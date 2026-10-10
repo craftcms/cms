@@ -323,15 +323,15 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         });
 
         // Fields
-        Route::prefix('settings/fields')->group(function () {
-            Route::get('/', [FieldsController::class, 'index']);
+        Route::prefix('settings/fields')->name('settings.fields.')->group(function () {
+            Route::get('/', [FieldsController::class, 'index'])->name('index');
             Route::middleware(RequireAdminChanges::class)->get('edit', [FieldsController::class, 'edit']);
-            Route::get('edit/{fieldId}', [FieldsController::class, 'edit'])->whereNumber('fieldId');
+            Route::get('edit/{fieldId}', [FieldsController::class, 'edit'])->whereNumber('fieldId')->name('edit');
 
             Route::middleware(RequireAdminChanges::class)->group(function () {
-                Route::get('new', [FieldsController::class, 'create']);
+                Route::get('new', [FieldsController::class, 'create'])->name('create');
                 Route::post('/', [FieldsController::class, 'store']);
-                Route::delete('{fieldId}', [FieldsController::class, 'destroy'])->whereNumber('fieldId');
+                Route::delete('{fieldId}', [FieldsController::class, 'destroy'])->whereNumber('fieldId')->name('destroy');
             });
         });
 

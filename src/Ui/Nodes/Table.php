@@ -25,7 +25,7 @@ class Table implements Node
 {
     use Conditionable;
 
-    /** @var list<array{key: string, label: string, sortable?: bool}> */
+    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool}> */
     private array $columns = [];
 
     /** @var list<array<string, mixed>> */
@@ -104,8 +104,10 @@ class Table implements Node
     /**
      * Columns with `sortable => true` get clickable headers that cycle ascending, descending,
      * then back to the rows' own order. See {@see rows()} for the `_sort` override.
+     * `width` sets a fixed or relative column width (e.g. `34px` or `1.5fr`).
+     * `headerSrOnly` hides only the visible header text.
      *
-     * @param  list<array{key: string, label: string, sortable?: bool}>  $columns
+     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool}>  $columns
      */
     public function columns(array $columns): static
     {

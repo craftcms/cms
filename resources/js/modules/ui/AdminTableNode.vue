@@ -277,6 +277,10 @@
         columnHelper.accessor(column.key, {
           header: column.label,
           enableSorting: !!column.sortable,
+          meta: {
+            trackSize: column.width,
+            headerSrOnly: column.headerSrOnly,
+          },
           cell: ({getValue, row}) => {
             const value = getValue();
             let rendered;
@@ -314,20 +318,23 @@
 
     if (deletable.value) {
       cols.push(
-        columnHelper.actions(({row}) => {
-          const actions = [];
+        columnHelper.actions(
+          ({row}) => {
+            const actions = [];
 
-          if (row.original._deletable !== false && deleteUrl(row.original)) {
-            actions.push(
-              h(DeleteButton, {
-                disabled: deletePending.value,
-                onClick: () => deleteRow(row.original),
-              })
-            );
-          }
+            if (row.original._deletable !== false && deleteUrl(row.original)) {
+              actions.push(
+                h(DeleteButton, {
+                  disabled: deletePending.value,
+                  onClick: () => deleteRow(row.original),
+                })
+              );
+            }
 
-          return actions;
-        })
+            return actions;
+          },
+          {meta: {trackSize: '60px'}}
+        )
       );
     }
 

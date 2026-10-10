@@ -1,6 +1,8 @@
+import '../../../../css/cp.css';
 import {createApp, h, nextTick, reactive, ref} from 'vue';
 import {mergeDataIntoQueryString} from '@inertiajs/core';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import {page} from 'vite-plus/test/browser/context';
 import AdminTable from './AdminTable.vue';
 import AdminTableNode from '@/modules/ui/AdminTableNode.vue';
 import {actionClient} from '@craftcms/ui';
@@ -121,6 +123,39 @@ function mountNode(options: Partial<TableProps> = {}) {
   teardown = () => app.unmount();
   return host;
 }
+
+it('renders HTML icon descriptions and hides only their column header text', async () => {
+  mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {
+        key: 'searchable',
+        label: 'Searchable',
+        headerSrOnly: true,
+      },
+    ],
+    rows: [
+      {
+        id: 1,
+        name: 'Body',
+        searchable: {
+          html: '<craft-icon name="magnifying-glass" appearance="badge" label="Used as search keywords"></craft-icon>',
+        },
+      },
+    ],
+  });
+  await nextTick();
+
+  const header = page.getByRole('columnheader', {name: 'Searchable'});
+  await expect.element(header).toBeInTheDocument();
+  const label = header.element().querySelector('.sr-only')!;
+  expect(label).not.toBeNull();
+  expect(label.getBoundingClientRect().width).toBeLessThanOrEqual(1);
+  expect(label.getBoundingClientRect().height).toBeLessThanOrEqual(1);
+  await expect
+    .element(page.getByRole('img', {name: 'Used as search keywords'}))
+    .toBeInTheDocument();
+});
 
 it.each([false, true])(
   'offers creation in the empty state with page-header placement %s',
