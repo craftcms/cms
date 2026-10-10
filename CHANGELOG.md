@@ -24,20 +24,12 @@
 - Selectize fields are now rendered as `<craft-combobox>` web components, rather than Selectize instances.
 - Autosuggest inputs are now rendered as `<craft-combobox>` web components, rather than Vue 2 `vue-autosuggest` instances.
 - Autosuggest inputs now match suggestions on their hint as well as their label, and no longer cap each suggestion group at five items.
-- Updated the user groups index to use shared UI tables and hide create and delete actions when `allowAdminChanges` is disabled.
-- Updated the GraphQL schemas index to use shared UI tables, and prevented the public schema from being deleted through its numeric URL.
-- Updated the image transforms index to use shared UI tables, with copyable handles, formatted configuration values, and empty-state creation actions.
-- Updated the asset volumes index to use shared UI tables, with copyable handles and reordering that restores the previous order when saving fails.
-- Updated the GraphQL tokens index to use shared UI tables, preserving date formatting and empty-state creation actions.
-- Updated the sections index to use shared UI tables, preserving server-side search, sorting, pagination, and section deletion warnings about entries.
-- Updated the entry types index to use shared UI tables, preserving chips, expandable usages, copyable handles, and deletion warnings about entries.
-- Updated the fields index to use shared UI tables, preserving icon descriptions, multisite columns, copyable handles, and field type presentation.
-- Updated the asset transformers index to use shared UI tables, preserving default labels and explanations for disabled deletion.
-- Updated the sites index to use shared UI tables, preserving group management, reordering, content transfer, and primary-site deletion restrictions.
+- Updated the index pages for user groups, GraphQL schemas and tokens, image transforms, asset volumes and transformers, workflows, sections, entry types, fields, and sites to use shared UI tables.
 - Improved labeling and keyboard focus management in shared control panel modals.
-- Updated the workflows index to use shared UI tables, with name sorting and visible deletion refusal messages.
+- Added `CraftCms\Cms\Ui\Nodes\Table`, for rendering admin tables from PHP UI definitions.
 - Added `CraftCms\Cms\Cp\Components\CopyAttribute` for rendering inline copyable values in PHP and templates.
 - Fixed a bug where page-header actions could be clipped on narrow screens.
+- Fixed a bug where the public GraphQL schema could be deleted through its numeric URL.
 - Plugins’ control panel nav items can now be shown as groups, by calling `group(true)` on the item returned by `getCpNavItem()` and passing its items to `subnav()`. ([#19903](https://github.com/craftcms/cms/pull/19903))
 - Plugin bundles can now import the control panel’s components and composables from the `@craftcms/cp` import-map module, including `ElementIndexPage`, `ElementEditor`, `AdminTable`, `SearchForm`, `DeleteButton`, `useCraftTable`, `createCraftColumnHelper`, and `useInertiaReorder`. ([#19912](https://github.com/craftcms/cms/issues/19912))
 - `useCraftTable` now has an `inertia` option, which pages and sorts a table through Inertia visits that reload its rows, `pagination`, and `sort` props together. ([#19912](https://github.com/craftcms/cms/issues/19912))
