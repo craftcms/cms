@@ -94,6 +94,27 @@ export function useAssetIndexItemBehavior(
         return false;
       }
 
+      // The folder's title links to it for new tabs and copied links, but a
+      // plain click navigates like the rest of the row, keeping the index's
+      // current state.
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.closest('a[data-folder-link]')
+      ) {
+        if (
+          event.button === 0 &&
+          !event.altKey &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !event.shiftKey
+        ) {
+          event.preventDefault();
+          navigateToFolder(item.folderUrl);
+        }
+
+        return true;
+      }
+
       if (
         event.target instanceof HTMLElement &&
         event.target.closest(

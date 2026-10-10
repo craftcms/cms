@@ -274,6 +274,8 @@ it('includes a volume’s subfolders in the index results', function () {
             // The folder row is flagged and carries the URL to navigate into it.
             ->where('data.0.isFolder', true)
             ->where('data.0.folderUrl', fn (string $url) => str_contains($url, "assets/{$volumeModel->handle}/a-subfolder"))
+            ->where('data.0.title', fn (string $html) => str_contains($html, 'data-folder-link')
+                && str_contains($html, "assets/{$volumeModel->handle}/a-subfolder\""))
         );
 });
 
