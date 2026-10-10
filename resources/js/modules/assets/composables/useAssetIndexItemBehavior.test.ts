@@ -65,6 +65,47 @@ it('opens a folder with the current view and fresh pagination', () => {
   );
 });
 
+it('opens a folder from its title link, unless the click is modified', () => {
+  const {itemBehavior} = useAssetIndexItemBehavior({visit});
+  const folder = {
+    id: 'folder:7',
+    isFolder: true,
+    folderUrl: '/cp/assets/photos/products',
+  };
+  const link = document.createElement('a');
+  link.href = folder.folderUrl;
+  link.dataset.folderLink = '';
+  const label = link.appendChild(document.createElement('span'));
+  document.body.append(link);
+
+  const click = (init: MouseEventInit = {}) => {
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      ...init,
+    });
+    let handled: boolean | undefined;
+    const onClick = (e: MouseEvent) => {
+      handled = itemBehavior.onClick?.(folder, e);
+    };
+    document.addEventListener('click', onClick, {once: true});
+    label.dispatchEvent(event);
+    return {event, handled};
+  };
+
+  const modified = click({metaKey: true});
+  expect(modified.handled).toBe(true);
+  expect(modified.event.defaultPrevented).toBe(false);
+  expect(visit).not.toHaveBeenCalled();
+
+  const plain = click();
+  expect(plain.handled).toBe(true);
+  expect(plain.event.defaultPrevented).toBe(true);
+  expect(visitedUrl().pathname).toBe('/cp/assets/photos/products');
+
+  link.remove();
+});
+
 it('marks assets and folders for drag-and-drop', () => {
   const {itemBehavior} = useAssetIndexItemBehavior({visit});
 

@@ -277,6 +277,9 @@ readonly class ElementHtml
      * - `class` – Class name(s) that should be added to the container element
      * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
      * - `hyperlink` – Whether the chip label should be hyperlinked to the element’s URL
+     * - `hyperlinkUrl` – The URL the label should be hyperlinked to, if not the element’s edit URL
+     * - `hyperlinkTag` – The tag the label hyperlink should use (`a` by default, or e.g. `CpLink` in Vue-rendered HTML)
+     * - `hyperlinkAttributes` – Any additional HTML attributes for the label hyperlink
      * - `returnUrl` – The `returnUrl` param that should be added to the hyperlink URL
      * - `id` – The chip’s `id` attribute
      * - `inputName` – The `name` attribute that should be set on a hidden input, if set
@@ -1175,7 +1178,7 @@ readonly class ElementHtml
                 ($config['hyperlink'] ?? false) &&
                 ! $element->trashed &&
                 $config['context'] !== 'modal' &&
-                ($url = $attributes['data']['cp-url'] ?? null)
+                ($url = $config['hyperlinkUrl'] ?? $attributes['data']['cp-url'] ?? null)
             ) {
                 $returnUrl = $config['returnUrl'] ?? null;
                 if ($returnUrl) {
@@ -1188,9 +1191,10 @@ readonly class ElementHtml
                     ]);
                 }
 
-                $content = Html::tag('a', Html::tag('span', $content), [
+                $content = Html::tag($config['hyperlinkTag'] ?? 'a', Html::tag('span', $content), [
                     'class' => ['label-link'],
                     'href' => $url,
+                    ...($config['hyperlinkAttributes'] ?? []),
                 ]);
             } else {
                 $content = Html::tag('span', $content, ['class' => 'label-link']);
