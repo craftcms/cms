@@ -243,7 +243,13 @@ it('requires a schemaId before deletion', function () {
 it('deletes private schemas and preserves the public schema', function (bool $public) {
     $schema = $public ? Gql::getPublicSchema() : createSchemaForSchemasControllerTest();
 
-    deleteJson(action([SchemasController::class, 'destroy'], ['schemaId' => $schema->id]))->assertForbidden();
+    $response = deleteJson(action([SchemasController::class, 'destroy'], ['schemaId' => $schema->id]));
+
+    if ($public) {
+        $response->assertForbidden();
+    } else {
+        $response->assertOk();
+    }
 
     expect(Gql::getSchemaById($schema->id)?->id)->toBe($public ? $schema->id : null);
 })->with(['private' => false, 'public' => true]);
