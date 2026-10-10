@@ -174,8 +174,8 @@ export const Spacious: Story = {
 };
 
 /**
- * `flush` drops the inline padding at each end of a row, so cell content lines
- * up with the edges of whatever contains the table.
+ * `flush` pads the start and end of each row by `--cp-container-padding`, for a
+ * table that spans its container's padding rather than sitting inside it.
  */
 export const Flush: Story = {
   args: {flush: true},

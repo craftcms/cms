@@ -201,8 +201,8 @@ export const Compact: Story = {
 };
 
 /**
- * `padded` insets the header, body and footer by the page container's padding
- * and flushes the rows to match, so the table lines up with the page content.
+ * `padded` insets the header and footer by the page container's padding, and
+ * lets the table span it with each row's outer cells padded to match.
  */
 export const Padded: Story = {
   args: {padded: true},

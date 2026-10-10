@@ -25,8 +25,8 @@
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: number[];
       /**
-       * Insets the table by the page container’s padding, and drops the inline
-       * padding at the start and end of each row to match.
+       * Insets the header and footer by the page container’s padding, and lets
+       * the table span it, padding each row’s outer cells to match.
        */
       padded?: boolean;
     }>(),
@@ -234,7 +234,6 @@
   }
   .admin-table--padded {
     .admin-table__header,
-    .admin-table__body,
     .admin-table__footer {
       padding-inline: var(--cp-container-padding);
     }

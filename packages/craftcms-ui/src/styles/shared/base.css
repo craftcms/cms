@@ -201,7 +201,7 @@ most of the element display correctly which is why we don't do BEM or anything h
 Modify with `cp-table--compact` to reduce the vertical cell padding
 Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
-Modify with `cp-table--flush` to remove the inline padding at the outer edges of each row
+Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-container-padding`, for tables that span their container's padding
  */
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
@@ -293,11 +293,11 @@ Modify with `cp-table--flush` to remove the inline padding at the outer edges of
 
 .cp-table--flush tr > :is(th, td) {
   &:first-child {
-    padding-inline-start: 0;
+    padding-inline-start: var(--cp-container-padding);
   }
 
   &:last-child {
-    padding-inline-end: 0;
+    padding-inline-end: var(--cp-container-padding);
   }
 }
 

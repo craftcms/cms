@@ -355,6 +355,7 @@
     <ElementIndex
       :view="model.view"
       :toolbar-as-form="false"
+      :flush-table="false"
       :quick-edit="quickEdit"
       :footer-active="queryState.selection.hasSelection.value"
       :item-behavior="{
