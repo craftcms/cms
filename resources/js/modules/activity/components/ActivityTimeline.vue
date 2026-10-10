@@ -68,7 +68,9 @@
           :key="group.key"
           :data-activity-day="group.key"
         >
-          <h4 class="activity-timeline__day">{{ group.label }}</h4>
+          <h4 class="activity-timeline__day">
+            <span class="activity-timeline__day-label">{{ group.label }}</span>
+          </h4>
           <component
             v-for="(event, index) in group.events"
             :key="event.id"
@@ -129,11 +131,31 @@
   }
 
   .activity-timeline__day {
+    position: relative;
     text-align: center;
     margin-block: var(--c-spacing-md);
     color: var(--c-text-quiet);
     font-size: var(--c-text-xs);
     font-weight: 600;
+  }
+
+  /* Out through the scroll area's padding to the pane's edges. */
+  .activity-timeline__day::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline: calc(var(--cp-container-padding) * -1);
+    border-block-start: 1px solid var(--c-color-border-quiet);
+  }
+
+  .activity-timeline__day-label {
+    position: relative;
+    display: inline-block;
+    padding-block: var(--c-spacing-xs);
+    padding-inline: var(--c-spacing-md);
+    border: 1px solid var(--c-color-border-quiet);
+    border-radius: var(--c-radius-full);
+    background-color: var(--c-surface-default);
   }
 
   section:first-of-type .activity-timeline__day {

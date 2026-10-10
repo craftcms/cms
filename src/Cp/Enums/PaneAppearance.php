@@ -16,6 +16,7 @@ enum PaneAppearance: string
 {
     case Raised = 'raised';
     case Outline = 'outline';
+    case OutlineFill = 'outline-fill';
     case Plain = 'plain';
     case Sunken = 'sunken';
 }
