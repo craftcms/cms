@@ -558,6 +558,7 @@ return [
     'Default Value' => 'Standardværdi',
     'Default Values' => 'Standard Værdier',
     'Default View Mode' => 'Standard visningstilstand',
+    'Default order' => 'Default order',
     'Default {type} Placement' => 'Standardplacering af {type}',
     'Default' => 'Standard',
     'Default?' => 'Standard?',
@@ -1058,6 +1059,7 @@ return [
     'Manage categories' => 'Administrer kategorier',
     'Manage element thumbnails' => 'Administrer miniaturebilleders element',
     'Manipulated SVG image rasterizing is unreliable. See \\CraftCms\\Cms\\Image\\Images::loadImage()' => 'Manipulated SVG image rasterizing is unreliable. See \\CraftCms\\Cms\\Image\\Images::loadImage()',
+    'Manual order' => 'Manual order',
     'Markdown Extra' => 'Markdown Extra',
     'Markdown Flavor' => 'Markdown Flavor',
     'Markdown Guide' => 'Markdown Guide',
@@ -2239,11 +2241,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Du ser en revision. Ingen af {type}s felter kan redigeres.',
     'Zip Code' => 'Postnummer',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` og `fieldId` kan ikke begge indstilles på en post.',
-    'account_activation_body' => 'Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{systemName}}! Aktiver din konto ved at klikke på følgende link:
+    'account_activation_body' => "Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{systemName}}! Aktiver din konto ved at klikke på følgende link:
 
 <{{link}}>
 
-Hvis du ikke forventede denne e-mail, bare ignorere den.',
+Hvis du ikke forventede denne e-mail, bare ignorere den.",
     'account_activation_heading' => 'Når nogen opretter en bruger:',
     'account_activation_subject' => 'Aktiver din bruger',
     'address' => 'adresse',
@@ -2340,11 +2342,11 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'user' => 'bruger',
     'users' => 'brugere',
     'validation.required' => 'validation.required',
-    'verify_new_email_body' => 'Hej {{user.friendlyName|e}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
+    'verify_new_email_body' => "Hej {{user.friendlyName|e}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
 
 <{{link}}>
 
-Hvis du ikke forventede denne e-mail, bare ignorere den.',
+Hvis du ikke forventede denne e-mail, bare ignorere den.",
     'verify_new_email_heading' => 'Når nogen ændrer deres e-mailadresse:',
     'verify_new_email_subject' => 'Bekræft din nye e-mailadresse',
     'week' => 'uge',
