@@ -5,8 +5,60 @@ declare(strict_types=1);
 use CraftCms\Cms\Http\Responses\CpModalResponse;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\Request;
+use Illuminate\Testing\TestResponse;
 use Twig\Markup;
+
+it('renders UI form state and submission props in pages and slideouts', function (bool $resolved, string $accept, string $mode) {
+    $ui = Ui::make([
+        Field::make('Title', Text::make('title')->value('Default title')),
+    ]);
+    $context = new UiContext(
+        namespace: ['settings'],
+        values: ['settings' => ['title' => 'Submitted title']],
+        errors: ['title' => ['Title is invalid.']],
+        globalErrors: ['Settings could not be saved.'],
+        mode: ControlMode::ReadOnly,
+        refreshable: true,
+    );
+    $props = ['submit' => ['method' => 'post', 'url' => '/settings']];
+    $screen = new CpScreenResponse()->title('Settings');
+
+    if ($resolved) {
+        $screen->ui(app(UiResolver::class)->resolve($ui, $context), props: $props);
+    } else {
+        $screen->ui($ui, $context, $props);
+    }
+
+    $request = Request::create('/', server: [
+        'HTTP_ACCEPT' => $accept,
+        'HTTP_X_INERTIA' => 'true',
+        'HTTP_X_CRAFT_CONTAINER_ID' => 'settings-slideout',
+    ]);
+
+    TestResponse::fromBaseResponse($screen->toResponse($request))
+        ->assertOk()
+        ->assertJsonPath('component', 'Ui')
+        ->assertJsonPath('props.screen.mode', $mode)
+        ->assertJsonPath('props.title', 'Settings')
+        ->assertJsonPath('props.submit', ['method' => 'post', 'url' => '/settings'])
+        ->assertJsonPath('props.ui.scope', ['settings'])
+        ->assertJsonPath('props.ui.refreshable', true)
+        ->assertJsonPath('props.ui.nodes.0.control.path', ['settings', 'title'])
+        ->assertJsonPath('props.ui.nodes.0.control.mode', 'readOnly')
+        ->assertJsonPath('props.ui.values.settings.title', 'Submitted title')
+        ->assertJsonPath('props.ui.errors', [
+            ['path' => ['settings', 'title'], 'messages' => ['Title is invalid.']],
+        ])
+        ->assertJsonPath('props.ui.globalErrors', ['Settings could not be saved.']);
+})->with(['definition' => false, 'payload' => true])
+    ->with(['page' => ['text/html', 'page'], 'slideout' => ['application/json', 'slideout']]);
 
 it('accepts markup for html sections', function (string $method, string $property) {
     $markup = new Markup('<div>HTML</div>', 'UTF-8');

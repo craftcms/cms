@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Workbench\App\Providers;
 
-use CraftCms\Cms\Asset\Data\AssetTransformerIndexData;
 use CraftCms\Cms\Asset\Data\UploadResult;
 use CraftCms\Cms\Condition\ConditionBuilderPayload;
 use CraftCms\Cms\Condition\ConditionRulePayload;
@@ -68,7 +67,6 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
             ->replaceType(DateTimeInterface::class, 'string')
             ->provider(new ClassListTransformedProvider(
                 [
-                    AssetTransformerIndexData::class,
                     UploadResult::class,
                     UploadSessionData::class,
                     GqlSchema::class,

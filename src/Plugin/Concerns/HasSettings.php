@@ -115,8 +115,7 @@ trait HasSettings
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Plugins'), 'settings/plugins')
             ->redirectUrl('settings')
-            ->inertiaPage('Ui', [
-                'ui' => $ui,
+            ->ui($ui, props: [
                 'submit' => [
                     'method' => 'post',
                     'url' => Url::cpUrl("settings/plugins/{$this->handle}"),

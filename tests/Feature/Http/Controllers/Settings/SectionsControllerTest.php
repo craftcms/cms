@@ -16,18 +16,21 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Site\Sites as SitesService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertSoftDeleted;
-use function Pest\Laravel\delete;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
@@ -65,27 +68,85 @@ it('requires admin changes', function () {
     deleteJson(action([SectionsController::class, 'destroy'], [Section::first()->id]))->assertForbidden();
 });
 
-test('index can be loaded', function () {
-    get(action([SectionsController::class, 'index']))
-        ->assertOk();
+test('index serves linked section rows and actions allowed by admin changes', function (bool $allowAdminChanges) {
+    Cms::config()->allowAdminChanges = $allowAdminChanges;
+    $section = Section::firstOrFail();
+    $response = get(action([SectionsController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('Ui'));
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))
+        ->firstWhere('component', 'craft:admin-table');
+
+    expect($table['props']['createUrl'])->toBe($allowAdminChanges ? action([SectionsController::class, 'create']) : null)
+        ->and($table['props']['deletable'])->toBe($allowAdminChanges);
+
+    expect($table['props']['rows'])->toHaveCount(1)
+        ->and($table['props']['pagination']['total'])->toBe(1);
+    $row = $table['props']['rows'][0];
+    $handle = new Crawler($row['handle']['html'])->filter('craft-copy-attribute');
+
+    expect($row)->toMatchArray([
+        'id' => $section->id,
+        'name' => ['label' => 'mmm Middle Section', 'url' => action([SectionsController::class, 'edit'], $section)],
+        'type' => 'Channel',
+    ])
+        ->and($handle->attr('value'))->toBe($section->handle)
+        ->and($handle->text())->toBe($section->handle);
+
+    if ($allowAdminChanges) {
+        expect($row['_deleteUrl'])->toBe(action([SectionsController::class, 'destroy'], $section))
+            ->and($row['_deleteConfirmMessage'])->toBe('Are you sure you want to delete “mmm Middle Section” and all its entries?');
+    } else {
+        expect($row)->not->toHaveKey('_deleteUrl');
+    }
+})->with(['writable' => true, 'read-only' => false]);
+
+it('requires admin access for the section index', function () {
+    $user = UserModel::firstOrFail();
+    $user->update(['admin' => false]);
+    UserPermissions::saveUserPermissions($user->id, ['accessCp']);
+    actingAs(User::findOne($user->id));
+
+    get(action([SectionsController::class, 'index']))->assertForbidden();
 });
 
-test('index can be sorted', function () {
-    Section::factory()->create(['name' => 'zzz Last Section']);
-    Section::factory()->create(['name' => 'aaa First Section']);
+test('index filters sorts and paginates sections', function (string $field, string $direction, string $name, ?string $mysqlName = null) {
+    Section::firstOrFail()->update(['handle' => 'm_middle']);
+    Section::factory()->create(['name' => 'zzz Last Section', 'handle' => 'a_last', 'type' => SectionType::Single]);
+    Section::factory()->create(['name' => 'aaa First Section', 'handle' => 'z_first', 'type' => SectionType::Structure]);
+    Section::factory()->create(['name' => 'Ignored record', 'handle' => 'ignored_record']);
+    Cms::config()->pageTrigger = 'custom-page';
+
+    // MySQL sorts enum values by declaration order rather than alphabetically.
+    $name = DB::isMysql() ? $mysqlName ?? $name : $name;
 
     get(action([SectionsController::class, 'index'], [
-        'sort' => [
-            ['field' => 'name', 'direction' => 'asc'],
-        ],
-    ]))
-        ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('data', 3)
-            ->where('data.0.name', 'aaa First Section')
-            ->where('data.2.name', 'zzz Last Section')
-        );
-});
+        'search' => 'Section',
+        'sort' => [['field' => $field, 'direction' => $direction]],
+        'per_page' => 2,
+        'custom-page' => 2,
+    ]), [
+        'X-Inertia' => 'true',
+        'X-Inertia-Partial-Component' => 'Ui',
+        'X-Inertia-Partial-Data' => 'ui',
+    ])->assertOk()->assertHeader('X-Inertia', 'true')
+        ->assertJsonPath('component', 'Ui')
+        ->assertJsonCount(1, 'props.ui.nodes.0.props.rows')
+        ->assertJsonPath('props.ui.nodes.0.props.rows.0.name.label', $name)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.total', 3)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.per_page', 2)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.current_page', 2)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.last_page', 2)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.from', 3)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.to', 3);
+})->with([
+    'ascending names' => ['name', 'asc', 'zzz Last Section'],
+    'descending names' => ['name', 'desc', 'aaa First Section'],
+    'ascending handles' => ['handle', 'asc', 'aaa First Section'],
+    'descending handles' => ['handle', 'desc', 'zzz Last Section'],
+    'ascending types' => ['type', 'asc', 'aaa First Section'],
+    'descending types' => ['type', 'desc', 'mmm Middle Section', 'zzz Last Section'],
+]);
 
 test('create can be loaded', function () {
     get(action([SectionsController::class, 'create']))
@@ -429,8 +490,9 @@ it('can delete a section', function () {
 
     expect(Section::count())->toBe(2);
 
-    delete(action([SectionsController::class, 'destroy'], [$newSection->id]))
-        ->assertRedirectBack();
+    deleteJson(action([SectionsController::class, 'destroy'], [$newSection->id]))
+        ->assertOk()
+        ->assertJsonPath('message', 'Section “'.$newSection->name.'” deleted.');
 
     assertSoftDeleted(Section::class, ['id' => $newSection->id]);
     expect(ProjectConfig::get(ProjectConfigPaths::PATH_SECTIONS.'.'.$newSection->uid))->toBeNull();

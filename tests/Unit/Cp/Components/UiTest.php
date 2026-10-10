@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\Components\Field;
 use CraftCms\Cms\Cp\Components\MissingComponent;
 use CraftCms\Cms\Cp\Components\ViewComponent;
 use CraftCms\Cms\View\TemplateMode;
+use Symfony\Component\DomCrawler\Crawler;
 use Twig\Markup;
 
 use function CraftCms\Cms\ui;
@@ -45,6 +46,18 @@ describe('configure', function () {
 });
 
 describe('ui()', function () {
+    it('renders copyable values as literal text without injecting markup or attributes', function () {
+        $value = '" autofocus onfocus="alert(1)"><script>alert(2)</script>&';
+        $crawler = new Crawler(ui('copy-attribute', ['value' => $value])->toHtml());
+        $attribute = $crawler->filter('craft-copy-attribute');
+
+        expect($attribute->count())->toBe(1)
+            ->and($attribute->attr('value'))->toBe($value)
+            ->and($attribute->text())->toBe($value)
+            ->and($attribute->children()->count())->toBe(0)
+            ->and($attribute->getNode(0)->attributes->length)->toBe(1);
+    });
+
     it('creates a configured component by name', function () {
         $component = ui('callout', ['variant' => 'info', 'content' => 'Hi']);
 
