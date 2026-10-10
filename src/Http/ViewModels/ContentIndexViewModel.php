@@ -1291,10 +1291,6 @@ abstract class ContentIndexViewModel extends ViewModel
             'appearance' => 'plain',
         ]);
 
-        if (static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL) {
-            return $chip;
-        }
-
         return $this->titleLinkHtml($element, $chip);
     }
 

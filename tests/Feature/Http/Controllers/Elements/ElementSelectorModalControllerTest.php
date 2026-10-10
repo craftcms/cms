@@ -2,11 +2,15 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -119,6 +123,78 @@ describe('titles are not links', function () {
 
         expect($thumbs)->not->toBeEmpty();
         $thumbs->each(fn (array $thumb) => expect($thumb['url'])->toBeNull());
+    });
+});
+
+describe('asset folders', function () {
+    beforeEach(function () {
+        config()->set('filesystems.disks.test-disk', [
+            'driver' => 'local',
+            'root' => storage_path('framework/testing/element-selector-modal-test/test-disk'),
+        ]);
+
+        $this->volume = Volumes::getVolumeById(Volume::factory()->create([
+            'fs' => 'test-disk',
+            'handle' => 'testvolume',
+            'name' => 'Test volume',
+        ])->id);
+
+        $this->postAssets = fn (array $payload = []) => ($this->postBody)([
+            'elementType' => Asset::class,
+            'source' => "volume:{$this->volume->uid}",
+            // What the Assets field sends; folders are only listed when asked for.
+            'showFolders' => true,
+            ...$payload,
+        ])->assertOk()->json('props');
+    });
+
+    it('marks folder rows so they can’t be selected', function () {
+        $first = Folders::ensureFolderByFullPathAndVolume('first', $this->volume)->id;
+        $second = Folders::ensureFolderByFullPathAndVolume('second', $this->volume)->id;
+
+        $rows = collect(($this->postAssets)()['data']);
+
+        expect($rows->pluck('isFolder')->all())->toBe([true, true])
+            ->and($rows->pluck('id')->sort()->values()->all())
+            ->toBe(["folder:{$first}", "folder:{$second}"]);
+    });
+
+    it('links folder titles to the folder', function () {
+        Folders::ensureFolderByFullPathAndVolume('a-subfolder', $this->volume);
+
+        $title = ($this->postAssets)()['data'][0]['title'];
+
+        expect($title)->toContain('data-folder-link')
+            ->toContain('assets/testvolume/a-subfolder"');
+    });
+
+    it('lists the requested subfolder, with a trail back to the volume root', function () {
+        Folders::ensureFolderByFullPathAndVolume('parent/child', $this->volume);
+        $parent = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'parent/']);
+
+        $props = ($this->postAssets)(['folderId' => $parent->id]);
+
+        expect(collect($props['data'])->pluck('label')->all())->toBe(['child'])
+            // Uploads land in the folder on screen.
+            ->and($props['source']['data']['folder-id'])->toBe($parent->id)
+            ->and(collect($props['folderBreadcrumbs'])->map(fn (array $crumb) => [$crumb['label'], $crumb['folderId']])->all())
+            ->toBe([
+                ['Test volume', Folders::getRootFolderByVolumeId($this->volume->id)->id],
+                ['parent', $parent->id],
+            ]);
+    });
+
+    it('ignores a requested folder outside the current volume', function () {
+        Folders::ensureFolderByFullPathAndVolume('mine', $this->volume);
+        $otherVolumeId = Volume::factory()->create(['fs' => 'test-disk'])->id;
+        Volumes::reset();
+        $otherVolume = Volumes::getVolumeById($otherVolumeId);
+        $elsewhere = Folders::ensureFolderByFullPathAndVolume('elsewhere', $otherVolume)->id;
+
+        $props = ($this->postAssets)(['folderId' => $elsewhere]);
+
+        expect(collect($props['data'])->pluck('label')->all())->toBe(['mine'])
+            ->and($props['folderBreadcrumbs'])->toHaveCount(1);
     });
 });
 
