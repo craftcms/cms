@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {type InertiaLinkProps, Link} from '@inertiajs/vue3';
-  import {type Component, computed, defineComponent, h} from 'vue';
+  import {type Component, computed, defineComponent, h, useAttrs} from 'vue';
 
   defineOptions({inheritAttrs: false});
 
@@ -99,6 +99,17 @@
     };
   });
 
+  const attrs = useAttrs();
+
+  // Inertia only prefetches GET visits, and throws for any other method.
+  const defaultPrefetch = computed(() => {
+    const method =
+      attrs.method ??
+      (props.href instanceof Object ? props.href.method : undefined);
+
+    return !method || String(method).toLowerCase() === 'get' ? 'click' : false;
+  });
+
   const hrefString = computed(() => {
     return props.href instanceof Object ? props.href.url : props.href;
   });
@@ -126,7 +137,11 @@
 <template>
   <template v-if="inertia">
     <Link
-      v-bind="{prefetch: 'click', ...$attrs, ...customElementAttributes}"
+      v-bind="{
+        prefetch: defaultPrefetch,
+        ...$attrs,
+        ...customElementAttributes,
+      }"
       :as="linkComponent"
       :tag="customElement"
       :href="href"

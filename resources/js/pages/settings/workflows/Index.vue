@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {router} from '@inertiajs/vue3';
   import {useCraftTable} from '@/common/table/craftTable';
   import {computed, h, ref} from 'vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
@@ -10,8 +9,6 @@
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
   import SearchForm from '@/modules/admin-table/components/SearchForm.vue';
-  import {useServerPagination} from '@/common/table/useServerPagination';
-  import {useServerSort} from '@/common/table/useServerSort';
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {
     create,
@@ -53,30 +50,12 @@
           confirm: t('Are you sure you want to delete “{name}”?', {
             name: row.original.name,
           }),
-          onClick: () => router.delete(destroy({workflow: row.original.id})),
+          action: destroy({workflow: row.original.id}),
         }),
       ]),
     ])
   );
 
-  const {paginationState, paginationConfig} = useServerPagination({
-    initialState: props.pagination,
-    onChange: ({query}) => {
-      router.visit(index({}, {query}), {
-        only: ['data', 'pagination'],
-        preserveScroll: true,
-      });
-    },
-  });
-  const {sortingState, sortingConfig} = useServerSort({
-    initialState: props.sort,
-    onChange: ({query}) => {
-      router.visit(index({}, {query}), {
-        only: ['data', 'sort'],
-        preserveScroll: true,
-      });
-    },
-  });
   const table = useCraftTable<Workflow>({
     get data() {
       return props.data;
@@ -85,18 +64,15 @@
       return columns.value;
     },
     state: {
-      get pagination() {
-        return paginationState.value;
-      },
-      get sorting() {
-        return sortingState.value;
-      },
       get columnVisibility() {
         return {actions: !props.readOnly};
       },
     },
-    ...paginationConfig,
-    ...sortingConfig,
+    inertia: {
+      url: index(),
+      pagination: () => props.pagination,
+      sort: () => props.sort,
+    },
   });
 </script>
 

@@ -1286,16 +1286,39 @@ abstract class ContentIndexViewModel extends ViewModel
 
     private function titleCellHtml(ElementInterface $element, ElementHtml $elementHtml): string
     {
-        $editUrl = static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
-            ? $this->editUrl($element)
-            : null;
-
-        // Only the label is the link, so the rest of the chip (its status
-        // indicator, say) behaves like the rest of the row.
-        return $elementHtml->elementChipHtml($element, [
+        $chip = $elementHtml->elementChipHtml($element, [
             'context' => static::RENDER_CONTEXT,
             'appearance' => 'plain',
-            'hyperlink' => $editUrl !== null,
+        ]);
+
+        if (static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL) {
+            return $chip;
+        }
+
+        return $this->titleLinkHtml($element, $chip);
+    }
+
+    /**
+     * Links a title cell's chip to wherever clicking the element should go.
+     */
+    protected function titleLinkHtml(ElementInterface $element, string $chip): string
+    {
+        $editUrl = $this->editUrl($element);
+
+        if ($editUrl === null) {
+            return $chip;
+        }
+
+        // CONFLICT-REVIEW: 6.x wrapped the whole chip in a CpLink here, while HEAD
+        // (824d4397a2) links only the chip's label. Kept 6.x's overridable hook
+        // (AssetIndexViewModel overrides it for folders) but re-render the chip
+        // with HEAD's label-only link, so `$chip` is only used when there's no URL.
+        // Only the label is the link, so the rest of the chip (its status
+        // indicator, say) behaves like the rest of the row.
+        return app(ElementHtml::class)->elementChipHtml($element, [
+            'context' => static::RENDER_CONTEXT,
+            'appearance' => 'plain',
+            'hyperlink' => true,
             'hyperlinkUrl' => $editUrl,
             'hyperlinkTag' => 'CpLink',
             'hyperlinkAttributes' => ['bare' => true],

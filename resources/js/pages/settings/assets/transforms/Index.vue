@@ -11,7 +11,6 @@
   } from '@actions/Settings/ImageTransformsController';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
-  import {router} from '@inertiajs/vue3';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   type ExistingImageTransform = Omit<
@@ -72,18 +71,16 @@
               name: row.original.name,
             }
           ),
-          onClick: () =>
-            router
-              .optimistic<{transforms: Array<ExistingImageTransform>}>(
-                (props) => ({
-                  transforms: props.transforms.filter(
-                    ({id}) => id !== row.original.id
-                  ),
-                })
-              )
-              .delete(destroy({transformId: row.original.id}), {
-                preserveScroll: true,
-              }),
+          action: destroy({transformId: row.original.id}),
+          options: {
+            optimistic: (props: {
+              transforms: Array<ExistingImageTransform>;
+            }) => ({
+              transforms: props.transforms.filter(
+                ({id}) => id !== row.original.id
+              ),
+            }),
+          },
         }),
       ]),
     ])
