@@ -39,17 +39,19 @@
     sourceKey?: string | null;
   }>();
 
+  const route: ElementIndexRoute = {
+    url: (query = {}) => appendIndexQuery(props.indexUrl, query),
+  };
+
   const subnavActions = useCustomizeSources(() => ({
     elementType: props.elementType,
     page: props.page,
     sourceKey: props.sourceKey,
+    route,
+    sourceHref: props.indexUrl,
   }));
 
   useAppLayout(() => ({subnavActions: subnavActions.value}));
-
-  const route: ElementIndexRoute = {
-    url: (query = {}) => appendIndexQuery(props.indexUrl, query),
-  };
 
   const toolbarFragment = computed(() =>
     props.toolbarHtml
