@@ -248,7 +248,7 @@
       <template #[contentSlot]>
         <component
           :is="isBareTable ? 'div' : 'craft-field-group'"
-          :class="isBareTable ? undefined : 'py-4'"
+          :class="isBareTable ? undefined : 'py-lg'"
         >
           <UiRenderer
             ref="renderer"

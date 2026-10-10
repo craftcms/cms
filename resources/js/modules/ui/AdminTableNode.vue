@@ -317,7 +317,7 @@
 
             const status = row.original._status;
             if (columnIndex === 0 && status) {
-              return h('div', {class: 'flex flex-nowrap gap-1 items-center'}, [
+              return h('div', {class: 'flex flex-nowrap gap-sm items-center'}, [
                 h('craft-indicator', {
                   fill: status.fill,
                   label: status.label ?? undefined,

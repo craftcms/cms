@@ -56,7 +56,7 @@
       <span>{{ t('Move to page…') }}</span>
     </button>
 
-    <div slot="content-body" class="flex flex-nowrap items-end gap-2">
+    <div slot="content-body" class="flex flex-nowrap items-end gap-md">
       <Select
         :label="t('Choose a page')"
         v-model="targetPageRaw"

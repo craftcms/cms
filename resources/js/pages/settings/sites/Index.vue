@@ -91,7 +91,7 @@
 <template>
   <div class="contents">
     <LayoutSlot name="title">
-      <div class="flex gap-2 items-center">
+      <div class="flex gap-md items-center">
         <h1 class="title text-xl">
           {{ title }}
         </h1>

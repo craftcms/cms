@@ -52,7 +52,7 @@
         <template #option="{option}">
           <span
             v-if="statusOptionFill(option)"
-            class="inline-flex items-center gap-2"
+            class="inline-flex items-center gap-md"
           >
             <craft-indicator :fill="statusOptionFill(option)"></craft-indicator>
             {{ option.label }}
@@ -80,7 +80,7 @@
           >
             <craft-icon name="x" :label="t('Clear search')"></craft-icon>
           </craft-button>
-          <span class="flex items-center px-2">
+          <span class="flex items-center px-md">
             <craft-icon name="search"></craft-icon>
           </span>
         </div>
