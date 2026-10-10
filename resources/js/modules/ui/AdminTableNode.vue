@@ -30,6 +30,7 @@
   } from '@/modules/elements/types/actions';
   import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import UiModal from './UiModal.vue';
+  import {useInertiaTable} from './useInertiaTable';
   import type {UiValues} from './types';
 
   import type {
@@ -50,6 +51,7 @@
   const props = defineProps<{node: TableNodePayload}>();
 
   const adminTable = ref<AdminTableHandle>();
+  const inertia = useInertiaTable(() => props.node);
   const deletePending = shallowRef(false);
   const deletable = computed(
     () => props.node.props.deletable ?? !!props.node.props.deleteUrl
@@ -513,7 +515,7 @@
   }
 
   function refreshTable(): void {
-    refreshUi();
+    if (!props.node.props.pagination) refreshUi();
 
     void adminTable.value?.refresh();
   }
@@ -540,8 +542,16 @@
         ref="adminTable"
         :rows="node.props.rows"
         :columns="columns"
-        :load-rows="node.props.dataUrl ? loadRows : undefined"
+        :load-rows="
+          node.props.pagination
+            ? inertia.loadRows
+            : node.props.dataUrl
+              ? loadRows
+              : undefined
+        "
         :storage-key="storageKey"
+        :pagination="node.props.pagination"
+        :request-state="inertia.requestState.value"
         :page-size="node.props.perPage"
         :page-size-options="node.props.perPageOptions"
         :get-row-label="

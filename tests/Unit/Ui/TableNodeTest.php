@@ -55,6 +55,10 @@ it('resolves footer visibility from pagination and bulk actions unless overridde
 })->with([
     'static list' => [fn (Table $table) => $table, false],
     'paginated list' => [fn (Table $table) => $table->dataUrl('/workflows/table-data'), true],
+    'Inertia-paginated list' => [fn (Table $table) => $table->pagination([
+        'total' => 1, 'per_page' => 100, 'current_page' => 1, 'last_page' => 1,
+        'next_page_url' => null, 'prev_page_url' => null, 'from' => 1, 'to' => 1,
+    ]), true],
     'bulk deletion' => [fn (Table $table) => $table->bulkDeletable('/workflows'), true],
     'bulk actions' => [fn (Table $table) => $table->bulkActions([['label' => 'Approve', 'url' => '/workflows/approve']]), true],
     'status actions' => [fn (Table $table) => $table->statusActions([['label' => 'Enable', 'url' => '/workflows/enable']]), true],

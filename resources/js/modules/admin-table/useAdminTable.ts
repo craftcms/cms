@@ -49,32 +49,51 @@ export function useAdminTable<TData extends Record<string, any>>(
     () => options.loadRows,
     onLoadError
   );
-  const {rows: pageRows, pagination, loading} = pageData;
+  const {loading} = pageData;
+  const pageRows = computed({
+    get: () => (options.pagination ? rows.value : pageData.rows.value),
+    set: (value: TData[]) => {
+      if (options.pagination) rows.value = value;
+      else pageData.rows.value = value;
+    },
+  });
+  const pagination = computed(
+    () => options.pagination ?? pageData.pagination.value
+  );
   const reordering = shallowRef(false);
-  const search = shallowRef('');
+  const search = shallowRef(options.requestState?.search ?? '');
   const storedPageSize = preference('perPage', options.pageSize);
   const pageSize = shallowRef(
-    paginated.value && options.pageSizeOptions.includes(storedPageSize.value)
-      ? storedPageSize.value
-      : options.pageSize
+    options.requestState?.perPage ??
+      (paginated.value && options.pageSizeOptions.includes(storedPageSize.value)
+        ? storedPageSize.value
+        : options.pageSize)
   );
   const storedStatus = preference('status', '');
   const status = shallowRef(
-    options.statusFilterOptions.some(
-      (option) => option.value === storedStatus.value
-    )
-      ? storedStatus.value
-      : ''
+    options.requestState?.status ??
+      (options.statusFilterOptions.some(
+        (option) => option.value === storedStatus.value
+      )
+        ? storedStatus.value
+        : '')
   );
   const storedSort = preference<SortingState>('sort', []);
   const sorting = shallowRef<SortingState>(
-    (storedSort.value ?? [])
+    (options.requestState
+      ? (options.requestState.sort ?? []).map((sort) => ({
+          id: sort.field,
+          desc: sort.direction === 'desc',
+        }))
+      : (storedSort.value ?? [])
+    )
       .filter((sort) =>
         options.columns.some(
           (column) =>
             (column.id ??
               ('accessorKey' in column ? column.accessorKey : undefined)) ===
-              sort.id && column.enableSorting
+              sort.id &&
+            (column.enableSorting || options.requestState)
         )
       )
       .slice(0, 1)
@@ -362,7 +381,7 @@ export function useAdminTable<TData extends Record<string, any>>(
   ): Promise<boolean> {
     if (!options.loadRows) return true;
 
-    const pending = pageData.load({
+    const params: AdminTableRequest = {
       page,
       perPage: pageSize.value,
       search: search.value || undefined,
@@ -373,7 +392,8 @@ export function useAdminTable<TData extends Record<string, any>>(
             direction: sort.desc ? 'desc' : 'asc',
           }))
         : undefined,
-    });
+    };
+    const pending = pageData.load(params);
     const request = pageData.request.value;
     const success = await pending;
     const result = pagination.value;
@@ -386,23 +406,47 @@ export function useAdminTable<TData extends Record<string, any>>(
     return true;
   }
 
+  watch(
+    () => options.requestState,
+    (state) => {
+      if (!state || loading.value) return;
+      search.value = state.search ?? '';
+      status.value = state.status ?? '';
+      pageSize.value = state.perPage;
+      sorting.value = (state.sort ?? []).map((sort) => ({
+        id: sort.field,
+        desc: sort.direction === 'desc',
+      }));
+      table.resetRowSelection();
+    }
+  );
+
   watch(status, (value) => {
     storedStatus.value = value;
     table.resetRowSelection();
-    if (paginated.value) void refresh(1);
+    if (
+      paginated.value &&
+      (!options.requestState || value !== (options.requestState.status ?? ''))
+    )
+      void refresh(1);
   });
   watch(search, () => table.resetRowSelection());
   watchDebounced(
     search,
     () => {
-      if (paginated.value) void refresh(1);
+      if (
+        paginated.value &&
+        (!options.requestState ||
+          search.value !== (options.requestState.search ?? ''))
+      )
+        void refresh(1);
     },
     {debounce: 300}
   );
   watch(
     () => options.loadRows,
     () => {
-      if (paginated.value) void refresh(1);
+      if (paginated.value && !options.pagination) void refresh();
     },
     {immediate: true}
   );

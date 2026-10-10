@@ -1,4 +1,5 @@
-import {createApp, h, nextTick, ref} from 'vue';
+import {createApp, h, nextTick, reactive, ref} from 'vue';
+import {mergeDataIntoQueryString} from '@inertiajs/core';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import AdminTable from './AdminTable.vue';
 import AdminTableNode from '@/modules/ui/AdminTableNode.vue';
@@ -10,12 +11,13 @@ import type {
   AdminTableRequest,
 } from '../types';
 
-const reload = vi.hoisted(() => vi.fn());
+const {reload, get} = vi.hoisted(() => ({reload: vi.fn(), get: vi.fn()}));
+let inertiaPage: {url: string; props: {readOnly: boolean}};
 
 vi.mock('@inertiajs/vue3', async () => ({
   ...(await vi.importActual('@inertiajs/vue3')),
-  usePage: () => ({props: {readOnly: false}}),
-  router: {reload},
+  usePage: () => inertiaPage,
+  router: {reload, get},
 }));
 
 const records = [
@@ -31,6 +33,8 @@ beforeEach(() => {
   localStorage.clear();
   vi.stubGlobal('Craft', {systemUid: 'admin-table-test'});
   reload.mockClear();
+  get.mockReset();
+  inertiaPage = reactive({url: '/', props: {readOnly: false}});
   vi.stubGlobal(
     'fetch',
     vi.fn().mockResolvedValue(new Response('<svg></svg>'))
@@ -515,6 +519,89 @@ it('loads the requested page and returns to page one when the page size changes'
   await vi.waitFor(() => expect(rowNames(host)).toEqual(['Page 1']));
 });
 
+it('renders the initial server page and updates it through Inertia without echoing restored state', async () => {
+  vi.stubGlobal('Craft', {systemUid: 'admin-table-test', pageTrigger: 'p'});
+  const originalPageUrl =
+    '/settings/entry-types?site=secondary&p=2&per_page=100&search=Article&sort[0][field]=name&sort[0][direction]=desc';
+  inertiaPage.url = originalPageUrl;
+  const originalPagination = {
+    ...result('Loaded', 2).pagination,
+    per_page: 100,
+    total: 101,
+    from: 101,
+    to: 101,
+  };
+  const options = reactive<Partial<TableProps>>({
+    rows: [{id: 2, name: 'Loaded'}],
+    pagination: originalPagination,
+    searchable: true,
+  });
+  const host = mountNode(options);
+  await nextTick();
+
+  expect(rowNames(host)).toEqual(['Loaded']);
+  expect(get).not.toHaveBeenCalled();
+  expect(
+    host.querySelector<HTMLElement & {modelValue: string}>(
+      'craft-input[name=search]'
+    )?.modelValue
+  ).toBe('Article');
+  get.mockImplementationOnce((_url, _query, visit) => {
+    options.rows = [{id: 1, name: 'Filtered'}];
+    options.pagination = {
+      ...result('Filtered').pagination,
+      per_page: 100,
+      total: 1,
+      last_page: 1,
+      to: 1,
+    };
+    inertiaPage.url =
+      '/settings/entry-types?site=secondary&p=1&per_page=100&search=Filtered&sort[0][field]=name&sort[0][direction]=desc';
+    void visit.onSuccess().then(() => visit.onFinish());
+  });
+  await setControl(host, 'craft-input[name=search]', 'Filtered');
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Filtered']));
+
+  expect(get).toHaveBeenCalledExactlyOnceWith(
+    '/settings/entry-types',
+    {
+      site: 'secondary',
+      p: 1,
+      per_page: 100,
+      search: 'Filtered',
+      sort: expect.anything(),
+    },
+    expect.objectContaining({
+      only: ['ui'],
+      preserveState: true,
+      preserveScroll: true,
+    })
+  );
+
+  const [serializedUrl] = mergeDataIntoQueryString(
+    'get',
+    '/settings/entry-types',
+    get.mock.calls[0]![1],
+    'brackets'
+  );
+  const params = new URL(serializedUrl, location.origin).searchParams;
+  expect(params.get('sort[0][field]')).toBe('name');
+  expect(params.get('sort[0][direction]')).toBe('desc');
+
+  options.rows = [{id: 2, name: 'Loaded'}];
+  options.pagination = originalPagination;
+  inertiaPage.url = originalPageUrl;
+  await nextTick();
+  expect(rowNames(host)).toEqual(['Loaded']);
+  expect(
+    host.querySelector<HTMLElement & {modelValue: string}>(
+      'craft-input[name=search]'
+    )?.modelValue
+  ).toBe('Article');
+  await new Promise((resolve) => setTimeout(resolve, 350));
+  expect(get).toHaveBeenCalledTimes(1);
+});
+
 it('ignores superseded responses and aborts an unfinished load on unmount', async () => {
   const pending: Array<{
     signal: AbortSignal;
@@ -538,6 +625,85 @@ it('ignores superseded responses and aborts an unfinished load on unmount', asyn
   teardown = undefined;
   expect(pending[2]!.signal.aborted).toBe(true);
   pending[2]!.resolve(result('Unmounted'));
+});
+
+it('refreshes through Inertia after deletion and returns from an emptied final page', async () => {
+  inertiaPage.url = '/settings/entry-types?page=2';
+  const remove = vi
+    .spyOn(actionClient, 'delete')
+    .mockResolvedValue({data: {}} as never);
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
+  const options = reactive<Partial<TableProps>>({
+    rows: [{id: 51, name: 'Last', _deleteUrl: '/settings/entry-types/51'}],
+    pagination: {...result('Last', 2).pagination, total: 51, from: 51, to: 51},
+    deletable: true,
+  });
+  const host = mountNode(options);
+  get.mockImplementation((_url, query, visit) => {
+    options.rows =
+      query.page === 2
+        ? []
+        : [{id: 1, name: 'Replacement', _deleteUrl: '/settings/entry-types/1'}];
+    options.pagination = {
+      ...result('Unused', query.page).pagination,
+      last_page: 1,
+      total: 50,
+      from: query.page === 2 ? null : 1,
+      to: query.page === 2 ? null : 50,
+    };
+    inertiaPage.url = `/settings/entry-types?page=${query.page}`;
+    void visit.onSuccess().then(() => visit.onFinish());
+  });
+
+  host.querySelector<HTMLElement>('tbody craft-button')!.click();
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Replacement']));
+
+  expect(remove).toHaveBeenCalledExactlyOnceWith('/settings/entry-types/51', {
+    data: {id: 51},
+  });
+  expect(get.mock.calls.map((call) => call[1].page)).toEqual([2, 1]);
+  expect(reload).not.toHaveBeenCalled();
+});
+
+it('keeps a newer search while an earlier Inertia response updates the node', async () => {
+  inertiaPage.url = '/settings/entry-types';
+  const options = reactive({
+    rows: [{id: 1, name: 'Initial'}],
+    pagination: result('Initial').pagination,
+    searchable: true,
+  });
+  const host = mountNode(options);
+  await nextTick();
+  const visits: Array<{onSuccess: () => Promise<void>; onFinish: () => void}> =
+    [];
+  get.mockImplementation((_url, _query, visit) => visits.push(visit));
+
+  await setControl(host, 'craft-input[name=search]', 'First');
+  await vi.waitFor(() => expect(get).toHaveBeenCalledTimes(1));
+  await setControl(host, 'craft-input[name=search]', 'Latest');
+  options.rows = [{id: 1, name: 'First response'}];
+  inertiaPage.url = '/settings/entry-types?search=First';
+  await visits[0]!.onSuccess();
+  visits[0]!.onFinish();
+
+  expect(
+    host.querySelector<HTMLElement & {modelValue: string}>(
+      'craft-input[name=search]'
+    )?.modelValue
+  ).toBe('Latest');
+  await vi.waitFor(() => expect(get.mock.lastCall?.[1].search).toBe('Latest'));
+
+  options.rows = [{id: 2, name: 'Latest response'}];
+  inertiaPage.url = '/settings/entry-types?search=Latest';
+  await visits[1]!.onSuccess();
+  visits[1]!.onFinish();
+
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Latest response']));
+  expect(
+    host.querySelector<HTMLElement & {modelValue: string}>(
+      'craft-input[name=search]'
+    )?.modelValue
+  ).toBe('Latest');
 });
 
 it('adapts node endpoint requests and renders serialized cells in the shared table', async () => {

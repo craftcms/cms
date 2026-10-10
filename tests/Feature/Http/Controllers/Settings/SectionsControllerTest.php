@@ -47,7 +47,6 @@ it('requires authentication', function () {
     Auth::logout();
 
     get(action([SectionsController::class, 'index']))->assertRedirect();
-    postJson(action([SectionsController::class, 'tableData']))->assertUnauthorized();
     get(action([SectionsController::class, 'create']))->assertRedirect();
     get(action([SectionsController::class, 'edit'], [Section::first()->id]))->assertRedirect();
     postJson(action([SectionsController::class, 'renderUi']))->assertUnauthorized();
@@ -77,15 +76,12 @@ test('index serves linked section rows and actions allowed by admin changes', fu
     $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))
         ->firstWhere('component', 'craft:admin-table');
 
-    expect($table['props']['dataUrl'])->toBe(action([SectionsController::class, 'tableData']))
-        ->and($table['props']['createUrl'])->toBe($allowAdminChanges ? action([SectionsController::class, 'create']) : null)
+    expect($table['props']['createUrl'])->toBe($allowAdminChanges ? action([SectionsController::class, 'create']) : null)
         ->and($table['props']['deletable'])->toBe($allowAdminChanges);
 
-    $response = postJson($table['props']['dataUrl'])
-        ->assertOk()
-        ->assertJsonCount(1, 'data')
-        ->assertJsonPath('pagination.total', 1);
-    $row = $response->json('data.0');
+    expect($table['props']['rows'])->toHaveCount(1)
+        ->and($table['props']['pagination']['total'])->toBe(1);
+    $row = $table['props']['rows'][0];
     $handle = new Crawler($row['handle']['html'])->filter('craft-copy-attribute');
 
     expect($row)->toMatchArray([
@@ -104,38 +100,41 @@ test('index serves linked section rows and actions allowed by admin changes', fu
     }
 })->with(['writable' => true, 'read-only' => false]);
 
-it('requires admin access for the section index and table data', function () {
+it('requires admin access for the section index', function () {
     $user = UserModel::firstOrFail();
     $user->update(['admin' => false]);
     UserPermissions::saveUserPermissions($user->id, ['accessCp']);
     actingAs(User::findOne($user->id));
 
     get(action([SectionsController::class, 'index']))->assertForbidden();
-    postJson(action([SectionsController::class, 'tableData']))->assertForbidden();
 });
 
-test('table data filters sorts and paginates sections', function (string $field, string $direction, string $name) {
+test('index filters sorts and paginates sections', function (string $field, string $direction, string $name) {
     Section::firstOrFail()->update(['handle' => 'm_middle']);
     Section::factory()->create(['name' => 'zzz Last Section', 'handle' => 'a_last', 'type' => SectionType::Single]);
     Section::factory()->create(['name' => 'aaa First Section', 'handle' => 'z_first', 'type' => SectionType::Structure]);
     Section::factory()->create(['name' => 'Ignored record', 'handle' => 'ignored_record']);
     Cms::config()->pageTrigger = 'custom-page';
 
-    postJson(action([SectionsController::class, 'tableData']), [
+    get(action([SectionsController::class, 'index'], [
         'search' => 'Section',
         'sort' => [['field' => $field, 'direction' => $direction]],
         'per_page' => 2,
-        'page' => 2,
-    ])
-        ->assertOk()
-        ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.name.label', $name)
-        ->assertJsonPath('pagination.total', 3)
-        ->assertJsonPath('pagination.per_page', 2)
-        ->assertJsonPath('pagination.current_page', 2)
-        ->assertJsonPath('pagination.last_page', 2)
-        ->assertJsonPath('pagination.from', 3)
-        ->assertJsonPath('pagination.to', 3);
+        'custom-page' => 2,
+    ]), [
+        'X-Inertia' => 'true',
+        'X-Inertia-Partial-Component' => 'Ui',
+        'X-Inertia-Partial-Data' => 'ui',
+    ])->assertOk()->assertHeader('X-Inertia', 'true')
+        ->assertJsonPath('component', 'Ui')
+        ->assertJsonCount(1, 'props.ui.nodes.0.props.rows')
+        ->assertJsonPath('props.ui.nodes.0.props.rows.0.name.label', $name)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.total', 3)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.per_page', 2)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.current_page', 2)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.last_page', 2)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.from', 3)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.to', 3);
 })->with([
     'ascending names' => ['name', 'asc', 'zzz Last Section'],
     'descending names' => ['name', 'desc', 'aaa First Section'],

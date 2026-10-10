@@ -1,5 +1,6 @@
 import type {AdminTableStatusOption} from '@/modules/admin-table/types';
 import type {UiNodePayload, UiValues} from './types';
+import type {PaginationData} from '@/common/types';
 
 export interface TableColumn {
   key: string;
@@ -85,6 +86,7 @@ export type TableRow = Record<string, TableCellValue> & {
 };
 
 export interface TableProps {
+  pagination?: PaginationData | null;
   columns: TableColumn[];
   rows: TableRow[];
   dataUrl: string | null;

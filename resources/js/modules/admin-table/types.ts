@@ -1,6 +1,7 @@
 import type {ColumnDef} from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/common/table/craftTable';
 import type {PaginatedRows} from '@/common/composables/usePaginatedRows';
+import type {PaginationData} from '@/common/types';
 
 export interface AdminTableRequest {
   page: number;
@@ -36,6 +37,8 @@ export interface AdminTableDataOptions<TData extends Record<string, any>> {
     signal: AbortSignal
   ) => Promise<AdminTablePage<TData>>;
   storageKey?: string;
+  pagination?: PaginationData | null;
+  requestState?: AdminTableRequest;
   pageSize: number;
   pageSizeOptions: number[];
   statusFilterOptions: AdminTableStatusOption[];

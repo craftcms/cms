@@ -33,6 +33,9 @@ class Table implements Node
 
     private ?string $dataUrl = null;
 
+    /** @var array{total: int, per_page: int, current_page: int, last_page: int, next_page_url: ?string, prev_page_url: ?string, from: ?int, to: ?int}|null */
+    private ?array $pagination = null;
+
     private int $perPage = 100;
 
     /** @var list<int> */
@@ -134,6 +137,7 @@ class Table implements Node
      * boolean or status string and renders an indicator in the first column.
      * `_search` overrides client-side search text; otherwise columns' text is used.
      * `_sort` maps column keys to values to sort by client-side instead of the cell's text.
+     * Calling this clears pagination; apply {@see pagination()} afterward for a server-paginated page.
      *
      * @param  iterable<array-key, array<string, mixed>>  $rows
      */
@@ -141,6 +145,7 @@ class Table implements Node
     {
         $this->rows = self::prepareRows(iterator_to_array($rows, false));
         $this->dataUrl = null;
+        $this->pagination = null;
 
         return $this;
     }
@@ -191,20 +196,46 @@ class Table implements Node
      * last_page, next_page_url, prev_page_url, from, to}}`. Pass the page's rows through
      * {@see prepareRows()} first. Calling this clears {@see rows()}, and vice versa.
      *
-     * Users can switch `per_page` between `$perPageOptions` (plus `$perPage`), so the
-     * endpoint must honor the posted value rather than assume `$perPage`.
-     *
-     * @param  list<int>|null  $perPageOptions
+     * Users can switch `per_page` between the sizes configured by {@see perPage()}, so
+     * the endpoint must honor the posted value rather than assume the initial size.
      */
-    public function dataUrl(string $url, int $perPage = 100, ?array $perPageOptions = null): static
+    public function dataUrl(string $url): static
     {
         $this->dataUrl = $url;
-        $this->perPage = $perPage;
         $this->rows = [];
+        $this->pagination = null;
 
-        if ($perPageOptions !== null) {
-            $this->perPageOptions = $perPageOptions;
+        return $this;
+    }
+
+    /**
+     * Configure the initial page size and optionally replace
+     * the available sizes. The initial size is always included in the options.
+     *
+     * @param  list<int>|null  $options
+     */
+    public function perPage(int $perPage, ?array $options = null): static
+    {
+        $this->perPage = $perPage;
+
+        if ($options !== null) {
+            $this->perPageOptions = $options;
         }
+
+        return $this;
+    }
+
+    /**
+     * Treat {@see rows()} as one server-paginated page. The Inertia UI page supplies
+     * subsequent pages through partial reloads of its existing index route.
+     *
+     * @param  array{total: int, per_page: int, current_page: int, last_page: int, next_page_url: ?string, prev_page_url: ?string, from: ?int, to: ?int}  $pagination
+     */
+    public function pagination(array $pagination): static
+    {
+        $this->pagination = $pagination;
+        $this->perPage = $pagination['per_page'];
+        $this->dataUrl = null;
 
         return $this;
     }
@@ -499,6 +530,7 @@ class Table implements Node
             'columns' => $this->columns,
             'rows' => $this->rows,
             'dataUrl' => $this->dataUrl,
+            'pagination' => $this->pagination,
             'perPage' => $this->perPage,
             'perPageOptions' => $this->resolvePerPageOptions(),
             'moveToPageUrl' => $this->moveToPageUrl,
@@ -526,6 +558,7 @@ class Table implements Node
             'bordered' => $this->bordered,
             'showFooter' => $this->showFooter ?? (
                 $this->dataUrl !== null
+                || $this->pagination !== null
                 || $this->bulkDeleteUrl !== null
                 || $this->bulkActions !== []
                 || $this->statusActions !== []

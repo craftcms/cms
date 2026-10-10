@@ -296,16 +296,16 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             ->name('settings.mcp.store');
 
         // Entry types
-        Route::prefix('settings/entry-types')->group(function () {
-            Route::get('/', [EntryTypesController::class, 'index']);
+        Route::prefix('settings/entry-types')->name('settings.entry-types.')->group(function () {
+            Route::get('/', [EntryTypesController::class, 'index'])->name('index');
 
             Route::middleware(RequireAdminChanges::class)->group(function () {
-                Route::get('new', [EntryTypesController::class, 'create']);
-                Route::post('/', [EntryTypesController::class, 'store']);
-                Route::delete('{entryType}', [EntryTypesController::class, 'destroy']);
+                Route::get('new', [EntryTypesController::class, 'create'])->name('create');
+                Route::post('/', [EntryTypesController::class, 'store'])->name('store');
+                Route::delete('{entryType}', [EntryTypesController::class, 'destroy'])->name('destroy');
             });
 
-            Route::get('{entryType}', [EntryTypesController::class, 'edit']);
+            Route::get('{entryType}', [EntryTypesController::class, 'edit'])->name('edit');
         });
 
         // Workflows
@@ -432,8 +432,6 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         // Sections
         Route::get('settings/sections', [SectionsController::class, 'index'])
             ->name('settings.sections.index');
-        Route::post('settings/sections/table-data', [SectionsController::class, 'tableData'])
-            ->name('settings.sections.table-data');
         Route::middleware(RequireAdminChanges::class)->group(function () {
             Route::get('settings/sections/new', [SectionsController::class, 'create'])->name('settings.sections.create');
             Route::post('settings/sections/render-ui', [SectionsController::class, 'renderUi']);

@@ -1,5 +1,6 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, type App} from 'vue';
+import LegacyAdminTable from './LegacyAdminTable.vue';
 import type {Table} from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/common/table/craftTable';
 import type {LegacyAdminTableRow} from '@/modules/admin-table/types/legacy';
@@ -40,7 +41,6 @@ afterEach(() => {
 });
 
 async function mount(props: Record<string, unknown>) {
-  const LegacyAdminTable = (await import('./LegacyAdminTable.vue')).default;
   const host = document.createElement('div');
   document.body.append(host);
 

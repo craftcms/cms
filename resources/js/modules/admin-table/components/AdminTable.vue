@@ -9,7 +9,11 @@
   import {usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import {computed, defineComponent, h, ref} from 'vue';
-  import {TableSpacing, type TableSpacingValue} from '@/common/types';
+  import {
+    TableSpacing,
+    type TableSpacingValue,
+    type PaginationData,
+  } from '@/common/types';
 
   import {useAdminTable} from '../useAdminTable';
   import type {
@@ -28,6 +32,8 @@
       columns?: ColumnDef<CraftTableFeatures, TData, any>[];
       loadRows?: AdminTableDataOptions<TData>['loadRows'];
       storageKey?: string;
+      pagination?: PaginationData | null;
+      requestState?: AdminTableDataOptions<TData>['requestState'];
       pageSize?: number;
       searchable?: boolean;
       searchPlaceholder?: string | null;
@@ -63,8 +69,8 @@
       interactionsDisabled?: boolean;
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
-      from?: number;
-      to?: number;
+      from?: number | null;
+      to?: number | null;
       total?: number;
       showFooter?: boolean;
       enableAdjustPageSize?: boolean;

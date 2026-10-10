@@ -50,32 +50,7 @@ readonly class SectionsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(): CpScreenResponse
-    {
-        $table = UiTable::make('sections')
-            ->columns([
-                ['key' => 'name', 'label' => t('Name'), 'sortable' => true],
-                ['key' => 'handle', 'label' => t('Handle'), 'sortable' => true],
-                ['key' => 'type', 'label' => t('Type'), 'sortable' => true],
-            ])
-            ->dataUrl(route('craft.cp.settings.sections.table-data'))
-            ->searchable()
-            ->emptyMessage(t('No sections exist yet.'))
-            ->unless($this->readOnly, fn (UiTable $table) => $table
-                ->createAction(t('New section'), route('craft.cp.settings.sections.create'))
-                ->createActionInPageHeader()
-                ->deletable());
-
-        return new CpScreenResponse()
-            ->title(t('Sections'))
-            ->crumbs([
-                new ActionItem()->label(t('Settings'))->href(route('craft.cp.settings.index')),
-                new ActionItem()->label(t('Sections')),
-            ])
-            ->ui(Ui::make([$table]));
-    }
-
-    public function tableData(TableRequest $request, Sections $sections): JsonResponse
+    public function index(TableRequest $request, Sections $sections): CpScreenResponse
     {
         [$pagination, $tableData] = $sections->getSectionTableData(
             page: $request->page(),
@@ -98,10 +73,28 @@ readonly class SectionsController
             ]),
         ], $tableData);
 
-        return new JsonResponse([
-            'data' => UiTable::prepareRows($rows),
-            'pagination' => $pagination,
-        ]);
+        $table = UiTable::make('sections')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name'), 'sortable' => true],
+                ['key' => 'handle', 'label' => t('Handle'), 'sortable' => true],
+                ['key' => 'type', 'label' => t('Type'), 'sortable' => true],
+            ])
+            ->rows($rows)
+            ->pagination($pagination)
+            ->searchable()
+            ->emptyMessage(t('No sections exist yet.'))
+            ->unless($this->readOnly, fn (UiTable $table) => $table
+                ->createAction(t('New section'), route('craft.cp.settings.sections.create'))
+                ->createActionInPageHeader()
+                ->deletable());
+
+        return new CpScreenResponse()
+            ->title(t('Sections'))
+            ->crumbs([
+                new ActionItem()->label(t('Settings'))->href(route('craft.cp.settings.index')),
+                new ActionItem()->label(t('Sections')),
+            ])
+            ->ui(Ui::make([$table]));
     }
 
     public function create(Sites $sites): CpScreenResponse
