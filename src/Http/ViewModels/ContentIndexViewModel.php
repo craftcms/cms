@@ -1227,7 +1227,7 @@ abstract class ContentIndexViewModel extends ViewModel
             ...collect($attributes)
                 ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title'
-                        ? $this->titleCellHtml($element)
+                        ? $this->titleLinkHtml($element)
                         : (string) $element->getAttributeHtml($attribute),
                 ])
                 ->all(),
@@ -1282,11 +1282,6 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         return $flags;
-    }
-
-    private function titleCellHtml(ElementInterface $element): string
-    {
-        return $this->titleLinkHtml($element);
     }
 
     /**
