@@ -397,6 +397,7 @@ it('fails on a change request and restores the current stage when review is requ
         ->assertUnprocessable()
         ->assertJsonPath('message', 'This stage cannot be requested again.');
 
+    $this->flushSession();
     actingAs($this->author);
     postJson(action([UserReviewController::class, 'requestReview'], [
         'workflowRun' => $firstRun,

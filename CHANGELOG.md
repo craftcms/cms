@@ -87,6 +87,8 @@
 - Fixed a bug where control panel nav flyouts could close as soon as the pointer reached them. ([#19926](https://github.com/craftcms/cms/pull/19926))
 - Fixed a bug where action menus on thumbnails in single-element relation fields were positioned at the start of the thumbnail rather than the end.
 - Fixed a bug where element chips within links weren’t following the link underline behavior or the “Underline links” accessibility preference.
+- Fixed a bug where site Inertia middleware registered in `craft.web` could break control panel authentication pages.
+- Fixed a bug where authenticated control panel routes didn’t invalidate sessions with stale password hashes.
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
