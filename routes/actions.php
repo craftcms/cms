@@ -383,7 +383,8 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // Volumes
         Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
+            Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder'])
+                ->name('volumes.reorder');
         });
 
         // Structures

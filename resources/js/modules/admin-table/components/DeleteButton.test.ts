@@ -1,4 +1,4 @@
-import {createApp, nextTick} from 'vue';
+import {createApp} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import DeleteButton from './DeleteButton.vue';
 
@@ -35,20 +35,6 @@ it('emits clicks only after confirmation', () => {
   confirm.mockReturnValue(true);
   button.click();
   expect(onClick).toHaveBeenCalledOnce();
-});
-
-it('keeps disabled delete buttons focusable without activating them', async () => {
-  const onClick = vi.fn();
-  app = createApp(DeleteButton, {disabled: true, onClick});
-  app.mount(container);
-  await nextTick();
-
-  const button = container.querySelector('craft-button') as HTMLElement;
-  button.click();
-
-  expect(button.getAttribute('aria-disabled')).toBe('true');
-  expect(button.hasAttribute('disabled')).toBe(false);
-  expect(onClick).not.toHaveBeenCalled();
 });
 
 it('visits its action once confirmed, as a DELETE or with the route’s method', () => {

@@ -15,6 +15,10 @@ class TableRequest extends FormRequest
 {
     public function page(): int
     {
+        if ($this->isMethod('POST')) {
+            return $this->integer('page', 1);
+        }
+
         return $this->integer(Cms::config()->getPageTriggerParam(), 1);
     }
 

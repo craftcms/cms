@@ -9,7 +9,7 @@
   const props = defineProps<{
     /** The toggleable/reorderable table columns. */
     options: Array<CheckboxOption>;
-    /** The sortable attributes for the "Sort by" select. */
+    /** The sortable attributes for the "Sort by" select; an empty `value` means no sort. */
     sortOptions: Array<SortOption>;
     /** Whether the active sort has an intrinsic direction. */
     sortDirectionLocked?: boolean;
@@ -99,7 +99,7 @@
     </craft-button>
 
     <div slot="content-body" class="gap-lg">
-      <div>
+      <div v-if="sortOptions.length">
         <div class="flex items-end gap-md">
           <Select
             :label="t('Sort by')"
@@ -115,7 +115,7 @@
               :aria-pressed="sortDirection === 'asc'"
               :variant="ButtonVariant.Fill"
               .active="sortDirection === 'asc'"
-              .disabled="sortDirectionLocked"
+              .disabled="!sortField || sortDirectionLocked"
               @click="setSortDirection('asc')"
             ></craft-button>
             <craft-button
@@ -126,7 +126,7 @@
               :aria-pressed="sortDirection === 'desc'"
               :variant="ButtonVariant.Fill"
               .active="sortDirection === 'desc'"
-              .disabled="sortDirectionLocked"
+              .disabled="!sortField || sortDirectionLocked"
               @click="setSortDirection('desc')"
             ></craft-button>
           </craft-button-group>

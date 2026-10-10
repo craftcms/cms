@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Components\CopyAttribute;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -21,7 +22,8 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Nodes\Table as UiTable;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Http\JsonResponse;
@@ -57,21 +59,42 @@ readonly class SectionsController
             orderBy: $request->orderBy(),
             sortDir: $request->sortDir(),
         );
+        $rows = array_map(fn (array $section): array => [
+            'id' => $section['id'],
+            'name' => [
+                'label' => $section['name'],
+                'url' => route('craft.cp.settings.sections.edit', ['section' => $section['id']]),
+            ],
+            'handle' => ['html' => CopyAttribute::make()->value((string) $section['handle'])->toHtml()],
+            'type' => $section['type'],
+            ...($this->readOnly ? [] : [
+                '_deleteUrl' => route('craft.cp.settings.sections.destroy', ['section' => $section['id']]),
+                '_deleteConfirmMessage' => t('Are you sure you want to delete “{name}” and all its entries?', ['name' => $section['name']]),
+            ]),
+        ], $tableData);
+
+        $table = UiTable::make('sections')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name'), 'sortable' => true],
+                ['key' => 'handle', 'label' => t('Handle'), 'sortable' => true],
+                ['key' => 'type', 'label' => t('Type'), 'sortable' => true],
+            ])
+            ->rows($rows)
+            ->pagination($pagination)
+            ->searchable()
+            ->emptyMessage(t('No sections exist yet.'))
+            ->unless($this->readOnly, fn (UiTable $table) => $table
+                ->createAction(t('New section'), route('craft.cp.settings.sections.create'))
+                ->createActionInPageHeader()
+                ->deletable());
 
         return new CpScreenResponse()
             ->title(t('Sections'))
             ->crumbs([
-                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Settings'))->href(route('craft.cp.settings.index')),
                 new ActionItem()->label(t('Sections')),
             ])
-            ->inertiaPage('settings/sections/Index', [
-                'data' => fn () => $tableData,
-                'pagination' => fn () => $pagination,
-                'sort' => $request->sort(),
-                'searchTerm' => $request->search(),
-                'emptyMessage' => t('No sections exist yet.'),
-                'readOnly' => $this->readOnly,
-            ]);
+            ->ui(Ui::make([$table]));
     }
 
     public function create(Sites $sites): CpScreenResponse

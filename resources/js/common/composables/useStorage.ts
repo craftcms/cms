@@ -1,7 +1,7 @@
 import type {UseStorageOptions} from '@vueuse/core';
-import {useStorage as _useStorage} from '@vueuse/core';
+import {StorageSerializers, useStorage as _useStorage} from '@vueuse/core';
 import type {RemovableRef} from '@vueuse/shared';
-import type {MaybeRefOrGetter} from 'vue';
+import {shallowRef, type MaybeRefOrGetter} from 'vue';
 
 declare const Craft: {systemUid: string};
 
@@ -79,6 +79,20 @@ export function useLocalStorage(
   options?: UseStorageOptions<any>
 ) {
   return useStorage(key, initialValue, localStorage, options);
+}
+
+export function useOptionalLocalStorage<T>(
+  key: string | undefined,
+  initial: T
+) {
+  return key
+    ? useLocalStorage<T>(key, initial, {
+        writeDefaults: false,
+        ...(typeof initial === 'object'
+          ? {serializer: StorageSerializers.object}
+          : {}),
+      })
+    : shallowRef(initial);
 }
 
 export function useSessionStorage(

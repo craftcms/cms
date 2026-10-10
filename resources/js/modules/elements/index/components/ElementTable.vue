@@ -7,7 +7,7 @@
   } from '@tanstack/vue-table';
   import type {CraftTableFeatures} from '@/common/table/craftTable';
   import {t} from '@craftcms/ui';
-  import {computed, ref, type HTMLAttributes, type VNodeChild} from 'vue';
+  import {computed, type HTMLAttributes, type VNodeChild} from 'vue';
   import DataTable from '@/common/components/DataTable.vue';
   import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
   import type {NestedReorderDirection} from '@craftcms/ui';
@@ -18,10 +18,7 @@
   } from '@/modules/elements/index/composables/useStructureDrag';
   import {TableSpacing, type TableSpacingValue} from '@/common/types';
   import DropIndicator from '@/common/components/DropIndicator.vue';
-  import {
-    isInteractiveItemEvent,
-    type ElementIndexItemBehavior,
-  } from '@/modules/elements/types/item-behavior';
+  import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
 
   const props = withDefaults(
     defineProps<{
@@ -81,37 +78,12 @@
   }>();
 
   const readOnly = computed(() => props.selection.readOnly.value);
-  const {
-    onToggleAllSelected,
-    selectRow,
-    selectRowFromEvent,
-    toggleRow,
-    extendSelectionTo,
-  } = props.selection;
-
   function renderInlineCell(
     context: CellContext<CraftTableFeatures, TData, unknown>
   ): VNodeChild {
     const showErrors = context.row.getVisibleCells()[0]?.id === context.cell.id;
 
     return props.renderCell?.(context, showErrors) as VNodeChild;
-  }
-
-  // Captures modifier state from the native click, because craft-checkbox's
-  // `model-value-changed` event does not carry `shiftKey`.
-  const pendingShiftKey = ref(false);
-  function rememberShift(event: MouseEvent) {
-    pendingShiftKey.value = event.shiftKey;
-  }
-
-  function onRowClick(row: any, event: MouseEvent) {
-    if (props.itemBehavior?.onClick?.(row.original, event)) {
-      return;
-    }
-
-    if (!props.interactionsDisabled) {
-      selectRowFromEvent(row, event);
-    }
   }
 
   const structureDropMoves: Partial<
@@ -175,18 +147,15 @@
     ...(props.structure && props.reorderable && !readOnly.value
       ? ['44px']
       : []),
-    ...(props.selectable ? ['44px'] : []),
   ]);
 
   function rowAttributes(row: Row<CraftTableFeatures, TData>): HTMLAttributes {
     return {
       ...props.itemBehavior?.attrs?.(row.original),
-      tabindex: props.selectable ? 0 : undefined,
       style: props.structure
         ? {'--structure-level': row.original.level ?? 1}
         : undefined,
       class: {
-        sel: row.getIsSelected(),
         'row--dragging': structureDrag.isDragging(row.id),
         'row--drop-child':
           structureDrag.instructionFor(row.id)?.type === 'make-child',
@@ -197,49 +166,12 @@
   function rowLabel(row: Row<CraftTableFeatures, TData>): string {
     return row.original.label ?? String(row.original.id);
   }
-
-  function onRowKeydown(
-    row: any,
-    index: number | string,
-    event: KeyboardEvent
-  ) {
-    if (!props.selectable) return;
-    if (isInteractiveItemEvent(event)) return;
-    const rows = props.table.getRowModel().rows;
-    if (!(event.currentTarget instanceof HTMLElement)) return;
-    index = Number(index);
-    if (props.itemBehavior?.onKeydown?.(row.original, event)) {
-      event.preventDefault();
-      return;
-    }
-    if (props.interactionsDisabled) return;
-    switch (event.key) {
-      case ' ':
-      case 'Enter':
-        event.preventDefault();
-        toggleRow(row);
-        break;
-      case 'ArrowDown': {
-        const next = Math.min(index + 1, rows.length - 1);
-        const nextRow = rows[next];
-        if (event.shiftKey && nextRow) extendSelectionTo(nextRow);
-
-        break;
-      }
-      case 'ArrowUp': {
-        const prev = Math.max(index - 1, 0);
-        const prevRow = rows[prev];
-        if (event.shiftKey && prevRow) extendSelectionTo(prevRow);
-
-        break;
-      }
-    }
-  }
 </script>
 
 <template>
   <DataTable
     :table="table"
+    :selection="selectable ? selection : undefined"
     :title="title"
     :loading="loading"
     :read-only="readOnly"
@@ -251,8 +183,7 @@
     :interactions-disabled="interactionsDisabled"
     :leading-column-tracks="leadingColumnTracks"
     :row-attributes="rowAttributes"
-    @row-click="onRowClick"
-    @row-keydown="onRowKeydown"
+    :row-behavior="itemBehavior"
     @row-ref="(el, row) => structureDrag.setRowRef(el, row.id)"
     @reorder="(from, to) => emit('reorder', from, to)"
   >
@@ -270,25 +201,6 @@
         class="cell cell--header"
       >
         <span class="sr-only">{{ t('Reorder') }}</span>
-      </th>
-      <th
-        v-if="selectable"
-        class="cp-table-cell cp-table-cell--header cp-table-cell--select"
-        scope="col"
-      >
-        <craft-checkbox
-          label-sr-only
-          .checked="table.getIsAllRowsSelected()"
-          .indeterminate="
-            table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
-          "
-          .disabled="readOnly || interactionsDisabled"
-          @model-value-changed="
-            onToggleAllSelected(($event.target as HTMLInputElement).checked)
-          "
-        >
-          <label slot="label">{{ t('Select all') }}</label>
-        </craft-checkbox>
       </th>
     </template>
     <template #leading-cells="{row, hideBottomBorder}">
@@ -342,31 +254,6 @@
             @craft-reorder="onStructureReorder(row.original.id, $event)"
           ></craft-reorder-button>
         </div>
-      </td>
-      <td
-        v-if="selectable"
-        :class="{
-          'cp-table-cell': true,
-          'cp-table-cell--select': true,
-          'border-b-0': hideBottomBorder,
-        }"
-      >
-        <craft-checkbox
-          label-sr-only
-          .checked="row.getIsSelected()"
-          .disabled="readOnly || interactionsDisabled || !row.getCanSelect()"
-          @click="rememberShift($event)"
-          @model-value-changed="
-            selectRow(row, {
-              checked: ($event.target as HTMLInputElement).checked,
-              shiftKey: pendingShiftKey,
-            })
-          "
-        >
-          <label slot="label">{{
-            t('Select {label}', {label: rowLabel(row)})
-          }}</label>
-        </craft-checkbox>
       </td>
     </template>
     <template #cell="{cell, row, index}">
