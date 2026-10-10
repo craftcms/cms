@@ -109,11 +109,8 @@
     @close="emit('close')"
     @submit="submit"
   >
-    <UiRenderer
-      v-if="modal"
-      ref="renderer"
-      :payload="modal.ui"
-      :errors="errors"
-    />
+    <craft-field-group v-if="modal">
+      <UiRenderer ref="renderer" :payload="modal.ui" :errors="errors" />
+    </craft-field-group>
   </ModalForm>
 </template>

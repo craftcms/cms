@@ -44,17 +44,24 @@ it('renders a section as a fieldset with a legend by default', function () {
 });
 
 it('renders a craft-field in fieldset mode with asField()', function () {
-    $crawler = renderGroup(
+    $payload = app(UiResolver::class)->resolve(Ui::make([
         locationGroup()
             ->asField()
-            ->instructions('The location where assets can be selected from.')
+            ->instructions('The **location** where assets can be selected from.')
+            ->instructionsPosition('after')
+            ->layoutUid('layout-element-uid')
             ->width(FieldWidth::Half),
-    );
+    ]), new UiContext);
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $field = $crawler->filter('craft-field[fieldset]');
 
-    expect($field)->toHaveCount(1)
+    expect($payload->nodes[0]->props['instructionsHtml'] ?? null)->toBe('The <strong>location</strong> where assets can be selected from.')
+        ->and($field)->toHaveCount(1)
         ->and($field->attr('label'))->toBe('Asset Location')
         ->and($field->attr('class'))->toContain('width-50')
+        ->and($field->attr('instructions-position'))->toBe('after')
+        ->and($field->attr('data-layout-element'))->toBe('layout-element-uid')
+        ->and($field->filter('[slot="help-text"] strong')->text())->toBe('location')
         ->and($crawler->filter('legend'))->toHaveCount(0)
         ->and($field->filter('craft-field.width-33'))->toHaveCount(1)
         ->and($field->filter('craft-field.width-66'))->toHaveCount(1);
