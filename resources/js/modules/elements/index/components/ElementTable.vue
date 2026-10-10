@@ -46,6 +46,11 @@
       itemBehavior?: ElementIndexItemBehavior<any>;
       withBottomBorder?: boolean;
       /**
+       * Pads each row's outer cells by `--cp-container-padding`; see
+       * `DataTable`'s `flush`.
+       */
+      flush?: boolean;
+      /**
        * Disables selection, sorting and reordering while a request runs,
        * keeping the controls in place so the layout doesn't shift.
        */
@@ -67,6 +72,7 @@
       isRowPending: () => false,
       canMoveRow: () => false,
       withBottomBorder: true,
+      flush: true,
       inlineEditing: false,
     }
   );
@@ -178,7 +184,7 @@
     :layout="layout"
     :spacing="spacing"
     :with-bottom-border="withBottomBorder"
-    flush
+    :flush="flush"
     :reorderable="reorderable && !structure"
     :interactions-disabled="interactionsDisabled"
     :leading-column-tracks="leadingColumnTracks"

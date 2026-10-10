@@ -32,6 +32,11 @@
       showSites?: boolean;
       enableAdjustPageSize?: boolean;
       withBottomBorder?: boolean;
+      /**
+       * Lets the table span the container's inline padding, padding each
+       * row's outer cells to match. Turn off when the container has none.
+       */
+      flushTable?: boolean;
       toolbarAsForm?: boolean;
       quickEdit?: ElementIndexQuickEdit;
     }>(),
@@ -40,6 +45,7 @@
       footerActive: false,
       enableAdjustPageSize: false,
       withBottomBorder: true,
+      flushTable: true,
       toolbarAsForm: true,
     }
   );
@@ -275,7 +281,16 @@
     <div class="element-index__navbar" v-if="$slots.navbar">
       <slot name="navbar" />
     </div>
-    <div class="element-index__body" :aria-busy="loading ? 'true' : undefined">
+    <div
+      :class="[
+        'element-index__body',
+        {
+          'element-index__body--flush':
+            flushTable && mode !== 'cards' && mode !== 'thumbs',
+        },
+      ]"
+      :aria-busy="loading ? 'true' : undefined"
+    >
       <div
         ref="body"
         @mousedown.capture="
@@ -324,6 +339,7 @@
           :spacing="TableSpacing.Spacious"
           :item-behavior="itemBehavior"
           :with-bottom-border="withBottomBorder"
+          :flush="flushTable"
           :structure="
             !isInlineEditing && structure !== undefined && mode === 'structure'
           "
@@ -418,6 +434,11 @@
   .element-index__body,
   .element-index__footer {
     padding-inline: var(--cp-container-padding);
+  }
+
+  // The table pads its own outer cells instead; see `flushTable`.
+  .element-index__body--flush {
+    padding-inline: 0;
   }
 
   .element-index__header {

@@ -50,8 +50,8 @@
       spacing?: TableSpacingValue;
       withBottomBorder?: boolean;
       /**
-       * Drops the inline padding at the start and end of each row, so the
-       * table lines up with its container's edges.
+       * Pads the start and end of each row by `--cp-container-padding`, for a
+       * table that spans its container's padding rather than sitting inside it.
        */
       flush?: boolean;
     }>(),
