@@ -25,7 +25,6 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
@@ -1310,7 +1309,20 @@ abstract class ContentIndexViewModel extends ViewModel
             return $chip;
         }
 
-        return Html::tag('CpLink', $chip, ['href' => $editUrl]);
+        // CONFLICT-REVIEW: 6.x wrapped the whole chip in a CpLink here, while HEAD
+        // (824d4397a2) links only the chip's label. Kept 6.x's overridable hook
+        // (AssetIndexViewModel overrides it for folders) but re-render the chip
+        // with HEAD's label-only link, so `$chip` is only used when there's no URL.
+        // Only the label is the link, so the rest of the chip (its status
+        // indicator, say) behaves like the rest of the row.
+        return app(ElementHtml::class)->elementChipHtml($element, [
+            'context' => static::RENDER_CONTEXT,
+            'appearance' => 'plain',
+            'hyperlink' => true,
+            'hyperlinkUrl' => $editUrl,
+            'hyperlinkTag' => 'CpLink',
+            'hyperlinkAttributes' => ['bare' => true],
+        ]);
     }
 
     /**

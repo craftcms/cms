@@ -301,27 +301,43 @@ describe('clicking a chip', () => {
   }
 
   it('holds the click back until a double-click is ruled out', () => {
-    const {row, link} = renderRow();
+    const {row, assetChip} = renderRow();
     const clicks = rowClicks(row);
+    const label = assetChip.querySelector('.label-link')!;
 
-    const event = click(link.querySelector('.label-link')!);
+    const event = click(label);
 
-    // Not following the link, and not reaching the row, yet.
+    // Not reaching the row (and toggling its selection), yet.
     expect(event.defaultPrevented).toBe(true);
     expect(clicks).toHaveLength(0);
 
     vi.advanceTimersByTime(CHIP_DOUBLE_CLICK_DELAY);
 
     expect(clicks).toHaveLength(1);
-    expect(clicks[0]!.target).toBe(link.querySelector('.label-link'));
+    expect(clicks[0]!.target).toBe(label);
     expect(clicks[0]!.defaultPrevented).toBe(false);
   });
 
-  it('holds back the mouseup Inertia links visit on, and replays it', () => {
+  it('follows a link around the chip straight away', () => {
     const {row, link} = renderRow();
+    const clicks = rowClicks(row);
     const mouseups: Event[] = [];
     row.addEventListener('mouseup', (event) => mouseups.push(event));
     const label = link.querySelector('.label-link')!;
+
+    dispatch(label, 'mouseup', deferChipClick, {detail: 1});
+    const event = click(label);
+
+    expect(event.defaultPrevented).toBe(false);
+    expect(mouseups).toHaveLength(1);
+    expect(clicks).toHaveLength(1);
+  });
+
+  it('holds back the mouseup and replays it with the click', () => {
+    const {row, assetChip} = renderRow();
+    const mouseups: Event[] = [];
+    row.addEventListener('mouseup', (event) => mouseups.push(event));
+    const label = assetChip.querySelector('.label-link')!;
 
     dispatch(label, 'mouseup', deferChipClick, {detail: 1});
     click(label);
