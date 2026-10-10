@@ -140,16 +140,16 @@ class ModalIndexViewModel extends ContentIndexViewModel
      * to the folder, and a plain click opens it in the modal instead.
      */
     #[\Override]
-    protected function titleLinkHtml(ElementInterface $element, string $chip): string
+    protected function titleLinkHtml(ElementInterface $element): string
     {
         if (! $element instanceof Asset || ! $element->isFolder) {
-            return $chip;
+            return $this->chipHtml($element);
         }
 
         $folderUrl = $this->folderUrl($element);
 
         return $folderUrl === null
-            ? $chip
+            ? $this->chipHtml($element)
             : $this->labelLinkedChipHtml($element, $folderUrl, attributes: ['data-folder-link' => true]);
     }
 

@@ -1227,7 +1227,7 @@ abstract class ContentIndexViewModel extends ViewModel
             ...collect($attributes)
                 ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title'
-                        ? $this->titleCellHtml($element, $elementHtml)
+                        ? $this->titleCellHtml($element)
                         : (string) $element->getAttributeHtml($attribute),
                 ])
                 ->all(),
@@ -1284,25 +1284,24 @@ abstract class ContentIndexViewModel extends ViewModel
         return $flags;
     }
 
-    private function titleCellHtml(ElementInterface $element, ElementHtml $elementHtml): string
+    private function titleCellHtml(ElementInterface $element): string
     {
-        $chip = $elementHtml->elementChipHtml($element, [
-            'context' => static::RENDER_CONTEXT,
-            'appearance' => 'plain',
-        ]);
-
-        return $this->titleLinkHtml($element, $chip);
+        return $this->titleLinkHtml($element);
     }
 
     /**
-     * Links a title cell's chip to wherever clicking the element should go.
+     * Renders a title cell's chip, linked to wherever clicking the element
+     * should go.
+     *
+     * Only the label is the link, so the rest of the chip (its status
+     * indicator, say) behaves like the rest of the row.
      */
-    protected function titleLinkHtml(ElementInterface $element, string $chip): string
+    protected function titleLinkHtml(ElementInterface $element): string
     {
         $editUrl = $this->editUrl($element);
 
         if ($editUrl === null) {
-            return $chip;
+            return $this->chipHtml($element);
         }
 
         return $this->labelLinkedChipHtml($element, $editUrl, 'CpLink', ['bare' => true]);
@@ -1316,13 +1315,28 @@ abstract class ContentIndexViewModel extends ViewModel
      */
     protected function labelLinkedChipHtml(ElementInterface $element, string $url, string $tag = 'a', array $attributes = []): string
     {
-        return app(ElementHtml::class)->elementChipHtml($element, [
-            'context' => static::RENDER_CONTEXT,
-            'appearance' => 'plain',
+        return $this->chipHtml($element, [
             'hyperlink' => true,
             'hyperlinkUrl' => $url,
             'hyperlinkTag' => $tag,
             'hyperlinkAttributes' => $attributes,
+        ]);
+    }
+
+    /**
+     * Renders a title cell's chip.
+     *
+     * Rendered once per cell: rendering resolves the chip's thumbnail URLs,
+     * which can queue transforms or fire `ThumbUrlResolving` handlers.
+     *
+     * @param  array<string, mixed>  $config  Additional {@see ElementHtml::elementChipHtml()} config
+     */
+    protected function chipHtml(ElementInterface $element, array $config = []): string
+    {
+        return app(ElementHtml::class)->elementChipHtml($element, [
+            'context' => static::RENDER_CONTEXT,
+            'appearance' => 'plain',
+            ...$config,
         ]);
     }
 
