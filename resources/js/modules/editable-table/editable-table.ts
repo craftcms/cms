@@ -628,8 +628,11 @@ export class EditableTable extends Base<EditableTableSettings> {
   ): any {
     void staticRows;
 
+    // Keep hidden rows' inputs mounted so they retain and submit their values.
+    // Some hosts override the UA [hidden] rule, so the class is also needed.
     const $tr = $('<tr/>', {
       'data-id': rowId,
+      ...(values._hidden ? {hidden: true, class: 'hidden'} : {}),
     });
 
     for (const colId in columns) {

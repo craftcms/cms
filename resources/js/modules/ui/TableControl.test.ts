@@ -487,6 +487,39 @@ describe('Vue table rows', () => {
     ]);
     expect(new FormData(form).get('rows[row7][title]')).toBe('Alpha');
   });
+
+  it.each([false, true])(
+    'keeps hidden rows mounted and submitted when visible rows change (keyed: %s)',
+    async (keyed) => {
+      const hiddenKey = keyed ? 'row7' : '0';
+      const visibleKey = keyed ? 'row9' : '1';
+      const {inertiaUi} = await mountTable(keyed, undefined, {
+        hiddenRows: [hiddenKey],
+      });
+      const input = form.querySelector<HTMLInputElement>(
+        `input[name="rows[${hiddenKey}][title]"]`
+      )!;
+      const row = input.closest('tr')!;
+      expect(row.hidden).toBe(true);
+      expect(new FormData(form).get(input.name)).toBe('Alpha');
+
+      const visibleInput = form.querySelector<HTMLInputElement>(
+        `input[name="rows[${visibleKey}][title]"]`
+      )!;
+      expect(visibleInput.closest('tr')!.hidden).toBe(false);
+      visibleInput.value = 'Edited';
+      visibleInput.dispatchEvent(new Event('input', {bubbles: true}));
+      await settle();
+
+      expect(form.querySelector(`input[name="${input.name}"]`)).toBe(input);
+      expect(new FormData(form).get(input.name)).toBe('Alpha');
+      expect(inertiaUi.data().rows).toEqual(
+        keyed
+          ? {row7: {title: 'Alpha'}, row9: {title: 'Edited'}}
+          : [{title: 'Alpha'}, {title: 'Edited'}]
+      );
+    }
+  );
 });
 
 function payload(keyed: boolean): UiPayload {
