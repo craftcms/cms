@@ -325,6 +325,7 @@
     z-index: 1;
     display: flex;
     gap: var(--c-spacing-xs);
+    margin-inline-start: auto;
     align-items: center;
   }
 

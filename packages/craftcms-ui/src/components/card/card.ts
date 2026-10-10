@@ -136,11 +136,7 @@ export default class CraftCard extends Paddable(LitElement, {
                     : nothing}</slot
                 >
                 <div class="card__header__suffix">
-                  <slot
-                    name="badge"
-                    class="card__badge"
-                    part="badge"
-                  ></slot>
+                  <slot name="badge" class="card__badge" part="badge"></slot>
                   <slot
                     name="actions"
                     class="card__actions"

@@ -14,7 +14,7 @@ import {
 } from '@/modules/elements/fixtures/elements';
 
 const meta = {
-  title: 'Elements/DataTable',
+  title: 'CP/DataTable',
   // The component is generic over its row type, which `Meta<typeof …>` can't
   // instantiate. Every story drives it through `render`, so the only thing the
   // cast costs is arg typing that nothing here uses.

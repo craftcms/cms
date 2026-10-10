@@ -7,7 +7,6 @@
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import {create, destroy, edit} from '@actions/Gql/SchemasController';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
-  import {router} from '@inertiajs/vue3';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
 
   interface SchemaData {
@@ -56,12 +55,12 @@
                   'Are you sure you want to delete the “{name}” schema?',
                   {name: row.original.name}
                 ),
-                onClick: () =>
-                  router
-                    .optimistic<{schemas: Array<SchemaData>}>(({schemas}) => ({
-                      schemas: schemas.filter(({id}) => id !== row.original.id),
-                    }))
-                    .delete(destroy({schemaId: row.original.id})),
+                action: destroy({schemaId: row.original.id}),
+                options: {
+                  optimistic: ({schemas}: {schemas: Array<SchemaData>}) => ({
+                    schemas: schemas.filter(({id}) => id !== row.original.id),
+                  }),
+                },
               }),
         ]),
       ];

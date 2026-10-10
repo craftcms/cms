@@ -12,7 +12,6 @@
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import DeleteButton from '@/modules/admin-table/components/DeleteButton.vue';
-  import {router} from '@inertiajs/vue3';
   import type {UserGroup} from '@/common/types';
 
   const props = defineProps<{
@@ -37,12 +36,12 @@
             confirm: t('Are you sure you want to delete "{name}"?', {
               name: row.original.name,
             }),
-            onClick: () =>
-              router
-                .optimistic<{groups: Array<UserGroup>}>(({groups}) => ({
-                  groups: groups.filter(({id}) => id !== row.original.id),
-                }))
-                .delete(destroy({groupId: row.original.id})),
+            action: destroy({groupId: row.original.id}),
+            options: {
+              optimistic: ({groups}: {groups: Array<UserGroup>}) => ({
+                groups: groups.filter(({id}) => id !== row.original.id),
+              }),
+            },
           }),
         ]),
       ];

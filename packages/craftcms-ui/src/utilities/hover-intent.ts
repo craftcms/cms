@@ -153,6 +153,13 @@ export class HoverIntentGroup {
     state.closeTimer = undefined;
     state.exit = undefined;
 
+    // Arriving in an overlay also hovers each ancestor of its trigger, first,
+    // since the overlay renders inside it. A hover held there was this same
+    // arrival, and let through later it would close the overlay it reached.
+    if (this.#pendingOpen?.element.contains(member.element)) {
+      this.#pendingOpen = undefined;
+    }
+
     // The pointer is only crossing this item on the way to an overlay already
     // open beside it. Held rather than dropped, because it may yet stop here,
     // and then this is the hover it meant. `#onPointerMove` and the close tick
