@@ -146,3 +146,6 @@ jobs:
 
           - name: Run table, element, field, legacy HTML control, and skip link tests
             run: vp test run resources/js/modules/admin-table resources/js/common/components/DataTable.test.ts resources/js/modules/elements resources/js/modules/fields resources/js/modules/ui/nested-elements resources/js/modules/ui/entry-field-layout-ui-host.test.ts resources/js/modules/sections/components/PreviewTargetsTable.test.ts resources/js/common/layouts/screens/page/ScreenSkipLinks.browser.test.ts yii2-adapter/resources/js
+
+      - name: Run UI renderer and modal tests
+        run: vp test run resources/js/modules/ui/UiRenderer.test.ts resources/js/modules/ui/AdminTableDeleteModal.test.ts resources/js/modules/ui/UiModal.browser.test.ts resources/js/common/components/Modal.browser.test.ts

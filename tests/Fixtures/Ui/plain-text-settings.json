@@ -51,7 +51,8 @@
       "props": {
         "label": "Field Limit",
         "asField": true,
-        "instructions": "The maximum number of characters or bytes the field is allowed to have."
+        "instructions": "The maximum number of characters or bytes the field is allowed to have.",
+        "instructionsHtml": "The maximum number of characters or bytes the field is allowed to have."
       },
       "uid": "plain-text-field-limit",
       "children": [
