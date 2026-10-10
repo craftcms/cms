@@ -13,10 +13,8 @@
 
 ### Elements
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
-- Element edit screens now indicate which fields a draft has unapplied changes to.
 - Element index searches now update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Clicking anywhere on an element index table row or card (other than an interactive control) now selects it. ([#19351](https://github.com/craftcms/cms/pull/19351))
-- Element editor slideouts now have action menus and “Open in a new tab” buttons. ([#19748](https://github.com/craftcms/cms/pull/19748))
 
 #### Entries
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
