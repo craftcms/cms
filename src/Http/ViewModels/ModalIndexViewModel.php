@@ -11,7 +11,6 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Facades\Folders;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Facades\Gate;
 
@@ -137,8 +136,8 @@ class ModalIndexViewModel extends ContentIndexViewModel
      * A click in the modal is a selection, so titles don't link — a link would
      * navigate the CP behind the modal and drop the selection being collected.
      *
-     * Folders are the exception, since they can't be selected. They link to
-     * the folder, and a plain click opens it in the modal instead.
+     * Folders are the exception, since they can't be selected. Their labels link
+     * to the folder, and a plain click opens it in the modal instead.
      */
     #[\Override]
     protected function titleLinkHtml(ElementInterface $element, string $chip): string
@@ -149,7 +148,9 @@ class ModalIndexViewModel extends ContentIndexViewModel
 
         $folderUrl = $this->folderUrl($element);
 
-        return $folderUrl === null ? $chip : Html::a($chip, $folderUrl, ['data-folder-link' => true]);
+        return $folderUrl === null
+            ? $chip
+            : $this->labelLinkedChipHtml($element, $folderUrl, attributes: ['data-folder-link' => true]);
     }
 
     /**

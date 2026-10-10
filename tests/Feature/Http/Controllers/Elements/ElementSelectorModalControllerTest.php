@@ -159,13 +159,14 @@ describe('asset folders', function () {
             ->toBe(["folder:{$first}", "folder:{$second}"]);
     });
 
-    it('links folder titles to the folder', function () {
+    it('links folder titles’ labels to the folder', function () {
         Folders::ensureFolderByFullPathAndVolume('a-subfolder', $this->volume);
 
         $title = ($this->postAssets)()['data'][0]['title'];
 
-        expect($title)->toContain('data-folder-link')
-            ->toContain('assets/testvolume/a-subfolder"');
+        // Only the label is the link, not the whole chip.
+        expect($title)->toStartWith('<craft-chip')
+            ->toMatch('/<a class="label-link" href="[^"]*assets\/testvolume\/a-subfolder" data-folder-link>/');
     });
 
     it('lists the requested subfolder, with a trail back to the volume root', function () {

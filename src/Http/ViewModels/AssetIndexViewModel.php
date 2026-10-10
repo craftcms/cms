@@ -381,7 +381,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
             return $chip;
         }
 
-        return Html::a($chip, $folderUrl, ['data-folder-link' => true]);
+        return $this->labelLinkedChipHtml($element, $folderUrl, attributes: ['data-folder-link' => true]);
     }
 
     private function folderUrl(Asset $folder): ?string
