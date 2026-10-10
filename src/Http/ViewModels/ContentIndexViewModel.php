@@ -1292,9 +1292,19 @@ abstract class ContentIndexViewModel extends ViewModel
             'appearance' => 'plain',
         ]);
 
-        $editUrl = static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
-            ? $this->editUrl($element)
-            : null;
+        if (static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL) {
+            return $chip;
+        }
+
+        return $this->titleLinkHtml($element, $chip);
+    }
+
+    /**
+     * Links a title cell's chip to wherever clicking the element should go.
+     */
+    protected function titleLinkHtml(ElementInterface $element, string $chip): string
+    {
+        $editUrl = $this->editUrl($element);
 
         if ($editUrl === null) {
             return $chip;
