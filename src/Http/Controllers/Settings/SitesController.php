@@ -8,7 +8,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Data\Site;
@@ -16,7 +16,7 @@ use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Flash;
-use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\Controls\Choice;
@@ -28,6 +28,7 @@ use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
@@ -71,6 +72,44 @@ readonly class SitesController
             : $this->sites->getAllSites()->values();
         $groups = $this->siteGroups->getAllGroups()->sortBy(['id', 'asc'])->values();
 
+        $table = Table::make('sites')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name')],
+                ['key' => 'handle', 'label' => t('Handle')],
+                ['key' => 'status', 'label' => t('Status')],
+                ['key' => 'language', 'label' => t('Language')],
+                ['key' => 'primary', 'label' => t('Primary')],
+                ['key' => 'baseUrl', 'label' => t('Base URL')],
+                ['key' => 'group', 'label' => t('Group')],
+            ])
+            ->rows($sites->map(fn (Site $site): array => [
+                'id' => $site->id,
+                'name' => [
+                    'label' => $site->getName(),
+                    'url' => route('craft.cp.settings.sites.edit', ['site' => $site->id]),
+                ],
+                'handle' => ['html' => Html::tag('code', Html::encode($site->handle))],
+                'status' => ['html' => Html::tag('craft-badge', Html::encode($site->getEnabled() ? t('Enabled') : t('Disabled')), [
+                    'fill' => $site->getEnabled() ? 'success' : 'default',
+                ])],
+                'language' => ['html' => Html::tag('code', Html::encode($site->getLanguage()))],
+                'primary' => $site->primary ? ['icon' => 'check', 'label' => t('Yes')] : null,
+                'baseUrl' => ['html' => Html::tag('code', Html::encode($site->getBaseUrl() ?? ''))],
+                'group' => $site->getGroup()->getName(),
+                '_status' => $site->getEnabled(),
+                ...($this->readOnly ? [] : [
+                    '_deleteUrl' => route('craft.cp.settings.sites.destroy', ['site' => $site->id]),
+                    '_deletable' => ! $site->primary,
+                    '_deleteDisabledReason' => $site->primary ? t('You cannot delete the primary site.') : null,
+                ]),
+            ]))
+            ->emptyMessage(t('No sites exist yet.'))
+            ->unless($this->readOnly, fn (Table $table) => $table
+                ->createAction(t('New Site'), route('craft.cp.settings.sites.create', isset($group) ? ['groupId' => $group->id] : []))
+                ->createActionInPageHeader()
+                ->deletable()
+                ->when(isset($group), fn (Table $table) => $table->reorderable(route('craft.cp.settings.sites.reorder'), t('New order saved.'))));
+
         $crumbs = array_filter([
             ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
             ['label' => t('Sites'), 'href' => Url::cpUrl('settings/sites')],
@@ -80,10 +119,8 @@ readonly class SitesController
         return Inertia::render('settings/sites/Index', [
             'title' => isset($group) ? $group->getName() : t('Sites'),
             'crumbs' => $crumbs,
-            'newSiteUrl' => Url::cpUrl('settings/sites/new'),
             'nameTextExpanderTriggers' => Inertia::defer(fn () => SelectOptions::getEnvTextExpanderTriggers()),
             'group' => $group ?? null,
-            'groups' => $groups,
             'subnav' => [
                 new NavItem()->label(t('All Sites'))->href(Url::cpUrl('settings/sites'))->selected(! isset($group)),
                 ...$groups->map(fn ($siteGroup) => new NavItem()
@@ -92,7 +129,7 @@ readonly class SitesController
                     ->selected(isset($group) && $siteGroup->id === $group->id)
                 )->all(),
             ],
-            'sites' => $sites->toArray(),
+            'ui' => $this->uiResolver->resolve(Ui::make([$table]), new UiContext),
             'readOnly' => $this->readOnly,
             'transferContentOptions' => Inertia::defer(fn () => $sitesService->getAllSites()->values()),
         ]);
@@ -161,7 +198,7 @@ readonly class SitesController
     {
         $request->validate([
             'values' => ['required', 'array'],
-            'values.siteId' => ['nullable', 'integer', Rule::exists(Table::SITES, 'id')],
+            'values.siteId' => ['nullable', 'integer', Rule::exists(DbTable::SITES, 'id')],
             'scope' => ['present', 'array', 'size:0'],
         ]);
 
@@ -171,8 +208,8 @@ readonly class SitesController
     public function store(Request $request): \Symfony\Component\HttpFoundation\Response
     {
         $request->validate([
-            'siteId' => ['nullable', Rule::exists(Table::SITES, 'id')],
-            'group' => ['required', 'integer', Rule::exists(Table::SITEGROUPS, 'id')->whereNull('dateDeleted')],
+            'siteId' => ['nullable', Rule::exists(DbTable::SITES, 'id')],
+            'group' => ['required', 'integer', Rule::exists(DbTable::SITEGROUPS, 'id')->whereNull('dateDeleted')],
         ]);
 
         $siteId = $request->input('siteId');
@@ -206,25 +243,22 @@ readonly class SitesController
         return $this->asSuccess(t('Site saved.'));
     }
 
-    public function reorder(Request $request): RedirectResponse
+    public function reorder(Request $request): \Symfony\Component\HttpFoundation\Response
     {
-        $ids = $request->input('ids', []);
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'list'],
+            'ids.*' => ['required', 'integer', 'distinct', Rule::exists(DbTable::SITES, 'id')->whereNull('dateDeleted')],
+        ]);
 
-        if (is_string($ids)) {
-            $ids = Json::decode($ids);
-        }
+        $this->sites->reorderSites($data['ids']);
 
-        $this->sites->reorderSites($ids);
-
-        Flash::success(t('New order saved.'));
-
-        return back();
+        return $this->asSuccess(t('New order saved.'));
     }
 
     public function destroy(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'id' => ['required', 'integer', Rule::exists(Table::SITES, 'id')],
+            'id' => ['required', 'integer', Rule::exists(DbTable::SITES, 'id')],
             'contentDestination' => ['required', 'in:transfer,delete'],
             'transferContentTo' => Rule::when(
                 $request->get('contentDestination') === 'transfer',
@@ -232,7 +266,7 @@ readonly class SitesController
                     'required',
                     'integer',
                     'different:id',
-                    Rule::exists(Table::SITES, 'id')->whereNull('dateDeleted'),
+                    Rule::exists(DbTable::SITES, 'id')->whereNull('dateDeleted'),
                 ]),
         ]);
 

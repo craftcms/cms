@@ -59,7 +59,13 @@
 </script>
 
 <template>
-  <Modal :is-active="state.active" width="sm" @close="close" @opened="opened">
+  <Modal
+    :is-active="state.active"
+    :label="t('Confirm your identity.')"
+    width="sm"
+    @close="close"
+    @opened="opened"
+  >
     <craft-pane
       data-elevated-session-dialog
       role="dialog"
