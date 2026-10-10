@@ -558,6 +558,7 @@ return [
     'Default Value' => 'Alapértelmezett érték',
     'Default Values' => 'Alapértelmezett értékek',
     'Default View Mode' => 'Alapértelmezett megtekintési mód',
+    'Default order' => 'Default order',
     'Default {type} Placement' => '{type} alapértelmezett elhelyezése',
     'Default' => 'Alapértelmezett',
     'Default?' => 'Alapértelmezett?',
@@ -1058,6 +1059,7 @@ return [
     'Manage categories' => 'Kategóriák kezelése',
     'Manage element thumbnails' => 'Elem miniatűrjeinek a kezelése',
     'Manipulated SVG image rasterizing is unreliable. See \\CraftCms\\Cms\\Image\\Images::loadImage()' => 'Manipulated SVG image rasterizing is unreliable. See \\CraftCms\\Cms\\Image\\Images::loadImage()',
+    'Manual order' => 'Manual order',
     'Markdown Extra' => 'Markdown Extra',
     'Markdown Flavor' => 'Markdown Flavor',
     'Markdown Guide' => 'Markdown Guide',
@@ -2239,11 +2241,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Ön egy revíziót néz. A {type} egyik mezője sem szerkeszthető.',
     'Zip Code' => 'Zip-kód',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => 'A „sectionId” és a „fieldId” nem lehet egyszerre beállítva egy bejegyzésben.',
-    'account_activation_body' => 'Hello {{user.friendlyName|e}},
+    'account_activation_body' => "Hello {{user.friendlyName|e}},
 
 Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
 
-<{{link}}>',
+<{{link}}>",
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
     'address' => 'cím',
