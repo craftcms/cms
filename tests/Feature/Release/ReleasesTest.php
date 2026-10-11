@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Tests\TestClasses\Release\DraftableReleaseElement;
 use CraftCms\Cms\Tests\TestClasses\Release\ReleasePermissions;
 use CraftCms\Cms\User\Elements\User;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function Pest\Laravel\actingAs;
 
@@ -228,6 +230,114 @@ it('rejects an unpublished member with a conflicting URI during publication with
         ->and($savedDraft->getEnabledForSite())->toBeTrue()
         ->and($savedConflict->enabled)->toBeTrue()
         ->and($savedConflict->getEnabledForSite())->toBeTrue();
+});
+
+it('publishes only due scheduled releases after the scheduling user loses every permission', function () {
+    Date::setTestNow('2026-10-01 12:00:00');
+
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    $scheduler = UserModel::factory()
+        ->withPermissions(['manageReleases', 'publishReleases'])
+        ->createElement();
+
+    $lateDraft = releaseDraft(
+        EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement(['title' => 'Late original']),
+        'Late scheduled change',
+        $this->actor,
+    );
+    $lateRelease = $this->releases->create('Late release', null, $this->actor);
+    $this->releases->attach($lateRelease, $lateDraft, $this->actor);
+    expect($scheduler->can('saveCanonical', $lateDraft))->toBeFalse();
+
+    $lateRelease = $this->releases->schedule($lateRelease, now()->addMinute(), $scheduler);
+
+    $futureDraft = releaseDraft(
+        EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement(['title' => 'Future original']),
+        'Future scheduled change',
+        $this->actor,
+    );
+    $futureRelease = $this->releases->create('Future release', null, $this->actor);
+    $this->releases->attach($futureRelease, $futureDraft, $this->actor);
+    $futureRelease = $this->releases->schedule($futureRelease, now()->addHour(), $scheduler);
+
+    $unscheduledDraft = releaseDraft(
+        EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement(['title' => 'Unscheduled original']),
+        'Unscheduled change',
+        $this->actor,
+    );
+    $unscheduledRelease = $this->releases->create('Unscheduled release', null, $this->actor);
+    $this->releases->attach($unscheduledRelease, $unscheduledDraft, $this->actor);
+
+    UserPermissions::saveUserPermissions($scheduler->id, []);
+    expect($scheduler->can('manageReleases'))->toBeFalse()
+        ->and($scheduler->can('publishReleases'))->toBeFalse();
+
+    Date::setTestNow('2026-10-01 12:05:00');
+
+    expect($this->releases->publishDue())->toBe(1)
+        ->and($lateRelease->fresh()->status)->toBe(ReleaseStatus::Published)
+        ->and($futureRelease->fresh()->status)->toBe(ReleaseStatus::Scheduled)
+        ->and($unscheduledRelease->fresh()->status)->toBe(ReleaseStatus::Draft)
+        ->and(EntryElement::find()->id($lateDraft->getCanonicalId())->status(null)->one()->title)->toBe('Late scheduled change')
+        ->and(EntryElement::find()->id($futureDraft->getCanonicalId())->status(null)->one()->title)->toBe('Future original')
+        ->and(EntryElement::find()->id($unscheduledDraft->getCanonicalId())->status(null)->one()->title)->toBe('Unscheduled original');
+});
+
+it('requires publication permission to cancel a scheduled release', function () {
+    Date::setTestNow('2026-10-01 12:00:00');
+
+    $draft = releaseDraft(EntryModel::factory()->createElement(['title' => 'Original']), 'Scheduled change', $this->actor);
+    $release = $this->releases->create('Scheduled release', null, $this->actor);
+    $this->releases->attach($release, $draft, $this->actor);
+    $release = $this->releases->schedule($release, now()->addMinute(), $this->actor);
+    $manager = UserModel::factory()->withPermissions(['manageReleases'])->createElement();
+    $publisher = UserModel::factory()->withPermissions(['manageReleases', 'publishReleases'])->createElement();
+
+    expect(fn () => $this->releases->unschedule($release, $manager))
+        ->toThrow(HttpException::class, 'You are not allowed to publish releases.');
+
+    expect($release->fresh()->status)->toBe(ReleaseStatus::Scheduled);
+
+    $cancelled = $this->releases->unschedule($release, $publisher);
+
+    expect($cancelled->status)->toBe(ReleaseStatus::Draft)
+        ->and($cancelled->publishedAt)->toBeNull()
+        ->and($cancelled->scheduledById)->toBeNull();
+
+    Date::setTestNow('2026-10-01 12:05:00');
+
+    expect($this->releases->publishDue())->toBe(0)
+        ->and(EntryElement::find()->id($draft->getCanonicalId())->status(null)->one()->title)->toBe('Original');
+});
+
+it('keeps publishing due releases after an earlier one fails', function () {
+    Date::setTestNow('2026-10-01 12:00:00');
+
+    $failingDraft = releaseDraft(EntryModel::factory()->createElement(['title' => 'Failing original']), 'Failing change', $this->actor);
+    $failingRelease = $this->releases->create('Failing release', null, $this->actor);
+    $this->releases->attach($failingRelease, $failingDraft, $this->actor);
+    $this->releases->schedule($failingRelease, now()->addMinute(), $this->actor);
+
+    $laterDraft = releaseDraft(EntryModel::factory()->createElement(['title' => 'Later original']), 'Later change', $this->actor);
+    $laterRelease = $this->releases->create('Later release', null, $this->actor);
+    $this->releases->attach($laterRelease, $laterDraft, $this->actor);
+    $this->releases->schedule($laterRelease, now()->addMinutes(2), $this->actor);
+
+    Event::listen(DraftApplying::class, function (DraftApplying $event) use ($failingDraft): void {
+        if ($event->draft->draftId === $failingDraft->draftId) {
+            throw new RuntimeException('The failing member failed.');
+        }
+    });
+
+    Date::setTestNow('2026-10-01 12:05:00');
+
+    expect($this->releases->publishDue())->toBe(1)
+        ->and($failingRelease->fresh()->status)->toBe(ReleaseStatus::Failed)
+        ->and($failingRelease->fresh()->lastError)->toBe('The failing member failed.')
+        ->and($laterRelease->fresh()->status)->toBe(ReleaseStatus::Published)
+        ->and(EntryElement::find()->id($failingDraft->getCanonicalId())->status(null)->one()->title)->toBe('Failing original')
+        ->and(EntryElement::find()->id($laterDraft->getCanonicalId())->status(null)->one()->title)->toBe('Later change');
 });
 
 it('checks readiness without saving the draft or changing its content and dates', function () {

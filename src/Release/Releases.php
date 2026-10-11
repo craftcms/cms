@@ -33,6 +33,7 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\ConcurrencyErrorDetector;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -244,9 +245,89 @@ class Releases
         return $this->buildReadiness($release);
     }
 
+    public function schedule(Release $release, DateTimeInterface $publishAt, CraftUser $actor): Release
+    {
+        if ($publishAt <= now()) {
+            throw new ReleaseException(t('The scheduled publication time must be in the future.'));
+        }
+
+        return DB::transaction(function () use ($release, $publishAt, $actor): Release {
+            $release = $this->lockRelease($release->id);
+            $this->ensureMutable($release);
+            $items = $this->lockReleaseDrafts($release);
+            if (! $actor->can('publishReleases')) {
+                throw new ReleaseException(t('You are not allowed to schedule releases.'), Response::HTTP_FORBIDDEN);
+            }
+
+            $release->publishedAt = Date::instance($publishAt);
+            $this->lockRootIds(...$items->pluck('canonicalId')->map(fn ($id): int => (int) $id)->all());
+            $readiness = $this->buildReadiness($release, lockWorkflowRun: true);
+            if (! $readiness->ready) {
+                throw new ReleaseException(t('The release is not ready to be scheduled.'));
+            }
+
+            $release->update([
+                'publishedAt' => $publishAt,
+                'plannedAt' => $release->plannedAt ?? $publishAt,
+                'scheduledById' => $actor->getCraftUserId(),
+                'status' => ReleaseStatus::Scheduled,
+                'lastError' => null,
+            ]);
+
+            return $release->refresh();
+        });
+    }
+
+    public function unschedule(Release $release, CraftUser $actor): Release
+    {
+        abort_unless($actor->can('publishReleases'), Response::HTTP_FORBIDDEN, t('You are not allowed to publish releases.'));
+
+        return DB::transaction(function () use ($release): Release {
+            $release = $this->lockRelease($release->id);
+            if ($release->status !== ReleaseStatus::Scheduled) {
+                throw new ReleaseException(t('Only scheduled releases can be unscheduled.'));
+            }
+
+            $release->update([
+                'publishedAt' => null,
+                'scheduledById' => null,
+                'status' => ReleaseStatus::Draft,
+                'lastError' => null,
+            ]);
+
+            return $release->refresh();
+        });
+    }
+
     public function publish(Release $release, CraftUser $actor): Release
     {
         return $this->publishRelease($release, false, $actor);
+    }
+
+    public function publishDue(): int
+    {
+        $published = 0;
+        $releaseIds = Release::query()
+            ->where('status', ReleaseStatus::Scheduled)
+            ->where('publishedAt', '<=', now())
+            ->orderBy('publishedAt')
+            ->pluck('id');
+
+        foreach ($releaseIds as $releaseId) {
+            $release = Release::query()->find($releaseId);
+            if ($release === null) {
+                continue;
+            }
+
+            try {
+                $this->publishRelease($release, true);
+                $published++;
+            } catch (Throwable) {
+                continue;
+            }
+        }
+
+        return $published;
     }
 
     private function publishRelease(Release $release, bool $scheduledExecution, ?CraftUser $actor = null): Release
