@@ -124,7 +124,7 @@
         <CalloutReadOnly />
       </template>
 
-      <AdminTableNode padded :node="tableNode">
+      <AdminTableNode appearance="flush" :node="tableNode">
         <template #delete-modal="{row, label, close}">
           <DeleteSiteModal
             open

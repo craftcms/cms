@@ -390,7 +390,7 @@ something more useful:
 | `loading`               | `boolean`           | `false`           | Shows the loading state and blocks interaction.                                                                                    |
 | `layout`                | `'auto' \| 'fixed'` | `'auto'`          | The table's CSS layout.                                                                                                            |
 | `spacing`               | `TableSpacingValue` | `'spacious'`      | Row density, `TableSpacing.Spacious` or `TableSpacing.Compact`.                                                                    |
-| `padded`                | `boolean`           | `false`           | Insets the header and footer by the page container's padding, and lets the table span it, padding each row's outer cells to match. |
+| `appearance` | `'plain' \| 'flush' \| 'raised'` | `'plain'` | How the table meets its container. `flush` insets the header and footer by the page container's padding, and lets the table span it, padding each row's outer cells to match. `raised` sets it in a raised pane. |
 | `from` / `to` / `total` | `number`            | —                 | The “X–Y of Z” footer text. Pass these from `PaginationData`.                                                                      |
 | `enableAdjustPageSize`  | `boolean`           | `false`           | Adds a page-size select to the footer.                                                                                             |
 | `pageSizeOptions`       | `number[]`          | `[50, 100, 250]`  | The page-size select's choices.                                                                                                    |

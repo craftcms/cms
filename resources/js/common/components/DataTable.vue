@@ -23,7 +23,12 @@
   import type {NestedReorderDirection} from '@craftcms/ui';
   import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
   import {useReorderableRows} from '@/common/composables/useReorderableRows';
-  import {TableSpacing, type TableSpacingValue} from '@/common/types';
+  import {
+    TableAppearance,
+    TableSpacing,
+    type TableAppearanceValue,
+    type TableSpacingValue,
+  } from '@/common/types';
   import ColumnHeaderTitle from '@/common/components/ColumnHeaderTitle.vue';
   import DropIndicator from '@/common/components/DropIndicator.vue';
   const props = withDefaults(
@@ -50,10 +55,12 @@
       spacing?: TableSpacingValue;
       withBottomBorder?: boolean;
       /**
-       * Pads the start and end of each row by `--cp-container-padding`, for a
-       * table that spans its container's padding rather than sitting inside it.
+       * How the table meets its container. `flush` pads the start and end of
+       * each row by `--cp-container-padding`, for a table that spans its
+       * container's padding rather than sitting inside it. (A `raised` pane is
+       * up to whatever contains the table; see `AdminTable`.)
        */
-      flush?: boolean;
+      appearance?: Exclude<TableAppearanceValue, 'raised'>;
     }>(),
 
     {
@@ -64,7 +71,7 @@
       loading: false,
       layout: 'auto',
       withBottomBorder: true,
-      flush: false,
+      appearance: TableAppearance.Plain,
     }
   );
 
@@ -349,7 +356,7 @@
         'cp-table--compact': spacing === TableSpacing.Compact,
         'cp-table--spacious': spacing === TableSpacing.Spacious,
         'cp-table--auto': layout === 'auto',
-        'cp-table--flush': flush,
+        'cp-table--flush': appearance === TableAppearance.Flush,
       }"
       :style="tableStyles"
     >

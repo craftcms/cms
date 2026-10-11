@@ -1,7 +1,12 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
 import {ref} from 'vue';
 import AdminTable from './AdminTable.vue';
-import {TableSpacing, type TableSpacingValue} from '@/common/types';
+import {
+  TableAppearance,
+  TableSpacing,
+  type TableAppearanceValue,
+  type TableSpacingValue,
+} from '@/common/types';
 import {
   createSampleTable,
   sampleEntries,
@@ -18,10 +23,14 @@ const meta = {
     reorderable: false,
     readOnly: false,
     loading: false,
-    padded: false,
+    appearance: TableAppearance.Plain,
     spacing: TableSpacing.Spacious,
   },
   argTypes: {
+    appearance: {
+      control: 'inline-radio',
+      options: Object.values(TableAppearance),
+    },
     spacing: {
       control: 'inline-radio',
       options: Object.values(TableSpacing),
@@ -45,7 +54,7 @@ interface AdminTableStoryArgs {
   reorderable?: boolean;
   readOnly?: boolean;
   loading?: boolean;
-  padded?: boolean;
+  appearance?: TableAppearanceValue;
   spacing?: TableSpacingValue;
 }
 
@@ -201,11 +210,12 @@ export const Compact: Story = {
 };
 
 /**
- * `padded` insets the header and footer by the page container's padding, and
- * lets the table span it with each row's outer cells padded to match.
+ * `appearance="flush"` insets the header and footer by the page container's
+ * padding, and lets the table span it with each row's outer cells padded to
+ * match.
  */
-export const Padded: Story = {
-  args: {padded: true},
+export const Flush: Story = {
+  args: {appearance: TableAppearance.Flush},
   render: (args) => ({
     components: {AdminTable},
     setup() {
@@ -221,4 +231,10 @@ export const Padded: Story = {
       </div>
     `,
   }),
+};
+
+/** `appearance="raised"` sets the table in a raised pane. */
+export const Raised: Story = {
+  args: {appearance: TableAppearance.Raised},
+  render,
 };

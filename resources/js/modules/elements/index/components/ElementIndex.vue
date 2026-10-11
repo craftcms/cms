@@ -3,7 +3,11 @@
   import {onLongPress} from '@vueuse/core';
   import {ButtonVariant, t} from '@craftcms/ui';
   import PaginationControls from '@/common/components/PaginationControls.vue';
-  import {TableSpacing} from '@/common/types';
+  import {
+    TableAppearance,
+    TableSpacing,
+    type TableAppearanceValue,
+  } from '@/common/types';
   import ElementTable from '@/modules/elements/index/components/ElementTable.vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
@@ -33,10 +37,11 @@
       enableAdjustPageSize?: boolean;
       withBottomBorder?: boolean;
       /**
-       * Lets the table span the container's inline padding, padding each
-       * row's outer cells to match. Turn off when the container has none.
+       * How the table view meets the index. `flush` (the default) lets the
+       * table span the container's inline padding, padding each row's outer
+       * cells to match; use `plain` when the container has none.
        */
-      flushTable?: boolean;
+      tableAppearance?: Exclude<TableAppearanceValue, 'raised'>;
       toolbarAsForm?: boolean;
       quickEdit?: ElementIndexQuickEdit;
     }>(),
@@ -45,7 +50,7 @@
       footerActive: false,
       enableAdjustPageSize: false,
       withBottomBorder: true,
-      flushTable: true,
+      tableAppearance: TableAppearance.Flush,
       toolbarAsForm: true,
     }
   );
@@ -286,7 +291,9 @@
         'element-index__body',
         {
           'element-index__body--flush':
-            flushTable && mode !== 'cards' && mode !== 'thumbs',
+            tableAppearance === TableAppearance.Flush &&
+            mode !== 'cards' &&
+            mode !== 'thumbs',
         },
       ]"
       :aria-busy="loading ? 'true' : undefined"
@@ -339,7 +346,7 @@
           :spacing="TableSpacing.Spacious"
           :item-behavior="itemBehavior"
           :with-bottom-border="withBottomBorder"
-          :flush="flushTable"
+          :appearance="tableAppearance"
           :structure="
             !isInlineEditing && structure !== undefined && mode === 'structure'
           "
@@ -436,7 +443,7 @@
     padding-inline: var(--cp-container-padding);
   }
 
-  // The table pads its own outer cells instead; see `flushTable`.
+  // The table pads its own outer cells instead; see `tableAppearance`.
   .element-index__body--flush {
     padding-inline: 0;
   }

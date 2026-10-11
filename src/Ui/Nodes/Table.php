@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ui\Nodes;
 
+use CraftCms\Cms\Cp\Enums\TableAppearance;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Contracts\Control;
@@ -90,7 +91,7 @@ class Table implements Node
 
     private ?string $searchPlaceholder = null;
 
-    private bool $bordered = false;
+    private ?TableAppearance $appearance = null;
 
     private ?bool $showFooter = null;
 
@@ -423,9 +424,15 @@ class Table implements Node
         return $this;
     }
 
-    public function bordered(bool $bordered = true): static
+    /**
+     * How the table meets its container. Strings (e.g. from Twig `ui()` config)
+     * are validated against {@see TableAppearance}. When unset, a table that's
+     * all its page has is `flush`, spanning the page like an index; otherwise
+     * it's `plain`.
+     */
+    public function appearance(TableAppearance|string|null $appearance): static
     {
-        $this->bordered = $bordered;
+        $this->appearance = is_string($appearance) ? TableAppearance::from($appearance) : $appearance;
 
         return $this;
     }
@@ -559,7 +566,7 @@ class Table implements Node
             'hiddenColumnsByDefault' => $this->hiddenColumnsByDefault,
             'searchable' => $this->searchable,
             'searchPlaceholder' => $this->searchPlaceholder,
-            'bordered' => $this->bordered,
+            'appearance' => $this->appearance?->value,
             'showFooter' => $this->showFooter ?? (
                 $this->dataUrl !== null
                 || $this->pagination !== null

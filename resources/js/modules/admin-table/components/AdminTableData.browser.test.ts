@@ -113,7 +113,7 @@ function mountNode(options: Partial<TableProps> = {}) {
           hiddenColumnsByDefault: [],
           searchable: false,
           searchPlaceholder: null,
-          bordered: false,
+          appearance: null,
           ...options,
         },
       },
@@ -253,8 +253,8 @@ function result(
   };
 }
 
-it('insets padded table controls and footer by the container gutter, and pads rows’ outer cells to match', async () => {
-  const {host} = mountTable({padded: true});
+it('insets a flush table’s controls and footer by the container gutter, and pads rows’ outer cells to match', async () => {
+  const {host} = mountTable({appearance: 'flush'});
   host.style.setProperty('--cp-container-padding', '24px');
   await nextTick();
 

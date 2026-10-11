@@ -121,7 +121,7 @@ function mount(readOnly = false) {
     hiddenColumnsByDefault: [],
     searchable: false,
     searchPlaceholder: null,
-    bordered: false,
+    appearance: null,
     showFooter: false,
   };
   const host = document.createElement('div');
