@@ -277,7 +277,7 @@ readonly class ElementHtml
      * - `class` – Class name(s) that should be added to the container element
      * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
      * - `hyperlink` – Whether the chip label should be hyperlinked to the element’s URL
-     * - `hyperlinkUrl` – The URL the label should be hyperlinked to, if not the element’s edit URL
+     * - `hyperlinkUrl` – The URL the label should be hyperlinked to, if not the element’s edit URL. Unlike the edit URL, it’s linked in the `modal` context too.
      * - `hyperlinkTag` – The tag the label hyperlink should use (`a` by default, or e.g. `CpLink` in Vue-rendered HTML)
      * - `hyperlinkAttributes` – Any additional HTML attributes for the label hyperlink
      * - `returnUrl` – The `returnUrl` param that should be added to the hyperlink URL
@@ -1177,7 +1177,8 @@ readonly class ElementHtml
             if (
                 ($config['hyperlink'] ?? false) &&
                 ! $element->trashed &&
-                $config['context'] !== 'modal' &&
+                // Modals don't link out to edit screens, but a URL passed explicitly is meant to be linked.
+                ($config['context'] !== 'modal' || isset($config['hyperlinkUrl'])) &&
                 ($url = $config['hyperlinkUrl'] ?? $attributes['data']['cp-url'] ?? null)
             ) {
                 $returnUrl = $config['returnUrl'] ?? null;
