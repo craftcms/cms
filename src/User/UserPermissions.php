@@ -568,6 +568,13 @@ class UserPermissions
                 new Permission(
                     key: 'manageReleases',
                     label: t('Manage releases'),
+                    nested: collect([
+                        new Permission(
+                            key: 'publishReleases',
+                            label: t('Publish releases'),
+                            info: t('Allows scheduling and publishing every draft in a release, regardless of content permissions.'),
+                        ),
+                    ]),
                 ),
             ]),
         ));

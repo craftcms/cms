@@ -1,0 +1,352 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Events\DraftApplying;
+use CraftCms\Cms\Element\Models\Element;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Release\Enums\ReleaseStatus;
+use CraftCms\Cms\Release\Events\ReleasePublished;
+use CraftCms\Cms\Release\Exceptions\ReleaseException;
+use CraftCms\Cms\Release\Notifications\ReleaseFailed;
+use CraftCms\Cms\Release\Releases;
+use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Tests\TestClasses\Release\DraftableReleaseElement;
+use CraftCms\Cms\Tests\TestClasses\Release\ReleasePermissions;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
+
+use function Pest\Laravel\actingAs;
+
+beforeEach(function () {
+    $this->actor = User::findOne();
+    $this->releases = app(Releases::class);
+
+    actingAs($this->actor);
+});
+
+afterEach(fn () => Date::setTestNow());
+
+it('publishes changed disabled and unpublished entries together and retains immutable history', function () {
+    Event::fake([ReleasePublished::class]);
+    Date::setTestNow('2026-10-01 12:00:00');
+
+    $secondSite = Site::factory()->create();
+    Sites::refreshSites();
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->withSites($secondSite)->create();
+    Sections::refreshSections();
+    EntryTypes::refreshEntryTypes();
+
+    $changedCanonical = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($entryType)
+        ->createElement(['title' => 'Original changed entry']);
+    $changedCanonical->setAuthorIds([$this->actor->id]);
+    expect(Elements::saveElement($changedCanonical))->toBeTrue();
+
+    Date::setTestNow(now()->addSecond());
+
+    $changedDraft = releaseDraft($changedCanonical, 'Changed for launch', $this->actor);
+    $changedDraftForSecondSite = EntryElement::find()
+        ->draftId($changedDraft->draftId)
+        ->siteId($secondSite->id)
+        ->status(null)
+        ->one();
+    $changedDraftForSecondSite->title = 'Changed for second site launch';
+    expect(Elements::saveElement($changedDraftForSecondSite))->toBeTrue();
+
+    $disabledCanonical = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($entryType)
+        ->createElement(['title' => 'Original enabled entry']);
+    $disabledCanonical->setAuthorIds([$this->actor->id]);
+    expect(Elements::saveElement($disabledCanonical))->toBeTrue();
+
+    Date::setTestNow(now()->addSecond());
+
+    $disabledDraft = releaseDraft($disabledCanonical, 'Disabled for launch', $this->actor);
+    $disabledDraft->enabled = false;
+    expect(Elements::saveElement($disabledDraft))->toBeTrue();
+
+    $unpublishedDraft = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($entryType)
+        ->createElement(['title' => 'Brand new launch entry']);
+    $unpublishedDraft->setAuthorIds([$this->actor->id]);
+    expect(Elements::saveElement($unpublishedDraft))->toBeTrue();
+    expect(app(Drafts::class)->saveElementAsDraft(
+        $unpublishedDraft,
+        $this->actor->id,
+        'New launch entry',
+    ))->toBeTrue();
+
+    $release = $this->releases->create('October launch', null, $this->actor);
+    $items = collect([$changedDraft, $disabledDraft, $unpublishedDraft])
+        ->map(fn (EntryElement $draft) => $this->releases->attach($release, $draft, $this->actor));
+    $draftIds = $items->pluck('draftId')->all();
+
+    $published = $this->releases->publish($release, $this->actor);
+
+    $changedEntries = EntryElement::find()->id($changedCanonical->id)->site('*')->status(null)->all();
+    $changedEntriesBySite = collect($changedEntries)->keyBy('siteId');
+    $disabledEntries = EntryElement::find()->id($disabledCanonical->id)->site('*')->status(null)->all();
+    $newEntries = EntryElement::find()->id($unpublishedDraft->id)->drafts(false)->site('*')->status(null)->all();
+    $history = $published->fresh()->load('items');
+
+    expect($published->status)->toBe(ReleaseStatus::Published)
+        ->and($published->publishedAt)->not()->toBeNull()
+        ->and($changedEntries)->toHaveCount(2)
+        ->and($changedEntriesBySite[$changedDraft->siteId]->title)->toBe('Changed for launch')
+        ->and($changedEntriesBySite[$secondSite->id]->title)->toBe('Changed for second site launch')
+        ->and($disabledEntries)->toHaveCount(2)
+        ->and(collect($disabledEntries)->every(fn (EntryElement $entry): bool => ! $entry->enabled))->toBeTrue()
+        ->and($newEntries)->toHaveCount(2)
+        ->and($history->items)->toHaveCount(3)
+        ->and($history->items->pluck('draftId')->all())->toBe([null, null, null])
+        ->and($history->items->every(fn ($item): bool => $item->publishedElementId !== null && $item->publishedAt !== null))->toBeTrue()
+        ->and(DB::table(Table::DRAFTS)->whereIn('id', $draftIds)->exists())->toBeFalse()
+        ->and(fn () => $this->releases->update($published, 'Renamed launch', null, $this->actor))
+        ->toThrow(ReleaseException::class, 'Scheduled and completed releases cannot be changed.')
+        ->and(fn () => $this->releases->delete($published, $this->actor))
+        ->toThrow(ReleaseException::class, 'Scheduled and completed releases cannot be changed.');
+
+    Event::assertDispatched(fn (ReleasePublished $event): bool => $event->release->is($published));
+});
+
+it('rolls back every member and notifies release managers when a later draft fails during publication', function () {
+    Event::fake([ReleasePublished::class]);
+    Notification::fake();
+    $editor = UserModel::factory()->createElement();
+
+    $firstCanonical = EntryModel::factory()->createElement(['title' => 'First original']);
+    $firstDraft = releaseDraft($firstCanonical, 'First release change', $this->actor);
+    $secondCanonical = EntryModel::factory()->createElement(['title' => 'Second original']);
+    $secondDraft = releaseDraft($secondCanonical, 'Second release change', $this->actor);
+
+    $release = $this->releases->create('Atomic release', null, $this->actor);
+    $firstItem = $this->releases->attach($release, $firstDraft, $this->actor);
+    $secondItem = $this->releases->attach($release, $secondDraft, $this->actor);
+
+    Event::listen(DraftApplying::class, function (DraftApplying $event) use ($secondDraft): void {
+        if ($event->draft->draftId === $secondDraft->draftId) {
+            throw new RuntimeException('The second member failed.');
+        }
+    });
+
+    expect(fn () => $this->releases->publish($release, $this->actor))
+        ->toThrow(RuntimeException::class, 'The second member failed.');
+
+    $failed = $release->fresh()->load('items');
+    $firstAfterFailure = EntryElement::find()->id($firstCanonical->id)->status(null)->one();
+    $secondAfterFailure = EntryElement::find()->id($secondCanonical->id)->status(null)->one();
+
+    expect($firstAfterFailure->title)->toBe('First original')
+        ->and($secondAfterFailure->title)->toBe('Second original')
+        ->and(EntryElement::find()->draftId($firstDraft->draftId)->status(null)->one())->not()->toBeNull()
+        ->and(EntryElement::find()->draftId($secondDraft->draftId)->status(null)->one())->not()->toBeNull()
+        ->and($failed->status)->toBe(ReleaseStatus::Failed)
+        ->and($failed->lastError)->toBe('The second member failed.')
+        ->and($failed->publishedAt)->toBeNull()
+        ->and($failed->publishAttempts)->toBe(1)
+        ->and($failed->items->pluck('draftId')->all())->toBe([$firstItem->draftId, $secondItem->draftId])
+        ->and($failed->items->pluck('publishedElementId')->filter())->toBeEmpty();
+
+    Event::assertNotDispatched(ReleasePublished::class);
+    Notification::assertSentTo(
+        $this->actor,
+        ReleaseFailed::class,
+        fn (ReleaseFailed $notification): bool => $notification->toDatabase($this->actor)['message']
+            === 'The release “Atomic release” could not be published. The second member failed.',
+    );
+    Notification::assertNotSentTo($editor, ReleaseFailed::class);
+});
+
+it('rejects an unpublished member with a conflicting URI during publication without disabling it', function () {
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    SectionSiteSettings::query()
+        ->where('sectionId', $section->id)
+        ->update([
+            'hasUrls' => true,
+            'uriFormat' => 'fixed-release-uri',
+        ]);
+    Sections::refreshSections();
+
+    $conflictingEntry = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($entryType)
+        ->createElement([
+            'title' => 'Existing live entry',
+            'slug' => 'existing-live-entry',
+        ]);
+    expect(Elements::saveElement($conflictingEntry))->toBeTrue();
+
+    $unpublishedDraft = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($entryType)
+        ->createElement([
+            'title' => 'Conflicting unpublished entry',
+            'slug' => 'conflicting-unpublished-entry',
+        ]);
+    expect(app(Drafts::class)->saveElementAsDraft(
+        $unpublishedDraft,
+        $this->actor->id,
+        'Conflicting unpublished draft',
+    ))->toBeTrue();
+
+    $release = $this->releases->create('Strict URI release', null, $this->actor);
+    $item = $this->releases->attach($release, $unpublishedDraft, $this->actor);
+
+    expect(fn () => $this->releases->publish($release, $this->actor))
+        ->toThrow(ReleaseException::class, 'Could not generate a unique URI based on the URI format.');
+
+    $failedRelease = $release->fresh();
+    $savedDraft = EntryElement::find()->draftId($unpublishedDraft->draftId)->status(null)->one();
+    $savedConflict = EntryElement::find()->id($conflictingEntry->id)->status(null)->one();
+
+    expect($failedRelease->status)->toBe(ReleaseStatus::Failed)
+        ->and($failedRelease->publishedAt)->toBeNull()
+        ->and($item->fresh()->draftId)->toBe($unpublishedDraft->draftId)
+        ->and($item->fresh()->publishedElementId)->toBeNull()
+        ->and($savedDraft)->not()->toBeNull()
+        ->and($savedDraft->enabled)->toBeTrue()
+        ->and($savedDraft->getEnabledForSite())->toBeTrue()
+        ->and($savedConflict->enabled)->toBeTrue()
+        ->and($savedConflict->getEnabledForSite())->toBeTrue();
+});
+
+it('checks readiness without saving the draft or changing its content and dates', function () {
+    Date::setTestNow('2026-10-01 12:00:00');
+
+    $canonical = EntryModel::factory()->createElement(['title' => 'Original title']);
+    $draft = releaseDraft($canonical, 'Prepared title', $this->actor);
+    $draft->postDate = now()->addDay();
+    expect(Elements::saveElement($draft))->toBeTrue();
+
+    $release = $this->releases->create('Readiness release', null, $this->actor);
+    $item = $this->releases->attach($release, $draft, $this->actor);
+    $savedDraft = EntryElement::find()->draftId($draft->draftId)->status(null)->one();
+    $savedDateUpdated = $savedDraft->dateUpdated;
+    $savedPostDate = $savedDraft->postDate;
+
+    Date::setTestNow('2026-10-01 12:05:00');
+
+    $live = EntryElement::find()->id($canonical->id)->status(null)->one();
+    $live->slug = 'updated-live-slug';
+    expect(Elements::saveElement($live))->toBeTrue();
+
+    $readiness = $this->releases->checkReadiness($release, $this->actor);
+    $draftAfterReadinessCheck = EntryElement::find()->draftId($draft->draftId)->status(null)->one();
+
+    expect($readiness->ready)->toBeTrue()
+        ->and($readiness->itemWarnings[$item->id])->toContain('This entry will remain pending in at least one site at the release time.')
+        ->and($draftAfterReadinessCheck->title)->toBe('Prepared title')
+        ->and($draftAfterReadinessCheck->slug)->toBe($savedDraft->slug)
+        ->and($draftAfterReadinessCheck->postDate->equalTo($savedPostDate))->toBeTrue()
+        ->and($draftAfterReadinessCheck->dateUpdated->equalTo($savedDateUpdated))->toBeTrue();
+});
+
+function releaseDraft(EntryElement $canonical, string $title, User $actor): EntryElement
+{
+    Sections::refreshSections();
+    EntryTypes::refreshEntryTypes();
+
+    $draft = app(Drafts::class)->createDraft(
+        canonical: $canonical,
+        creatorId: $actor->id,
+        name: "$title draft",
+    );
+    $draft->title = $title;
+    $draft->setAuthorIds([$actor->id]);
+
+    if (! Elements::saveElement($draft)) {
+        throw new RuntimeException('The release test draft could not be saved.');
+    }
+
+    return $draft;
+}
+
+it('allows a release publisher without content permissions to publish a saved non-entry draft', function () {
+    $model = Element::factory()->title('Original content')->create(['type' => DraftableReleaseElement::class]);
+    $canonical = DraftableReleaseElement::find()->id($model->id)->one();
+    $draft = app(Drafts::class)->createDraft($canonical, $this->actor->id, 'Prepared content');
+    $draft->title = 'Published content';
+    expect(Elements::saveElement($draft))->toBeTrue();
+
+    $release = $this->releases->create('Mixed content', null, $this->actor);
+    $this->releases->attach($release, $draft, $this->actor);
+    $publisher = UserModel::factory()
+        ->withPermissions(['manageReleases', 'publishReleases'])
+        ->createElement();
+
+    expect($publisher->can('save', $draft))->toBeFalse()
+        ->and($this->releases->checkReadiness($release, $publisher)->ready)->toBeTrue();
+
+    $published = $this->releases->publish($release, $publisher);
+
+    expect($published->status)->toBe(ReleaseStatus::Published)
+        ->and(DraftableReleaseElement::find()->id($canonical->id)->one()?->title)->toBe('Published content')
+        ->and(DraftableReleaseElement::find()->draftId($draft->draftId)->status(null)->one())->toBeNull();
+});
+
+it('merges live changes into untouched fields while publishing the release draft changes', function () {
+    Date::setTestNow('2026-10-01 12:00:00');
+
+    $canonical = EntryModel::factory()->createElement(['title' => 'Original title', 'slug' => 'original-slug']);
+    $draft = releaseDraft($canonical, 'Release title', $this->actor);
+    $release = $this->releases->create('Merge release', null, $this->actor);
+    $item = $this->releases->attach($release, $draft, $this->actor);
+
+    Date::setTestNow(now()->addMinute());
+
+    $live = EntryElement::find()->id($canonical->id)->status(null)->one();
+    $live->title = 'Live title';
+    $live->slug = 'live-slug';
+    expect(Elements::saveElement($live))->toBeTrue()
+        ->and($this->releases->checkReadiness($release, $this->actor)->ready)->toBeTrue();
+
+    $published = $this->releases->publish($release, $this->actor);
+    $live = EntryElement::find()->id($canonical->id)->status(null)->one();
+
+    expect($published->status)->toBe(ReleaseStatus::Published)
+        ->and($live->title)->toBe('Release title')
+        ->and($live->slug)->toBe('live-slug')
+        ->and($item->fresh()->draftId)->toBeNull()
+        ->and(EntryElement::find()->draftId($draft->draftId)->status(null)->one())->toBeNull();
+});
+
+it('requires release publication permission even when a manager can publish the member', function () {
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    $canonical = EntryModel::factory()->forSection($section)->forEntryType($entryType)
+        ->createElement(['title' => 'Original content']);
+    $draft = releaseDraft($canonical, 'Prepared content', $this->actor);
+    $manager = UserModel::factory()
+        ->withPermissions(ReleasePermissions::forSection($section, manageReleases: true))
+        ->createElement();
+    $release = $this->releases->create('Permission release', null, $this->actor);
+    $this->releases->attach($release, $draft, $this->actor);
+
+    expect($manager->can('saveCanonical', $draft))->toBeTrue()
+        ->and(fn () => $this->releases->publish($release, $manager))
+        ->toThrow(ReleaseException::class, 'You are not allowed to publish releases.')
+        ->and($release->fresh()->status)->toBe(ReleaseStatus::Draft)
+        ->and($release->fresh()->publishAttempts)->toBe(0)
+        ->and(EntryElement::find()->id($canonical->id)->status(null)->one()->title)->toBe('Original content')
+        ->and(EntryElement::find()->draftId($draft->draftId)->status(null)->one())->not()->toBeNull();
+});

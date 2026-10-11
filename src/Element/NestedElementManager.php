@@ -1443,7 +1443,12 @@ class NestedElementManager extends Component
 
                     if ($canonicalElement->trashed) {
                         if ($derivativeElement->dateUpdated == $derivativeElement->dateCreated) {
-                            Elements::deleteElement($derivativeElement);
+                            $derivativeElement->mergingCanonicalChanges = true;
+                            try {
+                                Elements::deleteElement($derivativeElement);
+                            } finally {
+                                $derivativeElement->mergingCanonicalChanges = false;
+                            }
                         }
                     } elseif (
                         ! $derivativeElement->trashed &&
@@ -1506,7 +1511,14 @@ class NestedElementManager extends Component
                 }
 
                 $element->deletedWithOwner = true;
-                Elements::deleteElement($element, $hardDelete);
+                $mergingCanonicalChanges = $element->mergingCanonicalChanges;
+                $element->mergingCanonicalChanges = $owner->mergingCanonicalChanges;
+
+                try {
+                    Elements::deleteElement($element, $hardDelete);
+                } finally {
+                    $element->mergingCanonicalChanges = $mergingCanonicalChanges;
+                }
             }
         }
     }

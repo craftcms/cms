@@ -23,7 +23,7 @@ use WeakMap;
 #[Singleton]
 readonly class WorkflowContentChanges
 {
-    /** @var WeakMap<ElementInterface, array{draftIds: list<int>, mergingCanonicalChanges: bool}> */
+    /** @var WeakMap<ElementInterface, list<int>> */
     private WeakMap $writes;
 
     /** @var WeakMap<ElementInterface, list<int>> */
@@ -39,7 +39,9 @@ readonly class WorkflowContentChanges
 
     public function handleElementSaving(ElementSaving $event): void
     {
-        $draftIds = $this->drafts->getDraftIdsForElement($event->element);
+        $draftIds = $event->element->mergingCanonicalChanges
+            ? []
+            : $this->drafts->getDraftIdsForElement($event->element);
 
         if ($draftIds === []) {
             unset($this->writes[$event->element]);
@@ -47,39 +49,36 @@ readonly class WorkflowContentChanges
             return;
         }
 
-        $this->writes[$event->element] = [
-            'draftIds' => $draftIds,
-            'mergingCanonicalChanges' => $event->element->mergingCanonicalChanges,
-        ];
+        $this->writes[$event->element] = $draftIds;
     }
 
     public function handleElementPersisted(ElementPersisted $event): void
     {
-        $write = $this->writes[$event->element] ?? null;
+        $draftIds = $this->writes[$event->element] ?? [];
         unset($this->writes[$event->element]);
 
         if (
-            $write === null ||
-            (! $write['mergingCanonicalChanges'] &&
-                $event->element->getDirtyAttributes() === [] &&
-                $event->element->getDirtyFields() === [])
+            $draftIds === [] ||
+            ($event->element->getDirtyAttributes() === [] && $event->element->getDirtyFields() === [])
         ) {
             return;
         }
 
         if (($event->element->applyingDraft || $event->element->propagatingFrom?->applyingDraft) && WorkflowRun::query()
-            ->whereIn('draftId', $write['draftIds'])
+            ->whereIn('draftId', $draftIds)
             ->where('status', WorkflowStatus::Approved)
             ->exists()) {
             return;
         }
 
-        $this->workflows->contentChangedByDraftIds($write['draftIds']);
+        $this->workflows->contentChangedByDraftIds($draftIds);
     }
 
     public function handleElementLifecycleDeleting(ElementLifecycleDeleting $event): void
     {
-        $this->deletions[$event->element] = $this->drafts->getDraftIdsForElement($event->element);
+        $this->deletions[$event->element] = $event->element->mergingCanonicalChanges
+            ? []
+            : $this->drafts->getDraftIdsForElement($event->element);
     }
 
     public function handleElementLifecycleDeleted(ElementLifecycleDeleted $event): void
@@ -87,7 +86,9 @@ readonly class WorkflowContentChanges
         $draftIds = $this->deletions[$event->element] ?? [];
         unset($this->deletions[$event->element]);
 
-        $this->workflows->contentChangedByDraftIds($draftIds);
+        if ($draftIds !== []) {
+            $this->workflows->contentChangedByDraftIds($draftIds);
+        }
     }
 
     /** @return array<class-string, string> */
