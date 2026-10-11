@@ -10,8 +10,8 @@
       pageSize: number;
       pageCount: number;
       paginated?: boolean;
-      from?: number;
-      to?: number;
+      from?: number | null;
+      to?: number | null;
       total?: number;
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: number[];

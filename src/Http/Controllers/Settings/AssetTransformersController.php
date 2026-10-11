@@ -7,20 +7,21 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
-use CraftCms\Cms\Asset\Data\AssetTransformerIndexData;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Components\CopyAttribute;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\AssetTransformerEditViewModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Nodes\Table;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -43,34 +44,53 @@ class AssetTransformersController extends BaseAssetSettingsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(): \Inertia\Response
+    public function index(): CpScreenResponse
     {
         $defaultHandle = $this->assetTransformers->getDefaultAssetTransformer()->handle;
+        $rows = $this->assetTransformers->getAllAssetTransformers()
+            ->sortBy('name')
+            ->map(function (AssetTransformer $transformer) use ($defaultHandle): array {
+                $deleteDisabledReason = $this->assetTransformers->getDeleteDisabledReason($transformer);
 
-        return Inertia::render('settings/assets/transformers/Index', [
-            'crumbs' => fn () => [
-                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
-                new ActionItem()->label(t('Assets'))->href(Url::cpUrl('settings/assets')),
-                new ActionItem()->label(t('Asset Transformers')),
-            ],
-            'readOnly' => $this->readOnly,
-            'subnav' => $this->subnav(),
-            'title' => t('Asset Transformers'),
-            'transformers' => $this->assetTransformers
-                ->getAllAssetTransformers()
-                ->map(fn (AssetTransformer $transformer): AssetTransformerIndexData => new AssetTransformerIndexData([
-                    'uid' => $transformer->uid,
-                    'name' => $transformer->name,
-                    'handle' => $transformer->handle,
+                return [
+                    'id' => $transformer->uid,
+                    'name' => [
+                        'label' => $transformer->name.($transformer->handle === $defaultHandle ? ' ('.t('Default').')' : ''),
+                        'url' => route('craft.cp.settings.assets.transformers.edit', ['handle' => $transformer->handle]),
+                    ],
+                    'handle' => ['html' => CopyAttribute::make()->value($transformer->handle)->toHtml()],
                     'driver' => $this->assetTransformDrivers->has($transformer->driver)
                         ? $this->assetTransformDrivers->driver($transformer->driver)->definition()->name
                         : t('{driver} (Unavailable)', ['driver' => $transformer->driver]),
-                    'isDefault' => $transformer->handle === $defaultHandle,
-                    'deleteDisabledReason' => $this->assetTransformers->getDeleteDisabledReason($transformer),
-                ]))
-                ->sortBy('name')
-                ->values(),
-        ]);
+                    ...($this->readOnly ? [] : [
+                        '_deletable' => $deleteDisabledReason === null,
+                        '_deleteDisabledReason' => $deleteDisabledReason,
+                        '_deleteUrl' => route('craft.cp.settings.assets.transformers.destroy', ['handle' => $transformer->handle]),
+                        '_deleteConfirmMessage' => t('Are you sure you want to delete the “{name}” Asset Transformer?', ['name' => $transformer->name]),
+                    ]),
+                ];
+            });
+        $table = Table::make('asset-transformers')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name')],
+                ['key' => 'handle', 'label' => t('Handle')],
+                ['key' => 'driver', 'label' => t('Driver')],
+            ])
+            ->rows($rows)
+            ->unless($this->readOnly, fn (Table $table) => $table
+                ->createAction(t('New Asset Transformer'), route('craft.cp.settings.assets.transformers.create'))
+                ->createActionInPageHeader()
+                ->deletable());
+
+        return new CpScreenResponse()
+            ->title(t('Asset Transformers'))
+            ->subnav($this->subnav())
+            ->crumbs([
+                new ActionItem()->label(t('Settings'))->href(route('craft.cp.settings.index')),
+                new ActionItem()->label(t('Assets'))->href(route('craft.cp.settings.assets.volumes.index')),
+                new ActionItem()->label(t('Asset Transformers')),
+            ])
+            ->ui(Ui::make([$table]));
     }
 
     public function create(): CpScreenResponse

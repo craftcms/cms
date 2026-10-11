@@ -390,7 +390,7 @@
                               <div id="cp-content-header" class="pt-lg pb-md">
                                 <CpContainer>
                                   <div
-                                    class="flex items-center justify-between"
+                                    class="flex flex-wrap gap-md items-center justify-between"
                                   >
                                     <LayoutSlotOutlet name="title">
                                       <slot name="title">

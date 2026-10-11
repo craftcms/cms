@@ -165,6 +165,7 @@
   <Teleport to="body">
     <Modal
       :is-active="modalActive"
+      :label="t('Choose an icon')"
       width="xl"
       height="calc(550rem / 16)"
       @close="modalActive = false"

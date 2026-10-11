@@ -1227,7 +1227,7 @@ abstract class ContentIndexViewModel extends ViewModel
             ...collect($attributes)
                 ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title'
-                        ? $this->titleCellHtml($element)
+                        ? $this->titleLinkHtml($element)
                         : (string) $element->getAttributeHtml($attribute),
                 ])
                 ->all(),
@@ -1284,15 +1284,6 @@ abstract class ContentIndexViewModel extends ViewModel
         return $flags;
     }
 
-    private function titleCellHtml(ElementInterface $element): string
-    {
-        if (static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL) {
-            return $this->chipHtml($element);
-        }
-
-        return $this->titleLinkHtml($element);
-    }
-
     /**
      * Renders a title cell's chip, linked to wherever clicking the element
      * should go.
@@ -1308,11 +1299,22 @@ abstract class ContentIndexViewModel extends ViewModel
             return $this->chipHtml($element);
         }
 
+        return $this->labelLinkedChipHtml($element, $editUrl, 'CpLink', ['bare' => true]);
+    }
+
+    /**
+     * Renders a title cell's chip with only its label linked, so the rest of the
+     * chip (its status indicator, say) behaves like the rest of the row.
+     *
+     * @param  array<string, mixed>  $attributes  Additional attributes for the label link
+     */
+    protected function labelLinkedChipHtml(ElementInterface $element, string $url, string $tag = 'a', array $attributes = []): string
+    {
         return $this->chipHtml($element, [
             'hyperlink' => true,
-            'hyperlinkUrl' => $editUrl,
-            'hyperlinkTag' => 'CpLink',
-            'hyperlinkAttributes' => ['bare' => true],
+            'hyperlinkUrl' => $url,
+            'hyperlinkTag' => $tag,
+            'hyperlinkAttributes' => $attributes,
         ]);
     }
 

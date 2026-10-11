@@ -1,0 +1,609 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Ui\Nodes;
+
+use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiPayload;
+use DateTimeImmutable;
+use Illuminate\Support\Traits\Conditionable;
+
+use function CraftCms\Cms\t;
+
+/**
+ * A listing of rows supplied through node props, not form values.
+ *
+ * @since 6.0.0
+ */
+class Table implements Node
+{
+    use Conditionable;
+
+    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool}> */
+    private array $columns = [];
+
+    /** @var list<array<string, mixed>> */
+    private array $rows = [];
+
+    private ?string $dataUrl = null;
+
+    /** @var array{total: int, per_page: int, current_page: int, last_page: int, next_page_url: ?string, prev_page_url: ?string, from: ?int, to: ?int}|null */
+    private ?array $pagination = null;
+
+    private int $perPage = 100;
+
+    /** @var list<int> */
+    private array $perPageOptions = [50, 100, 250];
+
+    private ?string $moveToPageUrl = null;
+
+    private ?string $emptyMessage = null;
+
+    private ?string $createLabel = null;
+
+    private ?string $createUrl = null;
+
+    /** @var list<array{label: string, url: string}>|null */
+    private ?array $createMenuItems = null;
+
+    private bool $createActionInPageHeader = false;
+
+    private ?string $reorderUrl = null;
+
+    private ?string $reorderSuccessMessage = null;
+
+    private ?string $reorderFailMessage = null;
+
+    private ?string $deleteUrl = null;
+
+    private bool $deletable = false;
+
+    private ?string $deleteConfirmMessage = null;
+
+    private ?string $deleteModalUrl = null;
+
+    private ?string $bulkDeleteUrl = null;
+
+    private ?string $bulkDeleteConfirmMessage = null;
+
+    /** @var list<array<string, mixed>> */
+    private array $bulkActions = [];
+
+    /** @var list<array<string, mixed>> */
+    private array $statusActions = [];
+
+    /** @var list<array{value: string, label: string}>|null */
+    private ?array $statusFilterOptions = null;
+
+    private bool $columnsToggleable = false;
+
+    /** @var list<string> */
+    private array $hiddenColumnsByDefault = [];
+
+    private bool $searchable = false;
+
+    private ?string $searchPlaceholder = null;
+
+    private bool $bordered = false;
+
+    private ?bool $showFooter = null;
+
+    public function __construct(private readonly string $uid) {}
+
+    public static function make(string $uid): self
+    {
+        return new self($uid);
+    }
+
+    /**
+     * Columns with `sortable => true` get clickable headers that cycle ascending, descending,
+     * then back to the rows' own order. See {@see rows()} for the `_sort` override.
+     * `width` sets a fixed or relative column width (e.g. `34px` or `1.5fr`).
+     * `headerSrOnly` hides only the visible header text.
+     *
+     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool}>  $columns
+     */
+    public function columns(array $columns): static
+    {
+        $this->columns = $columns;
+
+        return $this;
+    }
+
+    /**
+     * Rows are keyed by column `key`, with an `id` when reordering or deleting.
+     * Cells accept scalars, `['label' => string, 'url' => ?string]` links, lists of
+     * links, `['label' => string, 'items' => list<links>]` menus, `['icon' => string,
+     * 'label' => ?string]` icons, `['date' => ISO timestamp]` dates, or `['html' => string]` markup. HTML is rendered
+     * without sanitization in both renderers. Encode untrusted content with
+     * {@see Html::encode()} before passing it.
+     *
+     * A link with `'slideout' => true` opens its URL's screen in a slideout, and reloads the
+     * table once that screen is saved.
+     *
+     * A menu item can be `['label' => string, 'modalUrl' => string, 'actionUrl' => string,
+     * 'params' => ?array]` instead of a link, to open a modal UI. `modalUrl` is requested
+     * via GET with `params` and must return JSON `{ui: UiPayload, title?: string,
+     * submitLabel?: string}`; submitting posts the UI's values plus `params` to `actionUrl`,
+     * then reloads the table.
+     *
+     * `_deleteUrl` overrides the shared deletion URL with a row's named resource route.
+     * `_deleteConfirmMessage` overrides the shared deletion confirmation for one row.
+     * `_deletable => false` suppresses deletion of one row. `_deleteDisabledReason`
+     * shows a disabled delete button with an explanation instead of hiding it.
+     * `_status` accepts a
+     * boolean or status string and renders an indicator in the first column.
+     * `_search` overrides client-side search text; otherwise columns' text is used.
+     * `_sort` maps column keys to values to sort by client-side instead of the cell's text.
+     * Calling this clears pagination; apply {@see pagination()} afterward for a server-paginated page.
+     *
+     * @param  iterable<array-key, array<string, mixed>>  $rows
+     */
+    public function rows(iterable $rows): static
+    {
+        $this->rows = self::prepareRows(iterator_to_array($rows, false));
+        $this->dataUrl = null;
+        $this->pagination = null;
+
+        return $this;
+    }
+
+    /**
+     * Resolve `_status` on rows returned by a {@see dataUrl()} endpoint; {@see rows()}
+     * calls this automatically for upfront rows.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array<string, mixed>>
+     */
+    public static function prepareRows(array $rows): array
+    {
+        return array_map(self::resolveRowStatus(...), $rows);
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private static function resolveRowStatus(array $row): array
+    {
+        if (! array_key_exists('_status', $row) || $row['_status'] === null) {
+            return $row;
+        }
+
+        $status = $row['_status'];
+        $status = is_bool($status) ? ($status ? 'enabled' : 'disabled') : $status;
+
+        $row['_status'] = [
+            'value' => $status,
+            'fill' => self::statusFill($status),
+            'label' => ucfirst($status),
+        ];
+
+        return $row;
+    }
+
+    private static function statusFill(string $status): string
+    {
+        return (Color::tryFromStatus($status) ?? Color::Gray)->value;
+    }
+
+    /**
+     * Fetch rows by posting `{page, per_page, search, status, sort}` to `$url`, where `sort`
+     * is `[{field, direction}]` for a sortable column key, or omitted for the rows' own order.
+     * The response must contain `{data: <rows>, pagination: {total, per_page, current_page,
+     * last_page, next_page_url, prev_page_url, from, to}}`. Pass the page's rows through
+     * {@see prepareRows()} first. Calling this clears {@see rows()}, and vice versa.
+     *
+     * Users can switch `per_page` between the sizes configured by {@see perPage()}, so
+     * the endpoint must honor the posted value rather than assume the initial size.
+     */
+    public function dataUrl(string $url): static
+    {
+        $this->dataUrl = $url;
+        $this->rows = [];
+        $this->pagination = null;
+
+        return $this;
+    }
+
+    /**
+     * Configure the initial page size and optionally replace
+     * the available sizes. The initial size is always included in the options.
+     *
+     * @param  list<int>|null  $options
+     */
+    public function perPage(int $perPage, ?array $options = null): static
+    {
+        $this->perPage = $perPage;
+
+        if ($options !== null) {
+            $this->perPageOptions = $options;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Treat {@see rows()} as one server-paginated page. The Inertia UI page supplies
+     * subsequent pages through partial reloads of its existing index route.
+     *
+     * @param  array{total: int, per_page: int, current_page: int, last_page: int, next_page_url: ?string, prev_page_url: ?string, from: ?int, to: ?int}  $pagination
+     */
+    public function pagination(array $pagination): static
+    {
+        $this->pagination = $pagination;
+        $this->perPage = $pagination['per_page'];
+        $this->dataUrl = null;
+
+        return $this;
+    }
+
+    /**
+     * In {@see dataUrl()} mode, posts `{id, page, per_page}` to `$url` to move a row across
+     * pages. The endpoint computes the new absolute position.
+     */
+    public function moveToPageUrl(string $url): static
+    {
+        $this->moveToPageUrl = $url;
+
+        return $this;
+    }
+
+    public function emptyMessage(?string $emptyMessage): static
+    {
+        $this->emptyMessage = $emptyMessage;
+
+        return $this;
+    }
+
+    public function createAction(?string $label, ?string $url): static
+    {
+        $this->createLabel = $label;
+        $this->createUrl = $url;
+        $this->createMenuItems = null;
+
+        return $this;
+    }
+
+    /**
+     * Render a create button with a menu of links instead of one {@see createAction()} URL.
+     *
+     * @param  list<array{label: string, url: string}>  $items
+     */
+    public function createActionMenu(string $label, array $items): static
+    {
+        $this->createLabel = $label;
+        $this->createUrl = null;
+        $this->createMenuItems = $items;
+
+        return $this;
+    }
+
+    /**
+     * Render the {@see createAction()} or {@see createActionMenu()} button in the page header
+     * instead of the table's toolbar.
+     */
+    public function createActionInPageHeader(bool $inPageHeader = true): static
+    {
+        $this->createActionInPageHeader = $inPageHeader;
+
+        return $this;
+    }
+
+    /**
+     * Enables drag-to-reorder. Static rows post `{ids: list<int|string>}`.
+     * Paginated rows post `{id: <row id>, toPosition: <absolute zero-based position>}`.
+     * `$successMessage`/`$failMessage` are shown as a toast after the request settles — omit
+     * either (or both) to fall back to a generic message client-side.
+     */
+    public function reorderable(string $url, ?string $successMessage = null, ?string $failMessage = null): static
+    {
+        $this->reorderUrl = $url;
+        $this->reorderSuccessMessage = $successMessage;
+        $this->reorderFailMessage = $failMessage;
+
+        return $this;
+    }
+
+    /**
+     * Adds a per-row delete action, submitting `{id: <row id>}` to `$url` via DELETE.
+     * Individual rows can opt out via `_deletable => false` in {@see rows()}.
+     * For resource routes, set `_deleteUrl` on each row using `route()`.
+     * The shared `$url` can then be omitted.
+     *
+     * `$modalUrl` replaces the per-row confirmation with a modal UI, for deletions that need
+     * more input (where to move a deleted record's data, say). It's requested via GET with
+     * `{id: <row id>}` and must return JSON `{ui: UiPayload, title?: string,
+     * submitLabel?: string}`; submitting sends the UI's values plus `id` to the row's
+     * deletion URL via DELETE.
+     */
+    public function deletable(?string $url = null, ?string $confirmMessage = null, ?string $modalUrl = null): static
+    {
+        $this->deletable = true;
+        $this->deleteUrl = $url;
+        $this->deleteConfirmMessage = $confirmMessage;
+        $this->deleteModalUrl = $modalUrl;
+
+        return $this;
+    }
+
+    /**
+     * Enables row selection and adds a bulk delete action, submitting
+     * `{ids: list<int|string>}` to `$url` via DELETE after confirmation.
+     * Row deletion is configured independently with {@see deletable()}.
+     */
+    public function bulkDeletable(string $url, ?string $confirmMessage = null): static
+    {
+        $this->bulkDeleteUrl = $url;
+        $this->bulkDeleteConfirmMessage = $confirmMessage;
+
+        return $this;
+    }
+
+    /**
+     * Adds items to the selection footer's "Actions" menu. Each action posts
+     * `{ids: <selected row ids>, ...params}` to its `url`.
+     *
+     * Entries may be `['label' => string, 'url' => string, 'params'? => array,
+     * 'allowMultiple'? => bool]` or groups with `['label'? => string, 'items' => list<actions>]`.
+     * An omitted group label leaves its items unheaded; `icon` is ignored. `allowMultiple`
+     * defaults to true and only disables the UI for multiple rows. Endpoints must enforce
+     * their own constraints.
+     *
+     * @param  list<array<string, mixed>>  $actions
+     */
+    public function bulkActions(array $actions): static
+    {
+        $this->bulkActions = $actions;
+
+        return $this;
+    }
+
+    /**
+     * Adds a separate "Set status" menu to the selection footer. Items use the same
+     * shape as single {@see bulkActions()} entries, plus an optional `fill` (a colored
+     * status dot — any `craft-indicator` `fill` value); the button label is fixed.
+     *
+     * @param  list<array<string, mixed>>  $items
+     */
+    public function statusActions(array $items): static
+    {
+        $this->statusActions = $items;
+
+        return $this;
+    }
+
+    /**
+     * Adds a status dropdown to the toolbar, defaulting to enabled/disabled. Filters
+     * {@see rows()} locally on `_status`, or sends the chosen `status` to the {@see dataUrl()}
+     * endpoint and resets to page 1. "All" sends no `status`.
+     *
+     * @param  list<array{value: string, label: string}>|null  $options
+     */
+    public function statusFilter(?array $options = null): static
+    {
+        $this->statusFilterOptions = $options ?? [
+            ['value' => 'enabled', 'label' => t('Enabled')],
+            ['value' => 'disabled', 'label' => t('Disabled')],
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Adds a "View" menu for showing, hiding and reordering columns, and choosing the sort
+     * of any sortable {@see columns()}. The first column is always shown. Every other
+     * column starts visible unless its key is in `$hiddenByDefault`.
+     *
+     * @param  list<string>  $hiddenByDefault
+     */
+    public function toggleableColumns(array $hiddenByDefault = []): static
+    {
+        $this->columnsToggleable = true;
+        $this->hiddenColumnsByDefault = $hiddenByDefault;
+
+        return $this;
+    }
+
+    /**
+     * Search {@see rows()} locally, or send `search` to the {@see dataUrl()} endpoint
+     * and reset to page 1. See {@see rows()} for the `_search` override.
+     */
+    public function searchable(?string $placeholder = null): static
+    {
+        $this->searchable = true;
+        $this->searchPlaceholder = $placeholder;
+
+        return $this;
+    }
+
+    public function bordered(bool $bordered = true): static
+    {
+        $this->bordered = $bordered;
+
+        return $this;
+    }
+
+    /**
+     * Override the automatic footer visibility for pagination and bulk actions.
+     */
+    public function showFooter(bool $showFooter = true): static
+    {
+        $this->showFooter = $showFooter;
+
+        return $this;
+    }
+
+    public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
+    {
+        $columns = $node->props['columns'];
+        $rows = $node->props['rows'];
+
+        $createAction = match (true) {
+            $node->props['createUrl'] !== null && $node->props['createLabel'] !== null => Html::a(
+                Html::encode($node->props['createLabel']),
+                $node->props['createUrl'],
+                ['class' => ['btn', 'submit', 'add', 'icon']],
+            ),
+            ! empty($node->props['createMenuItems']) => Html::encode($node->props['createLabel'] ?? '').': '.implode(', ', array_map(
+                fn (array $item) => Html::a(Html::encode($item['label']), $item['url']),
+                $node->props['createMenuItems'],
+            )),
+            default => '',
+        };
+
+        if ($node->props['dataUrl'] !== null) {
+            // Without JavaScript, endpoint rows cannot be fetched or treated as an empty table.
+            $table = Html::tag('p', Html::encode(t('This table requires JavaScript.')), [
+                'class' => ['zilch'],
+            ]);
+        } elseif (empty($rows)) {
+            $table = Html::tag('p', Html::encode($node->props['emptyMessage'] ?? ''), [
+                'class' => ['zilch'],
+            ]);
+        } else {
+            $renderLink = fn (array $link): string => ($link['url'] ?? null) !== null
+                ? Html::a(Html::encode($link['label']), $link['url'])
+                : Html::encode($link['label']);
+
+            $firstColumnKey = $columns[0]['key'] ?? null;
+
+            $renderCell = function (array $column, array $row) use ($renderLink, $firstColumnKey): string {
+                $value = $row[$column['key']] ?? '';
+
+                $rendered = match (true) {
+                    is_array($value) && array_key_exists('items', $value) => implode(', ', array_map($renderLink, $value['items'])),
+                    is_array($value) && array_key_exists('icon', $value) => Html::encode($value['label'] ?? ''),
+                    is_array($value) && array_key_exists('html', $value) => $value['html'],
+                    is_array($value) && array_key_exists('date', $value) => Html::tag('time', Html::encode(new DateTimeImmutable($value['date'])->format('F j, Y')), ['datetime' => $value['date']]),
+                    is_array($value) && array_is_list($value) => implode(', ', array_map($renderLink, $value)),
+                    is_array($value) => $renderLink($value),
+                    default => Html::encode((string) $value),
+                };
+
+                if ($column['key'] === $firstColumnKey && ! empty($row['_status']['label'])) {
+                    $rendered = Html::encode($row['_status']['label']).': '.$rendered;
+                }
+
+                return $rendered;
+            };
+
+            $head = Html::tag('tr', implode('', array_map(
+                fn (array $column) => Html::tag('th', Html::encode($column['label'])),
+                $columns,
+            )));
+
+            $body = implode('', array_map(
+                fn (array $row) => Html::tag('tr', implode('', array_map(
+                    fn (array $column) => Html::tag('td', $renderCell($column, $row)),
+                    $columns,
+                ))),
+                $rows,
+            ));
+
+            $table = Html::tag('table', Html::tag('thead', $head).Html::tag('tbody', $body), [
+                'class' => ['data', 'fullwidth'],
+            ]);
+        }
+
+        return Html::tag('div', $createAction.$table, [
+            'class' => ['grid', 'gap-2'],
+            'data-ui-node' => $node->uid,
+        ]);
+    }
+
+    public function component(): string
+    {
+        return 'craft:admin-table';
+    }
+
+    public function uid(): ?string
+    {
+        return $this->uid;
+    }
+
+    public function props(): array
+    {
+        return [
+            'columns' => $this->columns,
+            'rows' => $this->rows,
+            'dataUrl' => $this->dataUrl,
+            'pagination' => $this->pagination,
+            'perPage' => $this->perPage,
+            'perPageOptions' => $this->resolvePerPageOptions(),
+            'moveToPageUrl' => $this->moveToPageUrl,
+            'emptyMessage' => $this->emptyMessage,
+            'createLabel' => $this->createLabel,
+            'createUrl' => $this->createUrl,
+            'createMenuItems' => $this->createMenuItems,
+            'createActionInPageHeader' => $this->createActionInPageHeader,
+            'reorderUrl' => $this->reorderUrl,
+            'reorderSuccessMessage' => $this->reorderSuccessMessage,
+            'reorderFailMessage' => $this->reorderFailMessage,
+            'deleteUrl' => $this->deleteUrl,
+            'deletable' => $this->deletable,
+            'deleteConfirmMessage' => $this->deleteConfirmMessage,
+            'deleteModalUrl' => $this->deleteModalUrl,
+            'bulkDeleteUrl' => $this->bulkDeleteUrl,
+            'bulkDeleteConfirmMessage' => $this->bulkDeleteConfirmMessage,
+            'bulkActions' => $this->bulkActions,
+            'statusActions' => $this->statusActions,
+            'statusFilterOptions' => $this->resolveStatusFilterOptions(),
+            'columnsToggleable' => $this->columnsToggleable,
+            'hiddenColumnsByDefault' => $this->hiddenColumnsByDefault,
+            'searchable' => $this->searchable,
+            'searchPlaceholder' => $this->searchPlaceholder,
+            'bordered' => $this->bordered,
+            'showFooter' => $this->showFooter ?? (
+                $this->dataUrl !== null
+                || $this->pagination !== null
+                || $this->bulkDeleteUrl !== null
+                || $this->bulkActions !== []
+                || $this->statusActions !== []
+                || $this->moveToPageUrl !== null
+            ),
+        ];
+    }
+
+    /** @return list<array{value: string, label: string, fill: string|null}> */
+    private function resolveStatusFilterOptions(): array
+    {
+        if ($this->statusFilterOptions === null) {
+            return [];
+        }
+
+        return [
+            ['value' => '', 'label' => t('All'), 'fill' => null],
+            ...array_map(fn (array $option) => [
+                'value' => $option['value'],
+                'label' => $option['label'],
+                'fill' => self::statusFill($option['value']),
+            ], $this->statusFilterOptions),
+        ];
+    }
+
+    /** @return list<int> */
+    private function resolvePerPageOptions(): array
+    {
+        $options = array_unique([...$this->perPageOptions, $this->perPage]);
+        sort($options);
+
+        return $options;
+    }
+
+    public function getControl(): ?Control
+    {
+        return null;
+    }
+
+    public function children(): array
+    {
+        return [];
+    }
+}
