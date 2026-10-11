@@ -380,20 +380,20 @@ something more useful:
 
 ## Props
 
-| Prop                    | Type                | Default           | Description                                                                                  |
-| ----------------------- | ------------------- | ----------------- | -------------------------------------------------------------------------------------------- |
-| `table`                 | `Table`             | required          | The table from `useCraftTable`.                                                              |
-| `title`                 | `string`            | —                 | The table's accessible name.                                                                 |
-| `selectable`            | `boolean`           | `false`           | Adds row selection.                                                                          |
-| `reorderable`           | `boolean`           | `false`           | Adds drag-to-reorder. Listen for `reorder`.                                                  |
-| `readOnly`              | `boolean`           | page's `readOnly` | Disables selection and reordering. Falls back to the Inertia page's `readOnly` prop.         |
-| `loading`               | `boolean`           | `false`           | Shows the loading state and blocks interaction.                                              |
-| `layout`                | `'auto' \| 'fixed'` | `'auto'`          | The table's CSS layout.                                                                      |
-| `spacing`               | `TableSpacingValue` | `'spacious'`      | Row density, `TableSpacing.Spacious` or `TableSpacing.Compact`.                              |
-| `padded`                | `boolean`           | `false`           | Insets the table by the page container's padding, so it lines up with the content around it. |
-| `from` / `to` / `total` | `number`            | —                 | The “X–Y of Z” footer text. Pass these from `PaginationData`.                                |
-| `enableAdjustPageSize`  | `boolean`           | `false`           | Adds a page-size select to the footer.                                                       |
-| `pageSizeOptions`       | `number[]`          | `[50, 100, 250]`  | The page-size select's choices.                                                              |
+| Prop                    | Type                | Default           | Description                                                                                                                        |
+| ----------------------- | ------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `table`                 | `Table`             | required          | The table from `useCraftTable`.                                                                                                    |
+| `title`                 | `string`            | —                 | The table's accessible name.                                                                                                       |
+| `selectable`            | `boolean`           | `false`           | Adds row selection.                                                                                                                |
+| `reorderable`           | `boolean`           | `false`           | Adds drag-to-reorder. Listen for `reorder`.                                                                                        |
+| `readOnly`              | `boolean`           | page's `readOnly` | Disables selection and reordering. Falls back to the Inertia page's `readOnly` prop.                                               |
+| `loading`               | `boolean`           | `false`           | Shows the loading state and blocks interaction.                                                                                    |
+| `layout`                | `'auto' \| 'fixed'` | `'auto'`          | The table's CSS layout.                                                                                                            |
+| `spacing`               | `TableSpacingValue` | `'spacious'`      | Row density, `TableSpacing.Spacious` or `TableSpacing.Compact`.                                                                    |
+| `padded`                | `boolean`           | `false`           | Insets the header and footer by the page container's padding, and lets the table span it, padding each row's outer cells to match. |
+| `from` / `to` / `total` | `number`            | —                 | The “X–Y of Z” footer text. Pass these from `PaginationData`.                                                                      |
+| `enableAdjustPageSize`  | `boolean`           | `false`           | Adds a page-size select to the footer.                                                                                             |
+| `pageSizeOptions`       | `number[]`          | `[50, 100, 250]`  | The page-size select's choices.                                                                                                    |
 
 | Event     | Payload                                     |
 | --------- | ------------------------------------------- |
