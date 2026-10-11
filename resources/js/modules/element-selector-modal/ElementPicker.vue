@@ -6,6 +6,7 @@
   import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
   import type {SourceItem} from '@/modules/elements/types/sources';
   import {
+    isModifiedClick,
     useModalElementIndex,
     type SelectedElement,
   } from './useModalElementIndex';
@@ -32,8 +33,37 @@
     disabledElementIds: () => props.disabledElementIds ?? [],
   });
 
-  const {selectedElements, hasSelection, clearSelection} = index;
+  const {selectedElements, hasSelection, clearSelection, folderBreadcrumbs} =
+    index;
   const {elementIndex} = index.view;
+
+  // Only once inside a subfolder: at a volume's root, the selected source
+  // already says where the modal is.
+  const showFolderBreadcrumbs = computed(
+    () => folderBreadcrumbs.value.length > 1
+  );
+
+  function onCrumbClick(folderId: number, event: MouseEvent) {
+    if (isModifiedClick(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    index.openFolder(folderId);
+  }
+
+  // A folder's first click has already opened it, so a double-click on one
+  // isn't a choice.
+  function onDblClick(event: MouseEvent) {
+    if (
+      event.target instanceof Element &&
+      event.target.closest('[data-is-folder]')
+    ) {
+      return;
+    }
+
+    emit('choose', selectedElements.value);
+  }
 
   // The modal's Select button and its enabled state live outside Vue, so the
   // selection is pushed out rather than read in.
@@ -84,11 +114,32 @@
     <div class="modal-element-index__main">
       <ElementIndex
         :view="index.view"
+        :item-behavior="index.itemBehavior"
         contained
         :show-sites="true"
         @site-change="index.changeSite"
-        @dblclick="emit('choose', selectedElements)"
-      />
+        @dblclick="onDblClick"
+      >
+        <template v-if="showFolderBreadcrumbs" #navbar>
+          <div class="border-b border-b-quiet py-sm">
+            <craft-breadcrumbs :label="t('Breadcrumbs')" class="text-xs">
+              <craft-breadcrumb-item
+                v-for="(crumb, idx) in folderBreadcrumbs"
+                :key="crumb.folderId"
+              >
+                <a
+                  v-if="idx < folderBreadcrumbs.length - 1 && crumb.url"
+                  :href="crumb.url"
+                  class="text-box-trim"
+                  @click="onCrumbClick(crumb.folderId, $event)"
+                  >{{ crumb.label }}</a
+                >
+                <span v-else class="text-box-trim">{{ crumb.label }}</span>
+              </craft-breadcrumb-item>
+            </craft-breadcrumbs>
+          </div>
+        </template>
+      </ElementIndex>
     </div>
   </div>
 </template>
