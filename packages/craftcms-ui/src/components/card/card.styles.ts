@@ -30,6 +30,7 @@ export default css`
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
     position: relative;
     height: 100%;
+    overflow: clip;
   }
 
   .card__header,
@@ -58,14 +59,10 @@ export default css`
 
   :host([collapsed]) .card__header {
     border-block-end-width: 0;
-    border-end-start-radius: var(--c-card-radius, var(--c-radius-md));
-    border-end-end-radius: var(--c-card-radius, var(--c-radius-md));
   }
 
   .card__header {
     min-height: var(--c-card-header-min-height, 1lh);
-    border-start-start-radius: var(--c-card-radius, var(--c-radius-md));
-    border-start-end-radius: var(--c-card-radius, var(--c-radius-md));
     border-block-end-width: 1px;
     display: flex;
     justify-content: space-between;

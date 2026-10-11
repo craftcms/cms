@@ -239,7 +239,7 @@
     padding: 0;
     list-style: none;
     display: grid;
-    gap: var(--c-spacing-md);
+    gap: var(--c-spacing-sm);
     align-items: start;
   }
 
