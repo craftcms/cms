@@ -10,7 +10,9 @@
   import {t} from '@craftcms/ui';
   import {computed, defineComponent, h, ref} from 'vue';
   import {
+    TableAppearance,
     TableSpacing,
+    type TableAppearanceValue,
     type TableSpacingValue,
     type PaginationData,
   } from '@/common/types';
@@ -76,10 +78,15 @@
       enableAdjustPageSize?: boolean;
       pageSizeOptions?: number[];
       /**
-       * Insets the table by the page container’s padding, and drops the inline
-       * padding at the start and end of each row to match.
+       * How the table meets its container:
+       *
+       * - `plain` — sits inside the container’s padding (the default)
+       * - `flush` — insets the header and footer by the page container’s
+       *   padding, and lets the table span it, padding each row’s outer cells
+       *   to match
+       * - `raised` — sits in a raised pane
        */
-      padded?: boolean;
+      appearance?: TableAppearanceValue;
     }>(),
     {
       rows: () => [],
@@ -100,7 +107,7 @@
       showFooter: true,
       enableAdjustPageSize: false,
       pageSizeOptions: () => [50, 100, 250],
-      padded: false,
+      appearance: TableAppearance.Plain,
     }
   );
   const page = usePage<{readOnly: boolean}>();
@@ -251,7 +258,15 @@
 </script>
 
 <template>
-  <div :class="['admin-table', {'admin-table--padded': padded}]">
+  <component
+    :is="appearance === TableAppearance.Raised ? 'craft-pane' : 'div'"
+    v-bind="
+      appearance === TableAppearance.Raised
+        ? {padding: '0', appearance: 'raised'}
+        : {}
+    "
+    :class="['admin-table', `admin-table--${appearance}`]"
+  >
     <div
       v-if="$slots['table-header'] || hasControls"
       class="admin-table__header"
@@ -286,7 +301,11 @@
         :loading="loading"
         :layout="layout"
         :spacing="spacing"
-        :flush="padded"
+        :appearance="
+          appearance === TableAppearance.Flush
+            ? TableAppearance.Flush
+            : TableAppearance.Plain
+        "
         :with-bottom-border="!footerVisible"
         :selection="selection"
         :get-row-label="getRowLabel"
@@ -344,16 +363,15 @@
         @page-size-change="table.setPageSize"
       />
     </div>
-  </div>
+  </component>
 </template>
 
 <style scoped lang="scss">
   .admin-table {
     min-width: 0;
   }
-  .admin-table--padded {
+  .admin-table--flush {
     .admin-table__header,
-    .admin-table__body,
     .admin-table__footer {
       padding-inline: var(--cp-container-padding);
     }

@@ -113,7 +113,7 @@ function mountNode(options: Partial<TableProps> = {}) {
           hiddenColumnsByDefault: [],
           searchable: false,
           searchPlaceholder: null,
-          bordered: false,
+          appearance: null,
           ...options,
         },
       },
@@ -253,15 +253,28 @@ function result(
   };
 }
 
-it('insets padded table controls, rows, and footer by the container gutter', async () => {
-  const {host} = mountTable({class: 'admin-table--padded'});
+it('insets a flush table’s controls and footer by the container gutter, and pads rows’ outer cells to match', async () => {
+  const {host} = mountTable({appearance: 'flush'});
   host.style.setProperty('--cp-container-padding', '24px');
   await nextTick();
 
-  for (const region of ['header', 'body', 'footer']) {
+  for (const region of ['header', 'footer']) {
     const element = host.querySelector(`.admin-table__${region}`)!;
     expect(getComputedStyle(element).paddingInlineStart).toBe('24px');
     expect(getComputedStyle(element).paddingInlineEnd).toBe('24px');
+  }
+
+  // The table spans the gutter, so its rows' rules reach the container's edges.
+  const body = host.querySelector('.admin-table__body')!;
+  expect(getComputedStyle(body).paddingInlineStart).toBe('0px');
+  expect(getComputedStyle(body).paddingInlineEnd).toBe('0px');
+
+  for (const row of host.querySelectorAll('tr')) {
+    const cells = row.querySelectorAll(':scope > th, :scope > td');
+    expect(getComputedStyle(cells[0]!).paddingInlineStart).toBe('24px');
+    expect(getComputedStyle(cells[cells.length - 1]!).paddingInlineEnd).toBe(
+      '24px'
+    );
   }
 });
 

@@ -7,10 +7,12 @@
   import CpLink from '@/common/components/CpLink.vue';
   import Date from '@/common/components/Date.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import type {
-    ActionItemButton,
-    ActionItemLink,
-    PaginationData,
+  import {
+    TableAppearance,
+    type ActionItemButton,
+    type ActionItemLink,
+    type PaginationData,
+    type TableAppearanceValue,
   } from '@/common/types';
   import {openSlideout} from '@/common/slideouts';
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
@@ -31,7 +33,7 @@
   import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
-  import {UiTablePadded} from './runtime';
+  import {UiTableFlush} from './runtime';
   import type {UiValues} from './types';
 
   import type {
@@ -49,12 +51,24 @@
     TableRow,
   } from './table-types';
 
-  const props = withDefaults(
-    defineProps<{node: TableNodePayload; padded?: boolean}>(),
-    {padded: undefined}
+  const props = defineProps<{
+    node: TableNodePayload;
+    /** Overrides the node's own appearance. */
+    appearance?: TableAppearanceValue;
+  }>();
+  const pageTableFlush = inject(UiTableFlush, ref(false));
+  provide(UiTableFlush, ref(false));
+
+  /**
+   * The prop, then the node's own appearance, then `flush` when the table is
+   * all the page has, so it spans the page like an index.
+   */
+  const appearance = computed<TableAppearanceValue>(
+    () =>
+      props.appearance ??
+      props.node.props.appearance ??
+      (pageTableFlush.value ? TableAppearance.Flush : TableAppearance.Plain)
   );
-  const pageTablePadded = inject(UiTablePadded, ref(false));
-  provide(UiTablePadded, ref(false));
 
   const slots = defineSlots<{
     /** The page owns submission and refreshing when replacing the deletion dialog. */
@@ -569,81 +583,74 @@
       />
     </LayoutSlot>
 
-    <component
-      :is="node.props.bordered ? 'craft-pane' : 'div'"
-      v-bind="node.props.bordered ? {padding: '0', appearance: 'raised'} : {}"
+    <AdminTable
+      ref="adminTable"
+      :appearance="appearance"
+      :rows="node.props.rows"
+      :columns="columns"
+      :load-rows="
+        node.props.pagination
+          ? inertia.loadRows
+          : node.props.dataUrl
+            ? loadRows
+            : undefined
+      "
+      :storage-key="storageKey"
+      :pagination="node.props.pagination"
+      :request-state="inertia.requestState.value"
+      :page-size="node.props.perPage"
+      :page-size-options="node.props.perPageOptions"
+      :get-row-label="
+        (row) =>
+          cellText(row[node.props.columns[0]?.key ?? ''] ?? null) ||
+          String(row.id)
+      "
+      :get-search-text="rowSearchText"
+      :get-row-status="(row) => row._status?.value"
+      :get-sort-value="sortValue"
+      :can-select-row="
+        (row) => row._deletable !== false && !row._deleteDisabledReason
+      "
+      :reorderable="!!node.props.reorderUrl"
+      :reorder-rows="node.props.reorderUrl ? reorderRows : undefined"
+      :move-to-page="node.props.moveToPageUrl ? moveToPage : undefined"
+      :selectable="hasBulkFooter"
+      :interactions-disabled="deletePending"
+      :show-footer="node.props.showFooter"
+      :actions="footerActionItems"
+      :statuses="statusActionItems"
+      :searchable="node.props.searchable"
+      :search-placeholder="node.props.searchPlaceholder"
+      :status-filter-options="node.props.statusFilterOptions"
+      :columns-toggleable="node.props.columnsToggleable"
+      :hidden-columns-by-default="node.props.hiddenColumnsByDefault"
+      :empty-message="node.props.emptyMessage"
+      :create-label="node.props.createLabel"
+      :create-url="
+        node.props.createActionInPageHeader ? null : node.props.createUrl
+      "
+      :create-menu-items="
+        node.props.createActionInPageHeader ? null : node.props.createMenuItems
+      "
+      ids-field="ids"
+      @action-error="onOrderFailed"
+      @load-error="onLoadFailed"
+      @action-performed="refreshUi"
     >
-      <AdminTable
-        ref="adminTable"
-        :padded="padded ?? (!node.props.bordered && pageTablePadded)"
-        :rows="node.props.rows"
-        :columns="columns"
-        :load-rows="
-          node.props.pagination
-            ? inertia.loadRows
-            : node.props.dataUrl
-              ? loadRows
-              : undefined
-        "
-        :storage-key="storageKey"
-        :pagination="node.props.pagination"
-        :request-state="inertia.requestState.value"
-        :page-size="node.props.perPage"
-        :page-size-options="node.props.perPageOptions"
-        :get-row-label="
-          (row) =>
-            cellText(row[node.props.columns[0]?.key ?? ''] ?? null) ||
-            String(row.id)
-        "
-        :get-search-text="rowSearchText"
-        :get-row-status="(row) => row._status?.value"
-        :get-sort-value="sortValue"
-        :can-select-row="
-          (row) => row._deletable !== false && !row._deleteDisabledReason
-        "
-        :reorderable="!!node.props.reorderUrl"
-        :reorder-rows="node.props.reorderUrl ? reorderRows : undefined"
-        :move-to-page="node.props.moveToPageUrl ? moveToPage : undefined"
-        :selectable="hasBulkFooter"
-        :interactions-disabled="deletePending"
-        :show-footer="node.props.showFooter"
-        :actions="footerActionItems"
-        :statuses="statusActionItems"
-        :searchable="node.props.searchable"
-        :search-placeholder="node.props.searchPlaceholder"
-        :status-filter-options="node.props.statusFilterOptions"
-        :columns-toggleable="node.props.columnsToggleable"
-        :hidden-columns-by-default="node.props.hiddenColumnsByDefault"
-        :empty-message="node.props.emptyMessage"
-        :create-label="node.props.createLabel"
-        :create-url="
-          node.props.createActionInPageHeader ? null : node.props.createUrl
-        "
-        :create-menu-items="
-          node.props.createActionInPageHeader
-            ? null
-            : node.props.createMenuItems
-        "
-        ids-field="ids"
-        @action-error="onOrderFailed"
-        @load-error="onLoadFailed"
-        @action-performed="refreshUi"
+      <template v-if="$slots['empty-row']" #empty-row>
+        <slot name="empty-row" />
+      </template>
+      <template
+        v-if="hasCreateAction && node.props.createActionInPageHeader"
+        #empty-actions
       >
-        <template v-if="$slots['empty-row']" #empty-row>
-          <slot name="empty-row" />
-        </template>
-        <template
-          v-if="hasCreateAction && node.props.createActionInPageHeader"
-          #empty-actions
-        >
-          <CreateActionButton
-            :label="node.props.createLabel"
-            :url="node.props.createUrl"
-            :menu-items="node.props.createMenuItems"
-          />
-        </template>
-      </AdminTable>
-    </component>
+        <CreateActionButton
+          :label="node.props.createLabel"
+          :url="node.props.createUrl"
+          :menu-items="node.props.createMenuItems"
+        />
+      </template>
+    </AdminTable>
     <slot
       v-if="deletingRow"
       name="delete-modal"

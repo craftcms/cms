@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cp\Enums\TableAppearance;
 use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
@@ -69,3 +70,19 @@ it('resolves footer visibility from pagination and bulk actions unless overridde
     'explicitly hidden for bulk actions' => [fn (Table $table) => $table->bulkDeletable('/workflows')->showFooter(false), false],
     'returned to static rows' => [fn (Table $table) => $table->dataUrl('/workflows/table-data')->rows([]), false],
 ]);
+
+it('sends its appearance, leaving it to the page when unset', function (Closure $configure, ?string $appearance) {
+    $table = $configure(Table::make('workflows')->columns([['key' => 'name', 'label' => 'Name']]));
+    $payload = app(UiResolver::class)->resolve(Ui::make([$table]), new UiContext);
+
+    expect($payload->nodes[0]->props['appearance'])->toBe($appearance);
+})->with([
+    'unset' => [fn (Table $table) => $table, null],
+    'enum' => [fn (Table $table) => $table->appearance(TableAppearance::Raised), 'raised'],
+    'string' => [fn (Table $table) => $table->appearance('flush'), 'flush'],
+    'reset' => [fn (Table $table) => $table->appearance('flush')->appearance(null), null],
+]);
+
+it('rejects an unknown appearance', function () {
+    Table::make('workflows')->appearance('bordered');
+})->throws(ValueError::class);

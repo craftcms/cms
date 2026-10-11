@@ -28,10 +28,11 @@ const meta = {
     layout: 'auto',
     spacing: undefined,
     withBottomBorder: true,
-    flush: false,
+    appearance: 'plain',
   },
   argTypes: {
     layout: {control: 'inline-radio', options: ['auto', 'fixed']},
+    appearance: {control: 'inline-radio', options: ['plain', 'flush']},
     spacing: {
       control: 'inline-radio',
       options: [undefined, ...Object.values(TableSpacing)],
@@ -61,7 +62,7 @@ interface DataTableStoryArgs {
   layout?: 'auto' | 'fixed';
   spacing?: TableSpacingValue;
   withBottomBorder?: boolean;
-  flush?: boolean;
+  appearance?: 'plain' | 'flush';
 }
 
 type Story = StoryObj<DataTableStoryArgs>;
@@ -174,11 +175,12 @@ export const Spacious: Story = {
 };
 
 /**
- * `flush` drops the inline padding at each end of a row, so cell content lines
- * up with the edges of whatever contains the table.
+ * `appearance="flush"` pads the start and end of each row by
+ * `--cp-container-padding`, for a table that spans its container's padding
+ * rather than sitting inside it.
  */
 export const Flush: Story = {
-  args: {flush: true},
+  args: {appearance: 'flush'},
   render: (args) => ({
     components: {DataTable},
     setup() {

@@ -14,7 +14,7 @@
   } from '@/common/composables/useAppLayout';
   import MetadataDetails from '@/common/components/MetadataDetails.vue';
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
-  import {UiTablePadded} from '@/modules/ui/runtime';
+  import {UiTableFlush} from '@/modules/ui/runtime';
   import type {
     UiChange,
     UiChangeKind,
@@ -178,11 +178,12 @@
     return (
       rest.length === 0 &&
       node?.component === 'craft:admin-table' &&
-      node.props.bordered === false
+      // Unset means the page decides, which is flush for a lone table.
+      (node.props.appearance ?? 'flush') === 'flush'
     );
   });
   const contentSlot = computed(() => (isBareTable.value ? 'full' : 'default'));
-  provide(UiTablePadded, isBareTable);
+  provide(UiTableFlush, isBareTable);
 
   useAppLayout(() => ({
     form: props.submit ? inertiaForm : null,
