@@ -84,15 +84,18 @@ const testFiles = globSync('**/*.{test,stories}.ts', {cwd: SRC}).filter(
   (file) => !file.includes('node_modules') && statSync(join(SRC, file)).isFile()
 );
 
-const testSources = testFiles.map((file) =>
-  readFileSync(join(SRC, file), 'utf8')
-);
+const testSources = testFiles.map((file) => ({
+  file,
+  source: readFileSync(join(SRC, file), 'utf8'),
+}));
 
 const CITED_FILE = /`([^`\s]+(?:\.test\.ts|\.stories\.ts|Test\.php))`/g;
 const CITED_STORY = /`([A-Z][A-Za-z0-9]*)`/g;
 
-function resolvesInPackage(cited: string): boolean {
-  return testFiles.some((file) => file === cited || file.endsWith(`/${cited}`));
+function resolveInPackage(cited: string) {
+  return testSources.find(
+    ({file}) => file === cited || file.endsWith(`/${cited}`)
+  );
 }
 
 /**
@@ -134,10 +137,16 @@ describe('a11y docs check off only what this package verifies', () => {
     for (const {text} of checklist(source).filter(({checked}) => checked)) {
       const summary = text.split('\n')[0]!.slice(0, 80);
       const files = matchAll(text, CITED_FILE);
-      const outside = files.filter((file) => !resolvesInPackage(file));
-      const tests = files.filter(
-        (file) => !file.endsWith('.stories.ts') && resolvesInPackage(file)
+      const resolvedFiles = files.flatMap((file) => {
+        const resolved = resolveInPackage(file);
+
+        return resolved ? [{file, source: resolved.source}] : [];
+      });
+      const outside = files.filter((file) => !resolveInPackage(file));
+      const tests = resolvedFiles.filter(
+        ({file}) => !file.endsWith('.stories.ts')
       );
+      const citedSources = resolvedFiles.map(({source}) => source);
       const citesStory =
         /\bstor(?:y|ies)\b/.test(text) &&
         matchAll(text, CITED_STORY).some((name) => stories.get(name) === true);
@@ -152,7 +161,7 @@ describe('a11y docs check off only what this package verifies', () => {
         (name) =>
           name.includes(' ') &&
           !name.includes('…') &&
-          !testSources.some((test) => test.includes(name))
+          !citedSources.some((test) => test.includes(name))
       );
 
       if (outside.length) {
