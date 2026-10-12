@@ -18,6 +18,15 @@
 - Element selection modals no longer have a header, and their toolbars now fit on one row. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Expand/collapse toggles’ chevrons now point up while expanded. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Image thumbnails’ placeholders now cover the same area as the image, and thumbnails no longer shift once their image loads. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Section and Matrix site settings now have a single “Route To” setting, in place of separate Route Type and Route settings. Namespaced controller actions and values that match a named route are saved as routes, and anything else is saved as a template. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- “Route To” settings now suggest the app’s named routes and controller actions, as well as templates. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Editable tables’ text and select inputs now fill their cells, and clicking anywhere in a cell focuses its control. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Editable tables’ headers now have a background color, and their checkbox, lightswitch, color, and icon cells are more compact. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Checkboxes and radio buttons now look the same in every browser, and their focus rings follow their rounded shape. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Text inputs and selects now take on their container’s background color. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Disabled lightswitches are now dimmed. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Chips’ handles are now shown as plain text below their labels. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Component selects no longer show a reorder button when only one item is selected. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - Saving the Customize Sources modal from an element index’s action menu now goes to the source that was last edited, as it does from the secondary nav. ([#19929](https://github.com/craftcms/cms/pull/19929))
@@ -38,6 +47,9 @@
 - Added `CraftCms\Cms\Ui\Nodes\Table`, for rendering admin tables from PHP UI definitions. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Added `CraftCms\Cms\Cp\Components\CopyAttribute` for rendering inline copyable values in PHP and templates. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Fixed a bug where thumbnails in relational fields linked to their elements. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where single-select comboboxes had no visible focus ring. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where single-select comboboxes’ combobox element had no accessible name in Chromium. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where some focus rings were clipped within editable tables. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where page-header actions could be clipped on narrow screens. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Fixed a bug where the public GraphQL schema could be deleted through its numeric URL. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Plugins’ control panel nav items can now be shown as groups, by calling `group(true)` on the item returned by `getCpNavItem()` and passing its items to `subnav()`. ([#19903](https://github.com/craftcms/cms/pull/19903))
@@ -60,6 +72,13 @@
 - Added `CraftCms\Cms\Cp\Components\Combobox::labelledBy()`, for a combobox labelled by an element the caller renders itself.
 - Added `CraftCms\Cms\Ui\Nodes\Field::headingPrefix()`, `headingSuffix()`, `translatable()`, `orientation()`, `inputWidth()`, `fieldset()`, and `showStatus()`. ([#19915](https://github.com/craftcms/cms/pull/19915))
 - Updated `CraftCms\Cms\Ui\Nodes\Field::make()` and `label()` to accept `Illuminate\Contracts\Support\Htmlable` and `Twig\Markup` labels. ([#19915](https://github.com/craftcms/cms/pull/19915))
+- Added `CraftCms\Cms\Route\ElementRoute::isRoute()`, which determines whether an element site settings destination refers to a route or a template. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Added `CraftCms\Cms\Cp\SelectOptions::getRouteSuggestions()`, which returns the app’s named routes and controller actions, optionally limited to those that accept a given element type. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Added `CraftCms\Cms\Element\Data\ElementSiteSettings::destinationColumn()`, which replaces `routeColumn()`. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Element site settings forms now post a single `destination` value, in place of `routeType` and `route`. Explicit `template` and `route` values are still supported. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Added the `centered` editable table column class, and column classes now apply to header cells as well as body cells. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Removed the `prefixSelect` editable table column option. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Removed the `--c-select-*`, `--c-input-spacing-block`, and `--c-form-control-spacing-block` CSS custom properties. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added `CraftCms\Cms\Plugin\Concerns\HasSettings::createSettings()`, a static method which replaces `CraftCms\Cms\Contracts\PluginInterface::createSettings()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - `<craft-tabs>` now always has a tab selected. A `selected-index` of `-1` resolves to the first enabled tab.
 - Updated `CraftCms\Cms\Cp\Components\Tabs` to throw an `InvalidArgumentException` when rendered without a label, and `<craft-tabs>` to log a console error when rendered without a `label` attribute.
