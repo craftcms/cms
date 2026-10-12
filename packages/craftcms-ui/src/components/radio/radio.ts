@@ -19,9 +19,12 @@ export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
     return [
       ...super.styles,
       css`
-        /* same as checkbox, potentially consolidate */
+        /*
+         * Match the checkbox's gaps: space between the input and its label, but
+         * none between rows, since the (often empty) help text wraps onto its own
+         */
         :host {
-          gap: var(--c-spacing-sm);
+          gap: 0 var(--c-spacing-md);
         }
       `,
     ];
