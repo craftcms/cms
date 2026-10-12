@@ -24,7 +24,7 @@ importer instance with its own `uid`, `type` (the importer FQCN), `source`, `tra
   `Config::get('craft.import')`.
 
 `ImportPlan::isEditable()` reads the `$editable` flag, which is set for plans loaded from the
-database. `ImportPlan::getAllImportPlans()` (`src/Import/ImportPlan.php:51`) lists DB plans
+database. `ImportPlan::getAllImportPlans()` (`src/Import/ImportPlan.php:69`) lists DB plans
 first, in their saved `sortOrder` (then name, then handle), followed by file-based plans sorted
 by name. The result is keyed by handle and memoized. An invalid file-based plan is **skipped and
 logged** as a warning rather than blowing up the list.
@@ -77,9 +77,14 @@ rejected.
 - the value isn't some other scheme (`data:`, `phar://`, …), a dotfile, or inside a restricted
   directory;
 - a local file exists and is readable, its extension is a registered data type, and its contents
-  match that type (CSV also accepts content detected as `txt`).
+  match that type (CSV also accepts content detected as `txt`). Content type detection only
+  looks at the first few MB, so a large JSON file detected as `text/plain` still passes if it
+  starts with `[` or `{` (after an optional BOM; `startsLikeJson()`).
 
-URLs are checked with a `UrlValidator` that rejects reserved IP ranges. The download
+URLs are checked with `BaseImporter::urlValidator()`, which rejects URLs resolving to private IP
+addresses unless the host is listed in the `allowedPrivateHosts` general config setting
+(exact hostnames or `*.` wildcards). Loopback, link-local and cloud metadata addresses are always
+rejected. The download
 (`downloadFile()`) pins the connection to the validated IPs to guard against SSRF and DNS
 rebinding, and doesn't follow redirects. A remote file's data type comes from the response's
 `Content-Type`, falling back to the URL path's extension, and its contents are then checked like
@@ -94,22 +99,39 @@ mapping), downloading a remote source to a temp file and deleting it afterwards.
 
 ## 3. Running an import plan
 
-`Import::dispatchImport()` (`src/Import/Import.php:162`) generates a `runId`, builds one
+`Import::dispatchImport()` (`src/Import/Import.php:123`) generates a `runId`, builds one
 `Import` job per step, fires `ImportDispatching` (cancelable), then dispatches a single
 `ImportPipeline` job so the whole plan shows as one named queue item. `ImportPipeline` wraps
 each step in its own `Bus::batch(...)->allowFailures()` and chains them, followed by a
-`FinishImport` job, so steps run sequentially and one bad step doesn't kill the plan.
-`ImportDispatched` fires afterwards.
+`FinishImport` job, so steps run sequentially and one bad step doesn't kill the plan. The
+batches and the chain go onto `Cms::config()->queueName`. `ImportDispatched` fires afterwards.
 
-The `Import` job re-reads the data each time, slices off already-processed rows,
-processes the step's `batchSize` items (default 5; **0 disables batching** and does everything
-in one job), and re-adds itself to the batch for the remainder. Per-item failures are
-logged and skipped, not fatal.
+Each `Import` job carries the import plan as it was at dispatch, rather than looking it up again.
+Changes an `ImportDispatching` listener makes to `$importPlan` reach the jobs; replacing it with a
+different object doesn't.
 
-The first chunk of a step runs the step's full `validate()`, and if the source is a URL it
-downloads it once into `runtime/imports/{runId}`. Later chunks only run `validateSettings()` and
-reuse that local copy, which assumes all chunks run on the same server. `FinishImport` deletes
-the run's download directory.
+An `Import` job processes up to the step's `batchSize` items (default 100; **0 disables
+batching** and does everything in one job), and re-adds itself to the batch for the remainder.
+It also stops early, leaving the rest to the next chunk, when the next item could take it past
+the memory limit or the timeout. Jobs aren't retried (`$tries = 1`, `$failOnTimeout = true`),
+since a retried chunk would import its items again. A canceled batch skips its remaining jobs
+(`SkipIfBatchCancelled`), and cancellation is also checked between items. Progress is reported
+as "n of total" items. Per-item failures (any `Throwable`) are logged with the exception and
+skipped, not fatal.
+
+The first chunk of a step runs the step's full `validate()` and parses the source; a URL source
+is downloaded to Craft's temp folder, parsed and deleted straight away. If the step needs more
+chunks, the first one stores the remaining items on the import disk (the `importDisk` general
+config setting, `craft-tmp` by default) in pieces of `batchSize` items, at
+`imports/{runId}/{stepUid}/{n}.json` (`Import::spoolPath()`). Later chunks only run
+`validateSettings()` and read just their own pieces, so they don't need to run on the same
+server as long as the disk is shared. With batching disabled nothing is stored, and a follow-up
+job parses the source again.
+
+Each step batch's `finally` deletes that step's stored items (even if the batch was canceled),
+and `FinishImport` deletes the run's directory (`FinishImport::spoolPath()`). The
+`RemoveStaleImportData` garbage collection action removes run directories whose files haven't
+changed in 7 days.
 
 ### Run lifecycle events
 
@@ -144,7 +166,9 @@ wraps in a `settings` `Scope`.
   adds `volume`, and `UserImporter` resolves its fixed layout via `resolveDefaultFieldLayout()`.
   An element type is importable if and only if an `ElementImporter` subclass is registered for
   it — `Address` has none, so it's never a standalone import target, only reachable as nested
-  content (Addresses field / User addresses container).
+  content (Addresses field / User addresses container). `UserImporter::setAttributesForImport()`
+  drops `User::SENSITIVE_ATTRIBUTES` (e.g. `admin`, `password`) apart from `affiliatedSiteId`,
+  `email`, `passwordResetRequired` and `photoId`, none of which grant any privileges.
 - **`ModelImporter`** is abstract too, and works exactly the same way: each importable Eloquent
   model is represented by its own concrete subclass. `SystemMessageImporter` is the only
   built-in. A model is importable if and only if a `ModelImporter` subclass is registered for
@@ -166,7 +190,7 @@ with the `Import\ImporterTypes` registry from a service provider's `boot()`
 
 ## 5. Per-item pipeline
 
-`Import::importItem()` (`src/Import/Import.php:219`):
+`Import::importItem()` (`src/Import/Import.php:174`):
 
 1. `ItemImporting` event (cancelable, can rewrite `$data`).
 2. Apply the map via `ImportHelper::remapData()` — only if a map is set.
@@ -206,7 +230,8 @@ is accepted and expanded). Behavior:
 
 1. `getRootElement()` calls `$this->prepareNewRootElementForImport($data)` on the importer to get
    a new element instance (per-type subclasses like `EntryImporter`/`AssetImporter` resolve the
-   entry type/volume here). If there are match criteria, it then queries with
+   entry type/volume here; `EntryImporter` also sets a Structure section's `structureId`, so
+   `parentId` can be applied). If there are match criteria, it then queries with
    `->drafts(null)->status(null)`, lets the importer adjust the query
    (`$this->prepareRootElementImportQuery($element, $query)`) — scoping it by type/volume, for
    example — typecasts criteria, and **forces the step's siteId** so it always wins over
@@ -223,7 +248,7 @@ is accepted and expanded). Behavior:
    strips `id`/`uid` and applies the rest via `setAttributesFromRequest()`; `AssetImporter`
    overrides it to resolve filename/folder/temp-file handling and download).
 5. **Skip-unchanged optimization**: snapshots attribute values and serialized field
-   values; if nothing changed, the element is never saved. Skipped for new elements or
+   values (only for handles in the field layout); if nothing changed, the element is never saved. Skipped for new elements or
    when container data is present. A special case catches content blocks, whose
    `serializeValue()` returns null while the block has no id.
 6. Validation scenario: `SCENARIO_LIVE` when `enabled && getEnabledForSite()`,
@@ -346,8 +371,12 @@ Registering a second handler for the same class throws; `remove()` the existing 
 ### Creating assets from incoming files
 
 Handled by `Asset\Import\AssetsFieldImportHandler`. An Assets field value can mix asset IDs with
-file references — absolute URLs or local paths (local paths must be within the temp path, project
-root or storage folder). Files are turned into assets as the value is normalized, in the same upload
+file references — absolute URLs or local paths. A local path must be within Craft's temp folder,
+or within the project root but outside the storage folder, and can't be a dotfile, inside a
+dot-prefixed folder or in a restricted directory (`AssetsHelper::resolveImportFilePath()`). Local
+paths are refused altogether when the step's source is remote, since the remote source's author
+could otherwise point them anywhere; `AssetImporter` applies the same rules. Remote files are
+downloaded through `RemoteFileDownloader`, capped at the max asset upload size. Files are turned into assets as the value is normalized, in the same upload
 location as a file dropped onto the field (the default upload location, or the restricted one), and
 the field gets plain asset IDs, so change detection works as usual. Incoming order is kept.
 
@@ -424,7 +453,8 @@ Craft's normal save behavior, so it isn't tracked or logged.
 ## 9. Control panel
 
 Nav: **Import**, in the Administration group. Permissions group `import`: `viewImportPlans`
-(→ `saveImportPlans`, `deleteImportPlans`, `triggerImportPlans`).
+(→ `saveImportPlans`, `deleteImportPlans`, `triggerImportPlans`). `triggerImportPlans` shows a
+warning that import plans can create and update data regardless of the user's other permissions.
 
 Screens are Vue/Inertia under `resources/js/pages/import/`, backed by `ImportPlansController`:
 
@@ -454,6 +484,9 @@ Screens are Vue/Inertia under `resources/js/pages/import/`, backed by `ImportPla
   slideout instead of a select; the slideout has the "Keep existing nested elements missing
   from the imported data" checkbox and one section per field-layout provider, and nests
   arbitrarily deep. All four trees are held client-side and saved with the step.
+- The mapping endpoints (`ImportPlansController::mappingImporter()`) only build the posted draft
+  step for users with `saveImportPlans`. Anyone else gets the saved step with the posted step's
+  UID, so they can't make the server fetch a source of their choosing.
 
 Read-only: derived from `allowAdminChanges`. Save/delete actions are dropped and the
 forms render in read-only mode. Running plans is deliberately *not* gated on it.
@@ -517,3 +550,5 @@ Registries (register from a service provider's `boot()`; see `Component\TypeRegi
   `ElementTransformer` also supports convention-based `normalize{PropName}()` methods, and
   auto-matches incoming keys that don't match exactly (`ImportHelper::prepKeyForAutoMatching()`,
   e.g. `Plain Text` / `plain_text` → `plainText`).
+- General config: `importDisk` (where multi-chunk steps store their parsed items; see §3) and
+  `allowedPrivateHosts` (hosts a source URL may resolve to private IPs for; see §2).
