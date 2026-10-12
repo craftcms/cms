@@ -23,6 +23,7 @@ export type NestedElementsManager = {
   deleteConfirmationMessage?: string;
   bulkDeleteConfirmationMessage?: string;
   prevalidate?: boolean;
+  slideoutWidth?: string | null;
   createAttributes: Array<{
     label: string;
     group?: string | null;

@@ -936,6 +936,12 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public static function editViewModelClass(): string;
 
     /**
+     * Returns the width of the slideout this element type is edited in, as a CSS length
+     * (e.g. `'85vw'`), or `null` for the default width.
+     */
+    public static function slideoutWidth(): ?string;
+
+    /**
      * Prepares the response for the element’s Edit screen.
      *
      * @param  Response  $response  The response being prepared

@@ -496,6 +496,11 @@ abstract class ContentIndexViewModel extends ViewModel
         return $this->elementType;
     }
 
+    public function slideoutWidth(): ?string
+    {
+        return $this->elementType::slideoutWidth();
+    }
+
     public function page(): ?string
     {
         return $this->page;

@@ -77,6 +77,7 @@
     | 'craft-asset-select-input';
   type ElementSelectProps = {
     elementType: string;
+    slideoutWidth?: string | null;
     customElement: ElementSelectElement;
     elements: ElementPresentation[];
     context: string;
@@ -623,6 +624,7 @@
 
       if (href) {
         void openSlideout(href, {
+          width: props.control.props.slideoutWidth ?? undefined,
           // Registering a handler keeps a save from reloading the page behind,
           // which would throw away the owner's unsaved edits.
           onSaved: () => {},

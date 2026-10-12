@@ -234,6 +234,7 @@ class ElementSelect extends Control
 
         return [
             'elementType' => $this->elementType,
+            'slideoutWidth' => $this->elementType::slideoutWidth(),
             'customElement' => self::customElement($this->elementType),
             'elements' => array_map(fn (ElementInterface $element): array => self::elementPayload($element) + self::viewPayload($element, $this->viewMode), $elements),
             'elementDisplayName' => $this->elementType::lowerDisplayName(),

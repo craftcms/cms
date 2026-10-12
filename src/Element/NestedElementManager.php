@@ -765,6 +765,7 @@ class NestedElementManager extends Component
             'fieldHandle' => $this->field?->handle,
             'baseInputName' => InputNamespace::get(),
             'prevalidate' => $config['prevalidate'] ?? false,
+            'slideoutWidth' => $this->elementType::slideoutWidth(),
         ];
 
         $settings['createAttributes'] = array_map(function (array $attributes): array {

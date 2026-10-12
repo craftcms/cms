@@ -90,6 +90,11 @@ trait HasControlPanelUI
         return ElementEditViewModel::class;
     }
 
+    public static function slideoutWidth(): ?string
+    {
+        return null;
+    }
+
     /**
      * Performs any action after the element's editor is fully ready.
      */

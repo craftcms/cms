@@ -522,6 +522,29 @@ describe('NestedElementsControl', () => {
     });
   });
 
+  it('opens elements at the element type’s slideout width', async () => {
+    mount({
+      manager: {slideoutWidth: '80vw'},
+      cards: [
+        nestedElement({
+          id: 18,
+          siteId: 1,
+          ownerId: 31,
+          editUrl: '/admin/actions/elements/edit?elementId=18&siteId=1',
+          cardAttributes: {data: {editable: true}},
+        }),
+      ],
+    });
+    await nextTick();
+
+    root.querySelector<HTMLAnchorElement>('a[href]')!.click();
+    await vi.waitFor(() => expect(slideout).toHaveBeenCalledOnce());
+
+    expect(slideout.mock.lastCall![1]).toEqual(
+      expect.objectContaining({width: '80vw'})
+    );
+  });
+
   it('uses the refreshed server edit URL after preparing an owner draft', async () => {
     const serverEditUrl =
       '/admin/actions/elements/edit?elementId=18&siteId=1&fieldId=7&ownerId=31';

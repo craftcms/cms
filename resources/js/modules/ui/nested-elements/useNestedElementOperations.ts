@@ -321,6 +321,7 @@ export function useNestedElementOperations(
     if (canUseVueSlideout()) {
       void openSlideout(element.editUrl, {
         opener,
+        width: options.manager.value?.slideoutWidth ?? undefined,
         prepareNestedOwner,
         onSaved,
       });
@@ -527,6 +528,7 @@ export function useNestedElementOperations(
       });
       await openSlideout(editUrl, {
         opener,
+        width: options.manager.value?.slideoutWidth ?? undefined,
         onSaved: ({draft} = {}) => onSaved(Boolean(draft)),
       });
 

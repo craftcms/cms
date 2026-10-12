@@ -102,6 +102,7 @@ export function useContentIndexData<
   const data = reactive({
     // Element type
     elementType: computed(() => props().elementType),
+    slideoutWidth: computed(() => props().slideoutWidth),
     elementDisplayName: computed(() => props().elementDisplayName),
     elementPluralDisplayName: computed(() => props().elementPluralDisplayName),
     canHaveDrafts: computed(() => props().canHaveDrafts),

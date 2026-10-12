@@ -57,6 +57,7 @@ export const CHIP_DOUBLE_CLICK_DELAY = 300;
 export interface ElementQuickEditDependencies {
   openSlideout?: typeof openSlideout;
   refreshResults: () => void;
+  slideoutWidth?: () => string | null | undefined;
 }
 
 export function useElementQuickEdit(
@@ -64,7 +65,11 @@ export function useElementQuickEdit(
 ) {
   // The active index's partial reload — the same one a bulk action triggers,
   // minus clearing the selection. Editing one row shouldn't deselect anything.
-  const {openSlideout: open = openSlideout, refreshResults} = dependencies;
+  const {
+    openSlideout: open = openSlideout,
+    refreshResults,
+    slideoutWidth,
+  } = dependencies;
 
   /**
    * Drafts autosave as the user types, and each one is a chance for the row to
@@ -84,7 +89,7 @@ export function useElementQuickEdit(
   }
 
   function openEditor(url: string, opener: HTMLElement | null = null): void {
-    void open(url, {opener, onSaved});
+    void open(url, {opener, width: slideoutWidth?.() ?? undefined, onSaved});
   }
 
   /**

@@ -142,6 +142,20 @@ describe('useElementQuickEdit', () => {
     );
   });
 
+  it('opens the editor at the element type’s slideout width', () => {
+    const quickEdit = useElementQuickEdit({
+      openSlideout,
+      refreshResults,
+      slideoutWidth: () => '80vw',
+    });
+    quickEdit.openEditor(CP_URL);
+
+    expect(openSlideout).toHaveBeenCalledWith(
+      CP_URL,
+      expect.objectContaining({width: '80vw'})
+    );
+  });
+
   it('opens the element when a row is double-clicked', () => {
     const {postDate} = renderRow();
 

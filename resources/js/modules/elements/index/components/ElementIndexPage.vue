@@ -53,6 +53,7 @@
     refreshResults: () => {
       void page.refresh();
     },
+    slideoutWidth: () => page.view.elementIndex.slideoutWidth,
   });
 
   const {elementIndex, selection} = page.view;
