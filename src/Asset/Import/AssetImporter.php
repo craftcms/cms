@@ -246,7 +246,7 @@ class AssetImporter extends ElementImporter
             $source = $attributes['tempFilePath'];
 
             try {
-                [$tempPath, $extension] = AssetsHelper::fetchImportFile(static::urlValidator(), $source, $attributes['filename']);
+                [$tempPath, $extension] = AssetsHelper::fetchImportFile(static::urlValidator(), $source, $attributes['filename'], ! self::isRemoteSource($this->source));
             } catch (AssetException|FileException $e) {
                 throw $e;
             } catch (Throwable $e) {

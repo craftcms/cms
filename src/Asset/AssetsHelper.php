@@ -20,6 +20,7 @@ use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Filesystem\RemoteFileDownloader;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
@@ -583,8 +584,9 @@ class AssetsHelper
 
     /**
      * Resolves a local file path given in import data, making sure it points to a file
-     * within a known temp path, the project root, or the storage folder.
+     * within Craft’s temp folder, or within the project root but outside the storage folder.
      *
+     * Files in dot-prefixed files or folders, and in restricted directories, aren’t allowed.
      *
      * @throws FileException if the file doesn’t exist or is in a disallowed location
      */
@@ -600,13 +602,42 @@ class AssetsHelper
 
         $resolvedPath = File::normalizePath($resolvedPath);
 
-        if (! Path::isPathWithinRoots($resolvedPath, Asset::getAllowedTempFileRoots())) {
-            throw new FileException(t('File “{filePath}” is in a disallowed location. Only temp path, project root and storage folders are allowed.', [
+        // Craft’s own temp folder is always fine (it’s within the storage folder, which is otherwise off-limits)
+        if (Path::isPathWithinRoots($resolvedPath, [[Path::temp(), true]])) {
+            return $resolvedPath;
+        }
+
+        if (! self::isImportFilePathAllowed($resolvedPath)) {
+            throw new FileException(t('File “{filePath}” is in a disallowed location. Only Craft’s temp folder and the project root (outside the storage folder) are allowed.', [
                 'filePath' => $path,
             ]));
         }
 
         return $resolvedPath;
+    }
+
+    /**
+     * Returns whether a resolved local file path is within the project root, outside the storage folder,
+     * restricted directories, and dot-prefixed files or folders.
+     */
+    private static function isImportFilePathAllowed(string $resolvedPath): bool
+    {
+        $root = realpath((string) Aliases::get('@root', false));
+
+        if (
+            $root === false ||
+            ! Path::isPathWithinRoots($resolvedPath, [[$root, false]]) ||
+            Path::isPathWithinRoots($resolvedPath, [[Path::storage(create: false), true]]) ||
+            Security::isRestrictedDir($resolvedPath)
+        ) {
+            return false;
+        }
+
+        // disallow dotfiles and anything within a dot-prefixed folder (e.g. .env, .git/)
+        $relativePath = substr($resolvedPath, strlen(File::normalizePath($root)));
+        $segments = array_filter(explode(DIRECTORY_SEPARATOR, $relativePath), fn (string $segment) => $segment !== '');
+
+        return array_all($segments, fn (string $segment) => ! str_starts_with($segment, '.'));
     }
 
     /**
@@ -642,13 +673,20 @@ class AssetsHelper
      * @return array{0: string, 1: string}
      *
      * @throws AssetException if the file is too large or its type can’t be determined
-     * @throws FileException if a local file can’t be found, isn’t allowed, or can’t be copied
+     * @throws FileException if a local file isn’t allowed, can’t be found, or can’t be copied
      * @throws InvalidArgumentException if a URL can’t be downloaded
      */
-    public static function fetchImportFile(UrlValidator $urlValidator, string $source, string $filename): array
+    public static function fetchImportFile(UrlValidator $urlValidator, string $source, string $filename, bool $allowLocalPath = true): array
     {
+        $isUrl = Url::isAbsoluteUrl($source);
+
+        // local paths in data from a remote source could point anywhere the remote source’s author wants
+        if (! $isUrl && ! $allowLocalPath) {
+            throw new FileException(t('Local file paths can’t be imported from a remote source.'));
+        }
+
         // validate a local path before anything gets created for it
-        $localPath = Url::isAbsoluteUrl($source) ? null : self::resolveImportFilePath($source);
+        $localPath = $isUrl ? null : self::resolveImportFilePath($source);
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         $tempPath = self::tempFilePath($extension ?: 'tmp');
 

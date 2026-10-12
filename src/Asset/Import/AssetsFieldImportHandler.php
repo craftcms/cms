@@ -155,13 +155,14 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
      */
     private function importFile(AssetsField $field, string $source, ImportFileConflict $conflict, UrlValidator $urlValidator, BaseImporter $importer, VolumeFolder $folder): int
     {
+        $allowLocalPath = ! $importer::isRemoteSource($importer->source);
         $filename = AssetsHelper::importFilename($source);
         $tempPath = null;
 
         try {
             // without an extension, the file has to be fetched to find out what it is
             if (pathinfo($filename, PATHINFO_EXTENSION) === '') {
-                [$tempPath, $extension] = AssetsHelper::fetchImportFile($urlValidator, $source, $filename);
+                [$tempPath, $extension] = AssetsHelper::fetchImportFile($urlValidator, $source, $filename, $allowLocalPath);
                 $filename .= ".$extension";
             }
 
@@ -172,7 +173,7 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
             if ($existingAsset !== null) {
                 // only replace the file once the item has gone through
                 if ($conflict === ImportFileConflict::Replace) {
-                    $importer->afterItemImported(fn () => $this->replaceFile($field, $existingAsset, $source, $urlValidator));
+                    $importer->afterItemImported(fn () => $this->replaceFile($field, $existingAsset, $source, $urlValidator, $allowLocalPath));
                 }
 
                 if ($tempPath !== null) {
@@ -182,7 +183,7 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
                 return $existingAsset->id;
             }
 
-            $tempPath ??= AssetsHelper::fetchImportFile($urlValidator, $source, $filename)[0];
+            $tempPath ??= AssetsHelper::fetchImportFile($urlValidator, $source, $filename, $allowLocalPath)[0];
             $asset = $this->createAsset($tempPath, $filename, $folder);
         } catch (Throwable $e) {
             if ($tempPath !== null) {
@@ -204,12 +205,12 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
     /**
      * Replaces an existing asset’s file with an imported one, logging any failure.
      */
-    private function replaceFile(AssetsField $field, Asset $asset, string $source, UrlValidator $urlValidator): void
+    private function replaceFile(AssetsField $field, Asset $asset, string $source, UrlValidator $urlValidator, bool $allowLocalPath): void
     {
         $tempPath = null;
 
         try {
-            [$tempPath] = AssetsHelper::fetchImportFile($urlValidator, $source, $asset->getFilename());
+            [$tempPath] = AssetsHelper::fetchImportFile($urlValidator, $source, $asset->getFilename(), $allowLocalPath);
             AssetsService::replaceAssetFile($asset, $tempPath, $asset->getFilename());
 
             if (! empty($asset->getFirstErrors())) {
