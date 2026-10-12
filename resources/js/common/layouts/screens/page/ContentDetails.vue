@@ -41,9 +41,12 @@
 <style scoped lang="css">
   .cp-details {
     display: grid;
+    grid-template-rows: minmax(0, 1fr);
     align-items: start;
     gap: var(--c-spacing-md);
     height: 100%;
     min-block-size: 0;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 </style>
