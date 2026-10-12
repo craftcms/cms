@@ -64,7 +64,7 @@
 
       <div v-else-if="hasLoaded" class="activity-timeline__rail">
         <section
-          v-for="group in dayGroups"
+          v-for="(group, groupIndex) in dayGroups"
           :key="group.key"
           :data-activity-day="group.key"
         >
@@ -78,7 +78,10 @@
             :element-type="elementType"
             :element-id="elementId"
             :site-id="siteId"
-            :last="index === group.events.length - 1"
+            :last="
+              groupIndex === dayGroups.length - 1 &&
+              index === group.events.length - 1
+            "
             @updated="addOrUpdateEvent"
           />
         </section>
@@ -129,15 +132,27 @@
   }
 
   .activity-timeline__day {
+    position: relative;
     text-align: center;
-    margin-block: var(--c-spacing-md);
+    margin-block: 0 var(--c-spacing-md);
     color: var(--c-text-quiet);
     font-size: var(--c-text-xs);
     font-weight: 600;
   }
 
-  section:first-of-type .activity-timeline__day {
-    margin-block-start: 0;
+  /*
+   * Carries the timeline's hairline across the day heading, from where the
+   * previous day's last event leaves off to where the next event's picks up.
+   * The offsets mirror craft-timeline-item's own hairline.
+   */
+  section + section > .activity-timeline__day::before {
+    position: absolute;
+    inset-block: calc(var(--c-spacing-md) + 0.875rem)
+      calc(-2 * var(--c-spacing-md) - 0.875rem);
+    inset-inline-start: 0.85rem;
+    width: 1px;
+    background: var(--c-color-neutral-border-quiet);
+    content: '';
   }
 
   .activity-timeline__composer {
