@@ -51,6 +51,11 @@ abstract class ModelImporter extends BaseImporter
         'varchar' => Query::TYPE_STRING,
     ];
 
+    /**
+     * @var array<string, list<string>> The tables’ column names, indexed by table name.
+     */
+    private array $columnListings = [];
+
     #[Override]
     public function settingsUi(): array
     {
@@ -114,7 +119,7 @@ abstract class ModelImporter extends BaseImporter
         $incomingKeys = array_combine(array_keys($item), array_keys($item));
         $incomingKeys = array_map(fn ($key) => ImportHelper::prepKeyForAutoMatching((string) $key), $incomingKeys);
 
-        $attributeHandles = Schema::getColumnListing($model->getTable());
+        $attributeHandles = $this->columnListings[$model->getTable()] ??= Schema::getColumnListing($model->getTable());
         $attributes = [];
 
         // and this is where auto-magical mapping happens between what's in the incoming data and in the field layout element handles

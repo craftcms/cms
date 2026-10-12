@@ -20,6 +20,11 @@ class ElementTransformer extends BaseTransformer
     public ?array $props = null;
 
     /**
+     * @var array<int|string, list<string>> The handles of the field layouts’ elements, indexed by field layout UID.
+     */
+    private array $fieldHandles = [];
+
+    /**
      * This method is called automatically by Fractal when transforming an item.
      * It's responsible for converting the incoming data (e.g. from the json file)
      * into an array that's understood and can be imported into an Element.
@@ -88,7 +93,7 @@ class ElementTransformer extends BaseTransformer
 
         // now, we should have a layout, so we can get all the field handles
         if ($fieldLayout) {
-            $fieldHandles = array_filter(
+            $fieldHandles = $this->fieldHandles[$fieldLayout->uid ?? spl_object_id($fieldLayout)] ??= array_filter(
                 array_map(
                     fn ($fieldLayoutElement) => $fieldLayoutElement->attribute(),
                     $fieldLayout->getAllElements()

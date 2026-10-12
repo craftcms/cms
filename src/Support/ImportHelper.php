@@ -29,14 +29,28 @@ use CraftCms\Cms\Support\Facades\Import;
  */
 class ImportHelper
 {
+    /**
+     * @var array<string, string> Keys prepped for auto-matching, indexed by the original key.
+     */
+    private static array $autoMatchingKeys = [];
+
+    /**
+     * @var array<class-string, list<ImportableProperty>> Importable properties, indexed by the class they belong to.
+     */
+    private static array $importableProperties = [];
+
     public static function prepKeyForAutoMatching(string $key): string
     {
+        if (isset(self::$autoMatchingKeys[$key])) {
+            return self::$autoMatchingKeys[$key];
+        }
+
         $fragments = explode('.', $key);
         foreach ($fragments as $i => $fragment) {
             $fragments[$i] = Str::toHandle(implode(' ', Str::toWords($fragment)));
         }
 
-        return Arr::join($fragments, '.');
+        return self::$autoMatchingKeys[$key] = Arr::join($fragments, '.');
     }
 
     /**
@@ -82,9 +96,15 @@ class ImportHelper
      */
     public static function getImportableProperties(BaseImporter $importer): array
     {
+        $targetClass = $importer::targetClass();
+
+        if (isset(self::$importableProperties[$targetClass])) {
+            return self::$importableProperties[$targetClass];
+        }
+
         // Automatically include all Importable properties, including inherited ones
         // such as parent from Structurable trait on Element.
-        $class = new \ReflectionClass($importer::targetClass());
+        $class = new \ReflectionClass($targetClass);
         $properties = [];
 
         do {
@@ -97,7 +117,7 @@ class ImportHelper
             }
         } while ($class = $class->getParentClass());
 
-        return array_values(array_map(function ($property) {
+        return self::$importableProperties[$targetClass] = array_values(array_map(function ($property) {
             $attribute = $property->getAttributes(Importable::class)[0];
             $arguments = $attribute->getArguments();
 
