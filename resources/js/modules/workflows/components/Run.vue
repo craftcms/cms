@@ -19,6 +19,7 @@
     <component
       :is="collapsible ? 'craft-disclosure' : 'section'"
       class="workflow-review-run"
+      :appearance="collapsible ? 'plain' : undefined"
       :opened.prop="collapsible ? run.current : undefined"
     >
       <craft-button
@@ -138,8 +139,6 @@
   .workflow-review-run__content {
     margin-block-start: var(--c-spacing-xs);
     padding-block-end: var(--c-spacing-sm);
-    padding-inline-start: 0;
-    border-inline-start: 0;
   }
 
   .workflow-review-submission {

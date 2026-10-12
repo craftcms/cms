@@ -26,7 +26,7 @@
     data-color="white"
     :class="{'activity-timeline__changes--collapsible': showInline}"
   >
-    <craft-disclosure v-if="showInline" opened>
+    <craft-disclosure v-if="showInline" appearance="plain" opened>
       <craft-button
         slot="invoker"
         type="button"

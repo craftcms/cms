@@ -494,7 +494,7 @@ export default css`
   }
 
   .button-content--spaced-prefix .prefix {
-    margin-inline-end: var(--c-spacing-sm);
+    margin-inline-end: var(--c-button-prefix-gap, var(--c-spacing-sm));
   }
 
   .button-content--spaced-suffix .suffix {

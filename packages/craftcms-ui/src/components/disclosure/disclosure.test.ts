@@ -128,6 +128,17 @@ describe('craft-disclosure invoker', () => {
     expect(invoker.textContent).toBe('Advanced');
   });
 
+  // The hairline's offset follows `size`, so the default invoker has to match.
+  it('sizes the default invoker to match', async () => {
+    const {element, invoker} = await createSlotted();
+    expect(invoker.getAttribute('size')).toBe('medium');
+
+    element.size = 'small';
+    await element.updateComplete;
+
+    expect(invoker.getAttribute('size')).toBe('small');
+  });
+
   it.each([
     ['default', undefined],
     [

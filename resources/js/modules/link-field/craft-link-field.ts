@@ -741,7 +741,7 @@ class CraftLinkField extends LitElement {
     ).filter((field) => this.hasAdvancedField(field));
 
     return html`
-      <craft-disclosure id=${this.advancedPanelId}>
+      <craft-disclosure id=${this.advancedPanelId} size="small">
         <craft-button
           slot="invoker"
           type="button"
