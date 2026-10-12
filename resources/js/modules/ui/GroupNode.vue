@@ -12,16 +12,30 @@
 
   type GroupNodeProps = {
     label?: string | null;
+    labelHtml?: string;
+    labelSrOnly?: boolean;
+    headingPrefix?: string;
+    headingSuffix?: string;
+    translatable?: boolean;
+    translationDescription?: string;
+    orientation?: 'ltr' | 'rtl';
+    inputWidth?: 'full' | 'auto';
+    status?: string;
+    statusLabel?: string;
+    showStatus?: boolean;
     collapsible?: boolean;
     expanded?: boolean;
     /** Renders the group as one field rather than a section — see `Nodes\Group`. */
     asField?: boolean;
     required?: boolean;
     instructions?: string | null;
+    instructionsHtml?: string;
+    instructionsPosition?: 'before' | 'after';
     tip?: string;
     tipHtml?: string;
     warning?: string;
     warningHtml?: string;
+    layoutUid?: string;
     width?: number;
     /** Absolute path of the reactive control whose refresh loads this group. */
     dependsOn?: string[];
@@ -57,9 +71,22 @@
   <craft-field
     v-if="node.props.asField"
     fieldset
-    :label="node.props.label ?? undefined"
+    :label-sr-only="node.props.labelSrOnly || undefined"
+    .translatable="Boolean(node.props.translatable)"
+    :translation-description="node.props.translationDescription"
+    :orientation="node.props.orientation"
+    :width="node.props.inputWidth"
+    :status="node.props.showStatus === false ? undefined : node.props.status"
+    :status-label="
+      node.props.showStatus === false ? undefined : node.props.statusLabel
+    "
     :required="node.props.required || undefined"
-    :help-text="node.props.instructions ?? undefined"
+    :help-text="
+      node.props.instructionsHtml
+        ? undefined
+        : (node.props.instructions ?? undefined)
+    "
+    :instructions-position="node.props.instructionsPosition"
     :class="{
       [`width-${node.props.width}`]: Boolean(node.props.width),
       hidden: Boolean(node.props.hidden),
@@ -67,8 +94,32 @@
     }"
     :hidden="node.props.hidden || undefined"
     :data-ui-node="node.uid"
+    :data-layout-element="node.props.layoutUid"
     :aria-busy="showLoading || undefined"
   >
+    <span
+      v-if="node.props.labelHtml !== undefined"
+      slot="label"
+      v-html="node.props.labelHtml"
+    />
+    <span v-else-if="node.props.label != null" slot="label">{{
+      node.props.label
+    }}</span>
+    <span
+      v-if="node.props.headingPrefix"
+      slot="heading-prefix"
+      v-html="node.props.headingPrefix"
+    />
+    <span
+      v-if="node.props.headingSuffix"
+      slot="heading-suffix"
+      v-html="node.props.headingSuffix"
+    />
+    <span
+      v-if="node.props.instructionsHtml"
+      slot="help-text"
+      v-html="node.props.instructionsHtml"
+    />
     <span v-if="node.props.tipHtml" slot="tip" v-html="node.props.tipHtml" />
     <span
       v-if="node.props.warningHtml"

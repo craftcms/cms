@@ -120,6 +120,7 @@ readonly class ElementHtml
                 'label' => $component->getUiLabel(),
                 'description' => $component instanceof Describable ? $component->getDescription() : null,
                 'handle' => $component instanceof Grippable ? $component->getHandle() : null,
+                'color' => $color->value ?? 'white',
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => InputNamespace::namespaceId($config['id']),
@@ -209,25 +210,27 @@ readonly class ElementHtml
             ]);
         }
 
-        $html .= Html::beginTag('div', ['slot' => 'suffix']);
-        if ($config['showActionMenu']) {
-            /** @var Chippable&Actionable $component */
-            $html .= $this->componentActionMenu($component);
+        if ($config['showActionMenu'] || $config['sortable']) {
+            $html .= Html::beginTag('div', ['slot' => 'suffix']);
+            if ($config['showActionMenu']) {
+                /** @var Chippable&Actionable $component */
+                $html .= $this->componentActionMenu($component);
+            }
+            if ($config['sortable']) {
+                $html .= Button::make()
+                    ->icon('move')
+                    ->attributes([
+                        'class' => ['chromeless', 'small', 'move-btn'],
+                        'title' => t('Reorder'),
+                        'aria' => [
+                            'label' => t('Reorder'),
+                        ],
+                        'role' => 'none',
+                        'tabindex' => '-1',
+                    ]);
+            }
+            $html .= Html::endTag('div'); // slot=suffix
         }
-        if ($config['sortable']) {
-            $html .= Button::make()
-                ->icon('move')
-                ->attributes([
-                    'class' => ['chromeless', 'small', 'move-btn'],
-                    'title' => t('Reorder'),
-                    'aria' => [
-                        'label' => t('Reorder'),
-                    ],
-                    'role' => 'none',
-                    'tabindex' => '-1',
-                ]);
-        }
-        $html .= Html::endTag('div'); // slot=suffix
 
         if ($config['inputName'] !== null) {
             $inputValue = $config['inputValue'] ?? $component->getId();

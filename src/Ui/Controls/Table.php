@@ -44,6 +44,9 @@ class Table extends Control
 
     private ?string $addRowLabel = null;
 
+    /** @var list<string> */
+    private array $hiddenRows = [];
+
     private bool|string $includeRowId = false;
 
     /** @var array<string, mixed> */
@@ -140,6 +143,14 @@ class Table extends Control
     public function addRowLabel(?string $label): static
     {
         $this->addRowLabel = $label;
+
+        return $this;
+    }
+
+    /** @param list<string> $rowIds */
+    public function hiddenRows(array $rowIds): static
+    {
+        $this->hiddenRows = $rowIds;
 
         return $this;
     }
@@ -288,6 +299,7 @@ class Table extends Control
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'keyed' => $this->keyed,
+            'hiddenRows' => $this->hiddenRows ?: null,
             'defaultValues' => $this->rowDefaults(),
             'addRowLabel' => $this->addRowLabel,
             'includeRowId' => $this->includeRowId,
