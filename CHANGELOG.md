@@ -16,6 +16,7 @@
 - Asset folders’ labels are now links in thumbnail and card views. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Element index view mode buttons now have tooltips. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - The Notification Position and Slideout Position preferences’ buttons now have tooltips. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Outline and dashed buttons now have the same border color as text inputs and checkboxes. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Element selection modals no longer have a header, and their toolbars now fit on one row. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Expand/collapse toggles’ chevrons now point up while expanded. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Image thumbnails’ placeholders now cover the same area as the image, and thumbnails no longer shift once their image loads. ([#19942](https://github.com/craftcms/cms/pull/19942))

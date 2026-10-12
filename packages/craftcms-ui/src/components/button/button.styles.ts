@@ -359,6 +359,19 @@ export default css`
     border-color: var(--c-color-border-loud);
   }
 
+  :host(
+    [variant~='outline']:not([variant~='primary']):not([variant~='danger']):not(
+      [inherit]
+    ):not([active]):not(.is-active)
+  ),
+  :host(
+    [variant~='dashed']:not([variant~='primary']):not([variant~='danger']):not(
+      [inherit]
+    ):not([active]):not(.is-active)
+  ) {
+    border-color: var(--c-form-control-border-color);
+  }
+
   :host([variant~='dashed']) {
     --c-button-border-style: dashed;
   }

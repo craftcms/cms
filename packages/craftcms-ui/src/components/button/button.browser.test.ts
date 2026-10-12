@@ -294,6 +294,39 @@ describe('[inherit]', () => {
   });
 });
 
+describe('outline and dashed borders', () => {
+  async function mount(variant: string): Promise<CraftButton> {
+    document.body.innerHTML = `
+      <div style="--c-form-control-border-color: rgb(0, 128, 0)">
+        <craft-button variant="${variant}">Add</craft-button>
+      </div>`;
+    const button = document.querySelector('craft-button') as CraftButton;
+    await button.updateComplete;
+
+    return button;
+  }
+
+  it.each(['outline', 'dashed'])(
+    'gives a %s button the form control border color',
+    async (variant) => {
+      const button = await mount(variant);
+
+      expect(getComputedStyle(button).borderTopColor).toBe('rgb(0, 128, 0)');
+    }
+  );
+
+  it.each(['outline primary', 'dashed danger'])(
+    'leaves a %s button its own border color',
+    async (variant) => {
+      const button = await mount(variant);
+
+      expect(getComputedStyle(button).borderTopColor).not.toBe(
+        'rgb(0, 128, 0)'
+      );
+    }
+  );
+});
+
 describe('themed subtrees', () => {
   async function loadTokens(): Promise<void> {
     await import('../../styles/shared/color-palette.css');
