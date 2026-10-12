@@ -3549,11 +3549,12 @@ describe('UiRenderer', () => {
       ).toBe('https://craftcms.com')
     );
     expect(
-      container.querySelectorAll('craft-link-field craft-field-group')
-    ).toHaveLength(2);
+      container.querySelector<HTMLElement & {live: boolean}>('craft-link-field')
+        ?.live
+    ).toBe(true);
     expect(
-      container.querySelector<HTMLElement & {modelValue: string}>(
-        'craft-link-field craft-disclosure craft-field-group[slot="content"]'
+      container.querySelector(
+        'craft-link-field craft-pane craft-disclosure craft-field-group[slot="content"]'
       )
     ).not.toBeNull();
     expect(
@@ -3597,16 +3598,19 @@ describe('UiRenderer', () => {
       container.querySelector('craft-link-field'),
       'Expected the link field control.'
     ).dispatchEvent(
-      new CustomEvent('apply', {
+      new CustomEvent('link-change', {
         bubbles: true,
         detail: {
-          defaultLabel: 'example.com',
-          href: 'https://example.com',
-          label: 'Example',
-          title: '',
-          type: 'url',
-          urlSuffix: '',
-          value: 'https://example.com',
+          kind: 'discrete',
+          value: {
+            defaultLabel: 'example.com',
+            href: 'https://example.com',
+            label: 'Example',
+            title: '',
+            type: 'url',
+            urlSuffix: '',
+            value: 'https://example.com',
+          },
         },
       })
     );
