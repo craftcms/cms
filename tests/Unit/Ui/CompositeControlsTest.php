@@ -39,6 +39,7 @@ function compositeControlsUi(): Ui
                     'enabled' => ['heading' => 'Enabled', 'type' => 'checkbox'],
                 ])
                 ->allowAdd()
+                ->addRowLabel('Add a coupon')
                 ->allowDelete(),
         ),
         Field::make('Link',
@@ -109,11 +110,12 @@ it('resolves documented composite Control shapes and properties', function () {
     ])->and($controls['craft:table']->props['columns']['name'])->toBe([
         'heading' => 'Name',
         'type' => 'singleline',
-    ])->and($controls['craft:link']->props['types'][0])->toBe([
-        'id' => 'url',
-        'label' => 'URL',
-        'kind' => 'text',
-    ])->and($controls['craft:address']->props['countryCode'])->toBe('US')
+    ])->and($controls['craft:table']->props['addRowLabel'])->toBe('Add a coupon')
+        ->and($controls['craft:link']->props['types'][0])->toBe([
+            'id' => 'url',
+            'label' => 'URL',
+            'kind' => 'text',
+        ])->and($controls['craft:address']->props['countryCode'])->toBe('US')
         ->and(collect($controls['craft:address']->props['fields'])->keyBy('name')['administrativeArea'])->toMatchArray([
             'type' => 'select',
             'visible' => true,
@@ -130,6 +132,7 @@ it('renders composite Controls with nested submission names and escaped values',
         ->and($textExpander->attr('for'))->toBe($markdown->attr('id'))
         ->and($textExpander->attr('slot'))->toBe('input')
         ->and(json_decode($crawler->filter('craft-table-ui')->attr('data-payload'), true)['values']['settings']['rows'])->toBe([['name' => '<Row>', 'enabled' => true]])
+        ->and(json_decode($crawler->filter('craft-table-ui')->attr('data-payload'), true)['nodes'][0]['control']['props']['addRowLabel'])->toBe('Add a coupon')
         ->and($crawler->filter('craft-link-field[name="settings[link]"][model-value]'))->toHaveCount(1)
         ->and($crawler->filter('input[name="settings[address][addressLine1]"][value="123 Main Street"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-combobox[name="settings[address][administrativeArea]"][model-value="CA"]'))->toHaveCount(1)
