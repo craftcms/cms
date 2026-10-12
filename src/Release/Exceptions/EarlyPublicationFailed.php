@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Release\Exceptions;
 
 use RuntimeException;
-use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
@@ -14,7 +13,7 @@ use function CraftCms\Cms\t;
  */
 class EarlyPublicationFailed extends RuntimeException
 {
-    public function __construct(public Response $response)
+    public function __construct(public mixed $response)
     {
         parent::__construct(t('The draft could not be published.'));
     }

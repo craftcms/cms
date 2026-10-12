@@ -35,19 +35,19 @@ class Draft extends BaseModel
         'saved' => 'bool',
     ];
 
-    public static function findElement(int $draftId): ?ElementInterface
+    public static function findElement(int $draftId, ?int $siteId = null): ?ElementInterface
     {
         $elementType = DB::table(Table::ELEMENTS)->where('draftId', $draftId)->value('type');
         if (! is_string($elementType) || ! is_a($elementType, ElementInterface::class, true)) {
             return null;
         }
 
-        return $elementType::find()
+        $query = $elementType::find()
             ->draftId($draftId)
             ->provisionalDrafts(null)
-            ->site('*')
-            ->status(null)
-            ->one();
+            ->status(null);
+
+        return ($siteId === null ? $query->site('*') : $query->siteId($siteId))->one();
     }
 
     /**

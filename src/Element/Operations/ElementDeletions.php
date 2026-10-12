@@ -264,13 +264,11 @@ readonly class ElementDeletions
         $recordActivity = $recordActivity &&
             $this->shouldRecordLifecycleActivity($element);
 
-        return BulkOps::ensure(function () use ($element, $recordActivity) {
+        return BulkOps::ensure(fn () => $this->releases->withElementDeletion($element, function () use ($element, $recordActivity) {
             DB::beginTransaction();
             DateTimeHelper::pause();
 
             try {
-                $this->releases->lockElements($element);
-
                 $elementRecord = DB::table(Table::ELEMENTS)
                     ->select('dateDeleted')
                     ->where('id', $element->id)
@@ -368,7 +366,7 @@ readonly class ElementDeletions
             event(new ElementDeleted($element));
 
             return true;
-        });
+        }));
     }
 
     public function deleteElementForSite(ElementInterface $element): void

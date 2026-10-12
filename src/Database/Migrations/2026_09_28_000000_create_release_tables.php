@@ -50,7 +50,7 @@ return new class extends Migration
         Schema::table(Table::RELEASES, fn (Blueprint $table) => $table->foreign('createdById')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::RELEASES, fn (Blueprint $table) => $table->foreign('scheduledById')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::RELEASE_ITEMS, fn (Blueprint $table) => $table->foreign('releaseId')->references('id')->on(Table::RELEASES)->cascadeOnDelete());
-        Schema::table(Table::RELEASE_ITEMS, fn (Blueprint $table) => $table->foreign('draftId')->references('id')->on(Table::DRAFTS)->nullOnDelete());
+        Schema::table(Table::RELEASE_ITEMS, fn (Blueprint $table) => $table->foreign('draftId')->references('id')->on(Table::DRAFTS)->cascadeOnDelete());
     }
 
     public function down(): void

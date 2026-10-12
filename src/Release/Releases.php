@@ -18,6 +18,7 @@ use CraftCms\Cms\Release\Data\ReleaseReadiness;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
 use CraftCms\Cms\Release\Exceptions\EarlyPublicationFailed;
+use CraftCms\Cms\Release\Exceptions\ReleaseDeletionRetry;
 use CraftCms\Cms\Release\Exceptions\ReleaseException;
 use CraftCms\Cms\Release\Exceptions\ReleaseNotDue;
 use CraftCms\Cms\Release\Models\Release;
@@ -71,16 +72,22 @@ class Releases
 
     public function update(Release $release, string $name, ?DateTimeInterface $plannedAt, CraftUser $actor, ?string $description = null): Release
     {
+        return $this->updateMetadata($release, [
+            'name' => $name,
+            'description' => $description,
+            'plannedAt' => $plannedAt,
+        ], $actor);
+    }
+
+    /** @param array{name?: string, description?: string|null, plannedAt?: DateTimeInterface|null} $changes */
+    public function updateMetadata(Release $release, array $changes, CraftUser $actor): Release
+    {
         abort_unless($actor->can('manageReleases'), Response::HTTP_FORBIDDEN, t('You are not allowed to manage releases.'));
 
-        return DB::transaction(function () use ($release, $name, $plannedAt, $description): Release {
+        return DB::transaction(function () use ($release, $changes): Release {
             $release = $this->lockRelease($release->id);
             $this->ensureMutable($release);
-            $release->update([
-                'name' => $name,
-                'description' => $description,
-                'plannedAt' => $plannedAt,
-            ]);
+            $release->update($changes);
 
             return $release->refresh();
         });
@@ -173,6 +180,78 @@ class Releases
 
         Draft::lockIds(...$draftIds);
         $this->lockElementRoots($elements);
+    }
+
+    /**
+     * Locks releases before their drafts, then removes deleted membership in the same transaction.
+     * Carries membership discovered by locking reads across retries because an outer transaction may retain its read snapshot.
+     *
+     * @param  Closure(): bool  $delete
+     */
+    public function withElementDeletion(ElementInterface $element, Closure $delete): bool
+    {
+        $draftIds = null;
+        $releaseIds = null;
+
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            try {
+                return DB::transaction(function () use ($element, $delete, &$draftIds, &$releaseIds): bool {
+                    $draftIds ??= $this->deletionDraftIds($element);
+                    $releaseIds ??= ReleaseItem::query()->whereIn('draftId', $draftIds)
+                        ->orderBy('releaseId')->pluck('releaseId')->unique()->all();
+                    $releases = Release::query()->whereIn('id', $releaseIds)->orderBy('id')->lockForUpdate()->get();
+                    ReleaseItem::query()->whereIn('releaseId', $releaseIds)->orderBy('id')->lockForUpdate()->get();
+
+                    Draft::lockIds(...$draftIds);
+                    $this->lockElements($element);
+
+                    $currentDraftIds = $this->deletionDraftIds($element, true);
+                    $currentReleaseIds = ReleaseItem::query()->whereIn('draftId', $currentDraftIds)
+                        ->orderBy('releaseId')->lockForUpdate()->pluck('releaseId')->unique()->all();
+                    if (array_diff($currentDraftIds, $draftIds) || array_diff($currentReleaseIds, $releaseIds)) {
+                        $draftIds = $currentDraftIds;
+                        $releaseIds = $currentReleaseIds;
+
+                        throw new ReleaseDeletionRetry;
+                    }
+
+                    $deleted = $delete();
+                    if ($deleted) {
+                        ReleaseItem::query()->whereIn('draftId', $currentDraftIds)->delete();
+                        foreach ($releases as $release) {
+                            if ($release->status === ReleaseStatus::Scheduled && ! $release->items()->exists()) {
+                                $release->update([
+                                    'status' => ReleaseStatus::Draft,
+                                    'publishedAt' => null,
+                                    'scheduledById' => null,
+                                    'lastError' => null,
+                                ]);
+                            }
+                        }
+                    }
+
+                    return $deleted;
+                }, 3);
+            } catch (ReleaseDeletionRetry) {
+                continue;
+            }
+        }
+
+        throw new ReleaseException(t('Release membership changed while deleting the draft. Try again.'));
+    }
+
+    /** @return list<int> */
+    private function deletionDraftIds(ElementInterface $element, bool $lock = false): array
+    {
+        $query = DB::table(Table::DRAFTS)->where('canonicalId', $element->id);
+        if ($element->getIsDraft()) {
+            $query->orWhere('id', $element->draftId);
+        }
+        if ($lock) {
+            $query->lockForUpdate();
+        }
+
+        return $query->orderBy('id')->pluck('id')->map(fn ($id): int => (int) $id)->all();
     }
 
     /** @param list<ElementInterface> $elements */
@@ -300,13 +379,18 @@ class Releases
         return $published;
     }
 
-    /** @param Closure(ElementInterface): Response $apply */
-    public function publishAheadOfRelease(int $releaseId, ElementInterface $draft, CraftUser $actor, Closure $apply): Response
+    /**
+     * @template T
+     *
+     * @param  Closure(ElementInterface): T  $apply
+     * @return T
+     */
+    public function publishAheadOfRelease(int $releaseId, ElementInterface $draft, CraftUser $actor, Closure $apply): mixed
     {
         $draftId = $this->draftId($draft);
 
         try {
-            return DB::transaction(function () use ($releaseId, $draftId, $draft, $actor, $apply): Response {
+            return DB::transaction(function () use ($releaseId, $draftId, $draft, $actor, $apply): mixed {
                 $release = $this->lockRelease($releaseId);
                 $this->ensureMutable($release);
                 $item = ReleaseItem::query()
@@ -441,6 +525,7 @@ class Releases
             }
 
             $this->ensureReadyWorkflow($draft, true);
+            $item->update(['draftId' => null]);
             $canonical = $this->validateAndApplyDraft($draft);
             $item->update([
                 'draftId' => null,
