@@ -95,13 +95,21 @@ function resolvesInPackage(cited: string): boolean {
   return testFiles.some((file) => file === cited || file.endsWith(`/${cited}`));
 }
 
-function storyExports(dir: string): Set<string> {
-  return new Set(
+/**
+ * Stories exported from the component's own stories file, each mapped to
+ * whether it defines a `play()` function. Only a story with one can verify a
+ * requirement; a story without one just renders.
+ */
+function storyExports(dir: string): Map<string, boolean> {
+  return new Map(
     globSync('*.stories.ts', {cwd: dir}).flatMap((file) =>
-      matchAll(
-        readFileSync(join(dir, file), 'utf8'),
-        /^export const ([A-Za-z0-9]+)\s*:/gm
-      )
+      readFileSync(join(dir, file), 'utf8')
+        .split(/^(?=export const )/m)
+        .flatMap((chunk): Array<[string, boolean]> => {
+          const name = /^export const ([A-Za-z0-9]+)\s*:/.exec(chunk)?.[1];
+
+          return name ? [[name, /\bplay\s*[:(]/.test(chunk)]] : [];
+        })
     )
   );
 }
@@ -127,9 +135,12 @@ describe('a11y docs check off only what this package verifies', () => {
       const summary = text.split('\n')[0]!.slice(0, 80);
       const files = matchAll(text, CITED_FILE);
       const outside = files.filter((file) => !resolvesInPackage(file));
+      const tests = files.filter(
+        (file) => !file.endsWith('.stories.ts') && resolvesInPackage(file)
+      );
       const citesStory =
         /\bstor(?:y|ies)\b/.test(text) &&
-        matchAll(text, CITED_STORY).some((name) => stories.has(name));
+        matchAll(text, CITED_STORY).some((name) => stories.get(name) === true);
       const verifiedBy = text.split('Verified by').slice(1).join('Verified by');
       const missingNames = [
         ...matchAll(verifiedBy, /`([^`]+)`/g),
@@ -150,14 +161,17 @@ describe('a11y docs check off only what this package verifies', () => {
         );
       }
 
-      if (files.length === outside.length && !citesStory) {
-        problems.push(`${summary} cites no test or story in this package`);
+      if (!tests.length && !citesStory) {
+        problems.push(
+          `${summary} cites no test, or story with a play() assertion, in this package`
+        );
       }
 
-      const missingStories = matchAll(
+      const citedStories = matchAll(
         text,
         /`([A-Z][A-Za-z0-9]*)` stor(?:y|ies)\b/g
-      ).filter((name) => !stories.has(name));
+      );
+      const missingStories = citedStories.filter((name) => !stories.has(name));
 
       if (missingStories.length) {
         problems.push(
