@@ -173,7 +173,11 @@
       @item-keydown="onCardKeydown"
     >
       <template #thumbnail="{index}">
-        <div v-if="data[index]?.cardThumbHtml" slot="thumbnail">
+        <div
+          v-if="data[index]?.cardThumbHtml"
+          slot="thumbnail"
+          class="card-thumb"
+        >
           <DynamicHtmlRenderer :html="data[index]!.cardThumbHtml!" />
         </div>
       </template>
@@ -211,7 +215,6 @@
 
 <style scoped lang="scss">
   .card-grid-header {
-    margin-block-end: var(--c-spacing-md);
     padding: var(--c-spacing-md);
     padding-inline-start: calc(
       var(--c-spacing-md) + 1px
@@ -227,7 +230,6 @@
     gap: var(--c-spacing-md);
     align-items: stretch;
     grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-    margin-block: var(--c-spacing-md);
   }
 
   // One card per row, however wide the container gets.
@@ -237,10 +239,6 @@
 
   .card-grid > li {
     position: relative;
-  }
-
-  .card-grid > li[data-is-folder] {
-    cursor: pointer;
   }
 
   // Dragging, but still over itself — dim rather than remove, so the grid
@@ -266,14 +264,22 @@
     --c-thumbnail-size: 120px;
   }
 
-  // Non-image thumbs (folder / file-kind SVGs) render at a fixed small size;
-  // scale them up to match.
-  .card-grid :deep(.card-main .thumb) {
+  // Non-image thumbs (folder / file-kind SVGs) render at a fixed small size.
+  // Center them in the same 120px box an image thumbnail fills, at the size
+  // they get in the thumbnail view.
+  .card-thumb:has(> .thumb) {
+    display: grid;
+    place-items: center;
+    width: 120px;
+    height: 120px;
+  }
+
+  .card-thumb > :deep(.thumb) {
     width: 72px;
     height: 72px;
   }
 
-  .card-grid :deep(.card-main .thumb svg) {
+  .card-thumb > :deep(.thumb svg) {
     width: 100%;
     height: 100%;
   }

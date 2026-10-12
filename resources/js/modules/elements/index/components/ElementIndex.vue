@@ -249,7 +249,15 @@
         @reorder="reorder"
         @site-change="emit('site-change', $event)"
       >
-        <template #actions>
+        <template
+          v-if="
+            canEditInline ||
+            exportElements ||
+            $slots['toolbar-actions'] ||
+            $slots['toolbar-actions-after']
+          "
+          #actions
+        >
           <div class="flex flex-wrap gap-md">
             <craft-button
               v-if="canEditInline"
@@ -300,6 +308,9 @@
     >
       <div
         ref="body"
+        :class="{
+          'element-index__grid': mode === 'cards' || mode === 'thumbs',
+        }"
         @mousedown.capture="
           isInlineEditing
             ? undefined
@@ -450,6 +461,24 @@
 
   .element-index__header {
     margin-block-end: var(--c-spacing-md);
+  }
+
+  // Card and thumb grids leave their own spacing to where they're placed. A
+  // grid's select-all header sits flush at the top, with the grid below it.
+  .element-index__grid {
+    padding-block-end: var(--c-spacing-lg);
+
+    > :deep(:is(.card-grid, .thumbsview)) {
+      margin-block-start: var(--c-spacing-lg);
+    }
+
+    // Like a flush table, the select-all header spans the container's padding
+    // and pads its content back in by the same amount.
+    > :deep(:is(.card-grid-header, .thumbsview-header)) {
+      margin-inline: calc(var(--cp-container-padding) * -1);
+      padding-inline: var(--cp-container-padding);
+      border-radius: 0;
+    }
   }
 
   .element-index__body {

@@ -169,6 +169,19 @@ describe('asset folders', function () {
             ->toMatch('/<a class="label-link" href="[^"]*assets\/testvolume\/a-subfolder" data-folder-link>/');
     });
 
+    it('links folder labels in the card and thumb views', function () {
+        Folders::ensureFolderByFullPathAndVolume('a-subfolder', $this->volume);
+
+        $card = ($this->postAssets)(['viewMode' => 'cards'])['data'][0];
+        $thumb = ($this->postAssets)(['viewMode' => 'thumbs'])['data'][0];
+
+        expect($card['cardContentHtml'])
+            ->toMatch('/<a class="label-link" href="[^"]*assets\/testvolume\/a-subfolder" data-folder-link>/')
+            ->and($thumb['url'])->toBeNull()
+            ->and($thumb['labelUrl'])->toEndWith('assets/testvolume/a-subfolder')
+            ->and($thumb['labelLinkAttributes'])->toBe(['data-folder-link' => '']);
+    });
+
     it('lists the requested subfolder, with a trail back to the volume root', function () {
         Folders::ensureFolderByFullPathAndVolume('parent/child', $this->volume);
         $parent = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'parent/']);

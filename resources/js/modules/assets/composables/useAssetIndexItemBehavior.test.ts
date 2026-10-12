@@ -50,9 +50,9 @@ it('opens a folder with the current view and fresh pagination', () => {
   };
 
   expect(
-    itemBehavior.onClick?.(
+    itemBehavior.onKeydown?.(
       folder,
-      new MouseEvent('click', {bubbles: true, cancelable: true})
+      new KeyboardEvent('keydown', {key: 'Enter', cancelable: true})
     )
   ).toBe(true);
   expect(visitedUrl().pathname).toBe('/cp/assets/photos/products');
@@ -105,6 +105,43 @@ it('opens a folder from its title link, unless the click is modified', () => {
 
   link.remove();
 });
+
+// A folder only opens from its link, or Enter. Anywhere else, a click or Space
+// selects it, as it would an asset — in a table row, a card or a thumb alike.
+it.each([
+  ['table row', () => document.createElement('tr')],
+  ['card', () => document.createElement('craft-card')],
+  ['thumb', () => document.createElement('li')],
+])(
+  'leaves a click or Space on a folder %s, outside its link, to selection',
+  (_, createItem) => {
+    const {itemBehavior} = useAssetIndexItemBehavior({visit});
+    const folder = {
+      id: 'folder:7',
+      isFolder: true,
+      folderUrl: '/cp/assets/photos/products',
+    };
+    const item = createItem();
+    const body = item.appendChild(document.createElement('span'));
+    const click = new MouseEvent('click', {bubbles: true, cancelable: true});
+    Object.defineProperty(click, 'target', {value: body});
+    const space = new KeyboardEvent('keydown', {key: ' ', cancelable: true});
+    Object.defineProperty(space, 'target', {value: item});
+
+    expect(itemBehavior.onClick?.(folder, click)).toBe(false);
+    expect(itemBehavior.onKeydown?.(folder, space)).toBe(false);
+    expect(visit).not.toHaveBeenCalled();
+
+    const enter = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      cancelable: true,
+    });
+    Object.defineProperty(enter, 'target', {value: item});
+
+    expect(itemBehavior.onKeydown?.(folder, enter)).toBe(true);
+    expect(visit).toHaveBeenCalledTimes(1);
+  }
+);
 
 it('marks assets and folders for drag-and-drop', () => {
   const {itemBehavior} = useAssetIndexItemBehavior({visit});

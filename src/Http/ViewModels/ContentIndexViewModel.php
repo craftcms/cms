@@ -1387,7 +1387,20 @@ abstract class ContentIndexViewModel extends ViewModel
                 ? $this->editUrl($element)
                 : null,
             'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit),
+            ...$this->extraThumbData($element),
         ], $elements);
+    }
+
+    /**
+     * Additional data for an element's thumb. A thumb with no `url` can still
+     * link its label, by setting `labelUrl` (and optionally
+     * `labelLinkAttributes`).
+     *
+     * @return array{labelUrl?: string, labelLinkAttributes?: array<string, mixed>}
+     */
+    protected function extraThumbData(ElementInterface $element): array
+    {
+        return [];
     }
 
     /**

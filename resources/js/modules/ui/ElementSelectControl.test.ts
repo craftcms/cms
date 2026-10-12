@@ -565,6 +565,27 @@ describe('ElementSelectControl', () => {
       expect(root.querySelectorAll('craft-chip')).toHaveLength(0);
     });
 
+    // Clicking a related element selects or edits it, so its tile mustn't
+    // navigate away, even though its URL still backs "View in a new tab".
+    it('doesn’t link thumbnails to the element’s URL', async () => {
+      const root = await mount({
+        props: {
+          viewMode: 'thumbs',
+          elements: [
+            {
+              id: 5,
+              label: 'Some entry',
+              url: 'https://example.test/some-entry',
+            },
+          ],
+        },
+        value: [5],
+      });
+
+      expect(root.querySelector('.thumb-tile')).not.toBeNull();
+      expect(root.querySelector('.thumb-tile a, a.thumb-tile')).toBeNull();
+    });
+
     /** The list item a card / thumb body draws per element. */
     function tiles(root: HTMLElement, selector: string): HTMLElement[] {
       return [...root.querySelectorAll<HTMLElement>(selector)];

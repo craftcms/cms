@@ -144,7 +144,9 @@
         </craft-checkbox>
       </template>
       <template #navbar>
-        <div class="border-b border-b-quiet py-sm">
+        <div
+          class="folder-breadcrumbs -mx-(--cp-container-padding) px-(--cp-container-padding) py-sm border-b border-b-quiet"
+        >
           <Breadcrumbs :items="breadcrumbs" />
         </div>
       </template>
@@ -295,4 +297,11 @@
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  // Even on both sides of each separator, matching the header's breadcrumbs:
+  // the crumb's own gap already sits before it, so the end margin makes up for
+  // it.
+  .folder-breadcrumbs :deep(craft-breadcrumb-item > [slot='separator']) {
+    margin-inline: var(--c-spacing-sm) var(--c-spacing-md);
+  }
+</style>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {computed} from 'vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementChips from '@/modules/elements/components/ElementChips.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
@@ -29,7 +30,7 @@
     thumbHtml?: string;
   }
 
-  withDefaults(
+  const props = withDefaults(
     defineProps<{
       /** The elements to draw, in display order. */
       data?: Array<ListElement>;
@@ -50,6 +51,12 @@
       loading: false,
       sortable: false,
     }
+  );
+
+  // Thumbs link any tile with a `url`. In a relational field, clicking an
+  // element selects or edits it, so the tiles shouldn't navigate away.
+  const thumbsData = computed(() =>
+    props.data.map(({url: _url, ...element}) => element)
   );
 
   defineEmits<{
@@ -81,7 +88,7 @@
 
   <ElementThumbs
     v-else-if="viewMode === 'thumbs'"
-    :data="data"
+    :data="thumbsData"
     :selection="selection"
     :selectable="selectable"
     :select-all="selectAll"

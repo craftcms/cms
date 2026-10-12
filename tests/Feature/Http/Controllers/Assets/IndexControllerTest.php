@@ -280,6 +280,30 @@ it('includes a volume’s subfolders in the index results', function () {
         );
 });
 
+it('links folder labels in the card and thumb views', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    Folders::ensureFolderByFullPathAndVolume('a-subfolder', Volumes::getVolumeById($volumeModel->id));
+    $folderLink = "/<a class=\"label-link\" href=\"[^\"]*assets\\/{$volumeModel->handle}\\/a-subfolder\" data-folder-link>/";
+    $url = '/'.Cms::config()->cpTrigger."/assets/{$volumeModel->handle}";
+
+    get("{$url}?viewMode=cards")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.cardContentHtml', fn (string $html) => preg_match($folderLink, $html) === 1)
+        );
+
+    get("{$url}?viewMode=thumbs")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.url', null)
+            ->where('data.0.labelUrl', fn (string $labelUrl) => str_ends_with($labelUrl, "assets/{$volumeModel->handle}/a-subfolder"))
+            ->where('data.0.labelLinkAttributes', ['data-folder-link' => ''])
+        );
+});
+
 it('scopes the results to the subfolder named in the path', function () {
     $volumeModel = Volume::factory()->create([
         'fs' => 'test-disk',

@@ -384,6 +384,44 @@ class AssetIndexViewModel extends ContentIndexViewModel
         return $this->labelLinkedChipHtml($element, $folderUrl, attributes: ['data-folder-link' => true]);
     }
 
+    /**
+     * Folder card labels link to the folder, like their chips in the table view.
+     *
+     * @return array<string, mixed>
+     */
+    #[Override]
+    protected function cardConfig(ElementInterface $element): array
+    {
+        $folderUrl = $this->folderLinkUrl($element);
+
+        return $folderUrl === null ? [] : [
+            'hyperlink' => true,
+            'hyperlinkUrl' => $folderUrl,
+            'hyperlinkAttributes' => ['data-folder-link' => true],
+        ];
+    }
+
+    /**
+     * Folder thumb labels link to the folder, like their chips in the table view.
+     *
+     * @return array{labelUrl?: string, labelLinkAttributes?: array<string, mixed>}
+     */
+    #[Override]
+    protected function extraThumbData(ElementInterface $element): array
+    {
+        $folderUrl = $this->folderLinkUrl($element);
+
+        return $folderUrl === null ? [] : [
+            'labelUrl' => $folderUrl,
+            'labelLinkAttributes' => ['data-folder-link' => ''],
+        ];
+    }
+
+    private function folderLinkUrl(ElementInterface $element): ?string
+    {
+        return $element instanceof Asset && $element->isFolder ? $this->folderUrl($element) : null;
+    }
+
     private function folderUrl(Asset $folder): ?string
     {
         $uri = array_last($folder->sourcePath ?? [])['uri'] ?? null;
