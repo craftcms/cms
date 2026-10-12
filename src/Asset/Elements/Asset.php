@@ -2186,6 +2186,22 @@ JS, [
         return $this->getPlaceholderDataUrl();
     }
 
+    /**
+     * A fit thumbnail is the image scaled to fit within `$size`×`$size`, the same as its transform.
+     */
+    #[Override]
+    protected function thumbDimensions(int $size, ImageTransformMode $mode): ?array
+    {
+        $width = (int) $this->getWidth();
+        $height = (int) $this->getHeight();
+
+        if ($this->isFolder || $mode !== ImageTransformMode::Fit || ! $width || ! $height) {
+            return null;
+        }
+
+        return AssetsHelper::scaledDimensions($width, $height, $size, $size);
+    }
+
     #[Override]
     protected function hasCheckeredThumb(): bool
     {
