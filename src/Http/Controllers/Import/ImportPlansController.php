@@ -217,7 +217,7 @@ class ImportPlansController
      */
     public function stepMapping(): JsonResponse
     {
-        $importer = $this->draftImporter();
+        $importer = $this->mappingImporter();
 
         // the panel's mapping button is hidden until this passes, so reaching here means the step
         // changed between the last refresh and the click
@@ -276,7 +276,7 @@ class ImportPlansController
      */
     public function nestedMappingCols(): JsonResponse
     {
-        $importer = $this->draftImporter();
+        $importer = $this->mappingImporter();
 
         abort_if($importer === null, 400, 'The import step couldn’t be built.');
 
@@ -337,6 +337,34 @@ class ImportPlansController
             sourceDataCols: $sourceDataCols,
             suggestions: self::subtree($suggestions, $rootPath),
         )->jsonSerialize());
+    }
+
+    /**
+     * Returns the importer whose source should be read for the mapping panels.
+     *
+     * Only users who can save import plans get the posted draft step. Anyone else gets the saved
+     * step with the posted step’s UID, so they can’t make the server fetch a source of their choosing.
+     */
+    private function mappingImporter(): ?BaseImporter
+    {
+        if ($this->request->craftUser()?->can('saveImportPlans')) {
+            return $this->draftImporter();
+        }
+
+        $stepUid = $this->request->validate([
+            'step' => ['required', 'array'],
+            'step.uid' => ['required', 'string', 'max:36'],
+        ])['step']['uid'];
+
+        foreach ($this->importsService->getAllImportPlans() as $importPlan) {
+            foreach ($importPlan->steps ?? [] as $importer) {
+                if ($importer->uid === $stepUid) {
+                    return $importer;
+                }
+            }
+        }
+
+        abort(404, 'Import step not found.');
     }
 
     /**
