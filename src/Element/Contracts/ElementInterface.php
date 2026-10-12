@@ -938,6 +938,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the width of Vue-based element editor slideouts for this element type,
      * as a CSS length (e.g. `'85vw'`), or `null` for the default width.
+     * The rendered width is capped at the viewport width.
      * Legacy jQuery element editor slideouts do not use this setting.
      */
     public static function slideoutWidth(): ?string;

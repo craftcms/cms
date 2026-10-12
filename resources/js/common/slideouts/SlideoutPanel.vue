@@ -209,7 +209,7 @@
        length, not a percentage — the stack offset subtracts it from `100vw`.
        Resolved into a local so the fallback lives in exactly one place; the
        offset `calc()` reads this too. */
-    --slideout-panel-width: var(--slideout-width, 55vw);
+    --slideout-panel-width: min(var(--slideout-width, 55vw), 100vw);
 
     position: fixed;
     inset-block: 0;
