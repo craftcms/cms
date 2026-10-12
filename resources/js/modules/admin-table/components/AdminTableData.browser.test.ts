@@ -6,7 +6,7 @@ import {page, userEvent} from 'vite-plus/test/browser/context';
 import AdminTable from './AdminTable.vue';
 import AdminTableNode from '@/modules/ui/AdminTableNode.vue';
 import {actionClient} from '@craftcms/ui';
-import type {TableProps, TableRow} from '@/modules/ui/table-types';
+import type {TableProps} from '@/modules/ui/table-types';
 import type {
   AdminTableHandle,
   AdminTablePage,
@@ -969,7 +969,7 @@ it('opens slideout links at their width and refreshes through its own handler', 
 
   expect(slideout).toHaveBeenCalledWith(
     '/admin/rules/1',
-    expect.objectContaining({width: '85vw'})
+    expect.objectContaining({opener: link, width: '85vw'})
   );
   slideout.mock.lastCall![1].onSaved();
   expect(onRefresh).toHaveBeenCalledOnce();
@@ -997,21 +997,26 @@ it('opens the create action in a slideout when asked to', async () => {
   expect(click.defaultPrevented).toBe(true);
   expect(slideout).toHaveBeenCalledWith(
     '/admin/rules/new',
-    expect.objectContaining({width: '85vw'})
+    expect.objectContaining({opener: button, width: '85vw'})
   );
   slideout.mock.lastCall![1].onSaved();
   expect(reload).toHaveBeenCalledWith({only: ['ui']});
 });
 
-async function doubleClickRow(host: HTMLElement, index: number): Promise<void> {
-  const cell = await vi.waitFor(() => {
-    const element = host.querySelectorAll('tbody tr')[index]?.lastElementChild;
-    expect(element).toBeTruthy();
+async function doubleClickRow(
+  host: HTMLElement,
+  index: number
+): Promise<Element> {
+  const row = await vi.waitFor(() => {
+    const element = host.querySelectorAll('tbody tr')[index];
+    expect(element?.lastElementChild).toBeTruthy();
     return element!;
   });
-  cell.dispatchEvent(
+  row.lastElementChild!.dispatchEvent(
     new MouseEvent('dblclick', {bubbles: true, cancelable: true})
   );
+
+  return row;
 }
 
 it('opens a double-clicked row the way its first column’s link would', async () => {
@@ -1039,17 +1044,17 @@ it('opens a double-clicked row the way its first column’s link would', async (
     ],
   });
 
-  await doubleClickRow(host, 0);
+  const row = await doubleClickRow(host, 0);
   expect(slideout).toHaveBeenCalledWith(
     '/admin/rules/1',
-    expect.objectContaining({width: '85vw'})
+    expect.objectContaining({opener: row, width: '85vw'})
   );
 
   await doubleClickRow(host, 1);
   expect(visit).toHaveBeenCalledWith('/admin/rules/2');
 });
 
-it('opens a row’s own link on double-click, or nothing when it has none', async () => {
+it('ignores double-clicks on rows whose first column isn’t a link', async () => {
   const host = mountNode({
     columns: [
       {key: 'name', label: 'Name'},
@@ -1058,26 +1063,16 @@ it('opens a row’s own link on double-click, or nothing when it has none', asyn
     rows: [
       {
         id: 1,
-        name: {label: 'Summer sale', url: '/admin/rules/1'},
+        name: {html: '<a href="/admin/rules/1">Summer sale</a>'},
         handle: 'summerSale',
-        _link: {url: '/admin/rules/1/edit', slideout: true},
       },
-      {
-        id: 2,
-        name: {label: 'Winter sale', url: '/admin/rules/2'},
-        handle: 'winterSale',
-        _link: null,
-      },
-    ] as TableRow[],
+      {id: 2, name: 'Winter sale', handle: 'winterSale'},
+    ],
   });
 
   await doubleClickRow(host, 0);
-  expect(slideout).toHaveBeenCalledWith(
-    '/admin/rules/1/edit',
-    expect.anything()
-  );
-
   await doubleClickRow(host, 1);
-  expect(slideout).toHaveBeenCalledOnce();
+
+  expect(slideout).not.toHaveBeenCalled();
   expect(visit).not.toHaveBeenCalled();
 });

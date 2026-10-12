@@ -39,6 +39,7 @@
 
     event.preventDefault();
     void openSlideout(props.url, {
+      opener: event.currentTarget as HTMLElement,
       width: slideout.value.width,
       onSaved: slideout.value.onSaved,
     });

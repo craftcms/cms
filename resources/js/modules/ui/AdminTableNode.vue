@@ -50,7 +50,6 @@
     TableModalAction,
     TableNodePayload,
     TableRow,
-    TableRowLink,
   } from './table-types';
 
   const props = defineProps<{
@@ -235,7 +234,10 @@
               }
 
               event.preventDefault();
-              openLinkSlideout(url, link);
+              openLinkSlideout(
+                {...link, url},
+                event.currentTarget as HTMLElement
+              );
             }
           : undefined,
       },
@@ -243,35 +245,34 @@
     );
   }
 
-  function openLinkSlideout(url: string, link: TableRowLink): void {
-    void openSlideout(url, {
+  function openLinkSlideout(
+    link: TableLink & {url: string},
+    opener: HTMLElement | null
+  ): void {
+    void openSlideout(link.url, {
+      opener,
       width: link.slideoutWidth ?? undefined,
       onSaved: refreshTable,
     });
   }
 
-  function rowLink(row: TableRow): TableRowLink | null {
-    if ('_link' in row) {
-      return row._link ?? null;
-    }
-
+  function rowLink(row: TableRow): (TableLink & {url: string}) | null {
     const value = row[props.node.props.columns[0]?.key ?? ''];
 
     return value !== null &&
       typeof value === 'object' &&
       !Array.isArray(value) &&
-      'url' in value
-      ? value
+      'url' in value &&
+      value.url
+      ? {...value, url: value.url}
       : null;
   }
 
   function onRowDblclick(row: TableRow, event: MouseEvent): void {
     const link = rowLink(row);
-    const url = link?.url;
 
     if (
       !link ||
-      !url ||
       event.altKey ||
       event.ctrlKey ||
       event.metaKey ||
@@ -284,9 +285,12 @@
     window.getSelection()?.removeAllRanges();
 
     if (link.slideout) {
-      openLinkSlideout(url, link);
+      openLinkSlideout(
+        link,
+        (event.target as Element).closest<HTMLElement>('tr')
+      );
     } else {
-      router.visit(url);
+      router.visit(link.url);
     }
   }
 
