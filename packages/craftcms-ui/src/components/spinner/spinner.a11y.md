@@ -26,4 +26,3 @@
 ## Depends on usage
 
 - 1.1.1 (Non-text Content): slot text saying what is loading, unless nearby text already says it. See [Accessibility](./Spinner.mdx#accessibility).
-- 4.1.3 (Status Messages): announce the start and end of the wait through a live region. See [Accessibility](./Spinner.mdx#accessibility).

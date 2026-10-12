@@ -21,6 +21,7 @@ A circular progress indicator drawn on a `<canvas>`, using the WAI-ARIA [`progre
 
 ### Color and contrast
 
+- [ ] A failed indicator is distinguishable from a complete one by more than color. Per WCAG 1.4.1 (Use of Color). Known gap: a failed arc differs from a full one only by color.
 - [ ] The progress arc reaches 3:1 against the track arc and the surface. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified. The track and fail colors default to fixed hex values (`#a3afbb`, `#da5a47`), not theme tokens.
 - [ ] In forced-colors mode, the arc stays visible against the system background. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified. Forced colors doesn't recolor canvas pixels, so the hex track and fail colors are drawn as authored.
 
@@ -31,7 +32,6 @@ A circular progress indicator drawn on a `<canvas>`, using the WAI-ARIA [`progre
 
 ## Depends on usage
 
-- 1.1.1 (Non-text Content): keep visible text beside the arc that says what is progressing. See [Accessibility](./Progress.mdx#accessibility).
-- 1.4.1 (Use of Color): a failed arc differs from a full one only by color, so show the failure in visible text. See [Accessibility](./Progress.mdx#accessibility).
+- 1.1.1 (Non-text Content): keep visible text beside the arc that says what is progressing, and whether it failed. See [Accessibility](./Progress.mdx#accessibility).
 - 4.1.3 (Status Messages): announce completion or failure through a live region; the component has none. See [Accessibility](./Progress.mdx#accessibility).
 - 1.4.11 (Non-text Contrast): check custom `color`, `bg-color` and `fail-color` values reach 3:1. See [Accessibility](./Progress.mdx#accessibility).

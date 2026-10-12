@@ -29,7 +29,10 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 
 ### Keyboard and focus
 
-- [ ] Opening the menu leaves focus on the invoker, as in the example. Per WCAG 2.4.3 (Focus Order). Known deviation: opening moves focus to the search input when `searchable`, or to the first navigable item otherwise, as `focuses the first navigable item on open in non-searchable mode` in `action-menu.test.ts` asserts.
+- [ ] Where focus goes when the menu opens. Per WCAG 2.4.3 (Focus Order). Decision TBD: the Disclosure Navigation Menu example leaves focus on the invoker, while the code (`_onOverlayShow`) calls `focus()` on the search input when `searchable`, or on the first navigable item otherwise. Not yet verified in a browser. `focuses the first navigable item on open in non-searchable mode` in `action-menu.test.ts` stubs each item's `focus()`, so it shows the call is made, not that focus moves, and in the `Default` story focus doesn't appear to move to the first item. Possible causes, not yet investigated:
+  - Lion dispatches `show` before the items can take focus.
+  - The first item renders as a link that `delegatesFocus` doesn't reach.
+  - Focus moves only when the menu is opened from the keyboard, not by a click.
 - [x] ArrowDown and ArrowUp move to the next or previous item, wrapping at both ends. Per WCAG 2.1.1 (Keyboard). Verified by `ArrowDown/ArrowUp move between items and wrap at the ends` in `action-menu.test.ts`.
 - [x] Home and End move to the first and last item. Per WCAG 2.1.1 (Keyboard). Verified by `Home/End jump to the first/last navigable item` in `action-menu.test.ts`.
 - [x] Arrow navigation skips hidden, filtered-out and disabled items. Per WCAG 2.1.1 (Keyboard). Verified by `skips consumer-hidden, filtered, and disabled items` in `action-menu.test.ts`.

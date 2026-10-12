@@ -51,6 +51,6 @@ Its open and close behavior comes from APG's [Disclosure Navigation Menu](https:
 
 ## Depends on usage
 
-- 4.1.2 (Name, Role, Value): set `label` so the panel's `role="dialog"` has a name. See [Accessibility](./Popover.mdx#accessibility).
+- 4.1.2 (Name, Role, Value): set `label` to name the panel. See [Accessibility](./Popover.mdx#accessibility).
 - 4.1.2 (Name, Role, Value) and 2.1.1 (Keyboard): use a real button as the invoker. See [Accessibility](./Popover.mdx#accessibility).
 - 2.4.3 (Focus Order): with `for` or `anchor`, place `<craft-popover>` right after its trigger. See [Accessibility](./Popover.mdx#accessibility).

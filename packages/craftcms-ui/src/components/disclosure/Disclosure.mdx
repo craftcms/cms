@@ -47,7 +47,7 @@ In external-target mode the rest is up to the page:
 - If the target can't come right after the button, manage focus yourself. When it expands, move focus to the start of the target: its heading, or the target itself with `tabindex="-1"`. When it collapses while focus is inside it, move focus back to the button. Otherwise a keyboard or screen reader user is left at the trigger, with the content they just opened somewhere else on the page.
 - Style the button with a visible focus indicator and a target of at least 24×24 CSS px.
 
-For an accordion, each trigger belongs inside a heading. External-target mode allows it: wrap the whole `craft-disclosure` in the heading. Slotted mode doesn't yet, because the invoker has to be a direct child.
+For an accordion, each trigger belongs inside a heading. In external-target mode, wrap the whole `craft-disclosure` in the heading.
 
 ## Properties
 

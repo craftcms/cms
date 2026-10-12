@@ -17,4 +17,4 @@
 
 ## Depends on usage
 
-- 2.4.7 (Focus Visible): keep focusable content out of it. See [Accessibility](./VisuallyHidden.mdx#accessibility).
+- 1.3.1 (Info and Relationships): write hidden text that matches what the design conveys visually. See [Accessibility](./VisuallyHidden.mdx#accessibility).

@@ -45,7 +45,7 @@ The arc is drawn on a canvas, which means it has no text and nothing a screen re
 
 The component exposes a `progressbar` named by `label`, with the percentage, "Loading" or "Failed" as hidden text. Set `label` to what is progressing; the default, "Progress", says nothing.
 
-Whatever it accompanies has to carry the state in visible text — "Uploading 3 of 8" beside the arc, not the arc alone. A percentage that exists only as an angle is a percentage some people cannot read. The same goes for failure: a failed arc differs from a full one only by color, so say it failed in text.
+Whatever it accompanies has to carry the state in visible text — "Uploading 3 of 8" beside the arc, not the arc alone. A percentage that exists only as an angle is a percentage some people cannot read. The same goes for failure: say it failed in text.
 
 The component has no live region. When completion or failure matters, announce it through one — once, at the end, rather than at every step.
 

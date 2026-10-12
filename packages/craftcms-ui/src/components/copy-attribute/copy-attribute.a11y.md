@@ -18,5 +18,4 @@ A `craft-copy-button` that shows the value it copies, in a monospace chip. See `
 
 ## Depends on usage
 
-- 4.1.3 (Status Messages): announce the result from `craft-copy` and `craft-error`, since the copy button doesn't yet. See [Accessibility](./CopyAttribute.mdx#accessibility).
 - 2.4.6 (Headings and Labels): use it only where the value says what it is, such as a field handle, since the button can't be given another name. See [Accessibility](./CopyAttribute.mdx#accessibility).

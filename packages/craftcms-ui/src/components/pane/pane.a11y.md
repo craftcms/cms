@@ -32,11 +32,10 @@
 
 ### Scrolling and reflow
 
-- [ ] At 320 CSS px, content wider than the pane is reachable rather than cut off. Per WCAG 1.4.10 (Reflow). Not yet verified: a pane that doesn't clamp its height uses `overflow: clip`, so an unbreakable string or wide table with no scroll container of its own is clipped.
+- [ ] At 320 CSS px, content wider than the pane is reachable rather than cut off. Per WCAG 1.4.10 (Reflow). Known gap: a pane that doesn't clamp its height uses `overflow: clip`, so an unbreakable string or wide table with no scroll container of its own is clipped.
 
 ## Depends on usage
 
 - 4.1.2 (Name, Role, Value): set `label` or `aria-label` on a pane that may scroll, so its region isn't one of several named "Scrollable region". See [Accessibility](./Pane.mdx#accessibility).
 - 1.3.1 (Info and Relationships): set `heading-level` to fit the page's outline. See [Accessibility](./Pane.mdx#accessibility).
 - 1.4.1 (Use of Color): the `error` variant's color only reinforces an error, so say what's wrong in the pane's text. See [Accessibility](./Pane.mdx#accessibility).
-- 1.4.10 (Reflow): give wide content its own scroll container or let it wrap. See [Accessibility](./Pane.mdx#accessibility).

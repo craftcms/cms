@@ -26,10 +26,8 @@ Follows the WAI-ARIA APG [Button](https://www.w3.org/WAI/ARIA/apg/patterns/butto
 ### Visual
 
 - [ ] The icons are filled with `currentColor`, so they follow the text color and forced colors mode. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified.
-- [ ] The button is at least 24×24 CSS px. Per WCAG 2.5.8 (Target Size (Minimum)). Not yet verified. The button has no padding, so an icon-only one is about 0.9em tall.
+- [ ] The button is at least 24×24 CSS px. Per WCAG 2.5.8 (Target Size (Minimum)). Known gap: the button has no padding, so an icon-only one is about 0.9em tall.
 
 ## Depends on usage
 
-- 4.1.3 (Status Messages): announce the result from `craft-copy` and `craft-error` until the button does. See [Accessibility](./CopyButton.mdx#accessibility).
-- 2.4.6 (Headings and Labels): put what's copied in the button's visible text, since `tooltip-label` doesn't name it. See [Accessibility](./CopyButton.mdx#accessibility).
-- 2.5.8 (Target Size (Minimum)): leave 24px around an icon-only copy button, or give it a larger box. See [Accessibility](./CopyButton.mdx#accessibility).
+- 2.4.6 (Headings and Labels): put what's copied in the button's visible text. See [Accessibility](./CopyButton.mdx#accessibility).

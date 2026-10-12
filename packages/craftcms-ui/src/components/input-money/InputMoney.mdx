@@ -48,8 +48,7 @@ A boolean binding cannot express that — `?show-currency="${false}"` removes th
 The mask changes what a person sees as they type.
 Keep the help text explicit about the expected form when the locale's conventions are not the ones a reader would assume — a field that silently reformats input is harder to trust than one that says what it will do.
 
-The currency prefix is visual only: it isn't announced with the field.
-Name the currency in the label or help text whenever the field has to be understood without it, and always when `show-currency="false"`.
+When `show-currency="false"`, name the currency in the label or help text, since nothing else on screen shows it.
 
 The clear button is a real button with its own label. Everything else is announced as on [Input](?path=/docs/form-controls-text-controls-input--docs).
 

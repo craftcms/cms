@@ -38,7 +38,7 @@ It is only meaningful while the switch is off, and is cleared as soon as the swi
 
 ## Accessibility
 
-The control is exposed as a switch that's on or off. The mixed state sets `aria-checked="mixed"`, but switches don't support that value, so screen readers announce a mixed switch as off. Don't rely on `indeterminate` to tell someone the state is mixed.
+The control is exposed as a switch that's on or off.
 
 Label it with the thing being switched, not with the states. "Enable comments" tells a person what the control governs; "On/Off" tells them only what a switch already looks like. If the label comes from elsewhere on the page through `aria-labelledby`, it must contain the text shown beside the switch, so voice control users can say what they see.
 

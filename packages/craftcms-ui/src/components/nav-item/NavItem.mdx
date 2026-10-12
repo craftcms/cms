@@ -49,7 +49,6 @@ A few things are worth attention:
 
 - **Every item needs label text, including `icon-only` ones.** `icon-only` hides the label visually, not from assistive technology: it becomes the row's accessible name and its tooltip. Do not "help" by removing the label.
 - **Set `current` and `active` to match the page.** The item turns them into `aria-current`: `page` for the link to the page you're on, `true` for its ancestors and for a current button. The color alone does not announce anything, so leaving them off leaves screen reader users without the selection.
-- **A heading over a subnav is only visual.** A `group` item, or one whose label is styled text, isn't announced as a heading. Keep heading text short and the items under it self-explanatory.
 - **Controls in the `actions` slot need their own names**, for example `aria-label="Customize sources"`, since they usually show only an icon.
 
 ## Properties

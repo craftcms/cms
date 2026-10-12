@@ -29,5 +29,5 @@ The subclass is a masked `type="text"` field with `inputmode="decimal"`, a curre
 
 ## Depends on usage
 
-- 3.3.2 (Labels or Instructions): name the currency in the label or help text when `show-currency="false"`, or when the field must be understood without the prefix. See [Accessibility](./InputMoney.mdx#accessibility).
+- 3.3.2 (Labels or Instructions): name the currency in the label or help text when `show-currency="false"`. See [Accessibility](./InputMoney.mdx#accessibility).
 - 3.3.2 (Labels or Instructions): say in help text how the amount will be formatted when the locale's conventions may not be the ones a reader expects. See [Accessibility](./InputMoney.mdx#accessibility).

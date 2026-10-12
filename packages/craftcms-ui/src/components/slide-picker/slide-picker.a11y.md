@@ -14,10 +14,10 @@ Follows the WAI-ARIA APG [Slider](https://www.w3.org/WAI/ARIA/apg/patterns/slide
 
 - [x] The control is a `role="slider"` element carrying `aria-valuemin`, `aria-valuemax` and `aria-valuenow`. Per WCAG 4.1.2 (Name, Role, Value). Verified by `exposes slider ARIA state` in `slide-picker.test.ts`.
 - [x] `aria-valuetext` announces the value with `value-unit` appended, or as `valueLabel` formats it, so a bare number isn't all a screen reader gets. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `formats the value text with valueUnit and valueLabel` in `slide-picker.test.ts`.
-- [ ] `value-unit` is appended without a space, so `value-unit="columns"` announces "3columns". Per WCAG 1.3.1 (Info and Relationships). Known gap: the `InAForm` story works around it with a leading space.
-- [ ] `label` is the slider's accessible name, applied as `aria-label`. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
-- [ ] The accessible name comes from a visible label. Per WCAG 2.5.3 (Label in Name) and 3.3.2 (Labels or Instructions). Known gap: `label` only sets `aria-label`, and the component draws no label. A `<label for>` or `craft-field` label names the host, which doesn't reach the slider in the shadow root. `label` also defaults to "Number of columns", so an unlabeled picker is announced with a name that may be wrong.
-- [ ] The element named by `described-by` is the slider's description. Per WCAG 1.3.1 (Info and Relationships). Known gap: the slider is in the shadow root, so an `aria-describedby` id from the page doesn't resolve, and `craft-field` doesn't set `described-by`.
+- [ ] `value-unit` is separated from the value by a space, so `value-unit="columns"` announces "3 columns". Per WCAG 1.3.1 (Info and Relationships). Known gap: the unit is appended with no space, so it announces "3columns".
+- [ ] The slider takes its accessible name from its field label, whether that's a `craft-field` label or a `<label for>` pointing at the picker. Per WCAG 1.3.1 (Info and Relationships), 2.5.3 (Label in Name) and 4.1.2 (Name, Role, Value). Known gap: a field label names the host, which doesn't reach the slider in the shadow root. The only name is `label`, applied as `aria-label`, and the component draws no label of its own.
+- [ ] A picker with no label isn't given a name that may be wrong. Per WCAG 2.4.6 (Headings and Labels). Known gap: `label` defaults to "Number of columns".
+- [ ] The slider takes its description from its field's help text, or from the element named by `described-by`. Per WCAG 1.3.1 (Info and Relationships). Known gap: the slider is in the shadow root, so an `aria-describedby` id from the page doesn't resolve, and `craft-field` doesn't set `described-by`.
 - [x] `disabled` sets `aria-disabled="true"` and removes the slider from the Tab order. Per WCAG 4.1.2 (Name, Role, Value). Verified by `ignores input while disabled` in `slide-picker.test.ts`.
 - [x] `readonly` sets `aria-readonly="true"` and ignores pointer and keyboard input. Per WCAG 4.1.2 (Name, Role, Value). Verified by `ignores input while read-only` in `slide-picker.test.ts`.
 - [ ] A read-only slider stays in the Tab order, so its value can still be reached and read. Per WCAG 2.1.1 (Keyboard). Known gap: `readonly` sets `tabindex="-1"`, which `ignores input while read-only` asserts.
@@ -47,5 +47,5 @@ Follows the WAI-ARIA APG [Slider](https://www.w3.org/WAI/ARIA/apg/patterns/slide
 
 ## Depends on usage
 
-- 3.3.2 (Labels or Instructions): show a visible label beside the picker and pass the same text as `label`. See [Accessibility](./SlidePicker.mdx#accessibility).
+- 3.3.2 (Labels or Instructions): give the picker a visible label. See [Accessibility](./SlidePicker.mdx#accessibility).
 - 1.3.1 (Info and Relationships): set `value-unit` or `valueLabel` when the number alone doesn't say what it counts. See [Accessibility](./SlidePicker.mdx#accessibility).

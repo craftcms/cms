@@ -16,11 +16,13 @@ The swatch is a native `<input type="color">`, made transparent and laid over a 
 - [ ] The picker's accessible name says which field it sets. Per WCAG 4.1.2 (Name, Role, Value) and 2.4.6 (Headings and Labels). Known gap: the picker is always named "Color picker", so two color fields on a page have identically named pickers, and neither name includes the field's label.
 - [ ] The color preview behind the picker is decorative and has no role or text, so the color isn't announced twice. Per WCAG 1.1.1 (Non-text Content). Not yet verified.
 - [x] `disabled` disables the native picker as well as the text field. Per WCAG 4.1.2 (Name, Role, Value). Verified by `sets disabled state on the native picker` in `input-color.test.ts`.
+- [ ] The text field's accessible name or description says it takes a hex value. Per WCAG 1.3.1 (Info and Relationships). Known gap: the `#` prefix that shows this is hidden from screen readers, and nothing else in the field says it.
 
 ### Use of color
 
 - [x] A color chosen with the picker is written into the text field as hex, so the value is always readable as text and not by the swatch alone. Per WCAG 1.4.1 (Use of Color). Verified by `updates the model from the native color picker without a # prefix` in `input-color.test.ts`.
 - [x] A value that isn't a valid hex color stays in the text field as typed and clears the preview, rather than showing a color the value doesn't name. Per WCAG 1.4.1 (Use of Color). Verified by `keeps invalid text values and clears the preview` in `input-color.test.ts`.
+- [ ] A value that isn't a valid hex color is identified in text in `feedback`. Per WCAG 3.3.1 (Error Identification). Known gap: the field has no built-in hex validator, so an invalid value only empties the swatch, which doesn't say what's wrong.
 
 ### Keyboard and focus
 
@@ -38,6 +40,4 @@ The swatch is a native `<input type="color">`, made transparent and laid over a 
 
 ## Depends on usage
 
-- 3.3.2 (Labels or Instructions): say in help text that the field takes a hex value, since the `#` prefix is hidden from screen readers. See [Accessibility](./InputColor.mdx#accessibility).
-- 3.3.1 (Error Identification): the field has no built-in hex validator, so add one to report an invalid value in `feedback`; an empty swatch alone doesn't say what's wrong. See [Accessibility](./InputColor.mdx#accessibility).
 - 1.4.1 (Use of Color): name what a preset means in help text, since presets are offered by value alone. See [Accessibility](./InputColor.mdx#accessibility).

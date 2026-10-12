@@ -38,7 +38,7 @@ rule.addEventListener('change', () => save(rule.value));
 
 A drag-to-rotate ruler is a pointer-first control, which makes the keyboard path the one to check rather than assume. The arrow keys move it by one degree, Page Up and Page Down by ten, and Home and End jump to the ends of the range. A tap on the ruler sets the value at that point, so dragging is never required.
 
-Its accessible name comes from `label`, which is applied as `aria-label`, defaults to "Rotate", and isn't drawn on screen. Show a visible label beside the rule and pass the same text as `label`. A `<label for>` or a [Field](?path=/docs/form-controls-field--docs) label doesn't reach the slider inside the component.
+Give it a visible label, such as a [Field](?path=/docs/form-controls-field--docs) label, so people know what it adjusts and can name it by voice.
 
 Whatever it adjusts should also be settable another way — a numeric field beside it, or a set of preset angles — so an exact value doesn't depend on aiming a pointer or counting key presses.
 

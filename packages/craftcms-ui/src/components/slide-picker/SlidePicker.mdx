@@ -45,11 +45,9 @@ When a unit is not enough, `valueLabel` formats the announced value however you 
 
 ## Accessibility
 
-The control is a slider. Its accessible name comes from `label`, which is applied as `aria-label` and isn't drawn on screen. Show a visible label beside the picker and pass the same text as `label`, so the name matches what people see and can say. A `<label for>` or a [Field](?path=/docs/form-controls-field--docs) label doesn't reach the slider inside the component, and `label` defaults to "Number of columns", which is wrong for most uses.
+The control is a slider. Give it a visible label, such as a [Field](?path=/docs/form-controls-field--docs) label, so people know what it sets and can name it by voice.
 
-`described-by` is meant to add a description, but the slider sits in the component's shadow root, where an id from the page doesn't resolve, and Field doesn't set it. Put anything a person needs to know in the visible label or beside the control for now.
-
-Set `value-unit` or `valueLabel` whenever the number alone doesn't say what it counts. `value-unit` is appended without a space, so include one: `value-unit=" columns"`.
+Set `value-unit` or `valueLabel` whenever the number alone doesn't say what it counts.
 
 Sliders are hard to operate precisely with a pointer and easy with a keyboard, so the arrow-key behavior is not a fallback — it is how many people will use it. Keep the step count low enough that arrowing to a value is quick. There's no Page Up or Page Down.
 

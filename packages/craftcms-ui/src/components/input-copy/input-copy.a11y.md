@@ -15,7 +15,7 @@ The copy button is a `craft-copy-button`; see `craft-copy-button` for its own na
 
 ### Copy behavior
 
-- [ ] A successful or failed copy is announced. Per WCAG 4.1.3 (Status Messages). Not yet verified. The field adds no announcement of its own and relies on `craft-copy-button`.
+- [ ] A successful or failed copy is announced. Per WCAG 4.1.3 (Status Messages). Known gap: the field adds no announcement of its own, and `craft-copy-button` only changes its tooltip and icon, so the result isn't announced.
 
 ### Keyboard and focus
 
@@ -28,5 +28,4 @@ The copy button is a `craft-copy-button`; see `craft-copy-button` for its own na
 
 ## Depends on usage
 
-- 4.1.3 (Status Messages): if the page doesn't already announce the copy result, listen for `craft-copy` and `craft-error` and announce it. See [Accessibility](./InputCopy.mdx#accessibility).
 - 1.3.1 (Info and Relationships): when `copy-value` differs from the displayed value, say so in help text, so it's clear the clipboard gets more than is shown. See [Accessibility](./InputCopy.mdx#accessibility).

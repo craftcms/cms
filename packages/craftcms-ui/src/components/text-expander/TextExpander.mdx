@@ -32,11 +32,9 @@ Suggestions can carry markup — an avatar, a status, a hint — which is what m
 
 This is a combobox pattern layered onto a free-text field, and the announcement is the part that carries it.
 
-The suggestion list is wired to the input, so arrowing through options announces each one while focus stays in the field. A live region announces "Loading" while an asynchronous source fetches, "No suggestions" when nothing matches, and that suggestions collapsed when the list closes. Opening the list and the number of matches aren't announced; a screen reader user learns the list opened when the first option becomes active.
+The suggestion list is wired to the input, so arrowing through options announces each one while focus stays in the field. A live region announces "Loading" while an asynchronous source fetches, "No suggestions" when nothing matches, and that suggestions collapsed when the list closes.
 
 The expander binds to an existing input or textarea and adds no label of its own, so give the field a visible label. Nothing on screen shows that suggestions exist until a trigger is typed, so name the trigger characters in the label or help text — "Mention a user with @", for example. The stories do this in their labels.
-
-When an asynchronous source fails, the list closes silently and only `craft-error` fires. If the failure matters to the person, listen for `craft-error` and tell them, such as with visible help text.
 
 Because suggestions arrive as a person types, keep the option text short and put the distinguishing part first. A list where every entry starts with the same words is a list nobody can navigate by ear.
 

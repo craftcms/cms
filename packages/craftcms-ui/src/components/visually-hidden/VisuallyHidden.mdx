@@ -9,7 +9,7 @@ import * as VisuallyHiddenStories from './visually-hidden.stories';
 
 <Canvas of={VisuallyHiddenStories.Default} sourceState="shown" />
 
-There is text in that example. It is in the document, in the accessibility tree, and in the tab order — it just is not painted.
+There is text in that example. It is in the document and in the accessibility tree — it just is not painted.
 
 ## When to Use It
 
@@ -37,7 +37,7 @@ Prefer a visible label where one fits. Reach for this when the design genuinely 
 
 ## Accessibility
 
-Keep focusable content, such as links and buttons, out of it. Nothing reveals the content when it takes focus, so a keyboard user would land on something they can't see. A skip link needs a pattern that shows it on focus.
+Write the hidden text as a screen reader user should hear it: a short name or description that matches what the design shows, not a duplicate of nearby visible text.
 
 ## Properties
 

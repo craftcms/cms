@@ -18,5 +18,5 @@
 
 ## Depends on usage
 
-- 1.4.1 (Use of Color): show the state in visible text where the dot isn't enough on its own. See [Accessibility](./Status.mdx#accessibility).
+- 1.4.1 (Use of Color): show the state in visible text beside the dot. See [Accessibility](./Status.mdx#accessibility).
 - 4.1.2 (Name, Role, Value): set `label` when "Status: {status}" isn't what a person needs to hear. See [Accessibility](./Status.mdx#accessibility).

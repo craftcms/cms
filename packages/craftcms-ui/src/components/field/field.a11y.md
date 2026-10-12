@@ -50,7 +50,7 @@ The field supplies the label, instructions, notices, and errors around a slotted
 
 - 3.3.2 (Labels or Instructions): give every field a visible `label`, and use `label-sr-only` only when the control's purpose is clear without it. See [Accessibility](./Field.mdx#accessibility).
 - 4.1.2 (Name, Role, Value): set `required`, `readonly`, and `disabled` on the control as well as the field. See [Accessibility](./Field.mdx#accessibility).
-- 1.4.1 (Use of Color): put error text in the `feedback` slot. Setting `has-errors` alone only changes color. See [Accessibility](./Field.mdx#accessibility).
+- 1.4.1 (Use of Color): put error text in the `feedback` slot, so an error isn't shown by color alone. See [Accessibility](./Field.mdx#accessibility).
 - 3.3.3 (Error Suggestion): write errors that say how to fix the value. See [Accessibility](./Field.mdx#accessibility).
 - 3.3.1 (Error Identification): on submit, move focus to the first invalid control. See [Accessibility](./Field.mdx#accessibility).
 - 1.3.1 (Info and Relationships): use `fieldset` when several controls answer one question. See [Accessibility](./Field.mdx#accessibility).

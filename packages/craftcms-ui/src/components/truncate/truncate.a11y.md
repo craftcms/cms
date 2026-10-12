@@ -18,5 +18,4 @@
 
 ## Depends on usage
 
-- 1.4.10 (Reflow): truncate only text whose full value someone can reach another way, and set `disabled` only where the full value shows elsewhere. See [Accessibility](./Truncate.mdx#accessibility).
-- 2.1.1 (Keyboard): for clipped plain text that matters, make the content a link or show the full value elsewhere. See [Accessibility](./Truncate.mdx#accessibility).
+- 1.4.10 (Reflow): set `disabled` only where the full value is already shown nearby. See [Accessibility](./Truncate.mdx#accessibility).

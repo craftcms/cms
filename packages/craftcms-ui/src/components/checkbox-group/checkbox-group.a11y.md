@@ -35,6 +35,6 @@ Follows the WAI-ARIA APG [Checkbox](https://www.w3.org/WAI/ARIA/apg/patterns/che
 ## Depends on usage
 
 - 3.3.2 (Labels or Instructions): give the group a visible label that names the question the boxes answer. See [Accessibility](./CheckboxGroup.mdx#accessibility).
-- 3.3.2 (Labels or Instructions): say in the label or help text when at least one option is required, since the group can't expose it. See [Accessibility](./CheckboxGroup.mdx#accessibility).
+- 3.3.2 (Labels or Instructions): say in the label or help text when at least one option is required. See [Accessibility](./CheckboxGroup.mdx#accessibility).
 - 1.4.1 (Use of Color): show a message in `feedback` when the group is invalid, not just the color change. See [Accessibility](./CheckboxGroup.mdx#accessibility).
 - 3.3.3 (Error Suggestion): write group errors that say how to fix the choice. See [Accessibility](./CheckboxGroup.mdx#accessibility).

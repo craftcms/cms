@@ -62,9 +62,7 @@ Give every combobox a visible label, through `label`, the `label` slot or `craft
 
 When `requireOptionMatch` is `false`, the field accepts values that aren't in the list. Say so in the label or help text, so people know they can type their own.
 
-The filtering is the part worth thinking about. A list that renders only matches means the number of options changes as a person types, and nothing announces that count, or that nothing matched. A screen reader user hears only the position of the active option, such as "3 of 12". The "Showing … of …" note shown past `limit` is hidden from screen readers too. Keep `limit` high enough that a search returns everything someone would reasonably scroll through.
-
-Group headings are visual only and aren't announced, so write option labels that make sense without their group. An option's `indicator` color only reinforces its label: "Online" and "Offline" carry the meaning, the green and red don't.
+An option's `indicator` color only reinforces its label: "Online" and "Offline" carry the meaning, the green and red don't.
 
 ## Properties
 

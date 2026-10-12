@@ -78,4 +78,3 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 - 3.3.2 (Labels or Instructions): say in the label or help text whether values outside the list are accepted. See [Accessibility](./Combobox.mdx#accessibility).
 - 2.5.3 (Label in Name): a host `aria-labelledby` or `aria-label` must contain the visible label text. See [Accessibility](./Combobox.mdx#accessibility).
 - 1.4.1 (Use of Color): an option's `indicator` color only reinforces its label, so the label must say what the color means. See [Accessibility](./Combobox.mdx#accessibility).
-- 1.3.1 (Info and Relationships): group headings aren't announced, so each option label must make sense without its group. See [Accessibility](./Combobox.mdx#accessibility).

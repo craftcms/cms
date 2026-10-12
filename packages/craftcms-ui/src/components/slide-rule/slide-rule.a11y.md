@@ -14,8 +14,8 @@ Follows the WAI-ARIA APG [Slider](https://www.w3.org/WAI/ARIA/apg/patterns/slide
 
 - [x] The control is a `role="slider"` element carrying `aria-valuemin`, `aria-valuemax`, `aria-valuenow`, and an `aria-valuetext` that includes the value. Per WCAG 4.1.2 (Name, Role, Value). Verified by `exposes slider ARIA state` in `slide-rule.test.ts`.
 - [ ] `aria-valuetext` reads as a whole number of degrees ("12 degrees"), while `aria-valuenow` keeps any fraction. Per WCAG 1.3.1 (Info and Relationships). Not yet verified.
-- [ ] `label` is the slider's accessible name, applied as `aria-label`. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
-- [ ] The accessible name comes from a visible label. Per WCAG 2.5.3 (Label in Name) and 3.3.2 (Labels or Instructions). Known gap: `label` only sets `aria-label` and defaults to "Rotate". A `<label for>` or `craft-field` label names the host, which doesn't reach the slider in the shadow root.
+- [ ] The slider takes its accessible name from its field label, whether that's a `craft-field` label or a `<label for>` pointing at the rule. Per WCAG 1.3.1 (Info and Relationships), 2.5.3 (Label in Name) and 4.1.2 (Name, Role, Value). Known gap: a field label names the host, which doesn't reach the slider in the shadow root. The only name is `label`, applied as `aria-label`, and the component draws no label of its own.
+- [ ] A rule with no label isn't given a name that may be wrong. Per WCAG 2.4.6 (Headings and Labels). Known gap: `label` defaults to "Rotate".
 - [x] `disabled` sets `aria-disabled="true"`, removes the slider from the Tab order and ignores the keyboard. Per WCAG 4.1.2 (Name, Role, Value). Verified by `ignores the keyboard while disabled` in `slide-rule.test.ts`.
 - [ ] The graduation marks and their numbers are hidden from assistive technology, leaving the slider's own value as the only thing announced. Per WCAG 1.3.1 (Info and Relationships). Not yet verified.
 
@@ -47,4 +47,4 @@ Follows the WAI-ARIA APG [Slider](https://www.w3.org/WAI/ARIA/apg/patterns/slide
 
 ## Depends on usage
 
-- 3.3.2 (Labels or Instructions): show a visible label beside the rule and pass the same text as `label`. See [Accessibility](./SlideRule.mdx#accessibility).
+- 3.3.2 (Labels or Instructions): give the rule a visible label. See [Accessibility](./SlideRule.mdx#accessibility).

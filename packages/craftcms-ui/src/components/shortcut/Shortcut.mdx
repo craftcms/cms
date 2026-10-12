@@ -17,9 +17,7 @@ The component renders a shortcut; it does not bind one. Whatever handles the key
 
 ## Accessibility
 
-Symbols like ⌘ and ⇧ are announced inconsistently, and sometimes not at all.
-
-Where a shortcut is the only way to reach something, it needs a text equivalent nearby rather than living solely in the symbols. Inside an [Action Item](?path=/docs/components-action-item--docs), the item's label carries the meaning and the shortcut is supplementary, which is the arrangement that works.
+Where a shortcut is the only way to reach something, name the action in text nearby, not only in the shortcut. Inside an [Action Item](?path=/docs/components-action-item--docs), the item's label carries the meaning and the shortcut is supplementary, which is the arrangement that works.
 
 The component only shows the shortcut. When a control really responds to it, put `aria-keyshortcuts` on that control, such as `aria-keyshortcuts="Meta+S"` on a Mac or `"Control+S"` elsewhere, so assistive technology can announce it.
 

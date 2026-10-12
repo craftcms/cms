@@ -35,13 +35,13 @@ Three components draw a small colored mark, and they are not interchangeable:
 
 The dot is a colored shape, so on its own it conveys nothing to a screen reader. With a `status` set, it is exposed as `role="img"` with an accessible name, which is what makes the state perceivable.
 
-Without a `label`, the name is "Status: live" derived from the state. Only the "Status:" part is translated; the state itself is the raw key. Set `label` when that is not what a person needs to hear, including on non-English pages:
+Without a `label`, the name is "Status: live" derived from the state. Set `label` when that is not what a person needs to hear:
 
 <Canvas of={StatusStories.CustomLabel} sourceState="shown" />
 
-A status with neither `status` nor `label` has no name and is not exposed as an image at all. A dot with a `status` always has a name, though, even when adjacent text already spells the state out, so in that case a screen reader hears the state twice.
+A status with neither `status` nor `label` has no name and is not exposed as an image at all.
 
-**Color is the only visual signal here.** Every state is the same circle, so in a dense list the whole meaning rests on hue. Carry the state in visible text in the surrounding row too, rather than relying on the dot alone.
+**Show the state in visible text too.** Carry it in the surrounding row, so its meaning doesn't rest on the dot alone.
 
 ## Properties
 

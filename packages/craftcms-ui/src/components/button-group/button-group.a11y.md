@@ -34,4 +34,3 @@ Without `name`, the group only joins its buttons visually; each one follows `but
 
 - 4.1.2 (Name, Role, Value): name the group with `aria-label` or `aria-labelledby` in selection mode. See [Accessibility](./ButtonGroup.mdx#accessibility).
 - 4.1.2 (Name, Role, Value): name each icon-only button. See [Accessibility](./ButtonGroup.mdx#accessibility).
-- 1.3.1 (Info and Relationships): keep menus and other controls out of a group that has a `name`. See [Accessibility](./ButtonGroup.mdx#accessibility).
