@@ -142,15 +142,6 @@
     font-weight: 600;
   }
 
-  /* Out through the scroll area's padding to the pane's edges. */
-  .activity-timeline__day::before {
-    content: '';
-    position: absolute;
-    inset-block-start: 50%;
-    inset-inline: calc(var(--cp-container-padding) * -1);
-    border-block-start: 1px solid var(--c-color-border-quiet);
-  }
-
   .activity-timeline__day-label {
     position: relative;
     display: inline-block;

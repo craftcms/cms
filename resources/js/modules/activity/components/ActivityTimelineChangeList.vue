@@ -55,6 +55,10 @@
     overflow-wrap: anywhere;
   }
 
+  .activity-timeline__change-label {
+    font-weight: var(--font-weight-semibold);
+  }
+
   .activity-timeline__change-comparison {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

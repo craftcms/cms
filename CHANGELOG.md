@@ -39,7 +39,7 @@
 - Comments can now be submitted with <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in the Activity and Workflow details panels. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - Comment fields in the Activity and Workflow details panels now start one line high, keep the Comment button inside the field, and show how many characters a comment is over the limit. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))
-- Activity timeline day headings now show the date as a badge over a full-width rule, and the Workflow details panel’s review panes are no longer outlined. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Activity timeline day headings now show the date as a badge, and the Workflow details panel’s review panes are no longer outlined. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Selectize fields are now rendered as `<craft-combobox>` web components, rather than Selectize instances.
 - Autosuggest inputs are now rendered as `<craft-combobox>` web components, rather than Vue 2 `vue-autosuggest` instances.
 - Autosuggest inputs now match suggestions on their hint as well as their label, and no longer cap each suggestion group at five items.
