@@ -45,7 +45,8 @@ class SystemMessages extends Utility
     {
         Edition::require(Edition::Pro);
 
-        $messages = app(SystemMessagesService::class)->getAllMessages();
+        $systemMessages = app(SystemMessagesService::class);
+        $messages = $systemMessages->getAllMessages();
 
         $locales = I18N::getSiteLocales()->map(fn (Locale $locale) => [
             'value' => $locale->id,
@@ -58,10 +59,38 @@ class SystemMessages extends Utility
                 'heading' => $m->heading,
                 'subject' => $m->subject,
                 'body' => $m->body,
+                'textExpanderTriggers' => self::textExpanderTriggers($systemMessages->getTemplateVariables($m)),
             ])->values()->all(),
             ':locales' => $locales,
-            ':is-multi-site' => Sites::isMultiSite(),
             'primary-language' => Sites::getPrimarySite()->getLanguage(),
         ]);
+    }
+
+    /**
+     * @param  array<string, string>  $variables
+     * @return list<array<string, mixed>>
+     */
+    private static function textExpanderTriggers(array $variables): array
+    {
+        $options = collect($variables)
+            ->map(function (string $label, string $name): array {
+                $value = sprintf('{{%s}}', $name);
+
+                return [
+                    'label' => $label,
+                    'value' => $value,
+                    'keywords' => [$name],
+                    'data' => ['hint' => $value],
+                ];
+            })
+            ->values()
+            ->all();
+
+        return [[
+            'trigger' => '{{',
+            'boundary' => 'anywhere',
+            'label' => t('Message Variables'),
+            'options' => $options,
+        ]];
     }
 }
