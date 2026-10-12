@@ -240,30 +240,36 @@ describe('withNavCrumbMenus', () => {
   });
   const NAV = [navCrumbItem({label: 'Dashboard'}), ENTRIES];
 
-  it('swaps a switcher for the menu the nav draws at its level', () => {
-    const [entries, posts] = withNavCrumbMenus(
-      [
-        {label: 'Entries', href: '/admin/content/entries'},
-        {
-          label: 'Posts',
-          href: '/admin/content/entries/posts',
-          items: [{type: 'link', label: 'Singles', href: '/admin/singles'}],
-        },
-      ],
-      NAV
-    );
+  it.each([
+    ['/admin/content/entries', true, false],
+    ['/admin/content/entries/posts', false, true],
+  ] as const)(
+    'gives source %s its nav menu without duplicating it on the section crumb',
+    (href, allSelected, postsSelected) => {
+      const [entries, posts] = withNavCrumbMenus(
+        [
+          {label: 'Entries', href: '/admin/content/entries'},
+          {
+            label: 'Posts',
+            href,
+            items: [{type: 'link', label: 'Singles', href: '/admin/singles'}],
+          },
+        ],
+        NAV
+      );
 
-    expect(entries!.items).toBeUndefined();
-    expect(posts!.items).toMatchObject([
-      {type: 'link', label: 'All entries', selected: false},
-      {type: 'link', label: 'Singles', selected: false},
-      {
-        type: 'group',
-        heading: 'Channels',
-        items: [{type: 'link', label: 'Posts', selected: true}],
-      },
-    ]);
-  });
+      expect(entries!.items).toBeUndefined();
+      expect(posts!.items).toMatchObject([
+        {type: 'link', label: 'All entries', selected: allSelected},
+        {type: 'link', label: 'Singles', selected: false},
+        {
+          type: 'group',
+          heading: 'Channels',
+          items: [{type: 'link', label: 'Posts', selected: postsSelected}],
+        },
+      ]);
+    }
+  );
 
   it('keeps the server menu for a crumb the nav doesn’t know', () => {
     const items = [{type: 'link' as const, label: 'Other', href: '/x'}];
@@ -316,24 +322,6 @@ describe('withNavCrumbMenus', () => {
     const [crumb] = withNavCrumbMenus([{label: 'English', items}], NAV);
 
     expect(crumb!.items).toBe(items);
-  });
-
-  it('leaves a section that is nothing but its sources to the source crumb', () => {
-    const [entries, all] = withNavCrumbMenus(
-      [
-        {label: 'Entries', href: '/admin/content/entries'},
-        {
-          label: 'All entries',
-          href: '/admin/content/entries',
-          items: [{type: 'link', label: 'All entries', href: '/x'}],
-        },
-      ],
-      NAV,
-      '/admin/content/entries'
-    );
-
-    expect(entries!.items).toBeUndefined();
-    expect(all!.items).toHaveLength(3);
   });
 
   describe('in a plugin’s section', () => {

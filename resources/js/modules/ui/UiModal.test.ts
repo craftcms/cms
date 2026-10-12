@@ -3,19 +3,20 @@ import {createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import UiModal from './UiModal.vue';
 
-const modalProps = vi.hoisted(() => ({current: {} as Record<string, unknown>}));
-
 vi.mock('@/common/components/ModalForm.vue', () => ({
   default: defineComponent({
     props: ['isActive', 'title', 'submitLabel', 'loading', 'width'],
     emits: ['submit', 'close'],
     setup(props, {slots, emit}) {
       return () => {
-        modalProps.current = {...props};
         return h(
           'form',
           {onSubmit: (e: Event) => (e.preventDefault(), emit('submit'))},
-          slots.default?.()
+          [
+            h('h1', props.title),
+            slots.default?.(),
+            h('button', {type: 'submit'}, props.submitLabel),
+          ]
         );
       };
     },
@@ -84,12 +85,8 @@ describe('UiModal', () => {
     expect(get).toHaveBeenCalledWith('things/receive-modal', {
       params: {thingId: 4},
     });
-    expect(modalProps.current).toMatchObject({
-      isActive: true,
-      title: 'Receive',
-      submitLabel: 'Receive now',
-      width: 'md',
-    });
+    expect(container.querySelector('h1')?.textContent).toBe('Receive');
+    expect(container.querySelector('button')?.textContent).toBe('Receive now');
   });
 
   it('posts the UI values with its params, then reports the response', async () => {

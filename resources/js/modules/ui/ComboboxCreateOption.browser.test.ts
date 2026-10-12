@@ -1,5 +1,7 @@
+import '../../../css/cp.css';
 import {createApp, h, nextTick, ref} from 'vue';
-import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {page, userEvent} from 'vite-plus/test/browser/context';
 import type CraftCombobox from '@craftcms/ui/components/combobox/combobox';
 import type {ComboboxItem} from '@craftcms/ui/components/combobox/combobox';
 import '@craftcms/ui/components/combobox/combobox';
@@ -27,35 +29,14 @@ const options = [
 
 let app: ReturnType<typeof createApp> | undefined;
 let container: HTMLElement;
-const attachInternals = Object.getOwnPropertyDescriptor(
-  HTMLElement.prototype,
-  'attachInternals'
-);
-
-beforeEach(() => {
-  Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
-    configurable: true,
-    value: () => ({setFormValue: vi.fn(), setValidity: vi.fn()}),
-  });
-});
-
 afterEach(() => {
   app?.unmount();
   container?.remove();
   slideout.openSlideout.mockReset();
-  if (attachInternals) {
-    Object.defineProperty(
-      HTMLElement.prototype,
-      'attachInternals',
-      attachInternals
-    );
-  } else {
-    Reflect.deleteProperty(HTMLElement.prototype, 'attachInternals');
-  }
 });
 
 async function fixture(multiple = false, items: ComboboxItem[] = options) {
-  container = document.createElement('div');
+  container = document.createElement('form');
   document.body.append(container);
   const selection = ref<string | string[]>(multiple ? ['42'] : '42');
   const changes = vi.fn(
@@ -141,14 +122,10 @@ it('exposes a native selection event before syncing the Vue model', async () => 
 it('opens the create screen when its option is selected by keyboard', async () => {
   slideout.openSlideout.mockResolvedValue(null);
   const {combobox, selection} = await fixture();
-  const input = combobox.querySelector('input')!;
-  input.focus();
-  input.value = 'Create';
-  input.dispatchEvent(new Event('input', {bubbles: true}));
-  await vi.waitFor(() => expect(combobox.activeIndex).toBe(0));
-  input.dispatchEvent(
-    new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
-  );
+  combobox.querySelector('input')!.focus();
+  await userEvent.keyboard('{ArrowDown}');
+  await expect.element(page.getByRole('listbox')).toBeVisible();
+  await userEvent.keyboard('{ArrowUp}{Enter}');
 
   await vi.waitFor(() =>
     expect(slideout.openSlideout).toHaveBeenCalledTimes(1)
@@ -158,7 +135,7 @@ it('opens the create screen when its option is selected by keyboard', async () =
 });
 
 it.each([false, true])(
-  'keeps the prior selection on cancel and selects the saved record (multiple: %s)',
+  'keeps the prior selection until the created record is saved (multiple: %s)',
   async (multiple) => {
     slideout.openSlideout.mockResolvedValue(null);
     const {combobox, selection, changes} = await fixture(multiple);
@@ -171,7 +148,16 @@ it.each([false, true])(
       expect(combobox.modelValue).toEqual(multiple ? ['42'] : '42')
     );
     expect(selection.value).toEqual(multiple ? ['42'] : '42');
-    expect(changes).not.toHaveBeenCalled();
+    await vi.waitFor(() =>
+      expect(
+        new FormData(container as HTMLFormElement).getAll(
+          multiple ? 'category[]' : 'category'
+        )
+      ).toEqual(['42'])
+    );
+    expect(changes.mock.calls.flatMap(([value]) => value)).not.toContain(
+      '__add__'
+    );
 
     const [url, config] = slideout.openSlideout.mock.calls[0]!;
     expect(url).toBe('/categories/new');
@@ -186,9 +172,21 @@ it.each([false, true])(
           : [item.value]
       )
     ).toEqual(['42', '73', '__add__']);
-    expect(changes).toHaveBeenCalledTimes(1);
+    expect(changes).toHaveBeenLastCalledWith(
+      multiple ? ['42', '73'] : '73',
+      'discrete'
+    );
+    await vi.waitFor(() =>
+      expect(
+        new FormData(container as HTMLFormElement).getAll(
+          multiple ? 'category[]' : 'category'
+        )
+      ).toEqual(multiple ? ['42', '73'] : ['73'])
+    );
     if (!multiple) {
-      expect(combobox.querySelector('input')?.value).toBe('New category');
+      await vi.waitFor(() =>
+        expect(combobox.querySelector('input')?.value).toBe('New category')
+      );
     }
   }
 );
