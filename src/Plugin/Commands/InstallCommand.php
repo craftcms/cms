@@ -47,7 +47,14 @@ class InstallCommand extends Command
         }
 
         $handle = $this->getHandle(fn (array $info) => ! $info['isInstalled']);
+        if ($handle === false) {
+            return self::FAILURE;
+        }
+
         $edition = $this->argument('edition');
+        if ($edition !== null && ! is_string($edition)) {
+            throw new \InvalidArgumentException('Invalid plugin edition.');
+        }
 
         if ($this->plugins->isPluginInstalled($handle)) {
             return $this->switchEdition($handle, $edition);
@@ -74,6 +81,10 @@ class InstallCommand extends Command
                     validate: fn ($value) => in_array($value, $editions) ? null : 'The edition must be one of: '.implode(', ', $editions),
                 );
             }
+        }
+
+        if ($edition !== null && ! is_string($edition)) {
+            throw new \InvalidArgumentException('Invalid plugin edition.');
         }
 
         $this->installPluginByHandle($handle, $edition);

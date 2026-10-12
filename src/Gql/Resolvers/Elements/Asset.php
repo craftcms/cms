@@ -49,7 +49,12 @@ class Asset extends ElementResolver
             return ElementCollection::empty();
         }
 
-        $volumeIds = collect($pairs['volumes'])
+        $volumeUids = $pairs['volumes'] ?? [];
+        if ($volumeUids === true) {
+            return $query;
+        }
+
+        $volumeIds = collect($volumeUids)
             ->map(fn (string $uid) => Volumes::getVolumeByUid($uid)?->id)
             ->filter(fn (?int $id) => $id !== null)
             ->all();

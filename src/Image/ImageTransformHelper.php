@@ -196,7 +196,7 @@ class ImageTransformHelper
             $imageSourcePath = false;
         }
 
-        if (! is_file($imageSourcePath)) {
+        if ($imageSourcePath === false || ! is_file($imageSourcePath)) {
             throw new FsObjectNotFoundException("The file \"{$asset->getFilename()}\" does not exist.");
         }
 
@@ -394,9 +394,11 @@ class ImageTransformHelper
         }
 
         $imageSource = self::getLocalImageSource($asset);
+        $width = $transform->width === null ? null : (int) $transform->width;
+        $height = $transform->height === null ? null : (int) $transform->height;
 
         if ($ext === 'svg' && $format !== 'svg') {
-            $size = max($transform->width, $transform->height) ?? 1000;
+            $size = max($width, $height) ?? 1000;
             $image = $imagesService->loadImage($imageSource, true, $size);
         } else {
             $image = $imagesService->loadImage($imageSource);
@@ -421,25 +423,25 @@ class ImageTransformHelper
             case 'letterbox':
                 if ($image instanceof Raster) {
                     $image->scaleToFitAndFill(
-                        $transform->width,
-                        $transform->height,
+                        $width,
+                        $height,
                         $transform->fill,
                         $position,
                         $scaleIfSmaller
                     );
                 } else {
                     Log::info('Cannot add fill to non-raster images');
-                    $image->scaleToFit($transform->width, $transform->height, $scaleIfSmaller);
+                    $image->scaleToFit($width, $height, $scaleIfSmaller);
                 }
                 break;
             case 'fit':
-                $image->scaleToFit($transform->width, $transform->height, $scaleIfSmaller);
+                $image->scaleToFit($width, $height, $scaleIfSmaller);
                 break;
             case 'stretch':
-                $image->resize($transform->width, $transform->height);
+                $image->resize($width, $height);
                 break;
             default:
-                $image->scaleAndCrop($transform->width, $transform->height, $scaleIfSmaller, $position);
+                $image->scaleAndCrop($width, $height, $scaleIfSmaller, $position);
         }
 
         if ($image instanceof Raster) {

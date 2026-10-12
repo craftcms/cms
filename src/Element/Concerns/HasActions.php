@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Actions\Edit;
 use CraftCms\Cms\Element\Actions\SetStatus;
 use CraftCms\Cms\Element\Actions\View as ViewAction;
 use CraftCms\Cms\Element\Contracts\DeleteActionInterface;
+use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Events\ElementActionsResolving;
 use Illuminate\Support\Collection;
 
@@ -25,6 +26,7 @@ use function CraftCms\Cms\t;
  */
 trait HasActions
 {
+    /** @return array<ElementActionInterface|class-string<ElementActionInterface>|array{type:class-string<ElementActionInterface>}> */
     public static function actions(string $source): array
     {
         $actions = Collection::make(static::defineActions($source));

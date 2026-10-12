@@ -200,7 +200,7 @@ class FieldEditViewModel extends ViewModel
     private function fieldTypeOptions(): array
     {
         $allFieldTypes = $this->fieldsService->getAllFieldTypes();
-        $savedField = $this->field->id
+        $savedField = is_int($this->field->id)
             ? $this->fieldsService->getFieldById($this->field->id)
             : null;
         $compatibleFieldTypes = $savedField
@@ -263,7 +263,7 @@ class FieldEditViewModel extends ViewModel
     {
         return array_map(
             static fn (TranslationMethod $method): string => $method->value,
-            $type::supportedTranslationMethods(),
+            array_values($type::supportedTranslationMethods()),
         );
     }
 

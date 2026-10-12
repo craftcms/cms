@@ -78,7 +78,7 @@ class UpdateElementSlugsAndUris extends Job
 
         $query->cursor()->each(function ($element) {
             // totalToProcess can be 0 somehow (https://github.com/craftcms/cms/issues/16787)
-            $this->setProgress((int) (($this->totalProcessed / max($this->totalToProcess, $this->totalProcessed + 1)) * 100));
+            $this->setProgress(min(100, max(0, (int) (($this->totalProcessed / max($this->totalToProcess, $this->totalProcessed + 1)) * 100))));
             $this->totalProcessed++;
 
             $oldSlug = $element->slug;

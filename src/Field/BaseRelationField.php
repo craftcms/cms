@@ -74,7 +74,7 @@ use Override;
 use RuntimeException;
 use Tpetry\QueryExpressions\Language\Alias;
 
-use function CraftCms\Cms\craftAuth;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -295,7 +295,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     /**
-     * @var string|string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
+     * @var list<string>|string|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
      */
     public string|array|null $sources = '*';
 
@@ -872,7 +872,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE)) {
+        if (! $element->ruleset || ! $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -1006,7 +1006,9 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         // Prevent relational fields on this element from enforcing related element validation
         self::$validatingRelatedElements = true;
 
-        $target->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        if ($target->ruleset) {
+            $target->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        }
         $validates = $target->validate();
 
         self::$validatingRelatedElements = false;
@@ -1055,7 +1057,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ->siteId($this->targetSiteId($element));
 
         if (is_array($value) || is_int($value)) {
-            $value = collect($value)->filter()->values()->all();
+            $value = collect(is_int($value) ? [$value] : $value)->filter()->values()->all();
             $query->whereIn('elements.id', $value);
             if (! empty($value)) {
                 $query->orderBy(new FixedOrderExpression('elements.id', $value));
@@ -1392,7 +1394,10 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 )
                 ->orderBy('sortOrder')
                 ->get()
-                ->map(fn (object $row) => (array) $row)
+                ->map(fn (\stdClass $row) => [
+                    'source' => (int) $row->source,
+                    'target' => (int) $row->target,
+                ])
                 ->all();
 
             array_push($map, ...$missingMappingsQuery);
@@ -1403,7 +1408,10 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         // Is a single target site selected?
         if ($this->targetSiteId && Sites::isMultiSite()) {
             try {
-                $criteria['siteId'] = Sites::getSiteByUid($this->targetSiteId)->id;
+                $site = Sites::getSiteByUid($this->targetSiteId);
+                if ($site->id !== null) {
+                    $criteria['siteId'] = $site->id;
+                }
             } catch (SiteNotFoundException $exception) {
                 Log::warning($exception->getMessage(), [__METHOD__]);
             }
@@ -1424,7 +1432,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     public function getContentGqlMutationArgumentType(): array
     {
         return [
-            'name' => $this->handle,
+            'name' => $this->handle ?? '',
             'type' => Type::listOf(Type::int()),
             'description' => $this->instructions,
         ];
@@ -1464,7 +1472,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         if (isset($this->oldSettings)) {
             $oldLocalizeRelations = (bool) ($this->oldSettings['localizeRelations'] ?? false);
             if ($this->localizeRelations !== $oldLocalizeRelations) {
-                dispatch(new LocalizeRelations($this->id));
+                dispatch(new LocalizeRelations($this->getId() ?? throw new RuntimeException('Saved relation fields must have an ID.')));
             }
         }
 
@@ -1560,7 +1568,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 );
                 $siteIds = Arr::where($siteIds, fn ($siteId) => $siteId !== $element->siteId);
                 if (! empty($siteIds)) {
-                    $userId = craftAuth()->id();
+                    $userId = currentUser()?->getCraftUserId();
                     $timestamp = now();
 
                     foreach ($siteIds as $siteId) {
@@ -1568,7 +1576,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                             ->upsert([
                                 'elementId' => $element->id,
                                 'siteId' => $siteId,
-                                'fieldId' => $this->id,
+                                'fieldId' => $this->getId(),
                                 'layoutElementUid' => $this->layoutElement->uid,
                                 'dateUpdated' => $timestamp,
                                 'propagated' => $element->propagating,
@@ -1696,7 +1704,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         $searchCriteria = null;
 
         if ($this->showSearchInput($element)) {
-            $source = ElementSources::findSource($elementType, reset($sources), ElementSources::CONTEXT_FIELD);
+            $source = ElementSources::findSource($elementType, (is_array($sources) ? reset($sources) : $sources) ?: '', ElementSources::CONTEXT_FIELD);
             if (! empty($source['criteria'])) {
                 $searchCriteria = $source['criteria'];
             }
@@ -1708,12 +1716,12 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             'jsClass' => $this->inputJsClass,
             'elementType' => $elementType,
             'id' => $this->getInputId(),
-            'fieldId' => $this->id,
+            'fieldId' => $this->getId(),
             'storageKey' => 'field.'.$this->id,
             'describedBy' => $this->describedBy,
             'labelId' => $this->getLabelId(),
-            'name' => $this->handle,
-            'elements' => $value,
+            'name' => $this->handle ?? '',
+            'elements' => array_values($value),
             'sources' => $sources,
             'searchCriteria' => $searchCriteria,
             'condition' => $selectionCondition,
@@ -1809,12 +1817,16 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      *
      * @param  ElementConditionInterface|string|array|null  $condition
      *
-     * @phpstan-param ElementConditionInterface|string|array{class:string}|null $condition
+     * @phpstan-param ElementConditionInterface|class-string<ElementConditionInterface>|array{class:class-string<ElementConditionInterface>}|null $condition
      */
     public function setSelectionCondition(mixed $condition): void
     {
         if ($condition instanceof ConditionInterface && ! $condition->getConditionRules()->getRules()) {
             $condition = null;
+        }
+
+        if (is_string($condition)) {
+            $condition = ['class' => $condition];
         }
 
         // Don't instantiate it unless we actually end up needing it.

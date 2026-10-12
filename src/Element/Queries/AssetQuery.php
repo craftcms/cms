@@ -25,7 +25,9 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\currentUser;
 
 /**
- * @extends ElementQuery<Asset>
+ * @template TAsArray of bool = false
+ *
+ * @extends ElementQuery<Asset, TAsArray>
  *
  * @since 6.0.0
  */

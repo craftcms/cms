@@ -33,7 +33,7 @@ class Address extends ElementResolver
             if (isset($pairs['usergroups'])) {
                 $groupIds = array_filter(array_map(
                     fn (string $uid) => UserGroups::getGroupByUid($uid)?->id,
-                    $pairs['usergroups'],
+                    $pairs['usergroups'] === true ? UserGroups::getAllGroups()->pluck('uid')->all() : $pairs['usergroups'],
                 ));
                 if (! empty($groupIds)) {
                     $conditions[] = function (Builder $query) use ($groupIds) {

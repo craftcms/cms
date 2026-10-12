@@ -34,7 +34,7 @@ trait IndexesAssets
 
     private function parseBooleanOption(string|int|bool $value): bool
     {
-        return match (strtolower($value)) {
+        return match (strtolower((string) $value)) {
             '1', 'yes', 'y', 'true', 'on' => true,
             default => false,
         };
@@ -309,6 +309,6 @@ trait IndexesAssets
                 ->all(),
         );
 
-        return $selection ? $missingRecords[$selection - 1] : null;
+        return $selection ? $missingRecords[(int) $selection - 1] : null;
     }
 }

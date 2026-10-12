@@ -10,6 +10,7 @@ use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use GraphQL\Type\Definition\Argument;
+use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -103,14 +104,14 @@ class User extends ElementArguments
     }
 
     #[\Override]
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     public static function getDraftArguments(): array
     {
         return [];
     }
 
     #[\Override]
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     public static function getRevisionArguments(): array
     {
         return [];

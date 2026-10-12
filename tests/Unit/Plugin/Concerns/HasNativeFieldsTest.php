@@ -27,5 +27,5 @@ it('does not register a native field provider by default', function () {
 
     $plugin->bootHasNativeFields();
 
-    expect(app(NativeFields::class)->apply(new FieldLayout, ['native']))->toBe(['native']);
+    expect(app(NativeFields::class)->apply(new FieldLayout, [EntryTitleField::class]))->toBe([EntryTitleField::class]);
 });

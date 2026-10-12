@@ -30,6 +30,7 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\MoneyRule;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
+use InvalidArgumentException;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Exception\ParserException;
@@ -119,8 +120,12 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     /**
      * Constructor
      */
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         $this->_isoCurrencies = new ISOCurrencies;
 
         // Config normalization
@@ -182,7 +187,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             return null;
         }
 
-        $decimal = MoneyHelper::toDecimal(new MoneyLibrary($value, new Currency($this->currency)));
+        $decimal = MoneyHelper::toDecimal(new MoneyLibrary(is_float($value) ? (int) $value : $value, new Currency($this->currency)));
 
         return $decimal === false ? null : (float) $decimal;
     }
@@ -285,6 +290,10 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             $value = (int) $value;
         }
 
+        if (! is_numeric($value)) {
+            return null;
+        }
+
         return new MoneyLibrary($value, new Currency($this->currency));
     }
 
@@ -306,6 +315,10 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         }
 
         $currency ??= $this->currency;
+
+        if ($currency === '') {
+            throw new InvalidArgumentException('Money fields require a currency code.');
+        }
 
         // Was this submitted with a locale ID? (This means the data is coming from the settings form)
         if (isset($value['locale'], $value['value'])) {
@@ -346,7 +359,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
         $defaultValue = null;
         if (isset($this->defaultValue)) {
-            $defaultValue = MoneyHelper::toNumber(new MoneyLibrary($this->defaultValue, new Currency($this->currency)));
+            $defaultValue = MoneyHelper::toNumber(new MoneyLibrary(is_float($this->defaultValue) ? (int) $this->defaultValue : $this->defaultValue, new Currency($this->currency)));
         }
 
         return FormFields::moneyInputHtml([

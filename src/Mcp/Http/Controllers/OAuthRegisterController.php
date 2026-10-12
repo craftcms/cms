@@ -146,9 +146,9 @@ readonly class OAuthRegisterController
         /** @var list<string> $allowedDomains */
         $allowedDomains = config('mcp.redirect_domains', []);
 
-        return collect($allowedDomains)
+        return array_values(collect($allowedDomains)
             ->map(fn (string $domain): string => Str::endsWith($domain, '/') ? $domain : "$domain/")
-            ->all();
+            ->all());
     }
 
     private function hasLocalhostDomain(): bool

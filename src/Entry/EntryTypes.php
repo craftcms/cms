@@ -119,7 +119,7 @@ class EntryTypes
         /** @var MemoizableArray<EntryType> $entryTypes */
         $entryTypes = new MemoizableArray(
             $this->_createEntryTypeQuery()->get()->all(),
-            function (object $result) {
+            function (\stdClass $result) {
                 $result->titleTranslationMethod = TranslationMethod::from($result->titleTranslationMethod);
                 $result->slugTranslationMethod = TranslationMethod::from($result->slugTranslationMethod);
                 $result->color = $result->color ? Color::from($result->color) : null;
@@ -596,7 +596,7 @@ class EntryTypes
      *
      * @internal
      */
-    /** @return array{array<string, int|string|null>, EntryTypeIndexData[]} */
+    /** @return array{array{total:int, per_page:int, current_page:int, last_page:int, next_page_url:string|null, prev_page_url:string|null, from:int|null, to:int|null}, list<EntryTypeIndexData>} */
     public function getTableData(
         int $page,
         int $limit,
@@ -615,7 +615,7 @@ class EntryTypes
 
         /** @var Collection<int, EntryType> $entryTypes */
         $entryTypes = $results->map(fn (object $result) => $this->entryTypes()->firstWhere('id',
-            $result->id))->filter()->values();
+            get_object_vars($result)['id']))->filter()->values();
 
         $tableData = [];
         $usages = $this->allEntryTypeUsages();
@@ -642,16 +642,16 @@ class EntryTypes
             ]);
         }
 
-        $pagination = Arr::only($paginator->toArray(), [
-            'total',
-            'per_page',
-            'current_page',
-            'last_page',
-            'next_page_url',
-            'prev_page_url',
-            'from',
-            'to',
-        ]);
+        $pagination = [
+            'total' => $paginator->total(),
+            'per_page' => $paginator->perPage(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'next_page_url' => $paginator->nextPageUrl(),
+            'prev_page_url' => $paginator->previousPageUrl(),
+            'from' => $paginator->firstItem(),
+            'to' => $paginator->lastItem(),
+        ];
 
         return [$pagination, $tableData];
     }

@@ -55,7 +55,7 @@ readonly class EnforceLicenses
             ->value();
 
         $cookie = $request->cookie($this->license->shunCookieName());
-        $data = $cookie ? Json::decode($cookie) : null;
+        $data = is_string($cookie) && $cookie !== '' ? Json::decode($cookie) : null;
 
         if (($data['hash'] ?? null) !== $hash) {
             $data = null;
@@ -89,7 +89,7 @@ readonly class EnforceLicenses
     {
         $cookie = $request->cookie($this->license->shunCookieName());
 
-        if (! $cookie) {
+        if (! is_string($cookie) || $cookie === '') {
             return true;
         }
 

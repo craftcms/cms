@@ -1,0 +1,11 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Aliases;
+
+class Aliases
+{
+    /** @return ($throw is true ? string : string|false) */
+    public static function get(string $alias, bool $throw = true): string|false {}
+}

@@ -293,7 +293,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                 ->instructions(t('Choose which buttons should be available in the editor toolbar.'))
                 ->control(Choice::make('toolbarButtons')
                     ->multiple()
-                    ->options(array_map(fn (array $option): array => Arr::only($option, ['label', 'value']), self::toolbarButtonOptions()))
+                    ->options(array_map(fn (array $option): array => ['label' => $option['label'], 'value' => $option['value']], self::toolbarButtonOptions()))
                     ->value($this->toolbarButtons)),
             UiField::make(t('Show Stats'))
                 ->instructions(t('Whether the editor should show character, word, and line counts.'))
@@ -367,7 +367,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                         ->control(Lightswitch::make('sanitizeHtml')->value($this->sanitizeHtml)),
                     UiField::make(t('HTML Sanitizer'))
                         ->control(Choice::make('htmlSanitizer')
-                            ->options($this->htmlSanitizerOptions()->all())
+                            ->options($this->htmlSanitizerOptions()->values()->all())
                             ->value($this->htmlSanitizer ?? 'default')),
                 ), 'markdown-advanced-settings');
     }
@@ -467,12 +467,16 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
      *
      * @param  ElementConditionInterface|string|array|null  $condition
      *
-     * @phpstan-param ElementConditionInterface|string|array{class:string}|null $condition
+     * @phpstan-param ElementConditionInterface|class-string<ElementConditionInterface>|array{class:class-string<ElementConditionInterface>}|null $condition
      */
     public function setAssetSelectionCondition(mixed $condition): void
     {
         if ($condition instanceof ConditionInterface && ! $condition->getConditionRules()->getRules()) {
             $condition = null;
+        }
+
+        if (is_string($condition)) {
+            $condition = ['class' => $condition];
         }
 
         // Don't instantiate it unless we actually end up needing it.
@@ -637,6 +641,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     {
         return $this->availableAssetVolumes()
             ->map(fn (Volume $volume) => "volume:$volume->uid")
+            ->values()
             ->all();
     }
 

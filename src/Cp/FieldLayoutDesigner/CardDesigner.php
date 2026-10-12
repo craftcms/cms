@@ -59,7 +59,7 @@ class CardDesigner
     }
 
     /**
-     * @return array{label:string,value:string}[]
+     * @return array<string, array{label: string, value: string, placeholder?: string|null}>
      */
     public function previewOptions(FieldLayout $fieldLayout, bool $withAttributes = true): array
     {
@@ -133,7 +133,7 @@ class CardDesigner
 
     }
 
-    /** @return array<string, array<string, string|null>> */
+    /** @return array<string, array{label: string, value: string, placeholder?: string|null}> */
     private function cardPreviewOptionsInternal(
         FieldLayout $fieldLayout,
         string $keyPrefix,

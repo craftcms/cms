@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Types\Generators;
 
-use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
@@ -42,7 +41,6 @@ abstract class Generator
         }
 
         foreach ($layout->getCustomFields() as $contentField) {
-            /** @var Field $contentField */
             if ($contentField->includeInGqlSchema($schema)) {
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
             }

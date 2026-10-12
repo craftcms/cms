@@ -21,7 +21,7 @@ class GroupedEntryTypeManager extends Control
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
         return self::managerHtml(
-            is_array($value) ? $value : [],
+            is_array($value) ? array_values($value) : [],
             $attributes['name'],
             $attributes['name'] === null,
         );

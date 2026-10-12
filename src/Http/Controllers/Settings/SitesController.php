@@ -304,10 +304,10 @@ readonly class SitesController
         $isNew = $site->id === null;
         $isMultiSite = $this->sites->getTotalSites() > 1;
         $group = Field::make(t('Group'), Choice::make('group')
-            ->options($this->siteGroups->getAllGroups()->map(fn ($group) => [
+            ->options(array_values($this->siteGroups->getAllGroups()->filter(fn ($group) => $group->id !== null)->map(fn ($group) => [
                 'label' => $group->getName(),
-                'value' => $group->id,
-            ])->all()))
+                'value' => $group->id ?? 0,
+            ])->all())))
             ->instructions(t('Which group should this site belong to?'))
             ->required();
 

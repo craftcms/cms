@@ -202,10 +202,9 @@ class Html
     }
 
     /**
-     * @param  array<array-key, mixed>|string  $action
      * @param  array<string, mixed>  $options
      */
-    public static function beginForm(array|string $action = '', string $method = 'post', array $options = []): string
+    public static function beginForm(string $action = '', string $method = 'post', array $options = []): string
     {
         $options['accept-charset'] ??= 'UTF-8';
 
@@ -303,6 +302,10 @@ class Html
     /** @param array<string, mixed> $attributes */
     public static function tag(string $name, bool|float|int|string|Stringable|null $content = '', array $attributes = []): string
     {
+        if ($name === '') {
+            throw new InvalidArgumentException('HTML tag names cannot be empty.');
+        }
+
         return YiiHtml::tag($name)
             ->content(NoEncode::string((string) $content))
             ->attributes(self::normalizeTagAttributes($attributes))
@@ -323,10 +326,9 @@ class Html
     }
 
     /**
-     * @param  array<array-key, mixed>|string|null  $url
      * @param  array<string, mixed>  $options
      */
-    public static function a(Stringable|string $text, array|string|null $url = null, array $options = []): string
+    public static function a(Stringable|string $text, ?string $url = null, array $options = []): string
     {
         if ($url !== null) {
             // Use UrlHelper::url() instead of Url::to()
@@ -706,12 +708,12 @@ class Html
             }, $value);
 
             // now split the styles string on semicolons
-            $styles = Arr::whereNotEmpty(preg_split('/\s*;\s*/', (string) $value));
+            $styles = Arr::whereNotEmpty((preg_split('/\s*;\s*/', (string) $value) ?: throw new InvalidArgumentException('Unable to split the HTML value.')));
 
             // and proceed with the array of styles
             $normalized = [];
             foreach ($styles as $style) {
-                [$n, $v] = array_pad(preg_split('/\s*:\s*/', (string) $style, 2), 2, '');
+                [$n, $v] = array_pad((preg_split('/\s*:\s*/', (string) $style, 2) ?: throw new InvalidArgumentException('Unable to split the HTML value.')), 2, '');
                 $normalized[$n] = strtr($v, $markers);
             }
 
@@ -746,6 +748,7 @@ class Html
     /**
      * Appends or prepends HTML to the beginning of a string.
      */
+    /** @param 'htmlStart'|'htmlEnd' $position */
     private static function _addToTagInternal(string $tag, string $html, string $position, ?string $ifExists = null): string
     {
         $info = self::parseTag($tag);
@@ -1026,7 +1029,7 @@ class Html
         $html = preg_replace_callback(
             "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|aria\\-activedescendant|aria\\-flowto|aria\\-owns|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\"))([^'\"]+)\\3/i",
             function (array $match) use ($namespace, $ids): string {
-                $matchIds = preg_split('/([,\s+]+)/', $match[4], flags: PREG_SPLIT_DELIM_CAPTURE);
+                $matchIds = (preg_split('/([,\s+]+)/', $match[4], flags: PREG_SPLIT_DELIM_CAPTURE) ?: throw new InvalidArgumentException('Unable to split the HTML value.'));
                 $namespacedIds = '';
                 foreach ($matchIds as $i => $id) {
                     if (
@@ -1071,7 +1074,7 @@ class Html
         if ($withClasses) {
             $html = preg_replace_callback('/(?<![\w\-])\bclass=(\'|")([^\'"]+)\\1/i', function ($match) use ($namespace) {
                 $newClasses = [];
-                foreach (preg_split('/\s+/', $match[2]) as $class) {
+                foreach ((preg_split('/\s+/', $match[2]) ?: throw new InvalidArgumentException('Unable to split the HTML value.')) as $class) {
                     $newClasses[] = "$namespace-$class";
                 }
 
@@ -1175,6 +1178,10 @@ class Html
         $sanitizer = new Sanitizer;
         $sanitizer->setAllowedAttrs(new SvgAllowedAttributes);
         $svg = $sanitizer->sanitize($svg);
+
+        if ($svg === false) {
+            throw new InvalidArgumentException('Unable to sanitize the SVG contents.');
+        }
         // Remove comments, title & desc
         $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
         $svg = preg_replace(self::TITLE_TAG_RE, '', (string) $svg);
@@ -1223,7 +1230,13 @@ class Html
             }
         }
 
-        return self::dataUrlFromString(file_get_contents($file), $mimeType);
+        $contents = file_get_contents($file);
+
+        if ($contents === false) {
+            throw new InvalidArgumentException('Unable to read the file contents.');
+        }
+
+        return self::dataUrlFromString($contents, $mimeType);
     }
 
     /**
@@ -1361,6 +1374,14 @@ class Html
                 return '';
             }
             $svg = file_get_contents($svg);
+
+            if ($svg === false) {
+                if ($throwException) {
+                    throw new InvalidArgumentException('Unable to read the SVG file.');
+                }
+
+                return '';
+            }
 
             // This came from a file path, so pretty good chance that the SVG can be trusted.
             $sanitize ??= false;

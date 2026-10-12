@@ -126,7 +126,13 @@ readonly class SchemasController extends GqlController
         }
 
         $permissions = $request->input('permissions', []);
-        $schema->scope = is_array($permissions) ? $permissions : [$permissions];
+        $permissions = is_array($permissions) ? $permissions : [$permissions];
+
+        if (array_any($permissions, static fn (mixed $permission): bool => ! is_string($permission))) {
+            throw ValidationException::withMessages(['permissions' => 'Permissions must be strings.']);
+        }
+
+        $schema->scope = array_values($permissions);
 
         if (! $this->gql->saveSchema($schema)) {
             throw ValidationException::withMessages($schema->errors()->getMessages());

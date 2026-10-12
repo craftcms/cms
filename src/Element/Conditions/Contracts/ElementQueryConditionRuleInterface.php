@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Conditions\Contracts;
 
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use Illuminate\Database\Query\Builder;
 
 /**
@@ -17,7 +18,7 @@ interface ElementQueryConditionRuleInterface extends ConditionRuleInterface
      * Applies a `where` condition to the query builder.
      *
      * @param  Builder  $query  The query builder
-     * @param  ElementQueryInterface  $elementQuery  The element query
+     * @param  ElementQueryInterface&ElementQuery<*>  $elementQuery  The element query
      */
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void;
 }

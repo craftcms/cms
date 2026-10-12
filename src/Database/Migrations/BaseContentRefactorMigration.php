@@ -117,7 +117,7 @@ class BaseContentRefactorMigration extends Migration
 
         $query
             ->lazyById(column: 'es.id')
-            ->each(function (object $element) use ($contentTable, $fieldsByUid, $fieldColumns, $progress) {
+            ->each(function (\stdClass $element) use ($contentTable, $fieldsByUid, $fieldColumns, $progress) {
                 $progress
                     ->label($this->elementLabel($element))
                     ->render();
@@ -130,19 +130,25 @@ class BaseContentRefactorMigration extends Migration
 
                     if ($field instanceof MissingField) {
                         // Figure it out from the actual DB column
-                        $dbType = Schema::getColumnType($contentTable, $column);
+                        $dbType = is_array($column)
+                            ? array_map(fn (string $column): string => Schema::getColumnType($contentTable, $column), $column)
+                            : Schema::getColumnType($contentTable, $column);
                     } else {
                         $dbType = $field::dbType();
                     }
 
                     if (is_array($column)) {
+                        if (! is_array($dbType)) {
+                            throw new \RuntimeException('Multi-column field must define column types.');
+                        }
+
                         $value = [];
                         foreach (array_keys($dbType) as $i => $key) {
                             if (! isset($column[$key])) {
                                 continue;
                             }
                             $c = $column[$key];
-                            $v = $this->decodeValue($element[$c], $dbType[$key], $contentTable, $c);
+                            $v = $this->decodeValue($element->{$c}, $dbType[$key], $contentTable, $c);
 
                             if ($v !== null) {
                                 $value[$key] = $v;
@@ -152,7 +158,7 @@ class BaseContentRefactorMigration extends Migration
                             }
                         }
                     } else {
-                        $value = $this->decodeValue($element[$column], $dbType, $contentTable, $column);
+                        $value = $this->decodeValue($element->{$column}, $dbType, $contentTable, $column);
                         if ($value === null) {
                             continue;
                         }
@@ -163,9 +169,9 @@ class BaseContentRefactorMigration extends Migration
 
                 // don't call $this->update() so it doesn't mess with the CLI output
                 DB::table(Table::ELEMENTS_SITES)
-                    ->where('id', $element['id'])
+                    ->where('id', $element->id)
                     ->update([
-                        'title' => $element['title'] ?? null,
+                        'title' => $element->title ?? null,
                         'content' => $content ?: null,
                     ]);
 
@@ -214,7 +220,7 @@ class BaseContentRefactorMigration extends Migration
         }
     }
 
-    private function elementLabel(object $element): string
+    private function elementLabel(\stdClass $element): string
     {
         $elementType = $element->type;
 

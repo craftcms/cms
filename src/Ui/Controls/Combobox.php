@@ -41,7 +41,7 @@ class Combobox extends Control
             ->id($attributes['id'])
             ->name($attributes['name'])
             ->multiple((bool) ($control->props['multiple'] ?? false))
-            ->value(($control->props['multiple'] ?? false) ? (array) $value : ($value === null ? null : (string) $value))
+            ->value(($control->props['multiple'] ?? false) ? array_map(strval(...), array_values((array) $value)) : ($value === null ? null : (string) $value))
             ->options($control->props['options'])
             ->placeholder($control->props['placeholder'] ?? null)
             ->limit($control->props['limit'] ?? 150)

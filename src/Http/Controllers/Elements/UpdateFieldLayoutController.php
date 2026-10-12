@@ -37,22 +37,21 @@ readonly class UpdateFieldLayoutController
             $element = $this->createElement();
         }
 
-        // Prevalidate?
-        if ($this->request->boolean('prevalidate') && $element->enabled && $element->getEnabledForSite()) {
-            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-            $element->validate();
-        }
-
-        /**
-         * see https://github.com/craftcms/cms/issues/14635#issuecomment-2349006694 for details
-         *
-         * @var Element|Response|null $element
-         */
         if ($element instanceof Response) {
             return $element;
         }
 
-        if (! $element || $element->getIsRevision()) {
+        abort_if($element === null, 400, 'No element was identified by the request.');
+
+        // Prevalidate?
+        if ($this->request->boolean('prevalidate') && $element->enabled && $element->getEnabledForSite()) {
+            if ($element->ruleset !== false) {
+                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+            }
+            $element->validate();
+        }
+
+        if ($element->getIsRevision()) {
             abort(400, 'No element was identified by the request.');
         }
 

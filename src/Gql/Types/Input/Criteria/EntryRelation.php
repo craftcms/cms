@@ -25,6 +25,6 @@ class EntryRelation extends InputObjectType
                 ...EntryArguments::getContentArguments(),
                 ...RelationCriteria::getArguments(),
             ],
-        ]));
+        ]), InputObjectType::class);
     }
 }

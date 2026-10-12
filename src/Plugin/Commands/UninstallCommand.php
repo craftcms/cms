@@ -38,6 +38,10 @@ class UninstallCommand extends Command
         }
 
         $handle = $this->getHandle(fn (array $info) => $info['isInstalled'] && ($info['isEnabled'] || $this->option('force')));
+        if ($handle === false) {
+            return self::FAILURE;
+        }
+
         $plugin = $this->plugins->isPluginInstalled($handle);
 
         if (! $plugin) {

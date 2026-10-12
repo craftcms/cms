@@ -146,7 +146,7 @@ class CreateCommand extends Command
             $this->components->task(
                 description: 'Assigning the user to groups',
                 task: function () use ($users, $user, $groupIds) {
-                    $users->assignUserToGroups($user->id, $groupIds);
+                    $users->assignUserToGroups($user->id, array_map(intval(...), $groupIds));
                 }
             );
         }

@@ -231,7 +231,7 @@ class NestedElementManager extends Component
     }
 
     /**
-     * @return int[]
+     * @return list<int>
      */
     public function getSupportedSiteIds(ElementInterface $owner): array
     {
@@ -266,7 +266,7 @@ class NestedElementManager extends Component
         return $siteIds;
     }
 
-    private function isCustomPropagationMatch(ElementInterface $owner, int $siteId, ?string $propagationKey): bool
+    private function isCustomPropagationMatch(ElementInterface $owner, int $siteId, string|false|null $propagationKey): bool
     {
         if (! isset($propagationKey)) {
             return true;
@@ -375,7 +375,7 @@ class NestedElementManager extends Component
      */
     public static function elementEditUrl(
         NestedElementInterface $element,
-        ?int $fieldId = null,
+        int|string|null $fieldId = null,
         ?int $ownerId = null,
         bool $prevalidate = false,
     ): string {
@@ -479,7 +479,9 @@ class NestedElementManager extends Component
         if ($this->hasErrors($owner)) {
             foreach ($elements as $element) {
                 if ($element->enabled && $element->getEnabledForSite()) {
-                    $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+                    if ($element->ruleset) {
+                        $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+                    }
                 }
                 $element->validate();
             }
@@ -517,8 +519,8 @@ class NestedElementManager extends Component
         $settings = $this->viewSettings($owner, $config, self::VIEW_MODE_INDEX, $attribute);
         $settings['elementType'] = $this->elementType;
         $settings['indexSettings'] = [
-            'showHeaderColumn' => $config['showHeaderColumn'],
-            'storageKey' => $config['storageKey'],
+            'showHeaderColumn' => $config['showHeaderColumn'] ?? true,
+            'storageKey' => $config['storageKey'] ?? null,
             'static' => $config['static'],
         ];
         unset($settings['ownerIdParam']);
@@ -534,7 +536,7 @@ class NestedElementManager extends Component
      * Resolves the complete server-owned configuration for an embedded index.
      *
      * @param  array<string, mixed>  $config
-     * @return array<string, mixed>
+     * @return array{static: mixed, nestedActionEvents: mixed, prevalidate: mixed, sortable: mixed, canCreate: mixed, canPaste: mixed, pasteableData: mixed, minElements: mixed, maxElements: mixed, createButtonLabel: mixed, createAttributes: mixed, ...}
      */
     public function getIndexConfig(?ElementInterface $owner, array $config = []): array
     {
@@ -650,12 +652,13 @@ class NestedElementManager extends Component
      * used by cards and indexes.
      *
      * @param  array<string, mixed>  $config
-     * @return array<string, mixed>
+     * @return array{static: mixed, nestedActionEvents: mixed, prevalidate: mixed, sortable: mixed, canCreate: mixed, canPaste: mixed, pasteableData: mixed, minElements: mixed, maxElements: mixed, createButtonLabel: mixed, createAttributes: mixed, ...}
      */
     private function normalizeViewConfig(array $config): array
     {
         $config += [
             'static' => false,
+            'prevalidate' => false,
             'nestedActionEvents' => false,
             'sortable' => false,
             'canCreate' => false,
@@ -728,7 +731,7 @@ class NestedElementManager extends Component
      * Builds the manager settings payload shared by cards and indexes.
      *
      * @param array{
-     *     sortable: bool,
+     *     sortable: mixed,
      *     canCreate: mixed,
      *     canPaste: mixed,
      *     pasteableData: mixed,
@@ -736,7 +739,7 @@ class NestedElementManager extends Component
      *     maxElements: mixed,
      *     createButtonLabel: mixed,
      *     prevalidate?: mixed,
-     *     createAttributes?: list<array{label: string, attributes: array<string, mixed>, icon?: mixed, color?: mixed, group?: mixed}>
+     *     createAttributes: mixed
      * } $config
      * @return array<string, mixed>
      */
@@ -1071,7 +1074,7 @@ class NestedElementManager extends Component
 
         event(new NestedElementsSaved(
             manager: $this,
-            elements: $elements,
+            elements: array_values($elements),
         ));
     }
 
@@ -1210,6 +1213,10 @@ class NestedElementManager extends Component
                     $newElementId = $element->id;
                 } else {
                     $newElementId = Elements::duplicateElement($element, $newAttributes)->id;
+                }
+
+                if (! is_int($element->id) || ! is_int($newElementId)) {
+                    throw new \LogicException('Duplicated nested elements require persisted IDs.');
                 }
 
                 $newElementIds[$element->id] = $newElementId;
@@ -1372,6 +1379,10 @@ class NestedElementManager extends Component
                 'ownerId' => $revision->id,
                 'sortOrder' => $element->getSortOrder(),
             ];
+            if (! is_int($element->id)) {
+                throw new \LogicException('Revised nested elements require persisted IDs.');
+            }
+
             $map[$element->id] = $elementRevisionId;
         }
 

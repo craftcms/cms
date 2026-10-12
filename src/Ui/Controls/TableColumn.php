@@ -74,7 +74,7 @@ class TableColumn
 
     /**
      * @param  array<array-key, mixed>  $options
-     * @return list<array{label: string, value: string|int|float|bool, group?: string, default?: bool}>
+     * @return list<array{label: string, value: string|int|float|bool, group?: string|null, default?: bool|null}>
      */
     public static function options(array $options): array
     {
@@ -89,18 +89,37 @@ class TableColumn
                 continue;
             }
 
-            $normalized[] = is_array($option)
-                ? [
-                    ...$option,
-                    'label' => (string) ($option['label'] ?? $option['value'] ?? $key),
-                    'value' => $option['value'] ?? $key,
-                    ...(isset($option['group']) ? ['group' => (string) $option['group']] : []),
-                    ...(isset($option['default']) ? ['default' => (bool) $option['default']] : []),
-                ]
-                : ['label' => (string) $option, 'value' => $key];
+            $normalized[] = self::normalizeOption($key, $option);
         }
 
         return $normalized;
+    }
+
+    /** @return array{label: string, value: scalar, group?: string|null, default?: bool|null} */
+    private static function normalizeOption(int|string $key, mixed $option): array
+    {
+        $value = is_array($option) ? ($option['value'] ?? $key) : $key;
+
+        if (! is_scalar($value)) {
+            throw new InvalidArgumentException('Table options require scalar values.');
+        }
+
+        if (! is_array($option)) {
+            return ['label' => (string) $option, 'value' => $key];
+        }
+
+        $option['label'] = (string) ($option['label'] ?? $value);
+        $option['value'] = $value;
+
+        if (array_key_exists('group', $option) && $option['group'] !== null) {
+            $option['group'] = (string) $option['group'];
+        }
+
+        if (array_key_exists('default', $option) && $option['default'] !== null) {
+            $option['default'] = (bool) $option['default'];
+        }
+
+        return $option;
     }
 
     /**

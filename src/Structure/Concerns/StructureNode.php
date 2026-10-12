@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Throwable;
+use Tpetry\QueryExpressions\Operator\Arithmetic\Add;
+use Tpetry\QueryExpressions\Value\Value;
 
 trait StructureNode
 {
@@ -134,9 +136,9 @@ trait StructureNode
                     ->where('lft', '>=', $model->lft)
                     ->where('rgt', '<=', $model->rgt)
                     ->update([
-                        'lft' => DB::raw('lft'.sprintf('%+d', -1)),
-                        'rgt' => DB::raw('rgt'.sprintf('%+d', -1)),
-                        'level' => DB::raw('level'.sprintf('%+d', -1)),
+                        'lft' => new Add('lft', new Value(-1)),
+                        'rgt' => new Add('rgt', new Value(-1)),
+                        'level' => new Add('level', new Value(-1)),
                     ]);
 
                 $model->shiftLeftRightAttribute($rightValue + 1, -2);
@@ -169,7 +171,13 @@ trait StructureNode
 
         $this->lft = $value;
         $this->rgt = $value + 1;
-        $this->level = $target->level + $depth;
+        $level = $target->level + $depth;
+
+        if ($level < 0) {
+            throw new RuntimeException('A structure node cannot have a negative level.');
+        }
+
+        $this->level = $level;
         $this->root = $target->root;
 
         $this->shiftLeftRightAttribute($value, 2);
@@ -185,9 +193,9 @@ trait StructureNode
             ->where('lft', '>=', $leftValue)
             ->where('rgt', '<=', $rightValue)
             ->update([
-                'lft' => DB::raw('lft'.sprintf('%+d', 1 - $leftValue)),
-                'rgt' => DB::raw('rgt'.sprintf('%+d', 1 - $leftValue)),
-                'level' => DB::raw('level'.sprintf('%+d', -$depthValue)),
+                'lft' => new Add('lft', new Value(1 - $leftValue)),
+                'rgt' => new Add('rgt', new Value(1 - $leftValue)),
+                'level' => new Add('level', new Value(-$depthValue)),
                 'root' => $this->getKey(),
             ]);
 
@@ -218,7 +226,7 @@ trait StructureNode
                 ->where('lft', '>=', $leftValue)
                 ->where('rgt', '<=', $rightValue)
                 ->update([
-                    'level' => DB::raw('level'.sprintf('%+d', $depth)),
+                    'level' => new Add('level', new Value($depth)),
                 ]);
 
             foreach (['lft', 'rgt'] as $attribute) {
@@ -226,7 +234,7 @@ trait StructureNode
                     ->where($attribute, '>=', $leftValue)
                     ->where($attribute, '<=', $rightValue)
                     ->update([
-                        $attribute => DB::raw($attribute.sprintf('%+d', $value - $leftValue)),
+                        $attribute => new Add($attribute, new Value($value - $leftValue)),
                     ]);
             }
 
@@ -242,7 +250,7 @@ trait StructureNode
                 ->where($attribute, '>=', $value)
                 ->where('root', '=', $nodeRootValue)
                 ->update([
-                    $attribute => DB::raw($attribute.sprintf('%+d', $rightValue - $leftValue + 1)),
+                    $attribute => new Add($attribute, new Value($rightValue - $leftValue + 1)),
                 ]);
         }
 
@@ -253,9 +261,9 @@ trait StructureNode
             ->where('rgt', '<=', $rightValue)
             ->where('root', '=', $this->root)
             ->update([
-                'lft' => DB::raw('lft'.sprintf('%+d', $delta)),
-                'rgt' => DB::raw('rgt'.sprintf('%+d', $delta)),
-                'level' => DB::raw('level'.sprintf('%+d', $depth)),
+                'lft' => new Add('lft', new Value($delta)),
+                'rgt' => new Add('rgt', new Value($delta)),
+                'level' => new Add('level', new Value($depth)),
                 'root' => $nodeRootValue,
             ]);
 
@@ -268,7 +276,7 @@ trait StructureNode
             $this->treeQuery()
                 ->where($attribute, '>=', $value)
                 ->update([
-                    $attribute => DB::raw($attribute.sprintf('%+d', $delta)),
+                    $attribute => new Add($attribute, new Value($delta)),
                 ]);
         }
     }
@@ -355,7 +363,7 @@ trait StructureNode
                 if ($result === false) {
                     DB::rollBack();
 
-                    return false;
+                    return $result;
                 }
 
                 DB::commit();

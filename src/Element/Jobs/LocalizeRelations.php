@@ -41,7 +41,7 @@ class LocalizeRelations extends Job
         $now = now();
 
         foreach ($relations->lazyById() as $i => $relation) {
-            $this->setProgress((int) (($i / max($totalRelations, 1)) * 100));
+            $this->setProgress(min(100, max(0, (int) (($i / max($totalRelations, 1)) * 100))));
 
             DB::transaction(function () use ($relation, $primarySiteId, $otherSiteIds, $now): void {
                 $relation = DB::table(Table::RELATIONS)

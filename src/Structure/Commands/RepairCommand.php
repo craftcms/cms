@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Structure\Commands;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Structure\Enums\Mode;
@@ -72,10 +73,14 @@ abstract class RepairCommand extends Command
                 ->orderBy('structureelements.lft')
                 ->orderBy('elements.dateCreated')
                 ->get();
+        } else {
+            $elements = $query;
         }
 
-        /** @var class-string<ElementInterface> $elementType */
-        $elementType = $query->elementType;
+        $firstElement = $elements->first();
+        $elementType = $query instanceof ElementQueryInterface
+            ? $query->elementType
+            : ($firstElement !== null ? $firstElement::class : Element::class);
         $displayName = $elementType::pluralLowerDisplayName();
 
         if (empty($elements)) {

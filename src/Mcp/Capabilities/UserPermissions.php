@@ -50,7 +50,7 @@ readonly class UserPermissions
 
         return [
             'count' => $groups->count(),
-            'groups' => $groups->all(),
+            'groups' => array_values($groups->all()),
         ];
     }
 
@@ -243,8 +243,8 @@ readonly class UserPermissions
     {
         return [
             'userId' => $userId,
-            'permissions' => $this->permissions->getPermissionsByUserId($userId)->values()->all(),
-            'directPermissions' => $this->permissions->getDirectPermissionsByUserId($userId)->values()->all(),
+            'permissions' => array_values($this->permissions->getPermissionsByUserId($userId)->all()),
+            'directPermissions' => array_values($this->permissions->getDirectPermissionsByUserId($userId)->all()),
         ];
     }
 
@@ -253,7 +253,7 @@ readonly class UserPermissions
     {
         return [
             'groupId' => $groupId,
-            'permissions' => $this->permissions->getPermissionsByGroupId($groupId)->values()->all(),
+            'permissions' => array_values($this->permissions->getPermissionsByGroupId($groupId)->all()),
         ];
     }
 

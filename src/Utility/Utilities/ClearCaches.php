@@ -188,7 +188,7 @@ class ClearCaches extends Utility
                 'info' => t('Anything cached with {method}', [
                     'method' => '`Cache::put`',
                 ]),
-                'action' => [Cache::getFacadeRoot(), 'clear'],
+                'action' => fn () => Cache::clear(),
             ],
             [
                 'key' => 'asset',

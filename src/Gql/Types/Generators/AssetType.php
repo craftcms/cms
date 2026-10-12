@@ -52,6 +52,6 @@ class AssetType extends Generator implements GeneratorInterface, SingleGenerator
 
                 return Gql::prepareFieldDefinitions($assetFields, $typeName);
             },
-        ]));
+        ]), Asset::class);
     }
 }

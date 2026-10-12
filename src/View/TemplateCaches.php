@@ -159,7 +159,7 @@ class TemplateCaches
 
                 return $collector;
             },
-            $this->cacheCollectors->types()->all(),
+            array_values($this->cacheCollectors->types()->all()),
         );
 
         return $this->collectors;
@@ -299,7 +299,7 @@ class TemplateCaches
         }
 
         if ($expiration !== null) {
-            $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - now()->getTimestamp();
+            $duration = (DateTimeHelper::toDateTime($expiration) ?: throw new InvalidArgumentException('Invalid cache expiration date.'))->getTimestamp() - now()->getTimestamp();
         } else {
             $duration = null;
         }
@@ -320,7 +320,7 @@ class TemplateCaches
             return null;
         }
 
-        $duration = DateTimeHelper::toDateTime($cacheInfo['expiryDate'])->getTimestamp() - now()->getTimestamp();
+        $duration = (DateTimeHelper::toDateTime($cacheInfo['expiryDate']) ?: throw new InvalidArgumentException('Invalid cache expiration date.'))->getTimestamp() - now()->getTimestamp();
 
         return max(0, $duration);
     }

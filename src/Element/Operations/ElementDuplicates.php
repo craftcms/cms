@@ -45,7 +45,11 @@ readonly class ElementDuplicates
     ) {}
 
     /**
+     * @template T of ElementInterface
+     *
+     * @param  T  $element
      * @param  array<string, mixed>  $newAttributes
+     * @return T
      *
      * @throws UnsupportedSiteException
      * @throws InvalidElementException
@@ -135,8 +139,9 @@ readonly class ElementDuplicates
                 trackChanges: $mainClone->trackDraftChanges,
             );
         }
-
-        $mainClone->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        if ($mainClone->ruleset) {
+            $mainClone->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        }
         $mainClone->validate();
 
         if ($mainClone->errors()->has('uri') && $mainClone->enabled) {

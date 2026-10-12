@@ -51,7 +51,8 @@ class UploaderConditionRule extends BaseElementSelectConditionRule implements El
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        AssetQuery::applyUploaderId($query, $this->getElementId());
+        $uploaderId = $this->getElementId();
+        AssetQuery::applyUploaderId($query, $uploaderId === null ? null : (int) $uploaderId);
     }
 
     public function matchElement(ElementInterface $element): bool

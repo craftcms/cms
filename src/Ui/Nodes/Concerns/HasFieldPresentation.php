@@ -62,7 +62,7 @@ trait HasFieldPresentation
         };
         $this->label = $this->labelHtml !== null
             ? html_entity_decode(strip_tags($this->labelHtml), ENT_QUOTES | ENT_HTML5, 'UTF-8')
-            : ($label !== null ? (string) $label : null);
+            : ($label instanceof Htmlable ? html_entity_decode(strip_tags($label->toHtml()), ENT_QUOTES | ENT_HTML5, 'UTF-8') : ($label !== null ? (string) $label : null));
 
         return $this;
     }
@@ -240,6 +240,10 @@ trait HasFieldPresentation
     protected static function fieldComponent(array $props): FieldComponent
     {
         $showStatus = (bool) ($props['showStatus'] ?? true);
+        $instructionsPosition = $props['instructionsPosition'] ?? 'before';
+        if (! in_array($instructionsPosition, ['before', 'after'], true)) {
+            throw new \InvalidArgumentException('Invalid instructions position.');
+        }
 
         return FieldComponent::make()
             ->label(isset($props['labelHtml']) ? new HtmlString($props['labelHtml']) : ($props['label'] ?? null))
@@ -250,7 +254,7 @@ trait HasFieldPresentation
             ->orientation($props['orientation'] ?? null)
             ->width($props['inputWidth'] ?? null)
             ->instructions($props['instructions'] ?? null)
-            ->instructionsPosition((string) ($props['instructionsPosition'] ?? 'before'))
+            ->instructionsPosition($instructionsPosition)
             ->tip($props['tip'] ?? null)
             ->warning($props['warning'] ?? null)
             ->required((bool) ($props['required'] ?? false))

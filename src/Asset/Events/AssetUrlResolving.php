@@ -12,11 +12,14 @@ use CraftCms\Cms\Image\Data\ImageTransform;
  * @event AssetUrlResolving The event that is triggered before defining the asset’s URL.
  *
  * @see getUrl()
+ *
+ * @phpstan-import-type TransformConfig from Asset
+ *
  * @since 6.0.0
  */
 class AssetUrlResolving extends ElementUrlResolving
 {
-    /** @param ImageTransform|string|array<string, bool|float|int|string|null>|null $transform */
+    /** @param ImageTransform|string|TransformConfig|null $transform */
     public function __construct(
         public Asset $asset,
         public ImageTransform|string|array|null $transform,

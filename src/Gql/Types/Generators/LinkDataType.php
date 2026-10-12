@@ -93,6 +93,6 @@ class LinkDataType implements GeneratorInterface, SingleGeneratorInterface
 
                 return Gql::prepareFieldDefinitions($fields, $typeName);
             },
-        ]));
+        ]), LinkData::class);
     }
 }

@@ -249,7 +249,7 @@ readonly class EmailSettingsController
         ];
 
         foreach (array_keys($mailers) as $name) {
-            $options[] = ['value' => $name, 'label' => $name];
+            $options[] = ['value' => (string) $name, 'label' => (string) $name];
         }
 
         return $options;

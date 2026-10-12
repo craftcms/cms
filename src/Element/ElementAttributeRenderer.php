@@ -131,7 +131,7 @@ readonly class ElementAttributeRenderer
                     }
 
                     $context = $this->inlineUiContext([
-                        $field->handle => $element->errors()->get("field:$field->handle"),
+                        $field->handle => $element->errors()->getMessages()["field:$field->handle"] ?? [],
                     ]);
                     $control = InputNamespace::with(null, fn () => $field->uiControl(new FieldContext(
                         path: $field->handle,
@@ -156,7 +156,7 @@ readonly class ElementAttributeRenderer
      * active Twig namespace is resolved now because Vue mounts after that scope
      * has ended. Plugin HTML continues through the existing HTML hook chain.
      *
-     * @param  array<string, list<string>>  $errors
+     * @param  array<string, array<string>>  $errors
      */
     public function renderInlineUi(Ui $ui, array $errors = [], ?UiContext $context = null): string
     {
@@ -167,11 +167,14 @@ readonly class ElementAttributeRenderer
         ]);
     }
 
-    /** @param array<string, list<string>> $errors */
+    /** @param array<string, array<string>> $errors */
     private function inlineUiContext(array $errors): UiContext
     {
         return new UiContext(
-            namespace: preg_split('/[\[\]]+/', InputNamespace::get() ?? '', flags: PREG_SPLIT_NO_EMPTY),
+            namespace: array_values(array_filter(
+                explode('[', str_replace(']', '', InputNamespace::get() ?? '')),
+                fn (string $segment): bool => $segment !== '',
+            )),
             errors: $errors,
         );
     }

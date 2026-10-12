@@ -34,7 +34,11 @@ readonly class ValidateElementController
             abort(400, 'No element was identified by the request.');
         }
 
-        $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        if ($element->ruleset !== false) {
+
+            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+
+        }
 
         if (! $element->validate()) {
             return new ElementResponse()->failure($element, t('{type} validation failed.', [

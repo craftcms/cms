@@ -198,6 +198,7 @@ function maxPowerCaptain(): void
 /**
  * Calls the given closure with all error reporting silenced, and returns its response.
  *
+ * @param  Closure|callable-string  $callable
  * @param  int|null  $mask  Error levels to suppress, default value NULL indicates all warnings and below.
  */
 function silence(Closure|string $callable, ?int $mask = null): mixed

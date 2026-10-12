@@ -33,7 +33,7 @@ class StripTags extends Directive
                     'description' => 'List of allowed tag names.',
                 ],
             ],
-        ]));
+        ]), self::class);
     }
 
     public static function name(): string

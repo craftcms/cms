@@ -30,7 +30,7 @@ class EntryTypeSelect extends Control
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
         return self::selectHtml(
-            is_array($value) ? $value : [],
+            is_array($value) ? array_values($value) : [],
             (bool) ($control->props['allowOverrides'] ?? false),
             (bool) ($control->props['create'] ?? false),
             $attributes['name'],

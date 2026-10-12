@@ -15,14 +15,12 @@ use CraftCms\Cms\Element\Events\DraftApplying;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Events\DraftCreating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Workflows;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
@@ -55,7 +53,7 @@ readonly class Drafts
     /**
      * Returns drafts for a given element ID that the current user is allowed to edit
      *
-     * @return Collection<array-key,ElementInterface|array<string,mixed>>
+     * @return Collection<int,ElementInterface>
      */
     public function getEditableDrafts(ElementInterface $element, ?string $permission = null): Collection
     {
@@ -65,7 +63,6 @@ readonly class Drafts
             return collect();
         }
 
-        /** @var ElementQueryInterface $query */
         $query = $element::find()
             ->draftOf($element)
             ->siteId($element->siteId)
@@ -276,7 +273,7 @@ readonly class Drafts
      */
     public function applyDraft(ElementInterface $draft, array $newAttributes = []): ElementInterface
     {
-        if (! $draft instanceof WorkflowableInterface || ! $this->workflows->requiresApproval($draft)) {
+        if (! $this->workflows->requiresApproval($draft)) {
             return $this->applyDraftInternal($draft, $newAttributes);
         }
 
@@ -301,13 +298,19 @@ readonly class Drafts
             $stage = (int) $expectedStage;
         }
 
-        return $this->workflows->applyDraft(
+        $canonical = $this->workflows->applyDraft(
             draft: $draft,
             actor: currentUser(),
             expectedRunId: $runId,
             expectedStage: $stage,
             apply: fn (ElementInterface $freshDraft): ElementInterface => $this->applyDraftInternal($freshDraft, $newAttributes),
         );
+
+        if (! $canonical instanceof $draft) {
+            throw new \LogicException('Applying a draft must preserve its element type.');
+        }
+
+        return $canonical;
     }
 
     /**
@@ -447,7 +450,9 @@ readonly class Drafts
         $draft->firstSave = true;
 
         // We still need to validate so the SlugValidator gets run
-        $draft->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        if ($draft->ruleset) {
+            $draft->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        }
         $draft->validate();
 
         // If there are any errors on the URI, re-validate as disabled
@@ -612,8 +617,10 @@ readonly class Drafts
     }
 
     /**
-     * @param  ElementInterface[]  $elements
-     * @return ElementInterface[]
+     * @template T of ElementInterface
+     *
+     * @param  T[]  $elements
+     * @return T[]
      */
     private function provisionalDrafts(array $elements, ?User $user = null): array
     {

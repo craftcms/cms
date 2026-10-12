@@ -15,7 +15,7 @@ use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 trait CollectsCacheTags
 {
     /**
-     * @var string[]|null
+     * @var list<string>|null
      *
      * @see getCacheTags()
      */
@@ -41,7 +41,7 @@ trait CollectsCacheTags
     }
 
     /**
-     * @return string[]
+     * @return list<string>
      */
     public function getCacheTags(): array
     {
@@ -103,7 +103,7 @@ trait CollectsCacheTags
      * When elements are created/updated/deleted, their [[ElementInterface::getCacheTags()]] method will be called,
      * and any caches that have those tags listed as dependencies will be invalidated.
      *
-     * @return string[]
+     * @return list<string>
      */
     protected function cacheTags(): array
     {

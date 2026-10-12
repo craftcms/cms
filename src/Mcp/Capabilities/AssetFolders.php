@@ -63,7 +63,7 @@ readonly class AssetFolders
 
         return [
             'count' => $folders->count(),
-            'folders' => $folders->map($this->serialize(...))->all(),
+            'folders' => array_values($folders->map($this->serialize(...))->all()),
         ];
     }
 

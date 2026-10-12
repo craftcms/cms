@@ -64,7 +64,7 @@ class SaveElementIndexElementsController
                     ->mapWithKeys(fn ($element) => [
                         $element->id => NestedElementManager::prepareElementForOwner($element, $owner),
                     ]);
-                $elements = collect($originalIds)->map(fn (int $id) => $preparedByOriginalId[$id]);
+                $elements = collect($originalIds)->map(fn (int $id) => $preparedByOriginalId[$id])->filter(fn (mixed $element): bool => $element instanceof ElementInterface)->values();
             } else {
                 $elements = $this->getElements(
                     elementType: $elementType,
@@ -152,7 +152,7 @@ class SaveElementIndexElementsController
     }
 
     /**
-     * @param  Collection<int, ElementInterface>  $elements
+     * @param  Collection<int, covariant ElementInterface>  $elements
      * @param  array<string, array<string, mixed>>  $data
      * @param  list<int>|null  $originalIds
      * @return array<int, array<string, array<int, string>>>
@@ -179,10 +179,14 @@ class SaveElementIndexElementsController
             }
 
             if (! empty($attributes)) {
-                $element->ruleset->withScenario(
-                    ElementRules::SCENARIO_LIVE,
-                    fn () => $element->setAttributesFromRequest($attributes),
-                );
+                if ($element->ruleset === false) {
+                    $element->setAttributesFromRequest($attributes);
+                } else {
+                    $element->ruleset->withScenario(
+                        ElementRules::SCENARIO_LIVE,
+                        fn () => $element->setAttributesFromRequest($attributes),
+                    );
+                }
             }
 
             $element->setFieldValuesFromRequest("$namespace.$postedElementKey.fields");
@@ -192,21 +196,31 @@ class SaveElementIndexElementsController
             }
 
             if ($element->getIsUnpublishedDraft()) {
-                $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                if ($element->ruleset !== false) {
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                }
             } elseif ($element->enabled && $element->getEnabledForSite()) {
-                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+                if ($element->ruleset !== false) {
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+                }
             }
 
             $names = array_merge(
                 array_keys($attributes),
                 array_map(
-                    fn (string $handle): string => "field:$handle",
+                    fn (int|string $handle): string => "field:$handle",
                     array_keys($data[$postedElementKey]['fields'] ?? []),
                 ),
             );
 
             if (! $element->validate($names)) {
-                $errors[$originalIds[$index] ?? $element->getCanonicalId()] = $element->errors()->getMessages();
+                $id = $originalIds[$index] ?? $element->getCanonicalId();
+
+                if (! is_int($id)) {
+                    throw ValidationException::withMessages([$namespace => 'The element has no persistent ID.']);
+                }
+
+                $errors[$id] = $element->errors()->getMessages();
             }
         }
 

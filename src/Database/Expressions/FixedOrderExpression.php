@@ -35,6 +35,10 @@ readonly class FixedOrderExpression implements Expression
             $cases[] = new CaseRule(result: new Value($key), condition: new Equal($this->column, new Value($value)));
         }
 
+        if ($cases === []) {
+            return new Value($key)->getValue($grammar);
+        }
+
         return new CaseGroup(when: $cases, else: new Value($key))->getValue($grammar);
     }
 }

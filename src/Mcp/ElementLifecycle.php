@@ -74,6 +74,10 @@ readonly class ElementLifecycle
     /** @return array{valid: bool, scenario: string, errors: array<string, list<string>>} */
     public function validate(ElementInterface $element): array
     {
+        if ($element->ruleset === false) {
+            throw new ToolCallException('Validation is disabled for this element.');
+        }
+
         $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $valid = $element->validate();
 

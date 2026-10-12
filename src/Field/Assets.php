@@ -53,6 +53,7 @@ use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\Separator;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
+use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -63,7 +64,7 @@ use Illuminate\Validation\Validator;
 use Override;
 use Symfony\Component\Mime\MimeTypes;
 
-use function CraftCms\Cms\craftAuth;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -387,7 +388,7 @@ class Assets extends BaseRelationField
         }
     }
 
-    /** @return list<Closure> */
+    /** @return list<object|string> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -529,7 +530,7 @@ class Assets extends BaseRelationField
      * @return array{
      *     name: string|null,
      *     type: Type,
-     *     args: array<string, ArgumentConfig>,
+     *     args: array<string, ArgumentConfig|(Type&InputType)>,
      *     resolve: string,
      *     complexity: callable,
      * }
@@ -617,9 +618,11 @@ class Assets extends BaseRelationField
                         $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false) ?? $file['mimeType']);
                         $asset->newFolderId = $uploadFolderId;
                         $asset->setVolumeId($uploadFolder->volumeId);
-                        $asset->uploaderId = craftAuth()->id();
+                        $asset->uploaderId = currentUser()?->getCraftUserId();
                         $asset->avoidFilenameConflicts = true;
-                        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
+                        if ($asset->ruleset) {
+                            $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
+                        }
 
                         if (Elements::saveElement($asset)) {
                             $assetIds[] = $asset->id;
@@ -722,12 +725,16 @@ class Assets extends BaseRelationField
         parent::afterElementSave($element, $isNew);
     }
 
-    /** @return array{volumeId:list<int>}|null */
+    /** @return array{}|array{volumeId:list<int>}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $volumeUids = $allowedEntities['volumes'] ?? [];
+
+        if ($volumeUids === true) {
+            return [];
+        }
 
         if (empty($volumeUids)) {
             return null;
@@ -740,7 +747,7 @@ class Assets extends BaseRelationField
         }, $volumeUids));
 
         return [
-            'volumeId' => $volumeIds,
+            'volumeId' => array_values($volumeIds),
         ];
     }
 

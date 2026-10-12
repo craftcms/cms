@@ -371,7 +371,7 @@ class Composer
                 '_readme' => [
                     'No composer.lock file existed at the time of backup.',
                 ],
-            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
         }
     }
 }

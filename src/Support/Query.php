@@ -96,6 +96,30 @@ readonly class Query
 
     private const array OPERATORS = ['not ', '!=', '<=', '>=', '<', '>', '='];
 
+    public static function orderByExpression(Builder $query, Expression $expression): Builder
+    {
+        $order = ['type' => 'Raw', 'sql' => $expression->getValue($query->getGrammar())];
+
+        if ($query->unions) {
+            $query->unionOrders[] = $order;
+        } else {
+            $query->orders[] = $order;
+        }
+
+        return $query;
+    }
+
+    public static function whereJsonContains(Builder $query, string|Expression $column, mixed $value, string $boolean = 'and'): Builder
+    {
+        $query->wheres[] = ['type' => 'JsonContains', 'column' => $column, 'value' => $value, 'boolean' => $boolean, 'not' => false];
+
+        if (! $value instanceof Expression) {
+            $query->addBinding($query->getGrammar()->prepareBindingForJsonContains($value));
+        }
+
+        return $query;
+    }
+
     /**
      * Parses a query param value and applies it to a query builder.
      *
@@ -118,7 +142,7 @@ readonly class Query
      * @param  string  $defaultOperator  The default operator to apply to the values
      *                                   (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @param  bool  $caseInsensitive  Whether the resulting condition should be case-insensitive
-     * @param  self::TYPE_*  $columnType  The database column type the param is targeting
+     * @param  string|null  $columnType  The database column type the param is targeting
      */
     public static function whereParam(
         Builder $query,
@@ -252,17 +276,17 @@ readonly class Query
                         }
 
                         if ($caseInsensitive && $isMysql) {
-                            $query->where($caseColumn, $operator, self::escapeForLike($value), boolean: $boolean);
+                            $query->where($caseColumn, $operator, self::escapeForLike((string) $value), boolean: $boolean);
 
                             continue;
                         }
 
-                        $query->where($column, $operator, self::escapeForLike($value), boolean: $boolean);
+                        $query->where($column, $operator, self::escapeForLike((string) $value), boolean: $boolean);
 
                         continue;
                     }
 
-                    if ($caseInsensitive) {
+                    if ($caseInsensitive && is_string($value)) {
                         $value = mb_strtolower($value);
                     }
                 }
@@ -427,6 +451,10 @@ readonly class Query
 
             // Assume that date params are set in the system timezone
             $val = MoneyHelper::toMoney(['value' => $val, 'currency' => $currency]);
+
+            if ($val === false) {
+                throw new InvalidArgumentException('Invalid monetary query value.');
+            }
 
             $normalizedValues[] = $operator.$val->getAmount();
         }

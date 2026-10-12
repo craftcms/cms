@@ -48,12 +48,15 @@ class User extends ElementResolver
 
             $pairs = GqlHelper::extractAllowedEntitiesFromSchema();
 
+            $groupUids = $pairs['usergroups'] ?? [];
+            $groupUids = $groupUids === true ? UserGroups::getAllGroups()->pluck('uid')->all() : $groupUids;
+
             if (Edition::get() < Edition::Pro) {
                 $availableGroupUids = UserGroups::getAllGroups()->pluck('uid')->all();
-                $pairs['usergroups'] = array_filter($pairs['usergroups'], fn ($uid) => in_array($uid, $availableGroupUids));
+                $groupUids = array_filter($groupUids, fn ($uid) => in_array($uid, $availableGroupUids));
             }
 
-            $allowedGroupIds = array_filter(array_map(fn (string $uid) => UserGroups::getGroupByUid($uid)->id ?? null, $pairs['usergroups']));
+            $allowedGroupIds = array_filter(array_map(fn (string $uid) => UserGroups::getGroupByUid($uid)->id ?? null, $groupUids));
 
             $query->groupId = $query->groupId ? array_intersect($allowedGroupIds, (array) $query->groupId) : $allowedGroupIds;
         }

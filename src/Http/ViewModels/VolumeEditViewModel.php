@@ -199,7 +199,7 @@ class VolumeEditViewModel extends ViewModel
         ];
     }
 
-    /** @return list<array{value:string,label:string}> */
+    /** @return list<array{value: string, label: string}|array{type: string, label: string, options: list<array{label: string, value: string, data: array{hint: mixed, keywords?: string|null}}>}> */
     private function assetTransformerOptions(): array
     {
         return $this->assetTransformers
@@ -230,6 +230,6 @@ class VolumeEditViewModel extends ViewModel
             ->prepend(['label' => t('Select a disk'), 'value' => '', 'disabled' => false, 'data' => ['hint' => '']])
             ->all();
 
-        return [...$options, ...SelectOptions::getEnvOptions(collect($options)->pluck('value')->all())];
+        return [...$options, ...SelectOptions::getEnvOptions(collect($options)->pluck('value')->filter(fn (mixed $value): bool => is_scalar($value))->values()->all())];
     }
 }

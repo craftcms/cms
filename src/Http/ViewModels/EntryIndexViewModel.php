@@ -35,7 +35,13 @@ class EntryIndexViewModel extends ContentIndexViewModel
     /** @return list<array<string, mixed>> */
     public function publishableSections(): array
     {
-        return SectionResource::collection(Sections::getPublishableSections())->resolve();
+        $sections = SectionResource::collection(Sections::getPublishableSections())->resolve();
+
+        if (array_any($sections, static fn (mixed $section): bool => ! is_array($section))) {
+            throw new \UnexpectedValueException('Section resources must resolve to arrays.');
+        }
+
+        return array_values($sections);
     }
 
     /**

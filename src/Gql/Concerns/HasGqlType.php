@@ -18,11 +18,21 @@ trait HasGqlType
      */
     public static function getType(?array $fields = null): Type
     {
+        $name = [static::class, 'getName'];
+        $fieldDefinitions = [static::class, 'getFieldDefinitions'];
+        if (! is_callable($name) || ($fields === null && ! is_callable($fieldDefinitions))) {
+            throw new \InvalidArgumentException('GraphQL object types must define a name and fields.');
+        }
+
+        $typeName = $name();
+        if (! is_string($typeName)) {
+            throw new \InvalidArgumentException('GraphQL type names must be strings.');
+        }
+
         return GqlEntityRegistry::getOrCreate(static::class, fn () => new GqlObjectType([
-            /** @phpstan-ignore-next-line */
-            'name' => static::getName(),
-            'fields' => $fields ?: (static::class.'::getFieldDefinitions'),
-        ]));
+            'name' => $typeName,
+            'fields' => $fields ?? \Closure::fromCallable($fieldDefinitions),
+        ]), GqlObjectType::class);
     }
 
     /** @return array<string, UnnamedFieldDefinitionConfig> */

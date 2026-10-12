@@ -63,7 +63,7 @@ trait Queryable
      *
      * @param  mixed  $criteria  Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
      * @param  bool  $one  Whether this method is called by [[findOne()]] or [[findAll()]]
-     * @return static|static[]|null
+     * @return ($one is true ? static|null : array<static>)
      */
     protected static function findByCondition(mixed $criteria, bool $one): array|static|null
     {

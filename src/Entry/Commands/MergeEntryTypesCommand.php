@@ -97,7 +97,7 @@ class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
 
         /** @var Collection<string,FieldInterface> $persistingFields */
         $persistingFields = collect($persistingEntryType->getFieldLayout()->getCustomFields())
-            ->keyBy(fn (FieldInterface $field) => $field->handle);
+            ->keyBy(fn (FieldInterface $field) => $field->handle ?? '');
 
         // Track field instances that need to be added to the layout,
         // including the new field handles we're going to need to assign them.
@@ -180,7 +180,7 @@ class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
                     $fieldLayout = $persistingEntryType->getFieldLayout();
                     /** @var array<string,true> $uidIdx */
                     $uidIdx = collect($fieldLayout->getAllElements())
-                        ->keyBy(fn (FieldLayoutElement $layoutElement) => $layoutElement->uid)
+                        ->keyBy(fn (FieldLayoutElement $layoutElement) => $layoutElement->uid ?? '')
                         ->map(fn () => true)
                         ->all();
                     $tabs = $fieldLayout->getTabs();
@@ -263,7 +263,13 @@ class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
                     'outgoingEntryTypeUid' => $outgoingEntryType->uid,
                     'layoutElementUidMap' => $uidMap,
                 ]);
-                File::put($migrationPath, ob_get_clean());
+                $content = ob_get_clean();
+
+                if ($content === false) {
+                    throw new \RuntimeException('Unable to capture the entry type merge migration.');
+                }
+
+                File::put($migrationPath, $content);
             }
         );
 

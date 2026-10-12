@@ -40,7 +40,7 @@ readonly class HandleTokenRequest
             return $next($request);
         }
 
-        abort_unless(preg_match('/^[A-Za-z0-9_-]+$/', (string) $token), 400, 'Invalid token');
+        abort_unless(preg_match('/^[A-Za-z0-9_-]+$/', (string) $token) === 1, 400, 'Invalid token');
 
         $tokenRoute = $this->tokens->getTokenRoute($token);
 

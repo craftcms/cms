@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use Illuminate\Support\Collection;
+use RuntimeException;
 use stdClass;
 
 /**
@@ -93,7 +94,9 @@ trait HydratesElements
 
         event($event = new ElementsHydrated($elements, $items));
 
-        return $event->elements;
+        return array_map(fn ($element) => $element instanceof $this->elementType
+            ? $element
+            : throw new RuntimeException('Hydrated elements must match the query element type.'), $event->elements);
     }
 
     /**
@@ -115,12 +118,12 @@ trait HydratesElements
         if (
             ! $this->ignorePlaceholders &&
             isset($row['id'], $row['siteId']) &&
-            ! is_null($element = Elements::getPlaceholderElement($row['id'], $row['siteId']))
+            ! is_null($element = Elements::getPlaceholderElement($row['id'], $row['siteId'])) &&
+            $element instanceof $this->elementType
         ) {
             return $element;
         }
 
-        /** @var class-string<ElementInterface> $class */
         $class = $this->elementType;
 
         // Instantiate the element
@@ -214,6 +217,10 @@ trait HydratesElements
         }
 
         event($event = new ElementHydrated($element, $row, $content));
+
+        if (! $event->element instanceof $class) {
+            throw new RuntimeException('Hydrated elements must match the query element type.');
+        }
 
         return $event->element;
     }

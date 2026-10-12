@@ -64,7 +64,7 @@ class EntryTypeSelect extends ComponentSelect
     #[\Override]
     protected function getOptions(): array
     {
-        $this->options ??= app(EntryTypes::class)->getAllEntryTypes()->all();
+        $this->options ??= app(EntryTypes::class)->getAllEntryTypes()->values()->all();
 
         return parent::getOptions();
     }

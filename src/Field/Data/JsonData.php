@@ -108,7 +108,7 @@ class JsonData extends Component implements AllowableInSandbox, IteratorAggregat
             $options |= JSON_PRETTY_PRINT;
         }
 
-        $json = Json::encode($this->value, $options);
+        $json = Json::encode($this->value, $options | JSON_THROW_ON_ERROR);
 
         if ($pretty) {
             return Json::reindent($json, $indent);

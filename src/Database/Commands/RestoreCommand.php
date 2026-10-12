@@ -138,12 +138,18 @@ class RestoreCommand extends Command
             return null;
         }
 
-        return select(
+        $selection = select(
             label: 'Select a database backup to restore',
             options: collect($backupPaths)
                 ->mapWithKeys(fn (string $backupPath) => [$backupPath => basename($backupPath)])
                 ->all(),
         );
+
+        if (! is_string($selection)) {
+            throw new \InvalidArgumentException('Invalid database selection.');
+        }
+
+        return $selection;
     }
 
     /**

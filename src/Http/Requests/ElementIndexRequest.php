@@ -154,7 +154,7 @@ class ElementIndexRequest extends FormRequest
      */
     public function returnUrl(): ?string
     {
-        $returnUrl = $this->input('returnUrl');
+        $returnUrl = $this->string('returnUrl')->toString();
 
         return $returnUrl ? str_replace('?', ':QS:', $returnUrl) : null;
     }
@@ -174,7 +174,7 @@ class ElementIndexRequest extends FormRequest
     /** @return list<int> */
     public function collapsedElementIds(): array
     {
-        return $this->array('collapsedElementIds');
+        return array_values(array_map(fn (mixed $id): int => is_numeric($id) ? (int) $id : abort(400, 'Invalid collapsed element ID.'), $this->array('collapsedElementIds')));
     }
 
     /**

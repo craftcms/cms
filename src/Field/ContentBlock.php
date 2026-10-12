@@ -48,7 +48,7 @@ use InvalidArgumentException;
 use Override;
 use RuntimeException;
 
-use function CraftCms\Cms\craftAuth;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -296,6 +296,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     /**
      * Sets the generated fields on the field layout.
      */
+    /** @param list<array{uid?:string,name?:string,handle?:string,template?:string}>|null $fields */
     public function setGeneratedFields(mixed $fields): void
     {
         if (! is_array($fields)) {
@@ -651,7 +652,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
+        if (! $element->ruleset || ! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -664,8 +665,10 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     {
         $value->setOwner($element);
 
-        if ($element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_LIVE)) {
-            $value->ruleset->useScenario($element->ruleset->getScenario());
+        if ($element->ruleset && $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_LIVE)) {
+            if ($value->ruleset) {
+                $value->ruleset->useScenario($element->ruleset->getScenario());
+            }
         }
 
         if (! $value->validate()) {
@@ -796,7 +799,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                 )
             ) {
                 // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                $contentBlock = app(Drafts::class)->createDraft($contentBlock, craftAuth()->id(), null, null, [
+                $contentBlock = app(Drafts::class)->createDraft($contentBlock, currentUser()?->getCraftUserId(), null, null, [
                     'canonicalId' => $contentBlock->id,
                     'primaryOwnerId' => $element->id,
                     'owner' => $element,

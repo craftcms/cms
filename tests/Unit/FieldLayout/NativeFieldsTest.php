@@ -5,7 +5,6 @@ declare(strict_types=1);
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\NativeFields;
-use CraftCms\Cms\Site\Sites;
 
 it('applies native field providers', function () {
     $registry = app(NativeFields::class);
@@ -15,25 +14,25 @@ it('applies native field providers', function () {
 });
 
 it('resolves provider dependencies from the current scope with contextual arguments', function () {
-    app()->scoped(Sites::class, fn () => Mockery::mock(Sites::class));
+    app()->scoped(EntryTitleField::class, fn () => new EntryTitleField);
 
     $registry = app(NativeFields::class);
     $registry->remove('craft');
     $layout = new FieldLayout;
     $calls = [];
-    $registry->register('plugin', function (FieldLayout $fieldLayout, array $fields, Sites $sites) use (&$calls): array {
+    $registry->register('plugin', function (FieldLayout $fieldLayout, array $fields, EntryTitleField $titleField) use (&$calls): array {
         $calls[] = [$fieldLayout, $fields];
 
-        return [...$fields, $sites];
+        return [...$fields, $titleField];
     });
 
-    $first = $registry->apply($layout, ['existing']);
+    $first = $registry->apply($layout, [EntryTitleField::class]);
     app()->forgetScopedInstances();
-    $second = $registry->apply($layout, ['existing']);
+    $second = $registry->apply($layout, [EntryTitleField::class]);
 
     expect($calls)->toBe([
-        [$layout, ['existing']],
-        [$layout, ['existing']],
+        [$layout, [EntryTitleField::class]],
+        [$layout, [EntryTitleField::class]],
     ])->and($first[1])->not()->toBe($second[1]);
 });
 

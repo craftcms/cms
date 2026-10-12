@@ -20,16 +20,17 @@ readonly class AuthorizationView
         private AuthenticationViews $views,
     ) {}
 
-    /**
-     * @param array{
-     *     client: Client,
-     *     scopes: list<Scope>,
-     *     request: Request,
-     *     authToken: string,
-     * } $parameters
-     */
+    /** @param array<string, mixed> $parameters */
     public function __invoke(array $parameters): Response
     {
+        if (! ($parameters['request'] ?? null) instanceof Request
+            || ! ($parameters['client'] ?? null) instanceof Client
+            || ! is_array($parameters['scopes'] ?? null)
+            || array_any($parameters['scopes'], static fn (mixed $scope): bool => ! $scope instanceof Scope)
+            || ! is_string($parameters['authToken'] ?? null)) {
+            throw new \InvalidArgumentException('Invalid OAuth authorization view parameters.');
+        }
+
         $request = $parameters['request'];
         $clientName = (string) $parameters['client']->getAttribute('name');
         $scopes = array_map(

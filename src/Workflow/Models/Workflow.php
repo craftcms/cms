@@ -41,7 +41,7 @@ class Workflow extends BaseModel
     {
         return [
             'name' => $this->name,
-            'stages' => $this->stages->map(fn (WorkflowStageData $stage): array => $stage->getConfig())->all(),
+            'stages' => array_values($this->stages->map(fn (WorkflowStageData $stage): array => $stage->getConfig())->all()),
         ];
     }
 
@@ -49,11 +49,11 @@ class Workflow extends BaseModel
     public function getExecutionConfig(): array
     {
         return [
-            'stages' => $this->stages->map(fn (WorkflowStageData $stage): array => [
+            'stages' => array_values($this->stages->map(fn (WorkflowStageData $stage): array => [
                 'uid' => $stage->uid,
                 'type' => $stage->type,
                 'settings' => $stage->settings,
-            ])->all(),
+            ])->all()),
         ];
     }
 

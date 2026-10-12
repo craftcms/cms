@@ -28,7 +28,7 @@ class TwigClearCommand extends Command
         foreach (TemplateMode::cases() as $mode) {
             $cache = $twig->get($mode)->getCache();
 
-            if (! is_dir($cache)) {
+            if (! is_string($cache) || ! is_dir($cache)) {
                 continue;
             }
 

@@ -26,8 +26,12 @@ class AltField extends TextareaField
     #[Override]
     public bool $requirable = true;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         parent::__construct(Arr::except($config, [
             'attribute',
             'autofocus',
@@ -71,9 +75,10 @@ class AltField extends TextareaField
     #[Override]
     protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
     {
-        return Arr::merge(parent::inputTemplateVariables($element, $static), [
-            'class' => ['nicetext'],
-        ]);
+        $variables = parent::inputTemplateVariables($element, $static);
+        $variables['class'][] = 'nicetext';
+
+        return $variables;
     }
 
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string

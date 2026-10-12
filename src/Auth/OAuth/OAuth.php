@@ -504,6 +504,7 @@ class OAuth
         return $resolved->id;
     }
 
+    /** @return class-string<AbstractProvider>|null */
     private function resolveProviderClass(string $handle, string $driver): ?string
     {
         if (! class_exists($driver)) {
@@ -517,6 +518,7 @@ class OAuth
         return $driver;
     }
 
+    /** @param class-string<AbstractProvider> $providerClass */
     private function buildProviderInstance(string $providerClass, ProviderDefinition $provider, bool $isCpRequest): AbstractProvider
     {
         $this->assertDirectProviderCredentials($provider);

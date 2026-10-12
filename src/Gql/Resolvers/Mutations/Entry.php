@@ -115,7 +115,7 @@ class Entry extends ElementMutationResolver
             $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
             Drafts::saveElementAsDraft(
                 $entry,
-                creatorId: craftAuth()->id(),
+                creatorId: ($userId = craftAuth()->id()) !== null ? (int) $userId : null,
                 name: $arguments['draftName'] ?? null,
                 notes: $arguments['draftNotes'] ?? null,
             );
@@ -301,7 +301,7 @@ class Entry extends ElementMutationResolver
         }
 
         $entry->sectionId = $section?->id;
-        $entry->fieldId = $field?->id;
+        $entry->fieldId = $field?->id !== null ? (int) $field->id : null;
 
         // Null the field layout ID in case the entry type changes.
         if ($entry->getTypeId() !== $entryType->id) {

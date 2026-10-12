@@ -26,7 +26,7 @@ class Site extends ArgumentHandler
         }
 
         // Normalize to array.
-        if (! empty($argumentValue) && ! is_array($argumentValue)) {
+        if (! is_array($argumentValue)) {
             $argumentValue = [$argumentValue];
         }
 
@@ -34,9 +34,9 @@ class Site extends ArgumentHandler
         if (count($argumentValue) === 1 && $argumentValue[0] === '*') {
             $argumentValue = $allowedValues;
         } else {
-            if ($argumentValue[0] === 'not') {
+            if (($argumentValue[0] ?? null) === 'not') {
                 // get rid of not
-                array_unshift($argumentValue);
+                array_shift($argumentValue);
 
                 // Set the argument value to the diff, subtracting the values that were requested to be excluded from the list of allowed values
                 $argumentValue = array_diff($allowedValues, $argumentValue);

@@ -47,7 +47,13 @@ readonly class ActionRouteResolver
         $segmentIndex = $this->actionTriggerSegmentIndex($request);
 
         if ($request->segment($segmentIndex) === $actionTrigger && count($request->segments()) > $segmentIndex) {
-            return array_slice($request->segments(), $segmentIndex);
+            $segments = array_slice($request->segments(), $segmentIndex);
+
+            if (array_any($segments, static fn (mixed $segment): bool => ! is_string($segment))) {
+                return null;
+            }
+
+            return array_values($segments);
         }
 
         return null;

@@ -22,7 +22,7 @@ class ElementSiteRemoved extends ActivityEventType
     {
         return t(
             'Removed from {site}',
-            ['site' => $event->snapshots['site']['name']],
+            ['site' => $event->snapshots['site']['name'] ?? throw new \InvalidArgumentException('Site activity requires a site snapshot.')],
         );
     }
 }

@@ -10,7 +10,11 @@ use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 
 /**
- * @extends ElementQuery<ContentBlock>
+ * @template TAsArray of bool = false
+ *
+ * @extends ElementQuery<ContentBlock, TAsArray>
+ *
+ * @implements NestedElementQueryInterface<ContentBlock, TAsArray>
  *
  * @since 6.0.0
  */

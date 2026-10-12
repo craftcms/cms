@@ -31,7 +31,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         foreach ($criteriaList as $criteria) {
             /** @var ElementQuery<ElementInterface> $elementQuery */
             $elementQuery = Typecast::configure(Elements::createElementQuery($elementType), $criteria);
-            $idSets[] = $elementQuery->ids();
+            $idSets[] = array_values($elementQuery->ids());
         }
 
         return $idSets;

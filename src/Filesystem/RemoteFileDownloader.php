@@ -25,7 +25,7 @@ readonly class RemoteFileDownloader
     {
         $parts = parse_url($url);
 
-        if (! filter_var($url, FILTER_VALIDATE_URL) || ! is_array($parts) || isset($parts['user']) || isset($parts['pass'])) {
+        if (! filter_var($url, FILTER_VALIDATE_URL) || ! is_array($parts) || ! isset($parts['host'], $parts['scheme']) || isset($parts['user']) || isset($parts['pass'])) {
             throw new RuntimeException('The file URL is invalid.');
         }
 

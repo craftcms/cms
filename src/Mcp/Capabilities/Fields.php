@@ -39,7 +39,7 @@ readonly class Fields
 
         return [
             'count' => $fields->count(),
-            'fields' => $fields->all(),
+            'fields' => array_values($fields->all()),
         ];
     }
 
@@ -77,7 +77,7 @@ readonly class Fields
         #[Schema(type: 'object', additionalProperties: true)]
         array $settings = [],
     ): array {
-        if (! ComponentHelper::validateComponentClass($type, FieldInterface::class) || ! $type::isSelectable()) {
+        if (! is_a($type, FieldInterface::class, true) || ! ComponentHelper::validateComponentClass($type, FieldInterface::class) || ! $type::isSelectable()) {
             throw new ToolCallException('Field type is invalid or unavailable.');
         }
 

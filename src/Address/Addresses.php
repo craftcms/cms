@@ -193,7 +193,9 @@ readonly class Addresses implements FieldLayoutProviderInterface
     {
         $requiredFields = [];
         $scenario = $address->ruleset->getScenario();
-        $address->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        if ($address->ruleset) {
+            $address->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        }
 
         foreach ($address->ruleset->rules() as $attribute => $rules) {
             foreach (Arr::wrap($rules) as $rule) {
@@ -204,13 +206,14 @@ readonly class Addresses implements FieldLayoutProviderInterface
                 }
             }
         }
-
-        $address->ruleset->useScenario($scenario);
+        if ($address->ruleset) {
+            $address->ruleset->useScenario($scenario);
+        }
         $belongsToCurrentUser ??= $address->getBelongsToCurrentUser();
-        $visibleFields = array_flip(array_merge(
+        $visibleFields = array_fill_keys(array_merge(
             $this->getUsedFields($address->countryCode),
             $this->getUsedSubdivisionFields($address->countryCode),
-        )) + $requiredFields;
+        ), true) + $requiredFields;
         $parents = $this->subdivisionParents($address, $visibleFields);
 
         return [
@@ -262,7 +265,10 @@ readonly class Addresses implements FieldLayoutProviderInterface
         ];
     }
 
-    /** @return AddressFormField */
+    /**
+     * @param  'addressLine1'|'addressLine2'|'addressLine3'|'administrativeArea'|'locality'|'dependentLocality'|'postalCode'|'sortingCode'  $name
+     * @return AddressFormField
+     */
     private function textFieldDefinition(
         Address $address,
         string $name,
@@ -281,7 +287,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
             'required' => $required,
             'autocomplete' => $autocomplete,
             'status' => $status ? [Str::toString($status[0]), $status[1]] : null,
-            'errors' => $address->errors()->get($name),
+            'errors' => array_values($address->errors()->messages()[$name] ?? []),
         ];
 
         if ($width !== null) {
@@ -292,6 +298,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
     }
 
     /**
+     * @param  'administrativeArea'|'locality'|'dependentLocality'  $name
      * @param  list<string|null>  $parents
      * @return AddressFormField
      */

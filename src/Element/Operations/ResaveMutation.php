@@ -58,7 +58,9 @@ class ResaveMutation
         }
 
         if ($ifInvalid) {
-            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+            if ($element->ruleset) {
+                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+            }
 
             return ! (($fieldOnly || $element->validate($attribute)) && $element->validate("field:$attribute"));
         }

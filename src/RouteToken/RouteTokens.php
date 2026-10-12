@@ -69,6 +69,10 @@ class RouteTokens
             throw new InvalidArgumentException("Invalid token: $token");
         }
 
+        if ($usageLimit !== null && $usageLimit < 0) {
+            throw new InvalidArgumentException('Token usage limits cannot be negative.');
+        }
+
         $tokenModel = new RouteToken;
         $tokenModel->token = $token ?? Str::random(32, extendedChars: true);
         $tokenModel->route = $route;
@@ -164,7 +168,7 @@ class RouteTokens
 
             if ($result) {
                 if ($result->usageLimit) {
-                    $this->remainingTokenUsages[$token] = $result->usageLimit - $result->usageCount;
+                    $this->remainingTokenUsages[$token] = (int) $result->usageLimit - (int) $result->usageCount;
                 } else {
                     $this->remainingTokenUsages[$token] = null;
                 }

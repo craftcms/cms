@@ -565,7 +565,7 @@ trait QueriesNestedElements
         }
 
         if (is_numeric($value)) {
-            return [$value];
+            return [(int) $value];
         }
 
         if (! is_array($value) || ! Arr::isNumeric($value)) {

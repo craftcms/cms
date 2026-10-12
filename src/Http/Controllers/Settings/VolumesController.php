@@ -145,7 +145,7 @@ class VolumesController extends BaseAssetSettingsController
 
         abort_if($volume === null, 400, "Invalid volume ID: {$volumeId}");
 
-        $subpath = $request->input('subpath');
+        $subpath = $request->string('subpath')->toString() ?: null;
 
         if (! empty($subpath)) {
             $subpath = File::normalizePath(ltrim(trim((string) $subpath), '/'));

@@ -11,6 +11,7 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Queue\ClearableQueue;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Grammar;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
@@ -312,7 +313,20 @@ readonly class JobProgress
                 };
                 $cancelled = JobStatus::Cancelled->value;
 
-                return DB::raw("CASE WHEN $table.status = $cancelled THEN $table.$column ELSE $incoming END");
+                return new readonly class($table, $column, $incoming, $cancelled) implements Expression
+                {
+                    public function __construct(
+                        private string $table,
+                        private string $column,
+                        private string $incoming,
+                        private int $cancelled,
+                    ) {}
+
+                    public function getValue(Grammar $grammar): string
+                    {
+                        return "CASE WHEN {$this->table}.status = {$this->cancelled} THEN {$this->table}.{$this->column} ELSE {$this->incoming} END";
+                    }
+                };
             }, $updates));
         }
 

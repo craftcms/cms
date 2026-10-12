@@ -214,7 +214,7 @@ class Url extends \Illuminate\Support\Facades\URL
      */
     public static function encodeUrl(string $url): string
     {
-        $parts = preg_split('/([:\/?#\[\]@!$&\'()*+,;=%])/', $url, flags: PREG_SPLIT_DELIM_CAPTURE);
+        $parts = (preg_split('/([:\/?#\[\]@!$&\'()*+,;=%])/', $url, flags: PREG_SPLIT_DELIM_CAPTURE) ?: throw new \InvalidArgumentException('Unable to split the URL.'));
         $url = '';
         foreach ($parts as $i => $part) {
             if ($i % 2 === 0) {
@@ -642,7 +642,7 @@ class Url extends \Illuminate\Support\Facades\URL
      */
     /**
      * @param  array<string, mixed>|string|null  $params
-     * @return array{array<string, mixed>, ?string}
+     * @return array{array<array-key, mixed>, ?string}
      */
     private static function _normalizeParams(array|string|null $params): array
     {

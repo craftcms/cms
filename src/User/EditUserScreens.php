@@ -119,6 +119,10 @@ class EditUserScreens
                 $securityItem->selected = true;
             }
 
+            if ($current === false) {
+                $current = [];
+            }
+
             $current[] = new NavItem([
                 'label' => $info['label'],
                 'url' => $info['url'] ?? $this->url($user, $name),
@@ -126,7 +130,7 @@ class EditUserScreens
             ]);
         }
 
-        return $items;
+        return array_values($items);
     }
 
     /**

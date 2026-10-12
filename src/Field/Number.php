@@ -186,8 +186,12 @@ class Number extends Field implements CrossSiteCopyableFieldInterface, Defaultab
      */
     public ?string $previewCurrency = null;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         // Config normalization
         foreach (['defaultValue', 'min', 'max', 'step'] as $name) {
             if (isset($config[$name])) {
@@ -405,15 +409,15 @@ JS;
     {
         if (! $value) {
             if (isset($this->min, $this->max)) {
-                $min = $this->min * (10 ^ $this->decimals);
-                $max = $this->max * (10 ^ $this->decimals);
+                $min = $this->min * (10 ** $this->decimals);
+                $max = $this->max * (10 ** $this->decimals);
                 if ($this->step) {
-                    $step = $this->step * (10 ^ $this->decimals);
-                    $value = random_int($min / $step, $max / $step) * $step;
+                    $step = $this->step * (10 ** $this->decimals);
+                    $value = random_int((int) ceil($min / $step), (int) floor($max / $step)) * $step;
                 } else {
-                    $value = random_int($min, $max);
+                    $value = random_int((int) ceil($min), (int) floor($max));
                 }
-                $value /= 10 ^ $this->decimals;
+                $value /= 10 ** $this->decimals;
             } else {
                 $value = 1234;
             }

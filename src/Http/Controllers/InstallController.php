@@ -91,6 +91,10 @@ readonly class InstallController
                 $licensePath = Aliases::get('@craftcms/LICENSE.md');
                 $license = file_get_contents($licensePath);
 
+                if ($license === false) {
+                    throw new RuntimeException('Unable to read the license file.');
+                }
+
                 return Str::markdown($license);
             }),
             'localeOptions' => Inertia::defer(fn () => I18N::getAllLocales()->map(fn ($locale) => [
@@ -286,7 +290,7 @@ readonly class InstallController
 
     /**
      * @param  array<string, mixed>  $data
-     * @return array<string, bool|int|string|null>
+     * @return array<string, mixed>&array{driver: string, database: string}
      */
     public function validateDbData(array $data): array
     {
@@ -305,7 +309,13 @@ readonly class InstallController
         $data['database'] = ($data['database'] ?? null) ?: $defaults['database'];
 
         if ($data['driver'] === 'sqlite') {
-            return ConnectionConfig::normalize($data);
+            $data = ConnectionConfig::normalize($data);
+
+            if (! is_string($data['database'] ?? null)) {
+                throw new RuntimeException('Invalid SQLite database path.');
+            }
+
+            return ['driver' => 'sqlite', 'database' => $data['database']] + $data;
         }
 
         $data['host'] ??= $defaults['host'];
@@ -314,7 +324,11 @@ readonly class InstallController
         $data['password'] ??= '';
         $data['prefix'] ??= $defaults['prefix'];
 
-        return collect($data)->mapWithKeys(fn (mixed $value, string $key) => [$key => $value])->all();
+        if (! is_string($data['driver']) || ! is_string($data['database'])) {
+            throw new RuntimeException('Invalid database connection configuration.');
+        }
+
+        return $data;
     }
 
     private function dbDriver(mixed $driver): string

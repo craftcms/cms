@@ -57,7 +57,7 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
     /**
      * Returns the valid option values.
      *
-     * @return string[]
+     * @return list<int|string>
      */
     private function _validValues(): array
     {

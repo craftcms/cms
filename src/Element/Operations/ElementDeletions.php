@@ -132,7 +132,7 @@ readonly class ElementDeletions
                 ->get();
 
             if ($relations->isNotEmpty()) {
-                $relationKey = fn (object $relation) => "{$relation->fieldId}:{$relation->sourceId}:{$relation->sourceSiteId}";
+                $relationKey = fn (\stdClass $relation) => "{$relation->fieldId}:{$relation->sourceId}:{$relation->sourceSiteId}";
                 $prevailingRelations = DB::table(Table::RELATIONS)
                     ->select(['fieldId', 'sourceId', 'sourceSiteId'])
                     ->where('targetId', $prevailingElement->id)
@@ -141,7 +141,7 @@ readonly class ElementDeletions
                     ->get()
                     ->keyBy($relationKey);
                 $relationIds = $relations
-                    ->reject(fn (object $relation) => $prevailingRelations->has($relationKey($relation)))
+                    ->reject(fn (\stdClass $relation) => $prevailingRelations->has($relationKey($relation)))
                     ->pluck('id');
 
                 if ($relationIds->isNotEmpty()) {
@@ -537,8 +537,9 @@ readonly class ElementDeletions
                 } else {
                     $siteElements = [];
                 }
-
-                $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                if ($element->ruleset) {
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                }
                 if (! $element->validate()) {
                     Log::warning("Unable to restore element $element->id: doesn't pass essential validation: ".print_r($element->errors()->all(), true), [__METHOD__]);
                     DB::rollBack();
@@ -550,8 +551,9 @@ readonly class ElementDeletions
                     if ($siteElement === $element) {
                         continue;
                     }
-
-                    $siteElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                    if ($siteElement->ruleset) {
+                        $siteElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                    }
 
                     if (! $siteElement->validate()) {
                         Log::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: ".print_r($element->errors()->all(), true), [__METHOD__]);

@@ -115,7 +115,13 @@ class ElementHelper
             $slug = Str::lower((string) $slug, $language);
         }
 
-        $words = Arr::whereNotEmpty(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', (string) $slug));
+        $words = preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', (string) $slug);
+
+        if ($words === false) {
+            throw new \InvalidArgumentException('Slugs must contain valid UTF-8 text.');
+        }
+
+        $words = Arr::whereNotEmpty($words);
 
         return implode($generalConfig->slugWordSeparator, $words);
     }

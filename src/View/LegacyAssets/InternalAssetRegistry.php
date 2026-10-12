@@ -18,10 +18,10 @@ use Illuminate\Container\Attributes\Scoped;
 #[Scoped]
 class InternalAssetRegistry
 {
-    /** @var array<string, true> */
+    /** @var array<class-string<LegacyAssetInterface>, true> */
     private array $registeredBundles = [];
 
-    /** @var array<string, true> */
+    /** @var array<class-string<LegacyAssetInterface>, true> */
     private array $pendingBundles = [];
 
     public function __construct(
@@ -33,11 +33,12 @@ class InternalAssetRegistry
         }
     }
 
-    /**
-     * @param  class-string<LegacyAssetInterface>  $bundle
-     */
     public function register(string $bundle): void
     {
+        if (! is_a($bundle, LegacyAssetInterface::class, true)) {
+            throw new \InvalidArgumentException("Invalid legacy asset bundle: {$bundle}");
+        }
+
         if (isset($this->registeredBundles[$bundle]) || isset($this->pendingBundles[$bundle])) {
             return;
         }

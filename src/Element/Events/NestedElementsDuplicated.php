@@ -17,7 +17,7 @@ class NestedElementsDuplicated
         public ElementInterface $source,
         public ElementInterface $target,
 
-        /** @var list<int> $newElementIds */
+        /** @var array<int, int> $newElementIds Mapping from source element IDs to new element IDs. */
         public array $newElementIds = [],
     ) {}
 }

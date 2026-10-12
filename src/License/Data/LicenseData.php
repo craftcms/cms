@@ -29,7 +29,7 @@ readonly class LicenseData
         public string $version,
         string|LicenseKeyStatus $status,
     ) {
-        $this->status = LicenseKeyStatus::from($status);
+        $this->status = is_string($status) ? LicenseKeyStatus::from($status) : $status;
     }
 
     public function isMultiEdition(): bool

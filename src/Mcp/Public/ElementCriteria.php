@@ -222,7 +222,7 @@ readonly class ElementCriteria
                 ->all();
         }
 
-        return $type->query()->getFieldLayouts();
+        return array_values($type->query()->getFieldLayouts());
     }
 
     /**

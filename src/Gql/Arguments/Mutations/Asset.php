@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Gql\Arguments\Mutations;
 use CraftCms\Cms\Gql\Arguments\ElementMutationArguments;
 use CraftCms\Cms\Gql\Types\Input\File;
 use GraphQL\Type\Definition\Argument;
+use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -16,7 +17,7 @@ use GraphQL\Type\Definition\Type;
  */
 class Asset extends ElementMutationArguments
 {
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     #[\Override]
     public static function getArguments(): array
     {

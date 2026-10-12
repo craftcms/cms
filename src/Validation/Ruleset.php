@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Validation;
 use Closure;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Events\ValidationRulesResolving;
+use Illuminate\Support\Arr;
 use Illuminate\Validation\Validator;
 use Override;
 
@@ -39,7 +40,10 @@ abstract class Ruleset extends \CraftCms\RulesetValidation\Ruleset
      */
     protected function validationRules(): array
     {
-        $rules = parent::validationRules();
+        $rules = array_map(
+            fn (mixed $rules): array => is_string($rules) ? explode('|', $rules) : Arr::wrap($rules),
+            parent::validationRules(),
+        );
 
         event($event = new ValidationRulesResolving($this->resolveSubject(), $this, $rules));
 

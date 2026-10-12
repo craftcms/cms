@@ -128,10 +128,16 @@ class DropTablePrefixCommand extends Command
             return false;
         }
 
-        return select(
+        $selection = select(
             label: 'Multiple table prefixes were detected. Which one should be removed?',
             options: array_combine($possiblePrefixes, $possiblePrefixes),
         );
+
+        if (! is_string($selection)) {
+            throw new \InvalidArgumentException('Invalid database selection.');
+        }
+
+        return $selection;
     }
 
     private function renameTable(string $table, string $newName, Connection $connection): void

@@ -44,6 +44,6 @@ class MoneyAsset implements LegacyAssetInterface
             static fn (Currency $currency) => [$currency->getCode() => $currencies->subunitFor($currency)],
         );
 
-        return Json::encode($subUnitsByCurrencyCode);
+        return Json::encode($subUnitsByCurrencyCode, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?: throw new \RuntimeException('Unable to encode currency subunits.');
     }
 }

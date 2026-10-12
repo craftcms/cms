@@ -51,7 +51,7 @@ class FieldsMergeCommand extends Command
                 $pattern = preg_quote(substr($handle, 0, -1), '/');
 
                 return $fieldsService->getAllFields()
-                    ->filter(fn (FieldInterface $field) => preg_match("/^$pattern\d*$/", (string) $field->handle))
+                    ->filter(fn (FieldInterface $field) => preg_match("/^$pattern\d*$/", (string) $field->handle) === 1)
                     ->map(fn (FieldInterface $field) => $field->handle)
                     ->all();
             })
@@ -76,7 +76,7 @@ class FieldsMergeCommand extends Command
 
                 return $field;
             })
-            ->keyBy(fn (FieldInterface $field) => $field->handle);
+            ->keyBy(fn (FieldInterface $field) => $field->handle ?? '');
 
         /** @var Collection<string, Collection<int, FieldLayout>> $layoutsByField */
         $layoutsByField = $fields->map(fn (FieldInterface $field) => $fieldsService->findFieldUsages($field));
@@ -256,6 +256,6 @@ class FieldsMergeCommand extends Command
             $infoByField->all(),
         );
 
-        return $fields[$choice];
+        return $fields->get((string) $choice) ?? throw new \InvalidArgumentException('Invalid selected field.');
     }
 }

@@ -160,7 +160,7 @@ readonly class RoutesController
             'label' => t('Global'),
         ]])
             ->merge($this->sites->getAllSites()->map(fn (Site $site): array => [
-                'value' => $site->uid,
+                'value' => $site->uid ?? '',
                 'label' => t($site->getName(), category: 'site'),
             ]))
             ->values()

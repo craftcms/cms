@@ -226,11 +226,11 @@ readonly class CreateEntryController
     {
         // Post & expiry dates
         if (($postDate = $this->request->input('postDate')) !== null) {
-            $entry->postDate = DateTimeHelper::toDateTime($postDate);
+            $entry->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
         }
 
         if (($expiryDate = $this->request->input('expiryDate')) !== null) {
-            $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate);
+            $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }
     }
 

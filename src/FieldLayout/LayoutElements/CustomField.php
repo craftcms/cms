@@ -120,8 +120,12 @@ class CustomField extends BaseField
      */
     private mixed $_elementEditCondition = null;
 
-    public function __construct(?FieldInterface $field = null, $config = [])
+    public function __construct(?FieldInterface $field = null, array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         // ensure we set the field last, so it has access to other properties that need to be set first
         // see https://github.com/craftcms/cms/issues/15752
         $fieldUid = Arr::pull($config, 'fieldUid');
@@ -147,9 +151,9 @@ class CustomField extends BaseField
     }
 
     #[Override]
-    public function label(?string $label = null): static|string|null
+    public function label(string|null|false $label = false): static|string|null
     {
-        if (func_num_args() === 0) {
+        if ($label === false) {
             return parent::label();
         }
 
@@ -624,7 +628,7 @@ class CustomField extends BaseField
     }
 
     /**
-     * @return array{class: string, data: array{attribute: string, mandatory: bool, requirable: bool, thumbable: bool, preview-options: list<array{label: string, value: string}>|null, thumb-options: list<array{label: string, value: string}>|null, id?: int}}
+     * @return array{class: string, data: array{attribute: string, mandatory: bool, requirable: bool, thumbable: bool, preview-options: list<array{label: string, value: string}>|null, thumb-options: list<array{label: string, value: string}>|null, id?: int|string|null}}
      */
     #[Override]
     protected function selectorAttributes(): array
@@ -637,11 +641,9 @@ class CustomField extends BaseField
             return $attributes;
         }
 
-        return Arr::merge($attributes, [
-            'data' => [
-                'id' => $field->id,
-            ],
-        ]);
+        $attributes['data']['id'] = $field->id;
+
+        return $attributes;
     }
 
     #[Override]
@@ -684,12 +686,10 @@ class CustomField extends BaseField
             return $attributes;
         }
 
-        return Arr::merge($attributes, [
-            'id' => "{$field->handle}-field",
-            'data' => [
-                'type' => $field::class,
-            ],
-        ]);
+        $attributes['id'] = "{$field->handle}-field";
+        $attributes['data']['type'] = $field::class;
+
+        return $attributes;
     }
 
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string

@@ -62,10 +62,10 @@ class CreateCommand extends Command
             callback: fn () => $projectConfig->readOnly,
         );
 
-        $rules = new Section()->ruleset->getValidator()->getRules();
+        $rules = (new Section()->ruleset ?: throw new RuntimeException('Section validation rules are unavailable.'))->getValidator()->getRules();
 
         $entryTypes = collect($this->option('entryTypes'))
-            ->flatMap(fn (string $entryType) => explode(',', $entryType))
+            ->flatMap(fn (?string $entryType) => explode(',', $entryType ?? ''))
             ->map(function (string $entryTypeHandle) use ($entryTypesService) {
                 $entryType = $entryTypesService->getEntryTypeByHandle($entryTypeHandle);
 

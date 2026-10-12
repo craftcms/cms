@@ -45,7 +45,7 @@ readonly class Routes
 
         return [
             'count' => $routes->count(),
-            'routes' => $routes->all(),
+            'routes' => array_values($routes->all()),
         ];
     }
 

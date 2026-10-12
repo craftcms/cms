@@ -140,6 +140,10 @@ class Str extends \Illuminate\Support\Str
 
         $str = mb_convert_encoding($str, 'UTF-8', $encoding);
 
+        if ($str === false) {
+            throw new InvalidArgumentException('Unable to convert the string to UTF-8.');
+        }
+
         return str_replace("\0", '', $str);
     }
 
@@ -220,7 +224,13 @@ class Str extends \Illuminate\Support\Str
         // So, by converting from UTF-8 to UTF-32, we magically
         // get the correct hex encoding.
         return Str::replaceMb4($str, static function ($char) {
-            $unpacked = unpack('H*', mb_convert_encoding($char, 'UTF-32', 'UTF-8'));
+            $encoded = mb_convert_encoding($char, 'UTF-32', 'UTF-8');
+
+            if (! is_string($encoded)) {
+                throw new InvalidArgumentException('Unable to convert the character to UTF-32.');
+            }
+
+            $unpacked = unpack('H*', $encoded);
 
             return isset($unpacked[1]) ? '&#x'.ltrim((string) $unpacked[1], '0').';' : '';
         });
@@ -234,7 +244,13 @@ class Str extends \Illuminate\Support\Str
      */
     public static function encoding(string $str): string
     {
-        return mb_strtolower(mb_detect_encoding($str, mb_detect_order(), true));
+        $encoding = mb_detect_encoding($str, mb_detect_order(), true);
+
+        if ($encoding === false) {
+            throw new InvalidArgumentException('Unable to detect the string encoding.');
+        }
+
+        return mb_strtolower($encoding);
     }
 
     /**
@@ -376,7 +392,7 @@ class Str extends \Illuminate\Support\Str
     {
         $lines = mb_split("[\r\n]{1,2}", $str);
 
-        if ($lines === false) {
+        if ($lines === false || $lines === []) {
             return [''];
         }
 
@@ -485,8 +501,8 @@ class Str extends \Illuminate\Support\Str
         $shortcodes = array_keys($reflectionMethod->invoke(null));
 
         self::$shortcodeEscapeMap = array_combine(
-            array_map(fn (string $shortcode) => ":$shortcode:", $shortcodes),
-            array_map(fn (string $shortcode) => "\\:$shortcode\\:", $shortcodes),
+            array_map(fn (int|string $shortcode) => ":$shortcode:", $shortcodes),
+            array_map(fn (int|string $shortcode) => "\\:$shortcode\\:", $shortcodes),
         );
 
         return self::$shortcodeEscapeMap;
@@ -574,7 +590,7 @@ class Str extends \Illuminate\Support\Str
         }
 
         if ($object instanceof BackedEnum) {
-            return $object->value;
+            return (string) $object->value;
         }
 
         if (is_iterable($object)) {
@@ -679,6 +695,12 @@ class Str extends \Illuminate\Support\Str
         // Normalize NFD chars to NFC
         $value = Normalizer::normalize($value, Normalizer::FORM_C);
 
-        return $transliterator->transliterate($value);
+        if ($value === false) {
+            return null;
+        }
+
+        $result = $transliterator->transliterate($value);
+
+        return $result === false ? null : $result;
     }
 }

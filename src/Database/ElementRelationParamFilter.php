@@ -209,6 +209,9 @@ class ElementRelationParamFilter
     private function applyNormalized(BuilderContract $query, array $relatedToParam, bool $matchNoneWhenInvalid = true): bool
     {
         $glue = array_shift($relatedToParam);
+        if (! is_string($glue) || ! in_array($glue, ['and', 'or'], true)) {
+            throw new InvalidArgumentException('Invalid relation operator.');
+        }
 
         if (empty($relatedToParam)) {
             return false;
@@ -485,7 +488,7 @@ class ElementRelationParamFilter
         if (is_numeric($field)) {
             $fieldHandleParts = null;
 
-            return Fields::getFieldById($field);
+            return Fields::getFieldById((int) $field);
         }
 
         $fieldHandleParts = explode('.', (string) $field);

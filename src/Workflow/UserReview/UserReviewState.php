@@ -17,7 +17,7 @@ readonly class UserReviewState
 {
     /**
      * @param  Collection<int, User>  $reviewers
-     * @param  Collection<int, array<int, User>>  $reviewersByGroup
+     * @param  Collection<int, list<User>>  $reviewersByGroup
      * @param  Collection<int, int>  $localApprovalIds
      * @param  Collection<int, int>  $carriedApprovalIds
      * @param  Collection<int, int>  $effectiveApprovalIds

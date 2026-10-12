@@ -24,6 +24,7 @@ class LevelConditionRule extends BaseNumberConditionRule implements ElementCondi
         return t('Level');
     }
 
+    /** @param ElementQueryInterface&ElementQuery<*> $elementQuery */
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         ElementQuery::applyLevel($query, $this->paramValue(), $elementQuery);

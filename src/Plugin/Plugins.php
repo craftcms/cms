@@ -329,7 +329,6 @@ class Plugins
      *
      * The plugin may not actually be installed.
      *
-     * @param  class-string  $class
      * @return string|null The plugin handle, or null if it can’t be determined
      */
     public function getPluginHandleByClass(string $class): ?string
@@ -338,10 +337,18 @@ class Plugins
             return $this->classPluginHandles[$class];
         }
 
+        if (! class_exists($class) && ! interface_exists($class) && ! trait_exists($class)) {
+            return $this->classPluginHandles[$class] = null;
+        }
+
         // Figure out the path to the folder that contains this class
         try {
             // Add a trailing slash so we don't get false positives
-            $classPath = Str::finish(File::normalizePath(dirname(new ReflectionClass($class)->getFileName()), '/'), '/');
+            $classFile = new ReflectionClass($class)->getFileName();
+            if ($classFile === false) {
+                return $this->classPluginHandles[$class] = null;
+            }
+            $classPath = Str::finish(File::normalizePath(dirname($classFile), '/'), '/');
         } catch (ReflectionException) {
             return $this->classPluginHandles[$class] = null;
         }
@@ -496,6 +503,9 @@ class Plugins
 
             if ($edition === null || ! in_array($edition, $editions, true)) {
                 $edition = reset($editions);
+                if ($edition === false) {
+                    throw new \RuntimeException('The plugin must provide at least one edition.');
+                }
             }
 
             $plugin->edition = $edition;
@@ -993,6 +1003,9 @@ class Plugins
             $editions = $plugin::editions();
             if (! in_array($edition, $editions, true)) {
                 $edition = reset($editions);
+                if ($edition === false) {
+                    throw new \RuntimeException('The plugin must provide at least one edition.');
+                }
             }
         } else {
             $editions = ['standard'];
@@ -1078,7 +1091,7 @@ class Plugins
 
     /**
      * @param  array<string, mixed>|null  $pluginInfo
-     * @param  (LicenseInfo&array{status: string})|null  $licenseInfo
+     * @param  LicenseInfo|array{status: string}|null  $licenseInfo
      * @return string[]
      */
     private function calculateLicenseIssues(?array $pluginInfo, ?array $licenseInfo): array
@@ -1088,6 +1101,7 @@ class Plugins
         }
 
         $status = $licenseInfo['status'] ?? LicenseKeyStatus::Unknown->value;
+        $status = $status instanceof LicenseKeyStatus ? $status->value : $status;
 
         if ($status === LicenseKeyStatus::Unknown->value) {
             // Either we don't know yet, or the plugin is free
@@ -1156,7 +1170,7 @@ class Plugins
             $iconPath .= '/icon.svg';
         }
 
-        return file_get_contents($iconPath);
+        return file_get_contents($iconPath) ?: throw new \RuntimeException('Unable to read plugin icon.');
     }
 
     /**

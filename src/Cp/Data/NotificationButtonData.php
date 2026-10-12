@@ -27,7 +27,10 @@ readonly class NotificationButtonData implements Arrayable, JsonSerializable
     public function toArray(): array
     {
         return [
-            ...get_object_vars($this),
+            'label' => $this->label,
+            'url' => $this->url,
+            'target' => $this->target,
+            'icon' => $this->icon,
             'variant' => $this->variant->value,
         ];
     }

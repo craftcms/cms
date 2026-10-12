@@ -110,7 +110,7 @@ class ConvertCharsetCommand extends Command
                 return $values['Charset'] ?? $values['charset'] ?? null;
             })
             ->filter(fn (mixed $charset): bool => is_string($charset) && $charset !== '')
-            ->prepend($default)
+            ->merge([$default])
             ->unique()
             ->values()
             ->all();
@@ -126,7 +126,7 @@ class ConvertCharsetCommand extends Command
                 return $values['Collation'] ?? $values['collation'] ?? null;
             })
             ->filter(fn (mixed $collation): bool => is_string($collation) && $collation !== '')
-            ->prepend($default)
+            ->merge([$default])
             ->unique()
             ->values()
             ->all();

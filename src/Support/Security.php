@@ -106,7 +106,8 @@ class Security
                 return true;
             }
 
-            $winRoot = File::normalizePath(Request::server('SystemRoot') ?? 'C:\\Windows', '/');
+            $systemRoot = Request::server('SystemRoot');
+            $winRoot = File::normalizePath(is_string($systemRoot) ? $systemRoot : 'C:\\Windows', '/');
             $drive = substr($winRoot, 0, 3); // e.g. "C:/" because we've normalized it
             $sensitiveDirs = [
                 $winRoot, // C:/Windows

@@ -36,7 +36,7 @@ trait OverridesResults
      */
     public function getResultOverride(): ?array
     {
-        if (! isset($this->override)) {
+        if ($this->asArray || ! isset($this->override)) {
             return null;
         }
 

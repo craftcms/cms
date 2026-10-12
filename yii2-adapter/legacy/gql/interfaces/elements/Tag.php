@@ -5,6 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
+declare(strict_types=1);
+
 namespace craft\gql\interfaces\elements;
 
 use Craft;
@@ -35,9 +37,9 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function getType(): Type
+    public static function getType(): InterfaceType
     {
-        if ($type = GqlEntityRegistry::getEntity(self::getName())) {
+        if (($type = GqlEntityRegistry::getEntity(self::getName())) instanceof InterfaceType) {
             return $type;
         }
 

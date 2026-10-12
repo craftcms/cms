@@ -190,6 +190,10 @@ readonly class Icons
         // be repeated here. The XML declaration matters most: several of the
         // bundled custom icons carry one, and it reaches the CP as unparsable
         // markup. Harmless for icons that never had one.
+        if ($svg === false) {
+            throw new InvalidArgumentException('Unable to read icon SVG.');
+        }
+
         $svg = preg_replace(Html::XML_DECLARATION_RE, '', $svg);
         $svg = preg_replace(Html::TITLE_TAG_RE, '', $svg);
 

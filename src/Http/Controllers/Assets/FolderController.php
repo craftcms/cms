@@ -145,7 +145,7 @@ readonly class FolderController
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
                 ->all();
-            $fileTransferList = AssetsHelper::fileTransferList($foundAssets, $folderIdChanges);
+            $fileTransferList = AssetsHelper::fileTransferList(array_values($foundAssets), $folderIdChanges);
         } else {
             $targetTreeMap = [];
 
@@ -177,7 +177,7 @@ readonly class FolderController
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
                 ->all();
-            $fileTransferList = AssetsHelper::fileTransferList($foundAssets, $folderIdChanges);
+            $fileTransferList = AssetsHelper::fileTransferList(array_values($foundAssets), $folderIdChanges);
         }
 
         $newFolderId = $folderIdChanges[$request->folderBeingMovedId()] ?? null;

@@ -176,7 +176,7 @@ class I18N
             return $this->allLocaleIds;
         }
 
-        $allLocaleIds = ResourceBundle::getLocales('');
+        $allLocaleIds = ResourceBundle::getLocales('') ?: throw new \RuntimeException('Unable to load ICU locales.');
         $this->localeAliases = Cms::config()->localeAliases;
 
         // Hyphens, not underscores
@@ -364,6 +364,8 @@ class I18N
             return '';
         }
 
+        $message = (string) $message;
+
         if (str_starts_with($message, 't9n:')) {
             $args = Json::decode(substr($message, 4));
 
@@ -378,7 +380,7 @@ class I18N
          * If we don't have a translation for the message.
          * Translate it using Laravel's translations.
          */
-        if ($translation === (string) $message) {
+        if ($translation === $message) {
             $result = __($message, $parameters, $locale);
 
             // We're dealing with a message that's equal to a translation file (for example 'site')
@@ -439,6 +441,10 @@ class I18N
 
             // Use the last source (matching Translator's LIFO resolution order)
             $source = end($sources);
+
+            if ($source === false) {
+                continue;
+            }
 
             foreach ($localesToCheck as $localeToCheck) {
                 $messages = $source->getMessages($localeToCheck);

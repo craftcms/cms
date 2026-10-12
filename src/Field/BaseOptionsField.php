@@ -34,6 +34,7 @@ use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\ColorRule;
+use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Query\Builder;
@@ -115,7 +116,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $negate = false;
         }
 
-        $valueSql = self::valueColumn($instances);
+        $valueSql = self::valueColumn(array_values($instances));
 
         if ($valueSql === null) {
             return;
@@ -168,8 +169,12 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
      */
     public bool $customOptions = false;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         // Normalize the options
         $options = [];
         if (isset($config['options']) && is_array($config['options'])) {
@@ -358,7 +363,11 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     {
         $options = collect($this->translatedOptions(true, $context->value, $context->element))
             ->filter(fn (array $option): bool => array_key_exists('value', $option))
-            ->map(fn (array $option): array => Arr::only($option, ['label', 'value', 'disabled']))
+            ->map(fn (array $option): array => [
+                'label' => $option['label'],
+                'value' => $option['value'],
+                'disabled' => $option['disabled'] ?? false,
+            ])
             ->values()
             ->all();
 
@@ -378,7 +387,9 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     #[Override]
     public function getDefaultValue(): array|string|null
     {
-        return $this->defaultValue();
+        $value = $this->defaultValue();
+
+        return is_array($value) ? array_values($value) : $value;
     }
 
     #[Override]
@@ -646,7 +657,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
      * @return array{
      *     name:string|null,
      *     type:Type,
-     *     args:array<string, ArgumentConfig>,
+     *     args:array<string, ArgumentConfig|(Type&InputType)>,
      *     resolve:string,
      * }
      */
@@ -726,7 +737,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
      * @param  mixed  $value  The field’s value. This will either be the [[normalizeValue()|normalized value]],
      *                        raw POST data (i.e. if there was a validation error), or null
      * @param  ElementInterface|null  $element  The element the field is associated with, if there is one
-     * @return list<array{optgroup:string}|array{label:string|null, value:string|list<string>, color?:string|null, icon?:string|null, custom?:true}>
+     * @return list<array{optgroup:string}|array{label:string|null, value:string, color?:string|null, icon?:string|null, custom?:true}>
      */
     protected function translatedOptions(bool $encode = false, mixed $value = null, ?ElementInterface $element = null): array
     {
@@ -772,14 +783,14 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return $translatedOptions;
     }
 
-    /** @return string|list<string>|null Base64-encodes a value. */
+    /** @return ($value is MultiOptionsFieldData ? list<string> : ($value is null ? null : string)) Base64-encodes a value. */
     protected function encodeValue(OptionData|MultiOptionsFieldData|string|null $value): string|array|null
     {
         if ($value instanceof MultiOptionsFieldData) {
-            /** @var OptionData[] $options */
-            $options = (array) $value;
-
-            return array_map($this->encodeValue(...), $options);
+            return array_map(
+                $this->encodeValue(...),
+                array_values($value->getArrayCopy()),
+            );
         }
 
         if ($value instanceof OptionData) {

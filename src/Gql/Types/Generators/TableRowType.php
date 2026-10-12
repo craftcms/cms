@@ -40,6 +40,6 @@ class TableRowType implements GeneratorInterface, SingleGeneratorInterface
 
                 return Gql::prepareFieldDefinitions($contentFields, $typeName);
             },
-        ]));
+        ]), TableRow::class);
     }
 }

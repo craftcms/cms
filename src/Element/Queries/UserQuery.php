@@ -15,13 +15,17 @@ use CraftCms\Cms\Element\Queries\Concerns\User\QueriesRolesAndPermissions;
 use CraftCms\Cms\Element\Queries\Concerns\User\QueriesUserGroups;
 use CraftCms\Cms\Element\Queries\Concerns\User\QueriesUserProperties;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Database\Grammar;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
 use Override;
+use Tpetry\QueryExpressions\Language\Alias;
 
 /**
- * @extends ElementQuery<User>
+ * @template TAsArray of bool = false
+ *
+ * @extends ElementQuery<User, TAsArray>
  *
  * @since 6.0.0
  */
@@ -39,7 +43,7 @@ class UserQuery extends ElementQuery
 
     public const string STATUS_CREDENTIALED = 'credentialed';
 
-    /** @var array<int|string, Expression<*>|int|string> */
+    /** @var array<int|string, Expression<covariant literal-string>|int|string> */
     #[Override]
     protected array $defaultOrderBy;
 
@@ -79,10 +83,17 @@ class UserQuery extends ElementQuery
             ->selectRaw('1')
             ->whereColumn('userId', 'users.id');
 
-        $this->query->selectRaw(
-            sprintf('exists(%s) as %s', $identities->toSql(), $this->query->getGrammar()->wrap('hasSsoIdentity')),
-            $identities->getBindings(),
-        );
+        $this->query
+            ->addSelect(new Alias(new readonly class($identities) implements \Illuminate\Contracts\Database\Query\Expression
+            {
+                public function __construct(private Builder $query) {}
+
+                public function getValue(Grammar $grammar): string
+                {
+                    return sprintf('exists(%s)', $this->query->toSql());
+                }
+            }, 'hasSsoIdentity'))
+            ->addBinding($identities->getBindings(), 'select');
 
         $this->beforeQuery(static function (self $userQuery) {
             $orders = $userQuery->query->orders;

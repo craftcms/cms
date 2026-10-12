@@ -302,7 +302,7 @@ class SectionEditViewModel extends ViewModel
     {
         return SelectOptions::getObjectTemplateTextExpanderTriggers(
             EntryElement::class,
-            array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $this->section->getEntryTypes()),
+            array_values(array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $this->section->getEntryTypes())),
         );
     }
 }

@@ -26,7 +26,12 @@ class Element extends ObjectType
             $config['interfaces'] = [];
         }
 
-        $config['interfaces'] = array_merge([ElementInterface::getType()], $config['interfaces']);
+        $interfaces = $config['interfaces'];
+        $config['interfaces'] = static function () use ($interfaces): array {
+            $interfaces = is_callable($interfaces) ? $interfaces() : $interfaces;
+
+            return array_merge([ElementInterface::getType()], is_array($interfaces) ? $interfaces : iterator_to_array($interfaces));
+        };
 
         parent::__construct($config);
     }

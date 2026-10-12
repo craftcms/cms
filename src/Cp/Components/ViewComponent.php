@@ -127,6 +127,8 @@ abstract class ViewComponent implements Htmlable, Stringable
      * directly (the right default for single-element components and
      * manifest-generated classes). View-backed components receive
      * {@see self::viewData()}.
+     *
+     * @var view-string|null
      */
     protected ?string $view = null;
 

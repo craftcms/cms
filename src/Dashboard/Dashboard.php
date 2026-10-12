@@ -46,10 +46,7 @@ readonly class Dashboard
     /**
      * Creates a widget with a given config.
      *
-     * @template T of WidgetInterface
-     *
-     * @param  class-string<T>|array{type: class-string<T>, id?: int, colspan?: int, settings?: array<string, mixed>, dateCreated?: DateTimeInterface, dateUpdated?: DateTimeInterface}  $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
-     * @return T
+     * @param  class-string<WidgetInterface>|array{type: class-string<WidgetInterface>, id?: int, colspan?: int, settings?: array<string, mixed>, dateCreated?: DateTimeInterface, dateUpdated?: DateTimeInterface}  $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
      */
     public function createWidget(string|array $config): WidgetInterface
     {
@@ -76,7 +73,7 @@ readonly class Dashboard
             $widgets = $this->getUserWidgets();
         }
 
-        return $widgets;
+        return $widgets === false ? collect() : $widgets;
     }
 
     /**
@@ -151,7 +148,7 @@ readonly class Dashboard
         DB::beginTransaction();
 
         try {
-            $widgetModel = $this->getUserWidgetModelById($widget->id);
+            $widgetModel = $this->getUserWidgetModelById($widget->id === null ? null : (int) $widget->id);
 
             $widgetModel->type = $widget::class;
             $widgetModel->settings = $widget->getSettings();
@@ -162,7 +159,7 @@ readonly class Dashboard
                     ->where('userId', currentUser()->getAuthIdentifier())
                     ->max('sortOrder');
 
-                $widgetModel->sortOrder = $maxSortOrder + 1;
+                $widgetModel->sortOrder = max(0, (int) $maxSortOrder) + 1;
             }
 
             $widgetModel->save();
@@ -217,7 +214,7 @@ readonly class Dashboard
         DB::beginTransaction();
 
         try {
-            $widgetRecord = $this->getUserWidgetModelById($widget->id);
+            $widgetRecord = $this->getUserWidgetModelById($widget->id === null ? null : (int) $widget->id);
             $widgetRecord->delete();
             $widget->afterDelete();
             DB::commit();
@@ -242,6 +239,10 @@ readonly class Dashboard
      */
     public function reorderWidgets(array $widgetIds): bool
     {
+        if ($widgetIds === []) {
+            return true;
+        }
+
         $cases = [];
 
         foreach ($widgetIds as $index => $id) {

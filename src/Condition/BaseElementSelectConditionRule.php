@@ -37,7 +37,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     private array|string|null $_elementIds = null;
 
     public ?int $elementId {
-        get => $this->getElementId();
+        get => ($id = $this->getElementId()) !== null ? (int) $id : null;
         set {
             $this->setElementId($value);
         }
@@ -104,7 +104,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     {
         return ElementSelect::make('elementIds')
             ->elementType($this->elementType())
-            ->sources($this->sources())
+            ->sources(($sources = $this->sources()) !== null ? array_values($sources) : null)
             ->criteria($this->criteria() ?? [])
             ->selectionCondition($this->selectionCondition())
             ->limit($this->allowMultiple() ? null : 1)
@@ -229,6 +229,10 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     protected function matchValue(mixed $value): bool
     {
         $elementIds = $this->getElementIds();
+
+        if (is_string($elementIds)) {
+            throw new \InvalidArgumentException('Element IDs must be parsed before comparison.');
+        }
 
         if (empty($elementIds)) {
             return true;

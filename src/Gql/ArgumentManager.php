@@ -113,9 +113,6 @@ class ArgumentManager extends Component
         return $handler;
     }
 
-    /**
-     * @param  class-string<ArgumentHandlerInterface>|Closure|ArgumentHandlerInterface  $handler
-     */
     private function resolveHandler(string $argumentName, ArgumentHandlerInterface|string|Closure $handler): ArgumentHandlerInterface
     {
         $handler = match (true) {

@@ -33,7 +33,7 @@ class UserSettings extends Component
 
     public function __construct(object|array $config = [])
     {
-        $config = Arr::except($config, ['groups', 'fieldLayouts']);
+        $config = Arr::except((array) $config, ['groups', 'fieldLayouts']);
 
         parent::__construct($config);
     }

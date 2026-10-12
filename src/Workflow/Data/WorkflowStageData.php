@@ -24,9 +24,15 @@ readonly class WorkflowStageData
         public ?UiPayload $settingsUi = null,
     ) {}
 
-    /** @param array{uid: string, name: string, type: string, settings?: array<string, mixed>} $data */
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
+        foreach (['uid', 'name', 'type'] as $attribute) {
+            if (! isset($data[$attribute]) || ! is_string($data[$attribute])) {
+                throw new \InvalidArgumentException("Invalid workflow stage {$attribute}.");
+            }
+        }
+
         return new self(
             uid: $data['uid'],
             name: $data['name'],

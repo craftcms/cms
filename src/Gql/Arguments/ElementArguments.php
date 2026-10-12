@@ -13,6 +13,7 @@ use CraftCms\Cms\Gql\Types\Input\Criteria\UserRelation;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\InputObjectType;
+use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -22,7 +23,7 @@ use GraphQL\Type\Definition\Type;
  */
 abstract class ElementArguments extends Arguments
 {
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     #[\Override]
     public static function getArguments(): array
     {
@@ -89,7 +90,7 @@ abstract class ElementArguments extends Arguments
                             'type' => Type::boolean(),
                         ],
                     ],
-                ])),
+                ]), InputObjectType::class),
                 'description' => 'Defines the default options that should be applied terms within the `search` argument.',
             ],
             'relatedTo' => [
@@ -185,7 +186,7 @@ abstract class ElementArguments extends Arguments
         return $event->arguments;
     }
 
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     public static function getStatusArguments(): array
     {
         if (! Gql::canQueryInactiveElements()) {
@@ -211,7 +212,7 @@ abstract class ElementArguments extends Arguments
         ];
     }
 
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     public static function getDraftArguments(): array
     {
         if (! Gql::canQueryDrafts()) {
@@ -252,7 +253,7 @@ abstract class ElementArguments extends Arguments
         ];
     }
 
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     public static function getRevisionArguments(): array
     {
         if (! Gql::canQueryRevisions()) {

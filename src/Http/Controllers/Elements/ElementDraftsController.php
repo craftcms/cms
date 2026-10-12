@@ -151,7 +151,11 @@ class ElementDraftsController
                     $element->isProvisionalDraft = false;
                 }
 
-                $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                if ($element->ruleset !== false) {
+
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+
+                }
 
                 // If the field layout ID changed, save all content
                 $saveContent = $element->getFieldLayout()?->id !== $oldFieldLayoutId;
@@ -280,6 +284,10 @@ class ElementDraftsController
     {
         $element = $this->request->element(checkForProvisionalDraft: true);
 
+        if ($element instanceof Response) {
+            return $element;
+        }
+
         if (! $element || $element->getIsRevision()) {
             abort(400, 'No element was identified by the request.');
         }
@@ -397,7 +405,9 @@ class ElementDraftsController
 
         // Validate and save the draft
         if ($elementToSave->enabled && $elementToSave->getEnabledForSite()) {
-            $elementToSave->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+            if ($elementToSave->ruleset !== false) {
+                $elementToSave->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+            }
         }
 
         // if we're about to apply an unpublished draft, set propagateRequired to true
@@ -444,7 +454,9 @@ class ElementDraftsController
             /** @var MessageBag $errors */
             $errors = $element->errors();
             $invalidNestedElementIds = $element->getInvalidNestedElementIds();
-            $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+            if ($element->ruleset !== false) {
+                $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+            }
             $this->elements->saveElement(element: $element, runValidation: false, saveContent: $saveContent);
             $element->clearErrors();
             $element->errors()->merge($errors);

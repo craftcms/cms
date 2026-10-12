@@ -25,7 +25,7 @@ trait SiteDefaults
 
         // Come up with something based on the server name
         $server = request()->host();
-        $words = preg_split('/[\-_\.]+/', $server);
+        $words = preg_split('/[\-_\.]+/', $server) ?: [];
         array_pop($words);
 
         return implode(' ', array_map(ucfirst(...), $words));

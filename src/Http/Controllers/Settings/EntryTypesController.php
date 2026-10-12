@@ -133,7 +133,7 @@ class EntryTypesController
 
     public function edit(Request $request, ?EntryTypeModel $entryType = null): CpScreenResponse
     {
-        $entryType ??= EntryTypeModel::find($request->input('entryTypeId'));
+        $entryType ??= EntryTypeModel::find($request->integer('entryTypeId'));
 
         abort_if(is_null($entryType), 404, 'Entry type not found');
 
@@ -292,7 +292,7 @@ class EntryTypesController
 
     public function destroy(Request $request, ?EntryTypeModel $entryType = null): Response
     {
-        $entryType ??= EntryTypeModel::find($request->input('entryTypeId'));
+        $entryType ??= EntryTypeModel::find($request->integer('entryTypeId'));
 
         abort_if(is_null($entryType), 404, 'Entry type not found');
 

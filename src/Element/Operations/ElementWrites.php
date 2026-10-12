@@ -216,8 +216,9 @@ readonly class ElementWrites
             try {
                 $query->cursor()->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $skipRevisions, $touch, $updateSearchIndex) {
                     $position++;
-
-                    $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                    if ($element->ruleset) {
+                        $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                    }
                     $element->resaving = true;
 
                     $throwable = null;
@@ -285,8 +286,9 @@ readonly class ElementWrites
                     $position++;
 
                     event(new ElementPropagating($query, $element, $position));
-
-                    $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                    if ($element->ruleset) {
+                        $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                    }
                     $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
                     $supportedSiteIds = array_keys($supportedSites);
                     $elementSiteIds = $siteIds !== null ? array_intersect($siteIds,
@@ -307,6 +309,10 @@ readonly class ElementWrites
                             if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
                                 $siteElement ??= false;
                                 $this->propagate($element, $supportedSites, $siteId, $siteElement);
+                                if (! $siteElement instanceof ElementInterface) {
+                                    throw new \LogicException('Propagation must produce a site element.');
+                                }
+
                                 $siteElements[$siteId] = $siteElement;
                             }
                         }
@@ -348,11 +354,17 @@ readonly class ElementWrites
 
         $this->elementCaches->invalidateForElement($element);
 
+        if (! $siteElement instanceof ElementInterface) {
+            throw new \LogicException('Propagation must produce a site element.');
+        }
+
         return $siteElement;
     }
 
     /**
      * @param  array<int, array{siteId:int, siteUid:string, propagate:bool, enabledByDefault:bool}>  $supportedSites
+     *
+     * @param-out ElementInterface $siteElement
      */
     public function propagate(
         ElementInterface $element,
@@ -363,15 +375,23 @@ readonly class ElementWrites
         bool $saveContent = true,
         ?ElementSiteSettings &$siteSettingsRecord = null,
     ): bool {
-        return $this->propagateInternal(
+        $resolvedSiteElement = $siteElement;
+        $success = $this->propagateInternal(
             $element,
             $supportedSites,
             $siteId,
-            $siteElement,
+            $resolvedSiteElement,
             $crossSiteValidate,
             $saveContent,
             $siteSettingsRecord,
         );
+        if (! $resolvedSiteElement instanceof ElementInterface) {
+            throw new \LogicException('Propagation must produce a site element.');
+        }
+
+        $siteElement = $resolvedSiteElement;
+
+        return $success;
     }
 
     /**
@@ -394,7 +414,7 @@ readonly class ElementWrites
         ?ElementSiteSettings &$siteSettingsRecord = null,
         ?bool $inheritedUpdateSearchIndex = null,
     ): bool {
-        $originalScenario = $element->ruleset->getScenario();
+        $originalScenario = $element->ruleset ? $element->ruleset->getScenario() : ElementRules::SCENARIO_DEFAULT;
         try {
             $isNewElement = ! $element->id;
             $trackChanges = ElementHelper::shouldTrackChanges($element);
@@ -606,7 +626,7 @@ readonly class ElementWrites
 
                     if ($trackChanges) {
                         array_push($dirtyAttributes, ...$element->getDirtyAttributes());
-                        $element->setDirtyAttributes($dirtyAttributes, false);
+                        $element->setDirtyAttributes(array_map(strval(...), $dirtyAttributes), false);
                     }
 
                     $element->afterSave($isNewElement);
@@ -646,6 +666,10 @@ readonly class ElementWrites
                                     $element->dateUpdated = $originalDateUpdated;
 
                                     return false;
+                                }
+
+                                if (! $siteElement instanceof ElementInterface) {
+                                    throw new \LogicException('Propagation must produce a site element.');
                                 }
 
                                 $siteElements[$siteId] = $siteElement;
@@ -699,7 +723,7 @@ readonly class ElementWrites
                 if ($resolvedUpdateSearchIndex && ! $element->getIsRevision() && ! ElementHelper::isRevision($element)) {
                     $searchableDirtyFields = array_filter(
                         $dirtyFields,
-                        fn (string $handle) => $fieldLayout?->getFieldByHandle($handle)?->searchable,
+                        fn (string $handle): bool => $fieldLayout?->getFieldByHandle($handle)->searchable ?? false,
                     );
 
                     if (
@@ -772,7 +796,9 @@ readonly class ElementWrites
                 return false;
             }
         } finally {
-            $element->ruleset->useScenario($originalScenario);
+            if ($element->ruleset) {
+                $element->ruleset->useScenario($originalScenario);
+            }
         }
 
         event(new ElementSaved($element, $isNewElement));
@@ -872,15 +898,18 @@ readonly class ElementWrites
                 // carry on
             }
         }
-
-        $siteElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        if ($siteElement->ruleset) {
+            $siteElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        }
 
         if (
             ($crossSiteValidate || $element->propagateRequired) &&
             $siteElement->enabled &&
             $siteElement->getEnabledForSite()
         ) {
-            $siteElement->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+            if ($siteElement->ruleset) {
+                $siteElement->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+            }
         }
 
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(),
@@ -1122,7 +1151,7 @@ readonly class ElementWrites
         ?bool $updateForOwner = null,
     ): void {
         if ($element->updateSearchIndexImmediately ?? app()->runningInConsole()) {
-            $this->search->indexElementAttributes($element, $searchableDirtyFields);
+            $this->search->indexElementAttributes($element, array_values($searchableDirtyFields));
         } else {
             $this->search->queueIndexElement($element, $searchableDirtyFields);
         }

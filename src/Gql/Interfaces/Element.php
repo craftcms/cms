@@ -28,17 +28,17 @@ class Element extends InterfaceType implements SingularTypeInterface
         return ElementType::class;
     }
 
-    public static function getType(): Type
+    public static function getType(): GqlInterfaceType
     {
-        if ($type = GqlEntityRegistry::getEntity(self::getName())) {
+        if (($type = GqlEntityRegistry::getEntity(self::getName())) instanceof GqlInterfaceType) {
             return $type;
         }
 
         $type = GqlEntityRegistry::createEntity(self::getName(), new GqlInterfaceType([
             'name' => static::getName(),
-            'fields' => self::class.'::getFieldDefinitions',
+            'fields' => self::getFieldDefinitions(...),
             'description' => 'This is the interface implemented by all elements.',
-            'resolveType' => self::class.'::resolveElementTypeName',
+            'resolveType' => self::resolveElementTypeName(...),
         ]));
 
         ElementType::generateTypes();

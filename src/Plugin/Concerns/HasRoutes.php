@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Plugin\Concerns;
 use Closure;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Route\Routes;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Routing\Router;
 
 /**
  * @mixin Plugin
@@ -24,7 +26,7 @@ trait HasRoutes
         $directory = dirname(self::getInstance()->getBasePath());
 
         foreach (['web', 'cp', 'actions'] as $type) {
-            if (! $this->app['files']->exists($path = "$directory/routes/$type.php")) {
+            if (! $this->app->make(Filesystem::class)->exists($path = "$directory/routes/$type.php")) {
                 continue;
             }
 
@@ -38,7 +40,7 @@ trait HasRoutes
 
     protected function registerWebRoutes(string|Closure $routes): void
     {
-        $this->app['router']
+        $this->app->make(Router::class)
             ->middleware(['craft', 'craft.web'])
             ->group($routes);
     }
@@ -47,7 +49,7 @@ trait HasRoutes
     {
         $craftRoutes = $this->app->get(Routes::class);
 
-        $this->app['router']
+        $this->app->make(Router::class)
             ->middleware(['web', 'craft', 'craft.cp'])
             ->prefix($craftRoutes->cpTriggerRoutePrefix())
             ->group($routes);
@@ -66,7 +68,7 @@ trait HasRoutes
             $handle,
         ]);
 
-        $this->app['router']
+        $this->app->make(Router::class)
             ->middleware(['web', 'craft', 'craft.cp'])
             ->prefix($cpActionPrefix)
             ->group($routes);
@@ -75,7 +77,7 @@ trait HasRoutes
             return;
         }
 
-        $this->app['router']
+        $this->app->make(Router::class)
             ->middleware(['craft', 'craft.web'])
             ->prefix($siteActionPrefix)
             ->name("craft.plugin.$handle.site.")

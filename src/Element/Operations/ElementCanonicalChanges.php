@@ -95,7 +95,11 @@ readonly class ElementCanonicalChanges
     }
 
     /**
+     * @template T of ElementInterface
+     *
+     * @param  T  $element
      * @param  array<string, mixed>  $newAttributes
+     * @return T
      */
     public function updateCanonicalElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {

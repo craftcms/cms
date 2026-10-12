@@ -37,16 +37,22 @@ use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
+use GraphQL\Type\Definition\InputObjectField;
 use GraphQL\Type\Definition\InputObjectType;
+use GraphQL\Type\Definition\InputType;
+use GraphQL\Type\Definition\OutputType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
+use LogicException;
 use Override;
 
 use function CraftCms\Cms\t;
 
 /**
  * Link represents a Link field.
+ *
+ * @phpstan-import-type InputObjectFieldConfig from InputObjectField
  *
  * @since 6.0.0
  */
@@ -142,8 +148,12 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
      */
     public bool $fullGraphqlData = true;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         $config = $this->prepareLegacyAdvancedFieldConfig($config);
         $config = $this->prepareLinkSettingsConfig($config);
 
@@ -487,7 +497,7 @@ JS;
             $containerId = "$id-$typeId";
             $nsContainerId = InputNamespace::namespaceId($containerId);
             $selected = $typeId === $valueTypeId;
-            $typeValue = $selected ? $value?->serialize()['value'] : null;
+            $typeValue = $selected ? $value?->serialize()['value'] ?? null : null;
             $isTextLink = is_subclass_of($linkType, BaseTextLinkType::class);
             $innerHtml .=
                 Html::beginTag('div', [
@@ -649,7 +659,7 @@ JS;
                 }
 
                 $linkType = $linkTypes[$value->getType()];
-                $value = $value->serialize()['value'];
+                $value = $value->serialize()['value'] ?? null;
                 $error = null;
                 if (! $linkType->validateValue($value, $error)) {
                     /** @var string|null $error */
@@ -681,7 +691,7 @@ JS;
         $value = $element->getFieldValue($this->handle);
         $linkTypes = $this->getLinkTypes();
         $linkType = $linkTypes[$value->getType()] ?? $linkTypes[UrlType::id()] ?? new UrlType;
-        $value = $value->serialize()['value'];
+        $value = $value->serialize()['value'] ?? null;
 
         return $linkType->isValueEmpty($value);
     }
@@ -713,13 +723,23 @@ JS;
     public function getContentGqlType(): Type
     {
         if (! $this->fullGraphqlData) {
-            return parent::getContentGqlType();
+            $type = parent::getContentGqlType();
+
+            if (is_array($type)) {
+                $type = $type['type'];
+            }
+
+            if (! $type instanceof Type || ! $type instanceof OutputType) {
+                throw new LogicException('Field GraphQL output must resolve to an output type.');
+            }
+
+            return $type;
         }
 
         return LinkDataType::generateType($this);
     }
 
-    /** @return Type|array{name: string, type: Type, description: string|null} */
+    /** @return (Type&InputType)|InputObjectFieldConfig */
     #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
@@ -737,7 +757,7 @@ JS;
                 'label' => Type::string(),
                 'urlSuffix' => Type::string(),
             ],
-        ]));
+        ]), expectedType: InputObjectType::class);
     }
 
     public function getReferenceTargetIds(ElementInterface $element): array

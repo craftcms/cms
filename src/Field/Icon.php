@@ -27,7 +27,9 @@ use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
+use GraphQL\Type\Definition\OutputType;
 use GraphQL\Type\Definition\Type;
+use LogicException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -94,8 +96,12 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
      */
     public bool $fullGraphqlData = true;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         // Default includeProIcons to true for existing Icon fields
         if (isset($config['id']) && ! isset($config['includeProIcons'])) {
             $config['includeProIcons'] = true;
@@ -191,7 +197,17 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function getContentGqlType(): Type
     {
         if (! $this->fullGraphqlData) {
-            return parent::getContentGqlType();
+            $type = parent::getContentGqlType();
+
+            if (is_array($type)) {
+                $type = $type['type'];
+            }
+
+            if (! $type instanceof Type || ! $type instanceof OutputType) {
+                throw new LogicException('Field GraphQL output must resolve to an output type.');
+            }
+
+            return $type;
         }
 
         return IconDataType::generateType($this);

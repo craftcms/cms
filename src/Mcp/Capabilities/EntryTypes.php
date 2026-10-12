@@ -44,7 +44,7 @@ readonly class EntryTypes
 
         return [
             'count' => $entryTypes->count(),
-            'entryTypes' => $entryTypes->all(),
+            'entryTypes' => array_values($entryTypes->all()),
         ];
     }
 

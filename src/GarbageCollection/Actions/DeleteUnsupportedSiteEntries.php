@@ -38,7 +38,7 @@ class DeleteUnsupportedSiteEntries extends GarbageCollectionAction
                 $siteIds = $this->sites->getAllSiteIds(true);
 
                 foreach (Sections::getAllSections() as $section) {
-                    $unsupportedSiteIds = $siteIds->diff(array_keys($section->getSiteSettings()));
+                    $unsupportedSiteIds = $siteIds->diff(array_map(intval(...), array_keys($section->getSiteSettings())));
 
                     if ($unsupportedSiteIds->isEmpty()) {
                         continue;

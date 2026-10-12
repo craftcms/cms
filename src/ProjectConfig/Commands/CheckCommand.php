@@ -57,7 +57,7 @@ class CheckCommand extends Command
             return self::FAILURE;
         }
 
-        foreach (array_keys($projectConfig->get(ProjectConfig::PATH_PLUGINS) ?? []) as $handle) {
+        foreach (array_map(strval(...), array_keys($projectConfig->get(ProjectConfig::PATH_PLUGINS) ?? [])) as $handle) {
             if ($plugins->isPluginEnabled($handle) && $plugins->getPlugin($handle) === null) {
                 $this->components->error("Enabled plugin \"$handle\" could not be loaded. Check its Composer package and plugin initialization errors before checking schema compatibility.");
 

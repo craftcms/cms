@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Mcp\Serializers;
 
 use CraftCms\Cms\Activity\ActivityTimelinePresenter;
 use CraftCms\Cms\Activity\Data\ActivityChange;
+use CraftCms\Cms\Activity\Data\ActivityTimelineEventData;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
@@ -23,8 +24,8 @@ readonly class ActivityEventSerializer
     public function serialize(Collection $events, User $viewer): array
     {
         return $this->presenter->events($events, $viewer)
-            ->map(static function (array $event): array {
-                $serialized = Arr::only($event, [
+            ->map(static function (ActivityTimelineEventData $event): array {
+                $serialized = Arr::only($event->toArray(), [
                     'id', 'type', 'occurredAt', 'actor', 'impersonator', 'source',
                     'subject', 'site', 'origin', 'description', 'changes', 'comment',
                 ]);
@@ -32,7 +33,7 @@ readonly class ActivityEventSerializer
                 $serialized['impersonator'] = $serialized['impersonator'] !== null
                     ? Arr::except($serialized['impersonator'], ['url'])
                     : null;
-                $serialized['changes'] = array_map(static fn (ActivityChange $change): array => $change->toArray(), $event['changes']);
+                $serialized['changes'] = array_map(static fn (ActivityChange $change): array => $change->toArray(), $event->changes);
 
                 if ($serialized['comment'] !== null) {
                     $serialized['comment'] = Arr::except($serialized['comment'], ['canEdit', 'canDelete']);

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\Request;
 
 trait PopulatesNames
 {
-    protected function populateNameAttributes(Request $request, object $model): void
+    protected function populateNameAttributes(Request $request, User|Address $model): void
     {
         if ($request->has('fullName')) {
             $model->fullName = $request->input('fullName');

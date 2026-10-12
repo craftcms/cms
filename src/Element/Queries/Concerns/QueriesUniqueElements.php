@@ -54,6 +54,7 @@ trait QueriesUniqueElements
         }
 
         $preferSites = collect($elementQuery->preferSites ?? [Sites::getCurrentSite()->id])
+            ->filter()
             ->map(fn (string|int $preferSite) => match (true) {
                 is_numeric($preferSite) => $preferSite,
                 ! is_null($site = Sites::getSiteByHandle($preferSite)) => $site->id,
@@ -67,7 +68,9 @@ trait QueriesUniqueElements
             $cases[] = new CaseRule(new Value($index), new Equal('elements_sites.siteId', new Value($siteId)));
         }
 
-        $caseGroup = new CaseGroup($cases, new Value($preferSites->count()));
+        $caseGroup = $cases === []
+            ? new Value(0)
+            : new CaseGroup($cases, new Value($preferSites->count()));
 
         $siteRows = $elementQuery->getQuery()
             ->cloneWithout(['orders', 'limit', 'offset'])

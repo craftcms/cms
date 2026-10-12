@@ -58,6 +58,6 @@ class EntryType extends Generator implements GeneratorInterface, SingleGenerator
 
                 return Gql::prepareFieldDefinitions($entryTypeFields, $typeName);
             },
-        ]));
+        ]), Entry::class);
     }
 }

@@ -129,7 +129,7 @@ readonly class AssetIndexesController
             // If action is now required, we just processed the last entry
             // To save a round-trip, just pull the session review data
             if ($indexingSession->actionRequired) {
-                $indexingSession->skippedEntries = $this->assetIndexer->getSkippedItemsForSession($indexingSession);
+                $indexingSession->skippedEntries = array_values($this->assetIndexer->getSkippedItemsForSession($indexingSession));
                 $indexingSession->missingEntries = $this->assetIndexer->getMissingEntriesForSession($indexingSession);
 
                 // If nothing out of ordinary, just end it.
@@ -168,7 +168,7 @@ readonly class AssetIndexesController
             return $this->asFailure(t("Cannot find the indexing session, or there\u{2019}s nothing to review."));
         }
 
-        $indexingSession->skippedEntries = $this->assetIndexer->getSkippedItemsForSession($indexingSession);
+        $indexingSession->skippedEntries = array_values($this->assetIndexer->getSkippedItemsForSession($indexingSession));
         $indexingSession->missingEntries = $this->assetIndexer->getMissingEntriesForSession($indexingSession);
 
         return $this->asSuccess(null, ['session' => $indexingSession]);

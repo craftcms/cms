@@ -182,7 +182,7 @@ readonly class ElementRelations
     /**
      * Returns all relational fields for the given element, grouped by field ID.
      *
-     * @return array<int,RelationalFieldInterface[]>
+     * @return array<int|string,RelationalFieldInterface[]>
      */
     public function relationalFields(ElementInterface $element): array
     {

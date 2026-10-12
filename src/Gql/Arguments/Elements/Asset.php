@@ -10,6 +10,7 @@ use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\Volumes;
 use GraphQL\Type\Definition\Argument;
+use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\Type;
 use Override;
 
@@ -104,14 +105,14 @@ class Asset extends ElementArguments
     }
 
     #[Override]
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     public static function getDraftArguments(): array
     {
         return [];
     }
 
     #[Override]
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     public static function getRevisionArguments(): array
     {
         return [];

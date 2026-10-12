@@ -59,7 +59,9 @@ class ElementResponse
                 $newElement->slug = ElementHelper::tempSlug();
             }
 
-            $newElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+            if ($newElement->ruleset !== false) {
+                $newElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+            }
 
             if (! Drafts::saveElementAsDraft($newElement, $user->getCraftUserId(), null, null, false)) {
                 abort(500, sprintf('Unable to create a new element: %s', implode(', ', $element->errors()->all())));

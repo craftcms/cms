@@ -151,9 +151,9 @@ class QuickPost extends Widget
                     ->control(Choice::make('entryType')->value($this->entryType()?->id)->options(array_map(
                         fn (EntryType $entryType): array => [
                             'label' => t($entryType->name, category: 'site'),
-                            'value' => $entryType->id,
+                            'value' => $entryType->id ?? '',
                         ],
-                        $entryTypes,
+                        array_values($entryTypes),
                     ))),
                 Field::make(t('Widget Title'))
                     ->control(Text::make('customTitle')

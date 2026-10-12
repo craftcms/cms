@@ -111,7 +111,7 @@ class TextareaField extends BaseNativeField
     protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
     {
         return [
-            'class' => HtmlHelper::explodeClass($this->class),
+            'class' => array_values(HtmlHelper::explodeClass($this->class)),
             'id' => $this->id(),
             'describedBy' => $this->describedBy($element, $static),
             'rows' => $this->rows,

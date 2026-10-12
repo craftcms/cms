@@ -35,17 +35,17 @@ class Entry extends Structure
     }
 
     #[Override]
-    public static function getType(): Type
+    public static function getType(): InterfaceType
     {
-        if ($type = GqlEntityRegistry::getEntity(self::getName())) {
+        if (($type = GqlEntityRegistry::getEntity(self::getName())) instanceof InterfaceType) {
             return $type;
         }
 
         $type = GqlEntityRegistry::createEntity(self::getName(), new InterfaceType([
             'name' => static::getName(),
-            'fields' => self::class.'::getFieldDefinitions',
+            'fields' => self::getFieldDefinitions(...),
             'description' => 'This is the interface implemented by all entries.',
-            'resolveType' => self::class.'::resolveElementTypeName',
+            'resolveType' => self::resolveElementTypeName(...),
         ]));
 
         EntryType::generateTypes();

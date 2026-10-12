@@ -114,14 +114,14 @@ class PhpInfo extends Utility
         $phpInfo = [];
 
         foreach ($sections as $section) {
-            $heading = substr($section, 0, strpos($section, '</h2>'));
+            $heading = substr($section, 0, (strpos($section, '</h2>') ?: 0));
 
             if (preg_match_all('#%S%(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?%E%#', $section, $matches, PREG_SET_ORDER) === 0) {
                 continue;
             }
 
             foreach ($matches as $row) {
-                if (! isset($row[2])) {
+                if (! isset($row[1], $row[2])) {
                     continue;
                 }
 

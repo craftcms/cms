@@ -123,7 +123,6 @@ use Stringable;
 use Throwable;
 use Twig\Markup;
 
-use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
@@ -480,7 +479,7 @@ class Asset extends Element
         return new AssetCondition(self::class);
     }
 
-    /** @return array{elementType?: class-string<ElementInterface>, map: list<array{elementType?: class-string<ElementInterface>, source: int, target: int}>, criteria?: array<string, bool|int|string|null>, createElement?: callable}|list<array{elementType?: class-string<ElementInterface>, map: list<array{elementType?: class-string<ElementInterface>, source: int, target: int}>, criteria?: array<string, bool|int|string|null>, createElement?: callable}>|false|null */
+    /** @return EagerLoadingMap|list<EagerLoadingMap>|false|null */
     #[Override]
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -493,7 +492,10 @@ class Asset extends Element
                 ->whereIn('id', $sourceElementIds)
                 ->whereNotNull('uploaderId')
                 ->get()
-                ->map(fn (object $row) => (array) $row)
+                ->map(fn (\stdClass $row) => [
+                    'source' => (int) $row->source,
+                    'target' => (int) $row->target,
+                ])
                 ->all();
 
             return [
@@ -858,14 +860,14 @@ class Asset extends Element
         }
     }
 
-    /** @return array<string, array{label: string, placeholder: Closure}> */
+    /** @return array<string, array{label:string, icon?:string, placeholder?:mixed, ...}> */
     #[Override]
     protected static function defineCardAttributes(): array
     {
         $attributes = array_merge($parentAttributes = parent::defineCardAttributes(), [
             'dateCreated' => [
                 'label' => t('Date Uploaded'),
-                'placeholder' => $parentAttributes['dateCreated']['placeholder'],
+                'placeholder' => $parentAttributes['dateCreated']['placeholder'] ?? null,
             ],
             'filename' => [
                 'label' => t('Filename'),
@@ -1051,7 +1053,7 @@ class Asset extends Element
         }
 
         if ($queryFolder === null) {
-            $queryFolder = Folders::getFolderById($assetQuery->folderId);
+            $queryFolder = Folders::getFolderById((int) $assetQuery->folderId);
             if (! $queryFolder) {
                 return false;
             }
@@ -1102,7 +1104,7 @@ class Asset extends Element
 
         if ($assetQuery->includeSubfolders) {
             if ($queryFolder === null) {
-                $queryFolder = Folders::getFolderById($assetQuery->folderId);
+                $queryFolder = Folders::getFolderById((int) $assetQuery->folderId);
                 if (! $queryFolder) {
                     throw new QueryAbortedException;
                 }
@@ -1285,7 +1287,7 @@ class Asset extends Element
             $crumbs[] = new ActionItem()
                 ->label($current['label'])
                 ->href($current['href'])
-                ->items($volumeOptions->count() > 1 ? $volumeOptions->all() : []);
+                ->items($volumeOptions->count() > 1 ? $volumeOptions->values()->all() : []);
         } else {
             // Just show its name w/o a link
             $crumbs[] = new ActionItem()->label($volume->getUiLabel());
@@ -1297,10 +1299,7 @@ class Asset extends Element
             $subfolders = Arr::whereNotEmpty(explode('/', $this->folderPath));
             foreach ($subfolders as $subfolder) {
                 $uri .= "/$subfolder";
-                $crumbs[] = [
-                    'label' => $subfolder,
-                    'href' => Url::cpUrl($uri),
-                ];
+                $crumbs[] = new ActionItem()->label($subfolder)->href(Url::cpUrl($uri));
             }
         }
 
@@ -1443,7 +1442,7 @@ class Asset extends Element
         return $items;
     }
 
-    /** @return list<array<string, bool|int|string|MenuItemType|list<array<string, bool|int|string|MenuItemType>>>> */
+    /** @return list<array<string,mixed>> */
     #[Override]
     protected function safeActionMenuItems(): array
     {
@@ -1515,7 +1514,7 @@ JS, [
         }
 
         $viewIndex = Collection::make($items)->search(fn (array $item) => str_starts_with($item['id'] ?? '', 'action-view-'));
-        array_splice($items, $viewIndex !== false ? $viewIndex + 1 : 0, 0, $viewItems);
+        array_splice($items, $viewIndex !== false ? (int) $viewIndex + 1 : 0, 0, $viewItems);
 
         $items[] = ['type' => MenuItemType::HR];
 
@@ -2148,7 +2147,7 @@ JS, [
     protected function thumbSvg(): string
     {
         if ($this->isFolder) {
-            return file_get_contents(Aliases::get('@resources/public/images/thumbs/folder.svg'));
+            return File::get(Aliases::get('@resources/public/images/thumbs/folder.svg'));
         }
 
         return AssetsHelper::iconSvg($this->getExtension());
@@ -2643,7 +2642,7 @@ JS, [
      *
      * @param  bool  $asCss  whether the value should be returned in CSS syntax ("50% 25%") instead
      */
-    /** @return array{x: float, y: float}|string|null */
+    /** @return ($asCss is true ? string|null : array{x:float,y:float}|null) */
     #[AllowedInSandbox]
     public function getFocalPoint(bool $asCss = false): array|string|null
     {
@@ -2722,7 +2721,7 @@ JS, [
     }
 
     #[Override]
-    protected function attributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string|Stringable
     {
         switch ($attribute) {
             case 'uploader':
@@ -2764,7 +2763,7 @@ JS, [
     }
 
     #[Override]
-    public function getInlineAttributeInputHtml(string $attribute): string
+    public function getInlineAttributeInputHtml(string $attribute): string|Stringable
     {
         if ($this->isFolder) {
             return '';
@@ -2967,7 +2966,7 @@ JS;
      * so its messages move to the name the Control answers to. They're moved
      * rather than copied so the error summary doesn't list each one twice.
      *
-     * @return array<string, list<string>>
+     * @return array<string, array<string>>
      */
     #[Override]
     public function uiErrors(): array
@@ -2986,7 +2985,7 @@ JS;
         return $errors;
     }
 
-    /** @return array<string, Closure(): bool|string> */
+    /** @return array<string, (Closure(): (string|false))> */
     #[Override]
     protected function metadata(): array
     {
@@ -3237,9 +3236,17 @@ JS;
             $model->folderId = (int) $this->folderId;
             $model->uploaderId = (int) $this->uploaderId ?: null;
             $model->kind = $this->kind;
-            $model->size = (int) $this->size ?: null;
-            $model->width = (int) $this->_width ?: $fallbackWidth;
-            $model->height = (int) $this->_height ?: $fallbackHeight;
+            $size = (int) $this->size ?: null;
+            $width = (int) $this->_width ?: $fallbackWidth;
+            $height = (int) $this->_height ?: $fallbackHeight;
+
+            if ($size < 0 || $width < 0 || $height < 0) {
+                throw new RuntimeException('Asset file size and dimensions cannot be negative.');
+            }
+
+            $model->size = $size;
+            $model->width = $width;
+            $model->height = $height;
             $model->dateModified = Query::prepareDateForDb($this->dateModified);
 
             if (isset($this->_mimeType)) {
@@ -3248,7 +3255,9 @@ JS;
 
             if ($this->getHasFocalPoint()) {
                 $focal = $this->getFocalPoint();
-                $model->focalPoint = number_format($focal['x'], 4).';'.number_format($focal['y'], 4);
+                $model->focalPoint = is_array($focal)
+                    ? number_format($focal['x'], 4).';'.number_format($focal['y'], 4)
+                    : $focal;
             } else {
                 $model->focalPoint = null;
             }
@@ -3384,7 +3393,7 @@ JS;
         $volume = $this->getVolume();
         $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
-        if ($volume->isTemporary() || craftAuth()->id() === $this->uploaderId) {
+        if ($volume->isTemporary() || currentUser()?->getCraftUserId() === $this->uploaderId) {
             $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {
@@ -3579,7 +3588,13 @@ JS;
                 $this->colors = null;
             }
 
-            $this->size = filesize($tempPath);
+            $size = filesize($tempPath);
+
+            if ($size === false) {
+                throw new RuntimeException("Unable to determine the file size for $tempPath.");
+            }
+
+            $this->size = $size;
             $mtime = filemtime($tempPath);
             $this->dateModified = $mtime ? Date::createFromTimestampUTC($mtime) : null;
 
@@ -3745,6 +3760,10 @@ JS;
                 $nodes = $xpath->query($query);
                 if ($nodes !== false) {
                     foreach ($nodes as $node) {
+                        if (! $node instanceof \DOMNode) {
+                            continue;
+                        }
+
                         $value = trim($node->textContent);
                         if ($value !== '') {
                             return $value;
@@ -3757,6 +3776,10 @@ JS;
             $nodes = $xpath->query('//dc:description/rdf:Alt/rdf:li');
             if ($nodes !== false) {
                 foreach ($nodes as $node) {
+                    if (! $node instanceof \DOMNode) {
+                        continue;
+                    }
+
                     $value = trim($node->textContent);
                     if ($value !== '') {
                         return $value;
@@ -3768,6 +3791,10 @@ JS;
             $nodes = $xpath->query('//dc:description[not(rdf:Alt)]');
             if ($nodes !== false) {
                 foreach ($nodes as $node) {
+                    if (! $node instanceof \DOMNode) {
+                        continue;
+                    }
+
                     $value = trim($node->textContent);
                     if ($value !== '') {
                         return $value;

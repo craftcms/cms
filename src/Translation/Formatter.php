@@ -85,10 +85,10 @@ class Formatter
         }
 
         if (! $currency) {
-            return $formatter->format($value);
+            return $this->formattedNumber($formatter->format($value), $formatter);
         }
 
-        return $formatter->formatCurrency($value, $currency);
+        return $this->formattedNumber($formatter->formatCurrency($value, $currency), $formatter);
     }
 
     public function asDate(int|string|DateTimeInterface $value, ?string $format = null): string
@@ -103,15 +103,15 @@ class Formatter
         $format = $this->dateTimeFormats[$format]['date'] ?? $format;
 
         if (isset($this->defaultDateFormats[$format])) {
-            return $this->dateFormatter(
+            return $this->formatDate($this->dateFormatter(
                 dateType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
                 timeType: IntlDateFormatter::NONE,
-            )->format($value->toDateTime());
+            ), $value->toDateTime());
         }
 
-        return $this->dateFormatter(
+        return $this->formatDate($this->dateFormatter(
             pattern: $format,
-        )->format($value->toDateTime());
+        ), $value->toDateTime());
     }
 
     public function asDateTime(int|string|DateTimeInterface $value, ?string $format = null, bool $withTimeZone = false): string
@@ -120,7 +120,7 @@ class Formatter
             value: $value,
             assumeSystemTimeZone: false,
             setToSystemTimeZone: false,
-        );
+        ) ?: throw new InvalidArgumentException(is_scalar($value) ? "'$value' is not a valid date time value." : 'Invalid date time value.');
 
         $format ??= $this->defaultDateFormat;
         [$value] = $this->parseDate($value, $format, $withTimeZone);
@@ -132,15 +132,15 @@ class Formatter
         $format = $this->dateTimeFormats[$format]['datetime'] ?? $format;
 
         if (isset($this->defaultDateFormats[$format])) {
-            return $this->dateFormatter(
+            return $this->formatDate($this->dateFormatter(
                 dateType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
                 timeType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
-            )->format($value->toDateTime());
+            ), $value->toDateTime());
         }
 
-        return $this->dateFormatter(
+        return $this->formatDate($this->dateFormatter(
             pattern: $format,
-        )->format($value->toDateTime());
+        ), $value->toDateTime());
     }
 
     /**
@@ -172,7 +172,7 @@ class Formatter
             $formatter->setAttribute($attribute, $attributeValue);
         }
 
-        return $formatter->format($value);
+        return $this->formattedNumber($formatter->format($value), $formatter);
     }
 
     private function asDecimalFallback(mixed $value, ?int $decimals = null): string
@@ -183,12 +183,17 @@ class Formatter
 
         $value = $this->normalizeDecimalStringValue((string) $value);
 
+        $absoluteValue = ltrim($value, '+-');
+        if (! is_numeric($absoluteValue)) {
+            throw new InvalidArgumentException('Invalid numeric value.');
+        }
+
         $negative = str_starts_with($value, '-');
         $decimals ??= 2;
 
         // checking if fractional part must be rounded
         // checking if integer part must be rounded
-        $rounded = bcround(ltrim($value, '+-'), max(0, $decimals), $decimals < 0 ? RoundingMode::TowardsZero : RoundingMode::HalfAwayFromZero);
+        $rounded = bcround($absoluteValue, max(0, $decimals), $decimals < 0 ? RoundingMode::TowardsZero : RoundingMode::HalfAwayFromZero);
 
         [$integerPart, $fractionalPart] = array_pad(explode('.', $rounded, 2), 2, '');
         $decimalOutput = $decimals > 0
@@ -292,7 +297,7 @@ class Formatter
         $formatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, $decimals ?? 0);
         $formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $decimals ?? 0);
 
-        return $formatter->format($value);
+        return $this->formattedNumber($formatter->format($value), $formatter);
     }
 
     private function asPercentFallback(mixed $value, ?int $decimals = null): string
@@ -316,16 +321,17 @@ class Formatter
         }
 
         if ($value instanceof DateInterval) {
-            return CarbonInterval::instance($value)
-                ->locale($this->locale)
-                ->forHumans(CarbonInterface::DIFF_RELATIVE_TO_NOW, false, 1);
+            $interval = CarbonInterval::instance($value);
+            $interval->locale($this->locale);
+
+            return $interval->forHumans(CarbonInterface::DIFF_RELATIVE_TO_NOW, false, 1);
         }
 
         $dateThen = DateTimeHelper::toDateTime(
             value: $value,
             assumeSystemTimeZone: false,
             setToSystemTimeZone: false,
-        ) ?: throw new InvalidArgumentException("'$value' is not a valid date time value.");
+        ) ?: throw new InvalidArgumentException(is_scalar($value) ? "'$value' is not a valid date time value." : 'Invalid date time value.');
 
         $dateThen = Date::instance($dateThen)->setTimezone($this->timeZone);
 
@@ -335,13 +341,13 @@ class Formatter
                 value: $referenceTime,
                 assumeSystemTimeZone: false,
                 setToSystemTimeZone: false,
-            ) ?: throw new InvalidArgumentException("'$referenceTime' is not a valid date time value."));
+            ) ?: throw new InvalidArgumentException(is_scalar($referenceTime) ? "'$referenceTime' is not a valid date time value." : 'Invalid reference date time value.'));
 
         $dateNow = Date::instance($dateNow)->setTimezone($this->timeZone);
 
-        return $dateThen
-            ->locale($this->locale)
-            ->diffForHumans($dateNow, CarbonInterface::DIFF_RELATIVE_TO_NOW);
+        $dateThen->locale($this->locale);
+
+        return $dateThen->diffForHumans($dateNow, CarbonInterface::DIFF_RELATIVE_TO_NOW);
     }
 
     public function asSize(string|int|float|null $bytes, ?int $decimals = null): string
@@ -411,15 +417,15 @@ class Formatter
         $format = $this->dateTimeFormats[$format]['time'] ?? $format;
 
         if (isset($this->defaultDateFormats[$format])) {
-            return $this->dateFormatter(
+            return $this->formatDate($this->dateFormatter(
                 dateType: IntlDateFormatter::NONE,
                 timeType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
-            )->format($value->toDateTime());
+            ), $value->toDateTime());
         }
 
-        return $this->dateFormatter(
+        return $this->formatDate($this->dateFormatter(
             pattern: $format,
-        )->format($value->toDateTime());
+        ), $value->toDateTime());
     }
 
     private function dateFormatter(
@@ -501,6 +507,7 @@ class Formatter
         return (string) $this->normalizeNumericValue($value) !== $this->normalizeNumericStringValue((string) $value);
     }
 
+    /** @return numeric-string */
     private function normalizeDecimalStringValue(string $value): string
     {
         $value = $this->normalizeNumericStringValue(str_replace('e', 'E', $value));
@@ -508,8 +515,16 @@ class Formatter
         if (preg_match('/^(.+)[eE]([+-]?\d+)$/', $value, $matches)) {
             [, $coefficient, $exponent] = $matches;
             $exponent = (int) $exponent;
+            if (! is_numeric($coefficient)) {
+                throw new InvalidArgumentException('Invalid numeric coefficient.');
+            }
+
             $fractionalDigits = strlen(explode('.', $coefficient, 2)[1] ?? '');
             $value = bcmul($coefficient, bcpow('10', (string) $exponent, max(0, -$exponent)), max(0, $fractionalDigits - $exponent));
+        }
+
+        if (! is_numeric($value)) {
+            throw new InvalidArgumentException('Invalid numeric value.');
         }
 
         return $value;
@@ -646,20 +661,39 @@ class Formatter
         return $result;
     }
 
+    private function formatDate(IntlDateFormatter $formatter, DateTimeInterface $value): string
+    {
+        $formatted = $formatter->format($value);
+        if ($formatted === false) {
+            throw new InvalidArgumentException($formatter->getErrorMessage());
+        }
+
+        return $formatted;
+    }
+
+    private function formattedNumber(string|false $value, NumberFormatter $formatter): string
+    {
+        if ($value === false) {
+            throw new InvalidArgumentException($formatter->getErrorMessage());
+        }
+
+        return $value;
+    }
+
     private function normalizeNumericValue(mixed $value): float|int
     {
         if (empty($value)) {
             return 0;
         }
 
+        if (is_int($value) || is_float($value)) {
+            return $value;
+        }
+
         if (is_string($value) && is_numeric($value)) {
             return (float) $value;
         }
 
-        if (! is_numeric($value)) {
-            throw new InvalidArgumentException("'$value' is not a numeric value.");
-        }
-
-        return $value;
+        throw new InvalidArgumentException(is_scalar($value) ? "'$value' is not a numeric value." : 'The value is not numeric.');
     }
 }

@@ -29,7 +29,9 @@ readonly class CreateElementController
     public function __invoke(Request $request, Drafts $drafts): Response
     {
         $element = $this->createElement();
-        $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        if ($element->ruleset !== false) {
+            $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        }
 
         if (! $drafts->saveElementAsDraft($element, $request->craftUser()?->getCraftUserId(), markAsSaved: false)) {
             return new ElementResponse()->failure($element, mb_ucfirst(t('Couldn’t create {type}.', [

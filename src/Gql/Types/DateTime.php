@@ -33,7 +33,7 @@ class DateTime extends ScalarType implements SingularTypeInterface
 
     public static function getType(): DateTime
     {
-        return GqlEntityRegistry::getOrCreate(self::getName(), fn () => new self);
+        return GqlEntityRegistry::getOrCreate(self::getName(), fn () => new self, self::class);
     }
 
     public static function getName(): string

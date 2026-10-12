@@ -116,7 +116,7 @@ class BulkOpDeferrals
                     $handler(new DeferredBulkOpReplayed(
                         key: $key,
                         event: $event,
-                        watchKey: $watchKey,
+                        watchKey: (string) $watchKey,
                         data: $data,
                     ));
                 }

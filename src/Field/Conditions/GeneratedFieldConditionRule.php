@@ -54,7 +54,7 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
             throw new RuntimeException("Invalid generated field UUID: $this->fieldUid");
         }
 
-        return $field['name'];
+        return $field['name'] ?? '';
     }
 
     public function getGroupLabel(): ?string
@@ -83,7 +83,7 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
         if (! $field) {
             return true;
         }
-        $value = $element->getGeneratedFieldValues()[$field['handle']] ?? null;
+        $value = $element->getGeneratedFieldValues()[($field['handle'] ?? '')] ?? null;
 
         return $this->matchValue($value);
     }

@@ -23,6 +23,6 @@ class Entry extends InputObjectType
                 ...EntryArguments::getArguments(),
                 ...EntryArguments::getContentArguments(),
             ],
-        ]));
+        ]), InputObjectType::class);
     }
 }

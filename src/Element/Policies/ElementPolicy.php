@@ -95,7 +95,7 @@ class ElementPolicy
         if (in_array($method, self::ABILITIES, true)) {
             [$user, $element] = $arguments + [null, null];
 
-            if ($user instanceof CraftUser && $element instanceof ElementInterface && $this->hasCustomElementAuthorizationMethod($element, $method)) {
+            if ($user instanceof CraftUser && $element instanceof ElementInterface && isset(self::ELEMENT_AUTHORIZATION_METHODS[$method]) && $this->hasCustomElementAuthorizationMethod($element, $method)) {
                 return $element->{self::ELEMENT_AUTHORIZATION_METHODS[$method]}($user->asElement());
             }
 

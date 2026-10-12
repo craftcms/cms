@@ -44,7 +44,7 @@ class EnvValueRule implements DataAwareRule, ValidationRule
     public bool $implicit = true;
 
     /**
-     * @var array<int, Closure|LegacyRule|Stringable|ValidationRule|string>
+     * @var array<int, Closure|LegacyRule|Stringable|ValidationRule|ConditionalRules|string>
      */
     private readonly array $rules;
 
@@ -92,7 +92,7 @@ class EnvValueRule implements DataAwareRule, ValidationRule
             return;
         }
 
-        foreach ($validator->errors()->get($attribute) as $message) {
+        foreach ($validator->errors()->all() as $message) {
             $fail($this->errorMessage($message, $value, $parsedValue));
         }
     }

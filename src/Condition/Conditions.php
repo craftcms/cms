@@ -38,7 +38,7 @@ readonly class Conditions
 
                 if ($rule instanceof ConditionRuleInterface && ! $rule->validate()) {
                     foreach ($rule->errors()->getMessages() as $attribute => $messages) {
-                        $errors["{$rule->uid}.$attribute"] = $messages;
+                        $errors["{$rule->uid}.$attribute"] = array_values($messages);
                     }
                 }
             }
@@ -50,7 +50,10 @@ readonly class Conditions
     /**
      * Creates a condition instance.
      *
-     * @param  array<string, mixed>|class-string<ConditionInterface>  $config  The condition class or configuration array
+     * @template T of ConditionInterface = ConditionInterface
+     *
+     * @param  array{class: class-string<T>}|array<string, mixed>|class-string<T>  $config  The condition class or configuration array
+     * @return T
      *
      * @throws InvalidArgumentException if the condition does not implement [[ConditionInterface]]
      */
@@ -62,7 +65,7 @@ readonly class Conditions
 
         $class = Arr::pull($config, 'class');
 
-        if (! is_subclass_of($class, ConditionInterface::class)) {
+        if (! is_string($class) || ! is_subclass_of($class, ConditionInterface::class)) {
             throw new InvalidArgumentException("Invalid condition class: $class");
         }
 
@@ -135,7 +138,7 @@ readonly class Conditions
             $config = [...$config, ...$newConfig];
         }
 
-        if (! is_subclass_of($class, ConditionRuleInterface::class)) {
+        if (! is_string($class) || ! is_subclass_of($class, ConditionRuleInterface::class)) {
             throw new InvalidArgumentException("Invalid condition rule class: $class");
         }
 

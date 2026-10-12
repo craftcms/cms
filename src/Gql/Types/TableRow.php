@@ -31,7 +31,7 @@ class TableRow extends ObjectType
     /**
      * @param  bool  $includeHandles  Whether columns also should be present by their field handles.
      * @param  array<string, TableColumn>  $columns
-     * @return array<string, Type&(OutputType|InputType)>
+     * @return ($input is true ? array<string, Type&InputType> : array<string, Type&OutputType>)
      */
     public static function prepareRowFieldDefinition(array $columns, bool $includeHandles = true, bool $input = false): array
     {

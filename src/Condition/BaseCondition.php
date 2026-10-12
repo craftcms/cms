@@ -121,7 +121,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
             $rules = $event->conditionRules;
 
             $this->_selectableConditionRules = Collection::make($rules)
-                ->keyBy(fn ($type) => is_string($type) ? $type : Json::encode($type))
+                ->keyBy(fn ($type) => is_string($type) ? $type : (Json::encode($type, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?: throw new InvalidArgumentException('Invalid condition rule configuration.')))
                 ->map(fn ($type) => $this->createConditionRule($type))
                 ->filter(fn (ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule))
                 ->all();
@@ -180,14 +180,24 @@ abstract class BaseCondition extends Component implements ConditionInterface
         }
 
         $group = static::createGroup();
-        $operator = strtolower($rules['operator'] ?? 'and');
+        $operator = $rules['operator'] ?? 'and';
+        if (! is_string($operator)) {
+            throw new InvalidArgumentException('Invalid condition group operator.');
+        }
+
+        $operator = strtolower($operator);
         $group->operator = GroupOperator::tryFrom($operator)
             ?? throw new InvalidArgumentException("Invalid condition group operator: $operator");
         $group->setCondition($this);
 
         $projectConfig = app(ProjectConfig::class);
 
-        foreach ($rules['rules'] ?? (isset($rules['operator']) ? [] : $rules) as $rule) {
+        $groupRules = $rules['rules'] ?? (isset($rules['operator']) ? [] : $rules);
+        if (! is_array($groupRules)) {
+            throw new InvalidArgumentException('Invalid condition group rules.');
+        }
+
+        foreach ($groupRules as $rule) {
             if ($rule instanceof ConditionGroupInterface || (is_array($rule) && ! isset($rule['class']) && ! isset($rule['type']) && isset($rule['rules']))) {
                 $group->addRule($this->normalizeConditionRules($rule));
 

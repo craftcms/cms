@@ -204,7 +204,7 @@ class ElementEditViewModel extends ViewModel
      * element against that owner (an owner draft included) rather than its
      * primary owner.
      *
-     * @return array{fieldId: int|null, ownerId: int}|null
+     * @return array{fieldId: int|string|null, ownerId: int}|null
      */
     public function nestedContext(): ?array
     {

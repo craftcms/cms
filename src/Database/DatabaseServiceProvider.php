@@ -101,8 +101,8 @@ class DatabaseServiceProvider extends ServiceProvider
             return Context::getHidden('craft.supportsMb4');
         });
 
-        Builder::macro('whereBool', fn ($column, bool $value) => $this->where($column, new QueryExpression(var_export($value, true))));
-        Builder::macro('orWhereBool', fn ($column, bool $value) => $this->orWhere($column, new QueryExpression(var_export($value, true))));
+        Builder::macro('whereBool', fn ($column, bool $value) => $this->where($column, new QueryExpression($value ? 'true' : 'false')));
+        Builder::macro('orWhereBool', fn ($column, bool $value) => $this->orWhere($column, new QueryExpression($value ? 'true' : 'false')));
 
         $this->registerQueryBuilderMacros();
         $this->registerSchemaBuilderMacros();
@@ -187,7 +187,8 @@ class DatabaseServiceProvider extends ServiceProvider
 
         Builder::macro('softDelete', function (?int $id = null): int {
             if (! is_null($id)) {
-                $this->where($this->from.'.id', '=', $id);
+                $table = $this->from instanceof Expression ? $this->from->getValue($this->getGrammar()) : $this->from;
+                $this->where($table.'.id', '=', $id);
             }
 
             return $this->update(['dateDeleted' => now()]);
@@ -195,7 +196,8 @@ class DatabaseServiceProvider extends ServiceProvider
 
         Builder::macro('restore', function (?int $id = null): int {
             if (! is_null($id)) {
-                $this->where($this->from.'.id', '=', $id);
+                $table = $this->from instanceof Expression ? $this->from->getValue($this->getGrammar()) : $this->from;
+                $this->where($table.'.id', '=', $id);
             }
 
             return $this->update(['dateDeleted' => null]);
@@ -207,16 +209,20 @@ class DatabaseServiceProvider extends ServiceProvider
         SchemaBuilder::macro('indexName', function (string $table, array|string|Expression $columns) {
             if ($this->getConnection()->getConfig('prefix_indexes')) {
                 $table = str_contains($table, '.')
-                    ? substr_replace($table, '.'.$this->getConnection()->getTablePrefix(), strrpos($table, '.'), 1)
+                    ? substr_replace($table, '.'.$this->getConnection()->getTablePrefix(), strrpos($table, '.') ?: 0, 1)
                     : $this->getConnection()->getTablePrefix().$table;
             }
 
+            $columns = is_array($columns) ? $columns : [$columns];
+            $columns = array_map(fn (string|Expression $column): string => (string) ($column instanceof Expression ? $column->getValue($this->getConnection()->getQueryGrammar()) : $column), $columns);
             $index = strtolower($table.'_'.implode('_', $columns));
 
             return 'idx_'.md5($index);
         });
 
         SchemaBuilder::macro('createIndex', function (string $table, array|string|Expression $columns, ?string $name = null, bool $unique = false): void {
+            $columns = $columns instanceof Expression ? [$columns] : $columns;
+
             $this->table($table, function (Blueprint $table) use ($name, $columns, $unique) {
                 $name ??= SchemaBuilder::indexName($table->getTable(), $columns);
 

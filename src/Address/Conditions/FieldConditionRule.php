@@ -48,7 +48,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     protected function options(): array
     {
         return $this->addressFields()
-            ->keyBy(fn (Addresses $field) => $field->uid)
+            ->keyBy(fn (Addresses $field) => $field->uid ?? '')
             ->map(
                 fn (Addresses $field) => $field->getUiLabel().($this->showLabelHint() ? " ($field->handle)" : '')
             )
@@ -57,6 +57,10 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
+        if (! $elementQuery instanceof AddressQuery) {
+            throw new \InvalidArgumentException('This condition requires an address query.');
+        }
+
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
             $fieldIds = $this->addressFields()->pluck('id');
         } elseif ($this->operator === self::OPERATOR_EMPTY) {

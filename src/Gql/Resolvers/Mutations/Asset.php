@@ -155,8 +155,11 @@ class Asset extends ElementMutationResolver
             $fileInformation = Arr::pull($arguments, '_file');
         }
 
-        /** @var AssetElement $element */
         $element = parent::populateElementWithData($element, $arguments, $resolveInfo);
+
+        if (! $element instanceof AssetElement) {
+            throw new Error('Asset mutations require an asset element.');
+        }
 
         if (! empty($fileInformation) && $this->handleUpload($element, $fileInformation)) {
             $element->ruleset->useScenario($element->id

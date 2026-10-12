@@ -368,7 +368,7 @@ readonly class Navigation
                 );
 
             if ($group !== null) {
-                $group->subnav = [...$group->subnav, $item];
+                $group->subnav = [...($group->subnav ?: []), $item];
 
                 continue;
             }
@@ -796,7 +796,7 @@ readonly class Navigation
 
         return array_all(
             $params,
-            fn ($value, $name) => ! ($this->request->query($name) !== $value),
+            fn ($value, $name) => ! ($this->request->query((string) $name) !== $value),
         );
     }
 

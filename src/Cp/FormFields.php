@@ -461,7 +461,7 @@ readonly class FormFields
         if ($sortable && is_array($values) && $values !== []) {
             $options = $options
                 ->sortBy(function (array $option) use ($values): int {
-                    $index = array_search($option['value'] ?? null, $values);
+                    $index = array_search($option['value'] ?? null, array_values($values));
 
                     return $index === false ? PHP_INT_MAX : $index;
                 })
@@ -1292,7 +1292,7 @@ readonly class FormFields
      * marker; the component takes that as a `group` on each option instead.
      *
      * @param  array<array-key, mixed>  $options
-     * @return list<array<string, mixed>>
+     * @return list<array{label: string, value: scalar, disabled?: bool, hidden?: bool, data?: array<string, mixed>, group: string|null}>
      */
     private static function normalizeSelectOptions(array $options): array
     {
@@ -1312,12 +1312,19 @@ readonly class FormFields
                 continue;
             }
 
+            $value = $option['value'] ?? $key;
+            $data = $option['data'] ?? [];
+
+            if (! is_scalar($value) || ! is_array($data) || array_any(array_keys($data), fn ($key): bool => ! is_string($key))) {
+                throw new InvalidArgumentException('Select options require scalar values and named data attributes.');
+            }
+
             $normalized[] = [
-                'label' => (string) ($option['label'] ?? $option['value'] ?? $key),
-                'value' => $option['value'] ?? $key,
+                'label' => (string) ($option['label'] ?? $value),
+                'value' => $value,
                 'disabled' => (bool) ($option['disabled'] ?? false),
                 'hidden' => (bool) ($option['hidden'] ?? false),
-                'data' => $option['data'] ?? [],
+                'data' => $data,
                 'group' => $group,
             ];
         }
@@ -1558,7 +1565,7 @@ readonly class FormFields
                     self::formattedTime($range[0]) ?? '',
                     self::formattedTime($range[1]) ?? '',
                 ],
-                $config['disableTimeRanges'] ?? [],
+                array_values($config['disableTimeRanges'] ?? []),
             ))
             ->minuteIncrement((int) ($config['minuteIncrement'] ?? 30))
             ->forceRoundTime((bool) ($config['forceRoundTime'] ?? false))
@@ -1609,7 +1616,7 @@ readonly class FormFields
                     self::formattedTime($range[0]) ?? '',
                     self::formattedTime($range[1]) ?? '',
                 ],
-                $config['disableTimeRanges'] ?? [],
+                array_values($config['disableTimeRanges'] ?? []),
             ))
             ->minuteIncrement((int) ($config['minuteIncrement'] ?? 30))
             ->forceRoundTime((bool) ($config['forceRoundTime'] ?? false))

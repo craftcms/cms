@@ -1,0 +1,13 @@
+services:
+    -
+        class: CraftCms\Cms\Tests\Support\ArrWhereNotNullReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicStaticMethodReturnTypeExtension
+    -
+        class: CraftCms\Cms\Tests\Support\CollectionValuesReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicMethodReturnTypeExtension
+    -
+        class: CraftCms\Cms\Tests\Support\JsonEncodeReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicStaticMethodReturnTypeExtension

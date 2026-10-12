@@ -10,7 +10,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * EagerLoadingFieldInterface defines the common interface to be implemented by field classes that support eager-loading.
  *
  * @phpstan-type EagerLoadingMapItem array{elementType?: class-string<ElementInterface>, source: int, target: int}
- * @phpstan-type EagerLoadingMap array{elementType?: class-string<ElementInterface>, map: list<EagerLoadingMapItem>, criteria?: array<string, mixed>, createElement?: callable}
+ * @phpstan-type EagerLoadingMap array{elementType?: class-string<ElementInterface>, map: array<int, EagerLoadingMapItem>, criteria?: array<string, mixed>, createElement?: callable}
  */
 interface EagerLoadingFieldInterface extends FieldInterface
 {

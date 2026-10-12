@@ -73,7 +73,7 @@ abstract class ContentIndexViewModel extends ViewModel
     /** @var array<string, mixed>|null */
     private ?array $indexData = null;
 
-    /** @var LengthAwarePaginator<array-key, ElementInterface|array<string, mixed>>|null */
+    /** @var LengthAwarePaginator<array-key, ElementInterface>|null */
     private ?LengthAwarePaginator $paginator = null;
 
     /** @var array{perPage: int, page: int, total: int, pageParam: string}|null */
@@ -227,7 +227,7 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         return collect($this->elementType::statuses())
-            ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
+            ->map(fn ($label, $value) => ['label' => is_array($label) ? $label['label'] : $label, 'value' => $value])
             ->prepend(['label' => t('All'), 'value' => ''])
             ->values()
             ->all();
@@ -432,11 +432,11 @@ abstract class ContentIndexViewModel extends ViewModel
         // The options mirror the sources sidebar, headings and all, so the
         // selectable ones are a level down inside any group.
         $choices = collect($options)->flatMap(
-            fn (array $option): array => $option['type'] === 'group' ? $option['items'] : [$option],
+            fn (array $option): array => $option['items'] ?? [$option],
         );
-        $current = $choices->first(fn (array $option): bool => $option['selected']);
+        $current = $choices->first(fn (array $option): bool => $option['selected'] ?? false);
 
-        if ($current === null) {
+        if ($current === null || ! isset($current['label'])) {
             return $crumbs;
         }
 
@@ -467,7 +467,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return $this->resolvedSources ??= ElementSources::filterSourcesBySite(
             collect($this->allSources()),
             $this->siteId(),
-        )->all();
+        )->values()->all();
     }
 
     /**
@@ -487,7 +487,7 @@ abstract class ContentIndexViewModel extends ViewModel
             $this->elementType,
             withDisabled: true,
             page: $this->page,
-        )->all();
+        )->values()->all();
     }
 
     /** @return class-string<ElementInterface> */
@@ -557,14 +557,14 @@ abstract class ContentIndexViewModel extends ViewModel
         return $this->sourceSettings()->defaultTableColumns;
     }
 
-    /** @return list<array<string, mixed>> */
+    /** @return list<ActionItem|array<string, mixed>> */
     public function data(): array
     {
         if ($this->sourceState()[0] === null) {
             return [];
         }
 
-        $elements = $this->resolvePaginator()->items();
+        $elements = array_values($this->resolvePaginator()->items());
         $this->prepareElements($elements);
 
         return match ($this->mode()) {
@@ -624,7 +624,16 @@ abstract class ContentIndexViewModel extends ViewModel
             return $this->resolvedSort;
         }
 
-        return $this->resolvedSort = $this->sourceSettings()->sort($this->request->array('sort'));
+        $requestedSort = [];
+        foreach ($this->request->array('sort') as $item) {
+            if (! is_array($item) || ! is_string($item['field'] ?? null) || ! is_string($item['direction'] ?? null)) {
+                abort(400, 'Invalid element index sort configuration.');
+            }
+
+            $requestedSort[] = ['field' => $item['field'], 'direction' => $item['direction']];
+        }
+
+        return $this->resolvedSort = $this->sourceSettings()->sort($requestedSort);
     }
 
     /**
@@ -780,26 +789,32 @@ abstract class ContentIndexViewModel extends ViewModel
      */
     private function sourceCrumbOptions(string $sourceKey): array
     {
-        $options = [];
-        // A heading collects the sources after it, so the switcher groups them
-        // the way the sources sidebar does.
-        $groupIndex = null;
+        return array_values(iterator_to_array($this->sourceCrumbItems($sourceKey), false));
+    }
+
+    /**
+     * @return \Generator<int, array{type: 'link', label: string, href: string, selected: bool}|array{type: 'group', heading: string, items: list<array{type: 'link', label: string, href: string, selected: bool}>}>
+     */
+    private function sourceCrumbItems(string $sourceKey): \Generator
+    {
+        $groupHeading = null;
+        $groupItems = [];
 
         foreach ($this->sources() as $source) {
             if ($source['type'] === ElementSources::TYPE_HEADING) {
-                $options[] = [
-                    'type' => 'group',
-                    'heading' => $source['heading'] ?? '',
-                    'items' => [],
-                ];
-                $groupIndex = array_key_last($options);
+                if ($groupHeading !== null && $groupItems !== []) {
+                    yield ['type' => 'group', 'heading' => $groupHeading, 'items' => $groupItems];
+                }
+
+                $groupHeading = (string) ($source['heading'] ?? '');
+                $groupItems = [];
 
                 continue;
             }
 
             $key = $source['key'] ?? null;
 
-            if ($key === null) {
+            if (! is_string($key)) {
                 continue;
             }
 
@@ -811,24 +826,22 @@ abstract class ContentIndexViewModel extends ViewModel
 
             $option = [
                 'type' => 'link',
-                'label' => $source['label'] ?? $key,
+                'label' => (string) ($source['label'] ?? $key),
                 'href' => $url,
                 'selected' => $key === $sourceKey,
             ];
 
-            if ($groupIndex !== null) {
-                $options[$groupIndex]['items'][] = $option;
+            if ($groupHeading !== null) {
+                $groupItems[] = $option;
             } else {
-                $options[] = $option;
+                yield $option;
             }
         }
 
-        // A heading whose sources the user can't reach is left standing on its
-        // own, so drop it rather than show a heading over nothing.
-        return array_values(array_filter(
-            $options,
-            fn (array $option): bool => $option['type'] !== 'group' || count($option['items']) > 0,
-        ));
+        if ($groupHeading !== null && $groupItems !== []) {
+            yield ['type' => 'group', 'heading' => $groupHeading, 'items' => $groupItems];
+        }
+
     }
 
     /** @return array{0: ?string, 1: ?array<string, mixed>} */
@@ -878,7 +891,7 @@ abstract class ContentIndexViewModel extends ViewModel
             sourceKey: $sourceKey,
             source: $source,
             siteId: $siteId,
-            viewModes: $this->elementType::indexViewModes(),
+            viewModes: array_values($this->elementType::indexViewModes()),
             sortOptions: $sortOptions,
             tableColumns: $tableColumns,
             defaultTableColumns: $defaultTableColumns,
@@ -886,7 +899,7 @@ abstract class ContentIndexViewModel extends ViewModel
             defaultViewMode: is_string($source['defaultViewMode'] ?? null) ? $source['defaultViewMode'] : 'table',
             pageSize: max(1, $this->request->integer('per_page', 50)),
             showHeaderColumn: $this->request->boolean('showHeaderColumn', true),
-            fieldLayouts: $fieldLayouts,
+            fieldLayouts: $fieldLayouts !== null ? array_values($fieldLayouts) : null,
         );
     }
 
@@ -935,7 +948,7 @@ abstract class ContentIndexViewModel extends ViewModel
     /** @return list<array<string, mixed>> */
     protected function sourceCandidates(int $siteId): array
     {
-        return ElementSources::filterSourcesBySite(collect($this->allSources()), $siteId)->all();
+        return ElementSources::filterSourcesBySite(collect($this->allSources()), $siteId)->values()->all();
     }
 
     /**
@@ -1181,7 +1194,7 @@ abstract class ContentIndexViewModel extends ViewModel
         ];
     }
 
-    /** @return LengthAwarePaginator<array-key, ElementInterface|array<string, mixed>> */
+    /** @return LengthAwarePaginator<array-key, ElementInterface> */
     private function resolvePaginator(): LengthAwarePaginator
     {
         if ($this->paginator !== null) {
@@ -1191,8 +1204,17 @@ abstract class ContentIndexViewModel extends ViewModel
         $indexData = $this->resolveIndexData();
         $state = $this->resolvePaginationState();
 
+        $items = [];
+        foreach ($indexData['elements'] ?? [] as $element) {
+            if (! $element instanceof ElementInterface) {
+                throw new \UnexpectedValueException('Element index data must contain elements.');
+            }
+
+            $items[] = $element;
+        }
+
         $paginator = new IlluminatePaginator(
-            $indexData['elements'] ?? [],
+            $items,
             $state['total'],
             $state['perPage'],
             $state['page'],
@@ -1259,6 +1281,10 @@ abstract class ContentIndexViewModel extends ViewModel
         $flags = [];
 
         foreach ($elements as $index => $element) {
+            if (! is_int($element->id)) {
+                throw new \UnexpectedValueException('Indexed elements must have integer IDs.');
+            }
+
             if (! isset($element->lft, $element->rgt, $element->level) || $element->rgt <= $element->lft + 1) {
                 $flags[$element->id] = false;
 
@@ -1375,7 +1401,7 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
-     * @param  ElementInterface[]  $elements
+     * @param  list<ElementInterface>  $elements
      * @return list<ActionItem|array<string, mixed>>
      */
     private function thumbData(array $elements): array

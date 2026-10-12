@@ -25,6 +25,7 @@ use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Throwable;
 
 /**
@@ -179,6 +180,10 @@ class Structures
                 ->findOrFail($structure->id);
         } else {
             $structureModel = new StructureModel;
+        }
+
+        if ($structure->maxLevels !== null && $structure->maxLevels < 0) {
+            throw new InvalidArgumentException('A structure cannot have a negative maximum level.');
         }
 
         $structureModel->maxLevels = $structure->maxLevels;

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\SendQueuedNotifications;
+use Illuminate\Support\Collection;
 use LogicException;
 use Override;
 
@@ -38,7 +39,7 @@ class SendQueuedUserNotifications extends SendQueuedNotifications
             }
         }
 
-        parent::__construct($notifiables, $notification, $channels);
+        parent::__construct($notifiables instanceof Collection ? $notifiables : collect([$notifiables]), $notification, $channels);
     }
 
     #[Override]

@@ -24,6 +24,7 @@ class HasDescendantsRule extends BaseLightswitchConditionRule implements Element
         return t('Has Descendants');
     }
 
+    /** @param ElementQueryInterface&ElementQuery<*> $elementQuery */
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         ElementQuery::applyHasDescendants($query, $this->value, $elementQuery);

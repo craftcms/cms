@@ -49,10 +49,10 @@ readonly class Update implements Arrayable
         return $this->releases[0] ?? null;
     }
 
-    /** @param array<string, bool|float|string|array<array-key, array<string, bool|string|null>>|null> $data */
+    /** @param array{status?: string, packageName?: string, renewalPrice?: float|null, renewalCurrency?: string|null, renewalUrl?: string|null, releases?: list<array{version: string, date?: string|null, critical?: bool, notes?: string|null}>, phpConstraint?: string|null, abandoned?: bool, replacementName?: string|null, replacementHandle?: string|null, replacementUrl?: string|null} $data */
     public static function fromArray(array $data): self
     {
-        $data['status'] = UpdateStatus::tryFrom($data['status'] ?? '');
+        $data['status'] = UpdateStatus::tryFrom($data['status'] ?? '') ?? UpdateStatus::ELIGIBLE;
         $data['releases'] = array_map(
             UpdateRelease::fromArray(...),
             $data['releases'] ?? [],

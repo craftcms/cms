@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
+use Fruitcake\LaravelDebugbar\LaravelDebugbar;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\Log;
 
@@ -31,7 +32,7 @@ class TemplateProfiler
     /** @var array<string, array<string, int>> */
     private array $profileCounters = [];
 
-    /** @var array<string, int> */
+    /** @var array<string, int|float> */
     private array $timers = [];
 
     public function beginProfile(string $type, string $name): void
@@ -48,7 +49,10 @@ class TemplateProfiler
 
         $this->timers[$this->profileToken($type, $name, $count)] = hrtime(true);
 
-        debugbar()->startMeasure($this->profileToken($type, $name, $count), "{$type} {$name}");
+        $debugbar = debugbar();
+        if ($debugbar instanceof LaravelDebugbar) {
+            $debugbar->startMeasure($this->profileToken($type, $name, $count), "{$type} {$name}");
+        }
 
         Log::debug('profile begin', [
             'name' => $name,
@@ -65,7 +69,10 @@ class TemplateProfiler
 
         $count = $this->profileCounters[$type][$name]--;
 
-        debugbar()->stopMeasure($this->profileToken($type, $name, $count));
+        $debugbar = debugbar();
+        if ($debugbar instanceof LaravelDebugbar) {
+            $debugbar->stopMeasure($this->profileToken($type, $name, $count));
+        }
 
         $start = $this->timers[$this->profileToken($type, $name, $count)] ?? null;
 

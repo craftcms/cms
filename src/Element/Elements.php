@@ -74,7 +74,7 @@ class Elements
      * Returns the class of an element with a given UID.
      *
      * @param  string  $uid  The element’s UID
-     * @return string|null The element’s class, or null if it could not be found
+     * @return class-string<ElementInterface>|null The element’s class, or null if it could not be found
      */
     public function getElementTypeByUid(string $uid): ?string
     {
@@ -86,13 +86,15 @@ class Elements
      *
      * @param  string  $property  Either `id` or `uid`
      * @param  int|string  $elementId  The element’s ID/UID
-     * @return string|null The element’s class, or null if it could not be found
+     * @return class-string<ElementInterface>|null The element’s class, or null if it could not be found
      */
     public function getElementTypeByKey(string $property, int|string $elementId): ?string
     {
-        return DB::table(Table::ELEMENTS)
+        $type = DB::table(Table::ELEMENTS)
             ->where($property, $elementId)
             ->value('type');
+
+        return is_string($type) && is_subclass_of($type, ElementInterface::class) ? $type : null;
     }
 
     /**
@@ -124,7 +126,7 @@ class Elements
      * Returns an element class by its handle.
      *
      * @param  string  $refHandle  The element class handle
-     * @return string|null The element class, or null if it could not be found
+     * @return class-string<ElementInterface>|null The element class, or null if it could not be found
      */
     public function getElementTypeByRefHandle(string $refHandle): ?string
     {
@@ -138,6 +140,7 @@ class Elements
         return $class ?: null;
     }
 
+    /** @return class-string<ElementInterface>|false */
     private function elementTypeByRefHandle(string $refHandle): string|false
     {
         if (is_subclass_of($refHandle, ElementInterface::class)) {
@@ -161,14 +164,22 @@ class Elements
             $config = ['type' => $config];
         }
 
-        return ComponentHelper::createComponent($config, ElementInterface::class);
+        $type = $config['type'];
+
+        if (! is_subclass_of($type, ElementInterface::class)) {
+            throw new InvalidArgumentException("$type is not a valid element.");
+        }
+
+        return ComponentHelper::createComponent($config, $type);
     }
 
     /**
      * Creates an element query for a given element type.
      *
-     * @param  class-string<ElementInterface>  $elementType  The element class
-     * @return ElementQueryInterface The element query
+     * @template T of ElementInterface
+     *
+     * @param  class-string<T>  $elementType  The element class
+     * @return ElementQueryInterface<T> The element query
      *
      * @throws InvalidArgumentException if $elementType is not a valid element
      */
@@ -222,7 +233,7 @@ class Elements
      * @param  int|string|int[]|null  $siteId  The site(s) to fetch the element in.
      *                                         Defaults to the current site.
      * @param  array<string,mixed>  $criteria
-     * @return T|null The matching element, or `null`.
+     * @return ($elementType is null ? ElementInterface|null : T|null) The matching element, or `null`.
      */
     public function getElementByUid(
         string $uid,
@@ -244,7 +255,7 @@ class Elements
      * @param  int|string|int[]|null  $siteId  The site(s) to fetch the element in.
      *                                         Defaults to the current site.
      * @param  array<string,mixed>  $criteria
-     * @return T|null The matching element, or `null`.
+     * @return ($elementType is null ? ElementInterface|null : T|null) The matching element, or `null`.
      */
     private function elementByKey(
         string $property,
@@ -322,7 +333,7 @@ class Elements
             )
             ->first();
 
-        if (! $result || ! is_a($result->type, ElementInterface::class, true)) {
+        if (! $result || ! is_string($result->type) || ! is_subclass_of($result->type, ElementInterface::class)) {
             return null;
         }
 
@@ -753,7 +764,7 @@ class Elements
                 ->all();
         } else {
             $oldSortOrders = $nestedElements
-                ->keyBy(fn (ElementInterface $element) => $element->id)
+                ->keyBy(fn (ElementInterface $element) => $element->id ?? throw new InvalidArgumentException('Persisted elements must have an ID.'))
                 /** @phpstan-ignore-next-line */
                 ->map(fn (NestedElementInterface $element) => $element->getSortOrder())
                 ->all();

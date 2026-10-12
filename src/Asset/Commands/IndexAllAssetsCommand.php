@@ -56,6 +56,6 @@ class IndexAllAssetsCommand extends Command
             return;
         }
 
-        $this->indexAssets($volumes->all());
+        $this->indexAssets($volumes->values()->all());
     }
 }

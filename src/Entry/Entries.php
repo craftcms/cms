@@ -84,7 +84,7 @@ class Entries
     public function getSingleEntriesByHandle(array $handles): array
     {
         $entries = [];
-        $siteId = Sites::getCurrentSite()->id;
+        $siteId = Sites::getCurrentSite()->id ?? throw new \RuntimeException('Single entries require a persisted site.');
         $missingEntries = [];
 
         $this->singleEntries[$siteId] ??= [];
@@ -182,7 +182,9 @@ class Entries
         $entry->sectionId = $section->id;
 
         // Validate
-        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        if ($entry->ruleset) {
+            $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        }
         $entry->validate();
 
         // If there are any errors on the URI, re-validate as disabled

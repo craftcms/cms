@@ -22,6 +22,7 @@ class Json
      * Encodes the given value into a JSON string.
      *
      * @param  mixed  $value  the data to be encoded.
+     * @param  positive-int  $depth  The maximum nesting depth.
      * @param  int  $options  The encoding options. `JSON_UNESCAPED_UNICODE` is used by default.
      */
     public static function encode(mixed $value, int $options = JSON_UNESCAPED_UNICODE, int $depth = 512): string|false
@@ -125,6 +126,10 @@ class Json
         string $defaultIndent = '  ',
     ): void {
         $json = static::encode($value, $options);
+
+        if ($json === false) {
+            throw new InvalidArgumentException('Unable to encode JSON data.');
+        }
 
         if ($options & JSON_PRETTY_PRINT) {
             if (File::exists($path)) {

@@ -284,7 +284,7 @@ class TwigRenderer implements TwigRendererInterface
      */
     /**
      * @param  array<array-key, mixed>  $fields
-     * @return list<int|string>
+     * @return list<string>
      */
     private function filterFieldsByTemplate(array $fields, string $template): array
     {
@@ -295,7 +295,7 @@ class TwigRenderer implements TwigRendererInterface
                 $field = $definition;
             }
             if (preg_match(sprintf('/\b%s\b/', preg_quote((string) $field, '/')), $template)) {
-                $filtered[] = $field;
+                $filtered[] = (string) $field;
             }
         }
 

@@ -43,9 +43,9 @@ class ElementAdapterRegistry extends TypeRegistry
     /** @return list<string> */
     public function handles(): array
     {
-        return $this->types()
+        return array_values($this->types()
             ->map(static fn (string $type): string => $type::handle())
-            ->all();
+            ->all());
     }
 
     /**

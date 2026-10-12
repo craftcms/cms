@@ -34,7 +34,12 @@ readonly class TemplateLoader implements LoaderInterface
             throw new TemplateLoaderException($name, t('Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
         }
 
-        return new Source(file_get_contents($template), $name, $template);
+        $contents = file_get_contents($template);
+        if ($contents === false) {
+            throw new TemplateLoaderException($name, t('Unable to read the template at {path}.', ['path' => $template]));
+        }
+
+        return new Source($contents, $name, $template);
     }
 
     /**

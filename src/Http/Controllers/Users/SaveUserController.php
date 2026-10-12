@@ -295,13 +295,13 @@ readonly class SaveUserController
 
             if ($isPublicRegistration && $user->errors()->has('newPassword')) {
                 // Move any 'newPassword' errors over to 'password'
-                $user->errors()->merge(['password' => $user->errors()->get('newPassword')]);
+                $user->errors()->merge(['password' => $user->errors()->getMessages()['newPassword']]);
                 $user->errors()->forget('newPassword');
             }
 
             // Copy any 'unverifiedEmail' errors to 'email'
             if (! $user->errors()->has('email') && $user->errors()->has('unverifiedEmail')) {
-                $user->errors()->merge(['email' => $user->errors()->get('unverifiedEmail')]);
+                $user->errors()->merge(['email' => $user->errors()->getMessages()['unverifiedEmail']]);
                 $user->errors()->forget('unverifiedEmail');
             }
 

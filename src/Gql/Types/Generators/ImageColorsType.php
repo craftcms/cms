@@ -69,6 +69,6 @@ class ImageColorsType implements GeneratorInterface, SingleGeneratorInterface
 
                 return Gql::prepareFieldDefinitions($fields, $typeName);
             },
-        ]));
+        ]), ImageColors::class);
     }
 }

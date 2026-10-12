@@ -190,8 +190,8 @@ class EntryActivity
             : User::find()->id($ids)->status(null)->collect()->keyBy('id');
 
         return [
-            self::elementValues(collect($oldIds)->map($authors->get(...))->filter()->all()),
-            self::elementValues(collect($newIds)->map($authors->get(...))->filter()->all()),
+            self::elementValues(array_values(collect($oldIds)->map(fn (int $id): ?User => $authors->get($id))->filter()->all())),
+            self::elementValues(array_values(collect($newIds)->map(fn (int $id): ?User => $authors->get($id))->filter()->all())),
         ];
     }
 
@@ -201,9 +201,9 @@ class EntryActivity
      */
     private static function relationValues(ElementQueryInterface|ElementCollection $value): array
     {
-        return self::elementValues($value instanceof ElementQueryInterface
-            ? (clone $value)->status(null)->all()
-            : $value->all());
+        return self::elementValues(array_values($value instanceof ElementQueryInterface
+            ? (clone $value)->asArray(false)->status(null)->all()
+            : $value->all()));
     }
 
     /**

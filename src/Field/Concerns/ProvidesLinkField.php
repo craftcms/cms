@@ -240,25 +240,34 @@ trait ProvidesLinkField
         return [Scope::make([], $nodes, 'link-settings')->deltaGroupAtNamespace()];
     }
 
-    /** @return list<array<string, mixed>> */
+    /** @return list<array{id:string,label:string,kind:'custom'|'element'|'text'}> */
     protected function linkPickerConfig(): array
     {
         $availableTypes = Link::types();
         $typeSettings = $this->{$this->namespacedAttribute('typeSettings')};
 
-        return collect($this->{$this->namespacedAttribute('types')})
-            ->filter(fn (string $typeId) => isset($availableTypes[$typeId]))
-            ->map(function (string $typeId) use ($availableTypes, $typeSettings): array {
-                /** @var BaseLinkType $linkType */
-                $linkType = ComponentHelper::createComponent([
-                    'type' => $availableTypes[$typeId],
-                    'settings' => $typeSettings[$typeId] ?? [],
-                ], BaseLinkType::class);
+        $configs = [];
+        foreach ($this->{$this->namespacedAttribute('types')} as $typeId) {
+            if (! isset($availableTypes[$typeId])) {
+                continue;
+            }
 
-                return $linkType->pickerConfig();
-            })
-            ->values()
-            ->all();
+            $linkType = ComponentHelper::createComponent([
+                'type' => $availableTypes[$typeId],
+                'settings' => $typeSettings[$typeId] ?? [],
+            ], BaseLinkType::class);
+            $config = $linkType->pickerConfig();
+            $kind = $config['kind'];
+
+            if (! in_array($kind, ['custom', 'element', 'text'], true)) {
+                throw new \InvalidArgumentException('Unsupported link picker kind.');
+            }
+
+            $config['kind'] = $kind;
+            $configs[] = $config;
+        }
+
+        return $configs;
     }
 
     /** @return Collection<string, class-string<BaseLinkType>> */
@@ -306,12 +315,7 @@ trait ProvidesLinkField
         return [];
     }
 
-    /**
-     * @return ($attribute is 'types' ? 'types'|'linkSettingsTypes' :
-     *     ($attribute is 'typeSettings' ? 'typeSettings'|'linkSettingsTypeSettings' :
-     *     ($attribute is 'showLabelField' ? 'showLabelField'|'linkSettingsShowLabelField' :
-     *     'advancedFields'|'linkSettingsAdvancedFields')))
-     */
+    /** @param 'types'|'typeSettings'|'showLabelField'|'advancedFields' $attribute */
     private function namespacedAttribute(string $attribute): string
     {
         $namespace = $this->linkSettingsNamespace();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Activity;
 
 use CraftCms\Cms\Activity\Data\ActivityActor;
+use CraftCms\Cms\Activity\Data\ActivityTimelineEventData;
 use CraftCms\Cms\Activity\EventTypes\CommentCreated;
 use CraftCms\Cms\Activity\EventTypes\CommentDeleted;
 use CraftCms\Cms\Activity\EventTypes\CommentEdited;
@@ -28,11 +29,9 @@ class ActivityTimelinePresenter
     ) {}
 
     /**
-     * @template TKey of array-key
-     *
      * @param  Collection<int, ActivityEvent>  $events
-     * @param  Collection<TKey, ActivityEvent>|null  $selectedVersions
-     * @return Collection<int, array<string, mixed>>
+     * @param  Collection<array-key, ActivityEvent>|null  $selectedVersions
+     * @return Collection<int, ActivityTimelineEventData>
      */
     public function events(
         Collection $events,
@@ -47,7 +46,7 @@ class ActivityTimelinePresenter
         $mentionedUsers = $this->comments->mentionedUsers($versions);
         $formatter = I18N::getFormatter();
 
-        return $events->map(fn (ActivityEvent $root): array => $this->event(
+        return $events->map(fn (ActivityEvent $root): ActivityTimelineEventData => $this->event(
             $root,
             $versions->get($root->id),
             $viewer,
@@ -109,7 +108,6 @@ class ActivityTimelinePresenter
     /**
      * @param  Collection<int|string, User>  $actors
      * @param  Collection<int|string, User>  $mentionedUsers
-     * @return array<string, mixed>
      */
     private function event(
         ActivityEvent $root,
@@ -118,7 +116,7 @@ class ActivityTimelinePresenter
         Collection $actors,
         Collection $mentionedUsers,
         Formatter $formatter,
-    ): array {
+    ): ActivityTimelineEventData {
         $actor = $event->actorType === ActivityActor::TYPE_USER && $event->actorId !== null
             ? $actors->get($event->actorId)
             : null;
@@ -135,30 +133,30 @@ class ActivityTimelinePresenter
             : null;
         $occurredAt = $root->occurredAt->setTimezone($formatter->timeZone);
 
-        return [
-            'id' => (string) $root->id,
-            'type' => $root->eventType,
-            'subject' => $root->subjectId === null ? null : [
+        return new ActivityTimelineEventData(
+            id: (string) $root->id,
+            type: $root->eventType,
+            subject: $root->subjectId === null ? null : [
                 'type' => $root->subjectType,
                 'uid' => $root->subjectId,
                 'label' => $root->snapshots['subject']['label'] ?? null,
             ],
-            'site' => $root->siteId === null ? null : [
+            site: $root->siteId === null ? null : [
                 'id' => $root->siteId,
                 'name' => $root->snapshots['site']['name'] ?? null,
             ],
-            'origin' => ($isComment ? $root : $event)->snapshots['origin'] ?? null,
-            'component' => $event->eventType::component(),
-            'props' => $event->eventType::props($event),
-            'icon' => $this->activities->icon($event),
-            'occurredAt' => $root->occurredAt->toIso8601String(),
-            'formattedOccurredAt' => [
+            origin: ($isComment ? $root : $event)->snapshots['origin'] ?? null,
+            component: $event->eventType::component(),
+            props: $event->eventType::props($event),
+            icon: $this->activities->icon($event),
+            occurredAt: $root->occurredAt->toIso8601String(),
+            formattedOccurredAt: [
                 'date' => $occurredAt->toDateString(),
                 'dateLabel' => $formatter->asDate($occurredAt, Locale::LENGTH_MEDIUM),
                 'time' => $formatter->asTime($occurredAt, Locale::LENGTH_SHORT),
                 'full' => $formatter->asDateTime($occurredAt, Locale::LENGTH_LONG, true),
             ],
-            'actor' => [
+            actor: [
                 'type' => $event->actorType,
                 'id' => $event->actorId,
                 'label' => $event->snapshots['actor']['label'],
@@ -167,7 +165,7 @@ class ActivityTimelinePresenter
                     && $event->actorId !== null
                     && $actor === null,
             ],
-            'impersonator' => $impersonatorSnapshot === null ? null : [
+            impersonator: $impersonatorSnapshot === null ? null : [
                 'id' => $impersonatorSnapshot['id'],
                 'label' => $impersonatorSnapshot['label'],
                 'url' => $impersonator && Gate::forUser($viewer)->allows('view', $impersonator)
@@ -175,16 +173,16 @@ class ActivityTimelinePresenter
                     : null,
                 'deleted' => $impersonator === null,
             ],
-            'source' => [
+            source: [
                 'id' => $event->source,
                 'label' => $event->snapshots['source']['label'],
             ],
-            'description' => [
+            description: [
                 'text' => $formatted instanceof Htmlable ? null : $formatted,
                 'html' => $formatted instanceof Htmlable ? $formatted->toHtml() : null,
             ],
-            'changes' => $event->changes,
-            'comment' => $isComment ? [
+            changes: $event->changes,
+            comment: $isComment ? [
                 'html' => $renderedComment?->toHtml(),
                 'markdown' => $canEdit ? $event->data['markdown'] : null,
                 'edited' => $event->eventType === CommentEdited::class,
@@ -192,6 +190,6 @@ class ActivityTimelinePresenter
                 'canEdit' => $canEdit,
                 'canDelete' => ! $deleted && ($root->actorId === $viewer->id || $viewer->admin),
             ] : null,
-        ];
+        );
     }
 }

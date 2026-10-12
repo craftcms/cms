@@ -379,7 +379,8 @@ trait QueriesDraftsAndRevisions
     {
         $this->draftCreator = match (true) {
             $value instanceof User => $value->id,
-            is_numeric($value) || $value === null => $value,
+            is_numeric($value) => (int) $value,
+            $value === null => null,
             default => throw new InvalidArgumentException('Invalid draftCreator value'),
         };
 
@@ -559,7 +560,8 @@ trait QueriesDraftsAndRevisions
     {
         $this->revisionOf = match (true) {
             $value instanceof ElementInterface => $value->getCanonicalId(),
-            is_numeric($value) || $value === null => $value,
+            is_numeric($value) => (int) $value,
+            $value === null => null,
             default => throw new InvalidArgumentException('Invalid revisionOf value'),
         };
 
@@ -600,7 +602,8 @@ trait QueriesDraftsAndRevisions
     {
         $this->revisionCreator = match (true) {
             $value instanceof User => $value->id,
-            is_numeric($value) || $value === null => $value,
+            is_numeric($value) => (int) $value,
+            $value === null => null,
             default => throw new InvalidArgumentException('Invalid revisionCreator value'),
         };
 

@@ -21,6 +21,6 @@ class UserRelation extends InputObjectType
         return GqlEntityRegistry::getOrCreate($typeName, fn () => new InputObjectType([
             'name' => $typeName,
             'fields' => fn () => UserArguments::getArguments() + RelationCriteria::getArguments(),
-        ]));
+        ]), InputObjectType::class);
     }
 }

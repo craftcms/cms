@@ -879,7 +879,7 @@ readonly class ElementHtml
         return $items;
     }
 
-    /** @return array{type: string, name: string, detail: array{action: string, elementId: int|null, bulkLabel?: string}} */
+    /** @return array{type: string, name: string, detail: array{action: string, elementId?: int, bulkLabel?: string}} */
     private function nestedCardAction(ElementInterface $element, string $action): array
     {
         $bulkLabel = match ($action) {

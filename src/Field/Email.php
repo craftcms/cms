@@ -60,8 +60,12 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
      */
     public ?string $placeholder = null;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         if (($config['placeholder'] ?? null) === '') {
             unset($config['placeholder']);
         }

@@ -22,7 +22,7 @@ class ComponentHelper
      * Returns whether a component class exists, is an instance of a given interface,
      * and doesn't belong to a disabled plugin.
      *
-     * @param  class-string<ComponentInterface>  $class  The component’s class name.
+     * @param  string  $class  The component’s class name.
      * @param  class-string<ComponentInterface>|null  $instanceOf  The class or interface that the component must be an instance of.
      * @param  bool  $throwException  Whether an exception should be thrown if an issue is encountered
      *
@@ -47,7 +47,7 @@ class ComponentHelper
             throw new RuntimeException("Component class '$class' does not implement ComponentInterface.");
         }
 
-        if ($instanceOf !== null && ! is_subclass_of($class, $instanceOf)) {
+        if ($instanceOf !== null && ! is_a($class, $instanceOf, true)) {
             if (! $throwException) {
                 return false;
             }
@@ -84,14 +84,12 @@ class ComponentHelper
     /**
      * Instantiates and populates a component, and ensures that it is an instance of a given interface.
      *
-     * @template T of ComponentInterface
+     * @template TConfig of ComponentInterface = ComponentInterface
+     * @template TInstance of ComponentInterface = ComponentInterface
      *
-     * @param  class-string<T>|array<string, mixed>  $config  The component’s class name, or its config, with a `type` value and optionally a `settings` value.
-     * @param  class-string<T>|null  $instanceOf  The class or interface that the component must be an instance of.
-     *
-     * @phpstan-param class-string<T>|array{type:class-string<T>,__class?:string} $config
-     *
-     * @return T The component
+     * @param  class-string<TConfig>|array{type: class-string<TConfig>}|array<string, mixed>  $config  The component’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @param  class-string<TInstance>|null  $instanceOf  The class or interface that the component must be an instance of.
+     * @return TConfig&TInstance The component
      *
      * @throws RuntimeException if $config doesn’t contain a `type` value, or the type isn’t compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
@@ -120,7 +118,12 @@ class ComponentHelper
         // Typecast the properties
         Typecast::properties($class, $config);
 
-        return app()->make($class, ['config' => $config]);
+        $component = app()->make($class, ['config' => $config]);
+        if ($instanceOf !== null && ! $component instanceof $instanceOf) {
+            throw new RuntimeException("Component class '$class' is not an instance of '$instanceOf'.");
+        }
+
+        return $component;
     }
 
     /**

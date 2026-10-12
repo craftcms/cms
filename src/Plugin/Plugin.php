@@ -189,7 +189,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
         return once(function () {
             $class = new ReflectionClass($this);
 
-            return dirname($class->getFileName());
+            return dirname($class->getFileName() ?: throw new \RuntimeException('The plugin class has no source file.'));
         });
     }
 

@@ -29,7 +29,7 @@ class ProjectConfigHelper
      */
     public static function encodeValueAsString(mixed $value): string
     {
-        return JsonHelper::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
+        return JsonHelper::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -428,7 +428,7 @@ class ProjectConfigHelper
      * Take a project config array and split it into components.
      * Components are defined per each second-level config entry, where all the sibling entries are keyed by UIDs.
      *
-     * @param  array<string, mixed>  $config
+     * @param  array<string|int, mixed>  $config
      * @return array<string, mixed> in the form of [$file => $config], where `$file` is the relative config file path in Project Config folder
      */
     public static function splitConfigIntoComponents(array $config): array
@@ -494,7 +494,7 @@ class ProjectConfigHelper
     /**
      * Recursively looks for an array of component configs (sub-arrays indexed by UUIDs), within the given config array.
      *
-     * @param  array<string, mixed>  $config
+     * @param  array<string|int, mixed>  $config
      * @param  array<string, mixed>  $splitConfig
      * @return bool whether the config was split
      */
@@ -569,7 +569,7 @@ class ProjectConfigHelper
             return Diff::diff($currentConfig, $pendingConfig);
         }, new AllDependencies([
             $projectConfig->getCacheDependency(),
-            new CallbackDependency(fn (): string => md5(JsonHelper::encode(app(ProjectConfig::class)->get(null, true)))),
+            new CallbackDependency(fn (): string => md5(JsonHelper::encode(app(ProjectConfig::class)->get(null, true), JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR))),
         ]));
     }
 
@@ -588,6 +588,9 @@ class ProjectConfigHelper
 
         $path = Path::projectConfigFile();
         $handle = fopen($path, 'r');
+        if ($handle === false) {
+            throw new RuntimeException("Unable to open project configuration: {$path}");
+        }
         $foundTimestamp = false;
 
         // Conflict stuff. "bt" = "before timestamp"; "at" = "after timestamp"
@@ -700,7 +703,7 @@ class ProjectConfigHelper
         }
 
         if (str_contains($path, '\.')) {
-            $segments = preg_split('/(?<!\\\)\./', $path);
+            $segments = preg_split('/(?<!\\\)\./', $path) ?: throw new InvalidArgumentException('Invalid project config path.');
 
             return array_map(fn (string $segment) => str_replace('\.', '.', $segment), $segments);
         }
@@ -714,7 +717,12 @@ class ProjectConfigHelper
     public static function pathDepth(string $path): int
     {
         if (str_contains($path, '\.')) {
-            return preg_match_all('/(?<!\\\)\./', $path);
+            $depth = preg_match_all('/(?<!\\\)\./', $path);
+            if ($depth === false) {
+                throw new InvalidArgumentException('Invalid project config path.');
+            }
+
+            return $depth;
         }
 
         return substr_count($path, '.');
@@ -729,7 +737,7 @@ class ProjectConfigHelper
     {
         $segments = self::pathSegments($path);
 
-        return end($segments);
+        return array_last($segments) ?? throw new InvalidArgumentException('No project config path provided.');
     }
 
     /**

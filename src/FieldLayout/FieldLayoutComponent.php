@@ -206,7 +206,7 @@ abstract class FieldLayoutComponent extends Component
      *
      * @template T of ConditionInterface
      *
-     * @param  ConditionInterface|class-string<T>|array{class:class-string<T>}|null  $condition
+     * @param  T|class-string<T>|array{class:class-string<T>}|null  $condition
      * @return T|null
      */
     protected function normalizeCondition(mixed $condition): ?ConditionInterface
@@ -297,6 +297,8 @@ abstract class FieldLayoutComponent extends Component
     /**
      * Builds a fieldset of user/element condition builders — the shared shape
      * behind the visibility and editability condition groups.
+     *
+     * @param  class-string<ConditionInterface>|null  $defaultElementConditionClass
      */
     protected function conditionGroupNode(
         string $groupUid,

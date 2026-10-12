@@ -22,8 +22,12 @@ class LabelField extends TitleField
     #[Override]
     public bool $translatable = false;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         $this->required = Arr::pull($config, 'required', $this->required);
         unset($config['requirable']);
         parent::__construct($config);

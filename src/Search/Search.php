@@ -130,7 +130,7 @@ class Search
                 empty($ignoreFieldIds),
                 fn (Builder $query) => $query->whereNot(fn (Builder $query) => $query
                     ->where('layoutElementUid', '0')
-                    ->whereIn('fieldId', array_map(fn (int $fieldId) => (string) $fieldId, $ignoreFieldIds))),
+                    ->whereIn('fieldId', array_map(strval(...), $ignoreFieldIds))),
             )
             ->delete();
 
@@ -142,7 +142,7 @@ class Search
         foreach ($updateFields as $layoutElementUid => $field) {
             $fieldValue = $element->getFieldValue($field->handle);
             $keywords = $field->getSearchKeywords($fieldValue, $element);
-            $this->indexKeywords($element, $keywords, fieldId: $field->id, layoutElementUid: $layoutElementUid);
+            $this->indexKeywords($element, $keywords, fieldId: $field->id === null ? null : (int) $field->id, layoutElementUid: $layoutElementUid);
         }
 
         $mutex->release();
@@ -171,7 +171,7 @@ class Search
     public function queueIndexElement(ElementInterface $element, array $fieldHandles): void
     {
         try {
-            $this->createOrUpdateIndexJob($element, $fieldHandles);
+            $this->createOrUpdateIndexJob($element, array_values($fieldHandles));
         } catch (QueryException) {
             return;
         }
@@ -278,7 +278,7 @@ class Search
                     ->one();
 
                 if ($element) {
-                    $this->indexElementAttributes($element, $fieldHandles);
+                    $this->indexElementAttributes($element, array_values($fieldHandles));
                 }
             }
 
@@ -350,8 +350,13 @@ class Search
         $results = $query
             ->whereIn('elementId', $ids)
             ->get()
-            ->map(fn ($row) => (array) $row)
-            ->all();
+            ->map(fn (\stdClass $row): array => [
+                'elementId' => $row->elementId,
+                'siteId' => $row->siteId,
+                'keywords' => $row->keywords,
+                'attribute' => $row->attribute,
+            ])
+            ->values()->all();
 
         event($event = new SearchResultsResolving($elementQuery, $searchQuery, $results));
 
@@ -389,7 +394,8 @@ class Search
             return false;
         }
 
-        $query = DB::table(Table::SEARCHINDEX)->whereRaw($where['sql'], $where['bindings']);
+        $predicate = new SearchPredicate($where);
+        $query = DB::table(Table::SEARCHINDEX)->whereRaw($predicate, $predicate->bindings());
 
         if ($elementQuery->siteId !== null) {
             $query->whereIn('siteId', Arr::wrap($elementQuery->siteId));
@@ -427,7 +433,7 @@ class Search
 
         foreach ($searchQuery->getTokens() as $token) {
             if ($token instanceof SearchQueryTermGroup) {
-                $groups[] = $token->terms;
+                $groups[] = array_values($token->terms);
             } else {
                 $terms[] = $token;
             }
@@ -559,7 +565,7 @@ class Search
     /** @param array{elementId: int|string, siteId: int|string, keywords: string, attribute: string} $row */
     private function scoreTerm(SearchQueryTerm $term, array $row, float|int $weight = 1): float
     {
-        if ($term->exact || ! ($keywords = $this->normalizeTerm($term->term, $row['siteId']))) {
+        if ($term->exact || ! ($keywords = $this->normalizeTerm($term->term, (int) $row['siteId']))) {
             return 0;
         }
 
@@ -820,7 +826,7 @@ class Search
         $conditions = array_map(fn (string $uid) => $this->sqlWhere('layoutElementUid', '=', $uid), $layoutElementUids);
 
         $legacyFieldIds = $this->combineSqlConditions(
-            array_map(fn (int $fieldId) => $this->sqlWhere('fieldId', '=', $fieldId), $fieldIds),
+            array_map(fn (int|string|null $fieldId) => $this->sqlWhere('fieldId', '=', $fieldId), $fieldIds),
             ' OR ',
         );
 
@@ -895,8 +901,9 @@ class Search
      */
     private function sqlSubSelect(array $where, array|int|null $siteId): array|false
     {
+        $predicate = new SearchPredicate($where);
         $elementIds = DB::table(Table::SEARCHINDEX)
-            ->whereRaw($where['sql'], $where['bindings'])
+            ->whereRaw($predicate, $predicate->bindings())
             ->when(
                 $siteId !== null,
                 fn (Builder $query) => $query->whereIn('siteId', Arr::wrap($siteId)),
@@ -906,7 +913,7 @@ class Search
         if ($elementIds->isNotEmpty()) {
             $ids = $elementIds
                 ->map(fn (int|string $id) => (int) $id)
-                ->all();
+                ->values()->all();
             $placeholders = implode(', ', array_fill(0, count($ids), '?'));
 
             return [

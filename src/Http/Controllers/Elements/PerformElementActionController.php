@@ -161,7 +161,7 @@ class PerformElementActionController
                                 $owner,
                                 $elementQuery,
                                 [$duplicateId],
-                                $position + 1,
+                                (int) $position + 1,
                             );
                         });
                 }

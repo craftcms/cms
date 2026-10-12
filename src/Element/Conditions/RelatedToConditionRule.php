@@ -32,9 +32,9 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     public string $elementType = Entry::class;
 
-    /** @var int[] */
+    /** @var array<int|string> */
     public array $elementIds {
-        get => $this->getElementIds();
+        get => (array) $this->getElementIds();
         set {
             $this->setElementIds($value);
         }
@@ -62,6 +62,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         return parent::elementSelect()->showSiteMenu();
     }
 
+    /** @param ElementQueryInterface&ElementQuery<*> $elementQuery */
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         ElementQuery::applyRelatedTo($query, $this->getElementIds(), $elementQuery);
@@ -73,7 +74,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     {
         return [
             Field::make(t('Element Type'), Choice::make('elementType')
-                ->options($this->_elementTypeOptions())
+                ->options(array_values($this->_elementTypeOptions()))
                 ->withoutPlaceholder()
                 ->value($this->elementType)
                 ->reactive()),

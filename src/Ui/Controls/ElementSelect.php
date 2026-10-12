@@ -390,7 +390,7 @@ class ElementSelect extends Control
             ->status(null)
             ->id(array_values($value))
             ->fixedOrder()
-            ->all();
+            ->all() |> array_values(...);
     }
 
     /** @param class-string<ElementInterface> $elementType */

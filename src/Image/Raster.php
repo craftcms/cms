@@ -188,6 +188,10 @@ class Raster extends Image
         $this->normalizeDimensions($targetWidth, $targetHeight);
         $this->scaleToFit($targetWidth, $targetHeight, $upscale);
         $this->setFill($fill);
+        if (is_array($position)) {
+            throw new \InvalidArgumentException('Letterbox alignment must be a position string.');
+        }
+
         $this->_image->resizeCanvas($targetWidth, $targetHeight, $this->_fill, $position);
 
         return $this;
@@ -343,6 +347,10 @@ class Raster extends Image
 
                 if ($quality === null) {
                     $originalSize = filesize($this->_imageSourcePath);
+
+                    if ($originalSize === false) {
+                        throw new ImageException('Unable to determine the source image size.');
+                    }
                     $tempFile = $this->autoGuessImageQuality($targetPath, $originalSize, $extension);
                     rename($tempFile, $targetPath);
 
@@ -710,7 +718,13 @@ class Raster extends Image
 
     private function encodeImagickPng(string $targetPath, int $compression): void
     {
-        $output = clone $this->_image->core()->native();
+        $native = $this->_image->core()->native();
+
+        if (! $native instanceof Imagick) {
+            throw new ImageException('The image must use the Imagick driver.');
+        }
+
+        $output = clone $native;
         $output->setOption('png:compression-level', (string) $compression);
 
         $pngInfo = $this->_imageSourcePath ? ImageHelper::pngImageInfo($this->_imageSourcePath) : false;

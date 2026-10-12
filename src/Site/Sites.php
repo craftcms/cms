@@ -209,7 +209,7 @@ class Sites
 
         $this->currentSite = match (true) {
             $site instanceof Site => $site,
-            is_numeric($site) => $this->getSiteById($site, false),
+            is_numeric($site) => $this->getSiteById((int) $site, false),
             default => $this->getSiteByHandle($site, false),
         };
 
@@ -285,7 +285,7 @@ class Sites
 
         $user = currentUser();
 
-        return $this->editableSiteIds = $this->getAllSites(true)->filter(fn (Site $site) => $user?->can("editSite:$site->uid"))->pluck('id')->values();
+        return $this->editableSiteIds = $this->getAllSites(true)->filter(fn (Site $site) => ($user?->can("editSite:$site->uid") ?? false))->pluck('id')->values();
     }
 
     /**

@@ -12,7 +12,7 @@ use Illuminate\Container\Attributes\Scoped;
 #[Scoped]
 class TemplateHooks
 {
-    /** @var array<string, list<callable>> */
+    /** @var array<string, list<callable|class-string<object&callable>>> */
     private array $hooks = [];
 
     /**

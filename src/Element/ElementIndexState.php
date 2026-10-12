@@ -80,7 +80,7 @@ readonly class ElementIndexState
         foreach ($allSources as $source) {
             if ($source['type'] === ElementSources::TYPE_HEADING) {
                 $sources[] = $source;
-            } elseif (isset($missingKeys[$source['key']])) {
+            } elseif (isset($source['key']) && isset($missingKeys[$source['key']])) {
                 $sources[] = $source;
                 unset($missingKeys[$source['key']]);
             }
@@ -157,7 +157,7 @@ readonly class ElementIndexState
      * it only gets the common set.)
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @return Collection<string, array<string, mixed>>
+     * @return Collection<string, array{label: string, icon?: string, placeholder?: mixed, ...}>
      */
     public function tableColumns(string $elementType, ?string $sourceKey = null): Collection
     {

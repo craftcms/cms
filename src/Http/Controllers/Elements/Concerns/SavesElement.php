@@ -95,22 +95,25 @@ trait SavesElement
             $element->updateSearchIndexImmediately = $this->request->boolean('updateSearchIndexImmediately');
         }
 
-        $element->ruleset->withScenario(
-            ElementRules::SCENARIO_LIVE,
-            function () use ($element) {
-                $values = $this->request->validated() + array_filter(['fieldId' => $this->request->input('fieldId')]);
+        $configure = function () use ($element) {
+            $values = $this->request->validated() + array_filter(['fieldId' => $this->request->input('fieldId')]);
 
-                if ($element instanceof User) {
-                    $values = Arr::except($values, $this->sensitiveAttributes($element));
-                }
+            if ($element instanceof User) {
+                $values = Arr::except($values, $this->sensitiveAttributes($element));
+            }
 
-                $element->setAttributesFromRequest($values);
+            $element->setAttributesFromRequest($values);
 
-                if ($this->request->has('slug')) {
-                    $element->slug = $this->request->input('slug');
-                }
-            },
-        );
+            if ($this->request->has('slug')) {
+                $element->slug = $this->request->input('slug');
+            }
+        };
+
+        if ($element->ruleset === false) {
+            $configure();
+        } else {
+            $element->ruleset->withScenario(ElementRules::SCENARIO_LIVE, $configure);
+        }
 
         // Now that the element is fully configured, make sure the user can actually view it
         Gate::authorize('view', $element);
@@ -123,7 +126,7 @@ trait SavesElement
     private function sensitiveAttributes(User $element): array
     {
         if ($element->getIsDraft()) {
-            return array_diff(User::SENSITIVE_ATTRIBUTES, ['email']);
+            return array_values(array_diff(User::SENSITIVE_ATTRIBUTES, ['email']));
         }
 
         return User::SENSITIVE_ATTRIBUTES;

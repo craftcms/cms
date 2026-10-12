@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static string|null getElementTypeById(int $elementId)
- * @method static string|null getElementTypeByUid(string $uid)
- * @method static string|null getElementTypeByKey(string $property, int|string $elementId)
+ * @method static class-string<\CraftCms\Cms\Element\Contracts\ElementInterface>|null getElementTypeById(int $elementId)
+ * @method static class-string<\CraftCms\Cms\Element\Contracts\ElementInterface>|null getElementTypeByUid(string $uid)
+ * @method static class-string<\CraftCms\Cms\Element\Contracts\ElementInterface>|null getElementTypeByKey(string $property, int|string $elementId)
  * @method static string[] getElementTypesByIds(int[] $elementIds)
  * @method static string[] getAllElementTypes()
  * @method static string|null getElementTypeByRefHandle(string $refHandle)

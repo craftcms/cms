@@ -188,7 +188,7 @@ class ActivityComments
             $subject = new ActivitySubject(
                 $root->subjectType,
                 $root->subjectId,
-                $root->snapshots['subject']['label'],
+                $root->snapshots['subject']['label'] ?? throw new \InvalidArgumentException('Activity comments require a subject snapshot.'),
             );
             $site = $root->siteId === null ? null : Site::get($root->siteId);
 
@@ -271,7 +271,7 @@ class ActivityComments
             ->map(function (int $id) use ($subject, $users): ?array {
                 $user = $users->get($id);
 
-                if ($subject === null || $user === null || ! $this->canMention($user, $subject)) {
+                if ($subject === null || $user === null || $user->id === null || $user->username === null || ! $this->canMention($user, $subject)) {
                     return null;
                 }
 

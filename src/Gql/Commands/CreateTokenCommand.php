@@ -94,7 +94,7 @@ class CreateTokenCommand extends Command implements PromptsForMissingInput
                     ? null
                     : 'Please enter a valid expiry date.',
             );
-            $token->expiryDate = DateTimeHelper::toDateTime($expiry);
+            $token->expiryDate = DateTimeHelper::toDateTime($expiry) ?: throw new \InvalidArgumentException('Invalid token expiry date.');
         }
 
         if (! $gql->saveToken($token)) {
@@ -135,7 +135,7 @@ class CreateTokenCommand extends Command implements PromptsForMissingInput
                     options: array_keys($options),
                 );
 
-                return $options[$selection];
+                return $options[$selection] ?? throw new \InvalidArgumentException('Invalid token option.');
             },
         ];
     }

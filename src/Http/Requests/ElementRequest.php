@@ -139,7 +139,7 @@ class ElementRequest extends FormRequest
             ! in_array($element->siteId, $preferSites, true) &&
             ! $this->wantsJson()
         ) {
-            return redirect($element->getCpEditUrl());
+            return redirect()->to($element->getCpEditUrl() ?? abort(400, 'Element has no edit URL.'));
         }
 
         $this->element = $element;
@@ -157,6 +157,10 @@ class ElementRequest extends FormRequest
         $elementUid = Arr::get($this->overrides, 'uid', $this->input('elementUid'));
 
         if ($elementType) {
+            if (! is_string($elementType) || ! is_a($elementType, ElementInterface::class, true)) {
+                abort(400, 'Invalid element type.');
+            }
+
             return $this->elementType = $elementType;
         }
 
@@ -167,6 +171,10 @@ class ElementRequest extends FormRequest
                 "Invalid element ID: $elementId",
             );
 
+            if (! is_a($elementType, ElementInterface::class, true)) {
+                abort(400, 'Invalid element type.');
+            }
+
             return $this->elementType = $elementType;
         }
 
@@ -176,6 +184,10 @@ class ElementRequest extends FormRequest
                 400,
                 "Invalid element UUID: $elementUid",
             );
+
+            if (! is_a($elementType, ElementInterface::class, true)) {
+                abort(400, 'Invalid element type.');
+            }
 
             return $this->elementType = $elementType;
         }
@@ -274,7 +286,7 @@ class ElementRequest extends FormRequest
 
             if ($element && $this->craftUser()->can('view', $element)) {
                 if (! $this->wantsJson()) {
-                    return redirect($element->getCpEditUrl());
+                    return redirect()->to($element->getCpEditUrl() ?? abort(400, 'Element has no edit URL.'));
                 }
 
                 return $element;

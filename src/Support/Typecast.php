@@ -105,6 +105,7 @@ class Typecast
         return $object;
     }
 
+    /** @param class-string $class */
     private static function isAssignableProperty(string $class, string $property): bool
     {
         if (! isset(self::$assignableProperties[$class])) {
@@ -114,6 +115,7 @@ class Typecast
         return self::$assignableProperties[$class][$property] ?? true;
     }
 
+    /** @param class-string $class */
     private static function setter(string $class, string $property): ?string
     {
         if (! isset(self::$setters[$class])) {
@@ -136,6 +138,7 @@ class Typecast
         }
     }
 
+    /** @param class-string $class */
     public static function isDateTimeProperty(string $class, string $property): bool
     {
         $type = self::propertyType($class, $property);
@@ -215,7 +218,7 @@ class Typecast
                     $value = match ($typeName) {
                         self::TYPE_FLOAT => (float) $value,
                         self::TYPE_INT => (int) $value,
-                        self::TYPE_INT_FLOAT => self::toIntOrFloat($value ?? 0),
+                        self::TYPE_INT_FLOAT => self::toIntOrFloat(is_bool($value) ? (int) $value : ($value ?? 0)),
                         self::TYPE_INT_STRING => is_int($value) || ($value === (string) (int) $value) ? (int) $value : $value,
                         self::TYPE_STRING => (string) $value,
                     };
@@ -252,7 +255,7 @@ class Typecast
                     self::TYPE_CARBON => Carbon::class,
                     self::TYPE_CARBONINTERFACE => CarbonInterface::class,
                     self::TYPE_DATETIME => DateTime::class,
-                    self::TYPE_DATETIMEINTERFACE => DateTimeInterface::class,
+                    default => DateTimeInterface::class,
                 };
 
                 if ($value instanceof $expected) {
@@ -271,12 +274,19 @@ class Typecast
                     is_scalar($value) &&
                     is_subclass_of($typeName, BackedEnum::class)
                 ) {
+                    if (! is_int($value) && ! is_string($value)) {
+                        throw new \TypeError('Backed enum values must be integers or strings.');
+                    }
+
                     $value = $typeName::from($value);
                 }
         }
     }
 
-    /** @return array{string, bool}|false */
+    /**
+     * @param  class-string  $class
+     * @return array{string, bool}|false
+     */
     private static function propertyType(string $class, string $property): array|false
     {
         if (! isset(self::$types[$class])) {
@@ -306,6 +316,7 @@ class Typecast
             ?? false;
     }
 
+    /** @param class-string $class */
     private static function resolveClassTypes(string $class): void
     {
         self::$types[$class] = [];
@@ -405,7 +416,15 @@ class Typecast
     /** @return array{string, bool}|false */
     private static function resolveUnionType(ReflectionUnionType $type): array|false
     {
-        $names = array_map(fn (ReflectionNamedType $t) => $t->getName(), $type->getTypes());
+        $names = [];
+
+        foreach ($type->getTypes() as $memberType) {
+            if (! $memberType instanceof ReflectionNamedType) {
+                return false;
+            }
+
+            $names[] = $memberType->getName();
+        }
 
         sort($names);
 

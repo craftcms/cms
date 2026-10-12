@@ -176,6 +176,10 @@ class ApplyNewPropagationMethod extends BatchedJob
                 ElementHelper::supportedSitesForElement($newElement),
             );
 
+            if (! is_int($item->id) || ! is_int($newElement->id)) {
+                throw new \LogicException('Propagated elements require persisted IDs.');
+            }
+
             foreach ($newElementSiteIds as $newElementSiteId) {
                 unset($otherSiteElements[$newElementSiteId]);
                 $this->duplicatedElementIds[$item->id][$newElementSiteId] = $newElement->id;
@@ -193,7 +197,9 @@ class ApplyNewPropagationMethod extends BatchedJob
 
     private function resaveItem(ElementInterface $item): void
     {
-        $item->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        if ($item->ruleset) {
+            $item->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        }
         $item->resaving = true;
 
         try {

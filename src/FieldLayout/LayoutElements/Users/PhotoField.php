@@ -37,8 +37,12 @@ class PhotoField extends BaseNativeField
     #[Override]
     public string $attribute = 'photo';
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         // We didn't start removing autofocus from fields() until 3.5.6
         parent::__construct(Arr::except($config, [
             'mandatory',

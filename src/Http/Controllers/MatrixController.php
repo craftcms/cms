@@ -283,7 +283,7 @@ readonly class MatrixController
         }
 
         return $this->blockHtmlResponse(new MatrixBlockHtmlRendering(
-            entries: $entries,
+            entries: array_values($entries),
             field: $field,
             namespace: $validated['namespace'],
         ));

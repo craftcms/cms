@@ -267,7 +267,15 @@ readonly class Elements
     ): array {
         $actor = $this->actor->user();
         $adapter = $this->adapter($type);
-        $this->assertValid($attributes, $adapter->schema()['updateAttributes'], 'attributes', $type);
+        $attributesSchema = $adapter->schema()['updateAttributes'] ?? null;
+
+        if ($attributesSchema === null && $attributes !== []) {
+            throw new ToolCallException("Element type [{$type}] does not accept attribute updates.");
+        }
+
+        if ($attributesSchema !== null) {
+            $this->assertValid($attributes, $attributesSchema, 'attributes', $type);
+        }
 
         $element = $adapter->find($id, $uid, $siteId) ?? throw $this->notFound($adapter);
 
@@ -357,7 +365,15 @@ readonly class Elements
         array $fields = [],
     ): array {
         $adapter = $this->adapter($type);
-        $this->assertValid($attributes, $adapter->schema()['updateAttributes'], 'attributes', $type);
+        $attributesSchema = $adapter->schema()['updateAttributes'] ?? null;
+
+        if ($attributesSchema === null && $attributes !== []) {
+            throw new ToolCallException("Element type [{$type}] does not accept attribute updates.");
+        }
+
+        if ($attributesSchema !== null) {
+            $this->assertValid($attributes, $attributesSchema, 'attributes', $type);
+        }
 
         $element = $this->lifecycle->find($adapter::elementType(), $id, $uid, $siteId);
 

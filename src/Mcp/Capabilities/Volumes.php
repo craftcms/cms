@@ -39,7 +39,7 @@ readonly class Volumes
 
         return [
             'count' => $volumes->count(),
-            'volumes' => $volumes->all(),
+            'volumes' => array_values($volumes->all()),
         ];
     }
 

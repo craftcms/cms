@@ -65,8 +65,9 @@ class ResaveElements extends BatchedElementJob
             $this->ifEmpty,
             $this->ifInvalid,
         );
-
-        $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        if ($element->ruleset) {
+            $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        }
         $element->resaving = true;
 
         try {

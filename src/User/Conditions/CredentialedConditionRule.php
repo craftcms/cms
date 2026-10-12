@@ -40,8 +40,13 @@ class CredentialedConditionRule extends BaseLightswitchConditionRule implements 
         return t('Credentialed');
     }
 
+    /** @param ElementQueryInterface&\CraftCms\Cms\Element\Queries\ElementQuery<*> $elementQuery */
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
+        if (! $elementQuery instanceof UserQuery) {
+            throw new \InvalidArgumentException('Credentialed conditions require a user query.');
+        }
+
         if ($this->value) {
             $statuses = ['active', 'pending'];
         } else {

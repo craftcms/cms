@@ -44,7 +44,7 @@ class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements Ele
     {
         return SiteGroups::getAllGroups()
             ->filter(fn (SiteGroup $group) => Sites::getEditableSitesByGroupId($group->id)->isNotEmpty())
-            ->keyBy(fn (SiteGroup $group) => $group->uid)
+            ->keyBy(fn (SiteGroup $group) => $group->uid ?? '')
             ->map(fn (SiteGroup $group) => $group->getName())
             ->all();
     }

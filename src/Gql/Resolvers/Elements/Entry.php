@@ -33,7 +33,7 @@ class Entry extends ElementResolver
 
             $query->where(function (Builder $query) use ($pairs) {
                 if (isset($pairs['sections'])) {
-                    $sectionIds = collect($pairs['sections'])
+                    $sectionIds = collect($pairs['sections'] === true ? Sections::getAllSections()->pluck('uid')->all() : $pairs['sections'])
                         ->map(fn (string $uid) => Sections::getSectionByUid($uid)?->id)
                         ->filter()
                         ->all();
@@ -45,7 +45,7 @@ class Entry extends ElementResolver
 
                 if (isset($pairs['nestedentryfields'])) {
                     $types = Fields::getNestedEntryFieldTypes()->flip();
-                    $fieldIds = collect($pairs['nestedentryfields'])
+                    $fieldIds = collect($pairs['nestedentryfields'] === true ? Fields::getAllFields()->pluck('uid')->all() : $pairs['nestedentryfields'])
                         ->map(function (string $uid) use ($types) {
                             $field = Fields::getFieldByUid($uid);
 

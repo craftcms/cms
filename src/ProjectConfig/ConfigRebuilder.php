@@ -6,20 +6,31 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Data\AssetTransformer;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources as ElementSourceTypes;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserGroups;
+use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Database\DatabaseManager;
 use InvalidArgumentException;
@@ -111,7 +122,7 @@ class ConfigRebuilder
     }
 
     /**
-     * @param  iterable<object>  $components
+     * @param  iterable<AssetTransformer|EntryType|ImageTransform|Section|Site|SiteGroup|Volume|Workflow|UserGroup|GqlSchema>  $components
      * @return array<string, mixed>
      */
     private function components(iterable $components): array
@@ -119,7 +130,10 @@ class ConfigRebuilder
         return collect($components)->mapWithKeys(fn ($component): array => [$component->uid => $component->getConfig()])->all();
     }
 
-    /** @return array{fieldLayouts?: array<string, mixed>} */
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     * @return array{fieldLayouts?: array<string, mixed>}
+     */
     private function fieldLayout(string $elementType): array
     {
         $layout = $this->fields->getLayoutByType($elementType, false);

@@ -28,7 +28,6 @@ return new class extends Migration
     private function updateLinkFields(ProjectConfig $projectConfig): void
     {
         $fields = $this->findFields($projectConfig, Link::class);
-
         foreach ($fields as $path => $config) {
             if (! isset($config['settings']['typeSettings']) || ! is_array($config['settings']['typeSettings'])) {
                 continue;
@@ -44,7 +43,6 @@ return new class extends Migration
     private function updateMarkdownFields(ProjectConfig $projectConfig): void
     {
         $fields = $this->findFields($projectConfig, Markdown::class);
-
         foreach ($fields as $path => $config) {
             if (! isset($config['settings']) || ! is_array($config['settings'])) {
                 continue;
@@ -132,13 +130,19 @@ return new class extends Migration
     {
         $fields = $projectConfig->find(fn (array $config) => isset($config['type']) && $config['type'] === $type);
 
-        foreach ($fields as &$config) {
+        $normalized = [];
+        foreach ($fields as $path => $config) {
+            if (! isset($config['type']) || $config['type'] !== $type) {
+                continue;
+            }
             if (isset($config['settings'])) {
                 $config['settings'] = ProjectConfigHelper::unpackAssociativeArrays($config['settings']);
             }
+
+            $normalized[$path] = $config;
         }
 
-        return $fields;
+        return $normalized;
     }
 
     /**
