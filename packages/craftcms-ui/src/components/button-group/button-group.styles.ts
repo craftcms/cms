@@ -4,7 +4,6 @@ export default css`
   :host {
     --_button-radius: var(--c-button-radius, var(--c-form-control-radius));
     display: flex;
-    gap: var(--c-spacing-1px);
   }
 
   ::slotted(*) {
@@ -12,6 +11,20 @@ export default css`
     --c-button-radius-start-end: 0;
     --c-button-radius-end-start: 0;
     --c-button-radius-end-end: 0;
+  }
+
+  ::slotted(:not([data-button-group-start])) {
+    margin-inline-start: calc(var(--c-button-border-width, 1px) * -1);
+  }
+
+  ::slotted(:hover),
+  ::slotted([active]),
+  ::slotted([aria-pressed='true']) {
+    z-index: 1;
+  }
+
+  ::slotted(:focus-visible) {
+    z-index: 2;
   }
 
   ::slotted([data-button-group-start]) {

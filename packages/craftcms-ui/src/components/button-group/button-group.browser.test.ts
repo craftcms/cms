@@ -92,3 +92,25 @@ it.each([
     expect(getComputedStyle(other!).cursor).toBe('pointer');
   }
 );
+
+it('overlaps adjacent buttons’ borders, with no gap', async () => {
+  const [first, second] = await render(`
+    <craft-button variant="outline">One</craft-button>
+    <craft-button variant="outline">Two</craft-button>`);
+  const border = parseFloat(getComputedStyle(first!).borderInlineEndWidth);
+
+  expect(border).toBeGreaterThan(0);
+  expect(
+    first!.getBoundingClientRect().right - second!.getBoundingClientRect().left
+  ).toBeCloseTo(border);
+});
+
+it('raises the selected button, so its whole border shows', async () => {
+  const [unselected, selected] = await render(`
+    <craft-button variant="outline" aria-pressed="false">One</craft-button>
+    <craft-button variant="outline" aria-pressed="true">Two</craft-button>`);
+
+  expect(Number(getComputedStyle(selected!).zIndex)).toBeGreaterThan(
+    Number(getComputedStyle(unselected!).zIndex) || 0
+  );
+});

@@ -16,6 +16,7 @@
 - Asset folders’ labels are now links in thumbnail and card views. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Element index view mode buttons now have tooltips. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - The Notification Position and Slideout Position preferences’ buttons now have tooltips. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Buttons in button groups no longer have gaps between them, and adjacent buttons now share a border. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Outline and dashed buttons now have the same border color as text inputs and checkboxes. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Selected buttons in single-choice button groups, such as element index view modes, no longer show hover effects or pointer cursors. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Element selection modals no longer have a header, and their toolbars now fit on one row. ([#19942](https://github.com/craftcms/cms/pull/19942))
