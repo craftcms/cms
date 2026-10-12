@@ -215,17 +215,7 @@ readonly class ElementHtml
             $html .= $this->componentActionMenu($component);
         }
         if ($config['sortable']) {
-            $html .= Button::make()
-                ->icon('move')
-                ->attributes([
-                    'class' => ['chromeless', 'small', 'move-btn'],
-                    'title' => t('Reorder'),
-                    'aria' => [
-                        'label' => t('Reorder'),
-                    ],
-                    'role' => 'none',
-                    'tabindex' => '-1',
-                ]);
+            $html .= Html::tag('craft-reorder-button', '', ['class' => 'move-btn']);
         }
         $html .= Html::endTag('div'); // slot=suffix
 
@@ -633,17 +623,7 @@ readonly class ElementHtml
                 ],
             ]) : '').
             ($config['showActionMenu'] ? $this->componentActionMenu($element, ! $showEditButton, $this->nestedCardActionItems($element, $config)) : '').
-            ($config['sortable'] ? Button::make()
-                ->icon('move')
-                ->attributes([
-                    'class' => ['chromeless', 'small', 'move-btn'],
-                    'title' => t('Reorder'),
-                    'aria' => [
-                        'label' => t('Reorder'),
-                    ],
-                    'role' => 'none',
-                    'tabindex' => '-1',
-                ]) : '');
+            ($config['sortable'] ? Html::tag('craft-reorder-button', '', ['class' => 'move-btn']) : '');
     }
 
     /**

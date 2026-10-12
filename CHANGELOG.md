@@ -27,6 +27,8 @@
 - Disabled lightswitches are now dimmed. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Chips’ handles are now shown as plain text below their labels. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Component selects no longer show a reorder button when only one item is selected. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Relational fields’ chips and cards now have reorder buttons with menu options for moving them, including on touch devices. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Move icons on Matrix blocks, chips, and editable table rows are now larger. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - Saving the Customize Sources modal from an element index’s action menu now goes to the source that was last edited, as it does from the secondary nav. ([#19929](https://github.com/craftcms/cms/pull/19929))
