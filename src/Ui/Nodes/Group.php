@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ui\Nodes;
 
-use CraftCms\Cms\Cp\Components\Field as FieldComponent;
 use CraftCms\Cms\Cp\Components\FieldGroup;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Enums\FieldWidth;
 use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\Nodes\Concerns\HasFieldPresentation;
 use CraftCms\Cms\Ui\Nodes\Concerns\HasVisibility;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiPayload;
@@ -31,8 +30,9 @@ use InvalidArgumentException;
  *   settings under a heading (“Advanced”, “Field Limit”).
  * - **Field** ({@see self::asField()}) — a `<craft-field>` in fieldset mode,
  *   for several inputs that make up *one* logical field (“Asset Location” over
- *   a source select and a subpath input). Unlocks instructions, tip and
- *   warning, and the label reads as a field label rather than a heading.
+ *   a source select and a subpath input). Presentation settings from
+ *   HasFieldPresentation apply to this appearance, and the label reads as
+ *   a field label rather than a heading.
  *
  * Field appearance renders `role="group"` + `aria-labelledby` rather than a
  * `label[for]`, since one label can't address several inputs — the ARIA17
@@ -45,27 +45,14 @@ use InvalidArgumentException;
  */
 class Group extends Container
 {
+    use HasFieldPresentation;
     use HasVisibility;
-
-    private ?string $label = null;
 
     private bool $collapsible = false;
 
     private bool $expanded = false;
 
     private bool $asField = false;
-
-    private bool $required = false;
-
-    private ?string $instructions = null;
-
-    private string $instructionsPosition = 'before';
-
-    private ?string $tip = null;
-
-    private ?string $warning = null;
-
-    private ?string $layoutUid = null;
 
     private ?int $width = null;
 
@@ -77,7 +64,7 @@ class Group extends Container
         $label = $node->props['label'] ?? null;
 
         if ($node->props['asField'] ?? false) {
-            return self::fieldHtml($node, $payload, $renderer, $label);
+            return self::fieldHtml($node, $payload, $renderer);
         }
 
         $children = FieldGroup::make()
@@ -109,13 +96,6 @@ class Group extends Container
         return new self($uid, $children);
     }
 
-    public function label(?string $label): static
-    {
-        $this->label = $label;
-
-        return $this;
-    }
-
     /** Section appearance only; ignored when {@see self::asField()} is set. */
     public function collapsible(bool $collapsible = true): static
     {
@@ -139,54 +119,6 @@ class Group extends Container
     public function asField(bool $asField = true): static
     {
         $this->asField = $asField;
-
-        return $this;
-    }
-
-    /** Field appearance only; marks the group label as required. */
-    public function required(bool $required = true): static
-    {
-        $this->required = $required;
-
-        return $this;
-    }
-
-    /** Field appearance only. */
-    public function instructions(?string $instructions): static
-    {
-        $this->instructions = $instructions;
-
-        return $this;
-    }
-
-    /** Field appearance only. */
-    public function instructionsPosition(string $instructionsPosition): static
-    {
-        $this->instructionsPosition = $instructionsPosition;
-
-        return $this;
-    }
-
-    /** Field appearance only. */
-    public function tip(?string $tip): static
-    {
-        $this->tip = $tip;
-
-        return $this;
-    }
-
-    /** Field appearance only. */
-    public function warning(?string $warning): static
-    {
-        $this->warning = $warning;
-
-        return $this;
-    }
-
-    /** Field appearance only. */
-    public function layoutUid(?string $layoutUid): static
-    {
-        $this->layoutUid = $layoutUid;
 
         return $this;
     }
@@ -232,12 +164,7 @@ class Group extends Container
             ...($this->asField && $this->required ? ['required' => true] : []),
             ...Arr::whereNotNull([
                 'instructions' => $this->instructions,
-                'instructionsPosition' => $this->instructionsPosition !== 'before' ? $this->instructionsPosition : null,
-                'tip' => $this->tip,
-                'tipHtml' => $this->noticeHtml($this->tip),
-                'warning' => $this->warning,
-                'warningHtml' => $this->noticeHtml($this->warning),
-                'layoutUid' => $this->layoutUid,
+                ...$this->fieldPresentationProps(),
                 'width' => $this->width,
                 'dependsOn' => $this->dependsOn,
             ]),
@@ -249,18 +176,11 @@ class Group extends Container
         NodePayload $node,
         UiPayload $payload,
         UiHtmlRenderer $renderer,
-        ?string $label,
     ): string {
         $props = $node->props;
 
-        return FieldComponent::make()
+        return self::fieldComponent($props)
             ->fieldset()
-            ->label($label)
-            ->required((bool) ($props['required'] ?? false))
-            ->instructions($props['instructions'] ?? null)
-            ->instructionsPosition((string) ($props['instructionsPosition'] ?? 'before'))
-            ->tip($props['tip'] ?? null)
-            ->warning($props['warning'] ?? null)
             ->input(
                 FieldGroup::make()
                     ->children([
@@ -275,12 +195,5 @@ class Group extends Container
             ])
             ->attributes(self::visibilityAttributes($props))
             ->toHtml();
-    }
-
-    private function noticeHtml(?string $notice): ?string
-    {
-        return $notice === null
-            ? null
-            : Html::decodeDoubles(Markdown::parseParagraph(Html::encodeInvalidTags($notice)));
     }
 }

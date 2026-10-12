@@ -52,6 +52,31 @@ it.each([1, 3])('populates a hidden table with %i minimum rows', (minRows) => {
   vi.clearAllTimers();
 });
 
+it('keeps hidden row inputs mounted and submitted', () => {
+  vi.stubGlobal('$', $);
+  vi.stubGlobal('Craft', {
+    inArray: (value: unknown, values: unknown[]) => values.includes(value),
+  });
+
+  const form = document.createElement('form');
+  const table = document.createElement('table');
+  const body = table.createTBody();
+  const row = EditableTable.createRow(
+    'site-uid',
+    {label: {type: 'singleline', heading: 'Label'}},
+    'siteOverrides',
+    {_hidden: true, label: 'Saved value'}
+  );
+  body.append(row[0]);
+  form.append(table);
+  document.body.append(form);
+
+  expect(row[0].hidden).toBe(true);
+  expect(new FormData(form).get('siteOverrides[site-uid][label]')).toBe(
+    'Saved value'
+  );
+});
+
 it('initializes text cells without the legacy NiceText behavior', () => {
   vi.stubGlobal('$', $);
   vi.stubGlobal('Garnish', {});

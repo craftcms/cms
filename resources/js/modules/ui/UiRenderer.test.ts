@@ -455,58 +455,87 @@ describe('UiRenderer', () => {
     expect(container.querySelector('craft-info-icon')).toBeNull();
   });
 
-  it('renders field presentation settings and clears them when the payload changes', async () => {
-    const payload = clonePayload();
-    Object.assign(
-      required(payload.nodes[0], 'Expected a field in the UI fixture.').props,
-      {
-        label: 'UI Mode',
-        labelHtml: '<strong>UI Mode</strong>',
-        headingPrefix: '<span>Before</span>',
-        translatable: true,
-        translationDescription: 'Translated for each site.',
-        orientation: 'rtl',
-        width: 50,
-        inputWidth: 'full',
-        fieldset: true,
-      }
-    );
-    app.unmount();
-    await mount(payload);
+  it.each(['field', 'group'])(
+    'renders %s presentation settings and clears them when the payload changes',
+    async (appearance) => {
+      const payload = clonePayload();
+      const nodeIndex = appearance === 'group' ? 2 : 0;
+      const defaultLabel = payload.nodes[nodeIndex]!.props.label;
+      Object.assign(
+        required(payload.nodes[nodeIndex], 'Expected a node in the UI fixture.')
+          .props,
+        {
+          label: 'UI Mode',
+          labelHtml: '<strong>UI Mode</strong>',
+          labelSrOnly: true,
+          headingPrefix: '<span>Before</span>',
+          headingSuffix: '<span>After</span>',
+          status: 'modified',
+          statusLabel: 'Settings changed',
+          translatable: true,
+          translationDescription: 'Translated for each site.',
+          orientation: 'rtl',
+          width: 50,
+          inputWidth: 'full',
+          fieldset: true,
+        }
+      );
+      app.unmount();
+      await mount(payload);
 
-    const field = required(
-      container.querySelector('craft-field'),
-      'Expected a rendered field.'
-    );
-    expect(field.querySelector('[slot="label"] strong')?.textContent).toBe(
-      'UI Mode'
-    );
-    expect(field.querySelector('[slot="heading-prefix"]')?.textContent).toBe(
-      'Before'
-    );
-    expect(field.hasAttribute('translatable')).toBe(true);
-    expect(field.getAttribute('translation-description')).toBe(
-      'Translated for each site.'
-    );
-    expect(field.getAttribute('orientation')).toBe('rtl');
-    expect(field.getAttribute('width')).toBe('full');
-    expect(field.classList.contains('width-50')).toBe(true);
-    expect(field.getAttribute('role')).toBe('group');
-
-    currentPayload.value = clonePayload();
-    await nextTick();
-    await vi.waitFor(() => {
-      expect(field.hasAttribute('translatable')).toBe(false);
-      expect(field.querySelector('[slot="label"] strong')).toBeNull();
-      expect(field.querySelector('[slot="label"]')?.textContent).toBe(
+      const field = required(
+        container.querySelector(
+          appearance === 'group'
+            ? '[data-ui-node="plain-text-field-limit"]'
+            : 'craft-field'
+        ),
+        'Expected a rendered field.'
+      );
+      expect(field.querySelector('[slot="label"] strong')?.textContent).toBe(
         'UI Mode'
       );
-      expect(field.querySelector('[slot="heading-prefix"]')).toBeNull();
-      expect(field.hasAttribute('orientation')).toBe(false);
-      expect(field.hasAttribute('width')).toBe(false);
-      expect(field.hasAttribute('fieldset')).toBe(false);
-    });
-  });
+      expect(field.querySelector('[slot="heading-prefix"]')?.textContent).toBe(
+        'Before'
+      );
+      expect(field.hasAttribute('label-sr-only')).toBe(true);
+      expect(field.getAttribute('status')).toBe('modified');
+      expect(field.getAttribute('status-label')).toBe('Settings changed');
+      expect(field.querySelector('[slot="heading-suffix"]')?.textContent).toBe(
+        'After'
+      );
+      expect(field.hasAttribute('translatable')).toBe(true);
+      expect(field.getAttribute('translation-description')).toBe(
+        'Translated for each site.'
+      );
+      expect(field.getAttribute('orientation')).toBe('rtl');
+      expect(field.getAttribute('width')).toBe('full');
+      expect(field.classList.contains('width-50')).toBe(true);
+      expect(field.getAttribute('role')).toBe('group');
+
+      const suppressed = structuredClone(payload);
+      suppressed.nodes[nodeIndex]!.props.showStatus = false;
+      currentPayload.value = suppressed;
+      await nextTick();
+      await vi.waitFor(() => expect(field.hasAttribute('status')).toBe(false));
+      expect(field.hasAttribute('status-label')).toBe(false);
+
+      currentPayload.value = clonePayload();
+      await nextTick();
+      await vi.waitFor(() => {
+        expect(field.hasAttribute('label-sr-only')).toBe(false);
+        expect(field.hasAttribute('translatable')).toBe(false);
+        expect(field.querySelector('[slot="label"] strong')).toBeNull();
+        expect(field.querySelector('[slot="label"]')?.textContent).toBe(
+          defaultLabel
+        );
+        expect(field.querySelector('[slot="heading-prefix"]')).toBeNull();
+        expect(field.querySelector('[slot="heading-suffix"]')).toBeNull();
+        expect(field.hasAttribute('orientation')).toBe(false);
+        expect(field.hasAttribute('width')).toBe(false);
+        expect(field.hasAttribute('fieldset')).toBe(appearance === 'group');
+      });
+    }
+  );
 
   it.each([
     {
