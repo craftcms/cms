@@ -251,6 +251,21 @@ Remove once we have a stable way to create a `<craft-checkbox/>` via twig
 }
 
 /**
+Component select chips, spaced like relational fields' chips
+ */
+[data-id='component-select-items'] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--c-spacing-sm);
+}
+
+[data-id='component-select-items'].inline-chips {
+  flex-flow: row wrap;
+  align-items: center;
+}
+
+/**
 Form controls
  */
 .cp-form-control {

@@ -195,6 +195,15 @@ fieldset {
   border-radius: var(--c-radius-sm);
 }
 
+craft-chip .cp-code {
+  /* Block, so the label's line height doesn't add space above it */
+  display: block;
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+}
+
 .cp-icon {
   --_icon-size: var(--c-icon-size, 1em);
   width: var(--_icon-size);
