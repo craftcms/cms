@@ -126,8 +126,9 @@ export function useModalElementIndex(options: Options) {
   }
 
   /**
-   * Folders can't be selected, so a click on one opens it instead. Its title
-   * is a real link, so a modified click still opens it in a new tab.
+   * A folder opens from its title link, or Enter. Its title is a real link, so
+   * a modified click still opens it in a new tab. Folders can't be selected,
+   * so a click anywhere else on one does nothing.
    */
   const itemBehavior: ElementIndexItemBehavior<IndexItem> = {
     attrs: (row) => (row.isFolder ? {'data-is-folder': ''} : undefined),
@@ -138,36 +139,27 @@ export function useModalElementIndex(options: Options) {
 
       const target = event.target instanceof Element ? event.target : null;
 
-      if (target?.closest('a[data-folder-link]')) {
-        if (!isModifiedClick(event)) {
-          event.preventDefault();
-          openFolder(row.folderId);
-        }
-
-        return true;
+      if (target?.closest('a[data-folder-link]') && !isModifiedClick(event)) {
+        event.preventDefault();
+        openFolder(row.folderId);
       }
-
-      if (target?.closest('a[href], button, input, craft-checkbox')) {
-        return true;
-      }
-
-      openFolder(row.folderId);
 
       return true;
     },
     onKeydown(row, event) {
-      if (
-        !row.isFolder ||
-        typeof row.folderId !== 'number' ||
-        (event.key !== 'Enter' && event.key !== ' ')
-      ) {
+      if (!row.isFolder || typeof row.folderId !== 'number') {
         return false;
       }
 
-      event.preventDefault();
-      openFolder(row.folderId);
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        openFolder(row.folderId);
 
-      return true;
+        return true;
+      }
+
+      // Space would select it, but folders can't be selected.
+      return event.key === ' ';
     },
   };
 

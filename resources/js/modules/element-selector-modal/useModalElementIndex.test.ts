@@ -84,7 +84,9 @@ it('marks folder rows, so a double-click on one isn’t taken as a choice', () =
 });
 
 describe('opening a folder', () => {
-  it('opens it when its row is clicked', () => {
+  // Only its title link opens it. Folders can't be selected either, so a click
+  // anywhere else on the row does nothing.
+  it('ignores a click elsewhere on its row', () => {
     const index = mountIndex();
 
     const handled = index.itemBehavior.onClick?.(
@@ -93,7 +95,7 @@ describe('opening a folder', () => {
     );
 
     expect(handled).toBe(true);
-    expect(lastQuery()).toMatchObject({folderId: 7});
+    expect(post).not.toHaveBeenCalled();
   });
 
   it('opens it in place when its title link is clicked', () => {
@@ -121,15 +123,28 @@ describe('opening a folder', () => {
     expect(post).not.toHaveBeenCalled();
   });
 
-  it.each(['Enter', ' '])('opens it with %j', (key) => {
+  it('opens it with Enter', () => {
     const index = mountIndex();
-    const event = new KeyboardEvent('keydown', {key, cancelable: true});
+    const event = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      cancelable: true,
+    });
 
     const handled = index.itemBehavior.onKeydown?.(folderRow(index), event);
 
     expect(handled).toBe(true);
     expect(event.defaultPrevented).toBe(true);
     expect(lastQuery()).toMatchObject({folderId: 7});
+  });
+
+  it('neither opens nor selects it with Space', () => {
+    const index = mountIndex();
+    const event = new KeyboardEvent('keydown', {key: ' ', cancelable: true});
+
+    const handled = index.itemBehavior.onKeydown?.(folderRow(index), event);
+
+    expect(handled).toBe(true);
+    expect(post).not.toHaveBeenCalled();
   });
 
   it('clears the selection made in the listing it leaves', () => {

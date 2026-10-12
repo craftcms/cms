@@ -52,8 +52,7 @@
     index.openFolder(folderId);
   }
 
-  // A folder's first click has already opened it, so a double-click on one
-  // isn't a choice.
+  // Folders can't be chosen, so a double-click on one isn't a choice.
   function onDblClick(event: MouseEvent) {
     if (
       event.target instanceof Element &&
@@ -121,7 +120,9 @@
         @dblclick="onDblClick"
       >
         <template v-if="showFolderBreadcrumbs" #navbar>
-          <div class="border-b border-b-quiet py-sm">
+          <div
+            class="folder-breadcrumbs -mx-(--cp-container-padding) px-(--cp-container-padding) py-sm border-b border-b-quiet"
+          >
             <craft-breadcrumbs :label="t('Breadcrumbs')" class="text-xs">
               <craft-breadcrumb-item
                 v-for="(crumb, idx) in folderBreadcrumbs"
@@ -164,6 +165,9 @@
   }
 
   .modal-element-index__main {
+    // The index lays itself out by `cp-content-view` container queries, as it
+    // would on a page; without this, it falls back to its narrowest layout.
+    container: cp-content-view / inline-size;
     background: var(--c-surface-overlay);
     border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
 
@@ -178,5 +182,18 @@
     // the pane aren't clipped.
     display: grid;
     overflow: hidden;
+  }
+
+  // Even on both sides of each separator, matching the header's breadcrumbs:
+  // the crumb's own gap already sits before it, so the end margin makes up for
+  // it.
+  .folder-breadcrumbs :deep(craft-breadcrumb-item > [slot='separator']) {
+    margin-inline: var(--c-spacing-sm) var(--c-spacing-md);
+  }
+
+  // The modal has no header above the index, so the toolbar gets the same
+  // breathing room as the sidebar beside it.
+  .modal-element-index__main :deep(.element-index__header) {
+    padding-block-start: var(--c-spacing-lg);
   }
 </style>
