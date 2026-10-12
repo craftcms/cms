@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
+  import {computed, useId} from 'vue';
   import {t} from '@craftcms/ui';
   import {useForm, usePage} from '@inertiajs/vue3';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
@@ -80,6 +80,8 @@
       form.underlineLinks = values.includes('underlineLinks');
     },
   });
+
+  const positionIdPrefix = `preference-position-${useId()}`;
 
   const generalSettings = computed({
     get: () => (form.disableAutofocus ? ['disableAutofocus'] : []),
@@ -192,22 +194,35 @@
           />
 
           <craft-field fieldset :label="t('Notification Position')">
-            <craft-button-group slot="input">
-              <craft-button
+            <div slot="input">
+              <craft-button-group>
+                <craft-button
+                  v-for="option in props.notificationPositionOptions"
+                  :key="option.value"
+                  :id="`${positionIdPrefix}-notificationPosition-${option.value}`"
+                  type="button"
+                  variant="outline"
+                  :active="
+                    form.notificationPosition === option.value ? 'true' : null
+                  "
+                  :aria-pressed="form.notificationPosition === option.value"
+                  @click="form.notificationPosition = option.value"
+                >
+                  <craft-icon :name="option.icon" :label="option.label" />
+                </craft-button>
+              </craft-button-group>
+              <!-- Icon-only buttons, so their names show on hover and focus too.
+                They label the buttons rather than describing them, so the name
+                isn't announced twice. -->
+              <craft-tooltip
                 v-for="option in props.notificationPositionOptions"
                 :key="option.value"
-                type="button"
-                variant="outline"
-                :active="
-                  form.notificationPosition === option.value ? 'true' : null
-                "
-                :aria-pressed="form.notificationPosition === option.value"
-                :title="option.label"
-                @click="form.notificationPosition = option.value"
+                :for="`${positionIdPrefix}-notificationPosition-${option.value}`"
+                invoker-relation="label"
               >
-                <craft-icon :name="option.icon" :label="option.label" />
-              </craft-button>
-            </craft-button-group>
+                {{ option.label }}
+              </craft-tooltip>
+            </div>
             <ul
               v-if="form.errors.notificationPosition"
               slot="feedback"
@@ -218,20 +233,35 @@
           </craft-field>
 
           <craft-field fieldset :label="t('Slideout Position')">
-            <craft-button-group slot="input">
-              <craft-button
+            <div slot="input">
+              <craft-button-group>
+                <craft-button
+                  v-for="option in props.slideoutPositionOptions"
+                  :key="option.value"
+                  :id="`${positionIdPrefix}-slideoutPosition-${option.value}`"
+                  type="button"
+                  variant="outline"
+                  :active="
+                    form.slideoutPosition === option.value ? 'true' : null
+                  "
+                  :aria-pressed="form.slideoutPosition === option.value"
+                  @click="form.slideoutPosition = option.value"
+                >
+                  <craft-icon :name="option.icon" :label="option.label" />
+                </craft-button>
+              </craft-button-group>
+              <!-- Icon-only buttons, so their names show on hover and focus too.
+                They label the buttons rather than describing them, so the name
+                isn't announced twice. -->
+              <craft-tooltip
                 v-for="option in props.slideoutPositionOptions"
                 :key="option.value"
-                type="button"
-                variant="outline"
-                :active="form.slideoutPosition === option.value ? 'true' : null"
-                :aria-pressed="form.slideoutPosition === option.value"
-                :title="option.label"
-                @click="form.slideoutPosition = option.value"
+                :for="`${positionIdPrefix}-slideoutPosition-${option.value}`"
+                invoker-relation="label"
               >
-                <craft-icon :name="option.icon" :label="option.label" />
-              </craft-button>
-            </craft-button-group>
+                {{ option.label }}
+              </craft-tooltip>
+            </div>
             <ul
               v-if="form.errors.slideoutPosition"
               slot="feedback"
