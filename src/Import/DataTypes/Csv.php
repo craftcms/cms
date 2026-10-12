@@ -77,8 +77,11 @@ class Csv implements DataTypeInterface
         $reader->setReadDataOnly(true);
 
         $spreadsheet = $reader->loadSpreadsheetFromString($data);
-        $sheet = $spreadsheet->getSheet(0);
+        $rows = $spreadsheet->getSheet(0)->toArray();
 
-        return $sheet->toArray();
+        // the spreadsheet and its worksheets reference each other, so PHP wouldn't free them otherwise
+        $spreadsheet->disconnectWorksheets();
+
+        return $rows;
     }
 }

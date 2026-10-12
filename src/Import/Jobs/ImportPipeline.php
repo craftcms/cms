@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -65,6 +66,9 @@ class ImportPipeline extends Job
                 ->onQueue(Cms::config()->queueName)
                 // runs once, after every job in this step has run (failed ones included)
                 ->finally(function (Batch $batch) use ($importPlan, $stepUid, $runId) {
+                    // the step's stored items aren't needed anymore, even if the batch was canceled and FinishImport won't run
+                    Storage::disk(Cms::config()->getImportDisk())->deleteDirectory(Import::spoolPath($runId, $stepUid));
+
                     // let FinishImport know that at least one step had failures
                     if ($batch->hasFailures()) {
                         Cache::put(FinishImport::hasFailuresCacheKey($runId), true, now()->addDay());

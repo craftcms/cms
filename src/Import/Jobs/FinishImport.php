@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Jobs;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportFinished;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Override;
 
 /**
@@ -18,6 +18,11 @@ use Override;
  */
 class FinishImport extends Job
 {
+    /**
+     * The directory on the import disk that import runs store their items in.
+     */
+    public const string SPOOL_ROOT = 'imports';
+
     /**
      * Promotes the import plan and run ID, then calls the parent constructor.
      *
@@ -36,7 +41,7 @@ class FinishImport extends Job
      */
     public function handle(): void
     {
-        File::deleteDirectory(Path::runtime(self::downloadsPath($this->runId), create: false));
+        Storage::disk(Cms::config()->getImportDisk())->deleteDirectory(self::spoolPath($this->runId));
 
         $hasFailures = (bool) Cache::pull(self::hasFailuresCacheKey($this->runId));
 
@@ -44,13 +49,13 @@ class FinishImport extends Job
     }
 
     /**
-     * Returns the runtime-relative path of the directory that the given import run's remote files are downloaded to.
+     * Returns the path of the directory on the import disk that the given import run's steps store their items in.
      *
      * @param  string  $runId  The unique ID of the import run.
      */
-    public static function downloadsPath(string $runId): string
+    public static function spoolPath(string $runId): string
     {
-        return "imports/{$runId}";
+        return self::SPOOL_ROOT."/{$runId}";
     }
 
     /**

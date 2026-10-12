@@ -1475,6 +1475,25 @@ class GeneralConfig extends BaseConfig
     ];
 
     /**
+     * @var string|null The Laravel filesystem disk that import runs should store their parsed source data on, so that each
+     *                  of a step’s queue jobs can read its own items without parsing the whole source again.
+     *
+     *                  A local temp folder will be used by default. Set it to a shared disk if queue jobs can run on different servers.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->importDisk('$IMPORT_DISK')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_IMPORT_DISK=imports
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public ?string $importDisk = null;
+
+    /**
      * @var string[] The template filenames Craft will look for within a directory to represent the directory’s “index” template when
      *               matching a template path to a file on the front end.
      *
@@ -4688,6 +4707,27 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * The Laravel filesystem disk that import runs should store their parsed source data on, so that each
+     * of a step’s queue jobs can read its own items without parsing the whole source again.
+     *
+     * A local temp folder will be used by default. Set it to a shared disk if queue jobs can run on different servers.
+     *
+     * ```php
+     * ->importDisk('$IMPORT_DISK')
+     * ```
+     *
+     * @group System
+     *
+     * @see $importDisk
+     */
+    public function importDisk(?string $value): self
+    {
+        $this->importDisk = $value;
+
+        return $this;
+    }
+
+    /**
      * The template filenames Craft will look for within a directory to represent the directory’s “index” template when
      * matching a template path to a file on the front end.
      *
@@ -6334,6 +6374,14 @@ class GeneralConfig extends BaseConfig
         $this->verifyEmailSuccessPath = $value;
 
         return $this;
+    }
+
+    /**
+     * Returns the import disk name.
+     */
+    public function getImportDisk(): string
+    {
+        return $this->storageDiskName($this->importDisk, 'craft-tmp');
     }
 
     /**

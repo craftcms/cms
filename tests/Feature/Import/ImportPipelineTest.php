@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Testing\Fakes\BatchFake;
 
@@ -139,17 +140,6 @@ it('fires the import finished event without failures when no step flagged any', 
     new FinishImport($this->importPlan, 'run-id')->handle();
 
     Event::assertDispatched(fn (ImportFinished $event) => $event->hasFailures === false);
-});
-
-it('deletes the run’s downloaded files when finishing an import', function () {
-    Event::fake([ImportFinished::class]);
-    $directory = Path::runtime(FinishImport::downloadsPath('run-id'));
-    File::ensureDirectoryExists($directory);
-    File::put("$directory/data.json", '[]');
-
-    new FinishImport($this->importPlan, 'run-id')->handle();
-
-    expect(is_dir($directory))->toBeFalse();
 });
 
 it('gives the pipeline and every step job the same run ID when dispatching an import', function () {
@@ -269,7 +259,7 @@ it('fires the step started and chunk events from the first chunk’s import job'
         && $event->runId === 'run-id');
     Event::assertDispatched(fn (ImportChunkStarted $event) => $event->step->uid === 'step-1'
         && $event->offset === 0
-        && $event->limit === 5);
+        && $event->limit === 100);
     Event::assertDispatched(fn (ImportChunkFinished $event) => $event->offset === 0
         && $event->count === 3
         && $event->hasFailures === false);
@@ -332,4 +322,64 @@ it('stops importing and doesn’t queue the next chunk once the job is canceled'
 
     Event::assertNotDispatched(ItemImporting::class);
     expect($batch->added)->toBeEmpty();
+});
+
+it('imports a step’s later chunks from the import disk rather than the source', function () {
+    Storage::fake(Cms::config()->getImportDisk());
+    $this->importPlan->steps[0]->batchSize(2);
+    $filePath = Path::temp().'/'.Str::uuid().'.json';
+    File::copy($this->filePath, $filePath);
+    $importedTitles = [];
+    Event::listen(ItemImporting::class, function (ItemImporting $event) use (&$importedTitles) {
+        $importedTitles[] = $event->data['title'];
+        $event->isValid = false;
+    });
+
+    [$job, $batch] = new ImportJob($this->importPlan, 'step-1', $filePath, 'run-id')->withFakeBatch();
+    $job->handle();
+    File::delete($filePath);
+
+    expect($batch->added)->toHaveCount(1);
+
+    [$nextJob, $nextBatch] = $batch->added[0]->withFakeBatch();
+    $nextJob->handle();
+
+    expect($importedTitles)->toBe(['first file entry', 'second file entry', 'third file entry'])
+        ->and($nextBatch->added)->toBeEmpty();
+
+    new FinishImport($this->importPlan, 'run-id')->handle();
+
+    Storage::disk(Cms::config()->getImportDisk())->assertMissing(FinishImport::spoolPath('run-id'));
+});
+
+it('reads a later chunk that starts partway through a stored piece', function () {
+    Storage::fake(Cms::config()->getImportDisk());
+    $this->importPlan->steps[0]->batchSize(2);
+    $importedTitles = [];
+    Event::listen(ItemImporting::class, function (ItemImporting $event) use (&$importedTitles) {
+        $importedTitles[] = $event->data['title'];
+        $event->isValid = false;
+    });
+    ($this->runJob)();
+    $importedTitles = [];
+
+    [$job] = new ImportJob($this->importPlan, 'step-1', '/path/to/missing.json', 'run-id', 1, 3)->withFakeBatch();
+    $job->handle();
+
+    expect($importedTitles)->toBe(['second file entry', 'third file entry']);
+});
+
+it('deletes a step’s stored items once its batch has finished', function () {
+    Storage::fake(Cms::config()->getImportDisk());
+    $disk = Storage::disk(Cms::config()->getImportDisk());
+    $disk->put(ImportJob::spoolPath('run-id', 'step-1').'/0.json', '[]');
+    $disk->put(ImportJob::spoolPath('run-id', 'step-2').'/0.json', '[]');
+
+    new ImportPipeline([($this->step)('step-1'), ($this->step)('step-2')], $this->importPlan, 'run-id')->handle();
+    [$firstBatch] = ($this->pendingBatches)();
+
+    $firstBatch->finallyCallbacks()[0](($this->batchWithFailures)(0));
+
+    $disk->assertMissing(ImportJob::spoolPath('run-id', 'step-1').'/0.json');
+    $disk->assertExists(ImportJob::spoolPath('run-id', 'step-2').'/0.json');
 });
