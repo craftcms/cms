@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
+use CraftCms\Cms\Filesystem\RemoteFileDownloader;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
@@ -24,18 +25,13 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
-use CraftCms\UrlValidator\UrlValidationException;
 use CraftCms\UrlValidator\UrlValidator;
 use DateTimeInterface;
 use Exception;
-use GuzzleHttp\RequestOptions;
-use GuzzleHttp\TransferStats;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
 use Throwable;
 use Twig\Error\RuntimeError;
@@ -614,59 +610,17 @@ class AssetsHelper
     }
 
     /**
-     * Downloads a remote file to a temp path, pinning the connection to a set of
-     * pre-validated IP addresses so cURL can’t re-resolve the hostname to a
-     * different (potentially internal) address between validation and download.
+     * Downloads a remote file to a temp path, checking its URL with the given validator.
      *
-     * @throws InvalidArgumentException if the URL or the IP it resolves to is disallowed, or the response isn’t a 2xx one
+     * @throws InvalidArgumentException if the URL or the IP it resolves to is disallowed, the file is empty or too large, or the response isn’t a 2xx one
      */
-    public static function downloadUrl(UrlValidator $urlValidator, string $url, string $tempPath): Response
+    public static function downloadUrl(UrlValidator $urlValidator, string $url, string $tempPath, int $maxBytes = PHP_INT_MAX): Response
     {
-        // Validate the URL and resolve it to a known-good set of IPs *before*
-        // opening any connection (guards against SSRF + DNS rebinding).
         try {
-            $ips = $urlValidator->validate($url);
-        } catch (UrlValidationException $e) {
-            throw new InvalidArgumentException(t('{url} is invalid.', ['url' => $url]), previous: $e);
+            return new RemoteFileDownloader($urlValidator)->download($url, $tempPath, $maxBytes);
+        } catch (Throwable $e) {
+            throw new InvalidArgumentException(t('{url} couldn’t be downloaded.', ['url' => $url]), previous: $e);
         }
-
-        $host = parse_url($url, PHP_URL_HOST);
-        $port = parse_url($url, PHP_URL_PORT)
-            ?? (strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https' ? 443 : 80);
-
-        try {
-            $response = Http::create()->withOptions([
-                RequestOptions::ALLOW_REDIRECTS => false,
-                RequestOptions::SINK => $tempPath,
-                // Pin the connection to the IPs we already validated, so cURL doesn’t
-                // re-resolve the hostname to a different address (DNS rebinding).
-                'curl' => [
-                    CURLOPT_RESOLVE => ["$host:$port:".implode(',', $ips)],
-                ],
-                RequestOptions::ON_STATS => function (TransferStats $stats) use ($url, $urlValidator) {
-                    // Validate the IP, in case the cURL handler isn’t in use (so CURLOPT_RESOLVE was ignored)
-                    $ip = $stats->getHandlerStat('primary_ip');
-                    if ($ip && ! $urlValidator->validateIp($ip)) {
-                        throw new InvalidArgumentException(t('{url} is invalid.', ['url' => $url]));
-                    }
-                },
-            ])->get($url);
-        } catch (RequestException $e) {
-            throw new InvalidArgumentException(t('{url} returned a {status} response.', [
-                'url' => $url,
-                'status' => $e->response->status(),
-            ]), previous: $e);
-        }
-
-        // redirects aren’t followed, so a redirect’s body would otherwise be taken for the file
-        if (! $response->successful()) {
-            throw new InvalidArgumentException(t('{url} returned a {status} response.', [
-                'url' => $url,
-                'status' => $response->status(),
-            ]));
-        }
-
-        return $response;
     }
 
     /**
@@ -702,12 +656,12 @@ class AssetsHelper
             $mimeType = null;
 
             if ($localPath === null) {
-                $mimeType = self::downloadUrl($urlValidator, $source, $tempPath)->header('Content-Type');
+                $mimeType = self::downloadUrl($urlValidator, $source, $tempPath, self::getMaxAssetUploadSize())->header('Content-Type');
             } elseif (! @copy($localPath, $tempPath)) {
                 throw new FileException("Couldn’t copy $localPath to a temp location.");
             }
 
-            if (filesize($tempPath) > Cms::config()->maxUploadFileSize) {
+            if (filesize($tempPath) > self::getMaxAssetUploadSize()) {
                 throw new AssetException(t('“{filename}” is too large.', [
                     'filename' => $filename,
                 ]));

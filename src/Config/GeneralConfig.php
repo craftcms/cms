@@ -390,7 +390,7 @@ class GeneralConfig extends BaseConfig
      * Only the private IP range check is relaxed for these hosts. Loopback, link-local and cloud metadata addresses are still rejected.
      *
      * Features apply it by creating their `RemoteFileDownloader` with
-     * `new UrlValidator(options: ['allowedPrivateHosts' => Cms::config()->allowedPrivateHosts])`. GraphQL and MCP asset uploads don’t apply it.
+     * `new UrlValidator(options: ['allowedPrivateHosts' => Cms::config()->allowedPrivateHosts])`. Imports apply it; GraphQL and MCP asset uploads don’t.
      *
      * ::: warning
      * Only list hostnames whose DNS you control, and list individual services rather than whole internal domains.

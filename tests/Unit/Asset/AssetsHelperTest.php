@@ -543,13 +543,13 @@ describe('downloadUrl', function () {
         expect(file_get_contents($tempPath))->toBe('hello from the internet');
     });
 
-    test('reports a failed response with its status', function () {
+    test('reports a failed response', function () {
         Http::fake([
             'example.com/*' => Http::response('not found', 404),
         ]);
 
         expect(fn () => AssetsHelper::downloadUrl($this->urlValidator, 'http://example.com/missing.txt', AssetsHelper::tempFilePath()))
-            ->toThrow(InvalidArgumentException::class, 'http://example.com/missing.txt returned a 404 response.');
+            ->toThrow(InvalidArgumentException::class, 'http://example.com/missing.txt couldn’t be downloaded.');
     });
 });
 

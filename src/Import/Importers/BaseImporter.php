@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Import\Importers;
 use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
@@ -592,8 +593,8 @@ abstract class BaseImporter
     public static function urlValidator(?callable $resolver = null): UrlValidator
     {
         return new UrlValidator($resolver, [
-            'ipv4FilterFlags' => FILTER_FLAG_NO_RES_RANGE,
-            'ipv6FilterFlags' => FILTER_FLAG_NO_RES_RANGE,
+            // only the hosts listed in the allowedPrivateHosts config setting can resolve to private IP addresses
+            'allowedPrivateHosts' => Cms::config()->allowedPrivateHosts,
         ]);
     }
 
