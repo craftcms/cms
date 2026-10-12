@@ -27,10 +27,13 @@ beforeAll(() => setIconResolver(() => nothing));
 let app: App | undefined;
 let container: HTMLElement | undefined;
 
-function mount(html: string | null): void {
+function mount(html: string | null, controls = false): void {
   container = document.createElement('div');
   document.body.append(container);
-  app = createApp(MetadataDetails, {html});
+  app = createApp({
+    render: () =>
+      h(MetadataDetails, {html}, controls ? {default: () => h('input')} : {}),
+  });
   app.mount(container);
 }
 
@@ -57,3 +60,25 @@ it('renders nothing without metadata', async () => {
 
   expect(container!.querySelector('craft-disclosure')).toBeNull();
 });
+
+it.each(['<dl>ID 1</dl>', null])(
+  'keeps sidebar controls with metadata %s',
+  async (html) => {
+    mount(html, true);
+    await nextTick();
+
+    const control = container!.querySelector('input');
+    const details = container!.querySelector('.details-html');
+
+    expect(control).not.toBeNull();
+    expect(container!.querySelector('hr') !== null).toBe(html !== null);
+    if (html === null) {
+      expect(details).toBeNull();
+      return;
+    }
+    expect(
+      control!.compareDocumentPosition(details!) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  }
+);
