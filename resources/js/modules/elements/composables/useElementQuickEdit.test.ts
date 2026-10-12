@@ -157,11 +157,14 @@ describe('useElementQuickEdit', () => {
   });
 
   it('opens the element when a row is double-clicked', () => {
-    const {postDate} = renderRow();
+    const {postDate} = renderRow({'data-slideout-width': '65vw'});
 
     const event = dblclick(postDate);
 
-    expect(openSlideout).toHaveBeenCalledWith(CP_URL, expect.anything());
+    expect(openSlideout).toHaveBeenCalledWith(
+      CP_URL,
+      expect.objectContaining({width: '65vw'})
+    );
     expect(event.defaultPrevented).toBe(true);
   });
 
@@ -174,13 +177,18 @@ describe('useElementQuickEdit', () => {
   });
 
   it('opens the element when a card is double-clicked', () => {
-    const {body} = renderCard();
+    const {card, body} = renderCard();
+    card.querySelector<HTMLElement>('craft-card')!.dataset.slideoutWidth =
+      '70vw';
 
     dblclick(body);
 
     // Cards keep the metadata on the inner `<craft-card>`, not the `.element`
     // wrapper, so this only works if both shapes are handled.
-    expect(openSlideout).toHaveBeenCalledWith(CP_URL, expect.anything());
+    expect(openSlideout).toHaveBeenCalledWith(
+      CP_URL,
+      expect.objectContaining({width: '70vw'})
+    );
   });
 
   describe('leaves interactive controls alone', () => {
@@ -226,17 +234,33 @@ describe('useElementQuickEdit', () => {
       expect(event.defaultPrevented).toBe(true);
     });
 
-    it('opens a related chip’s own element rather than the row’s', () => {
-      const {row, assetChip} = renderRow();
+    it.each(['70vw', undefined])(
+      'opens a related chip with its own width (%s)',
+      (width) => {
+        const {row, assetChip} = renderRow();
+        const quickEdit = useElementQuickEdit({
+          openSlideout,
+          refreshResults,
+          slideoutWidth: () => '80vw',
+        });
 
-      dblclick(assetChip.querySelector('.label-link')!);
+        if (width) {
+          assetChip.dataset.slideoutWidth = width;
+        }
 
-      expect(openSlideout).toHaveBeenCalledOnce();
-      expect(openSlideout).toHaveBeenCalledWith(
-        ASSET_CP_URL,
-        expect.objectContaining({opener: row})
-      );
-    });
+        dispatch(
+          assetChip.querySelector('.label-link')!,
+          'dblclick',
+          quickEdit.onDblClick
+        );
+
+        expect(openSlideout).toHaveBeenCalledOnce();
+        expect(openSlideout).toHaveBeenCalledWith(
+          ASSET_CP_URL,
+          expect.objectContaining({opener: row, width})
+        );
+      }
+    );
 
     it('leaves a chip that can’t be edited to the row', () => {
       const {assetChip} = renderRow();

@@ -88,8 +88,12 @@ export function useElementQuickEdit(
     refreshResults();
   }
 
-  function openEditor(url: string, opener: HTMLElement | null = null): void {
-    void open(url, {opener, width: slideoutWidth?.() ?? undefined, onSaved});
+  function openEditor(
+    url: string,
+    opener: HTMLElement | null = null,
+    width: string | null | undefined = slideoutWidth?.()
+  ): void {
+    void open(url, {opener, width: width ?? undefined, onSaved});
   }
 
   /**
@@ -296,7 +300,8 @@ export function useElementQuickEdit(
       const chipRow = rowFrom(chip);
       openEditor(
         chip.dataset.cpUrl!,
-        chipRow instanceof HTMLElement ? chipRow : chip
+        chipRow instanceof HTMLElement ? chipRow : chip,
+        chip.dataset.slideoutWidth ?? null
       );
 
       return;
@@ -327,7 +332,11 @@ export function useElementQuickEdit(
     // Two fast clicks leave a text selection behind.
     window.getSelection()?.removeAllRanges();
 
-    openEditor(element.dataset.cpUrl!, row instanceof HTMLElement ? row : null);
+    openEditor(
+      element.dataset.cpUrl!,
+      row instanceof HTMLElement ? row : null,
+      element.dataset.slideoutWidth ?? null
+    );
   }
 
   return {onDblClick, deferChipClick, openEditor};

@@ -936,8 +936,9 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public static function editViewModelClass(): string;
 
     /**
-     * Returns the width of the slideout this element type is edited in, as a CSS length
-     * (e.g. `'85vw'`), or `null` for the default width.
+     * Returns the width of Vue-based element editor slideouts for this element type,
+     * as a CSS length (e.g. `'85vw'`), or `null` for the default width.
+     * Legacy jQuery element editor slideouts do not use this setting.
      */
     public static function slideoutWidth(): ?string;
 

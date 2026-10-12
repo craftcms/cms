@@ -1082,6 +1082,7 @@ readonly class ElementHtml
                     'label' => $element->getUiLabel(),
                     'url' => $element->getUrl(),
                     'cp-url' => $editable ? $element->getCpEditUrl() : null,
+                    'slideout-width' => $element::slideoutWidth(),
                     'level' => $element->level,
                     'trashed' => $element->trashed,
                     'editable' => $editable,

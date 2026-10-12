@@ -790,6 +790,7 @@ describe('ElementSelectControl', () => {
       const root = await mount({
         props: {
           elementType: 'CraftCms\\Cms\\Asset\\Elements\\Asset',
+          slideoutWidth: '75vw',
           elements: [
             {id: 5, label: 'Some asset', cpEditUrl: '/admin/assets/edit/5'},
           ],
@@ -802,7 +803,7 @@ describe('ElementSelectControl', () => {
       expect(createElementEditor).not.toHaveBeenCalled();
       expect(stub.openSlideout).toHaveBeenCalledWith(
         '/admin/assets/edit/5',
-        expect.objectContaining({onSaved: expect.any(Function)})
+        expect.objectContaining({width: '75vw', onSaved: expect.any(Function)})
       );
     });
 

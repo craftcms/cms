@@ -18,6 +18,20 @@ beforeEach(function () {
     $this->elementHtml = app(ElementHtml::class);
 });
 
+it('includes the element type’s slideout width in chip and card metadata', function (string $method, string $tag) {
+    $element = new ElementHtmlTestElement;
+    $element->id = 123;
+    $element->title = 'Payment #123';
+
+    expect($this->elementHtml->$method($element))
+        ->toContainTag($tag, ['data-slideout-width' => '70vw'])
+        ->and($this->elementHtml->$method(User::findOne()))
+        ->not->toContain('data-slideout-width');
+})->with([
+    'chip' => ['elementChipHtml', 'craft-chip'],
+    'card' => ['elementCardHtml', 'craft-card'],
+]);
+
 describe('elementChipHtml', function () {
     it('fits thumbnails in both chip sizes', function (string $size, int $pixels) {
         $entry = Entry::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')
@@ -176,6 +190,12 @@ describe('elementCardHtml', function () {
 
 class ElementHtmlTestElement extends Element
 {
+    #[Override]
+    public static function slideoutWidth(): ?string
+    {
+        return '70vw';
+    }
+
     #[Override]
     public function canView(User $user): bool
     {
