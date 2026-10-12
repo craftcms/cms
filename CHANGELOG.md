@@ -169,7 +169,7 @@
 - Fixed an accessibility issue where switches in editable tables weren’t labeled by their column headers. ([#19886](https://github.com/craftcms/cms/pull/19886))
 - Fixed a bug where editable tables on the same page could label each other’s inputs, or move focus to another table’s column header when sorting. ([#19886](https://github.com/craftcms/cms/pull/19886))
 - Fixed an accessibility issue where checkboxes and select menus in form-builder table cells were named twice for screen readers, and checkboxes showed their label beside them. ([#19890](https://github.com/craftcms/cms/pull/19890))
-- Button groups that hold a selection are now a single tab stop, and their selection can be changed with the arrow keys, <kbd>Home</kbd>, and <kbd>End</kbd>. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Button groups that hold a selection are now a single tab stop, and their selection can be changed with the arrow keys, <kbd>Home</kbd>, and <kbd>End</kbd>. Single-choice button groups show their focus ring around the whole group. ([#19942](https://github.com/craftcms/cms/pull/19942))
 
 ### Administration
 

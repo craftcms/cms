@@ -22,6 +22,7 @@ A group that holds a single selection follows the keyboard behavior of the WAI-A
 ### Visual
 
 - [x] Adjacent buttons share one border. The hovered, selected, pressed or focused button is drawn above its neighbors, so its whole border and focus ring show. Verified by `overlaps adjacent buttons’ borders, with no gap` and `raises the selected button, so its whole border shows` in `button-group.browser.test.ts`.
+- [x] When the selected button of a single-selection group has keyboard focus, the focus ring goes around the whole group instead, and the group shrinks to fit its buttons so the ring hugs them. The selection still shows which button has focus, since focus and selection move together. In a multi-selection group, or when focus is on an unselected button (nothing was selected yet), the focused button keeps its own ring. Per WCAG 2.4.7 (Focus Visible). Verified by `wraps the focus ring around a single-selection group`, `keeps the focus ring on the focused button in a multi-selection group` and `shrinks to fit its buttons, so the focus ring hugs them` in `button-group.browser.test.ts`.
 - [x] The selected button of a single-selection group doesn't change on hover or press, and has a default cursor, since clicking it does nothing. Verified by the `gives a … group’s selected button a … cursor` cases in `button-group.browser.test.ts`.
 - [ ] The selected button is distinguishable from the others in forced colors mode. Not yet verified.
 

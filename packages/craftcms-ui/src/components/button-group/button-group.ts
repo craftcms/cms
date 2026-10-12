@@ -5,6 +5,7 @@ import styles from './button-group.styles.js';
 
 const START_ATTRIBUTE = 'data-button-group-start';
 const END_ATTRIBUTE = 'data-button-group-end';
+const FOCUS_RING_ATTRIBUTE = 'data-focus-ring';
 
 /**
  * @summary Wrapper component used to group a set of buttons together.
@@ -80,6 +81,7 @@ export default class CraftButtonGroup extends LitElement {
       }
     }
     this._syncTabStop();
+    this._syncFocusRing();
   });
 
   /** The button that last had focus, which keeps the tab stop in multi-select. */
@@ -108,6 +110,7 @@ export default class CraftButtonGroup extends LitElement {
     });
     this.addEventListener('keydown', this._handleKeydown);
     this.addEventListener('focusin', this._handleFocusin);
+    this.addEventListener('focusout', this._handleFocusout);
   }
 
   override firstUpdated(changed: PropertyValues) {
@@ -137,6 +140,7 @@ export default class CraftButtonGroup extends LitElement {
     this.removeEventListener('click', this._handleClick);
     this.removeEventListener('keydown', this._handleKeydown);
     this.removeEventListener('focusin', this._handleFocusin);
+    this.removeEventListener('focusout', this._handleFocusout);
     this._childObserver.disconnect();
     this._stateObserver.disconnect();
   }
@@ -352,6 +356,26 @@ export default class CraftButtonGroup extends LitElement {
     }
   }
 
+  /**
+   * Draws the focus ring around the whole group rather than the focused
+   * button, when that button is the selection of a single-selection group. The
+   * selection then shows which button has focus. In multi-select, focus moves
+   * on its own, so the focused button keeps its own ring.
+   */
+  private _syncFocusRing() {
+    const items = this._items();
+    const focused = items.find((item) => item.matches(':focus-visible'));
+    this.toggleAttribute(
+      FOCUS_RING_ATTRIBUTE,
+      Boolean(
+        focused &&
+        this._holdsSelection(items) &&
+        !this._isMultiple() &&
+        this._isSelected(focused)
+      )
+    );
+  }
+
   private _handleFocusin = (event: FocusEvent) => {
     const item = this._items().find((item) =>
       event.composedPath().includes(item)
@@ -360,6 +384,11 @@ export default class CraftButtonGroup extends LitElement {
       this._focusedItem = item;
       this._syncTabStop();
     }
+    this._syncFocusRing();
+  };
+
+  private _handleFocusout = () => {
+    queueMicrotask(() => this._syncFocusRing());
   };
 
   private _handleKeydown = (event: KeyboardEvent) => {
@@ -415,6 +444,7 @@ export default class CraftButtonGroup extends LitElement {
       next.click();
     }
     this._syncTabStop();
+    this._syncFocusRing();
   };
 
   override render() {
