@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
+use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Route\CurrentElement;
+use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
@@ -22,11 +26,23 @@ use CraftCms\Cms\View\Contracts\ProvidesObjectTemplateSuggestions;
 use CraftCms\Cms\View\TemplateMode;
 use DateTimeInterface;
 use DateTimeZone;
+use FilesystemIterator;
+use Illuminate\Routing\Route;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use ReflectionClass;
+use ReflectionFunction;
+use ReflectionFunctionAbstract;
+use ReflectionIntersectionType;
+use ReflectionMethod;
+use ReflectionNamedType;
+use ReflectionParameter;
+use ReflectionType;
+use ReflectionUnionType;
 use SplFileInfo;
 
 use function CraftCms\Cms\t;
@@ -590,5 +606,215 @@ class SelectOptions
                 'options' => array_values(Arr::sort($suggestions, 'label')),
             ],
         ];
+    }
+
+    /**
+     * Returns the application’s named routes and controller actions, for element route autosuggestions.
+     *
+     * Controller actions that are already registered as routes are excluded, since element routes can
+     * only dispatch to them when the registered route matches the element’s URI.
+     *
+     * @param  class-string<ElementInterface>|null  $elementType  Excludes controller actions whose element
+     *                                                            parameter (`#[CurrentElement]`, or else `$element`) can’t accept this element type.
+     *
+     * @phpstan-return list<array{label: string, type: 'optgroup', options: list<array{label: string, value: string, data: array{hint: string|null, keywords: string|null}}>}>
+     *
+     * @since 6.0.0
+     */
+    public static function getRouteSuggestions(?string $elementType = null): array
+    {
+        $appNamespace = app()->getNamespace();
+        $routes = app(Router::class)->getRoutes()->getRoutes();
+        $suggestions = [];
+        $registeredActions = [];
+
+        foreach ($routes as $route) {
+            $action = ltrim($route->getActionName(), '\\');
+            $registeredActions[strtolower(str_contains($action, '@') ? $action : "$action@__invoke")] = true;
+            $name = $route->getName();
+
+            if (
+                $name === null ||
+                ! in_array('GET', $route->methods(), true) ||
+                str_starts_with($name, 'craft.') ||
+                ! self::isAppRoute($route, $action, $appNamespace) ||
+                ! ElementRoute::isValid($name) ||
+                ($elementType !== null && ! self::routeAcceptsElementType($route, $action, $elementType))
+            ) {
+                continue;
+            }
+
+            $uri = '/'.ltrim($route->uri(), '/');
+            $suggestions[$name] = [
+                'label' => $name,
+                'value' => $name,
+                'data' => [
+                    'hint' => $uri,
+                    'keywords' => $uri,
+                ],
+            ];
+        }
+
+        foreach (self::controllerActions($appNamespace) as $action) {
+            $key = strtolower(str_contains($action, '@') ? $action : "$action@__invoke");
+            if (isset($registeredActions[$key]) || ($elementType !== null && ! self::actionAcceptsElementType($action, $elementType))) {
+                continue;
+            }
+
+            $suggestions[$action] = [
+                'label' => $action,
+                'value' => $action,
+                'data' => [
+                    'hint' => null,
+                    'keywords' => null,
+                ],
+            ];
+        }
+
+        if ($suggestions === []) {
+            return [];
+        }
+
+        return [
+            [
+                'label' => t('Routes'),
+                'type' => 'optgroup',
+                'options' => array_values(Arr::sort($suggestions, 'label')),
+            ],
+        ];
+    }
+
+    /**
+     * Returns whether a named route’s closure or controller action can accept the given element type.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    private static function routeAcceptsElementType(Route $route, string $action, string $elementType): bool
+    {
+        if ($action !== 'Closure') {
+            return self::actionAcceptsElementType($action, $elementType);
+        }
+
+        $closure = $route->getAction('uses');
+
+        return ! $closure instanceof Closure || self::functionAcceptsElementType(new ReflectionFunction($closure), $elementType);
+    }
+
+    /**
+     * Returns whether a controller action can accept the given element type.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    private static function actionAcceptsElementType(string $action, string $elementType): bool
+    {
+        [$class, $method] = explode('@', str_contains($action, '@') ? $action : "$action@__invoke", 2);
+
+        return ! method_exists($class, $method) || self::functionAcceptsElementType(new ReflectionMethod($class, $method), $elementType);
+    }
+
+    /**
+     * Returns whether a route handler’s element parameter can accept the given element type.
+     *
+     * The element parameter is the one with a `#[CurrentElement]` attribute, or else one named `$element`.
+     * Handlers without an element parameter accept any element type.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    private static function functionAcceptsElementType(ReflectionFunctionAbstract $function, string $elementType): bool
+    {
+        $parameters = $function->getParameters();
+        $elementParameters = array_filter($parameters, fn (ReflectionParameter $parameter): bool => $parameter->getAttributes(CurrentElement::class) !== [])
+            ?: array_filter($parameters, fn (ReflectionParameter $parameter): bool => $parameter->getName() === 'element');
+
+        return array_all($elementParameters, fn (ReflectionParameter $parameter): bool => self::typeAccepts($parameter->getType(), $elementType));
+    }
+
+    /**
+     * Returns whether a parameter type accepts an instance of the given class.
+     */
+    private static function typeAccepts(?ReflectionType $type, string $class): bool
+    {
+        return match (true) {
+            $type === null => true,
+            $type instanceof ReflectionNamedType => $type->isBuiltin()
+                ? in_array($type->getName(), ['mixed', 'object'], true)
+                : is_a($class, $type->getName(), true),
+            $type instanceof ReflectionUnionType => array_any($type->getTypes(), fn (ReflectionType $type): bool => self::typeAccepts($type, $class)),
+            $type instanceof ReflectionIntersectionType => array_all($type->getTypes(), fn (ReflectionType $type): bool => self::typeAccepts($type, $class)),
+            default => true,
+        };
+    }
+
+    /**
+     * Returns whether a route is defined by the application, rather than Craft, a plugin, or a package.
+     */
+    private static function isAppRoute(Route $route, string $action, string $appNamespace): bool
+    {
+        if ($action !== 'Closure') {
+            return str_starts_with($action, $appNamespace);
+        }
+
+        $closure = $route->getAction('uses');
+
+        if (! $closure instanceof Closure) {
+            return false;
+        }
+
+        $file = new ReflectionFunction($closure)->getFileName();
+
+        return $file !== false && ! str_contains($file, DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR);
+    }
+
+    /**
+     * Returns the public actions of the application’s controllers, as element route destinations.
+     *
+     * @return list<string>
+     */
+    private static function controllerActions(string $appNamespace): array
+    {
+        $directory = app_path('Http/Controllers');
+
+        if (! is_dir($directory)) {
+            return [];
+        }
+
+        $actions = [];
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS));
+
+        foreach ($files as $file) {
+            /** @var SplFileInfo $file */
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $relativePath = substr($file->getPathname(), strlen($directory) + 1, -4);
+            $class = $appNamespace.'Http\\Controllers\\'.str_replace(DIRECTORY_SEPARATOR, '\\', $relativePath);
+
+            if (! class_exists($class)) {
+                continue;
+            }
+
+            $reflection = new ReflectionClass($class);
+
+            if (! $reflection->isInstantiable()) {
+                continue;
+            }
+
+            foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+                if ($method->isStatic() || $method->getDeclaringClass()->getName() !== $class) {
+                    continue;
+                }
+
+                $name = $method->getName();
+
+                if ($name === '__invoke') {
+                    $actions[] = $class;
+                } elseif (! str_starts_with($name, '__')) {
+                    $actions[] = "$class@$name";
+                }
+            }
+        }
+
+        return $actions;
     }
 }

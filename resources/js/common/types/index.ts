@@ -55,8 +55,7 @@ export interface SectionSiteSettingsData {
   singleHomepage: boolean;
   singleUri: string | null;
   uriFormat: string | null;
-  routeType: 'template' | 'route';
-  route: string | null;
+  destination: string;
 }
 
 export interface ChipIndicator {
