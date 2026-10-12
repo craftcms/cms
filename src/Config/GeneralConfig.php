@@ -381,6 +381,40 @@ class GeneralConfig extends BaseConfig
     ];
 
     /**
+     * @var string[] Hostnames that are allowed to resolve to private IP addresses (e.g. `10.0.0.0/8`, `192.168.0.0/16`)
+     *               when a feature that fetches remote files opts in to it.
+     *
+     * When using UrlValidator, by default, URLs that resolve to private IP addresses are rejected. Use an exact hostname,
+     * or a leading `*.` wildcard to match any subdomain (`*.site.testing.local` matches `api.site.testing.local`, but not `site.testing.local` itself).
+     *
+     * Only the private IP range check is relaxed for these hosts. Loopback, link-local and cloud metadata addresses are still rejected.
+     *
+     * Features apply it by creating their `RemoteFileDownloader` with
+     * `new UrlValidator(options: ['allowedPrivateHosts' => Cms::config()->allowedPrivateHosts])`. GraphQL and MCP asset uploads don’t apply it.
+     *
+     * ::: warning
+     * Only list hostnames whose DNS you control, and list individual services rather than whole internal domains.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * ->allowedPrivateHosts([
+     *     'api.internal',
+     *     '*.ddev.site',
+     * ])
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ALLOWED_PRIVATE_HOSTS=api.internal,*.ddev.site
+     * ```
+     * :::
+     *
+     * @group Security
+     *
+     * @since 6.0.0
+     */
+    public array $allowedPrivateHosts = [];
+
+    /**
      * @var bool Whether users should be allowed to create similarly-named tags.
      *
      * ::: code
@@ -3463,6 +3497,31 @@ class GeneralConfig extends BaseConfig
     public function allowedFileExtensions(array $value): self
     {
         $this->allowedFileExtensions = array_map(strtolower(...), $value);
+
+        return $this;
+    }
+
+    /**
+     * Hostnames that are allowed to resolve to private IP addresses (e.g. `10.0.0.0/8`, `192.168.0.0/16`)
+     * when a feature that fetches remote files opts in to it via UrlValidator.
+     *
+     * ```php
+     * ->allowedPrivateHosts([
+     *     'api.internal',
+     *     '*.ddev.site',
+     * ])
+     * ```
+     *
+     * @group Security
+     *
+     * @param  string[]  $value
+     *
+     * @see $allowedPrivateHosts
+     * @since 6.0.0
+     */
+    public function allowedPrivateHosts(array $value): self
+    {
+        $this->allowedPrivateHosts = $value;
 
         return $this;
     }
