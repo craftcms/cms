@@ -8,7 +8,7 @@ The subclass adds a reveal button in the `suffix` slot. Its state is carried by 
 
 ### Semantics
 
-- [x] The reveal button is slotted into `suffix` in the light DOM, so it follows the input in the Tab order. Per WCAG 2.4.3 (Focus Order). Verified by `places the reveal button in the suffix slot` in `input-password.test.ts`.
+- [ ] The reveal button is slotted into `suffix` in the light DOM, so it follows the input in the Tab order. Per WCAG 2.4.3 (Focus Order). Not yet verified: `places the reveal button in the suffix slot` in `input-password.test.ts` checks slot assignment, not the Tab sequence.
 - [ ] The reveal button's name says what it will do, "Show" or "Hide", and changes with the state. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified. `toggles the input type when the reveal button is clicked` in `input-password.test.ts` checks the type, not the name.
 - [ ] The reveal button's name says what it reveals. Per WCAG 2.4.6 (Headings and Labels). Known gap: it's "Show" or "Hide" alone, not "Show password".
 - [ ] The reveal button is `type="button"`, so pressing it doesn't submit the form. Per WCAG 3.2.2 (On Input). Not yet verified.
