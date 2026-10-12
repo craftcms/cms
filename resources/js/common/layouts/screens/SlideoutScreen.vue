@@ -88,6 +88,7 @@
   interface ScreenPageProps {
     title?: string;
     readOnly?: boolean;
+    showReadOnlyNotice?: boolean;
     submitButtonLabel?: string | null;
     /** The response's `primaryAction()` button, rendered server-side. */
     primaryAction?: string | null;
@@ -482,7 +483,9 @@
           </slot>
         </LayoutSlotOutlet>
 
-        <CalloutReadOnly v-if="readOnly" />
+        <CalloutReadOnly
+          v-if="readOnly && chrome.showReadOnlyNotice !== false"
+        />
 
         <craft-field-group>
           <slot></slot>

@@ -107,6 +107,7 @@
   const page = usePage<{
     title: string;
     readOnly?: boolean;
+    showReadOnlyNotice?: boolean;
     primaryAction?: string | null;
     crumbs?: Array<BreadcrumbItem> | null;
     subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
@@ -347,7 +348,12 @@
                               />
                             </slot>
                           </LayoutSlotOutlet>
-                          <CalloutReadOnly v-if="readOnly" />
+                          <CalloutReadOnly
+                            v-if="
+                              readOnly &&
+                              page.props.showReadOnlyNotice !== false
+                            "
+                          />
                           <div
                             :class="{
                               'cp-content-view': true,

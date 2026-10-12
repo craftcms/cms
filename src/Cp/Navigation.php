@@ -173,7 +173,7 @@ readonly class Navigation
         }
 
         if (Sections::getTotalEditableSections() || Gate::check('manageReleases')) {
-            $navItems->add(new NavItem()
+            $contentItems->add(new NavItem()
                 ->label(t('Releases'))
                 ->href(route('craft.cp.releases.index'))
                 ->icon('calendar'));

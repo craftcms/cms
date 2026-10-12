@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\ViewModels\ReleaseViewModel;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Releases;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Html;
@@ -68,16 +69,17 @@ class ReleasesController
         $formatter = new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::MEDIUM, IntlDateFormatter::SHORT, Cms::timezone());
         $rows = $paginator->getCollection()->map(function (Release $release) use ($formatter): array {
             $date = $release->publishedAt ?? $release->plannedAt;
+            $canDelete = $release->status->isMutable() && Gate::allows('manage', $release);
 
             return [
                 'id' => $release->id,
                 'name' => ['label' => $release->name, 'url' => route('craft.cp.releases.show', $release)],
                 'status' => ['html' => Html::tag('craft-badge', t(ucfirst($release->status->value)), [
                     'fill' => match ($release->status) {
-                        ReleaseStatus::Draft => 'neutral',
-                        ReleaseStatus::Scheduled, ReleaseStatus::Publishing => 'info',
-                        ReleaseStatus::Published => 'success',
-                        ReleaseStatus::Failed => 'error',
+                        ReleaseStatus::Draft => Color::Gray->value,
+                        ReleaseStatus::Scheduled, ReleaseStatus::Publishing => Color::Sky->value,
+                        ReleaseStatus::Published => Color::Emerald->value,
+                        ReleaseStatus::Failed => Color::Red->value,
                     },
                 ])],
                 'date' => $date === null ? t('Not set') : ['html' => Html::tag('time',
@@ -85,6 +87,10 @@ class ReleasesController
                     ['datetime' => $date->toIso8601String()],
                 )],
                 'itemCount' => (int) $release->items_count,
+                '_deletable' => $canDelete,
+                '_deleteUrl' => $canDelete ? route('craft.cp.releases.destroy', $release) : null,
+                '_deleteLabel' => t('Delete {name}', ['name' => $release->name]),
+                '_deleteConfirmMessage' => t('Delete “{name}”? Its unpublished drafts will be preserved.', ['name' => $release->name]),
             ];
         });
 
@@ -104,6 +110,7 @@ class ReleasesController
             ->searchable()
             ->emptyMessage(t('No releases exist yet.'))
             ->when($canManage, fn (UiTable $table) => $table
+                ->deletable()
                 ->createAction(t('New release'), route('craft.cp.releases.create'))
                 ->createActionInPageHeader());
 
@@ -144,6 +151,7 @@ class ReleasesController
             'release' => Inertia::always($viewModel->release(...)),
             'readiness' => Inertia::always($viewModel->readiness(...)),
             'readOnly' => Inertia::always($viewModel->readOnly(...)),
+            'showReadOnlyNotice' => false,
             'formAdditionalButtons' => Inertia::always($viewModel->formAdditionalButtons(...)),
         ]);
     }

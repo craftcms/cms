@@ -1,6 +1,9 @@
 import '../../../../css/cp.css';
 import {createApp, h, nextTick, reactive, ref} from 'vue';
-import {mergeDataIntoQueryString} from '@inertiajs/core';
+import {
+  mergeDataIntoQueryString,
+  router as inertiaRouter,
+} from '@inertiajs/core';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
 import AdminTable from './AdminTable.vue';
@@ -13,7 +16,11 @@ import type {
   AdminTableRequest,
 } from '../types';
 
-const {reload, get} = vi.hoisted(() => ({reload: vi.fn(), get: vi.fn()}));
+const {reload, get, openSlideout} = vi.hoisted(() => ({
+  reload: vi.fn(),
+  get: vi.fn(),
+  openSlideout: vi.fn(),
+}));
 let inertiaPage: {url: string; props: {readOnly: boolean}};
 
 vi.mock('@inertiajs/vue3', async () => ({
@@ -21,6 +28,8 @@ vi.mock('@inertiajs/vue3', async () => ({
   usePage: () => inertiaPage,
   router: {reload, get},
 }));
+
+vi.mock('@/common/slideouts', () => ({openSlideout}));
 
 const records = [
   {id: 1, name: 'Beta', status: 'enabled', count: 2},
@@ -36,6 +45,7 @@ beforeEach(() => {
   vi.stubGlobal('Craft', {systemUid: 'admin-table-test'});
   reload.mockClear();
   get.mockReset();
+  openSlideout.mockReset().mockResolvedValue(null);
   inertiaPage = reactive({url: '/', props: {readOnly: false}});
   vi.stubGlobal(
     'fetch',
@@ -123,6 +133,40 @@ function mountNode(options: Partial<TableProps> = {}) {
   teardown = () => app.unmount();
   return host;
 }
+
+it.each(['mouse', 'keyboard'])(
+  'opens slideout links by %s without navigating the underlying page',
+  async (activation) => {
+    const visit = vi.spyOn(inertiaRouter, 'visit').mockImplementation(() => {});
+    const prefetch = vi
+      .spyOn(inertiaRouter, 'prefetch')
+      .mockImplementation(() => {});
+    mountNode({
+      rows: [
+        {
+          id: 1,
+          name: {label: 'Release draft', url: '/content/draft', slideout: true},
+        },
+      ],
+    });
+    const link = page.getByRole('link', {name: 'Release draft'});
+
+    if (activation === 'mouse') {
+      await link.click();
+    } else {
+      link.element().focus();
+      await userEvent.keyboard('{Enter}');
+    }
+
+    expect(openSlideout).toHaveBeenCalledOnce();
+    expect(openSlideout).toHaveBeenCalledWith(
+      '/content/draft',
+      expect.any(Object)
+    );
+    expect(visit).not.toHaveBeenCalled();
+    expect(prefetch).not.toHaveBeenCalled();
+  }
+);
 
 it('renders HTML icon descriptions and hides only their column header text', async () => {
   mountNode({

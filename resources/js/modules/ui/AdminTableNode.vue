@@ -203,6 +203,7 @@
       CpLink,
       {
         href: url,
+        inertia: !link.slideout,
         // A modified click still follows the link, to open the screen in a tab.
         onClick: link.slideout
           ? (event: MouseEvent) => {

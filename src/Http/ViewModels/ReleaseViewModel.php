@@ -16,6 +16,7 @@ use CraftCms\Cms\Release\Exceptions\ReleaseException;
 use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Models\ReleaseItem;
 use CraftCms\Cms\Release\Releases;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownParser;
 use CraftCms\Cms\Support\Html;
@@ -111,27 +112,33 @@ class ReleaseViewModel extends ViewModel
     {
         $readiness = $this->readiness();
         $rows = array_map(function (ReleaseItemData $item) use ($readiness): array {
-            $messages = $readiness?->itemErrors[$item->id] ?? [];
-            if ($messages === []) {
-                $messages = $readiness?->itemWarnings[$item->id] ?? [];
-            }
-
-            $state = $readiness === null ? t('Not available') : t('Ready');
-            if ($messages !== []) {
-                $state = ['html' => (string) Html::ul($messages, ['class' => 'list-disc ps-5'], encode: true)];
-            }
+            $errors = $readiness?->itemErrors[$item->id] ?? [];
+            $warnings = $readiness?->itemWarnings[$item->id] ?? [];
+            $messages = $errors !== [] ? $errors : $warnings;
+            [$label, $color] = match (true) {
+                $readiness === null => [t('Not available'), Color::Gray],
+                $errors !== [] => [t('Not ready'), Color::Red],
+                $warnings !== [] => [t('Ready with warnings'), Color::Amber],
+                default => [t('Ready'), Color::Emerald],
+            };
 
             if ($item->publishedAt !== null) {
                 $date = new \IntlDateFormatter(app()->getLocale(), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT, Cms::timezone());
-                $state = t('Published {date}', ['date' => $date->format($item->publishedAt)]);
+                $label = t('Published {date}', ['date' => $date->format($item->publishedAt)]);
+                $color = Color::Emerald;
+            }
+
+            $state = Html::tag('craft-badge', Html::encode($label), ['fill' => $color->value]);
+            if ($messages !== []) {
+                $state .= Html::ul($messages, ['class' => 'list-disc ps-5'], encode: true);
             }
 
             return [
                 'id' => $item->id,
-                'title' => ['label' => $item->title, 'url' => $item->url],
+                'title' => ['label' => $item->title, 'url' => $item->url, 'slideout' => true],
                 'draftName' => $item->draftName,
                 'sites' => implode(', ', $item->sites) ?: t('Not available'),
-                'readiness' => $state,
+                'readiness' => ['html' => $state],
                 '_deletable' => $item->canDetach,
                 '_deleteUrl' => $item->canDetach && $item->draftId !== null
                     ? route('craft.cp.releases.detach', [$this->release, $item->draftId])

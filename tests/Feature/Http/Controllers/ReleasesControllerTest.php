@@ -126,6 +126,7 @@ it('shows release item counts while restricting management to release managers',
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes.0.props.createUrl', route('craft.cp.releases.create'))
+            ->where('ui.nodes.0.props.rows.0._deletable', true)
             ->where('ui.nodes.0.props.rows.0.itemCount', 1));
 
     $this->flushSession();
@@ -135,6 +136,8 @@ it('shows release item counts while restricting management to release managers',
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes.0.props.createUrl', null)
+            ->where('ui.nodes.0.props.rows.0._deletable', false)
+            ->where('ui.nodes.0.props.rows.0._deleteUrl', null)
             ->where('ui.nodes.0.props.rows.0.id', $release->id)
             ->where('ui.nodes.0.props.rows.0.itemCount', 1));
 
@@ -254,6 +257,12 @@ it('sends release errors back to the form for non-JSON requests', function () {
 
     $release->update(['status' => ReleaseStatus::Published]);
 
+    get(route('craft.cp.releases.index'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('ui.nodes.0.props.rows.0._deletable', false)
+            ->where('ui.nodes.0.props.rows.0._deleteUrl', null));
+
     delete(route('craft.cp.releases.destroy', $release))
         ->assertSessionHasErrors(['release' => 'Scheduled and completed releases cannot be changed.']);
 
@@ -325,15 +334,23 @@ it('shows release metadata without content links or removal actions', function (
     expect($this->releases->releaseForDraft($draft)?->id)->toBe($release->id);
 });
 
-it('deletes a release through its advertised form action without deleting its draft', function () {
+it('deletes a mutable release through its advertised action without deleting its draft', function (string $source, ReleaseStatus $status) {
     $draft = releaseControllerDraft($this->actor);
     $release = $this->releases->create('Delete release', null, $this->actor);
     $this->releases->attach($release, $draft, $this->actor);
+    $release->update(['status' => $status]);
 
-    $response = get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
-        ->assertOk()
-        ->assertJsonPath('props.readOnly', false);
-    $action = $response->json('props.formAdditionalButtons.0.action');
+    if ($source === 'form') {
+        $response = get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
+            ->assertOk()
+            ->assertJsonPath('props.readOnly', false);
+        $action = $response->json('props.formAdditionalButtons.0.action');
+    } else {
+        $response = get(route('craft.cp.releases.index'), headers: ['X-Inertia' => 'true'])
+            ->assertOk()
+            ->assertJsonPath('props.ui.nodes.0.props.rows.0._deleteUrl', route('craft.cp.releases.destroy', $release));
+        $action = ['method' => 'DELETE', 'url' => $response->json('props.ui.nodes.0.props.rows.0._deleteUrl')];
+    }
 
     $this->json($action['method'], $action['url'])
         ->assertOk()
@@ -342,4 +359,7 @@ it('deletes a release through its advertised form action without deleting its dr
     expect($release->fresh())->toBeNull()
         ->and($this->releases->releaseForDraft($draft))->toBeNull()
         ->and(EntryElement::find()->draftId($draft->draftId)->status(null)->one()?->title)->toBe('Controller change');
-});
+})->with([
+    'draft form' => ['form', ReleaseStatus::Draft],
+    'failed index row' => ['index', ReleaseStatus::Failed],
+]);
