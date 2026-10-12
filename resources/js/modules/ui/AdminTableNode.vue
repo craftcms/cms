@@ -30,6 +30,7 @@
     BulkAction,
     BulkActionItem,
   } from '@/modules/elements/types/actions';
+  import {AdminTableCreateSlideout} from '@/modules/admin-table/create-slideout';
   import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
@@ -49,15 +50,32 @@
     TableModalAction,
     TableNodePayload,
     TableRow,
+    TableRowLink,
   } from './table-types';
 
   const props = defineProps<{
     node: TableNodePayload;
     /** Overrides the node's own appearance. */
     appearance?: TableAppearanceValue;
+    /**
+     * Replaces reloading the page's `ui` after the table's rows change, for a
+     * table that isn't part of the page's own `ui` (such as one in a slideout).
+     */
+    onRefresh?: () => void;
   }>();
   const pageTableFlush = inject(UiTableFlush, ref(false));
   provide(UiTableFlush, ref(false));
+  provide(
+    AdminTableCreateSlideout,
+    computed(() =>
+      props.node.props.createSlideout
+        ? {
+            width: props.node.props.createSlideoutWidth ?? undefined,
+            onSaved: refreshTable,
+          }
+        : null
+    )
+  );
 
   /**
    * The prop, then the node's own appearance, then `flush` when the table is
@@ -217,12 +235,59 @@
               }
 
               event.preventDefault();
-              void openSlideout(url, {onSaved: refreshTable});
+              openLinkSlideout(url, link);
             }
           : undefined,
       },
       () => link.label
     );
+  }
+
+  function openLinkSlideout(url: string, link: TableRowLink): void {
+    void openSlideout(url, {
+      width: link.slideoutWidth ?? undefined,
+      onSaved: refreshTable,
+    });
+  }
+
+  function rowLink(row: TableRow): TableRowLink | null {
+    if ('_link' in row) {
+      return row._link ?? null;
+    }
+
+    const value = row[props.node.props.columns[0]?.key ?? ''];
+
+    return value !== null &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      'url' in value
+      ? value
+      : null;
+  }
+
+  function onRowDblclick(row: TableRow, event: MouseEvent): void {
+    const link = rowLink(row);
+    const url = link?.url;
+
+    if (
+      !link ||
+      !url ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    window.getSelection()?.removeAllRanges();
+
+    if (link.slideout) {
+      openLinkSlideout(url, link);
+    } else {
+      router.visit(url);
+    }
   }
 
   function renderIcon(icon: TableIcon) {
@@ -560,6 +625,12 @@
   }
 
   function refreshUi(): void {
+    if (props.onRefresh) {
+      props.onRefresh();
+
+      return;
+    }
+
     router.reload({only: ['ui']});
   }
 
@@ -636,6 +707,7 @@
       @action-error="onOrderFailed"
       @load-error="onLoadFailed"
       @action-performed="refreshUi"
+      @row-dblclick="onRowDblclick"
     >
       <template v-if="$slots['empty-row']" #empty-row>
         <slot name="empty-row" />

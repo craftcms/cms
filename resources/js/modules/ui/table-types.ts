@@ -15,7 +15,11 @@ export interface TableLink {
   url?: string | null;
   /** Opens the URL's screen in a slideout, reloading the table once it's saved. */
   slideout?: boolean;
+  /** The slideout's width, as a CSS length. */
+  slideoutWidth?: string | null;
 }
+
+export type TableRowLink = Omit<TableLink, 'label'>;
 
 /** A menu item that opens a server-built form in a modal instead of following a link. */
 export interface TableModalAction {
@@ -86,6 +90,8 @@ export type TableRow = Record<string, TableCellValue> & {
   _status?: TableStatus | null;
   _search?: string;
   _sort?: Record<string, string | number | boolean | null>;
+  /** What double-clicking the row opens, instead of its first column's link. */
+  _link?: TableRowLink | null;
 };
 
 export interface TableProps {
@@ -99,6 +105,8 @@ export interface TableProps {
   emptyMessage: string | null;
   createLabel: string | null;
   createUrl: string | null;
+  createSlideout?: boolean;
+  createSlideoutWidth?: string | null;
   createMenuItems: Array<{label: string; url: string}> | null;
   createActionInPageHeader: boolean;
   reorderUrl: string | null;

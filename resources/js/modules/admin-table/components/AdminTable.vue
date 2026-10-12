@@ -119,6 +119,7 @@
     'action-performed': [];
     'load-error': [error: unknown];
     'action-error': [error: unknown];
+    'row-dblclick': [row: TData, event: MouseEvent];
   }>();
 
   const managed = props.table
@@ -311,6 +312,9 @@
         :get-row-label="getRowLabel"
         :interactions-disabled="interactionsDisabled || loading"
         @reorder="onReorder"
+        @row-dblclick="
+          (row, event) => emit('row-dblclick', row.original, event)
+        "
       >
         <template #empty-row v-if="$slots['empty-row'] || managed">
           <slot name="empty-row"><span hidden /></slot>
