@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Import;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
 use Override;
@@ -18,6 +20,16 @@ use function CraftCms\Cms\t;
  */
 class UserImporter extends ElementImporter
 {
+    /**
+     * The sensitive user attributes that can be imported. They don’t grant any privileges.
+     */
+    private const array IMPORTABLE_SENSITIVE_ATTRIBUTES = [
+        'affiliatedSiteId',
+        'email',
+        'passwordResetRequired',
+        'photoId',
+    ];
+
     #[Override]
     public static function targetClass(): string
     {
@@ -55,5 +67,16 @@ class UserImporter extends ElementImporter
     {
         $fieldLayout = Fields::getLayoutByType(User::class, false);
         $this->fieldLayout($fieldLayout ? $fieldLayout->uid : User::class);
+    }
+
+    #[Override]
+    public function setAttributesForImport(ElementInterface $element, array $attributes, array $data): void
+    {
+        // sensitive user attributes (e.g. admin) can't be imported, apart from the ones the importer offers
+        parent::setAttributesForImport(
+            $element,
+            Arr::except($attributes, array_diff(User::SENSITIVE_ATTRIBUTES, self::IMPORTABLE_SENSITIVE_ATTRIBUTES)),
+            $data,
+        );
     }
 }

@@ -230,7 +230,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var bool Admin
      */
     #[AllowedInSandbox]
-    #[Importable('admin', 'Is Admin?', canBeMatchCriteria: false)]
     public bool $admin = false;
 
     /**
@@ -248,7 +247,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var string|null Password
      */
-    #[Importable('password', 'Password', canBeMatchCriteria: false)]
     public ?string $password = null;
 
     /**
