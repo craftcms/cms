@@ -188,30 +188,18 @@
   --c-form-control-border-style: solid;
   --c-form-control-radius: var(--c-radius-md);
   --c-form-control-spacing-inline: var(--c-spacing-md);
-  --c-form-control-spacing-block: var(--c-spacing-sm);
   --c-form-control-height: var(--c-size-control-md);
 
   /* Input */
-  --c-input-fill: var(--c-form-control-fill);
+  /* Inputs take on their container's background */
+  --c-input-fill: transparent;
   --c-input-text: var(--c-form-control-text);
   --c-input-border-color: var(--c-form-control-border-color);
   --c-input-border-width: var(--c-form-control-border-width);
   --c-input-border-style: var(--c-form-control-border-style);
   --c-input-radius: var(--c-form-control-radius);
   --c-input-spacing-inline: var(--c-form-control-spacing-inline);
-  --c-input-spacing-block: var(--c-form-control-spacing-block);
-  --c-input-shadow: var(--inset-shadow-sm);
-
-  /* Select */
-  --c-select-fill: var(--c-form-control-fill);
-  --c-select-text: var(--c-form-control-text);
-  --c-select-border-color: var(--c-form-control-border-color);
-  --c-select-border-width: var(--c-form-control-border-width);
-  --c-select-border-style: var(--c-form-control-border-style);
-  --c-select-radius: var(--c-form-control-radius);
-  --c-select-spacing-inline: var(--c-form-control-spacing-inline);
-  --c-select-spacing-block: var(--c-form-control-spacing-block);
-  --c-select-shadow: var(--shadow-sm);
+  --c-input-shadow: inset 0 2px 4px rgb(0 0 0 / 0.08);
 
   /* Checkbox */
   --c-checkbox-size: var(--c-size-control-xs);

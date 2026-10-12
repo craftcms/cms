@@ -60,7 +60,7 @@ export default css`
     );
 
     &:has(+ .form-field__help-text) {
-      margin-block-end: var(--c-spacing-xs);
+      margin-block-end: 0;
     }
   }
 

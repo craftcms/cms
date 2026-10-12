@@ -756,13 +756,20 @@ export default class CraftActionMenu extends CraftPopover {
       craft-action-menu [data-search-hidden] {
         display: none !important;
       }
+      craft-action-menu .action-menu__search {
+        padding: var(--c-spacing-sm);
+      }
       craft-action-menu .action-menu__search input {
         box-sizing: border-box;
         width: 100%;
-        padding: var(--c-spacing-xs);
-        border: 1px solid var(--c-border-form);
-        border-radius: var(--c-radius-sm);
-        background-color: var(--c-surface-form);
+        padding-block: var(--c-spacing-xs);
+        padding-inline: var(--c-spacing-sm);
+        border: var(--c-input-border-width) var(--c-input-border-style)
+          var(--c-input-border-color);
+        border-radius: var(--c-input-radius);
+        background-color: var(--c-input-fill);
+        box-shadow: var(--c-input-shadow);
+        color: var(--c-input-text);
         font: inherit;
       }
     `;
