@@ -52,12 +52,39 @@ export default class CraftButtonGroup extends LitElement {
    */
   private _childObserver = new MutationObserver(() => this._markEnds());
 
+  /**
+   * Buttons use `active` for their pressed state too, and clear it when a
+   * mouse press ends, including on the selected button. In single-selection
+   * mode that would leave the selected button looking deselected, so it gets
+   * its `active` back.
+   */
+  private _selectionObserver = new MutationObserver((records) => {
+    if (!this.name || this.multiple) {
+      return;
+    }
+    for (const {target} of records) {
+      if (
+        target instanceof Element &&
+        target.localName === 'craft-button' &&
+        !target.hasAttribute('active') &&
+        target.getAttribute('value') === this.value
+      ) {
+        target.setAttribute('active', '');
+      }
+    }
+  });
+
   override connectedCallback() {
     super.connectedCallback();
     this._childObserver.observe(this, {
       childList: true,
       attributes: true,
       attributeFilter: ['hidden', 'style', 'class'],
+      subtree: true,
+    });
+    this._selectionObserver.observe(this, {
+      attributes: true,
+      attributeFilter: ['active'],
       subtree: true,
     });
   }
@@ -87,6 +114,7 @@ export default class CraftButtonGroup extends LitElement {
     super.disconnectedCallback();
     this.removeEventListener('click', this._handleClick);
     this._childObserver.disconnect();
+    this._selectionObserver.disconnect();
   }
 
   /**

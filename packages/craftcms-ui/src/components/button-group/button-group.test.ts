@@ -1,5 +1,6 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftButton from '../button/button.js';
+import type CraftButtonGroup from './button-group.js';
 import '../button/button.js';
 import './button-group.js';
 
@@ -15,7 +16,7 @@ beforeEach(() => {
 describe('craft-button-group', () => {
   async function createGroup(multiple: boolean): Promise<{
     form: HTMLFormElement;
-    group: HTMLElement;
+    group: CraftButtonGroup;
     buttons: CraftButton[];
   }> {
     const form = document.createElement('form');
@@ -87,6 +88,22 @@ describe('craft-button-group', () => {
 
     expect(value).toBe('events');
     expect(new FormData(form).get('topics')).toBe('events');
+  });
+
+  it('keeps the selected button selected when it’s clicked again', async () => {
+    const {group, buttons} = await createGroup(false);
+    click(buttons[1]!);
+    await group.updateComplete;
+
+    buttons[1]!.dispatchEvent(new MouseEvent('mousedown'));
+    buttons[1]!.dispatchEvent(new MouseEvent('mouseup'));
+    click(buttons[1]!);
+    await buttons[1]!.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(group.value).toBe('events');
+    expect(buttons[1]!.hasAttribute('active')).toBe(true);
+    expect(buttons[1]!.getAttribute('aria-pressed')).toBe('true');
   });
 
   it('adopts its value from a child marked active in markup', async () => {

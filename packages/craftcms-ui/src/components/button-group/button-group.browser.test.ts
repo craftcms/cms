@@ -69,3 +69,26 @@ it('joins a button rendered into a placeholder after the group mounts', async ()
   expect(corners(button)).toEqual({start: true, end: false});
   expect(corners(last!)).toEqual({start: false, end: true});
 });
+
+it.each([
+  ['single', 'default', ''],
+  ['multiple', 'pointer', ' multiple'],
+])(
+  'gives a %s-selection group’s selected button a %s cursor',
+  async (_, cursor, attrs) => {
+    document.body.innerHTML = `
+    <craft-button-group name="mode"${attrs}>
+      <craft-button value="a" active>A</craft-button>
+      <craft-button value="b">B</craft-button>
+    </craft-button-group>`;
+    const group = document.querySelector('craft-button-group')!;
+    await group.updateComplete;
+    await settle();
+    const [selected, other] = Array.from(
+      document.querySelectorAll('craft-button')
+    );
+
+    expect(getComputedStyle(selected!).cursor).toBe(cursor);
+    expect(getComputedStyle(other!).cursor).toBe('pointer');
+  }
+);

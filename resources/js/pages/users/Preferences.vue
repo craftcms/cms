@@ -195,18 +195,21 @@
 
           <craft-field fieldset :label="t('Notification Position')">
             <div slot="input">
-              <craft-button-group>
+              <craft-button-group
+                name="notificationPosition"
+                .value="form.notificationPosition"
+                @change="
+                  (event: CustomEvent) =>
+                    (form.notificationPosition = event.detail.value)
+                "
+              >
                 <craft-button
                   v-for="option in props.notificationPositionOptions"
                   :key="option.value"
                   :id="`${positionIdPrefix}-notificationPosition-${option.value}`"
                   type="button"
                   variant="outline"
-                  :active="
-                    form.notificationPosition === option.value ? 'true' : null
-                  "
-                  :aria-pressed="form.notificationPosition === option.value"
-                  @click="form.notificationPosition = option.value"
+                  :value="option.value"
                 >
                   <craft-icon :name="option.icon" :label="option.label" />
                 </craft-button>
@@ -234,18 +237,21 @@
 
           <craft-field fieldset :label="t('Slideout Position')">
             <div slot="input">
-              <craft-button-group>
+              <craft-button-group
+                name="slideoutPosition"
+                .value="form.slideoutPosition"
+                @change="
+                  (event: CustomEvent) =>
+                    (form.slideoutPosition = event.detail.value)
+                "
+              >
                 <craft-button
                   v-for="option in props.slideoutPositionOptions"
                   :key="option.value"
                   :id="`${positionIdPrefix}-slideoutPosition-${option.value}`"
                   type="button"
                   variant="outline"
-                  :active="
-                    form.slideoutPosition === option.value ? 'true' : null
-                  "
-                  :aria-pressed="form.slideoutPosition === option.value"
-                  @click="form.slideoutPosition = option.value"
+                  :value="option.value"
                 >
                   <craft-icon :name="option.icon" :label="option.label" />
                 </craft-button>

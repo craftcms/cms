@@ -23,4 +23,12 @@ export default css`
     --c-button-radius-start-end: var(--_button-radius);
     --c-button-radius-end-end: var(--_button-radius);
   }
+
+  :host([name]:not([multiple])) ::slotted([aria-pressed='true']) {
+    cursor: default;
+    background-color: var(--c-color-fill-loud);
+    color: var(--c-color-on-loud);
+    border-color: var(--c-color-border-loud);
+    box-shadow: none;
+  }
 `;
