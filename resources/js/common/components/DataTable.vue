@@ -466,6 +466,8 @@
               row: true,
               'cp-table-row': true,
               sel: !!selection && row.getIsSelected(),
+              'cp-table-row--clickable':
+                selectable && !selectionDisabled && row.getCanSelect(),
               'row--dragging':
                 !readOnly && getDragState(row.id).type === 'is-dragging',
             }"
@@ -588,6 +590,12 @@
   }
   :deep(.row--dragging) {
     opacity: 0.4;
+  }
+
+  // A click anywhere on the row selects it, so its text shouldn't offer a text
+  // cursor. Links and inputs keep their own.
+  :deep(.cp-table-row--clickable) {
+    cursor: default;
   }
 
   // Selected rows take the accent fill a selected chip or thumbnail does, so a
