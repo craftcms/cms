@@ -557,6 +557,11 @@ abstract class BaseImporter
             ['source' => ['mimes:'.implode(',', $allowedExtensions)]],
         )->passes();
 
+        // the contents are only detected as JSON within the first few MB, so a larger JSON file is reported as plain text
+        if (! $contentsMatch && $dataType === 'json' && new File($sourcePath)->getMimeType() === 'text/plain') {
+            $contentsMatch = self::startsLikeJson($sourcePath);
+        }
+
         if (! $contentsMatch) {
             return t('The contents of “{source}” don’t match its type ({dataType}).', [
                 'source' => $url ?? $sourcePath,
@@ -565,6 +570,29 @@ abstract class BaseImporter
         }
 
         return null;
+    }
+
+    /**
+     * Returns whether the file's first non-whitespace character (after an optional UTF-8 BOM) opens a JSON array or object.
+     */
+    private static function startsLikeJson(string $path): bool
+    {
+        $handle = @fopen($path, 'rb');
+
+        if ($handle === false) {
+            return false;
+        }
+
+        $start = fread($handle, 4096);
+        fclose($handle);
+
+        if ($start === false) {
+            return false;
+        }
+
+        $start = ltrim(str_starts_with($start, "\xEF\xBB\xBF") ? substr($start, 3) : $start);
+
+        return str_starts_with($start, '[') || str_starts_with($start, '{');
     }
 
     /**
