@@ -2,7 +2,7 @@ import {LionCollapsible} from '@lion/ui/collapsible.js';
 import {css, html, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import type {WindowWithCraft} from '@src/types/globals';
-import '../button/button.js';
+import CraftButton from '../button/button.js';
 
 /**
  * @summary A trigger that shows and hides content, in either of two modes:
@@ -11,7 +11,11 @@ import '../button/button.js';
  * `slot="invoker"` trigger and `slot="content"` collapsible content. Without a
  * slotted invoker, renders a default one from the `label` attribute:
  *
- *     <craft-button type="button" variant="plain" icon="chevron-down">${label}</craft-button>
+ *     <craft-button type="button" variant="plain" flush icon="chevron-down">${label}</craft-button>
+ *
+ * While the disclosure is open, a `craft-button` invoker's chevron points up
+ * instead (`icon="chevron-down"` becomes `chevron-up`), whether it's the
+ * default invoker or a slotted one.
  *
  * **External-target mode** — wraps a bare `button[type="button"]` whose
  * `aria-controls` names an element elsewhere in the document; toggling flips
@@ -108,6 +112,10 @@ export default class CraftDisclosure extends LionCollapsible {
       this.__defaultInvoker.textContent = this.label;
     }
 
+    if (changedProperties.has('opened')) {
+      this.__syncInvokerChevron();
+    }
+
     if (changedProperties.has('state') && this.__externalTrigger) {
       if (this.state === 'expanded') {
         this.__handleExternalOpen();
@@ -125,12 +133,30 @@ export default class CraftDisclosure extends LionCollapsible {
     const button = document.createElement('craft-button');
     button.slot = 'invoker';
     button.setAttribute('type', 'button');
-    button.setAttribute('appearance', 'plain');
+    button.setAttribute('variant', 'plain');
+    button.setAttribute('flush', '');
     button.setAttribute('icon', 'chevron-down');
     button.textContent = this.label;
 
     this.__defaultInvoker = button;
     this.prepend(button);
+  }
+
+  /**
+   * Points a chevron invoker up while the content is open, and down while it's
+   * closed. Uses the `icon` property rather than the attribute, since Vue sets
+   * the property and `craft-button` doesn't reflect it.
+   */
+  private __syncInvokerChevron() {
+    const invoker = this._invokerNode;
+
+    if (!(invoker instanceof CraftButton)) {
+      return;
+    }
+
+    if (invoker.icon === 'chevron-down' || invoker.icon === 'chevron-up') {
+      invoker.icon = this.opened ? 'chevron-up' : 'chevron-down';
+    }
   }
 
   private __setupExternalMode() {

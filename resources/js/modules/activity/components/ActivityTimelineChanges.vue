@@ -22,12 +22,21 @@
 </script>
 
 <template>
-  <craft-card data-color="white">
-    <craft-disclosure
-      v-if="showInline"
-      :label="changeCountLabel(changes.length)"
-      opened
-    >
+  <craft-card
+    data-color="white"
+    :class="{'activity-timeline__changes--collapsible': showInline}"
+  >
+    <craft-disclosure v-if="showInline" opened>
+      <craft-button
+        slot="invoker"
+        type="button"
+        variant="plain"
+        size="small"
+        flush
+        icon="chevron-down"
+      >
+        {{ changeCountLabel(changes.length) }}
+      </craft-button>
       <ActivityTimelineChangeList
         slot="content"
         class="activity-timeline__change-list"
@@ -72,6 +81,10 @@
 </template>
 
 <style scoped>
+  .activity-timeline__changes--collapsible {
+    --c-card-padding-block: var(--c-spacing-sm);
+  }
+
   .activity-timeline__change-list {
     margin-block-start: var(--c-spacing-sm);
   }

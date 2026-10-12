@@ -26,6 +26,8 @@
         slot="invoker"
         type="button"
         variant="plain"
+        size="small"
+        flush
         align="start"
         class="workflow-review-run__heading"
       >
@@ -79,8 +81,9 @@
     display: block;
   }
 
+  /* Block-level, so it fills the row even as `flush` pulls it outward. */
   .workflow-review-run__heading {
-    width: 100%;
+    display: flex;
     --c-button-height: var(--c-size-touch-target);
     --c-button-spacing-inline: var(--c-spacing-xs);
   }
