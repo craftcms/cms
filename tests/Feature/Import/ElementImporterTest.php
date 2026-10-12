@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -106,3 +107,15 @@ it('lists the concrete element importer subclasses, not a bare ElementImporter, 
         ->and($types)->toContain(AssetImporter::class)
         ->and($types)->toContain(UserImporter::class);
 });
+
+it('offers enabled but not parentId on the mapping screen for non-structured element types', function (string $importerClass) {
+    $handles = collect($importerClass::create()->getDestinationCols())
+        ->whereInstanceOf(MappingColumn::class)
+        ->pluck('handle');
+
+    expect($handles)->toContain('enabled')
+        ->and($handles)->not->toContain('parentId');
+})->with([
+    'Asset' => [AssetImporter::class],
+    'User' => [UserImporter::class],
+]);

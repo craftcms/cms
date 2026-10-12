@@ -7,6 +7,7 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Events\ItemImported;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -236,4 +237,33 @@ it('imports an entry under a parent in a structure section', function () {
 
     expect($entry->getParentId())->toBe($parent->id)
         ->and($entry->level)->toBe(2);
+});
+
+it('offers enabled but not parentId on the mapping screen for a channel section', function () {
+    $this->importer->section($this->section->uid)->entryType($this->entryType->uid);
+
+    $handles = collect($this->importer->getDestinationCols())
+        ->whereInstanceOf(MappingColumn::class)
+        ->pluck('handle');
+
+    expect($handles)->toContain('enabled')
+        ->and($handles)->not->toContain('parentId');
+});
+
+it('offers enabled and parentId on the mapping screen for a structure section', function () {
+    $section = Section::factory()
+        ->withEntryTypes($this->entryType)
+        ->create([
+            'type' => SectionType::Structure,
+            'structureId' => Structure::factory()->create()->id,
+        ]);
+
+    $this->importer->section($section->uid)->entryType($this->entryType->uid);
+
+    $handles = collect($this->importer->getDestinationCols())
+        ->whereInstanceOf(MappingColumn::class)
+        ->pluck('handle');
+
+    expect($handles)->toContain('enabled')
+        ->and($handles)->toContain('parentId');
 });

@@ -18,7 +18,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Import;
 
 /**
- * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, defaultValue: mixed}
+ * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, defaultValue: mixed, trait: class-string|null}
  * @phpstan-type MappedNode array{data: array<mixed>, consumed: list<int|string>}
  * @phpstan-type MappingSource array{value: array<mixed>, basePath: string, consumed: list<string>}
  * @phpstan-type MappedScalar array{value: mixed, consumed: string|null}
@@ -131,8 +131,27 @@ class ImportHelper
                 'canBeCleared' => $arguments[5] ?? $arguments['canBeCleared'] ?? true,
                 'canBeSet' => $arguments[6] ?? $arguments['canBeSet'] ?? true,
                 'defaultValue' => $property->getDefaultValue(),
+                'trait' => self::declaringTrait($property->getDeclaringClass(), $property->getName()),
             ];
         }, $properties));
+    }
+
+    /**
+     * Returns the trait that declares the given property, if any, including traits used by other traits.
+     *
+     * @param  \ReflectionClass<object>  $class
+     */
+    private static function declaringTrait(\ReflectionClass $class, string $propertyName): ?string
+    {
+        foreach ($class->getTraits() as $trait) {
+            if (! $trait->hasProperty($propertyName)) {
+                continue;
+            }
+
+            return self::declaringTrait($trait, $propertyName) ?? $trait->getName();
+        }
+
+        return null;
     }
 
     /**

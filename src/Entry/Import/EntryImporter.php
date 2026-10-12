@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Import;
 
 use Closure;
+use CraftCms\Cms\Element\Concerns\Structurable;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -327,6 +328,19 @@ class EntryImporter extends ElementImporter
         }
 
         parent::setAttributesForImport($element, $attributes, $data);
+    }
+
+    #[Override]
+    protected function includeConditionalProperties(array $props): array
+    {
+        $included = parent::includeConditionalProperties($props);
+
+        // structure props only apply when importing into a structure section
+        if (self::normalizeSection($this->section)?->type === SectionType::Structure) {
+            $included = [...$included, ...array_filter($props, fn ($prop) => $prop['trait'] === Structurable::class)];
+        }
+
+        return array_values($included);
     }
 
     /**

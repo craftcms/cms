@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Import;
 
 use Closure;
+use CraftCms\Cms\Element\Concerns\HasStatuses;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -33,6 +34,8 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 /**
+ * @phpstan-import-type ImportableProperty from ImportHelper
+ *
  * @since 6.0.0
  */
 abstract class ElementImporter extends BaseImporter
@@ -331,6 +334,12 @@ abstract class ElementImporter extends BaseImporter
         // exclude all those that are not supposed to be available for UI mapping
         $props = array_filter($props, fn ($prop) => ! isset($prop['excludeFromUiMapping']) || $prop['excludeFromUiMapping'] === false);
 
+        // properties provided by traits are only included when they apply to the current settings
+        $includedTraitProps = $this->includeConditionalProperties(
+            array_values(array_filter($props, fn ($prop) => $prop['trait'] !== null)),
+        );
+        $props = array_filter($props, fn ($prop) => $prop['trait'] === null || in_array($prop, $includedTraitProps, true));
+
         if (! empty($props)) {
             $propertyCols = array_values(array_map(fn ($prop) => MappingColumn::make(
                 handle: $prop['name'],
@@ -352,6 +361,18 @@ abstract class ElementImporter extends BaseImporter
         $fieldLayoutCols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
 
         return array_merge($propertyCols, $fieldLayoutCols);
+    }
+
+    /**
+     * Returns the trait-provided importable properties that apply to the current settings.
+     *
+     * @param  list<ImportableProperty>  $props
+     * @return list<ImportableProperty>
+     */
+    protected function includeConditionalProperties(array $props): array
+    {
+        // statuses apply to all elements
+        return array_values(array_filter($props, fn ($prop) => $prop['trait'] === HasStatuses::class));
     }
 
     #[Override]

@@ -282,6 +282,10 @@ subclass for that type (see §4):
   hooks. `EntryImporter` resolves the entry type (from the configured `fieldLayout`, or from the
   row's `typeId`) and scopes the match query by type; `AssetImporter` resolves the volume from
   `fieldLayout` and does the heavy filename/folder/temp-file work in `setAttributesForImport()`.
+- `includeConditionalProperties(array $props): array` — receives the importable properties declared
+  in traits and returns the ones the mapping screen should offer for the current settings. The base
+  implementation includes `HasStatuses` properties (`enabled`); `EntryImporter` also includes
+  `Structurable` properties (`parentId`) when the section is a Structure.
 
 ### The `Importable` attribute
 
@@ -304,6 +308,11 @@ Both `name` and `label` are **required** positionally. Examples: `id`/`uid` are
 (excluded from UI mapping since the field-layout-provider step covers it);
 `User::$_addresses` is the only `isContainer: true` property; an element type with one must implement
 `ImportableContainerPropertiesInterface`.
+
+An attributed property declared in a trait (e.g. `Structurable::$_parentId`, which every element
+inherits) is only offered on the mapping screen when the importer's `includeConditionalProperties()`
+includes it, since a trait used by `Element` doesn't apply to every element type or section.
+Properties declared directly on a class are always offered (subject to `excludeFromUiMapping`).
 
 ### Field layout elements
 
