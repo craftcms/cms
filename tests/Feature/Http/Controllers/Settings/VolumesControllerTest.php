@@ -14,6 +14,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -67,7 +68,14 @@ it('requires admin changes', function () {
     Cms::config()->allowAdminChanges = false;
 
     get(action([VolumesController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Ui')
+            ->where('readOnly', true)
+            ->where('ui.nodes.0.props.createUrl', null)
+            ->where('ui.nodes.0.props.reorderUrl', null)
+            ->where('ui.nodes.0.props.deletable', false)
+            ->where('ui.nodes.0.props.rows.0.name.url', action([VolumesController::class, 'edit'], ['volumeId' => $volume->id]))
+            ->missing('ui.nodes.0.props.rows.0._deleteUrl'));
 
     get(action([VolumesController::class, 'edit'], ['volumeId' => $volume->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -87,17 +95,44 @@ it('requires admin changes', function () {
         'fsHandle' => 'test-disk',
     ])->assertForbidden();
     deleteJson(action([VolumesController::class, 'destroy'], ['volumeId' => $volume->id]))->assertForbidden();
+    postJson(action([VolumesController::class, 'reorder']), ['ids' => [$volume->id]])->assertForbidden();
 });
 
 describe('index', function () {
-    test('index lists all volumes', function () {
-        $firstVolume = createTestVolume(['name' => 'Volume A', 'handle' => 'volumeA', 'subpath' => 'a']);
-        $secondVolume = createTestVolume(['name' => 'Volume B', 'handle' => 'volumeB', 'subpath' => 'b']);
+    test('index preserves manual order with edit links, copyable handles, and named deletion', function () {
+        $firstVolume = createTestVolume(['name' => 'Volume B', 'handle' => 'volumeB', 'subpath' => 'b']);
+        $secondVolume = createTestVolume(['name' => 'Volume A', 'handle' => 'volumeA', 'subpath' => 'a']);
 
         get(action([VolumesController::class, 'index']))
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('volumes', fn (Collection $volumes): bool => $volumes->pluck('id')->contains($firstVolume->id)
-                    && $volumes->pluck('id')->contains($secondVolume->id)));
+                ->component('Ui')
+                ->where('ui.nodes.0.props.reorderUrl', action([VolumesController::class, 'reorder']))
+                ->where('ui.nodes.0.props.deletable', true)
+                ->where('ui.nodes.0.props.rows', function (Collection $rows) use ($firstVolume, $secondVolume): bool {
+                    expect($rows->pluck('id')->all())->toBe([$firstVolume->id, $secondVolume->id]);
+
+                    $row = $rows[0];
+                    $handle = new Crawler($row['handle']['html'])->filter('craft-copy-attribute');
+
+                    expect($row['name']['label'])->toBe('Volume B')
+                        ->and($row['name']['url'])->toBe(action([VolumesController::class, 'edit'], ['volumeId' => $firstVolume->id]))
+                        ->and($row['_deleteUrl'])->toBe(action([VolumesController::class, 'destroy'], ['volumeId' => $firstVolume->id]))
+                        ->and($row['_deleteConfirmMessage'])->toBe('Are you sure you want to delete "Volume B"?')
+                        ->and($handle->attr('value'))->toBe('volumeB')
+                        ->and($handle->text())->toBe('volumeB');
+
+                    return true;
+                }));
+    });
+
+    test('empty index offers volume creation', function () {
+        get(action([VolumesController::class, 'index']))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Ui')
+                ->where('ui.nodes.0.props.rows', [])
+                ->where('ui.nodes.0.props.emptyMessage', t('No volumes exist yet.'))
+                ->where('ui.nodes.0.props.createLabel', t('New volume'))
+                ->where('ui.nodes.0.props.createUrl', action([VolumesController::class, 'create'])));
     });
 });
 
@@ -278,11 +313,27 @@ describe('delete', function () {
         app()->forgetInstance(Volumes::class);
         get(action([VolumesController::class, 'index']))
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('volumes', fn (Collection $volumes): bool => $volumes->pluck('id')->doesntContain($volume->id)));
+                ->where('ui.nodes.0.props.rows', fn (Collection $rows): bool => $rows->pluck('id')->doesntContain($volume->id)));
     });
 });
 
 describe('reorder', function () {
+    test('rejects malformed reorder IDs without changing volume order', function (Closure $ids) {
+        $first = createTestVolume(['name' => 'Volume A', 'handle' => 'volumeA', 'subpath' => 'a']);
+        $second = createTestVolume(['name' => 'Volume B', 'handle' => 'volumeB', 'subpath' => 'b']);
+        ProjectConfig::rebuild();
+
+        postJson(action([VolumesController::class, 'reorder']), ['ids' => $ids($first->id, $second->id)])
+            ->assertUnprocessable();
+
+        app()->forgetInstance(Volumes::class);
+        expect(app(Volumes::class)->getAllVolumes()->pluck('id')->all())->toBe([$first->id, $second->id]);
+    })->with([
+        'JSON string' => [fn (int $first, int $second): string => json_encode([$second, $first])],
+        'duplicate IDs' => [fn (int $first, int $second): array => [$second, $first, $second]],
+        'non-integer ID' => [fn (int $first, int $second): array => [$second, 'invalid', $first]],
+    ]);
+
     test('reorder changes volume order', function () {
         $volume1 = createTestVolume(['name' => 'Volume A', 'handle' => 'volumeA', 'subpath' => 'a']);
         $volume2 = createTestVolume(['name' => 'Volume B', 'handle' => 'volumeB', 'subpath' => 'b']);
@@ -296,6 +347,6 @@ describe('reorder', function () {
         app()->forgetInstance(Volumes::class);
         get(action([VolumesController::class, 'index']))
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('volumes', fn (Collection $volumes): bool => $volumes->pluck('id')->all() === [$volume2->id, $volume1->id]));
+                ->where('ui.nodes.0.props.rows', fn (Collection $rows): bool => $rows->pluck('id')->all() === [$volume2->id, $volume1->id]));
     });
 });

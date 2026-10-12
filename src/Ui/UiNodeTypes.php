@@ -20,6 +20,7 @@ use CraftCms\Cms\Ui\Nodes\Missing;
 use CraftCms\Cms\Ui\Nodes\Scope;
 use CraftCms\Cms\Ui\Nodes\Separator;
 use CraftCms\Cms\Ui\Nodes\Tab;
+use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Nodes\TemplateContent;
 use Illuminate\Container\Attributes\Singleton;
 
@@ -50,6 +51,7 @@ class UiNodeTypes extends TypeRegistry
         Scope::class,
         Separator::class,
         Tab::class,
+        Table::class,
         TemplateContent::class,
     ];
 }

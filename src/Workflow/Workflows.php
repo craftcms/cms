@@ -876,7 +876,7 @@ class Workflows
                 },
                 description: match ($type) {
                     WorkflowActivityType::Submit => t('requested review'),
-                    WorkflowActivityType::Comment => t('commented.'),
+                    WorkflowActivityType::Comment => t('commented'),
                     WorkflowActivityType::Approve, WorkflowActivityType::StageApproved => t('approved'),
                     WorkflowActivityType::Reject => t('requested changes'),
                     WorkflowActivityType::RequestReview => t('requested another review'),

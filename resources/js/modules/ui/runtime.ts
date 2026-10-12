@@ -17,6 +17,13 @@ export const UiFailure: InjectionKey<(message: string) => void> =
 export const UiPending: InjectionKey<Readonly<Ref<boolean>>> =
   Symbol('UiPending');
 
+/**
+ * Whether the page's table defaults to the `flush` appearance, spanning the
+ * full container width.
+ */
+export const UiTableFlush: InjectionKey<Readonly<Ref<boolean>>> =
+  Symbol('UiTableFlush');
+
 export const UiErrors: InjectionKey<{
   clearChildren(path: string[]): void;
   childrenCleared(path: string[]): boolean;

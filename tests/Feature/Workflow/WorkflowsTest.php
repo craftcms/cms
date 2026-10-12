@@ -15,10 +15,13 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Settings\WorkflowsController;
 use CraftCms\Cms\Http\Controllers\Workflows\UserReviewController;
+use CraftCms\Cms\Http\Controllers\Workflows\WorkflowTransitionsController;
+use CraftCms\Cms\Http\Requests\ActivityCommentRequest;
 use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
@@ -50,8 +53,9 @@ use Inertia\Testing\AssertableInertia;
 use Workbench\App\Workflow\AutomaticApprovalStage;
 
 use function Pest\Laravel\actingAs;
-use function Pest\Laravel\delete;
+use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
+use function Pest\Laravel\getJson;
 use function Pest\Laravel\patch;
 use function Pest\Laravel\postJson;
 
@@ -414,7 +418,7 @@ it('fails on a change request and restores the current stage when review is requ
         ->and(collect($review->runs)->first()->stages[0]->icon)->toBe('clock')
         ->and(collect($review->runs)->first()->stages[0]->events)->toHaveCount(3)
         ->and(collect($review->runs)->first()->stages[0]->events[0]->description)->toBe('requested changes')
-        ->and(collect($review->runs)->first()->stages[0]->events[1]->description)->toBe('commented.')
+        ->and(collect($review->runs)->first()->stages[0]->events[1]->description)->toBe('commented')
         ->and(collect($review->runs)->first()->stages[0]->events[2]->description)->toBe('requested another review')
         ->and($this->workflows->reviewData($this->draft, $this->reviewers[0])->actionProps['canReview'])->toBeTrue()
         ->and($this->reviewers[0]->notifications()->count())->toBe(2);
@@ -680,13 +684,23 @@ it('exposes stage components and safely handles user review decisions', function
         ->and($this->author->notifications()->latest()->firstOrFail()->data['title'])->toBe('Draft approved');
 });
 
-it('blocks workflow deletion while a section references it', function () {
+it('returns a deletion refusal as JSON and permits deletion once the workflow is unassigned', function () {
     $workflow = workflowFor($this->entry, [automatedStage('Review', 'pending')]);
+    $this->workflows->saveWorkflow($workflow);
 
-    delete(action([WorkflowsController::class, 'destroy'], $workflow))
-        ->assertMessage('error', 'This workflow cannot be deleted while it is assigned to a section.');
+    deleteJson(action([WorkflowsController::class, 'destroy'], $workflow))
+        ->assertBadRequest()
+        ->assertJsonPath('message', 'This workflow cannot be deleted while it is assigned to a section.');
 
     expect($workflow->fresh())->not->toBeNull();
+
+    Section::query()->whereKey($this->entry->sectionId)->update(['workflowId' => null]);
+
+    deleteJson(action([WorkflowsController::class, 'destroy'], $workflow))
+        ->assertOk()
+        ->assertJsonPath('message', 'Workflow deleted.');
+
+    expect($workflow->fresh())->toBeNull();
 });
 
 it('links review notifications to the workflow panel', function () {
@@ -759,47 +773,65 @@ it('returns to the workflow index unless saving and continuing', function () {
         ->assertRedirect($editUrl);
 });
 
-it('filters sorts and paginates the workflow settings index', function () {
-    Workflow::query()->create([
-        'name' => 'Alpha review',
-        'uid' => Str::uuid7()->toString(),
-        'stages' => [
-            [
-                ...automatedStage('Review', 'pending'),
-                'uid' => Str::uuid7()->toString(),
-            ],
-        ],
-    ]);
-    Workflow::query()->create([
-        'name' => 'Beta review',
+it('serves linked workflow rows and actions allowed by admin changes', function (bool $allowAdminChanges) {
+    $workflow = workflowFor($this->entry, [automatedStage('Review', 'pending')]);
+    $earlierWorkflow = Workflow::query()->create([
+        'name' => 'Another workflow',
         'uid' => Str::uuid7()->toString(),
         'stages' => [],
     ]);
-    Workflow::query()->create([
-        'name' => 'Ignored release',
-        'uid' => Str::uuid7()->toString(),
-        'stages' => [],
+    Cms::config()->allowAdminChanges = $allowAdminChanges;
+
+    $response = get(action([WorkflowsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('Ui'));
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))
+        ->firstWhere('component', 'craft:admin-table');
+
+    expect($table['props']['rows'])->toHaveCount(2)
+        ->and($table['props']['rows'][0])->toMatchArray([
+            'id' => $earlierWorkflow->id,
+            'name' => ['label' => 'Another workflow', 'url' => action([WorkflowsController::class, 'edit'], $earlierWorkflow)],
+            'stages' => 0,
+        ])
+        ->and($table['props']['createUrl'])->toBe($allowAdminChanges ? action([WorkflowsController::class, 'create']) : null)
+        ->and($table['props']['deletable'])->toBe($allowAdminChanges);
+
+    $row = $table['props']['rows'][1];
+
+    expect($row)->toMatchArray([
+        'id' => $workflow->id,
+        'name' => ['label' => 'Editorial workflow', 'url' => action([WorkflowsController::class, 'edit'], $workflow)],
+        'stages' => 1,
     ]);
 
-    get(action([WorkflowsController::class, 'index'], [
-        'search' => 'review',
-        'sort' => [['field' => 'name', 'direction' => 'desc']],
-        'per_page' => 1,
-        Cms::config()->getPageTriggerParam() => 2,
-    ]))
-        ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('searchTerm', 'review')
-            ->where('sort.0.field', 'name')
-            ->where('sort.0.direction', 'desc')
-            ->where('pagination.total', 2)
-            ->where('pagination.per_page', 1)
-            ->where('pagination.current_page', 2)
-            ->has('data', 1)
-            ->where('data.0.name', 'Alpha review')
-            ->where('data.0.stages', 1)
-            ->etc());
-});
+    if ($allowAdminChanges) {
+        expect($row['_deleteUrl'])->toBe(action([WorkflowsController::class, 'destroy'], $workflow))
+            ->and($row['_deleteConfirmMessage'])->toBe('Are you sure you want to delete “Editorial workflow”?');
+    } else {
+        expect($row)->not->toHaveKey('_deleteUrl');
+        deleteJson(action([WorkflowsController::class, 'destroy'], $workflow))->assertForbidden();
+        expect($workflow->fresh())->not->toBeNull();
+    }
+})->with(['writable' => true, 'read-only' => false]);
+
+it('restricts the workflow index to Pro administrators', function (string $restriction, int $status) {
+    if ($restriction === 'guest') {
+        Auth::logout();
+    } elseif ($restriction === 'non-admin') {
+        UserModel::query()->whereKey($this->author->id)->update(['admin' => false]);
+        UserPermissions::saveUserPermissions($this->author->id, ['accessCp']);
+        actingAs(User::findOne($this->author->id));
+    } else {
+        Edition::set(Edition::Team);
+        config()->set('app.debug', false);
+    }
+
+    getJson(action([WorkflowsController::class, 'index']))->assertStatus($status);
+})->with([
+    'guest' => ['guest', 401],
+    'non-admin with CP access' => ['non-admin', 403],
+    'Team administrator' => ['team', 404],
+]);
 
 /** @param list<array{name: string, type: string, settings: array<string, mixed>}> $stages */
 function workflowFor(Entry $entry, array $stages): Workflow
@@ -941,3 +973,23 @@ function workflowEvents(Entry $entry, WorkflowActivityType|WorkflowTransition $t
         ->filter(fn (ActivityEvent $event): bool => $event->data['type'] === $type->value)
         ->values();
 }
+
+it('accepts workflow comments as long as activity comments', function (int $length, bool $accepted) {
+    app(WorkflowStageTypes::class)->register(TestAutomatedWorkflowStage::class);
+    $workflow = workflowFor($this->entry, [automatedStage('External check', 'pending')]);
+    $run = submitAs($this->workflows, $this->draft, $this->author);
+
+    actingAs($this->author);
+    $response = postJson(action([WorkflowTransitionsController::class, 'comment'], [
+        'workflowRun' => $run,
+        'stage' => $workflow->stages->sole()->uid,
+    ]), [
+        ...elementIdentity($this->entry, $this->draft),
+        'note' => str_repeat('a', $length),
+    ]);
+
+    $accepted ? $response->assertOk() : $response->assertJsonValidationErrors('note');
+})->with([
+    'at the limit' => [ActivityCommentRequest::MaxLength, true],
+    'over the limit' => [ActivityCommentRequest::MaxLength + 1, false],
+]);

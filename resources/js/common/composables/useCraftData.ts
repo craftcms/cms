@@ -10,6 +10,8 @@ export interface CpUser {
   thumbHtml: string | null;
   name: string | null;
   admin: boolean;
+  /** The "Underline links" accessibility preference. */
+  underlineLinks: boolean;
 }
 
 export interface CraftData {

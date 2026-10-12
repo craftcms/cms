@@ -2,7 +2,7 @@ import {css} from 'lit';
 
 export default css`
   /*
-   * A label link: no underline until it's hovered. ::slotted() only reaches a
+   * A label link is decorated like any other link. ::slotted() only reaches a
    * link slotted straight into the chip; one nested a level down (inside a
    * craft-truncate, as element chips render it) gets the same treatment
    * through the custom properties, which it inherits and craft-truncate
@@ -10,8 +10,8 @@ export default css`
    */
   :host {
     display: contents;
-    --c-truncate-link-decoration: none;
-    --c-truncate-link-hover-decoration: underline;
+    --c-truncate-link-decoration: var(--c-link-decoration);
+    --c-truncate-link-hover-decoration: var(--c-link-decoration-hover);
   }
 
   /* Base */
@@ -220,11 +220,11 @@ export default css`
   }
 
   .cp-chip__body::slotted(a) {
-    text-decoration: none;
+    text-decoration-line: var(--c-link-decoration);
   }
 
   .cp-chip__body::slotted(a:hover) {
-    text-decoration: underline;
+    text-decoration-line: var(--c-link-decoration-hover);
   }
 
   /* Suffix */

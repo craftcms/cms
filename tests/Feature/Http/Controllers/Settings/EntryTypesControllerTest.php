@@ -6,15 +6,19 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -65,10 +69,122 @@ it('requires admin changes', function () {
     deleteJson(action([EntryTypesController::class, 'destroy'], [EntryType::first()->id]))->assertForbidden();
 });
 
-test('index can be loaded', function () {
-    get(action([EntryTypesController::class, 'index']))
-        ->assertOk();
+test('index serves chips, copyable handles, usages, and permitted actions', function (bool $allowAdminChanges, ?int $perPage) {
+    Cms::config()->allowAdminChanges = $allowAdminChanges;
+    $entryType = EntryType::firstOrFail();
+    $entryType->update([
+        'name' => 'News & Updates',
+        'handle' => 'newsUpdates',
+        'description' => 'Editorial **articles**.',
+        'icon' => 'newspaper',
+        'color' => Color::Red->value,
+    ]);
+    $section = Section::factory()->withEntryTypes($entryType)->create(['name' => 'News']);
+    $otherSection = Section::factory()->withEntryTypes($entryType)->create(['name' => 'Updates']);
+    $response = get(action([EntryTypesController::class, 'index'], $perPage === null ? [] : ['per_page' => $perPage]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Ui')->where('readOnly', ! $allowAdminChanges));
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))->firstWhere('component', 'craft:admin-table');
+
+    expect($table['props']['createUrl'])->toBe($allowAdminChanges ? action([EntryTypesController::class, 'create']) : null)
+        ->and($table['props']['deletable'])->toBe($allowAdminChanges);
+
+    expect($table['props']['rows'])->toHaveCount(1)
+        ->and($table['props']['pagination']['total'])->toBe(1)
+        ->and($table['props']['pagination']['per_page'])->toBe($perPage ?? 100);
+    $row = $table['props']['rows'][0];
+    $chip = new Crawler($row['name']['html']);
+    $handle = new Crawler($row['handle']['html'])->filter('craft-copy-attribute');
+    $usages = new Crawler($row['usages']['html']);
+
+    expect($row['id'])->toBe($entryType->id)
+        ->and($chip->filter('craft-chip')->attr('class'))->toContain('cp-color-red')
+        ->and($chip->filter('craft-icon')->attr('name'))->toBe('newspaper')
+        ->and($chip->filter('a')->text())->toBe('News & Updates')
+        ->and($chip->filter('a')->attr('href'))->toBe(Url::cpUrl("settings/entry-types/$entryType->id"))
+        ->and($chip->filter('craft-info-icon strong')->text())->toBe('articles')
+        ->and($handle->attr('value'))->toBe('newsUpdates')
+        ->and($handle->text())->toBe('newsUpdates')
+        ->and($usages->filter('a')->text())->toBe('News')
+        ->and($usages->filter('a')->attr('href'))->toBe(Url::cpUrl("settings/sections/$section->id"))
+        ->and($usages->filter('craft-button')->text())->toBe('+1');
+    $otherUsages = new Crawler(json_decode($usages->filter('craft-button')->attr('data-other'), true));
+
+    expect($otherUsages->filter('a')->text())->toBe('Updates')
+        ->and($otherUsages->filter('a')->attr('href'))->toBe(Url::cpUrl("settings/sections/$otherSection->id"));
+
+    if ($allowAdminChanges) {
+        expect($row['_deleteUrl'])->toBe(action([EntryTypesController::class, 'destroy'], $entryType))
+            ->and($row['_deleteConfirmMessage'])->toBe('Are you sure you want to delete “News & Updates” and all entries of that type?');
+    } else {
+        expect($row)->not->toHaveKey('_deleteUrl');
+    }
+})->with(['writable' => [true, 2], 'read-only' => [false, null]]);
+
+it('requires admin access for the entry type index', function () {
+    $user = UserModel::firstOrFail();
+    $user->update(['admin' => false]);
+    UserPermissions::saveUserPermissions($user->id, ['accessCp']);
+    actingAs(User::findOne($user->id));
+
+    get(action([EntryTypesController::class, 'index']))->assertForbidden();
 });
+
+it('searches, sorts, and paginates entry type rows', function (string $field, string $direction, string $expectedHandle) {
+    EntryType::firstOrFail()->update(['name' => 'Middle Article', 'handle' => 'middleArticle']);
+    EntryType::factory()->create(['name' => 'First Article', 'handle' => 'zzzArticle']);
+    EntryType::factory()->create(['name' => 'Last Article', 'handle' => 'aaaArticle']);
+    EntryType::factory()->create(['name' => 'Ignored', 'handle' => 'ignored']);
+    Cms::config()->pageTrigger = 'custom-page';
+
+    $response = get(action([EntryTypesController::class, 'index'], [
+        'search' => 'Article',
+        'sort' => [['field' => $field, 'direction' => $direction]],
+        'custom-page' => 2,
+        'per_page' => 2,
+    ]), [
+        'X-Inertia' => 'true',
+        'X-Inertia-Partial-Component' => 'Ui',
+        'X-Inertia-Partial-Data' => 'ui',
+    ])->assertOk()->assertHeader('X-Inertia', 'true')
+        ->assertJsonPath('component', 'Ui')
+        ->assertJsonCount(1, 'props.ui.nodes.0.props.rows')
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.total', 3)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.current_page', 2)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.per_page', 2)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.last_page', 2)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.from', 3)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.to', 3);
+
+    expect(new Crawler($response->json('props.ui.nodes.0.props.rows.0.handle.html'))->filter('craft-copy-attribute')->text())->toBe($expectedHandle);
+})->with([
+    'ascending names' => ['name', 'asc', 'middleArticle'],
+    'descending names' => ['name', 'desc', 'zzzArticle'],
+    'ascending handles' => ['handle', 'asc', 'zzzArticle'],
+    'descending handles' => ['handle', 'desc', 'aaaArticle'],
+    'ascending usages retain name ordering' => ['usages', 'asc', 'middleArticle'],
+    'descending usages retain name ordering' => ['usages', 'desc', 'zzzArticle'],
+]);
+
+it('finds entry types by handle and returns no rows for an unmatched search', function (string $search, bool $matches) {
+    EntryType::firstOrFail()->update(['name' => 'Editorial', 'handle' => 'articleContent']);
+    EntryType::factory()->create(['name' => 'Other', 'handle' => 'other']);
+
+    $response = get(action([EntryTypesController::class, 'index'], ['search' => $search]))
+        ->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->has('ui.nodes.0.props.rows', $matches ? 1 : 0)
+        ->where('ui.nodes.0.props.pagination.total', $matches ? 1 : 0)
+        ->where('ui.nodes.0.props.pagination.from', $matches ? 1 : null)
+        ->where('ui.nodes.0.props.pagination.to', $matches ? 1 : null));
+
+    if ($matches) {
+        expect(new Crawler($response->inertiaProps('ui.nodes.0.props.rows.0.name.html'))->filter('a')->text())->toBe('Editorial');
+    }
+})->with([
+    'handle search' => ['articleContent', true],
+    'unmatched search' => ['nonexistentEntryType', false],
+]);
 
 test('create can be loaded', function () {
     get(action([EntryTypesController::class, 'create']))

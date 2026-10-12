@@ -774,7 +774,7 @@
               <ActionMenu
                 v-if="menuActions(element.id, index).length"
                 :actions="menuActions(element.id, index)"
-                flush="inline-start"
+                :flush="list.isList.value ? 'inline-start' : undefined"
               />
             </template>
           </ElementList>

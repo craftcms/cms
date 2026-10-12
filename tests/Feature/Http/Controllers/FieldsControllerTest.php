@@ -94,10 +94,110 @@ it('needs authentication and admin changes to delete', function () {
     $this->deleteJson(action([FieldsController::class, 'destroy'], ['fieldId' => $field->id]))->assertForbidden();
 });
 
-it('can render the index', function () {
-    $this->get(action([FieldsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/fields/Index'));
+it('lists field descriptions, handles, types, usages, and permitted actions', function (bool $multiSite, bool $allowAdminChanges) {
+    Cms::config()->allowAdminChanges = $allowAdminChanges;
+
+    if ($multiSite) {
+        Site::factory()->create();
+    }
+
+    Fields::saveField($field = Fields::createField([
+        'type' => PlainText::class,
+        'name' => 'Body & Summary',
+        'handle' => 'bodySummary',
+        'searchable' => true,
+        'translationMethod' => 'site',
+    ]));
+    EntryType::factory()->withField(FieldModel::findOrFail($field->id))->create();
+    Fields::refreshFields();
+
+    $response = $this->get(action([FieldsController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('Ui'));
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))->firstWhere('component', 'craft:admin-table')['props'];
+    $row = $table['rows'][0];
+    $handle = new Crawler($row['handle']['html'])->filter('craft-copy-attribute');
+    $searchIcon = new Crawler($row['searchable']['html'])->filter('craft-icon');
+    $translationIcon = new Crawler($row['translatable']['html'])->filter('craft-icon');
+    $type = new Crawler($row['type']['html']);
+
+    expect($table['rows'])->toHaveCount(1)
+        ->and($table['pagination']['total'])->toBe(1)
+        ->and(in_array('translatable', array_column($table['columns'], 'key'), true))->toBe($multiSite)
+        ->and($row['name']['label'])->toBe('Body & Summary')
+        ->and(parse_url($row['name']['url'], PHP_URL_PATH))->toBe(route('craft.cp.settings.fields.edit', ['fieldId' => $field->id], false))
+        ->and($handle->text())->toBe('bodySummary')
+        ->and($handle->attr('value'))->toBe('bodySummary')
+        ->and($searchIcon->attr('name'))->toBe('magnifying-glass')
+        ->and($searchIcon->attr('label'))->toBe('This field’s values are used as search keywords.')
+        ->and($translationIcon->attr('name'))->toBe('language')
+        ->and($translationIcon->attr('family'))->toBe('custom-icons')
+        ->and($translationIcon->attr('label'))->toBe('This field is translated for each site.')
+        ->and($type->text())->toBe('Plain Text')
+        ->and($type->filter('craft-icon')->attr('name'))->toBe('i-cursor')
+        ->and($row['usages'])->toBe('1 layout')
+        ->and($table['createUrl'])->toBe($allowAdminChanges ? action([FieldsController::class, 'create']) : null)
+        ->and($table['deletable'])->toBe($allowAdminChanges);
+
+    if ($allowAdminChanges) {
+        expect($row['_deleteUrl'])->toBe(action([FieldsController::class, 'destroy'], ['fieldId' => $field->id]))
+            ->and($row['_deleteConfirmMessage'])->toBe('Are you sure you want to delete “Body & Summary”?');
+    } else {
+        expect($row)->not->toHaveKey('_deleteUrl');
+    }
+})->with([
+    'single site' => [false, true],
+    'multiple sites' => [true, true],
+    'read-only' => [false, false],
+]);
+
+it('leaves disabled field indicators empty and identifies unavailable field types', function () {
+    Site::factory()->create();
+
+    Fields::saveField($field = Fields::createField([
+        'type' => PlainText::class,
+        'name' => 'Unavailable',
+        'handle' => 'unavailable',
+        'searchable' => false,
+        'translationMethod' => 'none',
+    ]));
+    FieldModel::findOrFail($field->id)->update(['type' => 'Unavailable\\Field']);
+
+    $response = $this->get(action([FieldsController::class, 'index']))->assertOk();
+    $row = data_get($response->inertiaProps('ui.nodes'), '0.props.rows.0');
+
+    expect($row['searchable'])->toBeNull()
+        ->and($row['translatable'])->toBeNull()
+        ->and($row['type'])->toBe('Missing');
 });
+
+it('searches, sorts, and paginates fields through the index route', function (array $query, string $expectedHandle, int $total) {
+    foreach ([['Article Alpha', 'zebra'], ['Article Zulu', 'apple'], ['Other', 'other']] as [$name, $handle]) {
+        Fields::saveField(Fields::createField(['type' => PlainText::class, 'name' => $name, 'handle' => $handle]));
+    }
+    Cms::config()->pageTrigger('p');
+
+    $response = $this->withHeaders([
+        'X-Inertia' => 'true',
+        'X-Inertia-Partial-Component' => 'Ui',
+        'X-Inertia-Partial-Data' => 'ui',
+    ])->get(action([FieldsController::class, 'index'], ['per_page' => 1, ...$query]))->assertOk();
+    $table = $response->assertHeader('X-Inertia', 'true')->json('props.ui.nodes.0.props');
+    $handle = new Crawler($table['rows'][0]['handle']['html'])->filter('craft-copy-attribute');
+
+    expect($table['rows'])->toHaveCount(1)
+        ->and($handle->text())->toBe($expectedHandle)
+        ->and($table['pagination']['total'])->toBe($total)
+        ->and($table['pagination']['current_page'])->toBe($query['p'] ?? 1)
+        ->and($table['pagination']['per_page'])->toBe(1);
+})->with([
+    'name ascending' => [['search' => 'Article'], 'zebra', 2],
+    'name descending' => [['search' => 'Article', 'sort' => [['field' => 'name', 'direction' => 'desc']]], 'apple', 2],
+    'handle ascending' => [['search' => 'Article', 'sort' => [['field' => 'handle', 'direction' => 'asc']]], 'apple', 2],
+    'handle descending' => [['search' => 'Article', 'sort' => [['field' => 'handle', 'direction' => 'desc']]], 'zebra', 2],
+    'handle search' => [['search' => 'zebra'], 'zebra', 1],
+    'second page' => [['search' => 'Article', 'p' => 2], 'apple', 2],
+]);
 
 it('can create a new field', function () {
     $this->get(action([FieldsController::class, 'create']))

@@ -55,9 +55,8 @@ readonly class GeneralSettingsController
                 new ActionItem()->label(t('General Settings')),
             ])
             ->redirectUrl('settings')
-            ->inertiaPage('Ui', [
+            ->ui($this->systemSettingsUi(), props: [
                 'readOnly' => false,
-                'ui' => $this->systemSettingsUi(),
                 'submit' => [
                     'method' => 'post',
                     'url' => action([self::class, 'store']),

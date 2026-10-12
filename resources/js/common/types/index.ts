@@ -342,6 +342,25 @@ export const TableSpacing = {
 export type TableSpacingValue =
   (typeof TableSpacing)[keyof typeof TableSpacing];
 
+/**
+ * How a table meets its container. Mirrors
+ * `CraftCms\Cms\Cp\Enums\TableAppearance`.
+ */
+export const TableAppearance = {
+  /** Sits inside the container's padding. */
+  Plain: 'plain',
+  /**
+   * Spans the container's inline padding, padding each row's outer cells by
+   * `--cp-container-padding` to match.
+   */
+  Flush: 'flush',
+  /** Sits in a raised pane. */
+  Raised: 'raised',
+} as const;
+
+export type TableAppearanceValue =
+  (typeof TableAppearance)[keyof typeof TableAppearance];
+
 export interface Site {
   name: string;
   nameRaw: string;
@@ -393,8 +412,8 @@ export interface PaginationData {
   last_page: number;
   next_page_url: string | null;
   prev_page_url: string | null;
-  from: number;
-  to: number;
+  from: number | null;
+  to: number | null;
 }
 
 export interface UserGroup {

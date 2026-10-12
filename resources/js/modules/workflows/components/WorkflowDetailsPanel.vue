@@ -84,6 +84,11 @@
     display: grid;
   }
 
+  .workflow-details-panel {
+    padding-block: var(--c-spacing-lg);
+    padding-inline: var(--cp-container-padding);
+  }
+
   .workflow-details-panel__drafts {
     display: grid;
     gap: var(--c-spacing-sm);

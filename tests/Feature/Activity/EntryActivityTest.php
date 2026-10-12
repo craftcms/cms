@@ -221,7 +221,7 @@ it('records a status change instead of a generic update', function () {
     expect($events)->toHaveCount(1)
         ->and($events->first()->eventType)->toBe(ElementStatusChanged::class)
         ->and($events->first()->data)->toEqual(['oldStatus' => 'live', 'newStatus' => 'disabled'])
-        ->and($this->activities->format($events->first()))->toBe('Status changed from Live to Disabled.')
+        ->and($this->activities->format($events->first()))->toBe('Status changed from Live to Disabled')
         ->and($events->first()->changes)->toContainEqual(
             new ActivityChange($field->name, 'Old body', 'New body'),
         );
@@ -504,7 +504,7 @@ it('records revision restoration without a generic update', function () {
         ->and($events->first()->eventType)->toBe(RevisionRestored::class)
         ->and($events->first()->data)->toBe(['revisionNum' => $revision->revisionNum])
         ->and($events->first()->siteId)->toBe($entry->siteId)
-        ->and($this->activities->format($events->first()))->toBe("Restored revision {$revision->revisionNum}.");
+        ->and($this->activities->format($events->first()))->toBe("Restored revision {$revision->revisionNum}");
 });
 
 it('rolls back revision restoration when a post-save event fails', function (string $eventType) {
