@@ -44,7 +44,6 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Workflow\Workflows;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -76,7 +75,6 @@ readonly class ElementWrites
         private ElementCaches $elementCaches,
         private Search $search,
         private Sites $sites,
-        private Workflows $workflows,
     ) {
         $this->propagationSites = new WeakMap;
     }
@@ -518,7 +516,6 @@ readonly class ElementWrites
 
                 try {
                     Draft::lockIds(...$draftIdsToLock);
-
                     $this->updateModel($element, $isNewElement, $forceTouch, $fieldLayout, $trackChanges, $dirtyAttributes);
 
                     if ($siteSettingsRecord === null) {

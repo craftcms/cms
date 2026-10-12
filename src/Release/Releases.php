@@ -17,6 +17,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Release\Data\ReleaseReadiness;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
+use CraftCms\Cms\Release\Exceptions\EarlyPublicationFailed;
 use CraftCms\Cms\Release\Exceptions\ReleaseException;
 use CraftCms\Cms\Release\Exceptions\ReleaseNotDue;
 use CraftCms\Cms\Release\Models\Release;
@@ -49,9 +50,6 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class Releases
 {
-    /** @var array<int, int> */
-    private array $mutableDrafts = [];
-
     public function __construct(
         private readonly Workflows $workflows,
         private readonly ConcurrencyErrorDetector $concurrencyErrorDetector,
@@ -164,31 +162,7 @@ class Releases
             ->first();
     }
 
-    public function isDraftAttached(ElementInterface|int $draft): bool
-    {
-        return $this->releaseForDraft($draft) !== null;
-    }
-
-    public function assertDraftMutable(ElementInterface|int $draft): void
-    {
-        $draftId = $this->draftId($draft);
-        if (($this->mutableDrafts[$draftId] ?? 0) > 0) {
-            return;
-        }
-
-        if ($this->isDraftAttached($draftId)) {
-            throw new ReleaseException(t('This draft is attached to a release and cannot be changed.'));
-        }
-    }
-
-    public function assertElementMutable(ElementInterface $element): void
-    {
-        foreach ($this->owningDraftIds($element) as $draftId) {
-            $this->assertDraftMutable($draftId);
-        }
-    }
-
-    public function lockAndAssertElementsMutable(ElementInterface ...$elements): void
+    public function lockElements(ElementInterface ...$elements): void
     {
         $draftIds = collect($elements)
             ->flatMap(fn (ElementInterface $element): array => $this->owningDraftIds($element))
@@ -199,10 +173,6 @@ class Releases
 
         Draft::lockIds(...$draftIds);
         $this->lockElementRoots($elements);
-
-        foreach ($draftIds as $draftId) {
-            $this->assertDraftMutable($draftId);
-        }
     }
 
     /** @param list<ElementInterface> $elements */
@@ -330,6 +300,48 @@ class Releases
         return $published;
     }
 
+    /** @param Closure(ElementInterface): Response $apply */
+    public function publishAheadOfRelease(int $releaseId, ElementInterface $draft, CraftUser $actor, Closure $apply): Response
+    {
+        $draftId = $this->draftId($draft);
+
+        try {
+            return DB::transaction(function () use ($releaseId, $draftId, $draft, $actor, $apply): Response {
+                $release = $this->lockRelease($releaseId);
+                $this->ensureMutable($release);
+                $item = ReleaseItem::query()
+                    ->where('releaseId', $release->id)
+                    ->where('draftId', $draftId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($item === null) {
+                    throw new ReleaseException(t('The draft is not attached to that release.'));
+                }
+
+                Draft::lockIds($draftId);
+                $freshDraft = $this->freshDraft($draftId);
+                if (! $actor->can('publishDraft', [Release::class, $freshDraft])) {
+                    throw new ReleaseException(t('You are not allowed to publish this draft.'), Response::HTTP_FORBIDDEN);
+                }
+
+                $workflowDraft = $this->ensureReadyWorkflow($freshDraft, true);
+                $draftToApply = $workflowDraft ?? $draft;
+                $response = $apply($draftToApply);
+
+                if (DB::table(Table::DRAFTS)->where('id', $draftId)->exists()) {
+                    throw new EarlyPublicationFailed($response);
+                }
+
+                $item->delete();
+
+                return $response;
+            });
+        } catch (EarlyPublicationFailed $exception) {
+            return $exception->response;
+        }
+    }
+
     private function publishRelease(Release $release, bool $scheduledExecution, ?CraftUser $actor = null): Release
     {
         [$publishedRelease, $failedRelease, $publicationFailure] = DB::transaction(function () use ($release, $scheduledExecution, $actor): array {
@@ -424,18 +436,12 @@ class Releases
                 throw new ReleaseException(t('The live element changed after this draft was prepared.'));
             }
 
-            $canonical = $this->withMutableDraft(
-                (int) $item->draftId,
-                function () use ($draft): ElementInterface {
-                    if ($draft::trackChanges() && ElementHelper::isOutdated($draft)) {
-                        app(Elements::class)->mergeCanonicalChanges($draft);
-                    }
+            if ($draft::trackChanges() && ElementHelper::isOutdated($draft)) {
+                app(Elements::class)->mergeCanonicalChanges($draft);
+            }
 
-                    $this->ensureReadyWorkflow($draft, true);
-
-                    return $this->validateAndApplyDraft($draft);
-                },
-            );
+            $this->ensureReadyWorkflow($draft, true);
+            $canonical = $this->validateAndApplyDraft($draft);
             $item->update([
                 'draftId' => null,
                 'publishedElementId' => $canonical->id,
@@ -822,25 +828,5 @@ class Releases
         }
 
         return $draftId;
-    }
-
-    /**
-     * @template T
-     *
-     * @param  Closure(): T  $callback
-     * @return T
-     */
-    private function withMutableDraft(int $draftId, Closure $callback): mixed
-    {
-        $this->mutableDrafts[$draftId] = ($this->mutableDrafts[$draftId] ?? 0) + 1;
-
-        try {
-            return $callback();
-        } finally {
-            $this->mutableDrafts[$draftId]--;
-            if ($this->mutableDrafts[$draftId] === 0) {
-                unset($this->mutableDrafts[$draftId]);
-            }
-        }
     }
 }

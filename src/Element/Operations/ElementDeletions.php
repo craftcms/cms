@@ -29,6 +29,7 @@ use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
@@ -57,6 +58,7 @@ readonly class ElementDeletions
         private ElementWrites $elementWrites,
         private ElementCaches $elementCaches,
         private Search $search,
+        private Releases $releases,
     ) {}
 
     public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
@@ -267,6 +269,8 @@ readonly class ElementDeletions
             DateTimeHelper::pause();
 
             try {
+                $this->releases->lockElements($element);
+
                 $elementRecord = DB::table(Table::ELEMENTS)
                     ->select('dateDeleted')
                     ->where('id', $element->id)
@@ -391,6 +395,8 @@ readonly class ElementDeletions
         }
 
         DB::transaction(function () use ($elements, $firstElement) {
+            $this->releases->lockElements(...array_values($elements));
+
             $siteElementIds = DB::table(Table::ELEMENTS_SITES)
                 ->whereIn('elementId', Arr::pluck($elements, 'id'))
                 ->where('siteId', $firstElement->siteId)

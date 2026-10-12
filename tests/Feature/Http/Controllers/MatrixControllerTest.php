@@ -21,6 +21,7 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Http\Controllers\MatrixController;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
 use CraftCms\Cms\Support\Str;
@@ -142,7 +143,7 @@ it('refuses an entry type the field does not offer', function () {
 });
 
 it('returns a failure response when saving a new matrix draft fails', function () {
-    app()->instance(Drafts::class, new readonly class(app(Elements::class), app(DraftActivity::class), app(Workflows::class)) extends Drafts
+    app()->instance(Drafts::class, new readonly class(app(Elements::class), app(DraftActivity::class), app(Workflows::class), app(Releases::class)) extends Drafts
     {
         public function saveElementAsDraft(ElementInterface $element, ?int $creatorId = null, ?string $name = null, ?string $notes = null, bool $markAsSaved = true): bool
         {
@@ -267,7 +268,7 @@ it('returns a failure response when duplicating a matrix entry fails validation'
     $this->fixture = MatrixControllerFixture::refresh($this->fixture);
     $source = MatrixControllerFixture::entries($this->fixture)->sole();
 
-    app()->instance(Elements::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends Elements
+    app()->instance(Elements::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends Elements
     {
         public function duplicateElement(
             ElementInterface $element,

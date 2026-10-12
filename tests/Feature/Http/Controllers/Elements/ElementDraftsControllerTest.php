@@ -17,6 +17,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Elements\ElementDraftsController;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -659,7 +660,7 @@ describe('store', function () {
         $request->setUserResolver(fn () => currentUser());
         app()->instance('request', $request);
 
-        $controller = new class($request, app(Drafts::class), app(Elements::class), app(ElementActivity::class), app(Workflows::class)) extends ElementDraftsController
+        $controller = new class($request, app(Drafts::class), app(Elements::class), app(ElementActivity::class), app(Workflows::class), app(Releases::class)) extends ElementDraftsController
         {
             private int $canSaveCalls = 0;
 
