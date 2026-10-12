@@ -60,6 +60,7 @@ function payload(): ElementEditPayload {
     discardDraftUrl: '',
     isProvisionalDraft: false,
     draftId: null,
+    draftIsSaved: false,
     canAutosave: false,
     notice: null,
     mergeNotice: null,
@@ -76,6 +77,11 @@ function payload(): ElementEditPayload {
       current: null,
       draftReviews: [],
     },
+    release: null,
+    releaseOptions: [],
+    canCreateRelease: false,
+    canAddToRelease: false,
+    releaseTimeZone: 'UTC',
   };
 }
 

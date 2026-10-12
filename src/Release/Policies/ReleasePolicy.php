@@ -42,17 +42,6 @@ class ReleasePolicy
             && $release->items()->exists();
     }
 
-    public function publishAhead(CraftUser $actor, Release $release, ElementInterface $draft): bool
-    {
-        if (! is_int($draft->draftId) || $draft->draftId < 1) {
-            return false;
-        }
-
-        return $release->status->isMutable()
-            && $release->items()->where('draftId', $draft->draftId)->exists()
-            && $this->publishDraft($actor, $draft);
-    }
-
     public function publishDraft(CraftUser $actor, ElementInterface $draft): bool
     {
         if (is_int($draft->draftId) && $draft->draftId > 0) {

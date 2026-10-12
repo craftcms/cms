@@ -9,16 +9,24 @@ use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementEditorActions;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Release\Data\AttachedReleaseData;
+use CraftCms\Cms\Release\Data\ReleaseSummaryData;
+use CraftCms\Cms\Release\Enums\ReleaseStatus;
+use CraftCms\Cms\Release\Models\Release;
+use CraftCms\Cms\Release\Models\ReleaseItem;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -34,8 +42,10 @@ use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Data\WorkflowDraftReviewData;
 use CraftCms\Cms\Workflow\Data\WorkflowReviewData;
+use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -83,6 +93,10 @@ class ElementEditViewModel extends ViewModel
     private ?UiPayload $sidebarUi = null;
 
     private bool $sidebarUiResolved = false;
+
+    private ?Release $attachedRelease = null;
+
+    private bool $attachedReleaseResolved = false;
 
     public function __construct(
         protected readonly ElementInterface $element,
@@ -219,13 +233,35 @@ class ElementEditViewModel extends ViewModel
      */
     public function editorActions(): array
     {
-        return app(ElementEditorActions::class)->for(
+        $actions = app(ElementEditorActions::class)->for(
             element: $this->element,
             canSave: $this->canSave,
             review: $this->workflowReview(),
             primaryLabel: $this->primaryActionLabel(),
             isNew: $this->request->boolean('fresh'),
         );
+
+        $release = $this->attachedRelease();
+        if ($release !== null) {
+            $actions['primary']['label'] = t('Save draft');
+            $actions['primary']['actionUrl'] = $this->autosaveUrl();
+            $actions['primary']['tabId'] = null;
+
+            if (! $release->status->isMutable()) {
+                $actions['buttons'] = array_map(
+                    fn (array $action): array => $action['actionUrl'] === $this->applyDraftUrl()
+                        ? [
+                            ...$action,
+                            'disabled' => true,
+                            'disabledReason' => t('Cancel the release schedule before applying this draft.'),
+                        ]
+                        : $action,
+                    $actions['buttons'],
+                );
+            }
+        }
+
+        return $actions;
     }
 
     protected function primaryActionLabel(): ?string
@@ -242,6 +278,123 @@ class ElementEditViewModel extends ViewModel
             'current' => $this->workflowReview(),
             'draftReviews' => [],
         ];
+    }
+
+    public function release(): ?AttachedReleaseData
+    {
+        if (! $this->element->getIsDraft() || $this->element->isProvisionalDraft) {
+            return null;
+        }
+
+        $release = $this->attachedRelease();
+        $actor = currentUser();
+
+        if ($release === null || $actor === null) {
+            return null;
+        }
+
+        return new AttachedReleaseData(
+            id: $release->id,
+            name: $release->name,
+            status: $release->status,
+            plannedAt: $release->plannedAt,
+            canManage: $actor->can('manage', $release),
+            draftId: (int) $this->element->draftId,
+            siteId: $this->element->siteId,
+        );
+    }
+
+    /** @return list<ReleaseSummaryData> */
+    public function releaseOptions(): array
+    {
+        if (! $this->canAddToRelease()) {
+            return [];
+        }
+
+        $actor = currentUser();
+        if ($actor === null) {
+            return [];
+        }
+
+        $canonicalId = $this->element->getCanonicalId();
+        $releaseIdsWithCanonical = is_int($canonicalId) && $canonicalId > 0
+            ? ReleaseItem::query()->where('canonicalId', $canonicalId)->pluck('releaseId')->all()
+            : [];
+
+        return Release::query()
+            ->whereIn('status', [ReleaseStatus::Draft, ReleaseStatus::Failed])
+            ->orderByRaw('plannedAt is null')
+            ->orderBy('plannedAt')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (Release $release): bool => ! in_array($release->id, $releaseIdsWithCanonical, true)
+                && $actor->can('attach', [$release, $this->element]))
+            ->map(fn (Release $release): ReleaseSummaryData => new ReleaseSummaryData(
+                id: $release->id,
+                name: $release->name,
+                status: $release->status,
+                plannedAt: $release->plannedAt,
+                publishedAt: $release->publishedAt,
+                itemCount: null,
+            ))
+            ->values()
+            ->all();
+    }
+
+    public function canCreateRelease(): bool
+    {
+        return (currentUser()?->can('manageReleases') ?? false)
+            && $this->canAddToRelease();
+    }
+
+    public function canAddToRelease(): bool
+    {
+        $actor = currentUser();
+        if (
+            ! $this->canSave
+            || ! $this->element::hasDrafts()
+            || $this->element->getIsRevision()
+            || $this->attachedRelease() !== null
+            || $actor === null
+            || ! $this->releaseApprovalReady()
+        ) {
+            return false;
+        }
+
+        $prospectiveRelease = new Release;
+        $prospectiveRelease->status = ReleaseStatus::Draft;
+
+        return $actor->can('attach', [$prospectiveRelease, $this->element]);
+    }
+
+    private function releaseApprovalReady(): bool
+    {
+        if (! Workflows::requiresApproval($this->element)) {
+            return true;
+        }
+
+        if (! $this->element->getIsDraft() || $this->element->isProvisionalDraft) {
+            return false;
+        }
+
+        return Workflows::latestRun($this->element)?->status === WorkflowStatus::Approved
+            && ! ElementHelper::isOutdated($this->element);
+    }
+
+    public function releaseTimeZone(): string
+    {
+        return Cms::timezone();
+    }
+
+    public function draftIsSaved(): bool
+    {
+        if (! $this->element->getIsDraft() || $this->element->isProvisionalDraft || ! $this->element->draftId) {
+            return false;
+        }
+
+        return (bool) DB::table(Table::DRAFTS)
+            ->where('id', $this->element->draftId)
+            ->value('saved');
     }
 
     protected function workflowReview(): ?WorkflowReviewData
@@ -794,6 +947,18 @@ class ElementEditViewModel extends ViewModel
     public function readOnly(): bool
     {
         return ! $this->canSave;
+    }
+
+    private function attachedRelease(): ?Release
+    {
+        if (! $this->attachedReleaseResolved) {
+            $this->attachedReleaseResolved = true;
+            $this->attachedRelease = $this->element->getIsDraft() && ! $this->element->isProvisionalDraft
+                ? app(Releases::class)->releaseForDraft($this->element)
+                : null;
+        }
+
+        return $this->attachedRelease;
     }
 
     /**

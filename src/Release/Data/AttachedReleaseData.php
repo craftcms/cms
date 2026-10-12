@@ -18,8 +18,6 @@ readonly class AttachedReleaseData
         public ReleaseStatus $status,
         public ?DateTimeInterface $plannedAt,
         public bool $canManage,
-        public bool $canDetach,
-        public bool $canPublishAhead,
         public int $draftId,
         public ?int $siteId,
     ) {}

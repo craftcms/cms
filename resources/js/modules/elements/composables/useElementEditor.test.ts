@@ -73,6 +73,7 @@ function payload(
     crumbs: undefined,
     readOnly: undefined,
     draftId: null,
+    draftIsSaved: true,
     isProvisionalDraft: false,
     canAutosave: false,
     ui: null,
@@ -109,6 +110,11 @@ function payload(
       current: null,
       draftReviews: [],
     },
+    release: null,
+    releaseOptions: [],
+    canCreateRelease: false,
+    canAddToRelease: false,
+    releaseTimeZone: 'UTC',
     ...overrides,
   };
 }
@@ -678,10 +684,72 @@ describe('useElementEditor', () => {
 
       expect(editor.workflowReviewLocked.value).toBe(true);
 
-      editor.startEditingReviewedDraft();
+      editor.startEditingDraft();
       await nextTick();
 
       expect(editor.workflowReviewLocked.value).toBe(false);
+    }
+  );
+
+  it.each(['draft', 'scheduled'] as const)(
+    'edits a %s release draft locally and autosaves without changing membership',
+    async (status) => {
+      vi.useFakeTimers();
+      onTestFinished(() => {
+        vi.useRealTimers();
+      });
+      const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+      onTestFinished(() => visit.mockRestore());
+      const release = {
+        id: 4,
+        name: 'Campaign',
+        status,
+        plannedAt: null,
+        canManage: true,
+        draftId: 7,
+        siteId: 1,
+      };
+      const screen = payload({
+        draftId: 7,
+        canAutosave: true,
+        readOnly: false,
+        release,
+        ui: fieldLayout('Original'),
+      });
+      const {editor, page} = mount(screen);
+      await typeTitle('Initial edit');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(postSpy).not.toHaveBeenCalled();
+
+      editor.startEditingDraft();
+      await nextTick();
+      expect(visit).not.toHaveBeenCalled();
+      expect(postSpy).not.toHaveBeenCalled();
+
+      await typeTitle('Updated release content');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(postSpy).toHaveBeenCalledTimes(1);
+      expect(postSpy.mock.calls[0]![1]).toMatchObject({
+        draftId: 7,
+        title: 'Updated release content',
+      });
+      expect(editor.props.release?.id).toBe(release.id);
+
+      page.props = {...screen, release: {...release}};
+      await nextTick();
+      await typeTitle('Further release content');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(postSpy).toHaveBeenCalledTimes(2);
+
+      page.props = {
+        ...screen,
+        draftId: 8,
+        release: {...release, id: 5, draftId: 8},
+      };
+      await nextTick();
+      await typeTitle('New release draft');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(postSpy).toHaveBeenCalledTimes(2);
     }
   );
 
@@ -1527,6 +1595,152 @@ describe('useElementEditor', () => {
       },
     };
   }
+
+  it('saves a newer mutation before attaching after an earlier autosave', async () => {
+    vi.useFakeTimers();
+    postSpy.mockResolvedValue({data: {draftId: 9}});
+
+    const {editor, page} = mount(
+      payload({
+        canAutosave: true,
+        draftId: 9,
+        ui: fieldLayout('Original title'),
+      })
+    );
+
+    await typeTitle('Autosaved title');
+    await vi.advanceTimersByTimeAsync(2000);
+    await nextTick();
+
+    expect(postSpy).toHaveBeenCalledTimes(1);
+    expect(editor.autosave.hasPendingChanges.value).toBe(false);
+
+    await typeTitle('Latest title');
+
+    const save = interceptSave();
+    const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+
+    editor.addToRelease({
+      id: 4,
+      name: 'Launch',
+      status: 'draft',
+      plannedAt: null,
+    });
+
+    expect(save.last().url).toBe('/actions/elements/save-draft');
+    expect(save.last().data).toMatchObject({
+      draftId: 9,
+      title: 'Latest title',
+    });
+    expect(visit).not.toHaveBeenCalled();
+
+    await save.land(
+      page,
+      payload({
+        canAutosave: true,
+        draftId: 9,
+        ui: fieldLayout('Latest title'),
+      })
+    );
+
+    expect(visit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/admin/releases/4/drafts',
+        method: 'post',
+      }),
+      expect.objectContaining({data: {draftId: 9, siteId: 1}})
+    );
+
+    visit.mockRestore();
+    save.restore();
+    vi.useRealTimers();
+  });
+
+  it('attaches a truly clean approved draft without saving it again', () => {
+    const {editor} = mount(
+      payload({
+        draftId: 9,
+        ui: fieldLayout('Approved title'),
+        workflow: {
+          current: {
+            status: 'approved',
+          } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+          draftReviews: [],
+        },
+      })
+    );
+    const save = interceptSave();
+    const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+
+    editor.addToRelease({
+      id: 4,
+      name: 'Launch',
+      status: 'draft',
+      plannedAt: null,
+    });
+
+    expect(save.calls()).toBe(0);
+    expect(visit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: '/admin/releases/4/drafts',
+        method: 'post',
+      }),
+      expect.objectContaining({data: {draftId: 9, siteId: 1}})
+    );
+
+    visit.mockRestore();
+    save.restore();
+  });
+
+  it.each([
+    {draftId: 9, savedDraftId: 9, params: {draftId: 9}},
+    {draftId: null, savedDraftId: 10, params: {dropProvisional: 1}},
+  ])(
+    'persists an unsaved draft before attaching it (draft: $draftId)',
+    async ({draftId, savedDraftId, params}) => {
+      const {editor, page} = mount(
+        payload({
+          draftId,
+          draftIsSaved: false,
+          ui: fieldLayout('New draft'),
+        })
+      );
+      const save = interceptSave();
+      const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+      onTestFinished(() => {
+        visit.mockRestore();
+        save.restore();
+      });
+
+      editor.addToRelease({
+        id: 4,
+        name: 'Launch',
+        status: 'draft',
+        plannedAt: null,
+      });
+
+      expect(save.last().url).toBe('/actions/elements/save-draft');
+      expect(save.last().data).toMatchObject(params);
+      expect(visit).not.toHaveBeenCalled();
+
+      await save.land(
+        page,
+        payload({
+          draftId: savedDraftId,
+          draftIsSaved: true,
+          ui: fieldLayout('New draft'),
+        })
+      );
+
+      expect(visit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: '/admin/releases/4/drafts',
+          method: 'post',
+        }),
+        expect.objectContaining({data: {draftId: savedDraftId, siteId: 1}})
+      );
+    }
+  );
 
   /**
    * Applying the provisional draft consumes it, so the screen is a plain

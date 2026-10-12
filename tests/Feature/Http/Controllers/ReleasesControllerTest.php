@@ -71,7 +71,8 @@ it('schedules a release at the submitted local time and requires a time', functi
     Date::setTestNow('2026-10-01 12:00:00');
 
     $release = $this->releases->create('Scheduled launch', Date::parse('2026-10-02 08:00:00', Cms::timezone()), $this->actor);
-    $this->releases->attach($release, releaseControllerDraft($this->actor), $this->actor);
+    $draft = releaseControllerDraft($this->actor);
+    $this->releases->attach($release, $draft, $this->actor);
 
     $modal = getJson(route('craft.cp.releases.scheduleModal', $release))
         ->assertOk()
@@ -103,6 +104,12 @@ it('schedules a release at the submitted local time and requires a time', functi
             ->where('editUi', null));
 
     getJson(route('craft.cp.releases.scheduleModal', $release))->assertForbidden();
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('editorActions.buttons.0.disabled', true)
+            ->where('editorActions.buttons.0.disabledReason', 'Cancel the release schedule before applying this draft.'));
 });
 
 it('shows release item counts while restricting management to release managers', function () {
@@ -177,7 +184,7 @@ it('filters, paginates, and sorts release rows through Ui reloads', function () 
             ->where('ui.nodes.0.props.rows.0.id', $alpha->id));
 });
 
-it('attaches and explicitly removes a draft from the release', function () {
+it('attaches and edits the same draft, and explicitly removes it from the release', function () {
     $draft = releaseControllerDraft($this->actor);
     $release = $this->releases->create('Attach release', null, $this->actor);
 
@@ -192,6 +199,28 @@ it('attaches and explicitly removes a draft from the release', function () {
         ->assertJsonPath('redirect', $draft->getCpEditUrl());
 
     expect($this->releases->releaseForDraft($draft)?->id)->toBe($release->id);
+
+    $screen = get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('release.id', $release->id)
+            ->where('readOnly', false)
+            ->where('canAutosave', true));
+
+    $action = $screen->inertiaProps('editorActions.primary');
+    app()->forgetScopedInstances();
+    $saveResponse = postJson($action['actionUrl'] ?? $screen->inertiaProps('applyDraftUrl'), [
+        ...$action['params'],
+        'elementType' => EntryElement::class,
+        'draftId' => $draft->draftId,
+        'siteId' => $draft->siteId,
+        'title' => 'Edited release content',
+    ]);
+    $saveResponse->assertOk();
+
+    expect(EntryElement::find()->draftId($draft->draftId)->status(null)->one()?->title)->toBe('Edited release content')
+        ->and($this->releases->releaseForDraft($draft)?->id)->toBe($release->id)
+        ->and(EntryElement::find()->id($draft->getCanonicalId())->status(null)->one()->title)->toBe('Controller original');
 
     $page = get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
         ->assertOk()
