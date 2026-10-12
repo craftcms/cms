@@ -142,10 +142,6 @@
         value[key] =
           column.value ??
           (['checkbox', 'lightswitch'].includes(column.type) ? false : '');
-      if (column.prefixSelect && !(column.prefixSelect.key in value)) {
-        value[column.prefixSelect.key] =
-          column.prefixSelect.options[0]?.value ?? '';
-      }
     }
     const row = createRow(value);
     row.ui = props.control.props.rowTemplate;
@@ -534,27 +530,6 @@
                 v-html="String(row.value[key] ?? '')"
               />
               <span v-else>{{ row.value[key] }}</span>
-              <TableCell
-                v-if="
-                  column.prefixSelect &&
-                  fieldFor(fields, column.prefixSelect.key)
-                "
-                :node="fieldFor(fields, column.prefixSelect.key)!"
-                :value="row.value[column.prefixSelect.key]"
-                :label="column.prefixSelect.label"
-                :editable="
-                  editable && !disabledCell(row, key) && !column.static
-                "
-                :values="effectiveValues"
-                :errors="errors ?? []"
-                :touched-paths="effectiveTouched"
-                :ui-scope="uiScope ?? []"
-                :ui-refreshable="Boolean(uiRefreshable)"
-                @update:value="
-                  (value, kind) =>
-                    updateCell(index, column.prefixSelect!.key, value, kind)
-                "
-              />
             </component>
             <td
               v-if="

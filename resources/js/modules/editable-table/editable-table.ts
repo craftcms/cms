@@ -872,47 +872,6 @@ export class EditableTable extends Base<EditableTableSettings> {
             }
         }
 
-        if (col.prefixSelect) {
-          const config = col.prefixSelect;
-          const select = document.createElement('select');
-          select.slot = 'input';
-          select.name = `${baseName}[${rowId}][${config.key}]`;
-          for (const option of config.options) {
-            select.add(new Option(option.label, option.value));
-          }
-          select.value = String(
-            values[config.key] ?? config.options[0]?.value ?? ''
-          );
-
-          const prefix = document.createElement('craft-select');
-          prefix.label = config.label;
-          prefix.setAttribute('label-sr-only', '');
-          prefix.name = select.name;
-          prefix.className = 'w-28 shrink-0';
-          prefix.append(select);
-
-          const input = document.createElement('craft-field');
-          input.label = col.heading ?? colId;
-          input.setAttribute('label-sr-only', '');
-          input.className = 'min-w-0 flex-1';
-          const controls = [...$cell[0].children] as HTMLElement[];
-          for (const control of controls) {
-            control.slot = 'input';
-          }
-          input.append(...controls);
-          const group = document.createElement('craft-field-group');
-          group.slot = 'input';
-          group.className = '!flex w-full flex-wrap items-end !gap-2';
-          group.append(prefix, input);
-          const field = document.createElement('craft-field');
-          field.fieldset = true;
-          field.label = col.heading ?? colId;
-          field.setAttribute('label-sr-only', '');
-          field.className = 'min-w-72 p-1';
-          field.append(group);
-          $cell.append(field);
-        }
-
         if (col.textExpanderTriggers && textExpanderTarget) {
           textExpanderTarget.id = `editable-table-input-${crypto.randomUUID()}`;
           textExpanderTarget.setAttribute('aria-label', col.heading ?? colId);
