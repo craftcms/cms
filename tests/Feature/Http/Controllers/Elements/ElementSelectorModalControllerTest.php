@@ -155,8 +155,8 @@ describe('asset folders', function () {
         $rows = collect(($this->postAssets)()['data']);
 
         expect($rows->pluck('isFolder')->all())->toBe([true, true])
-            ->and($rows->pluck('id')->sort()->values()->all())
-            ->toBe(["folder:{$first}", "folder:{$second}"]);
+            ->and($rows->pluck('id')->all())
+            ->toEqualCanonicalizing(["folder:{$first}", "folder:{$second}"]);
     });
 
     it('links folder titles’ labels to the folder', function () {
