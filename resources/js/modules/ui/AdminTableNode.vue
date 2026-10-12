@@ -287,7 +287,11 @@
     if (link.slideout) {
       openLinkSlideout(
         link,
-        (event.target as Element).closest<HTMLElement>('tr')
+        (event.target as Element)
+          .closest('tr')
+          ?.querySelector<HTMLElement>(
+            `.cp-table-cell--${CSS.escape(props.node.props.columns[0]!.key)} a[href]`
+          ) ?? null
       );
     } else {
       router.visit(link.url);

@@ -1045,9 +1045,11 @@ it('opens a double-clicked row the way its first column’s link would', async (
   });
 
   const row = await doubleClickRow(host, 0);
+  const link = row.querySelector('a[href="/admin/rules/1"]');
+  expect(link).toBeInstanceOf(HTMLAnchorElement);
   expect(slideout).toHaveBeenCalledWith(
     '/admin/rules/1',
-    expect.objectContaining({opener: row, width: '85vw'})
+    expect.objectContaining({opener: link, width: '85vw'})
   );
 
   await doubleClickRow(host, 1);
