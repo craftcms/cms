@@ -5,6 +5,7 @@
   import {computed, provide, shallowRef, toRaw} from 'vue';
   import type {
     ActionItem,
+    ActionItemButton,
     FormAction,
     FormSubmissionAction,
   } from '@/common/types';
@@ -39,6 +40,7 @@
     /** Controls for the details column, submitted alongside `ui`. */
     sidebarUi?: UiPayload;
     contentMaxWidth?: boolean;
+    formAdditionalButtons?: ActionItemButton[];
   }>();
   const emit = defineEmits<{
     (event: 'change', change: UiChange, values: UiPayload['values']): void;
@@ -196,6 +198,7 @@
       ? []
       : props.defaultFormActions,
     formActions: translatedFormActions.value,
+    formAdditionalButtons: props.formAdditionalButtons,
     contentMaxWidth: props.contentMaxWidth ?? true,
     onSave: save,
   }));

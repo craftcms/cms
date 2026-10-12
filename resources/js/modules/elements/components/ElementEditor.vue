@@ -233,7 +233,7 @@
   </LayoutSlot>
 
   <!-- Where the legacy editor puts its spinner and checkmark. -->
-  <LayoutSlot v-if="autosave.status.value !== 'idle'" name="additional-buttons">
+  <LayoutSlot v-if="autosave.status.value !== 'idle'" name="footer-meta">
     <AutosaveMessage
       :status="autosave.status.value"
       :saved-at="autosave.savedAt.value"
