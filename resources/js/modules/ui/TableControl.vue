@@ -495,8 +495,10 @@
                 setRowRef(element as HTMLTableRowElement | null, row.id)
             "
             :class="{
+              hidden: control.props.hiddenRows?.includes(rowKey(index)),
               'row--dragging': getDragState(row.id).type === 'is-dragging',
             }"
+            :hidden="control.props.hiddenRows?.includes(rowKey(index))"
             :data-row-id="row.id"
           >
             <component
