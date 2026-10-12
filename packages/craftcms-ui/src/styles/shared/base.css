@@ -360,10 +360,11 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
 
   tbody th {
     text-align: inherit;
+    font-weight: var(--font-weight-semibold);
   }
 
-  /* Add a rule to the first cells */
-  tr:first-child {
+  /* Add a rule to the first cells, unless the header row's border already does */
+  &:not(:has(> thead)) tr:first-child {
     td {
       border-block-start: 1px solid
         color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
@@ -371,7 +372,8 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
   }
 
   textarea,
-  input:not([type='checkbox']):not([type='radio']) {
+  /* Color inputs sit in padded cells, so they keep their own input styles */
+  input:not([type='checkbox']):not([type='radio']):not(craft-input-color input) {
     --c-focus-outline-offset: -2px;
     border: 0;
     padding-block: var(--_cell-spacing-block);
@@ -409,6 +411,23 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
     background-color: transparent;
   }
 
+  thead {
+    background-color: var(--c-surface-sunken);
+  }
+
+  thead th {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  /* Keep the header's background inside the table's rounded corners */
+  thead tr:first-child > :nth-child(1 of :not([hidden])) {
+    border-start-start-radius: calc(var(--c-radius-sm) - 1px);
+  }
+
+  thead tr:first-child > :nth-last-child(1 of :not([hidden])) {
+    border-start-end-radius: calc(var(--c-radius-sm) - 1px);
+  }
+
   th {
     font-size: var(--c-text-sm);
     padding-block: var(--c-spacing-sm);
@@ -420,10 +439,105 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
     padding: 0;
   }
 
-  td.thin {
-    padding: var(--c-spacing-sm);
+  /*
+    Cells without a text input or select get the same padding as `th`. Native
+    controls only count as direct children (legacy markup), so the inputs
+    nested inside color and icon pickers don't.
+  */
+  td:where(
+    :not(
+      :has(
+        craft-input:not([hidden-input]),
+        craft-input-money,
+        craft-textarea,
+        craft-select,
+        craft-combobox,
+        > textarea,
+        > input:not([type='checkbox'], [type='radio'], [type='hidden']),
+        > select,
+        > .select,
+        > .datewrapper,
+        > .timewrapper
+      )
+    )
+  ) {
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--_input-padding-inline);
+  }
+
+  :is(th, td).thin {
     white-space: nowrap;
     width: 0.01%;
+  }
+
+  /* Size thin selects to their widest option so the selected label isn't truncated */
+  td.thin select {
+    width: max-content;
+    min-width: 100%;
+  }
+
+  :is(th, td).centered {
+    text-align: center;
+  }
+
+  /* Center checkboxes and lightswitches, whose wrappers otherwise reserve a label column */
+  td.centered :is(craft-checkbox, craft-switch) {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+  }
+
+  /* Text and dropdown inputs fill their cells: no borders, rounded corners, or shadows, and inset focus rings so the cell doesn't clip them */
+  td
+    :is(
+      craft-input:not([hidden-input]),
+      craft-input-money,
+      craft-textarea,
+      craft-select,
+      craft-combobox
+    ) {
+    --c-input-border-width: 0px;
+    --c-input-radius: 0px;
+    --c-input-shadow: none;
+    --c-focus-outline-offset: -2px;
+  }
+
+  /*
+    Text and select cells act as their control: text cells get a text cursor,
+    clicking anywhere in the cell focuses its control (in TableControl.vue), and
+    the cell draws the focus ring so it spans the full row height.
+  */
+  td:has(
+    craft-input:not([hidden-input], [type='date'], [type='time']),
+    craft-input-money,
+    craft-textarea,
+    craft-combobox
+  ) {
+    cursor: text;
+  }
+
+  td:has(
+    craft-input:not([hidden-input]),
+    craft-input-money,
+    craft-textarea,
+    craft-select,
+    craft-combobox
+  ) {
+    /* Set on the controls themselves too, since prefixed inputs (money) set their own */
+    &,
+    & :is(input, textarea, select, .form-control) {
+      --c-focus-outline-style: none;
+    }
+
+    &:has(:focus-visible) {
+      outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+      outline-offset: calc(var(--c-focus-outline-width) * -1);
+    }
+  }
+
+  /* Pickers sit in padded cells, so shrink them to keep rows from growing */
+  td :is(craft-input-color, craft-input[hidden-input]) {
+    --c-input-height: var(--c-size-control-sm);
   }
 
   td.select-cell {

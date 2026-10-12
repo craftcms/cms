@@ -180,7 +180,7 @@ class Table extends Control
 
         foreach ($this->columns as $key => $column) {
             $column = array_replace($column, $cellOptions[$key] ?? []);
-            if (($column['type'] ?? null) === 'html' || ($column['html'] ?? false)) {
+            if (in_array($column['type'] ?? null, ['heading', 'html'], true) || ($column['html'] ?? false)) {
                 continue;
             }
 
