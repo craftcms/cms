@@ -15,7 +15,7 @@
 </script>
 
 <template>
-  <craft-pane appearance="outline" padding="sm">
+  <craft-pane appearance="outline-fill" padding="sm">
     <component
       :is="collapsible ? 'craft-disclosure' : 'section'"
       class="workflow-review-run"

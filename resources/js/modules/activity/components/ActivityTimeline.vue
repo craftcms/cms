@@ -68,7 +68,9 @@
           :key="group.key"
           :data-activity-day="group.key"
         >
-          <h4 class="activity-timeline__day">{{ group.label }}</h4>
+          <h4 class="activity-timeline__day">
+            <span class="activity-timeline__day-label">{{ group.label }}</span>
+          </h4>
           <component
             v-for="(event, index) in group.events"
             :key="event.id"
@@ -140,12 +142,35 @@
     font-weight: 600;
   }
 
+  /* Out through the scroll area's padding to the pane's edges. */
+  .activity-timeline__day::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline: calc(var(--cp-container-padding) * -1);
+    border-block-start: 1px solid var(--c-color-border-quiet);
+  }
+
+  .activity-timeline__day-label {
+    position: relative;
+    display: inline-block;
+    padding-block: var(--c-spacing-xs);
+    padding-inline: var(--c-spacing-md);
+    border: 1px solid var(--c-color-border-quiet);
+    border-radius: var(--c-radius-full);
+    background-color: var(--c-surface-default);
+  }
+
+  section:first-of-type .activity-timeline__day {
+    margin-block-start: 0;
+  }
+
   /*
    * Carries the timeline's hairline across the day heading, from where the
    * previous day's last event leaves off to where the next event's picks up.
    * The offsets mirror craft-timeline-item's own hairline.
    */
-  section + section > .activity-timeline__day::before {
+  section + section > .activity-timeline__day::after {
     position: absolute;
     inset-block: calc(var(--c-spacing-md) + 0.875rem)
       calc(-2 * var(--c-spacing-md) - 0.875rem);
