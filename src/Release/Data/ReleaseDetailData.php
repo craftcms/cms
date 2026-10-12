@@ -12,7 +12,6 @@ use DateTimeInterface;
  */
 readonly class ReleaseDetailData
 {
-    /** @param array{update: string} $urls */
     public function __construct(
         public int $id,
         public string $name,
@@ -24,6 +23,5 @@ readonly class ReleaseDetailData
         public bool $canSchedule,
         public bool $canPublish,
         public bool $canUnschedule,
-        public array $urls,
     ) {}
 }

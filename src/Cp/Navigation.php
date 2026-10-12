@@ -172,6 +172,13 @@ readonly class Navigation
             }
         }
 
+        if (Sections::getTotalEditableSections() || Gate::check('manageReleases')) {
+            $navItems->add(new NavItem()
+                ->label(t('Releases'))
+                ->href(route('craft.cp.releases.index'))
+                ->icon('calendar'));
+        }
+
         if (Volumes::getTotalViewableVolumes()) {
             $contentItems->add(new NavItem()
                 ->label(t('Assets'))

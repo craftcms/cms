@@ -136,6 +136,7 @@ class Table implements Node
      *
      * `_deleteUrl` overrides the shared deletion URL with a row's named resource route.
      * `_deleteConfirmMessage` overrides the shared deletion confirmation for one row.
+     * `_deleteLabel` customizes the delete button's accessible name.
      * `_deletable => false` suppresses deletion of one row. `_deleteDisabledReason`
      * shows a disabled delete button with an explanation instead of hiding it.
      * `_status` accepts a

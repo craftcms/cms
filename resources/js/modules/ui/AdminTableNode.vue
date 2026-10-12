@@ -360,6 +360,7 @@
             ) {
               actions.push(
                 h(DeleteButton, {
+                  label: row.original._deleteLabel,
                   disabled: deletePending.value,
                   disabledReason: row.original._deleteDisabledReason,
                   onClick: () => deleteRow(row.original),

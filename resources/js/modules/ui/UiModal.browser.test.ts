@@ -5,6 +5,8 @@ import {createApp, h, shallowRef, type App} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
 import {createCpComponentRegistry} from '@/bootstrap/components';
+import DateTimeControl from './DateTimeControl.vue';
+import FieldNode from './FieldNode.vue';
 import UiModal from './UiModal.vue';
 import {registerUiComponents} from './register';
 import type {UiNodePayload, UiPayload} from './types';
@@ -209,4 +211,77 @@ it('lays out modal fields in columns and stacks them in a narrow container witho
   await expect
     .element(page.getByRole('button', {name: 'Open settings'}))
     .toHaveFocus();
+});
+
+it('shows composite input errors and focuses the invalid field without discarding edits', async () => {
+  const ui: UiPayload = {
+    scope: [],
+    refreshable: false,
+    nodes: [
+      {
+        type: 'field',
+        component: 'craft:field',
+        props: {label: 'Publication date', fieldset: true, required: true},
+        control: {
+          type: 'date-time',
+          component: 'craft:date-time',
+          path: ['publishAt'],
+          mode: 'editable',
+          deltaGroup: ['publishAt'],
+          props: {
+            showDate: true,
+            showTime: true,
+            showTimeZone: true,
+            locale: 'en-US',
+            minuteIncrement: 30,
+          },
+        },
+      },
+    ],
+    values: {
+      publishAt: {date: '2030-10-02', time: '', timezone: 'America/New_York'},
+    },
+    errors: [],
+    globalErrors: [],
+  };
+  vi.stubGlobal('Craft', {cp: {displayError: vi.fn()}});
+  vi.spyOn(actionClient, 'get').mockResolvedValue({
+    data: {ui, title: 'Schedule release', submitLabel: 'Schedule'},
+  });
+  vi.spyOn(actionClient, 'post').mockRejectedValue({
+    response: {
+      data: {
+        message: 'Enter a publication time.',
+        errors: {'publishAt.time': ['Enter a publication time.']},
+      },
+    },
+  });
+
+  host = document.createElement('div');
+  document.body.append(host);
+  app = createApp(() =>
+    h(UiModal, {modalUrl: '/release/form', actionUrl: '/release/schedule'})
+  );
+  app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+  app.component('craft:field', FieldNode);
+  app.component('craft:date-time', DateTimeControl);
+  app.mount(host);
+
+  await page
+    .getByRole('textbox', {name: 'Date', exact: true})
+    .fill('2030-10-03');
+  await page.getByRole('button', {name: 'Schedule', exact: true}).click();
+
+  await expect
+    .element(page.getByText('Enter a publication time.', {exact: true}))
+    .toBeVisible();
+  await expect
+    .element(page.getByRole('textbox', {name: 'Date', exact: true}))
+    .toHaveFocus();
+  await expect
+    .element(page.getByRole('textbox', {name: 'Date', exact: true}))
+    .toHaveValue('2030-10-03');
+  await expect
+    .element(page.getByRole('dialog', {name: 'Schedule release'}))
+    .toBeVisible();
 });
