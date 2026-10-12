@@ -793,6 +793,7 @@ class UserPermissions
                             key: 'triggerImportPlans',
                             label: t('Run import plans'),
                             info: t('Allows user to run an import plan.'),
+                            warning: t('Import plans can create and update elements and other model data, regardless of the user’s other permissions.'),
                         ),
                     ])->filter(),
                 ),

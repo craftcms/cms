@@ -953,6 +953,7 @@ return [
     'Import Plans' => 'Import Plans',
     'Import could not be started.' => 'Import could not be started.',
     'Import plan saved.' => 'Import plan saved.',
+    'Import plans can create and update elements and other model data, regardless of the user’s other permissions.' => 'Import plans can create and update elements and other model data, regardless of the user’s other permissions.',
     'Import started.' => 'Import started.',
     'Importer Type' => 'Importer Type',
     'Importing data (import job)' => 'Importing data (import job)',
