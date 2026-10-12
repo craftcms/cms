@@ -1,6 +1,9 @@
 import '../../../../css/cp.css';
 import {createApp, h, nextTick, reactive, ref} from 'vue';
-import {mergeDataIntoQueryString} from '@inertiajs/core';
+import {
+  mergeDataIntoQueryString,
+  router as inertiaRouter,
+} from '@inertiajs/core';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
 import AdminTable from './AdminTable.vue';
@@ -974,6 +977,78 @@ it('opens slideout links at their width and refreshes through its own handler', 
   slideout.mock.lastCall![1].onSaved();
   expect(onRefresh).toHaveBeenCalledOnce();
   expect(reload).not.toHaveBeenCalled();
+});
+
+it('opens menu links in slideouts without losing native modified-click behavior', async () => {
+  const onRefresh = vi.fn();
+  const navigate = vi
+    .spyOn(inertiaRouter, 'visit')
+    .mockImplementation(() => {});
+  const host = mountNode(
+    {
+      rows: [
+        {
+          id: 1,
+          name: {
+            label: 'Actions',
+            items: [
+              {
+                label: 'Edit rule',
+                url: '/admin/rules/1',
+                slideout: true,
+                slideoutWidth: '72vw',
+              },
+              {label: 'View rule', url: '/admin/rules/1/view'},
+            ],
+          },
+        },
+      ],
+    },
+    {onRefresh}
+  );
+  const menu = host.querySelector('craft-action-menu')!;
+  await menu.show();
+  const item = await vi.waitFor(() => {
+    const element = menu.querySelector('craft-action-item');
+    expect(element).toBeTruthy();
+    return element!;
+  });
+  await item.updateComplete;
+  const anchor = item.shadowRoot!.querySelector('a')!;
+  expect(anchor.getAttribute('href')).toBe('/admin/rules/1');
+
+  for (const modifier of ['altKey', 'ctrlKey', 'metaKey', 'shiftKey']) {
+    const click = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      [modifier]: true,
+    });
+    item.dispatchEvent(click);
+    expect(click.defaultPrevented).toBe(false);
+  }
+  expect(slideout).not.toHaveBeenCalled();
+  expect(navigate).not.toHaveBeenCalled();
+
+  await menu.show();
+  item.focus();
+  await userEvent.keyboard('{Enter}');
+  expect(slideout).toHaveBeenCalledWith(
+    '/admin/rules/1',
+    expect.objectContaining({
+      opener: menu.querySelector('[slot="invoker"]'),
+      width: '72vw',
+    })
+  );
+  slideout.mock.lastCall![1].onSaved();
+  expect(onRefresh).toHaveBeenCalledOnce();
+  expect(reload).not.toHaveBeenCalled();
+
+  await menu.show();
+  await userEvent.click(page.getByRole('link', {name: 'View rule'}));
+  expect(navigate).toHaveBeenCalledWith(
+    '/admin/rules/1/view',
+    expect.anything()
+  );
 });
 
 it('opens the create action in a slideout when asked to', async () => {

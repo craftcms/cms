@@ -220,28 +220,35 @@
       CpLink,
       {
         href: url,
-        // A modified click still follows the link, to open the screen in a tab.
         onClick: link.slideout
-          ? (event: MouseEvent) => {
-              if (
-                event.altKey ||
-                event.ctrlKey ||
-                event.metaKey ||
-                event.shiftKey ||
-                event.button !== 0
-              ) {
-                return;
-              }
-
-              event.preventDefault();
-              openLinkSlideout(
-                {...link, url},
-                event.currentTarget as HTMLElement
-              );
-            }
+          ? (event: MouseEvent) => onLinkClick({...link, url}, event)
           : undefined,
       },
       () => link.label
+    );
+  }
+
+  function onLinkClick(
+    link: TableLink & {url: string},
+    event: MouseEvent
+  ): void {
+    if (
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.button !== 0
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    const target = event.currentTarget as HTMLElement;
+    openLinkSlideout(
+      link,
+      target
+        .closest('craft-action-menu')
+        ?.querySelector<HTMLElement>('[slot="invoker"]') ?? target
     );
   }
 
@@ -337,6 +344,14 @@
                 type: 'link',
                 href: item.url ?? '#',
                 label: item.label,
+                onClick:
+                  item.slideout && item.url
+                    ? (event: Event) =>
+                        onLinkClick(
+                          {...item, url: item.url!},
+                          event as MouseEvent
+                        )
+                    : undefined,
               }
         ),
       },
