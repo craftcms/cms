@@ -79,7 +79,8 @@ export default class CraftActionMenu extends CraftPopover {
       }
 
       ::slotted([slot='content']) hr {
-        margin: 0;
+        margin-block: calc(var(--c-spacing-sm) - var(--c-spacing-xs));
+        margin-inline: 0;
       }
 
       :host([disabled]) ::slotted([slot='invoker']) {
@@ -551,8 +552,10 @@ export default class CraftActionMenu extends CraftPopover {
       // The separator lives in light DOM (inside the slotted content
       // container), so the shadow `::slotted()` selector can't reach it —
       // style it directly here.
+      // With the content's gap, the space around it matches the menu's padding.
       Object.assign(hr.style, {
-        margin: '0',
+        marginBlock: 'calc(var(--c-spacing-sm) - var(--c-spacing-xs))',
+        marginInline: '0',
         border: '0',
         borderBlockStart: '1px solid var(--c-color-neutral-border-quiet)',
       });
