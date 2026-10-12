@@ -191,9 +191,8 @@
             :error="form.errors.notificationDuration"
           />
 
-          <craft-field-group>
-            <h3 class="text-sm">{{ t('Notification Position') }}</h3>
-            <craft-button-group role="group">
+          <craft-field fieldset :label="t('Notification Position')">
+            <craft-button-group slot="input">
               <craft-button
                 v-for="option in props.notificationPositionOptions"
                 :key="option.value"
@@ -209,14 +208,17 @@
                 <craft-icon :name="option.icon" :label="option.label" />
               </craft-button>
             </craft-button-group>
-            <ul class="error-list" v-if="form.errors.notificationPosition">
+            <ul
+              v-if="form.errors.notificationPosition"
+              slot="feedback"
+              class="error-list"
+            >
               <li>{{ form.errors.notificationPosition }}</li>
             </ul>
-          </craft-field-group>
+          </craft-field>
 
-          <craft-field-group>
-            <h3 class="text-sm">{{ t('Slideout Position') }}</h3>
-            <craft-button-group role="group">
+          <craft-field fieldset :label="t('Slideout Position')">
+            <craft-button-group slot="input">
               <craft-button
                 v-for="option in props.slideoutPositionOptions"
                 :key="option.value"
@@ -230,10 +232,14 @@
                 <craft-icon :name="option.icon" :label="option.label" />
               </craft-button>
             </craft-button-group>
-            <ul class="error-list" v-if="form.errors.slideoutPosition">
+            <ul
+              v-if="form.errors.slideoutPosition"
+              slot="feedback"
+              class="error-list"
+            >
               <li>{{ form.errors.slideoutPosition }}</li>
             </ul>
-          </craft-field-group>
+          </craft-field>
         </craft-field-group>
       </section>
 
