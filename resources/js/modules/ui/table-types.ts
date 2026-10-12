@@ -1,6 +1,6 @@
 import type {AdminTableStatusOption} from '@/modules/admin-table/types';
 import type {UiNodePayload, UiValues} from './types';
-import type {PaginationData} from '@/common/types';
+import type {PaginationData, TableAppearanceValue} from '@/common/types';
 
 export interface TableColumn {
   key: string;
@@ -117,7 +117,8 @@ export interface TableProps {
   hiddenColumnsByDefault: string[];
   searchable: boolean;
   searchPlaceholder: string | null;
-  bordered: boolean;
+  /** Null when the page decides; see `AdminTableNode`. */
+  appearance: TableAppearanceValue | null;
   showFooter?: boolean;
 }
 

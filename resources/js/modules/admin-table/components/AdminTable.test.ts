@@ -198,9 +198,9 @@ it('toggles a focused row with space and extends with shift+arrow', async () => 
   expect(selectedIds()).toEqual([1, 2]);
 });
 
-it.each([true, false])(
-  'only pads the table and flushes its row edges when padded (%s)',
-  (padded) => {
+it.each(['plain', 'flush', 'raised'] as const)(
+  'renders the %s appearance',
+  (appearance) => {
     const table = useCraftTable({
       data: [{id: 1, name: 'Settings record'}],
       columns: [
@@ -210,19 +210,22 @@ it.each([true, false])(
     const host = document.createElement('div');
     document.body.append(host);
     const app = createApp({
-      render: () => h(AdminTable, {table, padded} as never),
+      render: () => h(AdminTable, {table, appearance} as never),
     });
     app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
     app.mount(host);
     teardown = () => app.unmount();
 
-    expect(
-      host
-        .querySelector('.admin-table')
-        ?.classList.contains('admin-table--padded')
-    ).toBe(padded);
+    const root = host.querySelector('.admin-table');
+
+    expect(root?.classList.contains(`admin-table--${appearance}`)).toBe(true);
+    // A raised table is set in a pane; the others aren't wrapped.
+    expect(root?.tagName.toLowerCase()).toBe(
+      appearance === 'raised' ? 'craft-pane' : 'div'
+    );
+    // Only a flush table pads its rows' outer cells.
     expect(
       host.querySelector('table')?.classList.contains('cp-table--flush')
-    ).toBe(padded);
+    ).toBe(appearance === 'flush');
   }
 );

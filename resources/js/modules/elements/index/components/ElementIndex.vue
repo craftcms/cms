@@ -3,7 +3,11 @@
   import {onLongPress} from '@vueuse/core';
   import {ButtonVariant, t} from '@craftcms/ui';
   import PaginationControls from '@/common/components/PaginationControls.vue';
-  import {TableSpacing} from '@/common/types';
+  import {
+    TableAppearance,
+    TableSpacing,
+    type TableAppearanceValue,
+  } from '@/common/types';
   import ElementTable from '@/modules/elements/index/components/ElementTable.vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
@@ -32,6 +36,12 @@
       showSites?: boolean;
       enableAdjustPageSize?: boolean;
       withBottomBorder?: boolean;
+      /**
+       * How the table view meets the index. `flush` (the default) lets the
+       * table span the container's inline padding, padding each row's outer
+       * cells to match; use `plain` when the container has none.
+       */
+      tableAppearance?: Exclude<TableAppearanceValue, 'raised'>;
       toolbarAsForm?: boolean;
       quickEdit?: ElementIndexQuickEdit;
     }>(),
@@ -40,6 +50,7 @@
       footerActive: false,
       enableAdjustPageSize: false,
       withBottomBorder: true,
+      tableAppearance: TableAppearance.Flush,
       toolbarAsForm: true,
     }
   );
@@ -275,7 +286,18 @@
     <div class="element-index__navbar" v-if="$slots.navbar">
       <slot name="navbar" />
     </div>
-    <div class="element-index__body" :aria-busy="loading ? 'true' : undefined">
+    <div
+      :class="[
+        'element-index__body',
+        {
+          'element-index__body--flush':
+            tableAppearance === TableAppearance.Flush &&
+            mode !== 'cards' &&
+            mode !== 'thumbs',
+        },
+      ]"
+      :aria-busy="loading ? 'true' : undefined"
+    >
       <div
         ref="body"
         @mousedown.capture="
@@ -324,6 +346,7 @@
           :spacing="TableSpacing.Spacious"
           :item-behavior="itemBehavior"
           :with-bottom-border="withBottomBorder"
+          :appearance="tableAppearance"
           :structure="
             !isInlineEditing && structure !== undefined && mode === 'structure'
           "
@@ -418,6 +441,11 @@
   .element-index__body,
   .element-index__footer {
     padding-inline: var(--cp-container-padding);
+  }
+
+  // The table pads its own outer cells instead; see `tableAppearance`.
+  .element-index__body--flush {
+    padding-inline: 0;
   }
 
   .element-index__header {

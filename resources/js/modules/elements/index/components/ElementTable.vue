@@ -16,7 +16,12 @@
     type StructureDropType,
     useStructureDrag,
   } from '@/modules/elements/index/composables/useStructureDrag';
-  import {TableSpacing, type TableSpacingValue} from '@/common/types';
+  import {
+    TableAppearance,
+    TableSpacing,
+    type TableAppearanceValue,
+    type TableSpacingValue,
+  } from '@/common/types';
   import DropIndicator from '@/common/components/DropIndicator.vue';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
 
@@ -45,6 +50,8 @@
       canMoveRow?: (id: string | number, move: StructureMove) => boolean;
       itemBehavior?: ElementIndexItemBehavior<any>;
       withBottomBorder?: boolean;
+      /** How the table meets its container; see `DataTable`'s `appearance`. */
+      appearance?: Exclude<TableAppearanceValue, 'raised'>;
       /**
        * Disables selection, sorting and reordering while a request runs,
        * keeping the controls in place so the layout doesn't shift.
@@ -67,6 +74,7 @@
       isRowPending: () => false,
       canMoveRow: () => false,
       withBottomBorder: true,
+      appearance: TableAppearance.Flush,
       inlineEditing: false,
     }
   );
@@ -178,7 +186,7 @@
     :layout="layout"
     :spacing="spacing"
     :with-bottom-border="withBottomBorder"
-    flush
+    :appearance="appearance"
     :reorderable="reorderable && !structure"
     :interactions-disabled="interactionsDisabled"
     :leading-column-tracks="leadingColumnTracks"

@@ -77,9 +77,11 @@ export {
 } from './common/table/createCraftColumnHelper';
 
 export {
+  TableAppearance,
   TableSpacing,
   type PaginationData,
   type SortItem,
+  type TableAppearanceValue,
   type TableSpacingValue,
 } from './common/types';
 

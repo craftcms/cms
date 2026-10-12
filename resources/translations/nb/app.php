@@ -558,6 +558,7 @@ return [
     'Default Value' => 'Standardverdi',
     'Default Values' => 'Standardverdier',
     'Default View Mode' => 'Standard visningsmodus',
+    'Default order' => 'Default order',
     'Default {type} Placement' => 'Standard plassering for {type}',
     'Default' => 'Standard',
     'Default?' => 'Standard?',
@@ -1058,6 +1059,7 @@ return [
     'Manage categories' => 'Administrer kategorier',
     'Manage element thumbnails' => 'Administrer miniatyrbilder for elementer',
     'Manipulated SVG image rasterizing is unreliable. See \\CraftCms\\Cms\\Image\\Images::loadImage()' => 'Manipulated SVG image rasterizing is unreliable. See \\CraftCms\\Cms\\Image\\Images::loadImage()',
+    'Manual order' => 'Manual order',
     'Markdown Extra' => 'Markdown Extra',
     'Markdown Flavor' => 'Markdown Flavor',
     'Markdown Guide' => 'Markdown Guide',
@@ -2325,9 +2327,9 @@ return [
     'six' => 'seks',
     'tag' => 'merke',
     'tags' => 'stikkord',
-    'test_email_body' => 'Hei, {{user.friendlyName|e}}
+    'test_email_body' => "Hei, {{user.friendlyName|e}}
 
-Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}',
+Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du benyttet: {{ settings }}",
     'test_email_heading' => 'Når du tester e-postinnstillingene:',
     'test_email_subject' => 'Dette er en test av e-post fra Craft',
     'three' => 'tre',
