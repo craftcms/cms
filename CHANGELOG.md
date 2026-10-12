@@ -31,6 +31,7 @@
 - Move icons on Matrix blocks, chips, and editable table rows are now larger. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Action menu buttons’ ellipsis icons are now larger, and chips’ action menu and reorder buttons are now closer together. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Nav items’ icons are now closer to their labels, and expanded nav sections now have a hairline in line with the selected item’s indicator. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Metadata values in details panes are now left-aligned. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - Saving the Customize Sources modal from an element index’s action menu now goes to the source that was last edited, as it does from the secondary nav. ([#19929](https://github.com/craftcms/cms/pull/19929))
