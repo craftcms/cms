@@ -56,7 +56,7 @@ export default css`
     font-weight: bold;
     margin-block-end: var(
       --c-field-label-margin-block-end,
-      var(--c-spacing-md)
+      var(--c-spacing-sm)
     );
 
     &:has(+ .form-field__help-text) {
@@ -102,7 +102,7 @@ export default css`
   /* Instructions (.field > .instructions in the CP) */
   .form-field__help-text {
     display: block;
-    margin-block-end: var(--c-spacing-md);
+    margin-block-end: var(--c-spacing-sm);
   }
 
   .form-field__group-two .form-field__help-text {
