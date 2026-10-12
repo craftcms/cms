@@ -286,8 +286,6 @@
   .details-panels__content {
     flex: 1;
     min-inline-size: 0;
-    block-size: 100%;
-    overflow-y: auto;
 
     > section {
       display: flex;
