@@ -11,6 +11,13 @@ const END_ATTRIBUTE = 'data-button-group-end';
  * When `name` is set, the selected value is submitted with the form. Set
  * `multiple` to allow more than one selected button.
  *
+ * A group that holds a selection — `name` is set, it's a `radiogroup`, or its
+ * buttons carry `aria-pressed` — is a single tab stop. The arrow keys, Home
+ * and End move between its buttons, and select the one they land on unless
+ * more than one can be selected (`multiple`, or `role="group"`). They select
+ * by clicking it, so a consumer that manages the selection itself follows
+ * along.
+ *
  * @slot - The default slot.
  *
  * @fires change - Fired when the selected value changes.
@@ -53,26 +60,30 @@ export default class CraftButtonGroup extends LitElement {
   private _childObserver = new MutationObserver(() => this._markEnds());
 
   /**
+   * Keeps the selection and the tab stop in step with the buttons' state.
    * Buttons use `active` for their pressed state too, and clear it when a
    * mouse press ends, including on the selected button. In single-selection
    * mode that would leave the selected button looking deselected, so it gets
    * its `active` back.
    */
-  private _selectionObserver = new MutationObserver((records) => {
-    if (!this.name || this.multiple) {
-      return;
-    }
-    for (const {target} of records) {
-      if (
-        target instanceof Element &&
-        target.localName === 'craft-button' &&
-        !target.hasAttribute('active') &&
-        target.getAttribute('value') === this.value
-      ) {
-        target.setAttribute('active', '');
+  private _stateObserver = new MutationObserver((records) => {
+    if (this.name && !this.multiple) {
+      for (const {target} of records) {
+        if (
+          target instanceof Element &&
+          target.localName === 'craft-button' &&
+          !target.hasAttribute('active') &&
+          target.getAttribute('value') === this.value
+        ) {
+          target.setAttribute('active', '');
+        }
       }
     }
+    this._syncTabStop();
   });
+
+  /** The button that last had focus, which keeps the tab stop in multi-select. */
+  private _focusedItem: HTMLElement | null = null;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -82,11 +93,21 @@ export default class CraftButtonGroup extends LitElement {
       attributeFilter: ['hidden', 'style', 'class'],
       subtree: true,
     });
-    this._selectionObserver.observe(this, {
+    this._stateObserver.observe(this, {
+      childList: true,
       attributes: true,
-      attributeFilter: ['active'],
+      attributeFilter: [
+        'active',
+        'aria-pressed',
+        'disabled',
+        'hidden',
+        'role',
+        'tabindex',
+      ],
       subtree: true,
     });
+    this.addEventListener('keydown', this._handleKeydown);
+    this.addEventListener('focusin', this._handleFocusin);
   }
 
   override firstUpdated(changed: PropertyValues) {
@@ -95,6 +116,7 @@ export default class CraftButtonGroup extends LitElement {
       this._setupRadioMode();
     }
     this._markEnds();
+    this._syncTabStop();
   }
 
   override updated(changed: PropertyValues) {
@@ -113,8 +135,10 @@ export default class CraftButtonGroup extends LitElement {
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('click', this._handleClick);
+    this.removeEventListener('keydown', this._handleKeydown);
+    this.removeEventListener('focusin', this._handleFocusin);
     this._childObserver.disconnect();
-    this._selectionObserver.disconnect();
+    this._stateObserver.disconnect();
   }
 
   /**
@@ -266,6 +290,133 @@ export default class CraftButtonGroup extends LitElement {
     );
   }
 
+  private _items(): HTMLElement[] {
+    return Array.from(this.children).filter(
+      (child): child is HTMLElement =>
+        (child.localName === 'craft-button' || child.localName === 'button') &&
+        this._isVisible(child)
+    );
+  }
+
+  private _isEnabled(item: HTMLElement): boolean {
+    return (
+      !item.hasAttribute('disabled') && !(item as HTMLButtonElement).disabled
+    );
+  }
+
+  private _isSelected(item: HTMLElement): boolean {
+    return item.hasAttribute('aria-pressed')
+      ? item.getAttribute('aria-pressed') === 'true'
+      : item.hasAttribute('active');
+  }
+
+  private _holdsSelection(items: HTMLElement[]): boolean {
+    return (
+      Boolean(this.name) ||
+      this.getAttribute('role') === 'radiogroup' ||
+      items.some((item) => item.hasAttribute('aria-pressed'))
+    );
+  }
+
+  private _isMultiple(): boolean {
+    return this.name
+      ? this.multiple
+      : this.multiple || this.getAttribute('role') === 'group';
+  }
+
+  /**
+   * Gives one button the tab stop: the focused one in multi-select, otherwise
+   * the selected one, otherwise the first.
+   */
+  private _syncTabStop() {
+    const items = this._items();
+    if (!this._holdsSelection(items)) {
+      return;
+    }
+
+    const enabled = items.filter((item) => this._isEnabled(item));
+    const focused =
+      this._isMultiple() &&
+      this._focusedItem &&
+      enabled.includes(this._focusedItem)
+        ? this._focusedItem
+        : null;
+    const stop =
+      focused ?? enabled.find((item) => this._isSelected(item)) ?? enabled[0];
+
+    for (const item of enabled) {
+      const tabIndex = item === stop ? '0' : '-1';
+      if (item.getAttribute('tabindex') !== tabIndex) {
+        item.setAttribute('tabindex', tabIndex);
+      }
+    }
+  }
+
+  private _handleFocusin = (event: FocusEvent) => {
+    const item = this._items().find((item) =>
+      event.composedPath().includes(item)
+    );
+    if (item) {
+      this._focusedItem = item;
+      this._syncTabStop();
+    }
+  };
+
+  private _handleKeydown = (event: KeyboardEvent) => {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+      return;
+    }
+
+    const items = this._items();
+    if (!this._holdsSelection(items)) {
+      return;
+    }
+
+    const enabled = items.filter((item) => this._isEnabled(item));
+    const current = enabled.find((item) => event.composedPath().includes(item));
+    if (!current) {
+      return;
+    }
+
+    const rtl = getComputedStyle(this).direction === 'rtl';
+    const index = enabled.indexOf(current);
+    let next: HTMLElement | undefined;
+    switch (event.key) {
+      case 'ArrowDown':
+        next = enabled[(index + 1) % enabled.length];
+        break;
+      case 'ArrowUp':
+        next = enabled[(index - 1 + enabled.length) % enabled.length];
+        break;
+      case 'ArrowRight':
+      case 'ArrowLeft': {
+        const step = (event.key === 'ArrowRight') !== rtl ? 1 : -1;
+        next = enabled[(index + step + enabled.length) % enabled.length];
+        break;
+      }
+      case 'Home':
+        next = enabled[0];
+        break;
+      case 'End':
+        next = enabled[enabled.length - 1];
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    if (!next) {
+      return;
+    }
+
+    this._focusedItem = next;
+    next.focus();
+    if (!this._isMultiple() && !this._isSelected(next)) {
+      next.click();
+    }
+    this._syncTabStop();
+  };
+
   override render() {
     return html`<slot @slotchange=${this._onSlotChange}></slot>`;
   }
@@ -275,6 +426,7 @@ export default class CraftButtonGroup extends LitElement {
       this._syncChildren();
     }
     this._markEnds();
+    this._syncTabStop();
   }
 }
 

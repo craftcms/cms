@@ -114,3 +114,26 @@ it('raises the selected button, so its whole border shows', async () => {
     Number(getComputedStyle(unselected!).zIndex) || 0
   );
 });
+
+it('reverses the left and right arrow keys in right-to-left text', async () => {
+  document.body.innerHTML = `
+    <craft-button-group name="mode" dir="rtl">
+      <craft-button value="a" active>A</craft-button>
+      <craft-button value="b">B</craft-button>
+    </craft-button-group>`;
+  const group = document.querySelector('craft-button-group')!;
+  await group.updateComplete;
+  await settle();
+  const [a] = Array.from(document.querySelectorAll('craft-button'));
+
+  a!.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'ArrowLeft',
+      bubbles: true,
+      composed: true,
+    })
+  );
+  await settle();
+
+  expect(group.value).toBe('b');
+});
