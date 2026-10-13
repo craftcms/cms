@@ -246,7 +246,7 @@ class ElementEditViewModel extends ViewModel
         if ($release !== null) {
             $actions['primary']['label'] = t('Save draft');
             $actions['primary']['actionUrl'] = $this->autosaveUrl();
-            $actions['primary']['tabId'] = null;
+            $actions['primary']['panelId'] = null;
 
             if (! $release->status->isMutable()) {
                 $actions['buttons'] = array_map(
