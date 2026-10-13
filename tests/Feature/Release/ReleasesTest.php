@@ -9,6 +9,8 @@ use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
 use CraftCms\Cms\Release\Exceptions\ReleaseException;
@@ -231,6 +233,38 @@ it('rejects an unpublished member with a conflicting URI during publication with
         ->and($savedDraft->getEnabledForSite())->toBeTrue()
         ->and($savedConflict->enabled)->toBeTrue()
         ->and($savedConflict->getEnabledForSite())->toBeTrue();
+});
+
+it('refuses to publish a draft whose other site misses a required value it leaves unchanged', function () {
+    $secondSite = Site::factory()->create();
+    Sites::refreshSites();
+    $field = Field::factory()->create([
+        'handle' => 'releaseSummary',
+        'type' => PlainText::class,
+        'translationMethod' => 'site',
+    ]);
+    $entryType = EntryType::factory()->withField($field, required: true)->create();
+    $section = Section::factory()->withEntryTypes($entryType)->withSites($secondSite)->create();
+    Sections::refreshSections();
+    EntryTypes::refreshEntryTypes();
+
+    $canonical = EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement(['title' => 'Live title']);
+    $canonical->setFieldValue('releaseSummary', 'Primary summary');
+    expect(Elements::saveElement($canonical))->toBeTrue();
+    $secondLive = EntryElement::find()->id($canonical->id)->siteId($secondSite->id)->status(null)->one();
+    $secondLive->setFieldValue('releaseSummary', '');
+    expect(Elements::saveElement($secondLive, runValidation: false))->toBeTrue();
+
+    $draft = app(Drafts::class)->createDraft($canonical, $this->actor->id);
+    $draft->title = 'Released title';
+    expect(Elements::saveElement($draft))->toBeTrue();
+
+    $release = $this->releases->create('Translated release', null, $this->actor);
+    $this->releases->attach($release, $draft, $this->actor);
+
+    expect($this->releases->checkReadiness($release, $this->actor)->ready)->toBeFalse()
+        ->and(fn () => $this->releases->publish($release, $this->actor))->toThrow(ReleaseException::class)
+        ->and(EntryElement::find()->id($canonical->id)->status(null)->one()->title)->toBe('Live title');
 });
 
 it('publishes only due scheduled releases after the scheduling user loses every permission', function () {
