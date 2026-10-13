@@ -550,3 +550,30 @@ describe('text box', () => {
     expect(getComputedStyle(label).display).toBe('contents');
   });
 });
+
+describe('small icon buttons', () => {
+  it('sizes an icon the same whether it is an attribute or slotted', async () => {
+    document.body.innerHTML = `
+      <craft-button size="small" icon="plus"></craft-button>
+      <craft-button size="small">
+        <craft-icon slot="prefix" name="plus"></craft-icon>
+      </craft-button>
+      <craft-button size="small" icon="plus">Add</craft-button>
+      <craft-button size="small">Add</craft-button>`;
+    const [attribute, slotted, labeledIcon, labeled] = Array.from(
+      document.querySelectorAll<CraftButton>('craft-button')
+    );
+    await Promise.all(
+      [attribute, slotted, labeledIcon, labeled].map(
+        (button) => button!.updateComplete
+      )
+    );
+
+    expect(getComputedStyle(attribute!).fontSize).toBe(
+      getComputedStyle(slotted!).fontSize
+    );
+    expect(getComputedStyle(labeledIcon!).fontSize).toBe(
+      getComputedStyle(labeled!).fontSize
+    );
+  });
+});

@@ -43,11 +43,10 @@ export default class CraftDisclosure extends LionCollapsible {
           --_chevron-scale: 1;
         }
 
-        /*
-        Small buttons are 0.9em, but 0.8em when \`icon\` is an attribute, as it is
-        on the default invoker.
-         */
-        :host([size='small']),
+        :host([size='small']) {
+          --_chevron-scale: 0.9;
+        }
+
         :host([size='xsmall']) {
           --_chevron-scale: 0.8;
         }

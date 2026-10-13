@@ -251,10 +251,6 @@ export default css`
     line-height: 1;
   }
 
-  :host([icon][size~='small']) {
-    font-size: 0.8em;
-  }
-
   /*
   Variants (appearance × palette)
    */
