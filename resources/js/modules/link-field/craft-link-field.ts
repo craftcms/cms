@@ -748,7 +748,8 @@ class CraftLinkField extends LitElement {
           variant="plain"
           size="small"
           flush
-          icon="chevron-down"
+          icon="chevron-right"
+          icon-position="suffix"
         >
           ${t('Advanced')}
         </craft-button>

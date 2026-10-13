@@ -33,7 +33,8 @@
         variant="plain"
         size="small"
         flush
-        icon="chevron-down"
+        icon="chevron-right"
+        icon-position="suffix"
       >
         {{ changeCountLabel(changes.length) }}
       </craft-button>

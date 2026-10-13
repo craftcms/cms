@@ -11,11 +11,11 @@ beforeEach(() => {
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 50));
 
-it.each([['xsmall'], ['small'], ['medium'], ['large']])(
-  'centers the hairline beneath the %s invoker’s chevron',
-  async (size) => {
+it.each([['ltr'], ['rtl']])(
+  'starts the hairline at the disclosure’s start edge, not inset (%s)',
+  async (dir) => {
     document.body.innerHTML = `
-      <craft-disclosure label="Details" size="${size}" opened>
+      <craft-disclosure label="Details" dir="${dir}" opened>
         <div slot="content">Content</div>
       </craft-disclosure>`;
     const disclosure =
@@ -23,14 +23,47 @@ it.each([['xsmall'], ['small'], ['medium'], ['large']])(
     await disclosure.updateComplete;
     await settle();
 
-    const invoker = disclosure.querySelector('craft-button')!;
-    const chevron = invoker.shadowRoot!.querySelector('craft-icon')!;
     const content = disclosure.querySelector<HTMLElement>('[slot="content"]')!;
+    const host = disclosure.getBoundingClientRect();
+    const box = content.getBoundingClientRect();
 
-    const chevronBox = chevron.getBoundingClientRect();
-    const chevronCenter = chevronBox.left + chevronBox.width / 2;
-    const hairlineCenter = content.getBoundingClientRect().left + 0.5;
-
-    expect(hairlineCenter).toBeCloseTo(chevronCenter, 1);
+    expect(getComputedStyle(content).borderInlineStartWidth).toBe('1px');
+    if (dir === 'rtl') {
+      expect(box.right).toBe(host.right);
+    } else {
+      expect(box.left).toBe(host.left);
+    }
   }
 );
+
+it('puts the chevron after the label', async () => {
+  document.body.innerHTML = `<craft-disclosure label="Details"></craft-disclosure>`;
+  const disclosure =
+    document.querySelector<CraftDisclosure>('craft-disclosure')!;
+  await disclosure.updateComplete;
+  const invoker = disclosure.querySelector('craft-button')!;
+  await invoker.updateComplete;
+  await settle();
+
+  const chevron = invoker.shadowRoot!.querySelector('craft-icon')!;
+  const label = invoker.shadowRoot!.querySelector('.label')!;
+
+  expect(chevron.closest('slot')?.getAttribute('name')).toBe('suffix');
+  expect(chevron.getBoundingClientRect().left).toBeGreaterThan(
+    label.getBoundingClientRect().left
+  );
+});
+
+it('points the closed chevron left in right-to-left text', async () => {
+  document.body.innerHTML = `<craft-disclosure label="Details" dir="rtl"></craft-disclosure>`;
+  const disclosure =
+    document.querySelector<CraftDisclosure>('craft-disclosure')!;
+  await disclosure.updateComplete;
+
+  expect(disclosure.querySelector('craft-button')!.icon).toBe('chevron-left');
+
+  disclosure.opened = true;
+  await disclosure.updateComplete;
+
+  expect(disclosure.querySelector('craft-button')!.icon).toBe('chevron-down');
+});

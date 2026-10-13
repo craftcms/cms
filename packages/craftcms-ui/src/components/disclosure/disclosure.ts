@@ -4,6 +4,13 @@ import {property} from 'lit/decorators.js';
 import type {WindowWithCraft} from '@src/types/globals';
 import CraftButton from '../button/button.js';
 
+const CHEVRONS = [
+  'chevron-down',
+  'chevron-up',
+  'chevron-right',
+  'chevron-left',
+];
+
 /**
  * @summary A trigger that shows and hides content, in either of two modes:
  *
@@ -11,16 +18,15 @@ import CraftButton from '../button/button.js';
  * `slot="invoker"` trigger and `slot="content"` collapsible content. Without a
  * slotted invoker, renders a default one from the `label` attribute:
  *
- *     <craft-button type="button" variant="plain" flush icon="chevron-down">${label}</craft-button>
+ *     <craft-button type="button" variant="plain" flush icon="chevron-right" icon-position="suffix">${label}</craft-button>
  *
- * While the disclosure is open, a `craft-button` invoker's chevron points up
- * instead (`icon="chevron-down"` becomes `chevron-up`), whether it's the
- * default invoker or a slotted one.
+ * The chevron trails the label, and points toward the end of the line while
+ * the disclosure is closed (right, or left in right-to-left text) and down
+ * while it's open. A slotted `craft-button` invoker with a chevron `icon`
+ * follows along, its chevron moved to its suffix.
  *
- * By default the content hangs off a hairline centered beneath the invoker's
- * leading chevron, with the invoker's label lined up with the content. Set
- * `size` to match a slotted invoker's size so the hairline stays centered, or
- * `appearance="plain"` to drop the hairline and indent.
+ * By default the content hangs off a hairline at the disclosure's start edge.
+ * Set `appearance="plain"` to drop the hairline and indent.
  *
  * **External-target mode** — wraps a bare `button[type="button"]` whose
  * `aria-controls` names an element elsewhere in the document; toggling flips
@@ -38,36 +44,13 @@ export default class CraftDisclosure extends LionCollapsible {
     return [
       ...super.styles,
       css`
-        /* The invoker's font size relative to ours, following craft-button's sizes */
-        :host {
-          --_chevron-scale: 1;
-        }
-
-        :host([size='small']) {
-          --_chevron-scale: 0.9;
-        }
-
-        :host([size='xsmall']) {
-          --_chevron-scale: 0.8;
-        }
-
         ::slotted([slot='content']) {
           margin-block-start: var(--c-spacing-lg);
         }
 
-        /*
-        Center the hairline beneath the invoker's leading chevron, which is 1em
-        of the invoker's font size wide.
-         */
         :host(:not([appearance='plain'])) ::slotted([slot='content']) {
-          margin-inline-start: calc(0.5em * var(--_chevron-scale) - 0.5px);
           padding-inline-start: var(--c-spacing-lg);
           border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
-        }
-
-        /* Line the invoker's label up with the content beside the hairline */
-        :host(:not([appearance='plain'])) ::slotted([slot='invoker']) {
-          --c-button-prefix-gap: calc(var(--c-spacing-lg) + 0.5px - 0.5em);
         }
       `,
     ];
@@ -77,15 +60,12 @@ export default class CraftDisclosure extends LionCollapsible {
   @property() label = '';
 
   /**
-   * `line` hangs the content off a hairline beneath the invoker's leading
-   * chevron; `plain` drops the hairline and indent.
+   * `line` hangs the content off a hairline at the disclosure's start edge;
+   * `plain` drops the hairline and indent.
    */
   @property({reflect: true}) appearance: 'line' | 'plain' = 'line';
 
-  /**
-   * Size of the default invoker. Match a slotted invoker's size, so the
-   * hairline stays centered beneath its chevron.
-   */
+  /** Size of the default invoker. */
   @property({reflect: true}) size: 'xsmall' | 'small' | 'medium' | 'large' =
     'medium';
 
@@ -183,7 +163,8 @@ export default class CraftDisclosure extends LionCollapsible {
     button.setAttribute('type', 'button');
     button.setAttribute('variant', 'plain');
     button.setAttribute('flush', '');
-    button.setAttribute('icon', 'chevron-down');
+    button.setAttribute('icon', 'chevron-right');
+    button.setAttribute('icon-position', 'suffix');
     button.textContent = this.label;
 
     this.__defaultInvoker = button;
@@ -191,20 +172,30 @@ export default class CraftDisclosure extends LionCollapsible {
   }
 
   /**
-   * Points a chevron invoker up while the content is open, and down while it's
-   * closed. Uses the `icon` property rather than the attribute, since Vue sets
-   * the property and `craft-button` doesn't reflect it.
+   * Points a chevron invoker down while the content is open, and toward the
+   * end of the line while it's closed, with the chevron trailing the label.
+   * Uses the `icon` property rather than the attribute, since Vue sets the
+   * property and `craft-button` doesn't reflect it.
    */
   private __syncInvokerChevron() {
     const invoker = this._invokerNode;
 
-    if (!(invoker instanceof CraftButton)) {
+    if (!(invoker instanceof CraftButton) || !invoker.icon) {
       return;
     }
 
-    if (invoker.icon === 'chevron-down' || invoker.icon === 'chevron-up') {
-      invoker.icon = this.opened ? 'chevron-up' : 'chevron-down';
+    if (!CHEVRONS.includes(invoker.icon)) {
+      return;
     }
+
+    const rtl = getComputedStyle(this).direction === 'rtl';
+
+    invoker.iconPosition = 'suffix';
+    invoker.icon = this.opened
+      ? 'chevron-down'
+      : rtl
+        ? 'chevron-left'
+        : 'chevron-right';
   }
 
   private __setupExternalMode() {

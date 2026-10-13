@@ -123,11 +123,16 @@
   }
 
   .workflow-review-stage__chevron {
+    transform: rotate(-90deg);
     transition: transform 100ms ease;
+
+    &:dir(rtl) {
+      transform: rotate(90deg);
+    }
   }
 
   .workflow-review-stage[opened] .workflow-review-stage__chevron {
-    transform: rotate(180deg);
+    transform: none;
   }
 
   .workflow-review-stage__content,
