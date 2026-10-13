@@ -4,11 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Import;
 
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\ImportLog;
+use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
+use CraftCms\Cms\User\Events\UserGroupsAndPermissionsAssigning;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -78,5 +85,52 @@ class UserImporter extends ElementImporter
             Arr::except($attributes, array_diff(User::SENSITIVE_ATTRIBUTES, self::IMPORTABLE_SENSITIVE_ATTRIBUTES)),
             $data,
         );
+
+        // deal with user groups
+        $this->afterItemImported(function (mixed $user) use ($data) {
+            if (! is_a($user, self::targetClass())) {
+                return;
+            }
+
+            // deal with groups
+            if (Edition::isAtLeast(Edition::Pro)) {
+                event(new UserGroupsAndPermissionsAssigning($user));
+
+                if (array_key_exists('groups', $data)) {
+                    $groups = $this->prepareUserGroups($data['groups']);
+
+                    if (! Users::assignUserToGroups($user->id, Arr::pluck($groups, 'id'))) {
+                        ImportLog::warning('Couldn’t assign user to groups', [
+                            'user' => $user->id,
+                            'groups' => $data['groups'],
+                        ]);
+                    }
+                    $user->setGroups($groups);
+                }
+
+                event(new GroupsAndPermissionsAssigned($user));
+            }
+        });
+    }
+
+    /** @return UserGroup[] */
+    private function prepareUserGroups(null|string|array $groupsData = null): array
+    {
+        if (empty($groupsData)) {
+            return [];
+        }
+
+        $incomingGroups = [];
+
+        // normalize incoming groups
+        if (is_array($groupsData)) {
+            foreach ($groupsData as $item) {
+                $incomingGroups[] = UserGroups::resolveGroup($item);
+            }
+        } else {
+            $incomingGroups[] = UserGroups::resolveGroup($groupsData);
+        }
+
+        return array_unique(array_filter($incomingGroups));
     }
 }

@@ -351,6 +351,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
      */
+    #[Importable('groups', 'User Groups')]
     private ?array $_groups = null;
 
     private ?bool $_hasSsoIdentity = null;
