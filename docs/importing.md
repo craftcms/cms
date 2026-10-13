@@ -17,7 +17,8 @@ An **import plan** is a named, handled, ordered list of **steps**
 (`src/Import/Data/ImportPlan.php`, service `src/Import/ImportPlan.php`). Each step is one
 importer instance with its own `uid`, `type` (the importer FQCN), `source`, `transformer`,
 `batchSize` and `settings` (importer-specific settings plus `map`, `matchCriteria`,
-`clearableItems` and, for elements, `keepMissingNestedElements` and `fieldSettings`). Two flavours:
+`clearableItems` and, for elements, `site`, `fieldLayout`, `keepMissingNestedElements` and
+`fieldSettings`). Two flavours:
 
 - **Editable** — created in the CP, stored in `import_plans`.
 - **Non-editable** — defined in `config/craft/import.php`, read via
@@ -51,18 +52,23 @@ return [
 ];
 ```
 
-The array key is only a fallback — plans are re-keyed by `handle`. File-based steps typically
+Plans are re-keyed by `handle` (the array key is the fallback when a plan has none), but only
+after the file-based plans have been merged into the DB ones with `+` (`src/Import/ImportPlan.php:91`).
+The DB plans are a 0-indexed list, so the config file must use string keys — a file-based plan
+under a numeric key that matches a DB plan's index is silently dropped. File-based steps typically
 set no `->map()` and no field layout; the transformer (or the per-row `type`/`sectionId` data)
 does that work, which is why one step can span multiple sections and entry types.
 
 ### What's persisted for an editable plan
 
-`steps` is stored as JSON, one entry per step, built by `BaseImporter::toArrayData()`. On load,
+`steps` is stored as JSON, one entry per step, built by `Data\ImportPlan::serializeSteps()` from
+each importer's `toImportStep()` (which uses `BaseImporter::toArrayData()`). On load,
 `ImportPlan::createImporter()` instantiates `$step['type']`, and `BaseImporter::__construct()`
-applies `source`, `transformer` and `batchSize`, then replays each `settings` key through the
+applies `uid`, `source`, `transformer` and `batchSize`, then replays each `settings` key through the
 importer's setter of the same name. Only settings declared in the importer's `getSettingsRules()`
-(`settings.<name>`) are applied; any other key is ignored, since step config can come from a request. Steps
-whose importer can't be created are left out. The target class is fixed by the importer
+(`settings.<name>`) and backed by an existing setter are applied; any other key is ignored, since
+step config can come from a request. An element importer left without a field layout then gets
+one from `resolveDefaultFieldLayout()`. Steps whose importer can't be created are left out. The target class is fixed by the importer
 subclass itself, so it isn't stored.
 
 ### Sources
@@ -115,23 +121,25 @@ batching** and does everything in one job), and re-adds itself to the batch for 
 It also stops early, leaving the rest to the next chunk, when the next item could take it past
 the memory limit or the timeout. Jobs aren't retried (`$tries = 1`, `$failOnTimeout = true`),
 since a retried chunk would import its items again. A canceled batch skips its remaining jobs
-(`SkipIfBatchCancelled`), and cancellation is also checked between items. Progress is reported
+(`SkipIfBatchCancelled`), and between items the job stops if its queue progress entry has been
+removed (`Job::shouldStillRun()`), i.e. the job was canceled from the queue UI. Progress is reported
 as "n of total" items. Per-item failures (any `Throwable`) are logged with the exception and
 skipped, not fatal.
 
 The first chunk of a step runs the step's full `validate()` and parses the source; a URL source
-is downloaded to Craft's temp folder, parsed and deleted straight away. If the step needs more
-chunks, the first one stores the remaining items on the import disk (the `importDisk` general
-config setting, `craft-tmp` by default) in pieces of `batchSize` items, at
-`imports/{runId}/{stepUid}/{n}.json` (`Import::spoolPath()`). Later chunks only run
-`validateSettings()` and read just their own pieces, so they don't need to run on the same
-server as long as the disk is shared. With batching disabled nothing is stored, and a follow-up
-job parses the source again.
+is downloaded to Craft's temp folder, parsed and deleted straight away. If the source has more
+than `batchSize` items, the first chunk stores all of them (its own included) on the import disk
+(the `importDisk` general config setting, `craft-tmp` by default) in pieces of `batchSize` items,
+at `imports/{runId}/{stepUid}/{n}.json` starting from `0.json` (`Import::spoolPath()`). Later
+chunks only run `validateSettings()` and read just their own pieces, so they don't need to run on
+the same server as long as the disk is shared. Otherwise nothing is stored: with batching
+disabled, or when a chunk of a source that fits in one batch stops early on the memory or time
+limit, the follow-up job parses the source again (downloading a URL source again).
 
 Each step batch's `finally` deletes that step's stored items (even if the batch was canceled),
 and `FinishImport` deletes the run's directory (`FinishImport::spoolPath()`). The
 `RemoveStaleImportData` garbage collection action removes run directories whose files haven't
-changed in 7 days.
+changed in 7 days, and empty run directories regardless of age.
 
 ### Run lifecycle events
 
@@ -162,13 +170,18 @@ wraps in a `settings` `Scope`.
 - **`ElementImporter`** is abstract. Each importable element type is represented by its own
   concrete subclass: `EntryImporter`, `AssetImporter`, `UserImporter` are the built-ins (there's
   no `UserTransformer`, so `UserImporter` uses the default `ElementTransformer`). Adds `site`
-  (required) and `fieldLayout`; `EntryImporter` adds `section` and `entryType`, `AssetImporter`
+  (required), `fieldLayout`, `keepMissingNestedElements` and `fieldSettings`; `EntryImporter`
+  adds `section` and `entryType`, `AssetImporter`
   adds `volume`, and `UserImporter` resolves its fixed layout via `resolveDefaultFieldLayout()`.
   An element type is importable if and only if an `ElementImporter` subclass is registered for
   it — `Address` has none, so it's never a standalone import target, only reachable as nested
   content (Addresses field / User addresses container). `UserImporter::setAttributesForImport()`
-  drops `User::SENSITIVE_ATTRIBUTES` (e.g. `admin`, `password`) apart from `affiliatedSiteId`,
-  `email`, `passwordResetRequired` and `photoId`, none of which grant any privileges.
+  drops `User::SENSITIVE_ATTRIBUTES` (e.g. `admin`, `password`) apart from
+  `IMPORTABLE_SENSITIVE_ATTRIBUTES` — `affiliatedSiteId`, `email`, `passwordResetRequired` and
+  `photoId` — none of which grant any privileges. A non-numeric `photoId` is treated as a URL or
+  local path (same rules as an Assets field's files, see §7) and saved with
+  `Users::saveUserPhoto()` in an `afterItemImported()` callback; group assignment (`groups`, Pro
+  only) runs in that callback too.
 - **`ModelImporter`** is abstract too, and works exactly the same way: each importable Eloquent
   model is represented by its own concrete subclass. `SystemMessageImporter` is the only
   built-in. A model is importable if and only if a `ModelImporter` subclass is registered for
@@ -198,7 +211,9 @@ with the `Import\ImporterTypes` registry from a service provider's `boot()`
 4. Resolve match criteria.
 5. Apply clearable items.
 6. Hand to the importer's `importItem()`.
-7. `ItemImported` event, carrying the returned `importedItem`.
+7. Run the importer's queued `afterItemImported()` callbacks with the imported item (they're
+   discarded if step 6 throws).
+8. `ItemImported` event, carrying the returned `importedItem`.
 
 Both item events also carry the `runId` (`null` outside a run).
 
@@ -235,16 +250,15 @@ is accepted and expanded). Behavior:
    `->drafts(null)->status(null)`, lets the importer adjust the query
    (`$this->prepareRootElementImportQuery($element, $query)`) — scoping it by type/volume, for
    example — typecasts criteria, and **forces the step's siteId** so it always wins over
-   anything in the criteria. If a match is found, the resolved element is passed back through
-   `prepareNewRootElementForImport()` so per-type subclasses can finish preparing it without
-   re-deriving the type.
+   anything in the criteria. The match is returned as is, falling back to the new element
+   (`$query->one() ?? $element`).
 2. `markAsImporting()` — for existing and new elements alike.
 3. Transformer runs *after* the element is resolved, so it can see the existing element
    via Fractal meta.
 4. Split the result into native attributes, custom fields, and container properties. The
    reserved keys (`matchCriteria`, `clearableItems`, `keepMissingNestedElements`) are never
    treated as fields. Attributes are applied via
-   `$this->setAttributesForImport($element, $attributes)` on the importer (base implementation
+   `$this->setAttributesForImport($element, $attributes, $data)` on the importer (base implementation
    strips `id`/`uid` and applies the rest via `setAttributesFromRequest()`; `AssetImporter`
    overrides it to resolve filename/folder/temp-file handling and download).
 5. **Skip-unchanged optimization**: snapshots attribute values and serialized field
@@ -267,8 +281,8 @@ imports the data — only `User` implements it, for `addresses`.
 ### Elements
 
 `Element` itself is deliberately thin here — it provides `markAsImporting()`, which sets
-`public private(set) bool $importing`, read by `Entry::canChangeAuthor()`-adjacent logic to
-bypass the logged-in-user requirement.
+`public private(set) bool $importing`. Its only reader is `Entry::setAttributesFromRequest()`,
+where it skips the `canChangeAuthor()` permission check so an import can set entry authors.
 
 The hooks that customize how a type participates in import instead live on the `ElementImporter`
 subclass for that type (see §4):
@@ -279,13 +293,18 @@ subclass for that type (see §4):
   `UserImporter` uses the default.
 - `prepareNewRootElementForImport(array &$data, ?ElementInterface $element = null):
   ElementInterface`, `prepareRootElementImportQuery()`, `setAttributesForImport()` — per-type
-  hooks. `EntryImporter` resolves the entry type (from the configured `fieldLayout`, or from the
-  row's `typeId`) and scopes the match query by type; `AssetImporter` resolves the volume from
-  `fieldLayout` and does the heavy filename/folder/temp-file work in `setAttributesForImport()`.
-- `includeConditionalProperties(array $props): array` — receives the importable properties declared
-  in traits and returns the ones the mapping screen should offer for the current settings. The base
-  implementation includes `HasStatuses` properties (`enabled`); `EntryImporter` also includes
-  `Structurable` properties (`parentId`) when the section is a Structure.
+  hooks. `EntryImporter` resolves the section and entry type (from its `section`/`entryType`
+  settings, or from the row's `sectionId`/`typeId`) and scopes the match query by type; in
+  `setAttributesForImport()` a configured `fieldLayout` keeps `typeId` from being overwritten, and
+  a Structure `parentId` is resolved by ID or by title/slug within the section and site
+  (`normalizeParent()`). `AssetImporter` resolves the volume from `fieldLayout` and does the heavy
+  filename/folder/temp-file work in `setAttributesForImport()`.
+- `isPropertyAvailable(array $prop): bool` — filters the importable properties
+  (`getAvailableProperties()`) down to the ones the mapping screen should offer for the current
+  settings. The base implementation allows properties not declared in a trait, plus `HasStatuses`
+  ones (`enabled`); `EntryImporter` also allows `Structurable` properties (`parentId`) when the
+  section is a Structure; `UserImporter` only offers `groups` on Pro, `affiliatedSiteId` on
+  multisite and `photoId` when a user photo volume is set.
 
 ### The `Importable` attribute
 
@@ -310,14 +329,15 @@ Both `name` and `label` are **required** positionally. Examples: `id`/`uid` are
 `ImportableContainerPropertiesInterface`.
 
 An attributed property declared in a trait (e.g. `Structurable::$_parentId`, which every element
-inherits) is only offered on the mapping screen when the importer's `includeConditionalProperties()`
-includes it, since a trait used by `Element` doesn't apply to every element type or section.
-Properties declared directly on a class are always offered (subject to `excludeFromUiMapping`).
+inherits) is only offered on the mapping screen when the importer's `isPropertyAvailable()`
+allows it, since a trait used by `Element` doesn't apply to every element type or section.
+Properties declared directly on a class are offered unless the importer's `isPropertyAvailable()`
+says otherwise (and subject to `excludeFromUiMapping`).
 
 ### Field layout elements
 
 `ImportableFieldLayoutElementInterface` — `getFieldsForMapping()`,
-`canBeMatchCriteria()`, `canBeCleared()`. `getFieldsForMapping()` returns an
+`canBeMatchCriteria()`, `canBeCleared()`, `getImportMappingExtraSettings()` (default `[]`). `getFieldsForMapping()` returns an
 `Import\Data\MappingColumn`, a `CompoundMappingColumn` (several columns under one heading,
 e.g. lat/long), or `null` to offer no column; `MappingColumn::make()` derives a column's path
 and input names from its prefixed handle. The default trait returns `false` for both,
@@ -344,8 +364,8 @@ values and other fields only for non-null ones, so nothing nested gets cleared b
 `$importSettings` is the field's branch of the importer's `fieldSettings` tree, which mirrors
 `map`'s shape (`['myMatrix' => ['someEntryType' => ['fields' => ['photos' => [...]]]]]`). A field
 type offers settings in the mapping UI through its import handler's `mappingSettings()` (see
-below), which returns a list of `Import\Data\FieldMappingSetting`; `CustomField::getFieldsForMapping()`
-passes them on as the column's `importSettings`.
+below), which returns a list of `Import\Data\FieldMappingSetting`; `CustomField::getImportMappingExtraSettings()`
+returns them, and `CustomField::getFieldsForMapping()` passes them on as the column's `importSettings`.
 
 ### Field import handlers
 
@@ -406,7 +426,10 @@ the row still imports. New assets for a row that then fails to save are left in 
 
 ## 8. Nested data formats
 
-Matrix accepts three shapes:
+Matrix itself accepts the flat and the `sortOrder`/`entries` shapes. The grouped-by-type shape is
+converted into the flat one by `ImportHelper::remapData()` (`src/Support/ImportHelper.php`), so it
+only works when the step has a map with per-type submaps; without one (e.g. from the CLI) its rows
+carry no `type` and are dropped. Grouped rows come out in the map's type order.
 
 **Flat, own-type-per-row** — order preserved:
 ```json
@@ -416,7 +439,7 @@ Matrix accepts three shapes:
 ]
 ```
 
-**Grouped by type** — keyed by entry type handle, rows carry no `type`:
+**Grouped by type** (needs a map) — keyed by entry type handle, rows carry no `type`:
 ```php
 'myMatrix' => [
     'secondEt' => [['title' => 'block 1', 'plainText' => 'foo']],
@@ -433,9 +456,10 @@ Matrix accepts three shapes:
 ```
 
 Notes:
-- A block with no `type`, or a type not allowed in the field, is **silently skipped**.
-- The `fields` wrapper is optional — `normalizeNestedEntryForImport()` moves custom
-  field handles into `fields` when it's absent.
+- A block with no `type`, a type not allowed in the field, or nothing but `type`/`matchCriteria`
+  is **silently skipped**.
+- The `fields` wrapper is optional — `normalizeNestedEntryForImport()` (from the
+  `ImportableElementContainerField` trait) moves custom field handles into `fields` when it's absent.
 - Blocks are matched only when the owner already has an id, using the block's own
   `matchCriteria`, scoped by field id, owner id and site.
 - Blocks absent from the incoming data are pruned by the normal nested save, unless kept.
@@ -454,7 +478,8 @@ children:
 ```
 
 A flat list of (dot-notation) handles is accepted too and expanded into `__keep__: true` leaves.
-Opt-in per field, per level — an outer field can keep while an inner one prunes. Pruning is
+Opt-in per field, per level — an outer field can keep while an inner one prunes. Only Matrix and
+Addresses support it. Pruning is
 Craft's normal save behavior, so it isn't tracked or logged.
 
 ---
@@ -467,8 +492,9 @@ warning that import plans can create and update data regardless of the user's ot
 
 Screens are Vue/Inertia under `resources/js/pages/import/`, backed by `ImportPlansController`:
 
-- `import` — two tables, editable and file-based. Editable rows get Edit, Duplicate, Delete
-  and Run; file-based rows get Run only. Run queues the plan via `dispatchImport()`. With
+- `import` — two tables, editable and file-based. Editable rows get Edit, plus Run (with
+  `triggerImportPlans`), Duplicate (with `saveImportPlans`) and Delete (with `deleteImportPlans`);
+  file-based rows get Run only (with `triggerImportPlans`). Run queues the plan via `dispatchImport()`. With
   `saveImportPlans`, the editable table can be reordered by drag and drop (`import/reorder`,
   rolled back client-side if the request fails).
 - `import/new|{handle}` — name, handle, description, then the **Steps** list
@@ -497,8 +523,10 @@ Screens are Vue/Inertia under `resources/js/pages/import/`, backed by `ImportPla
   step for users with `saveImportPlans`. Anyone else gets the saved step with the posted step's
   UID, so they can't make the server fetch a source of their choosing.
 
-Read-only: derived from `allowAdminChanges`. Save/delete actions are dropped and the
-forms render in read-only mode. Running plans is deliberately *not* gated on it.
+Read-only: users without `saveImportPlans` see the forms in read-only mode, without the
+Save/Delete/Run actions; the mapping button reads "View mapping" and steps aren't validated on
+close (`import/validate-step` requires `saveImportPlans`). It isn't tied to `allowAdminChanges`.
+Running plans is gated only by `triggerImportPlans`.
 
 There is **no logs/history screen** — logging goes to a daily `import` channel at
 `storage/logs/import.log` (debug, 14 days), registered only if the app hasn't already
@@ -511,8 +539,8 @@ defined one.
 One command per importer, each extending the abstract `CraftCms\Cms\Import\Commands\ImportCommand`:
 
 ```
-craft:import:entries {source} [--site=] [--section=] [--entry-type=] [--transformer=] [--match-criteria=]
-craft:import:assets {source} [--site=] [--volume=] [--transformer=] [--match-criteria=]
+craft:import:entries {source} [--site=] [--transformer=] [--match-criteria=] [--section=] [--entry-type=]
+craft:import:assets {source} [--site=] [--transformer=] [--match-criteria=] [--volume=]
 craft:import:users {source} [--site=] [--transformer=] [--match-criteria=]
 craft:import:system-messages {source} [--transformer=] [--match-criteria=]
 ```
@@ -520,7 +548,8 @@ craft:import:system-messages {source} [--transformer=] [--match-criteria=]
 Aliases: `import/entries`, `import/assets`, `import/users`, `import/system-messages`. `{source}` is an
 aliased or `@root`-relative path, or a URL, and is prompted if missing, as are any missing
 options; `--site` is only added for element importers and only prompted on multisite.
-`--match-criteria` is JSON.
+`--match-criteria` is JSON (a leading `=` is stripped; invalid JSON is silently treated as no
+criteria).
 
 A command builds a one-off importer via `ImportPlan::createImporter()`, validates it (printing
 errors per attribute and failing if it's invalid), reads the data via `withLocalFile()` (so a
@@ -549,7 +578,7 @@ Registries (register from a service provider's `boot()`; see `Component\TypeRegi
   (keyed by the handler's `fieldClass()`; see §7).
 - `ItemImporting` / `ItemImported` (the latter with `$importedItem`),
   `ImportPlanSaving` / `ImportPlanSaved`, `ImportDispatching` / `ImportDispatched`.
-  The `*ing` variants are cancelable.
+  The `*ing` variants are cancelable: a listener sets `$event->isValid = false` (`ValidatableEvent`).
 - Run lifecycle: `ImportStarted`, `ImportStepStarted`, `ImportChunkStarted`,
   `ImportChunkFinished`, `ImportStepFinished`, `ImportFinished` — all keyed by `runId`
   (see §3).
