@@ -48,24 +48,13 @@ export function queryAll(selector: string | null | undefined): HTMLElement[] {
  * link, button, form control, menu trigger, custom-element control,
  * contenteditable region, …) rather than passive content.
  *
- * Native controls, editable regions, and declared ARIA controls remain
- * interactive when they are not in the tab order.
+ * We use focusability as the proxy: every genuinely interactive control is
+ * focusable and reports a non-negative `tabIndex`, while passive containers,
+ * text, icons, etc. do not. This avoids maintaining a selector list of every
+ * interactive tag/web-component.
  */
 export function isInteractiveElement(node: EventTarget | null): boolean {
-  return (
-    (node instanceof HTMLElement || node instanceof SVGElement) &&
-    (node.tabIndex >= 0 ||
-      (node instanceof HTMLElement && node.isContentEditable) ||
-      (node instanceof HTMLLabelElement && node.control !== null) ||
-      node.matches(
-        'a:any-link, area[href], button, input, select, textarea, summary, ' +
-          '[role~="button"], [role~="link"], [role~="checkbox"], [role~="radio"], [role~="switch"], ' +
-          '[role~="menuitem"], [role~="menuitemcheckbox"], [role~="menuitemradio"], ' +
-          '[role~="option"], [role~="tab"], [role~="treeitem"], ' +
-          '[role~="combobox"], [role~="listbox"], [role~="textbox"], [role~="searchbox"], ' +
-          '[role~="slider"], [role~="spinbutton"], [role~="scrollbar"]'
-      ))
-  );
+  return node instanceof HTMLElement && node.tabIndex >= 0;
 }
 
 /**

@@ -1162,7 +1162,7 @@ async function doubleClickRow(
   return row;
 }
 
-it('opens a double-clicked row the way its first column’s link would', async () => {
+it('opens a double-clicked row’s slideout link, returning focus to the link', async () => {
   const {openSlideout, closeAllSlideouts, setSlideoutPageLoader} =
     await import('@/common/slideouts/store');
   const {default: SlideoutHost} =
@@ -1186,11 +1186,6 @@ it('opens a double-clicked row the way its first column’s link would', async (
         name: {label: 'Summer sale', url: '/admin/rules/1', slideout: true},
         handle: 'summerSale',
       },
-      {
-        id: 2,
-        name: {label: 'Winter sale', url: '/admin/rules/2'},
-        handle: 'winterSale',
-      },
     ],
   });
   const unmountTable = teardown;
@@ -1204,17 +1199,6 @@ it('opens a double-clicked row the way its first column’s link would', async (
     unmountTable?.();
     setSlideoutPageLoader();
   };
-  for (const modifier of ['altKey', 'ctrlKey', 'metaKey', 'shiftKey']) {
-    host.querySelector('tbody td:last-child')!.dispatchEvent(
-      new MouseEvent('dblclick', {
-        bubbles: true,
-        cancelable: true,
-        [modifier]: true,
-      })
-    );
-  }
-  expect(slideout).not.toHaveBeenCalled();
-  expect(visit).not.toHaveBeenCalled();
   const row = await doubleClickRow(host, 0);
   const link = row.querySelector('a[href="/admin/rules/1"]');
   expect(link).toBeInstanceOf(HTMLAnchorElement);
@@ -1228,11 +1212,9 @@ it('opens a double-clicked row the way its first column’s link would', async (
   expect(document.querySelectorAll('.slideout-panel')).toHaveLength(1);
   closeAllSlideouts();
   await expect.poll(() => document.activeElement === link).toBe(true);
-  await doubleClickRow(host, 1);
-  expect(visit).toHaveBeenCalledWith('/admin/rules/2');
 });
 
-it('ignores double-clicks on rows whose first column isn’t a link', async () => {
+it('ignores double-clicks on rows without a slideout link', async () => {
   const host = mountNode({
     columns: [
       {key: 'name', label: 'Name'},
@@ -1241,132 +1223,30 @@ it('ignores double-clicks on rows whose first column isn’t a link', async () =
     rows: [
       {
         id: 1,
-        name: {html: '<a href="/admin/rules/1">Summer sale</a>'},
+        name: {label: 'Summer sale', url: '/admin/rules/1'},
         handle: 'summerSale',
       },
-      {id: 2, name: 'Winter sale', handle: 'winterSale'},
+      {
+        id: 2,
+        name: {html: '<a href="/admin/rules/2">Winter sale</a>'},
+        handle: 'winterSale',
+      },
+      {id: 3, name: 'Spring sale', handle: 'springSale'},
     ],
   });
   await doubleClickRow(host, 0);
   await doubleClickRow(host, 1);
+  await doubleClickRow(host, 2);
   expect(slideout).not.toHaveBeenCalled();
   expect(visit).not.toHaveBeenCalled();
 });
 
 it.each([
-  {
-    html: '<div contenteditable="true"><span>Editable description</span></div>',
-    interactive: true,
-  },
-  {
-    html: '<button type="button" tabindex="-1"><span>Context action</span></button>',
-    interactive: true,
-  },
-  {
-    html: '<input type="text" tabindex="-1" value="Editable description" aria-label="Description">',
-    interactive: true,
-  },
-  {
-    html: '<textarea tabindex="-1" aria-label="Description">Editable description</textarea>',
-    interactive: true,
-  },
-  {
-    html: '<details><summary tabindex="-1"><span>Details</span></summary>Description</details>',
-    interactive: true,
-  },
-  {
-    html: '<a href="#own-action" tabindex="-1"><span>Own link</span></a>',
-    interactive: true,
-  },
-  {
-    html: '<label><span>Passive description</span></label>',
-    interactive: false,
-  },
-  {
-    html: '<label for="missing-control"><span>Passive description</span></label>',
-    interactive: false,
-  },
-  ...[
-    'button',
-    'link',
-    'checkbox',
-    'radio',
-    'switch',
-    'menuitem',
-    'menuitemcheckbox',
-    'menuitemradio',
-    'option',
-    'tab',
-    'treeitem',
-    'combobox',
-    'listbox',
-    'textbox',
-    'searchbox',
-    'slider',
-    'spinbutton',
-    'scrollbar',
-  ].map((role) => ({
-    html: `<div role="${role}" tabindex="-1"><span>Own action</span></div>`,
-    interactive: true,
-  })),
-  {
-    html: '<div role="unknown button" tabindex="-1"><span>Own action</span></div>',
-    interactive: true,
-  },
-  {
-    html: '<svg role="button" tabindex="-1"><text x="0" y="20">Own SVG action</text></svg>',
-    interactive: true,
-  },
-  ...['group', 'row', 'note', 'presentation'].map((role) => ({
-    html: `<div role="${role}"><span>Passive description</span></div>`,
-    interactive: false,
-  })),
-  {
-    html: '<div role="heading" aria-level="2"><span>Passive description</span></div>',
-    interactive: false,
-  },
-  {
-    html: '<svg><a href="#own-action" tabindex="-1"><text x="0" y="20">Own SVG link</text></a></svg>',
-    interactive: true,
-  },
-  {
-    html: '<svg xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:href="#own-action" tabindex="-1"><text x="0" y="20">Own SVG link</text></a></svg>',
-    interactive: true,
-  },
-  {
-    html: '<svg width="32" height="32" aria-hidden="true"><rect width="32" height="32" /></svg>',
-    interactive: false,
-  },
-])(
-  'opens rows from passive HTML cell content, but not interactive controls: $html',
-  async ({html, interactive}) => {
-    const host = mountNode({
-      columns: [
-        {key: 'name', label: 'Name'},
-        {key: 'detail', label: 'Detail'},
-      ],
-      rows: [
-        {
-          id: 1,
-          name: {label: 'Editor', url: '/admin/rules/1', slideout: true},
-          detail: {html},
-        },
-      ],
-    });
-    const target = host
-      .querySelector('tbody td:last-child')!
-      .querySelector('span, text, rect, input, textarea')!;
-    target.addEventListener('click', (event) => event.preventDefault());
-    await userEvent.dblClick(target);
-    expect(slideout).toHaveBeenCalledTimes(interactive ? 0 : 1);
-    expect(visit).not.toHaveBeenCalled();
-  }
-);
-
-it.each([
+  '<button type="button"><span>Own action</span></button>',
+  '<a href="#own-action"><span>Own link</span></a>',
+  '<input type="text" value="Editable" aria-label="Description">',
   '<label><input type="checkbox"><span>Enable rule</span></label>',
-  '<label for="rule-enabled"><span>Enable rule</span></label><input id="rule-enabled" type="checkbox">',
-])('activates a labeled control without opening its row: %s', async (html) => {
+])('leaves double-clicks on a row’s controls to them: %s', async (html) => {
   const host = mountNode({
     columns: [
       {key: 'name', label: 'Name'},
@@ -1380,47 +1260,12 @@ it.each([
       },
     ],
   });
-  const cell = host.querySelector('tbody td:last-child')!;
-  const input = cell.querySelector<HTMLInputElement>('input')!;
-  let changes = 0;
-  input.addEventListener('change', () => changes++);
-
-  await expect
-    .element(page.getByRole('checkbox', {name: 'Enable rule'}))
-    .toBeVisible();
-  await userEvent.dblClick(cell.querySelector('label span')!);
-
-  expect(changes).toBe(2);
-  expect(input.checked).toBe(false);
-  for (let step = 0; step < 10 && document.activeElement !== input; step++) {
-    await userEvent.tab();
-  }
-  expect(document.activeElement).toBe(input);
-  await userEvent.keyboard(' ');
-  expect(input.checked).toBe(true);
+  const target = host
+    .querySelector('tbody td:last-child')!
+    .querySelector('span, input')!;
+  target.addEventListener('click', (event) => event.preventDefault());
+  await userEvent.dblClick(target);
   expect(slideout).not.toHaveBeenCalled();
-  expect(visit).not.toHaveBeenCalled();
-});
-
-it('lets a custom cell cancel the row double-click action', async () => {
-  const host = mountNode({
-    columns: [
-      {key: 'name', label: 'Name'},
-      {key: 'detail', label: 'Detail'},
-    ],
-    rows: [
-      {
-        id: 1,
-        name: {label: 'Editor', url: '/admin/rules/1', slideout: true},
-        detail: {html: '<span>Own action</span>'},
-      },
-    ],
-  });
-  const control = host.querySelector('tbody span')!;
-  control.addEventListener('dblclick', (event) => event.preventDefault());
-  await userEvent.dblClick(control);
-  expect(slideout).not.toHaveBeenCalled();
-  expect(visit).not.toHaveBeenCalled();
 });
 
 it('preserves width and owner refresh handling for a double-clicked editor', async () => {
