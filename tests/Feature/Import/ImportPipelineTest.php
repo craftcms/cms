@@ -189,7 +189,7 @@ it('skips the first chunk of a step whose source is invalid', function () {
     ($this->runJob)();
 
     Event::assertNotDispatched(ImportChunkStarted::class);
-    ImportLog::shouldHaveReceived('warning')->withArgs(fn (string $message) => str_contains($message, 'does not exist.'));
+    ImportLog::shouldHaveReceived('warning')->withArgs(fn (string $message) => str_contains($message, 'Skipping import job for invalid step'));
 });
 
 it('doesn’t check the step’s source again in later chunks', function () {

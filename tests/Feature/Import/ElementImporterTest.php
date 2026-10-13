@@ -78,12 +78,15 @@ it('throws when fieldLayout() is given a nonexistent numeric ID', function () {
     EntryImporter::create()->fieldLayout(999999);
 })->throws(InvalidArgumentException::class, 'No field layout found with ID: 999999');
 
-it('resolves fieldLayout() with an arbitrary string to a new unsaved layout for that type', function () {
-    // getLayoutByType() makes an unsaved layout for any unknown string, so only a numeric id throws.
-    $importer = EntryImporter::create()->fieldLayout('not-a-real-uid-and-not-a-class-string');
+it('resolves fieldLayout() with an element type that has no saved layout to that type', function () {
+    $importer = EntryImporter::create()->fieldLayout(Address::class);
 
-    expect($importer->fieldLayout)->toBe('not-a-real-uid-and-not-a-class-string');
+    expect($importer->fieldLayout)->toBe(Address::class);
 });
+
+it('throws when fieldLayout() is given a string that is neither a layout UID nor an element type', function () {
+    EntryImporter::create()->fieldLayout('not-a-real-uid-and-not-a-class-string');
+})->throws(InvalidArgumentException::class, 'No field layout found with UID or Type of: "not-a-real-uid-and-not-a-class-string".');
 
 it('registers a concrete ElementImporter subclass per core importable element type', function (string $importerClass, string $elementClass) {
     expect(is_subclass_of($importerClass, ElementImporter::class))->toBeTrue()

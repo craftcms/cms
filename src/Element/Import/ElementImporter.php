@@ -501,7 +501,8 @@ abstract class ElementImporter extends BaseImporter
             $value instanceof FieldLayout => $value,
             $value === null => null,
             is_numeric($value) => Fields::getLayoutById((int) $value),
-            default => Fields::getLayoutByUid($value) ?? Fields::getLayoutByType($value),
+            // only an element type can fall back to its (unsaved) default layout
+            default => Fields::getLayoutByUid($value) ?? Fields::getLayoutByType($value, create: is_a($value, ElementInterface::class, true)),
         };
     }
 
