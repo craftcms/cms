@@ -650,33 +650,6 @@
       value=""
     />
     <component :is="control.props.customElement" :id="id">
-      <div v-if="editable && !atLimit" class="flex gap-md pb-md" slot="header">
-        <craft-button
-          ref="addButton"
-          type="button"
-          variant="dashed"
-          icon="plus"
-          data-element-select-add=""
-          :disabled="atLimit || undefined"
-          :aria-label="control.props.selectionLabel"
-          @click="openSelector()"
-        >
-          {{ control.props.selectionLabel }}
-        </craft-button>
-
-        <AssetUploadButton
-          v-if="control.props.canUpload !== undefined"
-          variant="dashed"
-          :can-upload="control.props.canUpload"
-          :folder-id="control.props.uploadFolderId ?? undefined"
-          :allowed-kinds="uploadKinds"
-          :drop-zone="dropZone"
-          :reload-on-complete="false"
-          :disabled="!showUpload"
-          @uploaded="attachUploaded"
-        />
-      </div>
-
       <div class="relative" v-if="ids.length > 0">
         <!--
           Selection toolbar. The whole bar is selection-only, so a field that
@@ -709,33 +682,35 @@
             </template>
           </div>
 
-          <ActionMenu
-            :actions="bulkActions"
-            :class="{
-              invisible: !hasSelection || !bulkActions.length,
-            }"
-          >
-            <template #invoker="{attributes}">
-              <craft-button
-                type="button"
-                variant="plain"
-                size="small"
-                v-bind="attributes"
-              >
-                {{ t('Actions') }}
-                <craft-icon name="chevron-down" slot="suffix"></craft-icon>
-              </craft-button>
-            </template>
-          </ActionMenu>
+          <div class="flex items-center gap-sm ms-auto">
+            <ActionMenu
+              :actions="bulkActions"
+              :class="{
+                invisible: !hasSelection || !bulkActions.length,
+              }"
+            >
+              <template #invoker="{attributes}">
+                <craft-button
+                  type="button"
+                  variant="plain"
+                  size="small"
+                  flush
+                  v-bind="attributes"
+                >
+                  {{ t('Actions') }}
+                  <craft-icon name="chevron-down" slot="suffix"></craft-icon>
+                </craft-button>
+              </template>
+            </ActionMenu>
 
-          <craft-badge
-            size="small"
-            class="me-sm"
-            no-prefix
-            v-if="!hasSelection || !bulkActions.length"
-          >
-            {{ ids.length }}/{{ limit }}
-          </craft-badge>
+            <craft-badge
+              size="small"
+              no-prefix
+              v-if="limit !== null && (!hasSelection || !bulkActions.length)"
+            >
+              {{ ids.length }}/{{ limit }}
+            </craft-badge>
+          </div>
         </div>
         <div class="elements-stage">
           <ElementList
@@ -779,6 +754,36 @@
             </template>
           </ElementList>
         </div>
+      </div>
+
+      <div
+        v-if="editable && !atLimit"
+        class="flex gap-md"
+        :class="{'pt-md': ids.length > 0}"
+      >
+        <craft-button
+          ref="addButton"
+          type="button"
+          variant="dashed"
+          icon="plus"
+          data-element-select-add=""
+          :aria-label="control.props.selectionLabel"
+          @click="openSelector()"
+        >
+          {{ control.props.selectionLabel }}
+        </craft-button>
+
+        <AssetUploadButton
+          v-if="control.props.canUpload !== undefined"
+          variant="dashed"
+          :can-upload="control.props.canUpload"
+          :folder-id="control.props.uploadFolderId ?? undefined"
+          :allowed-kinds="uploadKinds"
+          :drop-zone="dropZone"
+          :reload-on-complete="false"
+          :disabled="!showUpload"
+          @uploaded="attachUploaded"
+        />
       </div>
 
       <div slot="footer">
