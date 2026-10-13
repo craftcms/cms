@@ -210,7 +210,7 @@ it('resolves sectionId and typeId given as handles', function () {
         ->and($entry->getTypeId())->toBe($this->entryType->id);
 });
 
-it('imports an entry under a parent in a structure section', function () {
+it('imports an entry under a parent in a structure section', function (string $parentAttribute) {
     $structure = Structure::factory()->create();
     $section = Section::factory()
         ->withEntryTypes($this->entryType)
@@ -232,14 +232,14 @@ it('imports an entry under a parent in a structure section', function () {
 
     $this->import->importItem($this->importer, ($this->entryData)([
         'sectionId' => $section->handle,
-        'parentId' => $parent->id,
+        'parentId' => $parent->{$parentAttribute},
     ]));
 
     $entry = ($this->importedEntry)();
 
     expect($entry->getParentId())->toBe($parent->id)
         ->and($entry->level)->toBe(2);
-});
+})->with(['id', 'title', 'slug']);
 
 it('offers enabled but not parentId on the mapping screen for a channel section', function () {
     $this->importer->section($this->section->uid)->entryType($this->entryType->uid);

@@ -325,6 +325,8 @@ class EntryImporter extends ElementImporter
             if ($parent !== null && $element->getParentId() !== $parent->id) {
                 $element->setParent($parent);
             }
+
+            unset($attributes['parentId']);
         }
 
         parent::setAttributesForImport($element, $attributes, $data);
