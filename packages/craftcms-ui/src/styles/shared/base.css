@@ -139,6 +139,11 @@ craft-radio[data-button] > input[type='radio'] {
     background-color: transparent;
   }
 
+  /* Picking the selected option again does nothing. */
+  &:checked {
+    cursor: default;
+  }
+
   &::before {
     display: none;
   }

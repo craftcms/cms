@@ -181,3 +181,13 @@ it('draws lighter borders between buttons than around the group', async () => {
   expect(last!.borderInlineStartColor).toBe(first!.borderInlineEndColor);
   expect(last!.borderInlineEndColor).toBe(first!.borderInlineStartColor);
 });
+
+it('gives only the unchecked buttons a pointer cursor', async () => {
+  const {inputs} = await render();
+
+  expect(inputs.map((input) => getComputedStyle(input).cursor)).toEqual([
+    'pointer',
+    'default',
+    'pointer',
+  ]);
+});
