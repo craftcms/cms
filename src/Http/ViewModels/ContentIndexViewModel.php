@@ -1430,6 +1430,17 @@ abstract class ContentIndexViewModel extends ViewModel
         return [];
     }
 
+    /**
+     * Capabilities an element type adds to its rows, for bulk actions whose
+     * `selectionAttribute` names them.
+     *
+     * @return array<string, bool>
+     */
+    protected function extraCapabilities(ElementInterface $element): array
+    {
+        return [];
+    }
+
     /** @return array<string, mixed> */
     private function baseRowData(ElementInterface $element, ?ElementHtml $elementHtml = null): array
     {
@@ -1438,7 +1449,10 @@ abstract class ContentIndexViewModel extends ViewModel
         return [
             'label' => $element->getUiLabel(),
             ...$this->elementUrls($element),
-            'capabilities' => $elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+            'capabilities' => [
+                ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+                ...$this->extraCapabilities($element),
+            ],
             ...$this->extraRowData($element),
         ];
     }

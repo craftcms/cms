@@ -13,6 +13,7 @@
   import AssetUploadButton from './AssetUploadButton.vue';
   import {useAssetUploadRefresh} from '@/modules/uploader/useAssetUploadRefresh';
   import {useAssetFolderActions} from '@/modules/assets/composables/useAssetFolderActions';
+  import {useAssetFileActions} from '@/modules/assets/composables/useAssetFileActions';
   import {useAssetIndexItemBehavior} from '@/modules/assets/composables/useAssetIndexItemBehavior';
   import {
     appendIndexQuery,
@@ -101,7 +102,17 @@
     resolveConflictChoice,
     folderConflictPrompt: dragFolderConflictPrompt,
     resolveFolderConflictChoice: resolveDragFolderConflictChoice,
+    performMove,
   } = useAssetMoveDrag(elementIndex);
+
+  const {
+    renameAssetId,
+    renameFilename,
+    renameFileError,
+    renamingFile,
+    closeRenameFile,
+    submitRenameFile,
+  } = useAssetFileActions(elementIndex, performMove);
 
   const {
     newFolderOpen,
@@ -267,6 +278,34 @@
           variant="primary"
           .disabled="!renameName.trim() || renaming"
           @click="submitRename"
+        >
+          {{ t('Rename') }}
+        </craft-button>
+      </div>
+    </craft-dialog>
+
+    <craft-dialog
+      .opened="renameAssetId !== null"
+      :label="t('Rename file')"
+      @craft-before-hide="closeRenameFile"
+    >
+      <form class="flex flex-col gap-lg" @submit.prevent="submitRenameFile">
+        <CraftInput
+          v-model="renameFilename"
+          :label="t('Filename')"
+          :error="renameFileError"
+          :aria-invalid="renameFileError ? 'true' : 'false'"
+          autofocus
+        />
+      </form>
+      <div slot="footer" class="flex gap-md justify-end">
+        <craft-button type="button" @click="closeRenameFile">
+          {{ t('Cancel') }}
+        </craft-button>
+        <craft-button
+          variant="primary"
+          .disabled="!renameFilename.trim() || renamingFile"
+          @click="submitRenameFile"
         >
           {{ t('Rename') }}
         </craft-button>

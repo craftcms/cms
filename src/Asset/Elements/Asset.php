@@ -2619,6 +2619,18 @@ JS, [
             // `orientation` below, which is the locale's text direction.
             'imageWidth' => $this->getWidth(),
             'imageHeight' => $this->getHeight(),
+            ...static::sharedImageEditorSettings(),
+        ];
+    }
+
+    /**
+     * Returns the image editor settings that are the same for every asset.
+     *
+     * @return array<string, mixed>
+     */
+    public static function sharedImageEditorSettings(): array
+    {
+        return [
             'imageEditorRatios' => Cms::config()->imageEditorRatios,
             // Only Imagick can rotate by a fraction of a degree; GD rounds.
             'allowDegreeFractions' => Images::getIsImagick(),

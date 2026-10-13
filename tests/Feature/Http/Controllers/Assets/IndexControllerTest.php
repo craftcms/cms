@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
+use CraftCms\Cms\Asset\Actions\EditImage;
+use CraftCms\Cms\Asset\Actions\MoveAssets;
+use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -463,6 +467,60 @@ it('provides folder actions separately from element actions', function () {
                     'Delete folder',
                 ] && $actions->where('appliesTo', 'elements')->isNotEmpty();
             })
+        );
+});
+
+it('hands asset file actions to the page as client events', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    $root = Folders::getRootFolderByVolumeId($volumeModel->id);
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('actions', function ($actions) use ($root): bool {
+                $actions = $actions->keyBy('key');
+                $move = $actions->get(MoveAssets::class);
+
+                return $actions->get(RenameFile::class)['action'] === ['type' => 'event', 'name' => 'assets:rename-file']
+                    && $actions->get(RenameFile::class)['selectionAttribute'] === 'movable'
+                    && $actions->get(CopyReferenceTag::class)['action'] === ['type' => 'event', 'name' => 'assets:copy-reference-tag']
+                    && $actions->get(EditImage::class)['selectionAttribute'] === 'imageEditable'
+                    && array_key_exists('imageEditorRatios', $actions->get(EditImage::class)['action']['detail'])
+                    && $move['action']['name'] === 'assets:move-assets'
+                    && $move['action']['detail']['sources'] !== []
+                    && $move['action']['detail']['disabledFolderIds'] === [$root->id];
+            })
+        );
+});
+
+it('gives asset rows what their file actions need', function () {
+    Queue::fake();
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    Asset::factory()->createElement([
+        'volumeId' => $volumeModel->id,
+        'folderId' => Folders::getRootFolderByVolumeId($volumeModel->id)->id,
+        'filename' => 'photo.jpg',
+        'kind' => 'image',
+        'width' => 400,
+        'height' => 300,
+    ]);
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.assetFilename', 'photo.jpg')
+            ->where('data.0.imageWidth', 400)
+            ->where('data.0.imageHeight', 300)
+            ->where('data.0.capabilities.movable', true)
+            ->where('data.0.capabilities.replaceable', true)
+            ->has('data.0.capabilities.imageEditable')
+            ->has('data.0.capabilities.hasUrl')
         );
 });
 

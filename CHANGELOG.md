@@ -151,7 +151,7 @@
 - Fixed a bug where asset folders in asset selection modals couldn’t be opened. Folders are now linked, and clicking one shows its contents in the modal, with breadcrumbs leading back to the volume’s root. ([#19937](https://github.com/craftcms/cms/pull/19937))
 - Fixed a bug where `yii\db\Expression` values assigned to legacy Active Record attributes were saved as JSON strings. ([#19948](https://github.com/craftcms/cms/issues/19948), [#19953](https://github.com/craftcms/cms/pull/19953))
 - Fixed a bug where the “Users” nav item was marked as the current page when viewing your own account or a user’s edit screen. ([#19942](https://github.com/craftcms/cms/pull/19942))
-- Fixed a bug where the “Preview file” action in asset indexes’ Actions menu didn’t open the preview, and cleared the selection instead. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where the “Preview file”, “Download”, “Rename file”, “Replace file”, “Copy URL”, “Copy reference tag”, “Show in folder”, “Edit Image”, and “Move…” actions in asset indexes’ Actions menu didn’t do anything, and cleared the selection instead. ([#19942](https://github.com/craftcms/cms/pull/19942))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
