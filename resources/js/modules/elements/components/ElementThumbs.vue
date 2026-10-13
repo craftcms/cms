@@ -302,9 +302,15 @@
 
 <style scoped lang="scss">
   .thumbsview-header {
-    padding: var(--c-spacing-md);
+    margin-block-end: var(--c-spacing-md);
+    display: flex;
+    align-items: center;
+    min-height: calc(var(--c-checkbox-size) + var(--c-spacing-md) * 2);
+    padding-block: 0;
+    padding-inline: var(--c-spacing-md);
     background-color: var(--c-color-neutral-fill-quiet);
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    border-radius: var(--c-radius-md);
   }
 
   .thumbsview {

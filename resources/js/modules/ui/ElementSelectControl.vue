@@ -791,14 +791,12 @@
 <style lang="scss" scoped>
   .element-selections-header {
     margin-block-end: var(--c-spacing-md);
-    padding: var(--c-spacing-sm);
-    padding-inline-start: calc(
-      var(--c-spacing-md) + 1px
-    ); // so the checkboxes line up
+    min-height: calc(var(--c-checkbox-size) + var(--c-spacing-md) * 2);
+    padding-block: 0;
+    padding-inline: var(--c-spacing-md);
     background-color: var(--c-color-neutral-fill-quiet);
-    border-start-start-radius: var(--c-radius-md);
-    border-start-end-radius: var(--c-radius-md);
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    border-radius: var(--c-radius-md);
   }
 
   .element-selection-footer {

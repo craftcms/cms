@@ -476,7 +476,10 @@
     // and pads its content back in by the same amount.
     > :deep(:is(.card-grid-header, .thumbsview-header)) {
       margin-inline: calc(var(--cp-container-padding) * -1);
+      margin-block-end: 0;
       padding-inline: var(--cp-container-padding);
+      border-block-start-width: 0;
+      border-inline-width: 0;
       border-radius: 0;
     }
   }
