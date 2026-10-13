@@ -82,12 +82,12 @@ class BooleanMenu extends Combobox
                 [
                     'label' => $yesLabel,
                     'value' => '1',
-                    'data' => ['indicator' => ['variant' => 'success']],
+                    'data' => ['indicator' => self::indicator(true)],
                 ],
                 [
                     'label' => $noLabel,
                     'value' => '0',
-                    'data' => ['indicator' => ['variant' => 'empty']],
+                    'data' => ['indicator' => self::indicator(false)],
                 ],
                 ...($this->includeEnvVars ? self::envOptions($yesLabel, $noLabel) : []),
             ]);
@@ -108,14 +108,18 @@ class BooleanMenu extends Combobox
                     'data' => [
                         ...$option['data'],
                         'hint' => $enabled ? $yesLabel : $noLabel,
-                        'indicator' => [
-                            'variant' => $enabled ? 'success' : 'empty',
-                        ],
+                        'indicator' => self::indicator($enabled),
                     ],
                 ];
             })
             ->all();
 
         return $groups;
+    }
+
+    /** @return array{variant: string} */
+    private static function indicator(bool $enabled): array
+    {
+        return ['variant' => $enabled ? 'success' : 'empty'];
     }
 }
