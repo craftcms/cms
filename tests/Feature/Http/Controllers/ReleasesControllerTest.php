@@ -189,6 +189,14 @@ it('filters, paginates, and sorts release rows through Ui reloads', function () 
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes.0.props.rows.0.id', $alpha->id));
+
+    $beta->update(['status' => ReleaseStatus::Scheduled]);
+
+    get(route('craft.cp.releases.index', ['status' => 'scheduled']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('ui.nodes.0.props.pagination.total', 1)
+            ->where('ui.nodes.0.props.rows.0.id', $beta->id));
 });
 
 it('sorts releases by their publication or planned date with undated releases last', function () {

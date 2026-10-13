@@ -17,7 +17,6 @@ use CraftCms\Cms\Http\ViewModels\ReleaseViewModel;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Releases;
-use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Html;
@@ -59,6 +58,7 @@ class ReleasesController
         $paginator = Release::query()
             ->withCount('items')
             ->when($searchTerm !== '', fn ($query) => $query->where('name', 'like', "%{$searchTerm}%"))
+            ->when(ReleaseStatus::tryFrom((string) $request->input('status')), fn ($query, ReleaseStatus $status) => $query->where('status', $status))
             ->tap(function (Builder $query) use ($request): void {
                 $direction = $request->input('sort.0.direction') === 'desc' ? 'desc' : 'asc';
 
@@ -83,13 +83,8 @@ class ReleasesController
             return [
                 'id' => $release->id,
                 'name' => ['label' => $release->name, 'url' => route('craft.cp.releases.show', $release)],
-                'status' => ['html' => Html::tag('craft-badge', t(ucfirst($release->status->value)), [
-                    'fill' => match ($release->status) {
-                        ReleaseStatus::Draft => Color::Gray->value,
-                        ReleaseStatus::Scheduled, ReleaseStatus::Publishing => Color::Sky->value,
-                        ReleaseStatus::Published => Color::Emerald->value,
-                        ReleaseStatus::Failed => Color::Red->value,
-                    },
+                'status' => ['html' => Html::tag('craft-badge', Html::encode($release->status->label()), [
+                    'fill' => $release->status->color()->value,
                 ])],
                 'date' => $date === null ? t('Not set') : ['html' => Html::tag('time',
                     Html::encode($formatter->format($date) ?: t('Not set')),
@@ -117,6 +112,11 @@ class ReleasesController
                 'next_page_url', 'prev_page_url', 'from', 'to',
             ]))
             ->searchable()
+            ->statusFilter(array_map(fn (ReleaseStatus $status): array => [
+                'value' => $status->value,
+                'label' => $status->label(),
+                'fill' => $status->color()->value,
+            ], [ReleaseStatus::Draft, ReleaseStatus::Scheduled, ReleaseStatus::Published, ReleaseStatus::Failed]))
             ->emptyMessage(t('No releases exist yet.'))
             ->when($canManage, fn (UiTable $table) => $table
                 ->deletable()

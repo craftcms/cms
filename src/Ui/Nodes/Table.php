@@ -79,7 +79,7 @@ class Table implements Node
     /** @var list<array<string, mixed>> */
     private array $statusActions = [];
 
-    /** @var list<array{value: string, label: string}>|null */
+    /** @var list<array{value: string, label: string, fill?: string|null}>|null */
     private ?array $statusFilterOptions = null;
 
     private bool $columnsToggleable = false;
@@ -385,9 +385,10 @@ class Table implements Node
     /**
      * Adds a status dropdown to the toolbar, defaulting to enabled/disabled. Filters
      * {@see rows()} locally on `_status`, or sends the chosen `status` to the {@see dataUrl()}
-     * endpoint and resets to page 1. "All" sends no `status`.
+     * endpoint or as a {@see pagination()} query parameter, and resets to page 1. "All"
+     * sends no `status`. An option's `fill` overrides the indicator color derived from its value.
      *
-     * @param  list<array{value: string, label: string}>|null  $options
+     * @param  list<array{value: string, label: string, fill?: string|null}>|null  $options
      */
     public function statusFilter(?array $options = null): static
     {
@@ -592,7 +593,7 @@ class Table implements Node
             ...array_map(fn (array $option) => [
                 'value' => $option['value'],
                 'label' => $option['label'],
-                'fill' => self::statusFill($option['value']),
+                'fill' => $option['fill'] ?? self::statusFill($option['value']),
             ], $this->statusFilterOptions),
         ];
     }
