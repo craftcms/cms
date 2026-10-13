@@ -305,11 +305,10 @@
     margin-block-end: var(--c-spacing-md);
     display: flex;
     align-items: center;
-    min-height: calc(var(--c-checkbox-size) + var(--c-spacing-md) * 2);
-    padding-block: 0;
-    padding-inline: var(--c-spacing-md);
-    border: 1px solid var(--c-table-border-color);
-    border-radius: var(--c-radius-md);
+    min-height: calc(var(--c-size-control-sm) + var(--c-spacing-sm) + 1px);
+    padding-block: 0 var(--c-spacing-sm);
+    padding-inline: 0;
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   .thumbsview {
@@ -323,6 +322,7 @@
     border-radius: var(--c-radius-lg);
     border-width: 1px;
     border-style: solid;
+    box-shadow: var(--c-chip-shadow, var(--c-shadow-xs));
   }
 
   // Only the label links; the rest of the tile selects it.

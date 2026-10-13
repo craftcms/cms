@@ -759,7 +759,7 @@
       <div
         v-if="editable && !atLimit"
         class="flex gap-md"
-        :class="{'pt-md': ids.length > 0}"
+        :class="{'element-selections-footer': ids.length > 0}"
       >
         <craft-button
           ref="addButton"
@@ -796,11 +796,16 @@
 <style lang="scss" scoped>
   .element-selections-header {
     margin-block-end: var(--c-spacing-md);
-    min-height: calc(var(--c-checkbox-size) + var(--c-spacing-md) * 2);
-    padding-block: 0;
-    padding-inline: var(--c-spacing-md);
-    border: 1px solid var(--c-table-border-color);
-    border-radius: var(--c-radius-md);
+    min-height: calc(var(--c-size-control-sm) + var(--c-spacing-sm) + 1px);
+    padding-block: 0 var(--c-spacing-sm);
+    padding-inline: 0;
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .element-selections-footer {
+    margin-block-start: var(--c-spacing-md);
+    padding-block-start: var(--c-spacing-md);
+    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   .element-selection-footer {
