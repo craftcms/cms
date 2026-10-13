@@ -105,6 +105,29 @@ it.each([
   }
 );
 
+it.each([
+  ['an owner-managed', 'default', ''],
+  ['a toggle', 'pointer', ' toggle'],
+])(
+  'gives %s pressed button in an unnamed group a %s cursor',
+  async (_, cursor, attrs) => {
+    document.body.innerHTML = `
+    <craft-button-group>
+      <craft-button value="a" aria-pressed="true" active${attrs}>A</craft-button>
+      <craft-button value="b" aria-pressed="false"${attrs}>B</craft-button>
+    </craft-button-group>`;
+    const group = document.querySelector('craft-button-group')!;
+    await group.updateComplete;
+    await settle();
+    const [pressed, other] = Array.from(
+      document.querySelectorAll('craft-button')
+    );
+
+    expect(getComputedStyle(pressed!).cursor).toBe(cursor);
+    expect(getComputedStyle(other!).cursor).toBe('pointer');
+  }
+);
+
 it('overlaps adjacent buttons’ borders, with no gap', async () => {
   const [first, second] = await render(`
     <craft-button variant="outline">One</craft-button>

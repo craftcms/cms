@@ -58,8 +58,13 @@ export default css`
     --c-button-radius-end-end: var(--_button-radius);
   }
 
-  :host([name]:not([multiple])) ::slotted([aria-pressed='true']) {
+  /* Picking the selected option again does nothing. An owner may manage the
+     selection itself, so that's any pressed button but an independent toggle. */
+  :host(:not([multiple])) ::slotted([aria-pressed='true']:not([toggle])) {
     cursor: default;
+  }
+
+  :host([name]:not([multiple])) ::slotted([aria-pressed='true']) {
     background-color: var(--c-color-fill-loud);
     color: var(--c-color-on-loud);
     border-color: var(--c-color-border-loud);
