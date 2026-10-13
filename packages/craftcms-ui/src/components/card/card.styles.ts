@@ -33,6 +33,11 @@ export default css`
     overflow: clip;
   }
 
+  :host([data-color='white']) .card {
+    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+    box-shadow: var(--c-card-shadow, var(--c-shadow-xs));
+  }
+
   /* White fills the whole card, not just the header over a translucent body. */
   :host([data-color='white']:not([active])) .card {
     background-color: var(--c-color-fill-quiet);
