@@ -942,6 +942,37 @@ it('moves the selected row to another page, reloads rows, and clears selection',
   expect(handle.value?.selectedIds).toEqual([]);
 });
 
+async function expectDebouncedDraftRefresh(
+  onSaved: (result: {draft?: boolean}) => void,
+  refresh: ReturnType<typeof vi.fn>
+): Promise<void> {
+  vi.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+  try {
+    onSaved({draft: true});
+    expect(refresh).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(400);
+    onSaved({draft: true});
+    await vi.advanceTimersByTimeAsync(400);
+    expect(refresh).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(200);
+    expect(refresh).toHaveBeenCalledTimes(1);
+
+    onSaved({draft: true});
+    onSaved({});
+    expect(refresh).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(600);
+    expect(refresh).toHaveBeenCalledTimes(2);
+
+    onSaved({draft: true});
+    teardown?.();
+    teardown = undefined;
+    await vi.advanceTimersByTimeAsync(600);
+    expect(refresh).toHaveBeenCalledTimes(2);
+  } finally {
+    vi.useRealTimers();
+  }
+}
+
 it('opens slideout links at their width and refreshes through its own handler', async () => {
   const onRefresh = vi.fn();
   const host = mountNode(
@@ -974,8 +1005,10 @@ it('opens slideout links at their width and refreshes through its own handler', 
     '/admin/rules/1',
     expect.objectContaining({opener: link, width: '85vw'})
   );
-  slideout.mock.lastCall![1].onSaved();
-  expect(onRefresh).toHaveBeenCalledOnce();
+  await expectDebouncedDraftRefresh(
+    slideout.mock.lastCall![1].onSaved,
+    onRefresh
+  );
   expect(reload).not.toHaveBeenCalled();
 });
 
@@ -1074,7 +1107,7 @@ it('opens the create action in a slideout when asked to', async () => {
     '/admin/rules/new',
     expect.objectContaining({opener: button, width: '85vw'})
   );
-  slideout.mock.lastCall![1].onSaved();
+  await expectDebouncedDraftRefresh(slideout.mock.lastCall![1].onSaved, reload);
   expect(reload).toHaveBeenCalledWith({only: ['ui']});
 });
 

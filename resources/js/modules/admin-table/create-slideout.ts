@@ -1,8 +1,9 @@
 import type {InjectionKey, Ref} from 'vue';
+import type {SlideoutSaveResult} from '@/common/slideouts';
 
 export interface CreateSlideout {
   width?: string;
-  onSaved: () => void;
+  onSaved: (result: SlideoutSaveResult) => void;
 }
 
 /**

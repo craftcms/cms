@@ -2,6 +2,7 @@
   import {actionClient, t} from '@craftcms/ui';
   import {router} from '@inertiajs/vue3';
   import type {ColumnDef} from '@tanstack/vue-table';
+  import {useTimeoutFn} from '@vueuse/core';
   import {computed, h, inject, provide, ref, shallowRef} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
@@ -14,7 +15,7 @@
     type PaginationData,
     type TableAppearanceValue,
   } from '@/common/types';
-  import {openSlideout} from '@/common/slideouts';
+  import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import type {CraftTableFeatures} from '@/common/table/craftTable';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -70,7 +71,7 @@
       props.node.props.createSlideout
         ? {
             width: props.node.props.createSlideoutWidth ?? undefined,
-            onSaved: refreshTable,
+            onSaved: onSlideoutSaved,
           }
         : null
     )
@@ -259,7 +260,7 @@
     void openSlideout(link.url, {
       opener,
       width: link.slideoutWidth ?? undefined,
-      onSaved: refreshTable,
+      onSaved: onSlideoutSaved,
     });
   }
 
@@ -661,6 +662,20 @@
     if (!props.node.props.pagination) refreshUi();
 
     void adminTable.value?.refresh();
+  }
+
+  const draftRefresh = useTimeoutFn(refreshTable, 600, {immediate: false});
+
+  function onSlideoutSaved(result: SlideoutSaveResult = {}): void {
+    draftRefresh.stop();
+
+    if (result.draft) {
+      draftRefresh.start();
+
+      return;
+    }
+
+    refreshTable();
   }
 </script>
 
