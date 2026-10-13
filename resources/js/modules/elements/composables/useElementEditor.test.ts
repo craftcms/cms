@@ -1656,6 +1656,48 @@ describe('useElementEditor', () => {
     vi.useRealTimers();
   });
 
+  it('attaches a draft from a slideout without navigating the page behind it', async () => {
+    const slideout = slideoutController();
+    const {editor} = mount(
+      payload({
+        draftId: 9,
+        ui: fieldLayout('Approved title'),
+        workflow: {
+          current: {
+            status: 'approved',
+          } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+          draftReviews: [],
+        },
+      }),
+      slideout
+    );
+    const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+    onTestFinished(() => visit.mockRestore());
+    postSpy.mockResolvedValueOnce({
+      data: {
+        message: 'Draft added to “Launch”.',
+        redirect: '/admin/content/entries/news/12?draftId=9',
+      },
+    });
+
+    editor.addToRelease({
+      id: 4,
+      name: 'Launch',
+      status: 'draft',
+      plannedAt: null,
+    });
+
+    await vi.waitFor(() => expect(slideout.reload).toHaveBeenCalledOnce());
+    expect(visit).not.toHaveBeenCalled();
+    expect(postSpy).toHaveBeenCalledWith('/admin/releases/4/drafts', {
+      draftId: 9,
+      siteId: 1,
+    });
+    expect((slideout.instance as {href?: string}).href).toBe(
+      '/admin/content/entries/news/12?draftId=9'
+    );
+  });
+
   it('attaches a truly clean approved draft without saving it again', () => {
     const {editor} = mount(
       payload({

@@ -829,12 +829,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
           pendingRelease.value = null;
 
           if (finalDraftId !== null) {
-            router.visit(attach({release: release.id}), {
-              data: {
-                draftId: finalDraftId,
-                siteId: props.siteId,
-              },
-            });
+            void attachDraft(release, finalDraftId);
           }
         }
       },
@@ -861,6 +856,46 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     return Number.isInteger(id) && id > 0 ? id : null;
   }
 
+  /**
+   * Adds a saved draft to a release and shows it as a release member. In a
+   * slideout that's the panel's own request: an Inertia visit would follow the
+   * redirect on the page behind it and leave the panel showing the old state.
+   */
+  async function attachDraft(
+    release: ReleaseOption,
+    draftId: number
+  ): Promise<void> {
+    const target = attach({release: release.id});
+    const data = {draftId, siteId: props.siteId};
+
+    if (!slideout) {
+      router.visit(target, {data});
+
+      return;
+    }
+
+    try {
+      const {data: response} = await actionClient.post<{
+        message?: string;
+        redirect?: string;
+      }>(target.url, data);
+
+      if (response.message) {
+        window.Craft?.cp?.displayNotice(response.message);
+      }
+
+      if (response.redirect) {
+        slideout.instance.href = response.redirect;
+      }
+
+      await slideout.reload();
+    } catch (error: any) {
+      window.Craft?.cp?.displayError(
+        error?.response?.data?.message ?? t('A server error occurred.')
+      );
+    }
+  }
+
   function addToRelease(release: ReleaseOption): void {
     const savedDraftId = props.draftId ?? autosave.draftId.value;
     const savedAndClean =
@@ -870,12 +905,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       (!form.isDirty || !autosave.hasPendingChanges.value);
 
     if (savedAndClean) {
-      router.visit(attach({release: release.id}), {
-        data: {
-          draftId: savedDraftId,
-          siteId: props.siteId,
-        },
-      });
+      void attachDraft(release, savedDraftId);
 
       return;
     }
