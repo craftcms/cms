@@ -1,5 +1,4 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
-import {userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
 import '../button/button.js';
 import './button-group.js';
@@ -113,91 +112,5 @@ it('raises the selected button, so its whole border shows', async () => {
 
   expect(Number(getComputedStyle(selected!).zIndex)).toBeGreaterThan(
     Number(getComputedStyle(unselected!).zIndex) || 0
-  );
-});
-
-it('reverses the left and right arrow keys in right-to-left text', async () => {
-  document.body.innerHTML = `
-    <craft-button-group name="mode" dir="rtl">
-      <craft-button value="a" active>A</craft-button>
-      <craft-button value="b">B</craft-button>
-    </craft-button-group>`;
-  const group = document.querySelector('craft-button-group')!;
-  await group.updateComplete;
-  await settle();
-  const [a] = Array.from(document.querySelectorAll('craft-button'));
-
-  a!.dispatchEvent(
-    new KeyboardEvent('keydown', {
-      key: 'ArrowLeft',
-      bubbles: true,
-      composed: true,
-    })
-  );
-  await settle();
-
-  expect(group.value).toBe('b');
-});
-
-async function renderSelection(attrs: string) {
-  document.body.innerHTML = `
-    <craft-button-group
-      name="mode"${attrs}
-      style="--c-focus-outline-width: 2px; --c-focus-outline-offset: 2px; --c-color-focus-outline: blue"
-    >
-      <craft-button value="a" active>A</craft-button>
-      <craft-button value="b">B</craft-button>
-    </craft-button-group>`;
-  const group = document.querySelector('craft-button-group')!;
-  await group.updateComplete;
-  await settle();
-  const buttons = Array.from(document.querySelectorAll('craft-button'));
-
-  return {group, buttons};
-}
-
-const outline = (element: Element) => {
-  const style = getComputedStyle(element);
-
-  return parseFloat(style.outlineWidth) > 0 ? style.outlineStyle : 'none';
-};
-
-it('wraps the focus ring around a single-selection group', async () => {
-  const {group, buttons} = await renderSelection('');
-
-  await userEvent.tab();
-  expect(document.activeElement).toBe(buttons[0]);
-  expect(outline(group)).toBe('solid');
-  expect(outline(buttons[0]!)).toBe('none');
-
-  await userEvent.keyboard('{ArrowRight}');
-  await settle();
-  expect(document.activeElement).toBe(buttons[1]);
-  expect(outline(group)).toBe('solid');
-  expect(outline(buttons[1]!)).toBe('none');
-
-  (document.activeElement as HTMLElement).blur();
-  await settle();
-  expect(outline(group)).toBe('none');
-});
-
-it('keeps the focus ring on the focused button in a multi-selection group', async () => {
-  const {group, buttons} = await renderSelection(' multiple');
-
-  await userEvent.tab();
-  await userEvent.keyboard('{ArrowRight}');
-  await settle();
-
-  expect(document.activeElement).toBe(buttons[1]);
-  expect(outline(group)).toBe('none');
-  expect(outline(buttons[1]!)).toBe('solid');
-});
-
-it('shrinks to fit its buttons, so the focus ring hugs them', async () => {
-  const {group, buttons} = await renderSelection('');
-
-  expect(group.getBoundingClientRect().width).toBeCloseTo(
-    buttons[1]!.getBoundingClientRect().right -
-      buttons[0]!.getBoundingClientRect().left
   );
 });

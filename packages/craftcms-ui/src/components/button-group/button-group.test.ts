@@ -76,7 +76,7 @@ describe('craft-button-group', () => {
     expect(values).toEqual(['events']);
   });
 
-  it('posts a single value in radio mode', async () => {
+  it('posts a single value in single-selection mode', async () => {
     const {form, group, buttons} = await createGroup(false);
 
     let value = '';
@@ -104,6 +104,31 @@ describe('craft-button-group', () => {
     expect(group.value).toBe('events');
     expect(buttons[1]!.hasAttribute('active')).toBe(true);
     expect(buttons[1]!.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('is a group of toggle buttons, each its own tab stop', async () => {
+    const {group, buttons} = await createGroup(false);
+    click(buttons[1]!);
+    await group.updateComplete;
+
+    expect(group.getAttribute('role')).toBe('group');
+    expect(
+      buttons.map((button) => button.getAttribute('aria-pressed'))
+    ).toEqual(['false', 'true']);
+    expect(buttons.every((button) => button.tabIndex === 0)).toBe(true);
+  });
+
+  it('keeps a role the consumer gave it', async () => {
+    document.body.innerHTML = `
+      <craft-button-group role="toolbar">
+        <craft-button>Save</craft-button>
+      </craft-button-group>
+    `;
+
+    const group = document.querySelector('craft-button-group')!;
+    await group.updateComplete;
+
+    expect(group.getAttribute('role')).toBe('toolbar');
   });
 
   it('adopts its value from a child marked active in markup', async () => {
@@ -182,148 +207,5 @@ describe('craft-button-group', () => {
 
     expect(group.value).toBeUndefined();
     expect([...buttons].every((b) => b.hasAttribute('active'))).toBe(true);
-  });
-});
-
-describe('craft-button-group keyboard', () => {
-  async function render(
-    groupAttrs: string,
-    buttons: string
-  ): Promise<{group: CraftButtonGroup; buttons: CraftButton[]}> {
-    document.body.innerHTML = `<craft-button-group ${groupAttrs}>${buttons}</craft-button-group>`;
-    const group = document.querySelector('craft-button-group')!;
-    const children = Array.from(
-      document.querySelectorAll<CraftButton>('craft-button')
-    );
-    await Promise.all([
-      group.updateComplete,
-      ...children.map((button) => button.updateComplete),
-    ]);
-    await new Promise((resolve) => setTimeout(resolve));
-
-    return {group, buttons: children};
-  }
-
-  const press = (target: HTMLElement, key: string) =>
-    target.dispatchEvent(
-      new KeyboardEvent('keydown', {key, bubbles: true, composed: true})
-    );
-
-  const settle = () => new Promise((resolve) => setTimeout(resolve));
-
-  const tabIndexes = (buttons: CraftButton[]) =>
-    buttons.map((button) => button.getAttribute('tabindex'));
-
-  const radios = `
-    <craft-button value="a">A</craft-button>
-    <craft-button value="b" active>B</craft-button>
-    <craft-button value="c">C</craft-button>`;
-
-  it('makes the selected button the only tab stop', async () => {
-    const {buttons} = await render('name="mode"', radios);
-
-    expect(tabIndexes(buttons)).toEqual(['-1', '0', '-1']);
-  });
-
-  it('makes the first button the tab stop when nothing is selected', async () => {
-    const {buttons} = await render(
-      'name="mode"',
-      radios.replace(' active', '')
-    );
-
-    expect(tabIndexes(buttons)).toEqual(['0', '-1', '-1']);
-  });
-
-  it('selects and focuses the next button with the arrow keys, wrapping', async () => {
-    const {group, buttons} = await render('name="mode"', radios);
-    const [a, b, c] = buttons;
-
-    press(b!, 'ArrowRight');
-    await settle();
-    expect(group.value).toBe('c');
-    expect(document.activeElement).toBe(c);
-    expect(tabIndexes(buttons)).toEqual(['-1', '-1', '0']);
-
-    press(c!, 'ArrowDown');
-    await settle();
-    expect(group.value).toBe('a');
-    expect(document.activeElement).toBe(a);
-
-    press(a!, 'ArrowLeft');
-    await settle();
-    expect(group.value).toBe('c');
-
-    press(c!, 'ArrowUp');
-    await settle();
-    expect(group.value).toBe('b');
-  });
-
-  it('jumps to the ends with Home and End', async () => {
-    const {group, buttons} = await render('name="mode"', radios);
-
-    press(buttons[1]!, 'End');
-    await settle();
-    expect(group.value).toBe('c');
-
-    press(buttons[2]!, 'Home');
-    await settle();
-    expect(group.value).toBe('a');
-  });
-
-  it('skips disabled buttons', async () => {
-    const {group, buttons} = await render(
-      'name="mode"',
-      radios.replace('value="c"', 'value="c" disabled')
-    );
-
-    press(buttons[1]!, 'ArrowRight');
-    await settle();
-
-    expect(group.value).toBe('a');
-  });
-
-  it('moves focus without selecting in a multi-select group', async () => {
-    const {buttons} = await render('name="topics" multiple', radios);
-    const [, b, c] = buttons;
-
-    press(b!, 'ArrowRight');
-    await settle();
-
-    expect(document.activeElement).toBe(c);
-    expect(c!.hasAttribute('active')).toBe(false);
-    expect(tabIndexes(buttons)).toEqual(['-1', '-1', '0']);
-  });
-
-  it('clicks the button it lands on, for a consumer that selects', async () => {
-    const {buttons} = await render(
-      'role="radiogroup"',
-      `<craft-button aria-pressed="true">A</craft-button>
-       <craft-button aria-pressed="false">B</craft-button>`
-    );
-    const [a, b] = buttons;
-    let clicked: Element | null = null;
-    b!.addEventListener('click', () => (clicked = b!));
-
-    expect(tabIndexes(buttons)).toEqual(['0', '-1']);
-
-    press(a!, 'ArrowRight');
-    await settle();
-
-    expect(clicked).toBe(b);
-    expect(document.activeElement).toBe(b);
-  });
-
-  it('leaves a group of action buttons alone', async () => {
-    const {buttons} = await render(
-      '',
-      `<craft-button>Save</craft-button>
-       <craft-button>More</craft-button>`
-    );
-
-    press(buttons[0]!, 'ArrowRight');
-    await settle();
-
-    expect(tabIndexes(buttons)).toEqual(['0', '0']);
-    expect(document.activeElement).not.toBe(buttons[1]);
   });
 });

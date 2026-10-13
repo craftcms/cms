@@ -11,7 +11,9 @@ use CraftCms\Cms\Cp\Concerns\HasId;
  * PHP counterpart to the `<craft-button-group>` web component: a group of
  * buttons. With `name` set the component owns selection and, being
  * form-associated, submits the selected value itself. Each option button
- * carries its own `value`.
+ * carries its own `value`, and reports whether it's selected with
+ * `aria-pressed`. For a form setting that picks one value from a set of
+ * options, use {@see RadioGroup} with `buttons()` instead.
  *
  *     ButtonGroup::make()
  *         ->name('alignment')
@@ -96,7 +98,7 @@ class ButtonGroup extends ViewComponent
             'name' => $this->name,
             'value' => $this->value,
             'multiple' => $this->multiple,
-            'role' => $this->name !== null && ! $this->multiple ? 'radiogroup' : 'group',
+            'role' => 'group',
             'aria' => [
                 'labelledby' => $this->labelledBy,
             ],

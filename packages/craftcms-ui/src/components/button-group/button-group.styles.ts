@@ -4,17 +4,6 @@ export default css`
   :host {
     --_button-radius: var(--c-button-radius, var(--c-form-control-radius));
     display: flex;
-    width: fit-content;
-    border-radius: var(--_button-radius);
-  }
-
-  :host([data-focus-ring]) {
-    outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
-    outline-offset: var(--c-focus-outline-offset);
-  }
-
-  :host([data-focus-ring]) ::slotted(*) {
-    --c-focus-outline-width: 0px;
   }
 
   ::slotted(*) {
