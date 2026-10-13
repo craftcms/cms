@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Activity\Activities;
+use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Events\DraftApplying;
@@ -11,6 +13,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Release\Activity\ReleaseDraftPublished;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
 use CraftCms\Cms\Release\Exceptions\ReleaseException;
@@ -474,6 +477,26 @@ it('merges live changes into untouched fields while publishing the release draft
         ->and($live->slug)->toBe('live-slug')
         ->and($item->fresh()->draftId)->toBeNull()
         ->and(EntryElement::find()->draftId($draft->draftId)->status(null)->one())->toBeNull();
+});
+
+it('records release publication in the activity of each published entry', function () {
+    $canonical = EntryModel::factory()->createElement(['title' => 'Original title']);
+    $draft = releaseDraft($canonical, 'Release title', $this->actor);
+    $release = $this->releases->create('Launch <day>', null, $this->actor);
+    $this->releases->attach($release, $draft, $this->actor);
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    $this->releases->publish($release, $this->actor);
+
+    $event = app(Activities::class)->query()
+        ->subject(ActivitySubject::fromElement($canonical))
+        ->sole();
+
+    expect($event->eventType)->toBe(ReleaseDraftPublished::class)
+        ->and(app(Activities::class)->format($event)->toHtml())->toBe(sprintf(
+            'Published with the <a href="%s">Launch &lt;day&gt;</a> release',
+            route('craft.cp.releases.show', $release),
+        ));
 });
 
 it('requires release publication permission even when a manager can publish the member', function () {
