@@ -380,7 +380,6 @@ it('shows release metadata without content links or removal actions', function (
             ->where('ui.nodes.0.props.rows.0.title.label', 'Controller change')
             ->where('ui.nodes.0.props.rows.0.title.url', null)
             ->where('ui.nodes.0.props.rows.0.draftName', 'Controller draft')
-            ->where('ui.nodes.0.props.rows.0.sites', $draft->getSite()->getName())
             ->where('ui.nodes.0.props.rows.0._deleteUrl', null)
             ->where('ui.nodes.0.props.rows.0._deletable', false));
 

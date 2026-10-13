@@ -11,7 +11,6 @@ use DateTimeInterface;
  */
 readonly class ReleaseItemData
 {
-    /** @param list<string> $sites */
     public function __construct(
         public int $id,
         public bool $restricted,
@@ -20,7 +19,6 @@ readonly class ReleaseItemData
         public ?int $canonicalId,
         public ?string $draftName,
         public ?string $url,
-        public array $sites,
         public ?DateTimeInterface $publishedAt,
         public bool $canDetach,
     ) {}

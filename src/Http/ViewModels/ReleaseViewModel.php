@@ -127,7 +127,6 @@ class ReleaseViewModel extends ViewModel
                 'id' => $item->id,
                 'title' => ['label' => $item->title, 'url' => $item->url, 'slideout' => true],
                 'draftName' => $item->draftName,
-                'sites' => implode(', ', $item->sites) ?: t('Not available'),
                 'status' => ['html' => Html::tag('craft-badge', Html::encode($label), ['fill' => $color->value])],
                 'issues' => ['html' => $issues === [] ? '' : (string) Html::ul($issues, ['class' => 'grid gap-1'], encode: true)],
                 'publishedAt' => $item->publishedAt === null ? '' : $this->formatDate($item->publishedAt),
@@ -143,7 +142,6 @@ class ReleaseViewModel extends ViewModel
         $columns = [
             ['key' => 'title', 'label' => t('Content'), 'wrap' => true],
             ['key' => 'draftName', 'label' => t('Draft')],
-            ['key' => 'sites', 'label' => t('Sites')],
             ...match (true) {
                 $published => [['key' => 'publishedAt', 'label' => t('Published')]],
                 $readiness !== null => [
@@ -230,10 +228,6 @@ class ReleaseViewModel extends ViewModel
             canonicalId: $item->canonicalId,
             draftName: $element?->draftName,
             url: $viewableElement?->getCpEditUrl(),
-            sites: array_map(
-                fn (ElementInterface $siteElement): string => $siteElement->getSite()->getName(),
-                $elements,
-            ),
             publishedAt: $item->publishedAt,
             canDetach: $viewableElement !== null
                 && $item->draftId !== null

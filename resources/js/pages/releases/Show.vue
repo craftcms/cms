@@ -121,7 +121,7 @@
       v-if="editUi || canPublishNow"
       :name="editUi ? 'primary-action' : 'footer-meta'"
     >
-      <div v-if="canPublishNow" class="flex flex-wrap gap-2">
+      <div v-if="canPublishNow" class="flex flex-wrap gap-md">
         <craft-button
           type="button"
           variant="primary"
