@@ -48,16 +48,22 @@ export function queryAll(selector: string | null | undefined): HTMLElement[] {
  * link, button, form control, menu trigger, custom-element control,
  * contenteditable region, …) rather than passive content.
  *
- * Native controls and editable regions remain interactive when they are not
- * in the tab order. Non-native controls are identified by their tabIndex.
+ * Native controls, editable regions, and declared ARIA controls remain
+ * interactive when they are not in the tab order.
  */
 export function isInteractiveElement(node: EventTarget | null): boolean {
   return (
     (node instanceof HTMLElement || node instanceof SVGElement) &&
     (node.tabIndex >= 0 ||
       (node instanceof HTMLElement && node.isContentEditable) ||
+      (node instanceof HTMLLabelElement && node.control !== null) ||
       node.matches(
-        'a:any-link, area[href], button, input, select, textarea, summary'
+        'a:any-link, area[href], button, input, select, textarea, summary, ' +
+          '[role~="button"], [role~="link"], [role~="checkbox"], [role~="radio"], [role~="switch"], ' +
+          '[role~="menuitem"], [role~="menuitemcheckbox"], [role~="menuitemradio"], ' +
+          '[role~="option"], [role~="tab"], [role~="treeitem"], ' +
+          '[role~="combobox"], [role~="listbox"], [role~="textbox"], [role~="searchbox"], ' +
+          '[role~="slider"], [role~="spinbutton"], [role~="scrollbar"]'
       ))
   );
 }

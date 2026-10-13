@@ -1263,6 +1263,69 @@ it.each([
     interactive: true,
   },
   {
+    html: '<input type="text" tabindex="-1" value="Editable description" aria-label="Description">',
+    interactive: true,
+  },
+  {
+    html: '<textarea tabindex="-1" aria-label="Description">Editable description</textarea>',
+    interactive: true,
+  },
+  {
+    html: '<details><summary tabindex="-1"><span>Details</span></summary>Description</details>',
+    interactive: true,
+  },
+  {
+    html: '<a href="#own-action" tabindex="-1"><span>Own link</span></a>',
+    interactive: true,
+  },
+  {
+    html: '<label><span>Passive description</span></label>',
+    interactive: false,
+  },
+  {
+    html: '<label for="missing-control"><span>Passive description</span></label>',
+    interactive: false,
+  },
+  ...[
+    'button',
+    'link',
+    'checkbox',
+    'radio',
+    'switch',
+    'menuitem',
+    'menuitemcheckbox',
+    'menuitemradio',
+    'option',
+    'tab',
+    'treeitem',
+    'combobox',
+    'listbox',
+    'textbox',
+    'searchbox',
+    'slider',
+    'spinbutton',
+    'scrollbar',
+  ].map((role) => ({
+    html: `<div role="${role}" tabindex="-1"><span>Own action</span></div>`,
+    interactive: true,
+  })),
+  {
+    html: '<div role="unknown button" tabindex="-1"><span>Own action</span></div>',
+    interactive: true,
+  },
+  {
+    html: '<svg role="button" tabindex="-1"><text x="0" y="20">Own SVG action</text></svg>',
+    interactive: true,
+  },
+  ...['group', 'row', 'note', 'presentation'].map((role) => ({
+    html: `<div role="${role}"><span>Passive description</span></div>`,
+    interactive: false,
+  })),
+  {
+    html: '<div role="heading" aria-level="2"><span>Passive description</span></div>',
+    interactive: false,
+  },
+  {
     html: '<svg><a href="#own-action" tabindex="-1"><text x="0" y="20">Own SVG link</text></a></svg>',
     interactive: true,
   },
@@ -1290,13 +1353,54 @@ it.each([
         },
       ],
     });
-    const target = host.querySelector('tbody span, tbody text, tbody rect')!;
+    const target = host
+      .querySelector('tbody td:last-child')!
+      .querySelector('span, text, rect, input, textarea')!;
     target.addEventListener('click', (event) => event.preventDefault());
     await userEvent.dblClick(target);
     expect(slideout).toHaveBeenCalledTimes(interactive ? 0 : 1);
     expect(visit).not.toHaveBeenCalled();
   }
 );
+
+it.each([
+  '<label><input type="checkbox"><span>Enable rule</span></label>',
+  '<label for="rule-enabled"><span>Enable rule</span></label><input id="rule-enabled" type="checkbox">',
+])('activates a labeled control without opening its row: %s', async (html) => {
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {key: 'detail', label: 'Detail'},
+    ],
+    rows: [
+      {
+        id: 1,
+        name: {label: 'Editor', url: '/admin/rules/1', slideout: true},
+        detail: {html},
+      },
+    ],
+  });
+  const cell = host.querySelector('tbody td:last-child')!;
+  const input = cell.querySelector<HTMLInputElement>('input')!;
+  let changes = 0;
+  input.addEventListener('change', () => changes++);
+
+  await expect
+    .element(page.getByRole('checkbox', {name: 'Enable rule'}))
+    .toBeVisible();
+  await userEvent.dblClick(cell.querySelector('label span')!);
+
+  expect(changes).toBe(2);
+  expect(input.checked).toBe(false);
+  for (let step = 0; step < 10 && document.activeElement !== input; step++) {
+    await userEvent.tab();
+  }
+  expect(document.activeElement).toBe(input);
+  await userEvent.keyboard(' ');
+  expect(input.checked).toBe(true);
+  expect(slideout).not.toHaveBeenCalled();
+  expect(visit).not.toHaveBeenCalled();
+});
 
 it('lets a custom cell cancel the row double-click action', async () => {
   const host = mountNode({
