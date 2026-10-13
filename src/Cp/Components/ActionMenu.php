@@ -416,6 +416,7 @@ class ActionMenu extends ViewComponent
             'disabled' => $item['disabled'] ?? false,
             'hidden' => $item['hidden'] ?? false,
             'variant' => $item['variant'] ?? false,
+            'data-keywords' => $item['keywords'] ?? false,
             'action' => $action ? Json::encode($action, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : false,
         ], $item['attributes'] ?? []);
 
@@ -424,9 +425,8 @@ class ActionMenu extends ViewComponent
 
     /**
      * Renders a menu item's slotted content: its label (or raw `html`), plus
-     * an optional secondary line for `description`/`handle` — the same
-     * `menu-item-description` markup `_includes/menuitem.twig` and
-     * `_includes/forms/componentSelect.twig` use.
+     * optional secondary lines for its `handle` and `description` — the same
+     * `menu-item-description` markup `_includes/menuitem.twig` uses.
      *
      * @param  array<string, mixed>  $item
      */
@@ -436,19 +436,21 @@ class ActionMenu extends ViewComponent
             ? Html::encode($item['label'])
             : (string) ($item['html'] ?? '');
 
-        if (isset($item['description'])) {
-            $secondaryHtml = Html::tag('span', Html::encode($item['description']), [
-                'class' => ['menu-item-description', 'mt-2xs', 'smalltext', 'light'],
+        $secondaryHtml = '';
+
+        if (isset($item['handle'])) {
+            $secondaryHtml .= Html::tag('span', Html::encode($item['handle']), [
+                'class' => ['menu-item-description', 'mt-2xs', 'text-xs', 'font-mono', 'text-quiet'],
             ]);
-        } elseif (isset($item['handle'])) {
-            $secondaryHtml = Html::tag('span', Html::encode($item['handle']), [
-                'class' => ['menu-item-description', 'mt-2xs', 'smalltext', 'light', 'code'],
-            ]);
-        } else {
-            $secondaryHtml = null;
         }
 
-        if ($secondaryHtml === null) {
+        if (isset($item['description'])) {
+            $secondaryHtml .= Html::tag('span', Html::encode($item['description']), [
+                'class' => ['menu-item-description', 'mt-2xs', 'text-xs', 'text-quiet'],
+            ]);
+        }
+
+        if ($secondaryHtml === '') {
             return $labelHtml;
         }
 

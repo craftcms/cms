@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\TableCells;
 
-use CraftCms\Cms\Form\Controls\Control;
-use CraftCms\Cms\Form\Controls\Date as DateControl;
 use CraftCms\Cms\Gql\Types\DateTime as GqlDateTime;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Ui\Controls\Control;
+use CraftCms\Cms\Ui\Controls\Date as DateControl;
 use GraphQL\Type\Definition\Type;
 
 use function CraftCms\Cms\t;

@@ -1,10 +1,10 @@
 import {createApp, defineComponent, h} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {
-  FormControlPayload,
-  FormPayload,
-  FormProperties,
-} from '@/modules/forms/types';
+  UiControlPayload,
+  UiPayload,
+  UiProperties,
+} from '@/modules/ui/types';
 import Settings from './Settings.vue';
 
 interface CheckboxGroupElement extends HTMLElement {
@@ -12,51 +12,15 @@ interface CheckboxGroupElement extends HTMLElement {
 }
 
 const state = vi.hoisted(() => ({
-  openSlideout: vi.fn(),
-  setPhotoVolume: vi.fn(),
   setRequire2fa: vi.fn(),
 }));
 
-vi.mock('@actions/Settings/VolumesController', () => ({
-  create: {url: () => '/settings/assets/new'},
-}));
-
-vi.mock('@/common/slideouts', () => ({
-  openSlideout: state.openSlideout,
-}));
-
-vi.mock('@craftcms/ui/vue/CraftCombobox.vue', () => ({
-  default: defineComponent({
-    emits: ['update:modelValue'],
-    setup:
-      (_, {emit}) =>
-      () =>
-        h('button', {
-          'data-create-volume': '',
-          onClick: () => emit('update:modelValue', '__createVolume__'),
-        }),
-  }),
-}));
-
-vi.mock('@/pages/Form.vue', () => ({
+vi.mock('@/pages/Ui.vue', () => ({
   default: defineComponent({
     setup:
       (_, {slots}) =>
       () =>
         h('div', [
-          slots.photoVolumeUid?.({
-            control: control('photoVolumeUid', {
-              options: [
-                {label: 'Existing', value: 'existing'},
-                {label: 'Create a new volume…', value: '__createVolume__'},
-              ],
-            }),
-            value: '',
-            setValue: state.setPhotoVolume,
-            editable: true,
-            invalid: false,
-            required: false,
-          }),
           slots.require2fa?.({
             control: control('require2fa', {
               options: [
@@ -74,7 +38,7 @@ vi.mock('@/pages/Form.vue', () => ({
   }),
 }));
 
-const form: FormPayload = {
+const ui: UiPayload = {
   scope: [],
   refreshable: true,
   nodes: [],
@@ -87,8 +51,6 @@ let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
 
 beforeEach(() => {
-  state.openSlideout.mockReset();
-  state.setPhotoVolume.mockReset();
   state.setRequire2fa.mockReset();
   container = document.createElement('div');
   document.body.append(container);
@@ -97,24 +59,6 @@ beforeEach(() => {
 afterEach(() => {
   app.unmount();
   container.remove();
-});
-
-it('selects a volume created from the combobox', async () => {
-  mount();
-  container.querySelector<HTMLElement>('[data-create-volume]')?.click();
-
-  expect(state.openSlideout).toHaveBeenCalledWith(
-    '/settings/assets/new',
-    expect.objectContaining({onSaved: expect.any(Function)})
-  );
-
-  const openCall = state.openSlideout.mock.calls[0];
-  if (!openCall) throw new Error('Expected the volume slideout to open.');
-  openCall[1].onSaved({
-    data: {volume: {name: 'User Photos', uid: 'new-volume'}},
-  });
-
-  expect(state.setPhotoVolume).toHaveBeenCalledWith('new-volume');
 });
 
 it('keeps the exclusive two-step verification value shape', () => {
@@ -135,14 +79,14 @@ it('keeps the exclusive two-step verification value shape', () => {
 
 function mount(): void {
   app = createApp(Settings, {
-    form,
+    ui,
     submit: {method: 'post', url: '/settings/users'},
-    refreshUrl: '/settings/users/render-form',
+    refreshUrl: '/settings/users/render-ui',
   });
   app.mount(container);
 }
 
-function control(path: string, props: FormProperties): FormControlPayload {
+function control(path: string, props: UiProperties): UiControlPayload {
   return {
     type: 'test',
     component: 'test',
@@ -150,6 +94,6 @@ function control(path: string, props: FormProperties): FormControlPayload {
     path: [path],
     mode: 'editable',
     deltaGroup: [path],
-    forms: [],
+    uis: [],
   };
 }

@@ -8,21 +8,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Form\Controls\BooleanMenu;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\HiddenField;
+use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Data\Site;
@@ -30,9 +16,24 @@ use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Flash;
-use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\BooleanMenu;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Table;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,7 +57,7 @@ readonly class SitesController
         GeneralConfig $generalConfig,
         private Sites $sites,
         private SiteGroups $siteGroups,
-        private FormResolver $formResolver,
+        private UiResolver $uiResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -72,6 +73,44 @@ readonly class SitesController
             : $this->sites->getAllSites()->values();
         $groups = $this->siteGroups->getAllGroups()->sortBy(['id', 'asc'])->values();
 
+        $table = Table::make('sites')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name')],
+                ['key' => 'handle', 'label' => t('Handle')],
+                ['key' => 'status', 'label' => t('Status')],
+                ['key' => 'language', 'label' => t('Language')],
+                ['key' => 'primary', 'label' => t('Primary')],
+                ['key' => 'baseUrl', 'label' => t('Base URL')],
+                ['key' => 'group', 'label' => t('Group')],
+            ])
+            ->rows($sites->map(fn (Site $site): array => [
+                'id' => $site->id,
+                'name' => [
+                    'label' => $site->getName(),
+                    'url' => route('craft.cp.settings.sites.edit', ['site' => $site->id]),
+                ],
+                'handle' => ['html' => Html::tag('code', Html::encode($site->handle))],
+                'status' => ['html' => Html::tag('craft-badge', Html::encode($site->getEnabled() ? t('Enabled') : t('Disabled')), [
+                    'fill' => $site->getEnabled() ? 'success' : 'default',
+                ])],
+                'language' => ['html' => Html::tag('code', Html::encode($site->getLanguage()))],
+                'primary' => $site->primary ? ['icon' => 'check', 'label' => t('Yes')] : null,
+                'baseUrl' => ['html' => Html::tag('code', Html::encode($site->getBaseUrl() ?? ''))],
+                'group' => $site->getGroup()->getName(),
+                '_status' => $site->getEnabled(),
+                ...($this->readOnly ? [] : [
+                    '_deleteUrl' => route('craft.cp.settings.sites.destroy', ['site' => $site->id]),
+                    '_deletable' => ! $site->primary,
+                    '_deleteDisabledReason' => $site->primary ? t('You cannot delete the primary site.') : null,
+                ]),
+            ]))
+            ->emptyMessage(t('No sites exist yet.'))
+            ->unless($this->readOnly, fn (Table $table) => $table
+                ->createAction(t('New Site'), route('craft.cp.settings.sites.create', isset($group) ? ['groupId' => $group->id] : []))
+                ->createActionInPageHeader()
+                ->deletable()
+                ->when(isset($group), fn (Table $table) => $table->reorderable(route('craft.cp.settings.sites.reorder'), t('New order saved.'))));
+
         $crumbs = array_filter([
             ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
             ['label' => t('Sites'), 'href' => Url::cpUrl('settings/sites')],
@@ -81,10 +120,8 @@ readonly class SitesController
         return Inertia::render('settings/sites/Index', [
             'title' => isset($group) ? $group->getName() : t('Sites'),
             'crumbs' => $crumbs,
-            'newSiteUrl' => Url::cpUrl('settings/sites/new'),
             'nameTextExpanderTriggers' => Inertia::defer(fn () => SelectOptions::getEnvTextExpanderTriggers()),
             'group' => $group ?? null,
-            'groups' => $groups,
             'subnav' => [
                 new NavItem()->label(t('All Sites'))->href(Url::cpUrl('settings/sites'))->selected(! isset($group)),
                 ...$groups->map(fn ($siteGroup) => new NavItem()
@@ -93,7 +130,7 @@ readonly class SitesController
                     ->selected(isset($group) && $siteGroup->id === $group->id)
                 )->all(),
             ],
-            'sites' => $sites->toArray(),
+            'ui' => $this->uiResolver->resolve(Ui::make([$table]), new UiContext),
             'readOnly' => $this->readOnly,
             'transferContentOptions' => Inertia::defer(fn () => $sitesService->getAllSites()->values()),
         ]);
@@ -127,7 +164,7 @@ readonly class SitesController
                 new ActionItem()->label(t('Create a new site')),
             ])
             ->inertiaPage('settings/sites/Edit', [
-                ...$this->formProps($site),
+                ...$this->uiProps($site),
                 'site' => $site,
             ]);
     }
@@ -152,28 +189,28 @@ readonly class SitesController
             ])
             ->redirectUrl('settings/sites')
             ->inertiaPage('settings/sites/Edit', [
-                ...$this->formProps($siteData),
+                ...$this->uiProps($siteData),
                 'site' => $siteData,
                 'transferContentOptions' => Inertia::defer(fn () => $sitesService->getAllSites()->values()),
             ]);
     }
 
-    public function renderForm(Request $request): JsonResponse
+    public function renderUi(Request $request): JsonResponse
     {
         $request->validate([
             'values' => ['required', 'array'],
-            'values.siteId' => ['nullable', 'integer', Rule::exists(Table::SITES, 'id')],
+            'values.siteId' => ['nullable', 'integer', Rule::exists(DbTable::SITES, 'id')],
             'scope' => ['present', 'array', 'size:0'],
         ]);
 
-        return new JsonResponse(['form' => $this->siteForm($request->array('values'))]);
+        return new JsonResponse(['ui' => $this->siteUi($request->array('values'))]);
     }
 
     public function store(Request $request): \Symfony\Component\HttpFoundation\Response
     {
         $request->validate([
-            'siteId' => ['nullable', Rule::exists(Table::SITES, 'id')],
-            'group' => ['required', 'integer', Rule::exists(Table::SITEGROUPS, 'id')->whereNull('dateDeleted')],
+            'siteId' => ['nullable', Rule::exists(DbTable::SITES, 'id')],
+            'group' => ['required', 'integer', Rule::exists(DbTable::SITEGROUPS, 'id')->whereNull('dateDeleted')],
         ]);
 
         $siteId = $request->input('siteId');
@@ -207,25 +244,22 @@ readonly class SitesController
         return $this->asSuccess(t('Site saved.'));
     }
 
-    public function reorder(Request $request): RedirectResponse
+    public function reorder(Request $request): \Symfony\Component\HttpFoundation\Response
     {
-        $ids = $request->input('ids', []);
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'list'],
+            'ids.*' => ['required', 'integer', 'distinct', Rule::exists(DbTable::SITES, 'id')->whereNull('dateDeleted')],
+        ]);
 
-        if (is_string($ids)) {
-            $ids = Json::decode($ids);
-        }
+        $this->sites->reorderSites($data['ids']);
 
-        $this->sites->reorderSites($ids);
-
-        Flash::success(t('New order saved.'));
-
-        return back();
+        return $this->asSuccess(t('New order saved.'));
     }
 
     public function destroy(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'id' => ['required', 'integer', Rule::exists(Table::SITES, 'id')],
+            'id' => ['required', 'integer', Rule::exists(DbTable::SITES, 'id')],
             'contentDestination' => ['required', 'in:transfer,delete'],
             'transferContentTo' => Rule::when(
                 $request->get('contentDestination') === 'transfer',
@@ -233,7 +267,7 @@ readonly class SitesController
                     'required',
                     'integer',
                     'different:id',
-                    Rule::exists(Table::SITES, 'id')->whereNull('dateDeleted'),
+                    Rule::exists(DbTable::SITES, 'id')->whereNull('dateDeleted'),
                 ]),
         ]);
 
@@ -248,20 +282,20 @@ readonly class SitesController
     }
 
     /** @return array<string, mixed> */
-    private function formProps(Site $site): array
+    private function uiProps(Site $site): array
     {
         return [
-            'form' => $this->siteForm($this->siteValues($site)),
+            'ui' => $this->siteUi($this->siteValues($site)),
             'submit' => [
                 'method' => 'post',
                 'url' => action([self::class, 'store']),
             ],
-            'refreshUrl' => action([self::class, 'renderForm']),
+            'refreshUrl' => action([self::class, 'renderUi']),
         ];
     }
 
     /** @param array<string, mixed> $values */
-    private function siteForm(array $values): FormPayload
+    private function siteUi(array $values): UiPayload
     {
         $siteId = $values['siteId'] ?? null;
         $site = $siteId ? $this->sites->getSiteById((int) $siteId) : new Site;
@@ -353,7 +387,7 @@ readonly class SitesController
             ])->dependsOn('hasUrls');
         }
 
-        return $this->formResolver->resolve(Form::make($nodes), new FormContext(
+        return $this->uiResolver->resolve(Ui::make($nodes), new UiContext(
             values: $values,
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
             refreshable: ! $this->readOnly,

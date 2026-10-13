@@ -42,7 +42,7 @@
 <template>
   <AppLayout fill-viewport>
     <template #page-main>
-      <main id="main" tabindex="-1" class="cp-graphiql" data-theme="light">
+      <main id="main" tabindex="-1" class="cp-graphiql">
         <div class="cp-graphiql__header">
           <h1>{{ t('Explore the GraphQL API') }}</h1>
           <form method="get" :action="exploreUrl" class="schema-selector">
@@ -80,7 +80,6 @@
     grid-template-rows: auto minmax(0, 1fr);
     height: 100%;
     min-height: 0;
-    overflow: hidden;
   }
 
   .cp-graphiql__header {

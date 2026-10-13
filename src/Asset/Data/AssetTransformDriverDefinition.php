@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Data;
 
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Field;
 use Stringable;
 
 /**

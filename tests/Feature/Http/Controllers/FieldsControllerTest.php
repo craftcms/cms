@@ -16,12 +16,12 @@ use CraftCms\Cms\Field\RadioButtons;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\Field\TableCells\TableCell;
 use CraftCms\Cms\Field\TableCellTypes;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\UserPermissions;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -57,7 +57,7 @@ it('needs authentication and admin changes for the routes', function (string $me
 })->with([
     ['getJson', [FieldsController::class, 'index'], false],
     ['getJson', [FieldsController::class, 'edit'], false],
-    ['postJson', [FieldsController::class, 'renderForm'], true],
+    ['postJson', [FieldsController::class, 'renderUi'], true],
     ['postJson', [FieldsController::class, 'renderFieldLayoutDesigner'], false],
     ['postJson', [FieldsController::class, 'renderGroupedEntryTypeManager'], true],
     ['postJson', [FieldsController::class, 'renderConditionBuilder'], true],
@@ -94,38 +94,140 @@ it('needs authentication and admin changes to delete', function () {
     $this->deleteJson(action([FieldsController::class, 'destroy'], ['fieldId' => $field->id]))->assertForbidden();
 });
 
-it('can render the index', function () {
-    $this->get(action([FieldsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/fields/Index'));
+it('lists field descriptions, handles, types, usages, and permitted actions', function (bool $multiSite, bool $allowAdminChanges) {
+    Cms::config()->allowAdminChanges = $allowAdminChanges;
+
+    if ($multiSite) {
+        Site::factory()->create();
+    }
+
+    Fields::saveField($field = Fields::createField([
+        'type' => PlainText::class,
+        'name' => 'Body & Summary',
+        'handle' => 'bodySummary',
+        'searchable' => true,
+        'translationMethod' => 'site',
+    ]));
+    EntryType::factory()->withField(FieldModel::findOrFail($field->id))->create();
+    Fields::refreshFields();
+
+    $response = $this->get(action([FieldsController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('Ui'));
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))->firstWhere('component', 'craft:admin-table')['props'];
+    $row = $table['rows'][0];
+    $handle = new Crawler($row['handle']['html'])->filter('craft-copy-attribute');
+    $searchIcon = new Crawler($row['searchable']['html'])->filter('craft-icon');
+    $translationIcon = new Crawler($row['translatable']['html'])->filter('craft-icon');
+    $type = new Crawler($row['type']['html']);
+
+    expect($table['rows'])->toHaveCount(1)
+        ->and($table['pagination']['total'])->toBe(1)
+        ->and(in_array('translatable', array_column($table['columns'], 'key'), true))->toBe($multiSite)
+        ->and($row['name']['label'])->toBe('Body & Summary')
+        ->and(parse_url($row['name']['url'], PHP_URL_PATH))->toBe(route('craft.cp.settings.fields.edit', ['fieldId' => $field->id], false))
+        ->and($handle->text())->toBe('bodySummary')
+        ->and($handle->attr('value'))->toBe('bodySummary')
+        ->and($searchIcon->attr('name'))->toBe('magnifying-glass')
+        ->and($searchIcon->attr('label'))->toBe('This field’s values are used as search keywords.')
+        ->and($translationIcon->attr('name'))->toBe('language')
+        ->and($translationIcon->attr('family'))->toBe('custom-icons')
+        ->and($translationIcon->attr('label'))->toBe('This field is translated for each site.')
+        ->and($type->text())->toBe('Plain Text')
+        ->and($type->filter('craft-icon')->attr('name'))->toBe('i-cursor')
+        ->and($row['usages'])->toBe('1 layout')
+        ->and($table['createUrl'])->toBe($allowAdminChanges ? action([FieldsController::class, 'create']) : null)
+        ->and($table['deletable'])->toBe($allowAdminChanges);
+
+    if ($allowAdminChanges) {
+        expect($row['_deleteUrl'])->toBe(action([FieldsController::class, 'destroy'], ['fieldId' => $field->id]))
+            ->and($row['_deleteConfirmMessage'])->toBe('Are you sure you want to delete “Body & Summary”?');
+    } else {
+        expect($row)->not->toHaveKey('_deleteUrl');
+    }
+})->with([
+    'single site' => [false, true],
+    'multiple sites' => [true, true],
+    'read-only' => [false, false],
+]);
+
+it('leaves disabled field indicators empty and identifies unavailable field types', function () {
+    Site::factory()->create();
+
+    Fields::saveField($field = Fields::createField([
+        'type' => PlainText::class,
+        'name' => 'Unavailable',
+        'handle' => 'unavailable',
+        'searchable' => false,
+        'translationMethod' => 'none',
+    ]));
+    FieldModel::findOrFail($field->id)->update(['type' => 'Unavailable\\Field']);
+
+    $response = $this->get(action([FieldsController::class, 'index']))->assertOk();
+    $row = data_get($response->inertiaProps('ui.nodes'), '0.props.rows.0');
+
+    expect($row['searchable'])->toBeNull()
+        ->and($row['translatable'])->toBeNull()
+        ->and($row['type'])->toBe('Missing');
 });
+
+it('searches, sorts, and paginates fields through the index route', function (array $query, string $expectedHandle, int $total) {
+    foreach ([['Article Alpha', 'zebra'], ['Article Zulu', 'apple'], ['Other', 'other']] as [$name, $handle]) {
+        Fields::saveField(Fields::createField(['type' => PlainText::class, 'name' => $name, 'handle' => $handle]));
+    }
+    Cms::config()->pageTrigger('p');
+
+    $response = $this->withHeaders([
+        'X-Inertia' => 'true',
+        'X-Inertia-Partial-Component' => 'Ui',
+        'X-Inertia-Partial-Data' => 'ui',
+    ])->get(action([FieldsController::class, 'index'], ['per_page' => 1, ...$query]))->assertOk();
+    $table = $response->assertHeader('X-Inertia', 'true')->json('props.ui.nodes.0.props');
+    $handle = new Crawler($table['rows'][0]['handle']['html'])->filter('craft-copy-attribute');
+
+    expect($table['rows'])->toHaveCount(1)
+        ->and($handle->text())->toBe($expectedHandle)
+        ->and($table['pagination']['total'])->toBe($total)
+        ->and($table['pagination']['current_page'])->toBe($query['p'] ?? 1)
+        ->and($table['pagination']['per_page'])->toBe(1);
+})->with([
+    'name ascending' => [['search' => 'Article'], 'zebra', 2],
+    'name descending' => [['search' => 'Article', 'sort' => [['field' => 'name', 'direction' => 'desc']]], 'apple', 2],
+    'handle ascending' => [['search' => 'Article', 'sort' => [['field' => 'handle', 'direction' => 'asc']]], 'apple', 2],
+    'handle descending' => [['search' => 'Article', 'sort' => [['field' => 'handle', 'direction' => 'desc']]], 'zebra', 2],
+    'handle search' => [['search' => 'zebra'], 'zebra', 1],
+    'second page' => [['search' => 'Article', 'p' => 2], 'apple', 2],
+]);
 
 it('can create a new field', function () {
     $this->get(action([FieldsController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/fields/Edit')
             ->where('title', 'Create a new field')
-            ->where('form.values.fieldId', null)
-            ->where('form.values.type', PlainText::class)
-            ->where('form.values.oldType', PlainText::class)
-            ->where('form.values.translationMethod', 'none')
-            ->where('form.values.translationKeyFormat', '')
+            ->where('ui.values.fieldId', null)
+            ->where('ui.values.type', PlainText::class)
+            ->where('ui.values.oldType', PlainText::class)
+            ->where('ui.values.translationMethod', 'none')
+            ->where('ui.values.translationKeyFormat', '')
             ->has('supportedTranslationMethods')
-            ->where('form.refreshable', true)
-            ->where('form.nodes', function (Collection $nodes): bool {
-                $settings = $nodes->firstWhere('uid', 'field-settings');
+            ->where('ui.refreshable', true)
+            ->where('ui.nodes', function (Collection $nodes): bool {
+                $settings = collect(flattenUiNodes($nodes->all()))->first(
+                    fn (array $node): bool => data_get($node, 'props.dependsOn') === ['type'],
+                );
 
-                return data_get($settings, 'props.dependsOn') === ['type']
-                        && collect(data_get($settings, 'children'))->isNotEmpty();
+                return collect(flattenUiNodes(data_get($settings, 'children', [])))
+                    ->contains(fn (array $node): bool => data_get($node, 'control.path.0') === 'settings');
             })
             ->where('submit.method', 'post')
-            ->where('refreshUrl', action([FieldsController::class, 'renderForm'])));
+            ->where('refreshUrl', action([FieldsController::class, 'renderUi'])));
 });
 
 it('preselects a requested field type when creating', function (mixed $type, string $expectedType) {
     $this->get(action([FieldsController::class, 'create'], ['type' => $type]))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/fields/Edit')
-            ->where('form.values.type', $expectedType));
+            ->where('ui.values.type', $expectedType));
 })->with([
     'selectable type' => [RadioButtons::class, RadioButtons::class],
     'invalid class' => ['Not\\A\\Field', PlainText::class],
@@ -148,13 +250,13 @@ it('can edit a field', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/fields/Edit')
             ->where('title', 'My plaintext field')
-            ->where('form.values.fieldId', $field->id)
-            ->where('form.values.name', 'My plaintext field')
-            ->where('form.values.handle', 'plainText')
-            ->where('form.values.type', PlainText::class)
+            ->where('ui.values.fieldId', $field->id)
+            ->where('ui.values.name', 'My plaintext field')
+            ->where('ui.values.handle', 'plainText')
+            ->where('ui.values.type', PlainText::class)
             ->where('details', fn ($value) => is_string($value) && $value !== '')
-            ->has('form.values.settings')
-            ->has('form.nodes'));
+            ->has('ui.values.settings')
+            ->has('ui.nodes'));
 });
 
 it('renders the edit screen read-only without admin changes', function () {
@@ -170,16 +272,16 @@ it('renders the edit screen read-only without admin changes', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/fields/Edit')
             ->where('refreshUrl', null)
-            ->where('form.refreshable', false)
-            ->where('form.nodes', function (Collection $nodes): bool {
-                $controls = $nodes->pluck('control')->filter();
+            ->where('ui.refreshable', false)
+            ->where('ui.nodes', function (Collection $nodes): bool {
+                $controls = collect(flattenUiNodes($nodes->all()))->pluck('control')->filter();
 
                 return $controls->isNotEmpty()
                     && $controls->every(fn (array $control): bool => $control['mode'] === 'readOnly');
             }));
 });
 
-it('serves the Form page to slideout requests', function (?callable $setUp, bool $hasSidebar) {
+it('serves the Ui page to slideout requests', function (?callable $setUp, bool $hasSidebar) {
     $fieldId = $setUp ? $setUp()->id : null;
 
     $response = $this->getJson(
@@ -188,11 +290,11 @@ it('serves the Form page to slideout requests', function (?callable $setUp, bool
     )
         ->assertOk()
         ->assertJsonPath('inertiaPage', 'settings/fields/Edit')
-        ->assertJsonPath('inertiaProps.form.values.fieldId', $fieldId)
+        ->assertJsonPath('inertiaProps.ui.values.fieldId', $fieldId)
         ->assertJsonPath('inertiaProps.submit.method', 'post')
         ->assertJsonPath('formAttributes.action', action([FieldsController::class, 'store']))
         ->assertJson(fn (AssertableJson $json) => $json
-            ->has('inertiaProps.form.nodes')
+            ->has('inertiaProps.ui.nodes')
             ->etc());
 
     expect(is_string($response->json('sidebar')))->toBe($hasSidebar);
@@ -217,9 +319,9 @@ it('limits slideout field types to multi-instance fields when requested', functi
         ->assertOk()
         ->assertJsonPath('inertiaProps.refreshUrl', action([
             FieldsController::class,
-            'renderForm',
+            'renderUi',
         ], ['multiInstanceTypesOnly' => 1]))
-        ->assertJsonPath('inertiaProps.form.nodes', function (array $nodes): bool {
+        ->assertJsonPath('inertiaProps.ui.nodes', function (array $nodes): bool {
             $typeField = collect($nodes)->first(
                 fn (array $node): bool => data_get($node, 'control.path') === ['type'],
             );
@@ -230,8 +332,8 @@ it('limits slideout field types to multi-instance fields when requested', functi
         });
 });
 
-it('refreshes the complete field form when its type changes', function () {
-    $this->postJson(action([FieldsController::class, 'renderForm']), [
+it('refreshes the complete field UI when its type changes', function () {
+    $this->postJson(action([FieldsController::class, 'renderUi']), [
         'values' => [
             'fieldId' => null,
             'oldType' => PlainText::class,
@@ -245,12 +347,12 @@ it('refreshes the complete field form when its type changes', function () {
         'scope' => [],
     ])
         ->assertOk()
-        ->assertJsonPath('form.scope', [])
-        ->assertJsonPath('form.values.type', RadioButtons::class)
-        ->assertJsonPath('form.values.oldType', RadioButtons::class)
-        ->assertJsonPath('form.values.name', 'Options')
-        ->assertJsonPath('form.values.searchable', true)
-        ->assertJsonPath('form.refreshable', true);
+        ->assertJsonPath('ui.scope', [])
+        ->assertJsonPath('ui.values.type', RadioButtons::class)
+        ->assertJsonPath('ui.values.oldType', RadioButtons::class)
+        ->assertJsonPath('ui.values.name', 'Options')
+        ->assertJsonPath('ui.values.searchable', true)
+        ->assertJsonPath('ui.refreshable', true);
 });
 
 it('uses the saved field type as the compatibility baseline after refresh', function () {
@@ -260,7 +362,7 @@ it('uses the saved field type as the compatibility baseline after refresh', func
         'handle' => 'plainText',
     ]));
 
-    $response = $this->postJson(action([FieldsController::class, 'renderForm']), [
+    $response = $this->postJson(action([FieldsController::class, 'renderUi']), [
         'values' => [
             'fieldId' => $field->id,
             'oldType' => PlainText::class,
@@ -271,7 +373,7 @@ it('uses the saved field type as the compatibility baseline after refresh', func
         ],
         'scope' => [],
     ])->assertOk();
-    $typeControl = collect($response->json('form.nodes'))
+    $typeControl = collect($response->json('ui.nodes'))
         ->first(fn (array $node): bool => data_get($node, 'control.path') === ['type'])['control'];
     $plainTextOption = collect($typeControl['props']['options'])
         ->firstWhere('value', PlainText::class);
@@ -281,8 +383,8 @@ it('uses the saved field type as the compatibility baseline after refresh', func
 
 it('renders composite field settings Controls', function (string $type, string $component, string $action, string $htmlFragment) {
     $field = Fields::createField($type);
-    $context = new FormContext(namespace: 'settings');
-    $payload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
+    $context = new UiContext(namespace: 'settings');
+    $payload = app(UiResolver::class)->resolve($field->settingsUi($context), $context);
     $control = collect($payload->nodes)
         ->first(fn ($node) => $node->control?->component === $component)
         ->control;
@@ -317,7 +419,7 @@ it('renders a disabled field layout designer when admin changes are disabled', f
     ])->assertOk();
 });
 
-it('renders root field layout input names that can be expanded as post data', function () {
+it('renders field layout and generated field values at their root submission paths', function () {
     $response = $this->postJson(action([FieldsController::class, 'renderFieldLayoutDesigner']), [
         'value' => [],
         'elementType' => Entry::class,
@@ -329,8 +431,10 @@ it('renders root field layout input names that can be expanded as post data', fu
     ])->assertOk();
     $crawler = new Crawler($response->json('html'));
 
+    $generatedFields = json_decode($crawler->filter('craft-generated-fields-table')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+
     expect($crawler->filter('[data-config-input][name="fieldLayout"]'))->toHaveCount(1)
-        ->and($crawler->filter('craft-generated-fields-table[name="generatedFields"]'))->toHaveCount(1);
+        ->and($generatedFields['nodes'][0]['control']['path'])->toBe(['generatedFields']);
 });
 
 it('rejects non-condition classes from the condition builder endpoint', function () {
@@ -448,7 +552,7 @@ it('saves only the selected Matrix site destination while keeping the URI format
     ]);
 });
 
-it('saves changed Form groups without resetting untouched settings', function () {
+it('saves changed UI groups without resetting untouched settings', function () {
     Fields::saveField($field = Fields::createField([
         'type' => PlainText::class,
         'name' => 'My plaintext field',
@@ -471,7 +575,7 @@ it('saves changed Form groups without resetting untouched settings', function ()
         ->and($saved->initialRows)->toBe(8);
 });
 
-it('saves complete atomic Form groups', function () {
+it('saves complete atomic UI groups', function () {
     Fields::saveField($field = Fields::createField([
         'type' => PlainText::class,
         'name' => 'My plaintext field',
@@ -496,7 +600,7 @@ it('saves complete atomic Form groups', function () {
         ->and($saved->byteLimit)->toBe(25);
 });
 
-it('returns Form setting validation errors at their submitted paths', function () {
+it('returns UI setting validation errors at their submitted paths', function () {
     $this->postJson(action([FieldsController::class, 'store']), [
         'type' => PlainText::class,
         'name' => 'My plaintext field',
@@ -507,7 +611,7 @@ it('returns Form setting validation errors at their submitted paths', function (
         ->assertJsonValidationErrors('settings.initialRows');
 });
 
-it('keeps host and Form validation errors at their submitted paths', function () {
+it('keeps host and UI validation errors at their submitted paths', function () {
     $this->postJson(action([FieldsController::class, 'store']), [
         'type' => PlainText::class,
         'name' => '',
@@ -560,7 +664,7 @@ it('rejects invalid table cell configuration before resolving or saving settings
         ]],
     ];
 
-    $this->postJson(action([FieldsController::class, $action]), $action === 'renderForm'
+    $this->postJson(action([FieldsController::class, $action]), $action === 'renderUi'
         ? ['values' => $values, 'scope' => []]
         : $values)
         ->assertUnprocessable()
@@ -569,9 +673,9 @@ it('rejects invalid table cell configuration before resolving or saving settings
     expect(FieldModel::where('handle', 'table')->exists())->toBeFalse();
 })->with([
     'save unavailable type' => ['store', 'settings.columns.col1.type', ['type' => 'Unavailable\\TableCell']],
-    'refresh unavailable type' => ['renderForm', 'values.settings.columns.col1.type', ['type' => 'Unavailable\\TableCell']],
+    'refresh unavailable type' => ['renderUi', 'values.settings.columns.col1.type', ['type' => 'Unavailable\\TableCell']],
     'save invalid settings' => ['store', 'settings.columns.col1.settings', ['type' => 'singleline', 'settings' => 'invalid']],
-    'refresh invalid settings' => ['renderForm', 'values.settings.columns.col1.settings', ['type' => 'singleline', 'settings' => 'invalid']],
+    'refresh invalid settings' => ['renderUi', 'values.settings.columns.col1.settings', ['type' => 'singleline', 'settings' => 'invalid']],
 ]);
 
 it('validates plugin cell settings before saving a table field', function (array $settings, bool $valid, string $errorPath) {
@@ -602,8 +706,8 @@ it('validates plugin cell settings before saving a table field', function (array
     'flat settings override nested settings' => [['prefix' => 'Valid', 'settings' => ['prefix' => 'a']], true, ''],
 ]);
 
-it('refreshes a legacy field settings island without returning the outer field metadata form', function () {
-    $response = $this->postJson(action([FieldsController::class, 'renderForm']), [
+it('refreshes a legacy field settings island without returning the outer field metadata UI', function () {
+    $response = $this->postJson(action([FieldsController::class, 'renderUi']), [
         'values' => [
             'type' => Table::class,
             'name' => 'Outer field name',
@@ -615,11 +719,11 @@ it('refreshes a legacy field settings island without returning the outer field m
         'scope' => [],
         'settingsOnly' => true,
     ])->assertOk()
-        ->assertJsonPath('form.scope', ['settings'])
-        ->assertJsonPath('form.values.settings.columns.col1.heading', 'Status')
-        ->assertJsonPath('form.values.settings.defaults.0.col1', 'Draft');
+        ->assertJsonPath('ui.scope', ['settings'])
+        ->assertJsonPath('ui.values.settings.columns.col1.heading', 'Status')
+        ->assertJsonPath('ui.values.settings.defaults.0.col1', 'Draft');
 
-    expect($response->json('form.values'))->not->toHaveKey('name');
+    expect($response->json('ui.values'))->not->toHaveKey('name');
 });
 
 it('retains retired cell types only in unchanged persisted columns', function (string $action, string $scenario, bool $allowed) {
@@ -657,12 +761,12 @@ it('retains retired cell types only in unchanged persisted columns', function (s
     }
 
     try {
-        $response = $this->postJson(action([FieldsController::class, $action]), $action === 'renderForm'
+        $response = $this->postJson(action([FieldsController::class, $action]), $action === 'renderUi'
             ? ['values' => $values, 'scope' => []]
             : $values);
         if (! $allowed) {
             $columnId = $scenario === 'added' ? 'col2' : 'col1';
-            $prefix = $action === 'renderForm' ? 'values.settings' : 'settings';
+            $prefix = $action === 'renderUi' ? 'values.settings' : 'settings';
             $response->assertUnprocessable()->assertJsonValidationErrors("{$prefix}.columns.{$columnId}.type");
             expect(Fields::getFieldById($field->id)->columns)->toBe($columns)
                 ->and(FieldModel::where('handle', 'newTable')->exists())->toBeFalse();
@@ -671,8 +775,8 @@ it('retains retired cell types only in unchanged persisted columns', function (s
         }
 
         $response->assertOk();
-        if ($action === 'renderForm') {
-            $response->assertJsonPath('form.values.settings.columns', $columns);
+        if ($action === 'renderUi') {
+            $response->assertJsonPath('ui.values.settings.columns', $columns);
         } else {
             $saved = Fields::getFieldById($field->id);
             expect($saved->name)->toBe('Renamed table')->and($saved->columns)->toBe($columns);
@@ -680,7 +784,7 @@ it('retains retired cell types only in unchanged persisted columns', function (s
     } finally {
         RetiredFieldSettingsTableCell::$selectable = true;
     }
-})->with(['store', 'renderForm'])->with([
+})->with(['store', 'renderUi'])->with([
     'unchanged existing column' => ['unchanged', true],
     'changed existing column' => ['changed', false],
     'added column' => ['added', false],

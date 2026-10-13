@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Process;
 
 beforeEach(function () {
     $this->updates = app(Updates::class);
@@ -136,6 +137,7 @@ it('formats CLI updates with the original package and selected version', functio
     $this->mock(Composer::class)->shouldReceive('install')->times($info ? 0 : 1)
         ->with(['new/package' => "^$target", 'old/package' => false], Mockery::type('callable'));
     $this->mock(Updates::class)->shouldReceive('getUpdates')->with(true)->andReturn(new UpdatesData);
+    Process::fake();
     $seen = [];
     Event::listen(CriticalUpdateReleased::class, function ($event) use (&$seen, $critical) {
         $seen[] = $event->update->packageName;
@@ -151,4 +153,10 @@ it('formats CLI updates with the original package and selected version', functio
         ->and(str_contains($output, 'CRITICAL'))->toBe($critical);
 
     expect($seen)->toBe(['new/package']);
+
+    if ($info) {
+        Process::assertNothingRan();
+    } else {
+        Process::assertRan(fn ($process) => in_array('craft:update:info', (array) $process->command, true));
+    }
 })->with([[null, true], ['1.5.0', true], [null, false], [null, true, true], [null, true, false, true]]);

@@ -14,6 +14,7 @@ Source/.idea/*
 Build/*
 *.sass-cache
 node_modules/
+.pnpm-store/
 vendor/
 /bower_components
 cpresources/*
@@ -51,3 +52,7 @@ resources/build
 # Orb runtime state
 .amp/portals/*
 .amp/databases/
+
+# Vitest browser-mode failure artifacts
+**/__screenshots__/
+**/.vitest-attachments/

@@ -14,7 +14,7 @@ import {
   CpScreenSlideout,
   type CpScreenSlideoutSettings,
 } from './cp-screen-slideout';
-import type {FormValues} from '@/modules/forms/types';
+import type {UiValues} from '@/modules/ui/types';
 
 declare const Craft: any;
 declare const $: any;
@@ -36,16 +36,16 @@ export interface ElementEditorSlideoutSettings extends CpScreenSlideoutSettings 
   /** Ask the server to validate the element as part of the initial load. */
   prevalidate: boolean;
   /** Extra params injected as hidden inputs just before submitting. */
-  saveParams: FormValues | null;
+  saveParams: UiValues | null;
   /** Callback receiving the saved element's data (alongside the `submit` event). */
-  onSaveElement: ((data: FormValues) => void) | null;
+  onSaveElement: ((data: UiValues) => void) | null;
   validators: unknown[];
   expandData: unknown[];
   isStatic: boolean;
   onBeforeSubmit: () => Promise<void>;
 }
 
-interface ElementEditorParams extends FormValues {
+interface ElementEditorParams extends UiValues {
   elementType?: string;
   elementId?: number;
   draftId?: number | null;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\TableCells;
 
-use CraftCms\Cms\Form\Controls\Control;
-use CraftCms\Cms\Form\Controls\Textarea;
+use CraftCms\Cms\Ui\Controls\Control;
+use CraftCms\Cms\Ui\Controls\Textarea;
 
 use function CraftCms\Cms\t;
 

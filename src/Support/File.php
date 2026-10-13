@@ -290,6 +290,10 @@ class File extends \Illuminate\Support\Facades\File
             '!',
             '{',
             '}',
+            '“',
+            '”',
+            '‘',
+            '’',
         ];
 
         // Replace any control characters in the name with a space.

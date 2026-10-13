@@ -21,17 +21,6 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\MarkdownData;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\ConditionBuilder;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Markdown as MarkdownControl;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
@@ -43,6 +32,17 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\ConditionBuilder;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Markdown as MarkdownControl;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -258,7 +258,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         return MarkdownControl::make($context->path)
             ->rows($this->initialRows)
@@ -274,46 +274,46 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $volumeOptions = $this->volumeOptions();
         $assetSelectionCondition = $this->getAssetSelectionCondition() ?? $this->createAssetSelectionCondition();
 
-        return Form::make([
-            FormField::make(t('Markdown Flavor'))
+        return Ui::make([
+            UiField::make(t('Markdown Flavor'))
                 ->instructions(t('The Markdown flavor that should be used when rendering this field.'))
                 ->control(Choice::make('flavor')->options(self::flavorOptions())->value($this->flavor)),
-            FormField::make(t('Inline Only'))
+            UiField::make(t('Inline Only'))
                 ->instructions(t('Whether the field should only render inline Markdown, without wrapping paragraphs.'))
                 ->control(Lightswitch::make('inlineOnly')->value($this->inlineOnly)),
-            FormField::make(t('Show Toolbar'))
+            UiField::make(t('Show Toolbar'))
                 ->instructions(t('Whether the editor toolbar should be visible.'))
                 ->control(Lightswitch::make('showToolbar')->value($this->showToolbar)),
-            FormField::make(t('Toolbar Buttons'))
+            UiField::make(t('Toolbar Buttons'))
                 ->instructions(t('Choose which buttons should be available in the editor toolbar.'))
                 ->control(Choice::make('toolbarButtons')
                     ->multiple()
                     ->options(array_map(fn (array $option): array => Arr::only($option, ['label', 'value']), self::toolbarButtonOptions()))
                     ->value($this->toolbarButtons)),
-            FormField::make(t('Show Stats'))
+            UiField::make(t('Show Stats'))
                 ->instructions(t('Whether the editor should show character, word, and line counts.'))
                 ->control(Lightswitch::make('showStats')->value($this->showStats)),
-            FormField::make(t('Placeholder Text'))
+            UiField::make(t('Placeholder Text'))
                 ->instructions(t('The text that will be shown if the field doesn’t have a value.'))
                 ->control(Text::make('placeholder')->value($this->placeholder)),
-            FormField::make(t('Initial Rows'))
+            UiField::make(t('Initial Rows'))
                 ->control(Number::make('initialRows')->min(1)->value($this->initialRows)),
         ])->addGroup(t('Field Limit'), fn (Group $group): Group => $group
             ->instructions(t('The maximum number of characters or bytes the field is allowed to have.'))
             ->asField()
             ->add(
-                FormField::make(t('Maximum'))
+                UiField::make(t('Maximum'))
                     ->control(Number::make('fieldLimit')
                         ->min(1)
                         ->size(3)
                         ->deltaGroupAtNamespace()
                         ->value($this->charLimit ?? $this->byteLimit)),
-                FormField::make(t('Unit'))
+                UiField::make(t('Unit'))
                     ->control(Choice::make('limitUnit')
                         ->deltaGroupAtNamespace()
                         ->options([
@@ -328,7 +328,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ->addGroup(t('Assets'), fn (Group $group): Group => $group
                 ->collapsible()
                 ->add(
-                    FormField::make(t('Available Volumes'))
+                    UiField::make(t('Available Volumes'))
                         ->instructions(t('The volumes that should be available when selecting assets.'))
                         ->control(Choice::make('availableVolumes')
                             ->multiple()
@@ -337,17 +337,17 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
                                 ...$volumeOptions,
                             ])
                             ->value($this->availableVolumes === '*' ? ['*'] : $this->availableVolumes)),
-                    FormField::make(t('Show unpermitted volumes'))
+                    UiField::make(t('Show unpermitted volumes'))
                         ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                         ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
-                    FormField::make(t('Selectable Assets Condition'))
+                    UiField::make(t('Selectable Assets Condition'))
                         ->instructions(mb_ucfirst(t('Only allow assets to be selected if they match the following rules:')))
                         ->control(ConditionBuilder::make('assetSelectionCondition')
                             ->conditionClass($assetSelectionCondition::class)
                             ->queryParams(['site'])
                             ->forProjectConfig()
                             ->value($assetSelectionCondition->getConfig())),
-                    FormField::make(t('Upload Volume'))
+                    UiField::make(t('Upload Volume'))
                         ->instructions(t('The volume where pasted or dropped files should be uploaded.'))
                         ->control(Choice::make('uploadVolume')->options([
                             ['label' => t('No uploads'), 'value' => ''],
@@ -357,15 +357,15 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ->addGroup(t('Advanced'), fn (Group $group): Group => $group
                 ->collapsible()
                 ->add(
-                    FormField::make(t('Encode HTML'))
+                    UiField::make(t('Encode HTML'))
                         ->instructions(t('Whether HTML should be encoded before rendering the Markdown.'))
                         ->warning(t('Enabling this will enforce the Original Markdown flavor.'))
                         ->control(Lightswitch::make('encode')->value($this->encode)),
-                    FormField::make(t('Sanitize HTML'))
+                    UiField::make(t('Sanitize HTML'))
                         ->instructions(t('Removes any potentially-malicious code on save, by running the submitted data through an HTML sanitizer.'))
                         ->warning(t('Disable this at your own risk!'))
                         ->control(Lightswitch::make('sanitizeHtml')->value($this->sanitizeHtml)),
-                    FormField::make(t('HTML Sanitizer'))
+                    UiField::make(t('HTML Sanitizer'))
                         ->control(Choice::make('htmlSanitizer')
                             ->options($this->htmlSanitizerOptions()->all())
                             ->value($this->htmlSanitizer ?? 'default')),

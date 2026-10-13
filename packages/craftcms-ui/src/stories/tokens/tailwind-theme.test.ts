@@ -14,6 +14,7 @@ describe('themeEntries', () => {
           --c-color-border-quiet,
           var(--c-color-neutral-border-quiet)
         );
+        --text-color-quiet: var(--c-text-quiet);
         --padding-sm: var(--c-spacing-sm);
         --z-index-popover: var(--c-layer-popover);
         --unrelated-thing: 1px;
@@ -39,6 +40,12 @@ describe('themeEntries', () => {
         value:
           'var(--c-color-border-quiet, var(--c-color-neutral-border-quiet))',
         token: '--c-color-border-quiet',
+      },
+      {
+        namespace: 'text-color',
+        name: 'quiet',
+        value: 'var(--c-text-quiet)',
+        token: '--c-text-quiet',
       },
       {
         namespace: 'padding',
@@ -67,6 +74,9 @@ describe('themeEntries', () => {
       'normal',
       'loud',
     ]);
+    expect(entriesIn('text-color').map((entry) => entry.token)).toEqual([
+      '--c-text-quiet',
+    ]);
     expect(entriesIn('padding').map((entry) => entry.token)).toContain(
       '--c-spacing-md'
     );
@@ -82,5 +92,23 @@ describe('themeEntries', () => {
       'header',
     ]);
     expect(entriesIn('color').length).toBeGreaterThan(0);
+  });
+
+  it('maps every layer token, so the Layers story lists them all', () => {
+    const tokens = readFileSync(
+      join(import.meta.dirname, '../../styles/shared/tokens.css'),
+      'utf8'
+    );
+    const layerTokens = [...tokens.matchAll(/(--c-layer-[\w-]+)\s*:/g)].map(
+      ([, token]) => token
+    );
+    const mappedTokens = themeEntries(
+      readFileSync(join(import.meta.dirname, '../../../tailwind.css'), 'utf8')
+    )
+      .filter((entry) => entry.namespace === 'z-index')
+      .map((entry) => entry.token);
+
+    expect(layerTokens).toContain('--c-layer-skip-link');
+    expect(mappedTokens).toEqual(expect.arrayContaining(layerTokens));
   });
 });

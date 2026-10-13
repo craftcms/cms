@@ -137,7 +137,7 @@ export function useScreenContentWidth(): Readonly<Ref<number>> | null {
 
 /**
  * Whether the shell has lifted the details column out of its layout to overlay
- * the content, which is the cue for the column to fold down to its tab rail.
+ * the content, which is the cue for the column to fold down to its rail.
  *
  * Each shell publishes its own threshold from its container query — a slideout
  * and a full page have nothing like the same geometry — so the width stays in
@@ -149,6 +149,19 @@ export const ScreenDetailsOverlayKey: InjectionKey<Readonly<Ref<boolean>>> =
 /** `null` outside a shell that overlays. See {@link ScreenDetailsOverlayKey}. */
 export function useScreenDetailsOverlay(): Readonly<Ref<boolean>> | null {
   return inject(ScreenDetailsOverlayKey, null);
+}
+
+/**
+ * Where the details rail goes, when the shell keeps it apart from the
+ * details panels. A full page puts it in a rail beside the inset content
+ * panel; a slideout provides `null`, so its rail stays beside its panels.
+ */
+export const ScreenDetailsRailKey: InjectionKey<string | null> =
+  Symbol('screenDetailsRail');
+
+/** A selector, or `null` where the rail stays with its panels. See {@link ScreenDetailsRailKey}. */
+export function useScreenDetailsRail(): string | null {
+  return inject(ScreenDetailsRailKey, null);
 }
 
 /** No-ops outside a shell that cares. See {@link ScreenContentReadyKey}. */

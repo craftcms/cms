@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
 export default css`
   :host {
@@ -158,6 +159,7 @@ export default css`
     line-height: var(--c-pane-title-line-height, calc(28 / 18));
     font-weight: var(--c-pane-title-font-weight, 700);
     margin: 0;
+    ${trimmedTextBoxStyles}
   }
 
   .cp-pane__header-actions {

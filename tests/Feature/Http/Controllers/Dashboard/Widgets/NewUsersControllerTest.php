@@ -21,6 +21,15 @@ it('requires authentication', function () {
     postJson(action([NewUsersController::class, 'data']))->assertUnauthorized();
 });
 
+it('requires the viewUsers permission', function () {
+    actingAs(UserModel::factory()->active()->withPermissions(['accessCp'])->create()->asElement());
+
+    postJson(action([NewUsersController::class, 'data']), [
+        'startDate' => now()->subDays(7)->timestamp,
+        'endDate' => now()->timestamp,
+    ])->assertForbidden();
+});
+
 it('validates required fields', function () {
     postJson(action([NewUsersController::class, 'data']), [])
         ->assertJsonValidationErrors(['startDate', 'endDate']);

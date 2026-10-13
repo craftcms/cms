@@ -9,7 +9,9 @@ use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Twig\Variables\Cp;
@@ -20,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 
 /** Settings without the plugin lookup, which `all()` would otherwise hit the database for. */
 function cpSettings(): Settings
@@ -28,6 +31,19 @@ function cpSettings(): Settings
         Cms::config(),
         Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
     );
+}
+
+/**
+ * Finds a top-level nav item by its label, including items listed under a
+ * top-level group, such as “Administration”.
+ *
+ * @param  NavItem[]  $items
+ */
+function findNavItem(array $items, string $label): ?NavItem
+{
+    return collect($items)
+        ->flatMap(fn (NavItem $item) => $item->group ? $item->subnav : [$item])
+        ->firstWhere('label', $label);
 }
 
 beforeEach(function () {
@@ -72,7 +88,7 @@ it('selects nav items from paths with the cp trigger', function () {
         cpSettings(),
     );
 
-    $settingsItem = collect($navigation->getItems())->firstWhere('label', 'Settings');
+    $settingsItem = findNavItem($navigation->getItems(), 'Settings');
 
     expect($settingsItem->selected)->toBeTrue()
         ->and($settingsItem->linkAttributes['aria']['current'])->toBe('true');
@@ -92,7 +108,7 @@ it('selects parent nav items when a subnav item matches the cp path', function (
         cpSettings(),
     );
 
-    $graphqlItem = collect($navigation->getItems())->firstWhere('label', 'GraphQL');
+    $graphqlItem = findNavItem($navigation->getItems(), 'GraphQL');
     $tokensItem = collect($graphqlItem->subnav)->firstWhere('label', 'Tokens');
 
     expect($graphqlItem->selected)->toBeTrue()
@@ -186,10 +202,10 @@ it('selects navigation independently for each request', function () {
         cpSettings(),
     );
 
-    $items = collect($graphql->getItems());
+    $items = $graphql->getItems();
 
-    expect($items->firstWhere('label', 'GraphQL')->selected)->toBeTrue()
-        ->and($items->firstWhere('label', 'Settings')->selected)->toBeFalse();
+    expect(findNavItem($items, 'GraphQL')->selected)->toBeTrue()
+        ->and(findNavItem($items, 'Settings')->selected)->toBeFalse();
 });
 
 it('nests the settings screens under Settings, grouped as the index groups them', function () {
@@ -205,7 +221,7 @@ it('nests the settings screens under Settings, grouped as the index groups them'
         cpSettings(),
     );
 
-    $settings = collect($navigation->getTree())->firstWhere('label', 'Settings');
+    $settings = findNavItem($navigation->getTree(), 'Settings');
     $groups = collect($settings->subnav);
     $system = $groups->firstWhere('label', 'System');
 
@@ -229,14 +245,83 @@ it('hands a group\'s children up for the legacy sidebar, which has no groups', f
         cpSettings(),
     );
 
-    $settings = collect($navigation->getShallowItems())->firstWhere('label', 'Settings');
+    $items = collect($navigation->getShallowItems());
+    $settings = $items->firstWhere('label', 'Settings');
     $children = collect($settings->subnav);
 
     // Flat, and every one of them somewhere to go — a heading with no URL
     // would render as an unclickable nav item in the Twig sidebar.
-    expect($children->pluck('label'))->toContain('General')
+    expect($items->every(fn ($item) => ! $item->group))->toBeTrue()
+        ->and($children->pluck('label'))->toContain('General')
         ->and($children->every(fn ($item) => ! $item->group))->toBeTrue()
         ->and($children->every(fn ($item) => $item->href !== null))->toBeTrue();
+});
+
+it('lists the administrative nav items under an Administration group', function () {
+    $navigation = new Navigation(
+        Request::create('/admin/dashboard'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+        cpSettings(),
+    );
+
+    $tree = collect($navigation->getTree());
+    $administration = $tree->firstWhere('label', 'Administration');
+
+    expect($administration->group)->toBeTrue()
+        ->and(collect($administration->subnav)->pluck('label')->all())
+        ->toContain('GraphQL', 'Settings', 'Plugin Store')
+        ->and($tree->pluck('label'))->not->toContain('GraphQL', 'Settings', 'Plugin Store');
+});
+
+it('lists ungrouped plugin nav items before grouped ones', function () {
+    $plugin = function (string $handle, NavItem $navItem): Plugin {
+        $plugin = new class(app()) extends Plugin
+        {
+            public ?NavItem $navItem = null;
+
+            public function getCpNavItem(): NavItem
+            {
+                return $this->navItem;
+            }
+        };
+        $plugin->handle = $handle;
+        $plugin->hasCpSection = true;
+        $plugin->navItem = $navItem;
+
+        return $plugin;
+    };
+
+    $navigation = new Navigation(
+        Request::create('/admin/dashboard'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => [
+            $plugin('shop', new NavItem()->label('Shop')->group(true)->subnav([
+                new NavItem()->label('Orders')->href('shop/orders'),
+            ])),
+            $plugin('bookings', new NavItem()->label('Bookings')->href('bookings')),
+            $plugin('newsletter', new NavItem(['label' => 'Newsletter', 'url' => 'newsletter'])),
+        ]]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+        cpSettings(),
+    );
+
+    $labels = collect($navigation->getTree())
+        ->flatMap(fn (NavItem $item) => $item->label === 'Content' ? $item->subnav : [$item])
+        ->pluck('label')
+        ->all();
+
+    expect(array_values(array_intersect($labels, ['Shop', 'Bookings', 'Newsletter'])))
+        ->toBe(['Bookings', 'Newsletter', 'Shop']);
 });
 
 it('hangs an element type\'s sources off its nav item, grouped by heading', function () {
@@ -271,7 +356,7 @@ it('hangs an element type\'s sources off its nav item, grouped by heading', func
         cpSettings(),
     );
 
-    $entries = collect($navigation->getTree())->firstWhere('label', 'Entries');
+    $entries = findNavItem($navigation->getTree(), 'Entries');
     $children = collect($entries->subnav);
 
     expect($children->pluck('label')->all())->toBe(['Singles', 'Channels'])
@@ -315,7 +400,7 @@ it('drops a heading whose members all turned out to be unusable', function () {
         cpSettings(),
     );
 
-    $entries = collect($navigation->getTree())->firstWhere('label', 'Entries');
+    $entries = findNavItem($navigation->getTree(), 'Entries');
 
     // A heading standing over nothing is worse than no heading.
     expect($entries->subnav)->toBe([]);
@@ -349,7 +434,7 @@ it('carries a plugin’s own icon into its settings nav item', function () {
         $settings,
     );
 
-    $groups = collect(collect($navigation->getItems())->firstWhere('label', 'Settings')->subnav);
+    $groups = collect(findNavItem($navigation->getItems(), 'Settings')->subnav);
 
     // As in Craft 5: System holds the Plugins management page, and each
     // plugin's own settings page sits under a Plugins heading of its own.
@@ -361,6 +446,38 @@ it('carries a plugin’s own icon into its settings nav item', function () {
     // left the item with the bullet that stands in for a missing one.
     expect($plugin->iconSvg)->toBe('<svg viewBox="0 0 16 16"></svg>')
         ->and($plugin->icon)->toBeNull();
+});
+
+it('draws settings nav items with solid icons', function () {
+    $solidIcon = CmsAssets::resourcesPath('icons/solid/navigation-test-solid.svg');
+    File::ensureDirectoryExists(dirname($solidIcon));
+    File::put($solidIcon, '<svg></svg>');
+    $this->beforeApplicationDestroyed(fn () => File::delete($solidIcon));
+
+    $settings = Mockery::mock(Settings::class, [
+        'all' => [
+            'System' => [
+                'with-solid' => ['label' => 'With Solid', 'iconName' => 'light/navigation-test-solid'],
+                'light-only' => ['label' => 'Light Only', 'iconName' => 'light/navigation-test-light-only'],
+            ],
+        ],
+    ]);
+
+    $navigation = new Navigation(
+        Request::create('/admin/dashboard'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        Mockery::mock(ElementSources::class, ['getSources' => new Collection]),
+        $settings,
+    );
+
+    $items = collect(findNavItem($navigation->getItems(), 'Settings')->subnav[0]->subnav);
+
+    expect($items->pluck('icon')->all())->toBe(['navigation-test-solid', 'light/navigation-test-light-only']);
 });
 
 it('selects the plugin settings item instead of the Plugins index', function () {
@@ -390,7 +507,7 @@ it('selects the plugin settings item instead of the Plugins index', function () 
         $settings,
     );
 
-    $groups = collect(collect($navigation->getItems())->firstWhere('label', 'Settings')->subnav);
+    $groups = collect(findNavItem($navigation->getItems(), 'Settings')->subnav);
 
     expect($groups->first()->subnav[0]->selected)->toBeFalse()
         ->and($groups->last()->subnav[0]->selected)->toBeTrue();
@@ -424,7 +541,7 @@ it('leaves a source addressed by query to requests that ask for it', function (s
         cpSettings(),
     );
 
-    $entries = collect($navigation->getItems())->firstWhere('label', 'Entries');
+    $entries = findNavItem($navigation->getItems(), 'Entries');
 
     expect($entries->selected)->toBeTrue()
         ->and(collect($entries->subnav)->where('selected', true)->pluck('label')->all())

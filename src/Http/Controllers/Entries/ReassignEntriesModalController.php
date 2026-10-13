@@ -7,12 +7,12 @@ namespace CraftCms\Cms\Http\Controllers\Entries;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
-use CraftCms\Cms\Form\Controls\ElementSelect;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpModalResponse;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,7 +38,7 @@ readonly class ReassignEntriesModalController
 
         return new CpModalResponse()
             ->action('entries/reassign')
-            ->form(Form::make([
+            ->ui(Ui::make([
                 Field::make(t('Choose a new author'), ElementSelect::make('newUserId')
                     ->elementType(User::class)
                     ->criteria(['id' => ['not', ...$oldUserIds]])

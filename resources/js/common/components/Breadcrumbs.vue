@@ -47,11 +47,11 @@
         <DynamicHtmlRenderer :html="item.html" />
       </template>
       <template v-else-if="item.href">
-        <CpLink :href="item.href">{{ item.label }}</CpLink>
+        <CpLink :href="item.href">
+          <span class="text-box-trim">{{ item.label }}</span>
+        </CpLink>
       </template>
-      <template v-else>
-        {{ item.label }}
-      </template>
+      <span v-else class="text-box-trim">{{ item.label }}</span>
       <ActionMenu
         v-if="item.items?.length"
         slot="suffix"

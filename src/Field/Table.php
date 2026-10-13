@@ -13,30 +13,28 @@ use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\TableCells\MissingTableCell;
 use CraftCms\Cms\Field\TableCells\TableCellContext;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Table as TableControl;
-use CraftCms\Cms\Form\Controls\TableColumns;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\TableRowType;
 use CraftCms\Cms\Gql\Types\TableRow;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Table as TableControl;
+use CraftCms\Cms\Ui\Controls\TableColumns;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Validation\Rules\HandleRule;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\TimepickerAsset;
 use DateTimeInterface;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
@@ -48,7 +46,6 @@ use LogicException;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Table represents a Table field.
@@ -114,7 +111,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $columns = $this->controlColumns($context->element?->getLanguage());
         $missing = $this->hasMissingCellTypes();
@@ -152,7 +149,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     continue;
                 }
                 $value = $normalize ? $cell->normalizeValue($row[$id]) : $row[$id];
-                $row[$id] = $cell->formControl(new TableCellContext([$id], $value))->getValue();
+                $row[$id] = $cell->uiControl(new TableCellContext([$id], $value))->getValue();
             }
         }
 
@@ -168,7 +165,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 $column['type'] = 'singleline';
             }
             $column['heading'] = t($column['heading'] ?? '', category: 'site', locale: $locale);
-            $column['control'] = $this->cellType($column)->formControl(new TableCellContext('value', locale: $locale));
+            $column['control'] = $this->cellType($column)->uiControl(new TableCellContext('value', locale: $locale));
             $columns[$id] = $column;
         }
 
@@ -176,23 +173,23 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        $columnForms = [];
+        $columnUis = [];
         $types = [];
         foreach (self::typeOptions() as $identity => $label) {
             $types[] = ['value' => $identity, 'label' => $label];
         }
         foreach ($this->columns as $id => $column) {
-            $form = $this->cellType($column)->settingsForm(new FormContext(values: $column));
-            if ($form !== null) {
-                $columnForms[$id] = $form;
+            $ui = $this->cellType($column)->settingsUi(new UiContext(values: $column));
+            if ($ui !== null) {
+                $columnUis[$id] = $ui;
             }
         }
         $defaultColumns = $this->controlColumns(editableHeadings: true);
         $columnsControl = TableColumns::make('columns')
             ->cellTypes($types)
-            ->columnForms($columnForms)
+            ->columnUis($columnUis)
             ->errors($this->columnErrors)
             ->value($this->columns)
             ->reactive();
@@ -200,12 +197,12 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             $columnsControl->mode(ControlMode::ReadOnly);
         }
 
-        return Form::make([
-            FormField::make(t('Columns'))
+        return Ui::make([
+            UiField::make(t('Columns'))
                 ->instructions(t('Define the columns your table should have.'))
                 ->control($columnsControl),
             Group::make('table-default-values', [
-                FormField::make(t('Default Values'))
+                UiField::make(t('Default Values'))
                     ->instructions(t('Define the default values for the field.'))
                     ->control(TableControl::make('defaults')
                         ->columns($defaultColumns)
@@ -215,7 +212,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                         ->includeRowId($this->staticRows)
                         ->value($this->controlValues($this->defaults ?? []))
                         ->mode($this->hasMissingCellTypes() ? ControlMode::ReadOnly : ControlMode::Editable)),
-                FormField::make(t('Default Row Values'))
+                UiField::make(t('Default Row Values'))
                     ->instructions(t('Define the default values for new rows.'))
                     ->control(TableControl::make('defaultRowValues')
                         ->columns($defaultColumns)
@@ -224,16 +221,16 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                         ->value($this->controlValues([$this->defaultRowValues]))
                         ->mode($this->hasMissingCellTypes() ? ControlMode::ReadOnly : ControlMode::Editable)),
             ])->dependsOn('settings.columns'),
-            FormField::make(t('Static Rows'))
+            UiField::make(t('Static Rows'))
                 ->instructions(t('Whether the table rows should be restricted to those defined by the “Default Values” setting.'))
                 ->control(Lightswitch::make('staticRows')->value($this->staticRows)),
-            FormField::make(t('Min Rows'))
+            UiField::make(t('Min Rows'))
                 ->instructions(t('The minimum number of rows the field is allowed to have.'))
                 ->control(Number::make('minRows')->min(0)->value($this->minRows)),
-            FormField::make(t('Max Rows'))
+            UiField::make(t('Max Rows'))
                 ->instructions(t('The maximum number of rows the field is allowed to have.'))
                 ->control(Number::make('maxRows')->min(0)->value($this->maxRows)),
-            FormField::make(t('Add Row Label'))
+            UiField::make(t('Add Row Label'))
                 ->instructions(t('Insert the button label for adding a new row to the table.'))
                 ->control(Text::make('addRowLabel')->value($this->addRowLabel)),
         ]);
@@ -467,9 +464,38 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        app(InternalAssetRegistry::class)->register(TimepickerAsset::class);
+        if ($this->columns === []) {
+            return '';
+        }
 
-        return $this->inlineInputHtml($value, $element);
+        $errors = array_filter(
+            $element?->errors()->getMessages() ?? [],
+            fn (string $attribute): bool => $attribute === $this->handle || str_starts_with($attribute, "$this->handle."),
+            ARRAY_FILTER_USE_KEY,
+        );
+        $context = new UiContext(errors: $errors);
+        $control = $this->uiControl(new FieldContext(
+            path: $this->handle,
+            value: $value,
+            element: $element,
+            ui: $context,
+            inline: $inline,
+        ));
+        $payload = app(UiResolver::class)->resolve(
+            Ui::make([UiField::make()->control($control)]),
+            $context,
+        );
+
+        return Html::tag('craft-table-ui', '', [
+            'id' => $this->getInputId(),
+            'name' => $this->handle,
+            'role' => 'group',
+            'aria' => [
+                'labelledby' => $this->getLabelId(),
+                'describedby' => $this->describedBy,
+            ],
+            'data-payload' => Json::encode($payload),
+        ]);
     }
 
     /** @return list<Closure> */
@@ -803,82 +829,5 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             ['value' => $cell->serializeValue($value)],
             ['value' => $rules],
         )->errors()->get('value');
-    }
-
-    /**
-     * Returns the field's input HTML.
-     */
-    private function inlineInputHtml(mixed $value, ?ElementInterface $element): string
-    {
-        if (empty($this->columns)) {
-            return '';
-        }
-
-        // Translate the column headings and dropdown option labels,
-        // and configure number columns with the active formatting locale
-        $columns = [];
-        $locale = I18N::getFormattingLocale()->id;
-
-        foreach ($this->columns as $colId => $column) {
-            if (! empty($column['heading'])) {
-                $column['heading'] = t($column['heading'], category: 'site');
-            }
-            if (! empty($column['options'])) {
-                array_walk($column['options'], function (&$option) {
-                    $option['label'] = t($option['label'], category: 'site');
-                });
-            }
-            if ($column['type'] === 'number') {
-                $column['locale'] = $locale;
-            }
-            $columns[$colId] = $column;
-        }
-
-        if (! is_array($value)) {
-            $value = [];
-        }
-
-        // Explicitly set each cell value to an array with a 'value' key
-        $checkForErrors = $element && $element->errors()->has($this->handle);
-        foreach ($value as &$row) {
-            foreach ($columns as $colId => $col) {
-                if (isset($row[$colId])) {
-                    $hasErrors = $checkForErrors && $this->cellErrors($col, $row[$colId]) !== [];
-                    $row[$colId] = [
-                        'value' => match ($col['type']) {
-                            'heading' => Html::encode($row[$colId]),
-                            default => $row[$colId],
-                        },
-                        'hasErrors' => $hasErrors,
-                    ];
-                }
-            }
-        }
-        unset($row);
-
-        // Make sure the value contains at least the minimum number of rows
-        if ($this->minRows) {
-            for ($i = count($value); $i < $this->minRows; $i++) {
-                $value[] = [];
-            }
-        }
-
-        return template('_includes/forms/editableTable', [
-            'id' => $this->getInputId(),
-            'name' => $this->handle,
-            'cols' => $columns,
-            'rows' => $value,
-            'defaultValues' => $this->defaultRowValues,
-            'minRows' => $this->minRows,
-            'maxRows' => $this->maxRows,
-            'static' => false,
-            'staticRows' => $this->staticRows,
-            'allowAdd' => true,
-            'allowDelete' => true,
-            'allowReorder' => true,
-            'addRowLabel' => t($this->addRowLabel, category: 'site'),
-            'describedBy' => $this->describedBy,
-            'includeRowId' => $this->staticRows,
-        ]);
     }
 }

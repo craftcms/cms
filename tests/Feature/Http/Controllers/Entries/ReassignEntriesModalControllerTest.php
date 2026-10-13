@@ -113,7 +113,7 @@ it('reassigns entries to the selected author', function (int $count, string $mes
     'multiple entries' => [2, 'Entries reassigned.'],
 ]);
 
-it('submits the rendered reassignment Form through its namespace', function () {
+it('submits the rendered reassignment UI through its namespace', function () {
     $response = postJson(action([ReassignEntriesModalController::class, 'show']), [
         'oldUserIds' => [12, 34],
     ])->assertOk();

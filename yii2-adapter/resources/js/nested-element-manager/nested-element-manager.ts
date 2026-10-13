@@ -9,7 +9,7 @@ import {
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
 import {nestedElementManagerData} from './support';
-import type {FormProperties, FormValues} from '@/modules/forms/types';
+import type {UiProperties, UiValues} from '@/modules/ui/types';
 
 // `Craft`, `Garnish` (legacy), and `$` (jQuery) remain page globals. This
 // class is an orchestrator of still-jQuery Craft widgets, so jQuery survives
@@ -40,7 +40,7 @@ export interface CreateAttributes {
   color?: string | null;
   group?: string | null;
   /** The element attributes posted to `elements/create`. */
-  attributes?: FormProperties;
+  attributes?: UiProperties;
 }
 
 interface CopiedElementInfo {
@@ -69,7 +69,7 @@ export interface NestedElementManagerSettings extends GarnishBaseSettings {
   selectable: boolean;
   sortable: boolean;
   /** Extra settings for the embedded element index (index mode). */
-  indexSettings: FormProperties;
+  indexSettings: UiProperties;
   canCreate: boolean;
   /**
    * Whether copied elements may be pasted here — a boolean, or a runtime
@@ -89,9 +89,9 @@ export interface NestedElementManagerSettings extends GarnishBaseSettings {
   /** Request param name the owner ID is sent under. */
   ownerIdParam: string | null;
   /** Attributes for created elements; an array renders a disclosure menu of options. */
-  createAttributes: CreateAttributes[] | FormProperties | null;
+  createAttributes: CreateAttributes[] | UiProperties | null;
   /** Extra params merged into paste requests. */
-  pasteAttributes: FormProperties | null;
+  pasteAttributes: UiProperties | null;
   fieldId: number | null;
   fieldHandle: string | null;
   /** Base input name used to mark the owner form dirty (delta tracking). */
@@ -651,7 +651,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
     );
   }
 
-  async getBaseActionData(): Promise<FormValues> {
+  async getBaseActionData(): Promise<UiValues> {
     // this could end up updating this.settings.ownerId
     await this.markAsDirty();
 
@@ -822,7 +822,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
 
   // --- Element CRUD ----------------------------------------------------------
 
-  async createElement(attributes?: FormProperties | null): Promise<void> {
+  async createElement(attributes?: UiProperties | null): Promise<void> {
     if (this.creatingElement) {
       return;
     }

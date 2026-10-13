@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Components\CopyAttribute;
 use CraftCms\Cms\Cp\Data\ActionItem;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ImageTransformEditViewModel;
@@ -20,11 +20,13 @@ use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Nodes\Table;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -38,26 +40,58 @@ class ImageTransformsController extends BaseAssetSettingsController
 
     public function __construct(
         private readonly GeneralConfig $generalConfig,
-        private readonly FormResolver $formResolver,
+        private readonly UiResolver $uiResolver,
         private readonly AssetTransformers $assetTransformers,
         private readonly AssetTransformDrivers $assetTransformDrivers,
     ) {}
 
-    public function index(ImageTransforms $imageTransforms): \Inertia\Response
+    public function index(ImageTransforms $imageTransforms): CpScreenResponse
     {
-        return Inertia::render('settings/assets/transforms/Index', [
-            'crumbs' => fn () => [
-                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
-                new ActionItem()->label(t('Assets'))->href(Url::cpUrl('settings/assets/transforms')),
+        $readOnly = ! $this->generalConfig->allowAdminChanges;
+        $table = Table::make('image-transforms')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name')],
+                ['key' => 'handle', 'label' => t('Handle')],
+                ['key' => 'mode', 'label' => t('Mode')],
+                ['key' => 'dimensions', 'label' => t('Dimensions')],
+                ['key' => 'interlace', 'label' => t('Interlace')],
+                ['key' => 'format', 'label' => t('Format')],
+            ])
+            ->rows($imageTransforms->getAllTransforms()
+                ->sortBy(fn (ImageTransform $transform): string => t($transform->name, category: 'site'))
+                ->map(fn (ImageTransform $transform): array => [
+                    'id' => $transform->id,
+                    'name' => [
+                        'label' => $transform->name,
+                        'url' => route('craft.cp.settings.assets.transforms.edit', ['transformHandle' => $transform->handle]),
+                    ],
+                    'handle' => [
+                        'html' => CopyAttribute::make()->value($transform->handle)->toHtml(),
+                    ],
+                    'mode' => $transform->mode,
+                    'dimensions' => ($transform->width ?? t('Auto')).' x '.($transform->height ?? t('Auto')),
+                    'interlace' => t(ucfirst($transform->interlace ?: 'none')),
+                    'format' => $transform->format ? ucfirst($transform->format) : t('Auto'),
+                    ...($readOnly ? [] : [
+                        '_deleteUrl' => route('craft.cp.settings.assets.transforms.destroy', ['transformId' => $transform->id]),
+                        '_deleteConfirmMessage' => t('Are you sure you want to delete the “{name}” transform?', ['name' => $transform->name]),
+                    ]),
+                ]))
+            ->emptyMessage(t('No image transforms exist yet.'))
+            ->unless($readOnly, fn (Table $table) => $table
+                ->createAction(t('New image transform'), route('craft.cp.settings.assets.transforms.create'))
+                ->createActionInPageHeader()
+                ->deletable());
+
+        return new CpScreenResponse()
+            ->title(t('Image Transforms'))
+            ->subnav($this->subnav())
+            ->crumbs([
+                new ActionItem()->label(t('Settings'))->href(route('craft.cp.settings.index')),
+                new ActionItem()->label(t('Assets'))->href(route('craft.cp.settings.assets.transforms.index')),
                 new ActionItem()->label(t('Image Transforms')),
-            ],
-            'subnav' => $this->subnav(),
-            'title' => t('Image Transforms'),
-            'transforms' => $imageTransforms
-                ->getAllTransforms()
-                ->sortBy(fn (ImageTransform $transform): string => t($transform->name, category: 'site')),
-            'modes' => ImageTransformMode::asOptions(),
-        ]);
+            ])
+            ->ui(Ui::make([$table]));
     }
 
     public function create(Images $images): CpScreenResponse
@@ -113,7 +147,7 @@ class ImageTransformsController extends BaseAssetSettingsController
         );
     }
 
-    public function renderForm(Request $request, ImageTransforms $imageTransforms, Images $images): JsonResponse
+    public function renderUi(Request $request, ImageTransforms $imageTransforms, Images $images): JsonResponse
     {
         $data = $request->validate([
             'values' => ['required', 'array'],
@@ -140,7 +174,7 @@ class ImageTransformsController extends BaseAssetSettingsController
         abort_if($transform === null, 404, 'Transform not found');
 
         return new JsonResponse([
-            'form' => $this->viewModel($transform, $images, $values)->form(),
+            'ui' => $this->viewModel($transform, $images, $values)->ui(),
         ]);
     }
 
@@ -173,7 +207,7 @@ class ImageTransformsController extends BaseAssetSettingsController
         return new ImageTransformEditViewModel(
             $transform,
             $images,
-            $this->formResolver,
+            $this->uiResolver,
             $this->assetTransformers,
             $this->assetTransformDrivers,
             readOnly: ! $this->generalConfig->allowAdminChanges,

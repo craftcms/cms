@@ -292,8 +292,8 @@
     {% endif %}
   </div>
   <div class="fields" data-matrix-block-fields>
-    {{ tag('craft-entry-field-layout-form', {
-      data: {payload: formPayload|json_encode},
+    {{ tag('craft-entry-field-layout-ui', {
+      data: {payload: uiPayload|json_encode},
     }) }}
   </div>
 {% endtag %}{# /.matrixblock #}

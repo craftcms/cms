@@ -1,12 +1,19 @@
+{# Renders an entry type select from the legacy entryTypeSelect variables (the
+   componentSelect variables, plus `allowOverrides`, `includeGroupInValues` and
+   `create`). The mapping lives in FormFields::entryTypeSelectFromConfig(); only
+   the `jsClass` escape hatch is rendered here. #}
+
+{% if not (jsClass ?? false) %}
+  {{- craft.cp.entryTypeSelect(_context)|raw }}
+{% else %}
 {% set allowOverrides = allowOverrides ?? false %}
 
-{% embed '_includes/forms/componentSelect.twig' with {
+{% embed '_includes/forms/componentSelect/legacy' with {
   options: options ?? EntryTypes.getAllEntryTypes(),
   showHandles: true,
   showIndicators: showIndicators ?? allowOverrides,
   showDescription: showDescription ?? allowOverrides,
   createAction: (create ?? false) ? cpUrl('settings/entry-types/new') : null,
-  jsClass: jsClass ?? false,
   jsSettings: {
     allowOverrides,
   }|merge(jsSettings ?? {}),
@@ -25,7 +32,6 @@
             id: entryType.id,
             group: (includeGroupInValues ?? false) ? (entryType.group ?? 'General'|t('app')) : null,
           }|filter|merge(overrides)|json_encode : null,
-          checkbox: selectable ?? false,
           showActionMenu: showActionMenus,
           showHandle: showHandles,
           showIndicators: showIndicators,
@@ -33,11 +39,9 @@
           hyperlink: hyperlinks,
           overrides,
         }) %}
-        {% if disabled %}
-          {% set chip = chip|removeClass('removable') %}
-        {% endif %}
         {{ chip|raw }}
       </li>
     {% endfor %}
   {% endblock %}
 {% endembed %}
+{% endif %}

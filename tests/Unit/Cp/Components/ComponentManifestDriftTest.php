@@ -182,11 +182,6 @@ function cpDriftInvokeProtected(ViewComponent $component, string $method): mixed
 function cpDriftWcOnlyAllowlist(): array
 {
     return [
-        // <craft-tabs> writes `collapsed` itself in updated(), derived from
-        // selectedIndex, so a surrounding layout can style on it. Readable
-        // state, not a knob — Tabs::collapsible() is what a caller sets.
-        'craft-tabs' => ['collapsed'],
-
         // Inherited from <craft-popover>: it stops the overlay writing
         // `aria-expanded` onto its invoker, for a consumer whose invoker is a
         // positioning anchor rather than the control. Only something composing

@@ -8,10 +8,10 @@ use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Plugin\PluginSettings;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
@@ -254,9 +254,9 @@ interface PluginInterface
     public function getReadOnlySettingsResponse(): mixed;
 
     /**
-     * Returns the plugin settings form.
+     * Returns the plugin settings UI.
      */
-    public function settingsForm(FormContext $context = new FormContext): ?Form;
+    public function settingsUi(UiContext $context = new UiContext): ?Ui;
 
     /**
      * Returns the control panel nav item definition for this plugin, if it has a section in the control panel.

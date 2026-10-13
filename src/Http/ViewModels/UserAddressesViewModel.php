@@ -61,7 +61,7 @@ class UserAddressesViewModel extends ViewModel
         }
 
         return $this->user->getAddressManager()
-            ->formControl('addresses', $this->user, $this->showIndex() ? 'index' : 'cards-grid', $config)
+            ->uiControl('addresses', $this->user, $this->showIndex() ? 'index' : 'cards-grid', $config)
             ->props();
     }
 

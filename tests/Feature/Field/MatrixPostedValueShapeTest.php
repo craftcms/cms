@@ -13,10 +13,10 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -24,7 +24,7 @@ use function Pest\Laravel\actingAs;
 /**
  * The browser posts a Matrix field as an `{entries, sortOrder}` envelope, but the two
  * control panel stacks don't agree on where the `uid:` prefix goes: `block.twig` writes
- * prefixed `entries` keys and bare `sortOrder` values, while the Form controls prefix
+ * prefixed `entries` keys and bare `sortOrder` values, while the UI controls prefix
  * both. Every shape below is something a real client sends.
  *
  * @see ElementHelper::nestedElementDelta()
@@ -85,7 +85,7 @@ function matrixShapeBlockUids(EntryElement $entry): array
 
 beforeEach(fn () => actingAs(User::findOne()));
 
-it('creates a block when the Form control prefixes both halves of the envelope', function () {
+it('creates a block when the UI control prefixes both halves of the envelope', function () {
     [$entry, $blockType] = matrixShapeFixture();
     $uid = Str::uuid()->toString();
 
@@ -210,6 +210,6 @@ it('retains nested cards when only a sibling field in an outer block is edited',
     expect($block->getFieldValue('siblingText'))->toBe('After')
         ->and($block->getFieldValue('nestedCards')->status(null)->all())->toHaveCount(1);
 
-    app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new FormContext(mode: ControlMode::ReadOnly));
+    app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new UiContext(mode: ControlMode::ReadOnly));
     expect(SessionAuth::checkAuthorization("manageNestedElements::{$block->id}::field:nestedCards"))->toBeFalse();
 });

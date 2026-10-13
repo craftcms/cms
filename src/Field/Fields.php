@@ -823,6 +823,8 @@ class Fields
                     $layoutElement->handle = $this->layoutElementOverride($persistingField->handle, $outgoingField->handle, $layoutElement->handle);
                     $layoutElement->instructions = $this->layoutElementOverride($persistingField->instructions, $outgoingField->instructions, $layoutElement->instructions);
 
+                    // Lets saveLayout() update any condition rules that reference the outgoing field
+                    $layoutElement->oldFieldUid ??= $outgoingField->uid;
                     $layoutElement->setField($persistingField);
                     $changed = true;
                 }
@@ -838,10 +840,27 @@ class Fields
                 }
 
                 if ($layout->uid) {
-                    $projectConfigOccurrences = $projectConfigService->find(fn (array $item) => isset($item[$layout->uid]));
+                    $projectConfigOccurrences = $projectConfigService->find(fn (array $item) => (
+                        isset($item[$layout->uid]) ||
+                        in_array($layout->uid, array_column($item[ProjectConfig::ASSOC_KEY] ?? [], 0), true)
+                    ));
 
                     foreach ($projectConfigOccurrences as $path => $item) {
-                        $projectConfigService->set("$path.$layout->uid", $layout->getConfig());
+                        if (! isset($item[ProjectConfig::ASSOC_KEY])) {
+                            $projectConfigService->set("$path.$layout->uid", $layout->getConfig());
+
+                            continue;
+                        }
+
+                        // The layout is stored within a component's packed settings (e.g. a Content Block field)
+                        $item = ProjectConfigHelper::unpackAssociativeArray($item);
+                        $item[$layout->uid] = $layout->getConfig();
+                        $projectConfigService->set($path, ProjectConfigHelper::packAssociativeArray($item));
+
+                        // Fields read their layouts from their settings, so apply the change to the field as well
+                        if (preg_match(sprintf('/^%s\.(%s)\./', ProjectConfig::PATH_FIELDS, ProjectConfig::UID_PATTERN), $path, $match)) {
+                            $this->applyFieldSave($match[1], $projectConfigService->get(ProjectConfig::PATH_FIELDS.".$match[1]"), 'global');
+                        }
                     }
                 }
 

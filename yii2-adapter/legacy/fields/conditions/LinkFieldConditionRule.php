@@ -7,7 +7,7 @@ namespace craft\fields\conditions;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
-use CraftCms\Yii2Adapter\Form\Concerns\LegacyTextConditionRule;
+use CraftCms\Yii2Adapter\Ui\Concerns\LegacyTextConditionRule;
 
 /** @deprecated 6.0.0 Use \CraftCms\Cms\Field\Conditions\LinkFieldConditionRule instead. */
 class LinkFieldConditionRule extends \CraftCms\Cms\Field\Conditions\LinkFieldConditionRule

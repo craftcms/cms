@@ -63,6 +63,9 @@ const EXCEPTIONS: Record<string, string> = {
   // stage between stacked and its `sm` row.
   'resources/js/modules/elements/index/components/ElementIndexToolbar.vue':
     '480px',
+  // PageScreen's 932px shell fold, plus the expanded sidebar, as a viewport
+  // width: the sidebar sits outside the shell's container.
+  'resources/js/common/components/CpSidebar.vue': '1158px',
   // Predates the scale.
   'resources/css/global-sidebar.css': '1999px',
   'resources/css/messages.css': 'calc(600rem / 16)',

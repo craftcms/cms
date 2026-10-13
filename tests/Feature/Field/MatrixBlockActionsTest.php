@@ -12,13 +12,13 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Form\Controls\NestedElementBlocks;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Controls\NestedElementBlocks;
 use CraftCms\Cms\User\Elements\User;
 
 use function CraftCms\Cms\t;
@@ -81,7 +81,7 @@ function matrixActionsControl(EntryElement $owner): NestedElementBlocks
     $field = app(Fields::class)->getFieldByHandle('actionsMatrix');
 
     /** @var NestedElementBlocks $control */
-    $control = $field->formControl(new FieldContext(
+    $control = $field->uiControl(new FieldContext(
         path: 'actionsMatrix',
         value: $owner->getFieldValue('actionsMatrix'),
         element: $owner,
@@ -164,7 +164,7 @@ it('keeps single-site status actions when the field does not propagate blocks', 
     $field = app(Fields::class)->getFieldByHandle('actionsMatrix');
     $field->propagationMethod = PropagationMethod::None;
     /** @var NestedElementBlocks $control */
-    $control = $field->formControl(new FieldContext(
+    $control = $field->uiControl(new FieldContext(
         path: 'actionsMatrix',
         value: $owner->getFieldValue('actionsMatrix'),
         element: $owner,

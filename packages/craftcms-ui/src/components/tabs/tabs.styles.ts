@@ -67,6 +67,12 @@ export default css`
     flex: none;
   }
 
+  /* Overrides LionTabs' bold, which would otherwise beat the tab's own
+     selected weight and its width-reserving label copy. */
+  .tabs__tab-group ::slotted([slot='tab'][selected]) {
+    font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
+  }
+
   /*
    * Unless the strip is asked to divide its width evenly, which is the other
    * answer to the same problem: rather than collapsing the tabs that don't
@@ -117,6 +123,10 @@ export default css`
     display: none;
   }
 
+  ::slotted([slot='panel']) {
+    --c-focus-outline-offset: calc(var(--c-focus-outline-width) * -1);
+  }
+
   .tabs__panels {
     min-width: 0;
     background-color: var(--c-surface-default);
@@ -124,17 +134,6 @@ export default css`
        the flex item open at its content's height. */
     min-block-size: 0;
     overflow-y: auto;
-  }
-
-  /*
-   * Nothing is selected, so the region goes away entirely rather than holding
-   * an empty box open: a collapsed strip is just the strip. LionTabs gives
-   * .tabs__panels an author display: block, which would otherwise beat the
-   * UA's [hidden] rule. The flex gap goes with it, gaps being drawn only
-   * between the items that are laid out.
-   */
-  .tabs__panels[hidden] {
-    display: none;
   }
 
   /*

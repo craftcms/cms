@@ -1,16 +1,16 @@
-import type {FormPayload, FormValues} from '@/modules/forms/types';
+import type {UiPayload, UiValues} from '@/modules/ui/types';
 
 export type WidgetType = Omit<
   CraftCms.Cms.Dashboard.Data.WidgetTypeData,
-  'settingsForm'
+  'settingsUi'
 > & {
-  settingsForm: FormPayload | null;
+  settingsUi: UiPayload | null;
 };
 
 export type DashboardWidget = Omit<
   CraftCms.Cms.Dashboard.Data.WidgetData,
-  'settingsForm' | 'settings'
+  'settingsUi' | 'settings'
 > & {
-  settingsForm: FormPayload | null;
-  settings: FormValues;
+  settingsUi: UiPayload | null;
+  settings: UiValues;
 };

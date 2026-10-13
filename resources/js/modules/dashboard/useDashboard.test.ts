@@ -50,7 +50,7 @@ function widget(id: number): DashboardWidget {
     subtitle: null,
     name: 'Example',
     settings: {limit: id},
-    settingsForm: null,
+    settingsUi: null,
     component: null,
     data: null,
     fragment: {html: '', headHtml: '', bodyHtml: ''},

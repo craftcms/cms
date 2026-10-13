@@ -89,13 +89,6 @@ export default class CraftTimelineItem extends LitElement {
                   : nothing}
                 ${this._hasMeta
                   ? html`<div class="timeline-item__meta" part="meta">
-                      ${this._hasHeading
-                        ? html`<span
-                            class="timeline-item__separator"
-                            aria-hidden="true"
-                            >•</span
-                          >`
-                        : nothing}
                       <slot name="meta"></slot>
                     </div>`
                   : nothing}

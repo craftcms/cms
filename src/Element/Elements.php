@@ -32,6 +32,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
@@ -780,10 +781,53 @@ class Elements
                             'sortOrder' => $sortOrder,
                         ]);
                 }
+
+                $this->touchElementAndOwners($owner);
             });
         }
 
         $this->elementCaches->invalidateForElement($owner);
+    }
+
+    /**
+     * Updates an element's modification time and invalidates its caches, along with its owners'.
+     */
+    public function touchElementAndOwners(ElementInterface $element): void
+    {
+        $elements = [];
+
+        while ($element->id !== null) {
+            if (isset($elements[$element->id])) {
+                throw new RuntimeException('Cyclic element ownership.');
+            }
+
+            $elements[$element->id] = $element;
+
+            if (! $element instanceof NestedElementInterface || ($owner = $element->getOwner()) === null) {
+                break;
+            }
+
+            // Independently edited nested drafts and revisions can still point at a canonical owner.
+            if (($element->getIsDraft() || $element->getIsRevision()) && ! $owner->getIsDraft() && ! $owner->getIsRevision()) {
+                break;
+            }
+
+            $element = $owner;
+        }
+
+        if ($elements === []) {
+            return;
+        }
+
+        $timestamp = now('UTC');
+
+        DB::table(Table::ELEMENTS)
+            ->whereIn('id', array_keys($elements))
+            ->update(['dateUpdated' => $timestamp]);
+
+        foreach ($elements as $element) {
+            $this->elementCaches->invalidateForElement($element);
+        }
     }
 
     // Misc

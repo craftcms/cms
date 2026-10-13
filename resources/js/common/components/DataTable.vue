@@ -5,7 +5,10 @@
     type Row,
     type Table,
   } from '@tanstack/vue-table';
-  import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
+  import {
+    type CraftTableFeatures,
+    tableHeaderId,
+  } from '@/common/table/craftTable';
   import {t} from '@craftcms/ui';
   import type CraftSpinner from '@craftcms/ui/components/spinner/spinner';
   import {
@@ -18,13 +21,25 @@
     watch,
   } from 'vue';
   import type {NestedReorderDirection} from '@craftcms/ui';
+  import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
   import {useReorderableRows} from '@/common/composables/useReorderableRows';
-  import {TableSpacing, type TableSpacingValue} from '@/common/types';
+  import {
+    TableAppearance,
+    TableSpacing,
+    type TableAppearanceValue,
+    type TableSpacingValue,
+  } from '@/common/types';
   import ColumnHeaderTitle from '@/common/components/ColumnHeaderTitle.vue';
   import DropIndicator from '@/common/components/DropIndicator.vue';
   const props = withDefaults(
     defineProps<{
       table: Table<CraftTableFeatures, TData>;
+      selection?: TableRowSelection<TData>;
+      getRowLabel?: (row: TData) => string;
+      rowBehavior?: {
+        onClick?: (row: TData, event: MouseEvent) => boolean;
+        onKeydown?: (row: TData, event: KeyboardEvent) => boolean;
+      };
       title?: string;
       reorderable?: boolean;
       /**
@@ -39,6 +54,13 @@
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
       withBottomBorder?: boolean;
+      /**
+       * How the table meets its container. `flush` pads the start and end of
+       * each row by `--cp-container-padding`, for a table that spans its
+       * container's padding rather than sitting inside it. (A `raised` pane is
+       * up to whatever contains the table; see `AdminTable`.)
+       */
+      appearance?: Exclude<TableAppearanceValue, 'raised'>;
     }>(),
 
     {
@@ -49,6 +71,7 @@
       loading: false,
       layout: 'auto',
       withBottomBorder: true,
+      appearance: TableAppearance.Plain,
     }
   );
 
@@ -63,6 +86,61 @@
     rowRef: [element: Element | null, row: Row<CraftTableFeatures, TData>];
   }>();
 
+  const selectable = computed(
+    () => props.selection?.selection.enabled.value ?? false
+  );
+  const readOnly = computed(
+    () => props.readOnly || !!props.selection?.readOnly.value
+  );
+  const selectionDisabled = computed(
+    () => readOnly.value || props.interactionsDisabled || props.loading
+  );
+  const leadingColumnTracks = computed(() => [
+    ...props.leadingColumnTracks,
+    ...(selectable.value ? ['44px'] : []),
+  ]);
+  const pendingShiftKey = ref(false);
+
+  function rowLabel(row: Row<CraftTableFeatures, TData>): string {
+    return (
+      props.getRowLabel?.(row.original) ??
+      String(row.original.label ?? row.original.name ?? row.original.id)
+    );
+  }
+
+  function toggleAllSelected(event: Event): void {
+    if (selectionDisabled.value) return;
+    props.selection?.onToggleAllSelected(
+      (event.target as HTMLInputElement).checked
+    );
+  }
+
+  function selectRow(row: Row<CraftTableFeatures, TData>, event: Event): void {
+    if (selectionDisabled.value) return;
+    const shiftKey = pendingShiftKey.value;
+    pendingShiftKey.value = false;
+
+    props.selection?.selectRow(row, {
+      checked: (event.target as HTMLInputElement).checked,
+      shiftKey,
+    });
+  }
+
+  function onRowClick(
+    row: Row<CraftTableFeatures, TData>,
+    event: MouseEvent
+  ): void {
+    emit('rowClick', row, event);
+    if (
+      props.rowBehavior?.onClick?.(row.original, event) ||
+      event.defaultPrevented ||
+      selectionDisabled.value
+    )
+      return;
+    props.selection?.selectRowFromEvent(row, event);
+  }
+
+  const rootRef = useTemplateRef<HTMLElement>('root-ref');
   const loadingRef = useTemplateRef<CraftSpinner>('loading-ref');
 
   const {setRowRef, setHandleRef, getDragState, getDropState} =
@@ -72,7 +150,7 @@
         emit('reorder', startIndex, finishIndex);
       },
       enabled: () =>
-        !props.readOnly && props.reorderable && !props.interactionsDisabled,
+        !readOnly.value && props.reorderable && !props.interactionsDisabled,
     });
 
   function getClosestEdge(rowId: string) {
@@ -110,9 +188,10 @@
 
   function captureFocusedHeaderId(): string | null {
     const active = document.activeElement;
-    if (!(active instanceof HTMLElement)) return null;
-    const headerCell = active.closest<HTMLElement>('th[id^="header-"]');
-    return headerCell ? headerCell.id.slice('header-'.length) : null;
+    if (!(active instanceof HTMLElement) || !rootRef.value?.contains(active)) {
+      return null;
+    }
+    return active.closest<HTMLElement>('th[id]')?.id ?? null;
   }
 
   watch(
@@ -130,8 +209,8 @@
         const headerId = pendingSortFocusHeaderId.value;
         pendingSortFocusHeaderId.value = null;
         await nextTick();
-        document
-          .getElementById(`header-${headerId}`)
+        rootRef.value
+          ?.querySelector<HTMLElement>(`#${CSS.escape(headerId)}`)
           ?.querySelector<HTMLButtonElement>('button')
           ?.focus();
       }
@@ -160,7 +239,7 @@
       columnCount += 1;
     }
 
-    return columnCount + props.leadingColumnTracks.length;
+    return columnCount + leadingColumnTracks.value.length;
   });
 
   const tableStyles = computed(() => {
@@ -186,7 +265,7 @@
     return {
       '--table-column-count': columnCount,
       '--table-template-columns': [
-        ...props.leadingColumnTracks,
+        ...leadingColumnTracks.value,
         ...gridDef,
       ].join(' '),
     };
@@ -232,6 +311,23 @@
     )
       return;
 
+    if (props.rowBehavior?.onKeydown?.(row.original, event)) {
+      event.preventDefault();
+      return;
+    }
+
+    if (props.interactionsDisabled || props.loading) return;
+
+    if (
+      selectable.value &&
+      !readOnly.value &&
+      (event.key === ' ' || event.key === 'Enter')
+    ) {
+      event.preventDefault();
+      props.selection?.toggleRow(row);
+      return;
+    }
+
     const rows = props.table.getRowModel().rows;
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
@@ -239,13 +335,16 @@
         event.key === 'ArrowDown'
           ? Math.min(index + 1, rows.length - 1)
           : Math.max(index - 1, 0);
+      if (selectable.value && !readOnly.value && event.shiftKey && rows[next]) {
+        props.selection?.extendSelectionTo(rows[next]);
+      }
       focusRowByIndex(next, event.currentTarget);
     }
   }
 </script>
 
 <template>
-  <div>
+  <div ref="root-ref">
     <div v-if="loading" class="grid place-items-center min-h-20">
       <craft-spinner ref="loading-ref">{{ loadingLabel }}</craft-spinner>
     </div>
@@ -257,6 +356,7 @@
         'cp-table--compact': spacing === TableSpacing.Compact,
         'cp-table--spacious': spacing === TableSpacing.Spacious,
         'cp-table--auto': layout === 'auto',
+        'cp-table--flush': appearance === TableAppearance.Flush,
       }"
       :style="tableStyles"
     >
@@ -274,6 +374,22 @@
           :key="headerGroup.id"
         >
           <slot name="leading-header" />
+          <th
+            v-if="selectable"
+            class="cp-table-cell cp-table-cell--header cp-table-cell--select"
+            scope="col"
+          >
+            <craft-checkbox
+              label-sr-only
+              .checked="table.getIsAllRowsSelected()"
+              .indeterminate="
+                table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+              "
+              .disabled="selectionDisabled"
+              @model-value-changed="toggleAllSelected"
+              ><label slot="label">{{ t('Select all') }}</label></craft-checkbox
+            >
+          </th>
           <template v-if="!readOnly && reorderable">
             <th class="cell cell--header">
               <span class="sr-only">Reorder</span>
@@ -283,7 +399,7 @@
             v-for="header in headerGroup.headers"
             :key="header.id"
             :colSpan="header.colSpan"
-            :id="`header-${header.id}`"
+            :id="tableHeaderId(table, header.id)"
             :class="[
               {
                 'cp-table-cell': true,
@@ -349,11 +465,13 @@
             :class="{
               row: true,
               'cp-table-row': true,
+              sel: !!selection && row.getIsSelected(),
               'row--dragging':
                 !readOnly && getDragState(row.id).type === 'is-dragging',
             }"
+            :tabindex="selectable ? 0 : undefined"
             v-bind="rowAttributes?.(row)"
-            @click="emit('rowClick', row, $event)"
+            @click="onRowClick(row, $event)"
             @keydown="onRowKeydown(row, rowIdx, $event)"
           >
             <slot
@@ -361,6 +479,22 @@
               :row="row"
               :hide-bottom-border="hideBottomBorder(rowIdx)"
             />
+            <td
+              v-if="selectable"
+              class="cp-table-cell cp-table-cell--select"
+              :class="{'border-b-0': hideBottomBorder(rowIdx)}"
+            >
+              <craft-checkbox
+                label-sr-only
+                .checked="row.getIsSelected()"
+                .disabled="selectionDisabled || !row.getCanSelect()"
+                @click="pendingShiftKey = $event.shiftKey"
+                @model-value-changed="selectRow(row, $event)"
+                ><label slot="label">{{
+                  t('Select {label}', {label: rowLabel(row)})
+                }}</label></craft-checkbox
+              >
+            </td>
             <template v-if="reorderable && !readOnly">
               <td :class="{'border-b-0': hideBottomBorder(rowIdx)}">
                 <div>
@@ -446,7 +580,37 @@
   :deep(.cp-table-cell) {
     width: min-content;
   }
+  // Selection column hugs its checkbox rather than claiming a data-column share.
+  // Doubled class so it outranks wrappers that restate the `min-content` width.
+  :deep(.cp-table-cell.cp-table-cell--select) {
+    width: 1px;
+    white-space: nowrap;
+  }
   :deep(.row--dragging) {
     opacity: 0.4;
+  }
+
+  // Selected rows take the accent fill a selected chip or thumbnail does, so a
+  // selection reads the same whichever view mode you're in. Painted on the
+  // cells rather than the row: a `<tr>` background loses to any the cells set.
+  :deep(.cp-table-row.sel > td) {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-quiet);
+  }
+
+  // Cells carry a bottom border only, so a run of selected rows is bounded by
+  // the bottom border of the row above it and the bottom border of its own last
+  // row. Borders between selected rows are interior and stay quiet.
+  :deep(.cp-table-row.sel:not(:has(+ .cp-table-row.sel)) > td) {
+    border-block-end-color: var(--c-color-accent-border-normal);
+  }
+
+  :deep(.cp-table-row:not(.sel):has(+ .cp-table-row.sel) > td) {
+    border-block-end-color: var(--c-color-accent-border-normal);
+  }
+
+  // Nothing above the first row to carry its edge, so it keeps its own.
+  :deep(.cp-table-row.sel:first-child > td) {
+    border-block-start-color: var(--c-color-accent-border-normal);
   }
 </style>

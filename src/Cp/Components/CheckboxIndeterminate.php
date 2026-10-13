@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use CraftCms\Cms\Form\Enums\AllOptionMode;
+use CraftCms\Cms\Ui\Enums\AllOptionMode;
 
 /**
  * PHP counterpart to the `<craft-checkbox-indeterminate>` web component: an

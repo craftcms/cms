@@ -143,6 +143,10 @@ export default class CraftTooltip extends LionTooltip {
         placement: this.placement,
         modifiers: [
           ...(config.popperConfig?.modifiers ?? []),
+          // Lion's arrow mixin leaves 8px for an arrow tooltips don't draw.
+          // Sit at craft-popover's default distance instead, so a tooltip
+          // lines up with a flyout opened from the same row.
+          {name: 'offset', options: {offset: [0, 4]}},
           ...viewportEscapingModifiers(),
         ],
       },

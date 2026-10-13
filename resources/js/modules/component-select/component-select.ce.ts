@@ -8,7 +8,7 @@ import {
 /**
  * `<craft-component-select>` — a light-DOM progressive-enhancement port of the
  * legacy `Craft.ComponentSelectInput` (jQuery/Garnish). It wraps the
- * server-rendered markup from `_includes/forms/componentSelect.twig` and boots
+ * server-rendered markup from the `ComponentSelect` PHP component and boots
  * a {@link ComponentSelect} controller around it (see that file for the
  * behavior). This element is a `ControllerElement` facade: it owns attribute
  * parsing and is the public API surface consumers use — `selectedIds`,
@@ -36,6 +36,17 @@ export default class CraftComponentSelect extends ControllerElement<ComponentSel
    * {@link create} that always dereferences this field.
    */
   #getInputValue: ((id: string | number) => string | null) | null = null;
+
+  constructor() {
+    super();
+
+    // Set before the element upgraded, it's an own property hiding the accessor.
+    if (Object.prototype.hasOwnProperty.call(this, 'getInputValue')) {
+      const value = this.getInputValue;
+      delete (this as {getInputValue?: unknown}).getInputValue;
+      this.getInputValue = value;
+    }
+  }
 
   /**
    * Optional per-instance hook: the hidden-input value a newly-rendered chip
@@ -162,6 +173,7 @@ export default class CraftComponentSelect extends ControllerElement<ComponentSel
       showActionMenus: this.#boolAttr('show-action-menus', true),
       hyperlinks: this.#boolAttr('hyperlinks', false),
       createAction: this.getAttribute('create-action'),
+      checkboxOptions: this.#boolAttr('checkbox-options', false),
       disabled: this.#boolAttr('disabled', false),
     };
 

@@ -21,7 +21,7 @@ class ElementSiteRemoved extends ActivityEventType
     public static function format(ActivityEvent $event): string
     {
         return t(
-            'Removed from {site}.',
+            'Removed from {site}',
             ['site' => $event->snapshots['site']['name']],
         );
     }

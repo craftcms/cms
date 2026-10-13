@@ -290,7 +290,7 @@ describe('replaceReferencesModal', function () {
     });
 });
 
-it('preserves replacement Form settings and hidden values', function (string $method, string $action, bool $hardDelete) {
+it('preserves replacement UI settings and hidden values', function (string $method, string $action, bool $hardDelete) {
     $first = EntryModel::factory()->createElement();
     $second = EntryModel::factory()->createElement();
     $response = postJson(action([DeleteElementsController::class, $method]), [

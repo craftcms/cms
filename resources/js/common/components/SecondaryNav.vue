@@ -9,6 +9,11 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
 
+  const slots = defineSlots<{
+    actions?: () => unknown;
+    default?: () => unknown;
+  }>();
+
   const {items = [], actions = []} = defineProps<{
     /**
      * The nav itself, described rather than drawn.
@@ -27,6 +32,14 @@
      */
     actions?: ActionItems;
   }>();
+
+  /**
+   * Whether there is a menu to draw. The `actions` slot is a second way to put
+   * something there, so a caller that fills only the slot still gets a menu.
+   */
+  const hasActions = computed(
+    () => actions.length > 0 || Boolean(slots.actions)
+  );
 
   const isLarge = cpBreakpoints.greaterOrEqual('lg');
 
@@ -110,7 +123,7 @@ Nav states:
       </div>
     </craft-popover>
 
-    <craft-action-menu v-if="actions.length">
+    <craft-action-menu v-if="hasActions">
       <craft-button type="button" size="small" slot="invoker">
         <craft-icon name="ellipsis" :label="t('Customize')"></craft-icon>
       </craft-button>
@@ -141,11 +154,12 @@ Nav states:
       the same actions are already at the end of the action menu above, and
       this element stays in the DOM translated off-screen. -->
     <div
-      v-if="isLarge && actions.length"
+      v-if="isLarge && hasActions"
       class="secondary-nav__actions flex flex-wrap gap-2 mt-4"
     >
-      <ActionMenu :actions="actions" :button-variant="ButtonVariant.Outline" />
-      <slot name="actions"></slot>
+      <ActionMenu :actions="actions" :button-variant="ButtonVariant.Outline">
+        <template #actions><slot name="actions"></slot></template>
+      </ActionMenu>
     </div>
   </nav>
 </template>

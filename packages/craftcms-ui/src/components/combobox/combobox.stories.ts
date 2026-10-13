@@ -16,8 +16,8 @@ const countries: ComboboxItem[] = [
 ];
 
 const statuses: ComboboxItem[] = [
-  {label: 'Online', value: 'true', data: {indicator: {variant: 'success'}}},
-  {label: 'Offline', value: 'false', data: {indicator: {variant: 'danger'}}},
+  {label: 'Online', value: 'true', data: {indicator: {fill: 'success'}}},
+  {label: 'Offline', value: 'false', data: {indicator: {fill: 'danger'}}},
 ];
 
 const grouped: ComboboxItem[] = [

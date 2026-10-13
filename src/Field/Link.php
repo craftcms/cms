@@ -21,13 +21,6 @@ use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Link as LinkControl;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\LinkDataType;
 use CraftCms\Cms\Support\Arr;
@@ -37,6 +30,13 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Link as LinkControl;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Validation\Validator;
@@ -172,16 +172,16 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        return Form::make($this->linkSettingsNodes())->add(
-            FormField::make(t('Max Length'))
+        return Ui::make($this->linkSettingsNodes())->add(
+            UiField::make(t('Max Length'))
                 ->instructions(t('The maximum length (in bytes) the field can hold.'))
                 ->control(Number::make('maxLength')->min(10)->step(10)->value($this->maxLength)),
         )->when(
             Cms::config()->enableGql,
-            fn (Form $form): Form => $form->add(
-                FormField::make(t('GraphQL Mode'))
+            fn (Ui $ui): Ui => $ui->add(
+                UiField::make(t('GraphQL Mode'))
                     ->control(Choice::make('graphqlMode')->options([
                         ['label' => t('Full data'), 'value' => 'full'],
                         ['label' => t('URL only'), 'value' => 'url'],
@@ -215,7 +215,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $value = $context->value instanceof LinkData
             ? $context->value->serialize()

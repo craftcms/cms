@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -255,7 +256,7 @@ it('requires subpath for shared filesystems and rejects overlapping roots', func
         ->and($valid->errors()->has('subpath'))->toBeFalse();
 });
 
-it('propagates invalid field layout errors to fieldLayout prefixed keys', function () {
+it('propagates invalid field layout errors to fieldLayout prefixed keys', function (?string $namespace, array $path) {
     $volume = new Volume([
         'name' => 'Layout Volume',
         'handle' => 'layoutVolume',
@@ -277,10 +278,17 @@ it('propagates invalid field layout errors to fieldLayout prefixed keys', functi
     expect($volume->validate(['fieldLayout']))->toBeFalse()
         ->and($volume->errors()->has('fieldLayout.customFields'))->toBeTrue();
 
-    $html = app(FieldLayoutDesigner::class)->generatedFieldsTableHtml($fieldLayout);
-    expect(new Crawler($html)->filter('td.error [name="generatedFields[0][handle]"]')->count())->toBe(1)
+    $html = InputNamespace::with($namespace, fn () => app(FieldLayoutDesigner::class)->generatedFieldsTableHtml($fieldLayout));
+    $payload = json_decode(new Crawler($html)->filter('craft-generated-fields-table')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+    expect($payload['errors'])->toContain([
+        'path' => [...$path, 'generatedFields', '0', 'handle'],
+        'messages' => $fieldLayout->errors()->get('generatedFields.'.$fieldLayout->getGeneratedFields()[0]['uid'].'.handle'),
+    ])
         ->and($fieldLayout->getConfig()['generatedFields'][0]['handle'])->toBe('alt');
-});
+})->with([
+    'without a namespace' => [null, []],
+    'with a nested namespace' => ['settings[layout]', ['settings', 'layout']],
+]);
 
 function insertVolumeValidationRow(array $overrides = []): void
 {

@@ -3,8 +3,8 @@
   import {router, useHttp, usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import {connect, destroy} from '@actions/Users/SignInProvidersController';
-  import {useCraftTable} from '@/modules/admin-table/craftTable';
-  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+  import {useCraftTable} from '@/common/table/craftTable';
+  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import {elevatedSessionManager} from '@/modules/auth/elevated-session';
   import UserScreen from '@/modules/user/components/UserScreen.vue';

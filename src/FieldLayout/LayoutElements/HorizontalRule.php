@@ -7,9 +7,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Nodes\Separator;
 use InvalidArgumentException;
 use Override;
 
@@ -55,7 +55,7 @@ HTML;
     }
 
     #[Override]
-    public function formNode(FieldLayoutElementContext $context): ?Node
+    public function uiNode(FieldLayoutElementContext $context): ?Node
     {
         if (! $this->uid) {
             throw new InvalidArgumentException('Persisted Horizontal Rule FieldLayout elements require stable UIDs.');

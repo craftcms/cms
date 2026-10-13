@@ -17,8 +17,11 @@ export interface ComboboxOptionData {
   keywords?: string;
   /** Secondary text rendered after the label. */
   hint?: string;
-  /** Renders a `craft-indicator` before the label. */
-  indicator?: {variant?: string} & Record<string, unknown>;
+  /**
+   * Renders a `craft-indicator` before the label. `fill` takes what the
+   * component's own does: a status variant, a palette swatch, or any colour.
+   */
+  indicator?: {fill?: string; appearance?: string} & Record<string, unknown>;
   /** Name of a `craft-icon` rendered before the label, and in the textbox while this option is selected. */
   icon?: string;
   [key: string]: unknown;
@@ -244,6 +247,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     this.#lastNotifiedValue = this.modelValue;
     this.#committedValue = this.modelValue;
     this.#renderOptions();
+    this.#adoptPendingModelValue();
     if (this.multipleChoice) {
       this.initialValues = [
         ...(Array.isArray(this.pendingModelValue)
@@ -251,6 +255,35 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
           : []),
       ];
     }
+  }
+
+  /**
+   * Re-applies the value the `model-value` attribute asked for.
+   *
+   * Lion adopts a value once an option names it, and on an element upgraded
+   * from server-rendered markup the attribute lands before the options exist,
+   * so the value is dropped. Nothing has been announced yet at this point, so
+   * this is silent.
+   */
+  #adoptPendingModelValue(): void {
+    if (
+      this.pendingModelValue === undefined ||
+      JSON.stringify(this.modelValue) === JSON.stringify(this.pendingModelValue)
+    ) {
+      return;
+    }
+
+    const pending = this.pendingModelValue;
+    this.changingValues = true;
+
+    try {
+      this.modelValue = pending;
+    } finally {
+      this.changingValues = false;
+    }
+
+    this.#lastNotifiedValue = this.modelValue;
+    this.#committedValue = this.modelValue;
   }
 
   /** Emits native `change` when the value has moved since the last commit. */
@@ -271,6 +304,15 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
 
   override updated(changed: Map<PropertyKey, unknown>) {
     super.updated(changed);
+    this.#syncFormValue();
+    // An `aria-labelledby` on the host names a label the consumer renders
+    // itself — a table column heading, say — rather than one in the `label`
+    // slot. Lion rewrites the textbox's own `aria-labelledby` from its (empty)
+    // label on every update, so this has to be reapplied after `super`.
+    const labelledBy = this.getAttribute('aria-labelledby');
+    if (labelledBy) {
+      this._inputNode?.setAttribute('aria-labelledby', labelledBy);
+    }
     // Lion names the listbox after its own label only, which is empty when a
     // wrapping craft-field provides the label.
     this._listboxNode?.setAttribute(
@@ -576,11 +618,15 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
         <span class="combobox__option">
           ${data.indicator
             ? html`<craft-indicator
-                variant=${data.indicator.variant ?? 'neutral'}
+                fill=${data.indicator.fill ?? nothing}
+                appearance=${data.indicator.appearance ?? nothing}
               ></craft-indicator>`
             : nothing}
           ${data.icon
-            ? html`<craft-icon name="${data.icon}"></craft-icon>`
+            ? html`<craft-icon
+                name="${data.icon}"
+                style=${data.color ? `--icon-color: ${data.color}` : nothing}
+              ></craft-icon>`
             : nothing}
           ${isEnv ? html`<code>${label}</code>` : label}
         </span>
@@ -684,6 +730,39 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     );
   }
 
+  /**
+   * Publishes the value for native form submission.
+   *
+   * The host carries the `name` and the class declares `formAssociated`, but a
+   * single-choice combobox never told `ElementInternals` what its value was, so
+   * it contributed nothing to a native POST — a form read with `FormData`, or a
+   * page that posts itself rather than going through an Inertia form, saw the
+   * field as absent and left the old value in place. Multiple choice has its
+   * own hidden inputs; this is the single-choice equivalent.
+   */
+  #syncFormValue() {
+    if (this.multipleChoice) {
+      return;
+    }
+
+    /**
+     * `ElementInternals` is the whole mechanism here, so without it there is
+     * nothing to publish. happy-dom doesn't implement `attachInternals()`, and
+     * this runs from `updated()` on every render — so an unguarded call made
+     * rendering a combobox throw outright in any test using that environment.
+     */
+    if (typeof this.attachInternals !== 'function') {
+      return;
+    }
+
+    this.internals ??= this.attachInternals();
+
+    const omit = !this.name || this.disabled || this.fieldsetDisabled;
+    const value = typeof this.modelValue === 'string' ? this.modelValue : '';
+
+    this.internals.setFormValue(omit ? null : value);
+  }
+
   private syncInputs() {
     if (!this.inputs) {
       this.inputs = document.createElement('span');
@@ -717,7 +796,11 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       this.modelValue = [...this.initialValues];
       this.value = '';
       this.syncInputs();
+
+      return;
     }
+
+    this.#syncFormValue();
   }
 
   /** Tracks whether an ancestor `<fieldset>` has disabled the control. */

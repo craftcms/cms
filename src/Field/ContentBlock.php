@@ -24,14 +24,6 @@ use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField as CustomFieldElement;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\ContentBlock as ContentBlockControl;
-use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
 use CraftCms\Cms\Gql\Types\Generators\ContentBlock as ContentBlockGenerator;
@@ -40,6 +32,14 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\ContentBlock as ContentBlockControl;
+use CraftCms\Cms\Ui\Controls\FieldLayoutDesigner;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -143,12 +143,12 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $layout = $this->getFieldLayout();
 
-        return Form::make([
-            FormField::make(t('Field Layout'))
+        return Ui::make([
+            UiField::make(t('Field Layout'))
                 ->control(FieldLayoutDesigner::make('fieldLayout')
                     ->elementType(ContentBlockElement::class)
                     ->customizableTabs(false)
@@ -157,7 +157,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                         'type' => $layout->type,
                         ...($layout->getConfig() ?? []),
                     ])),
-            FormField::make(t('View Mode'))
+            UiField::make(t('View Mode'))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
                     ->options([
@@ -389,7 +389,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $control = ContentBlockControl::make($context->path);
 
@@ -398,10 +398,10 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         }
 
         return $control
-            ->form(app(FieldLayoutCompiler::class)->form(
+            ->ui(app(FieldLayoutCompiler::class)->ui(
                 $context->value->getFieldLayout(),
                 $context->value,
-                new FormContext,
+                new UiContext,
             ))
             ->value([]);
     }

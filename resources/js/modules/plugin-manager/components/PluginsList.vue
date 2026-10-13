@@ -3,8 +3,8 @@
   import {computed, h, shallowReactive} from 'vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
-  import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
-  import {useCraftTable} from '@/modules/admin-table/craftTable';
+  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
+  import {useCraftTable} from '@/common/table/craftTable';
   import PluginDetails from '@/modules/plugin-manager/components/PluginDetails.vue';
   import PluginStatus from '@/modules/plugin-manager/components/PluginStatus.vue';
   import PluginActionMenu from '@/modules/plugin-manager/components/PluginActionMenu.vue';

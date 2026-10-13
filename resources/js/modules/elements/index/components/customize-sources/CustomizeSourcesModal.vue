@@ -3,17 +3,17 @@
    * The "Customize sources" modal: a source list on the left and the selected
    * source's settings on the right.
    *
-   * Each source's settings are a Form payload built by
+   * Each source's settings are a UI payload built by
    * `ElementSourcesController::show()` and namespaced at `sources.<key>`, so a
-   * FormRenderer per source produces exactly the shape `store()` reads back.
+   * UiRenderer per source produces exactly the shape `store()` reads back.
    */
   import {computed, nextTick, ref, watch} from 'vue';
   import {actionClient, t, type ReorderMove} from '@craftcms/ui';
   import ElementSourcesController from '@actions/Elements/ElementSourcesController';
   import ModalForm from '@/common/components/ModalForm.vue';
-  import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import type {FormChange, FormPayload} from '@/modules/forms/types';
-  import {pathsMatch, valueAt, visitControls} from '@/modules/forms/runtime';
+  import UiRenderer from '@/modules/ui/UiRenderer.vue';
+  import type {UiChange, UiPayload} from '@/modules/ui/types';
+  import {pathsMatch, valueAt, visitControls} from '@/modules/ui/runtime';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
@@ -48,8 +48,8 @@
   }>();
 
   type Renderer = {
-    currentValues(): FormPayload['values'];
-    setValue(path: string[], value: FormPayload['values'][string]): void;
+    currentValues(): UiPayload['values'];
+    setValue(path: string[], value: UiPayload['values'][string]): void;
   };
 
   const {announce} = useAnnouncer();
@@ -76,7 +76,7 @@
    * worked on, so it's where the index lands after saving.
    */
   const lastEdited = ref<string | null>(null);
-  const errors = ref<Record<string, FormPayload['errors']>>({});
+  const errors = ref<Record<string, UiPayload['errors']>>({});
   const renderers = new Map<string, Renderer>();
 
   /**
@@ -130,7 +130,7 @@
           (source.type === 'heading' ? source.heading : source.label) ?? '',
         handle: source.handle ?? null,
         page: source.page ?? '',
-        form: source.form,
+        ui: source.ui,
         mounted: false,
       }));
       pages.value = pageRows(data);
@@ -192,39 +192,36 @@
 
     if (source.type !== 'heading') lastEdited.value = source.key;
 
-    if (!source.form) {
-      const form = await fetchForm(source.key, source.type);
+    if (!source.ui) {
+      const ui = await fetchUi(source.key, source.type);
 
       // A heading keyed on load isn't in project config yet, so the server
       // builds it blank; the text it already had comes from the list.
       if (source.type === 'heading') {
         const values = (
-          form.values.sources as Record<string, Record<string, unknown>>
+          ui.values.sources as Record<string, Record<string, unknown>>
         )?.[source.key];
         if (values) values.heading = source.label;
       }
 
-      source.form = form;
+      source.ui = ui;
     }
     // Settings are built on first select and kept mounted afterwards, so
     // unsaved edits and server-rendered controls survive switching sources.
     source.mounted = true;
   }
 
-  async function fetchForm(
+  async function fetchUi(
     sourceKey: string,
     type: SourceType
-  ): Promise<FormPayload> {
-    const {data} = await actionClient.post(
-      ElementSourcesController.form().url,
-      {
-        elementType: props.elementType,
-        sourceKey,
-        type,
-      }
-    );
+  ): Promise<UiPayload> {
+    const {data} = await actionClient.post(ElementSourcesController.ui().url, {
+      elementType: props.elementType,
+      sourceKey,
+      type,
+    });
 
-    return data.form;
+    return data.ui;
   }
 
   function setRenderer(key: string, el: unknown): void {
@@ -242,8 +239,8 @@
    */
   function onChange(
     source: SourceRow,
-    change: FormChange,
-    values: FormPayload['values']
+    change: UiChange,
+    values: UiPayload['values']
   ): void {
     const leaf = change.path.at(-1);
 
@@ -273,7 +270,7 @@
   ): string | null {
     let dir: string | null = null;
 
-    visitControls(source.form?.nodes ?? [], (control) => {
+    visitControls(source.ui?.nodes ?? [], (control) => {
       if (!pathsMatch(control.path, path)) return;
 
       const options = (control.props.options ?? []) as Array<{
@@ -288,27 +285,24 @@
 
   async function refresh(
     source: SourceRow,
-    values: FormPayload['values'],
+    values: UiPayload['values'],
     scope: string[] = []
-  ): Promise<FormPayload> {
-    const {data} = await actionClient.post(
-      ElementSourcesController.form().url,
-      {
-        elementType: props.elementType,
-        sourceKey: source.key,
-        type: source.type,
-        // `values` is already relative to `scope`, unlike currentValues().
-        settings: values,
-        scope,
-      }
-    );
+  ): Promise<UiPayload> {
+    const {data} = await actionClient.post(ElementSourcesController.ui().url, {
+      elementType: props.elementType,
+      sourceKey: source.key,
+      type: source.type,
+      // `values` is already relative to `scope`, unlike currentValues().
+      settings: values,
+      scope,
+    });
 
-    if (!data.form) {
-      throw new Error('The source did not return a Form payload.');
+    if (!data.ui) {
+      throw new Error('The source did not return a UI payload.');
     }
 
     // Server-rendered controls register their assets on every render.
-    return data.form;
+    return data.ui;
   }
 
   async function add(type: 'heading' | 'custom'): Promise<void> {
@@ -321,7 +315,7 @@
       label: '',
       handle: null,
       page: selectedPage.value ?? '',
-      form: null,
+      ui: null,
       mounted: false,
     });
     announce(t('Success'));
@@ -673,13 +667,12 @@
   function settingsFor(source: SourceRow): Record<string, unknown> {
     if (!source.key) return {};
 
-    // A heading keyed on load has no Form until it's selected; its text is all
+    // A heading keyed on load has no UI until it's selected; its text is all
     // there is to save.
-    if (!source.form && source.type === 'heading')
-      return {heading: source.label};
+    if (!source.ui && source.type === 'heading') return {heading: source.label};
 
     const values =
-      renderers.get(source.key)?.currentValues() ?? source.form?.values ?? {};
+      renderers.get(source.key)?.currentValues() ?? source.ui?.values ?? {};
 
     return (
       ((values.sources as Record<string, any>)?.[source.key] as Record<
@@ -787,7 +780,7 @@
   }
 
   function setErrors(next: Record<string, string | string[]>): void {
-    const byKey: Record<string, FormPayload['errors']> = {};
+    const byKey: Record<string, UiPayload['errors']> = {};
 
     for (const [path, messages] of Object.entries(next)) {
       const segments = path.split('.');
@@ -915,7 +908,7 @@
       <CustomizeSourcesColumn
         fill
         data-screen="settings"
-        :heading="selected?.form ? selected.label : undefined"
+        :heading="selected?.ui ? selected.label : undefined"
         :selected="screen === 'settings'"
         :back="t('Back to sources')"
         @back="showScreen('sources')"
@@ -923,15 +916,15 @@
         <div ref="settingsPane">
           <template v-for="source in sources" :key="source.key">
             <craft-field-group
-              v-if="source.mounted && source.form && source.key"
+              v-if="source.mounted && source.ui && source.key"
               v-show="source.key === selectedKey"
             >
-              <FormRenderer
+              <UiRenderer
                 :ref="(el) => setRenderer(source.key!, el)"
-                :payload="source.form"
+                :payload="source.ui"
                 :errors="errors[source.key!] ?? []"
                 :refresh="
-                  source.form.refreshable
+                  source.ui.refreshable
                     ? (values, scope) => refresh(source, values, scope)
                     : undefined
                 "
@@ -940,7 +933,7 @@
             </craft-field-group>
           </template>
 
-          <craft-spinner v-if="selected && !selected.form" />
+          <craft-spinner v-if="selected && !selected.ui" />
         </div>
       </CustomizeSourcesColumn>
     </div>

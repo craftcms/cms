@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\TableCells;
 
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Control;
-use CraftCms\Cms\Form\Controls\Table;
-use CraftCms\Cms\Form\Controls\TableColumn;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Control;
+use CraftCms\Cms\Ui\Controls\Table;
+use CraftCms\Cms\Ui\Controls\TableColumn;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 
 use function CraftCms\Cms\t;
 
@@ -46,9 +46,9 @@ class Select extends TableCell
         return $context->value ?? $default['value'] ?? $options[0]['value'] ?? null;
     }
 
-    public function settingsForm(FormContext $context = new FormContext): ?Form
+    public function settingsUi(UiContext $context = new UiContext): ?Ui
     {
-        return Form::make([
+        return Ui::make([
             Field::make(t('Options'))->control(Table::make('options')
                 ->columns([
                     'label' => ['heading' => t('Label'), 'type' => 'singleline'],

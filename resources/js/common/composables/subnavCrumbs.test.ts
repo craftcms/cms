@@ -5,6 +5,8 @@ import {
   withSubnavCrumbs,
 } from './subnavCrumbs';
 
+import type {BreadcrumbItem} from '@/common/types';
+
 type NavItem = CraftCms.Cms.Cp.Data.NavItem;
 
 function navCrumbItem(config: Partial<NavItem> & {label: string}): NavItem {
@@ -238,30 +240,36 @@ describe('withNavCrumbMenus', () => {
   });
   const NAV = [navCrumbItem({label: 'Dashboard'}), ENTRIES];
 
-  it('swaps a switcher for the menu the nav draws at its level', () => {
-    const [entries, posts] = withNavCrumbMenus(
-      [
-        {label: 'Entries', href: '/admin/content/entries'},
-        {
-          label: 'Posts',
-          href: '/admin/content/entries/posts',
-          items: [{type: 'link', label: 'Singles', href: '/admin/singles'}],
-        },
-      ],
-      NAV
-    );
+  it.each([
+    ['/admin/content/entries', true, false],
+    ['/admin/content/entries/posts', false, true],
+  ] as const)(
+    'gives source %s its nav menu without duplicating it on the section crumb',
+    (href, allSelected, postsSelected) => {
+      const [entries, posts] = withNavCrumbMenus(
+        [
+          {label: 'Entries', href: '/admin/content/entries'},
+          {
+            label: 'Posts',
+            href,
+            items: [{type: 'link', label: 'Singles', href: '/admin/singles'}],
+          },
+        ],
+        NAV
+      );
 
-    expect(entries!.items).toBeUndefined();
-    expect(posts!.items).toMatchObject([
-      {type: 'link', label: 'All entries', selected: false},
-      {type: 'link', label: 'Singles', selected: false},
-      {
-        type: 'group',
-        heading: 'Channels',
-        items: [{type: 'link', label: 'Posts', selected: true}],
-      },
-    ]);
-  });
+      expect(entries!.items).toBeUndefined();
+      expect(posts!.items).toMatchObject([
+        {type: 'link', label: 'All entries', selected: allSelected},
+        {type: 'link', label: 'Singles', selected: false},
+        {
+          type: 'group',
+          heading: 'Channels',
+          items: [{type: 'link', label: 'Posts', selected: postsSelected}],
+        },
+      ]);
+    }
+  );
 
   it('keeps the server menu for a crumb the nav doesn’t know', () => {
     const items = [{type: 'link' as const, label: 'Other', href: '/x'}];
@@ -314,5 +322,99 @@ describe('withNavCrumbMenus', () => {
     const [crumb] = withNavCrumbMenus([{label: 'English', items}], NAV);
 
     expect(crumb!.items).toBe(items);
+  });
+
+  describe('in a plugin’s section', () => {
+    const COMMERCE = navCrumbItem({
+      label: 'Commerce',
+      href: '/admin/commerce',
+      subnav: [
+        navCrumbItem({label: 'Orders', href: '/admin/commerce/orders'}),
+        navCrumbItem({label: 'All products', href: '/admin/commerce/products'}),
+        navCrumbItem({
+          label: 'Product Types',
+          href: null,
+          group: true,
+          subnav: [
+            navCrumbItem({
+              label: 'Widgets',
+              href: '/admin/commerce/products/widgets',
+            }),
+            navCrumbItem({
+              label: 'Gizmos',
+              href: '/admin/commerce/products/gizmos',
+            }),
+          ],
+        }),
+        navCrumbItem({label: 'Inventory', href: '/admin/commerce/inventory'}),
+      ],
+    });
+    const PLUGIN_NAV = [navCrumbItem({label: 'Dashboard'}), COMMERCE];
+    const SOURCES = [
+      {type: 'link' as const, label: 'All products', href: '/x'},
+    ];
+
+    const productCrumbs = (current: string): Array<BreadcrumbItem> => [
+      {label: 'Commerce', href: '/admin/commerce'},
+      {label: 'Products', href: '/admin/commerce/products'},
+      {label: 'Current', href: current, items: SOURCES},
+    ];
+
+    it('gives the section’s crumb the whole section', () => {
+      const [commerce] = withNavCrumbMenus(
+        productCrumbs('/admin/commerce/products/gizmos'),
+        PLUGIN_NAV,
+        '/admin/commerce/products/gizmos'
+      );
+
+      expect(commerce!.items).toMatchObject([
+        {type: 'link', label: 'Orders', selected: false},
+        {type: 'link', label: 'All products', selected: false},
+        {
+          type: 'group',
+          heading: 'Product Types',
+          items: [
+            {type: 'link', label: 'Widgets', selected: false},
+            {type: 'link', label: 'Gizmos', selected: true},
+          ],
+        },
+        {type: 'link', label: 'Inventory', selected: false},
+      ]);
+    });
+
+    it('limits a source crumb to what sits under its index', () => {
+      const [, products, source] = withNavCrumbMenus(
+        productCrumbs('/admin/commerce/products'),
+        PLUGIN_NAV,
+        '/admin/commerce/products'
+      );
+
+      expect(products!.items).toBeUndefined();
+      expect(source!.items).toMatchObject([
+        {type: 'link', label: 'All products', selected: true},
+        {
+          type: 'group',
+          heading: 'Product Types',
+          items: [
+            {type: 'link', label: 'Widgets', selected: false},
+            {type: 'link', label: 'Gizmos', selected: false},
+          ],
+        },
+      ]);
+    });
+
+    it('gives the section’s crumb its menu on a screen with no switchers', () => {
+      const [commerce, inventory] = withNavCrumbMenus(
+        [
+          {label: 'Commerce', href: '/admin/commerce'},
+          {label: 'Inventory', href: '/admin/commerce/inventory'},
+        ],
+        PLUGIN_NAV,
+        '/admin/commerce/inventory'
+      );
+
+      expect(commerce!.items).toHaveLength(4);
+      expect(inventory!.items).toBeUndefined();
+    });
   });
 });

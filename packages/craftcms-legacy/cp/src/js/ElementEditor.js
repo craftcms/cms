@@ -36,7 +36,7 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @type {?Craft.FormObserver}
      */
     formObserver: null,
-    formHost: null,
+    uiHost: null,
     abortController: null,
     ignoreFailedRequest: false,
     queue: null,
@@ -1382,7 +1382,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                   console.warn('Couldn’t save draft:', e);
                   reject(e);
                 });
-            } else if (this.getFormHost()) {
+            } else if (this.getUiHost()) {
               resolve();
             } else {
               this.updateFieldLayout(data)
@@ -1908,7 +1908,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     /**
-     * The `<craft-entry-field-layout-form>` this editor drives, looked up on
+     * The `<craft-entry-field-layout-ui>` this editor drives, looked up on
      * first use rather than when the editor is constructed.
      *
      * The host isn't necessarily in the document yet at construction: on a
@@ -1922,9 +1922,9 @@ Craft.ElementEditor = Garnish.Base.extend(
      * empty: it is captured eagerly too, and an empty jQuery set caches just as
      * badly as a missing host.
      */
-    getFormHost() {
-      if (this.formHost) {
-        return this.formHost;
+    getUiHost() {
+      if (this.uiHost) {
+        return this.uiHost;
       }
 
       if (this.isFullPage && !this.$contentContainer.length) {
@@ -1932,26 +1932,26 @@ Craft.ElementEditor = Garnish.Base.extend(
           this.settings.$contentContainer ?? $('#content');
       }
 
-      this.formHost = this.$contentContainer.find(
-        'craft-entry-field-layout-form'
+      this.uiHost = this.$contentContainer.find(
+        'craft-entry-field-layout-ui'
       )[0];
 
-      return this.formHost;
+      return this.uiHost;
     },
 
     async _afterUpdateFieldLayout(response) {
-      const formHost = this.getFormHost();
+      const uiHost = this.getUiHost();
 
-      if (!formHost || !response.data.form) {
-        throw new Error('Entry Form refresh requires a Form host.');
+      if (!uiHost || !response.data.ui) {
+        throw new Error('Entry UI refresh requires a UI host.');
       }
 
-      formHost.payload = response.data.form;
+      uiHost.payload = response.data.ui;
       const updateTabs =
         this.settings.updateTabs ??
         (this.isFullPage ? (tabs) => Craft.cp.updateTabs(tabs) : null);
       if (!updateTabs) {
-        throw new Error('Entry Form refresh requires a tab updater.');
+        throw new Error('Entry UI refresh requires a tab updater.');
       }
       updateTabs(response.data.tabs);
       await Craft.appendHeadHtml(response.data.headHtml);

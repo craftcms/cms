@@ -1,26 +1,23 @@
 import {actionClient} from '@craftcms/ui';
-import {
-  rebaseFieldForm,
-  isolateFieldForm,
-} from '@/modules/forms/html-field-form';
+import {rebaseFieldUi, isolateFieldUi} from '@/modules/ui/html-field-ui';
 import {
   isRecord,
   pathsMatch,
   setValue,
   valueAt,
   visitControls,
-} from '@/modules/forms/runtime';
-import type {FormNodePayload, FormPayload} from '@/modules/forms/types';
+} from '@/modules/ui/runtime';
+import type {UiNodePayload, UiPayload} from '@/modules/ui/types';
 
 /** Native fields captured by a plugin's HTML override stay native on refresh. */
 actionClient.interceptors.response.use((response) => {
   if (
-    !response.config.headers['X-Craft-Form-Root-Scope'] ||
+    !response.config.headers['X-Craft-Ui-Root-Scope'] ||
     typeof response.config.data !== 'string' ||
     !response.config.headers['X-Craft-Native-Field-Path'] ||
     !isRecord(response.data) ||
-    !isRecord(response.data.form) ||
-    !Array.isArray(response.data.form.nodes)
+    !isRecord(response.data.ui) ||
+    !Array.isArray(response.data.ui.nodes)
   ) {
     return response;
   }
@@ -28,8 +25,8 @@ actionClient.interceptors.response.use((response) => {
   const fieldPath: string[] = JSON.parse(
     String(response.config.headers['X-Craft-Native-Field-Path'])
   );
-  const form = response.data.form as unknown as FormPayload;
-  const unwrap = (nodes: FormNodePayload[]): void => {
+  const form = response.data.ui as unknown as UiPayload;
+  const unwrap = (nodes: UiNodePayload[]): void => {
     for (const node of nodes) {
       const control = node.control;
       const fragment = control?.props.fragment;
@@ -42,14 +39,14 @@ actionClient.interceptors.response.use((response) => {
         const template = document.createElement('template');
         template.innerHTML = fragment.html;
         const blocks = template.content.querySelector<HTMLElement>(
-          'craft-entry-field-layout-form[data-field-path]'
+          'craft-entry-field-layout-ui[data-field-path]'
         );
         const nested = template.content.querySelector<HTMLElement>(
           'craft-nested-elements-control[data-control]'
         );
         if (blocks?.dataset.payload && blocks.dataset.fieldPath) {
-          const native = isolateFieldForm(
-            rebaseFieldForm(
+          const native = isolateFieldUi(
+            rebaseFieldUi(
               JSON.parse(blocks.dataset.payload),
               JSON.parse(blocks.dataset.fieldPath),
               control.path
@@ -61,7 +58,7 @@ actionClient.interceptors.response.use((response) => {
             deltaGroup: control.deltaGroup,
             mode: control.mode,
           };
-          for (const nested of node.control.forms ?? []) {
+          for (const nested of node.control.uis ?? []) {
             visitControls(nested.nodes, (child) =>
               Object.assign(child, {
                 deltaGroup: control.deltaGroup,
@@ -96,7 +93,7 @@ actionClient.interceptors.response.use((response) => {
       }
 
       unwrap(node.children ?? []);
-      for (const nested of node.control?.forms ?? []) {
+      for (const nested of node.control?.uis ?? []) {
         unwrap(nested.nodes);
       }
     }

@@ -134,11 +134,11 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this.inlineInputsReady = Promise.all(
         [
           ...this.$elementContainer[0].querySelectorAll(
-            'craft-inline-attribute-form'
+            'craft-inline-attribute-ui'
           ),
-        ].map(async (form) => {
-          await customElements.whenDefined('craft-inline-attribute-form');
-          await form.ready;
+        ].map(async (ui) => {
+          await customElements.whenDefined('craft-inline-attribute-ui');
+          await ui.ready;
         })
       ).then(() => {
         this.initialSerializedValue = this.serializeInputs();
@@ -169,8 +169,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
                   const $row = this.$elementContainer.children(
                     `[data-id="${elementId}"]`
                   );
-                  $row.find('craft-inline-attribute-form').each((i, form) => {
-                    form.errors = data.errors[elementId];
+                  $row.find('craft-inline-attribute-ui').each((i, ui) => {
+                    ui.errors = data.errors[elementId];
                   });
                   for (const attribute in data.errors[elementId]) {
                     $row
@@ -301,9 +301,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     if (
       [
         ...this.$elementContainer[0].querySelectorAll(
-          'craft-inline-attribute-form'
+          'craft-inline-attribute-ui'
         ),
-      ].some((form) => !form.canSubmit())
+      ].some((ui) => !ui.canSubmit())
     ) {
       throw new Error('Cannot save inline inputs that failed to render.');
     }

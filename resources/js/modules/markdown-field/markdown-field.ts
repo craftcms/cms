@@ -99,6 +99,10 @@ class MarkdownField extends LitElement {
   @property({attribute: 'link-types', type: Array})
   linkTypes: unknown[] = [];
 
+  /** How tall, in pixels, the editor grows before it scrolls instead. */
+  @property({attribute: 'max-height', type: Number})
+  maxHeight: number | null = null;
+
   @property({attribute: 'max-length', type: Number})
   maxLength: number | null = null;
 
@@ -280,7 +284,7 @@ class MarkdownField extends LitElement {
       fontFamily: 'var(--c-font-mono)',
       fontSize: 'var(--c-text-base)',
       lineHeight: 'var(--c-leading-normal)',
-      maxHeight: null,
+      maxHeight: this.maxHeight ? `${this.maxHeight}px` : null,
       minHeight: undefined,
       padding: 'var(--c-spacing-md) var(--c-input-spacing-inline)',
       placeholder: this.placeholder ?? '',

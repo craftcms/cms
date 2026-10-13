@@ -9,14 +9,14 @@ use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\ConditionBuilder;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\ConditionBuilder;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
 use Override;
@@ -247,13 +247,13 @@ abstract class FieldLayoutComponent extends Component
     }
 
     /**
-     * Returns the settings Form for the layout component.
+     * Returns the settings Ui for the layout component.
      *
      * ::: tip
      * Subclasses should override [[settingsNodes()]] instead of this method.
      * :::
      */
-    final public function settingsForm(FormContext $context = new FormContext): ?Form
+    final public function settingsUi(UiContext $context = new UiContext): ?Ui
     {
         $settings = $this->settingsNodes($context);
         $conditions = $this->conditionalSettingsNodes($context);
@@ -264,17 +264,17 @@ abstract class FieldLayoutComponent extends Component
             default => [...$settings, Separator::make('settings-conditions'), ...$conditions],
         };
 
-        return $nodes === [] ? null : Form::make($nodes);
+        return $nodes === [] ? null : Ui::make($nodes);
     }
 
     /** @return list<Node> */
-    protected function settingsNodes(FormContext $context): array
+    protected function settingsNodes(UiContext $context): array
     {
         return [];
     }
 
     /** @return list<Node> */
-    protected function conditionalSettingsNodes(FormContext $context): array
+    protected function conditionalSettingsNodes(UiContext $context): array
     {
         if (! $this->conditional()) {
             return [];

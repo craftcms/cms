@@ -10,7 +10,7 @@ type SubmittedStatus = string | number | boolean | null | undefined;
  * rolls back up into the global switch, which reads `true` when every site is
  * on, `false` when none are, and indeterminate (`'-'`) when they disagree.
  *
- * Both switches are ordinary Form Controls writing into the shared Inertia
+ * Both switches are ordinary UI Controls writing into the shared Inertia
  * form, so this only has to reconcile their values — no DOM involved.
  */
 interface SiteStatusForm {

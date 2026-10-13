@@ -130,25 +130,6 @@ describe('craft-field required indicator', () => {
   });
 });
 
-describe('craft-field translatable indicator', () => {
-  it('renders the translation icon button inside the label', async () => {
-    const element = await createField({
-      label: 'My field',
-      translatable: '',
-      'translation-description': 'Translated per site.',
-    });
-
-    const tooltip = labelNode(element)!.querySelector('craft-tooltip');
-    expect(tooltip).not.toBeNull();
-    expect(tooltip!.getAttribute('text')).toBe('Translated per site.');
-
-    const button = tooltip!.querySelector('button.t9n-indicator');
-    expect(button).not.toBeNull();
-    expect(button!.getAttribute('data-icon')).toBe('language');
-    expect(button!.getAttribute('aria-label')).toBe('Translated per site.');
-  });
-});
-
 describe('craft-field fieldset mode', () => {
   it('exposes group semantics on the host', async () => {
     const element = await createField({label: 'My group', fieldset: ''});

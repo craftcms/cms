@@ -18,8 +18,8 @@
   <craft-button
     type="submit"
     :variant="ButtonVariant.Primary"
-    :loading="submitter.isSubmitting(PRIMARY_SUBMITTER)"
-    :disabled="form.processing"
+    .loading="submitter.isSubmitting(PRIMARY_SUBMITTER)"
+    .disabled="form.processing"
   >
     {{ label ?? t('Save') }}
   </craft-button>

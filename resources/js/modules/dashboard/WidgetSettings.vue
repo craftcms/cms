@@ -9,8 +9,8 @@
     update,
     refreshSettings,
   } from '@actions/Dashboard/WidgetsController';
-  import FormRenderer from '@/modules/forms/FormRenderer.vue';
-  import type {FormPayload} from '@/modules/forms/types';
+  import UiRenderer from '@/modules/ui/UiRenderer.vue';
+  import type {UiPayload} from '@/modules/ui/types';
   import type {DashboardWidget} from './types';
 
   const messages = useMessages();
@@ -21,7 +21,7 @@
     cancel: [];
   }>();
 
-  const renderer = ref<InstanceType<typeof FormRenderer>>();
+  const renderer = ref<InstanceType<typeof UiRenderer>>();
   const form = useHttp<Record<string, never>, {info: DashboardWidget | false}>(
     {}
   ).withAllErrors();
@@ -34,34 +34,34 @@
       ])
     )
   );
-  const formErrors = computed(() =>
+  const uiErrors = computed(() =>
     Object.entries(errors.value).map(([path, messages]) => ({
-      path: [...(props.widget.settingsForm?.scope ?? []), ...path.split('.')],
+      path: [...(props.widget.settingsUi?.scope ?? []), ...path.split('.')],
       messages,
     }))
   );
 
   async function refresh(
-    values: FormPayload['values'],
+    values: UiPayload['values'],
     scope: string[] = []
-  ): Promise<FormPayload> {
+  ): Promise<UiPayload> {
     const {data} = await actionClient.post(refreshSettings.url(), {
       type: props.widget.type,
       settings: values,
       namespace: scope.join('.'),
     });
-    if (!data.form) {
-      throw new Error('The widget did not return a Form payload.');
+    if (!data.ui) {
+      throw new Error('The widget did not return a UI payload.');
     }
 
-    return data.form;
+    return data.ui;
   }
 
   async function save() {
     if (form.processing) return;
 
     const values = renderer.value?.currentValues() ?? {};
-    const namespace = props.widget.settingsForm?.scope[0];
+    const namespace = props.widget.settingsUi?.scope[0];
 
     try {
       const data = await form
@@ -83,12 +83,12 @@
 <template>
   <form @submit.prevent="save">
     <craft-field-group>
-      <FormRenderer
-        v-if="widget.settingsForm"
+      <UiRenderer
+        v-if="widget.settingsUi"
         ref="renderer"
-        :payload="widget.settingsForm"
+        :payload="widget.settingsUi"
         :refresh="refresh"
-        :errors="formErrors"
+        :errors="uiErrors"
       />
     </craft-field-group>
     <craft-callout
@@ -107,13 +107,13 @@
       <craft-button
         type="submit"
         variant="primary"
-        :loading="form.processing"
-        :disabled="form.processing"
+        .loading="form.processing"
+        .disabled="form.processing"
         >{{ t('Save') }}</craft-button
       >
       <craft-button
         type="button"
-        :disabled="form.processing"
+        .disabled="form.processing"
         @click="emit('cancel')"
         >{{ t('Cancel') }}</craft-button
       >

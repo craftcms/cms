@@ -8,11 +8,11 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
 
 class FieldLayoutForm extends Component
 {
@@ -38,12 +38,12 @@ class FieldLayoutForm extends Component
         $payload = app(FieldLayoutCompiler::class)->compile(
             $layout,
             $element,
-            new FormContext(
+            new UiContext(
                 namespace: $namespace,
                 mode: $static ? ControlMode::ReadOnly : ControlMode::Editable,
             ),
         );
-        $renderer = app(FormHtmlRenderer::class);
+        $renderer = app(UiHtmlRenderer::class);
 
         return new self([
             'html' => $renderer->render($payload),

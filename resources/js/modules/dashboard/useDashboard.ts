@@ -133,7 +133,7 @@ export function useDashboard(props: {
   async function add(type: string) {
     const info = props.widgetTypes[type]!;
 
-    if (info.settingsForm) {
+    if (info.settingsUi) {
       const id = nextId--;
       widgets.value = [
         ...widgets.value,
@@ -146,8 +146,8 @@ export function useDashboard(props: {
           colspan: 1,
           maxColspan: info.maxColspan ?? 4,
           settings: {},
-          settingsForm: JSON.parse(
-            JSON.stringify(info.settingsForm).replaceAll(
+          settingsUi: JSON.parse(
+            JSON.stringify(info.settingsUi).replaceAll(
               '__NAMESPACE__',
               `newwidget${-id}-settings`
             )

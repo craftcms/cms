@@ -16,7 +16,7 @@ if (false) {
      * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
      *
      * @since 3.5.0
-     * @deprecated 6.0.0 use the renderer-neutral Form interfaces instead.
+     * @deprecated 6.0.0 use the renderer-neutral UI interfaces instead.
      */
     class FieldLayoutFormTab extends \CraftCms\Yii2Adapter\FieldLayout\FieldLayoutFormTab
     {

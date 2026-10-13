@@ -1,0 +1,137 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Ui\Contracts;
+
+use CraftCms\Cms\Ui\ControlPayload;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+
+interface Control
+{
+    /**
+     * Renders the resolved control for the non-Vue HTML fallback.
+     *
+     * Implementations own their control-specific markup and should compose
+     * existing CP components where suitable. They must preserve the common
+     * ID, name, state, validation, and accessibility attributes supplied by
+     * the renderer. Nested Controls may delegate recursion back to the
+     * renderer.
+     *
+     * @param  ControlPayload  $control  The resolved control payload, including its props, path, and mode.
+     * @param  mixed  $value  The current value at the control's resolved path.
+     * @param  array<string, mixed>  $attributes  Common HTML attributes computed from the field and control state.
+     * @param  UiHtmlRenderer  $renderer  The renderer coordinating the complete fallback UI.
+     */
+    public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string;
+
+    /**
+     * Returns what the control should read when its value is missing.
+     *
+     * A control renders as soon as the payload describing it does, and inside a
+     * nested UI that can be a beat ahead of the values filling it — a Matrix
+     * block the server has just minted, say. A control whose value is a shape
+     * would otherwise reach into nothing and throw, which takes the whole field
+     * down; the renderer stands this in for that beat instead.
+     *
+     * Null for a control whose value is a scalar: those coerce on their own, and
+     * null keeps it out of the payload.
+     */
+    public function emptyValue(): mixed;
+
+    /** Whether a null value is presentation-only and should be omitted from UI mutations. */
+    public function omitNullValue(): bool;
+
+    /**
+     * Returns whether the control renders nested UIs — Matrix blocks, a
+     * content block.
+     *
+     * A change anywhere inside one marks the control holding it as modified,
+     * the way Craft 5's element editor marks every enclosing field of a changed
+     * input. That's how an edit inside a block the server knows nothing about
+     * yet — one created in this draft — still shows on the field holding it.
+     */
+    public function nestsUis(): bool;
+
+    /**
+     * Returns the Vue component registry name used to render this control.
+     *
+     * The component must be registered before the UI is mounted and accept
+     * the control props emitted by the matching implementation.
+     */
+    public function component(): string;
+
+    /**
+     * Returns the control's path relative to the UI context namespace.
+     *
+     * Strings may use dot notation. Array paths must contain non-empty string
+     * segments. The resolved path identifies the value, input name, errors,
+     * and reconciliation unit, and must be unique within the UI.
+     *
+     * @return string|list<string>
+     */
+    public function path(): string|array;
+
+    /**
+     * Returns a copy bound to a different path, preserving the control's configuration.
+     *
+     * @param  string|list<string>  $path
+     */
+    public function withPath(string|array $path): static;
+
+    /**
+     * Returns an optional ancestor path whose complete value must mutate atomically.
+     *
+     * @return string|list<string>|null
+     */
+    public function getDeltaGroup(): string|array|null;
+
+    /**
+     * Returns the control's default value.
+     *
+     * The resolver uses this value only when the UI context does not contain
+     * a value at the resolved path. It must be JSON-serializable.
+     */
+    public function getValue(): mixed;
+
+    /**
+     * Returns the control's requested interaction mode.
+     *
+     * A non-editable mode set on the UI context takes precedence over this
+     * value when the payload is resolved.
+     */
+    public function getMode(): ControlMode;
+
+    public function mode(ControlMode|string $mode): static;
+
+    public function reactive(bool $reactive = true): static;
+
+    public function isReactive(): bool;
+
+    /**
+     * Returns control-specific configuration for the resolved value and both renderers.
+     *
+     * Generic data such as the component name, path, value, and mode belongs
+     * to the resolved control payload and should not be repeated here. Every
+     * returned value must be JSON-serializable.
+     *
+     * @return array<string, mixed>
+     */
+    public function props(mixed $value = null): array;
+
+    /**
+     * Resolves control-specific configuration using its effective interaction mode.
+     *
+     * @return array<string, mixed>
+     */
+    public function resolveProps(mixed $value, ControlMode $mode): array;
+
+    /**
+     * Returns UIs owned by this Control, scoped relative to its path.
+     *
+     * @return list<array{scope: string|list<string>, ui: Ui, refreshable: bool}>
+     */
+    public function nestedUis(mixed $value = null): array;
+}

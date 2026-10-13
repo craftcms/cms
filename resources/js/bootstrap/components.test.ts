@@ -33,7 +33,7 @@ describe('CP component registry', () => {
     expect(component).toHaveBeenCalledWith('TestComponent', testComponent);
   });
 
-  it('registers components with every mounted form host', () => {
+  it('registers components with every mounted UI host', () => {
     const registry = createCpComponentRegistry();
     const {app: firstApp, component: firstComponent} = createTestApp();
     const {app: secondApp, component: secondComponent} = createTestApp();
@@ -72,7 +72,7 @@ describe('CP component registry', () => {
     secondApp.unmount();
   });
 
-  it('stops registering components with unmounted form hosts', () => {
+  it('stops registering components with unmounted UI hosts', () => {
     const registry = createCpComponentRegistry();
     const {app, component} = createTestApp();
 

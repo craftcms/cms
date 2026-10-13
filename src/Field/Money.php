@@ -14,19 +14,19 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Money as MoneyControl;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\Money as MoneyType;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Money as MoneyControl;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\MoneyRule;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
@@ -152,26 +152,26 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $currencyOptions = [];
         foreach ($this->_isoCurrencies as $currency) {
             $currencyOptions[] = ['label' => $currency->getCode(), 'value' => $currency->getCode()];
         }
 
-        return Form::make([
-            FormField::make(t('Currency'))
+        return Ui::make([
+            UiField::make(t('Currency'))
                 ->required()
                 ->control(Choice::make('currency')->options($currencyOptions)->value($this->currency)),
-            FormField::make(t('Default Value'))
+            UiField::make(t('Default Value'))
                 ->control(Number::make('defaultValue')->step('any')->value($this->decimalSetting($this->defaultValue))),
-            FormField::make(t('Min Value'))
+            UiField::make(t('Min Value'))
                 ->control(Number::make('min')->step('any')->value($this->decimalSetting($this->min))),
-            FormField::make(t('Max Value'))
+            UiField::make(t('Max Value'))
                 ->control(Number::make('max')->step('any')->value($this->decimalSetting($this->max))),
-            FormField::make(t('Show Currency'))
+            UiField::make(t('Show Currency'))
                 ->control(Lightswitch::make('showCurrency')->value($this->showCurrency)),
-            FormField::make(t('Size'))
+            UiField::make(t('Size'))
                 ->control(Number::make('size')->min(1)->value($this->size)),
         ]);
     }
@@ -213,7 +213,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $value = $context->value instanceof MoneyLibrary
             ? MoneyHelper::toNumber($context->value)

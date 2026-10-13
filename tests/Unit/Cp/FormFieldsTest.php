@@ -203,6 +203,55 @@ describe('config deprecations', function () {
     });
 });
 
+describe('editable tables', function () {
+    it('preserves keyed legacy cells, per-cell choices, and submitted metadata', function (bool $twig, bool $static) {
+        $config = [
+            'id' => 'sites',
+            'name' => 'settings[sites]',
+            'label' => 'Sites',
+            'static' => $static,
+            'includeRowId' => true,
+            'cols' => [
+                'heading' => ['type' => 'heading', 'heading' => 'Site'],
+                'uri' => ['type' => 'singleline', 'heading' => 'URI', 'code' => true],
+                'choice' => ['type' => 'select', 'heading' => 'Choice', 'options' => ['default' => 'Default']],
+                'enabled' => ['type' => 'checkbox', 'heading' => 'Enabled', 'value' => 'yes'],
+            ],
+            'rows' => ['primary' => [
+                'heading' => '<strong>Primary</strong>',
+                'uri' => ['value' => 'articles/{slug}', 'hasErrors' => true],
+                'choice' => ['value' => 'override', 'options' => ['override' => 'Override']],
+                'enabled' => false,
+                'rowId' => 'stable-row',
+                'hiddenInputs' => ['token' => 'retained'],
+            ]],
+        ];
+        $html = $twig
+            ? app(TemplateManager::class)->renderString('{% import "_includes/forms" as forms %}{{ forms.editableTableField(config) }}', ['config' => $config], TemplateMode::Cp)
+            : FormFields::editableTableFieldHtml($config);
+        $input = new Crawler($html);
+        $payload = json_decode($input->filter('craft-table-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+        $control = $payload['nodes'][0]['control'];
+        $row = $payload['values']['settings']['sites']['primary'];
+        $cells = collect($control['uis'][0]['nodes'])->keyBy(fn (array $node): string => end($node['control']['path']));
+
+        expect($row)->toMatchArray([
+            'uri' => 'articles/{slug}', 'choice' => 'override', 'enabled' => false,
+            'rowId' => 'stable-row', 'token' => 'retained',
+        ])
+            ->and($control['mode'])->toBe($static ? 'readOnly' : 'editable')
+            ->and($control['props']['errors']['primary']['uri'])->toBeTrue()
+            ->and($cells['choice']['control']['props']['options'])->toBe([['label' => 'Override', 'value' => 'override']])
+            ->and($cells['enabled']['control']['props']['checkedValue'])->toBe('yes')
+            ->and($cells['token']['control']['path'])->toBe(['settings', 'sites', 'primary', 'token']);
+    })->with([
+        'PHP editable' => [false, false],
+        'Twig editable' => [true, false],
+        'PHP static' => [false, true],
+        'Twig static' => [true, true],
+    ]);
+});
+
 describe('field helper methods', function () {
     it('renders expected markers', function (string $needle, string $method, array $config = []) {
         $html = FormFields::$method($config);
@@ -246,5 +295,39 @@ describe('addressFieldsHtml', function () {
         expect((bool) preg_match('/<craft-field[^>]*data-attribute="addressLine1"[^>]*\brequired\b/', $html))->toBeTrue()
             ->and((bool) preg_match('/<craft-field[^>]*data-attribute="sortingCode"[^>]*\brequired\b/', $html))->toBeFalse()
             ->and($address->ruleset->getScenario())->toBe($originalScenario);
+    });
+});
+
+describe('selectizeHtml', function () {
+    it('keeps the native multiple select, which posts an array', function () {
+        $html = FormFields::selectizeHtml([
+            'name' => 'values',
+            'values' => ['live', 'pending'],
+            'options' => [
+                ['value' => 'live', 'label' => 'Live'],
+                ['value' => 'pending', 'label' => 'Pending'],
+                ['value' => 'expired', 'label' => 'Expired'],
+            ],
+            'multi' => true,
+        ]);
+
+        // `values[]` is the name legacy condition rules post under, and it has
+        // to be on the control whether or not anything is selected.
+        expect($html)->toContain('name="values[]"')
+            ->and($html)->toContain('<option value="live" selected>')
+            ->and($html)->toContain('<option value="pending" selected>')
+            ->and($html)->not->toContain('<option value="expired" selected>')
+            ->and($html)->not->toContain('<craft-combobox');
+    });
+
+    it('renders a single select as a combobox', function () {
+        $html = FormFields::selectizeHtml([
+            'name' => 'status',
+            'value' => 'live',
+            'options' => [['value' => 'live', 'label' => 'Live']],
+        ]);
+
+        expect($html)->toContain('<craft-combobox')
+            ->and($html)->toContain('name="status"');
     });
 });

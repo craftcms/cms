@@ -711,7 +711,10 @@ export default class CraftTextExpander extends LitElement {
       this.#inputRange = new InputRange(target);
       const styleClone = this.#inputRange.getStyleClone();
       // Keep the caret clone in the same web component slot as its input.
-      styleClone.element.parentElement!.slot = target.slot;
+      const cloneContainer = styleClone.element.parentElement!;
+      cloneContainer.slot = target.slot;
+      // Slotted control styles can paint the wrapper over the real input.
+      cloneContainer.style.visibility = 'hidden';
       styleClone.forceUpdate();
       styleClone.addEventListener('update', this.#onInputRangeUpdate);
     }

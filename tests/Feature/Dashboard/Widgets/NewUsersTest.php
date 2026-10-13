@@ -34,3 +34,22 @@ it('only shows New Users on editions that support it', function (Edition $editio
     'Pro' => [Edition::Pro, true],
     'Enterprise' => [Edition::Enterprise, true],
 ]);
+
+it('only shows New Users to users who can view users', function () {
+    Edition::set(Edition::Pro);
+    $user = UserModel::factory()->active()->withPermissions(['accessCp'])->create()->asElement();
+    actingAs($user);
+    UserModel::query()->whereKey($user->id)->update(['hasDashboard' => true]);
+    Widget::query()->create([
+        'userId' => $user->id,
+        'type' => NewUsers::class,
+        'settings' => [],
+        'sortOrder' => 1,
+    ]);
+
+    get(route('craft.cp.dashboard'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('widgets', 0)
+            ->where('widgetTypes', fn ($types) => $types[NewUsers::class]['selectable'] === false));
+});

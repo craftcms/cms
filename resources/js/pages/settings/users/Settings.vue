@@ -2,21 +2,21 @@
   import type {UrlMethodPair} from '@inertiajs/core';
   import type {SelectOption} from '@/common/types';
   import type {
-    FormControlOverrideProps,
-    FormControlPayload,
-    FormPayload,
-    FormValue,
-  } from '@/modules/forms/types';
-  import {inputName} from '@/modules/forms/runtime';
-  import FormPage from '@/pages/Form.vue';
+    UiControlOverrideProps,
+    UiControlPayload,
+    UiPayload,
+    UiValue,
+  } from '@/modules/ui/types';
+  import {inputName} from '@/modules/ui/runtime';
+  import UiPage from '@/pages/Ui.vue';
 
   const props = defineProps<{
-    form: FormPayload;
+    ui: UiPayload;
     submit: UrlMethodPair;
     refreshUrl: string | null;
   }>();
 
-  function options(control: FormControlPayload): SelectOption[] {
+  function options(control: UiControlPayload): SelectOption[] {
     const options = control.props.options;
     if (!Array.isArray(options)) {
       return [];
@@ -34,7 +34,7 @@
     });
   }
 
-  function require2faValues(value: FormValue): string[] {
+  function require2faValues(value: UiValue): string[] {
     if (value === 'all') {
       return ['all'];
     }
@@ -44,7 +44,7 @@
 
   function updateRequire2fa(
     event: CustomEvent,
-    setValue: FormControlOverrideProps['setValue']
+    setValue: UiControlOverrideProps['setValue']
   ): void {
     const target = event.currentTarget;
     const values =
@@ -61,8 +61,8 @@
 </script>
 
 <template>
-  <FormPage
-    :form="form"
+  <UiPage
+    :ui="ui"
     :submit="submit"
     :refresh-url="refreshUrl ?? undefined"
     :default-form-actions="[]"
@@ -90,5 +90,5 @@
         </craft-checkbox>
       </craft-checkbox-group>
     </template>
-  </FormPage>
+  </UiPage>
 </template>

@@ -17,10 +17,12 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
+use Inertia\Middleware;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
@@ -36,9 +38,18 @@ test('showLogin redirects already authenticated users', function () {
         ->assertRedirect();
 });
 
-test('showLogin shows the login form for guests', function () {
-    get(action([LoginController::class, 'showLogin']))
-        ->assertOk();
+test('showLogin shows the CP login form for guests with site Inertia middleware', function () {
+    app()->bind('site.inertia', fn () => new class extends Middleware
+    {
+        protected $rootView = 'site-app';
+    });
+    app(Router::class)->pushMiddlewareToGroup('craft.web', 'site.inertia');
+
+    get(cp_url(CpAuthPath::Login->value))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('auth/Login')
+            ->has('craft'));
 });
 
 test('showLogin includes configured OAuth buttons', function () {

@@ -186,7 +186,7 @@ describe('field input action listeners', () => {
 
       if (nativeHost) {
         const field = document.querySelector('craft-field')!;
-        const host = document.createElement('craft-entry-field-layout-form');
+        const host = document.createElement('craft-entry-field-layout-ui');
         host.dataset.fieldPath = JSON.stringify(['fields', 'blocks']);
         const inputField = document.createElement('craft-field');
         inputField.append(...field.querySelectorAll('[data-matrix-block]'));

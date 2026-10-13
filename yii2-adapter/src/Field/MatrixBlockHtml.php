@@ -8,9 +8,9 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Events\MatrixBlockHtmlRendering;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Ui\UiContext;
 use Illuminate\Http\JsonResponse;
 
 use function CraftCms\Cms\t;
@@ -33,7 +33,7 @@ class MatrixBlockHtml
                     'entry' => $entry,
                     'isFresh' => $event->fresh,
                     'staticEntries' => $event->staticEntries,
-                    ...$this->formVariables($field, $entry),
+                    ...$this->uiVariables($field, $entry),
                 ]), $event->namespace);
             }
         }
@@ -45,21 +45,21 @@ class MatrixBlockHtml
         ]);
     }
 
-    /** @return array{formPayload: array<string, mixed>, siteName: string|null} */
-    private function formVariables(Matrix $field, Entry $entry): array
+    /** @return array{uiPayload: array<string, mixed>, siteName: string|null} */
+    private function uiVariables(Matrix $field, Entry $entry): array
     {
         $namespace = InputNamespace::namespaceInputName("{$field->handle}[entries][uid:{$entry->uid}]");
         $payload = app(FieldLayoutCompiler::class)->compile(
             $entry->getFieldLayout(),
             $entry,
-            new FormContext(
+            new UiContext(
                 namespace: explode('[', str_replace(']', '', $namespace)),
                 errors: $entry->errors()->getMessages(),
             ),
         );
 
         return [
-            'formPayload' => $payload->jsonSerialize(),
+            'uiPayload' => $payload->jsonSerialize(),
             'siteName' => count($field->getSupportedSitesForElement($entry)) > 1
                 ? t($entry->getOwner()->getSite()->getName(), category: 'site')
                 : null,

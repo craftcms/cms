@@ -7,11 +7,11 @@ namespace CraftCms\Cms\Component\Concerns;
 use BackedEnum;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Events\DefineSettingsAttributes;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use DateTimeInterface;
 use Illuminate\Support\Facades\Event;
 use ReflectionProperty;
@@ -25,7 +25,7 @@ trait ConfigurableComponent
      */
     public const string EVENT_DEFINE_SETTINGS_ATTRIBUTES = 'defineSettingsAttributes';
 
-    public function settingsForm(FormContext $context = new FormContext): ?Form
+    public function settingsUi(UiContext $context = new UiContext): ?Ui
     {
         return null;
     }

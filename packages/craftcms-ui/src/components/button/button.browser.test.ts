@@ -471,3 +471,49 @@ describe('craft-button link keyboard focus', () => {
     expect(document.activeElement).toBe(after);
   });
 });
+
+describe('text box', () => {
+  async function mount(content: string): Promise<CraftButton> {
+    document.body.innerHTML = `<craft-button>${content}</craft-button>`;
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+
+    return button;
+  }
+
+  it('centers a text label on its capitals without changing the button’s height', async () => {
+    const button = await mount('Save');
+    const label = button.shadowRoot!.querySelector<HTMLElement>('.label')!;
+    const style = getComputedStyle(label);
+    const box = button.getBoundingClientRect();
+    const rect = label.getBoundingClientRect();
+    const capTop = rect.top + parseFloat(style.paddingTop);
+    const capBottom = rect.bottom - parseFloat(style.paddingBottom);
+    const context = document.createElement('canvas').getContext('2d')!;
+    context.font = style.font;
+    const capHeight = context.measureText('H').actualBoundingBoxAscent;
+
+    expect(Math.abs(capBottom - capTop - capHeight)).toBeLessThan(1.5);
+    expect(capTop - box.top).toBeCloseTo(box.bottom - capBottom, 0);
+    expect(box.height).toBeCloseTo(
+      parseFloat(getComputedStyle(button).minHeight),
+      0
+    );
+  });
+
+  it('still trims a text label that carries screen-reader-only text', async () => {
+    const button = await mount(
+      'View <span class="sr-only">Opens in a new window</span>'
+    );
+    const label = button.shadowRoot!.querySelector<HTMLElement>('.label')!;
+
+    expect(getComputedStyle(label).textBoxTrim).toBe('trim-both');
+  });
+
+  it('leaves a label holding elements laid out as before', async () => {
+    const button = await mount('<span>Save</span> <span>all</span>');
+    const label = button.shadowRoot!.querySelector<HTMLElement>('.label')!;
+
+    expect(getComputedStyle(label).display).toBe('contents');
+  });
+});

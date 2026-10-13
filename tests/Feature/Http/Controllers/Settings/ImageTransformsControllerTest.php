@@ -10,15 +10,15 @@ use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
@@ -97,7 +97,7 @@ it('requires authentication', function () {
     get(action([ImageTransformsController::class, 'index']))->assertRedirect();
     get(action([ImageTransformsController::class, 'create']))->assertRedirect();
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))->assertRedirect();
-    postJson(action([ImageTransformsController::class, 'renderForm']))->assertUnauthorized();
+    postJson(action([ImageTransformsController::class, 'renderUi']))->assertUnauthorized();
     postJson(action([ImageTransformsController::class, 'store']))->assertUnauthorized();
     deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertUnauthorized();
 });
@@ -107,21 +107,85 @@ it('requires admin changes', function () {
     Cms::config()->allowAdminChanges = false;
 
     get(action([ImageTransformsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Ui')
+            ->where('readOnly', true)
+            ->where('ui.nodes.0.props.createUrl', null)
+            ->where('ui.nodes.0.props.deletable', false)
+            ->missing('ui.nodes.0.props.rows.0._deleteUrl')
+            ->where('ui.nodes.0.props.rows.0.name.url', action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle])));
     get(action([ImageTransformsController::class, 'edit'], ['transformHandle' => $transform->handle]))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/assets/transforms/Edit')
             ->where('readOnly', true));
 
     get(action([ImageTransformsController::class, 'create']))->assertForbidden();
-    postJson(action([ImageTransformsController::class, 'renderForm']))->assertForbidden();
+    postJson(action([ImageTransformsController::class, 'renderUi']))->assertForbidden();
     postJson(action([ImageTransformsController::class, 'store']), validTransformData())->assertForbidden();
     deleteJson(action([ImageTransformsController::class, 'destroy'], [$transform->id]))->assertForbidden();
 });
 
-it('renders index', function () {
+it('renders an empty index with a creation action', function () {
     get(action([ImageTransformsController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/assets/transforms/Index'));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Ui')
+            ->where('ui.nodes.0.props.rows', [])
+            ->where('ui.nodes.0.props.emptyMessage', 'No image transforms exist yet.')
+            ->where('ui.nodes.0.props.createLabel', 'New image transform')
+            ->where('ui.nodes.0.props.createUrl', action([ImageTransformsController::class, 'create'])));
+});
+
+it('lists transforms by name with edit links, copyable handles, and formatted values', function () {
+    $fixed = createTestTransform([
+        'name' => 'Fixed dimensions',
+        'handle' => 'fixedDimensions',
+        'width' => 640,
+        'height' => 480,
+        'mode' => 'fit',
+        'interlace' => 'plane',
+        'format' => 'png',
+    ]);
+    $automatic = createTestTransform([
+        'name' => 'Automatic dimensions',
+        'handle' => 'automaticDimensions',
+        'width' => null,
+        'height' => 240,
+    ]);
+    $widthOnly = createTestTransform([
+        'name' => 'Width only dimensions',
+        'width' => 320,
+        'height' => null,
+    ]);
+
+    $response = get(action([ImageTransformsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('Ui'));
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))
+        ->firstWhere('component', 'craft:admin-table');
+    $rows = $table['props']['rows'];
+
+    expect(array_column($rows, 'id'))->toBe([$automatic->id, $fixed->id, $widthOnly->id])
+        ->and($rows[0])->toMatchArray([
+            'name' => ['label' => 'Automatic dimensions', 'url' => action([ImageTransformsController::class, 'edit'], ['transformHandle' => 'automaticDimensions'])],
+            'dimensions' => 'Auto x 240',
+            'interlace' => 'None',
+            'format' => 'Auto',
+            '_deleteUrl' => action([ImageTransformsController::class, 'destroy'], ['transformId' => $automatic->id]),
+            '_deleteConfirmMessage' => 'Are you sure you want to delete the “Automatic dimensions” transform?',
+        ])
+        ->and($rows[1])->toMatchArray([
+            'mode' => 'fit',
+            'dimensions' => '640 x 480',
+            'interlace' => 'Plane',
+            'format' => 'Png',
+        ])
+        ->and($rows[2]['dimensions'])->toBe('320 x Auto');
+
+    $handle = new DOMDocument;
+    $handle->loadHTML($rows[0]['handle']['html'], LIBXML_NOERROR | LIBXML_NOWARNING);
+    $copyAttribute = $handle->getElementsByTagName('craft-copy-attribute')->item(0);
+
+    expect($copyAttribute?->getAttribute('value'))->toBe('automaticDimensions')
+        ->and($copyAttribute?->textContent)->toBe('automaticDimensions');
 });
 
 it('renders a functional create form', function () {
@@ -129,23 +193,21 @@ it('renders a functional create form', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/assets/transforms/Edit')
             ->where('title', t('Create a new image transform'))
-            ->where('form.values.transformId', null)
-            ->where('form.values.mode', ImageTransformMode::Crop->value)
+            ->where('ui.values.transformId', null)
+            ->where('ui.values.mode', ImageTransformMode::Crop->value)
             ->where('submit.url', action([ImageTransformsController::class, 'store']))
-            ->where('refreshUrl', action([ImageTransformsController::class, 'renderForm']))
-            ->where('form.nodes', fn ($nodes): bool => collect($nodes)
+            ->where('refreshUrl', action([ImageTransformsController::class, 'renderUi']))
+            ->where('ui.nodes', fn ($nodes): bool => collect($nodes)
                 ->pluck('control.path')
                 ->contains(['mode'])));
 });
 
-it('groups declared parameter controls by Asset Transformer', function () {
+it('renders declared parameters under their Asset Transformer UUID', function () {
     $transformer = registerControllerAssetTransformer();
 
     get(action([ImageTransformsController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.nodes', fn ($nodes): bool => collect($nodes)
-                ->pluck('children')
-                ->flatten(1)
+            ->where('ui.nodes', fn ($nodes): bool => collect(flattenUiNodes(collect($nodes)->all()))
                 ->pluck('control.path')
                 ->contains(['parameters', $transformer->uid, 'blur'])));
 });
@@ -157,9 +219,9 @@ it('renders edit for an existing transform', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/assets/transforms/Edit')
             ->where('title', $transform->name)
-            ->where('form.values.transformId', $transform->id)
-            ->where('form.values.name', $transform->name)
-            ->where('form.values.handle', $transform->handle));
+            ->where('ui.values.transformId', $transform->id)
+            ->where('ui.values.name', $transform->name)
+            ->where('ui.values.handle', $transform->handle));
 });
 
 it('refreshes mode-dependent controls without saving', function () {
@@ -171,17 +233,17 @@ it('refreshes mode-dependent controls without saving', function () {
         'upscale' => true,
     ]);
 
-    $fitNodes = postJson(action([ImageTransformsController::class, 'renderForm']), [
+    $fitNodes = postJson(action([ImageTransformsController::class, 'renderUi']), [
         'values' => [...$values, 'mode' => ImageTransformMode::Fit->value],
         'scope' => [],
-    ])->assertOk()->json('form.nodes');
-    $letterboxNodes = postJson(action([ImageTransformsController::class, 'renderForm']), [
+    ])->assertOk()->json('ui.nodes');
+    $letterboxNodes = postJson(action([ImageTransformsController::class, 'renderUi']), [
         'values' => [...$values, 'mode' => ImageTransformMode::Letterbox->value],
         'scope' => [],
-    ])->assertOk()->json('form.nodes');
+    ])->assertOk()->json('ui.nodes');
 
-    $fitFields = collect(flattenFormNodes($fitNodes))->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
-    $letterboxFields = collect(flattenFormNodes($letterboxNodes))->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
+    $fitFields = collect(flattenUiNodes($fitNodes))->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
+    $letterboxFields = collect(flattenUiNodes($letterboxNodes))->keyBy(fn (array $node): string => implode('.', $node['control']['path'] ?? []));
 
     expect($fitFields['fill']['component'])->toBe('craft:hidden-field')
         ->and($fitFields['position']['component'])->toBe('craft:hidden-field')
@@ -192,7 +254,7 @@ it('refreshes mode-dependent controls without saving', function () {
 });
 
 it('rejects invalid refresh values', function () {
-    postJson(action([ImageTransformsController::class, 'renderForm']), [
+    postJson(action([ImageTransformsController::class, 'renderUi']), [
         'values' => validTransformData(['mode' => 'invalid']),
         'scope' => [],
     ])->assertUnprocessable()

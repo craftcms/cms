@@ -40,4 +40,9 @@ export default css`
     block-size: var(--c-size-control-sm);
     padding-inline: calc(0.5em + 1px);
   }
+
+  .badge__label--text {
+    display: block;
+    text-box: trim-both cap alphabetic;
+  }
 `;

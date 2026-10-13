@@ -6,11 +6,13 @@ use craft\base\Event as YiiEvent;
 use craft\elements\Category;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
+use craft\events\RegisterCpNavItemsEvent;
 use craft\gql\ArgumentManager as LegacyArgumentManager;
 use craft\services\Categories as LegacyCategories;
 use craft\services\Elements as LegacyElements;
 use craft\services\Globals as LegacyGlobals;
 use craft\services\UserPermissions as LegacyUserPermissions;
+use craft\web\twig\variables\Cp as CpVariable;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Plugin\Plugins;
@@ -28,6 +30,7 @@ afterEach(function() {
     YiiEvent::off(LegacyElements::class, LegacyElements::EVENT_REGISTER_ELEMENT_TYPES);
     YiiEvent::off(LegacyArgumentManager::class, LegacyArgumentManager::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS);
     YiiEvent::off(LegacyUserPermissions::class, LegacyUserPermissions::EVENT_REGISTER_PERMISSIONS);
+    YiiEvent::off(CpVariable::class, CpVariable::EVENT_REGISTER_CP_NAV_ITEMS);
 });
 
 it('finalizes registrations added by deprecated concepts after the early bridge setup', function() {
@@ -84,4 +87,42 @@ it('finalizes registrations added by deprecated concepts after the early bridge 
         Craft::$app->set('categories', $categories);
         Craft::$app->set('globals', $globals);
     }
+});
+
+it('adds Globals and Categories after the last content item inside a nav group', function() {
+    new ReflectionProperty(DeprecatedConcepts::class, 'supportsCategories')->setValue(null, true);
+    new ReflectionProperty(DeprecatedConcepts::class, 'supportsGlobalSets')->setValue(null, true);
+    YiiEvent::off(CpVariable::class, CpVariable::EVENT_REGISTER_CP_NAV_ITEMS);
+    DeprecatedConcepts::bootYiiEvents();
+
+    $categories = Craft::$app->getCategories();
+    $globals = Craft::$app->getGlobals();
+
+    Craft::$app->set('categories', Mockery::mock(LegacyCategories::class, function($mock) {
+        $mock->shouldReceive('getEditableGroupIds')->andReturn([1]);
+    }));
+    Craft::$app->set('globals', Mockery::mock(LegacyGlobals::class, function($mock) {
+        $mock->shouldReceive('getEditableSets')->andReturn([(object) ['name' => 'Company']]);
+    }));
+
+    $event = new RegisterCpNavItemsEvent(['navItems' => [
+        ['label' => 'Dashboard', 'url' => 'dashboard'],
+        ['label' => 'Content', 'group' => true, 'url' => null, 'subnav' => [
+            ['label' => 'Entries', 'href' => 'content/entries'],
+            ['label' => 'Assets', 'href' => 'assets'],
+        ]],
+        ['label' => 'Administration', 'group' => true, 'url' => null, 'subnav' => [
+            ['label' => 'Settings', 'href' => 'settings'],
+        ]],
+    ]]);
+
+    try {
+        YiiEvent::trigger(CpVariable::class, CpVariable::EVENT_REGISTER_CP_NAV_ITEMS, $event);
+    } finally {
+        Craft::$app->set('categories', $categories);
+        Craft::$app->set('globals', $globals);
+    }
+
+    expect(array_column($event->navItems, 'label'))->toBe(['Dashboard', 'Content', 'Administration'])
+        ->and(array_column($event->navItems[1]['subnav'], 'label'))->toBe(['Entries', 'Globals', 'Categories', 'Assets']);
 });

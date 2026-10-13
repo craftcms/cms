@@ -12,7 +12,7 @@ use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
-use CraftCms\Cms\Form\Contracts\Node;
+use CraftCms\Cms\Ui\Contracts\Node;
 use Illuminate\Support\Collection;
 use RuntimeException;
 

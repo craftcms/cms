@@ -1,17 +1,17 @@
 import {createApp} from 'vue';
 import {describe, expect, it} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
-import {createElementDetailsTabRegistry} from '@/bootstrap/element-details-tabs';
+import {createElementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
 import {registerWorkflowComponents} from './register';
 
 describe('workflow registration', () => {
-  it('registers the workflow details tab for reviews and drafts in review', () => {
+  it('registers the workflow details panel for reviews and drafts in review', () => {
     const app = createApp({render: () => null});
     const components = createCpComponentRegistry();
-    const tabs = createElementDetailsTabRegistry();
+    const panels = createElementDetailsPanelRegistry();
 
     components.install(app);
-    registerWorkflowComponents(components, tabs);
+    registerWorkflowComponents(components, panels);
 
     expect(app.component('craft:workflow-default-actions')).toBeTruthy();
     expect(
@@ -22,23 +22,23 @@ describe('workflow registration', () => {
     ).toBeTruthy();
     expect(app.component('craft:workflow-activity-event')).toBeTruthy();
 
-    const tab = tabs.tabs[0]!;
+    const panel = panels.panels[0]!;
     const payload = {
       workflow: {
         current: null,
         draftReviews: [],
       },
-    } as unknown as Parameters<NonNullable<typeof tab.visible>>[0];
+    } as unknown as Parameters<NonNullable<typeof panel.visible>>[0];
 
-    expect(tab).toMatchObject({
+    expect(panel).toMatchObject({
       id: 'workflow',
       icon: 'clipboard-list-check',
       order: 5,
     });
-    expect(tab.visible!(payload)).toBe(false);
-    expect(tab.status!(payload)).toBeNull();
+    expect(panel.visible!(payload)).toBe(false);
+    expect(panel.status!(payload)).toBeNull();
     expect(
-      tab.status!({
+      panel.status!({
         ...payload,
         workflow: {
           ...payload.workflow,
@@ -50,7 +50,7 @@ describe('workflow registration', () => {
       })
     ).toEqual({label: 'Awaiting approval', indicator: 'pending'});
     expect(
-      tab.visible!({
+      panel.visible!({
         ...payload,
         workflow: {
           ...payload.workflow,
@@ -59,7 +59,7 @@ describe('workflow registration', () => {
       })
     ).toBe(true);
     expect(
-      tab.visible!({
+      panel.visible!({
         ...payload,
         workflow: {
           ...payload.workflow,

@@ -7,7 +7,7 @@ namespace craft\elements\conditions\addresses;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Facades\Addresses;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Yii2Adapter\Form\Concerns\LegacyMultiSelectConditionRule;
+use CraftCms\Yii2Adapter\Ui\Concerns\LegacyMultiSelectConditionRule;
 
 /** @deprecated 6.0.0 Use \CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule instead. */
 class AdministrativeAreaConditionRule extends \CraftCms\Cms\Address\Conditions\AdministrativeAreaConditionRule

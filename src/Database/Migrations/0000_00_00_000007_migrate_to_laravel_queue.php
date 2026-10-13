@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\Schema;
  * - Drops the legacy `queue` table (used by Yii2 Queue)
  * - Creates the `jobprogress` table (used by Laravel Queue for progress tracking)
  *
- * The Laravel Queue system uses its own tables (jobs, failed_jobs) which are
- * managed by the host application, not by Craft.
+ * Laravel's queue tables are provisioned separately.
  */
 return new class extends Migration
 {

@@ -7,7 +7,7 @@ namespace craft\base\conditions;
 use CraftCms\Cms\Condition\ConditionBuilderRenderer;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
-use CraftCms\Yii2Adapter\Form\LegacyConditionClasses;
+use CraftCms\Yii2Adapter\Ui\LegacyConditionClasses;
 
 /** @deprecated 6.0.0 Use \CraftCms\Cms\Condition\BaseCondition instead. */
 abstract class BaseCondition extends \CraftCms\Cms\Condition\BaseCondition

@@ -1,13 +1,13 @@
 import type {ComputedRef, Ref} from 'vue';
 import type {Table} from '@tanstack/vue-table';
-import type {CraftTableFeatures} from '@/modules/admin-table/craftTable';
+import type {CraftTableFeatures} from '@/common/table/craftTable';
 import type {CheckboxOption} from '@/common/types';
 import type {ConditionConfig} from '@/modules/conditions/types';
 import type {
   useContentIndexData,
   ElementIndexRow,
 } from '../composables/useContentIndexData';
-import type {ElementIndexSelection} from '../composables/useElementIndexSelection';
+import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
 import type {StructureMove} from '../composables/useElementIndexStructure';
 import type {ViewMode} from '@/modules/elements/types/view-state';
 import type {InlineEditingSaveResult} from '../composables/useInlineEditing';
@@ -34,7 +34,7 @@ export interface ElementIndexView {
   elementIndex: Readonly<ReturnType<typeof useContentIndexData>>;
   table: Table<CraftTableFeatures, ElementIndexRow>;
   data: ComputedRef<ElementIndexRow[]>;
-  selection: ElementIndexSelection<ElementIndexRow>;
+  selection: TableRowSelection<ElementIndexRow>;
   search: Ref<string>;
   status: Ref<string>;
   conditions: Ref<ConditionConfig | null>;

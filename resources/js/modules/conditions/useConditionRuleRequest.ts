@@ -2,7 +2,7 @@ import {computed, inject, onBeforeUnmount, watch} from 'vue';
 import {actionClient, appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
 import ConditionsController from '@actions/ConditionsController';
 import {useFetch} from '@/common/composables/useFetch';
-import type {FormValues} from '@/modules/forms/types';
+import type {UiValues} from '@/modules/ui/types';
 import {ConditionEditor, type RulePayload} from './types';
 
 export function useConditionRuleRequest(id: string, fallbackMessage: string) {
@@ -47,7 +47,7 @@ export function useConditionRuleRequest(id: string, fallbackMessage: string) {
     editor.status(id, true);
   });
 
-  async function execute(rule: FormValues): Promise<RulePayload | undefined> {
+  async function execute(rule: UiValues): Promise<RulePayload | undefined> {
     const data = await request.execute({
       config: editor.payload().config,
       value: editor.value(),

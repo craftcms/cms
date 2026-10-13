@@ -299,26 +299,26 @@ describe('useElementAutosave', () => {
 
   it('keeps the layout the server saved', async () => {
     const layout = {scope: [], nodes: [], values: {}, errors: []};
-    postSpy.mockResolvedValue({data: {draftId: 7, form: layout}});
+    postSpy.mockResolvedValue({data: {draftId: 7, ui: layout}});
 
     const {autosave} = mount();
 
-    expect(autosave.form.value).toBeNull();
+    expect(autosave.ui.value).toBeNull();
 
     await autosave.save();
 
-    expect(autosave.form.value).toEqual(layout);
+    expect(autosave.ui.value).toEqual(layout);
 
     // A response without one leaves the last known layout in place, rather
     // than blanking the form the renderer is showing.
     postSpy.mockResolvedValue({data: {draftId: 7}});
     await autosave.save();
 
-    expect(autosave.form.value).toEqual(layout);
+    expect(autosave.ui.value).toEqual(layout);
 
     autosave.clearSaved();
 
-    expect(autosave.form.value).toBeNull();
+    expect(autosave.ui.value).toBeNull();
   });
 
   // The screen payload is what tells the client the save turned a canonical

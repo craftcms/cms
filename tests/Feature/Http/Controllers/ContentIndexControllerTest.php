@@ -9,6 +9,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Events\ElementSourcesResolving;
 use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -31,6 +32,7 @@ use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia;
 use Mockery\MockInterface;
@@ -93,7 +95,7 @@ it('renders page inline inputs only for explicitly editable table rows the user 
             ->where('data.0.id', $entry->id)
             ->where("data.0.inlineInputHtml.{$attribute}", function (string $html) use ($entry): bool {
                 $payload = json_decode(
-                    new Crawler($html)->filter('craft-inline-attribute-form')->attr('data-payload'),
+                    new Crawler($html)->filter('craft-inline-attribute-ui')->attr('data-payload'),
                     true,
                     flags: JSON_THROW_ON_ERROR,
                 );
@@ -865,6 +867,22 @@ it('renders title cells as element chips carrying the CP element metadata', func
         );
 });
 
+it('links only the title chip’s label, not the whole chip', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Hello']);
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data', function ($rows) use ($entry) {
+                $title = trim((string) (collect($rows)->first()['title'] ?? ''));
+
+                return str_starts_with($title, '<craft-chip')
+                    && preg_match('/<CpLink class="label-link" href="([^"]+)" bare>/', $title, $match) === 1
+                    && html_entity_decode($match[1]) === $entry->getCpEditUrl();
+            })
+        );
+});
+
 it('crumbs the “all entries” source by name on the bare index', function () {
     // The bare index opens on the “all entries” source, which gets a crumb of
     // its own — and, being what the index itself shows, is addressed by the
@@ -1166,6 +1184,7 @@ it('lists only the new site’s sources in the navigation after a switch', funct
         ->assertOk()
         ->assertInertia(function (AssertableInertia $page) use ($primaryOnly, $bothSites) {
             $entries = collect($page->toArray()['props']['craft']['nav'])
+                ->flatMap(fn (array $item): array => $item['group'] ? $item['subnav'] : [$item])
                 ->firstWhere('label', 'Entries');
 
             // The nav is the sources sidebar on an index page, so it has to
@@ -1189,6 +1208,7 @@ it('keeps every source in the navigation on a single-site install', function () 
         ->assertOk()
         ->assertInertia(function (AssertableInertia $page) use ($section) {
             $entries = collect($page->toArray()['props']['craft']['nav'])
+                ->flatMap(fn (array $item): array => $item['group'] ? $item['subnav'] : [$item])
                 ->firstWhere('label', 'Entries');
 
             $labels = collect($entries['subnav'])
@@ -1197,6 +1217,35 @@ it('keeps every source in the navigation on a single-site install', function () 
                     : [$item['label']]);
 
             expect($labels)->toContain($section->name);
+
+            return true;
+        });
+});
+
+it('carries a source’s status and badge count into its navigation entry', function () {
+    $section = Section::factory()->create(['name' => 'Blog', 'handle' => 'blog']);
+
+    Event::listen(function (ElementSourcesResolving $event) use ($section) {
+        if ($event->elementType !== EntryElement::class) {
+            return;
+        }
+
+        $event->sources = collect($event->sources)
+            ->map(fn (array $source): array => ($source['key'] ?? null) === "section:$section->uid"
+                ? [...$source, 'status' => 'green', 'badgeCount' => 4]
+                : $source)
+            ->all();
+    });
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(function (AssertableInertia $page) {
+            $items = collect($page->toArray()['props']['sourceNavItems'])
+                ->flatMap(fn (array $item): array => $item['group'] ? $item['subnav'] : [$item])
+                ->keyBy('label');
+
+            expect($items['Blog'])->toMatchArray(['status' => 'green', 'badgeCount' => 4])
+                ->and($items['All entries'])->toMatchArray(['status' => null, 'badgeCount' => 0]);
 
             return true;
         });

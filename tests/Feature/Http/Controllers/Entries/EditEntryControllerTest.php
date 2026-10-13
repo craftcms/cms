@@ -92,12 +92,12 @@ it('renders the entry edit screen as an Inertia page', function () {
         );
 });
 
-it('compiles the field layout into a form payload', function () {
+it('compiles the field layout into a UI payload', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('form.nodes')
-            ->where('form.nodes', fn (Collection $nodes) => $nodes
+            ->has('ui.nodes')
+            ->where('ui.nodes', fn (Collection $nodes) => $nodes
                 ->contains(fn (array $node) => ($node['uid'] ?? null) === 'entry-content'))
             ->etc()
         );
@@ -112,11 +112,11 @@ it('points the form at the entry save action', function () {
         );
 });
 
-it('compiles the meta fields into a sidebar form', function () {
+it('compiles the meta fields into a sidebar UI', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('sidebarForm.nodes', function (Collection $nodes) {
+            ->where('sidebarUi.nodes', function (Collection $nodes) {
                 $paths = $nodes
                     ->map(fn (array $node) => implode('.', $node['control']['path'] ?? []))
                     ->all();
@@ -147,13 +147,13 @@ it('includes the parent field for structure entries', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('sidebarForm.nodes', fn (Collection $nodes) => $nodes
+            ->where('sidebarUi.nodes', fn (Collection $nodes) => $nodes
                 ->contains(fn (array $node) => ($node['control']['path'] ?? null) === ['parentId']))
             ->etc()
         );
 });
 
-it('saves the meta fields the sidebar form submits', function () {
+it('saves the meta fields the sidebar UI submits', function () {
     post(action(StoreEntryController::class), [
         'entryId' => $this->entry->id,
         'siteId' => $this->entry->siteId,
@@ -335,7 +335,7 @@ it('renders a provisional draft in the Inertia editor', function () {
             ->where('canonicalId', $this->entry->id)
             ->where('notice', 'Showing your unsaved changes.')
             ->where('applyDraftUrl', fn (string $url) => str_contains($url, 'elements/apply-draft'))
-            ->where('sidebarForm.nodes', fn (Collection $nodes) => $nodes
+            ->where('sidebarUi.nodes', fn (Collection $nodes) => $nodes
                 ->contains(fn (array $node) => ($node['control']['path'] ?? null) === ['slug']
                     && ! array_key_exists('autoGenerate', $node['control']['props'])))
             ->etc()
@@ -398,7 +398,7 @@ it('creates a workflow entry as a draft before offering review', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Create entry')
-            ->where('editorActions.primary.tabId', null)
+            ->where('editorActions.primary.panelId', null)
             ->where('editorActions.primary.actionUrl', fn (string $url) => str_contains($url, 'elements/save-draft'))
             ->where('editorActions.primary.params.dropProvisional', 1)
             ->where('editorActions.primary.params.workflowSave', 1)
@@ -443,7 +443,7 @@ it('offers canonical creation for a disabled workflow entry', function () {
             ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Create entry')
             ->where('editorActions.primary.actionUrl', null)
-            ->where('editorActions.primary.tabId', null)
+            ->where('editorActions.primary.panelId', null)
             ->where('workflow.current.canSubmit', false)
             ->etc()
         );
@@ -477,7 +477,7 @@ it('offers review instead of canonical save actions for an unpublished workflow 
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('elements/Edit')
             ->where('editorActions.primary.label', 'Request review')
-            ->where('editorActions.primary.tabId', 'workflow')
+            ->where('editorActions.primary.panelId', 'workflow')
             ->where('editorActions.primary.actionUrl', fn (string $url) => str_contains($url, 'elements/save-draft'))
             ->where('editorActions.primary.params.workflowSave', 1)
             ->where('workflow.current.canSubmit', true)
@@ -509,7 +509,7 @@ it('offers review instead of canonical save actions for an unpublished workflow 
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('editorActions.primary.label', 'Save draft')
-            ->where('editorActions.primary.tabId', null)
+            ->where('editorActions.primary.panelId', null)
             ->where('editorActions.primary.actionUrl', fn (string $url) => str_contains($url, 'elements/save-draft'))
             ->where('editorActions.primary.params.workflowSave', 1)
             ->where('workflow.current.canSubmit', false)

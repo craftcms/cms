@@ -94,7 +94,7 @@ describe('WorkflowDetailsActions', () => {
           actionUrl: null,
           params: {},
           redirect: null,
-          tabId: null,
+          panelId: null,
         },
         menu: [],
         buttons: [],

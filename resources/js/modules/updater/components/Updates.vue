@@ -6,16 +6,16 @@
   import {router} from '@inertiajs/vue3';
   import UpdaterController from '@actions/Updates/UpdaterController';
   import UpdatesController from '@actions/Updates/UpdatesController';
-  import type {FormValues} from '@/modules/forms/types';
+  import type {UiValues} from '@/modules/ui/types';
 
-  interface Release extends FormValues {
+  interface Release extends UiValues {
     version: string;
     date: string | null;
     critical: boolean;
     notes: string | null;
   }
 
-  interface UpdateInfo extends FormValues {
+  interface UpdateInfo extends UiValues {
     status: string;
     statusText?: string;
     renewalPrice: string | null;
@@ -37,12 +37,12 @@
     altCtaUrl?: string;
   }
 
-  interface UpdatesCollection extends FormValues {
+  interface UpdatesCollection extends UiValues {
     cms: UpdateInfo;
     plugins: UpdateInfo[];
   }
 
-  interface UpdatesResponse extends FormValues {
+  interface UpdatesResponse extends UiValues {
     total: number;
     critical: boolean;
     allowUpdates: boolean;

@@ -27,13 +27,13 @@
 
   function sentenceFragment(text: string | null): string {
     return text === null
-      ? t('commented.')
+      ? t('commented')
       : text.charAt(0).toLocaleLowerCase() + text.slice(1);
   }
 </script>
 
 <template>
-  <craft-card>
+  <craft-card data-color="white">
     <div slot="label" class="activity-comment-card__heading">
       <ActivityTimelineActor
         :actor="actor"
@@ -50,7 +50,11 @@
       </span>
     </div>
 
-    <div v-if="$slots.actions" slot="actions">
+    <div
+      v-if="$slots.actions"
+      slot="actions"
+      class="activity-comment-card__actions"
+    >
       <slot name="actions" />
     </div>
 
@@ -58,11 +62,8 @@
 
     <slot />
 
-    <div slot="footer" class="activity-comment-card__footer">
+    <div slot="badge" class="activity-comment-card__badge">
       <span v-if="edited">{{ t('Edited') }}</span>
-      <time :datetime="occurredAt" :title="formattedOccurredAt.full">
-        {{ formattedOccurredAt.time }}
-      </time>
     </div>
   </craft-card>
 </template>
@@ -72,16 +73,16 @@
     margin-inline-start: 0.25em;
   }
 
-  .activity-comment-card__footer {
+  .activity-comment-card__actions {
     display: flex;
-    width: 100%;
-    color: var(--c-text-quiet);
-    font-size: var(--c-text-xs);
+    align-items: center;
   }
 
-  .activity-comment-card__footer time {
-    margin-inline-start: auto;
-    white-space: nowrap;
+  .activity-comment-card__badge {
+    display: flex;
+    align-items: center;
+    color: var(--c-text-quiet);
+    font-size: var(--c-text-xs);
   }
 
   .activity-comment-card__body :deep(> :last-child) {

@@ -61,6 +61,16 @@ class AssetAdapter extends BaseElementAdapter
                 'enabled' => ['type' => 'boolean', 'description' => 'Whether the asset is enabled.'],
                 'filename' => ['type' => 'string', 'description' => 'Asset filename. Changing it renames the file.'],
                 'folderId' => ['type' => 'integer', 'description' => 'Asset folder ID. Changing it moves the file.'],
+                'focalPoint' => [
+                    'type' => ['object', 'null'],
+                    'description' => 'Image or video focal point, as fractions of the width (x) and height (y) from the top-left corner. Image transforms crop around it. Null clears it.',
+                    'properties' => [
+                        'x' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
+                        'y' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
+                    ],
+                    'required' => ['x', 'y'],
+                    'additionalProperties' => false,
+                ],
             ],
             'additionalProperties' => false,
         ];

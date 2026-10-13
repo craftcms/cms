@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
 export default css`
   :host {
@@ -45,6 +46,12 @@ export default css`
     );
   }
 
+  @media (forced-colors: active) {
+    :host([selected])::after {
+      background-color: Highlight;
+    }
+  }
+
   :host([selected]) {
     font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
   }
@@ -55,6 +62,11 @@ export default css`
     display: inline-flex;
     flex-direction: column;
     min-width: 0;
+  }
+
+  .tab__text {
+    display: block;
+    ${trimmedTextBoxStyles}
   }
 
   .tab__label::after {

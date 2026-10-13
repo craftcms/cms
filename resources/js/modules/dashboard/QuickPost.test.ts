@@ -83,7 +83,7 @@ it('opens the created entry in a slideout and refreshes the dashboard after publ
             colspan: 1,
             maxColspan: 4,
             settings: {},
-            settingsForm: null,
+            settingsUi: null,
             component: 'craft:widget-quick-post',
             data: {params},
             fragment: {html: '', headHtml: '', bodyHtml: ''},

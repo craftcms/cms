@@ -39,11 +39,11 @@ This replaces the entire prefix region, and the built-in slots described below a
 
 <Canvas of={ChipStories.CustomPrefix} sourceState="shown" />
 
-Otherwise, use one of the built-in prefix slots:
+Otherwise, use one of the built-in slots. Each is only rendered when it has content:
 
-- `thumbnail` – Requires `show-thumb`. Without it the slot is not rendered, and its content does not appear.
-- `icon` – Rendered when the `icon` attribute is set.
-- `status` – Rendered whenever the slot is filled, or when `show-status` is set.
+- `thumbnail` – Also requires `show-thumb`. Without it the slot is not rendered, and its content does not appear.
+- `icon` – Rendered when the slot is filled or the `icon` attribute is set.
+- `status` – Rendered when the slot is filled. It sits beside the label rather than in the prefix, slightly closer to it than the other parts.
 
 <Canvas of={ChipStories.Thumbnail} sourceState="shown" />
 

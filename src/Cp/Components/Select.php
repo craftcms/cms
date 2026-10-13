@@ -24,7 +24,7 @@ class Select extends ViewComponent
     /** @var string|int|float|bool|list<string|int|float|bool>|null */
     protected string|int|float|bool|array|null $value = null;
 
-    /** @var list<array{label: string, value: string|int|float|bool, disabled?: bool, group?: string|null}> */
+    /** @var list<array{label: string, value: string|int|float|bool, disabled?: bool, hidden?: bool, data?: array<string, mixed>, group?: string|null}> */
     protected array $options = [];
 
     protected bool $multiple = false;
@@ -36,6 +36,8 @@ class Select extends ViewComponent
     protected bool $required = false;
 
     protected bool $small = false;
+
+    protected ?string $labelledBy = null;
 
     protected ?string $describedBy = null;
 
@@ -66,7 +68,7 @@ class Select extends ViewComponent
      * `group` heads a run of consecutive options that share it with an
      * `<optgroup>`.
      *
-     * @param  list<array{label: string, value: string|int|float|bool, disabled?: bool, group?: string|null}>  $options
+     * @param  list<array{label: string, value: string|int|float|bool, disabled?: bool, hidden?: bool, data?: array<string, mixed>, group?: string|null}>  $options
      */
     public function options(array $options): static
     {
@@ -106,6 +108,13 @@ class Select extends ViewComponent
     public function small(bool $small = true): static
     {
         $this->small = $small;
+
+        return $this;
+    }
+
+    public function labelledBy(?string $labelledBy): static
+    {
+        $this->labelledBy = $labelledBy;
 
         return $this;
     }
@@ -162,6 +171,8 @@ class Select extends ViewComponent
                 'value' => (string) $option['value'],
                 'selected' => in_array((string) $option['value'], $values, true),
                 'disabled' => $option['disabled'] ?? false,
+                'hidden' => $option['hidden'] ?? false,
+                'data' => $option['data'] ?? false,
             ]);
         }
 
@@ -175,7 +186,10 @@ class Select extends ViewComponent
             'multiple' => $this->multiple,
             'disabled' => $this->isDisabled(),
             'required' => $this->required,
-            'aria' => ['describedby' => $this->describedBy],
+            'aria' => [
+                'describedby' => $this->describedBy,
+                'labelledby' => $this->labelledBy,
+            ],
         ], $this->selectAttributes)).parent::renderSlots();
     }
 }

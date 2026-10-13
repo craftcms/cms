@@ -46,10 +46,4 @@
     height: 100%;
     min-block-size: 0;
   }
-
-  /* The height the tabs get; craft-tabs scrolls its own panels within it. */
-  .cp-details :deep(craft-tabs) {
-    block-size: 100%;
-    min-block-size: 0;
-  }
 </style>

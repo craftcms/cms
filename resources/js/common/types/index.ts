@@ -7,7 +7,7 @@ import type {
 import type {ComboboxOptionData} from '@craftcms/ui/components/combobox/combobox';
 import type {Component} from 'vue';
 import type {UrlMethodPair} from '@inertiajs/core';
-import type {FormValues} from '@/modules/forms/types';
+import type {UiValues} from '@/modules/ui/types';
 
 export type OptionData = ComboboxOptionData;
 
@@ -134,6 +134,8 @@ export interface ActionItemButton {
    * their own — a plugin's `icon.svg`. Takes precedence over `icon`.
    */
   iconSvg?: string;
+  /** A status dot in place of the icon, as a palette color or status variant. */
+  status?: string;
   hidden?: boolean;
   disabled?: boolean;
   disabledReason?: string | null;
@@ -165,6 +167,8 @@ export interface ActionItemLink {
    * their own — a plugin's `icon.svg`. Takes precedence over `icon`.
    */
   iconSvg?: string;
+  /** A status dot in place of the icon, as a palette color or status variant. */
+  status?: string;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
   /**
@@ -229,7 +233,7 @@ export type ActionItem =
 
 export type ActionItems = Array<ActionItem>;
 
-/** An alternate submission, executed by the Form page's save pipeline. */
+/** An alternate submission, executed by the Ui page's save pipeline. */
 export interface FormSubmissionAction extends Omit<
   ActionItemButton,
   'action' | 'shortcut'
@@ -237,7 +241,7 @@ export interface FormSubmissionAction extends Omit<
   action?: string;
   redirect?: string;
   confirm?: string;
-  params?: FormValues;
+  params?: UiValues;
   destructive?: boolean;
   shortcut?: boolean;
   shift?: boolean;
@@ -252,7 +256,7 @@ export interface FormSaveOptions {
   /** Keep a slideout open after saving, without navigating to a redirect. */
   keepOpen?: boolean;
   redirect?: boolean;
-  data?: FormValues;
+  data?: UiValues;
   preserveState?: boolean | 'errors';
 }
 
@@ -338,6 +342,25 @@ export const TableSpacing = {
 export type TableSpacingValue =
   (typeof TableSpacing)[keyof typeof TableSpacing];
 
+/**
+ * How a table meets its container. Mirrors
+ * `CraftCms\Cms\Cp\Enums\TableAppearance`.
+ */
+export const TableAppearance = {
+  /** Sits inside the container's padding. */
+  Plain: 'plain',
+  /**
+   * Spans the container's inline padding, padding each row's outer cells by
+   * `--cp-container-padding` to match.
+   */
+  Flush: 'flush',
+  /** Sits in a raised pane. */
+  Raised: 'raised',
+} as const;
+
+export type TableAppearanceValue =
+  (typeof TableAppearance)[keyof typeof TableAppearance];
+
 export interface Site {
   name: string;
   nameRaw: string;
@@ -389,8 +412,8 @@ export interface PaginationData {
   last_page: number;
   next_page_url: string | null;
   prev_page_url: string | null;
-  from: number;
-  to: number;
+  from: number | null;
+  to: number | null;
 }
 
 export interface UserGroup {

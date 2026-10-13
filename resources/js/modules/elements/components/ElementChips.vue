@@ -248,6 +248,12 @@
     flex-wrap: wrap;
   }
 
+  // Lets a chip with a long label shrink to the list and truncate, rather
+  // than widening it.
+  .element-chips__item {
+    min-width: 0;
+  }
+
   // Dragging, but still over itself — dim rather than remove, so the list
   // doesn't reflow under the cursor.
   .element-chips__item--dragging {

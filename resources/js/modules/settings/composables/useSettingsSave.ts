@@ -17,6 +17,8 @@ interface PasswordConfirmationOptions<T> {
 
 export interface UseSettingsSaveOptions<T extends object> {
   transform?: (data: T) => object;
+  /** Whether the screen's cmd/ctrl + S shortcut may submit. */
+  keyboardShortcutEnabled?: () => boolean;
   /** Uses the existing topmost-panel save listener for alternate submissions. */
   onSaveShortcut?: (event: KeyboardEvent) => void;
   /** Receives the response data when saving from a slideout. */
@@ -110,6 +112,11 @@ export function useSettingsSave<T extends object>(
 
       event.preventDefault();
       event.stopImmediatePropagation();
+
+      if (options.keyboardShortcutEnabled?.() === false) {
+        return;
+      }
+
       if (options.onSaveShortcut) {
         options.onSaveShortcut(event);
       } else if (!event.shiftKey) {

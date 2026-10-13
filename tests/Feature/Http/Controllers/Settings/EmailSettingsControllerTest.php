@@ -44,9 +44,9 @@ it('can show the email settings screen', function () {
     get(action([EmailSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/Email')
-            ->has('form.nodes')
-            ->has('form.values.fromEmail')
-            ->has('form.values.fromName')
+            ->has('ui.nodes')
+            ->has('ui.values.fromEmail')
+            ->has('ui.values.fromName')
             ->where('submit.method', 'post')
             ->where('submit.url', action([EmailSettingsController::class, 'store'])))
         ->assertOk();
@@ -57,7 +57,7 @@ it('shows a readonly settings screen when admin changes is disabled', function (
 
     get(action([EmailSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.nodes', function (Collection $nodes): bool {
+            ->where('ui.nodes', function (Collection $nodes): bool {
                 $controls = $nodes->pluck('control')->filter();
 
                 return $controls->isNotEmpty()
@@ -66,7 +66,7 @@ it('shows a readonly settings screen when admin changes is disabled', function (
         ->assertOk();
 });
 
-it('includes configured overrides for every site in the form', function () {
+it('includes configured overrides for every site in the UI', function () {
     $site = Site::factory()->create(['name' => 'French']);
     Sites::refreshSites();
     ProjectConfig::set('email', [
@@ -77,16 +77,16 @@ it('includes configured overrides for every site in the form', function () {
 
     get(action([EmailSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.nodes', fn (Collection $nodes): bool => $nodes
+            ->where('ui.nodes', fn (Collection $nodes): bool => $nodes
                 ->pluck('control')
                 ->filter()
                 ->contains(fn (array $control): bool => $control['component'] === 'craft:table'
                     && $control['path'] === ['siteOverrides']))
-            ->where("form.values.siteOverrides.{$site->uid}.site", 'French')
-            ->where("form.values.siteOverrides.{$site->uid}.fromEmail", 'french@example.com')
-            ->where("form.values.siteOverrides.{$site->uid}.fromName", '')
-            ->where("form.values.siteOverrides.{$site->uid}.replyToEmail", '')
-            ->where("form.values.siteOverrides.{$site->uid}.template", ''))
+            ->where("ui.values.siteOverrides.{$site->uid}.site", 'French')
+            ->where("ui.values.siteOverrides.{$site->uid}.fromEmail", 'french@example.com')
+            ->where("ui.values.siteOverrides.{$site->uid}.fromName", '')
+            ->where("ui.values.siteOverrides.{$site->uid}.replyToEmail", '')
+            ->where("ui.values.siteOverrides.{$site->uid}.template", ''))
         ->assertOk();
 });
 
@@ -96,7 +96,7 @@ it('escapes site names rendered as table headings', function () {
 
     get(action([EmailSettingsController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where("form.values.siteOverrides.{$site->uid}.site", '&lt;img src=x onerror=alert(1)&gt;'));
+            ->where("ui.values.siteOverrides.{$site->uid}.site", '&lt;img src=x onerror=alert(1)&gt;'));
 });
 
 it('can save email settings', function () {

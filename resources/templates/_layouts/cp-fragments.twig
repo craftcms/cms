@@ -1,0 +1,56 @@
+{# Stands in for `_layouts/basecp.twig` when a Twig-rendered control panel
+   screen is to render inside the Inertia shell rather than as its own
+   document.
+
+   `_layouts/cp.twig` captures its fragments before handing control to its
+   parent — it has to, to assemble the document — so by the time this runs they
+   are already strings in the context. All this does is pass them along and
+   draw nothing: the response layer picks them up and renders the shell around
+   them.
+
+   The names match what `CpScreenResponseFormatter` sends for an `asCpScreen()`
+   screen, so `cp/Screen` can't tell the two apart.
+
+   Extends nothing on purpose. `basecp` → `base` is where `<html>` is written,
+   and the point here is that no document gets built.
+
+   @see CraftCms\Cms\View\LegacyScreenFragments
+#}
+
+{# `bodyClass` was applied to the document's own `<body>`, and plugin CSS leans
+   on it — Commerce scopes its order index to `.commerceorders`. The shell owns
+   `<body>`, so the classes travel as a prop and the screen applies them for as
+   long as it is on screen. `bodyAttributes` does not come along: the shell
+   manages those itself. #}
+
+{# The document puts the footer inside the content column, right below the
+   content itself — `_elements/footer` pagination, usually. The shell has no
+   slot of its own for it, so it travels with the content it sat under. #}
+{%- set footerHtml = footer
+    ? "<div id=\"footer\" class=\"flex flex-justify\">#{footer}</div>"
+    : '' -%}
+
+{%- do craft.cp.collectScreenFragments({
+    docTitle: docTitle ?? null,
+    title: title ?? null,
+    selectedSubnavItem: selectedSubnavItem ?? null,
+    crumbs: crumbs,
+    contextMenu: contextMenu,
+    toolbar: toolbar,
+    actionMenu: actionMenu,
+    submitButtonLabel: submitButtonLabel ?? null,
+    additionalButtons: additionalButtons,
+    tabs: tabs,
+    fullPageForm: fullPageForm,
+    mainAttributes: mainAttributes,
+    mainFormAttributes: mainFormAttributes,
+    formActions: formActions,
+    saveShortcutRedirect: saveShortcutRedirect ?? null,
+    contentNotice: contentNotice,
+    bodyClass: bodyClass,
+    elementIndex: elementIndex ?? null,
+    content: content ~ footerHtml,
+    details: details,
+    sidebar: sidebar,
+    errorSummary: errorSummary ?? null,
+}) -%}

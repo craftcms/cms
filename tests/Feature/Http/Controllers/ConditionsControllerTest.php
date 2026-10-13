@@ -57,18 +57,18 @@ it('resolves nested and repeated rules into scoped Forms', function () {
     expect($rules)->toHaveCount(2);
 
     foreach ($rules as $uid => $rule) {
-        expect($rule['form']['scope'])->toBe(['_conditionRules', $uid])
-            ->and($rule['form']['values']['_conditionRules'][$uid]['value'])->toBeIn(['Alpha', 'Beta']);
+        expect($rule['ui']['scope'])->toBe(['_conditionRules', $uid])
+            ->and($rule['ui']['values']['_conditionRules'][$uid]['value'])->toBeIn(['Alpha', 'Beta']);
     }
 });
 
-it('creates the selected rule with its Form and assets', function () {
+it('creates the selected rule with its UI and assets', function () {
     postJson(action([ConditionsController::class, 'rule']), [
         ...$this->payload,
         'rule' => ['type' => TitleConditionRule::class],
     ])->assertOk()
         ->assertJsonPath('rule.config.class', TitleConditionRule::class)
-        ->assertJsonStructure(['rule' => ['form', 'config', 'label'], 'headHtml', 'bodyHtml']);
+        ->assertJsonStructure(['rule' => ['ui', 'config', 'label'], 'headHtml', 'bodyHtml']);
 });
 
 it('preserves compatible values when switching rule types', function () {

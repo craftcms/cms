@@ -39,7 +39,10 @@
 └────────────────────────────────────────────────────────────────────────────────────┘
 #}
 
-{% extends '_layouts/basecp.twig' %}
+{# The parent is chosen at runtime: the document normally, or a layout that
+   collects this screen's fragments and draws nothing, so the control panel
+   shell can render around them. See CraftCms\Cms\View\LegacyScreenFragments. #}
+{% extends craft.cp.screenShell() %}
 
 {# The control panel only supports queue components that implement QueueInterface #}
 {% set sidebarState = Request.cookie("Craft-#{craft.systemUid}_sidebar") ?? 'expanded' %}
@@ -57,6 +60,7 @@
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
 {% set trialInfo = craft.cp.trialInfo() %}
 
+{% set content = (content ?? block('content') ?? '')|trim %}
 {% set contentNotice = (contentNotice ?? block('contentNotice') ?? '')|trim %}
 {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
 {% set toolbar = (toolbar ?? block('toolbar') ?? '')|trim %}
@@ -110,9 +114,9 @@
 {% set userPhoto = include('_layouts/components/header-photo.twig') %}
 
 {% js at head %}
-// Remove the hash so the browser doesn't scroll to it
+// Read by the legacy tab manager. The hash itself stays on the URL: `craft-tabs`
+// reads it to pick a tab, and a saved screen returns to the tab it was on.
 window.LOCATION_HASH = document.location.hash ? decodeURIComponent(document.location.hash.substr(1)) : null;
-history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[0]);
 {% endjs %}
 
 {% block body %}
@@ -268,9 +272,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                                     </header>
                                                 {% endif %}
 
-                                                {% block content %}
-                                                    {{ content is defined ? content|raw }}
-                                                {% endblock %}
+                                                {{ content|raw }}
 
                                                 {# footer #}
                                                 {% if footer %}

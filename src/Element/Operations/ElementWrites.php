@@ -667,7 +667,12 @@ readonly class ElementWrites
 
                     DB::commit();
                 } catch (Throwable $throwable) {
-                    DB::rollBack();
+                    $connection = DB::connection();
+                    if ($connection->getPdo()->inTransaction()) {
+                        $connection->rollBack();
+                    } elseif ($connection->transactionLevel() > 0) {
+                        $connection->rollBack(0);
+                    }
 
                     $this->resetElement($element, $originalFirstSave, $originalIsNewForSite, $originalPropagateAll);
                     $element->dateUpdated = $originalDateUpdated;

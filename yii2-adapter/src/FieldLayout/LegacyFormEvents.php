@@ -11,10 +11,10 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Tab;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Tab;
+use CraftCms\Cms\Ui\UiContext;
 use Illuminate\Container\Attributes\Singleton;
 use RuntimeException;
 use WeakMap;
@@ -24,7 +24,7 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class LegacyFormEvents
 {
-    /** @var WeakMap<FormContext, array<int, CreateFieldLayoutFormEvent>> */
+    /** @var WeakMap<UiContext, array<int, CreateFieldLayoutFormEvent>> */
     private WeakMap $events;
 
     public function __construct()
@@ -32,7 +32,7 @@ class LegacyFormEvents
         $this->events = new WeakMap();
     }
 
-    public function prepare(FieldLayout $layout, ?ElementInterface $element, FormContext $context): ?CreateFieldLayoutFormEvent
+    public function prepare(FieldLayout $layout, ?ElementInterface $element, UiContext $context): ?CreateFieldLayoutFormEvent
     {
         if (!YiiEvent::hasHandlers(LegacyFieldLayout::class, LegacyFieldLayout::EVENT_CREATE_FORM)) {
             return null;
@@ -64,7 +64,7 @@ class LegacyFormEvents
 
         if ($mutations !== []) {
             throw new RuntimeException(sprintf(
-                'Legacy FieldLayout event mutation [%s] is incompatible with Form rendering.',
+                'Legacy FieldLayout event mutation [%s] is incompatible with UI rendering.',
                 implode(', ', $mutations),
             ));
         }
@@ -76,7 +76,7 @@ class LegacyFormEvents
         return $event;
     }
 
-    public function forget(FieldLayout $layout, FormContext $context): void
+    public function forget(FieldLayout $layout, UiContext $context): void
     {
         $events = $this->events[$context] ?? [];
         unset($events[spl_object_id($layout)]);
@@ -87,7 +87,7 @@ class LegacyFormEvents
         FieldLayout $layout,
         FieldLayoutTab $tab,
         ?ElementInterface $element,
-        FormContext $context,
+        UiContext $context,
         string $fallbackUid,
     ): ?Node {
         $tab->setLayout($layout);
@@ -103,10 +103,10 @@ class LegacyFormEvents
                 continue;
             }
 
-            $node = $layoutElement->formNode(new FieldLayoutElementContext(
+            $node = $layoutElement->uiNode(new FieldLayoutElementContext(
                 $element,
                 $context,
-                $layoutElement->formMode($element),
+                $layoutElement->uiMode($element),
             ));
 
             if ($node !== null) {

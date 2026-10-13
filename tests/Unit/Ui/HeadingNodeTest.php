@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Ui\Nodes\Heading;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
+use Symfony\Component\DomCrawler\Crawler;
+
+it('renders the configured heading level and defaults to level two', function () {
+    $ui = Ui::make([
+        Heading::make('custom', 'Custom')->level(3)->description('Supporting copy.'),
+        Heading::make('default', 'Default'),
+    ]);
+    $payload = app(UiResolver::class)->resolve($ui, new UiContext);
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+
+    expect($payload->nodes[0]->props['level'])->toBe(3)
+        ->and($crawler->filter('[data-ui-node="custom"] h3')->text())->toBe('Custom')
+        ->and($crawler->filter('[data-ui-node="custom"] h3.my-0'))->toHaveCount(1)
+        ->and($crawler->filter('[data-ui-node="custom"] p')->text())->toBe('Supporting copy.')
+        ->and($crawler->filter('[data-ui-node="custom"] p.my-0'))->toHaveCount(1)
+        ->and($crawler->filter('[data-ui-node="custom"].gap-1'))->toHaveCount(1)
+        ->and($payload->nodes[1]->props['level'])->toBe(2)
+        ->and($crawler->filter('[data-ui-node="default"] h2')->text())->toBe('Default');
+});

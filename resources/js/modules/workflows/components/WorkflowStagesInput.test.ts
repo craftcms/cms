@@ -14,13 +14,13 @@ const stageTypes = [
     type,
     label: 'User Review',
     settings: {approvalsRequired: 1, approvalMode: 'total', userGroups: []},
-    settingsForm: null,
+    settingsUi: null,
   },
   {
     type: 'plugin\\AutomatedStage',
     label: 'Automated review',
     settings: {rule: 'passing'},
-    settingsForm: null,
+    settingsUi: null,
   },
 ];
 
@@ -30,7 +30,7 @@ function stage(uid: string, name: string): WorkflowStage {
     name,
     type,
     settings: {approvalsRequired: 1, approvalMode: 'total', userGroups: []},
-    settingsForm: null,
+    settingsUi: null,
   };
 }
 
@@ -54,7 +54,7 @@ describe('WorkflowStagesInput', () => {
 
   function mount(
     stages: WorkflowStage[],
-    errors: CraftCms.Cms.Form.FormPayload['errors'] = []
+    errors: CraftCms.Cms.Ui.UiPayload['errors'] = []
   ) {
     const updates: WorkflowStage[][] = [];
     const modelValue = shallowRef(stages);
@@ -129,7 +129,7 @@ describe('WorkflowStagesInput', () => {
         name: 'Review',
         type,
         settings: {approvalsRequired: 1, approvalMode: 'total', userGroups: []},
-        settingsForm: null,
+        settingsUi: null,
       },
     ]);
 

@@ -9,22 +9,23 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Components\CopyAttribute;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\VolumeEditViewModel;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Nodes\Table;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -45,53 +46,62 @@ class VolumesController extends BaseAssetSettingsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(Request $request, Volumes $volumes): \Inertia\Response
+    public function index(Volumes $volumes): CpScreenResponse
     {
-        $sort = ! empty($request->array('sort')) ? $request->array('sort') : [
-            ['field' => 'sortOrder', 'direction' => 'asc'],
-        ];
+        $table = Table::make('asset-volumes')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name')],
+                ['key' => 'handle', 'label' => t('Handle')],
+            ])
+            ->rows($volumes->getAllVolumes()->map(fn (Volume $volume): array => [
+                'id' => $volume->id,
+                'name' => [
+                    'label' => $volume->name,
+                    'url' => route('craft.cp.settings.assets.volumes.edit', ['volumeId' => $volume->id]),
+                ],
+                'handle' => [
+                    'html' => CopyAttribute::make()->value($volume->handle)->toHtml(),
+                ],
+                ...($this->readOnly ? [] : [
+                    '_deleteUrl' => route('craft.cp.settings.assets.volumes.destroy', ['volumeId' => $volume->id]),
+                    '_deleteConfirmMessage' => t('Are you sure you want to delete "{name}"?', ['name' => $volume->name]),
+                ]),
+            ]))
+            ->emptyMessage(t('No volumes exist yet.'))
+            ->unless($this->readOnly, fn (Table $table) => $table
+                ->createAction(t('New volume'), route('craft.cp.settings.assets.volumes.create'))
+                ->createActionInPageHeader()
+                ->deletable()
+                ->reorderable(route('craft.actions.volumes.reorder')));
 
-        match (Arr::get($sort, '0.field')) {
-            'handle' => 'handle',
-            'type' => 'type',
-            default => 'name',
-        };
-
-        match (Arr::get($sort, '0.direction')) {
-            'desc' => SORT_DESC,
-            default => SORT_ASC,
-        };
-
-        return Inertia::render('settings/assets/Index', [
-            'crumbs' => fn () => [
-                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
-                new ActionItem()->label(t('Assets'))->href(Url::cpUrl('settings/assets')),
+        return new CpScreenResponse()
+            ->title(t('Volume Settings'))
+            ->subnav($this->subnav())
+            ->crumbs([
+                new ActionItem()->label(t('Settings'))->href(route('craft.cp.settings.index')),
+                new ActionItem()->label(t('Assets'))->href(route('craft.cp.settings.assets.volumes.index')),
                 new ActionItem()->label(t('Volumes')),
-            ],
-            'sort' => $sort,
-            'subnav' => $this->subnav(),
-            'title' => t('Volume Settings'),
-            'volumes' => $volumes->getAllVolumes(...),
-        ]);
+            ])
+            ->ui(Ui::make([$table]));
     }
 
-    public function create(Volumes $volumes, FormResolver $formResolver): CpScreenResponse
+    public function create(Volumes $volumes, UiResolver $uiResolver): CpScreenResponse
     {
         abort_if($this->readOnly, 403, 'Administrative changes are disallowed in this environment.');
 
-        return $this->editScreen(new Volume, $volumes, $formResolver);
+        return $this->editScreen(new Volume, $volumes, $uiResolver);
     }
 
-    public function edit(Volumes $volumes, FormResolver $formResolver, int $volumeId): CpScreenResponse
+    public function edit(Volumes $volumes, UiResolver $uiResolver, int $volumeId): CpScreenResponse
     {
         $volume = $volumes->getVolumeById($volumeId);
 
         abort_if(is_null($volume), 404, 'Volume not found');
 
-        return $this->editScreen($volume, $volumes, $formResolver);
+        return $this->editScreen($volume, $volumes, $uiResolver);
     }
 
-    public function renderForm(Request $request, Volumes $volumes, FormResolver $formResolver): JsonResponse
+    public function renderUi(Request $request, Volumes $volumes, UiResolver $uiResolver): JsonResponse
     {
         $data = $request->validate([
             'values' => ['required', 'array'],
@@ -115,13 +125,13 @@ class VolumesController extends BaseAssetSettingsController
         abort_if($volume === null, 404, 'Volume not found');
 
         return new JsonResponse([
-            'form' => new VolumeEditViewModel(
+            'ui' => new VolumeEditViewModel(
                 $volume,
                 $volumes,
-                $formResolver,
+                $uiResolver,
                 $this->assetTransformers,
                 values: $data['values'],
-            )->form(),
+            )->ui(),
         ]);
     }
 
@@ -165,8 +175,12 @@ class VolumesController extends BaseAssetSettingsController
 
     public function reorder(Request $request, Volumes $volumes): Response
     {
-        $volumeIds = $request->input('ids', []);
-        $volumes->reorderVolumes($volumeIds);
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'list'],
+            'ids.*' => ['required', 'integer', 'min:1', 'distinct'],
+        ]);
+
+        $volumes->reorderVolumes($data['ids']);
 
         return $this->asSuccess(t('Order updated.'));
     }
@@ -178,7 +192,7 @@ class VolumesController extends BaseAssetSettingsController
         return $this->asSuccess();
     }
 
-    private function editScreen(Volume $volume, Volumes $volumes, FormResolver $formResolver): CpScreenResponse
+    private function editScreen(Volume $volume, Volumes $volumes, UiResolver $uiResolver): CpScreenResponse
     {
         $isNewVolume = $volume->id === null;
         $title = $isNewVolume
@@ -191,10 +205,10 @@ class VolumesController extends BaseAssetSettingsController
             ->addCrumb(t('Assets'), 'settings/assets')
             ->addCrumb(t('Volumes'), 'settings/assets')
             ->addCrumb($title)
-            ->inertiaPage('Form', new VolumeEditViewModel(
+            ->inertiaPage('Ui', new VolumeEditViewModel(
                 $volume,
                 $volumes,
-                $formResolver,
+                $uiResolver,
                 $this->assetTransformers,
                 readOnly: $this->readOnly,
             ))

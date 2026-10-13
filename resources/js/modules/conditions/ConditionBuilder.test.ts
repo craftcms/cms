@@ -3,7 +3,7 @@ import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {actionClient} from '@craftcms/ui';
 import type CraftActionMenu from '@craftcms/ui/components/action-menu/action-menu';
 import {createCpComponentRegistry} from '@/bootstrap/components';
-import {registerFormComponents} from '@/modules/forms/register';
+import {registerUiComponents} from '@/modules/ui/register';
 import {expandFormData} from '@/common/utils/forms';
 import type {BuilderPayload, RulePayload, GroupConfig} from './types';
 import ConditionBuilder from './ConditionBuilder.vue';
@@ -21,7 +21,7 @@ function rule(
     label: type,
     hint: null,
     showHint: false,
-    form: {
+    ui: {
       scope,
       refreshable: true,
       nodes: [
@@ -104,7 +104,7 @@ let form: HTMLFormElement;
 let container: HTMLElement;
 
 const components = createCpComponentRegistry();
-registerFormComponents(components);
+registerUiComponents(components);
 defineConditionBuilderHost(components);
 
 beforeEach(() => {
@@ -388,9 +388,9 @@ it('does not allow edits or submit values in disabled mode', async () => {
 
 it('blocks native submission when a rule Form provider cannot render', async () => {
   const initial = rule();
-  initial.form.nodes[0] = {
-    ...initial.form.nodes[0]!,
-    control: {...initial.form.nodes[0]!.control!, component: 'missing:control'},
+  initial.ui.nodes[0] = {
+    ...initial.ui.nodes[0]!,
+    control: {...initial.ui.nodes[0]!.control!, component: 'missing:control'},
   };
   await mount(builder([initial]));
   await vi.waitFor(() =>

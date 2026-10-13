@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
-import {useElementIndexSelection} from '../composables/useElementIndexSelection';
+import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
 import ElementTable from './ElementTable.vue';
 import {
   createSampleTable,
@@ -50,7 +50,7 @@ function render(args: NonNullable<Story['args']>) {
       return {
         args,
         table,
-        selection: useElementIndexSelection(table, {
+        selection: useTableRowSelection(table, {
           selectable: () => args.selectable ?? false,
           readOnly: false,
         }),
@@ -108,7 +108,7 @@ export const Empty: Story = {
       return {
         args,
         table,
-        selection: useElementIndexSelection(table, {
+        selection: useTableRowSelection(table, {
           selectable: () => args.selectable ?? false,
           readOnly: false,
         }),

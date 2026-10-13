@@ -21,6 +21,7 @@ use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
+use CraftCms\Cms\Http\Middleware\RenderBridgedScreen;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveElementRoute;
@@ -197,10 +198,14 @@ class RouteServiceProvider extends ServiceProvider
 
         collect([
             RequireCpRequest::class,
+            AuthenticateCraftSession::class,
             CheckRequirements::class,
             HandleInertiaRequests::class,
             EnforceLicenses::class,
             HandleTemplateRequest::class,
+            // Last, so the response it builds passes back out through
+            // `HandleInertiaRequests`.
+            RenderBridgedScreen::class,
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
 
         collect([

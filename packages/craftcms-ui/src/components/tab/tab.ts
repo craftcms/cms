@@ -77,7 +77,7 @@ export default class CraftTab extends LitElement {
     return html`<span
       class="tab__label"
       data-text="${this.textContent?.trim() ?? ''}"
-      ><slot></slot
+      ><span class="tab__text"><slot></slot></span
     ></span>`;
   }
 }

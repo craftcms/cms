@@ -5,6 +5,7 @@ import TailwindMeta, {
   Layers,
   Spacing,
   Surfaces,
+  TextColors,
 } from './tailwind.stories';
 
 <Meta of={TailwindMeta} />
@@ -41,6 +42,14 @@ Every `--color-*` name works with each color utility: `bg-`, `text-`, `border-`,
 
 <Canvas of={BorderColors} />
 
+## Text colors
+
+`text-quiet` uses the `--c-text-quiet` token, for secondary text on a surface. It is defined in Tailwind's text-color namespace, which only feeds `text-*`, so it doesn't also produce `bg-quiet` or `border-quiet`, and it doesn't collide with font sizes such as `text-sm`.
+
+For text on a contextual fill, use `text-on-quiet`, `text-on-normal` and `text-on-loud` (from the colors above) with the matching `bg-fill-*`.
+
+<Canvas of={TextColors} />
+
 ## Spacing
 
 The named `--c-spacing-*` steps, for padding, margin, gap and `space-*`. Numeric classes such as `p-4` keep working alongside them.
@@ -52,6 +61,13 @@ They are mapped per utility rather than through `--spacing-*`: Tailwind reads `-
 ## Layers
 
 Semantic z-index layers, lowest to highest. Use these for anything that stacks against other parts of the page. A component lifting one of its own parts over another can keep a small local value instead.
+
+Layers fall into two tiers:
+
+- **Page chrome** (`z-sticky`, `z-sidebar`, `z-header`) sits below `z-skip-link`. The global skip links must never be covered when focused, so nothing persistent goes above them.
+- **Modal layers** start at `z-shade`. They may cover the global skip links, as the rest of the page is out of reach while they're open.
+
+Other skip links don't set a layer. They stack with whatever contains them.
 
 Slideouts, HUDs and legacy modals share `z-overlay` and are ordered by their place in the document. Native modal `<dialog>` elements sit in the browser's top layer and need no layer at all. Named layers have no negative form (`-z-popover` isn't generated).
 

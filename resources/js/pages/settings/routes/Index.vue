@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import DropIndicator from '@/common/components/DropIndicator.vue';
+  import {useInertiaReorder} from '@/common/composables/useInertiaReorder';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import type {RouteIndexData} from './types';
   import {
@@ -24,6 +25,13 @@
     readOnly?: boolean;
   }>();
 
+  const handleReorder = useInertiaReorder({
+    url: reorder(),
+    prop: 'routes',
+    key: 'uid',
+    param: 'routeUids',
+  });
+
   const {setItemRef, setHandleRef, getDragState, getDropState, getRowPosition} =
     useReorderableItems({
       getItemIds: () => props.routes.map((route) => route.uid),
@@ -35,39 +43,6 @@
     const state = getDropState(routeUid);
 
     return state.type === 'is-over' ? state.closestEdge : null;
-  }
-
-  function reorderedRoutes(
-    routes: Array<RouteIndexData>,
-    startIndex: number,
-    finishIndex: number
-  ): Array<RouteIndexData> {
-    const newRoutes = [...routes];
-    const [route] = newRoutes.splice(startIndex, 1);
-    newRoutes.splice(finishIndex, 0, route!);
-
-    return newRoutes;
-  }
-
-  function handleReorder(startIndex: number, finishIndex: number) {
-    const routes = reorderedRoutes(props.routes, startIndex, finishIndex);
-
-    router
-      .optimistic<{routes: Array<RouteIndexData>}>(() => {
-        return {
-          routes,
-        };
-      })
-      .post(
-        reorder(),
-        {
-          routeUids: routes.map((route) => route.uid),
-        },
-        {
-          preserveScroll: true,
-          preserveState: true,
-        }
-      );
   }
 
   function deleteRoute(route: RouteIndexData) {

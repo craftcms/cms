@@ -191,6 +191,30 @@ it('returns false when nested save is denied by the field', function () {
     expect($result)->toBeFalse();
 });
 
+it('delegates nested save checks to the field for element types without drafts', function () {
+    $user = UserModel::factory()->create();
+    $element = new class extends ContentBlock
+    {
+        public ?ElementContainerFieldInterface $mockField = null;
+
+        public static function hasDrafts(): bool
+        {
+            return false;
+        }
+
+        public function getField(): ?ElementContainerFieldInterface
+        {
+            return $this->mockField;
+        }
+    };
+    $element->siteId = null;
+    $element->mockField = createElementPolicyField(save: false);
+
+    $result = $this->policy->before($user, 'save', $element);
+
+    expect($result)->toBeFalse();
+});
+
 it('returns null when nested save authorization is unresolved', function () {
     $user = UserModel::factory()->create();
     $field = createElementPolicyField();

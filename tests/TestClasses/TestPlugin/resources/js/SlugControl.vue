@@ -1,9 +1,9 @@
 <script setup lang="ts">
-  import {inputName} from '@/modules/forms/runtime';
-  import type {FormChangeKind, FormControlPayload} from '@/modules/forms/types';
+  import {inputName} from '@/modules/ui/runtime';
+  import type {UiChangeKind, UiControlPayload} from '@/modules/ui/types';
 
   defineProps<{
-    control: FormControlPayload<{placeholder: string}>;
+    control: UiControlPayload<{placeholder: string}>;
     value: unknown;
     editable: boolean;
     label?: string;
@@ -11,7 +11,7 @@
     required: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: string, kind?: FormChangeKind): void;
+    (event: 'update:value', value: string, kind?: UiChangeKind): void;
   }>();
 </script>
 

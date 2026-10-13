@@ -87,6 +87,8 @@ class HtmlStack
 
     private bool $suppressAssetRenderingEvents = false;
 
+    private bool $deferInlineJs = false;
+
     /**
      * Registers inline JavaScript code.
      *
@@ -99,6 +101,19 @@ class HtmlStack
      * @param  Position  $position  Where on the page the code should appear.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$js`.
      */
+    /**
+     * Holds end-of-body JS until `Craft.whenReady` releases it.
+     *
+     * For a screen whose markup is mounted after the document parses, where JS
+     * written against the page would otherwise find none of it.
+     *
+     * @internal
+     */
+    public function deferInlineJs(): void
+    {
+        $this->deferInlineJs = true;
+    }
+
     public function js(string $js, Position $position = Position::Ready, ?string $key = null): void
     {
         $js = Str::finish(trim($js), ';');
@@ -830,7 +845,9 @@ class HtmlStack
             ->unless(
                 empty($this->js[$position->value]),
                 fn (Collection $c) => $c->concat([
-                    Html::script(implode(PHP_EOL, $this->js[$position->value]), ['type' => 'module']),
+                    $this->deferInlineJs && $position === Position::BodyEnd
+                        ? Html::script($this->whenReady(implode(PHP_EOL, $this->js[$position->value])))
+                        : Html::script(implode(PHP_EOL, $this->js[$position->value]), ['type' => 'module']),
                 ]),
             )
             ->when(
@@ -858,23 +875,43 @@ class HtmlStack
         event(new ViewAssetsRendering);
     }
 
-    private function readyJs(): string
+    /** Wraps JS so it runs when the screen's markup is in the DOM. */
+    private function whenReady(string $js): string
     {
-        $js = implode(PHP_EOL, $this->js[Position::Ready->value] ?? []);
-
         return <<<JS
 (() => {
   const run = function () {
 $js
   };
 
-  if (document.readyState === 'loading') {
+  const whenReady = window.Craft && window.Craft.whenReady;
+
+  if (typeof whenReady === 'function') {
+    whenReady(() => run.call(document));
+  } else if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => run.call(document), {once: true});
   } else {
     run.call(document);
   }
 })();
 JS;
+    }
+
+    private function readyJs(): string
+    {
+        $js = implode(PHP_EOL, $this->js[Position::Ready->value] ?? []);
+
+        /**
+         * `Craft.whenReady` is a compatibility seam, not a general API. Only
+         * the legacy-screen bridge defines it, and only because a screen's
+         * markup is mounted by Vue after the document is parsed — so
+         * `DOMContentLoaded` is no longer the moment this JS can safely run.
+         *
+         * Where nothing defines it, the two branches below are the original
+         * behavior, untouched. Removing the shim means removing the hook: drop
+         * the first branch and this is exactly what it was.
+         */
+        return $this->whenReady($js);
     }
 
     private function loadJs(): string

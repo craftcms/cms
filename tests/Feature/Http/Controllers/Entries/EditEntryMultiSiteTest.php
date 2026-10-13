@@ -100,7 +100,7 @@ it('renders a global status switch alongside per-site switches', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('sidebarForm.nodes', function (Collection $nodes) {
+            ->where('sidebarUi.nodes', function (Collection $nodes) {
                 $paths = $nodes
                     ->map(fn (array $node) => implode('.', $node['control']['path'] ?? []))
                     ->all();
@@ -134,7 +134,7 @@ it('omits the site switcher and per-site switches when the section is single-sit
             ->where('crumbs', fn (Collection $crumbs) => $crumbs->doesntContain(
                 fn (array $crumb) => ($crumb['icon'] ?? null) === 'earth',
             ))
-            ->where('sidebarForm.nodes', fn (Collection $nodes) => $nodes->doesntContain(
+            ->where('sidebarUi.nodes', fn (Collection $nodes) => $nodes->doesntContain(
                 fn (array $node) => ($node['uid'] ?? null) === 'site-statuses',
             ))
             ->etc()
@@ -156,7 +156,7 @@ it('offers a switch for every site the section is enabled for', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('sidebarForm.nodes', function (Collection $nodes) use ($extraSite) {
+            ->where('sidebarUi.nodes', function (Collection $nodes) use ($extraSite) {
                 $group = $nodes->first(fn (array $node) => ($node['uid'] ?? null) === 'site-statuses');
 
                 return collect($group['children'] ?? [])

@@ -14,16 +14,16 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Lightswitch as LightswitchControl;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Shared\Enums\Color as ColorEnum;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Lightswitch as LightswitchControl;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Override;
@@ -115,18 +115,18 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        return Form::make([
-            FormField::make(t('Default Value'))
+        return Ui::make([
+            UiField::make(t('Default Value'))
                 ->control(LightswitchControl::make('default')->value($this->default)),
-            FormField::make(t('OFF Label'))
+            UiField::make(t('OFF Label'))
                 ->instructions(t('The label text to display beside the lightswitch’s disabled state.'))
                 ->control(Text::make('offLabel')->value($this->offLabel)),
-            FormField::make(t('ON Label'))
+            UiField::make(t('ON Label'))
                 ->instructions(t('The label text to display beside the lightswitch’s enabled state.'))
                 ->control(Text::make('onLabel')->value($this->onLabel)),
-            FormField::make(t('Show ON/OFF labels in cards'))
+            UiField::make(t('Show ON/OFF labels in cards'))
                 ->instructions(t('Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'))
                 ->control(LightswitchControl::make('showLabelsInCards')->value($this->showLabelsInCards)),
         ]);
@@ -139,7 +139,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         return LightswitchControl::make($context->path)
             ->onLabel(t($this->onLabel, category: 'site'))

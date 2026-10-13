@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {capitalize} from '@craftcms/ui';
+  import {capitalize, colors} from '@craftcms/ui';
 
   type Color = string | {value: string};
 
@@ -48,14 +48,35 @@
     }
   });
 
-  // Empty string === all. `fill` takes any CSS value, so the gradient goes
-  // through it; only set when there is one, or the indicator's own fill would
-  // be overridden with nothing.
-  const indicatorBindings = computed(() =>
-    props.value
-      ? {}
-      : {fill: 'linear-gradient(60deg, #184cef, #e5422b) border-box'}
-  );
+  /**
+   * `craft-indicator` colors itself from `fill` alone: a status variant or
+   * palette color name, or any CSS value. Empty string === all, which gets the
+   * gradient. Nothing is bound for a value it can't color, or the indicator's
+   * own fill would be overridden with nothing.
+   */
+  const indicatorBindings = computed(() => {
+    if (!props.value) {
+      return {fill: 'linear-gradient(60deg, #184cef, #e5422b) border-box'};
+    }
+
+    if (props.color) {
+      return {
+        fill: typeof props.color === 'string' ? props.color : props.color.value,
+      };
+    }
+
+    if (variant.value === 'empty') {
+      return {appearance: 'outline'};
+    }
+
+    if (variant.value !== 'custom') {
+      return {fill: variant.value};
+    }
+
+    const value = props.value.toString();
+
+    return (colors as string[]).includes(value) ? {fill: value} : {};
+  });
 
   const computedLabel = computed(
     () => props.label ?? capitalize(props.value.toString())
@@ -72,10 +93,7 @@
       'gap-1 px-1.5 py-0.5 rounded-full text-xs': mode === 'badge',
     }"
   >
-    <craft-indicator
-      :variant="variant"
-      v-bind="indicatorBindings"
-    ></craft-indicator>
+    <craft-indicator v-bind="indicatorBindings"></craft-indicator>
     {{ computedLabel }}
   </div>
 </template>

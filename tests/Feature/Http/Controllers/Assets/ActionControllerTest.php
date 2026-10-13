@@ -92,6 +92,12 @@ describe('showInFolder', function () {
             ->assertJsonValidationErrors(['assetId']);
     });
 
+    it('rejects a non-integer asset id', function () {
+        postJson(action([ActionController::class, 'showInFolder']), [
+            'assetId' => ['filename' => 'findme.jpg'],
+        ])->assertJsonValidationErrors(['assetId']);
+    });
+
     it('can show asset in folder', function () {
         $asset = AssetModel::factory()->createElement([
             'volumeId' => $this->volume->id,

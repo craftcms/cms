@@ -59,6 +59,13 @@
   margin: 0;
 }
 
+.text-box-trim {
+  @supports (text-box: trim-both cap alphabetic) {
+    text-box: trim-both cap alphabetic;
+    padding-block: calc((1lh - 1cap) / 2);
+  }
+}
+
 /* Copied from tailwind's sr-only class */
 .sr-only {
   position: absolute;

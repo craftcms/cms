@@ -50,7 +50,7 @@ it('serves the capabilities the named user may use, except HTTP-only capabilitie
     $editor = User::factory()->withPermissions(['useCraftMcp'])->create(['username' => 'editor']);
     $call = static fn (string $tool, array $arguments = []): array => ['jsonrpc' => '2.0', 'id' => $tool, 'method' => 'tools/call', 'params' => ['name' => $tool, 'arguments' => $arguments]];
 
-    $admin = ($this->serve)(User::query()->firstOrFail()->username, [$call('info.get'), $call('configuration.list', ['type' => 'sections']), $call('assets.upload.prepare')]);
+    $admin = ($this->serve)(User::query()->where('admin', true)->firstOrFail()->username, [$call('info.get'), $call('configuration.list', ['type' => 'sections']), $call('assets.upload.prepare')]);
     $editorResponses = ($this->serve)($editor->email, [$call('configuration.list', ['type' => 'sections'])]);
 
     expect($admin['configuration.list'])->not->toHaveKey('error')

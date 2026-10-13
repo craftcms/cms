@@ -25,7 +25,7 @@ class ElementEditorActions
 
     /**
      * @return array{
-     *     primary: array{label: string, actionUrl: string|null, params: array<string, mixed>, redirect: null, tabId: string|null},
+     *     primary: array{label: string, actionUrl: string|null, params: array<string, mixed>, redirect: null, panelId: string|null},
      *     menu: list<array{label: string, actionUrl: string|null, params: array<string, mixed>, redirect: string|null, shortcut: bool, shift: bool}>,
      *     buttons: list<array<string, mixed>>,
      * }
@@ -88,7 +88,7 @@ class ElementEditorActions
                     $actions['primary'] = [
                         ...$actions['primary'],
                         'label' => t('Request review'),
-                        'tabId' => 'workflow',
+                        'panelId' => 'workflow',
                     ];
                 }
             }
@@ -127,7 +127,7 @@ class ElementEditorActions
         return $actions;
     }
 
-    /** @return array{label: string, actionUrl: null, params: array{}, redirect: null, tabId: null} */
+    /** @return array{label: string, actionUrl: null, params: array{}, redirect: null, panelId: null} */
     private function primaryAction(ElementInterface $element, ?string $label): array
     {
         $label ??= match (true) {
@@ -143,7 +143,7 @@ class ElementEditorActions
             'actionUrl' => null,
             'params' => [],
             'redirect' => null,
-            'tabId' => null,
+            'panelId' => null,
         ];
     }
 

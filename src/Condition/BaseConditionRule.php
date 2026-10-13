@@ -7,15 +7,15 @@ namespace CraftCms\Cms\Condition;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\DateTime;
-use CraftCms\Cms\Form\Controls\Hidden;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Action;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\DateTime;
+use CraftCms\Cms\Ui\Controls\Hidden;
+use CraftCms\Cms\Ui\Nodes\Action;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
@@ -201,7 +201,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      * @param  array<int|string, string|array<string, mixed>>  $options
      * @return list<array<string, mixed>>
      */
-    protected function formOptions(array $options): array
+    protected function uiOptions(array $options): array
     {
         return collect($options)
             ->map(fn (string|array $option, int|string $value): array => is_array($option) ? $option : ['value' => (string) $value, 'label' => $option])
@@ -215,7 +215,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      * Date fields keep theirs visible, since “From” and “To” are otherwise
      * indistinguishable.
      */
-    public function getForm(FormContext $context = new FormContext): Form
+    public function getUi(UiContext $context = new UiContext): Ui
     {
         $nodes = [
             ...$this->operatorNodes(),
@@ -228,7 +228,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
             }
         }
 
-        return Form::make($nodes);
+        return Ui::make($nodes);
     }
 
     /** @return list<Node> */

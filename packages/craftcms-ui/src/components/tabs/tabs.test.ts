@@ -8,7 +8,7 @@ import './tabs.js';
 
 /*
  * SCOPE: this covers what `CraftTabs` adds on top of `LionTabs` — the wrapper
- * and parts, `placement`, `collapsible`, the tab's own state, and
+ * and parts, `placement`, selection normalization, the tab's own state, and
  * external-panel mode (which this component implements itself, so it is fully
  * covered here).
  *
@@ -24,9 +24,14 @@ import './tabs.js';
 /** Builds a strip of `count` tabs and matching panels. */
 async function createTabs({
   count = 3,
+  label = 'Tabs' as string | null,
   attrs = {} as Record<string, string>,
 } = {}): Promise<CraftTabs> {
   const element = document.createElement('craft-tabs') as CraftTabs;
+
+  if (label !== null) {
+    element.setAttribute('label', label);
+  }
 
   for (const [name, value] of Object.entries(attrs)) {
     element.setAttribute(name, value);
@@ -82,6 +87,9 @@ function declarations(fragment: string): string {
 
 beforeEach(() => {
   document.body.innerHTML = '';
+  // Tabs sync the hash by default, so one test's selection would pick the
+  // starting tab for the next.
+  window.history.replaceState(null, '', window.location.pathname);
 });
 
 describe('structure', () => {
@@ -107,6 +115,37 @@ describe('structure', () => {
     // Nothing overflows in this environment (no layout engine), so it stays
     // out of the way rather than rendering an empty menu.
     expect((menu as HTMLElement).hidden).toBe(true);
+  });
+
+  it('reports a strip rendered without a label', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await createTabs({label: null});
+
+    expect(error).toHaveBeenCalledOnce();
+    expect(error.mock.calls[0]![0]).toContain('label');
+    error.mockRestore();
+  });
+
+  it('stays quiet when the strip is labeled', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await createTabs();
+
+    expect(error).not.toHaveBeenCalled();
+    error.mockRestore();
+  });
+
+  it('names the tablist from label', async () => {
+    const element = await createTabs({label: 'Details'});
+    const tablist = shadow(element, '[role="tablist"]')!;
+
+    expect(tablist.getAttribute('aria-label')).toBe('Details');
+
+    element.label = null;
+    await element.updateComplete;
+
+    expect(tablist.hasAttribute('aria-label')).toBe(false);
   });
 
   it('keeps the class names and slots Lion depends on', async () => {
@@ -373,6 +412,8 @@ async function createExternalTabs({
   const element = document.createElement('craft-tabs') as CraftTabs;
   const sections: HTMLElement[] = [];
 
+  element.setAttribute('label', 'Tabs');
+
   for (const [name, value] of Object.entries(attrs)) {
     element.setAttribute(name, value);
   }
@@ -499,10 +540,12 @@ describe('external-panel mode', () => {
     arrow(tabs[0]!, 'ArrowRight');
     await element.updateComplete;
     expect(element.selectedIndex).toBe(1);
+    expect(document.activeElement).toBe(tabs[1]);
 
     arrow(tabs[1]!, 'ArrowLeft');
     await element.updateComplete;
     expect(element.selectedIndex).toBe(0);
+    expect(document.activeElement).toBe(tabs[0]);
 
     // Wraps backwards off the first tab...
     arrow(tabs[0]!, 'ArrowLeft');
@@ -521,10 +564,12 @@ describe('external-panel mode', () => {
     arrow(tabs[0]!, 'End');
     await element.updateComplete;
     expect(element.selectedIndex).toBe(2);
+    expect(document.activeElement).toBe(tabs[2]);
 
     arrow(tabs[2]!, 'Home');
     await element.updateComplete;
     expect(element.selectedIndex).toBe(0);
+    expect(document.activeElement).toBe(tabs[0]);
   });
 
   it('skips disabled tabs when navigating, and refuses to select one', async () => {
@@ -537,6 +582,60 @@ describe('external-panel mode', () => {
     tabs[1]!.click();
     await element.updateComplete;
     expect(element.selectedIndex).toBe(2);
+  });
+
+  it('selects the first tab when no selected-index is given', async () => {
+    const {element, tabs} = await createExternalTabs();
+
+    expect(element.selectedIndex).toBe(0);
+    expect(tabs.map((tab) => tab.getAttribute('aria-selected'))).toEqual([
+      'true',
+      'false',
+      'false',
+    ]);
+  });
+
+  it.each([
+    {index: -1, disabled: [], expected: 0},
+    {index: -1, disabled: [0], expected: 1},
+    {index: 5, disabled: [], expected: 0},
+    {index: 1, disabled: [1], expected: 0},
+  ])(
+    'resolves selected-index $index to the first enabled tab (disabled: $disabled)',
+    async ({index, disabled, expected}) => {
+      const {element, tabs, sections} = await createExternalTabs({
+        disabled,
+        attrs: {'selected-index': String(index)},
+      });
+
+      expect(element.selectedIndex).toBe(expected);
+      expect(tabs[expected]!.getAttribute('aria-selected')).toBe('true');
+      expect(sections[expected]!.classList.contains('hidden')).toBe(false);
+
+      element.selectedIndex = 2;
+      await element.updateComplete;
+      element.selectedIndex = index;
+      await element.updateComplete;
+
+      expect(element.selectedIndex).toBe(expected);
+    }
+  );
+
+  it('keeps the selected tab selected on a repeat click or Escape', async () => {
+    const {element, tabs, sections} = await createExternalTabs({
+      attrs: {collapsible: ''},
+    });
+
+    tabs[0]!.click();
+    await element.updateComplete;
+    tabs[0]!.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Escape', bubbles: true})
+    );
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(0);
+    expect(element.hasAttribute('collapsed')).toBe(false);
+    expect(sections[0]!.classList.contains('hidden')).toBe(false);
   });
 
   it('moves the initial selection off a disabled first tab', async () => {
@@ -626,261 +725,81 @@ describe('external-panel mode', () => {
   });
 });
 
-/*
- * Collapsing is covered here in external-panel mode, where this component owns
- * the selection outright. The slotted half of it — Lion's own store, which
- * skips a selection it can't find in it — needs a `slotchange` happy-dom never
- * fires, so it's covered by the IconToolbar story.
- */
-describe('collapsible', () => {
-  /** Escape, as it arrives from a focused tab. */
-  function escape(tab: CraftTab) {
-    tab.dispatchEvent(
-      new KeyboardEvent('keydown', {key: 'Escape', bubbles: true})
-    );
-  }
+describe('location hash', () => {
+  const setHash = (hash: string) => {
+    window.history.replaceState(null, '', `#${hash}`);
+  };
 
-  it('collapses the panel region to nothing when nothing is selected', async () => {
-    const element = await createTabs({attrs: {'selected-index': '-1'}});
-    const panels = shadow(element, '[part="panels"]')!;
+  it('selects the panel the hash names on load', async () => {
+    setHash('panel-2');
 
-    expect(element.selectedIndex).toBe(-1);
-    expect(panels.hidden).toBe(true);
-    // Hidden rather than emptied: dropping the slot would unassign the panels.
-    expect(shadow(element, '.tabs__panels slot[name="panel"]')).not.toBeNull();
-    // And [hidden] has to be spelled out, since LionTabs gives the region an
-    // author `display: block` that beats the UA rule.
-    expect(rules().get('.tabs__panels[hidden]')).toContain('display: none');
-
-    element.selectedIndex = 0;
-    await element.updateComplete;
-
-    expect(panels.hidden).toBe(false);
-  });
-
-  /**
-   * A surrounding layout gives the panel's grid track its space back with
-   * `:has(craft-tabs[collapsed])`, so the attribute is API, not bookkeeping.
-   */
-  it('reflects a collapsed attribute for a surrounding layout to select on', async () => {
-    const {element, tabs} = await createExternalTabs({
-      attrs: {collapsible: ''},
-    });
-
-    expect(element.hasAttribute('collapsed')).toBe(false);
-
-    tabs[0]!.click();
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(-1);
-    expect(element.hasAttribute('collapsed')).toBe(true);
-
-    tabs[1]!.click();
-    await element.updateComplete;
-
-    expect(element.hasAttribute('collapsed')).toBe(false);
-  });
-
-  it('deselects the selected tab when it is clicked again', async () => {
-    const {element, tabs, sections} = await createExternalTabs({
-      attrs: {collapsible: ''},
-    });
-
-    let reported: number | undefined;
-    element.addEventListener('craft-tab-show', (event) => {
-      reported = (event.target as CraftTabs).selectedIndex;
-    });
-
-    tabs[0]!.click();
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(-1);
-    expect(reported).toBe(-1);
-    expect(sections.every((s) => s.classList.contains('hidden'))).toBe(true);
-    expect(tabs.map((tab) => tab.getAttribute('aria-selected'))).toEqual([
-      'false',
-      'false',
-      'false',
-    ]);
-  });
-
-  it('keeps exactly one tab in the tab order while collapsed', async () => {
-    const {element, tabs} = await createExternalTabs({
-      attrs: {collapsible: ''},
-    });
-
-    tabs[2]!.click();
-    await element.updateComplete;
-    tabs[2]!.click();
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(-1);
-    // The tab the selection was last on, so the strip doesn't snap the tab
-    // order back to the front while it's closed.
-    expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual([
-      '-1',
-      '-1',
-      '0',
-    ]);
-  });
-
-  it('starts collapsed from selected-index="-1"', async () => {
-    const {element, tabs, sections} = await createExternalTabs({
-      attrs: {collapsible: '', 'selected-index': '-1'},
-    });
-
-    expect(element.selectedIndex).toBe(-1);
-    expect(sections.every((s) => s.classList.contains('hidden'))).toBe(true);
-    expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual([
-      '0',
-      '-1',
-      '-1',
-    ]);
-  });
-
-  it('reopens on the next click, wherever it lands', async () => {
-    const {element, tabs, sections} = await createExternalTabs({
-      attrs: {collapsible: '', 'selected-index': '-1'},
-    });
-
-    tabs[1]!.click();
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(1);
-    expect(sections[1]!.classList.contains('hidden')).toBe(false);
-    expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual([
-      '-1',
-      '0',
-      '-1',
-    ]);
-
-    // A different tab still just selects, rather than toggling anything.
-    tabs[2]!.click();
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(2);
-  });
-
-  it('closes on Escape from a tab', async () => {
-    const {element, tabs} = await createExternalTabs({
-      attrs: {collapsible: ''},
-    });
-
-    escape(tabs[0]!);
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(-1);
-  });
-
-  it('closes from close(), handing focus to the tab it was on', async () => {
-    const {element, tabs} = await createExternalTabs({
-      attrs: {collapsible: ''},
-    });
-    let fired = 0;
-    element.addEventListener('selected-changed', () => {
-      fired++;
-    });
-
-    tabs[1]!.click();
-    await element.updateComplete;
-    fired = 0;
-
-    element.close();
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(-1);
-    expect(fired).toBe(1);
-    expect(document.activeElement).toBe(tabs[1]);
-    expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual([
-      '-1',
-      '0',
-      '-1',
-    ]);
-  });
-
-  it('reopens from open() on the tab it was closed on', async () => {
-    const {element, tabs, sections} = await createExternalTabs({
-      attrs: {collapsible: ''},
-    });
-
-    tabs[2]!.click();
-    await element.updateComplete;
-    element.close();
-    await element.updateComplete;
-
-    element.open();
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(2);
-    expect(sections[2]!.classList.contains('hidden')).toBe(false);
-    expect(document.activeElement).toBe(tabs[2]);
-  });
-
-  it('opens a strip that started closed on its first tab', async () => {
-    const element = await createTabs({attrs: {'selected-index': '-1'}});
-
-    element.open();
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(0);
-    expect(shadow(element, '[part="panels"]')!.hidden).toBe(false);
-  });
-
-  it('leaves an open strip on its tab when open() is called', async () => {
-    const {element, tabs} = await createExternalTabs();
-
-    tabs[1]!.click();
-    await element.updateComplete;
-    element.open();
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(1);
-  });
-
-  it('ignores close() on a strip that isn’t collapsible', async () => {
     const {element} = await createExternalTabs();
 
-    element.close();
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(0);
-  });
-
-  it('opens at the end you arrow out of', async () => {
-    const {element, tabs} = await createExternalTabs({
-      attrs: {collapsible: '', 'selected-index': '-1'},
-    });
-
-    arrow(tabs[0]!, 'ArrowRight');
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(0);
-
-    tabs[0]!.click();
-    await element.updateComplete;
-
-    expect(element.selectedIndex).toBe(-1);
-
-    arrow(tabs[0]!, 'ArrowLeft');
-    await element.updateComplete;
-
     expect(element.selectedIndex).toBe(2);
   });
 
-  it('leaves a strip that isn’t collapsible alone', async () => {
-    const {element, tabs, sections} = await createExternalTabs();
-    let fired = 0;
-    element.addEventListener('craft-tab-show', () => {
-      fired++;
-    });
+  it('writes the selected panel’s id to the hash', async () => {
+    const {element} = await createExternalTabs();
 
-    tabs[0]!.click();
-    escape(tabs[0]!);
+    element.selectedIndex = 1;
     await element.updateComplete;
 
+    expect(window.location.hash).toBe('#panel-1');
+  });
+
+  it('syncs without being asked to', async () => {
+    const {element} = await createExternalTabs();
+
+    element.selectedIndex = 1;
+    await element.updateComplete;
+
+    expect(window.location.hash).toBe('#panel-1');
+  });
+
+  it('leaves the hash alone when turned off', async () => {
+    const {element} = await createExternalTabs({
+      attrs: {'sync-location-hash': 'false'},
+    });
+
+    element.selectedIndex = 1;
+    await element.updateComplete;
+
+    expect(window.location.hash).toBe('');
+  });
+
+  it('leaves the hash alone for a slotted strip, which has no panel ids', async () => {
+    const element = document.createElement('craft-tabs') as CraftTabs;
+    for (let i = 0; i < 2; i++) {
+      const tab = document.createElement('craft-tab') as CraftTab;
+      tab.slot = 'tab';
+      tab.textContent = `Tab ${i}`;
+      element.append(tab);
+    }
+    document.body.append(element);
+    await element.updateComplete;
+
+    element.selectedIndex = 1;
+    await element.updateComplete;
+
+    expect(window.location.hash).toBe('');
+  });
+
+  it('ignores a hash that names no panel', async () => {
+    setHash('nothing-here');
+
+    const {element} = await createExternalTabs();
+
     expect(element.selectedIndex).toBe(0);
-    expect(fired).toBe(0);
-    expect(sections[0]!.classList.contains('hidden')).toBe(false);
-    expect(shadow(element, '[part="panels"]')!.hidden).toBe(false);
+    expect(window.location.hash).toBe('#nothing-here');
+  });
+
+  it('follows the hash when it changes', async () => {
+    const {element} = await createExternalTabs();
+
+    setHash('panel-2');
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    await element.updateComplete;
+
+    expect(element.selectedIndex).toBe(2);
   });
 });

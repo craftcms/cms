@@ -18,14 +18,14 @@ use CraftCms\Cms\Element\Jobs\ReplaceRelations;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\FieldReferences;
-use CraftCms\Cms\Form\Controls\ElementSelect;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpModalResponse;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Ui;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -150,7 +150,7 @@ readonly class DeleteElementsController
 
         return new CpModalResponse()
             ->action('delete-elements/replace-relations')
-            ->form(Form::make([
+            ->ui(Ui::make([
                 Field::make(t('Choose a new {type}', [
                     'type' => $this->elementType::lowerDisplayName(),
                 ]), ElementSelect::make('newTargetId')
@@ -222,7 +222,7 @@ readonly class DeleteElementsController
 
         return new CpModalResponse()
             ->action('delete-elements/replace-references')
-            ->form(Form::make([
+            ->ui(Ui::make([
                 Field::make(t('Choose a new {type}', [
                     'type' => $this->elementType::lowerDisplayName(),
                 ]), ElementSelect::make('newTargetId')

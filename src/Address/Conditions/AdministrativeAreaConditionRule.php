@@ -12,11 +12,11 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Facades\Addresses;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Nodes\Field;
 use Illuminate\Database\Query\Builder;
 use Override;
 
@@ -90,13 +90,13 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
     {
         return [
             Field::make(t('Country'), Choice::make('countryCode')
-                ->options($this->formOptions(Addresses::getCountryList()))
+                ->options($this->uiOptions(Addresses::getCountryList()))
                 ->withoutPlaceholder()
                 ->value($this->countryCode)
                 ->reactive()),
             Field::make($this->getLabel(), Combobox::make('values')
                 ->multiple()
-                ->options($this->formOptions($this->options()))
+                ->options($this->uiOptions($this->options()))
                 ->showAllOnEmpty()
                 ->value($this->getValues())),
         ];

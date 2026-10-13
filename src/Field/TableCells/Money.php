@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\TableCells;
 
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Control;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Money as MoneyControl;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Control;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Money as MoneyControl;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use Illuminate\Validation\Rule;
 use Money\Currencies\ISOCurrencies;
 
@@ -74,9 +74,9 @@ class Money extends Number
         ];
     }
 
-    public function settingsForm(FormContext $context = new FormContext): ?Form
+    public function settingsUi(UiContext $context = new UiContext): ?Ui
     {
-        return Form::make([
+        return Ui::make([
             Field::make(t('Currency'))->required()
                 ->control(Choice::make('currency')->options(self::currencyOptions())->value($this->currency)),
             Field::make(t('Show Currency'))

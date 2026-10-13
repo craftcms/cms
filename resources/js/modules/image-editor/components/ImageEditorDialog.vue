@@ -431,7 +431,11 @@
     <div class="flex flex-col h-full">
       <div class="image-editor">
         <div class="image-editor__sidebar">
-          <craft-tabs ref="tabsEl" @craft-tab-show="onTabChanged">
+          <craft-tabs
+            ref="tabsEl"
+            :label="t('Edit Image')"
+            @craft-tab-show="onTabChanged"
+          >
             <craft-tab slot="tab">
               <div class="flex items-center gap-1">
                 <craft-icon name="rotate" />

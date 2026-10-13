@@ -13,6 +13,7 @@ use CraftCms\Cms\Activity\EventTypes\ElementTrashed;
 use CraftCms\Cms\Activity\StructuralElementActivity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\ElementHelper;
@@ -282,6 +283,20 @@ readonly class ElementDeletions
                     DB::commit();
 
                     return true;
+                }
+
+                if (
+                    $element instanceof NestedElementInterface &&
+                    ! $element->deletedWithOwner &&
+                    $elementRecord->dateDeleted === null &&
+                    ($owner = $element->getOwner()) !== null &&
+                    (
+                        (! $element->getIsDraft() && ! $element->getIsRevision()) ||
+                        $owner->getIsDraft() ||
+                        $owner->getIsRevision()
+                    )
+                ) {
+                    $this->elements->touchElementAndOwners($owner);
                 }
 
                 while (($record = StructureElementModel::where('elementId', $element->id)->first()) !== null) {

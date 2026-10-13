@@ -33,6 +33,31 @@ export interface ScreenProps {
    * them beats filling the `subnav-actions` slot with one of the two.
    */
   subnavActions?: Array<ActionItem>;
+  /**
+   * The secondary nav itself, for a page whose nav comes from its own props
+   * rather than the server's `subnav` page prop — an element index listing its
+   * sources, typically. Takes precedence over that prop when set.
+   */
+  subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
+  /**
+   * Renders the screen as a page-level form with its own save button, for
+   * screens that post natively rather than through an Inertia form — a
+   * bridged legacy screen, typically. Craft 5: `fullPageForm`.
+   */
+  fullPageForm?: boolean;
+  /**
+   * Puts Craft 5's `#page-container` and `#toolbar` back on the shell.
+   *
+   * Legacy screen JS finds its working area by those ids — `_layouts/cp` put
+   * them on every control panel page, and `Craft.createElementIndex()` is
+   * handed `$('#page-container')` with `toolbarSelector: '#toolbar'`. A screen
+   * rendered as fragments has neither, so its JS binds to nothing.
+   *
+   * Only the fragment screen asks for this, and it goes away with it. Full
+   * pages only: a slideout gives legacy JS its own container already.
+   */
+  legacyIds?: boolean;
+
   /** Overrides the submit button's text. Craft 5: `submitButtonLabel`. */
   submitButtonLabel?: string;
   additionalSkipLinks?: Array<{label: string; url: string}>;

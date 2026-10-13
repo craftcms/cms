@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Schema\Blueprint;
@@ -11,15 +12,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable(Table::PASSWORD_RESET_TOKENS)) {
-            return;
-        }
-
-        Schema::create(Table::PASSWORD_RESET_TOKENS, function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
+        app(LaravelMigrations::class)->ensurePasswordResetTokensTable();
 
         $columns = array_filter([
             'verificationCode',

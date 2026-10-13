@@ -15,7 +15,11 @@ export default css`
     display: grid;
     grid-template-columns: 1.75rem minmax(0, 1fr);
     gap: var(--c-spacing-md);
-    padding-block: var(--c-spacing-md);
+    padding-block-end: var(--c-spacing-md);
+  }
+
+  :host([last]) .timeline-item {
+    padding-block-end: 0;
   }
 
   .timeline-item::after {
@@ -61,12 +65,6 @@ export default css`
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     column-gap: var(--c-spacing-xs);
-  }
-
-  .timeline-item__separator {
-    color: var(--c-text-quiet);
-    font-size: var(--c-text-lg);
-    line-height: 1;
   }
 
   .timeline-item__meta {

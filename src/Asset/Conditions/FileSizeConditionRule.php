@@ -12,9 +12,9 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Nodes\Field;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Nodes\Field;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 use Override;

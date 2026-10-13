@@ -121,7 +121,7 @@ it('keeps embedded exports scoped to the requested owner field', function () {
 
     $owner = Entry::find()->id($owner->id)->one();
     $field = Fields::getFieldById($fixture->field('matrixField')->id);
-    $manager = $field->formControl(new FieldContext(path: 'matrixField', element: $owner))->props()['manager'];
+    $manager = $field->uiControl(new FieldContext(path: 'matrixField', element: $owner))->props()['manager'];
     $response = ($this->export)([
         ...$manager,
         'context' => 'embeddedIndex',

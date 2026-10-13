@@ -7,7 +7,7 @@ import {getInputPostVal} from '@craftcms/garnish';
  * the user last typed rather than what was last saved — and it needs no
  * per-field preview logic on the server. Both stacks put their controls in the
  * light DOM, so one pass over the block's fields serves the Twig markup, the
- * Form Control's HTML, and the Vue control alike.
+ * UI Control's HTML, and the Vue control alike.
  *
  * Used only when the block has no UI label; that's the better summary when
  * there is one.

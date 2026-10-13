@@ -112,6 +112,7 @@ readonly class ElementHtml
             'icon' => $icon,
             'show-status' => $config['showStatus'],
             'selectable' => $config['selectable'],
+            'select-label' => $config['selectable'] ? t('Select {label}', ['label' => $component->getUiLabel()]) : null,
             'appearance' => $config['appearance'] ?? null,
             'data' => array_filter([
                 'type' => $component::class,
@@ -119,6 +120,7 @@ readonly class ElementHtml
                 'label' => $component->getUiLabel(),
                 'description' => $component instanceof Describable ? $component->getDescription() : null,
                 'handle' => $component instanceof Grippable ? $component->getHandle() : null,
+                'color' => $color->value ?? 'white',
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => InputNamespace::namespaceId($config['id']),
@@ -150,12 +152,6 @@ readonly class ElementHtml
 
         if ($icon !== null) {
             $html .= Icon::make()->name($icon)->slot('icon');
-        }
-
-        if ($config['selectable']) {
-            $html .= Html::beginTag('div', ['slot' => 'prefix']);
-            $html .= $this->componentCheckboxHtml(sprintf('%s-label', $config['id']));
-            $html .= Html::endTag('div');
         }
 
         if (isset($config['labelHtml'])) {
@@ -214,25 +210,27 @@ readonly class ElementHtml
             ]);
         }
 
-        $html .= Html::beginTag('div', ['slot' => 'suffix']);
-        if ($config['showActionMenu']) {
-            /** @var Chippable&Actionable $component */
-            $html .= $this->componentActionMenu($component);
+        if ($config['showActionMenu'] || $config['sortable']) {
+            $html .= Html::beginTag('div', ['slot' => 'suffix']);
+            if ($config['showActionMenu']) {
+                /** @var Chippable&Actionable $component */
+                $html .= $this->componentActionMenu($component);
+            }
+            if ($config['sortable']) {
+                $html .= Button::make()
+                    ->icon('move')
+                    ->attributes([
+                        'class' => ['chromeless', 'small', 'move-btn'],
+                        'title' => t('Reorder'),
+                        'aria' => [
+                            'label' => t('Reorder'),
+                        ],
+                        'role' => 'none',
+                        'tabindex' => '-1',
+                    ]);
+            }
+            $html .= Html::endTag('div'); // slot=suffix
         }
-        if ($config['sortable']) {
-            $html .= Button::make()
-                ->icon('move')
-                ->attributes([
-                    'class' => ['chromeless', 'small', 'move-btn'],
-                    'title' => t('Reorder'),
-                    'aria' => [
-                        'label' => t('Reorder'),
-                    ],
-                    'role' => 'none',
-                    'tabindex' => '-1',
-                ]);
-        }
-        $html .= Html::endTag('div'); // slot=suffix
 
         if ($config['inputName'] !== null) {
             $inputValue = $config['inputValue'] ?? $component->getId();
@@ -282,6 +280,9 @@ readonly class ElementHtml
      * - `class` – Class name(s) that should be added to the container element
      * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
      * - `hyperlink` – Whether the chip label should be hyperlinked to the element’s URL
+     * - `hyperlinkUrl` – The URL the label should be hyperlinked to, if not the element’s edit URL. Unlike the edit URL, it’s linked in the `modal` context too.
+     * - `hyperlinkTag` – The tag the label hyperlink should use (`a` by default, or e.g. `CpLink` in Vue-rendered HTML)
+     * - `hyperlinkAttributes` – Any additional HTML attributes for the label hyperlink
      * - `returnUrl` – The `returnUrl` param that should be added to the hyperlink URL
      * - `id` – The chip’s `id` attribute
      * - `inputName` – The `name` attribute that should be set on a hidden input, if set
@@ -1179,8 +1180,9 @@ readonly class ElementHtml
             if (
                 ($config['hyperlink'] ?? false) &&
                 ! $element->trashed &&
-                $config['context'] !== 'modal' &&
-                ($url = $attributes['data']['cp-url'] ?? null)
+                // Modals don't link out to edit screens, but a URL passed explicitly is meant to be linked.
+                ($config['context'] !== 'modal' || isset($config['hyperlinkUrl'])) &&
+                ($url = $config['hyperlinkUrl'] ?? $attributes['data']['cp-url'] ?? null)
             ) {
                 $returnUrl = $config['returnUrl'] ?? null;
                 if ($returnUrl) {
@@ -1193,9 +1195,10 @@ readonly class ElementHtml
                     ]);
                 }
 
-                $content = Html::tag('a', Html::tag('span', $content), [
+                $content = Html::tag($config['hyperlinkTag'] ?? 'a', Html::tag('span', $content), [
                     'class' => ['label-link'],
                     'href' => $url,
+                    ...($config['hyperlinkAttributes'] ?? []),
                 ]);
             } else {
                 $content = Html::tag('span', $content, ['class' => 'label-link']);

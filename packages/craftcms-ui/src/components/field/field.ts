@@ -14,6 +14,8 @@ import {FormControlMixin} from '@lion/ui/form-core.js';
 import type {} from '@open-wc/dedupe-mixin';
 // Registers <craft-callout> globally for the tip/warning notices.
 import '../callout/callout.js';
+import '../tooltip/tooltip.js';
+import '../button/button.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './field.styles.js';
@@ -630,15 +632,16 @@ export default class CraftField extends FormControlMixin(LitElement) {
     if (this.translatable) {
       const tooltip = document.createElement('craft-tooltip');
       tooltip.setAttribute('placement', 'bottom');
-      tooltip.setAttribute('max-width', '200px');
-      tooltip.setAttribute('text', this.translationDescription);
-      tooltip.setAttribute('delay', '1000');
+      tooltip.textContent = this.translationDescription;
       tooltip.setAttribute('data-craft-field-decoration', '');
 
-      const button = document.createElement('button');
+      const button = document.createElement('craft-button');
       button.type = 'button';
+      button.slot = 'invoker';
+      button.variant = 'plain';
+      button.size = 'small';
+      button.icon = 'language';
       button.className = 't9n-indicator prevent-autofocus';
-      button.setAttribute('data-icon', 'language');
       button.setAttribute('aria-label', this.translationDescription);
 
       tooltip.append(button);

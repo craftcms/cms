@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -24,7 +25,6 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
@@ -706,6 +706,66 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
+     * The index's sources as navigation entries, headings and all.
+     *
+     * The control panel puts an index's sources in the secondary nav, which a
+     * screen fills from its `subnav` prop. A heading becomes a group over the
+     * sources that follow it, the same way the sidebar drew it.
+     *
+     * @return list<NavItem>
+     */
+    public function sourceNavItems(): array
+    {
+        if ($this->indexUrl() === null) {
+            return [];
+        }
+
+        [$sourceKey] = $this->sourceState();
+        $items = [];
+        $group = null;
+
+        foreach ($this->sources() as $source) {
+            if ($source['type'] === ElementSources::TYPE_HEADING) {
+                $items[] = new NavItem()
+                    ->label($source['heading'] ?? '')
+                    ->group(true)
+                    ->subnav([]);
+                $group = array_key_last($items);
+
+                continue;
+            }
+
+            $key = $source['key'] ?? null;
+            $url = $key !== null ? $this->sourceUrl($source) : null;
+
+            if ($url === null) {
+                continue;
+            }
+
+            $item = new NavItem()
+                ->label($source['label'] ?? $key)
+                ->href($url)
+                ->selected($key === $sourceKey)
+                ->status($source['status'] ?? null)
+                ->badgeCount((int) ($source['badgeCount'] ?? 0));
+
+            if ($group === null) {
+                $items[] = $item;
+
+                continue;
+            }
+
+            $items[$group]->add($item);
+        }
+
+        /** A heading that collected nothing has nothing to head. */
+        return array_values(array_filter(
+            $items,
+            fn (NavItem $item): bool => ! $item->group || $item->subnav !== [],
+        ));
+    }
+
+    /**
      * The index's sources as action items, with the current one flagged — the
      * source crumb, and the switcher menu hanging off it.
      *
@@ -1167,7 +1227,7 @@ abstract class ContentIndexViewModel extends ViewModel
             ...collect($attributes)
                 ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title'
-                        ? $this->titleCellHtml($element, $elementHtml)
+                        ? $this->titleLinkHtml($element)
                         : (string) $element->getAttributeHtml($attribute),
                 ])
                 ->all(),
@@ -1224,22 +1284,55 @@ abstract class ContentIndexViewModel extends ViewModel
         return $flags;
     }
 
-    private function titleCellHtml(ElementInterface $element, ElementHtml $elementHtml): string
+    /**
+     * Renders a title cell's chip, linked to wherever clicking the element
+     * should go.
+     *
+     * Only the label is the link, so the rest of the chip (its status
+     * indicator, say) behaves like the rest of the row.
+     */
+    protected function titleLinkHtml(ElementInterface $element): string
     {
-        $chip = $elementHtml->elementChipHtml($element, [
-            'context' => static::RENDER_CONTEXT,
-            'appearance' => 'plain',
-        ]);
-
-        $editUrl = static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
-            ? $this->editUrl($element)
-            : null;
+        $editUrl = $this->editUrl($element);
 
         if ($editUrl === null) {
-            return $chip;
+            return $this->chipHtml($element);
         }
 
-        return Html::tag('CpLink', $chip, ['href' => $editUrl]);
+        return $this->labelLinkedChipHtml($element, $editUrl, 'CpLink', ['bare' => true]);
+    }
+
+    /**
+     * Renders a title cell's chip with only its label linked, so the rest of the
+     * chip (its status indicator, say) behaves like the rest of the row.
+     *
+     * @param  array<string, mixed>  $attributes  Additional attributes for the label link
+     */
+    protected function labelLinkedChipHtml(ElementInterface $element, string $url, string $tag = 'a', array $attributes = []): string
+    {
+        return $this->chipHtml($element, [
+            'hyperlink' => true,
+            'hyperlinkUrl' => $url,
+            'hyperlinkTag' => $tag,
+            'hyperlinkAttributes' => $attributes,
+        ]);
+    }
+
+    /**
+     * Renders a title cell's chip.
+     *
+     * Rendered once per cell: rendering resolves the chip's thumbnail URLs,
+     * which can queue transforms or fire `ThumbUrlResolving` handlers.
+     *
+     * @param  array<string, mixed>  $config  Additional {@see ElementHtml::elementChipHtml()} config
+     */
+    protected function chipHtml(ElementInterface $element, array $config = []): string
+    {
+        return app(ElementHtml::class)->elementChipHtml($element, [
+            'context' => static::RENDER_CONTEXT,
+            'appearance' => 'plain',
+            ...$config,
+        ]);
     }
 
     /**

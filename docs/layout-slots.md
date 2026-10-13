@@ -37,7 +37,7 @@ nav, the error summary — is hidden.
 `craft:layout-slot` and `craft:app-layout` only render on a page your plugin registered with
 `Cp.$inertia.register()`. Craft checks the nearest Inertia page above the component, so this
 includes anything that page renders, but not your components rendered on someone else's page: a
-dashboard widget, a form node, an element details tab. There, they render nothing and log a warning
+dashboard widget, a UI node, an element details tab. There, they render nothing and log a warning
 in development builds. This keeps a plugin from replacing the chrome of a page it doesn't own.
 
 `craft:cp-container` only lays out content and works anywhere.

@@ -10,14 +10,14 @@ use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
-use CraftCms\Cms\Form\Contracts\Node;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Control;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
-use CraftCms\Cms\Form\Nodes\Group;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\Scope;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
@@ -199,7 +199,7 @@ trait ProvidesLinkField
         $configured = $this->configuredLinkTypesForSettings();
         $typeSettings = $this->{$this->namespacedAttribute('typeSettings')};
         $nodes = [
-            FormField::make(t('Allowed Link Types'))
+            UiField::make(t('Allowed Link Types'))
                 ->instructions(t('The link types that should be available when inserting links.'))
                 ->required()
                 ->control(Choice::make("{$prefix}types")
@@ -225,10 +225,10 @@ trait ProvidesLinkField
             }
         }
 
-        $nodes[] = FormField::make(t('Show the “Label” field'))
+        $nodes[] = UiField::make(t('Show the “Label” field'))
             ->control(Lightswitch::make("{$prefix}showLabelField")
                 ->value($this->{$this->namespacedAttribute('showLabelField')}));
-        $nodes[] = FormField::make(t('Advanced Fields'))
+        $nodes[] = UiField::make(t('Advanced Fields'))
             ->instructions(t('Choose which advanced fields should be available when inserting links.'))
             ->control(Choice::make("{$prefix}advancedFields")
                 ->multiple()
@@ -236,21 +236,8 @@ trait ProvidesLinkField
                 ->options($this->linkAdvancedFieldOptions())
                 ->value($this->{$this->namespacedAttribute('advancedFields')}));
 
-        $this->groupLinkSettingsChanges($nodes);
-
-        return $nodes;
-    }
-
-    /** @param list<Node> $nodes */
-    private function groupLinkSettingsChanges(array $nodes): void
-    {
-        foreach ($nodes as $node) {
-            $control = $node->getControl();
-            if ($control instanceof Control) {
-                $control->deltaGroupAtNamespace();
-            }
-            $this->groupLinkSettingsChanges($node->children());
-        }
+        // Keep existing paths and submit all link settings together at the enclosing namespace.
+        return [Scope::make([], $nodes, 'link-settings')->deltaGroupAtNamespace()];
     }
 
     /** @return list<array<string, mixed>> */

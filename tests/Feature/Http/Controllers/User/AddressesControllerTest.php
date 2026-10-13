@@ -116,6 +116,13 @@ test('store & destroy', function () {
     expect(new AddressQuery()->count())->toBe(0);
 });
 
+test('store rejects a non-integer address id', function () {
+    postJson(action([AddressesController::class, 'store']), [
+        'userId' => auth()->id(),
+        'addressId' => ['ownerId' => auth()->id()],
+    ])->assertJsonValidationErrors(['addressId']);
+});
+
 test('store clears existing address fields', function () {
     postJson(action([AddressesController::class, 'store']), [
         'userId' => auth()->id(),

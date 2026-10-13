@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
 export default css`
   :host {
@@ -581,5 +582,15 @@ export default css`
   :host([href][size~='zero']:not([disabled])) .link,
   :host([href][icon]:not([disabled])) .link {
     padding-inline: 0;
+  }
+
+  .label--text {
+    display: block;
+    ${trimmedTextBoxStyles}
+  }
+
+  :host([flush]) .label--text {
+    text-box: normal;
+    padding-block: 0;
   }
 `;

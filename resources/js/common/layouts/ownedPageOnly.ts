@@ -11,7 +11,7 @@ import {inertiaPageOrigin} from '@/bootstrap/inertia-pages';
  * Whether the nearest Inertia page above this component came from a plugin.
  *
  * A plugin's own page is the only place it may take over the screen's chrome.
- * Anything it renders on someone else's page — a dashboard widget, a form node,
+ * Anything it renders on someone else's page — a dashboard widget, a UI node,
  * a details tab — sits under a core page here and is refused.
  */
 function onPluginPage(instance: ComponentInternalInstance | null): boolean {

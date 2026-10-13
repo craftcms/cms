@@ -137,6 +137,12 @@
     var(--c-color-neutral-border-loud)
   );
 
+  /* ——— Text colors ———
+     The text-color namespace only feeds text-*, so this gives text-quiet
+     without a bg-quiet or border-quiet. For text on a fill, use the
+     text-on-quiet/normal/loud classes from the --color-on-* entries below. */
+  --text-color-quiet: var(--c-text-quiet);
+
   /* ——— Spacing ———
      The named --c-spacing-* steps, for p-sm, mx-md, gap-lg, space-y-xs, …
      Per-utility namespaces rather than --spacing-*: w-*, max-w-* and min-w-*
@@ -174,6 +180,8 @@
   --z-index-raised: var(--c-layer-raised);
   --z-index-sticky: var(--c-layer-sticky);
   --z-index-sidebar: var(--c-layer-sidebar);
+  --z-index-header: var(--c-layer-header);
+  --z-index-skip-link: var(--c-layer-skip-link);
   --z-index-shade: var(--c-layer-shade);
   --z-index-overlay: var(--c-layer-overlay);
   --z-index-notification: var(--c-layer-notification);

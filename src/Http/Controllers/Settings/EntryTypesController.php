@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Components\CopyAttribute;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Data\EntryTypeIndexData;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
@@ -22,15 +24,18 @@ use CraftCms\Cms\Http\ViewModels\EntryTypeEditViewModel;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\EntryTypeSelect as EntryTypeSelectControl;
+use CraftCms\Cms\Ui\Nodes\Table;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -61,7 +66,7 @@ class EntryTypesController
         }
     }
 
-    public function index(TableRequest $request): \Inertia\Response
+    public function index(TableRequest $request): CpScreenResponse
     {
         [$pagination, $tableData] = $this->entryTypes->getTableData(
             page: $request->page(),
@@ -71,18 +76,39 @@ class EntryTypesController
             sortDir: $request->sortDir(),
         );
 
-        return Inertia::render('settings/entry-types/Index', [
-            'crumbs' => fn () => [
-                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+        $rows = array_map(fn (EntryTypeIndexData $entryType): array => [
+            'id' => $entryType->id,
+            'name' => ['html' => $entryType->chip],
+            'handle' => ['html' => CopyAttribute::make()->value($entryType->handle)->toHtml()],
+            'usages' => ['html' => $entryType->usages],
+            ...($this->readOnly ? [] : [
+                '_deleteUrl' => route('craft.cp.settings.entry-types.destroy', ['entryType' => $entryType->id]),
+                '_deleteConfirmMessage' => t('Are you sure you want to delete “{name}” and all entries of that type?', ['name' => Html::decode($entryType->title)]),
+            ]),
+        ], $tableData);
+
+        $table = Table::make('entry-types')
+            ->columns([
+                ['key' => 'name', 'label' => t('Entry Type')],
+                ['key' => 'handle', 'label' => t('Handle'), 'sortable' => true],
+                ['key' => 'usages', 'label' => t('Usages'), 'sortable' => true],
+            ])
+            ->rows($rows)
+            ->pagination($pagination)
+            ->searchable()
+            ->emptyMessage(t('No entry types exist yet.'))
+            ->unless($this->readOnly, fn (Table $table) => $table
+                ->createAction(t('New entry type'), route('craft.cp.settings.entry-types.create'))
+                ->createActionInPageHeader()
+                ->deletable());
+
+        return new CpScreenResponse()
+            ->title(t('Entry Types'))
+            ->crumbs([
+                new ActionItem()->label(t('Settings'))->href(route('craft.cp.settings.index')),
                 new ActionItem()->label(t('Entry Types')),
-            ],
-            'title' => t('Entry Types'),
-            'searchTerm' => $request->search(),
-            'sort' => $request->sort(),
-            'data' => fn () => $tableData,
-            'pagination' => fn () => $pagination,
-            'readOnly' => $this->readOnly,
-        ]);
+            ])
+            ->ui(Ui::make([$table]));
     }
 
     public function create(): CpScreenResponse
@@ -154,7 +180,7 @@ class EntryTypesController
         return $response;
     }
 
-    public function renderForm(Request $request): JsonResponse
+    public function renderUi(Request $request): JsonResponse
     {
         $data = $request->validate([
             'values' => ['required', 'array'],
@@ -180,11 +206,11 @@ class EntryTypesController
         ]);
 
         return new JsonResponse([
-            'form' => new EntryTypeEditViewModel(
+            'ui' => new EntryTypeEditViewModel(
                 new EntryType,
                 brandNew: ! isset($data['values']['entryTypeId']),
                 values: $data['values'],
-            )->form(),
+            )->ui(),
         ]);
     }
 
@@ -283,6 +309,31 @@ class EntryTypesController
         return $this->asSuccess(t('“{name}” deleted.', [
             'name' => $entryTypeData->getUiLabel(),
         ]), redirect: action([EntryTypesController::class, 'index']));
+    }
+
+    public function renderSelect(Request $request, HtmlStack $HtmlStack): JsonResponse
+    {
+        $data = $request->validate([
+            'value' => ['present', 'array'],
+            'allowOverrides' => ['required', 'boolean'],
+            'create' => ['required', 'boolean'],
+            'name' => ['required', 'string'],
+            'disabled' => ['required', 'boolean'],
+        ]);
+
+        $html = EntryTypeSelectControl::selectHtml(
+            $data['value'],
+            $data['allowOverrides'],
+            $data['create'],
+            $data['name'],
+            $data['disabled'],
+        );
+
+        return new JsonResponse([
+            'html' => $html,
+            'headHtml' => $HtmlStack->headHtml(),
+            'bodyHtml' => $HtmlStack->bodyHtml(),
+        ]);
     }
 
     public function renderOverrideSettings(Request $request, HtmlStack $HtmlStack): JsonResponse

@@ -87,7 +87,7 @@ function embeddedInlineEditFixture(): array
     $nested->setFieldValue('lockedText', 'Canonical locked text');
     expect(app(Elements::class)->saveElement($nested))->toBeTrue();
     $draft = app(Drafts::class)->createDraft($owner, auth()->id(), provisional: true);
-    $control = $field->formControl(new FieldContext(path: 'matrixField', element: $draft));
+    $control = $field->uiControl(new FieldContext(path: 'matrixField', element: $draft));
 
     return compact('owner', 'field', 'nested', 'draft', 'control', 'lockedText');
 }

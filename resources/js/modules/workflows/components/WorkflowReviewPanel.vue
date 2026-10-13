@@ -81,6 +81,6 @@
 
   .workflow-review__body {
     display: grid;
-    gap: var(--c-spacing-md);
+    gap: var(--c-spacing-lg);
   }
 </style>

@@ -437,3 +437,106 @@ it('keeps a flyout open while the pointer cuts across a neighbor', async () => {
 
   flyoutHoverIntent.reset();
 });
+
+/** Rail branches under group headings, as the main nav renders them. */
+async function groupedFixture(): Promise<CraftNavItem> {
+  const branch = (name: string, children: number) => {
+    const item = document.createElement('craft-nav-item') as CraftNavItem;
+    item.setAttribute('icon', 'gear');
+    item.setAttribute('href', `/admin/${name}`);
+    item.setAttribute('icon-only', '');
+    item.append(document.createTextNode(name));
+
+    const subnav = document.createElement('craft-nav-list');
+    subnav.slot = 'subnav';
+
+    for (let index = 0; index < children; index++) {
+      const child = document.createElement('craft-nav-item');
+      child.setAttribute('href', `/admin/${name}/${index}`);
+      child.textContent = `${name} ${index}`;
+      subnav.append(child);
+    }
+
+    item.append(subnav);
+
+    return item;
+  };
+
+  const group = (label: string, items: CraftNavItem[]) => {
+    const heading = document.createElement('craft-nav-item') as CraftNavItem;
+    heading.setAttribute('group', '');
+    heading.setAttribute('icon-only', '');
+    heading.append(document.createTextNode(label));
+
+    const subnav = document.createElement('craft-nav-list');
+    subnav.slot = 'subnav';
+    subnav.append(...items);
+    heading.append(subnav);
+
+    return heading;
+  };
+
+  const trigger = branch('above', 8);
+  const neighbors = [branch('below', 2), branch('third', 2)];
+  const groups = [group('Content', [trigger]), group('System', neighbors)];
+  const list = document.createElement('craft-nav-list');
+
+  list.append(...groups);
+  document.body.append(list);
+  await Promise.all(
+    [...groups, trigger, ...neighbors].map((item) => item.updateComplete)
+  );
+  await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+
+  return trigger;
+}
+
+it('keeps a flyout open when the pointer reaches it from across another group', async () => {
+  flyoutHoverIntent.reset();
+  flyoutHoverIntent.options = {
+    ...flyoutHoverIntent.options,
+    warmUpDelay: 0,
+    graceDelay: 10_000,
+  };
+
+  const {userEvent} = await import('@vitest/browser/context');
+  const trigger = await groupedFixture();
+
+  // Real pointer moves, so the browser orders the enter and leave events.
+  const moveTo = (x: number, y: number) =>
+    userEvent.hover(document.documentElement, {
+      position: {x: Math.round(x), y: Math.round(y)},
+      force: true,
+    });
+
+  const row = trigger
+    .shadowRoot!.querySelector('.nav-item')!
+    .getBoundingClientRect();
+  const from = {x: row.left + row.width / 2, y: row.top + row.height / 2};
+
+  await moveTo(from.x, from.y);
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  expect(trigger.flyoutOpen).toBe(true);
+
+  const target = trigger
+    .querySelectorAll('craft-nav-item')[5]!
+    .getBoundingClientRect();
+  const to = {x: target.left + 20, y: target.top + target.height / 2};
+  const steps = 12;
+
+  for (let step = 1; step <= steps; step++) {
+    await moveTo(
+      from.x + ((to.x - from.x) * step) / steps,
+      from.y + ((to.y - from.y) * step) / steps
+    );
+  }
+
+  await new Promise((resolve) =>
+    setTimeout(resolve, flyoutHoverIntent.options.closeDelay + 50)
+  );
+
+  expect(trigger.flyoutOpen).toBe(true);
+
+  flyoutHoverIntent.reset();
+});

@@ -19,7 +19,10 @@ vi.mock('./inertia-pages', () => ({
   resolveInertiaPage: vi.fn(),
 }));
 vi.mock('./components', () => ({cpComponentRegistry: {}}));
-vi.mock('./element-details-tabs', () => ({elementDetailsTabRegistry: {}}));
+vi.mock('./element-details-panels', () => ({
+  elementDetailsPanelRegistry: {},
+  warnDeprecated: vi.fn(),
+}));
 vi.mock('@/common/layouts/AppLayout.vue', () => ({default: {}}));
 vi.mock('@/common/slideouts', () => ({registerSlideoutGlobals: vi.fn()}));
 

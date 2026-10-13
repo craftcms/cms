@@ -28,7 +28,7 @@ import {installCpApp} from '@/bootstrap/cp-app';
 import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import {createApp, type App} from 'vue';
 import {Slideout, uiLayerManager, type SlideoutSettings} from './slideout';
-import type {FormValues} from '@/modules/forms/types';
+import type {UiValues} from '@/modules/ui/types';
 import {http, isHttpError} from '@craftcms/ui/utilities/api/http';
 import {
   sendLegacyRequest,
@@ -45,7 +45,7 @@ declare const $: any;
  * alongside the equivalent events.
  */
 export interface CpScreenSlideoutSettings extends SlideoutSettings {
-  params: FormValues;
+  params: UiValues;
   requestOptions: LegacyRequestOptions;
   showHeader: boolean | null;
   closeOnSubmit: boolean;
@@ -374,7 +374,7 @@ export class CpScreenSlideout extends Slideout {
     });
   }
 
-  getParams(): FormValues {
+  getParams(): UiValues {
     return {};
   }
 

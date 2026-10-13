@@ -38,6 +38,8 @@
   --c-text-default: var(--color-slate-900);
   --c-text-quiet: var(--color-slate-600);
   --c-text-link: var(--color-blue-600);
+  --c-link-decoration: none;
+  --c-link-decoration-hover: underline;
 
   /* Transparent tokens */
   --c-color-border-translucent: color-mix(
@@ -239,10 +241,17 @@
      lifting one of its own parts over another can keep a small local value.
      Slideouts, HUDs and legacy modals share the overlay layer and are ordered
      by their place in <body>. Native modal <dialog>s sit in the browser's top
-     layer and need none of these. */
+     layer and need none of these.
+     Persistent page chrome (sticky bars, sidebars, the header bar) stays below
+     the global skip links, which must never be covered when focused. Modal
+     layers start at the shade and may cover them. Other skip links don't set
+     a layer. The sidebar sits a step above sticky bars, since its tooltips
+     and flyouts open out over the page beside it. */
   --c-layer-raised: 1;
   --c-layer-sticky: 10;
-  --c-layer-sidebar: 10;
+  --c-layer-sidebar: 11;
+  --c-layer-header: 20;
+  --c-layer-skip-link: 90;
   --c-layer-shade: 99;
   --c-layer-overlay: 100;
   --c-layer-notification: 101;
@@ -266,4 +275,9 @@
   --c-modal-shadow:
     0 0 0 1px hsl(from var(--color-gray-400) h s l / 25%),
     0 25px 100px hsl(from var(--color-gray-900) h s l / 50%);
+}
+
+.underline-links {
+  --c-link-decoration: underline;
+  --c-link-decoration-hover: none;
 }

@@ -99,10 +99,10 @@ class ElementResponse
             'invalidNestedElementIds' => $element->getInvalidNestedElementIds(),
         ];
 
-        // The Inertia editor matches errors to Form Controls by path, which is
+        // The Inertia editor matches errors to UI Controls by path, which is
         // the posted input name rather than the validated attribute.
         if (! request()->expectsJson()) {
-            $data['errors'] = $element->formErrors();
+            $data['errors'] = $element->uiErrors();
         }
 
         return $this->asFailure($message, $data);

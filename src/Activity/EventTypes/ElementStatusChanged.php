@@ -46,7 +46,7 @@ class ElementStatusChanged extends ActivityEventType
     public static function format(ActivityEvent $event): string
     {
         return t(
-            'Status changed from {oldStatus} to {newStatus}.',
+            'Status changed from {oldStatus} to {newStatus}',
             [
                 'oldStatus' => t(Str::headline($event->data['oldStatus'])),
                 'newStatus' => t(Str::headline($event->data['newStatus'])),

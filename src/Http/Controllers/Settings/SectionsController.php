@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Components\CopyAttribute;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Entry\EntryTypes;
-use CraftCms\Cms\Form\FormResolver;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -23,7 +22,9 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Nodes\Table as UiTable;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,8 +45,7 @@ readonly class SectionsController
 
     public function __construct(
         private GeneralConfig $generalConfig,
-        private EntryTypes $entryTypes,
-        private FormResolver $formResolver,
+        private UiResolver $uiResolver,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -59,21 +59,42 @@ readonly class SectionsController
             orderBy: $request->orderBy(),
             sortDir: $request->sortDir(),
         );
+        $rows = array_map(fn (array $section): array => [
+            'id' => $section['id'],
+            'name' => [
+                'label' => $section['name'],
+                'url' => route('craft.cp.settings.sections.edit', ['section' => $section['id']]),
+            ],
+            'handle' => ['html' => CopyAttribute::make()->value((string) $section['handle'])->toHtml()],
+            'type' => $section['type'],
+            ...($this->readOnly ? [] : [
+                '_deleteUrl' => route('craft.cp.settings.sections.destroy', ['section' => $section['id']]),
+                '_deleteConfirmMessage' => t('Are you sure you want to delete “{name}” and all its entries?', ['name' => $section['name']]),
+            ]),
+        ], $tableData);
+
+        $table = UiTable::make('sections')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name'), 'sortable' => true],
+                ['key' => 'handle', 'label' => t('Handle'), 'sortable' => true],
+                ['key' => 'type', 'label' => t('Type'), 'sortable' => true],
+            ])
+            ->rows($rows)
+            ->pagination($pagination)
+            ->searchable()
+            ->emptyMessage(t('No sections exist yet.'))
+            ->unless($this->readOnly, fn (UiTable $table) => $table
+                ->createAction(t('New section'), route('craft.cp.settings.sections.create'))
+                ->createActionInPageHeader()
+                ->deletable());
 
         return new CpScreenResponse()
             ->title(t('Sections'))
             ->crumbs([
-                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+                new ActionItem()->label(t('Settings'))->href(route('craft.cp.settings.index')),
                 new ActionItem()->label(t('Sections')),
             ])
-            ->inertiaPage('settings/sections/Index', [
-                'data' => fn () => $tableData,
-                'pagination' => fn () => $pagination,
-                'sort' => $request->sort(),
-                'searchTerm' => $request->search(),
-                'emptyMessage' => t('No sections exist yet.'),
-                'readOnly' => $this->readOnly,
-            ]);
+            ->ui(Ui::make([$table]));
     }
 
     public function create(Sites $sites): CpScreenResponse
@@ -97,6 +118,7 @@ readonly class SectionsController
         abort_if(is_null($sectionData), 404, 'Section not found');
 
         return new CpScreenResponse()
+            ->editUrl($sectionData->getCpEditUrl())
             ->title(trim($sectionData->name) ?: t('Edit Section'))
             ->redirectUrl('settings/sections')
             ->addCrumb(t('Settings'), 'settings')
@@ -105,16 +127,17 @@ readonly class SectionsController
             ->inertiaPage('settings/sections/Edit', $this->viewModel($sectionData, $sites, brandNew: false));
     }
 
-    public function renderForm(Request $request, Sites $sites, Sections $sections): JsonResponse
+    public function renderUi(Request $request, Sites $sites, Sections $sections): JsonResponse
     {
-        $data = $request->validate([
+        $request->validate([
             'values' => ['required', 'array'],
             'values.sectionId' => ['nullable', 'integer', Rule::exists(Table::SECTIONS, 'id')],
             'values.type' => ['required', Rule::enum(SectionType::class)],
             'values.workflowId' => ['nullable', 'integer', Rule::exists(Workflow::class, 'id')],
             'scope' => ['present', 'array', 'size:0'],
         ]);
-        $values = $data['values'];
+        // Validated output drops the keys without rules, which is every other value.
+        $values = $request->array('values');
         $section = empty($values['sectionId'])
             ? new SectionData(['type' => SectionType::Channel])
             : $sections->getSectionById((int) $values['sectionId']);
@@ -122,12 +145,12 @@ readonly class SectionsController
         abort_if($section === null, 404, 'Section not found');
 
         return new JsonResponse([
-            'form' => $this->viewModel(
+            'ui' => $this->viewModel(
                 $section,
                 $sites,
                 brandNew: $section->id === null,
                 values: $values,
-            )->form(),
+            )->ui(),
         ]);
     }
 
@@ -249,8 +272,7 @@ readonly class SectionsController
         return new SectionEditViewModel(
             $section,
             $sites,
-            $this->entryTypes,
-            $this->formResolver,
+            $this->uiResolver,
             $brandNew,
             $this->readOnly,
             $this->generalConfig->headlessMode,

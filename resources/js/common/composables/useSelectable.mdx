@@ -10,7 +10,7 @@ navigation.
 
 It started as the element index's selection and was pulled out so the same
 gestures can go on a relation field's chips, an admin table, or anything else
-that shows a list. `useElementIndexSelection` and `ElementSelectControl` are both
+that shows a list. `useTableRowSelection` and `ElementSelectControl` are both
 built on it.
 
 ## Usage
@@ -85,7 +85,7 @@ const selection = useSelectable({
 });
 ```
 
-That's what `useElementIndexSelection` does. Selection state stays in the
+That's what `useTableRowSelection` does. Selection state stays in the
 TanStack table rather than being mirrored into the composable, so the checkboxes,
 the row model and the composable can't drift apart. The composable stays the
 _algorithm_ — anchors, ranges, gestures — without also trying to own the state.

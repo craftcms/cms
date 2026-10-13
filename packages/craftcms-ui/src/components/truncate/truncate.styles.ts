@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
 export default css`
   :host {
@@ -23,5 +24,6 @@ export default css`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    ${trimmedTextBoxStyles}
   }
 `;

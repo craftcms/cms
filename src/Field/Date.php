@@ -13,15 +13,6 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Date as DateControl;
-use CraftCms\Cms\Form\Controls\DateTime as DateTimeControl;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Enums\ChoicePresentation;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Directives\FormatDateTime;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
@@ -31,6 +22,15 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Date as DateControl;
+use CraftCms\Cms\Ui\Controls\DateTime as DateTimeControl;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use DateTimeInterface;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Database\Query\Builder;
@@ -165,7 +165,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
         $dateTime = match (true) {
             $this->showDate && ! $this->showTime => 'showDate',
@@ -178,21 +178,21 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             ['label' => t('Show date and time'), 'value' => 'showBoth'],
         ];
 
-        return Form::make([
-            FormField::make()
+        return Ui::make([
+            UiField::make()
                 ->control(Choice::make('dateTime')
                     ->presentation(ChoicePresentation::Radios)
                     ->options($options)
                     ->value($dateTime)),
-            FormField::make(t('Minute Increment'))
+            UiField::make(t('Minute Increment'))
                 ->instructions(t('The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'))
                 ->control(Choice::make('minuteIncrement')->options(self::minuteIncrementOptions())->value($this->minuteIncrement)),
-            FormField::make(t('Show Time Zone'))
+            UiField::make(t('Show Time Zone'))
                 ->instructions(t('Whether authors should be able to choose which time zone the time is in.'))
                 ->control(Lightswitch::make('showTimeZone')->value($this->showTimeZone)),
-            FormField::make(t('Min Date'))
+            UiField::make(t('Min Date'))
                 ->control(DateControl::make('min')->value($this->min?->format('Y-m-d'))),
-            FormField::make(t('Max Date'))
+            UiField::make(t('Max Date'))
                 ->control(DateControl::make('max')->value($this->max?->format('Y-m-d'))),
         ]);
     }
@@ -207,7 +207,7 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         $value = $context->value instanceof DateTimeInterface ? [
             'date' => $context->value->format('Y-m-d'),

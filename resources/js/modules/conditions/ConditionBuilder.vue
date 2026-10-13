@@ -15,8 +15,8 @@
   import {actionClient, t} from '@craftcms/ui';
   import ConditionsController from '@actions/ConditionsController';
   import {useFetch} from '@/common/composables/useFetch';
-  import type {FormPayload, FormValue} from '@/modules/forms/types';
-  import {canonical} from '@/modules/forms/runtime';
+  import type {UiPayload, UiValue} from '@/modules/ui/types';
+  import {canonical} from '@/modules/ui/runtime';
   import {
     ConditionEditor,
     type BuilderPayload,
@@ -35,7 +35,7 @@
       name?: string;
       editable?: boolean;
       autofocus?: boolean;
-      errors?: FormPayload['errors'];
+      errors?: UiPayload['errors'];
     }>(),
     {editable: true}
   );
@@ -70,7 +70,7 @@
       client: actionClient,
     }
   );
-  const errors = computed<FormPayload['errors']>(() => {
+  const errors = computed<UiPayload['errors']>(() => {
     const response = validation.error.value as {
       errors?: Record<string, string[]>;
     } | null;
@@ -239,7 +239,7 @@
   /** Native form adapters submit the same portable tree as the Vue hosts. */
   function hiddenInputs(
     name: string,
-    value: FormValue
+    value: UiValue
   ): Array<{name: string; value: string}> {
     if (Array.isArray(value) || (value !== null && typeof value === 'object')) {
       return Object.entries(value).flatMap(([key, child]) =>

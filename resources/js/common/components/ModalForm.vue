@@ -39,6 +39,7 @@
 <template>
   <Modal
     :is-active="isActive"
+    :label="title ?? label"
     :overlay="overlay"
     @close="emit('close')"
     :width="width"
@@ -129,8 +130,8 @@
           slot="primary-action"
           type="submit"
           variant="primary"
-          :loading="loading"
-          :disabled="submitDisabled || undefined"
+          .loading="loading"
+          .disabled="submitDisabled"
         >
           {{ submitLabel }}
         </craft-button>

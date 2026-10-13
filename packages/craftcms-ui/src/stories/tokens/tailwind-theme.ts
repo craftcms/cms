@@ -7,6 +7,7 @@ import source from '../../../tailwind.css?raw';
 export const themeNamespaces = [
   'background-color',
   'border-color',
+  'text-color',
   'z-index',
   'padding',
   'margin',

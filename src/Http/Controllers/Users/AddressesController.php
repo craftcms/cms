@@ -42,8 +42,12 @@ readonly class AddressesController
             abort(401);
         }
 
+        $request->validate([
+            'addressId' => ['nullable', 'integer'],
+        ]);
+
         $userId = (int) ($request->input('userId') ?? $user->getCraftUserId());
-        $addressId = $request->input('addressId');
+        $addressId = $request->integer('addressId');
 
         if ($addressId) {
             $address = Address::findOne($addressId);

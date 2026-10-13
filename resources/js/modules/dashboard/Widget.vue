@@ -119,7 +119,7 @@
               <h5 v-if="widget.subtitle">{{ widget.subtitle }}</h5>
             </div>
             <craft-button
-              v-if="widget.settingsForm"
+              v-if="widget.settingsUi"
               ref="settingsButton"
               slot="actions"
               class="widget-settings-button"
@@ -148,7 +148,7 @@
             {{ t('{type} Settings', {type: widget.name}) }}
           </h2>
           <craft-button
-            v-if="widget.settingsForm"
+            v-if="widget.settingsUi"
             slot="actions"
             type="button"
             icon="xmark-large"

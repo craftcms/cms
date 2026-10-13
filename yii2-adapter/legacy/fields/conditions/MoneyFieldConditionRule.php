@@ -8,7 +8,7 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Money as MoneyHelper;
-use CraftCms\Yii2Adapter\Form\Concerns\LegacyNumberConditionRule;
+use CraftCms\Yii2Adapter\Ui\Concerns\LegacyNumberConditionRule;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
 use RuntimeException;

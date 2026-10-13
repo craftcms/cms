@@ -23,7 +23,6 @@ use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Form\Controls\NestedElements;
 use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -36,6 +35,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Workflows as WorkflowsFacade;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\NestedElements;
 use Generator;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -542,18 +542,18 @@ class NestedElementManager extends Component
     }
 
     /**
-     * Builds the Form control that manages these nested elements outside the owner's form,
+     * Builds the UI control that manages these nested elements outside the owner's form,
      * as cards or an embedded element index.
      *
      * This is what fields and owner screens hand the Vue editor, so every nested element type
      * (entries, addresses, or a plugin's own) gets the same create, edit, reorder, paste, and
      * delete behavior.
      *
-     * @param  string|list<string>  $path  The control path within the owner's form
+     * @param  string|list<string>  $path  The control path within the owner's UI
      * @param  'cards'|'cards-grid'|'index'  $viewMode
      * @param  array<string, mixed>  $config  The cards or index view config
      */
-    public function formControl(string|array $path, ?ElementInterface $owner, string $viewMode, array $config = []): NestedElements
+    public function uiControl(string|array $path, ?ElementInterface $owner, string $viewMode, array $config = []): NestedElements
     {
         // The Vue cards build their action menus from structured card data.
         $config += ['nestedActionEvents' => true];

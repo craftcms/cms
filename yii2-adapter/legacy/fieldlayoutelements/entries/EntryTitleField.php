@@ -15,11 +15,11 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Yii2Adapter\Form\Enums\LegacyHtmlMode;
-use CraftCms\Yii2Adapter\Form\LegacyHtml;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Yii2Adapter\Ui\Enums\LegacyHtmlMode;
+use CraftCms\Yii2Adapter\Ui\LegacyHtml;
 use InvalidArgumentException;
 use Override;
 
@@ -27,9 +27,9 @@ use Override;
 class EntryTitleField extends \CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField
 {
     #[Override]
-    protected function formControl(FieldLayoutElementContext $context): ?Control
+    protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
-        $mode = $context->form->mode === ControlMode::Editable ? $context->mode : $context->form->mode;
+        $mode = $context->ui->mode === ControlMode::Editable ? $context->mode : $context->ui->mode;
         $mode = $this->disabled ? ControlMode::Disabled : ($this->readonly && $mode === ControlMode::Editable ? ControlMode::ReadOnly : $mode);
 
         $node = app(LegacyHtml::class)->capture(
@@ -37,7 +37,7 @@ class EntryTitleField extends \CraftCms\Cms\FieldLayout\LayoutElements\Entries\E
             hook: fn(): ?string => $mode === ControlMode::Disabled
                 ? Html::disableInputs(fn(): ?string => $this->inputHtml($context->element, true))
                 : $this->inputHtml($context->element, $mode !== ControlMode::Editable),
-            namespace: LegacyHtml::namespace($context->form->namespace),
+            namespace: LegacyHtml::namespace($context->ui->namespace),
             mode: match ($mode) {
                 ControlMode::Editable => LegacyHtmlMode::Editable,
                 ControlMode::ReadOnly => LegacyHtmlMode::Static,

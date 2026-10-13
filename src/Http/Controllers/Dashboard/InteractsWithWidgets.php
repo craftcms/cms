@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Data\WidgetData;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\View\HtmlStack;
 
 trait InteractsWithWidgets
@@ -35,7 +35,7 @@ trait InteractsWithWidgets
             return false;
         }
 
-        $settingsForm = $this->getWidgetSettingsForm($widget, "widget{$widget->id}-settings");
+        $settingsUi = $this->getWidgetSettingsUi($widget, "widget{$widget->id}-settings");
 
         return new WidgetData(
             id: $widget->id,
@@ -49,7 +49,7 @@ trait InteractsWithWidgets
             component: $component,
             data: $data,
             fragment: $fragment,
-            settingsForm: $settingsForm,
+            settingsUi: $settingsUi,
         );
     }
 
@@ -61,16 +61,16 @@ trait InteractsWithWidgets
         return $icon ? Icons::svg($icon, $label) : Icons::fallbackSvg($label);
     }
 
-    protected function getWidgetSettingsForm(WidgetInterface $widget, string $namespace): ?FormPayload
+    protected function getWidgetSettingsUi(WidgetInterface $widget, string $namespace): ?UiPayload
     {
-        $context = new FormContext(
+        $context = new UiContext(
             namespace: $namespace,
             values: [$namespace => $widget->getSettings()],
             errors: $widget->errors()->getMessages(),
             refreshable: true,
         );
-        $form = $widget->settingsForm($context);
+        $ui = $widget->settingsUi($context);
 
-        return $form === null ? null : app(FormResolver::class)->resolve($form, $context);
+        return $ui === null ? null : app(UiResolver::class)->resolve($ui, $context);
     }
 }

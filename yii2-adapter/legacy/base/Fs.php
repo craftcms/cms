@@ -14,16 +14,16 @@ namespace craft\base;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\validators\HandleValidator;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Yii2Adapter\Form\Concerns\LegacySettingsForm;
-use CraftCms\Yii2Adapter\Form\Contracts\LegacySettingsComponent;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Yii2Adapter\Ui\Concerns\LegacySettingsUi;
+use CraftCms\Yii2Adapter\Ui\Contracts\LegacySettingsComponent;
 use Override;
 use yii\base\InvalidConfigException;
 
@@ -42,8 +42,8 @@ use function CraftCms\Cms\t;
 abstract class Fs extends SavableComponent implements FsInterface, LegacySettingsComponent
 {
     use FsTrait;
-    use LegacySettingsForm {
-        settingsForm as private legacySettingsForm;
+    use LegacySettingsUi {
+        settingsUi as private legacySettingsUi;
     }
 
     public const CONFIG_MIMETYPE = 'mimetype';
@@ -57,17 +57,17 @@ abstract class Fs extends SavableComponent implements FsInterface, LegacySetting
     public const VISIBILITY_PUBLIC = 'public';
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext()): ?Form
+    public function settingsUi(UiContext $context = new UiContext()): ?Ui
     {
-        $form = Form::make();
+        $ui = Ui::make();
 
         if ($this->getShowHasUrlSetting()) {
-            $form->add(Field::make(t('Files in this filesystem have public URLs'))
+            $ui->add(Field::make(t('Files in this filesystem have public URLs'))
                 ->control(Lightswitch::make('hasUrls')->value($this->hasUrls)));
         }
 
         if ($this->hasUrls && $this->getShowUrlSetting()) {
-            $form->add(Field::make(t('Base URL'))
+            $ui->add(Field::make(t('Base URL'))
                 ->instructions(t('The base URL to the files in this filesystem.'))
                 ->required()
                 ->control(Text::make('url')
@@ -77,13 +77,13 @@ abstract class Fs extends SavableComponent implements FsInterface, LegacySetting
                 ->tip(t('Type `$` to choose an environment variable, or `@` to choose an alias.')));
         }
 
-        $legacyForm = $this->legacySettingsForm($context);
+        $legacyUi = $this->legacySettingsUi($context);
 
-        if ($legacyForm !== null) {
-            $form->add(...$legacyForm->nodes());
+        if ($legacyUi !== null) {
+            $ui->add(...$legacyUi->nodes());
         }
 
-        return $form->nodes() === [] ? null : $form;
+        return $ui->nodes() === [] ? null : $ui;
     }
 
     public function getShowHasUrlSetting(): bool

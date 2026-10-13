@@ -5,6 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
+declare(strict_types=1);
+
 namespace craft\web;
 
 use Craft;
@@ -19,6 +21,8 @@ use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use yii\db\Exception as DbException;
+
+use function CraftCms\Cms\craftAsset;
 
 /**
  * @inheritdoc
@@ -58,6 +62,16 @@ class AssetManager extends \yii\web\AssetManager
      */
     public function getPublishedUrl($path, bool $publish = false, ?string $filePath = null): string|false
     {
+        if (FileHelper::normalizePath(Aliases::get($path)) === FileHelper::normalizePath(__DIR__ . '/assets/installer/dist')) {
+            $assetPath = 'legacy/installer/dist';
+
+            if ($filePath !== null) {
+                $assetPath .= '/' . ltrim($filePath, '/');
+            }
+
+            return $this->_addBuildIdParam(craftAsset($assetPath));
+        }
+
         if ($publish === true && !app()->isEphemeral()) {
             [, $url] = $this->publish($path);
         } else {

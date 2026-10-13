@@ -17,9 +17,9 @@ function addBooleanData(
           ...option.data,
           hint: option.data?.boolean === '1' ? trueLabel : falseLabel,
           indicator: option.data?.boolean
-            ? {
-                variant: option.data?.boolean === '1' ? 'success' : 'empty',
-              }
+            ? option.data?.boolean === '1'
+              ? {fill: 'success'}
+              : {appearance: 'outline'}
             : null,
         },
       }

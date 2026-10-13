@@ -25,6 +25,7 @@ export function node(label: string, extra: Partial<NavNode> = {}): NavNode {
     iconSvg: null,
     fontIcon: null,
     iconColor: null,
+    status: null,
     id: null,
     variant: null,
     badgeCount: 0,

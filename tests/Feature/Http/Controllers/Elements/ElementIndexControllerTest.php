@@ -25,7 +25,6 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Form\Enums\ControlMode;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
 use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Section\Models\Section;
@@ -39,6 +38,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Twig;
+use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\View\TemplateMode;
@@ -371,7 +371,7 @@ it('accepts the modern filter HUD source descriptor', function () {
 
 it('includes the first server-rendered page in editable Matrix index controls', function () {
     $fixture = embeddedMatrixIndexFixture();
-    $props = $fixture['field']->formControl(new FieldContext(
+    $props = $fixture['field']->uiControl(new FieldContext(
         path: 'matrixField',
         element: $fixture['owner'],
     ))->props();
@@ -397,7 +397,7 @@ it('keeps page assets outside an embedded Matrix initial payload', function () {
     $fixture = embeddedMatrixIndexFixture();
     HtmlStack::cssFile('/page-before-matrix.css');
 
-    $props = $fixture['field']->formControl(new FieldContext(
+    $props = $fixture['field']->uiControl(new FieldContext(
         path: 'matrixField',
         element: $fixture['owner'],
     ))->props();
@@ -408,7 +408,7 @@ it('keeps page assets outside an embedded Matrix initial payload', function () {
 
 it('uses posted Matrix index presentation settings while retaining the owner scope', function () {
     $fixture = embeddedMatrixIndexFixture();
-    $props = $fixture['field']->formControl(new FieldContext(
+    $props = $fixture['field']->uiControl(new FieldContext(
         path: 'matrixField',
         element: $fixture['owner'],
     ))->props();
@@ -518,7 +518,7 @@ it('preserves posted native index settings without changing owner scope or autho
 
 it('disables embedded reordering when the view is filtered or re-sorted', function (Closure $query) {
     $fixture = embeddedMatrixIndexFixture();
-    $props = $fixture['field']->formControl(new FieldContext(
+    $props = $fixture['field']->uiControl(new FieldContext(
         path: 'matrixField',
         element: $fixture['owner'],
     ))->props();
@@ -551,7 +551,7 @@ it('scopes a read-only embedded Matrix index without granting mutation access', 
     if ($revision) {
         $owner = Elements::getElementById(app(Revisions::class)->createRevision($owner, force: true));
     }
-    $props = $field->formControl(new FieldContext(
+    $props = $field->uiControl(new FieldContext(
         path: 'matrixField',
         element: $owner,
         mode: ControlMode::ReadOnly,
@@ -605,7 +605,7 @@ it('scopes a read-only embedded Matrix index without granting mutation access', 
 
 it('uses grid directions for embedded Matrix card actions', function () {
     $fixture = embeddedMatrixIndexFixture(titles: ['Nested entry']);
-    $props = $fixture['field']->formControl(new FieldContext(path: 'matrixField', element: $fixture['owner']))->props();
+    $props = $fixture['field']->uiControl(new FieldContext(path: 'matrixField', element: $fixture['owner']))->props();
 
     $response = postJson(action([ElementIndexController::class, 'getElements']), [
         ...$props['manager'],
@@ -675,7 +675,7 @@ it('uses the validated owner site for embedded Matrix rows', function () {
     }
     Sections::refreshSections();
 
-    $props = $field->formControl(new FieldContext(
+    $props = $field->uiControl(new FieldContext(
         path: 'matrixField',
         element: $secondaryOwner,
         mode: ControlMode::ReadOnly,

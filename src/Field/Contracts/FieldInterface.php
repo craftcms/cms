@@ -21,8 +21,8 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Form\Contracts\Control;
 use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use DateTimeInterface;
 use GraphQL\Type\Definition\FieldDefinition;
@@ -58,7 +58,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * @var string|null The `aria-describedby` attribute value that should be set on the focusable input(s).
      *
-     * @see FieldInterface::formControl()
+     * @see FieldInterface::uiControl()
      */
     public ?string $describedBy { get; set; }
 
@@ -262,7 +262,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Returns the renderer-neutral Control used to edit the field's value.
      */
-    public function formControl(FieldContext $context): Control;
+    public function uiControl(FieldContext $context): Control;
 
     /**
      * Returns a warning the field itself needs to show, on top of any the
@@ -271,7 +271,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * For misconfiguration the author can't see from the layout — an Assets
      * field pointed at a volume that no longer exists, say.
      */
-    public function formWarning(?ElementInterface $element = null): ?string;
+    public function uiWarning(?ElementInterface $element = null): ?string;
 
     /**
      * Prepare the field value for validation.
@@ -336,8 +336,8 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * Normalizes the field’s value for use.
      *
      * This method is called when the field’s value is first accessed from the element. For example, the first time
-     * `element.myFieldHandle` is called from a template, or before [[formControl()]] is called. Whatever
-     * this method returns is what `element.myFieldHandle` will likewise return, and what [[formControl()]]’s and
+     * `element.myFieldHandle` is called from a template, or before [[uiControl()]] is called. Whatever
+     * this method returns is what `element.myFieldHandle` will likewise return, and what [[uiControl()]]’s and
      * [[serializeValue()]]’s value arguments will be set to.
      *
      * The value passed into this method will vary depending on the context.

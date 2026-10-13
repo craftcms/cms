@@ -99,6 +99,7 @@
     </slot>
     <div slot="content">
       <ActionList :actions="sorted" as="craft-action-item" />
+      <slot name="actions"></slot>
     </div>
   </craft-action-menu>
 </template>

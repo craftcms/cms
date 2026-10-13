@@ -123,6 +123,21 @@ readonly class Cp
         return asset("vendor/craft/build/$path");
     }
 
+    /**
+     * Module specifiers the CP shares with plugin bundles through the import map,
+     * so a plugin that leaves them out of its build runs on the CP's own instance
+     * rather than a copy of its own.
+     *
+     * @return array<string, string>
+     */
+    public static function sharedModules(): array
+    {
+        return [
+            'vue' => static::vite()->asset('resources/js/vue.ts'),
+            '@craftcms/cp' => static::vite()->asset('resources/js/cp-module.ts'),
+        ];
+    }
+
     public static function viteScripts(): Vite
     {
         return static::vite()->withEntryPoints([

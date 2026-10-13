@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\FieldLayoutDesigner;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Fields;
@@ -16,9 +15,16 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Controls\Table;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 
@@ -135,7 +141,7 @@ class FieldLayoutDesigner
         // control, throwing away the designer's DOM along with any open HUD or
         // menu. Consumers get the type from `$settings['elementType']`, and
         // every path that rebuilds a layout from this config assigns `type`
-        // itself (see `Form\Controls\FieldLayoutDesigner::designerHtml()`).
+        // itself (see `Ui\Controls\FieldLayoutDesigner::designerHtml()`).
 
         return view('c::forms.fld.designer', [
             'designer' => $this,
@@ -242,58 +248,55 @@ class FieldLayoutDesigner
                 'type' => 'singleline',
                 'code' => true,
                 'width' => '15%',
+                'autopopulate' => 'name',
             ],
             'template' => [
                 'heading' => t('Template'),
                 'type' => 'multiline',
                 'code' => true,
-                'info' => SelectOptions::getObjectTemplateTip(),
+                'infoHtml' => Markdown::parseParagraph(SelectOptions::getObjectTemplateTip()),
                 'textExpanderTriggers' => SelectOptions::getObjectTemplateTextExpanderTriggers(
                     $fieldLayout->type,
                     [$fieldLayout],
                 ),
             ],
+            'uid' => ['type' => 'hidden'],
         ];
 
-        $rows = array_map(function (array $field) {
-            if (isset($field['uid'])) {
-                $field['hiddenInputs'] = [
-                    'uid' => $field['uid'],
-                ];
+        $fields = $fieldLayout->getGeneratedFields();
+        $errors = [];
+
+        foreach ($fields as $index => $field) {
+            $messages = $fieldLayout->errors()->get("generatedFields.{$field['uid']}.handle");
+            if ($messages !== []) {
+                $errors["generatedFields.{$index}.handle"] = $messages;
             }
+        }
 
-            return $field;
-        }, $fieldLayout->getGeneratedFields());
+        $namespace = explode('[', str_replace(']', '', InputNamespace::namespaceInputName($name)));
+        array_pop($namespace);
 
-        $settings = [
-            'allowAdd' => true,
-            'allowReorder' => true,
-            'allowDelete' => true,
-            'static' => $config['disabled'],
-        ];
+        $payload = app(UiResolver::class)->resolve(
+            Ui::make([
+                Field::make(control: Table::make($name)
+                    ->columns($cols)
+                    ->value($fields)
+                    ->includeRowId('uid')
+                    ->allowAdd()
+                    ->allowReorder()
+                    ->allowDelete()
+                    ->addRowLabel(t('Add a field'))),
+            ]),
+            new UiContext(
+                namespace: $namespace,
+                errors: $errors,
+                mode: $config['disabled'] ? ControlMode::Disabled : ControlMode::Editable,
+            ),
+        );
 
-        $table = FormFields::editableTableHtml([
-            'id' => $config['id'],
-            'name' => $name,
-            'cols' => $cols,
-            'rows' => $rows,
-            'errors' => array_map(fn (array $field) => [
-                'handle' => $fieldLayout->errors()->has("generatedFields.{$field['uid']}.handle"),
-            ], $fieldLayout->getGeneratedFields()),
-            'addRowLabel' => t('Add a field'),
-            'static' => $config['disabled'],
-            'initJs' => false,
-            ...$settings,
-        ]);
-
-        // No `id` on the wrapper: the element reads its child <table>'s id (the
-        // one `EditableTable` resolves via `$('#'+id)`), and a matching id here
-        // would shadow that table for `getElementById` when no input namespace
-        // is active.
-        return Html::tag('craft-generated-fields-table', $table, [
-            'name' => InputNamespace::namespaceInputName($name),
-            'cols' => JsonHelper::encode($cols),
-            'settings' => JsonHelper::encode($settings),
+        return Html::tag('craft-generated-fields-table', '', [
+            'id' => InputNamespace::namespaceId($config['id']),
+            'data-payload' => JsonHelper::encode($payload),
         ]);
     }
 

@@ -4,30 +4,30 @@
   import {t, toEnvVar} from '@craftcms/ui';
   import {ref} from 'vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import FormPage from '@/pages/Form.vue';
+  import UiPage from '@/pages/Ui.vue';
   import type {
-    FormChange,
-    FormChangeKind,
-    FormPayload,
-    FormValue,
-  } from '@/modules/forms/types';
-  import {pathsMatch} from '@/modules/forms/runtime';
+    UiChange,
+    UiChangeKind,
+    UiPayload,
+    UiValue,
+  } from '@/modules/ui/types';
+  import {pathsMatch} from '@/modules/ui/runtime';
 
   const props = defineProps<{
     site: Site;
-    form: FormPayload;
+    ui: UiPayload;
     submit: UrlMethodPair;
     refreshUrl: string;
   }>();
 
-  const formPage = ref<{
-    setValue(path: string[], value: FormValue, kind?: FormChangeKind): void;
+  const uiPage = ref<{
+    setValue(path: string[], value: UiValue, kind?: UiChangeKind): void;
   }>();
   const baseUrlDirty = ref(
-    Boolean(props.form.values.siteId) || Boolean(props.form.values.baseUrl)
+    Boolean(props.ui.values.siteId) || Boolean(props.ui.values.baseUrl)
   );
 
-  function onChange(change: FormChange, values: FormPayload['values']): void {
+  function onChange(change: UiChange, values: UiPayload['values']): void {
     if (pathsMatch(change.path, ['baseUrl'])) {
       baseUrlDirty.value = true;
 
@@ -45,7 +45,7 @@
       return;
     }
 
-    formPage.value?.setValue(
+    uiPage.value?.setValue(
       ['baseUrl'],
       toEnvVar(String(values.name ?? ''), {
         prefix: '$',
@@ -66,9 +66,9 @@
     </craft-badge>
   </LayoutSlot>
 
-  <FormPage
-    ref="formPage"
-    :form="form"
+  <UiPage
+    ref="uiPage"
+    :ui="ui"
     :submit="submit"
     :refresh-url="refreshUrl"
     @change="onChange"

@@ -6,20 +6,20 @@ namespace CraftCms\Yii2Adapter\Field\Concerns;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\FieldContext;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Yii2Adapter\Form\Enums\LegacyHtmlMode;
-use CraftCms\Yii2Adapter\Form\LegacyHtml;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Yii2Adapter\Ui\Enums\LegacyHtmlMode;
+use CraftCms\Yii2Adapter\Ui\LegacyHtml;
 use RuntimeException;
 
 /** @phpstan-require-implements FieldInterface */
 trait LegacyFieldControl
 {
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
-        $mode = $context->form->mode === ControlMode::Editable
+        $mode = $context->ui->mode === ControlMode::Editable
             ? $context->mode
-            : $context->form->mode;
+            : $context->ui->mode;
         $path = self::segments($context->path);
         $namespacePath = $path;
         array_pop($namespacePath);
@@ -29,7 +29,7 @@ trait LegacyFieldControl
             element: $context->element,
             path: $path,
             namespace: LegacyHtml::namespace([
-                ...self::segments($context->form->namespace),
+                ...self::segments($context->ui->namespace),
                 ...$namespacePath,
             ]),
             mode: match ($mode) {

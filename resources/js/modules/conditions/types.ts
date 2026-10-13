@@ -1,31 +1,31 @@
-import type {FormPayload, FormValues} from '@/modules/forms/types';
+import type {UiPayload, UiValues} from '@/modules/ui/types';
 import type {InjectionKey} from 'vue';
 
-export type RuleConfig = {class: string; uid?: string} & FormValues;
+export type RuleConfig = {class: string; uid?: string} & UiValues;
 
 export type GroupConfig = {
   operator: CraftCms.Cms.Condition.Enums.GroupOperator;
   rules: Array<RuleConfig | GroupConfig>;
-} & FormValues;
+} & UiValues;
 
 export type ConditionConfig = {
   class: string;
   conditionRules?: GroupConfig | RuleConfig[];
-} & FormValues;
+} & UiValues;
 
 export type RulePayload = Omit<
   CraftCms.Cms.Condition.ConditionRulePayload,
-  'config' | 'form'
+  'config' | 'ui'
 > & {
   config: RuleConfig & {uid: string};
-  form: FormPayload;
+  ui: UiPayload;
 };
 
 export type BuilderPayload = Omit<
   CraftCms.Cms.Condition.ConditionBuilderPayload,
   'config' | 'value' | 'rules'
 > & {
-  config: FormValues;
+  config: UiValues;
   value: ConditionConfig;
   rules: Record<string, RulePayload>;
 };
@@ -42,7 +42,7 @@ export type GroupDraft = {
 export const ConditionEditor: InjectionKey<{
   payload: () => BuilderPayload;
   rules: Record<string, RulePayload>;
-  errors: () => FormPayload['errors'];
+  errors: () => UiPayload['errors'];
   editable: () => boolean;
   value: () => ConditionConfig;
   changed: () => void;

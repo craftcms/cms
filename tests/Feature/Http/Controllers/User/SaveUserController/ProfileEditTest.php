@@ -178,7 +178,7 @@ describe('photo selection', function () {
         $this->disk->assertMissing($path);
 
         get(cp_url('myaccount'))->assertOk()->assertInertia(function (AssertableInertia $page) {
-            $nodes = flattenFormNodes($page->toArray()['props']['form']['nodes']);
+            $nodes = flattenUiNodes($page->toArray()['props']['ui']['nodes']);
             $control = collect($nodes)->firstWhere('control.path', ['photo'])['control'];
             $folder = app(Users::class)->userPhotoFolder($this->user);
 

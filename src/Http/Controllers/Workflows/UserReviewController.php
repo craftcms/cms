@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Workflows;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementEditorActions;
+use CraftCms\Cms\Http\Requests\ActivityCommentRequest;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Workflow\Data\WorkflowStageContext;
 use CraftCms\Cms\Workflow\Enums\WorkflowTransition;
@@ -70,7 +71,7 @@ class UserReviewController
             'message' => [
                 Rule::when($decision === UserReviewDecision::Rejected, 'required', 'nullable'),
                 'string',
-                'max:5000',
+                'max:'.ActivityCommentRequest::MaxLength,
             ],
         ]);
 

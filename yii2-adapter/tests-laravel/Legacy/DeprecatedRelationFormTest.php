@@ -11,12 +11,12 @@ use craft\services\Tags as TagsService;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Yii2Adapter\Form\Controls\LegacyHtmlControl;
-use CraftCms\Yii2Adapter\Form\LegacyHtml;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
+use CraftCms\Yii2Adapter\Ui\Controls\LegacyHtmlControl;
+use CraftCms\Yii2Adapter\Ui\LegacyHtml;
 use Mockery\MockInterface;
 
 class LegacyRelationElement extends Element
@@ -75,11 +75,11 @@ it('keeps persisted Category and Tag fields usable through legacy HTML islands',
             namespace: 'fields',
         );
 
-        $payload = app(FormResolver::class)->resolve(
-            Form::make([$settingsNode, $fieldNode]),
-            new FormContext(refreshable: true),
+        $payload = app(UiResolver::class)->resolve(
+            Ui::make([$settingsNode, $fieldNode]),
+            new UiContext(refreshable: true),
         );
-        $html = app(FormHtmlRenderer::class)->render($payload);
+        $html = app(UiHtmlRenderer::class)->render($payload);
         $fieldValue = $payload->values['fields'][$handle];
         assert(is_array($fieldValue));
 

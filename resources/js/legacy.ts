@@ -1,6 +1,4 @@
-import '../../cms-assets/resources/legacy/cp/dist/css/cp.css';
-
-/**
+/**src
  * Register the full `craft-*` element set, same as `cp.ts` does.
  *
  * Legacy-rendered pages emit components that aren't imported anywhere in this
@@ -23,14 +21,14 @@ import './modules/auth/components/totp/totp-form.js';
 import './modules/auth/components/recovery-codes/recovery-code-form.js';
 import {mountElevatedSessionHost} from './modules/auth/elevated-session';
 import {installMessages} from './modules/messages';
-import {defineDashboardWidgetSettingsFormHost} from './modules/forms/dashboard-widget-settings-form-host';
+import {defineDashboardWidgetSettingsUiHost} from './modules/ui/dashboard-widget-settings-ui-host';
 import {defineConditionBuilderHost} from './modules/conditions/condition-builder-host';
-import {defineEntryFieldLayoutFormHost} from './modules/forms/entry-field-layout-form-host';
-import {defineFieldSettingsFormHost} from './modules/forms/field-settings-form-host';
-import {defineTableFormHost} from './modules/forms/table-form-host';
-import {defineNestedElementsControlHost} from './modules/forms/nested-elements/nested-elements-control-host';
-import {defineInlineAttributeFormHost} from './modules/forms/inline-attribute-form-host';
-import {defineLayoutComponentSettingsFormHost} from './modules/forms/layout-component-settings-form-host';
+import {defineEntryFieldLayoutUiHost} from './modules/ui/entry-field-layout-ui-host';
+import {defineFieldSettingsUiHost} from './modules/ui/field-settings-ui-host';
+import {defineTableUiHost} from './modules/ui/table-ui-host';
+import {defineNestedElementsControlHost} from './modules/ui/nested-elements/nested-elements-control-host';
+import {defineInlineAttributeUiHost} from './modules/ui/inline-attribute-ui-host';
+import {defineLayoutComponentSettingsUiHost} from './modules/ui/layout-component-settings-ui-host';
 
 import './modules/listbox/index';
 import './modules/field-layout-designer/index';
@@ -83,22 +81,20 @@ Cp.init();
 // The Twig layout renders `<cp-messages>` and queues the flashed messages.
 installMessages();
 
-defineDashboardWidgetSettingsFormHost(Cp.$components);
-defineEntryFieldLayoutFormHost(Cp.$components);
+defineDashboardWidgetSettingsUiHost(Cp.$components);
+defineEntryFieldLayoutUiHost(Cp.$components);
 defineNestedElementsControlHost(Cp.$components);
 defineConditionBuilderHost(Cp.$components);
-defineInlineAttributeFormHost(Cp.$components);
-defineTableFormHost(Cp.$components);
-defineFieldSettingsFormHost(Cp.$components);
-defineLayoutComponentSettingsFormHost(Cp.$components);
+defineInlineAttributeUiHost(Cp.$components);
+defineTableUiHost(Cp.$components);
+defineFieldSettingsUiHost(Cp.$components);
+defineLayoutComponentSettingsUiHost(Cp.$components);
 
 mountElevatedSessionHost();
 
 /**
  * Components - dynamically imported after Craft is initialized
  */
-import('@craftcms/ui/components/nav-list/nav-list');
-import('@craftcms/ui/components/nav-item/nav-item');
 import('./modules/navigation/components/cp-global-sidebar.js');
 import('./modules/navigation/components/cp-queue-indicator.js');
 import('./modules/notifications/components/cp-notification-center.js');

@@ -3,7 +3,7 @@ import type {
   IndexVisitor,
   IndexRestore,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
-import {createCraftColumnHelper} from '@/modules/admin-table/helpers/createCraftColumnHelper';
+import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import type {SourceItem} from '@/modules/elements/types/sources';
 import type {ElementIndexRow} from '@/modules/elements/index/composables/useContentIndexData';

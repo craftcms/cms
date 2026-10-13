@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Field\Assets;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\NodePayload;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 
 /**
- * Maps every setting in a resolved Assets Form to whether it renders.
+ * Maps every setting in a resolved Assets UI to whether it renders.
  *
  * @param  list<NodePayload>  $nodes
  * @return array<string, bool>
@@ -39,10 +39,10 @@ function visibilityByName(array $nodes, bool $inheritedHidden = false): array
 function assetsSettingsVisibility(array $settings = []): array
 {
     $field = Fields::createField(['type' => Assets::class, 'settings' => $settings]);
-    $context = new FormContext(namespace: 'settings');
+    $context = new UiContext(namespace: 'settings');
 
     return visibilityByName(
-        app(FormResolver::class)->resolve($field->settingsForm($context), $context)->nodes,
+        app(UiResolver::class)->resolve($field->settingsUi($context), $context)->nodes,
     );
 }
 
@@ -100,8 +100,8 @@ it('keeps hidden settings in the payload so their values still post', function (
         'restrictLocation' => false,
         'restrictedLocationSubpath' => 'kept/while/hidden',
     ]]);
-    $context = new FormContext(namespace: 'settings');
-    $payload = app(FormResolver::class)->resolve($field->settingsForm($context), $context);
+    $context = new UiContext(namespace: 'settings');
+    $payload = app(UiResolver::class)->resolve($field->settingsUi($context), $context);
 
     expect(assetsSettingsVisibility()['restrictedLocationSubpath'])->toBeFalse()
         ->and($payload->values['settings']['restrictedLocationSubpath'])->toBe('kept/while/hidden');

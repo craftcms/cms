@@ -13,16 +13,16 @@ use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
-use CraftCms\Cms\Form\Contracts\Control;
-use CraftCms\Cms\Form\Controls\Number;
-use CraftCms\Cms\Form\Controls\Range as RangeControl;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\Nodes\Field as FormField;
 use CraftCms\Cms\Gql\Types\Number as NumberType;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Number;
+use CraftCms\Cms\Ui\Controls\Range as RangeControl;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Override;
@@ -49,21 +49,21 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
     }
 
     #[Override]
-    public function settingsForm(FormContext $context = new FormContext): Form
+    public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        return Form::make([
-            FormField::make(t('Min Value'), Number::make('min')->step('any')->value($this->min))->required(),
-            FormField::make(t('Max Value'), Number::make('max')->step('any')->value($this->max))->required(),
-            FormField::make(t('Step Size'), Number::make('step')->step('any')->value($this->step))->required(),
-            FormField::make(t('Default Value'), Number::make('defaultValue')->step('any')->value($this->defaultValue)),
-            FormField::make(t('Suffix Text'))
+        return Ui::make([
+            UiField::make(t('Min Value'), Number::make('min')->step('any')->value($this->min))->required(),
+            UiField::make(t('Max Value'), Number::make('max')->step('any')->value($this->max))->required(),
+            UiField::make(t('Step Size'), Number::make('step')->step('any')->value($this->step))->required(),
+            UiField::make(t('Default Value'), Number::make('defaultValue')->step('any')->value($this->defaultValue)),
+            UiField::make(t('Suffix Text'))
                 ->instructions(t('Text that should be shown after the input.'))
                 ->control(Text::make('suffix')->value($this->suffix)),
         ]);
     }
 
     #[Override]
-    public function formControl(FieldContext $context): Control
+    public function uiControl(FieldContext $context): Control
     {
         return RangeControl::make($context->path)
             ->min($this->min)

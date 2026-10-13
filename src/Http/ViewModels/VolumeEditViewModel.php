@@ -10,23 +10,23 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\FieldLayoutDesigner;
-use CraftCms\Cms\Form\Controls\Handle;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\HiddenField;
-use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Controls\FieldLayoutDesigner;
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 
 use function CraftCms\Cms\t;
 
@@ -39,13 +39,13 @@ class VolumeEditViewModel extends ViewModel
     public function __construct(
         private readonly Volume $volume,
         private readonly Volumes $volumes,
-        private readonly FormResolver $formResolver,
+        private readonly UiResolver $uiResolver,
         private readonly AssetTransformers $assetTransformers,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
     ) {}
 
-    public function form(): FormPayload
+    public function ui(): UiPayload
     {
         $values = $this->values ?? $this->initialValues();
         $handle = Handle::make('handle');
@@ -66,7 +66,7 @@ class VolumeEditViewModel extends ViewModel
             $handle->source('name');
         }
 
-        $form = Form::make([
+        $ui = Ui::make([
             HiddenField::make('volumeId'),
             Field::make(t('Name'), Text::make('name')->autofocus())->required(),
             Field::make(t('Handle'), $handle)->required(),
@@ -98,7 +98,7 @@ class VolumeEditViewModel extends ViewModel
         ]);
 
         if (Sites::isMultiSite()) {
-            $form->add(
+            $ui->add(
                 Separator::make('translation-separator'),
                 Field::make(
                     t('{name} Translation Method', ['name' => t('Title')]),
@@ -107,7 +107,7 @@ class VolumeEditViewModel extends ViewModel
             );
 
             if (($values['titleTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
-                $form->add(Group::make('volume-title-translation-settings', [
+                $ui->add(Group::make('volume-title-translation-settings', [
                     Field::make(
                         t('{name} Translation Key Format', ['name' => t('Title')]),
                         Text::make('titleTranslationKeyFormat')
@@ -121,13 +121,13 @@ class VolumeEditViewModel extends ViewModel
                 ])->dependsOn('titleTranslationMethod'));
             }
 
-            $form->add(Field::make(
+            $ui->add(Field::make(
                 t('{name} Translation Method', ['name' => t('Alternative Text')]),
                 Choice::make('altTranslationMethod')->options(TranslationMethod::asOptions())->reactive(),
             )->instructions(t('How should {name} values be translated?', ['name' => t('Alternative Text')])));
 
             if (($values['altTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
-                $form->add(Group::make('volume-alt-translation-settings', [
+                $ui->add(Group::make('volume-alt-translation-settings', [
                     Field::make(
                         t('{name} Translation Key Format', ['name' => t('Alternative Text')]),
                         Text::make('altTranslationKeyFormat')
@@ -142,7 +142,7 @@ class VolumeEditViewModel extends ViewModel
             }
         }
 
-        $form->add(
+        $ui->add(
             Separator::make('field-layout-separator'),
             Field::make(null, FieldLayoutDesigner::make('fieldLayout')
                 ->elementType(Asset::class)
@@ -150,7 +150,7 @@ class VolumeEditViewModel extends ViewModel
                 ->withCardViewDesigner()),
         );
 
-        return $this->formResolver->resolve($form, new FormContext(
+        return $this->uiResolver->resolve($ui, new UiContext(
             values: $values,
             errors: $this->volume->errors()->getMessages(),
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
@@ -171,7 +171,7 @@ class VolumeEditViewModel extends ViewModel
     {
         return $this->readOnly
             ? null
-            : action([VolumesController::class, 'renderForm']);
+            : action([VolumesController::class, 'renderUi']);
     }
 
     /** @return array<string, mixed> */

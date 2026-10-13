@@ -7,23 +7,23 @@ namespace CraftCms\Cms\Http\ViewModels;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cp\SelectOptions;
-use CraftCms\Cms\Form\Controls\Choice;
-use CraftCms\Cms\Form\Controls\Combobox;
-use CraftCms\Cms\Form\Controls\Combobox\CreateOption as ComboboxCreateOption;
-use CraftCms\Cms\Form\Controls\Lightswitch;
-use CraftCms\Cms\Form\Controls\Text;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormPayload;
-use CraftCms\Cms\Form\FormResolver;
-use CraftCms\Cms\Form\Nodes\Field;
-use CraftCms\Cms\Form\Nodes\Group;
-use CraftCms\Cms\Form\Nodes\Heading;
-use CraftCms\Cms\Form\Nodes\HiddenField;
-use CraftCms\Cms\Form\Nodes\Separator;
 use CraftCms\Cms\Http\Controllers\Settings\Users\UserSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Controls\Combobox\CreateOption as ComboboxCreateOption;
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\Ui\Nodes\Heading;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Data\UserSettings;
 use CraftCms\Cms\User\Elements\User;
@@ -41,17 +41,17 @@ class UserSettingsViewModel extends ViewModel
         private readonly UserSettings $settings,
         private readonly Volumes $volumes,
         private readonly UserGroups $userGroups,
-        private readonly FormResolver $formResolver,
+        private readonly UiResolver $uiResolver,
         private readonly bool $canRequire2fa,
         private readonly bool $canManagePublicRegistration,
         private readonly bool $readOnly,
         private readonly ?array $values = null,
     ) {}
 
-    public function form(): FormPayload
+    public function ui(): UiPayload
     {
         $values = $this->values ?? $this->initialValues();
-        $form = Form::make([
+        $ui = Ui::make([
             Heading::make('user-photos-heading', t('User Photos')),
             Heading::make('user-photo-location-heading', t('User Photo Location'))
                 ->level(3)
@@ -76,7 +76,7 @@ class UserSettingsViewModel extends ViewModel
         ]);
 
         if ($this->canRequire2fa) {
-            $form->add(
+            $ui->add(
                 Separator::make('security-separator'),
                 Heading::make('security-heading', t('Security')),
                 Field::make(
@@ -87,7 +87,7 @@ class UserSettingsViewModel extends ViewModel
         }
 
         if ($this->canManagePublicRegistration) {
-            $form->add(
+            $ui->add(
                 Field::make(
                     t('Verify email addresses'),
                     Lightswitch::make('requireEmailVerification'),
@@ -121,11 +121,11 @@ class UserSettingsViewModel extends ViewModel
                     HiddenField::make('defaultGroup'),
                 ];
 
-            $form->add(Group::make('public-registration-settings', $registrationSettings)
+            $ui->add(Group::make('public-registration-settings', $registrationSettings)
                 ->dependsOn('allowPublicRegistration'));
         }
 
-        return $this->formResolver->resolve($form, new FormContext(
+        return $this->uiResolver->resolve($ui, new UiContext(
             values: $values,
             mode: $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
             refreshable: ! $this->readOnly && $this->canManagePublicRegistration,
@@ -145,7 +145,7 @@ class UserSettingsViewModel extends ViewModel
     {
         return $this->readOnly || ! $this->canManagePublicRegistration
             ? null
-            : action([UserSettingsController::class, 'renderForm']);
+            : action([UserSettingsController::class, 'renderUi']);
     }
 
     /** @return array<string, mixed> */

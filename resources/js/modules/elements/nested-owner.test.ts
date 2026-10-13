@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vite-plus/test';
 import {nestedOwnerContext} from './nested-owner';
-import type {FormPayload} from '@/modules/forms/types';
+import type {UiPayload} from '@/modules/ui/types';
 
 describe('nestedOwnerId', () => {
   it('resolves the requested nested block owner rather than the root element', () => {
@@ -40,7 +40,7 @@ describe('nestedOwnerId', () => {
             component: 'craft:nested-element-blocks',
             mode: 'editable',
             path: ['fields', 'blocks'],
-            forms: [
+            uis: [
               {
                 scope: [],
                 refreshable: false,
@@ -67,7 +67,7 @@ describe('nestedOwnerId', () => {
           },
         },
       ],
-    } as FormPayload;
+    } as UiPayload;
 
     expect(nestedOwnerContext(form, ['fields', 'cards'])).toMatchObject({
       ownerId: 31,

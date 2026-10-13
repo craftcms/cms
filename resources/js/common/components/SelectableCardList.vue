@@ -21,7 +21,7 @@
    * The frame only — the card, its select checkbox, the drag handle and drop
    * shadow, and where actions go. What goes *in* a card is the consumer's:
    * the element index slots in server-rendered HTML, a Matrix field slots in a
-   * live nested form. Everything list-shaped that isn't the frame (empty
+   * live nested UI. Everything list-shaped that isn't the frame (empty
    * states, select-all, add buttons, grid sizing) stays with the consumer too.
    */
   const props = withDefaults(

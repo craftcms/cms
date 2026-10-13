@@ -39,10 +39,10 @@ it('exposes the authenticated MCP connection settings', function () {
 
     get(route('craft.cp.settings.mcp.index'))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Form')
-            ->where('form.values.endpoint', route('craft.cp.mcp.server'))
-            ->where('form.values.publicEnabled', false)
-            ->where('form.values.publicRoute', '/mcp'))
+            ->component('Ui')
+            ->where('ui.values.endpoint', route('craft.cp.mcp.server'))
+            ->where('ui.values.publicEnabled', false)
+            ->where('ui.values.publicRoute', '/mcp'))
         ->assertOk();
 });
 
@@ -129,14 +129,14 @@ it('discovers plugin capabilities in settings and requires approval before servi
 
     get(route('craft.cp.settings.mcp.index'))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('form.nodes', function ($nodes) use ($property, $identity, $label): bool {
+            ->where('ui.nodes', function ($nodes) use ($property, $identity, $label): bool {
                 $field = collect($nodes)->firstWhere('control.path', [$property]);
                 $permissions = $field['control']['props']['groups'][0]['permissions'] ?? [];
 
                 return ($permissions[$identity]['label'] ?? null) === $label
                     && ! isset($permissions['example.manage']);
             })
-            ->where("form.values.$property", []));
+            ->where("ui.values.$property", []));
 
     post(route('craft.cp.settings.mcp.store'), $settings->toArray())
         ->assertRedirect()

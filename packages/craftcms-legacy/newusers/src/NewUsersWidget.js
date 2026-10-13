@@ -84,7 +84,7 @@
             var chartSettings = {
               orientation: response.data.orientation,
               dataScale: response.data.scale,
-              formats: response.data.formats,
+              formats: response.data.uiats,
             };
 
             this.chart.draw(chartDataTable, chartSettings);

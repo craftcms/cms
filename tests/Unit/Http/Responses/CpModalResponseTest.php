@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Form\Form;
-use CraftCms\Cms\Form\Nodes\HiddenField;
 use CraftCms\Cms\Http\Responses\CpModalResponse;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Ui;
 use Illuminate\Http\Request;
 use Symfony\Component\DomCrawler\Crawler;
 use Twig\Markup;
@@ -21,13 +21,13 @@ it('accepts markup for html sections', function (string $method, string $propert
     ['errorSummary', 'errorSummary'],
 ]);
 
-it('renders Forms and legacy HTML under the same modal namespace', function () {
+it('renders UIs and legacy HTML under the same modal namespace', function () {
     InputNamespace::set('outer');
 
     $response = new CpModalResponse()
         ->action('entries/reassign')
         ->contentHtml(fn () => '<input name="legacy" value="kept">')
-        ->form(Form::make([
+        ->ui(Ui::make([
             HiddenField::make('hardDelete'),
             HiddenField::make(['oldUserIds', '0']),
             HiddenField::make(['oldUserIds', '1']),
@@ -46,10 +46,10 @@ it('renders Forms and legacy HTML under the same modal namespace', function () {
     ])->and(InputNamespace::get())->toBe('outer');
 });
 
-it('allows a Form to be configured during modal preparation', function () {
+it('allows a UI to be configured during modal preparation', function () {
     $request = Request::create('/', server: ['HTTP_X_CRAFT_CONTAINER_ID' => 'modal']);
     $response = new CpModalResponse()->prepareModal(function (CpModalResponse $response) {
-        $response->form(Form::make([HiddenField::make('token')]), ['token' => 'prepared']);
+        $response->ui(Ui::make([HiddenField::make('token')]), ['token' => 'prepared']);
     });
 
     $data = $response->toResponse($request)->getData(true);

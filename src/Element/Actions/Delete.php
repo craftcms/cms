@@ -9,8 +9,10 @@ use CraftCms\Cms\Element\Contracts\DeleteActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\Workflows;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Override;
@@ -209,11 +211,16 @@ JS, [
             }
         }
 
-        foreach ($deleteOwnership as $ownerId => $elementIds) {
-            DB::table(Table::ELEMENTS_OWNERS)
-                ->whereIn('elementId', $elementIds)
-                ->where('ownerId', $ownerId)
-                ->delete();
+        foreach ($deleteOwnership as $ownerId => $data) {
+            $owner = $data['owner'];
+            Workflows::withContentChangeLock(Drafts::getDraftIdsForElement($owner), function () use ($ownerId, $data, $owner): void {
+                DB::table(Table::ELEMENTS_OWNERS)
+                    ->whereIn('elementId', $data['elementIds'])
+                    ->where('ownerId', $ownerId)
+                    ->delete();
+
+                Elements::touchElementAndOwners($owner);
+            });
         }
 
         if ($failedElementIds !== []) {
@@ -238,7 +245,7 @@ JS, [
     }
 
     /**
-     * @param  array<int, array<int|null>>  $deleteOwnership
+     * @param  array<int, array{owner: ElementInterface, elementIds: list<int|null>}>  $deleteOwnership
      */
     private function deleteElement(
         ElementInterface $element,
@@ -248,9 +255,13 @@ JS, [
         if (! $this->hard && $element instanceof NestedElementInterface) {
             $ownerId = $element->getOwnerId();
             if ($ownerId && $element->getPrimaryOwnerId() !== $ownerId) {
-                $deleteOwnership[$ownerId][] = $element->id;
+                $owner = $deleteOwnership[$ownerId]['owner'] ?? $element->getOwner();
+                if ($owner !== null) {
+                    $deleteOwnership[$ownerId] ??= ['owner' => $owner, 'elementIds' => []];
+                    $deleteOwnership[$ownerId]['elementIds'][] = $element->id;
 
-                return true;
+                    return true;
+                }
             }
         }
 

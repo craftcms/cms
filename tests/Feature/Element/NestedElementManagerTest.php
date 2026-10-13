@@ -27,16 +27,16 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
-use CraftCms\Cms\Form\Controls\NestedElements;
-use CraftCms\Cms\Form\Enums\ControlMode;
-use CraftCms\Cms\Form\FormContext;
-use CraftCms\Cms\Form\FormHtmlRenderer;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Ui\Controls\NestedElements;
+use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
@@ -466,9 +466,9 @@ it('passes Matrix content to the native control in HTML forms', function (string
     $payload = app(FieldLayoutCompiler::class)->compile(
         $owner->getFieldLayout(),
         $owner,
-        new FormContext(namespace: ['editor'], mode: $mode),
+        new UiContext(namespace: ['editor'], mode: $mode),
     );
-    $host = new Crawler(app(FormHtmlRenderer::class)->render($payload))->filter('craft-nested-elements-control');
+    $host = new Crawler(app(UiHtmlRenderer::class)->render($payload))->filter('craft-nested-elements-control');
     $control = json_decode($host->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
     $elements = $viewMode === Matrix::VIEW_MODE_INDEX ? $control['props']['index']['initial']['data'] : $control['props']['cards'];
 
@@ -566,7 +566,7 @@ it('provides permitted card menu events for the hosting field', function (bool $
 it('builds a shared nested elements control for attribute-backed owners', function (string $viewMode) {
     $user = UserModel::factory()->createElement();
 
-    $control = $user->getAddressManager()->formControl('addresses', $user, $viewMode, [
+    $control = $user->getAddressManager()->uiControl('addresses', $user, $viewMode, [
         'showInGrid' => true,
         'canCreate' => true,
     ]);
@@ -605,7 +605,7 @@ it('builds the shared control for plugin nested element types', function () {
         ],
     );
 
-    $control = $manager->formControl('pluginItems', $user, 'cards', ['canCreate' => true]);
+    $control = $manager->uiControl('pluginItems', $user, 'cards', ['canCreate' => true]);
 
     expect($control)->toBeInstanceOf(NestedElements::class)
         ->and($control->component())->toBe('craft:nested-elements')
@@ -619,7 +619,7 @@ it('builds the shared control for plugin nested element types', function () {
 it('explains why a nested elements control is unavailable for unsaved owners', function () {
     $user = UserModel::factory()->createElement();
 
-    $props = $user->getAddressManager()->formControl('addresses', new User, 'cards')->props();
+    $props = $user->getAddressManager()->uiControl('addresses', new User, 'cards')->props();
 
     expect($props['manager'])->toBeNull()
         ->and($props['cards'])->toBe([])

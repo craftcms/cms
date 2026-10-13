@@ -136,13 +136,13 @@ function swapUrlRequest(string $uri, string $method = 'GET', array $parameters =
  * @param  list<array<string, mixed>>  $nodes
  * @return list<array<string, mixed>>
  */
-function flattenFormNodes(array $nodes): array
+function flattenUiNodes(array $nodes): array
 {
     $flattened = [];
 
     foreach ($nodes as $node) {
         $flattened[] = $node;
-        array_push($flattened, ...flattenFormNodes($node['children'] ?? []));
+        array_push($flattened, ...flattenUiNodes($node['children'] ?? []));
     }
 
     return $flattened;

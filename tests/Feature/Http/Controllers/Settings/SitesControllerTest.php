@@ -12,10 +12,10 @@ use CraftCms\Cms\Site\Models\SiteGroup;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\deleteJson;
@@ -36,7 +36,7 @@ it('requires authentication', function () {
     get(action([SitesController::class, 'index']))->assertRedirect();
     get(action([SitesController::class, 'create']))->assertRedirect();
     get(action([SitesController::class, 'edit'], [Site::first()->id]))->assertRedirect();
-    postJson(action([SitesController::class, 'renderForm']))->assertUnauthorized();
+    postJson(action([SitesController::class, 'renderUi']))->assertUnauthorized();
     postJson(action([SitesController::class, 'store']))->assertUnauthorized();
     postJson(action([SitesController::class, 'reorder']))->assertUnauthorized();
     deleteJson(action([SitesController::class, 'destroy'], [Site::first()->id]))->assertUnauthorized();
@@ -45,18 +45,25 @@ it('requires authentication', function () {
 it('requires admin changes', function () {
     Cms::config()->allowAdminChanges = false;
 
-    // Read only
+    get(action([SitesController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('ui.nodes.0.props.createUrl', null)
+            ->where('ui.nodes.0.props.deletable', false)
+            ->where('ui.nodes.0.props.reorderUrl', null)
+            ->missing('ui.nodes.0.props.rows.0._deleteUrl')
+            ->where('ui.nodes.0.props.rows.0.name.url', route('craft.cp.settings.sites.edit', ['site' => Site::first()->id])));
+
     $this->get(action([SitesController::class, 'edit'], [Site::first()->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/sites/Edit')
-            ->where('form.nodes', fn ($nodes): bool => collect(flattenFormNodes(collect($nodes)->all()))
+            ->where('ui.nodes', fn ($nodes): bool => collect(flattenUiNodes(collect($nodes)->all()))
                 ->whereNotNull('control')
                 ->every(fn (array $node): bool => $node['control']['mode'] === 'readOnly')));
 
     // Not allowed
     get(action([SitesController::class, 'create']))->assertForbidden();
     postJson(action([SitesController::class, 'store']))->assertForbidden();
-    postJson(action([SitesController::class, 'renderForm']))->assertForbidden();
+    postJson(action([SitesController::class, 'renderUi']))->assertForbidden();
     postJson(action([SitesController::class, 'reorder']))->assertForbidden();
     deleteJson(action([SitesController::class, 'destroy'], [Site::first()->id]))->assertForbidden();
 });
@@ -66,49 +73,78 @@ test('index validates group id when passed', function () {
 });
 
 test('index shows all sites', function () {
-    $this->sites->saveSite(new SiteData([
+    $this->sites->saveSite($newSite = new SiteData([
         'name' => 'New site',
         'handle' => 'newSite',
         'language' => 'nl',
+        'enabled' => false,
+        'baseUrl' => 'https://example.com/?a=1&b=2',
         'groupId' => SiteGroup::first()->id,
     ]));
 
     $this->get(action([SitesController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page->component('settings/sites/Index')
-            ->has('sites.0', fn (AssertableInertia $page) => $page->where('id', Site::first()->id)->etc())
+            ->has('ui.nodes.0.props.rows', 2)
+            ->where('ui.nodes.0.props.rows.0.id', Site::first()->id)
+            ->where('ui.nodes.0.props.rows.0.primary.label', 'Yes')
+            ->where('ui.nodes.0.props.rows.0._deletable', false)
+            ->where('ui.nodes.0.props.rows.0._deleteDisabledReason', 'You cannot delete the primary site.')
+            ->where('ui.nodes.0.props.rows.1.id', $newSite->id)
+            ->where('ui.nodes.0.props.rows.1.name.label', 'New site')
+            ->where('ui.nodes.0.props.rows.1.name.url', route('craft.cp.settings.sites.edit', ['site' => $newSite->id]))
+            ->where('ui.nodes.0.props.rows.1.handle.html', fn (string $html): bool => new Crawler($html)->filter('code')->text() === 'newSite')
+            ->where('ui.nodes.0.props.rows.1.language.html', fn (string $html): bool => new Crawler($html)->filter('code')->text() === 'nl')
+            ->where('ui.nodes.0.props.rows.1.status.html', fn (string $html): bool => new Crawler($html)->filter('craft-badge')->text() === 'Disabled')
+            ->where('ui.nodes.0.props.rows.1.baseUrl.html', fn (string $html): bool => new Crawler($html)->filter('code')->text() === 'https://example.com/?a=1&b=2/')
+            ->where('ui.nodes.0.props.rows.1.group', SiteGroup::first()->name)
+            ->where('ui.nodes.0.props.rows.1.primary', null)
+            ->where('ui.nodes.0.props.rows.1._deletable', true)
+            ->where('ui.nodes.0.props.rows.1._deleteUrl', route('craft.cp.settings.sites.destroy', ['site' => $newSite->id]))
+            ->where('ui.nodes.0.props.reorderUrl', null)
         );
 });
 
 test('index can filter by group', function () {
     $this->siteGroups->saveGroup($group = new CraftCms\Cms\Site\Data\SiteGroup(['name' => 'New group']));
 
-    $this->sites->saveSite(new SiteData([
+    $this->sites->saveSite($newSite = new SiteData([
         'name' => 'New site',
         'handle' => 'newSite',
         'language' => 'nl',
         'groupId' => $group->id,
     ]));
 
-    $this->get(action([SitesController::class, 'index'], ['groupId' => $group->id]))
+    $response = $this->get(action([SitesController::class, 'index'], ['groupId' => $group->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/sites/Index')
+            ->has('ui.nodes.0.props.rows', 1)
+            ->where('ui.nodes.0.props.rows.0.id', $newSite->id)
+            ->where('ui.nodes.0.props.reorderUrl', route('craft.cp.settings.sites.reorder'))
+            ->where('ui.nodes.0.props.createUrl', route('craft.cp.settings.sites.create', ['groupId' => $group->id]))
             ->has('group', fn (AssertableInertia $page) => $page
                 ->where('id', $group->id)
                 ->where('name', $group->name)
                 ->etc()
             )
         );
+
+    $navigation = collect($response->inertiaProps('subnav'))->firstWhere('label', 'New group');
+    parse_str(parse_url($navigation['href'], PHP_URL_QUERY), $query);
+
+    expect($navigation['selected'])->toBeTrue()
+        ->and(parse_url($navigation['href'], PHP_URL_PATH))->toBe(route('craft.cp.settings.sites.index', absolute: false))
+        ->and($query['groupId'])->toBe((string) $group->id);
 });
 
 test('create can be loaded', function () {
     get(action([SitesController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/sites/Edit')
-            ->where('form.values.siteId', null)
-            ->where('form.values.group', SiteGroup::first()->id)
-            ->where('form.refreshable', true)
+            ->where('ui.values.siteId', null)
+            ->where('ui.values.group', SiteGroup::first()->id)
+            ->where('ui.refreshable', true)
             ->where('submit.url', action([SitesController::class, 'store']))
-            ->where('refreshUrl', action([SitesController::class, 'renderForm'])))
+            ->where('refreshUrl', action([SitesController::class, 'renderUi'])))
         ->assertOk();
 });
 
@@ -130,11 +166,11 @@ test('it can edit a site', function () {
     get(action([SitesController::class, 'edit'], [$site->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/sites/Edit')
-            ->where('form.values.siteId', $site->id)
-            ->where('form.values.name', $site->getName(false))
-            ->where('form.values.language', $site->getLanguage(false))
-            ->where('form.values.baseUrl', $site->getBaseUrl(false))
-            ->where('form.values.primary', true)
+            ->where('ui.values.siteId', $site->id)
+            ->where('ui.values.name', $site->getName(false))
+            ->where('ui.values.language', $site->getLanguage(false))
+            ->where('ui.values.baseUrl', $site->getBaseUrl(false))
+            ->where('ui.values.primary', true)
         );
 });
 
@@ -151,18 +187,18 @@ it('refreshes base URL visibility from current form values', function () {
         'baseUrl' => '',
     ];
 
-    $withoutBaseUrl = postJson(action([SitesController::class, 'renderForm']), [
+    $withoutBaseUrl = postJson(action([SitesController::class, 'renderUi']), [
         'values' => $values,
         'scope' => [],
-    ])->json('form.nodes');
+    ])->json('ui.nodes');
 
-    $withBaseUrl = postJson(action([SitesController::class, 'renderForm']), [
+    $withBaseUrl = postJson(action([SitesController::class, 'renderUi']), [
         'values' => [...$values, 'hasUrls' => true],
         'scope' => [],
-    ])->json('form.nodes');
+    ])->json('ui.nodes');
 
-    expect(collect(flattenFormNodes($withoutBaseUrl))->pluck('control.path'))->not->toContain(['baseUrl'])
-        ->and(collect(flattenFormNodes($withBaseUrl))->pluck('control.path'))->toContain(['baseUrl']);
+    expect(collect(flattenUiNodes($withoutBaseUrl))->pluck('control.path'))->not->toContain(['baseUrl'])
+        ->and(collect(flattenUiNodes($withBaseUrl))->pluck('control.path'))->toContain(['baseUrl']);
 });
 
 it('404s when a site does not exist', function () {
@@ -259,7 +295,7 @@ test('group is required', function () {
     ])->assertSessionHasErrors('group');
 });
 
-it('can reorder sites', function () {
+it('can reorder sites', function (bool $json) {
     $this->sites->saveSite($newSite = new SiteData([
         'name' => 'New site',
         'handle' => 'newSite',
@@ -274,16 +310,19 @@ it('can reorder sites', function () {
     expect($newSite->sortOrder)->toBe(2);
     expect($defaultSite->sortOrder)->toBe(1);
 
-    postJson(action([SitesController::class, 'reorder']), [
-        'ids' => Json::encode([
-            $newSite->id,
-            Site::first()->id,
-        ]),
-    ])->assertRedirectBack();
+    $response = ($json ? postJson(...) : post(...))(action([SitesController::class, 'reorder']), [
+        'ids' => [$newSite->id, $defaultSite->id],
+    ]);
+
+    if ($json) {
+        $response->assertOk()->assertJsonPath('message', 'New order saved.');
+    } else {
+        $response->assertRedirectBack();
+    }
 
     expect(Site::findOrFail($newSite->id)->sortOrder)->toBe(1);
     expect($defaultSite->fresh()->sortOrder)->toBe(2);
-});
+})->with(['JSON' => [true], 'Form redirect' => [false]]);
 
 it('validates site deletion intent', function (array $input, string $field) {
     $this->sites->saveSite($newSite = new SiteData([

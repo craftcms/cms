@@ -9,7 +9,7 @@ use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\ElementConditionGroup;
-use CraftCms\Yii2Adapter\Form\LegacyConditionClasses;
+use CraftCms\Yii2Adapter\Ui\LegacyConditionClasses;
 
 /** @deprecated 6.0.0 Use \CraftCms\Cms\Element\Conditions\ElementCondition instead. */
 class ElementCondition extends \CraftCms\Cms\Element\Conditions\ElementCondition

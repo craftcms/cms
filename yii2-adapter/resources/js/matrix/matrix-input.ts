@@ -32,7 +32,7 @@ import {
   rememberCollapsedBlock,
   setCollapsedBlockIds,
 } from '@/modules/matrix/collapsed-blocks';
-import type {FormValues} from '@/modules/forms/types';
+import type {UiValues} from '@/modules/ui/types';
 import {
   type CopiedElementInfo,
   type LegacyElementEditor,
@@ -89,7 +89,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
   };
 
   // The legacy statics PHP-emitted flash JS still calls. The storage itself
-  // lives in ./collapsed-blocks, shared with the Form control.
+  // lives in ./collapsed-blocks, shared with the UI control.
   static getCollapsedEntryIds = collapsedBlockIds;
 
   static setCollapsedEntryIds = setCollapsedBlockIds;
@@ -566,7 +566,7 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     type: string,
     insertBefore?: HTMLElement | null,
     autofocus = true,
-    params: FormValues = {}
+    params: UiValues = {}
   ): Promise<void> {
     if (!this.canAddMoreEntries()) {
       this.updateStatusMessage();

@@ -64,5 +64,5 @@ it('records safe asset file replacement facts', function () {
             'newSize' => 11,
         ])
         ->and(app(Activities::class)->format($event))
-        ->toBe('Replaced original.txt with replacement.txt.');
+        ->toBe('Replaced original.txt with replacement.txt');
 });

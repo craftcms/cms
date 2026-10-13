@@ -1,0 +1,127 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\ActionMenu;
+use CraftCms\Cms\Ui\Nodes\CopyAttribute;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
+use Symfony\Component\DomCrawler\Crawler;
+
+/** @param  list<array<string, mixed>>  $items */
+function actionMenuUi(array $items, ?CopyAttribute $chip = null): Ui
+{
+    $nodes = [ActionMenu::make('field-actions:label:menu', $items)];
+
+    if ($chip !== null) {
+        $nodes[] = $chip;
+    }
+
+    return Ui::make([
+        Field::make('Label', Text::make('label'))->actions(...$nodes),
+    ]);
+}
+
+it('converts menu-item configs into JSON-safe client descriptors', function () {
+    $node = ActionMenu::make('menu', [
+        [
+            'icon' => 'gear',
+            'label' => 'Field settings',
+            'color' => Color::Red,
+            'action' => ['type' => 'event', 'name' => 'craft:edit-field', 'detail' => ['fieldId' => 7]],
+        ],
+    ]);
+
+    $items = $node->props()['items'];
+
+    expect($items)->toHaveCount(1)
+        ->and($items[0]['label'])->toBe('Field settings')
+        ->and($items[0]['icon'])->toBe('gear')
+        // Enums must be unwrapped — UiResolver::ensureJsonSafe() rejects objects.
+        ->and($items[0]['iconColor'])->toBe(Color::Red->value)
+        ->and($items[0]['action'])->toBe([
+            'type' => 'event',
+            'name' => 'craft:edit-field',
+            'detail' => ['fieldId' => 7],
+        ])
+        // IDs are mt_rand()-generated; leaving them in props would make the
+        // payload differ on every render of a refreshable UI.
+        ->and($items[0])->not->toHaveKey('id')
+        ->and(json_encode($node->props()))->toBeString();
+});
+
+it('converts a string action into an http descriptor', function () {
+    $items = ActionMenu::make('menu', [
+        ['label' => 'Delete', 'action' => 'fields/delete', 'params' => ['id' => 3]],
+    ])->props()['items'];
+
+    expect($items[0]['action']['type'])->toBe('http')
+        ->and($items[0]['action']['method'])->toBe('POST')
+        ->and($items[0]['action']['url'])->toContain('fields/delete')
+        ->and($items[0]['action']['body'])->toBe(['id' => 3]);
+});
+
+it('moves destructive items behind a separator and trims stray rules', function () {
+    $items = ActionMenu::make('menu', [
+        ['type' => 'hr'],
+        ['label' => 'Settings'],
+        ['label' => 'Remove', 'destructive' => true],
+        ['type' => 'hr'],
+    ])->props()['items'];
+
+    expect(array_column($items, 'type'))->toBe(['button', 'hr', 'button'])
+        ->and($items[0]['label'])->toBe('Settings')
+        ->and($items[2]['label'])->toBe('Remove')
+        ->and($items[2]['variant'])->toBe('danger');
+});
+
+it('resolves into the field’s actions slot as a control-less node', function () {
+    $payload = app(UiResolver::class)->resolve(
+        actionMenuUi([['label' => 'Field settings', 'icon' => 'gear']]),
+        new UiContext,
+    );
+    $field = $payload->nodes[0];
+
+    expect($field->props['hasActions'])->toBeTrue()
+        ->and($field->children)->toHaveCount(1)
+        ->and($field->children[0]->component)->toBe('craft:action-menu')
+        ->and($field->children[0]->uid)->toBe('field-actions:label:menu')
+        ->and($field->children[0]->control)->toBeNull();
+});
+
+it('rejects two action menus sharing a UID', function () {
+    $ui = Ui::make([
+        Field::make('One', Text::make('one'))->actions(ActionMenu::make('dupe', [['label' => 'A']])),
+        Field::make('Two', Text::make('two'))->actions(ActionMenu::make('dupe', [['label' => 'B']])),
+    ]);
+
+    expect(fn () => app(UiResolver::class)->resolve($ui, new UiContext))
+        ->toThrow(InvalidArgumentException::class, 'Duplicate Node UID [dupe]');
+});
+
+it('renders a craft-action-menu with declarative action items in the HTML fallback', function () {
+    $payload = app(UiResolver::class)->resolve(
+        actionMenuUi(
+            [['label' => 'Copy field handle', 'icon' => 'clipboard', 'action' => ['type' => 'clipboard', 'value' => 'body']]],
+            CopyAttribute::make('field-actions:label:handle', 'body'),
+        ),
+        new UiContext,
+    );
+
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+    $menu = $crawler->filter('craft-field craft-action-menu[data-ui-node="field-actions:label:menu"]');
+    $item = $menu->filter('craft-action-item');
+
+    expect($menu->count())->toBe(1)
+        ->and($menu->filter('[slot="invoker"]')->count())->toBe(1)
+        ->and($item->count())->toBe(1)
+        ->and($item->text())->toContain('Copy field handle')
+        ->and($item->attr('icon'))->toBe('clipboard')
+        ->and(json_decode($item->attr('action'), true))->toBe(['type' => 'clipboard', 'value' => 'body'])
+        ->and($crawler->filter('craft-copy-attribute[value="body"]')->count())->toBe(1);
+});
