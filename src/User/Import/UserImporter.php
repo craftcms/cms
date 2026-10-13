@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\ImportLog;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -92,7 +93,6 @@ class UserImporter extends ElementImporter
                 return;
             }
 
-            // deal with groups
             if (Edition::isAtLeast(Edition::Pro)) {
                 event(new UserGroupsAndPermissionsAssigning($user));
 
@@ -111,6 +111,16 @@ class UserImporter extends ElementImporter
                 event(new GroupsAndPermissionsAssigned($user));
             }
         });
+    }
+
+    #[Override]
+    protected function isPropertyAvailable(array $prop): bool
+    {
+        return match ($prop['name']) {
+            'groups' => Edition::isAtLeast(Edition::Pro),
+            'affiliatedSiteId' => Sites::isMultiSite(),
+            default => parent::isPropertyAvailable($prop),
+        };
     }
 
     /** @return UserGroup[] */

@@ -122,3 +122,45 @@ it('offers enabled but not parentId on the mapping screen for non-structured ele
     'Asset' => [AssetImporter::class],
     'User' => [UserImporter::class],
 ]);
+
+it('offers user groups on the mapping screen only on Craft Pro', function (Edition $edition, bool $offered) {
+    Edition::set($edition);
+
+    $handles = collect(UserImporter::create()->getDestinationCols())->pluck('handle');
+
+    expect($handles->contains('groups'))->toBe($offered);
+})->with([
+    'Solo' => [Edition::Solo, false],
+    'Pro' => [Edition::Pro, true],
+]);
+
+it('offers the affiliated site on the mapping screen only on multi-site installs', function () {
+    $handles = collect(UserImporter::create()->getDestinationCols())->pluck('handle');
+
+    expect($handles)->not->toContain('affiliatedSiteId');
+
+    SiteModel::factory()->create();
+    Sites::refreshSites();
+
+    $handles = collect(UserImporter::create()->getDestinationCols())->pluck('handle');
+
+    expect($handles)->toContain('affiliatedSiteId');
+});
+
+it('imports the affiliated site only on multi-site installs', function (bool $isMultiSite) {
+    $site = $isMultiSite ? Sites::getSiteById(SiteModel::factory()->create()->id) : Sites::getPrimarySite();
+    Sites::refreshSites();
+
+    app(Import::class)->importItem(UserImporter::create()->site(Sites::getPrimarySite()->handle)->transformer(null), [
+        'username' => 'importeduser',
+        'email' => 'imported@example.com',
+        'affiliatedSiteId' => $site->id,
+    ]);
+
+    $user = UserElement::find()->username('importeduser')->one();
+
+    expect($user->affiliatedSiteId)->toBe($isMultiSite ? $site->id : null);
+})->with([
+    'single site' => [false],
+    'multi-site' => [true],
+]);

@@ -331,16 +331,16 @@ class EntryImporter extends ElementImporter
     }
 
     #[Override]
-    protected function includeConditionalProperties(array $props): array
+    protected function isPropertyAvailable(array $prop): bool
     {
-        $included = parent::includeConditionalProperties($props);
-
         // structure props only apply when importing into a structure section
-        if (self::normalizeSection($this->section)?->type === SectionType::Structure) {
-            $included = [...$included, ...array_filter($props, fn ($prop) => $prop['trait'] === Structurable::class)];
+        if ($prop['trait'] === Structurable::class) {
+            $section = self::normalizeSection($this->section);
+
+            return $section && $section->type === SectionType::Structure;
         }
 
-        return array_values($included);
+        return parent::isPropertyAvailable($prop);
     }
 
     /**

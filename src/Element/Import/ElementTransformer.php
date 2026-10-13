@@ -51,10 +51,13 @@ class ElementTransformer extends BaseTransformer
     {
         $element = $this->getCurrentScope()->getResource()->getMeta()['element'] ?? null;
 
-        // automatically include all Importable properties (e.g. sectionId, typeId for Entry);
+        // automatically include all Importable properties (e.g. sectionId, typeId for Entry)
+        // that apply to the importer's current settings
         if ($this->props === null) {
             $config = $this->getCurrentScope()->getResource()->getMeta()['config'];
-            $this->props = ImportHelper::getImportableProperties($config);
+            $this->props = $config instanceof ElementImporter
+                ? $config->getAvailableProperties()
+                : ImportHelper::getImportableProperties($config);
         }
 
         $array = [];

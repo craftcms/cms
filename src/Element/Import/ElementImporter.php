@@ -328,17 +328,11 @@ abstract class ElementImporter extends BaseImporter
     {
         $propertyCols = [];
 
-        // attribute mapping - get all properties marked as importable
-        $props = ImportHelper::getImportableProperties($this);
+        // attribute mapping - get all importable properties that apply to the current settings
+        $props = $this->getAvailableProperties();
 
         // exclude all those that are not supposed to be available for UI mapping
         $props = array_filter($props, fn ($prop) => ! isset($prop['excludeFromUiMapping']) || $prop['excludeFromUiMapping'] === false);
-
-        // properties provided by traits are only included when they apply to the current settings
-        $includedTraitProps = $this->includeConditionalProperties(
-            array_values(array_filter($props, fn ($prop) => $prop['trait'] !== null)),
-        );
-        $props = array_filter($props, fn ($prop) => $prop['trait'] === null || in_array($prop, $includedTraitProps, true));
 
         if (! empty($props)) {
             $propertyCols = array_values(array_map(fn ($prop) => MappingColumn::make(
@@ -364,15 +358,27 @@ abstract class ElementImporter extends BaseImporter
     }
 
     /**
-     * Returns the trait-provided importable properties that apply to the current settings.
+     * Returns the target class’s importable properties that apply to the current settings.
      *
-     * @param  list<ImportableProperty>  $props
-     * @return list<ImportableProperty>
+     * @return list<ImportableProperty> $props
      */
-    protected function includeConditionalProperties(array $props): array
+    public function getAvailableProperties(): array
     {
-        // statuses apply to all elements
-        return array_values(array_filter($props, fn ($prop) => $prop['trait'] === HasStatuses::class));
+        return array_values(array_filter(
+            ImportHelper::getImportableProperties($this),
+            $this->isPropertyAvailable(...),
+        ));
+    }
+
+    /**
+     * Returns whether the given importable property applies to the current settings.
+     *
+     * @param  ImportableProperty  $prop
+     */
+    protected function isPropertyAvailable(array $prop): bool
+    {
+        // trait-provided properties are opt-in; statuses apply to all elements
+        return $prop['trait'] === null || $prop['trait'] === HasStatuses::class;
     }
 
     #[Override]
