@@ -7,6 +7,7 @@
   import Select from '@/common/form/Select.vue';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {update} from '@actions/Users/PreferencesController';
   import UserScreen from '@/modules/user/components/UserScreen.vue';
@@ -118,14 +119,79 @@
       form.showExceptionView = values.includes('showExceptionView');
     },
   });
+
+  /**
+   * The screen's content tabs, each with the fields whose errors it flags, so
+   * an error on a tab that isn't showing still gets noticed.
+   */
+  const tabs = computed(() => [
+    {
+      id: 'preferences-general',
+      label: t('General'),
+      fields: [
+        'preferredLanguage',
+        'preferredLocale',
+        'weekStartDay',
+        'timeZone',
+      ],
+    },
+    {
+      id: 'preferences-accessibility',
+      label: t('Accessibility'),
+      fields: [
+        'useShapes',
+        'underlineLinks',
+        'disableAutofocus',
+        'notificationDuration',
+        'notificationPosition',
+        'slideoutPosition',
+      ],
+    },
+    ...(props.isAdmin
+      ? [
+          {
+            id: 'preferences-development',
+            label: t('Development'),
+            fields: [
+              'showFieldHandles',
+              'profileTemplates',
+              'showExceptionView',
+            ],
+          },
+        ]
+      : []),
+  ]);
+
+  function tabHasErrors(fields: string[]): boolean {
+    const errors = form.errors as Record<string, string | undefined>;
+
+    return fields.some((field) => Boolean(errors[field]));
+  }
 </script>
 
 <template>
   <UserScreen>
-    <div class="grid gap-6">
-      <section class="grid gap-3">
-        <h2 class="text-base">{{ t('General') }}</h2>
+    <LayoutSlot name="content-tabs">
+      <craft-tabs :label="t('Preferences')">
+        <craft-tab
+          v-for="tab in tabs"
+          :key="tab.id"
+          slot="tab"
+          :controls="tab.id"
+        >
+          {{ tab.label }}
+          <craft-icon
+            v-if="tabHasErrors(tab.fields)"
+            name="circle-exclamation"
+            :label="t('Errors')"
+            slot="suffix"
+          />
+        </craft-tab>
+      </craft-tabs>
+    </LayoutSlot>
 
+    <div>
+      <section id="preferences-general" class="grid gap-3">
         <craft-field-group>
           <CraftCombobox
             v-model="form.preferredLanguage"
@@ -175,13 +241,11 @@
             show-all-on-empty
           />
         </craft-field-group>
+
+        <HtmlFragmentRenderer :fragment="props.prefsHook" />
       </section>
 
-      <hr />
-
-      <section class="grid gap-3">
-        <h2 class="text-base">{{ t('Accessibility') }}</h2>
-
+      <section id="preferences-accessibility" class="grid gap-3 hidden">
         <craft-field-group>
           <CheckboxGroup
             v-model="displaySettings"
@@ -268,23 +332,19 @@
         </craft-field-group>
       </section>
 
-      <template v-if="props.isAdmin">
-        <hr />
-
-        <section class="grid gap-3">
-          <h2 class="text-base">{{ t('Development') }}</h2>
-
-          <craft-field-group>
-            <CheckboxGroup
-              v-model="developmentSettings"
-              :label="t('Development Settings')"
-              :options="props.developmentSettingOptions"
-            />
-          </craft-field-group>
-        </section>
-      </template>
-
-      <HtmlFragmentRenderer :fragment="props.prefsHook" />
+      <section
+        v-if="props.isAdmin"
+        id="preferences-development"
+        class="grid gap-3 hidden"
+      >
+        <craft-field-group>
+          <CheckboxGroup
+            v-model="developmentSettings"
+            :label="t('Development Settings')"
+            :options="props.developmentSettingOptions"
+          />
+        </craft-field-group>
+      </section>
     </div>
   </UserScreen>
 </template>
