@@ -477,6 +477,7 @@
     > :deep(:is(.card-grid-header, .thumbsview-header)) {
       margin-inline: calc(var(--cp-container-padding) * -1);
       margin-block-end: 0;
+      padding-block-start: var(--c-spacing-sm);
       padding-inline: var(--cp-container-padding);
     }
   }

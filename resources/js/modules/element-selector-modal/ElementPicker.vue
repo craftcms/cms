@@ -121,7 +121,7 @@
       >
         <template v-if="showFolderBreadcrumbs" #navbar>
           <div
-            class="folder-breadcrumbs -mx-(--cp-container-padding) px-(--cp-container-padding) py-sm border-b border-b-(--c-table-border-color)"
+            class="folder-breadcrumbs -mx-(--cp-container-padding) px-(--cp-container-padding) py-sm border-b border-b-(--c-color-neutral-border-quiet)"
           >
             <craft-breadcrumbs :label="t('Breadcrumbs')" class="text-xs">
               <craft-breadcrumb-item
