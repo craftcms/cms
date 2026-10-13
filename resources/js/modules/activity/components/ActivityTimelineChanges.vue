@@ -32,7 +32,7 @@
         type="button"
         variant="plain"
         size="small"
-        flush
+        flush="inline"
         icon="chevron-right"
         icon-position="suffix"
       >
@@ -83,7 +83,19 @@
 
 <style scoped>
   .activity-timeline__changes--collapsible {
-    --c-card-padding-block: var(--c-spacing-sm);
+    --c-card-padding-inline: var(--c-spacing-md);
+    --c-card-padding-block: calc(
+      var(--c-spacing-md) - var(--c-spacing-sm) - 1px
+    );
+
+    craft-disclosure {
+      display: flex;
+      flex-direction: column;
+    }
+
+    [slot='invoker'] {
+      align-self: start;
+    }
   }
 
   .activity-timeline__change-list {
