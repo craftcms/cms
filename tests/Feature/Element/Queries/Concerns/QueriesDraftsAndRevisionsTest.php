@@ -122,7 +122,7 @@ test('releaseId null clears the release criterion without resetting draft select
 
     $ids = entryQuery()
         ->releaseId($release->id)
-        ->releaseId(null)
+        ->releaseId()
         ->status(null)
         ->ids();
 
