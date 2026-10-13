@@ -171,6 +171,7 @@
 - Fixed an accessibility issue where checkboxes and select menus in form-builder table cells were named twice for screen readers, and checkboxes showed their label beside them. ([#19890](https://github.com/craftcms/cms/pull/19890))
 - Button Group fields, single-choice button controls, and the Notification Position and Slideout Position preferences are now radio groups drawn as buttons, so they’re announced as radios and their selection can be changed with the arrow keys. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Single-choice button groups are now announced as groups of toggle buttons rather than radio groups. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed an accessibility issue where element indexes’ view mode and sort direction buttons weren’t in named groups. ([#19942](https://github.com/craftcms/cms/pull/19942))
 
 ### Administration
 

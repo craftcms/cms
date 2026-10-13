@@ -221,6 +221,7 @@
         <div class="flex gap-md justify-end">
           <craft-button-group
             name="viewState[mode]"
+            :aria-label="t('View Mode')"
             .value="mode"
             @change="(event: CustomEvent) => (mode = event.detail.value)"
           >

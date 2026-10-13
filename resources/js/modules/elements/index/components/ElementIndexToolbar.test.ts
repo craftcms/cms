@@ -323,6 +323,27 @@ it('removes score without a search and locks custom ordering', () => {
   expect(descending.disabled).toBe(true);
 });
 
+it('names the view mode and sort direction button groups', () => {
+  mount({
+    viewModes: [
+      {mode: 'table', title: 'Display in a table', icon: 'list'},
+      {mode: 'thumbs', title: 'Display as thumbnails', icon: 'grid'},
+    ],
+    sortOptions: [{label: 'Title', value: 'title', defaultDir: 'asc'}],
+  });
+
+  const viewModes = container!.querySelector(
+    'craft-button-group[name="viewState[mode]"]'
+  )!;
+  const sortDirection = container!
+    .querySelector('craft-button[aria-label="Sort ascending"]')!
+    .closest('craft-button-group')!;
+
+  expect(viewModes.getAttribute('aria-label')).toBe('View Mode');
+  expect(sortDirection.getAttribute('role')).toBe('group');
+  expect(sortDirection.getAttribute('aria-label')).toBe('Sort direction');
+});
+
 it('changes sort direction when its actual direction button is clicked', async () => {
   const {onSortDirectionUpdate, state} = mount({
     sortOptions: [{label: 'Title', value: 'title', defaultDir: 'asc'}],
