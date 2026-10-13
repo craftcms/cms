@@ -146,5 +146,10 @@ jobs:
 
           # The vitest projects in vite.config.js pick up every *.test.ts
           # (happy-dom) and *.browser.test.ts (Chromium) file on their own.
-          - name: Run frontend tests
-            run: vp test run
+          - name: Run frontend unit tests
+            run: vp test run --project unit
+
+      # Outside the parallel group: these measure real layout and animation
+      # timing, which the other steps' CPU load throws off.
+      - name: Run frontend browser tests
+        run: vp test run --project browser
