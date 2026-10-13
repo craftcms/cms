@@ -74,6 +74,7 @@ use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
+use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Mcp\Http\Controllers\SettingsController as McpSettingsController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -105,7 +106,7 @@ Route::allowDuringMaintenance()->prefix('updates')->name('updates.')->group(func
     Route::post(BaseUpdaterController::ACTION_FINISH, [UpdaterController::class, 'finish'])->name('finish');
 });
 
-Route::allowDuringMaintenance()->middleware('craft.web')->group(function () {
+Route::allowDuringMaintenance()->middleware(RunQueue::class)->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
     Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME);
     Route::match(['get', 'post'], CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');

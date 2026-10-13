@@ -118,12 +118,12 @@ describe('FieldNode cross-site copying', () => {
     await vi.waitFor(() => {
       expect(
         [...container.querySelectorAll('craft-action-item')].some(
-          (item) => item.textContent === 'Copy value from site…'
+          (item) => item.textContent?.trim() === 'Copy value from site…'
         )
       ).toBe(true);
     });
     [...container.querySelectorAll<HTMLElement>('craft-action-item')]
-      .find((item) => item.textContent === 'Copy value from site…')!
+      .find((item) => item.textContent?.trim() === 'Copy value from site…')!
       .click();
 
     await vi.waitFor(() => {
