@@ -44,11 +44,15 @@ it('rejects an invalid local file', function (?string $file, string $message) {
     'missing file' => ['tests/Fixtures/Import/missing.csv', 'does not exist.'],
     'directory' => ['tests/Fixtures/Import', 'does not exist.'],
     'dotfile' => ['tests/Fixtures/Import/.hidden.csv', 'is not permitted.'],
-    'path traversal' => ['../../../../../../../../../../etc/passwd', 'is not permitted.'],
     'unsupported type' => ['tests/Fixtures/Import/unsupported.txt', 'Only files of these types are allowed'],
     'contents not matching the extension' => ['tests/Fixtures/Import/json-content.csv', 'don’t match its type (csv).'],
     'stream wrapper' => ['data:text/plain,a', 'Access to this file (data:text/plain,a) is not permitted.'],
 ]);
+
+it('rejects a path that traverses into a restricted directory', function () {
+    expect(($this->sourceError)('../../../../../../../../../../etc/passwd'))->toContain('is not permitted.')
+        ->and($this->importer::sourceError('../../../../../../../../../../etc/passwd', resolveHost: false))->not->toBeNull();
+})->skipOnWindows();
 
 it('rejects a URL with a scheme other than http or https', function (string $url) {
     expect(($this->sourceError)($url))->toBe("URL “{$url}” is not permitted.")

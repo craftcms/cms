@@ -21,7 +21,7 @@ class TestDataType implements DataTypeInterface
     #[Override]
     public static function format(string $data): array
     {
-        $lines = array_values(array_filter(explode("\n", $data), fn (string $line) => $line !== ''));
+        $lines = array_values(array_filter(preg_split('/\R/', $data), fn (string $line) => $line !== ''));
 
         return ['success' => true, 'data' => array_map(fn (string $line) => ['line' => $line], $lines)];
     }
