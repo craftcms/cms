@@ -227,9 +227,13 @@
   /**
    * Whether this is the page you're on rather than an ancestor of it.
    * Selection marks the whole trail, so the page is the selected item with
-   * nothing selected beneath it.
+   * nothing selected beneath it, unless the item says it's only on the trail.
    */
   function isCurrent(action: NavItem): boolean {
+    if (action.type !== 'group' && action.current === false) {
+      return false;
+    }
+
     return (
       isSelected(action) &&
       !childrenOf(action).some(
