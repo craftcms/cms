@@ -197,3 +197,59 @@ describe('leaving a folder', () => {
     expect(lastQuery()).not.toHaveProperty('folderId');
   });
 });
+
+describe('picking folders', () => {
+  function mountFolderPicker(disabledFolderIds: number[] = []) {
+    scope = effectScope();
+
+    return scope.run(() =>
+      useModalElementIndex({
+        action: 'element-selector-modals/body',
+        initial: assetsData({
+          data: [
+            {id: 'folder:7', label: 'Photos', isFolder: true, folderId: 7},
+            {id: 'folder:8', label: 'Video', isFolder: true, folderId: 8},
+          ],
+        } as Partial<ContentIndexData>),
+        params: {elementType: 'Asset'},
+        selectFolders: true,
+        disabledFolderIds: () => disabledFolderIds,
+      })
+    )!;
+  }
+
+  it('makes folders selectable, bar the disabled ones, and hands back their folder ids', async () => {
+    const index = mountFolderPicker([8]);
+    const [photos, video] = index.view.table.getRowModel().rows;
+
+    expect(photos!.getCanSelect()).toBe(true);
+    expect(video!.getCanSelect()).toBe(false);
+
+    photos!.toggleSelected(true);
+    await nextTick();
+
+    expect(index.selectedElements.value).toEqual([
+      expect.objectContaining({id: 7, folderId: 7}),
+    ]);
+  });
+
+  it('leaves a click elsewhere on a folder row to the selection', () => {
+    const index = mountFolderPicker();
+    const row = document.createElement('div');
+
+    expect(index.itemBehavior.onClick?.(folderRow(index), click(row))).toBe(
+      false
+    );
+  });
+
+  it('still opens a folder from its title link', () => {
+    const index = mountFolderPicker();
+    const link = document.createElement('a');
+    link.setAttribute('data-folder-link', '');
+
+    expect(index.itemBehavior.onClick?.(folderRow(index), click(link))).toBe(
+      true
+    );
+    expect(lastQuery()).toMatchObject({folderId: 7});
+  });
+});

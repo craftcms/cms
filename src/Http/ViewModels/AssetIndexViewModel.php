@@ -138,13 +138,12 @@ class AssetIndexViewModel extends ContentIndexViewModel
             );
         }
 
-        if (Gate::check('moveFolderFrom', $folder) && $this->moveTargetSourceKeys() !== []) {
-            $currentFolder = $this->subfolder() ?? $folder;
+        if (Gate::check('moveFolderFrom', $folder) && ($moveDetail = $this->moveDetail()) !== null) {
             $actions[] = $this->folderBulkAction(
                 'move-folder',
                 t('Move folder'),
                 self::MOVE_FOLDERS_EVENT,
-                detail: ['disabledFolderIds' => [$currentFolder->id]],
+                detail: $moveDetail,
             );
         }
 
@@ -177,7 +176,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
 
         [$event, $capability] = self::FILE_EVENT_ACTIONS[$key];
         $detail = match ($key) {
-            MoveAssets::class => $this->moveAssetsDetail(),
+            MoveAssets::class => $this->moveDetail(),
             EditImage::class => Asset::sharedImageEditorSettings(),
             default => [],
         };
@@ -198,12 +197,12 @@ class AssetIndexViewModel extends ContentIndexViewModel
     }
 
     /**
-     * What the folder picker needs to move assets out of the current folder,
-     * or `null` when there's no folder to move them to.
+     * What the folder picker needs to move assets or folders out of the
+     * current folder, or `null` when there's no folder to move them to.
      *
      * @return array<string, mixed>|null
      */
-    private function moveAssetsDetail(): ?array
+    private function moveDetail(): ?array
     {
         $sources = $this->moveTargetSourceKeys();
         $currentFolder = $this->subfolder() ?? $this->rootFolder();

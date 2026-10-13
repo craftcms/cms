@@ -8,6 +8,7 @@
   import {
     isModifiedClick,
     useModalElementIndex,
+    type FolderCrumb,
     type SelectedElement,
   } from './useModalElementIndex';
 
@@ -17,6 +18,9 @@
     initial: ContentIndexData;
     params: Record<string, unknown>;
     disabledElementIds?: number[];
+    /** Picks folders rather than elements; see `useModalElementIndex`. */
+    selectFolders?: boolean;
+    disabledFolderIds?: number[];
   }>();
 
   const emit = defineEmits<{
@@ -24,6 +28,8 @@
     (event: 'choose', elements: SelectedElement[]): void;
     /** The source being viewed, so the chrome can act on the current folder. */
     (event: 'source-change', source: SourceItem | null): void;
+    /** The trail from the volume root to the folder on screen. */
+    (event: 'folder-path-change', path: FolderCrumb[]): void;
   }>();
 
   const index = useModalElementIndex({
@@ -31,6 +37,8 @@
     initial: props.initial,
     params: props.params,
     disabledElementIds: () => props.disabledElementIds ?? [],
+    selectFolders: props.selectFolders,
+    disabledFolderIds: () => props.disabledFolderIds ?? [],
   });
 
   const {selectedElements, hasSelection, clearSelection, folderBreadcrumbs} =
@@ -52,9 +60,11 @@
     index.openFolder(folderId);
   }
 
-  // Folders can't be chosen, so a double-click on one isn't a choice.
+  // Folders can't be chosen, so a double-click on one isn't a choice — unless
+  // folders are what's being picked.
   function onDblClick(event: MouseEvent) {
     if (
+      !props.selectFolders &&
       event.target instanceof Element &&
       event.target.closest('[data-is-folder]')
     ) {
@@ -80,6 +90,10 @@
     {immediate: true}
   );
 
+  watch(folderBreadcrumbs, (path) => emit('folder-path-change', path), {
+    immediate: true,
+  });
+
   defineExpose({
     selectedElements,
     hasSelection,
@@ -96,6 +110,7 @@
     :class="{
       'modal-element-index': true,
       'modal-element-index--sidebar': showSidebar,
+      'modal-element-index--folders': selectFolders,
     }"
   >
     <nav
@@ -115,7 +130,7 @@
         :view="index.view"
         :item-behavior="index.itemBehavior"
         contained
-        :show-sites="true"
+        :show-sites="!selectFolders"
         @site-change="index.changeSite"
         @dblclick="onDblClick"
       >
@@ -189,6 +204,12 @@
   // it.
   .folder-breadcrumbs :deep(craft-breadcrumb-item > [slot='separator']) {
     margin-inline: var(--c-spacing-sm) var(--c-spacing-md);
+  }
+
+  // A folder listing has no columns besides the folder's own, so it takes the
+  // width the title column would otherwise leave to the checkbox column.
+  .modal-element-index--folders :deep(.cp-table-cell--title) {
+    width: 100%;
   }
 
   // The modal has no header above the index, so the toolbar gets the same

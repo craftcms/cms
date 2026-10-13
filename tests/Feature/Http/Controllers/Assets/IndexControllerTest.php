@@ -471,6 +471,25 @@ it('provides folder actions separately from element actions', function () {
         );
 });
 
+it('limits the Move folder picker to volumes folders can move into', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    Folders::ensureFolderByFullPathAndVolume('managed', Volumes::getVolumeById($volumeModel->id));
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('actions', function ($actions) use ($volumeModel): bool {
+                $sources = $actions->firstWhere('key', 'move-folder')['action']['detail']['sources'];
+
+                return in_array("volume:{$volumeModel->uid}", $sources, true)
+                    && collect($sources)->doesntContain(fn (string $key): bool => str_contains($key, 'temp'));
+            })
+        );
+});
+
 it('hands asset file actions to the page as client events', function () {
     $volumeModel = Volume::factory()->create([
         'fs' => 'test-disk',
