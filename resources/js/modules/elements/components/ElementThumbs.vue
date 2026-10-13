@@ -322,7 +322,8 @@
   .thumbsview > li {
     position: relative;
     border-radius: var(--c-radius-lg);
-    border: 1px solid var(--c-color-neutral-border-quiet);
+    border-width: 1px;
+    border-style: solid;
   }
 
   // Only the label links; the rest of the tile selects it.
@@ -380,13 +381,13 @@
 
   .element {
     background-color: var(--c-color-fill-quiet);
-    border-color: var(--c-color-border-quiet);
+    border-color: var(--c-color-neutral-border-quiet);
     color: var(--c-color-on-quiet);
   }
 
   .element--selected {
     background-color: var(--c-color-accent-fill-quiet);
-    border-color: var(--c-color-accent-border-quiet);
+    border-color: var(--c-color-accent-border-normal);
   }
 
   .thumb-img {
