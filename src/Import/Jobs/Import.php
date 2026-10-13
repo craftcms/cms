@@ -91,7 +91,12 @@ class Import extends Job
         $step = collect($this->importPlan->steps ?? [])->firstWhere('uid', $this->stepUid);
 
         if ($step === null) {
-            ImportLog::warning("Skipping import job for missing step \"{$this->stepUid}\" of import plan \"{$this->importPlan->name}\".");
+            ImportLog::warning("Skipping import job for missing step \"{$this->stepUid}\" of import plan \"{$this->importPlan->name}\".", [
+                'importPlan' => $this->importPlan->handle ?? $this->importPlan->name,
+                'stepUid' => $this->stepUid,
+                'runId' => $this->runId,
+                'start' => $this->start,
+            ]);
 
             return;
         }
@@ -106,7 +111,14 @@ class Import extends Job
                 $step->validateSettings();
             }
         } catch (ValidationException $e) {
-            ImportLog::warning("Skipping import job for invalid step \"$stepLabel\": ".implode(' ', $e->validator->errors()->all()));
+            ImportLog::warning("Skipping import job for invalid step \"$stepLabel\".", [
+                'importPlan' => $this->importPlan->handle ?? $this->importPlan->name,
+                'stepUid' => $this->stepUid,
+                'runId' => $this->runId,
+                'start' => $this->start,
+                'validation' => $this->start === 0 ? 'full' : 'settings',
+                'errors' => $e->errors(),
+            ]);
 
             return;
         }

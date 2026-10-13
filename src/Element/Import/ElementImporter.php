@@ -163,7 +163,7 @@ abstract class ElementImporter extends BaseImporter
             return $this;
         }
 
-        $fieldLayout = self::normalizeFieldLayout($value, create: true);
+        $fieldLayout = self::normalizeFieldLayout($value);
 
         if ($fieldLayout === null) {
             throw new InvalidArgumentException(is_numeric($value)
@@ -356,7 +356,7 @@ abstract class ElementImporter extends BaseImporter
             return $propertyCols;
         }
 
-        $fieldLayout = self::normalizeFieldLayout($this->fieldLayout, create: true);
+        $fieldLayout = self::normalizeFieldLayout($this->fieldLayout);
 
         $fieldLayoutCols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
 
@@ -495,13 +495,13 @@ abstract class ElementImporter extends BaseImporter
      * Resolves a FieldLayout instance, numeric ID, UID, or element-type string to a FieldLayout, or null if not found.
      * A null value resolves to null.
      */
-    private static function normalizeFieldLayout(string|int|FieldLayout|null $value, bool $create = false): ?FieldLayout
+    private static function normalizeFieldLayout(string|int|FieldLayout|null $value): ?FieldLayout
     {
         return match (true) {
             $value instanceof FieldLayout => $value,
             $value === null => null,
             is_numeric($value) => Fields::getLayoutById((int) $value),
-            default => Fields::getLayoutByUid($value) ?? Fields::getLayoutByType($value, create: $create),
+            default => Fields::getLayoutByUid($value) ?? Fields::getLayoutByType($value),
         };
     }
 
