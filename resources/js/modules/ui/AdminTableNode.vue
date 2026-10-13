@@ -58,7 +58,7 @@
     /** Overrides the node's own appearance. */
     appearance?: TableAppearanceValue;
     /**
-     * Replaces reloading the page's `ui` after the table's rows change, for a
+     * Replaces the default refresh after the table's rows change, for a
      * table that isn't part of the page's own `ui` (such as one in a slideout).
      */
     onRefresh?: () => void;
@@ -262,48 +262,6 @@
       width: link.slideoutWidth ?? undefined,
       onSaved: onSlideoutSaved,
     });
-  }
-
-  function rowLink(row: TableRow): (TableLink & {url: string}) | null {
-    const value = row[props.node.props.columns[0]?.key ?? ''];
-
-    return value !== null &&
-      typeof value === 'object' &&
-      !Array.isArray(value) &&
-      'url' in value &&
-      value.url
-      ? {...value, url: value.url}
-      : null;
-  }
-
-  function onRowDblclick(row: TableRow, event: MouseEvent): void {
-    const link = rowLink(row);
-
-    if (
-      !link ||
-      event.altKey ||
-      event.ctrlKey ||
-      event.metaKey ||
-      event.shiftKey
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-    window.getSelection()?.removeAllRanges();
-
-    if (link.slideout) {
-      openLinkSlideout(
-        link,
-        (event.target as Element)
-          .closest('tr')
-          ?.querySelector<HTMLElement>(
-            `.cp-table-cell--${CSS.escape(props.node.props.columns[0]!.key)} a[href]`
-          ) ?? null
-      );
-    } else {
-      router.visit(link.url);
-    }
   }
 
   function renderIcon(icon: TableIcon) {
@@ -659,6 +617,12 @@
   }
 
   function refreshTable(): void {
+    if (props.onRefresh) {
+      props.onRefresh();
+
+      return;
+    }
+
     if (!props.node.props.pagination) refreshUi();
 
     void adminTable.value?.refresh();
@@ -745,7 +709,6 @@
       @action-error="onOrderFailed"
       @load-error="onLoadFailed"
       @action-performed="refreshUi"
-      @row-dblclick="onRowDblclick"
     >
       <template v-if="$slots['empty-row']" #empty-row>
         <slot name="empty-row" />

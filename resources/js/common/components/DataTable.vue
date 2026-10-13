@@ -31,7 +31,6 @@
   } from '@/common/types';
   import ColumnHeaderTitle from '@/common/components/ColumnHeaderTitle.vue';
   import DropIndicator from '@/common/components/DropIndicator.vue';
-  import {isInteractiveClick} from '@/common/utils/dom';
   const props = withDefaults(
     defineProps<{
       table: Table<CraftTableFeatures, TData>;
@@ -79,7 +78,6 @@
   const emit = defineEmits<{
     reorder: [startIndex: number, finishIndex: number];
     rowClick: [row: Row<CraftTableFeatures, TData>, event: MouseEvent];
-    rowDblclick: [row: Row<CraftTableFeatures, TData>, event: MouseEvent];
     rowKeydown: [
       row: Row<CraftTableFeatures, TData>,
       index: number,
@@ -140,21 +138,6 @@
     )
       return;
     props.selection?.selectRowFromEvent(row, event);
-  }
-
-  function onRowDblclick(
-    row: Row<CraftTableFeatures, TData>,
-    event: MouseEvent
-  ): void {
-    if (
-      props.interactionsDisabled ||
-      props.loading ||
-      isInteractiveClick(event)
-    ) {
-      return;
-    }
-
-    emit('rowDblclick', row, event);
   }
 
   const rootRef = useTemplateRef<HTMLElement>('root-ref');
@@ -489,7 +472,6 @@
             :tabindex="selectable ? 0 : undefined"
             v-bind="rowAttributes?.(row)"
             @click="onRowClick(row, $event)"
-            @dblclick="onRowDblclick(row, $event)"
             @keydown="onRowKeydown(row, rowIdx, $event)"
           >
             <slot

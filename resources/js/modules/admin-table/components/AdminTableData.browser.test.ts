@@ -16,10 +16,9 @@ import type {
   AdminTableRequest,
 } from '../types';
 
-const {reload, get, visit} = vi.hoisted(() => ({
+const {reload, get} = vi.hoisted(() => ({
   reload: vi.fn(),
   get: vi.fn(),
-  visit: vi.fn(),
 }));
 const slideout = vi.hoisted(() => vi.fn().mockResolvedValue(null));
 let inertiaPage: {url: string; props: {readOnly: boolean}};
@@ -32,7 +31,7 @@ vi.mock('@/common/slideouts', async () => ({
 vi.mock('@inertiajs/vue3', async () => ({
   ...(await vi.importActual('@inertiajs/vue3')),
   usePage: () => inertiaPage,
-  router: {reload, get, visit},
+  router: {reload, get},
 }));
 
 const records = [
@@ -50,7 +49,6 @@ beforeEach(() => {
   reload.mockClear();
   get.mockReset();
   slideout.mockClear();
-  visit.mockClear();
   inertiaPage = reactive({url: '/', props: {readOnly: false}});
   vi.stubGlobal(
     'fetch',
@@ -999,6 +997,12 @@ it('opens slideout links at their width and refreshes through its own handler', 
     expect(element).not.toBeNull();
     return element!;
   });
+  link
+    .closest('td')!
+    .dispatchEvent(
+      new MouseEvent('dblclick', {bubbles: true, cancelable: true})
+    );
+  expect(slideout).not.toHaveBeenCalled();
   link.click();
 
   expect(slideout).toHaveBeenCalledWith(
@@ -1009,6 +1013,27 @@ it('opens slideout links at their width and refreshes through its own handler', 
     slideout.mock.lastCall![1].onSaved,
     onRefresh
   );
+  expect(reload).not.toHaveBeenCalled();
+});
+
+it('lets the owner refresh a paginated table after a slideout saves', async () => {
+  const options = reactive<Partial<TableProps>>({
+    rows: [
+      {id: 1, name: {label: 'Original', url: '/admin/rules/1', slideout: true}},
+    ],
+    pagination: result('Unused').pagination,
+  });
+  const host = mountNode(options, {
+    onRefresh: () => {
+      options.rows = [{id: 1, name: 'Updated by owner'}];
+    },
+  });
+
+  host.querySelector<HTMLAnchorElement>('a[href="/admin/rules/1"]')!.click();
+  slideout.mock.lastCall![1].onSaved({});
+
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Updated by owner']));
+  expect(get).not.toHaveBeenCalled();
   expect(reload).not.toHaveBeenCalled();
 });
 
@@ -1109,80 +1134,4 @@ it('opens the create action in a slideout when asked to', async () => {
   );
   await expectDebouncedDraftRefresh(slideout.mock.lastCall![1].onSaved, reload);
   expect(reload).toHaveBeenCalledWith({only: ['ui']});
-});
-
-async function doubleClickRow(
-  host: HTMLElement,
-  index: number
-): Promise<Element> {
-  const row = await vi.waitFor(() => {
-    const element = host.querySelectorAll('tbody tr')[index];
-    expect(element?.lastElementChild).toBeTruthy();
-    return element!;
-  });
-  row.lastElementChild!.dispatchEvent(
-    new MouseEvent('dblclick', {bubbles: true, cancelable: true})
-  );
-
-  return row;
-}
-
-it('opens a double-clicked row the way its first column’s link would', async () => {
-  const host = mountNode({
-    columns: [
-      {key: 'name', label: 'Name'},
-      {key: 'handle', label: 'Handle'},
-    ],
-    rows: [
-      {
-        id: 1,
-        name: {
-          label: 'Summer sale',
-          url: '/admin/rules/1',
-          slideout: true,
-          slideoutWidth: '85vw',
-        },
-        handle: 'summerSale',
-      },
-      {
-        id: 2,
-        name: {label: 'Winter sale', url: '/admin/rules/2'},
-        handle: 'winterSale',
-      },
-    ],
-  });
-
-  const row = await doubleClickRow(host, 0);
-  const link = row.querySelector('a[href="/admin/rules/1"]');
-  expect(link).toBeInstanceOf(HTMLAnchorElement);
-  expect(slideout).toHaveBeenCalledWith(
-    '/admin/rules/1',
-    expect.objectContaining({opener: link, width: '85vw'})
-  );
-
-  await doubleClickRow(host, 1);
-  expect(visit).toHaveBeenCalledWith('/admin/rules/2');
-});
-
-it('ignores double-clicks on rows whose first column isn’t a link', async () => {
-  const host = mountNode({
-    columns: [
-      {key: 'name', label: 'Name'},
-      {key: 'handle', label: 'Handle'},
-    ],
-    rows: [
-      {
-        id: 1,
-        name: {html: '<a href="/admin/rules/1">Summer sale</a>'},
-        handle: 'summerSale',
-      },
-      {id: 2, name: 'Winter sale', handle: 'winterSale'},
-    ],
-  });
-
-  await doubleClickRow(host, 0);
-  await doubleClickRow(host, 1);
-
-  expect(slideout).not.toHaveBeenCalled();
-  expect(visit).not.toHaveBeenCalled();
 });
