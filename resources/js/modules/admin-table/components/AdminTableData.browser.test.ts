@@ -973,6 +973,9 @@ async function expectDebouncedDraftRefresh(
 
 it('opens slideout links at their width and refreshes through its own handler', async () => {
   const onRefresh = vi.fn();
+  const navigate = vi
+    .spyOn(inertiaRouter, 'visit')
+    .mockImplementation(() => {});
   const host = mountNode(
     {
       rows: [
@@ -985,10 +988,23 @@ it('opens slideout links at their width and refreshes through its own handler', 
             slideoutWidth: '85vw',
           },
         },
+        {
+          id: 2,
+          name: {
+            label: 'Winter sale',
+            url: '/admin/rules/2',
+            slideoutWidth: '85vw',
+          },
+        },
       ],
     },
     {onRefresh}
   );
+
+  await userEvent.click(page.getByRole('link', {name: 'Winter sale'}));
+  expect(navigate).toHaveBeenCalledWith('/admin/rules/2', expect.anything());
+  expect(slideout).not.toHaveBeenCalled();
+  navigate.mockClear();
 
   const link = await vi.waitFor(() => {
     const element = host.querySelector<HTMLAnchorElement>(
@@ -1003,7 +1019,8 @@ it('opens slideout links at their width and refreshes through its own handler', 
       new MouseEvent('dblclick', {bubbles: true, cancelable: true})
     );
   expect(slideout).not.toHaveBeenCalled();
-  link.click();
+  await userEvent.click(page.getByRole('link', {name: 'Summer sale'}));
+  expect(navigate).not.toHaveBeenCalled();
 
   expect(slideout).toHaveBeenCalledWith(
     '/admin/rules/1',

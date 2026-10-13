@@ -221,6 +221,7 @@
       CpLink,
       {
         href: url,
+        inertia: !link.slideout,
         onClick: link.slideout
           ? (event: MouseEvent) => onLinkClick({...link, url}, event)
           : undefined,
