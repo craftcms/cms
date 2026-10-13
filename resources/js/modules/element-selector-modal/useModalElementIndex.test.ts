@@ -233,6 +233,19 @@ describe('picking folders', () => {
     ]);
   });
 
+  it('selects one folder at a time', async () => {
+    const index = mountFolderPicker();
+    const [photos, video] = index.view.table.getRowModel().rows;
+
+    photos!.toggleSelected(true);
+    video!.toggleSelected(true);
+    await nextTick();
+
+    expect(index.selectedElements.value.map(({folderId}) => folderId)).toEqual([
+      8,
+    ]);
+  });
+
   it('leaves a click elsewhere on a folder row to the selection', () => {
     const index = mountFolderPicker();
     const row = document.createElement('div');

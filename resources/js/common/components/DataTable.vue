@@ -380,6 +380,7 @@
             scope="col"
           >
             <craft-checkbox
+              v-if="table.options.enableMultiRowSelection !== false"
               label-sr-only
               .checked="table.getIsAllRowsSelected()"
               .indeterminate="

@@ -116,6 +116,10 @@
       editableRows.value.length > 0
   );
   const selectable = computed(() => !isInlineEditing.value);
+  /** Single-select lists get no select-all checkbox. */
+  const multiSelect = computed(
+    () => props.view.table.options.enableMultiRowSelection !== false
+  );
   const showFooter = computed(
     () =>
       props.footerActive ||
@@ -327,6 +331,7 @@
           :read-only="selection.readOnly.value"
           :data="data"
           :selectable="selectable"
+          :select-all="multiSelect"
           :loading="loading"
           :item-behavior="itemBehavior"
           :sortable="rowReorder?.enabled.value ?? false"
@@ -344,6 +349,7 @@
           :read-only="selection.readOnly.value"
           :data="data"
           :selectable="selectable"
+          :select-all="multiSelect"
           :loading="loading"
           :item-behavior="itemBehavior"
           :interactions-disabled="processing"

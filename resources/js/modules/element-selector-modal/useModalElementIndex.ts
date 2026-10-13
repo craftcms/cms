@@ -68,8 +68,8 @@ interface Options {
   disabledElementIds?: () => number[];
   /**
    * Picks folders rather than elements, for the folder picker: folder rows
-   * become selectable (bar `disabledFolderIds`), and still open from their
-   * title link or Enter.
+   * become selectable (bar `disabledFolderIds`), one at a time, and still open
+   * from their title link or Enter.
    */
   selectFolders?: boolean;
   disabledFolderIds?: () => number[];
@@ -99,6 +99,8 @@ export function useModalElementIndex(options: Options) {
         ? Boolean(row.isFolder) &&
           !disabledFolderIds.value.has(Number(row.folderId))
         : !row.isFolder && !disabledIds.value.has(Number(row.id)),
+    // A move has one destination.
+    multiSelect: !selectFolders,
   });
   const {table} = index.view;
 
