@@ -162,6 +162,7 @@
 - Added `CraftCms\Cms\Search\Events\KeywordsIndexing::$layoutElementUid`. ([#13991](https://github.com/craftcms/cms/pull/13991))
 - Added the `--c-layer-header` and `--c-layer-skip-link` CSS custom properties, and the `z-header` and `z-skip-link` utilities. ([#19886](https://github.com/craftcms/cms/pull/19886))
 - Added a `width` attribute to `<craft-input-date-time>`, along with `CraftCms\Cms\Cp\Components\InputDateTime::width()` and `CraftCms\Cms\Form\Controls\DateTime::fullWidth()`, for stretching date and time inputs across their container. ([#19871](https://github.com/craftcms/cms/pull/19871))
+- Added `CraftCms\Cms\Ui\Controls\BooleanMenu`. ([#19875](https://github.com/craftcms/cms/pull/19875))
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
 - Added `CraftCms\Cms\Cp\Components\ComponentSelect` and `CraftCms\Cms\Cp\Components\EntryTypeSelect`, which the `_includes/forms/componentSelect.twig` and `_includes/forms/entryTypeSelect.twig` templates now render. ([#19888](https://github.com/craftcms/cms/pull/19888))
