@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Models;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -47,7 +48,12 @@ class Draft extends BaseModel
             ->provisionalDrafts(null)
             ->status(null);
 
-        return ($siteId === null ? $query->site('*') : $query->siteId($siteId))->one();
+        // Without a site, start from the primary site's draft rather than
+        // whichever site row the database happens to return first.
+        return ($siteId === null
+            ? $query->site('*')->unique()->preferSites([Sites::getPrimarySite()->id])
+            : $query->siteId($siteId)
+        )->one();
     }
 
     /**
