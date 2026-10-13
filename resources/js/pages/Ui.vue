@@ -283,6 +283,7 @@
             @update:mutation="onSidebarMutation"
           />
         </craft-field-group>
+        <slot name="sidebar-actions" />
       </template>
     </MetadataDetails>
   </component>

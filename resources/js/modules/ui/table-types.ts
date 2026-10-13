@@ -8,6 +8,7 @@ export interface TableColumn {
   sortable?: boolean;
   width?: string;
   headerSrOnly?: boolean;
+  wrap?: boolean;
 }
 
 export interface TableLink {

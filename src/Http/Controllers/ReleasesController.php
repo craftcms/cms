@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Http\ViewModels\ReleaseDateGroup;
 use CraftCms\Cms\Http\ViewModels\ReleaseEditViewModel;
 use CraftCms\Cms\Http\ViewModels\ReleaseViewModel;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
@@ -20,12 +21,11 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Ui\Controls\DateTime;
-use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Table as UiTable;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiResolver;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +35,8 @@ use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use IntlDateFormatter;
 use Symfony\Component\HttpFoundation\Response;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
+use Tpetry\QueryExpressions\Operator\Comparison\IsNull;
 
 use function CraftCms\Cms\t;
 
@@ -57,10 +59,17 @@ class ReleasesController
         $paginator = Release::query()
             ->withCount('items')
             ->when($searchTerm !== '', fn ($query) => $query->where('name', 'like', "%{$searchTerm}%"))
-            ->when($request->input('sort.0.field') === 'name', fn ($query) => $query->orderBy(
-                'name',
-                $request->input('sort.0.direction') === 'desc' ? 'desc' : 'asc',
-            ))
+            ->tap(function (Builder $query) use ($request): void {
+                $direction = $request->input('sort.0.direction') === 'desc' ? 'desc' : 'asc';
+
+                match ($request->input('sort.0.field')) {
+                    'name' => $query->orderBy('name', $direction),
+                    'date' => $query
+                        ->orderBy(new IsNull($releaseDate = new Coalesce(['publishedAt', 'plannedAt'])))
+                        ->orderBy($releaseDate, $direction),
+                    default => null,
+                };
+            })
             ->orderByDesc('dateCreated')
             ->orderByDesc('id')
             ->paginate($request->limit(), pageName: Cms::config()->getPageTriggerParam(), page: $request->page())
@@ -98,7 +107,7 @@ class ReleasesController
             ->columns([
                 ['key' => 'name', 'label' => t('Name'), 'sortable' => true],
                 ['key' => 'status', 'label' => t('Status')],
-                ['key' => 'date', 'label' => t('Date')],
+                ['key' => 'date', 'label' => t('Date'), 'sortable' => true],
                 ['key' => 'itemCount', 'label' => t('Entries')],
             ])
             ->rows($rows)
@@ -213,16 +222,12 @@ class ReleasesController
         Gate::authorize('publish', $release);
 
         $date = $release->publishedAt ?? $release->plannedAt;
+        $timezone = $date?->getTimezone()->getName() ?? Cms::timezone();
         $ui = $uiResolver->resolve(Ui::make([
-            Field::make(t('Publication date'), DateTime::make('publishAt')->showTime()->showTimeZone())
-                ->fieldset()
+            ReleaseDateGroup::make('publishAt', t('Publication date'), min: now($timezone)->format('Y-m-d'))
                 ->required(),
         ]), new UiContext(values: [
-            'publishAt' => [
-                'date' => $date?->format('Y-m-d') ?? '',
-                'time' => $date?->format('H:i') ?? '',
-                'timezone' => $date?->getTimezone()->getName() ?? Cms::timezone(),
-            ],
+            'publishAt' => ReleaseDateGroup::value($date, $timezone),
         ]));
 
         return new JsonResponse([
@@ -244,7 +249,11 @@ class ReleasesController
         $publishAt = $this->dateTime($validated['publishAt']);
 
         if ($publishAt === null) {
-            throw ValidationException::withMessages(['publishAt' => t('Enter a valid publication date and time.')]);
+            throw ValidationException::withMessages(['publishAt.date' => t('Enter a valid publication date and time.')]);
+        }
+
+        if ($publishAt <= now()) {
+            throw ValidationException::withMessages(['publishAt.date' => t('The scheduled publication time must be in the future.')]);
         }
 
         $this->releases->schedule($release, $publishAt, $request->craftUser());

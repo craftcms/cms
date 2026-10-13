@@ -26,7 +26,7 @@ class Table implements Node
 {
     use Conditionable;
 
-    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool}> */
+    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool, wrap?: bool}> */
     private array $columns = [];
 
     /** @var list<array<string, mixed>> */
@@ -107,8 +107,9 @@ class Table implements Node
      * then back to the rows' own order. See {@see rows()} for the `_sort` override.
      * `width` sets a fixed or relative column width (e.g. `34px` or `1.5fr`).
      * `headerSrOnly` hides only the visible header text.
+     * `wrap` lets long cell content wrap instead of widening the column.
      *
-     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool}>  $columns
+     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool, wrap?: bool}>  $columns
      */
     public function columns(array $columns): static
     {

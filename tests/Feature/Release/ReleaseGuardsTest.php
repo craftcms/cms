@@ -155,6 +155,7 @@ it('blocks release and membership mutations while scheduled until a publisher un
 
     expect($release->status)->toBe(ReleaseStatus::Draft)
         ->and($release->publishedAt)->toBeNull()
+        ->and($release->plannedAt)->toBeNull()
         ->and($this->releases->releaseForDraft($draft))->toBeNull();
 });
 

@@ -46,6 +46,7 @@ use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Operator\Comparison\IsNull;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -323,7 +324,7 @@ class ElementEditViewModel extends ViewModel
 
         return Release::query()
             ->whereIn('status', [ReleaseStatus::Draft, ReleaseStatus::Failed])
-            ->orderByRaw('plannedAt is null')
+            ->orderBy(new IsNull('plannedAt'))
             ->orderBy('plannedAt')
             ->orderBy('name')
             ->get()
@@ -353,7 +354,7 @@ class ElementEditViewModel extends ViewModel
         if (
             ! $this->canSave
             || ! $this->element::hasDrafts()
-            || $this->element->getIsRevision()
+            || ! $this->element->getIsDraft()
             || $this->attachedRelease() !== null
             || $actor === null
             || ! $this->releaseApprovalReady()
@@ -373,7 +374,7 @@ class ElementEditViewModel extends ViewModel
             return true;
         }
 
-        if (! $this->element->getIsDraft() || $this->element->isProvisionalDraft) {
+        if ($this->element->isProvisionalDraft) {
             return false;
         }
 

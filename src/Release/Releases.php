@@ -317,7 +317,6 @@ class Releases
 
             $release->update([
                 'publishedAt' => $publishAt,
-                'plannedAt' => $release->plannedAt ?? $publishAt,
                 'scheduledById' => $actor->getCraftUserId(),
                 'status' => ReleaseStatus::Scheduled,
                 'lastError' => null,

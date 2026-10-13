@@ -87,6 +87,10 @@ it('schedules a release at the submitted local time and requires a time', functi
         'publishAt' => ['date' => '2026-10-02'],
     ])->assertJsonValidationErrorFor('publishAt.time');
 
+    postJson(route('craft.cp.releases.schedule', $release), [
+        'publishAt' => [...$publishAt, 'date' => '2026-09-30'],
+    ])->assertJsonValidationErrors(['publishAt.date' => 'The scheduled publication time must be in the future.']);
+
     $publishAt['time'] = '09:00';
     $publishAt['timezone'] = 'America/New_York';
     postJson(route('craft.cp.releases.schedule', $release), ['publishAt' => $publishAt])->assertOk();
@@ -187,6 +191,21 @@ it('filters, paginates, and sorts release rows through Ui reloads', function () 
             ->where('ui.nodes.0.props.rows.0.id', $alpha->id));
 });
 
+it('sorts releases by their publication or planned date with undated releases last', function () {
+    $undated = $this->releases->create('Undated', null, $this->actor);
+    $late = $this->releases->create('Late', Date::parse('2026-12-01 09:00:00'), $this->actor);
+    $early = $this->releases->create('Early', Date::parse('2026-11-01 09:00:00'), $this->actor);
+    $scheduled = $this->releases->create('Scheduled', Date::parse('2026-10-20 09:00:00'), $this->actor);
+    $scheduled->update(['status' => ReleaseStatus::Scheduled, 'publishedAt' => Date::parse('2026-11-15 09:00:00')]);
+
+    foreach (['asc' => [$early, $scheduled, $late, $undated], 'desc' => [$late, $scheduled, $early, $undated]] as $direction => $expected) {
+        get(route('craft.cp.releases.index', ['sort' => [['field' => 'date', 'direction' => $direction]]]))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('ui.nodes.0.props.rows', fn ($rows) => collect($rows)->pluck('id')->all() === array_map(fn (Release $release) => $release->id, $expected)));
+    }
+});
+
 it('attaches and edits the same draft, and explicitly removes it from the release', function () {
     $draft = releaseControllerDraft($this->actor);
     $release = $this->releases->create('Attach release', null, $this->actor);
@@ -284,6 +303,42 @@ function releaseControllerDraft(User $actor): EntryElement
 
     return $draft;
 }
+
+it('shows an entry’s publication warnings in its release row', function () {
+    $draft = releaseControllerDraft($this->actor);
+    $release = $this->releases->create('Warned release', null, $this->actor);
+    $this->releases->attach($release, $draft, $this->actor);
+
+    Date::setTestNow(now()->addMinute());
+    $canonical = $draft->getCanonical();
+    $canonical->title = 'Live edit';
+    expect(Elements::saveElement($canonical))->toBeTrue();
+
+    get(route('craft.cp.releases.show', $release))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('ui.nodes.0.props.rows.0.status.html', fn (string $html) => str_contains($html, 'Ready with warnings'))
+            ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'Live changes will be merged into this draft before publication.')));
+});
+
+it('offers adding to a release only while editing a draft', function (Closure $editedElement, bool $canAddToRelease) {
+    $draft = releaseControllerDraft($this->actor);
+    $this->releases->create('Editor release', null, $this->actor);
+
+    get($editedElement($draft, $this->actor)->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('canAddToRelease', $canAddToRelease)
+            ->where('releaseOptions', fn ($options) => count($options) === ($canAddToRelease ? 1 : 0)));
+})->with([
+    'live entry' => [fn (EntryElement $draft): EntryElement => $draft->getCanonical(), false],
+    'saved draft' => [fn (EntryElement $draft): EntryElement => $draft, true],
+    'provisional draft' => [function (EntryElement $draft, User $actor): EntryElement {
+        app(Drafts::class)->createDraft(canonical: $draft->getCanonical(), creatorId: $actor->id, provisional: true);
+
+        return $draft->getCanonical();
+    }, true],
+]);
 
 it('attaches a non-entry draft through HTTP and displays its release item', function () {
     $model = Element::factory()->create(['type' => DraftableReleaseElement::class]);

@@ -310,6 +310,7 @@
           meta: {
             trackSize: column.width,
             headerSrOnly: column.headerSrOnly,
+            wrap: column.wrap,
           },
           cell: ({getValue, row}) => {
             const value = getValue();

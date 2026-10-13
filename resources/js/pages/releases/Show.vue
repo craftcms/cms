@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {router} from '@inertiajs/vue3';
+  import {computed} from 'vue';
   import {t} from '@craftcms/ui';
   import {
     publish,
@@ -8,12 +9,8 @@
     update,
     unschedule as unscheduleRelease,
   } from '@actions/ReleasesController';
-  import CpContainer from '@/common/components/CpContainer.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
   import UiPage from '@/pages/Ui.vue';
-  import UiRenderer from '@/modules/ui/UiRenderer.vue';
-  import ReleaseReadiness from '@/modules/releases/components/ReleaseReadiness.vue';
   import ReleaseStatusBadge from '@/modules/releases/components/ReleaseStatusBadge.vue';
   import {openUiModal} from '@/modules/ui/open-ui-modal';
   import {formatReleaseDate} from '@/modules/releases/types';
@@ -29,9 +26,35 @@
 
   const props = defineProps<ReleasePageProps>();
 
-  if (!props.editUi) {
-    useAppLayout({title: props.release.name, form: null});
-  }
+  const canPublishNow = computed(
+    () => props.release.canPublish && !props.readOnly
+  );
+
+  const readinessSummary = computed((): string | null => {
+    const readiness = props.readiness;
+
+    if (!readiness || readiness.errors.length) {
+      return null;
+    }
+
+    const blocked = Object.keys(readiness.itemErrors).length;
+    if (blocked) {
+      return t(
+        '{count, plural, =1{# entry is blocking publication.} other{# entries are blocking publication.}}',
+        {count: blocked}
+      );
+    }
+
+    const withWarnings = Object.keys(readiness.itemWarnings).length;
+    if (withWarnings) {
+      return t(
+        'Ready to publish. {count, plural, =1{# entry has warnings.} other{# entries have warnings.}}',
+        {count: withWarnings}
+      );
+    }
+
+    return t('Ready to publish.');
+  });
 
   function scheduleRelease(): void {
     void openUiModal({
@@ -75,6 +98,13 @@
           })
         }}
       </span>
+      <span v-else-if="release.status === 'published' && release.publishedAt">
+        {{
+          t('Published {date}', {
+            date: formatReleaseDate(release.publishedAt),
+          })
+        }}
+      </span>
       <span v-else-if="release.plannedAt">
         {{
           t('Planned for {date}', {
@@ -82,29 +112,17 @@
           })
         }}
       </span>
+      <span v-if="readinessSummary">{{ readinessSummary }}</span>
     </LayoutSlot>
 
-    <LayoutSlot name="content-actions">
-      <div class="flex flex-wrap gap-2">
+    <!-- Filling the primary action keeps the form's Save button out of the
+    footer even when there is nothing to publish; Save sits in the sidebar. -->
+    <LayoutSlot
+      v-if="editUi || canPublishNow"
+      :name="editUi ? 'primary-action' : 'footer-meta'"
+    >
+      <div v-if="canPublishNow" class="flex flex-wrap gap-2">
         <craft-button
-          v-if="release.canUnschedule"
-          type="button"
-          variant="outline"
-          @click="unschedule"
-        >
-          {{ t('Unschedule') }}
-        </craft-button>
-        <craft-button
-          v-if="release.canSchedule && !readOnly"
-          type="button"
-          variant="outline"
-          .disabled="!readiness?.ready"
-          @click="scheduleRelease"
-        >
-          {{ t('Schedule') }}
-        </craft-button>
-        <craft-button
-          v-if="release.canPublish && !readOnly"
           type="button"
           variant="primary"
           .disabled="!readiness?.ready"
@@ -112,7 +130,21 @@
         >
           {{ t('Publish now') }}
         </craft-button>
+        <craft-button
+          type="button"
+          variant="outline"
+          .disabled="!readiness?.ready"
+          @click="scheduleRelease"
+        >
+          {{ t('Schedule') }}
+        </craft-button>
       </div>
+    </LayoutSlot>
+
+    <LayoutSlot v-if="release.canUnschedule" name="footer-meta">
+      <craft-button type="button" variant="outline" @click="unschedule">
+        {{ t('Unschedule') }}
+      </craft-button>
     </LayoutSlot>
 
     <craft-callout
@@ -136,48 +168,26 @@
       rounded="none"
       appearance="fill"
     >
-      {{ release.lastError }}
+      {{
+        t('The last publication attempt failed: {error}', {
+          error: release.lastError,
+        })
+      }}
     </craft-callout>
 
     <UiPage
-      v-if="editUi"
-      :ui="editUi"
-      :submit="update({release: release.id})"
+      :ui="ui"
+      :submit="editUi ? update({release: release.id}) : undefined"
+      :sidebar-ui="editUi ?? undefined"
+      :metadata-html="editUi ? undefined : metadataHtml"
       :default-form-actions="[]"
       :form-additional-buttons="formAdditionalButtons"
-    />
-
-    <div class="py-4">
-      <CpContainer>
-        <div class="flex flex-col gap-8">
-          <craft-callout
-            v-if="release.status === 'published'"
-            variant="success"
-            icon="check"
-          >
-            {{
-              t('Published {date}', {
-                date: formatReleaseDate(release.publishedAt),
-              })
-            }}
-          </craft-callout>
-          <div
-            v-if="!editUi && descriptionHtml"
-            class="markdown pane"
-            v-html="descriptionHtml"
-          />
-          <ReleaseReadiness
-            v-if="release.status !== 'published'"
-            :readiness="readiness"
-          />
-          <section aria-labelledby="release-items">
-            <h2 id="release-items" class="mb-3 text-lg font-semibold">
-              {{ t('Entries') }}
-            </h2>
-            <UiRenderer :payload="ui" />
-          </section>
-        </div>
-      </CpContainer>
-    </div>
+    >
+      <template #sidebar-actions>
+        <craft-button type="submit" variant="primary" class="mt-lg">
+          {{ t('Save') }}
+        </craft-button>
+      </template>
+    </UiPage>
   </div>
 </template>

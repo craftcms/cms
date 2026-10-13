@@ -574,7 +574,7 @@
       color: var(--c-color-on-loud);
     }
   }
-  :deep(.cell--wrap) {
+  :deep(.cp-table-cell--wrap) {
     white-space: normal;
   }
   :deep(.cp-table-cell) {

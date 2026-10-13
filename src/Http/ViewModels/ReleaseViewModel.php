@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
@@ -20,7 +21,6 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownParser;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Ui\Controls\DateTime;
 use CraftCms\Cms\Ui\Controls\Markdown;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -111,34 +111,26 @@ class ReleaseViewModel extends ViewModel
     public function ui(): UiPayload
     {
         $readiness = $this->readiness();
+        $published = $this->release->status === ReleaseStatus::Published;
         $rows = array_map(function (ReleaseItemData $item) use ($readiness): array {
             $errors = $readiness?->itemErrors[$item->id] ?? [];
             $warnings = $readiness?->itemWarnings[$item->id] ?? [];
-            $messages = $errors !== [] ? $errors : $warnings;
             [$label, $color] = match (true) {
-                $readiness === null => [t('Not available'), Color::Gray],
-                $errors !== [] => [t('Not ready'), Color::Red],
+                $item->publishedAt !== null => [t('Published {date}', ['date' => $this->formatDate($item->publishedAt)]), Color::Emerald],
+                $errors !== [] => [t('Blocked'), Color::Red],
                 $warnings !== [] => [t('Ready with warnings'), Color::Amber],
                 default => [t('Ready'), Color::Emerald],
             };
-
-            if ($item->publishedAt !== null) {
-                $date = new \IntlDateFormatter(app()->getLocale(), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT, Cms::timezone());
-                $label = t('Published {date}', ['date' => $date->format($item->publishedAt)]);
-                $color = Color::Emerald;
-            }
-
-            $state = Html::tag('craft-badge', Html::encode($label), ['fill' => $color->value]);
-            if ($messages !== []) {
-                $state .= Html::ul($messages, ['class' => 'list-disc ps-5'], encode: true);
-            }
+            $issues = [...$errors, ...$warnings];
 
             return [
                 'id' => $item->id,
                 'title' => ['label' => $item->title, 'url' => $item->url, 'slideout' => true],
                 'draftName' => $item->draftName,
                 'sites' => implode(', ', $item->sites) ?: t('Not available'),
-                'readiness' => ['html' => $state],
+                'status' => ['html' => Html::tag('craft-badge', Html::encode($label), ['fill' => $color->value])],
+                'issues' => ['html' => $issues === [] ? '' : (string) Html::ul($issues, ['class' => 'grid gap-1'], encode: true)],
+                'publishedAt' => $item->publishedAt === null ? '' : $this->formatDate($item->publishedAt),
                 '_deletable' => $item->canDetach,
                 '_deleteUrl' => $item->canDetach && $item->draftId !== null
                     ? route('craft.cp.releases.detach', [$this->release, $item->draftId])
@@ -148,13 +140,22 @@ class ReleaseViewModel extends ViewModel
             ];
         }, $this->items());
 
+        $columns = [
+            ['key' => 'title', 'label' => t('Content'), 'wrap' => true],
+            ['key' => 'draftName', 'label' => t('Draft')],
+            ['key' => 'sites', 'label' => t('Sites')],
+            ...match (true) {
+                $published => [['key' => 'publishedAt', 'label' => t('Published')]],
+                $readiness !== null => [
+                    ['key' => 'status', 'label' => t('Status')],
+                    ['key' => 'issues', 'label' => t('Issues'), 'width' => '2fr', 'wrap' => true],
+                ],
+                default => [],
+            },
+        ];
+
         $table = UiTable::make('release-items')
-            ->columns([
-                ['key' => 'title', 'label' => t('Content')],
-                ['key' => 'draftName', 'label' => t('Draft')],
-                ['key' => 'sites', 'label' => t('Sites')],
-                ['key' => 'readiness', 'label' => t('Readiness')],
-            ])
+            ->columns($columns)
             ->rows($rows)
             ->emptyMessage(t('No drafts have been added to this release.'));
 
@@ -175,20 +176,40 @@ class ReleaseViewModel extends ViewModel
             Field::make(t('Name'), Text::make('name'))->required(),
             Field::make(t('Description'), Markdown::make('description')
                 ->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)),
-            Field::make(t('Planned date'), DateTime::make('plannedAt')->showTime()->showTimeZone())
+            ReleaseDateGroup::make('plannedAt', t('Planned date'))
                 ->instructions(t('This date is for planning only. Scheduling is a separate action.')),
         ]), new UiContext(values: [
             'name' => $this->release->name,
             'description' => $this->release->description,
-            'plannedAt' => $this->dateValue($this->release->plannedAt),
+            'plannedAt' => ReleaseDateGroup::value($this->release->plannedAt),
         ], mode: ControlMode::Editable));
     }
 
-    public function descriptionHtml(): ?string
+    public function metadataHtml(): ?string
     {
-        return $this->release->description === null
-            ? null
-            : HtmlSanitizers::sanitize(MarkdownParser::parse($this->release->description));
+        $release = $this->release;
+        $dates = app(ContentHtml::class)->metadataHtml([
+            t('Scheduled for') => fn () => $release->status === ReleaseStatus::Scheduled && $release->publishedAt !== null
+                ? Html::encode($this->formatDate($release->publishedAt))
+                : false,
+            t('Published') => fn () => $release->status === ReleaseStatus::Published && $release->publishedAt !== null
+                ? Html::encode($this->formatDate($release->publishedAt))
+                : false,
+        ]);
+        $description = $release->description === null
+            ? ''
+            : Html::tag('section', implode('', [
+                Html::tag('h3', Html::encode(t('Description')), ['class' => 'font-bold text-xs mb-xs']),
+                Html::tag('div', HtmlSanitizers::sanitize(MarkdownParser::parse($release->description)), ['class' => 'markdown']),
+            ]), ['class' => $dates === '' ? null : 'mt-lg']);
+
+        return $dates.$description ?: null;
+    }
+
+    private function formatDate(\DateTimeInterface $date): string
+    {
+        return (string) new \IntlDateFormatter(app()->getLocale(), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT, Cms::timezone())
+            ->format($date);
     }
 
     private function itemData(ReleaseItem $item): ReleaseItemData
@@ -244,16 +265,6 @@ class ReleaseViewModel extends ViewModel
         return $item->draftId !== null
             ? $query->draftId($item->draftId)->all()
             : $query->id($item->publishedElementId ?? $item->canonicalId)->all();
-    }
-
-    /** @return array{date: string, time: string, timezone: string} */
-    private function dateValue(?\DateTimeInterface $date): array
-    {
-        return [
-            'date' => $date?->format('Y-m-d') ?? '',
-            'time' => $date?->format('H:i') ?? '',
-            'timezone' => $date?->getTimezone()->getName() ?? Cms::timezone(),
-        ];
     }
 
     private function canPublish(): bool

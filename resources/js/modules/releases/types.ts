@@ -10,5 +10,6 @@ export function formatReleaseDate(value: string | null): string {
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: 'medium',
     timeStyle: 'short',
+    timeZone: window.Craft?.timezone,
   }).format(new Date(value));
 }
