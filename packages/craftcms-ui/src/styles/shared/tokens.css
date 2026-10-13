@@ -25,6 +25,10 @@
   --c-surface-form: var(--color-base-100);
   --c-surface-overlay: var(--color-base-50);
   --c-surface-shade: rgba(0 0 0 / 25%);
+  --c-table-border-color: color-mix(
+    var(--c-color-neutral-border-quiet) 60%,
+    transparent
+  );
 
   /*
   Needs to remain statically dark between dark and light mode

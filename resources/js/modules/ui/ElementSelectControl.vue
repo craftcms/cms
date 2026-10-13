@@ -799,8 +799,7 @@
     min-height: calc(var(--c-checkbox-size) + var(--c-spacing-md) * 2);
     padding-block: 0;
     padding-inline: var(--c-spacing-md);
-    background-color: var(--c-color-neutral-fill-quiet);
-    border: 1px solid var(--c-color-neutral-border-quiet);
+    border: 1px solid var(--c-table-border-color);
     border-radius: var(--c-radius-md);
   }
 

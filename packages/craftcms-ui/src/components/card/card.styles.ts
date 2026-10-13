@@ -29,6 +29,7 @@ export default css`
     border-radius: var(--c-card-radius, var(--c-radius-md));
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
     position: relative;
+    box-sizing: border-box;
     height: 100%;
     overflow: clip;
   }
@@ -46,6 +47,22 @@ export default css`
   :host([data-color='white']:not([active])) .card__header,
   :host([data-color='white']:not([active])) .card__footer {
     background-color: transparent;
+  }
+
+  :host([data-color='white']) .card .card__header,
+  :host([data-color='white']) .card .card__footer {
+    border-color: var(--c-table-border-color);
+  }
+
+  :host([data-color='white'][active]) .card {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-normal);
+  }
+
+  :host([data-color='white'][active]) .card .card__header,
+  :host([data-color='white'][active]) .card .card__footer {
+    background-color: transparent;
+    border-color: var(--c-color-accent-border-quiet);
   }
 
   .card__header,
