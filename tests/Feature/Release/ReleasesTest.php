@@ -264,7 +264,8 @@ it('refuses to publish a draft whose other site misses a required value it leave
 
     expect($this->releases->checkReadiness($release, $this->actor)->ready)->toBeFalse()
         ->and(fn () => $this->releases->publish($release, $this->actor))->toThrow(ReleaseException::class)
-        ->and(EntryElement::find()->id($canonical->id)->status(null)->one()->title)->toBe('Live title');
+        ->and(EntryElement::find()->id($canonical->id)->status(null)->one()->title)->toBe('Live title')
+        ->and($release->fresh()->lastError)->toBe("Validation errors for site: “{$secondSite->name}“");
 });
 
 it('publishes only due scheduled releases after the scheduling user loses every permission', function () {

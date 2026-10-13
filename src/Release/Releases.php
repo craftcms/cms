@@ -25,6 +25,7 @@ use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Models\ReleaseItem;
 use CraftCms\Cms\Release\Notifications\ReleaseFailed;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
@@ -810,8 +811,15 @@ class Releases
         );
 
         if (! $saved) {
+            // Cross-site errors link to the invalid site for the element editor;
+            // a release reports them as text in its error, notifications and MCP.
+            $errors = array_map(
+                fn (string $error): string => trim(Html::decode(strip_tags($error))),
+                $draftToApply->errors()->all(),
+            );
+
             throw new ReleaseException(
-                implode(' ', $draftToApply->errors()->all()) ?: t('The draft could not be validated for publication.'),
+                implode(' ', $errors) ?: t('The draft could not be validated for publication.'),
             );
         }
 
