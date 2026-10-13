@@ -83,6 +83,22 @@
 
   const positionIdPrefix = `preference-position-${useId()}`;
 
+  const positionSettings = computed(
+    () =>
+      [
+        {
+          name: 'notificationPosition',
+          label: t('Notification Position'),
+          options: props.notificationPositionOptions,
+        },
+        {
+          name: 'slideoutPosition',
+          label: t('Slideout Position'),
+          options: props.slideoutPositionOptions,
+        },
+      ] as const
+  );
+
   const generalSettings = computed({
     get: () => (form.disableAutofocus ? ['disableAutofocus'] : []),
     set: (values: Array<string>) => {
@@ -193,89 +209,62 @@
             :error="form.errors.notificationDuration"
           />
 
-          <craft-field fieldset :label="t('Notification Position')">
-            <div slot="input">
-              <craft-button-group
-                name="notificationPosition"
-                .value="form.notificationPosition"
-                @change="
-                  (event: CustomEvent) =>
-                    (form.notificationPosition = event.detail.value)
-                "
+          <craft-radio-group
+            v-for="setting in positionSettings"
+            :key="setting.name"
+            buttons
+            :name="setting.name"
+            :label="setting.label"
+            .modelValue="form[setting.name]"
+            @model-value-changed="
+              (event: Event) =>
+                (form[setting.name] = (
+                  event.target as HTMLElement & {modelValue: string}
+                ).modelValue)
+            "
+          >
+            <craft-radio
+              v-for="option in setting.options"
+              :key="option.value"
+              .choiceValue="option.value"
+              .checked="form[setting.name] === option.value"
+            >
+              <input
+                slot="input"
+                :id="`${positionIdPrefix}-${setting.name}-${option.value}`"
+                type="radio"
+                :name="setting.name"
+                :value="option.value"
+                :checked="form[setting.name] === option.value"
+              />
+              <label
+                slot="label"
+                :for="`${positionIdPrefix}-${setting.name}-${option.value}`"
               >
-                <craft-button
-                  v-for="option in props.notificationPositionOptions"
-                  :key="option.value"
-                  :id="`${positionIdPrefix}-notificationPosition-${option.value}`"
-                  type="button"
-                  variant="outline"
-                  :value="option.value"
-                >
-                  <craft-icon :name="option.icon" :label="option.label" />
-                </craft-button>
-              </craft-button-group>
-              <!-- Icon-only buttons, so their names show on hover and focus too.
-                They label the buttons rather than describing them, so the name
-                isn't announced twice. -->
-              <craft-tooltip
-                v-for="option in props.notificationPositionOptions"
-                :key="option.value"
-                :for="`${positionIdPrefix}-notificationPosition-${option.value}`"
-                invoker-relation="label"
-              >
-                {{ option.label }}
-              </craft-tooltip>
-            </div>
+                <craft-icon :name="option.icon" :label="option.label" />
+              </label>
+            </craft-radio>
             <ul
-              v-if="form.errors.notificationPosition"
+              v-if="form.errors[setting.name]"
               slot="feedback"
               class="error-list"
             >
-              <li>{{ form.errors.notificationPosition }}</li>
+              <li>{{ form.errors[setting.name] }}</li>
             </ul>
-          </craft-field>
-
-          <craft-field fieldset :label="t('Slideout Position')">
-            <div slot="input">
-              <craft-button-group
-                name="slideoutPosition"
-                .value="form.slideoutPosition"
-                @change="
-                  (event: CustomEvent) =>
-                    (form.slideoutPosition = event.detail.value)
-                "
-              >
-                <craft-button
-                  v-for="option in props.slideoutPositionOptions"
-                  :key="option.value"
-                  :id="`${positionIdPrefix}-slideoutPosition-${option.value}`"
-                  type="button"
-                  variant="outline"
-                  :value="option.value"
-                >
-                  <craft-icon :name="option.icon" :label="option.label" />
-                </craft-button>
-              </craft-button-group>
-              <!-- Icon-only buttons, so their names show on hover and focus too.
-                They label the buttons rather than describing them, so the name
-                isn't announced twice. -->
-              <craft-tooltip
-                v-for="option in props.slideoutPositionOptions"
-                :key="option.value"
-                :for="`${positionIdPrefix}-slideoutPosition-${option.value}`"
-                invoker-relation="label"
-              >
-                {{ option.label }}
-              </craft-tooltip>
-            </div>
-            <ul
-              v-if="form.errors.slideoutPosition"
-              slot="feedback"
-              class="error-list"
+          </craft-radio-group>
+          <!-- Icon-only options, so their names show on hover and focus too.
+            They label the radios rather than describing them, so the name
+            isn't announced twice. -->
+          <template v-for="setting in positionSettings" :key="setting.name">
+            <craft-tooltip
+              v-for="option in setting.options"
+              :key="option.value"
+              :for="`${positionIdPrefix}-${setting.name}-${option.value}`"
+              invoker-relation="label"
             >
-              <li>{{ form.errors.slideoutPosition }}</li>
-            </ul>
-          </craft-field>
+              {{ option.label }}
+            </craft-tooltip>
+          </template>
         </craft-field-group>
       </section>
 
