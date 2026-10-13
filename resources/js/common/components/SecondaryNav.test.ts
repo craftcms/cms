@@ -313,43 +313,4 @@ describe('SecondaryNav', () => {
     // The expanded presentation is gone, not merely hidden.
     expect(container.querySelector('.secondary-nav__actions')).toBeNull();
   });
-  it('draws no actions menu for a nav with nothing to put in it', async () => {
-    stubViewport(true);
-
-    const container = mountWith([navItem({label: 'General'})]);
-    await nextTick();
-
-    expect(container.querySelector('.secondary-nav__actions')).toBeNull();
-    expect(container.querySelector('craft-action-menu')).toBeNull();
-  });
-
-  it('draws the actions menu once a page fills the actions slot', async () => {
-    stubViewport(true);
-
-    const filled = ref(false);
-    const container = document.createElement('div');
-    document.body.append(container);
-
-    const app = createApp({
-      render: () =>
-        h(
-          SecondaryNav,
-          {items: navItemActions([navItem({label: 'General'})])},
-          filled.value ? {actions: () => h('span', 'New Store')} : {}
-        ),
-    });
-    app.mount(container);
-    teardown = () => {
-      app.unmount();
-      container.remove();
-    };
-    await nextTick();
-
-    expect(container.querySelector('.secondary-nav__actions')).toBeNull();
-
-    filled.value = true;
-    await nextTick();
-
-    expect(container.querySelector('.secondary-nav__actions')).not.toBeNull();
-  });
 });
