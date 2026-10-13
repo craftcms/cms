@@ -142,8 +142,11 @@
 - Fixed a bug where control panel nav flyouts could close as soon as the pointer reached them. ([#19926](https://github.com/craftcms/cms/pull/19926))
 - Fixed a bug where action menus on thumbnails in single-element relation fields were positioned at the start of the thumbnail rather than the end.
 - Fixed a bug where element chips within links weren’t following the link underline behavior or the “Underline links” accessibility preference.
+- Fixed a bug where site Inertia middleware registered in `craft.web` could break control panel authentication pages.
+- Fixed a bug where authenticated control panel routes didn’t invalidate sessions with stale password hashes.
 - Fixed a bug where asset folders could be selected in asset selection modals. ([#19937](https://github.com/craftcms/cms/pull/19937))
 - Fixed a bug where asset folders in asset selection modals couldn’t be opened. Folders are now linked, and clicking one shows its contents in the modal, with breadcrumbs leading back to the volume’s root. ([#19937](https://github.com/craftcms/cms/pull/19937))
+- Fixed a bug where `yii\db\Expression` values assigned to legacy Active Record attributes were saved as JSON strings. ([#19948](https://github.com/craftcms/cms/issues/19948), [#19953](https://github.com/craftcms/cms/pull/19953))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
@@ -209,6 +212,7 @@
 - Added `CraftCms\Cms\Search\Events\KeywordsIndexing::$layoutElementUid`. ([#13991](https://github.com/craftcms/cms/pull/13991))
 - Added the `--c-layer-header` and `--c-layer-skip-link` CSS custom properties, and the `z-header` and `z-skip-link` utilities. ([#19886](https://github.com/craftcms/cms/pull/19886))
 - Added a `width` attribute to `<craft-input-date-time>`, along with `CraftCms\Cms\Cp\Components\InputDateTime::width()` and `CraftCms\Cms\Form\Controls\DateTime::fullWidth()`, for stretching date and time inputs across their container. ([#19871](https://github.com/craftcms/cms/pull/19871))
+- Added `CraftCms\Cms\Ui\Controls\BooleanMenu`. ([#19875](https://github.com/craftcms/cms/pull/19875))
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
 - Added `CraftCms\Cms\Cp\Components\ComponentSelect` and `CraftCms\Cms\Cp\Components\EntryTypeSelect`, which the `_includes/forms/componentSelect.twig` and `_includes/forms/entryTypeSelect.twig` templates now render. ([#19888](https://github.com/craftcms/cms/pull/19888))

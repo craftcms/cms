@@ -130,7 +130,7 @@ it('accepts Craft password confirmation on protected Craft routes', function () 
         ->assertNotFound();
 });
 
-it('preserves the host session when the Craft password hash changes', function () {
+it('preserves the host session when the Craft password hash changes', function (string $route) {
     Route::get('_test/craft-session-auth', fn () => response()->noContent())
         ->middleware(['craft', 'craft.web']);
 
@@ -153,7 +153,7 @@ it('preserves the host session when the Craft password hash changes', function (
     LaravelAuthenticateSession::redirectUsing(fn () => null);
 
     try {
-        getJson('_test/craft-session-auth')->assertUnauthorized();
+        getJson($route === 'cp' ? cp_url('dashboard') : '_test/craft-session-auth')->assertUnauthorized();
     } finally {
         LaravelAuthenticateSession::redirectUsing(fn () => route('login'));
     }
@@ -172,7 +172,7 @@ it('preserves the host session when the Craft password hash changes', function (
         ->and(Session::has('user.login_id'))->toBeFalse()
         ->and(Session::has('user.remember'))->toBeFalse()
         ->and(Session::has('user.pending_2fa_at'))->toBeFalse();
-});
+})->with(['site' => 'site', 'control panel' => 'cp']);
 
 it('fills missing Craft guard and provider configuration defaults', function () {
     $guard = config('auth.guards.craft');
