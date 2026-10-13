@@ -366,6 +366,14 @@ export default css`
     ):not([active]):not(.is-active)
   ) {
     border-color: var(--c-form-control-border-color);
+    border-inline-start-color: var(
+      --c-button-group-border-start-color,
+      var(--c-form-control-border-color)
+    );
+    border-inline-end-color: var(
+      --c-button-group-border-end-color,
+      var(--c-form-control-border-color)
+    );
   }
 
   :host([variant~='dashed']) {

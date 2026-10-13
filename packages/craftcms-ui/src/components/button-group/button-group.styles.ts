@@ -14,7 +14,12 @@ export default css`
   }
 
   ::slotted(:not([data-button-group-start])) {
+    --c-button-group-border-start-color: var(--c-color-neutral-border-quiet);
     margin-inline-start: calc(var(--c-button-border-width, 1px) * -1);
+  }
+
+  ::slotted(:not([data-button-group-end])) {
+    --c-button-group-border-end-color: var(--c-color-neutral-border-quiet);
   }
 
   ::slotted([data-button-group-divider]) {

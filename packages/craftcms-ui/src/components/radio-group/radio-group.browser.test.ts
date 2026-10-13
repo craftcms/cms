@@ -172,3 +172,12 @@ it('distinguishes the selected button in forced colors mode', async () => {
   expect(selected!.backgroundColor).not.toBe(unselected!.backgroundColor);
   expect(selected!.color).not.toBe(unselected!.color);
 });
+
+it('draws lighter borders between buttons than around the group', async () => {
+  const {radios} = await render();
+  const [first, , last] = radios.map((radio) => getComputedStyle(radio));
+
+  expect(first!.borderInlineEndColor).not.toBe(first!.borderInlineStartColor);
+  expect(last!.borderInlineStartColor).toBe(first!.borderInlineEndColor);
+  expect(last!.borderInlineEndColor).toBe(first!.borderInlineStartColor);
+});

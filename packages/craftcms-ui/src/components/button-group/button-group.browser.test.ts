@@ -1,6 +1,7 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
 import {userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
+import '../../styles/cp.css';
 import '../button/button.js';
 import './button-group.js';
 
@@ -240,4 +241,22 @@ it('draws the divider on a button nested in a grouped element', async () => {
   await settle();
 
   expect(dividers(nested!).left).not.toBe(transparent);
+});
+
+it('draws lighter borders between outline buttons than around the group', async () => {
+  const [first, middle, last] = await render(`
+    <craft-button variant="outline">One</craft-button>
+    <craft-button variant="outline">Two</craft-button>
+    <craft-button variant="outline">Three</craft-button>`);
+  const style = (button: CraftButton) => getComputedStyle(button);
+
+  expect(style(first!).borderInlineEndColor).not.toBe(
+    style(first!).borderInlineStartColor
+  );
+  expect(style(middle!).borderInlineStartColor).toBe(
+    style(first!).borderInlineEndColor
+  );
+  expect(style(last!).borderInlineEndColor).toBe(
+    style(first!).borderInlineStartColor
+  );
 });

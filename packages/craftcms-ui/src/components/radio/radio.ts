@@ -52,6 +52,11 @@ export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
 
         :host([data-button]:not([data-button-start])) {
           margin-inline-start: -1px;
+          border-inline-start-color: var(--c-color-neutral-border-quiet);
+        }
+
+        :host([data-button]:not([data-button-end])) {
+          border-inline-end-color: var(--c-color-neutral-border-quiet);
         }
 
         :host([data-button][data-button-start]) {
