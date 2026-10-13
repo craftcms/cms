@@ -6,6 +6,7 @@ use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
 use CraftCms\Cms\Asset\Actions\EditImage;
 use CraftCms\Cms\Asset\Actions\MoveAssets;
 use CraftCms\Cms\Asset\Actions\RenameFile;
+use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -495,6 +496,23 @@ it('hands asset file actions to the page as client events', function () {
             })
         );
 });
+
+it('offers Show in folder only when searching subfolders', function (array $query, bool $offered) {
+    Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume', ...$query]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('actions', fn ($actions): bool => $actions->contains('key', ShowInFolder::class) === $offered)
+        );
+})->with([
+    'browsing' => [[], false],
+    'searching the folder' => [['search' => 'photo'], false],
+    'searching subfolders' => [['search' => 'photo', 'includeSubfolders' => 1], true],
+]);
 
 it('gives asset rows what their file actions need', function () {
     Queue::fake();
