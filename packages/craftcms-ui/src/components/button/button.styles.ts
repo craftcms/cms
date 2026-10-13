@@ -607,6 +607,20 @@ export default css`
     padding-block: 0;
   }
 
+  :host(
+    :is(
+      [variant~='fill'],
+      [variant~='solid'],
+      [variant~='primary'],
+      [variant~='danger'],
+      [variant~='plain'],
+      [variant~='danger-plain']
+    )
+  ) {
+    border-inline-start-color: var(--c-button-divider-start-color, transparent);
+    border-inline-end-color: var(--c-button-divider-end-color, transparent);
+  }
+
   /* Ellipsis (action menu) icons read small at craft-icon's 0.8em */
   craft-icon[name='ellipsis'],
   ::slotted(craft-icon[name='ellipsis']) {

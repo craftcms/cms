@@ -5,6 +5,8 @@ import styles from './button-group.styles.js';
 
 const START_ATTRIBUTE = 'data-button-group-start';
 const END_ATTRIBUTE = 'data-button-group-end';
+const DIVIDER_ATTRIBUTE = 'data-button-group-divider';
+const DIVIDER_END_ATTRIBUTE = 'data-button-group-divider-end';
 
 /**
  * @summary Wrapper component used to group a set of buttons together.
@@ -53,8 +55,9 @@ export default class CraftButtonGroup extends LitElement {
   @property({reflect: true, type: Boolean}) multiple = false;
 
   /**
-   * Re-marks the ends when a child is shown or hidden, which changes which
-   * one is visibly first or last without firing `slotchange`.
+   * Re-marks the ends and dividers when a child is shown or hidden, which
+   * changes which one is visibly first or last without firing `slotchange`,
+   * or when one is selected or deselected.
    */
   private _childObserver = new MutationObserver(() => this._markEnds());
 
@@ -85,7 +88,7 @@ export default class CraftButtonGroup extends LitElement {
     this._childObserver.observe(this, {
       childList: true,
       attributes: true,
-      attributeFilter: ['hidden', 'style', 'class'],
+      attributeFilter: ['hidden', 'style', 'class', 'active', 'aria-pressed'],
       subtree: true,
     });
     this._selectionObserver.observe(this, {
@@ -128,6 +131,11 @@ export default class CraftButtonGroup extends LitElement {
    * outer corners. `:first-child` and `:last-child` can't be used: a group
    * can open with hidden inputs, or with an empty placeholder a framework
    * renders and later fills.
+   *
+   * Also marks the dividers between neighbors: between every pair, except
+   * on either side of a selected child, whose own look sets it apart. Both
+   * neighbors draw it, at the edge they share, so it still shows when either
+   * one is raised above the other, as a hovered or focused one is.
    */
   private _markEnds() {
     const visible = Array.from(this.children).filter((child) =>
@@ -137,9 +145,32 @@ export default class CraftButtonGroup extends LitElement {
     const last = visible[visible.length - 1];
 
     for (const child of Array.from(this.children)) {
+      const index = visible.indexOf(child);
+      const previous = index > 0 ? visible[index - 1] : undefined;
+      const next = index >= 0 ? visible[index + 1] : undefined;
+
       child.toggleAttribute(START_ATTRIBUTE, child === first);
       child.toggleAttribute(END_ATTRIBUTE, child === last);
+      child.toggleAttribute(
+        DIVIDER_ATTRIBUTE,
+        previous !== undefined &&
+          !this._isSelected(child) &&
+          !this._isSelected(previous)
+      );
+      child.toggleAttribute(
+        DIVIDER_END_ATTRIBUTE,
+        next !== undefined &&
+          !this._isSelected(child) &&
+          !this._isSelected(next)
+      );
     }
+  }
+
+  private _isSelected(element: Element): boolean {
+    return (
+      element.hasAttribute('active') ||
+      element.getAttribute('aria-pressed') === 'true'
+    );
   }
 
   private _isVisible(element: Element): boolean {

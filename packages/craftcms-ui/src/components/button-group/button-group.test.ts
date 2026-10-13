@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftButton from '../button/button.js';
 import type CraftButtonGroup from './button-group.js';
 import '../button/button.js';
@@ -129,6 +129,55 @@ describe('craft-button-group', () => {
     await group.updateComplete;
 
     expect(group.getAttribute('role')).toBe('toolbar');
+  });
+
+  it('marks dividers between buttons, but not beside the selected one', async () => {
+    document.body.innerHTML = `
+      <craft-button-group name="mode" value="b">
+        <craft-button value="a">A</craft-button>
+        <craft-button value="b">B</craft-button>
+        <craft-button value="c">C</craft-button>
+        <craft-button value="d">D</craft-button>
+      </craft-button-group>
+    `;
+
+    const group = document.querySelector('craft-button-group')!;
+    await group.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    const buttons = Array.from(document.querySelectorAll('craft-button'));
+    const dividers = (attribute: string) =>
+      buttons.map((button) => button.hasAttribute(attribute));
+
+    expect(dividers('data-button-group-divider')).toEqual([
+      false,
+      false,
+      false,
+      true,
+    ]);
+    expect(dividers('data-button-group-divider-end')).toEqual([
+      false,
+      false,
+      true,
+      false,
+    ]);
+
+    group.value = 'd';
+
+    await vi.waitFor(() => {
+      expect(dividers('data-button-group-divider')).toEqual([
+        false,
+        true,
+        true,
+        false,
+      ]);
+      expect(dividers('data-button-group-divider-end')).toEqual([
+        true,
+        true,
+        false,
+        false,
+      ]);
+    });
   });
 
   it('adopts its value from a child marked active in markup', async () => {

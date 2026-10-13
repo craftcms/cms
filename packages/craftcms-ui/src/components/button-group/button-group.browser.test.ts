@@ -126,3 +126,55 @@ it('raises the selected button, so its whole border shows', async () => {
     Number(getComputedStyle(unselected!).zIndex) || 0
   );
 });
+
+it('draws a divider between filled buttons, but not beside the selected one', async () => {
+  const buttons = await render(`
+    <craft-button aria-pressed="false">One</craft-button>
+    <craft-button aria-pressed="false">Two</craft-button>
+    <craft-button aria-pressed="true">Three</craft-button>
+    <craft-button aria-pressed="false">Four</craft-button>`);
+  const style = (button: CraftButton) => getComputedStyle(button);
+  const transparent = 'rgba(0, 0, 0, 0)';
+
+  expect(style(buttons[1]!).borderInlineStartColor).not.toBe(transparent);
+  expect(style(buttons[0]!).borderInlineEndColor).toBe(
+    style(buttons[1]!).borderInlineStartColor
+  );
+  expect(style(buttons[1]!).borderInlineEndColor).toBe(transparent);
+  expect(style(buttons[3]!).borderInlineStartColor).toBe(transparent);
+});
+
+it('keeps the divider showing when the button before it is hovered', async () => {
+  const [first, second] = await render(`
+    <craft-button>One</craft-button>
+    <craft-button>Two</craft-button>`);
+
+  await userEvent.hover(first!);
+
+  expect(Number(getComputedStyle(first!).zIndex)).toBeGreaterThan(
+    Number(getComputedStyle(second!).zIndex) || 0
+  );
+  expect(getComputedStyle(first!).borderInlineEndColor).not.toBe(
+    'rgba(0, 0, 0, 0)'
+  );
+
+  await parkPointer();
+});
+
+it('draws the divider on a button nested in a grouped element', async () => {
+  document.body.innerHTML = `
+    <craft-button-group>
+      <craft-button variant="primary">Save</craft-button>
+      <span style="display: inline-flex">
+        <craft-button variant="primary" icon="chevron-down"></craft-button>
+      </span>
+    </craft-button-group>`;
+  const group = document.querySelector('craft-button-group')!;
+  const [, nested] = Array.from(document.querySelectorAll('craft-button'));
+  await Promise.all([group.updateComplete, nested!.updateComplete]);
+  await settle();
+
+  expect(getComputedStyle(nested!).borderInlineStartColor).not.toBe(
+    'rgba(0, 0, 0, 0)'
+  );
+});

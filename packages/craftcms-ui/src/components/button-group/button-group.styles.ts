@@ -17,6 +17,22 @@ export default css`
     margin-inline-start: calc(var(--c-button-border-width, 1px) * -1);
   }
 
+  ::slotted([data-button-group-divider]) {
+    --c-button-divider-start-color: color-mix(
+      in srgb,
+      currentColor 25%,
+      transparent
+    );
+  }
+
+  ::slotted([data-button-group-divider-end]) {
+    --c-button-divider-end-color: color-mix(
+      in srgb,
+      currentColor 25%,
+      transparent
+    );
+  }
+
   ::slotted(:hover),
   ::slotted([active]),
   ::slotted([aria-pressed='true']) {
