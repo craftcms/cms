@@ -2883,8 +2883,8 @@ CSS,
                 'theme' => 'dark',
             ],
             'style' => [
-                'background-color' => '#000',
-                'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, $left, $right)",
+                'background-color' => 'transparent',
+                'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, color-mix(in srgb, $left 40%, transparent), color-mix(in srgb, $right 40%, transparent))",
             ],
         ];
     }

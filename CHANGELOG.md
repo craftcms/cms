@@ -23,6 +23,7 @@
 - Element selection modals no longer have a header, and their toolbars now fit on one row. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Expand/collapse toggles’ chevrons now follow their labels, and point toward the end of the line while collapsed and down while expanded. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Image thumbnails’ placeholders now cover the same area as the image, and thumbnails no longer shift once their image loads. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Asset previews’ background gradients are now more transparent, and asset edit pages now have a hairline below the preview. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Section and Matrix site settings now have a single “Route To” setting, in place of separate Route Type and Route settings. Namespaced controller actions and values that match a named route are saved as routes, and anything else is saved as a template. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - “Route To” settings now suggest the app’s named routes and controller actions, as well as templates. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Editable tables’ text and select inputs now fill their cells, and clicking anywhere in a cell focuses its control. ([#19942](https://github.com/craftcms/cms/pull/19942))
