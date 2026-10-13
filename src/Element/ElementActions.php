@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use CraftCms\Cms\Asset\Actions\PreviewAsset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\Actions\Copy;
 use CraftCms\Cms\Element\Actions\Delete;
@@ -50,6 +51,7 @@ class ElementActions
      * clicking one dispatches the mapped window event (with the live selection
      * in its detail) instead of POSTing to the perform endpoint. Copy mirrors
      * Craft 5, where it stores the selection in localStorage for paste targets.
+     * Preview has nothing to perform; its only behavior is the modal.
      *
      * @var array<class-string<ElementActionInterface>, string>
      */
@@ -57,6 +59,7 @@ class ElementActions
         Copy::class => 'craft:copy-elements',
         Actions\Edit::class => 'craft:edit-element',
         Actions\View::class => 'craft:view-element',
+        PreviewAsset::class => 'craft:preview-file',
     ];
 
     /**
