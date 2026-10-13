@@ -16,15 +16,17 @@
   import {formatReleaseDate} from '@/modules/releases/types';
   import type {UiPayload} from '@/modules/ui/types';
 
-  type ReleasePageProps = Omit<
-    CraftCms.Cms.Http.ViewModels.ReleaseViewModel,
-    'ui' | 'editUi'
-  > & {
+  type ReleaseViewModel = CraftCms.Cms.Http.ViewModels.ReleaseViewModel;
+
+  const props = defineProps<{
+    release: ReleaseViewModel['release'];
+    readOnly: boolean;
+    formAdditionalButtons: ReleaseViewModel['formAdditionalButtons'];
+    readiness: ReleaseViewModel['readiness'];
     ui: UiPayload;
     editUi: UiPayload | null;
-  };
-
-  const props = defineProps<ReleasePageProps>();
+    metadataHtml: string | null;
+  }>();
 
   const canPublishNow = computed(
     () => props.release.canPublish && !props.readOnly
