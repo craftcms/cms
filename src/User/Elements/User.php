@@ -199,7 +199,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var int|null Photo asset ID
      */
     #[AllowedInSandbox]
-    #[Importable('photoId', 'Photo ID')]
+    #[Importable('photoId', 'Photo (ID, URL, or path)')]
     public ?int $photoId = null;
 
     /**

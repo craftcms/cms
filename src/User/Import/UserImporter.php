@@ -4,20 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Import;
 
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\ImportLog;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
 use CraftCms\Cms\User\Events\UserGroupsAndPermissionsAssigning;
 use Override;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -80,6 +84,18 @@ class UserImporter extends ElementImporter
     #[Override]
     public function setAttributesForImport(ElementInterface $element, array $attributes, array $data): void
     {
+        $photoSource = null;
+        // a photo given as a URL or a file path gets turned into an asset once the user is saved
+        if (
+            isset($attributes['photoId']) &&
+            is_string($attributes['photoId']) &&
+            trim($attributes['photoId']) !== '' &&
+            ! is_numeric($attributes['photoId'])
+        ) {
+            $photoSource = $attributes['photoId'];
+            unset($attributes['photoId']);
+        }
+
         // sensitive user attributes (e.g. admin) can't be imported, apart from the ones the importer offers
         parent::setAttributesForImport(
             $element,
@@ -87,10 +103,14 @@ class UserImporter extends ElementImporter
             $data,
         );
 
-        // deal with user groups
-        $this->afterItemImported(function (mixed $user) use ($data) {
+        // deal with user groups & photo
+        $this->afterItemImported(function (mixed $user) use ($data, $photoSource) {
             if (! $user instanceof User) {
                 return;
+            }
+
+            if ($photoSource) {
+                $this->importPhotoFromFile($user, trim($photoSource));
             }
 
             if (Edition::isAtLeast(Edition::Pro)) {
@@ -119,8 +139,40 @@ class UserImporter extends ElementImporter
         return match ($prop['name']) {
             'groups' => Edition::isAtLeast(Edition::Pro),
             'affiliatedSiteId' => Sites::isMultiSite(),
+            'photoId' => ! empty(ProjectConfig::get('users.photoVolumeUid')),
             default => parent::isPropertyAvailable($prop),
         };
+    }
+
+    /**
+     * Saves an imported file (an absolute URL or a local path) as the user’s photo, logging any failure.
+     */
+    private function importPhotoFromFile(User $user, string $source): void
+    {
+        $filename = AssetsHelper::importFilename($source);
+        $tempPath = null;
+
+        try {
+            [$tempPath, $extension] = AssetsHelper::fetchImportFile(static::urlValidator(), $source, $filename, ! self::isRemoteSource($this->source));
+
+            // without an extension, the fetched file's type decides it, and the temp file needs it too to be saved as a photo
+            if (pathinfo($filename, PATHINFO_EXTENSION) === '') {
+                $filename .= ".$extension";
+                $typedTempPath = sprintf('%s/%s.%s', pathinfo($tempPath, PATHINFO_DIRNAME), pathinfo($tempPath, PATHINFO_FILENAME), $extension);
+                File::move($tempPath, $typedTempPath);
+                $tempPath = $typedTempPath;
+            }
+
+            Users::saveUserPhoto($tempPath, $user, $filename);
+        } catch (Throwable $e) {
+            if ($tempPath !== null) {
+                File::delete($tempPath);
+            }
+
+            ImportLog::warning("Couldn’t import “{$source}” as the user’s photo: ".$e->getMessage(), [
+                'user' => $user->id,
+            ]);
+        }
     }
 
     /**
