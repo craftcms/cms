@@ -759,7 +759,7 @@
       <div
         v-if="editable && !atLimit"
         class="flex gap-md"
-        :class="{'element-selections-footer': ids.length > 0}"
+        :class="{'pt-md': ids.length > 0}"
       >
         <craft-button
           ref="addButton"
@@ -800,12 +800,6 @@
     padding-block: 0 var(--c-spacing-sm);
     padding-inline: 0;
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-  }
-
-  .element-selections-footer {
-    margin-block-start: var(--c-spacing-md);
-    padding-block-start: var(--c-spacing-md);
-    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   .element-selection-footer {
