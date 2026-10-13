@@ -56,10 +56,13 @@ beforeEach(function () {
 
     $this->import->importItem($this->importer, ($this->entryData)());
 
-    // count ElementSaving occurrences from here on, so the seeding save above isn't counted
+    // count ElementSaving occurrences from here on, so the seeding save above isn't counted;
+    // revisions are skipped when created within the same second as the last one, so they're not counted either
     $this->saveCount = 0;
-    Event::listen(ElementSaving::class, function () {
-        $this->saveCount++;
+    Event::listen(ElementSaving::class, function (ElementSaving $event) {
+        if (! $event->element->getIsRevision()) {
+            $this->saveCount++;
+        }
     });
 });
 

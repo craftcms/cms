@@ -228,6 +228,8 @@ it('imports an entry under a parent in a structure section', function () {
         ->createElement();
     Structures::appendToRoot($structure->id, $parent);
 
+    $this->importer->section($section->uid)->entryType($this->entryType->uid);
+
     $this->import->importItem($this->importer, ($this->entryData)([
         'sectionId' => $section->handle,
         'parentId' => $parent->id,

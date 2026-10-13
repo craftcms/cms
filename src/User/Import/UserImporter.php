@@ -89,7 +89,7 @@ class UserImporter extends ElementImporter
 
         // deal with user groups
         $this->afterItemImported(function (mixed $user) use ($data) {
-            if (! is_a($user, self::targetClass())) {
+            if (! $user instanceof User) {
                 return;
             }
 
@@ -123,7 +123,10 @@ class UserImporter extends ElementImporter
         };
     }
 
-    /** @return UserGroup[] */
+    /**
+     * @param  string|array<mixed>|null  $groupsData
+     * @return UserGroup[]
+     */
     private function prepareUserGroups(null|string|array $groupsData = null): array
     {
         if (empty($groupsData)) {
