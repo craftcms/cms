@@ -1,4 +1,5 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
+import {userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
 import '../button/button.js';
 import './button-group.js';
@@ -21,6 +22,16 @@ async function render(markup: string): Promise<CraftButton[]> {
 }
 
 const settle = () => new Promise((resolve) => setTimeout(resolve));
+
+/** Moves the pointer to an empty corner, so nothing it was left over stays hovered. */
+async function parkPointer(): Promise<void> {
+  const spot = document.createElement('div');
+  spot.style.cssText =
+    'position: fixed; inset-block-end: 0; inset-inline-end: 0; width: 10px; height: 10px;';
+  document.body.append(spot);
+  await userEvent.hover(spot);
+  spot.remove();
+}
 
 function corners(button: CraftButton): {start: boolean; end: boolean} {
   const style = getComputedStyle(button);
@@ -109,6 +120,7 @@ it('raises the selected button, so its whole border shows', async () => {
   const [unselected, selected] = await render(`
     <craft-button variant="outline" aria-pressed="false">One</craft-button>
     <craft-button variant="outline" aria-pressed="true">Two</craft-button>`);
+  await parkPointer();
 
   expect(Number(getComputedStyle(selected!).zIndex)).toBeGreaterThan(
     Number(getComputedStyle(unselected!).zIndex) || 0

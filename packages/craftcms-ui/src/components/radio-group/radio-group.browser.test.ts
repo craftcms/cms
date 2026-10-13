@@ -17,6 +17,16 @@ afterEach(async () => {
 
 const settle = () => new Promise((resolve) => setTimeout(resolve));
 
+/** Moves the pointer to an empty corner, so nothing it was left over stays hovered. */
+async function parkPointer(): Promise<void> {
+  const spot = document.createElement('div');
+  spot.style.cssText =
+    'position: fixed; inset-block-end: 0; inset-inline-end: 0; width: 10px; height: 10px;';
+  document.body.append(spot);
+  await userEvent.hover(spot);
+  spot.remove();
+}
+
 async function render(): Promise<{
   group: CraftRadioGroup;
   radios: CraftRadio[];
@@ -89,6 +99,7 @@ it('selects an option when its button is clicked', async () => {
   const {group, radios} = await render();
 
   await userEvent.click(radios[0]!, {position: {x: 2, y: 2}});
+  await parkPointer();
   await settle();
 
   expect(group.modelValue).toBe('start');
