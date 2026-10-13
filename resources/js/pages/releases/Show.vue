@@ -181,7 +181,7 @@
       :ui="ui"
       :submit="editUi ? update({release: release.id}) : undefined"
       :sidebar-ui="editUi ?? undefined"
-      :metadata-html="editUi ? undefined : metadataHtml"
+      :metadata-html="editUi ? undefined : (metadataHtml ?? undefined)"
       :default-form-actions="[]"
       :form-additional-buttons="formAdditionalButtons"
     >
