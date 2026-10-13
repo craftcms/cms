@@ -212,4 +212,66 @@ describe('WorkflowDetailsPanel', () => {
       plannedAt: '2026-10-16T06:30:00+09:00',
     });
   });
+
+  it('explains instead of applying an approved draft the release schedule holds back', async () => {
+    const applyDraft = {
+      label: 'Apply draft',
+      actionUrl: '/actions/elements/apply-draft',
+      params: {workflowRunId: 41, workflowCurrentStage: 1},
+      redirect: null,
+      disabled: true,
+      disabledReason: 'Cancel the release schedule before applying this draft.',
+      includeFormData: false,
+    };
+    const submitAction = vi.fn();
+
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(WorkflowDetailsPanel, {
+          payload: {
+            workflow: {
+              current: review({
+                status: 'approved',
+                applyDisabledReason: null,
+                actionComponent: null,
+                showDefaultActions: true,
+                actionProps: {},
+                canApply: true,
+              }),
+              draftReviews: [],
+            },
+            applyDraftUrl: '/actions/elements/apply-draft',
+            draftId: 7,
+            isProvisionalDraft: false,
+            elementType: 'craft\\elements\\Entry',
+            canonicalId: 12,
+            siteId: 1,
+            editorActions: {primary: null, menu: [], buttons: [applyDraft]},
+            canAddToRelease: false,
+            canCreateRelease: false,
+            releaseOptions: [],
+          } as unknown as ElementEditPayload,
+          updatePayload: vi.fn(),
+          submitAction,
+        }),
+    });
+    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+    app.mount(container);
+    await nextTick();
+
+    const button = [
+      ...container.querySelectorAll<HTMLElement & {disabled: boolean}>(
+        'craft-button'
+      ),
+    ].find((element) => element.textContent?.trim() === 'Apply draft')!;
+    button.click();
+
+    expect(submitAction).not.toHaveBeenCalled();
+    expect(button.disabled).toBe(true);
+    expect(
+      container.querySelector(`craft-tooltip[for="${button.id}"]`)?.textContent
+    ).toContain('Cancel the release schedule before applying this draft.');
+  });
 });

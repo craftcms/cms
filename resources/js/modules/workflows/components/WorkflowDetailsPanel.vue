@@ -27,6 +27,12 @@
         ) ?? null)
       : null
   );
+  function applyDraft(): void {
+    if (applyDraftAction.value && !applyDraftAction.value.disabled) {
+      props.submitAction(applyDraftAction.value);
+    }
+  }
+
   const releaseActions = useReleaseEditorActions();
   const canChooseRelease = computed(
     () =>
@@ -82,14 +88,30 @@
           v-if="applyDraftAction || canChooseRelease"
           class="flex flex-wrap justify-end gap-2"
         >
-          <craft-button
-            v-if="applyDraftAction"
-            type="button"
-            :variant="ButtonVariant.Primary"
-            @click="props.submitAction(applyDraftAction)"
-          >
-            {{ applyDraftAction.label }}
-          </craft-button>
+          <template v-if="applyDraftAction">
+            <craft-button
+              id="workflow-apply-draft"
+              type="button"
+              :variant="ButtonVariant.Primary"
+              .disabled="applyDraftAction.disabled ?? false"
+              :focusable-when-disabled="
+                applyDraftAction.disabled && applyDraftAction.disabledReason
+                  ? true
+                  : undefined
+              "
+              @click="applyDraft"
+            >
+              {{ applyDraftAction.label }}
+            </craft-button>
+            <craft-tooltip
+              v-if="
+                applyDraftAction.disabled && applyDraftAction.disabledReason
+              "
+              for="workflow-apply-draft"
+            >
+              {{ applyDraftAction.disabledReason }}
+            </craft-tooltip>
+          </template>
           <ReleasePicker
             v-if="canChooseRelease"
             :releases="payload.releaseOptions"
