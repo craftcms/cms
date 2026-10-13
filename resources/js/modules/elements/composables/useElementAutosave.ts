@@ -76,6 +76,8 @@ export function useElementAutosave<T extends object>(
   const savedAt = ref<string | null>(null);
   const error = ref<string | null>(null);
   const httpStatus = ref<number | null>(null);
+  /** Bumped by every save that lands, for whoever reacts to one. */
+  const saves = ref(0);
 
   // The three pieces of what a save returned are held in one ref rather than
   // separately, so they can only ever be read as a matched set. The host
@@ -152,6 +154,7 @@ export function useElementAutosave<T extends object>(
         modified: data.modifiedAttributes ?? [],
       };
       status.value = 'saved';
+      saves.value++;
       acknowledgedGeneration.value = Math.max(
         acknowledgedGeneration.value,
         savingGeneration
@@ -311,6 +314,7 @@ export function useElementAutosave<T extends object>(
     savedAt: readonly(savedAt),
     error: readonly(error),
     httpStatus: readonly(httpStatus),
+    saves: readonly(saves),
     modified,
     hasPendingChanges,
     ui: uiPayload,

@@ -6,7 +6,14 @@
    * save controls and details column go.
    */
   import {t} from '@craftcms/ui';
-  import {computed, provide, useTemplateRef, type Component} from 'vue';
+  import {
+    computed,
+    provide,
+    useId,
+    useTemplateRef,
+    watch,
+    type Component,
+  } from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import MetadataDetailsContent from '@/common/components/MetadataDetailsContent.vue';
@@ -30,6 +37,8 @@
   import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
+  import LivePreview from '@/modules/elements/live-preview/LivePreview.vue';
+  import {useLivePreview} from '@/modules/elements/live-preview/useLivePreview';
 
   const contentEl = useTemplateRef<HTMLElement>('content');
   const slideout = useSlideout();
@@ -161,6 +170,24 @@
   );
   const showActionMenu = computed(() => isSlideout || !page.props.readOnly);
 
+  // Full pages only, as in Craft 5.
+  const livePreview = useLivePreview(
+    () => (isSlideout ? null : (payload.preview ?? null)),
+    {
+      save: () => autosave.save(),
+      get hasPendingChanges() {
+        return autosave.hasPendingChanges.value;
+      },
+    }
+  );
+  const canPreview = computed(
+    () => showElementControls.value && Boolean(payload.preview?.targets.length)
+  );
+  const livePreviewEditorId = `lp-editor-${useId()}`;
+  const previewButton = useTemplateRef<HTMLElement>('previewButton');
+
+  watch(autosave.saves, () => void livePreview.refresh());
+
   useAppLayout(() => ({
     title: payload.title,
     form,
@@ -209,6 +236,16 @@
     "
     name="content-toolbar-meta"
   >
+    <craft-button
+      v-if="canPreview"
+      ref="previewButton"
+      type="button"
+      size="small"
+      variant="outline"
+      @click="livePreview.open()"
+    >
+      {{ t('Preview') }}
+    </craft-button>
     <ElementActivityAvatars :entries="activity.activity.value" />
     <WorkflowDraftsStatus
       v-if="!isSlideout && payload.workflow.draftReviews.length"
@@ -342,31 +379,67 @@
     </div>
   </LayoutSlot>
 
-  <div ref="content" class="py-lg">
-    <CpContainer>
-      <component
-        :is="formWrapper ?? 'div'"
-        v-bind="formWrapper ? {editor, region: 'content'} : {}"
-      >
+  <Teleport
+    :to="`#${livePreviewEditorId}`"
+    :disabled="!livePreview.isOpen.value"
+    defer
+  >
+    <div ref="content" class="py-lg">
+      <CpContainer>
         <component
-          :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
-          v-if="uiPayload"
+          :is="formWrapper ?? 'div'"
+          v-bind="formWrapper ? {editor, region: 'content'} : {}"
         >
-          <UiRenderer
-            ref="renderer"
-            :payload="uiPayload"
-            :errors="errors"
-            :refresh="uiPayload.refreshable ? refreshLayout : undefined"
-            :modified="autosave.modified.value"
-            :disabled="workflowReviewLocked"
-            @update:mutation="onMutation"
-          />
+          <component
+            :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
+            v-if="uiPayload"
+          >
+            <UiRenderer
+              ref="renderer"
+              :payload="uiPayload"
+              :errors="errors"
+              :refresh="uiPayload.refreshable ? refreshLayout : undefined"
+              :modified="autosave.modified.value"
+              :disabled="workflowReviewLocked"
+              @update:mutation="onMutation"
+            />
+          </component>
         </component>
-      </component>
 
-      <slot :payload="payload" />
-    </CpContainer>
-  </div>
+        <slot :payload="payload" />
+      </CpContainer>
+    </div>
+  </Teleport>
+
+  <LivePreview
+    v-if="canPreview"
+    :controller="livePreview"
+    :editor-target-id="livePreviewEditorId"
+    :title="payload.title"
+    @save="primaryAction()"
+    @closed="previewButton?.focus()"
+  >
+    <template #status>
+      <AutosaveMessage
+        v-if="autosave.status.value !== 'idle'"
+        :status="autosave.status.value"
+        :saved-at="autosave.savedAt.value"
+        :error="autosave.error.value"
+        :http-status="autosave.httpStatus.value"
+        @refresh="reload"
+      />
+    </template>
+    <template #footer>
+      <craft-button
+        type="button"
+        variant="primary"
+        :disabled="workflowReviewLocked"
+        @click="primaryAction()"
+      >
+        {{ payload.editorActions.primary.label }}
+      </craft-button>
+    </template>
+  </LivePreview>
 
   <LayoutSlot
     v-if="hasDetails || $slots['details-header']"

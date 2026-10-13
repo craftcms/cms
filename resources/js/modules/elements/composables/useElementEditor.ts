@@ -18,6 +18,7 @@ import type {UiChangeKind, UiPayload, UiValues} from '@/modules/ui/types';
 import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 import {useInertiaUiRenderer} from '@/modules/ui/useInertiaUiRenderer';
 import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
+import type {ElementPreview} from '@/modules/elements/live-preview/useLivePreview';
 import {useElementActivity} from '@/modules/elements/composables/useElementActivity';
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
@@ -123,6 +124,8 @@ export interface ElementEditPayload {
   canDiscardDraft: boolean;
   actionMenu: Array<ElementActionMenuItem>;
   previewTargets: Array<ElementPreviewTarget>;
+  /** What Live Preview needs; `null` when the element can't be previewed here. */
+  preview?: ElementPreview | null;
   elementDisplayName: string;
   activityUrl: string | null;
   activityTimelineUrl: string | null;

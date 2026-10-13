@@ -36,6 +36,7 @@ use CraftCms\Cms\Workflow\Data\WorkflowDraftReviewData;
 use CraftCms\Cms\Workflow\Data\WorkflowReviewData;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -77,6 +78,11 @@ class ElementEditViewModel extends ViewModel
     }
 
     private ?UiPayload $ui = null;
+
+    private ?string $previewToken = null;
+
+    /** @var list<array<string, mixed>>|null */
+    private ?array $previewTargetsCache = null;
 
     private bool $uiResolved = false;
 
@@ -320,41 +326,16 @@ class ElementEditViewModel extends ViewModel
      */
     public function previewTargets(): array
     {
-        $element = $this->element;
-
-        if (! $element->id) {
-            return [];
-        }
-
-        $targets = $element->getPreviewTargets();
+        $targets = $this->rawPreviewTargets();
 
         if ($targets === []) {
             return [];
         }
 
-        $isLive = (
-            ($element->getIsCanonical() || $element->isProvisionalDraft) &&
-            ! $element->getIsDraft() &&
-            $element->enabled &&
-            $element->getEnabledForSite() &&
-            $element->getRoute() !== null
-        );
+        $isLive = $this->isLive();
+        $siteToken = $this->siteToken();
 
-        $previewToken = Str::random(32, extendedChars: true);
-        $siteToken = (app()->isDownForMaintenance() || ! $element->getSite()->getEnabled())
-            ? Crypt::encrypt((string) $element->siteId)
-            : null;
-
-        $tokenParams = array_filter([
-            'elementType' => $element::class,
-            'canonicalId' => $element->getCanonicalId(),
-            'siteId' => $element->siteId,
-            'revisionId' => $element->revisionId,
-            'draftId' => $element->isProvisionalDraft ? null : $element->draftId,
-            'previewToken' => Crypt::encrypt($previewToken),
-        ], fn (mixed $value): bool => $value !== null);
-
-        return array_values(array_map(function (array $target) use ($isLive, $previewToken, $siteToken, $tokenParams): array {
+        return array_values(array_map(function (array $target) use ($isLive, $siteToken): array {
             $params = array_filter([
                 // Randomized so CDNs don't serve a cached page.
                 'x-craft-preview' => $isLive ? null : Crypt::encrypt(Str::random(10)),
@@ -368,16 +349,126 @@ class ElementEditViewModel extends ViewModel
                 ];
             }
 
-            $params[Cms::config()->tokenParam] = $previewToken;
+            $params[Cms::config()->tokenParam] = $this->previewToken();
 
             return [
                 'label' => (string) $target['label'],
                 'url' => Url::actionUrl('preview/create-token', [
-                    ...$tokenParams,
+                    ...$this->previewTokenParams(),
                     'redirect' => Url::url($target['url'], $params),
                 ]),
             ];
         }, $targets));
+    }
+
+    /**
+     * What Live Preview needs to load the element's targets in an iframe, or
+     * `null` when the element can't be previewed from this screen.
+     *
+     * The target URLs are untokenized; the client adds the token once it has
+     * been created, along with the preview param, which changes on every save
+     * so a cached page is never shown.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function preview(): ?array
+    {
+        $targets = $this->rawPreviewTargets();
+
+        if ($targets === [] || ! $this->canPreview()) {
+            return null;
+        }
+
+        $config = Cms::config();
+
+        return [
+            'targets' => array_values(array_map(fn (array $target): array => [
+                'label' => (string) $target['label'],
+                'url' => (string) $target['url'],
+                'refresh' => (bool) ($target['refresh'] ?? true),
+            ], $targets)),
+            'createTokenUrl' => Url::actionUrl('preview/create-token'),
+            'tokenParams' => $this->previewTokenParams(),
+            'token' => $this->previewToken(),
+            'tokenParam' => $config->tokenParam,
+            'paramValue' => Crypt::encrypt(Str::random(10)),
+            'siteTokenParam' => $config->siteToken,
+            'siteToken' => $this->siteToken(),
+            'iframeResizerOptions' => $config->useIframeResizer
+                ? (object) $config->previewIframeResizerOptions
+                : false,
+        ];
+    }
+
+    /**
+     * Craft 5's rule: a draft can be previewed by whoever can save it, and the
+     * current element by whoever can draft it, since previewing it makes one.
+     */
+    protected function canPreview(): bool
+    {
+        $element = $this->element;
+
+        if ($this->request->isMobileBrowser(true) || $element->getIsRevision()) {
+            return false;
+        }
+
+        if ($element->getIsDraft() && ! $element->isProvisionalDraft) {
+            return $this->canSave;
+        }
+
+        return Gate::check('createDrafts', $element->getCanonical(true));
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function rawPreviewTargets(): array
+    {
+        if (! $this->element->id) {
+            return [];
+        }
+
+        return $this->previewTargetsCache ??= $this->element->getPreviewTargets();
+    }
+
+    private function isLive(): bool
+    {
+        $element = $this->element;
+
+        return ($element->getIsCanonical() || $element->isProvisionalDraft) &&
+            ! $element->getIsDraft() &&
+            $element->enabled &&
+            $element->getEnabledForSite() &&
+            $element->getRoute() !== null;
+    }
+
+    private function siteToken(): ?string
+    {
+        return (app()->isDownForMaintenance() || ! $this->element->getSite()->getEnabled())
+            ? Crypt::encrypt((string) $this->element->siteId)
+            : null;
+    }
+
+    /**
+     * One token per screen, shared by the View links and Live Preview, so
+     * whichever is used first creates it for both.
+     */
+    private function previewToken(): string
+    {
+        return $this->previewToken ??= Str::random(32, extendedChars: true);
+    }
+
+    /** @return array<string, mixed> */
+    private function previewTokenParams(): array
+    {
+        $element = $this->element;
+
+        return array_filter([
+            'elementType' => $element::class,
+            'canonicalId' => $element->getCanonicalId(),
+            'siteId' => $element->siteId,
+            'revisionId' => $element->revisionId,
+            'draftId' => $element->isProvisionalDraft ? null : $element->draftId,
+            'previewToken' => Crypt::encrypt($this->previewToken()),
+        ], fn (mixed $value): bool => $value !== null);
     }
 
     /**
@@ -395,7 +486,7 @@ class ElementEditViewModel extends ViewModel
             return [];
         }
 
-        $hidesView = $this->element->getPreviewTargets() !== [];
+        $hidesView = $this->rawPreviewTargets() !== [];
 
         return array_values(array_filter(
             $this->element->actionMenuDescriptors(ElementActionContext::Editor),

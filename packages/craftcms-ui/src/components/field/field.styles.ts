@@ -13,12 +13,14 @@ export default css`
   :host([has-maxlength]:not([width='full'])),
   :host([width='auto']) {
     width: fit-content;
+    max-width: 100%;
   }
 
   /* Stop the input chrome from flexing back out to the available space. */
   :host([has-maxlength]:not([width='full'])) .input-group__input,
   :host([width='auto']) .input-group__input {
     flex: 0 0 auto;
+    max-width: 100%;
   }
 
   :host([hidden]) {

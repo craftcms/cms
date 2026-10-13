@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\RouteToken\Data\RouteToken;
+use CraftCms\Cms\RouteToken\Model\RouteToken as RouteTokenModel;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -51,7 +52,7 @@ readonly class PreviewController
             default => $this->requireSessionAuthorization("previewElement:{$tokenData->getCanonicalId()}"),
         };
 
-        $token = $tokens->createPreviewToken([
+        $route = [
             ActionRoute::uriForSegments(['preview', 'preview'], false), [
                 'elementType' => $tokenData->elementType,
                 'canonicalId' => $tokenData->getCanonicalId(),
@@ -60,7 +61,20 @@ readonly class PreviewController
                 'revisionId' => $tokenData->revisionId ?? null,
                 'userId' => $request->craftUser()?->getCraftUserId(),
             ],
-        ], token: $tokenData->previewToken);
+        ];
+
+        // A pre-generated token is shared by everything on the edit screen, so
+        // whichever uses it second finds it already created.
+        $existing = isset($tokenData->previewToken)
+            ? RouteTokenModel::where('token', $tokenData->previewToken)->first()
+            : null;
+
+        if ($existing) {
+            abort_unless($existing->route == $route, 400, 'Invalid preview token.');
+            $token = $existing->token;
+        } else {
+            $token = $tokens->createPreviewToken($route, token: $tokenData->previewToken);
+        }
 
         abort_if($token === false, 500, t('Could not create a preview token.'));
 

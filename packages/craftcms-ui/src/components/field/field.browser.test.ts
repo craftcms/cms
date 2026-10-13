@@ -118,3 +118,17 @@ it('exposes translation help on keyboard focus and dismisses it with Escape', as
   await userEvent.tab();
   expect(document.activeElement).toBe(field.querySelector('input'));
 });
+
+it('keeps a maxlength field within a narrow column', async () => {
+  document.body.innerHTML =
+    '<div style="width: 300px"><craft-field label="Title"><craft-input slot="input" maxlength="255"><input slot="input" maxlength="255" size="255"></craft-input></craft-field></div>';
+  const field = document.querySelector('craft-field')!;
+  await field.updateComplete;
+
+  await vi.waitFor(() => {
+    expect(field.hasAttribute('has-maxlength')).toBe(true);
+    expect(
+      document.querySelector('input')!.getBoundingClientRect().width
+    ).toBeLessThanOrEqual(300);
+  });
+});
