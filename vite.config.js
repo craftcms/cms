@@ -294,6 +294,17 @@ export default defineConfig(({mode}) => {
           test: {
             name: 'unit',
             environment: 'happy-dom',
+            // Many tests import their module inside the test, and that first
+            // import can outlast the 5s default when every worker is busy.
+            testTimeout: 30_000,
+            // Vitest resolves packages for Node, which skips tus-js-client's
+            // legacy `browser` field; its Node build rejects browser Files.
+            alias: [
+              {
+                find: /^tus-js-client$/,
+                replacement: 'tus-js-client/lib.esm/browser/index.js',
+              },
+            ],
             include: [
               'resources/js/**/*.test.ts',
               'yii2-adapter/resources/js/**/*.test.ts',
