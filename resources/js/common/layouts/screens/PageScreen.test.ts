@@ -65,49 +65,63 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  vi.unstubAllGlobals();
   teardown?.();
   teardown = undefined;
+  vi.unstubAllGlobals();
   window.matchMedia = realMatchMedia;
 });
 
 describe('PageScreen', () => {
-  it('draws the subnav actions menu only once a page fills it', async () => {
-    stubViewport(true);
+  it.each([
+    {
+      layout: 'expanded',
+      isLarge: true,
+      nav: '.secondary-nav',
+      menu: '.secondary-nav__actions',
+    },
+    {
+      layout: 'collapsed',
+      isLarge: false,
+      nav: 'craft-popover',
+      menu: 'craft-action-menu',
+    },
+  ])(
+    'draws the $layout subnav actions menu only once a page fills it',
+    async ({isLarge, nav, menu}) => {
+      stubViewport(isLarge);
 
-    const filled = ref(false);
-    const container = document.createElement('div');
-    document.body.append(container);
+      const filled = ref(false);
+      const container = document.createElement('div');
+      document.body.append(container);
 
-    const app = createApp({
-      render: () =>
-        h(PageScreen, null, {
-          default: () =>
-            filled.value
-              ? h(LayoutSlot, {name: 'subnav-actions'}, () =>
-                  h('button', {type: 'button'}, 'New Store')
-                )
-              : null,
-        }),
-    });
-    app.mount(container);
-    teardown = () => {
-      app.unmount();
-      container.remove();
-    };
-    await nextTick();
+      const app = createApp({
+        render: () =>
+          h(PageScreen, null, {
+            default: () =>
+              filled.value
+                ? h(LayoutSlot, {name: 'subnav-actions'}, () =>
+                    h('button', {type: 'button'}, 'New Store')
+                  )
+                : null,
+          }),
+      });
+      app.mount(container);
+      teardown = () => {
+        app.unmount();
+        container.remove();
+      };
+      await nextTick();
 
-    expect(container.querySelector('.secondary-nav')).not.toBeNull();
-    expect(container.querySelector('.secondary-nav__actions')).toBeNull();
+      expect(container.querySelector(nav)).not.toBeNull();
+      expect(container.querySelector(menu)).toBeNull();
 
-    filled.value = true;
-    await nextTick();
-    await nextTick();
-    await nextTick();
+      filled.value = true;
 
-    const actions = container.querySelector('.secondary-nav__actions');
-
-    expect(actions).not.toBeNull();
-    expect(actions?.textContent).toContain('New Store');
-  });
+      await vi.waitFor(() =>
+        expect(container.querySelector(menu)?.textContent ?? '').toContain(
+          'New Store'
+        )
+      );
+    }
+  );
 });
