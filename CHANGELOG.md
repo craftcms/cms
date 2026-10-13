@@ -120,6 +120,8 @@
 - Added `CraftCms\Cms\Ui\Nodes\Scope` for embedding component settings under a path prefix, with optional shared delta tracking. ([#19914](https://github.com/craftcms/cms/pull/19914))
 - Added support for hiding editable table rows while preserving their inputs and submitted values, using `CraftCms\Cms\Ui\Controls\Table::hiddenRows()` or legacy `_hidden` row values. ([#19939](https://github.com/craftcms/cms/pull/19939))
 - The MCP server’s `elements.update` tool can now set and clear assets’ focal points via a `focalPoint` attribute. ([#19933](https://github.com/craftcms/cms/pull/19933))
+- The MCP server now validates custom field values against the `elements.field-schema` schema, and returns an error that identifies each invalid value. ([#19965](https://github.com/craftcms/cms/pull/19965))
+- GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - Fixed a bug where sorting the Sections, Fields, or Entry Types settings tables from a later page showed the first page’s rows with the later page’s pagination. ([#19912](https://github.com/craftcms/cms/issues/19912))
 - Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing. ([#19889](https://github.com/craftcms/cms/pull/19889))
 - Fixed a bug where new control panel assets weren’t getting published when updating via the control panel or `craft:update` command.
@@ -153,6 +155,7 @@
 - Fixed a bug where the “Users” nav item was marked as the current page when viewing your own account or a user’s edit screen. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where the “Preview file”, “Download”, “Rename file”, “Replace file”, “Copy URL”, “Copy reference tag”, “Show in folder”, “Edit Image”, and “Move…” actions in asset indexes’ Actions menu didn’t do anything, and cleared the selection instead. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where the folder picker for moving assets and folders was unstyled, and offered “Temporary Uploads” as a destination when moving folders. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where the MCP server’s `elements.create`, `elements.update`, and `elements.validate` tools silently ignored Matrix entries submitted in the format `elements.field-schema` described. ([#19965](https://github.com/craftcms/cms/pull/19965))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
