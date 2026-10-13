@@ -188,6 +188,7 @@
 
 ### Extensibility
 
+- Added the `buttons` attribute to `<craft-radio-group>`, and `CraftCms\Cms\Cp\Components\RadioGroup::buttons()`, which show a radio group’s options as a row of joined buttons. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added `CraftCms\Cms\Form\Controls\NestedElements` and `CraftCms\Cms\Element\NestedElementManager::formControl()`, allowing plugins to manage custom nested element types as cards or embedded element indexes. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Unified entry edit pages and nested element slideouts under the generic element editor, with a default `CraftCms\Cms\Http\ViewModels\ElementEditViewModel` for custom element types. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Added the `craft:layout-slot`, `craft:app-layout`, and `craft:cp-container` global Vue components, which plugins can use to fill control panel screen layout regions on their own Inertia pages. ([#19854](https://github.com/craftcms/cms/pull/19854))

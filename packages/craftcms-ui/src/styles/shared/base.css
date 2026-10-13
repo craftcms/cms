@@ -125,6 +125,29 @@ craft-radio > input[type='radio'] {
   }
 }
 
+craft-radio[data-button] > input[type='radio'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: inherit;
+
+  &,
+  &:checked {
+    background-color: transparent;
+  }
+
+  &::before {
+    display: none;
+  }
+
+  &:disabled {
+    opacity: 1;
+  }
+}
+
 h1,
 h2,
 h3,
