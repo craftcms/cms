@@ -18,6 +18,7 @@ use Inertia\Testing\AssertableInertia;
 use Symfony\Component\DomCrawler\Crawler;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
@@ -187,5 +188,14 @@ it('shows the uploader as a plain chip in the metadata', function () {
             ->where('metadataHtml', fn (string $html): bool => new Crawler($html)
                 ->filter('craft-chip')
                 ->attr('appearance') === 'plain')
+        );
+});
+
+it('leaves out the status, since assets have no statuses', function () {
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('statusLabelHtml', null)
+            ->where('metadataHtml', fn (string $html): bool => ! str_contains($html, 'craft-badge')
+                && ! str_contains($html, '>'.t('Status').'<'))
         );
 });
