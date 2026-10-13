@@ -5586,10 +5586,6 @@ $min2ColWidth: 400px;
     @include mixins.checkered-bg(17px);
   }
 
-  &.editable {
-    cursor: pointer;
-  }
-
   &.loading {
     &::after {
       content: '';
@@ -5627,15 +5623,6 @@ $min2ColWidth: 400px;
       max-width: 100%;
       max-height: 190px;
     }
-  }
-}
-
-.image-actions {
-  &.is-mobile {
-    margin-block: calc((var(--spacing) / 2) * -1) var(--spacing);
-    margin-inline: var(--neg-padding);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
   }
 }
 
