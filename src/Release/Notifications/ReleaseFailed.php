@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Release\Notifications;
 
 use CraftCms\Cms\Cp\Notifications\CpNotification;
+use CraftCms\Cms\Release\Models\Release;
 
 use function CraftCms\Cms\t;
 
@@ -13,15 +14,16 @@ use function CraftCms\Cms\t;
  */
 class ReleaseFailed extends CpNotification
 {
-    public function __construct(string $releaseName, string $error)
+    public function __construct(Release $release, string $error)
     {
         parent::__construct(t('The release “{name}” could not be published. {error}', [
-            'name' => $releaseName,
+            'name' => $release->name,
             'error' => $error,
         ]));
 
         $this
             ->kind('release-failed')
-            ->title(t('Release publication failed'));
+            ->title(t('Release publication failed'))
+            ->url(route('craft.cp.releases.show', $release));
     }
 }

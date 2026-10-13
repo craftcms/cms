@@ -898,7 +898,7 @@ class Releases
                 ->collect()
                 ->filter(fn (User $user): bool => $user->can('manageReleases'));
 
-            Notification::send($managers, new ReleaseFailed($release->name, $exception->getMessage()));
+            Notification::send($managers, new ReleaseFailed($release, $exception->getMessage()));
         } catch (Throwable $notificationException) {
             report($notificationException);
         }

@@ -173,7 +173,8 @@ it('rolls back every member and notifies release managers when a later draft fai
         $this->actor,
         ReleaseFailed::class,
         fn (ReleaseFailed $notification): bool => $notification->toDatabase($this->actor)['message']
-            === 'The release “Atomic release” could not be published. The second member failed.',
+            === 'The release “Atomic release” could not be published. The second member failed.'
+            && $notification->toDatabase($this->actor)['url'] === route('craft.cp.releases.show', $release),
     );
     Notification::assertNotSentTo($editor, ReleaseFailed::class);
 });
