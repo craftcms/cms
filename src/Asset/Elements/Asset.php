@@ -2838,6 +2838,8 @@ JS, [
      * edges show. Others get a gradient between the colors of the image's
      * left and right edges, so it bleeds out to the sides, with a black
      * overlay that darkens it by 25% at the top, fading to 5% at the bottom.
+     * The edge colors are 40% opaque over a transparent background, so the
+     * gradient takes on the color of whatever it sits on.
      *
      * @return array<string, array<string, string>>
      */
