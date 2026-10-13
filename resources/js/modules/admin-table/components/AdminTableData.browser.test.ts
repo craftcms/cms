@@ -1,5 +1,5 @@
 import '../../../../css/cp.css';
-import {createApp, h, nextTick, reactive, ref} from 'vue';
+import {createApp, defineComponent, h, nextTick, reactive, ref} from 'vue';
 import {
   mergeDataIntoQueryString,
   router as inertiaRouter,
@@ -16,9 +16,10 @@ import type {
   AdminTableRequest,
 } from '../types';
 
-const {reload, get} = vi.hoisted(() => ({
+const {reload, get, visit} = vi.hoisted(() => ({
   reload: vi.fn(),
   get: vi.fn(),
+  visit: vi.fn(),
 }));
 const slideout = vi.hoisted(() => vi.fn().mockResolvedValue(null));
 let inertiaPage: {url: string; props: {readOnly: boolean}};
@@ -31,7 +32,7 @@ vi.mock('@/common/slideouts', async () => ({
 vi.mock('@inertiajs/vue3', async () => ({
   ...(await vi.importActual('@inertiajs/vue3')),
   usePage: () => inertiaPage,
-  router: {reload, get},
+  router: {reload, get, visit},
 }));
 
 const records = [
@@ -49,6 +50,7 @@ beforeEach(() => {
   reload.mockClear();
   get.mockReset();
   slideout.mockClear();
+  visit.mockClear();
   inertiaPage = reactive({url: '/', props: {readOnly: false}});
   vi.stubGlobal(
     'fetch',
@@ -1013,12 +1015,6 @@ it('opens slideout links at their width and refreshes through its own handler', 
     expect(element).not.toBeNull();
     return element!;
   });
-  link
-    .closest('td')!
-    .dispatchEvent(
-      new MouseEvent('dblclick', {bubbles: true, cancelable: true})
-    );
-  expect(slideout).not.toHaveBeenCalled();
   await userEvent.click(page.getByRole('link', {name: 'Summer sale'}));
   expect(navigate).not.toHaveBeenCalled();
 
@@ -1151,4 +1147,191 @@ it('opens the create action in a slideout when asked to', async () => {
   );
   await expectDebouncedDraftRefresh(slideout.mock.lastCall![1].onSaved, reload);
   expect(reload).toHaveBeenCalledWith({only: ['ui']});
+});
+
+async function doubleClickRow(
+  host: HTMLElement,
+  index: number
+): Promise<Element> {
+  const row = await vi.waitFor(() => {
+    const element = host.querySelectorAll('tbody tr')[index];
+    expect(element?.lastElementChild).toBeTruthy();
+    return element!;
+  });
+  await userEvent.dblClick(row.lastElementChild!);
+  return row;
+}
+
+it('opens a double-clicked row the way its first column’s link would', async () => {
+  const {openSlideout, closeAllSlideouts, setSlideoutPageLoader} =
+    await import('@/common/slideouts/store');
+  const {default: SlideoutHost} =
+    await import('@/common/slideouts/SlideoutHost.vue');
+  setSlideoutPageLoader(async () => ({
+    component: defineComponent({
+      render: () => h('input', {'aria-label': 'Editor'}),
+    }),
+    props: {},
+    url: '/admin/rules/1',
+  }));
+  slideout.mockImplementationOnce(openSlideout);
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {key: 'handle', label: 'Handle'},
+    ],
+    rows: [
+      {
+        id: 1,
+        name: {label: 'Summer sale', url: '/admin/rules/1', slideout: true},
+        handle: 'summerSale',
+      },
+      {
+        id: 2,
+        name: {label: 'Winter sale', url: '/admin/rules/2'},
+        handle: 'winterSale',
+      },
+    ],
+  });
+  const unmountTable = teardown;
+  const root = document.createElement('div');
+  document.body.append(root);
+  const app = createApp(() => h(SlideoutHost, {assetVersion: ''}));
+  app.mount(root);
+  teardown = () => {
+    closeAllSlideouts();
+    app.unmount();
+    unmountTable?.();
+    setSlideoutPageLoader();
+  };
+  for (const modifier of ['altKey', 'ctrlKey', 'metaKey', 'shiftKey']) {
+    host
+      .querySelector('tbody td:last-child')!
+      .dispatchEvent(
+        new MouseEvent('dblclick', {
+          bubbles: true,
+          cancelable: true,
+          [modifier]: true,
+        })
+      );
+  }
+  expect(slideout).not.toHaveBeenCalled();
+  expect(visit).not.toHaveBeenCalled();
+  const row = await doubleClickRow(host, 0);
+  const link = row.querySelector('a[href="/admin/rules/1"]');
+  expect(link).toBeInstanceOf(HTMLAnchorElement);
+  await expect
+    .poll(() =>
+      document
+        .querySelector('.slideout-panel')
+        ?.contains(document.activeElement)
+    )
+    .toBe(true);
+  expect(document.querySelectorAll('.slideout-panel')).toHaveLength(1);
+  closeAllSlideouts();
+  await expect.poll(() => document.activeElement === link).toBe(true);
+  await doubleClickRow(host, 1);
+  expect(visit).toHaveBeenCalledWith('/admin/rules/2');
+});
+
+it('ignores double-clicks on rows whose first column isn’t a link', async () => {
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {key: 'handle', label: 'Handle'},
+    ],
+    rows: [
+      {
+        id: 1,
+        name: {html: '<a href="/admin/rules/1">Summer sale</a>'},
+        handle: 'summerSale',
+      },
+      {id: 2, name: 'Winter sale', handle: 'winterSale'},
+    ],
+  });
+  await doubleClickRow(host, 0);
+  await doubleClickRow(host, 1);
+  expect(slideout).not.toHaveBeenCalled();
+  expect(visit).not.toHaveBeenCalled();
+});
+
+it.each([
+  '<div contenteditable="true"><span>Editable description</span></div>',
+  '<button type="button" tabindex="-1"><span>Context action</span></button>',
+])(
+  'leaves double-clicks inside interactive HTML cells alone: %s',
+  async (html) => {
+    const host = mountNode({
+      columns: [
+        {key: 'name', label: 'Name'},
+        {key: 'detail', label: 'Detail'},
+      ],
+      rows: [
+        {
+          id: 1,
+          name: {label: 'Editor', url: '/admin/rules/1', slideout: true},
+          detail: {html},
+        },
+      ],
+    });
+    await userEvent.dblClick(host.querySelector('tbody span')!);
+    expect(slideout).not.toHaveBeenCalled();
+    expect(visit).not.toHaveBeenCalled();
+  }
+);
+
+it('lets a custom cell cancel the row double-click action', async () => {
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {key: 'detail', label: 'Detail'},
+    ],
+    rows: [
+      {
+        id: 1,
+        name: {label: 'Editor', url: '/admin/rules/1', slideout: true},
+        detail: {html: '<span>Own action</span>'},
+      },
+    ],
+  });
+  const control = host.querySelector('tbody span')!;
+  control.addEventListener('dblclick', (event) => event.preventDefault());
+  await userEvent.dblClick(control);
+  expect(slideout).not.toHaveBeenCalled();
+  expect(visit).not.toHaveBeenCalled();
+});
+
+it('preserves width and owner refresh handling for a double-clicked editor', async () => {
+  const onRefresh = vi.fn();
+  const host = mountNode(
+    {
+      columns: [
+        {key: 'name', label: 'Name'},
+        {key: 'detail', label: 'Detail'},
+      ],
+      rows: [
+        {
+          id: 1,
+          name: {
+            label: 'Editor',
+            url: '/admin/rules/1',
+            slideout: true,
+            slideoutWidth: '72vw',
+          },
+          detail: 'Text',
+        },
+      ],
+    },
+    {onRefresh}
+  );
+  await doubleClickRow(host, 0);
+  expect(slideout).toHaveBeenCalledWith(
+    '/admin/rules/1',
+    expect.objectContaining({width: '72vw'})
+  );
+  await expectDebouncedDraftRefresh(
+    slideout.mock.lastCall![1].onSaved,
+    onRefresh
+  );
+  expect(reload).not.toHaveBeenCalled();
 });

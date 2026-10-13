@@ -23,6 +23,7 @@ function mountTable(
     interactionsDisabled?: boolean;
     excludeSecond?: boolean;
     rowBehavior?: {onClick: () => boolean};
+    onRowDblclick?: (row: {original: {id: number}}) => void;
   } = {}
 ) {
   const table = useCraftTable({
@@ -56,6 +57,7 @@ function mountTable(
         readOnly: options.readOnly,
         rowBehavior: options.rowBehavior,
         interactionsDisabled: options.interactionsDisabled,
+        onRowDblclick: options.onRowDblclick,
       } as never),
   });
   app.mount(root);
@@ -176,4 +178,31 @@ it('leaves ordinary link clicks to the link without selecting its row', async ()
 
   expect(event.defaultPrevented).toBe(false);
   expect(selection.selectedIds.value).toEqual([]);
+});
+
+it('reports a double-click on a row body, but not on a link in it', async () => {
+  const onRowDblclick = vi.fn();
+  const {root} = mountTable({onRowDblclick});
+  const row = root.querySelectorAll('tbody tr')[1]!;
+  const dblclick = () =>
+    new MouseEvent('dblclick', {bubbles: true, cancelable: true});
+
+  row.querySelector('a')!.dispatchEvent(dblclick());
+  expect(onRowDblclick).not.toHaveBeenCalled();
+
+  row.querySelector('a')!.closest('td')!.dispatchEvent(dblclick());
+  expect(onRowDblclick).toHaveBeenCalledOnce();
+  expect(onRowDblclick.mock.lastCall![0].original.id).toBe(2);
+});
+
+it('ignores row double-clicks while interactions are disabled', async () => {
+  const onRowDblclick = vi.fn();
+  const {root} = mountTable({onRowDblclick, interactionsDisabled: true});
+
+  root
+    .querySelector('tbody a')!
+    .closest('td')!
+    .dispatchEvent(new MouseEvent('dblclick', {bubbles: true}));
+
+  expect(onRowDblclick).not.toHaveBeenCalled();
 });

@@ -48,13 +48,18 @@ export function queryAll(selector: string | null | undefined): HTMLElement[] {
  * link, button, form control, menu trigger, custom-element control,
  * contenteditable region, …) rather than passive content.
  *
- * We use focusability as the proxy: every genuinely interactive control is
- * focusable and reports a non-negative `tabIndex`, while passive containers,
- * text, icons, etc. do not. This avoids maintaining a selector list of every
- * interactive tag/web-component.
+ * Native controls and editable regions remain interactive when they are not
+ * in the tab order. Non-native controls are identified by their tabIndex.
  */
 export function isInteractiveElement(node: EventTarget | null): boolean {
-  return node instanceof HTMLElement && node.tabIndex >= 0;
+  return (
+    node instanceof HTMLElement &&
+    (node.tabIndex >= 0 ||
+      node.isContentEditable ||
+      node.matches(
+        'a[href], area[href], button, input, select, textarea, summary'
+      ))
+  );
 }
 
 /**

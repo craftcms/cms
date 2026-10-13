@@ -265,6 +265,47 @@
     });
   }
 
+  function rowLink(row: TableRow): (TableLink & {url: string}) | null {
+    const value = row[props.node.props.columns[0]?.key ?? ''];
+
+    return value !== null &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      'url' in value &&
+      value.url
+      ? {...value, url: value.url}
+      : null;
+  }
+
+  function onRowDblclick(row: TableRow, event: MouseEvent): void {
+    const link = rowLink(row);
+
+    if (
+      !link ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    window.getSelection()?.removeAllRanges();
+
+    if (link.slideout) {
+      const anchor = (
+        event.currentTarget as HTMLElement
+      ).querySelector<HTMLAnchorElement>(
+        `.cp-table-cell--${CSS.escape(props.node.props.columns[0]!.key)} a[href]`
+      );
+      anchor?.focus();
+      anchor?.click();
+    } else {
+      router.visit(link.url);
+    }
+  }
+
   function renderIcon(icon: TableIcon) {
     return h('craft-icon', {name: icon.icon, label: icon.label});
   }
@@ -710,6 +751,7 @@
       @action-error="onOrderFailed"
       @load-error="onLoadFailed"
       @action-performed="refreshUi"
+      @row-dblclick="onRowDblclick"
     >
       <template v-if="$slots['empty-row']" #empty-row>
         <slot name="empty-row" />
