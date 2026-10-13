@@ -53,11 +53,11 @@ export function queryAll(selector: string | null | undefined): HTMLElement[] {
  */
 export function isInteractiveElement(node: EventTarget | null): boolean {
   return (
-    node instanceof HTMLElement &&
+    (node instanceof HTMLElement || node instanceof SVGElement) &&
     (node.tabIndex >= 0 ||
-      node.isContentEditable ||
+      (node instanceof HTMLElement && node.isContentEditable) ||
       node.matches(
-        'a[href], area[href], button, input, select, textarea, summary'
+        'a:any-link, area[href], button, input, select, textarea, summary'
       ))
   );
 }

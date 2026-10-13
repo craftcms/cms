@@ -1205,15 +1205,13 @@ it('opens a double-clicked row the way its first column’s link would', async (
     setSlideoutPageLoader();
   };
   for (const modifier of ['altKey', 'ctrlKey', 'metaKey', 'shiftKey']) {
-    host
-      .querySelector('tbody td:last-child')!
-      .dispatchEvent(
-        new MouseEvent('dblclick', {
-          bubbles: true,
-          cancelable: true,
-          [modifier]: true,
-        })
-      );
+    host.querySelector('tbody td:last-child')!.dispatchEvent(
+      new MouseEvent('dblclick', {
+        bubbles: true,
+        cancelable: true,
+        [modifier]: true,
+      })
+    );
   }
   expect(slideout).not.toHaveBeenCalled();
   expect(visit).not.toHaveBeenCalled();
@@ -1256,11 +1254,29 @@ it('ignores double-clicks on rows whose first column isn’t a link', async () =
 });
 
 it.each([
-  '<div contenteditable="true"><span>Editable description</span></div>',
-  '<button type="button" tabindex="-1"><span>Context action</span></button>',
+  {
+    html: '<div contenteditable="true"><span>Editable description</span></div>',
+    interactive: true,
+  },
+  {
+    html: '<button type="button" tabindex="-1"><span>Context action</span></button>',
+    interactive: true,
+  },
+  {
+    html: '<svg><a href="#own-action" tabindex="-1"><text x="0" y="20">Own SVG link</text></a></svg>',
+    interactive: true,
+  },
+  {
+    html: '<svg xmlns:xlink="http://www.w3.org/1999/xlink"><a xlink:href="#own-action" tabindex="-1"><text x="0" y="20">Own SVG link</text></a></svg>',
+    interactive: true,
+  },
+  {
+    html: '<svg width="32" height="32" aria-hidden="true"><rect width="32" height="32" /></svg>',
+    interactive: false,
+  },
 ])(
-  'leaves double-clicks inside interactive HTML cells alone: %s',
-  async (html) => {
+  'opens rows from passive HTML cell content, but not interactive controls: $html',
+  async ({html, interactive}) => {
     const host = mountNode({
       columns: [
         {key: 'name', label: 'Name'},
@@ -1274,8 +1290,10 @@ it.each([
         },
       ],
     });
-    await userEvent.dblClick(host.querySelector('tbody span')!);
-    expect(slideout).not.toHaveBeenCalled();
+    const target = host.querySelector('tbody span, tbody text, tbody rect')!;
+    target.addEventListener('click', (event) => event.preventDefault());
+    await userEvent.dblClick(target);
+    expect(slideout).toHaveBeenCalledTimes(interactive ? 0 : 1);
     expect(visit).not.toHaveBeenCalled();
   }
 );
