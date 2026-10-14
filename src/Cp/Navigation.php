@@ -175,6 +175,9 @@ readonly class Navigation
     /**
      * The sources in the nav that show a count, keyed by nav item id.
      *
+     * A source that sets its own `badgeCount` keeps it, along with its
+     * `badgeLabel`, so it's left out rather than counted again.
+     *
      * @return array<string, array{elementType: class-string<ElementInterface>, source: array<string, mixed>}>
      */
     private function sourceBadges(): array
@@ -195,7 +198,7 @@ readonly class Navigation
                 );
 
                 foreach ($sources as $source) {
-                    if ($this->elementSources->showsBadgeCount($elementType, $source)) {
+                    if (! isset($source['badgeCount']) && $this->elementSources->showsBadgeCount($elementType, $source)) {
                         $badges[$this->sourceItemId($indexUri, (string) $source['key'])] = [
                             'elementType' => $elementType,
                             'source' => $source,

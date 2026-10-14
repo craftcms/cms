@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\ElementSourceUi;
+use CraftCms\Cms\Element\Events\ElementSourcesResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -126,6 +128,29 @@ it('gives the nav a count for each source that shows one', function () {
     expect($navigation->hasSourceBadges())->toBeTrue()
         ->and($counts)->toBe(['nav-content-entries-source-_2a' => Entry::find()->status(null)->count()])
         ->and($counts['nav-content-entries-source-_2a'])->toBeGreaterThanOrEqual(3);
+});
+
+it('leaves a source’s own badge count alone, even with “Show count” on', function () {
+    $section = Section::factory()->create();
+
+    Event::listen(function (ElementSourcesResolving $event) use ($section) {
+        if ($event->elementType !== Entry::class) {
+            return;
+        }
+
+        $event->sources = collect($event->sources)
+            ->map(fn (array $source): array => ($source['key'] ?? null) === "section:$section->uid"
+                ? [...$source, 'badgeCount' => 4, 'badgeLabel' => '4 new']
+                : $source)
+            ->all();
+    });
+
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'showBadgeCount' => true],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$section->uid", 'showBadgeCount' => true],
+    ]);
+
+    expect(array_keys(app(Navigation::class)->getSourceBadgeCounts()))->toBe(['nav-content-entries-source-_2a']);
 });
 
 it('leaves the nav without counts when no source shows one', function () {
