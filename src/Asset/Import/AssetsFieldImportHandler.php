@@ -287,6 +287,7 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
             return null;
         }
 
+        // we're searching through the default uploads folder only
         return Asset::find()
             ->folderId($folder->id)
             ->filename(Query::escapeParam($filename))

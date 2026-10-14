@@ -141,7 +141,8 @@ class Import
             return false;
         }
 
-        // todo (iwona): think about scheduling batch pruning
+        // batch pruning should be done by scheduling the queue:prune-batches command
+        // see https://laravel.com/framework/docs/12.x/queues#pruning-batches
 
         // we need to go through a single job because we want to name our chain
         dispatch(new ImportPipeline($event->steps, $event->importPlan, $runId));
