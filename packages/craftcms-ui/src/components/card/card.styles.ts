@@ -29,7 +29,40 @@ export default css`
     border-radius: var(--c-card-radius, var(--c-radius-md));
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
     position: relative;
+    box-sizing: border-box;
     height: 100%;
+    overflow: clip;
+  }
+
+  :host([data-color='white']) .card {
+    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+    box-shadow: var(--c-card-shadow, var(--c-shadow-xs));
+  }
+
+  /* White fills the whole card, not just the header over a translucent body. */
+  :host([data-color='white']:not([active])) .card {
+    background-color: var(--c-color-fill-quiet);
+  }
+
+  :host([data-color='white']:not([active])) .card__header,
+  :host([data-color='white']:not([active])) .card__footer {
+    background-color: transparent;
+  }
+
+  :host([data-color='white']) .card .card__header,
+  :host([data-color='white']) .card .card__footer {
+    border-color: var(--c-table-border-color);
+  }
+
+  :host([data-color='white'][active]) .card {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-normal);
+  }
+
+  :host([data-color='white'][active]) .card .card__header,
+  :host([data-color='white'][active]) .card .card__footer {
+    background-color: transparent;
+    border-color: var(--c-color-accent-border-quiet);
   }
 
   .card__header,
@@ -58,14 +91,10 @@ export default css`
 
   :host([collapsed]) .card__header {
     border-block-end-width: 0;
-    border-end-start-radius: var(--c-card-radius, var(--c-radius-md));
-    border-end-end-radius: var(--c-card-radius, var(--c-radius-md));
   }
 
   .card__header {
     min-height: var(--c-card-header-min-height, 1lh);
-    border-start-start-radius: var(--c-card-radius, var(--c-radius-md));
-    border-start-end-radius: var(--c-card-radius, var(--c-radius-md));
     border-block-end-width: 1px;
     display: flex;
     justify-content: space-between;

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Cp\Html\FieldHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
@@ -31,6 +33,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Volumes as VolumesFacade;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
@@ -432,6 +435,21 @@ it('can find field usages and render provider links', function (bool $unresolved
         ->and($crawler->filter('li a')->extract(['href']))->toBe([$links['Alpha & Beta'], $links['Zulu']])
         ->and($html)->toContain('Alpha &amp; Beta');
 })->with([false, true]);
+
+it('links field usages in asset volume layouts to their volumes', function () {
+    actingAs(User::findOne());
+    $fieldModel = FieldModel::factory()->create(['type' => PlainText::class]);
+    $layout = FieldLayoutModel::factory()->forField($fieldModel)->create(['type' => AssetElement::class]);
+    $volume = VolumeModel::factory()->create(['name' => 'Images', 'fieldLayoutId' => $layout->id]);
+    VolumesFacade::reset();
+    $this->fields->refreshFields();
+    $field = $this->fields->getFieldById($fieldModel->id);
+
+    $crawler = new Crawler(app(FieldHtml::class)->metadataHtml($field));
+
+    expect($crawler->filter('li')->each(fn (Crawler $item) => $item->text()))->toBe(['Images'])
+        ->and($crawler->filter('li a')->extract(['href']))->toBe([VolumesFacade::getVolumeById($volume->id)->getCpEditUrl()]);
+});
 
 it('can merge fields', function () {
     $this->fields->saveField($this->fields->createField([

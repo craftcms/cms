@@ -371,7 +371,8 @@
     background-color: var(--c-color-accent-fill-quiet);
   }
 
-  :deep(.cp-table-row[data-is-folder]) {
-    cursor: pointer;
-  }
+  /* CONFLICT-REVIEW: bugfix/small-bugs restored a pointer cursor for
+     `:deep(.cp-table-row[data-is-folder])`, but 6.x (60df609bd8) removed it
+     because clicking a folder row now selects it like an asset row; only its
+     link opens it. Followed 6.x and dropped the rule. */
 </style>

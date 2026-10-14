@@ -205,7 +205,7 @@
         {{ labelFor(element) }}
         <slot name="append" :element="element" :index="index"></slot>
 
-        <div slot="suffix" class="flex gap-0.5 items-center">
+        <div slot="suffix" class="element-chips__suffix flex items-center">
           <slot name="suffix" :element="element" :index="index"></slot>
 
           <span
@@ -239,7 +239,7 @@
     padding: 0;
     list-style: none;
     display: grid;
-    gap: var(--c-spacing-md);
+    gap: var(--c-spacing-sm);
     align-items: start;
   }
 
@@ -252,6 +252,14 @@
   // than widening it.
   .element-chips__item {
     min-width: 0;
+  }
+
+  // Square icon buttons, so the actions and reorder buttons sit close
+  // together while keeping their 24px targets.
+  .element-chips__suffix :deep(craft-button[icon]),
+  .element-chips__suffix
+    :deep(craft-action-menu > craft-button[slot='invoker']) {
+    padding-inline: 0;
   }
 
   // Dragging, but still over itself — dim rather than remove, so the list
