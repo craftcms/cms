@@ -124,6 +124,7 @@
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - Fixed a bug where sorting the Sections, Fields, or Entry Types settings tables from a later page showed the first page’s rows with the later page’s pagination. ([#19912](https://github.com/craftcms/cms/issues/19912))
 - Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing. ([#19889](https://github.com/craftcms/cms/pull/19889))
+- Fixed a bug where failed queue jobs weren’t removed when releasing all jobs. ([#19969](https://github.com/craftcms/cms/pull/19969))
 - Fixed a bug where new control panel assets weren’t getting published when updating via the control panel or `craft:update` command.
 - Fixed an error when rendering the Craft 5 starter homepage with the Yii adapter installed. ([#19917](https://github.com/craftcms/cms/pull/19917)
 - Fixed a bug where fields in element editors didn’t receive their text direction or translation settings. ([#19915](https://github.com/craftcms/cms/pull/19915))
