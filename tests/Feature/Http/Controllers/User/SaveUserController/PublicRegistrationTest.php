@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 use function CraftCms\Cms\currentUser;
 use function Pest\Laravel\post;
@@ -25,6 +26,14 @@ beforeEach(function () {
     Edition::set(Edition::Team);
 
     ProjectConfig::set('users.allowPublicRegistration', true);
+});
+
+// Each test gets its own photo directory: one shared between parallel test
+// processes let two of them claim the same filename at once.
+afterEach(function () {
+    if (isset($this->photoRoot)) {
+        File::deleteDirectory($this->photoRoot);
+    }
 });
 
 it('succeeds with valid data', function () {
@@ -335,7 +344,7 @@ it('can upload a photo', function () {
 
     config()->set('filesystems.disks.test', [
         'driver' => 'local',
-        'root' => public_path('test'),
+        'root' => $this->photoRoot = storage_path('framework/testing/user-photos/'.Str::uuid()),
         'url' => '/test',
     ]);
 
@@ -388,7 +397,7 @@ it('can upload a photo with different image formats', function () {
 
     config()->set('filesystems.disks.test', [
         'driver' => 'local',
-        'root' => public_path('test'),
+        'root' => $this->photoRoot = storage_path('framework/testing/user-photos/'.Str::uuid()),
         'url' => '/test',
     ]);
 
@@ -415,7 +424,7 @@ it('can upload a photo with base64 encoded data', function () {
 
     config()->set('filesystems.disks.test', [
         'driver' => 'local',
-        'root' => public_path('test'),
+        'root' => $this->photoRoot = storage_path('framework/testing/user-photos/'.Str::uuid()),
         'url' => '/test',
     ]);
 
@@ -493,7 +502,7 @@ it('handles base64 photo without filename extension', function () {
 
     config()->set('filesystems.disks.test', [
         'driver' => 'local',
-        'root' => public_path('test'),
+        'root' => $this->photoRoot = storage_path('framework/testing/user-photos/'.Str::uuid()),
         'url' => '/test',
     ]);
 

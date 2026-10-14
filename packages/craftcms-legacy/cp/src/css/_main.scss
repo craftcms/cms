@@ -5586,10 +5586,6 @@ $min2ColWidth: 400px;
     @include mixins.checkered-bg(17px);
   }
 
-  &.editable {
-    cursor: pointer;
-  }
-
   &.loading {
     &::after {
       content: '';
@@ -5630,54 +5626,11 @@ $min2ColWidth: 400px;
   }
 }
 
-.image-actions {
-  &.is-mobile {
-    margin-block: calc((var(--spacing) / 2) * -1) var(--spacing);
-    margin-inline: var(--neg-padding);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.button-fade {
-  .buttons {
-    opacity: 0;
-    position: absolute;
-    inset-block-start: 10px;
-    inset-inline-end: 10px;
-    margin: 0;
-    transition: opacity linear 100ms;
-
-    .btn {
-      --ui-control-color: var(--white);
-      --ui-control-hover-color: var(--white);
-      --ui-control-active-color: var(--white);
-      --interaction-background-color: var(--gray-700);
-      background-color: var(--gray-600);
-      color: var(--white);
-      @include mixins.light-on-dark-text;
-      @include mixins.two-color-focus-ring($light-button: false);
-
-      &:hover {
-        background-color: var(--interaction-background-color) !important;
-      }
-
-      &:not(.disabled, .loading, .dashed) {
-        &:focus,
-        &.focus,
-        &:hover {
-          background-color: var(--interaction-background-color);
-        }
-      }
-    }
-  }
-
-  &:hover,
-  &:focus-within {
-    .buttons {
-      opacity: 1;
-    }
-  }
+.button-fade .buttons {
+  /* The rest is in the template's utility classes, but legacy `.buttons` is
+     unlayered, so it would otherwise win over them. */
+  position: absolute;
+  margin: 0;
 }
 
 /* element selector modals */

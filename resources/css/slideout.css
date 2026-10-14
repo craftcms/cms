@@ -59,7 +59,7 @@ body.has-debug-toolbar .slideout-container {
   box-sizing: border-box;
   position: absolute;
   background-color: var(--c-modal-fill);
-  box-shadow: var(--c-modal-shadow);
+  box-shadow: var(--c-slideout-shadow);
   display: flex;
   flex-direction: column;
   overflow: hidden;
