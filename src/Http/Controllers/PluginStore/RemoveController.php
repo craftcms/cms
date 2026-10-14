@@ -5,11 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
-use CraftCms\Cms\Support\Json;
-use Illuminate\Support\Facades\Crypt;
-use Inertia\Inertia;
 use Override;
-use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
@@ -21,23 +17,6 @@ use function CraftCms\Cms\t;
  */
 class RemoveController extends BaseUpdaterController
 {
-    /**
-     * Renders the Config Sync page via Inertia.
-     */
-    #[Override]
-    public function index(): Response
-    {
-        $this->data = $this->initialData();
-        $state = $this->realInitialState();
-        $state['data'] = Crypt::encrypt(Json::encode($this->data));
-
-        return Inertia::render('updater/Index', [
-            'title' => $this->pageTitle(),
-            'initialState' => $this->clientState($state),
-            'returnUrl' => $this->returnUrl(),
-        ])->toResponse($this->request);
-    }
-
     #[Override]
     protected function pageTitle(): string
     {

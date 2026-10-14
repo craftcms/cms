@@ -17,9 +17,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
 use Override;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -58,23 +56,6 @@ class UpdaterController extends BaseUpdaterController
         if ($request->has('install') && $this->request->fullUrlIs(action([self::class, 'index']))) {
             abort_unless($request->craftUser()->can('performUpdates'), 403, 'You do not have permission to perform updates.');
         }
-    }
-
-    /**
-     * Renders the Updater page via Inertia.
-     */
-    #[Override]
-    public function index(): Response
-    {
-        $this->data = $this->initialData();
-        $state = $this->realInitialState();
-        $state['data'] = Crypt::encrypt(Json::encode($this->data));
-
-        return Inertia::render('updater/Index', [
-            'title' => $this->pageTitle(),
-            'initialState' => $this->clientState($state),
-            'returnUrl' => Url::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect()),
-        ])->toResponse($this->request);
     }
 
     public function forceUpdate(): Response

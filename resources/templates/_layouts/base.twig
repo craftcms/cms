@@ -10,8 +10,7 @@
   (currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
   (currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
   requestedSite ? "site--#{requestedSite.handle}",
-  'cp-legacy-reset',
-  'cp-legacy'
+  'cp-legacy-screen',
 ])|filter -%}
 
 {% set bodyAttributes = {

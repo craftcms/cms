@@ -67,13 +67,17 @@ it('shows licensing screen when license issues exist', function () {
     $middleware = new EnforceLicenses($mockLicense);
 
     $request = Request::create('foo');
+    $request->headers->set('X-Inertia', 'true');
     $request->setUserResolver(fn () => Mockery::mock(CraftUser::class));
 
     $result = $middleware->handle($request, fn () => new Response);
 
-    expect($result)->toBeInstanceOf(Response::class);
     expect($result->getStatusCode())->toBe(402);
-    expect($result->headers->has('Cache-Control'))->toBeTrue();
+    expect($result->headers->get('Cache-Control'))->toContain('no-store');
+    expect($result->getData(true))
+        ->component->toBe('licensing/Issues')
+        ->props->issues->toBe(['Description 1'])
+        ->props->hash->toBe($hash);
 
     putenv('CRAFT_NO_TRIALS');
 });
