@@ -66,6 +66,13 @@ interface Options {
   params: Record<string, unknown>;
   /** Element ids that can't be selected (already related, self-relation). */
   disabledElementIds?: () => number[];
+  /**
+   * Picks folders rather than elements, for the folder picker: folder rows
+   * become selectable (bar `disabledFolderIds`), one at a time, and still open
+   * from their title link or Enter.
+   */
+  selectFolders?: boolean;
+  disabledFolderIds?: () => number[];
 }
 
 /** Adds modal fetching and selection rules to the shared detached index. */
@@ -73,6 +80,10 @@ export function useModalElementIndex(options: Options) {
   const disabledIds = computed(
     () => new Set(options.disabledElementIds?.() ?? [])
   );
+  const disabledFolderIds = computed(
+    () => new Set(options.disabledFolderIds?.() ?? [])
+  );
+  const selectFolders = options.selectFolders ?? false;
   const index = useDetachedElementIndex({
     initial: options.initial,
     fetch: async (query) => {
@@ -84,8 +95,17 @@ export function useModalElementIndex(options: Options) {
       return data.props as ContentIndexData;
     },
     enableRowSelection: (row) =>
-      !row.isFolder && !disabledIds.value.has(Number(row.id)),
+      selectFolders
+        ? Boolean(row.isFolder) &&
+          !disabledFolderIds.value.has(Number(row.folderId))
+        : !row.isFolder && !disabledIds.value.has(Number(row.id)),
+    // A move has one destination.
+    multiSelect: !selectFolders,
   });
+  // Brings back the view mode, columns and sort this index last used, which
+  // the server can't know when it renders the first payload.
+  index.restore();
+
   const {table} = index.view;
 
   /** The trail from the volume root to the folder on screen, for assets. */
@@ -126,8 +146,10 @@ export function useModalElementIndex(options: Options) {
   }
 
   /**
-   * Folders can't be selected, so a click on one opens it instead. Its title
-   * is a real link, so a modified click still opens it in a new tab.
+   * A folder opens from its title link, or Enter. Its title is a real link, so
+   * a modified click still opens it in a new tab. Folders can't be selected,
+   * so a click anywhere else on one does nothing — except when picking
+   * folders, where it (and Space) selects the folder as any row would.
    */
   const itemBehavior: ElementIndexItemBehavior<IndexItem> = {
     attrs: (row) => (row.isFolder ? {'data-is-folder': ''} : undefined),
@@ -147,27 +169,23 @@ export function useModalElementIndex(options: Options) {
         return true;
       }
 
-      if (target?.closest('a[href], button, input, craft-checkbox')) {
-        return true;
-      }
-
-      openFolder(row.folderId);
-
-      return true;
+      return !selectFolders;
     },
     onKeydown(row, event) {
-      if (
-        !row.isFolder ||
-        typeof row.folderId !== 'number' ||
-        (event.key !== 'Enter' && event.key !== ' ')
-      ) {
+      if (!row.isFolder || typeof row.folderId !== 'number') {
         return false;
       }
 
-      event.preventDefault();
-      openFolder(row.folderId);
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        openFolder(row.folderId);
 
-      return true;
+        return true;
+      }
+
+      // Space would select it, but folders can't be selected — unless that's
+      // what's being picked.
+      return event.key === ' ' && !selectFolders;
     },
   };
 
@@ -185,7 +203,9 @@ export function useModalElementIndex(options: Options) {
         // Type-specific extras first — `kind`/`alt` for assets, `folderId` for
         // folders — so the named keys below always win.
         ...info,
-        id: Number(original.id),
+        // A folder row's own id is `folder:{id}`, not a number.
+        ...(original.isFolder ? {folderId: Number(original.folderId)} : {}),
+        id: Number(original.isFolder ? original.folderId : original.id),
         siteId: info.siteId != null ? Number(info.siteId) : null,
         label:
           typeof info.label === 'string' || typeof info.label === 'number'

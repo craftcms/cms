@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import '../link-field/craft-link-field';
   import type {
+    LinkAdvancedField,
+    LinkChangeDetail,
     LinkFieldValue,
     LinkTypeConfig,
   } from '../link-field/craft-link-field';
@@ -10,10 +12,10 @@
   type LinkControlProps = {
     types: LinkTypeConfig[];
     showLabelField?: boolean;
-    advancedFields?: Array<'urlSuffix' | 'title'>;
+    advancedFields?: LinkAdvancedField[];
   };
   type LinkValue = Pick<LinkFieldValue, 'type' | 'value'> &
-    Partial<Pick<LinkFieldValue, 'label' | 'title' | 'urlSuffix'>>;
+    Partial<Omit<LinkFieldValue, 'type' | 'value'>>;
 
   defineProps<{
     control: UiControlPayload<LinkControlProps>;
@@ -21,30 +23,36 @@
     editable: boolean;
   }>();
   const emit = defineEmits<{
-    (event: 'update:value', value: LinkValue, kind: 'discrete'): void;
+    (
+      event: 'update:value',
+      value: LinkValue,
+      kind: LinkChangeDetail['kind']
+    ): void;
   }>();
 
-  function apply(event: Event): void {
+  function change(event: Event): void {
     if (!(event instanceof CustomEvent)) {
       throw new TypeError('Expected a link-field custom event.');
     }
 
-    const detail: LinkFieldValue = event.detail;
-    const {label, title, type, urlSuffix, value} = detail;
-    emit('update:value', {label, title, type, urlSuffix, value}, 'discrete');
+    const {kind, value}: LinkChangeDetail = event.detail;
+    // `href` is derived, so it isn't part of the field's value.
+    const {href: _href, ...linkValue} = value;
+    emit('update:value', linkValue, kind);
   }
 </script>
 
 <template>
   <div>
     <craft-link-field
+      live
       :types="control.props.types"
       .modelValue="value"
       :name="editable ? inputName(control.path) : ''"
       .showLabelField="control.props.showLabelField"
       .advancedFields="control.props.advancedFields"
       :disabled="!editable"
-      @apply="apply"
+      @link-change="change"
     />
   </div>
 </template>

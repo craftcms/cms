@@ -69,3 +69,18 @@ describe.each(['light', 'dark'])('in the %s theme', (theme) => {
     }
   });
 });
+
+it.each([
+  ['small', '--c-size-control-xs'],
+  ['medium', '--c-size-control-sm'],
+])('makes a %s labeled badge as tall as %s', async (size, token) => {
+  document.body.innerHTML = `
+    <span class="probe" style="display: block; block-size: var(${token})"></span>
+    <craft-badge size="${size}" no-prefix>3/10</craft-badge>`;
+  const badge = document.querySelector('craft-badge')!;
+  await badge.updateComplete;
+
+  expect(
+    badge.shadowRoot!.querySelector('.badge')!.getBoundingClientRect().height
+  ).toBe(document.querySelector('.probe')!.getBoundingClientRect().height);
+});

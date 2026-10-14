@@ -279,8 +279,9 @@ export default css`
    * stay transparent, and to the stamped color so a variant still fills with
    * its own.
    */
-  :host([data-color='white'][appearance~='fill']) .cp-chip,
-  :host([data-color='white'][appearance~='outline-fill']) .cp-chip {
+  :host([data-color='white'][appearance~='fill']:not([selected])) .cp-chip,
+  :host([data-color='white'][appearance~='outline-fill']:not([selected]))
+    .cp-chip {
     background-color: var(--c-chip-fill, var(--c-surface-raised));
     border-color: var(
       --c-chip-border-color,
@@ -322,20 +323,20 @@ export default css`
   }
 
   /*
-   * Selected state, matching a selected thumbnail tile in the element index
-   * (.thumbsview > li.sel .thumb-tile) so a selection reads the same however the
-   * elements are being shown.
+   * Selected state: the accent fill of a selected thumbnail tile in the
+   * element index, with a stronger border, like a selected card's, so the
+   * selection stands out from the chips around it.
    *
    * Last in the file so it wins over the appearance tiers of equal
    * specificity: a selected chip stays legible as selected even when it is plain.
    */
   :host([selected]) .cp-chip {
     background-color: var(--c-color-accent-fill-quiet);
-    border-color: var(--c-color-accent-border-quiet);
+    border-color: var(--c-color-accent-border-normal);
   }
 
   /* A plain chip has no border to color, so its outline takes the color. */
   :host([selected]) .cp-chip--plain {
-    outline-color: var(--c-color-accent-border-quiet);
+    outline-color: var(--c-color-accent-border-normal);
   }
 `;
