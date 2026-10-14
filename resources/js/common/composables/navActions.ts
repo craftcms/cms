@@ -53,7 +53,10 @@ export function navItemAction(
     ...(item.status ? {status: item.status} : {}),
     ...(item.badgeCount > 0
       ? nested
-        ? {count: item.badgeCount}
+        ? {
+            count: item.badgeCount,
+            ...(item.badgeLabel ? {countLabel: item.badgeLabel} : {}),
+          }
         : {indicator: true}
       : {}),
     ...(children.length > 0 ? {subnav: navItemActions(children, true)} : {}),

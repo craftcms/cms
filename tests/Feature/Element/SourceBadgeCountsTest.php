@@ -83,14 +83,22 @@ it('shows a count when an admin turns it on, or the source does by default', fun
 
     expect($elementSources->showsBadgeCount(Entry::class, ['type' => ElementSources::TYPE_NATIVE, 'key' => '*']))->toBeFalse()
         ->and($elementSources->showsBadgeCount(Entry::class, ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'showBadgeCount' => true]))->toBeTrue()
-        ->and($elementSources->showsBadgeCount(Entry::class, ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'defaultBadgeCount' => true]))->toBeTrue()
-        ->and($elementSources->showsBadgeCount(Entry::class, [
+        ->and($elementSources->showsBadgeCount(TestBadgeCountElement::class, ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'defaultBadgeCount' => true]))->toBeTrue()
+        ->and($elementSources->showsBadgeCount(TestBadgeCountElement::class, [
             'type' => ElementSources::TYPE_NATIVE,
             'key' => '*',
             'defaultBadgeCount' => true,
             'showBadgeCount' => false,
         ]))->toBeFalse()
         ->and($elementSources->showsBadgeCount(Element::class, ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'showBadgeCount' => true]))->toBeFalse();
+});
+
+it('leaves entry, asset and user counts off by default, since the nav only checks project config for them', function () {
+    expect(app(ElementSources::class)->showsBadgeCount(Entry::class, [
+        'type' => ElementSources::TYPE_NATIVE,
+        'key' => '*',
+        'defaultBadgeCount' => true,
+    ]))->toBeFalse();
 });
 
 it('keeps the setting when sources are saved', function () {
@@ -116,8 +124,8 @@ it('gives the nav a count for each source that shows one', function () {
     $counts = $navigation->getSourceBadgeCounts();
 
     expect($navigation->hasSourceBadges())->toBeTrue()
-        ->and($counts)->toBe(['nav-content-entries-source-' => Entry::find()->status(null)->count()])
-        ->and($counts['nav-content-entries-source-'])->toBeGreaterThanOrEqual(3);
+        ->and($counts)->toBe(['nav-content-entries-source-_2a' => Entry::find()->status(null)->count()])
+        ->and($counts['nav-content-entries-source-_2a'])->toBeGreaterThanOrEqual(3);
 });
 
 it('leaves the nav without counts when no source shows one', function () {

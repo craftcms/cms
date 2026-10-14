@@ -98,3 +98,23 @@ it('marks a top-level badge with a dot and counts a nested one', () => {
   expect(blog.count).toBe(12);
   expect(blog).not.toHaveProperty('indicator');
 });
+
+it('carries a source’s badge label across for screen readers', () => {
+  const [entries] = navItemActions([
+    node('Entries', {
+      href: '/admin/content/entries',
+      subnav: [
+        node('Blog', {
+          href: '/admin/content/entries/blog',
+          badgeCount: 3,
+          badgeLabel: '3 new',
+        }),
+        node('News', {href: '/admin/content/entries/news', badgeCount: 5}),
+      ],
+    }),
+  ]) as ActionItemLink[];
+  const [blog, news] = entries!.subnav as ActionItemLink[];
+
+  expect(blog!.countLabel).toBe('3 new');
+  expect(news!).not.toHaveProperty('countLabel');
+});

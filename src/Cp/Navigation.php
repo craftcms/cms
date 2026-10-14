@@ -470,6 +470,10 @@ readonly class Navigation
                 $item->badgeCount((int) $source['badgeCount']);
             }
 
+            if (isset($source['badgeLabel'])) {
+                $item->badgeLabel((string) $source['badgeLabel']);
+            }
+
             if ($group !== null) {
                 $group->subnav = [...$group->subnav, $item];
 
@@ -577,10 +581,19 @@ readonly class Navigation
     /**
      * A source's nav item id. Not derived from its URL like other items, since
      * the “all elements” source shares its URL with the index it hangs off.
+     *
+     * The key is escaped rather than stripped, so `foo:bar` and `foobar` keep
+     * apart: `_` and anything else an id can't hold become `_` and its hex.
      */
     private function sourceItemId(string $indexUri, string $key): string
     {
-        return $this->itemId(sprintf('%s/source-%s', $indexUri, $key));
+        $escapedKey = preg_replace_callback(
+            '/[^A-Za-z0-9\-]/',
+            fn (array $match): string => '_'.bin2hex($match[0]),
+            $key,
+        );
+
+        return $this->itemId(sprintf('%s/source-%s', $indexUri, $escapedKey));
     }
 
     /**

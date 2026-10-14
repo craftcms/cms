@@ -22,7 +22,7 @@
    * inside its own `content` slot.
    */
   import {computed, type Component} from 'vue';
-  import {t} from '@craftcms/ui';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {attrs as serverAttributes} from '@craftcms/ui/utilities/attrs';
   import CpLink from '@/common/components/CpLink.vue';
   import {useNavItemActions} from '@/common/composables/useNavItemActions';
@@ -305,6 +305,19 @@
     return action.type === 'group' ? undefined : action.count;
   }
 
+  function countLabelOf(action: NavItem): string {
+    if (action.type === 'group') {
+      return '';
+    }
+
+    return (
+      action.countLabel ??
+      t('{num, number} {num, plural, =1{item} other{items}}', {
+        num: action.count,
+      })
+    );
+  }
+
   const actionsLentTo = useNavItemActions();
 
   /**
@@ -429,11 +442,7 @@
         slot="actions"
         variant="inverse"
         :badge-count="countOf(action)"
-        :alt-text="
-          t('{num, number} {num, plural, =1{item} other{items}}', {
-            num: countOf(action),
-          })
-        "
+        :alt-text="countLabelOf(action)"
       ></craft-badge-indicator>
 
       <craft-button

@@ -748,7 +748,8 @@ abstract class ContentIndexViewModel extends ViewModel
                 ->href($url)
                 ->selected($key === $sourceKey)
                 ->status($source['status'] ?? null)
-                ->badgeCount($this->sourceBadgeCount($source));
+                ->badgeCount($this->sourceBadgeCount($source))
+                ->badgeLabel(isset($source['badgeLabel']) ? (string) $source['badgeLabel'] : null);
 
             if ($group === null) {
                 $items[] = $item;

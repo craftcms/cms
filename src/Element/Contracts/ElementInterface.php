@@ -274,7 +274,9 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * - **`badgeCount`** – The badge count that should be displayed alongside the label. (Optional)
      * - **`badgeLabel`** – The badge count label that should be provided for screen readers. (Optional)
      * - **`defaultBadgeCount`** – Whether the source should show a count of its elements in the nav until an admin
-     *   chooses otherwise. Only applies when [[supportsSourceBadgeCounts()]] returns `true`. (Optional)
+     *   chooses otherwise. Only applies when [[supportsSourceBadgeCounts()]] returns `true`, and only to element types
+     *   whose sources the main nav doesn't list: entries, assets and users only show a count once an admin turns it
+     *   on, so their nav doesn't have to build every source on every request to find a default. (Optional)
      * - **`sites`** – An array of site IDs or UUIDs that the source should be shown for, on multi-site element indexes.
      *   (Optional; by default the source will be shown for all sites.)
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
