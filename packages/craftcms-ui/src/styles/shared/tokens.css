@@ -62,9 +62,10 @@
   );
 
   /* Shadows */
-  --c-shadow-sunken: var(--inset-shadow-sm);
-  --c-shadow-raised: var(--shadow-sm);
-  --c-shadow-overlay: var(--shadow-lg);
+  --c-shadow-sunken: inset 0 2px 4px
+    rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
+  --c-shadow-raised: var(--c-shadow-sm);
+  --c-shadow-overlay: var(--c-shadow-lg);
 
   /* Color mixes */
   --c-color-mix-hover: currentColor 10%;
@@ -109,40 +110,29 @@
   --c-size-control-lg: calc(44rem / 16);
 
   /*
-    Box shadows scale their opacity by this, so each theme can deepen them all
-    at once. Declared here rather than in variables.css so a themed subtree
-    re-resolves them against its own multiplier.
+    Craft's box shadows scale their opacity by this, so each theme can deepen
+    them all at once. Tailwind's own --shadow-* stay stock. Declared here
+    rather than in variables.css so a themed subtree re-resolves them against
+    its own multiplier.
   */
   --c-shadow-multiplier: 1;
-  --shadow-2xs: 0 1px rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
-  --shadow-sm:
+  --c-shadow-2xs: 0 1px rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
+  --c-shadow-xs: 0 1px 2px 0
+    rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
+  --c-shadow-sm:
     0 1px 3px 0 rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
     0 1px 2px -1px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
-  --shadow-md:
+  --c-shadow-md:
     0 4px 6px -1px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
     0 2px 4px -2px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
-  --shadow-lg:
+  --c-shadow-lg:
     0 10px 15px -3px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
     0 4px 6px -4px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
-  --shadow-xl:
+  --c-shadow-xl:
     0 20px 25px -5px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
     0 8px 10px -6px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
-  --shadow-2xl: 0 25px 50px -12px
+  --c-shadow-2xl: 0 25px 50px -12px
     rgb(0 0 0 / calc(0.25 * var(--c-shadow-multiplier)));
-  --inset-shadow-2xs: inset 0 1px
-    rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
-  --inset-shadow-xs: inset 0 1px 1px
-    rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
-  --inset-shadow-sm: inset 0 2px 4px
-    rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
-  --c-shadow-2xs: var(--shadow-2xs);
-  --c-shadow-xs: var(--shadow-xs);
-  --c-shadow-sm: var(--shadow-sm);
-  --c-shadow-md: var(--shadow-md);
-  --c-shadow-lg: var(--shadow-lg);
-  --c-shadow-xl: var(--shadow-xl);
-  --c-shadow-2xl: var(--shadow-2xl);
 
   /**
   Status

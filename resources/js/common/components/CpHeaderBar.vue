@@ -181,7 +181,7 @@
     align-items: center;
     border-block-start: 1px solid rgba(0 0 0 / 0.25);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-    box-shadow: var(--shadow-xs), var(--shadow-lg);
+    box-shadow: var(--c-shadow-xs), var(--c-shadow-lg);
     position: relative;
     z-index: var(--c-layer-header);
 
