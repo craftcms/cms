@@ -38,7 +38,22 @@ export const DeleteButton = defineAsyncComponent(
   () => import('./modules/admin-table/components/DeleteButton.vue')
 );
 
+/**
+ * Renders a server-built `HtmlFragment` (HTML plus its head and body assets),
+ * so a plugin's page can host HTML from template hooks or other server code.
+ */
+export const HtmlFragmentRenderer = defineAsyncComponent(
+  () => import('./common/components/HtmlFragmentRenderer.vue')
+);
+
 export type {ActionItem, ActionItemLink} from './common/types';
+
+export {openUiModal, type UiModalOptions} from './modules/ui/open-ui-modal';
+
+export {
+  useInertiaUiRenderer,
+  type UiRendererInstance,
+} from './modules/ui/useInertiaUiRenderer';
 
 /**
  * Lets a plugin's page configure the control panel shell around it — its
