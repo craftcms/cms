@@ -79,7 +79,7 @@ export default css`
     max-block-size: var(--_dialog-max-block-size);
     background-color: var(--c-surface-raised);
     border-radius: var(--c-radius-lg);
-    box-shadow: var(--c-shadow-lg);
+    box-shadow: var(--c-modal-shadow);
     overflow: hidden;
   }
 

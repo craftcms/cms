@@ -171,6 +171,11 @@
     grid-template-columns: clamp(12rem, 15%, 14rem) 1fr;
   }
 
+  // Only beside the sidebar: without one, the pane meets the modal's own edge.
+  .modal-element-index--sidebar .modal-element-index__main {
+    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
   .modal-element-index__sidebar {
     padding-block: var(--c-spacing-lg);
     padding-inline: var(--c-spacing-sm);
@@ -184,7 +189,6 @@
     // would on a page; without this, it falls back to its narrowest layout.
     container: cp-content-view / inline-size;
     background: var(--c-surface-overlay);
-    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
 
     // Grid items don't shrink below their content by default, so a wide table
     // widens the column and a long one grows the row — pushing the pane out of

@@ -378,14 +378,19 @@
     color: inherit;
   }
 
+  // `data-color="white"` hands its static white palette to inheriting
+  // controls, like the action menu's button, whose hover tints from it. As
+  // white cards do, point it at the tile's own surface and text instead.
   .element {
-    background-color: var(--c-surface-raised);
+    --c-color-fill-quiet: var(--c-surface-raised);
+    --c-color-on-quiet: var(--c-text-default);
+    background-color: var(--c-color-fill-quiet);
     border-color: var(--c-surface-raised-border);
     color: var(--c-text-default);
   }
 
   .element--selected {
-    background-color: var(--c-color-accent-fill-quiet);
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-normal);
   }
 

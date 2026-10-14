@@ -205,7 +205,7 @@ it.each([['data-color="white"'], ['']])(
 );
 
 it.each([
-  ['dark', 0.2],
+  ['dark', 0.15],
   ['light', 0.1],
 ])('gives a card the %s theme’s shadow', async (theme, alpha) => {
   document.body.innerHTML = `
