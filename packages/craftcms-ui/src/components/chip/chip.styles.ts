@@ -277,10 +277,15 @@ export default css`
    * and the default text color instead, so the three move together. Scoped to the two filled tiers so outline and plain
    * stay transparent, and to the stamped color so a variant still fills with
    * its own.
+   *
+   * The palette is repointed too, for controls that inherit it, like the
+   * action menu's button, whose hover tints from --c-color-fill-quiet.
    */
   :host([data-color='white'][appearance~='fill']:not([selected])) .cp-chip,
   :host([data-color='white'][appearance~='outline-fill']:not([selected]))
     .cp-chip {
+    --c-color-fill-quiet: var(--c-chip-fill, var(--c-surface-raised));
+    --c-color-on-quiet: var(--c-chip-text, var(--c-text-default));
     background-color: var(--c-chip-fill, var(--c-surface-raised));
     border-color: var(--c-chip-border-color, var(--c-surface-raised-border));
     color: var(--c-chip-text, var(--c-text-default));
@@ -288,6 +293,8 @@ export default css`
 
   :host([data-color='white'][appearance~='outline']) .cp-chip,
   :host([data-color='white'][appearance~='plain']) .cp-chip {
+    --c-color-fill-quiet: transparent;
+    --c-color-on-quiet: var(--c-chip-text, var(--c-text-default));
     color: var(--c-chip-text, var(--c-text-default));
   }
 
@@ -327,6 +334,7 @@ export default css`
    * specificity: a selected chip stays legible as selected even when it is plain.
    */
   :host([selected]) .cp-chip {
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
     background-color: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-normal);
   }

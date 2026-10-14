@@ -639,3 +639,36 @@ it('draws a selected chip with the accent’s normal border', async () => {
     getComputedStyle(plain!.shadowRoot!.querySelector('.cp-chip')!).outlineColor
   ).toBe(expected);
 });
+
+// Inheriting controls, like the action menu's button, tint their hover from
+// --c-color-fill-quiet. The stamped white palette's is static white, which
+// left a white hover on a dark chip.
+it.each([
+  ['default', ''],
+  ['selected', 'selected'],
+])(
+  'hands its own fill to slotted controls in the dark theme (%s)',
+  async (_, attrs) => {
+    await import('../../styles/shared/color-palette.css');
+    await import('../../styles/shared/colorable.css');
+    await import('../../styles/shared/variables.css');
+    await import('../../styles/shared/tokens.css');
+
+    document.body.innerHTML = `
+      <div data-theme="dark">
+        <craft-chip appearance="outline-fill" ${attrs}>
+          Label
+          <div slot="suffix" id="action" style="background-color: var(--c-color-fill-quiet)">…</div>
+        </craft-chip>
+      </div>`;
+    const chip = document.querySelector('craft-chip')!;
+    await chip.updateComplete;
+
+    expect(
+      getComputedStyle(document.querySelector('#action')!).backgroundColor
+    ).toBe(
+      getComputedStyle(chip.shadowRoot!.querySelector('.cp-chip')!)
+        .backgroundColor
+    );
+  }
+);
