@@ -463,6 +463,9 @@ abstract class BaseField extends FieldLayoutElement
      * “⋮” action menu, and — for admins with the “Show field handles in edit
      * forms” preference — the copyable handle chip.
      *
+     * The action menu is left out when the field has no visible label or
+     * instructions, since there's no heading for it to belong to.
+     *
      * @return list<Node>
      */
     protected function uiActionNodes(FieldLayoutElementContext $context, Control $control): array
@@ -470,7 +473,7 @@ abstract class BaseField extends FieldLayoutElement
         $nodes = [];
         $uidPrefix = $this->uiActionsUid($control);
 
-        $items = $this->resolveActionMenuItems($context);
+        $items = $this->hasVisibleHeading($context) ? $this->resolveActionMenuItems($context) : [];
         if ($items !== []) {
             $nodes[] = ActionMenu::make("$uidPrefix:menu", $items)
                 ->label(t('Field actions'));
@@ -481,6 +484,20 @@ abstract class BaseField extends FieldLayoutElement
         }
 
         return $nodes;
+    }
+
+    /**
+     * Returns whether the field shows a label or instructions above its input.
+     */
+    private function hasVisibleHeading(FieldLayoutElementContext $context): bool
+    {
+        if ($this->showLabel() && filled($this->label())) {
+            return true;
+        }
+
+        $static = $context->mode !== ControlMode::Editable || $context->ui->mode !== ControlMode::Editable;
+
+        return filled($this->instructionsText($context->element, $static));
     }
 
     /**
