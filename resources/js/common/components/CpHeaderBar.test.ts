@@ -103,9 +103,9 @@ it('orders sections to match the desktop visual layout (breadcrumbs first)', asy
   const container = await mountTopBar(true);
 
   expect(sectionClasses(container)).toEqual([
-    'cp-top-bar__breadcrumbs',
-    'cp-top-bar__indicators',
-    'cp-top-bar__end',
+    'cp-header-bar__breadcrumbs',
+    'cp-header-bar__indicators',
+    'cp-header-bar__end',
   ]);
 });
 
@@ -113,9 +113,9 @@ it('orders sections to match the mobile visual layout (breadcrumbs last)', async
   const container = await mountTopBar(false);
 
   expect(sectionClasses(container)).toEqual([
-    'cp-top-bar__start',
-    'cp-top-bar__indicators',
-    'cp-top-bar__end',
-    'cp-top-bar__breadcrumbs',
+    'cp-header-bar__start',
+    'cp-header-bar__indicators',
+    'cp-header-bar__end',
+    'cp-header-bar__breadcrumbs',
   ]);
 });

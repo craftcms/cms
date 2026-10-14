@@ -32,6 +32,7 @@
 - Added `CraftCms\Cms\Ui\Nodes\Table`, for rendering admin tables from PHP UI definitions. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Added `CraftCms\Cms\Cp\Components\CopyAttribute` for rendering inline copyable values in PHP and templates. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
+- Fixed a bug where the “Save” button in element editors kept the user on the edit page instead of returning to the element index. ([#19970](https://github.com/craftcms/cms/pull/19970))
 - Fixed a bug where page-header actions could be clipped on narrow screens. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Fixed a bug where the public GraphQL schema could be deleted through its numeric URL. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Fixed a bug where the System Messages utility’s language menu was empty. ([#19946](https://github.com/craftcms/cms/pull/19946))
@@ -77,8 +78,11 @@
 - Added `CraftCms\Cms\Ui\Nodes\Scope` for embedding component settings under a path prefix, with optional shared delta tracking. ([#19914](https://github.com/craftcms/cms/pull/19914))
 - Added support for hiding editable table rows while preserving their inputs and submitted values, using `CraftCms\Cms\Ui\Controls\Table::hiddenRows()` or legacy `_hidden` row values. ([#19939](https://github.com/craftcms/cms/pull/19939))
 - The MCP server’s `elements.update` tool can now set and clear assets’ focal points via a `focalPoint` attribute. ([#19933](https://github.com/craftcms/cms/pull/19933))
+- The MCP server now validates custom field values against the `elements.field-schema` schema, and returns an error that identifies each invalid value. ([#19965](https://github.com/craftcms/cms/pull/19965))
+- GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - Fixed a bug where sorting the Sections, Fields, or Entry Types settings tables from a later page showed the first page’s rows with the later page’s pagination. ([#19912](https://github.com/craftcms/cms/issues/19912))
 - Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing. ([#19889](https://github.com/craftcms/cms/pull/19889))
+- Fixed a bug where failed queue jobs weren’t removed when releasing all jobs. ([#19969](https://github.com/craftcms/cms/pull/19969))
 - Fixed a bug where new control panel assets weren’t getting published when updating via the control panel or `craft:update` command.
 - Fixed an error when rendering the Craft 5 starter homepage with the Yii adapter installed. ([#19917](https://github.com/craftcms/cms/pull/19917)
 - Fixed a bug where fields in element editors didn’t receive their text direction or translation settings. ([#19915](https://github.com/craftcms/cms/pull/19915))
@@ -101,8 +105,12 @@
 - Fixed a bug where control panel nav flyouts could close as soon as the pointer reached them. ([#19926](https://github.com/craftcms/cms/pull/19926))
 - Fixed a bug where action menus on thumbnails in single-element relation fields were positioned at the start of the thumbnail rather than the end.
 - Fixed a bug where element chips within links weren’t following the link underline behavior or the “Underline links” accessibility preference.
+- Fixed a bug where site Inertia middleware registered in `craft.web` could break control panel authentication pages.
+- Fixed a bug where authenticated control panel routes didn’t invalidate sessions with stale password hashes.
 - Fixed a bug where asset folders could be selected in asset selection modals. ([#19937](https://github.com/craftcms/cms/pull/19937))
 - Fixed a bug where asset folders in asset selection modals couldn’t be opened. Folders are now linked, and clicking one shows its contents in the modal, with breadcrumbs leading back to the volume’s root. ([#19937](https://github.com/craftcms/cms/pull/19937))
+- Fixed a bug where `yii\db\Expression` values assigned to legacy Active Record attributes were saved as JSON strings. ([#19948](https://github.com/craftcms/cms/issues/19948), [#19953](https://github.com/craftcms/cms/pull/19953))
+- Fixed a bug where the MCP server’s `elements.create`, `elements.update`, and `elements.validate` tools silently ignored Matrix entries submitted in the format `elements.field-schema` described. ([#19965](https://github.com/craftcms/cms/pull/19965))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
@@ -164,6 +172,7 @@
 - Added `CraftCms\Cms\Search\Events\KeywordsIndexing::$layoutElementUid`. ([#13991](https://github.com/craftcms/cms/pull/13991))
 - Added the `--c-layer-header` and `--c-layer-skip-link` CSS custom properties, and the `z-header` and `z-skip-link` utilities. ([#19886](https://github.com/craftcms/cms/pull/19886))
 - Added a `width` attribute to `<craft-input-date-time>`, along with `CraftCms\Cms\Cp\Components\InputDateTime::width()` and `CraftCms\Cms\Form\Controls\DateTime::fullWidth()`, for stretching date and time inputs across their container. ([#19871](https://github.com/craftcms/cms/pull/19871))
+- Added `CraftCms\Cms\Ui\Controls\BooleanMenu`. ([#19875](https://github.com/craftcms/cms/pull/19875))
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
 - Added `CraftCms\Cms\Cp\Components\ComponentSelect` and `CraftCms\Cms\Cp\Components\EntryTypeSelect`, which the `_includes/forms/componentSelect.twig` and `_includes/forms/entryTypeSelect.twig` templates now render. ([#19888](https://github.com/craftcms/cms/pull/19888))

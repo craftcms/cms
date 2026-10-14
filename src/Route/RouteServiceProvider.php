@@ -198,6 +198,7 @@ class RouteServiceProvider extends ServiceProvider
 
         collect([
             RequireCpRequest::class,
+            AuthenticateCraftSession::class,
             CheckRequirements::class,
             HandleInertiaRequests::class,
             EnforceLicenses::class,
