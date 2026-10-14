@@ -15,6 +15,7 @@ import styles from './pane.styles.js';
 export const PaneAppearance = {
   Raised: 'raised',
   Outline: 'outline',
+  OutlineFill: 'outline-fill',
   Plain: 'plain',
   Sunken: 'sunken',
 } as const;
@@ -115,7 +116,7 @@ const OVERFLOW_TOLERANCE = 1;
  *   `--c-color-neutral-fill-quiet` when `variant="code"`).
  * @cssproperty --c-pane-text - Text color. Defaults to `inherit`.
  * @cssproperty --c-pane-border-color - Border color of the `plain` appearance.
- *   The `raised`/`outline`/`sunken` appearances and the `error`/`code` variants
+ *   The `raised`/`outline`/`outline-fill`/`sunken` appearances and the `error`/`code` variants
  *   set their own; override those per-pane with `::part(base)`.
  * @cssproperty --c-pane-border-width - Border width. Defaults to `1px`.
  * @cssproperty --c-pane-border-style - Border style. Defaults to `solid`.
@@ -146,12 +147,14 @@ export default class CraftPane extends Paddable(LitElement, {
    *
    * - `raised` — bordered with a raised shadow (the default)
    * - `outline` — bordered, no shadow
+   * - `outline-fill` — bordered with a quiet tinted fill, no shadow, as cards are
    * - `plain` — the bare surface tokens, no border color or shadow
    * - `sunken` — recessed fill with an inset shadow
    */
   @property({reflect: true}) appearance:
     | 'raised'
     | 'outline'
+    | 'outline-fill'
     | 'plain'
     | 'sunken' = PaneAppearance.Raised;
 

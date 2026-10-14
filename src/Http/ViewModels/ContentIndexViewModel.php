@@ -1387,7 +1387,20 @@ abstract class ContentIndexViewModel extends ViewModel
                 ? $this->editUrl($element)
                 : null,
             'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit),
+            ...$this->extraThumbData($element),
         ], $elements);
+    }
+
+    /**
+     * Additional data for an element's thumb. A thumb with no `url` can still
+     * link its label, by setting `labelUrl` (and optionally
+     * `labelLinkAttributes`).
+     *
+     * @return array{labelUrl?: string, labelLinkAttributes?: array<string, mixed>}
+     */
+    protected function extraThumbData(ElementInterface $element): array
+    {
+        return [];
     }
 
     /**
@@ -1417,6 +1430,17 @@ abstract class ContentIndexViewModel extends ViewModel
         return [];
     }
 
+    /**
+     * Capabilities an element type adds to its rows, for bulk actions whose
+     * `selectionAttribute` names them.
+     *
+     * @return array<string, bool>
+     */
+    protected function extraCapabilities(ElementInterface $element): array
+    {
+        return [];
+    }
+
     /** @return array<string, mixed> */
     private function baseRowData(ElementInterface $element, ?ElementHtml $elementHtml = null): array
     {
@@ -1425,7 +1449,10 @@ abstract class ContentIndexViewModel extends ViewModel
         return [
             'label' => $element->getUiLabel(),
             ...$this->elementUrls($element),
-            'capabilities' => $elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+            'capabilities' => [
+                ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+                ...$this->extraCapabilities($element),
+            ],
             ...$this->extraRowData($element),
         ];
     }

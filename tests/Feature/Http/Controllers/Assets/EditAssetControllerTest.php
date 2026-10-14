@@ -18,6 +18,7 @@ use Inertia\Testing\AssertableInertia;
 use Symfony\Component\DomCrawler\Crawler;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
@@ -159,7 +160,7 @@ it('shows the image preview’s placeholder over a gradient between the image’
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('previewFragment.html', fn (string $html): bool => str_contains(
                 $html,
-                'background-color: #000; background-image: linear-gradient(#00000040, #0000000d), linear-gradient(to right, #d40000, #0000d4)',
+                'background-color: transparent; background-image: linear-gradient(#00000040, #0000000d), linear-gradient(to right, color-mix(in srgb, #d40000 40%, transparent), color-mix(in srgb, #0000d4 40%, transparent))',
             ) && str_contains($html, 'placeholder="data:image/png;base64,'))
         );
 });
@@ -187,5 +188,14 @@ it('shows the uploader as a plain chip in the metadata', function () {
             ->where('metadataHtml', fn (string $html): bool => new Crawler($html)
                 ->filter('craft-chip')
                 ->attr('appearance') === 'plain')
+        );
+});
+
+it('leaves out the status, since assets have no statuses', function () {
+    get($this->asset->getCpEditUrl())
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('statusLabelHtml', null)
+            ->where('metadataHtml', fn (string $html): bool => ! str_contains($html, 'craft-badge')
+                && ! str_contains($html, '>'.t('Status').'<'))
         );
 });

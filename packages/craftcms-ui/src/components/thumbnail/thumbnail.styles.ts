@@ -34,6 +34,25 @@ export default css`
     object-fit: contain;
   }
 
+  /*
+   * A fit image with known dimensions: its box is sized up front, no larger
+   * than those dimensions or the thumbnail box, so it's the same before and
+   * after it loads. The other axis follows from the inline aspect-ratio.
+   */
+  .thumbnail__image--landscape {
+    width: min(100%, var(--_width));
+    height: auto;
+  }
+
+  .thumbnail__image--portrait {
+    width: auto;
+    height: min(100%, var(--_height));
+  }
+
+  .thumbnail__image--placeholder {
+    background: var(--_placeholder) center / 100% 100% no-repeat;
+  }
+
   .thumbnail--crop .thumbnail__image,
   .thumbnail--stretch .thumbnail__image {
     width: 100%;

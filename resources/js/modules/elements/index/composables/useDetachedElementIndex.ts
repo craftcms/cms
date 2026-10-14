@@ -42,6 +42,8 @@ export interface UseDetachedElementIndexOptions<
   };
   pinnedColumn?: {key: string; label: string} | null;
   enableRowSelection?: (row: ElementIndexRow) => boolean;
+  /** Whether more than one row can be selected at a time. Defaults to true. */
+  multiSelect?: boolean;
   data?: (
     rows: ElementIndexRow[],
     mode: ViewMode['mode'],
@@ -127,6 +129,7 @@ export function useDetachedElementIndex<
       return applied;
     },
     enableRowSelection: options.enableRowSelection,
+    multiSelect: options.multiSelect,
   });
 
   return {
