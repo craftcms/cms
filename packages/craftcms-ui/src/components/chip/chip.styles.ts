@@ -45,7 +45,7 @@ export default css`
     gap: var(--_chip-gap);
     border-radius: var(--_radius);
     align-items: center;
-    box-shadow: var(--c-chip-shadow, var(--c-shadow-xs));
+    box-shadow: var(--c-chip-shadow, var(--c-shadow-chip));
     background-color: var(--c-chip-fill, var(--c-surface-raised));
 
     border-width: var(--_border-width);
@@ -273,9 +273,8 @@ export default css`
   /*
    * Without an author-chosen color the chip stamps data-color="white", whose
    * fill, border, and text are all static colors — they stay light in dark
-   * mode. A default chip takes the theme-aware surface instead, paired with
-   * the same text and border tokens craft-pane uses on that surface, so the
-   * three move together. Scoped to the two filled tiers so outline and plain
+   * mode. A default chip takes the theme-aware raised surface, its border,
+   * and the default text color instead, so the three move together. Scoped to the two filled tiers so outline and plain
    * stay transparent, and to the stamped color so a variant still fills with
    * its own.
    */
@@ -283,10 +282,7 @@ export default css`
   :host([data-color='white'][appearance~='outline-fill']:not([selected]))
     .cp-chip {
     background-color: var(--c-chip-fill, var(--c-surface-raised));
-    border-color: var(
-      --c-chip-border-color,
-      var(--c-color-neutral-border-quiet)
-    );
+    border-color: var(--c-chip-border-color, var(--c-surface-raised-border));
     color: var(--c-chip-text, var(--c-text-default));
   }
 

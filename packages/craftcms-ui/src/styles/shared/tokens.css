@@ -29,6 +29,15 @@
     var(--c-color-neutral-border-quiet) 60%,
     transparent
   );
+  --c-surface-raised-border: color-mix(
+    in srgb,
+    var(--color-slate-400),
+    transparent var(--c-color-border-quiet-transparency)
+  );
+  --c-surface-raised-border-selected: var(--color-static-gray-200);
+  --c-card-selected-fill: var(--c-color-neutral-fill-loud);
+  --c-card-selected-border-color: var(--c-color-neutral-border-loud);
+  --c-card-selected-text: var(--c-color-neutral-on-loud);
 
   /*
   Needs to remain statically dark between dark and light mode
@@ -102,6 +111,8 @@
   --c-shadow-2xs: 0 1px rgb(0 0 0 / 0.05);
   --c-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --c-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --c-shadow-card: var(--c-shadow-sm);
+  --c-shadow-chip: var(--c-shadow-xs);
   --c-shadow-md:
     0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --c-shadow-lg:
@@ -268,6 +279,34 @@
   --c-modal-shadow:
     0 0 0 1px hsl(from var(--color-gray-400) h s l / 25%),
     0 25px 100px hsl(from var(--color-gray-900) h s l / 50%);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --c-surface-default: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--color-base-100), var(--color-base-50) 30%),
+    var(--color-black) 15%
+  );
+  --c-surface-raised: var(--c-surface-default);
+  --c-surface-sunken: color-mix(
+    in oklab,
+    var(--color-base-50),
+    var(--color-black) 25%
+  );
+  --c-surface-overlay: var(--c-surface-default);
+  --c-shadow-card:
+    0 1px 3px 0 rgb(0 0 0 / 0.2), 0 1px 2px -1px rgb(0 0 0 / 0.2);
+  --c-shadow-chip: 0 1px 2px 0 rgb(0 0 0 / 0.1);
+  --c-surface-raised-border-selected: var(--color-base-500);
+  --c-card-selected-fill: var(--color-base-300);
+  --c-card-selected-border-color: var(--color-base-500);
+  --c-card-selected-text: var(--c-text-default);
+  --c-color-border-quiet-transparency: 40%;
 }
 
 .underline-links {

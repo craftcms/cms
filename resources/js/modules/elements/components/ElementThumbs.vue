@@ -322,7 +322,7 @@
     border-radius: var(--c-radius-lg);
     border-width: 1px;
     border-style: solid;
-    box-shadow: var(--c-chip-shadow, var(--c-shadow-xs));
+    box-shadow: var(--c-chip-shadow, var(--c-shadow-chip));
   }
 
   // Only the label links; the rest of the tile selects it.
@@ -379,9 +379,9 @@
   }
 
   .element {
-    background-color: var(--c-color-fill-quiet);
-    border-color: var(--c-color-neutral-border-quiet);
-    color: var(--c-color-on-quiet);
+    background-color: var(--c-surface-raised);
+    border-color: var(--c-surface-raised-border);
+    color: var(--c-text-default);
   }
 
   .element--selected {

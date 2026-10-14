@@ -165,7 +165,9 @@
 
 <style scoped>
   .cp-header-bar {
-    --badge-border-color: var(--c-surface-sunken);
+    --_fill: var(--color-base-50);
+    --badge-border-color: var(--_fill);
+    background-color: var(--_fill);
     padding-block-start: calc(var(--c-spacing-sm) - 1px);
     padding-block-end: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-sm);
@@ -183,6 +185,10 @@
     box-shadow: var(--shadow-xs), var(--shadow-lg);
     position: relative;
     z-index: var(--c-layer-header);
+
+    [data-theme='dark'] & {
+      --_fill: var(--c-surface-sunken);
+    }
 
     @media (width >= var(--breakpoint-lg)) {
       padding-inline: var(--c-spacing-md);

@@ -524,6 +524,45 @@ function decoration(element: Element): string {
  * Element chips nest their label link in a craft-truncate, out of reach of
  * ::slotted(), so the chip hands the decoration down instead.
  */
+it('draws a default chip’s border lighter than its fill in the dark theme', async () => {
+  await import('../../styles/shared/color-palette.css');
+  await import('../../styles/shared/colorable.css');
+  await import('../../styles/shared/variables.css');
+  await import('../../styles/shared/tokens.css');
+
+  document.body.innerHTML = `
+    <div data-theme="dark">
+      <craft-chip appearance="outline-fill">Label</craft-chip>
+    </div>`;
+  const chip = document.querySelector('craft-chip')!;
+  await chip.updateComplete;
+
+  const style = getComputedStyle(chip.shadowRoot!.querySelector('.cp-chip')!);
+  const luminance = (color: string, over: string): number => {
+    const parse = (value: string) => {
+      const numbers = value.match(/[\d.]+/g)!.map(Number);
+      const scale = value.startsWith('color(') ? 255 : 1;
+      return {
+        rgb: numbers.slice(0, 3).map((n) => n * scale),
+        alpha: numbers[3] ?? 1,
+      };
+    };
+    const {rgb, alpha} = parse(color);
+    const base = parse(over).rgb;
+    const [r, g, b] = rgb.map((value, i) => {
+      const channel = (value * alpha + base[i]! * (1 - alpha)) / 255;
+      return channel <= 0.03928
+        ? channel / 12.92
+        : ((channel + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+  };
+
+  expect(
+    luminance(style.borderTopColor, style.backgroundColor)
+  ).toBeGreaterThan(luminance(style.backgroundColor, style.backgroundColor));
+});
+
 it('does not underline a label link, nested or slotted directly', async () => {
   document.body.innerHTML = `
     <craft-chip id="nested">

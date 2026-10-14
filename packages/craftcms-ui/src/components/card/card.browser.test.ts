@@ -137,3 +137,130 @@ it('styles a selected white card like a selected chip', async () => {
   expect(part('.card__header').borderBottomColor).toBe(divider);
   expect(part('.card__footer').borderTopColor).toBe(divider);
 });
+
+it('gives a white card the raised surface and text of the dark theme', async () => {
+  document.body.innerHTML = `
+    <div data-theme="dark">
+      <span class="probe" style="background-color: var(--c-surface-raised); color: var(--c-text-default)"></span>
+      <craft-card data-color="white">
+        <span slot="label">Header</span>
+        Body
+      </craft-card>
+    </div>`;
+  const card = document.querySelector<CraftCard>('craft-card')!;
+  await card.updateComplete;
+
+  const probe = getComputedStyle(document.querySelector('.probe')!);
+  const root = getComputedStyle(card.shadowRoot!.querySelector('.card')!);
+  const header = getComputedStyle(
+    card.shadowRoot!.querySelector('.card__header')!
+  );
+
+  expect(root.backgroundColor).toBe(probe.backgroundColor);
+  expect(root.color).toBe(probe.color);
+  expect(header.color).toBe(probe.color);
+});
+
+function channels(color: string): {rgb: number[]; alpha: number} {
+  const values = color.match(/[\d.]+/g)!.map(Number);
+  const srgb = color.startsWith('color(');
+  const rgb = values.slice(0, 3).map((value) => (srgb ? value * 255 : value));
+
+  return {rgb, alpha: values[3] ?? 1};
+}
+
+/** The luminance of a possibly translucent color drawn over an opaque one. */
+function luminanceOver(color: string, background: string): number {
+  const {rgb, alpha} = channels(color);
+  const base = channels(background).rgb;
+  const [r, g, b] = rgb.map((value, i) => {
+    const channel = (value * alpha + base[i]! * (1 - alpha)) / 255;
+    return channel <= 0.03928
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+
+  return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+}
+
+it.each([['data-color="white"'], ['']])(
+  'draws a card’s border lighter than its fill in the dark theme (%s)',
+  async (attrs) => {
+    document.body.innerHTML = `
+      <div data-theme="dark" style="background-color: var(--c-surface-raised)">
+        <craft-card ${attrs}>Body</craft-card>
+      </div>`;
+    const card = document.querySelector<CraftCard>('craft-card')!;
+    await card.updateComplete;
+
+    const surface = getComputedStyle(card.parentElement!).backgroundColor;
+    const border = getComputedStyle(
+      card.shadowRoot!.querySelector('.card')!
+    ).borderTopColor;
+
+    expect(luminanceOver(border, surface)).toBeGreaterThan(
+      luminanceOver(surface, surface)
+    );
+  }
+);
+
+it.each([
+  ['dark', 0.2],
+  ['light', 0.1],
+])('gives a card the %s theme’s shadow', async (theme, alpha) => {
+  document.body.innerHTML = `
+    <div data-theme="${theme}">
+      <craft-card>Body</craft-card>
+    </div>`;
+  const card = document.querySelector<CraftCard>('craft-card')!;
+  await card.updateComplete;
+
+  const shadow = getComputedStyle(
+    card.shadowRoot!.querySelector('.card')!
+  ).boxShadow;
+
+  expect(shadow).toContain(`rgba(0, 0, 0, ${alpha})`);
+});
+
+it('gives a selected uncolored card a dark header in the dark theme', async () => {
+  document.body.innerHTML = `
+    <div data-theme="dark">
+      <span class="probe" style="background-color: var(--c-surface-default); color: var(--c-text-default)"></span>
+      <craft-card active>
+        <span slot="label">Header</span>
+        Body
+      </craft-card>
+    </div>`;
+  const card = document.querySelector<CraftCard>('craft-card')!;
+  await card.updateComplete;
+
+  const probe = getComputedStyle(document.querySelector('.probe')!);
+  const header = getComputedStyle(
+    card.shadowRoot!.querySelector('.card__header')!
+  );
+
+  expect(header.color).toBe(probe.color);
+  expect(
+    luminanceOver(header.backgroundColor, probe.backgroundColor)
+  ).toBeLessThan(luminanceOver(probe.color, probe.backgroundColor) / 4);
+});
+
+it.each([['dark'], ['light']])(
+  'gives a white card the same shadow as a white chip in the %s theme',
+  async (theme) => {
+    document.body.innerHTML = `
+      <div data-theme="${theme}">
+        <craft-card data-color="white">Card</craft-card>
+        <craft-chip data-color="white">Chip</craft-chip>
+      </div>`;
+    const card = document.querySelector<CraftCard>('craft-card')!;
+    const chip = document.querySelector('craft-chip')!;
+    await Promise.all([card.updateComplete, chip.updateComplete]);
+
+    expect(
+      getComputedStyle(card.shadowRoot!.querySelector('.card')!).boxShadow
+    ).toBe(
+      getComputedStyle(chip.shadowRoot!.querySelector('.cp-chip')!).boxShadow
+    );
+  }
+);

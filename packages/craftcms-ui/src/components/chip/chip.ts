@@ -77,7 +77,8 @@ type FilledParts = Record<
  * @cssproperty --c-chip-text - Label color. Defaults to `--c-text-default`.
  * @cssproperty --c-chip-border-color - Border color. Defaults to
  *   `--c-color-neutral-border-quiet`.
- * @cssproperty --c-chip-shadow - Box shadow. Defaults to `--c-shadow-sm`.
+ * @cssproperty --c-chip-shadow - Box shadow. Defaults to the theme's
+ *   `--c-shadow-chip`.
  * @cssproperty --c-chip-border-width - Border width. Defaults to `1px`.
  * @cssproperty --c-chip-border-style - Border style. Defaults to `solid`.
  *

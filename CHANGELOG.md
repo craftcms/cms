@@ -5,6 +5,7 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19882](https://github.com/craftcms/cms/pull/19882) for details.
 
+- Added a “Theme” user preference, with “Light”, “Dark”, and “System” options. “System” is the default. Pages shown to logged-out users, such as the login page, use the theme of whoever last used the control panel in the same browser, or “System”. The dark theme is a work in progress. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Improved chip styling. ([#19902](https://github.com/craftcms/cms/pull/19902))
 - Links are no longer underlined until they’re hovered, unless the “Underline links” accessibility preference is enabled, in which case they’re underlined until hovered. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Folder names in asset indexes are now links.
