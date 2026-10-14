@@ -307,6 +307,39 @@ describe('[inherit]', () => {
   });
 });
 
+describe('outline and dashed borders', () => {
+  async function mount(variant: string): Promise<CraftButton> {
+    document.body.innerHTML = `
+      <div style="--c-form-control-border-color: rgb(0, 128, 0)">
+        <craft-button variant="${variant}">Add</craft-button>
+      </div>`;
+    const button = document.querySelector('craft-button') as CraftButton;
+    await button.updateComplete;
+
+    return button;
+  }
+
+  it.each(['outline', 'dashed'])(
+    'gives a %s button the form control border color',
+    async (variant) => {
+      const button = await mount(variant);
+
+      expect(getComputedStyle(button).borderTopColor).toBe('rgb(0, 128, 0)');
+    }
+  );
+
+  it.each(['outline primary', 'dashed danger'])(
+    'leaves a %s button its own border color',
+    async (variant) => {
+      const button = await mount(variant);
+
+      expect(getComputedStyle(button).borderTopColor).not.toBe(
+        'rgb(0, 128, 0)'
+      );
+    }
+  );
+});
+
 describe('themed subtrees', () => {
   async function loadTokens(): Promise<void> {
     await import('../../styles/shared/color-palette.css');
@@ -581,5 +614,32 @@ describe('text box', () => {
     const label = button.shadowRoot!.querySelector<HTMLElement>('.label')!;
 
     expect(getComputedStyle(label).display).toBe('contents');
+  });
+});
+
+describe('small icon buttons', () => {
+  it('sizes an icon the same whether it is an attribute or slotted', async () => {
+    document.body.innerHTML = `
+      <craft-button size="small" icon="plus"></craft-button>
+      <craft-button size="small">
+        <craft-icon slot="prefix" name="plus"></craft-icon>
+      </craft-button>
+      <craft-button size="small" icon="plus">Add</craft-button>
+      <craft-button size="small">Add</craft-button>`;
+    const [attribute, slotted, labeledIcon, labeled] = Array.from(
+      document.querySelectorAll<CraftButton>('craft-button')
+    );
+    await Promise.all(
+      [attribute, slotted, labeledIcon, labeled].map(
+        (button) => button!.updateComplete
+      )
+    );
+
+    expect(getComputedStyle(attribute!).fontSize).toBe(
+      getComputedStyle(slotted!).fontSize
+    );
+    expect(getComputedStyle(labeledIcon!).fontSize).toBe(
+      getComputedStyle(labeled!).fontSize
+    );
   });
 });

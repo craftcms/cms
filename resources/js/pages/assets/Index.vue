@@ -13,6 +13,7 @@
   import AssetUploadButton from './AssetUploadButton.vue';
   import {useAssetUploadRefresh} from '@/modules/uploader/useAssetUploadRefresh';
   import {useAssetFolderActions} from '@/modules/assets/composables/useAssetFolderActions';
+  import {useAssetFileActions} from '@/modules/assets/composables/useAssetFileActions';
   import {useAssetIndexItemBehavior} from '@/modules/assets/composables/useAssetIndexItemBehavior';
   import {
     appendIndexQuery,
@@ -101,7 +102,17 @@
     resolveConflictChoice,
     folderConflictPrompt: dragFolderConflictPrompt,
     resolveFolderConflictChoice: resolveDragFolderConflictChoice,
+    performMove,
   } = useAssetMoveDrag(elementIndex);
+
+  const {
+    renameAssetId,
+    renameFilename,
+    renameFileError,
+    renamingFile,
+    closeRenameFile,
+    submitRenameFile,
+  } = useAssetFileActions(elementIndex, performMove);
 
   const {
     newFolderOpen,
@@ -144,7 +155,9 @@
         </craft-checkbox>
       </template>
       <template #navbar>
-        <div class="border-b border-b-quiet py-sm">
+        <div
+          class="folder-breadcrumbs -mx-(--cp-container-padding) px-(--cp-container-padding) py-sm border-b border-b-(--c-color-neutral-border-quiet)"
+        >
           <Breadcrumbs :items="breadcrumbs" />
         </div>
       </template>
@@ -272,6 +285,34 @@
     </craft-dialog>
 
     <craft-dialog
+      .opened="renameAssetId !== null"
+      :label="t('Rename file')"
+      @craft-before-hide="closeRenameFile"
+    >
+      <form class="flex flex-col gap-lg" @submit.prevent="submitRenameFile">
+        <CraftInput
+          v-model="renameFilename"
+          :label="t('Filename')"
+          :error="renameFileError"
+          :aria-invalid="renameFileError ? 'true' : 'false'"
+          autofocus
+        />
+      </form>
+      <div slot="footer" class="flex gap-md justify-end">
+        <craft-button type="button" @click="closeRenameFile">
+          {{ t('Cancel') }}
+        </craft-button>
+        <craft-button
+          variant="primary"
+          .disabled="!renameFilename.trim() || renamingFile"
+          @click="submitRenameFile"
+        >
+          {{ t('Rename') }}
+        </craft-button>
+      </div>
+    </craft-dialog>
+
+    <craft-dialog
       .opened="folderConflictPrompt !== null"
       :label="t('Folder already exists')"
       @craft-before-hide="resolveFolderConflictChoice('cancel')"
@@ -295,4 +336,11 @@
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  // Even on both sides of each separator, matching the header's breadcrumbs:
+  // the crumb's own gap already sits before it, so the end margin makes up for
+  // it.
+  .folder-breadcrumbs :deep(craft-breadcrumb-item > [slot='separator']) {
+    margin-inline: var(--c-spacing-sm) var(--c-spacing-md);
+  }
+</style>

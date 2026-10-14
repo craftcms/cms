@@ -251,10 +251,6 @@ export default css`
     line-height: 1;
   }
 
-  :host([icon][size~='small']) {
-    font-size: 0.8em;
-  }
-
   /*
   Variants (appearance × palette)
    */
@@ -357,6 +353,27 @@ export default css`
   :host([variant~='outline']),
   :host([variant~='dashed']) {
     border-color: var(--c-color-border-loud);
+  }
+
+  :host(
+    [variant~='outline']:not([variant~='primary']):not([variant~='danger']):not(
+      [inherit]
+    ):not([active]):not(.is-active)
+  ),
+  :host(
+    [variant~='dashed']:not([variant~='primary']):not([variant~='danger']):not(
+      [inherit]
+    ):not([active]):not(.is-active)
+  ) {
+    border-color: var(--c-form-control-border-color);
+    border-inline-start-color: var(
+      --c-button-group-border-start-color,
+      var(--c-form-control-border-color)
+    );
+    border-inline-end-color: var(
+      --c-button-group-border-end-color,
+      var(--c-form-control-border-color)
+    );
   }
 
   :host([variant~='dashed']) {
@@ -592,5 +609,34 @@ export default css`
   :host([flush]) .label--text {
     text-box: normal;
     padding-block: 0;
+  }
+
+  :host(
+    :is(
+      [variant~='fill'],
+      [variant~='solid'],
+      [variant~='primary'],
+      [variant~='danger'],
+      [variant~='plain'],
+      [variant~='danger-plain']
+    )
+  ) {
+    --_divider-left: var(--c-button-divider-start-color, transparent);
+    --_divider-right: var(--c-button-divider-end-color, transparent);
+    background-image:
+      linear-gradient(to right, var(--_divider-left) 1px, transparent 1px),
+      linear-gradient(to left, var(--_divider-right) 1px, transparent 1px);
+    background-origin: border-box;
+  }
+
+  :host(:dir(rtl)) {
+    --_divider-left: var(--c-button-divider-end-color, transparent);
+    --_divider-right: var(--c-button-divider-start-color, transparent);
+  }
+
+  /* Ellipsis (action menu) icons read small at craft-icon's 0.8em */
+  craft-icon[name='ellipsis'],
+  ::slotted(craft-icon[name='ellipsis']) {
+    font-size: 1em;
   }
 `;

@@ -3,6 +3,7 @@
 {% set orientation = I18N.getLocale().getOrientation() -%}
 {% set a11yDefaults = config('craft.general.accessibilityDefaults') %}
 {% set requestedSite = craft.cp.requestedSite %}
+{% set theme = craft.cp.theme %}
 
 {% set bodyClass = (bodyClass ?? [])|explodeClass|merge([
   orientation,
@@ -24,8 +25,12 @@
 {% hook "cp.layouts.base" -%}
 
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ language }}">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ language }}"{% if theme == 'dark' %} data-theme="dark"{% endif %}>
   <head>
+    {% if theme == 'system' %}
+      {# Before any styles load, so a dark system doesn't flash the light theme #}
+      <script>if (matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.dataset.theme = 'dark';</script>
+    {% endif %}
     {% block head %}
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta charset="utf-8">
