@@ -95,12 +95,6 @@ trait EditUserTrait
         ]);
 
         if ($screen !== EditUserScreens::PROFILE) {
-            $response->addAltAction(t('Save and continue editing'), [
-                'redirect' => $this->editUserScreenUrl($user, $screen),
-                'shortcut' => true,
-                'retainScroll' => true,
-            ]);
-
             $response->actionMenuItems(fn () => array_filter(
                 $user->getActionMenuItems(),
                 fn (array $item) => ! str_starts_with($item['id'] ?? '', 'action-edit-'),
