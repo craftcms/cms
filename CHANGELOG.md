@@ -16,6 +16,7 @@
 - In element index thumbnail views, only an element’s label now links to it. Clicking anywhere else on a thumbnail, card, or table row selects it, including for asset folders, which now only open from their links. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Asset folders’ labels are now links in thumbnail and card views. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Element index view mode buttons now have tooltips. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Empty states’ messages and icons are now lighter. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - User preference screens now have “General”, “Accessibility”, and “Development” tabs. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - The Notification Position and Slideout Position preferences’ buttons now have tooltips. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Buttons in button groups no longer have gaps between them, and adjacent buttons now share a border. ([#19942](https://github.com/craftcms/cms/pull/19942))
