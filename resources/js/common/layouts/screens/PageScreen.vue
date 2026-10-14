@@ -14,7 +14,11 @@
    */
   import {computed, provide, useTemplateRef} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
-  import {useElementSize} from '@vueuse/core';
+  import {
+    useElementBounding,
+    useElementSize,
+    useWindowSize,
+  } from '@vueuse/core';
   import {useVisibleHeight} from '@/common/composables/useVisibleHeight';
   import {useDebugBarHeight} from '@/common/composables/useDebugBarHeight';
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
@@ -121,7 +125,7 @@
   const {nav, siteCrumb} = useCraftData();
   const crumbs = computed<Array<BreadcrumbItem> | null>(() => {
     const merged = withSubnavCrumbs(
-      withNavCrumbMenus(page.props.crumbs ?? [], nav.value ?? []),
+      withNavCrumbMenus(page.props.crumbs ?? [], nav.value ?? [], page.url),
       subnav.value
     );
 
@@ -183,16 +187,32 @@
   const topBarVisibleHeight = useVisibleHeight(() => topBar.value?.$el);
   // The details pane and the sidebar both stop short of Laravel Debugbar.
   const debugBarHeight = useDebugBarHeight();
+  const contentLayout = useTemplateRef<HTMLElement>('contentLayout');
+  const detailsColumn = useTemplateRef<{$el: HTMLElement}>('detailsColumn');
+  const {width: contentLayoutWidth} = useElementSize(contentLayout);
+  // Where the details column sits in the viewport: how far down it starts until
+  // the pane sticks, and how much room its end leaves at the bottom once the
+  // page is scrolled to it. The pane is sized to fit between the two.
+  // The `aside`, which spans the row, rather than the pane's own contents,
+  // whose height follows from this.
+  const detailsAside = useTemplateRef<HTMLElement>('detailsAside');
+  const {top: detailsColumnTop, bottom: detailsColumnBottom} =
+    useElementBounding(detailsAside);
+  const {height: windowHeight} = useWindowSize();
+
   const pageScreenStyle = computed(() => ({
     '--cp-top-bar-visible-height': `${topBarVisibleHeight.value}px`,
+    '--cp-details-offset': `${Math.max(0, detailsColumnTop.value)}px`,
+    '--cp-details-end-gap': `${Math.max(
+      0,
+      windowHeight.value -
+        (debugBarHeight.value ?? 0) -
+        detailsColumnBottom.value
+    )}px`,
     ...(debugBarHeight.value === null
       ? {}
       : {'--cp-debug-bar-height': `${debugBarHeight.value}px`}),
   }));
-
-  const contentLayout = useTemplateRef<HTMLElement>('contentLayout');
-  const detailsColumn = useTemplateRef<{$el: HTMLElement}>('detailsColumn');
-  const {width: contentLayoutWidth} = useElementSize(contentLayout);
 
   // Lets content decide when it's cramped — the element details panels fold away
   // below a certain width.
@@ -372,7 +392,7 @@
                               <div id="cp-content-header" class="pt-lg pb-md">
                                 <CpContainer>
                                   <div
-                                    class="flex items-center justify-between"
+                                    class="flex flex-wrap gap-md items-center justify-between"
                                   >
                                     <LayoutSlotOutlet name="title">
                                       <slot name="title">
@@ -455,6 +475,7 @@
                         </div>
                         <!-- Paired ids for the legacy editor's `$('#details .details')`. -->
                         <aside
+                          ref="detailsAside"
                           v-show="hasDetails"
                           :id="legacyIds ? 'details' : undefined"
                           class="cp-content__details"
@@ -682,8 +703,13 @@ Content: the secondary nav, content, and details panes
 
   .cp-content--sidebar .cp-content__sidebar {
     min-width: calc(250rem / 16);
-    border-block-end: 1px solid var(--c-color-border-quiet);
     padding: var(--c-spacing-md);
+
+    /* Only stacked above the content; beside it, the panel's own border
+       already closes it off. */
+    @media (width < var(--breakpoint-lg)) {
+      border-block-end: 1px solid var(--c-color-border-quiet);
+    }
   }
 
   .cp-content__main {
@@ -704,13 +730,14 @@ Content: the secondary nav, content, and details panes
     justify-self: stretch;
   }
 
+  /* Runs from wherever the pane starts to the viewport's bottom, stopping
+     short only once the page's end brings the panel's own bottom into view. */
   .cp-content__details-pane {
     position: sticky;
-    inset-block-start: var(--cp-body-inset);
+    inset-block-start: 0;
     height: calc(
-      100dvh - var(--cp-top-bar-visible-height, 0px) -
-        var(--cp-debug-bar-height, 0px) -
-        (var(--cp-body-inset) + var(--cp-body-border-width)) * 2
+      100dvh - var(--cp-debug-bar-height, 0px) - var(--cp-details-offset, 0px) -
+        var(--cp-details-end-gap, 0px)
     );
   }
 

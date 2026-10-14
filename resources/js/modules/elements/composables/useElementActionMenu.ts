@@ -1,5 +1,3 @@
-import {Uploader} from '@/modules/uploader/uploader';
-import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
 import {router} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
 import {computed, type ComputedRef} from 'vue';
@@ -8,6 +6,8 @@ import type {ActionItem} from '@/common/types';
 import {ElementDeletionManager} from '@/modules/element-deletion-manager';
 import type {UiProperties, UiValues} from '@/modules/ui/types';
 import {openUiModal} from '@/modules/ui/open-ui-modal';
+import {submitNativeForm} from '@/common/utils/forms';
+import {replaceAssetFile} from '@/modules/assets/replaceAssetFile';
 import {
   openImageEditorDialog,
   type ImageEditorSettings,
@@ -222,7 +222,7 @@ export function createElementActionDispatcher({
         return;
 
       case 'replaceFile':
-        replaceFile(behavior.assetId);
+        replaceAssetFile(behavior.assetId, reload);
 
         return;
 
@@ -300,81 +300,6 @@ export function createElementActionDispatcher({
         error?.response?.data?.message ?? t('A server error occurred.')
       );
     }
-  }
-
-  /**
-   * Posts to an action the browser should handle itself — a file download,
-   * which can't come back through Inertia.
-   */
-  function submitNativeForm(action: string, params: UiValues): void {
-    const form = document.createElement('form');
-    form.method = 'post';
-    form.action = action;
-    form.hidden = true;
-
-    const fields = {...params};
-    if (Craft.csrfTokenName) {
-      fields[Craft.csrfTokenName] = Craft.csrfTokenValue;
-    }
-
-    for (const [name, value] of Object.entries(fields)) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = name;
-      input.value = String(value);
-      form.append(input);
-    }
-
-    document.body.append(form);
-    form.submit();
-    form.remove();
-  }
-
-  /**
-   * Swaps the asset's file for a newly uploaded one through the native
-   * uploader, then reloads so the filename, size, dimensions, and thumbnail all
-   * come back from the server together.
-   */
-  function replaceFile(assetId: number): void {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.name = 'replaceFile';
-    input.hidden = true;
-    document.body.append(input);
-
-    const uploaderSettings = {
-      dropZone: null,
-      fileInput: input,
-      paramName: 'replaceFile',
-      replace: true,
-    };
-    Object.assign(uploaderSettings, {
-      on: {
-        done: ({result}) => {
-          if (result?.error) {
-            Craft.cp?.displayError?.(result.error);
-
-            return;
-          }
-
-          Craft.cp?.displayNotice?.(t('New file uploaded.'));
-          Craft.broadcaster?.postMessage({event: 'saveElement', id: assetId});
-          reload();
-        },
-        fail: ({error, canceled}) => {
-          if (!canceled) {
-            Craft.cp?.displayError?.(
-              error instanceof Error ? error.message : t('Replace file failed.')
-            );
-          }
-        },
-        settled: () => input.remove(),
-      } satisfies UploaderCallbacks,
-    });
-    const uploader = new Uploader(input, uploaderSettings);
-
-    uploader.setParams({assetId});
-    input.click();
   }
 
   return dispatch;

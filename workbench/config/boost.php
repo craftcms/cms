@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'agents' => [
+        'claude_code' => [
+            'skills_path' => '.agents/skills',
+        ],
+    ],
     'browser_logs_watcher' => false,
     'enforce_tests' => false,
     'rules' => [

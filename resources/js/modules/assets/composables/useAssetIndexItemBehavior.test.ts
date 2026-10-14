@@ -50,9 +50,9 @@ it('opens a folder with the current view and fresh pagination', () => {
   };
 
   expect(
-    itemBehavior.onClick?.(
+    itemBehavior.onKeydown?.(
       folder,
-      new MouseEvent('click', {bubbles: true, cancelable: true})
+      new KeyboardEvent('keydown', {key: 'Enter', cancelable: true})
     )
   ).toBe(true);
   expect(visitedUrl().pathname).toBe('/cp/assets/photos/products');
@@ -64,6 +64,84 @@ it('opens a folder with the current view and fresh pagination', () => {
     expect.objectContaining({preserveState: true, preserveScroll: true})
   );
 });
+
+it('opens a folder from its title link, unless the click is modified', () => {
+  const {itemBehavior} = useAssetIndexItemBehavior({visit});
+  const folder = {
+    id: 'folder:7',
+    isFolder: true,
+    folderUrl: '/cp/assets/photos/products',
+  };
+  const link = document.createElement('a');
+  link.href = folder.folderUrl;
+  link.dataset.folderLink = '';
+  const label = link.appendChild(document.createElement('span'));
+  document.body.append(link);
+
+  const click = (init: MouseEventInit = {}) => {
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      ...init,
+    });
+    let handled: boolean | undefined;
+    const onClick = (e: MouseEvent) => {
+      handled = itemBehavior.onClick?.(folder, e);
+    };
+    document.addEventListener('click', onClick, {once: true});
+    label.dispatchEvent(event);
+    return {event, handled};
+  };
+
+  const modified = click({metaKey: true});
+  expect(modified.handled).toBe(true);
+  expect(modified.event.defaultPrevented).toBe(false);
+  expect(visit).not.toHaveBeenCalled();
+
+  const plain = click();
+  expect(plain.handled).toBe(true);
+  expect(plain.event.defaultPrevented).toBe(true);
+  expect(visitedUrl().pathname).toBe('/cp/assets/photos/products');
+
+  link.remove();
+});
+
+// A folder only opens from its link, or Enter. Anywhere else, a click or Space
+// selects it, as it would an asset — in a table row, a card or a thumb alike.
+it.each([
+  ['table row', () => document.createElement('tr')],
+  ['card', () => document.createElement('craft-card')],
+  ['thumb', () => document.createElement('li')],
+])(
+  'leaves a click or Space on a folder %s, outside its link, to selection',
+  (_, createItem) => {
+    const {itemBehavior} = useAssetIndexItemBehavior({visit});
+    const folder = {
+      id: 'folder:7',
+      isFolder: true,
+      folderUrl: '/cp/assets/photos/products',
+    };
+    const item = createItem();
+    const body = item.appendChild(document.createElement('span'));
+    const click = new MouseEvent('click', {bubbles: true, cancelable: true});
+    Object.defineProperty(click, 'target', {value: body});
+    const space = new KeyboardEvent('keydown', {key: ' ', cancelable: true});
+    Object.defineProperty(space, 'target', {value: item});
+
+    expect(itemBehavior.onClick?.(folder, click)).toBe(false);
+    expect(itemBehavior.onKeydown?.(folder, space)).toBe(false);
+    expect(visit).not.toHaveBeenCalled();
+
+    const enter = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      cancelable: true,
+    });
+    Object.defineProperty(enter, 'target', {value: item});
+
+    expect(itemBehavior.onKeydown?.(folder, enter)).toBe(true);
+    expect(visit).toHaveBeenCalledTimes(1);
+  }
+);
 
 it('marks assets and folders for drag-and-drop', () => {
   const {itemBehavior} = useAssetIndexItemBehavior({visit});

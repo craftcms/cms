@@ -15,6 +15,7 @@
     defineProps<{
       modalUrl: string;
       actionUrl: string;
+      actionMethod?: 'post' | 'delete';
       params?: UiValues;
       /** Used when the server doesn't send a title. */
       title?: string;
@@ -24,6 +25,7 @@
     }>(),
     {
       params: () => ({}),
+      actionMethod: 'post',
       title: undefined,
       submitLabel: () => t('Save'),
       width: 'md',
@@ -64,10 +66,17 @@
     errors.value = [];
 
     try {
-      const {data} = await actionClient.post<Record<string, unknown>>(
-        props.actionUrl,
-        {...renderer.value.currentValues(), ...props.params}
-      );
+      const values = {...renderer.value.currentValues(), ...props.params};
+      const {data} =
+        props.actionMethod === 'delete'
+          ? await actionClient.delete<Record<string, unknown>>(
+              props.actionUrl,
+              {data: values}
+            )
+          : await actionClient.post<Record<string, unknown>>(
+              props.actionUrl,
+              values
+            );
 
       if (typeof data?.message === 'string') {
         Craft.cp?.displayNotice?.(data.message);
@@ -100,11 +109,8 @@
     @close="emit('close')"
     @submit="submit"
   >
-    <UiRenderer
-      v-if="modal"
-      ref="renderer"
-      :payload="modal.ui"
-      :errors="errors"
-    />
+    <craft-field-group v-if="modal">
+      <UiRenderer ref="renderer" :payload="modal.ui" :errors="errors" />
+    </craft-field-group>
   </ModalForm>
 </template>

@@ -39,6 +39,7 @@
 <template>
   <Modal
     :is-active="isActive"
+    :label="title ?? label"
     :overlay="overlay"
     @close="emit('close')"
     :width="width"

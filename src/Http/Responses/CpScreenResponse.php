@@ -17,6 +17,10 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiPayload;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyReadyShim;
@@ -694,6 +698,21 @@ class CpScreenResponse implements Responsable
         $this->inertiaProps = $props;
 
         return $this;
+    }
+
+    /**
+     * Renders the UI page, resolving definitions with the given context.
+     * Already resolved payloads retain their values, errors, and control modes.
+     *
+     * @param  array<string, mixed>  $props  Additional UI page props.
+     */
+    public function ui(Ui|UiPayload $ui, UiContext $context = new UiContext, array $props = []): self
+    {
+        $payload = $ui instanceof Ui
+            ? app(UiResolver::class)->resolve($ui, $context)
+            : $ui;
+
+        return $this->inertiaPage('Ui', [...$props, 'ui' => $payload]);
     }
 
     /**

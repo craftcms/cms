@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementEditorActions;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
@@ -135,6 +136,22 @@ class ElementEditViewModel extends ViewModel
     public function cpEditUrl(): ?string
     {
         return $this->element->getCpEditUrl();
+    }
+
+    /**
+     * Where the Save button lands: back where the editor was opened from, as on
+     * the legacy screen. Saving a named draft stays on the draft.
+     *
+     * Encrypted, because the save controllers decrypt whatever `redirect` a
+     * request posts rather than trusting it.
+     */
+    public function redirectUrl(): string
+    {
+        $isNamedDraft = $this->element->getIsDraft()
+            && ! $this->element->getIsUnpublishedDraft()
+            && ! $this->element->isProvisionalDraft;
+
+        return Crypt::encrypt($isNamedDraft ? '{cpEditUrl}' : $this->postEditRedirectUrl($this->element));
     }
 
     /** Where the edit form posts when there are no provisional changes to apply. */
@@ -837,8 +854,15 @@ class ElementEditViewModel extends ViewModel
         ));
     }
 
-    public function statusLabelHtml(): string
+    /**
+     * Element types without statuses only get a label for drafts.
+     */
+    public function statusLabelHtml(): ?string
     {
+        if (! $this->element::hasStatuses() && $this->element->getStatus() !== Element::STATUS_DRAFT) {
+            return null;
+        }
+
         return app(StatusHtml::class)->componentStatusLabelHtml($this->element);
     }
 

@@ -16,7 +16,6 @@
     :element-type="payload.elementType"
     :element-id="payload.canonicalId"
     :site-id="payload.siteId"
-    :page-url="payload.activityPageUrl"
     :refresh-token="refreshToken"
   />
 </template>

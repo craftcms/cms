@@ -9,15 +9,17 @@
 </script>
 
 <script setup lang="ts">
-  import {onKeyStroke} from '@vueuse/core';
+  import {usePreferredReducedMotion} from '@vueuse/core';
   import {computed, onBeforeUnmount, shallowRef, watch} from 'vue';
   import {t} from '@craftcms/ui';
+  import CraftDialog from '@craftcms/ui/components/dialog/dialog';
   import CornerResizeHandle from '@/common/components/CornerResizeHandle.vue';
-  import {useBodyScrollLock} from '@/common/composables/useBodyScrollLock';
   import {useResizableBox} from '@/common/composables/useResizableBox';
 
   export interface ModalProps {
     isActive?: boolean;
+    /** Accessible name; ModalForm supplies its visible title. */
+    label?: string;
     overlay?: boolean;
     width?: string;
     height?: string;
@@ -40,11 +42,31 @@
     isActive: false,
     overlay: true,
     width: 'md',
+    label: () => t('Dialog'),
     resizable: false,
     dismissible: true,
   });
 
   const stackId = Symbol('modal');
+  const dialog = shallowRef<CraftDialog | null>(null);
+  const reducedMotion = usePreferredReducedMotion();
+  const transitionDuration = computed(() =>
+    reducedMotion.value === 'reduce' ? 0 : 250
+  );
+  let invoker: HTMLElement | null = null;
+
+  function closeDialog(element = dialog.value): void {
+    if (!element) return;
+
+    const returnTo = invoker;
+    invoker = null;
+    element.opened = false;
+    void element.updateComplete.then(() => {
+      if ((!props.isActive || !element.isConnected) && returnTo?.isConnected) {
+        returnTo.focus();
+      }
+    });
+  }
 
   function leaveStack(): void {
     const index = openModals.indexOf(stackId);
@@ -54,12 +76,26 @@
   watch(
     () => props.isActive,
     (active) => {
-      leaveStack();
-      if (active) openModals.push(stackId);
+      if (active) {
+        leaveStack();
+        openModals.push(stackId);
+        if (invoker) return;
+
+        const focused = document.activeElement;
+        invoker =
+          focused instanceof HTMLElement
+            ? (focused
+                .closest('craft-action-menu')
+                ?.querySelector<HTMLElement>('[slot="invoker"]') ?? focused)
+            : null;
+      }
     },
-    {immediate: true}
+    {immediate: true, flush: 'sync'}
   );
-  onBeforeUnmount(leaveStack);
+  onBeforeUnmount(() => {
+    leaveStack();
+    closeDialog();
+  });
 
   /** Whether this is the innermost open modal — the one Escape is for. */
   const isTop = computed(() => openModals.at(-1) === stackId);
@@ -71,20 +107,28 @@
    */
   const isNested = computed(() => openModals.indexOf(stackId) > 0);
 
-  onKeyStroke('Escape', () => {
-    if (props.isActive && isTop.value && props.dismissible) {
-      emit('close');
-    }
-  });
+  function requestClose(event: Event): void {
+    if (
+      event.composedPath().find((node) => node instanceof CraftDialog) !==
+      dialog.value
+    )
+      return;
 
-  function onOverlayClick(): void {
-    if (props.dismissible) {
-      emit('close');
+    event.preventDefault();
+    event.stopPropagation();
+    if (props.isActive && props.dismissible && isTop.value) emit('close');
+  }
+
+  function opened(): void {
+    if (content.value) {
+      emit('opened', content.value);
     }
   }
 
-  // The page behind the overlay shouldn't scroll out from under it.
-  useBodyScrollLock(() => props.isActive);
+  function closed(element: Element): void {
+    leaveStack();
+    if (element instanceof CraftDialog) closeDialog(element);
+  }
 
   const content = shallowRef<HTMLElement | null>(null);
   const resizer = useResizableBox({
@@ -117,28 +161,34 @@
 </script>
 
 <template>
-  <Transition name="body" @after-enter="(el) => emit('opened', el as Element)">
-    <div class="cp-modal" v-if="isActive">
-      <div
-        ref="content"
-        :class="{
-          content: true,
-          [widthClass]: true,
-        }"
-        :style="[contentStyle, resizer.style.value]"
-      >
-        <slot></slot>
-      </div>
-      <CornerResizeHandle v-if="resizable" :resizer="resizer" />
-    </div>
-  </Transition>
-
-  <Transition name="fade" v-if="overlay">
-    <div
+  <Transition
+    name="body"
+    :duration="transitionDuration"
+    @after-enter="opened"
+    @after-leave="closed"
+  >
+    <craft-dialog
       v-if="isActive"
-      :class="{'cp-overlay': true, 'cp-overlay--nested': isNested}"
-      @click="onOverlayClick"
-    ></div>
+      ref="dialog"
+      :label="label"
+      .opened="true"
+      no-close
+      .closeOnOutsideClick="dismissible"
+      :class="{'without-overlay': !overlay || isNested}"
+      @craft-before-hide="requestClose"
+      @keydown.esc="requestClose"
+    >
+      <div class="cp-modal">
+        <div
+          ref="content"
+          :class="{content: true, [widthClass]: true}"
+          :style="[contentStyle, resizer.style.value]"
+        >
+          <slot></slot>
+        </div>
+        <CornerResizeHandle v-if="resizable" :resizer="resizer" />
+      </div>
+    </craft-dialog>
   </Transition>
 </template>
 
@@ -159,31 +209,40 @@
     border-color: var(--c-modal-border-color);
     position: relative;
     overflow-y: scroll;
-    pointer-events: auto;
     /* Keeps the slotted content's own z-indexes — a sticky pane footer, say —
      from painting over the modal's chrome, such as the resize handle. Nothing
      can escape this box visually anyway; it scrolls. */
     isolation: isolate;
   }
 
-  .cp-modal,
-  .cp-overlay {
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    inset: 0;
+  craft-dialog::part(header) {
+    display: none;
+  }
+
+  craft-dialog::part(surface) {
+    display: block;
+    min-inline-size: 0;
+    max-inline-size: none;
+    max-block-size: none;
+    background: none;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  craft-dialog::part(body) {
+    padding: 0;
+    overflow: visible;
+  }
+
+  craft-dialog.without-overlay::part(dialog)::backdrop {
+    background: transparent;
   }
 
   .cp-modal {
-    z-index: var(--c-layer-dialog);
     display: grid;
     justify-content: center;
-    /* Content-sized in both axes, matching what justify-content does for the
-     column, so the resize handle's `align-self: end` lands on the content's
-     edge rather than the viewport's. */
     align-content: center;
     align-items: center;
-    pointer-events: none;
   }
 
   /* Overlaid on the content's own grid cell so the handle can sit in its corner
@@ -200,46 +259,29 @@
      itself positioned and would otherwise paint over the corner. */
     position: relative;
     z-index: 1;
-    /* `.cp-modal` turns pointer events off; the handle is the exception. */
-    pointer-events: auto;
   }
 
-  .cp-overlay {
-    z-index: var(--c-layer-dialog-shade);
-    background-color: rgba(0, 0, 0, 0.5);
-  }
-
-  .cp-overlay--nested {
-    background-color: transparent;
-  }
-
-  /* Only animate when the user is cool with it */
   @media (prefers-reduced-motion: no-preference) {
-    .body-enter-active {
-      animation: body-in 250ms;
-    }
-    .body-leave-active {
-      animation: body-in 250ms reverse;
-    }
-
-    @keyframes body-in {
-      0% {
-        opacity: 0;
-        transform: scale(0.9) translateY(2rem);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
+    craft-dialog.body-enter-active::part(dialog),
+    craft-dialog.body-leave-active::part(dialog) {
+      transition:
+        opacity 250ms,
+        transform 250ms;
     }
 
-    .fade-enter-active,
-    .fade-leave-active {
-      transition: opacity 0.1s ease;
+    craft-dialog.body-enter-from::part(dialog),
+    craft-dialog.body-leave-to::part(dialog) {
+      opacity: 0;
+      transform: scale(0.9) translateY(2rem);
     }
 
-    .fade-enter-from,
-    .fade-leave-to {
+    craft-dialog.body-enter-active::part(dialog)::backdrop,
+    craft-dialog.body-leave-active::part(dialog)::backdrop {
+      transition: opacity 100ms;
+    }
+
+    craft-dialog.body-enter-from::part(dialog)::backdrop,
+    craft-dialog.body-leave-to::part(dialog)::backdrop {
       opacity: 0;
     }
   }

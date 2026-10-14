@@ -12,7 +12,7 @@
   const props = withDefaults(
     defineProps<{
       open?: boolean;
-      site: Site;
+      site: Pick<Site, 'id' | 'name'>;
     }>(),
     {open: false}
   );
@@ -36,11 +36,9 @@
     transferContentTo: null,
   });
 
-  async function handleSubmit() {
-    deleteSite();
-  }
-
   function deleteSite() {
+    if (form.processing) return;
+
     form.clearErrors().delete(destroy({site: props.site.id}).url, {
       onSuccess: () => {
         emit('close');
@@ -60,10 +58,10 @@
   <ModalForm
     :title="t('Delete {site}', {site: site.name})"
     :is-active="open"
-    @close="handleModalClose"
-    @submit="handleSubmit"
     :loading="form.processing"
     :submit-label="t('Delete')"
+    @close="handleModalClose"
+    @submit="deleteSite"
   >
     <div class="grid gap-3">
       <craft-radio-group
@@ -83,13 +81,13 @@
         <craft-radio
           :label="t('Transfer it')"
           .choiceValue="'transfer'"
-          :checked="'transfer' === form.contentDestination"
+          .checked="'transfer' === form.contentDestination"
         >
         </craft-radio>
         <craft-radio
           :label="t('Delete it')"
           .choiceValue="'delete'"
-          :checked="'delete' === form.contentDestination"
+          .checked="'delete' === form.contentDestination"
         ></craft-radio>
       </craft-radio-group>
 
@@ -134,5 +132,3 @@
     </div>
   </ModalForm>
 </template>
-
-<style scoped lang="scss"></style>

@@ -92,6 +92,29 @@ describe('craft-button link mode', () => {
   });
 });
 
+describe('craft-button accessible name check', () => {
+  // A detached button's root is itself, which can't resolve an
+  // `aria-labelledby` ID, so a check that ran after removal threw.
+  it('skips the check for a button removed before it ran', async () => {
+    const errors: unknown[] = [];
+    const onRejection = (reason: unknown) => errors.push(reason);
+    process.on('unhandledRejection', onRejection);
+
+    const label = document.createElement('span');
+    label.id = 'button-name';
+    label.textContent = 'Settings';
+    const element = document.createElement('craft-button') as CraftButton;
+    element.setAttribute('aria-labelledby', 'button-name');
+    document.body.append(label, element);
+    element.remove();
+    await element.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    process.off('unhandledRejection', onRejection);
+    expect(errors).toEqual([]);
+  });
+});
+
 describe('craft-button link semantics', () => {
   it('is a presentation host and not a tab stop in link mode', async () => {
     const element = await createButton({href: '/x'});

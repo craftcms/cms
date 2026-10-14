@@ -19,8 +19,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\delete;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
@@ -91,6 +93,46 @@ test('index redirects to team permissions page when edition is team', function (
         ->assertRedirect(action([UserGroupsController::class, 'edit'], UserGroups::getTeamGroup()->id));
 });
 
+test('index lists linked groups and copyable handles with actions allowed by admin changes', function (bool $allowAdminChanges) {
+    Edition::set(Edition::Pro);
+    Cms::config()->allowAdminChanges = $allowAdminChanges;
+    $group = UserGroup::factory()->create([
+        'name' => 'Editors',
+        'handle' => 'editors',
+    ]);
+
+    $response = get(action([UserGroupsController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Ui'));
+
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))
+        ->firstWhere('component', 'craft:admin-table');
+    expect($table['props'])->toMatchArray([
+        'deletable' => $allowAdminChanges,
+        'bulkDeleteUrl' => null,
+        'createUrl' => $allowAdminChanges ? action([UserGroupsController::class, 'create']) : null,
+    ]);
+
+    $row = collect($table['props']['rows'])->firstWhere('id', $group->id);
+    expect($row['name'])->toMatchArray([
+        'label' => 'Editors',
+        'url' => action([UserGroupsController::class, 'edit'], $group->id),
+    ]);
+
+    $handle = new Crawler($row['handle']['html'])->filter('craft-copy-attribute');
+    expect($handle->text())->toBe('editors')
+        ->and($handle->attr('value'))->toBe('editors');
+
+    if ($allowAdminChanges) {
+        expect($row['_deleteUrl'])->toBe(action([UserGroupsController::class, 'destroy'], $group->id))
+            ->and($row['_deleteConfirmMessage'])->toBe('Are you sure you want to delete "Editors"?');
+
+        return;
+    }
+
+    expect($row)->not->toHaveKeys(['_deleteUrl', '_deleteConfirmMessage']);
+})->with([true, false]);
+
 test('edit renders team page when edition is team', function () {
     $group = UserGroup::factory()->create();
 
@@ -154,7 +196,7 @@ test('store validates on unique handle and name', function () {
     expect(UserPermissions::getPermissionsByGroupId($newGroup->id)->all())->toEqualCanonicalizing(['viewUsers', 'editUsers', "assignUserGroup:$newGroup->uid"]);
 });
 
-it('can delete a group', function () {
+it('can delete a group', function (bool $json) {
     Edition::set(Edition::Pro);
 
     UserGroups::saveGroup($group = new UserGroupData([
@@ -164,10 +206,23 @@ it('can delete a group', function () {
 
     expect(UserGroup::count())->toBe(1);
 
-    deleteJson(action([UserGroupsController::class, 'destroy'], [$group->id]))->assertOk();
+    $url = action([UserGroupsController::class, 'destroy'], [$group->id]);
+
+    if ($json) {
+        deleteJson($url)->assertOk();
+    } else {
+        delete($url)->assertRedirect(action([UserGroupsController::class, 'index']));
+    }
 
     expect(UserGroup::count())->toBe(0);
-});
+
+    $response = get(action([UserGroupsController::class, 'index']))->assertOk();
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))
+        ->firstWhere('component', 'craft:admin-table');
+
+    expect($table['props']['rows'])->toBe([])
+        ->and($table['props']['emptyMessage'])->toBe('No groups exist yet.');
+})->with([true, false]);
 
 it('checks permission elevation before saving group metadata', function (array $initialPermissions, array $permissions, bool $confirmed, bool $allowed, bool $team = false) {
     Edition::set($team ? Edition::Team : Edition::Pro);

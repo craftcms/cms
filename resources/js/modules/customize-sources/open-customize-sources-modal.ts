@@ -1,4 +1,5 @@
 import type {App} from 'vue';
+import type {SourcesLanding} from '@/modules/elements/index/composables/useCustomizeSources';
 
 export interface CustomizeSourcesModalOptions {
   /** The element type whose sources to customize. */
@@ -9,9 +10,13 @@ export interface CustomizeSourcesModalOptions {
   sourceKey?: string | null;
   /**
    * Called once the settings are saved, with the source the index should show
-   * next (or null to stay put). Defaults to reloading the page.
+   * next (or null to stay put) and the nav's link to it, when the nav has one.
+   * The modal closes once it settles. Defaults to reloading the page.
    */
-  onSaved?: (sourceKey: string | null) => void;
+  onSaved?: (
+    sourceKey: string | null,
+    url: string | null
+  ) => void | Promise<void>;
 }
 
 /**
@@ -37,7 +42,10 @@ export async function openCustomizeSourcesModal(
   const host = document.createElement('div');
   document.body.append(host);
 
-  const onSaved = options.onSaved ?? (() => window.location.reload());
+  function close(): void {
+    app.unmount();
+    host.remove();
+  }
 
   const app: App = createApp({
     render: () =>
@@ -46,12 +54,16 @@ export async function openCustomizeSourcesModal(
         elementType: options.elementType,
         page: options.page ?? null,
         sourceKey: options.sourceKey ?? null,
-        onClose: () => {
-          app.unmount();
-          host.remove();
+        onClose: close,
+        onSaved: async ({sourceKey, url}: SourcesLanding) => {
+          if (!options.onSaved) {
+            window.location.reload();
+            return;
+          }
+
+          await options.onSaved(sourceKey, url);
+          close();
         },
-        onSaved: ({sourceKey}: {sourceKey: string | null}) =>
-          onSaved(sourceKey),
       }),
   });
 

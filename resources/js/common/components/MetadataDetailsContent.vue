@@ -10,7 +10,7 @@
 </script>
 
 <template>
-  <div class="p-lg">
+  <div class="py-lg px-(--cp-container-padding)">
     <slot />
     <hr v-if="html && $slots.default" class="my-lg" />
     <DynamicHtmlRenderer v-if="html" :html="html" />

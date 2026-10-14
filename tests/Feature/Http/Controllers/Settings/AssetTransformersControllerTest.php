@@ -14,6 +14,7 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
 use CraftCms\Cms\Http\ViewModels\AssetTransformerEditViewModel;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
@@ -55,16 +56,54 @@ it('gives its breadcrumbs links the Vue breadcrumbs can follow', function () {
         );
 });
 
-it('lists the required Craft transformer', function () {
-    get(action([AssetTransformersController::class, 'index']))
+it('lists sorted transformers with editable default labels, handles, drivers, and permitted actions', function (bool $allowAdminChanges, string $defaultHandle) {
+    Cms::config()->allowAdminChanges = $allowAdminChanges;
+    app(AssetTransformDrivers::class)->extend('controller-test', fn () => new ControllerTestAssetTransformDriver);
+    $remote = new AssetTransformer(['name' => 'A Remote', 'handle' => 'remote', 'driver' => 'controller-test']);
+    $unavailable = new AssetTransformer(['name' => 'Z Unavailable', 'handle' => 'unavailable', 'driver' => 'craft']);
+    app(AssetTransformers::class)->saveAssetTransformer($remote);
+    app(AssetTransformers::class)->saveAssetTransformer($unavailable);
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_ASSET_TRANSFORMERS.'.'.$unavailable->uid.'.driver', 'missing-driver');
+    Cms::config()->defaultAssetTransformer($defaultHandle);
+
+    $response = get(action([AssetTransformersController::class, 'index']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('settings/assets/transformers/Index')
-            ->where('transformers', fn ($transformers): bool => collect($transformers)
-                ->contains(fn (array $transformer): bool => $transformer['handle'] === 'craft'
-                    && $transformer['isDefault'] === true
-                    && $transformer['deleteDisabledReason'] === 'The Craft Asset Transformer cannot be deleted.')));
-});
+            ->component('Ui')->where('readOnly', ! $allowAdminChanges));
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))->firstWhere('component', 'craft:admin-table')['props'];
+    [$remoteRow, $craftRow, $unavailableRow] = $table['rows'];
+    $handle = new Crawler($remoteRow['handle']['html'])->filter('craft-copy-attribute');
+
+    expect(array_column(array_column($table['rows'], 'name'), 'label'))->toBe([
+        $defaultHandle === 'remote' ? 'A Remote (Default)' : 'A Remote',
+        $defaultHandle === 'craft' ? 'Craft (Default)' : 'Craft',
+        'Z Unavailable',
+    ])
+        ->and($craftRow['name']['url'])->toBe(route('craft.cp.settings.assets.transformers.edit', ['handle' => 'craft']))
+        ->and($remoteRow['id'])->toBe($remote->uid)
+        ->and($handle->attr('value'))->toBe('remote')
+        ->and($handle->text())->toBe('remote')
+        ->and($remoteRow['driver'])->toBe('Controller test')
+        ->and($unavailableRow['driver'])->toBe('missing-driver (Unavailable)')
+        ->and($table['createUrl'])->toBe($allowAdminChanges ? action([AssetTransformersController::class, 'create']) : null)
+        ->and($table['deletable'])->toBe($allowAdminChanges);
+
+    if ($allowAdminChanges) {
+        expect($craftRow['_deletable'])->toBeFalse()
+            ->and($craftRow['_deleteDisabledReason'])->toBe('The Craft Asset Transformer cannot be deleted.')
+            ->and($remoteRow['_deletable'])->toBe($defaultHandle !== 'remote')
+            ->and($remoteRow['_deleteDisabledReason'])->toBe($defaultHandle === 'remote' ? 'This Asset Transformer cannot be deleted because it is configured as the default.' : null)
+            ->and($remoteRow['_deleteUrl'])->toBe(action([AssetTransformersController::class, 'destroy'], ['handle' => 'remote']))
+            ->and($remoteRow['_deleteConfirmMessage'])->toBe('Are you sure you want to delete the “A Remote” Asset Transformer?');
+    } else {
+        expect($craftRow)->not->toHaveKey('_deleteUrl')
+            ->and($remoteRow)->not->toHaveKey('_deleteUrl');
+    }
+})->with([
+    'Craft default' => [true, 'craft'],
+    'custom default' => [true, 'remote'],
+    'read-only' => [false, 'craft'],
+]);
 
 it('explains why transformers assigned to volumes cannot be deleted', function () {
     config()->set('filesystems.disks.controller-test', [
@@ -84,12 +123,12 @@ it('explains why transformers assigned to volumes cannot be deleted', function (
         'assetTransformer' => 'assigned',
     ]));
 
-    get(action([AssetTransformersController::class, 'index']))
-        ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('transformers', fn ($transformers): bool => collect($transformers)
-                ->contains(fn (array $transformer): bool => $transformer['handle'] === 'assigned'
-                    && $transformer['deleteDisabledReason'] === 'This Asset Transformer cannot be deleted because it is assigned to a volume.')));
+    $response = get(action([AssetTransformersController::class, 'index']))->assertOk();
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))->firstWhere('component', 'craft:admin-table')['props'];
+    $row = collect($table['rows'])->firstWhere('id', $transformer->uid);
+
+    expect($row['_deletable'])->toBeFalse()
+        ->and($row['_deleteDisabledReason'])->toBe('This Asset Transformer cannot be deleted because it is assigned to a volume.');
 });
 
 it('renders the standalone transformer UI', function () {

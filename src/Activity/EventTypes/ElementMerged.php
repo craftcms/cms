@@ -45,8 +45,8 @@ class ElementMerged extends ActivityEventType
         $other = $event->data['other']['label'];
 
         return match ($event->data['role']) {
-            'merged' => t('Merged into {other}.', compact('other')),
-            'prevailing' => t('Merged {other} into this element.', compact('other')),
+            'merged' => t('Merged into {other}', compact('other')),
+            'prevailing' => t('Merged {other} into this element', compact('other')),
             default => throw new UnexpectedValueException('Unknown activity merge role.'),
         };
     }

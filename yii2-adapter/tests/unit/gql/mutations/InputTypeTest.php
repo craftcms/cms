@@ -93,6 +93,7 @@ class InputTypeTest extends TestCase
                             ['blockType' => ['id' => 2, 'one', 'two']],
                             ['blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3], 'blockTypeB' => ['id' => 88, 'stuff' => 'ok']],
                         ],
+                    'sortOrder' => [2, 'new:1'],
                 ],
                 [
                     'entries' =>
@@ -115,6 +116,7 @@ class InputTypeTest extends TestCase
                                 'title' => null,
                             ],
                         ],
+                    'sortOrder' => [2, 'new:1'],
                 ],
             ],
             [
@@ -155,6 +157,7 @@ class InputTypeTest extends TestCase
                             ['blockType' => ['three']],
                             ['blockType' => ['four']],
                         ],
+                    'sortOrder' => ['new:1', 'new:2', 'new:3', 'new:4'],
                 ],
                 [
                     'entries' =>
@@ -180,6 +183,7 @@ class InputTypeTest extends TestCase
                                 'title' => null,
                             ],
                         ],
+                    'sortOrder' => ['new:1', 'new:2', 'new:3', 'new:4'],
                 ],
             ],
         ];

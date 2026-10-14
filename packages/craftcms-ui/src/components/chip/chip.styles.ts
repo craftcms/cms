@@ -2,7 +2,7 @@ import {css} from 'lit';
 
 export default css`
   /*
-   * A label link: no underline until it's hovered. ::slotted() only reaches a
+   * A label link is decorated like any other link. ::slotted() only reaches a
    * link slotted straight into the chip; one nested a level down (inside a
    * craft-truncate, as element chips render it) gets the same treatment
    * through the custom properties, which it inherits and craft-truncate
@@ -10,8 +10,8 @@ export default css`
    */
   :host {
     display: contents;
-    --c-truncate-link-decoration: none;
-    --c-truncate-link-hover-decoration: underline;
+    --c-truncate-link-decoration: var(--c-link-decoration);
+    --c-truncate-link-hover-decoration: var(--c-link-decoration-hover);
   }
 
   /* Base */
@@ -220,11 +220,11 @@ export default css`
   }
 
   .cp-chip__body::slotted(a) {
-    text-decoration: none;
+    text-decoration-line: var(--c-link-decoration);
   }
 
   .cp-chip__body::slotted(a:hover) {
-    text-decoration: underline;
+    text-decoration-line: var(--c-link-decoration-hover);
   }
 
   /* Suffix */
@@ -279,8 +279,9 @@ export default css`
    * stay transparent, and to the stamped color so a variant still fills with
    * its own.
    */
-  :host([data-color='white'][appearance~='fill']) .cp-chip,
-  :host([data-color='white'][appearance~='outline-fill']) .cp-chip {
+  :host([data-color='white'][appearance~='fill']:not([selected])) .cp-chip,
+  :host([data-color='white'][appearance~='outline-fill']:not([selected]))
+    .cp-chip {
     background-color: var(--c-chip-fill, var(--c-surface-raised));
     border-color: var(
       --c-chip-border-color,
@@ -322,20 +323,20 @@ export default css`
   }
 
   /*
-   * Selected state, matching a selected thumbnail tile in the element index
-   * (.thumbsview > li.sel .thumb-tile) so a selection reads the same however the
-   * elements are being shown.
+   * Selected state: the accent fill of a selected thumbnail tile in the
+   * element index, with a stronger border, like a selected card's, so the
+   * selection stands out from the chips around it.
    *
    * Last in the file so it wins over the appearance tiers of equal
    * specificity: a selected chip stays legible as selected even when it is plain.
    */
   :host([selected]) .cp-chip {
     background-color: var(--c-color-accent-fill-quiet);
-    border-color: var(--c-color-accent-border-quiet);
+    border-color: var(--c-color-accent-border-normal);
   }
 
   /* A plain chip has no border to color, so its outline takes the color. */
   :host([selected]) .cp-chip--plain {
-    outline-color: var(--c-color-accent-border-quiet);
+    outline-color: var(--c-color-accent-border-normal);
   }
 `;

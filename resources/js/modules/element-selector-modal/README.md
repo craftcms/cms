@@ -42,7 +42,8 @@ index reusable and `useModalElementIndex` core-agnostic.
 | `ElementPicker.vue` | Source navigation and selection around the shared `elements/index/components/ElementIndex.vue` renderer. |
 | `useModalElementIndex.ts` | Modal fetching and selection rules around `elements/index/composables/useDetachedElementIndex`, which uses the shared index and `createDetachedIndexVisitor`. |
 | `index.ts` | Registers the asset controller, drains legacy registrations, assigns the `Craft.*` shims. |
-| `volume-folder-selector-modal.ts` | The folder picker. Binds the same web component and controller to the **legacy jQuery index** — no Vue at all. |
+| `volume-folder-selector-modal.ts` | The folder picker's imperative class (`Craft.VolumeFolderSelectorModal`). Mounts `FolderSelectorModal.vue` lazily and removes itself once closed. |
+| `FolderSelectorModal.vue` | The folder picker's Vue view: `ElementPicker` in folder mode, feeding the open folder's breadcrumb trail to the controller. |
 
 ## What the payload looks like
 
@@ -58,26 +59,21 @@ as `"Image"` rather than `"image"` whenever the File Kind column was visible.
 
 ## The folder picker
 
-`volume-folder-selector-modal.ts` drives the **legacy jQuery element index**
-rather than the Vue one, because folder picking keys off that index's
-`sourcePath` — the breadcrumb of the folder you have navigated into, which is
-what "select the folder I'm looking at" means when no row is highlighted. It is
-the last thing keeping `ElementIndexHtml` and the HTML `element-indexes/*`
-endpoints alive.
+`volume-folder-selector-modal.ts` opens the same Vue modal as everything else,
+with `ElementPicker` in folder mode (`selectFolders`): the index lists folders
+only, folder rows are selectable (bar `disabledFolderIds`), and a folder still
+opens from its title link or Enter.
 
-It is also the proof that this split works: the same web component and the same
-controller as the Vue modal, with server HTML slotted in instead of a component
-tree, and a `VolumeFolderIndexAdapter` bridging the jQuery index to the core.
+Choosing with nothing highlighted means "the folder I'm looking at". The
+controller reads that from its index adapter's `sourcePath`, which
+`FolderSelectorModal.vue` keeps in step with the index's folder breadcrumbs.
 
-It opens **`non-modal`** deliberately. `showModal()` puts a dialog in the top
-layer, where it paints above every menu the legacy CP appends to `<body>` — the
-breadcrumb, status and site menus this index depends on — and makes them
-unclickable. `show()` keeps it in the normal stacking context; the component
-supplies the backdrop, Escape and focus containment the platform then stops
-providing.
+It starts in `defaultSource` and the last folder of `defaultSourcePath` (also
+read from `indexSettings`, where legacy callers put them) — typically the folder
+the items are being moved out of.
 
-The day a Vue folder index exists, this file collapses into
-`ElementSelectorModal.vue`.
+It used to drive the legacy jQuery element index, which depended entirely on the
+legacy CP stylesheet that Inertia pages no longer load, so it opened unstyled.
 
 ### A rule this fixed
 

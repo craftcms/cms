@@ -20,7 +20,6 @@ export interface EditableTableColumn {
     | EditableTableOptions
     | EditableTableOption[]
     | EditableTableOptionGroup[];
-  prefixSelect?: EditableTablePrefixSelect;
   textExpanderTriggers?: TextExpanderTriggers;
   /** Checkbox: only one in the column may be checked at a time. */
   radioMode?: boolean;
@@ -63,12 +62,6 @@ export interface EditableTableOption {
   default?: boolean;
 }
 
-export interface EditableTablePrefixSelect {
-  key: string;
-  label: string;
-  options: Array<{label: string; value: string}>;
-}
-
 export interface EditableTableOptions {
   [key: string]: EditableTableOption;
 }
@@ -88,7 +81,6 @@ type EditableTableColumnValue =
   | EditableTableOptions
   | EditableTableOption[]
   | EditableTableOptionGroup[]
-  | EditableTablePrefixSelect
   | TextExpanderTriggers;
 
 /** Map of column ID → column definition. */

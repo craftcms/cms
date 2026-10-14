@@ -8,6 +8,8 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
 use CraftCms\Cms\Condition\BaseCondition;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Components\CopyAttribute;
+use CraftCms\Cms\Cp\Components\Icon;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
@@ -29,6 +31,7 @@ use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
+use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
@@ -37,6 +40,8 @@ use CraftCms\Cms\Ui\Controls\ConditionBuilder as ConditionBuilderControl;
 use CraftCms\Cms\Ui\Controls\FieldLayoutDesigner as FieldLayoutDesignerControl;
 use CraftCms\Cms\Ui\Controls\FieldSelect as FieldSelectControl;
 use CraftCms\Cms\Ui\Controls\GroupedEntryTypeManager as GroupedEntryTypeManagerControl;
+use CraftCms\Cms\Ui\Nodes\Table;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Ui\UiResolver;
@@ -71,7 +76,7 @@ class FieldsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(TableRequest $request): \Inertia\Response
+    public function index(TableRequest $request, Sites $sites): CpScreenResponse
     {
         [$pagination, $tableData] = $this->fieldsService->getTableData(
             page: $request->page(),
@@ -81,17 +86,60 @@ class FieldsController
             sortDir: $request->sortDir(),
         );
 
-        return Inertia::render('settings/fields/Index', [
-            'crumbs' => fn () => [
-                new ActionItem()->label(t('Settings'))->href(Url::cpUrl('settings')),
+        $rows = array_map(fn (array $field): array => [
+            'id' => $field['id'],
+            'name' => ['label' => $field['title'], 'url' => $field['url']],
+            'searchable' => $field['searchable'] ? ['html' => Icon::make()
+                ->name('magnifying-glass')
+                ->appearance('badge')
+                ->label(t('This field’s values are used as search keywords.'))
+                ->toHtml()] : null,
+            'translatable' => $field['translatable'] ? ['html' => Icon::make()
+                ->name('language')
+                ->family('custom-icons')
+                ->appearance('badge')
+                ->label($field['translatable'])
+                ->toHtml()] : null,
+            'handle' => ['html' => CopyAttribute::make()->value($field['handle'] ?? '')->toHtml()],
+            'type' => $field['type']['isMissing'] ? t('Missing') : ['html' => Html::tag('div',
+                ($field['type']['icon'] ? Icon::make()->configure($field['type']['icon'])->toHtml() : '').
+                Html::tag('span', Html::encode($field['type']['label'])),
+                ['class' => ['flex', 'items-center', 'gap-2']],
+            )],
+            'usages' => $field['usages'],
+            ...($this->readOnly ? [] : [
+                '_deleteUrl' => route('craft.cp.settings.fields.destroy', ['fieldId' => $field['id']]),
+                '_deleteConfirmMessage' => t('Are you sure you want to delete “{name}”?', ['name' => $field['title']]),
+            ]),
+        ], $tableData);
+
+        $table = Table::make('fields')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name'), 'sortable' => true, 'width' => '1.5fr'],
+                ['key' => 'searchable', 'label' => t('Searchable'), 'width' => '34px', 'headerSrOnly' => true],
+                ...($sites->isMultiSite() ? [
+                    ['key' => 'translatable', 'label' => t('Translatable'), 'width' => '34px', 'headerSrOnly' => true],
+                ] : []),
+                ['key' => 'handle', 'label' => t('Handle'), 'sortable' => true],
+                ['key' => 'type', 'label' => t('Type')],
+                ['key' => 'usages', 'label' => t('Used by'), 'sortable' => true],
+            ])
+            ->rows($rows)
+            ->pagination($pagination)
+            ->searchable()
+            ->emptyMessage(t('No fields exist yet.'))
+            ->unless($this->readOnly, fn (Table $table) => $table
+                ->createAction(t('New field'), route('craft.cp.settings.fields.create'))
+                ->createActionInPageHeader()
+                ->deletable());
+
+        return new CpScreenResponse()
+            ->title(t('Fields'))
+            ->crumbs([
+                new ActionItem()->label(t('Settings'))->href(route('craft.cp.settings.index')),
                 new ActionItem()->label(t('Fields')),
-            ],
-            'title' => t('Fields'),
-            'sort' => $request->sort(),
-            'data' => fn () => $tableData,
-            'pagination' => fn () => $pagination,
-            'searchTerm' => $request->search(),
-        ]);
+            ])
+            ->ui(Ui::make([$table]));
     }
 
     public function create(Request $request): CpScreenResponse

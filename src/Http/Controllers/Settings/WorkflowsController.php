@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\Requests\WorkflowRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Nodes\Table;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\Cms\Workflow\Workflows;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,44 +33,40 @@ class WorkflowsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(TableRequest $request): CpScreenResponse
+    public function index(): CpScreenResponse
     {
-        $searchTerm = trim($request->search() ?? '');
-        $pageParam = Cms::config()->getPageTriggerParam();
-        $paginator = Workflow::query()
-            ->when($searchTerm !== '', fn ($query) => $query->where('name', 'like', "%{$searchTerm}%"))
-            ->orderBy('name', $request->sortDir() === SORT_DESC ? 'desc' : 'asc')
-            ->paginate($request->limit(), ['*'], $pageParam, $request->page())
-            ->appends($request->except($pageParam));
-        $pagination = Arr::only($paginator->toArray(), [
-            'total',
-            'per_page',
-            'current_page',
-            'last_page',
-            'next_page_url',
-            'prev_page_url',
-            'from',
-            'to',
+        $rows = Workflow::query()->orderBy('name')->get()->map(fn (Workflow $workflow): array => [
+            'id' => $workflow->id,
+            'name' => [
+                'label' => $workflow->name,
+                'url' => route('craft.cp.settings.workflows.edit', ['workflow' => $workflow->id]),
+            ],
+            'stages' => $workflow->stages->count(),
+            ...($this->readOnly ? [] : [
+                '_deleteUrl' => route('craft.cp.settings.workflows.destroy', ['workflow' => $workflow->id]),
+                '_deleteConfirmMessage' => t('Are you sure you want to delete “{name}”?', ['name' => $workflow->name]),
+            ]),
         ]);
+
+        $table = Table::make('workflows')
+            ->columns([
+                ['key' => 'name', 'label' => t('Name'), 'sortable' => true],
+                ['key' => 'stages', 'label' => t('Stages')],
+            ])
+            ->rows($rows)
+            ->emptyMessage(t('No approval workflows exist yet.'))
+            ->unless($this->readOnly, fn (Table $table) => $table
+                ->createAction(t('New workflow'), route('craft.cp.settings.workflows.create'))
+                ->createActionInPageHeader()
+                ->deletable());
 
         return new CpScreenResponse()
             ->title(t('Workflows'))
             ->crumbs([
-                ['label' => t('Settings'), 'href' => Url::cpUrl('settings')],
+                ['label' => t('Settings'), 'href' => route('craft.cp.settings.index')],
                 ['label' => t('Workflows')],
             ])
-            ->inertiaPage('settings/workflows/Index', [
-                'searchTerm' => $request->search(),
-                'sort' => $request->sort(),
-                'data' => fn () => $paginator->getCollection()
-                    ->map(fn (Workflow $workflow): array => [
-                        'id' => $workflow->id,
-                        'name' => $workflow->name,
-                        'stages' => $workflow->stages->count(),
-                    ]),
-                'pagination' => fn () => $pagination,
-                'readOnly' => $this->readOnly,
-            ]);
+            ->ui(Ui::make([$table]));
     }
 
     public function create(): CpScreenResponse

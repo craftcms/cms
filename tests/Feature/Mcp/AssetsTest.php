@@ -143,6 +143,31 @@ it('ingests an image reference through the shared asset upload workflow', functi
         ->and(File::files(Path::temp()))->toEqual($temporaryFiles);
 });
 
+it('sets and clears an image’s focal point through elements.update', function (): void {
+    Http::fake(['https://files.example.test/*' => Http::response(File::get(dirname(__DIR__, 2).'/_data/assets/files/google.png'))]);
+    $id = app(Assets::class)->create(
+        file: ['download_url' => 'https://files.example.test/download', 'file_id' => 'file_image', 'file_name' => 'image.png'],
+        volumeId: $this->folder->volumeId,
+    )['asset']['id'];
+    config()->set('passport.public_key', openssl_pkey_get_details(openssl_pkey_new(['private_key_bits' => 2048]))['key']);
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    $update = fn (mixed $focalPoint) => McpRequest::send($this, 'tools/call', [
+        'name' => 'elements.update',
+        'arguments' => ['type' => 'assets', 'id' => $id, 'attributes' => ['focalPoint' => $focalPoint]],
+    ])->assertOk();
+
+    $update(['x' => 0.25, 'y' => 0.8])
+        ->assertJsonPath('result.isError', false)
+        ->assertJsonPath('result.structuredContent.element.hasFocalPoint', true);
+
+    expect(Asset::findOne($id)->getFocalPoint())->toEqual(['x' => 0.25, 'y' => 0.8]);
+
+    $update(['x' => 1.5, 'y' => 0.5])->assertJsonPath('result.isError', true);
+    $update(null)->assertJsonPath('result.isError', false);
+
+    expect(Asset::findOne($id)->getHasFocalPoint())->toBeFalse();
+});
+
 it('releases the downloaded file when asset validation fails', function (): void {
     Http::fake(['https://files.example.test/*' => Http::response('Downloaded content')]);
     $temporaryFiles = File::files(Path::temp());

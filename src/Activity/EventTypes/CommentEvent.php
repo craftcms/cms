@@ -47,7 +47,7 @@ abstract class CommentEvent extends ActivityEventType
 
     public static function format(ActivityEvent $event): string
     {
-        return t('Commented.');
+        return t('Commented');
     }
 
     public static function component(): string

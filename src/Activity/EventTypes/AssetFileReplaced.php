@@ -48,7 +48,7 @@ class AssetFileReplaced extends ActivityEventType
     public static function format(ActivityEvent $event): string
     {
         return t(
-            'Replaced {oldFilename} with {newFilename}.',
+            'Replaced {oldFilename} with {newFilename}',
             [
                 'oldFilename' => $event->data['oldFilename'],
                 'newFilename' => $event->data['newFilename'],

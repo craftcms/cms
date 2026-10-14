@@ -16,10 +16,10 @@ import {
  * index views and other standalone content blocks.
  *
  * The header region is only rendered when the `label` attribute is set or the
- * `header`, `label`, or `actions` slot is filled. When no `header` slot is
- * provided, the header falls back to showing the `label` and `actions` slots
- * (with the `label` attribute as the default label content). The footer region
- * is only rendered when the `footer` slot is filled.
+ * `header`, `label`, `badge`, or `actions` slot is filled. When no `header`
+ * slot is provided, the header falls back to showing the `label`, `badge`, and
+ * `actions` slots (with the `label` attribute as the default label content).
+ * The footer region is only rendered when the `footer` slot is filled.
  *
  * The card renders its own chrome, so attributes set on the host are left
  * alone — an `id`, `style` custom properties, and `data-*` metadata can all be
@@ -27,9 +27,11 @@ import {
  *
  * @slot - The card's body content.
  * @slot header - The full header region. Replaces the default
- *   `label`/`actions` content when provided.
+ *   `label`/`badge`/`actions` content when provided.
  * @slot label - Label content shown in the header; defaults to the `label`
  *   attribute.
+ * @slot badge - Content that can be displayed before the actions at the end of
+ *   the header, e.g. a status badge.
  * @slot actions - Action content shown at the end of the header, e.g. buttons.
  * @slot footer - Footer content. The footer is only rendered when this slot is
  *   filled.
@@ -41,6 +43,7 @@ import {
  *   the border.
  * @csspart header - The default header region.
  * @csspart label - The label slot within the header.
+ * @csspart badge - The wrapper around the `badge` slot.
  * @csspart actions - The wrapper around the `actions` slot.
  * @csspart body - The region holding the thumbnail column and the content.
  * @csspart thumbnail - The fixed column the `thumbnail` slot renders into.
@@ -111,7 +114,7 @@ export default class CraftCard extends Paddable(LitElement, {
 
   override render() {
     const hasSlottedHeader =
-      !!this.label || hasSlotted(this, 'header', 'label', 'actions');
+      !!this.label || hasSlotted(this, 'header', 'label', 'badge', 'actions');
     const hasSlottedFooter = hasSlotted(this, 'footer');
     const showThumbnail = this.showThumb && hasSlotted(this, 'thumbnail');
 
@@ -132,11 +135,14 @@ export default class CraftCard extends Paddable(LitElement, {
                     ? html`<span class="card__label-text">${this.label}</span>`
                     : nothing}</slot
                 >
-                <slot
-                  name="actions"
-                  class="card__actions"
-                  part="actions"
-                ></slot>
+                <div class="card__header__suffix">
+                  <slot name="badge" class="card__badge" part="badge"></slot>
+                  <slot
+                    name="actions"
+                    class="card__actions"
+                    part="actions"
+                  ></slot>
+                </div>
               </slot>
             </div>`
           : nothing}

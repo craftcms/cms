@@ -46,10 +46,10 @@ it('mounts widget settings into the light DOM for native submission', async () =
   document.body.append(host);
   await nextTick();
 
-  expect(host.querySelector('craft-combobox')?.getAttribute('name')).toBe(
-    'settings[placeholder]'
-  );
-  expect(host.querySelector('craft-combobox')?.modelValue).toBe(
-    'Submitted placeholder'
-  );
+  // Vue sets `name` as a property; the element reflects it on its next update.
+  const combobox = host.querySelector('craft-combobox');
+  await combobox?.updateComplete;
+
+  expect(combobox?.getAttribute('name')).toBe('settings[placeholder]');
+  expect(combobox?.modelValue).toBe('Submitted placeholder');
 });

@@ -28,6 +28,8 @@ class RadioGroup extends ChoiceGroup
 
     protected ?string $targetPrefix = null;
 
+    protected bool $buttons = false;
+
     protected function tagName(): string
     {
         return 'craft-radio-group';
@@ -48,6 +50,17 @@ class RadioGroup extends ChoiceGroup
         return $this;
     }
 
+    /**
+     * Shows the options as a row of joined buttons. They're still radios, so
+     * they're announced as radios and the arrow keys move the selection.
+     */
+    public function buttons(bool $buttons = true): static
+    {
+        $this->buttons = $buttons;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -59,6 +72,7 @@ class RadioGroup extends ChoiceGroup
             ]),
             // Lays the options out as a row; see `craft-radio-group`'s styles.
             'thumbnails' => $this->hasThumbnails(),
+            'buttons' => $this->buttons,
             'data' => [
                 'target-prefix' => $this->toggle ? ($this->targetPrefix ?? '#') : null,
             ],

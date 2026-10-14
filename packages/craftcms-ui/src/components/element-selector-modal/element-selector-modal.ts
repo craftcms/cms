@@ -36,7 +36,6 @@ const NARROW_THRESHOLD = 550;
  * @csspart footer - The footer row.
  * @csspart secondary-actions - The left-hand footer group.
  * @csspart primary-actions - The right-hand footer group.
- * @csspart close - The header close button.
  * @csspart cancel - The Cancel button.
  * @csspart select - The Select button.
  *
@@ -152,35 +151,28 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
   /**
    * An `h1` rather than the base's `h2` — the modal is the page's main content
-   * while it is open — and the close button alongside it.
+   * while it is open. There is no close button: Cancel, Escape and the
+   * backdrop all dismiss it.
    *
-   * The heading is rendered even when `show-title` is off, because the dialog is
-   * labeled by it; it is only taken out of flow.
+   * Without `show-title` there is no header at all, but the heading is still
+   * rendered, out of flow, because the dialog is labeled by it.
    */
   protected override renderHeader(): TemplateResult {
-    return html`
-      <header class="header" part="header">
-        ${this.label === ''
-          ? nothing
-          : html`<h1
-              class=${this.showTitle ? 'title' : 'title title--hidden'}
-              part="title"
-              id=${this.titleId}
-            >
-              ${this.label}
-            </h1>`}
-        <button
-          type="button"
-          class="close"
-          part="close"
-          aria-label=${t('Close')}
-          ?disabled=${this.busy}
-          @click=${this.#onCloseClick}
-        >
-          <craft-icon name="xmark-large"></craft-icon>
-        </button>
-      </header>
-    `;
+    if (this.label === '') {
+      return html``;
+    }
+
+    const title = html`<h1
+      class=${this.showTitle ? 'title' : 'title title--hidden'}
+      part="title"
+      id=${this.titleId}
+    >
+      ${this.label}
+    </h1>`;
+
+    return this.showTitle
+      ? html`<header class="header" part="header">${title}</header>`
+      : title;
   }
 
   protected override renderBody(): TemplateResult {
@@ -276,13 +268,6 @@ export default class CraftElementSelectorModal extends CraftDialog {
   };
 
   // Same dismissal as Cancel — the controller decides whether it is allowed.
-  #onCloseClick = (): void => {
-    if (this.busy) {
-      return;
-    }
-
-    this.requestClose();
-  };
 }
 
 if (!customElements.get('craft-element-selector-modal')) {

@@ -1152,7 +1152,9 @@ JS,
 
         return array_merge([
             t('ID') => fn () => $this->id ?? false,
-            t('Status') => fn () => app(StatusHtml::class)->componentStatusLabelHtml($this),
+            t('Status') => fn () => static::hasStatuses() || $this->getStatus() === static::STATUS_DRAFT
+                ? app(StatusHtml::class)->componentStatusLabelHtml($this)
+                : false,
         ], $metadata, [
             t('Created at') => $this->dateCreated && ! $this->getIsUnpublishedDraft()
                 ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT, true)

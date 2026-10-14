@@ -29,14 +29,15 @@ it.each([false, true])(
   'labels a nested combobox and its listbox once (multiple: %s)',
   async (multiple) => {
     document.body.innerHTML = `<craft-field label="Entry Type" label-sr-only><craft-combobox slot="input" ${multiple ? 'multiple-choice' : ''} options='[{"label":"Alpha","value":"a"}]'></craft-combobox></craft-field>`;
+    const field = document.querySelector('craft-field')!;
     const combobox = document.querySelector('craft-combobox')!;
-    await vi.waitFor(() =>
-      expect(
-        computeAccessibleName(
-          combobox.querySelector('input:not([type=hidden])')!
-        )
-      ).toBe('Entry Type')
-    );
+    await field.updateComplete;
+    await combobox.updateComplete;
+    // Picking up the field's label queues another update, which names the listbox.
+    await combobox.updateComplete;
+    expect(
+      computeAccessibleName(combobox.querySelector('input:not([type=hidden])')!)
+    ).toBe('Entry Type');
     expect(
       computeAccessibleName(combobox.querySelector('[role=listbox]')!)
     ).toBe('Entry Type');

@@ -36,7 +36,6 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\UiContext;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -169,23 +168,7 @@ class EditElementController
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
 
-        $redirectUrl = $this->request->query('returnUrl');
-        if ($redirectUrl) {
-            // only require the URL to be hashed if it contains Twig code
-            try {
-                $redirectUrl = Crypt::decrypt($redirectUrl);
-            } catch (DecryptException) {
-                if (str_contains($redirectUrl, '{')) {
-                    abort(400, "Invalid returnUrl param: $redirectUrl");
-                }
-            }
-
-            // swap the QS placeholder with a `?`
-            // (see https://github.com/craftcms/cms/issues/18923)
-            $redirectUrl = str_replace(':QS:', '?', $redirectUrl);
-        } else {
-            $redirectUrl = ElementHelper::postEditUrl($element);
-        }
+        $redirectUrl = $this->postEditRedirectUrl($element);
 
         // Site statuses
         if ($canEditMultipleSites) {

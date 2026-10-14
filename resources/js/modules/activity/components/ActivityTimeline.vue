@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {ref} from 'vue';
-  import CpLink from '@/common/components/CpLink.vue';
   import ActivityTimelineComment from './ActivityTimelineComment.vue';
   import {
     type ActivityEvent,
@@ -64,19 +63,14 @@
       </p>
 
       <div v-else-if="hasLoaded" class="activity-timeline__rail">
-        <div v-if="pageUrl" class="activity-timeline__full-link">
-          <CpLink :href="pageUrl">
-            {{ t('View all activity') }}
-            <craft-icon name="circle-arrow-right" />
-          </CpLink>
-        </div>
-
         <section
-          v-for="group in dayGroups"
+          v-for="(group, groupIndex) in dayGroups"
           :key="group.key"
           :data-activity-day="group.key"
         >
-          <h4 class="activity-timeline__day">{{ group.label }}</h4>
+          <h4 class="activity-timeline__day">
+            <span class="activity-timeline__day-label">{{ group.label }}</span>
+          </h4>
           <component
             v-for="(event, index) in group.events"
             :key="event.id"
@@ -86,7 +80,10 @@
             :element-type="elementType"
             :element-id="elementId"
             :site-id="siteId"
-            :last="index === group.events.length - 1"
+            :last="
+              groupIndex === dayGroups.length - 1 &&
+              index === group.events.length - 1
+            "
             @updated="addOrUpdateEvent"
           />
         </section>
@@ -112,11 +109,13 @@
   .activity-timeline {
     display: flex;
     flex-direction: column;
-    max-height: 60vh;
+    block-size: 100%;
   }
 
   .activity-timeline__scroll {
     min-height: 8rem;
+    padding-block: var(--c-spacing-lg);
+    padding-inline: var(--cp-container-padding);
     overflow-y: auto;
   }
 
@@ -134,30 +133,54 @@
     margin: 0;
   }
 
-  .activity-timeline__composer {
-    padding-block-start: var(--c-spacing-md);
-  }
-
-  .activity-timeline__full-link {
-    display: flex;
-    align-items: center;
-    margin-block-end: var(--c-spacing-md);
-  }
-
   .activity-timeline__day {
-    margin-block: var(--c-spacing-lg) var(--c-spacing-xs);
+    position: relative;
+    text-align: center;
+    margin-block: 0 var(--c-spacing-md);
     color: var(--c-text-quiet);
     font-size: var(--c-text-xs);
     font-weight: 600;
+  }
+
+  .activity-timeline__day-label {
+    position: relative;
+    display: inline-block;
+    padding-block: var(--c-spacing-xs);
+    padding-inline: var(--c-spacing-md);
+    border: 1px solid var(--c-color-border-quiet);
+    border-radius: var(--c-radius-full);
+    background-color: var(--c-surface-default);
   }
 
   section:first-of-type .activity-timeline__day {
     margin-block-start: 0;
   }
 
+  /*
+   * Carries the timeline's hairline across the day heading, from where the
+   * previous day's last event leaves off to where the next event's picks up.
+   * The offsets mirror craft-timeline-item's own hairline.
+   */
+  section + section > .activity-timeline__day::after {
+    position: absolute;
+    inset-block: calc(var(--c-spacing-md) + 0.875rem)
+      calc(-2 * var(--c-spacing-md) - 0.875rem);
+    inset-inline-start: 0.85rem;
+    width: 1px;
+    background: var(--c-color-neutral-border-quiet);
+    content: '';
+  }
+
   .activity-timeline__composer {
-    flex: none;
-    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-    background: var(--c-bg);
+    margin-block-start: calc(var(--c-spacing-lg) * -1);
+    padding-block: var(--c-spacing-lg);
+    padding-inline: var(--cp-container-padding);
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--c-surface-default) 0%, transparent),
+      var(--c-surface-default) var(--c-spacing-lg)
+    );
+    position: relative;
+    z-index: 1;
   }
 </style>

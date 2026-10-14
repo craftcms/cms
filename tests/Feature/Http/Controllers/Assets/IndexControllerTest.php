@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
+use CraftCms\Cms\Asset\Actions\EditImage;
+use CraftCms\Cms\Asset\Actions\MoveAssets;
+use CraftCms\Cms\Asset\Actions\RenameFile;
+use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -274,6 +279,33 @@ it('includes a volume’s subfolders in the index results', function () {
             // The folder row is flagged and carries the URL to navigate into it.
             ->where('data.0.isFolder', true)
             ->where('data.0.folderUrl', fn (string $url) => str_contains($url, "assets/{$volumeModel->handle}/a-subfolder"))
+            // Only the chip's label is the link, not the whole chip.
+            ->where('data.0.title', fn (string $html) => str_starts_with($html, '<craft-chip')
+                && preg_match("/<a class=\"label-link\" href=\"[^\"]*assets\\/{$volumeModel->handle}\\/a-subfolder\" data-folder-link>/", $html) === 1)
+        );
+});
+
+it('links folder labels in the card and thumb views', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    Folders::ensureFolderByFullPathAndVolume('a-subfolder', Volumes::getVolumeById($volumeModel->id));
+    $folderLink = "/<a class=\"label-link\" href=\"[^\"]*assets\\/{$volumeModel->handle}\\/a-subfolder\" data-folder-link>/";
+    $url = '/'.Cms::config()->cpTrigger."/assets/{$volumeModel->handle}";
+
+    get("{$url}?viewMode=cards")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.cardContentHtml', fn (string $html) => preg_match($folderLink, $html) === 1)
+        );
+
+    get("{$url}?viewMode=thumbs")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.url', null)
+            ->where('data.0.labelUrl', fn (string $labelUrl) => str_ends_with($labelUrl, "assets/{$volumeModel->handle}/a-subfolder"))
+            ->where('data.0.labelLinkAttributes', ['data-folder-link' => ''])
         );
 });
 
@@ -436,6 +468,96 @@ it('provides folder actions separately from element actions', function () {
                     'Delete folder',
                 ] && $actions->where('appliesTo', 'elements')->isNotEmpty();
             })
+        );
+});
+
+it('limits the Move folder picker to volumes folders can move into', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    Folders::ensureFolderByFullPathAndVolume('managed', Volumes::getVolumeById($volumeModel->id));
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('actions', function ($actions) use ($volumeModel): bool {
+                $sources = $actions->firstWhere('key', 'move-folder')['action']['detail']['sources'];
+
+                return in_array("volume:{$volumeModel->uid}", $sources, true)
+                    && collect($sources)->doesntContain(fn (string $key): bool => str_contains($key, 'temp'));
+            })
+        );
+});
+
+it('hands asset file actions to the page as client events', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    $root = Folders::getRootFolderByVolumeId($volumeModel->id);
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('actions', function ($actions) use ($root): bool {
+                $actions = $actions->keyBy('key');
+                $move = $actions->get(MoveAssets::class);
+
+                return $actions->get(RenameFile::class)['action'] === ['type' => 'event', 'name' => 'assets:rename-file']
+                    && $actions->get(RenameFile::class)['selectionAttribute'] === 'movable'
+                    && $actions->get(CopyReferenceTag::class)['action'] === ['type' => 'event', 'name' => 'assets:copy-reference-tag']
+                    && $actions->get(EditImage::class)['selectionAttribute'] === 'imageEditable'
+                    && array_key_exists('imageEditorRatios', $actions->get(EditImage::class)['action']['detail'])
+                    && $move['action']['name'] === 'assets:move-assets'
+                    && $move['action']['detail']['sources'] !== []
+                    && $move['action']['detail']['disabledFolderIds'] === [$root->id];
+            })
+        );
+});
+
+it('offers Show in folder only when searching subfolders', function (array $query, bool $offered) {
+    Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume', ...$query]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('actions', fn ($actions): bool => $actions->contains('key', ShowInFolder::class) === $offered)
+        );
+})->with([
+    'browsing' => [[], false],
+    'searching the folder' => [['search' => 'photo'], false],
+    'searching subfolders' => [['search' => 'photo', 'includeSubfolders' => 1], true],
+]);
+
+it('gives asset rows what their file actions need', function () {
+    Queue::fake();
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    Asset::factory()->createElement([
+        'volumeId' => $volumeModel->id,
+        'folderId' => Folders::getRootFolderByVolumeId($volumeModel->id)->id,
+        'filename' => 'photo.jpg',
+        'kind' => 'image',
+        'width' => 400,
+        'height' => 300,
+    ]);
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.assetFilename', 'photo.jpg')
+            ->where('data.0.imageWidth', 400)
+            ->where('data.0.imageHeight', 300)
+            ->where('data.0.capabilities.movable', true)
+            ->where('data.0.capabilities.replaceable', true)
+            ->has('data.0.capabilities.imageEditable')
+            ->has('data.0.capabilities.hasUrl')
         );
 });
 

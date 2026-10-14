@@ -144,5 +144,12 @@ jobs:
           - name: Run @craftcms/ui tests
             run: vp run test:ui
 
-          - name: Run element, field, legacy HTML control, and skip link tests
-            run: vp test run resources/js/modules/elements resources/js/modules/fields resources/js/modules/ui/nested-elements resources/js/modules/ui/entry-field-layout-ui-host.test.ts resources/js/modules/sections/components/PreviewTargetsTable.test.ts resources/js/common/layouts/screens/page/ScreenSkipLinks.browser.test.ts yii2-adapter/resources/js
+          # The vitest projects in vite.config.js pick up every *.test.ts
+          # (happy-dom) and *.browser.test.ts (Chromium) file on their own.
+          - name: Run frontend unit tests
+            run: vp test run --project unit
+
+      # Outside the parallel group: these measure real layout and animation
+      # timing, which the other steps' CPU load throws off.
+      - name: Run frontend browser tests
+        run: vp test run --project browser

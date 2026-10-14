@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Workflows;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementEditorActions;
+use CraftCms\Cms\Http\Requests\ActivityCommentRequest;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
 use CraftCms\Cms\Workflow\Workflows;
@@ -29,7 +30,7 @@ class WorkflowTransitionsController
     {
         $draft = $this->draft();
         $data = $this->request->validate([
-            'note' => ['nullable', 'string', 'max:5000'],
+            'note' => ['nullable', 'string', 'max:'.ActivityCommentRequest::MaxLength],
         ]);
 
         $this->workflows->submitForReview(
@@ -44,7 +45,7 @@ class WorkflowTransitionsController
     {
         $draft = $this->draft();
         $data = $this->request->validate([
-            'note' => ['required', 'string', 'max:5000'],
+            'note' => ['required', 'string', 'max:'.ActivityCommentRequest::MaxLength],
         ]);
 
         $this->workflows->addComment(
@@ -61,7 +62,7 @@ class WorkflowTransitionsController
     {
         $draft = $this->draft();
         $data = $this->request->validate([
-            'note' => ['nullable', 'string', 'max:5000'],
+            'note' => ['nullable', 'string', 'max:'.ActivityCommentRequest::MaxLength],
         ]);
 
         $this->workflows->overrideApproval(

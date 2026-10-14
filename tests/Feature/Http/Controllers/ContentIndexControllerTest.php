@@ -867,6 +867,22 @@ it('renders title cells as element chips carrying the CP element metadata', func
         );
 });
 
+it('links only the title chip’s label, not the whole chip', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Hello']);
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data', function ($rows) use ($entry) {
+                $title = trim((string) (collect($rows)->first()['title'] ?? ''));
+
+                return str_starts_with($title, '<craft-chip')
+                    && preg_match('/<CpLink class="label-link" href="([^"]+)" bare>/', $title, $match) === 1
+                    && html_entity_decode($match[1]) === $entry->getCpEditUrl();
+            })
+        );
+});
+
 it('crumbs the “all entries” source by name on the bare index', function () {
     // The bare index opens on the “all entries” source, which gets a crumb of
     // its own — and, being what the index itself shows, is addressed by the

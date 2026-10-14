@@ -55,8 +55,7 @@ export interface SectionSiteSettingsData {
   singleHomepage: boolean;
   singleUri: string | null;
   uriFormat: string | null;
-  routeType: 'template' | 'route';
-  route: string | null;
+  destination: string;
 }
 
 export interface ChipIndicator {
@@ -127,6 +126,11 @@ export interface ActionItemButton {
    * labels stay aligned whichever one is current.
    */
   selected?: boolean;
+  /**
+   * Whether this is the page you're on rather than an ancestor of it. Left
+   * out, a nav takes the selected item with nothing selected beneath it.
+   */
+  current?: boolean;
   variant?: VariantKey | string;
   icon?: string;
   /**
@@ -189,6 +193,11 @@ export interface ActionItemLink {
    * labels stay aligned whichever one is current.
    */
   selected?: boolean;
+  /**
+   * Whether this is the page you're on rather than an ancestor of it. Left
+   * out, a nav takes the selected item with nothing selected beneath it.
+   */
+  current?: boolean;
   variant?: VariantKey | string;
   hidden?: boolean;
   disabled?: boolean;
@@ -342,6 +351,25 @@ export const TableSpacing = {
 export type TableSpacingValue =
   (typeof TableSpacing)[keyof typeof TableSpacing];
 
+/**
+ * How a table meets its container. Mirrors
+ * `CraftCms\Cms\Cp\Enums\TableAppearance`.
+ */
+export const TableAppearance = {
+  /** Sits inside the container's padding. */
+  Plain: 'plain',
+  /**
+   * Spans the container's inline padding, padding each row's outer cells by
+   * `--cp-container-padding` to match.
+   */
+  Flush: 'flush',
+  /** Sits in a raised pane. */
+  Raised: 'raised',
+} as const;
+
+export type TableAppearanceValue =
+  (typeof TableAppearance)[keyof typeof TableAppearance];
+
 export interface Site {
   name: string;
   nameRaw: string;
@@ -393,8 +421,8 @@ export interface PaginationData {
   last_page: number;
   next_page_url: string | null;
   prev_page_url: string | null;
-  from: number;
-  to: number;
+  from: number | null;
+  to: number | null;
 }
 
 export interface UserGroup {
