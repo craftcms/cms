@@ -137,6 +137,22 @@ class ElementEditViewModel extends ViewModel
         return $this->element->getCpEditUrl();
     }
 
+    /**
+     * Where the Save button lands: back where the editor was opened from, as on
+     * the legacy screen. Saving a named draft stays on the draft.
+     *
+     * Encrypted, because the save controllers decrypt whatever `redirect` a
+     * request posts rather than trusting it.
+     */
+    public function redirectUrl(): string
+    {
+        $isNamedDraft = $this->element->getIsDraft()
+            && ! $this->element->getIsUnpublishedDraft()
+            && ! $this->element->isProvisionalDraft;
+
+        return Crypt::encrypt($isNamedDraft ? '{cpEditUrl}' : $this->postEditRedirectUrl($this->element));
+    }
+
     /** Where the edit form posts when there are no provisional changes to apply. */
     public function saveUrl(): string
     {
