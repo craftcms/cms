@@ -620,7 +620,6 @@ it('gives each source its own nav item id, apart from the index it hangs off', f
 
     expect($all->href)->toBe($entries->href)
         ->and($all->id)->not->toBe($entries->id)
-        // A count an element type sets on the source itself is carried as-is.
         ->and($recent->badgeCount)->toBe(4)
         ->and($all->badgeCount)->toBe(0);
 });

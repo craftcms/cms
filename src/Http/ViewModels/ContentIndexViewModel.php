@@ -781,7 +781,7 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         if (
-            in_array($this->elementType, Navigation::SOURCE_ELEMENT_TYPES, true) ||
+            Navigation::countsSources($this->elementType) ||
             ! ElementSources::showsBadgeCount($this->elementType, $source)
         ) {
             return 0;

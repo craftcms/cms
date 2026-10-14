@@ -40,7 +40,7 @@ readonly class Navigation
      *
      * @var list<class-string<ElementInterface>>
      */
-    public const array SOURCE_ELEMENT_TYPES = [Entry::class, Asset::class, User::class];
+    private const array SOURCE_ELEMENT_TYPES = [Entry::class, Asset::class, User::class];
 
     public function __construct(
         private Request $request,
@@ -157,6 +157,19 @@ readonly class Navigation
     public function hasSourceBadges(): bool
     {
         return $this->elementSources->hasBadgeCountsEnabled(self::SOURCE_ELEMENT_TYPES);
+    }
+
+    /**
+     * Whether the nav counts an element type's sources itself, leaving its
+     * index page's secondary nav to show those counts without working them out.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     *
+     * @internal
+     */
+    public static function countsSources(string $elementType): bool
+    {
+        return in_array($elementType, self::SOURCE_ELEMENT_TYPES, true);
     }
 
     /**

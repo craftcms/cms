@@ -180,15 +180,12 @@ it('counts a source once its deferred badge counts arrive, and keeps them across
   ];
   await mount('/admin/content/entries/blog', {}, {tree});
 
-  const count = () => {
-    const badge = container.querySelector(
-      'craft-badge-indicator[slot="actions"]'
-    ) as any;
-
-    return badge
-      ? Number(badge.badgeCount ?? badge.getAttribute('badge-count'))
+  const badge = () =>
+    container.querySelector('craft-badge-indicator[slot="actions"]') as any;
+  const count = () =>
+    badge()
+      ? Number(badge().badgeCount ?? badge().getAttribute('badge-count'))
       : null;
-  };
 
   expect(count()).toBeNull();
 
@@ -199,15 +196,14 @@ it('counts a source once its deferred badge counts arrive, and keeps them across
   await nextTick();
 
   expect(count()).toBe(7);
+  expect(badge().altText ?? badge().getAttribute('alt-text')).toBe('7 items');
 
-  // The next visit arrives without them, while they're still on their way.
   state.page.deferredProps = {default: ['navSourceBadges']};
   state.page.props = {...state.page.props, navSourceBadges: undefined};
   await nextTick();
 
   expect(count()).toBe(7);
 
-  // A response that isn't deferring them means no source counts anymore.
   state.page.deferredProps = {};
   state.page.props = {...state.page.props};
   await nextTick();

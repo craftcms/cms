@@ -755,7 +755,6 @@ it('offers a count toggle only on sources that can show one', function () {
         'type' => ElementSources::TYPE_CUSTOM,
     ])->assertOk()->json('ui');
 
-    // Last, so it sits in the same place for every kind of source.
     expect(collect(controlPaths($entries))->last())->toBe(['sources', '*', 'showBadgeCount'])
         ->and(collect(controlPaths($custom))->last())->toBe(['sources', 'custom:new', 'showBadgeCount'])
         ->and($entries['values']['sources']['*']['showBadgeCount'])->toBeFalse()

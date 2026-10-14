@@ -189,7 +189,6 @@ class HandleInertiaRequests extends Middleware
             'isMultiSite' => fn () => Sites::isMultiSite(),
             'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
             'locale' => fn () => app()->getLocale(),
-            // Counted after the page loads, so a slow count never holds it up.
             ...($currentUser !== null && $nav->hasSourceBadges() ? [
                 'navSourceBadges' => Inertia::defer(fn (): object => (object) $nav->getSourceBadgeCounts()),
             ] : []),

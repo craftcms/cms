@@ -22,6 +22,7 @@
    * inside its own `content` slot.
    */
   import {computed, type Component} from 'vue';
+  import {t} from '@craftcms/ui';
   import {attrs as serverAttributes} from '@craftcms/ui/utilities/attrs';
   import CpLink from '@/common/components/CpLink.vue';
   import {useNavItemActions} from '@/common/composables/useNavItemActions';
@@ -428,6 +429,11 @@
         slot="actions"
         variant="inverse"
         :badge-count="countOf(action)"
+        :alt-text="
+          t('{num, number} {num, plural, =1{item} other{items}}', {
+            num: countOf(action),
+          })
+        "
       ></craft-badge-indicator>
 
       <craft-button

@@ -70,7 +70,6 @@ it('only offers counts on sources that can have one', function () {
     expect(Entry::sourceSupportsBadgeCount(['type' => ElementSources::TYPE_NATIVE, 'key' => '*']))->toBeTrue()
         ->and(Entry::sourceSupportsBadgeCount(['type' => ElementSources::TYPE_HEADING, 'heading' => 'Channels']))->toBeFalse()
         ->and(Entry::sourceSupportsBadgeCount(['heading' => 'Channels']))->toBeFalse()
-        // A new custom source's blank config carries an empty heading too.
         ->and(Entry::sourceSupportsBadgeCount(app(ElementSourceUi::class)->blankSource(ElementSources::TYPE_CUSTOM, 'custom:new')))->toBeTrue()
         ->and(User::sourceSupportsBadgeCount(['type' => ElementSources::TYPE_NATIVE, 'key' => 'admins']))->toBeTrue()
         ->and(Asset::sourceSupportsBadgeCount(['type' => ElementSources::TYPE_NATIVE, 'key' => 'volume:abc']))->toBeTrue()
@@ -149,7 +148,6 @@ it('counts only the entries a user can view in a native source', function () {
 
     actingAs($editor);
 
-    // Peer entries are out of reach without “View other users’ entries”.
     expect(Entry::sourceBadgeCount($source, null))->toBe(1);
 });
 
@@ -170,7 +168,6 @@ it('counts a plugin element type’s sources in its own secondary nav', function
 
     expect($items['All']->badgeCount)->toBe(5)
         ->and($items['Quiet']->badgeCount)->toBe(0)
-        // The main nav counts entries, after the page loads.
         ->and($navItems(Entry::class)['All entries']->badgeCount)->toBe(0);
 });
 
