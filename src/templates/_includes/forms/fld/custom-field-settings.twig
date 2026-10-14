@@ -47,12 +47,14 @@
           const newName = $chip.data('label');
           const newHandle = $chip.data('handle');
           const newInstructions = $chip.data('instructions') ?? null;
+          const newTip = $chip.data('tip') ?? null;
+          const newWarning = $chip.data('warning') ?? null;
 
           $labelInput.attr('placeholder', newName);
           $handleInput.attr('placeholder', newHandle);
           $instructionsInput.attr('placeholder', newInstructions);
-          $tipInput.attr('placeholder', $chip.data('tip'));
-          $warningInput.attr('placeholder', $chip.data('warning'));
+          $tipInput.attr('placeholder', newTip);
+          $warningInput.attr('placeholder', newWarning);
 
           if (!replaced) {
             // Override the name/handle/instructions/tip/warning for consistency with the old field,
