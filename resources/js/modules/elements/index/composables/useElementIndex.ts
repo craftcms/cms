@@ -138,7 +138,9 @@ export function useElementIndex(options: UseElementIndexOptions) {
   );
   const {mode: savedMode, restore: restoreViewMode} = useElementIndexViewMode(
     viewState,
-    visitor
+    visitor,
+    () => elementIndex.viewState?.mode,
+    () => visibleViewModes.value.map(({mode}) => mode)
   );
   const visibleViewModes = computed(() =>
     elementIndex.viewModes.filter(

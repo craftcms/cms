@@ -102,6 +102,10 @@ export function useModalElementIndex(options: Options) {
     // A move has one destination.
     multiSelect: !selectFolders,
   });
+  // Brings back the view mode, columns and sort this index last used, which
+  // the server can't know when it renders the first payload.
+  index.restore();
+
   const {table} = index.view;
 
   /** The trail from the volume root to the folder on screen, for assets. */
