@@ -2,7 +2,7 @@
 
 ### Administration
 
-- Custom fields now have “Default Tip” and “Default Warning” settings.
+- Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
 
 ### Development
 
