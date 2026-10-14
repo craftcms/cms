@@ -28,6 +28,7 @@ use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
 use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
 use Inertia\Testing\AssertableInertia;
 use Workbench\App\Workflow\AutomaticApprovalStage;
 
@@ -108,6 +109,26 @@ it('points the form at the entry save action', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('saveUrl', fn (string $url) => str_contains($url, 'entries/save-entry'))
+            ->etc()
+        );
+});
+
+it('sends Save back to the entries index', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('redirectUrl', fn (string $url) => Crypt::decrypt($url) === cp_url('content/entries'))
+            ->etc()
+        );
+});
+
+it('keeps Save on a named draft', function () {
+    $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
+
+    get(cp_url(sprintf('entries/news/%d-%s?draftId=%d', $this->entry->id, $this->entry->slug, $draft->draftId)))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('redirectUrl', fn (string $url) => Crypt::decrypt($url) === '{cpEditUrl}')
             ->etc()
         );
 });

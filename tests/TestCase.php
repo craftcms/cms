@@ -286,6 +286,7 @@ class TestCase extends Orchestra
             $driver = $config->get("database.connections.{$connection}.driver");
 
             $config->set('database.default', $connection);
+            $config->set('queue.failed.database', $connection);
             $config->set("database.connections.{$connection}.database", env('DB_DATABASE', database_path('craft_tests.sqlite')));
             $config->set("database.connections.{$connection}.host", env('DB_HOST', '127.0.0.1'));
             $config->set("database.connections.{$connection}.username", env('DB_USERNAME', 'root'));
