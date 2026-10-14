@@ -17,7 +17,7 @@ For anything less, a [Popover](?path=/docs/components-popover--docs) or an inlin
 
 Set the `open` attribute to show it.
 
-There is **no `open` boolean property**: Lion's overlay system already defines `open()` as a _method_, so the property would collide. Use the attribute, or the `opened` property.
+The attribute is `open`, but the property is **`opened`**, not `open`. The two stay in sync in both directions.
 
 ```js
 dialog.setAttribute('open', ''); // shows it
@@ -36,7 +36,7 @@ The dialog renders inside a native `<dialog>`, so the browser supplies the modal
 
 Two things stay with you:
 
-- **Name it.** A dialog with no accessible name is announced only as "dialog".
+- **Name it.** Set `label`. It renders as the header's heading and names the dialog, which is otherwise announced only as "dialog".
 - **Give it a way out that is not Escape.** Escape works, but a visible close or cancel control is what makes that discoverable.
 
 ## Properties
