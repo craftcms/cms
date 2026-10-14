@@ -55,13 +55,25 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    Schema::create('customers', function (Blueprint $table) {
+    createEloquentElementsTable('customers', function (Blueprint $table) {
         $table->id();
         $table->string('name');
         $table->string('email')->unique();
         $table->string('company')->nullable();
         $table->timestamps();
         $table->softDeletes();
+    });
+    createEloquentElementsTable('articles', function (Blueprint $table) {
+        $table->id();
+        $table->string('title');
+        $table->boolean('enabled');
+        $table->text('body');
+    });
+    createEloquentElementsTable('customer_notes', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('customer_id');
+        $table->string('body');
+        $table->timestamps();
     });
 
     // Registered types add their routes to the router, rather than finding them in the route cache
@@ -85,14 +97,25 @@ function actingAsEloquentElementsCpUser(array $permissions = []): void
     actingAs($user);
 }
 
-function createEloquentElementsArticlesTable(): void
+/**
+ * MySQL commits the test's transaction on DDL, which would leave the test's writes behind. There,
+ * each table is created once per process, between transactions, before the test writes anything.
+ */
+function createEloquentElementsTable(string $name, Closure $blueprint): void
 {
-    Schema::create('articles', function (Blueprint $table) {
-        $table->id();
-        $table->string('title');
-        $table->boolean('enabled');
-        $table->text('body');
-    });
+    if (! DB::isMysql()) {
+        Schema::create($name, $blueprint);
+
+        return;
+    }
+
+    if (Schema::hasTable($name)) {
+        return;
+    }
+
+    DB::commit();
+    Schema::create($name, $blueprint);
+    DB::beginTransaction();
 }
 
 it('gives a model saved outside Craft an element that hydrates the model', function () {
@@ -144,13 +167,10 @@ it('duplicates an element with new model attributes', function () {
 });
 
 it('leaves out model attributes named like the element’s own properties', function () {
-    createEloquentElementsArticlesTable();
-
     expect(TestArticleElement::modelAttributes())->toBe(['body']);
 });
 
 it('labels and searches elements by a title column', function () {
-    createEloquentElementsArticlesTable();
     app(EloquentElements::class)->register(TestArticleElement::class);
 
     $article = TestArticle::create(['title' => 'Notes on the Analytical Engine', 'enabled' => true, 'body' => '…']);
@@ -160,12 +180,6 @@ it('labels and searches elements by a title column', function () {
 });
 
 it('syncs a model touched by a related model', function () {
-    Schema::create('customer_notes', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('customer_id');
-        $table->string('body');
-        $table->timestamps();
-    });
     $customer = Customer::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']);
     $dateUpdated = CustomerElement::findForModel($customer)->dateUpdated;
 
