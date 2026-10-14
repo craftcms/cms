@@ -35,6 +35,13 @@ use function CraftCms\Cms\t;
  */
 readonly class Navigation
 {
+    /**
+     * The element types whose sources the nav lists, and counts.
+     *
+     * @var list<class-string<ElementInterface>>
+     */
+    public const array SOURCE_ELEMENT_TYPES = [Entry::class, Asset::class, User::class];
+
     public function __construct(
         private Request $request,
         private Plugins $plugins,
@@ -149,7 +156,7 @@ readonly class Navigation
      */
     public function hasSourceBadges(): bool
     {
-        return $this->elementSources->hasBadgeCountsEnabled([Entry::class, Asset::class, User::class]);
+        return $this->elementSources->hasBadgeCountsEnabled(self::SOURCE_ELEMENT_TYPES);
     }
 
     /**
@@ -161,7 +168,7 @@ readonly class Navigation
     {
         $badges = [];
 
-        foreach ([Entry::class, Asset::class, User::class] as $elementType) {
+        foreach (self::SOURCE_ELEMENT_TYPES as $elementType) {
             if (! $this->listsSources($elementType)) {
                 continue;
             }

@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\ElementSourceUi;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Http\ViewModels\LegacyElementIndexViewModel;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -150,3 +152,45 @@ it('counts only the entries a user can view in a native source', function () {
     // Peer entries are out of reach without “View other users’ entries”.
     expect(Entry::sourceBadgeCount($source, null))->toBe(1);
 });
+
+it('counts a plugin element type’s sources in its own secondary nav', function () {
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, TestBadgeCountElement::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'showBadgeCount' => true],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'quiet'],
+    ]);
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'showBadgeCount' => true],
+    ]);
+
+    $navItems = fn (string $elementType) => collect(
+        new LegacyElementIndexViewModel($elementType, ElementIndexRequest::create('/admin/test')->setContainer(app()))->sourceNavItems(),
+    )->keyBy('label');
+
+    $items = $navItems(TestBadgeCountElement::class);
+
+    expect($items['All']->badgeCount)->toBe(5)
+        ->and($items['Quiet']->badgeCount)->toBe(0)
+        // The main nav counts entries, after the page loads.
+        ->and($navItems(Entry::class)['All entries']->badgeCount)->toBe(0);
+});
+
+class TestBadgeCountElement extends Element
+{
+    public static function supportsSourceBadgeCounts(): bool
+    {
+        return true;
+    }
+
+    public static function sourceBadgeCount(array $source, ?int $siteId): int
+    {
+        return 5;
+    }
+
+    protected static function defineSources(string $context): array
+    {
+        return [
+            ['key' => '*', 'label' => 'All'],
+            ['key' => 'quiet', 'label' => 'Quiet'],
+        ];
+    }
+}

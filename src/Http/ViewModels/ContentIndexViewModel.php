@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
@@ -747,7 +748,7 @@ abstract class ContentIndexViewModel extends ViewModel
                 ->href($url)
                 ->selected($key === $sourceKey)
                 ->status($source['status'] ?? null)
-                ->badgeCount((int) ($source['badgeCount'] ?? 0));
+                ->badgeCount($this->sourceBadgeCount($source));
 
             if ($group === null) {
                 $items[] = $item;
@@ -763,6 +764,30 @@ abstract class ContentIndexViewModel extends ViewModel
             $items,
             fn (NavItem $item): bool => ! $item->group || $item->subnav !== [],
         ));
+    }
+
+    /**
+     * A source's count for the secondary nav.
+     *
+     * Types the main nav lists get theirs from there, after the page loads,
+     * so only other element types are counted here.
+     *
+     * @param  array<string, mixed>  $source
+     */
+    private function sourceBadgeCount(array $source): int
+    {
+        if (isset($source['badgeCount'])) {
+            return (int) $source['badgeCount'];
+        }
+
+        if (
+            in_array($this->elementType, Navigation::SOURCE_ELEMENT_TYPES, true) ||
+            ! ElementSources::showsBadgeCount($this->elementType, $source)
+        ) {
+            return 0;
+        }
+
+        return $this->elementType::sourceBadgeCount($source, $this->siteId());
     }
 
     /**

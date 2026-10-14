@@ -319,7 +319,7 @@
                               <!-- The subnav-actions outlet lives inside this fallback, so a page can
                               teleport `content-sidebar` or `subnav-actions`, never both. -->
                               <SecondaryNav
-                                :items="navItemActions(subnav)"
+                                :items="navItemActions(subnav, true)"
                                 :actions="subnavActions"
                               >
                                 <template #actions>
