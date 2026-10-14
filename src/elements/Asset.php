@@ -3262,6 +3262,19 @@ JS;
             }
         }
 
+        // If the file is being renamed without an extension, keep the current one
+        if (
+            isset($this->newFilename, $this->_filename) &&
+            $this->newFilename !== '' &&
+            !isset($this->tempFilePath) &&
+            pathinfo($this->newFilename, PATHINFO_EXTENSION) === ''
+        ) {
+            $extension = pathinfo($this->_filename, PATHINFO_EXTENSION);
+            if ($extension !== '') {
+                $this->newFilename = rtrim($this->newFilename, '.') . ".$extension";
+            }
+        }
+
         if ($this->newFilename === '' || $this->newFilename === $this->getFilename()) {
             $this->newFilename = null;
         }
