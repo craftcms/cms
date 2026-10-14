@@ -37,7 +37,6 @@
     container-type: inline-size;
     margin: 0;
     padding: 0;
-    border-inline-start: none;
     list-style: none;
   }
 
@@ -53,6 +52,10 @@
   .activity-timeline__change-label,
   .activity-timeline__change-comparison dd {
     overflow-wrap: anywhere;
+  }
+
+  .activity-timeline__change-label {
+    font-weight: var(--font-weight-semibold);
   }
 
   .activity-timeline__change-comparison {

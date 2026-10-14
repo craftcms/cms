@@ -4,6 +4,7 @@
   import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/checkbox-group/checkbox-group';
   import '@craftcms/ui/components/checkbox-indeterminate/checkbox-indeterminate';
+  import '@craftcms/ui/components/icon/icon';
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
@@ -175,12 +176,6 @@
 
   function onButtonClicked(value: ChoiceValue): void {
     const optionValue = inputValue(value);
-
-    if (!props.control.props.multiple) {
-      emit('update:value', optionValue);
-      return;
-    }
-
     const values = Array.isArray(props.value)
       ? props.value.map(inputValue)
       : [];
@@ -373,8 +368,10 @@
     </select>
   </craft-select>
   <craft-button-group
-    v-else-if="control.props.presentation === 'buttons'"
-    :role="control.props.multiple ? 'group' : 'radiogroup'"
+    v-else-if="
+      control.props.presentation === 'buttons' && control.props.multiple
+    "
+    role="group"
     :aria-invalid="invalid ? 'true' : undefined"
     :aria-required="required ? 'true' : undefined"
   >
@@ -382,12 +379,12 @@
       v-if="editable"
       type="hidden"
       :name="inputName(control.path)"
-      :value="control.props.multiple ? '' : inputValue(value)"
+      value=""
     />
     <input
-      v-for="option in control.props.multiple
-        ? control.props.options.filter((option) => selected(option.value))
-        : []"
+      v-for="option in control.props.options.filter((option) =>
+        selected(option.value)
+      )"
       :key="inputValue(option.value)"
       type="hidden"
       :name="`${inputName(control.path)}[]`"
@@ -431,6 +428,7 @@
     :is="control.props.multiple ? 'craft-checkbox-group' : 'craft-radio-group'"
     v-else
     :thumbnails="hasThumbnails() || undefined"
+    :buttons="control.props.presentation === 'buttons' || undefined"
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
@@ -490,6 +488,11 @@
         </label>
         <component
           :is="control.props.multiple ? 'craft-checkbox' : 'craft-radio'"
+          :title="
+            control.props.presentation === 'buttons' && option.icon
+              ? option.label
+              : undefined
+          "
           :disabled="!editable || option.disabled"
           .choiceValue="inputValue(option.value)"
           .checked="allChecked() || selected(option.value)"
@@ -511,7 +514,12 @@
             @change="onOptionChanged"
           />
           <label slot="label" :for="optionId(index)">
-            <span v-if="option.labelHtml" v-html="option.labelHtml" />
+            <craft-icon
+              v-if="control.props.presentation === 'buttons' && option.icon"
+              :name="option.icon"
+              :label="option.label"
+            />
+            <span v-else-if="option.labelHtml" v-html="option.labelHtml" />
             <template v-else>{{ option.label }}</template>
           </label>
         </component>

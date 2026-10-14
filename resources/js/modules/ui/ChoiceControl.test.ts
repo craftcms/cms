@@ -147,17 +147,47 @@ describe('ChoiceControl', () => {
     ]);
   });
 
-  it('renders an icon option as an empty, labeled button', async () => {
+  it('renders single-choice buttons as radios drawn as buttons', async () => {
     await mount(
       {
         presentation: 'buttons',
         multiple: false,
         options: [
           {label: 'Sort ascending', icon: 'asc', value: 'asc'},
-          {label: 'Sort descending', icon: 'desc', value: 'desc'},
+          {label: 'Descending', value: 'desc'},
         ],
       },
       'asc'
+    );
+
+    const group = container!.querySelector('craft-radio-group')!;
+    const inputs = [
+      ...group.querySelectorAll<HTMLInputElement>('input[type="radio"]'),
+    ];
+    const icon = group.querySelector('label craft-icon');
+
+    expect(container!.querySelector('craft-button-group')).toBeNull();
+    expect(group.hasAttribute('buttons')).toBe(true);
+    expect(inputs.map((input) => input.value)).toEqual(['asc', 'desc']);
+    expect(inputs.map((input) => input.checked)).toEqual([true, false]);
+    expect(icon?.getAttribute('name')).toBe('asc');
+    expect((icon as HTMLElement & {label?: string}).label).toBe(
+      'Sort ascending'
+    );
+    expect(inputs[1]!.labels?.[0]?.textContent?.trim()).toBe('Descending');
+  });
+
+  it('renders an icon option as an empty, labeled button', async () => {
+    await mount(
+      {
+        presentation: 'buttons',
+        multiple: true,
+        options: [
+          {label: 'Sort ascending', icon: 'asc', value: 'asc'},
+          {label: 'Sort descending', icon: 'desc', value: 'desc'},
+        ],
+      },
+      ['asc']
     );
 
     const buttons = [...container!.querySelectorAll('craft-button')];

@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
 use CraftCms\Cms\Mcp\ElementLifecycle;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
+use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
@@ -223,7 +224,17 @@ abstract class BaseElementAdapter implements ElementAdapter
     protected function populate(ElementInterface $element, array $attributes, array $fields, CraftUser $actor): void
     {
         Typecast::configure($element, $attributes);
-        $element->setFieldValues($fields);
+        $this->setFieldValues($element, $fields);
+    }
+
+    /**
+     * Sets custom field values given in the format `elements.field-schema` describes.
+     *
+     * @param  array<string, mixed>  $fields
+     */
+    protected function setFieldValues(ElementInterface $element, array $fields): void
+    {
+        $element->setFieldValues(app(CustomFieldSchema::class)->prepareValues($element, $fields));
     }
 
     protected function authorizeSave(CraftUser $actor, ElementInterface $element): void

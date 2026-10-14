@@ -52,3 +52,47 @@ it('sizes the inputs to their content by default', async () => {
 
   expect(nativeWidth(date!) + nativeWidth(time!)).toBeLessThan(600);
 });
+
+async function renderIn(width: number) {
+  document.body.innerHTML = `
+    <div style="width: ${width}px">
+      <craft-input-date-time width="full">
+        <craft-button icon="xmark-large" aria-label="Clear"></craft-button>
+      </craft-input-date-time>
+    </div>`;
+  const field = document.querySelector('craft-input-date-time')!;
+  await field.updateComplete;
+  // The stacked state follows a frame after layout.
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const [date, time] = Array.from(
+    field.querySelectorAll<HTMLElement>('[data-date-time-part]')
+  ).map((part) => part.getBoundingClientRect());
+
+  return {
+    field,
+    date: date!,
+    time: time!,
+    button: field.querySelector('craft-button')!,
+  };
+}
+
+it('keeps the inputs on one row when they fit', async () => {
+  const {field, date, time} = await renderIn(800);
+
+  // Same row: the time input starts before the date input ends.
+  expect(time.top).toBeLessThan(date.bottom);
+  expect(field.hasAttribute('stacked')).toBe(false);
+});
+
+it('stacks the inputs, beside a full-height clear button, when they don’t fit', async () => {
+  const {field, date, time, button} = await renderIn(200);
+  const buttonBounds = button.getBoundingClientRect();
+
+  expect(time.top).toBeGreaterThanOrEqual(date.bottom);
+  expect(field.hasAttribute('stacked')).toBe(true);
+  expect(buttonBounds.left).toBeGreaterThanOrEqual(date.right);
+  expect(buttonBounds.top).toBeLessThanOrEqual(date.top);
+  expect(buttonBounds.bottom).toBeGreaterThanOrEqual(time.bottom);
+});

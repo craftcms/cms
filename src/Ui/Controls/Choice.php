@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\Components\Checkbox;
 use CraftCms\Cms\Cp\Components\CheckboxGroup;
 use CraftCms\Cms\Cp\Components\CheckboxIndeterminate;
 use CraftCms\Cms\Cp\Components\CheckboxSelect;
+use CraftCms\Cms\Cp\Components\Icon;
 use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Select as SelectComponent;
@@ -68,7 +69,7 @@ class Choice extends Control
             ChoicePresentation::Radios => self::radiosHtml($control, $value, $attributes),
             ChoicePresentation::Buttons => $multiple
                 ? self::multipleButtonsHtml($control, $value, $attributes)
-                : self::buttonsHtml($control, $value, $attributes),
+                : self::radiosHtml($control, $value, $attributes, buttons: true),
         };
     }
 
@@ -422,12 +423,18 @@ class Choice extends Control
             ->children($checkboxes);
     }
 
-    /** @param array<string, mixed> $attributes */
-    private static function radiosHtml(ControlPayload $control, mixed $value, array $attributes): string
+    /**
+     * With `$buttons`, the radios are drawn as a row of joined buttons, and an
+     * option with an icon shows only the icon, named by the option's label.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private static function radiosHtml(ControlPayload $control, mixed $value, array $attributes, bool $buttons = false): string
     {
         $values = self::values($value);
-        $radios = array_map(function (array $option, int $index) use ($attributes, $values): Radio {
+        $radios = array_map(function (array $option, int $index) use ($attributes, $values, $buttons): Radio {
             $optionValue = (string) $option['value'];
+            $icon = $buttons ? ($option['icon'] ?? null) : null;
 
             return Radio::make()
                 ->id("{$attributes['id']}-{$index}")
@@ -435,7 +442,8 @@ class Choice extends Control
                 ->value($optionValue)
                 ->checked(in_array($optionValue, $values, true))
                 ->disabled($attributes['name'] === null || ($option['disabled'] ?? false))
-                ->label(self::optionLabel($option))
+                ->label($icon !== null ? Icon::make()->name($icon)->label($option['label']) : self::optionLabel($option))
+                ->attributes(['title' => $icon !== null ? $option['label'] : null])
                 ->thumbnail($option['thumbnail'] ?? null)
                 ->describedBy($attributes['aria']['describedby'] ?? null)
                 ->inputAttributes([
@@ -446,22 +454,9 @@ class Choice extends Control
 
         return RadioGroup::make()
             ->id($attributes['id'])
+            ->buttons($buttons)
             ->options($radios)
             ->attributes(self::groupAttributes($attributes, 'radiogroup'))
-            ->toHtml();
-    }
-
-    /** @param array<string, mixed> $attributes */
-    private static function buttonsHtml(ControlPayload $control, mixed $value, array $attributes): string
-    {
-        $values = self::values($value);
-
-        return ButtonGroup::make()
-            ->id($attributes['id'])
-            ->name($attributes['name'])
-            ->value($values[0] ?? null)
-            ->buttons(self::buttons($control, $values, $attributes))
-            ->attributes(self::buttonGroupAttributes($attributes))
             ->toHtml();
     }
 

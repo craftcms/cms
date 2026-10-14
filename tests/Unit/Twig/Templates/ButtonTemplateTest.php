@@ -44,7 +44,7 @@ it('renders the web component from the legacy buttonGroup variables', function (
             'id' => 'bg',
             'name' => 'align',
             'value' => 'left',
-            'role' => 'radiogroup',
+            'role' => 'group',
         ])
         ->toContainTag('craft-button', [
             'data-value' => 'left',

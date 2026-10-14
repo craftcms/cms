@@ -12,7 +12,9 @@ use CraftCms\Cms\Ui\UiHtmlRenderer;
 
 /**
  * A Link Control. Its canonical value is an object with required `type` and
- * `value` strings and optional `label`, `urlSuffix`, and `title` strings.
+ * `value` strings, an optional `label`, and the optional advanced attributes
+ * (`urlSuffix`, `target`, `title`, `class`, `id`, `rel`, `ariaLabel`,
+ * `download`, and `filename`). Each edit applies as it's made.
  *
  * @since 6.0.0
  */
@@ -31,6 +33,7 @@ class Link extends Control
             'show-label-field' => $control->props['showLabelField'] ?? false,
             'advanced-fields' => Json::encode($control->props['advancedFields'] ?? []),
             'disabled' => $attributes['name'] === null,
+            'live' => true,
         ]);
     }
 
