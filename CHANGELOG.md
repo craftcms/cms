@@ -4,6 +4,7 @@
 
 - Fixed a bug where the `fields/merge` and `fields/auto-merge` commands weren’t updating field condition rules that referenced the merged fields. ([#19901](https://github.com/craftcms/cms/issues/19901))
 - Fixed a bug where the `fields/merge` and `fields/auto-merge` commands weren’t updating Content Block fields’ layouts. ([#19901](https://github.com/craftcms/cms/issues/19901))
+- Fixed a bug where curly quotes were allowed within asset folder and filenames. ([#19904](https://github.com/craftcms/cms/issues/19904))
 
 ## 5.11.5.1 - 2026-10-08
 
