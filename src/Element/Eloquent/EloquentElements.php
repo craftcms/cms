@@ -181,20 +181,18 @@ class EloquentElements
         $this->app->make(Router::class)
             ->middleware(['auth', 'can:accessCp'])
             ->group(function (Router $router) use ($elementType, $uri, $name): void {
-                $router->get($uri, ElementTypeIndexController::class)
+                // Named as they're created, so the route collection can find a type registered after boot by name
+                $router->name("$name.index")->get($uri, ElementTypeIndexController::class)
                     ->middleware(AuthorizeEloquentElementIndex::class)
                     ->defaults('elementType', $elementType)
-                    ->defaults('newElementRoute', "craft.cp.$name.new")
-                    ->name("$name.index");
+                    ->defaults('newElementRoute', "craft.cp.$name.new");
 
-                $router->get("$uri/new", NewElementController::class)
-                    ->defaults('elementType', $elementType)
-                    ->name("$name.new");
+                $router->name("$name.new")->get("$uri/new", NewElementController::class)
+                    ->defaults('elementType', $elementType);
 
-                $router->get("$uri/{id}", EditElementController::class)
+                $router->name("$name.edit")->get("$uri/{id}", EditElementController::class)
                     ->whereNumber('id')
-                    ->defaults('elementType', $elementType)
-                    ->name("$name.edit");
+                    ->defaults('elementType', $elementType);
             });
     }
 

@@ -2,23 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Workbench\App\Elements;
+namespace CraftCms\Cms\Tests\TestClasses\Element\Eloquent;
 
 use CraftCms\Cms\Element\Eloquent\EloquentElement;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use Illuminate\Validation\Rule;
-use Workbench\App\Models\Customer as CustomerModel;
 
 /**
- * @extends EloquentElement<CustomerModel>
+ * @extends EloquentElement<Customer>
  */
-class Customer extends EloquentElement
+class CustomerElement extends EloquentElement
 {
     public static function modelClass(): string
     {
-        return CustomerModel::class;
+        return Customer::class;
     }
 
     public static function cpNavIcon(): string

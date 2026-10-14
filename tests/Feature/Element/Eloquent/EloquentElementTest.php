@@ -26,6 +26,8 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\UserPermissions as UserPermissionsFacade;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Tests\TestClasses\Element\Eloquent\Customer;
+use CraftCms\Cms\Tests\TestClasses\Element\Eloquent\CustomerElement;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\UserPermissions;
@@ -37,28 +39,42 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Once;
 use Inertia\Testing\AssertableInertia;
 use Twig\Sandbox\SecurityNotAllowedPropertyError;
-use Workbench\App\Elements\Customer as CustomerElement;
-use Workbench\App\Models\Customer;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\renderSandboxedString;
 use function CraftCms\Cms\renderString;
-use function Orchestra\Testbench\workbench_path;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\artisan;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
-    (require workbench_path('database/migrations/2026_10_14_000000_create_customers_table.php'))->up();
+    Schema::create('customers', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->string('email')->unique();
+        $table->string('company')->nullable();
+        $table->timestamps();
+        $table->softDeletes();
+    });
+
+    // Registered types add their routes to the router, rather than finding them in the route cache
+    app()->forgetInstance('routes.cached');
 
     app(EloquentElements::class)->register(CustomerElement::class);
 
     actingAs(User::findOne());
+});
+
+afterEach(function () {
+    Route::getRoutes()->refreshNameLookups();
+    app()->forgetInstance('routes.cached');
 });
 
 /** @param list<string> $permissions */
@@ -617,6 +633,15 @@ describe('registration', function () {
 
             expect($customer->fresh()->email)->toBe('countess@example.com');
         });
+
+        it('hands a model policy the user being checked when they aren’t signed in', function () {
+            Gate::policy(Customer::class, TestCustomerPolicy::class);
+
+            $element = CustomerElement::findForModel(Customer::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']));
+
+            expect($element->canView(UserModel::factory()->createElement(['admin' => false, 'email' => 'ada@example.com'])))->toBeTrue()
+                ->and($element->canView(UserModel::factory()->createElement(['admin' => false, 'email' => 'grace@example.com'])))->toBeFalse();
+        });
     });
 });
 
@@ -700,7 +725,7 @@ class TestCustomerPolicy
 
     public function view(UserModel $user, Customer $customer): bool
     {
-        return true;
+        return $user->is(currentUser()) || $user->email === $customer->email;
     }
 
     public function update(UserModel $user, Customer $customer): bool

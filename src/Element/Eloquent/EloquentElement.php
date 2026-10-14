@@ -836,7 +836,7 @@ abstract class EloquentElement extends Element
             return $currentUser;
         }
 
-        return UserModel::find() ?? $user;
+        return UserModel::query()->find($user->id) ?? $user;
     }
 
     #[Override]

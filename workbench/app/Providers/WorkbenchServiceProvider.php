@@ -7,7 +7,6 @@ namespace Workbench\App\Providers;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Dashboard\WidgetTypes;
-use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Json;
@@ -17,7 +16,6 @@ use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
-use Workbench\App\Elements\Customer;
 use Workbench\App\Ui\UiKitchenSink;
 use Workbench\App\Widgets\HtmlExample;
 use Workbench\App\Widgets\LayoutSlotsDemo;
@@ -45,8 +43,6 @@ class WorkbenchServiceProvider extends ServiceProvider
                 AutomaticApprovalStage::class,
             ),
         );
-
-        app(EloquentElements::class)->register(Customer::class);
 
         if (! $this->app->runningUnitTests()) {
             app(WidgetTypes::class)->register(HtmlExample::class);
