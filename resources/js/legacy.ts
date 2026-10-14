@@ -11,6 +11,7 @@
  * element definitions on every CP page.
  */
 import '@craftcms/ui';
+import '../css/legacy.css';
 
 // We need to globally register these for the moment because an
 // elevated session modal can be called from pretty much anywhere

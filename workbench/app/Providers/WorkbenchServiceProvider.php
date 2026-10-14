@@ -17,8 +17,8 @@ use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Workbench\App\Http\Controllers\ErrorPagesController;
-use Workbench\App\Http\Controllers\LegacyPagesController;
 use Workbench\App\Http\Controllers\PortedPagesController;
+use Workbench\App\Http\Controllers\SpecialPagesController;
 use Workbench\App\Ui\UiKitchenSink;
 use Workbench\App\Widgets\HtmlExample;
 use Workbench\App\Widgets\LayoutSlotsDemo;
@@ -93,13 +93,19 @@ class WorkbenchServiceProvider extends ServiceProvider
                         ->href('workbench/layout-slots')
                         ->icon('table-layout'),
                     new NavItem()
-                        ->label('Legacy Pages')
-                        ->href('workbench/legacy-pages/dbupdate')
+                        ->label('Special Pages')
+                        ->href('workbench/special-pages/dbupdate')
                         ->icon('clock-rotate-left')
-                        ->subnav(collect(LegacyPagesController::PAGES)
-                            ->map(fn (string $label, string $page) => new NavItem()
-                                ->label($label)
-                                ->href("workbench/legacy-pages/{$page}"))
+                        ->subnav(collect(SpecialPagesController::GROUPS)
+                            ->map(fn (array $pages, string $group) => new NavItem()
+                                ->label($group)
+                                ->group(true)
+                                ->subnav(collect($pages)
+                                    ->map(fn (string $label, string $page) => new NavItem()
+                                        ->label($label)
+                                        ->href("workbench/special-pages/{$page}"))
+                                    ->values()
+                                    ->all()))
                             ->values()
                             ->all()),
                     new NavItem()

@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Route;
 use Workbench\App\Http\Controllers\ChipsController;
 use Workbench\App\Http\Controllers\ErrorPagesController;
 use Workbench\App\Http\Controllers\LayoutSlotsDemoController;
-use Workbench\App\Http\Controllers\LegacyPagesController;
 use Workbench\App\Http\Controllers\PortedPagesController;
+use Workbench\App\Http\Controllers\SpecialPagesController;
 use Workbench\App\Http\Controllers\UiKitchenSinkController;
 
 Route::middleware(['craft', 'craft.cp', 'auth', 'can:accessCp'])
@@ -30,9 +30,9 @@ Route::middleware(['craft', 'craft.cp', 'auth', 'can:accessCp'])
             ->name('workbench.layout-slots');
         Route::get('workbench/chips', ChipsController::class)
             ->name('workbench.chips');
-        Route::get('workbench/legacy-pages/{page}', LegacyPagesController::class)
-            ->whereIn('page', array_keys(LegacyPagesController::PAGES))
-            ->name('workbench.legacy-pages');
+        Route::get('workbench/special-pages/{page}', SpecialPagesController::class)
+            ->whereIn('page', SpecialPagesController::pages())
+            ->name('workbench.special-pages');
         Route::get('workbench/error-pages/{page}', ErrorPagesController::class)
             ->whereIn('page', array_keys(ErrorPagesController::PAGES))
             ->name('workbench.error-pages');
