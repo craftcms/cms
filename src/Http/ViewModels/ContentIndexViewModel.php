@@ -25,7 +25,6 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
@@ -1228,7 +1227,7 @@ abstract class ContentIndexViewModel extends ViewModel
             ...collect($attributes)
                 ->mapWithKeys(fn (string $attribute) => [
                     $attribute => $attribute === 'title'
-                        ? $this->titleCellHtml($element, $elementHtml)
+                        ? $this->titleLinkHtml($element)
                         : (string) $element->getAttributeHtml($attribute),
                 ])
                 ->all(),
@@ -1285,22 +1284,55 @@ abstract class ContentIndexViewModel extends ViewModel
         return $flags;
     }
 
-    private function titleCellHtml(ElementInterface $element, ElementHtml $elementHtml): string
+    /**
+     * Renders a title cell's chip, linked to wherever clicking the element
+     * should go.
+     *
+     * Only the label is the link, so the rest of the chip (its status
+     * indicator, say) behaves like the rest of the row.
+     */
+    protected function titleLinkHtml(ElementInterface $element): string
     {
-        $chip = $elementHtml->elementChipHtml($element, [
-            'context' => static::RENDER_CONTEXT,
-            'appearance' => 'plain',
-        ]);
-
-        $editUrl = static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
-            ? $this->editUrl($element)
-            : null;
+        $editUrl = $this->editUrl($element);
 
         if ($editUrl === null) {
-            return $chip;
+            return $this->chipHtml($element);
         }
 
-        return Html::tag('CpLink', $chip, ['href' => $editUrl]);
+        return $this->labelLinkedChipHtml($element, $editUrl, 'CpLink', ['bare' => true]);
+    }
+
+    /**
+     * Renders a title cell's chip with only its label linked, so the rest of the
+     * chip (its status indicator, say) behaves like the rest of the row.
+     *
+     * @param  array<string, mixed>  $attributes  Additional attributes for the label link
+     */
+    protected function labelLinkedChipHtml(ElementInterface $element, string $url, string $tag = 'a', array $attributes = []): string
+    {
+        return $this->chipHtml($element, [
+            'hyperlink' => true,
+            'hyperlinkUrl' => $url,
+            'hyperlinkTag' => $tag,
+            'hyperlinkAttributes' => $attributes,
+        ]);
+    }
+
+    /**
+     * Renders a title cell's chip.
+     *
+     * Rendered once per cell: rendering resolves the chip's thumbnail URLs,
+     * which can queue transforms or fire `ThumbUrlResolving` handlers.
+     *
+     * @param  array<string, mixed>  $config  Additional {@see ElementHtml::elementChipHtml()} config
+     */
+    protected function chipHtml(ElementInterface $element, array $config = []): string
+    {
+        return app(ElementHtml::class)->elementChipHtml($element, [
+            'context' => static::RENDER_CONTEXT,
+            'appearance' => 'plain',
+            ...$config,
+        ]);
     }
 
     /**
@@ -1355,7 +1387,20 @@ abstract class ContentIndexViewModel extends ViewModel
                 ? $this->editUrl($element)
                 : null,
             'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit),
+            ...$this->extraThumbData($element),
         ], $elements);
+    }
+
+    /**
+     * Additional data for an element's thumb. A thumb with no `url` can still
+     * link its label, by setting `labelUrl` (and optionally
+     * `labelLinkAttributes`).
+     *
+     * @return array{labelUrl?: string, labelLinkAttributes?: array<string, mixed>}
+     */
+    protected function extraThumbData(ElementInterface $element): array
+    {
+        return [];
     }
 
     /**
@@ -1385,6 +1430,17 @@ abstract class ContentIndexViewModel extends ViewModel
         return [];
     }
 
+    /**
+     * Capabilities an element type adds to its rows, for bulk actions whose
+     * `selectionAttribute` names them.
+     *
+     * @return array<string, bool>
+     */
+    protected function extraCapabilities(ElementInterface $element): array
+    {
+        return [];
+    }
+
     /** @return array<string, mixed> */
     private function baseRowData(ElementInterface $element, ?ElementHtml $elementHtml = null): array
     {
@@ -1393,7 +1449,10 @@ abstract class ContentIndexViewModel extends ViewModel
         return [
             'label' => $element->getUiLabel(),
             ...$this->elementUrls($element),
-            'capabilities' => $elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+            'capabilities' => [
+                ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+                ...$this->extraCapabilities($element),
+            ],
             ...$this->extraRowData($element),
         ];
     }

@@ -189,7 +189,7 @@ class EntryAdapter extends BaseElementAdapter
             $element->setAuthorId($actor->getCraftUserId());
         }
 
-        $element->setFieldValues($fields);
+        $this->setFieldValues($element, $fields);
     }
 
     /** @param Entry $element */

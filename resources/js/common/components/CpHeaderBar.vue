@@ -166,6 +166,7 @@
 <style scoped>
   .cp-header-bar {
     --badge-border-color: var(--c-surface-sunken);
+    background-color: var(--c-surface-sunken);
     padding-block-start: calc(var(--c-spacing-sm) - 1px);
     padding-block-end: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-sm);
@@ -180,7 +181,7 @@
     align-items: center;
     border-block-start: 1px solid rgba(0 0 0 / 0.25);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-    box-shadow: var(--shadow-xs), var(--shadow-lg);
+    box-shadow: var(--c-shadow-xs), var(--c-shadow-lg);
     position: relative;
     z-index: var(--c-layer-header);
 
@@ -212,6 +213,8 @@
 
   .cp-header-bar__breadcrumbs {
     --c-text-link: var(--c-text-default);
+    --c-link-decoration: none;
+    --c-link-decoration-hover: underline;
     grid-area: breadcrumbs;
     overflow: auto;
   }

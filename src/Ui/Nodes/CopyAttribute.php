@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ui\Nodes;
 
-use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Cp\Components\CopyAttribute as CopyAttributeComponent;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\NodePayload;
@@ -42,10 +42,10 @@ class CopyAttribute implements Node
 
     public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
     {
-        return Html::tag('craft-copy-attribute', '', [
-            'value' => $node->props['value'],
-            'data-ui-node' => $node->uid,
-        ]);
+        return CopyAttributeComponent::make()
+            ->value($node->props['value'])
+            ->attributes(['data-ui-node' => $node->uid])
+            ->toHtml();
     }
 
     public function component(): string

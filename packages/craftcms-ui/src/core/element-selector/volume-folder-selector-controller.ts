@@ -60,8 +60,38 @@ export class VolumeFolderSelectorController extends ElementSelectorController<Vo
     this.disabledFolderIds = [...disabledFolderIds];
   }
 
+  /**
+   * Folders only, starting from `defaultSource` and the last folder of
+   * `defaultSourcePath` — typically the folder the items are being moved out
+   * of.
+   */
   override indexParams(): Record<string, unknown> {
-    return {...super.indexParams(), foldersOnly: true};
+    const params: Record<string, unknown> = {
+      ...super.indexParams(),
+      foldersOnly: true,
+      // Asset indexes only merge folders into their listing when asked to.
+      showFolders: true,
+    };
+
+    // Legacy callers nest these under `indexSettings`.
+    const {indexSettings} = this.options;
+    const defaultSource =
+      this.options.defaultSource ?? (indexSettings.defaultSource as string);
+    const path = (this.options.defaultSourcePath ??
+      indexSettings.defaultSourcePath ??
+      []) as SourcePathSegment[];
+
+    if (defaultSource) {
+      params.source = defaultSource;
+    }
+
+    const folderId = Number(path[path.length - 1]?.folderId);
+
+    if (Number.isFinite(folderId)) {
+      params.folderId = folderId;
+    }
+
+    return params;
   }
 
   override indexSettings(): Record<string, unknown> {

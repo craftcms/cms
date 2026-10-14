@@ -95,9 +95,3 @@
     </div>
   </craft-card>
 </template>
-
-<style scoped>
-  a {
-    text-decoration: none;
-  }
-</style>

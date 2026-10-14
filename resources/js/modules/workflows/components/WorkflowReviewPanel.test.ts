@@ -550,6 +550,58 @@ describe('WorkflowReviewPanel', () => {
     );
   });
 
+  it('blocks a requester’s comment that’s over the length limit', async () => {
+    mount(
+      review({
+        actionComponent: null,
+        showDefaultActions: true,
+        actionProps: {canReview: false},
+      })
+    );
+
+    await enterNote('a'.repeat(10_001));
+    const comment = actionButton(
+      'Comment'
+    ) as HTMLElementTagNameMap['craft-button'];
+    await comment.updateComplete;
+
+    expect(comment.disabled).toBe(true);
+    expect(container!.textContent).toContain('1 character over the limit');
+
+    container!
+      .querySelector<HTMLTextAreaElement>(
+        'textarea[id^="workflow-review-note"]'
+      )!
+      .dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          ctrlKey: true,
+          bubbles: true,
+        })
+      );
+    await nextTick();
+    expect(requests()).toHaveLength(0);
+
+    await enterNote('a'.repeat(10_000));
+    await comment.updateComplete;
+    expect(comment.disabled).toBe(false);
+    expect(container!.textContent).not.toContain('over the limit');
+  });
+
+  it('blocks a review whose message is over the length limit', async () => {
+    mount(review());
+
+    await chooseReviewDecision('approve');
+    await enterReviewMessage('😀'.repeat(10_002));
+    const submit = actionButton(
+      'Submit review'
+    ) as HTMLElementTagNameMap['craft-button'];
+    await submit.updateComplete;
+
+    expect(submit.disabled).toBe(true);
+    expect(container!.textContent).toContain('2 characters over the limit');
+  });
+
   it('shows the workflow message returned by a failed transition', async () => {
     requestSpy.mockResolvedValue(
       response(

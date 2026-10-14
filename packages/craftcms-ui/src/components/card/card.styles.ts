@@ -29,15 +29,62 @@ export default css`
     border-radius: var(--c-card-radius, var(--c-radius-md));
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
     position: relative;
+    box-sizing: border-box;
     height: 100%;
+    overflow: clip;
+  }
+
+  :host(:not([data-color]):not([active])) .card {
+    --c-color-border-quiet: var(--c-border-raised);
+  }
+
+  :host(:not([data-color])[active]) .card {
+    --c-color-fill-loud: var(--c-card-fill-selected);
+    --c-color-border-loud: var(--c-card-border-selected);
+    --c-color-on-loud: var(--c-card-text-selected);
+  }
+
+  :host([data-color='white']) .card {
+    --c-color-fill-quiet: var(--c-surface-raised);
+    --c-color-fill-loud: var(--c-surface-raised);
+    --c-color-border-quiet: var(--c-border-raised);
+    --c-color-border-loud: var(--c-border-raised-selected);
+    --c-color-on-quiet: var(--c-text-default);
+    --c-color-on-loud: var(--c-text-default);
+    box-shadow: var(--c-card-shadow, var(--c-shadow-xs));
+  }
+
+  /* White fills the whole card, not just the header over a translucent body. */
+  :host([data-color='white']:not([active])) .card {
+    background-color: var(--c-color-fill-quiet);
+  }
+
+  :host([data-color='white']:not([active])) .card__header,
+  :host([data-color='white']:not([active])) .card__footer {
+    background-color: transparent;
+  }
+
+  :host([data-color='white']) .card .card__header,
+  :host([data-color='white']) .card .card__footer {
+    border-color: var(--c-table-border-color);
+  }
+
+  :host([data-color='white'][active]) .card {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-normal);
+  }
+
+  :host([data-color='white'][active]) .card .card__header,
+  :host([data-color='white'][active]) .card .card__footer {
+    background-color: transparent;
+    border-color: var(--c-color-accent-border-quiet);
   }
 
   .card__header,
   .card__footer {
     font-size: 0.875em;
     padding-block: var(--c-card-padding-block, var(--c-spacing-sm));
-    padding-inline-start: var(--c-card-padding-inline, var(--c-spacing-md));
-    padding-inline-end: var(--c-card-padding-inline, var(--c-spacing-sm));
+    padding-inline: var(--c-card-padding-inline, var(--c-spacing-md));
     background-color: var(--c-color-fill-quiet);
     border-width: 0;
     border-color: var(--c-color-border-quiet);
@@ -59,14 +106,10 @@ export default css`
 
   :host([collapsed]) .card__header {
     border-block-end-width: 0;
-    border-end-start-radius: var(--c-card-radius, var(--c-radius-md));
-    border-end-end-radius: var(--c-card-radius, var(--c-radius-md));
   }
 
   .card__header {
     min-height: var(--c-card-header-min-height, 1lh);
-    border-start-start-radius: var(--c-card-radius, var(--c-radius-md));
-    border-start-end-radius: var(--c-card-radius, var(--c-radius-md));
     border-block-end-width: 1px;
     display: flex;
     justify-content: space-between;

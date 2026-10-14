@@ -63,11 +63,10 @@ it('requires admin access for token pages and actions', function () {
     deleteJson(action([TokensController::class, 'destroy'], ['tokenId' => $token->id]))->assertForbidden();
 });
 
-it('allows token pages and actions without admin changes', function () {
+it('allows token creation but forbids deletion without admin changes', function () {
     Cms::config()->allowAdminChanges = false;
     $schema = createSchemaForTokensControllerTest();
 
-    get(action([TokensController::class, 'index']))->assertOk();
     get(action([TokensController::class, 'create']))->assertOk();
 
     postJson(action([TokensController::class, 'store']), [
@@ -77,16 +76,71 @@ it('allows token pages and actions without admin changes', function () {
         'schema' => $schema->id,
     ])->assertOk();
 
-    expect(Gql::getTokenByName('No Admin Changes Token'))->not->toBeNull();
+    $token = Gql::getTokenByName('No Admin Changes Token');
+    expect($token)->not->toBeNull();
+
+    $response = get(action([TokensController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('Ui'));
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))
+        ->firstWhere('component', 'craft:admin-table');
+
+    expect($table['props']['createUrl'])->toBe(action([TokensController::class, 'create']))
+        ->and($table['props']['deletable'])->toBeFalse()
+        ->and(array_column($table['props']['rows'], 'id'))->toBe([$token->id])
+        ->and($table['props']['rows'][0])->not->toHaveKey('_deleteUrl');
+
+    deleteJson(action([TokensController::class, 'destroy'], ['tokenId' => $token->id]))->assertForbidden();
+    expect(Gql::getTokenById($token->id))->not->toBeNull();
 });
 
-it('renders the token index, create, and edit screens', function () {
+it('lists linked tokens by name with dates and named deletion, excluding the public token', function () {
+    $dated = createTokenForTokensControllerTest(overrides: [
+        'name' => 'Zulu',
+        'lastUsed' => new DateTimeImmutable('2026-03-14T12:00:00+00:00'),
+        'expiryDate' => new DateTimeImmutable('2026-12-31T12:00:00+00:00'),
+    ]);
+    $undated = createTokenForTokensControllerTest(overrides: ['name' => 'Alpha']);
+    $publicToken = Gql::getPublicToken();
+    $publicToken->enabled = true;
+    expect(Gql::saveToken($publicToken))->toBeTrue();
+
+    $response = get(action([TokensController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('Ui'));
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))
+        ->firstWhere('component', 'craft:admin-table');
+    $rows = $table['props']['rows'];
+
+    expect(array_column($rows, 'id'))->toBe([$undated->id, $dated->id])
+        ->and($table['props']['deletable'])->toBeTrue()
+        ->and($rows[0]['lastUsed'])->toBeNull()
+        ->and($rows[0]['expiryDate'])->toBeNull()
+        ->and(new DateTimeImmutable($rows[1]['lastUsed']['date'])->getTimestamp())->toBe(new DateTimeImmutable('2026-03-14T12:00:00+00:00')->getTimestamp())
+        ->and(new DateTimeImmutable($rows[1]['expiryDate']['date'])->getTimestamp())->toBe(new DateTimeImmutable('2026-12-31T12:00:00+00:00')->getTimestamp())
+        ->and($rows[1])->toMatchArray([
+            'name' => ['label' => 'Zulu', 'url' => action([TokensController::class, 'edit'], ['tokenId' => $dated->id])],
+            '_deleteUrl' => action([TokensController::class, 'destroy'], ['tokenId' => $dated->id]),
+            '_deleteConfirmMessage' => 'Are you sure you want to delete the “Zulu” token?',
+        ]);
+});
+
+it('offers creation when no tokens exist', function () {
+    $response = get(action([TokensController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('Ui'));
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))
+        ->firstWhere('component', 'craft:admin-table');
+
+    expect($table['props'])->toMatchArray([
+        'rows' => [],
+        'emptyMessage' => 'No GraphQL tokens exist yet.',
+        'createLabel' => 'New token',
+        'createUrl' => action([TokensController::class, 'create']),
+    ]);
+});
+
+it('renders the token create and edit screens', function () {
     $schema = createSchemaForTokensControllerTest();
     $token = createTokenForTokensControllerTest($schema);
     $publicSchema = Gql::getPublicSchema();
-
-    get(action([TokensController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->component('graphql/tokens/Index'));
 
     get(action([TokensController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page

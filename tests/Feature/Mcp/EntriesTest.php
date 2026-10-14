@@ -201,3 +201,36 @@ it('requires paginated queries for large nested collections', function (): void 
 
     expect($elements->get('entries', id: $result->element->id, fields: ['largeBlocks'])['element']['largeBlocks'])->toHaveCount(100);
 });
+
+it('accepts Matrix entries only in the format the field schema describes', function (): void {
+    $richText = Field::factory()->create(['handle' => 'richText', 'type' => PlainText::class]);
+    $blockType = EntryType::factory()->withField($richText)->create(['handle' => 'richText', 'hasTitleField' => false, 'titleFormat' => '{id}']);
+    $contentBlocks = Field::factory()->create([
+        'handle' => 'contentBlocks',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockType->id]],
+    ]);
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->withField($contentBlocks)->create())->create();
+    Fields::refreshFields();
+    EntryTypes::refreshEntryTypes();
+
+    $elements = app(ElementCapabilities::class);
+    $schema = $elements->fieldSchema('entries', context: ['sectionId' => $section->id])['schema']['properties']['contentBlocks'];
+    $entries = [['richText' => ['richText' => '<p>Example body</p>']]];
+
+    expect($schema['properties']['entries']['items']['properties'])->toHaveKey('richText')
+        ->and(fn () => $elements->create('entries', ['sectionId' => $section->id, 'title' => 'News'], ['contentBlocks' => ['entries' => $entries]]))
+        ->toThrow(ToolCallException::class, 'contentBlocks: New entries must be listed in `sortOrder`');
+
+    $created = $elements->create('entries', ['sectionId' => $section->id, 'title' => 'News'], [
+        'contentBlocks' => ['entries' => $entries, 'sortOrder' => ['new:1']],
+    ])['element'];
+
+    expect($elements->get('entries', id: $created['id'], fields: ['contentBlocks'])['element']['contentBlocks'])
+        ->toHaveCount(1)
+        ->sequence(fn ($block) => $block->richText->toBe('<p>Example body</p>'));
+
+    expect(fn () => $elements->validate('entries', id: $created['id'], fields: [
+        'contentBlocks' => ['entries' => [['body' => ['richText' => '<p>Example body</p>']]], 'sortOrder' => ['new:1']],
+    ]))->toThrow(ToolCallException::class, 'Invalid fields: /contentBlocks/entries/0: Additional object properties are not allowed: ["body"]');
+});

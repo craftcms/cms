@@ -94,25 +94,38 @@ export function useAssetIndexItemBehavior(
         return false;
       }
 
+      // The folder's title is a real link, for new tabs and copied links, but
+      // a plain click on it navigates within the index, keeping its current
+      // state.
       if (
         event.target instanceof HTMLElement &&
-        event.target.closest(
-          'a[href], button, input, craft-checkbox, craft-reorder-button'
-        )
+        event.target.closest('a[data-folder-link]')
       ) {
+        if (
+          event.button === 0 &&
+          !event.altKey &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !event.shiftKey
+        ) {
+          event.preventDefault();
+          navigateToFolder(item.folderUrl);
+        }
+
         return true;
       }
 
-      navigateToFolder(item.folderUrl);
-
-      return true;
+      // A folder only opens from its link. The rest of it behaves like an
+      // asset's row, card or thumb, selecting it.
+      return false;
     },
     onKeydown(item, event) {
       if (previewAsset(item, event)) {
         return true;
       }
 
-      if ((event.key === ' ' || event.key === 'Enter') && isFolderRow(item)) {
+      // Space selects a folder, as a click on it does; Enter opens it.
+      if (event.key === 'Enter' && isFolderRow(item)) {
         event.preventDefault();
         navigateToFolder(item.folderUrl);
 

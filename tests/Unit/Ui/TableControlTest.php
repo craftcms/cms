@@ -17,7 +17,7 @@ it('resolves table cells at concrete paths while keeping row templates outside v
     $ui = Ui::make([
         Field::make('Rows', Table::make('rows')->columns([
             'name' => ['heading' => 'Name', 'control' => Text::make('ignored')->placeholder('Enter name')],
-        ])->value([['name' => 'Ada']])->defaultValues(['name' => 'New row'])->allowAdd()),
+        ])->value([['name' => 'Ada']])->defaultValues(['name' => 'New row'])->allowAdd()->hiddenRows(['0'])),
     ]);
     $payload = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',
@@ -31,6 +31,7 @@ it('resolves table cells at concrete paths while keeping row templates outside v
         ->and($table->uis[0]->nodes[0]->control->deltaGroup)->toBe(['settings', 'rows'])
         ->and($table->props['rowTemplate']['nodes'][0]['control']['path'])->toBe(['name'])
         ->and($table->props['rowTemplate']['nodes'][0]['control']['props']['placeholder'])->toBe('Enter name')
+        ->and($table->props['hiddenRows'])->toBe(['0'])
         ->and($payload->errors)->toBe([
             ['path' => ['settings', 'rows', '0', 'name'], 'messages' => ['A real cell error.']],
             ['path' => ['settings', 'rows'], 'messages' => ['An unbound row error.']],

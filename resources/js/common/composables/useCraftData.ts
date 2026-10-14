@@ -10,9 +10,13 @@ export interface CpUser {
   thumbHtml: string | null;
   name: string | null;
   admin: boolean;
+  /** The "Underline links" accessibility preference. */
+  underlineLinks: boolean;
 }
 
 export interface CraftData {
+  /** The control panel theme: the user's preference, or `system`. */
+  theme: 'light' | 'dark' | 'system';
   csrfTokenValue: string | null;
   csrfTokenName: string | null;
   system: {

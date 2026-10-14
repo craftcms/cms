@@ -94,3 +94,30 @@ it('lets modified and auxiliary clicks on a custom-element link fall through to 
   app.unmount();
   container.remove();
 });
+
+it('leaves non-GET links unprefetched, which Inertia only allows for GET', async () => {
+  const container = document.createElement('div');
+  document.body.append(container);
+  const errors: unknown[] = [];
+  const app = createApp({
+    render: () =>
+      h(
+        CpLink,
+        {as: 'craft-button', href: '/admin/widgets/reset', method: 'post'},
+        {default: () => 'Reset'}
+      ),
+  });
+  app.config.errorHandler = (error) => errors.push(error);
+
+  app.mount(container);
+  await nextTick();
+  container
+    .querySelector('craft-button')
+    ?.dispatchEvent(new MouseEvent('mousedown', {bubbles: true, button: 0}));
+  await nextTick();
+
+  expect(errors).toEqual([]);
+
+  app.unmount();
+  container.remove();
+});

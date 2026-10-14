@@ -2,6 +2,7 @@ import {beforeEach, describe, expect, it} from 'vite-plus/test';
 
 import './disclosure.js';
 import type CraftDisclosure from './disclosure.js';
+import type CraftButton from '../button/button.js';
 
 /**
  * External-target mode: a bare `button[aria-controls]` inside the disclosure,
@@ -97,5 +98,98 @@ describe('craft-disclosure', () => {
     await element.updateComplete;
 
     expect(seen).toEqual(['close', 'open']);
+  });
+});
+
+describe('craft-disclosure invoker', () => {
+  async function createSlotted(
+    invokerHtml?: string
+  ): Promise<{element: CraftDisclosure; invoker: CraftButton}> {
+    const element = document.createElement(
+      'craft-disclosure'
+    ) as CraftDisclosure;
+    element.setAttribute('label', 'Advanced');
+    element.innerHTML = `${invokerHtml ?? ''}<div slot="content">Settings</div>`;
+    document.body.append(element);
+    await element.updateComplete;
+
+    return {
+      element,
+      invoker: element.querySelector<CraftButton>('[slot="invoker"]')!,
+    };
+  }
+
+  it('renders a plain, flush default invoker', async () => {
+    const {invoker} = await createSlotted();
+
+    expect(invoker.localName).toBe('craft-button');
+    expect(invoker.getAttribute('variant')).toBe('plain');
+    expect(invoker.getAttribute('flush')).toBe('');
+    expect(invoker.textContent).toBe('Advanced');
+  });
+
+  it('sizes the default invoker to match', async () => {
+    const {element, invoker} = await createSlotted();
+    expect(invoker.getAttribute('size')).toBe('medium');
+
+    element.size = 'small';
+    await element.updateComplete;
+
+    expect(invoker.getAttribute('size')).toBe('small');
+  });
+
+  it.each([
+    ['default', undefined],
+    [
+      'slotted',
+      '<craft-button slot="invoker" type="button" variant="plain" icon="chevron-right" icon-position="suffix">More</craft-button>',
+    ],
+    [
+      'down-chevron slotted',
+      '<craft-button slot="invoker" type="button" variant="plain" icon="chevron-down">More</craft-button>',
+    ],
+  ])(
+    'points a %s invoker’s trailing chevron right, then down while open',
+    async (_, html) => {
+      const {element, invoker} = await createSlotted(html);
+      expect(invoker.iconPosition).toBe('suffix');
+      expect(invoker.icon).toBe('chevron-right');
+
+      element.opened = true;
+      await element.updateComplete;
+      expect(invoker.icon).toBe('chevron-down');
+
+      element.opened = false;
+      await element.updateComplete;
+      expect(invoker.icon).toBe('chevron-right');
+    }
+  );
+
+  // Vue binds `icon` as a property, so there's no attribute to read.
+  it('points the chevron down when the icon was set as a property', async () => {
+    const element = document.createElement(
+      'craft-disclosure'
+    ) as CraftDisclosure;
+    const invoker = document.createElement('craft-button');
+    invoker.slot = 'invoker';
+    invoker.icon = 'chevron-right';
+    element.append(invoker);
+    element.opened = true;
+    document.body.append(element);
+    await element.updateComplete;
+
+    expect(invoker.hasAttribute('icon')).toBe(false);
+    expect(invoker.icon).toBe('chevron-down');
+  });
+
+  it('leaves an invoker’s other icons alone', async () => {
+    const {element, invoker} = await createSlotted(
+      '<craft-button slot="invoker" type="button" icon="gear">Settings</craft-button>'
+    );
+
+    element.opened = true;
+    await element.updateComplete;
+
+    expect(invoker.icon).toBe('gear');
   });
 });

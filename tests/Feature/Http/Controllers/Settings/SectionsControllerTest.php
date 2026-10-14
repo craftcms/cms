@@ -3,11 +3,14 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\ViewModels\SectionEditViewModel;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigPaths;
+use CraftCms\Cms\Route\CurrentElement;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
@@ -16,18 +19,22 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Site\Sites as SitesService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertSoftDeleted;
-use function Pest\Laravel\delete;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
@@ -65,27 +72,85 @@ it('requires admin changes', function () {
     deleteJson(action([SectionsController::class, 'destroy'], [Section::first()->id]))->assertForbidden();
 });
 
-test('index can be loaded', function () {
-    get(action([SectionsController::class, 'index']))
-        ->assertOk();
+test('index serves linked section rows and actions allowed by admin changes', function (bool $allowAdminChanges) {
+    Cms::config()->allowAdminChanges = $allowAdminChanges;
+    $section = Section::firstOrFail();
+    $response = get(action([SectionsController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('Ui'));
+    $table = collect(flattenUiNodes($response->inertiaProps('ui.nodes')))
+        ->firstWhere('component', 'craft:admin-table');
+
+    expect($table['props']['createUrl'])->toBe($allowAdminChanges ? action([SectionsController::class, 'create']) : null)
+        ->and($table['props']['deletable'])->toBe($allowAdminChanges);
+
+    expect($table['props']['rows'])->toHaveCount(1)
+        ->and($table['props']['pagination']['total'])->toBe(1);
+    $row = $table['props']['rows'][0];
+    $handle = new Crawler($row['handle']['html'])->filter('craft-copy-attribute');
+
+    expect($row)->toMatchArray([
+        'id' => $section->id,
+        'name' => ['label' => 'mmm Middle Section', 'url' => action([SectionsController::class, 'edit'], $section)],
+        'type' => 'Channel',
+    ])
+        ->and($handle->attr('value'))->toBe($section->handle)
+        ->and($handle->text())->toBe($section->handle);
+
+    if ($allowAdminChanges) {
+        expect($row['_deleteUrl'])->toBe(action([SectionsController::class, 'destroy'], $section))
+            ->and($row['_deleteConfirmMessage'])->toBe('Are you sure you want to delete “mmm Middle Section” and all its entries?');
+    } else {
+        expect($row)->not->toHaveKey('_deleteUrl');
+    }
+})->with(['writable' => true, 'read-only' => false]);
+
+it('requires admin access for the section index', function () {
+    $user = UserModel::firstOrFail();
+    $user->update(['admin' => false]);
+    UserPermissions::saveUserPermissions($user->id, ['accessCp']);
+    actingAs(User::findOne($user->id));
+
+    get(action([SectionsController::class, 'index']))->assertForbidden();
 });
 
-test('index can be sorted', function () {
-    Section::factory()->create(['name' => 'zzz Last Section']);
-    Section::factory()->create(['name' => 'aaa First Section']);
+test('index filters sorts and paginates sections', function (string $field, string $direction, string $name, ?string $mysqlName = null) {
+    Section::firstOrFail()->update(['handle' => 'm_middle']);
+    Section::factory()->create(['name' => 'zzz Last Section', 'handle' => 'a_last', 'type' => SectionType::Single]);
+    Section::factory()->create(['name' => 'aaa First Section', 'handle' => 'z_first', 'type' => SectionType::Structure]);
+    Section::factory()->create(['name' => 'Ignored record', 'handle' => 'ignored_record']);
+    Cms::config()->pageTrigger = 'custom-page';
+
+    // MySQL sorts enum values by declaration order rather than alphabetically.
+    $name = DB::isMysql() ? $mysqlName ?? $name : $name;
 
     get(action([SectionsController::class, 'index'], [
-        'sort' => [
-            ['field' => 'name', 'direction' => 'asc'],
-        ],
-    ]))
-        ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('data', 3)
-            ->where('data.0.name', 'aaa First Section')
-            ->where('data.2.name', 'zzz Last Section')
-        );
-});
+        'search' => 'Section',
+        'sort' => [['field' => $field, 'direction' => $direction]],
+        'per_page' => 2,
+        'custom-page' => 2,
+    ]), [
+        'X-Inertia' => 'true',
+        'X-Inertia-Partial-Component' => 'Ui',
+        'X-Inertia-Partial-Data' => 'ui',
+    ])->assertOk()->assertHeader('X-Inertia', 'true')
+        ->assertJsonPath('component', 'Ui')
+        ->assertJsonCount(1, 'props.ui.nodes.0.props.rows')
+        ->assertJsonPath('props.ui.nodes.0.props.rows.0.name.label', $name)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.total', 3)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.per_page', 2)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.current_page', 2)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.last_page', 2)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.from', 3)
+        ->assertJsonPath('props.ui.nodes.0.props.pagination.to', 3);
+})->with([
+    'ascending names' => ['name', 'asc', 'zzz Last Section'],
+    'descending names' => ['name', 'desc', 'aaa First Section'],
+    'ascending handles' => ['handle', 'asc', 'aaa First Section'],
+    'descending handles' => ['handle', 'desc', 'zzz Last Section'],
+    'ascending types' => ['type', 'asc', 'aaa First Section'],
+    'descending types' => ['type', 'desc', 'mmm Middle Section', 'zzz Last Section'],
+]);
 
 test('create can be loaded', function () {
     get(action([SectionsController::class, 'create']))
@@ -203,8 +268,40 @@ it('shows the site settings columns for the section type', function () {
         ->and($single['enabledByDefault']['type'])->toBe('hidden')
         // Single-site installs have nothing to enable or disable.
         ->and($channel['enabled']['type'])->toBe('hidden')
-        ->and($channel['route']['type'])->toBe('template')
-        ->and($channel['route']['options'][0]['type'])->toBe('optgroup');
+        ->and($channel['destination']['type'])->toBe('template')
+        ->and($channel['destination']['options'][0]['type'])->toBe('optgroup');
+});
+
+it('suggests named routes alongside templates for site settings destinations', function () {
+    Route::name('pages.show')->get('pages/{slug}', fn () => null);
+    Route::name('pages.store')->post('pages', fn () => null);
+
+    $options = sectionUiControl(postJson(action([SectionsController::class, 'renderUi']), [
+        'values' => sectionUiValues(),
+        'scope' => [],
+    ])->assertOk()->json('ui.nodes'), 'sites')['props']['columns']['destination']['options'];
+
+    $routes = collect($options)->firstWhere('label', t('Routes'));
+
+    expect(collect($options)->pluck('label')->all())->toBe([t('Templates'), t('Routes')])
+        ->and(collect($routes['options'])->firstWhere('value', 'pages.show')['data']['hint'])->toBe('/pages/{slug}')
+        ->and(collect($routes['options'])->pluck('value'))->not->toContain('pages.store');
+});
+
+it('only suggests routes that can accept entries for section destinations', function () {
+    Route::name('entries.page')->get('entry-page/{slug}', fn (#[CurrentElement] EntryElement $entry) => null);
+    Route::name('users.page')->get('user-page/{slug}', fn (#[CurrentElement] User $user) => null);
+    Route::name('elements.page')->get('element-page/{slug}', fn (ElementInterface $element) => null);
+
+    $options = sectionUiControl(postJson(action([SectionsController::class, 'renderUi']), [
+        'values' => sectionUiValues(),
+        'scope' => [],
+    ])->assertOk()->json('ui.nodes'), 'sites')['props']['columns']['destination']['options'];
+
+    $routes = collect(collect($options)->firstWhere('label', t('Routes'))['options'])->pluck('value');
+
+    expect($routes)->toContain('entries.page', 'elements.page')
+        ->and($routes)->not->toContain('users.page');
 });
 
 it('keeps the table rows when refreshing', function () {
@@ -230,7 +327,7 @@ it('lets each site be enabled in multi-site installs', function () {
     ])->assertOk()->json('ui.nodes'), 'sites')['props']['columns']['enabled'];
 
     expect($enabled['type'])->toBe('lightswitch')
-        ->and($enabled['toggle'])->toContain('uriFormat', 'route', 'enabledByDefault');
+        ->and($enabled['toggle'])->toContain('uriFormat', 'destination', 'enabledByDefault');
 });
 
 it('checks the homepage box for a single saved at the homepage URI', function () {
@@ -299,11 +396,12 @@ function validSectionData(array $overrides = []): array
 }
 
 it('saves and reloads normalized route destinations without requiring application code to exist', function (string $input, string $expected) {
+    Route::name('services.show')->get('services/{slug}', fn () => null);
+
     $site = Site::first();
     $data = validSectionData();
-    $data['sites'][$site->handle]['routeType'] = 'route';
     unset($data['sites'][$site->handle]['template']);
-    $data['sites'][$site->handle]['route'] = $input;
+    $data['sites'][$site->handle]['destination'] = $input;
 
     postJson(action([SectionsController::class, 'store']), $data)->assertOk();
 
@@ -313,8 +411,7 @@ it('saves and reloads normalized route destinations without requiring applicatio
     get(action([SectionsController::class, 'edit'], [$section->id]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('ui.values.sites.'.$site->handle.'.routeType', 'route')
-            ->where('ui.values.sites.'.$site->handle.'.route', $expected));
+            ->where('ui.values.sites.'.$site->handle.'.destination', $expected));
 })->with([
     'named route' => [' services.show ', 'services.show'],
     'invokable' => ['App\\Http\\Controllers\\ServiceController', 'App\\Http\\Controllers\\ServiceController'],
@@ -326,24 +423,37 @@ it('saves and reloads normalized route destinations without requiring applicatio
 ]);
 
 it('clears a section route when switching its destination to a template', function () {
+    Route::name('entries.show')->get('entries/{slug}', fn () => null);
+
     $site = Site::firstOrFail();
     $data = validSectionData();
     unset($data['sites'][$site->handle]['template']);
-    $data['sites'][$site->handle]['routeType'] = 'route';
-    $data['sites'][$site->handle]['route'] = 'entries.show';
+    $data['sites'][$site->handle]['destination'] = 'entries.show';
     postJson(action([SectionsController::class, 'store']), $data)->assertOk();
 
     $section = Section::where('handle', 'a_new_section')->firstOrFail();
+    assertDatabaseHas('sections_sites', ['sectionId' => $section->id, 'siteId' => $site->id, 'template' => null, 'route' => 'entries.show']);
+
     $data['sectionId'] = $section->id;
-    $data['sites'][$site->handle]['routeType'] = 'template';
-    $data['sites'][$site->handle]['route'] = 'entries/show';
+    $data['sites'][$site->handle]['destination'] = 'entries/show';
     postJson(action([SectionsController::class, 'store']), $data)->assertOk();
 
     assertDatabaseHas('sections_sites', ['sectionId' => $section->id, 'siteId' => $site->id, 'template' => 'entries/show', 'route' => null]);
     get(action([SectionsController::class, 'edit'], [$section->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('ui.values.sites.'.$site->handle.'.routeType', 'template')
-            ->where('ui.values.sites.'.$site->handle.'.route', 'entries/show'));
+            ->where('ui.values.sites.'.$site->handle.'.destination', 'entries/show'));
+});
+
+it('saves a section destination that isn’t a named route as a template', function () {
+    $site = Site::firstOrFail();
+    $data = validSectionData();
+    unset($data['sites'][$site->handle]['template']);
+    $data['sites'][$site->handle]['destination'] = 'entries.show';
+
+    postJson(action([SectionsController::class, 'store']), $data)->assertOk();
+
+    $section = Section::where('handle', 'a_new_section')->firstOrFail();
+    assertDatabaseHas('sections_sites', ['sectionId' => $section->id, 'siteId' => $site->id, 'template' => 'entries.show', 'route' => null]);
 });
 
 it('rejects malformed route syntax when saving a section', function () {
@@ -429,8 +539,9 @@ it('can delete a section', function () {
 
     expect(Section::count())->toBe(2);
 
-    delete(action([SectionsController::class, 'destroy'], [$newSection->id]))
-        ->assertRedirectBack();
+    deleteJson(action([SectionsController::class, 'destroy'], [$newSection->id]))
+        ->assertOk()
+        ->assertJsonPath('message', 'Section “'.$newSection->name.'” deleted.');
 
     assertSoftDeleted(Section::class, ['id' => $newSection->id]);
     expect(ProjectConfig::get(ProjectConfigPaths::PATH_SECTIONS.'.'.$newSection->uid))->toBeNull();

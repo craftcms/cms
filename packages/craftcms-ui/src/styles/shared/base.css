@@ -29,6 +29,150 @@ body {
   outline-offset: var(--c-focus-outline-offset);
 }
 
+/*
+  Checkboxes and radio buttons are drawn here rather than natively, so they look
+  the same in every browser and their border radius is real (native ones always
+  compute a zero radius, which squares off their focus ring). This lives in the
+  light DOM because the components' ::slotted() styles can't override the base
+  reset.
+*/
+:is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'],
+craft-radio > input[type='radio'] {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  /* Center the box on the first line of its label */
+  line-height: inherit;
+  margin-block: calc((1lh - var(--c-checkbox-size)) / 2);
+  margin-inline: 0;
+  width: var(--c-checkbox-size);
+  height: var(--c-checkbox-size);
+  border: var(--c-form-control-border-width) var(--c-form-control-border-style)
+    var(--c-form-control-border-color);
+  border-radius: var(--c-checkbox-radius);
+  background-color: var(--c-input-fill);
+  color: var(--c-color-accent-on-loud);
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    width: 65%;
+    aspect-ratio: 1;
+    background-color: currentColor;
+    visibility: hidden;
+  }
+
+  &:checked {
+    border-color: transparent;
+    background-color: var(--c-color-accent-fill-loud);
+
+    &::before {
+      visibility: visible;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @media (forced-colors: active) {
+    &:checked {
+      border-color: Highlight;
+    }
+
+    &::before {
+      forced-color-adjust: none;
+      background-color: Highlight;
+    }
+  }
+}
+
+:is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'] {
+  &::before {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' viewBox='0 0 255.8 234.9'%3E%3Cpath d='M245.9,4.6c-10.7-7.8-25.7-5.4-33.5,5.3l-119.4,164.2-52.1-52.1c-9.4-9.4-24.6-9.4-33.9,0-9.3,9.4-9.4,24.6,0,33.9l72,72c5,5,11.8,7.5,18.8,7s13.4-4.1,17.5-9.8L251.2,38.1c7.8-10.7,5.4-25.7-5.3-33.5Z'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+  }
+
+  &:indeterminate {
+    border-color: transparent;
+    background-color: var(--c-color-accent-fill-loud);
+
+    &::before {
+      visibility: visible;
+      mask-image: none;
+      aspect-ratio: auto;
+      width: 55%;
+      height: 2px;
+      border-radius: 1px;
+    }
+
+    @media (forced-colors: active) {
+      border-color: Highlight;
+    }
+  }
+}
+
+craft-radio > input[type='radio'] {
+  border-radius: 50%;
+
+  &::before {
+    width: 40%;
+    border-radius: 50%;
+  }
+}
+
+craft-radio[data-button] > input[type='radio'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: inherit;
+
+  &,
+  &:checked {
+    background-color: transparent;
+  }
+
+  /* Picking the selected option again does nothing. */
+  &:checked {
+    cursor: default;
+  }
+
+  &::before {
+    display: none;
+  }
+
+  &:disabled {
+    opacity: 1;
+  }
+}
+
+/*
+  Date and time inputs lead with their picker icon, as inputs with a prefix
+  icon do. The icon is the browser's own picker button, in the native input's
+  light DOM, so it's styled here rather than in the components.
+*/
+:is(craft-input-date, craft-input-time)
+  > input:is([type='date'], [type='time'])::-webkit-calendar-picker-indicator {
+  order: -1;
+  margin-inline: 0 var(--c-spacing-sm);
+  /*
+    The browser draws the picker's focus ring and doesn't match focus
+    pseudo-classes on it, but it does take the outline color, width, and
+    offset given here.
+  */
+  outline-color: var(--c-color-focus-outline);
+  outline-width: var(--c-focus-outline-width);
+  outline-offset: 1px;
+  border-radius: var(--c-radius-sm);
+}
+
 h1,
 h2,
 h3,
@@ -43,6 +187,24 @@ pre {
 a {
   cursor: pointer;
   color: var(--c-text-link);
+  text-decoration-line: var(--c-link-decoration);
+}
+
+a:hover {
+  text-decoration-line: var(--c-link-decoration-hover);
+}
+
+a craft-chip {
+  --c-chip-text: var(--c-text-link);
+}
+
+/* A link's underline doesn't reach into the chip's shadow tree, so its label takes it directly. */
+a craft-chip > :not([slot]) {
+  text-decoration-line: var(--c-link-decoration);
+}
+
+a:hover craft-chip > :not([slot]) {
+  text-decoration-line: var(--c-link-decoration-hover);
 }
 
 /*
@@ -81,6 +243,15 @@ fieldset {
   border-radius: var(--c-radius-sm);
 }
 
+craft-chip .cp-code {
+  /* Block, so the label's line height doesn't add space above it */
+  display: block;
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+}
+
 .cp-icon {
   --_icon-size: var(--c-icon-size, 1em);
   width: var(--_icon-size);
@@ -88,7 +259,9 @@ fieldset {
   max-width: var(--_icon-size);
   display: inline-flex;
 
+  /* SVGs fill black by default; shapes with their own fill keep it */
   svg {
+    fill: currentColor;
     width: var(--icon-size);
     height: var(--icon-size);
     max-width: var(--icon-size) !important;
@@ -183,7 +356,7 @@ most of the element display correctly which is why we don't do BEM or anything h
 Modify with `cp-table--compact` to reduce the vertical cell padding
 Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
-Modify with `cp-table--flush` to remove the inline padding at the outer edges of each row
+Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-container-padding`, for tables that span their container's padding
  */
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
@@ -210,8 +383,7 @@ Modify with `cp-table--flush` to remove the inline padding at the outer edges of
     &:last-child tr:not(:last-child) {
       th,
       td {
-        border-block-end: 1px solid
-          color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
+        border-block-end: 1px solid var(--c-table-border-color);
       }
     }
   }
@@ -246,10 +418,11 @@ Modify with `cp-table--flush` to remove the inline padding at the outer edges of
 
   tbody th {
     text-align: inherit;
+    font-weight: var(--font-weight-semibold);
   }
 
-  /* Add a rule to the first cells */
-  tr:first-child {
+  /* Add a rule to the first cells, unless the header row's border already does */
+  &:not(:has(> thead)) tr:first-child {
     td {
       border-block-start: 1px solid
         color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
@@ -257,7 +430,8 @@ Modify with `cp-table--flush` to remove the inline padding at the outer edges of
   }
 
   textarea,
-  input:not([type='checkbox']):not([type='radio']) {
+  /* Color inputs sit in padded cells, so they keep their own input styles */
+  input:not([type='checkbox']):not([type='radio']):not(craft-input-color input) {
     --c-focus-outline-offset: -2px;
     border: 0;
     padding-block: var(--_cell-spacing-block);
@@ -275,11 +449,11 @@ Modify with `cp-table--flush` to remove the inline padding at the outer edges of
 
 .cp-table--flush tr > :is(th, td) {
   &:first-child {
-    padding-inline-start: 0;
+    padding-inline-start: var(--cp-container-padding);
   }
 
   &:last-child {
-    padding-inline-end: 0;
+    padding-inline-end: var(--cp-container-padding);
   }
 }
 
@@ -295,6 +469,23 @@ Modify with `cp-table--flush` to remove the inline padding at the outer edges of
     background-color: transparent;
   }
 
+  thead {
+    background-color: var(--c-surface-sunken);
+  }
+
+  thead th {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  /* Keep the header's background inside the table's rounded corners */
+  thead tr:first-child > :nth-child(1 of :not([hidden])) {
+    border-start-start-radius: calc(var(--c-radius-sm) - 1px);
+  }
+
+  thead tr:first-child > :nth-last-child(1 of :not([hidden])) {
+    border-start-end-radius: calc(var(--c-radius-sm) - 1px);
+  }
+
   th {
     font-size: var(--c-text-sm);
     padding-block: var(--c-spacing-sm);
@@ -306,10 +497,105 @@ Modify with `cp-table--flush` to remove the inline padding at the outer edges of
     padding: 0;
   }
 
-  td.thin {
-    padding: var(--c-spacing-sm);
+  /*
+    Cells without a text input or select get the same padding as `th`. Native
+    controls only count as direct children (legacy markup), so the inputs
+    nested inside color and icon pickers don't.
+  */
+  td:where(
+    :not(
+      :has(
+        craft-input:not([hidden-input]),
+        craft-input-money,
+        craft-textarea,
+        craft-select,
+        craft-combobox,
+        > textarea,
+        > input:not([type='checkbox'], [type='radio'], [type='hidden']),
+        > select,
+        > .select,
+        > .datewrapper,
+        > .timewrapper
+      )
+    )
+  ) {
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--_input-padding-inline);
+  }
+
+  :is(th, td).thin {
     white-space: nowrap;
     width: 0.01%;
+  }
+
+  /* Size thin selects to their widest option so the selected label isn't truncated */
+  td.thin select {
+    width: max-content;
+    min-width: 100%;
+  }
+
+  :is(th, td).centered {
+    text-align: center;
+  }
+
+  /* Center checkboxes and lightswitches, whose wrappers otherwise reserve a label column */
+  td.centered :is(craft-checkbox, craft-switch) {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+  }
+
+  /* Text and dropdown inputs fill their cells: no borders, rounded corners, or shadows, and inset focus rings so the cell doesn't clip them */
+  td
+    :is(
+      craft-input:not([hidden-input]),
+      craft-input-money,
+      craft-textarea,
+      craft-select,
+      craft-combobox
+    ) {
+    --c-input-border-width: 0px;
+    --c-input-radius: 0px;
+    --c-input-shadow: none;
+    --c-focus-outline-offset: -2px;
+  }
+
+  /*
+    Text and select cells act as their control: text cells get a text cursor,
+    clicking anywhere in the cell focuses its control (in TableControl.vue), and
+    the cell draws the focus ring so it spans the full row height.
+  */
+  td:has(
+    craft-input:not([hidden-input], [type='date'], [type='time']),
+    craft-input-money,
+    craft-textarea,
+    craft-combobox
+  ) {
+    cursor: text;
+  }
+
+  td:has(
+    craft-input:not([hidden-input]),
+    craft-input-money,
+    craft-textarea,
+    craft-select,
+    craft-combobox
+  ) {
+    /* Set on the controls themselves too, since prefixed inputs (money) set their own */
+    &,
+    & :is(input, textarea, select, .form-control) {
+      --c-focus-outline-style: none;
+    }
+
+    &:has(:focus-visible) {
+      outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+      outline-offset: calc(var(--c-focus-outline-width) * -1);
+    }
+  }
+
+  /* Pickers sit in padded cells, so shrink them to keep rows from growing */
+  td :is(craft-input-color, craft-input[hidden-input]) {
+    --c-input-height: var(--c-size-control-sm);
   }
 
   td.select-cell {

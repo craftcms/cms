@@ -3,7 +3,11 @@
   import {onLongPress} from '@vueuse/core';
   import {ButtonVariant, t} from '@craftcms/ui';
   import PaginationControls from '@/common/components/PaginationControls.vue';
-  import {TableSpacing} from '@/common/types';
+  import {
+    TableAppearance,
+    TableSpacing,
+    type TableAppearanceValue,
+  } from '@/common/types';
   import ElementTable from '@/modules/elements/index/components/ElementTable.vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
@@ -32,6 +36,12 @@
       showSites?: boolean;
       enableAdjustPageSize?: boolean;
       withBottomBorder?: boolean;
+      /**
+       * How the table view meets the index. `flush` (the default) lets the
+       * table span the container's inline padding, padding each row's outer
+       * cells to match; use `plain` when the container has none.
+       */
+      tableAppearance?: Exclude<TableAppearanceValue, 'raised'>;
       toolbarAsForm?: boolean;
       quickEdit?: ElementIndexQuickEdit;
     }>(),
@@ -40,6 +50,7 @@
       footerActive: false,
       enableAdjustPageSize: false,
       withBottomBorder: true,
+      tableAppearance: TableAppearance.Flush,
       toolbarAsForm: true,
     }
   );
@@ -105,6 +116,10 @@
       editableRows.value.length > 0
   );
   const selectable = computed(() => !isInlineEditing.value);
+  /** Single-select lists get no select-all checkbox. */
+  const multiSelect = computed(
+    () => props.view.table.options.enableMultiRowSelection !== false
+  );
   const showFooter = computed(
     () =>
       props.footerActive ||
@@ -238,7 +253,15 @@
         @reorder="reorder"
         @site-change="emit('site-change', $event)"
       >
-        <template #actions>
+        <template
+          v-if="
+            canEditInline ||
+            exportElements ||
+            $slots['toolbar-actions'] ||
+            $slots['toolbar-actions-after']
+          "
+          #actions
+        >
           <div class="flex flex-wrap gap-md">
             <craft-button
               v-if="canEditInline"
@@ -275,9 +298,23 @@
     <div class="element-index__navbar" v-if="$slots.navbar">
       <slot name="navbar" />
     </div>
-    <div class="element-index__body" :aria-busy="loading ? 'true' : undefined">
+    <div
+      :class="[
+        'element-index__body',
+        {
+          'element-index__body--flush':
+            tableAppearance === TableAppearance.Flush &&
+            mode !== 'cards' &&
+            mode !== 'thumbs',
+        },
+      ]"
+      :aria-busy="loading ? 'true' : undefined"
+    >
       <div
         ref="body"
+        :class="{
+          'element-index__grid': mode === 'cards' || mode === 'thumbs',
+        }"
         @mousedown.capture="
           isInlineEditing
             ? undefined
@@ -294,6 +331,7 @@
           :read-only="selection.readOnly.value"
           :data="data"
           :selectable="selectable"
+          :select-all="multiSelect"
           :loading="loading"
           :item-behavior="itemBehavior"
           :sortable="rowReorder?.enabled.value ?? false"
@@ -311,6 +349,7 @@
           :read-only="selection.readOnly.value"
           :data="data"
           :selectable="selectable"
+          :select-all="multiSelect"
           :loading="loading"
           :item-behavior="itemBehavior"
           :interactions-disabled="processing"
@@ -324,6 +363,7 @@
           :spacing="TableSpacing.Spacious"
           :item-behavior="itemBehavior"
           :with-bottom-border="withBottomBorder"
+          :appearance="tableAppearance"
           :structure="
             !isInlineEditing && structure !== undefined && mode === 'structure'
           "
@@ -420,8 +460,32 @@
     padding-inline: var(--cp-container-padding);
   }
 
+  // The table pads its own outer cells instead; see `tableAppearance`.
+  .element-index__body--flush {
+    padding-inline: 0;
+  }
+
   .element-index__header {
     margin-block-end: var(--c-spacing-md);
+  }
+
+  // Card and thumb grids leave their own spacing to where they're placed. A
+  // grid's select-all header sits flush at the top, with the grid below it.
+  .element-index__grid {
+    padding-block-end: var(--c-spacing-lg);
+
+    > :deep(:is(.card-grid, .thumbsview)) {
+      margin-block-start: var(--c-spacing-lg);
+    }
+
+    // Like a flush table, the select-all header spans the container's padding
+    // and pads its content back in by the same amount.
+    > :deep(:is(.card-grid-header, .thumbsview-header)) {
+      margin-inline: calc(var(--cp-container-padding) * -1);
+      margin-block-end: 0;
+      padding-block-start: var(--c-spacing-sm);
+      padding-inline: var(--cp-container-padding);
+    }
   }
 
   .element-index__body {

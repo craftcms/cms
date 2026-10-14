@@ -124,7 +124,7 @@
   const {nav, siteCrumb} = useCraftData();
   const crumbs = computed<Array<BreadcrumbItem> | null>(() => {
     const merged = withSubnavCrumbs(
-      withNavCrumbMenus(page.props.crumbs ?? [], nav.value ?? []),
+      withNavCrumbMenus(page.props.crumbs ?? [], nav.value ?? [], page.url),
       subnav.value
     );
 
@@ -390,7 +390,7 @@
                               <div id="cp-content-header" class="pt-lg pb-md">
                                 <CpContainer>
                                   <div
-                                    class="flex items-center justify-between"
+                                    class="flex flex-wrap gap-md items-center justify-between"
                                   >
                                     <LayoutSlotOutlet name="title">
                                       <slot name="title">
@@ -597,7 +597,7 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     border: var(--cp-body-border-width) solid
       var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-xl);
-    box-shadow: var(--shadow-xs), var(--shadow-lg);
+    box-shadow: var(--c-shadow-xs), var(--c-shadow-lg);
     overflow: clip;
   }
 
@@ -701,8 +701,13 @@ Content: the secondary nav, content, and details panes
 
   .cp-content--sidebar .cp-content__sidebar {
     min-width: calc(250rem / 16);
-    border-block-end: 1px solid var(--c-color-border-quiet);
     padding: var(--c-spacing-md);
+
+    /* Only stacked above the content; beside it, the panel's own border
+       already closes it off. */
+    @media (width < var(--breakpoint-lg)) {
+      border-block-end: 1px solid var(--c-color-border-quiet);
+    }
   }
 
   .cp-content__main {

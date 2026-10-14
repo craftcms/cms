@@ -318,5 +318,6 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
     resolveConflictChoice,
     folderConflictPrompt,
     resolveFolderConflictChoice,
+    performMove,
   };
 }

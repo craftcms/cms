@@ -319,13 +319,15 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       'aria-labelledby',
       this._inputNode.getAttribute('aria-labelledby') ?? ''
     );
+    // In Chromium, Lion puts the combobox role on the textbox's wrapper (the
+    // ARIA 1.1 pattern), which needs the same name as the textbox.
+    this._comboboxNode?.setAttribute(
+      'aria-labelledby',
+      this._inputNode.getAttribute('aria-labelledby') ?? ''
+    );
     if (this.multipleChoice) {
       this.syncInputs();
       this._inputNode.removeAttribute('name');
-      this._comboboxNode.setAttribute(
-        'aria-labelledby',
-        this._inputNode.getAttribute('aria-labelledby') ?? ''
-      );
       this._inputNode.disabled = this.disabled || this.fieldsetDisabled;
       const missing =
         this.required && !this.inactive && this.selectedValues.length === 0;

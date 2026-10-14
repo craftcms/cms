@@ -292,6 +292,17 @@ export default defineConfig(({mode}) => {
           test: {
             name: 'unit',
             environment: 'happy-dom',
+            // Many tests import their module inside the test, and that first
+            // import can outlast the 5s default when every worker is busy.
+            testTimeout: 30_000,
+            // Vitest resolves packages for Node, which skips tus-js-client's
+            // legacy `browser` field; its Node build rejects browser Files.
+            alias: [
+              {
+                find: /^tus-js-client$/,
+                replacement: 'tus-js-client/lib.esm/browser/index.js',
+              },
+            ],
             include: [
               'resources/js/**/*.test.ts',
               'yii2-adapter/resources/js/**/*.test.ts',
@@ -319,7 +330,7 @@ export default defineConfig(({mode}) => {
       emptyOutDir: true,
       rollupOptions: {
         // App builds drop entry exports by default, which would empty the
-        // `vue.ts`/`elements.ts` entries that plugin bundles import through
+        // `vue.ts`/`cp-module.ts` entries that plugin bundles import through
         // the import map.
         preserveEntrySignatures: 'exports-only',
       },
@@ -383,7 +394,8 @@ export default defineConfig(({mode}) => {
               input: [
                 'resources/js/cp.ts',
                 'yii2-adapter/resources/js/cp-compat.ts',
-                'resources/js/elements.ts',
+                'yii2-adapter/resources/js/element-editor.ts',
+                'resources/js/cp-module.ts',
                 'resources/js/legacy.ts',
                 'resources/js/uploads.ts',
                 'resources/js/vue.ts',

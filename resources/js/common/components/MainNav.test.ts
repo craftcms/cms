@@ -163,3 +163,32 @@ it('drops top-level group headings from the collapsed rail', async () => {
   expect(collapsed.some((item) => item.hasAttribute('group'))).toBe(false);
   expect(collapsed.map(label)).toEqual(['Entries', 'Utilities']);
 });
+
+it('keeps a section with a subnav on the trail, not current, for a page beneath it that none of its children claim', async () => {
+  const users = {
+    ...nav()[1],
+    label: 'Users',
+    href: '/admin/users',
+    id: 'nav-admin-users',
+    subnav: [
+      {...nav()[1], label: 'All users', href: '/admin/users?source=*'},
+      {...nav()[1], label: 'Admins', href: '/admin/users?source=admins'},
+    ],
+  };
+  const tree = [users, nav()[1]];
+
+  for (const url of ['/admin/myaccount', '/admin/users/5/permissions']) {
+    const items = await mount(url, {}, {tree});
+    const item = byLabel(items, 'Users');
+
+    expect([url, item.active, item.current]).toEqual([url, true, false]);
+    app?.unmount();
+    app = null;
+    container.remove();
+  }
+
+  // With no subnav to fall short of, a page beneath an item is still its own.
+  const items = await mount('/admin/utilities/system-report', {}, {tree});
+
+  expect(byLabel(items, 'Utilities').current).toBe(true);
+});

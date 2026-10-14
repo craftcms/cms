@@ -18,6 +18,9 @@
     id: string | number;
     // The server sends the element's edit URL, which is null when it has none.
     url?: string | null;
+    // A tile with no `url` can still link its label, e.g. an asset folder's.
+    labelUrl?: string | null;
+    labelLinkAttributes?: Record<string, unknown>;
     thumbHtml?: string;
     label: string;
   }
@@ -96,8 +99,16 @@
     pendingShiftKey.value = event.shiftKey;
   }
 
+  // Only the label's link navigates. A click anywhere else on the tile selects
+  // it, as its checkbox would.
   function onTileClick(element: ThumbElement, event: MouseEvent) {
-    props.itemBehavior?.onClick?.(element, event);
+    if (props.itemBehavior?.onClick?.(element, event)) {
+      return;
+    }
+
+    if (props.selectable && !readOnly.value && !props.interactionsDisabled) {
+      props.selection.handleClick(element.id, event);
+    }
   }
 
   function focusTileByIndex(index: number, el: HTMLElement) {
@@ -123,13 +134,16 @@
     }
     if (props.interactionsDisabled) return;
     switch (event.key) {
-      case ' ':
-      case 'Enter': {
-        event.preventDefault();
+      case 'Enter':
         if (element?.url) {
+          event.preventDefault();
           window.location.assign(element.url);
           break;
         }
+      // Without a link to open, Enter selects, the same as Space.
+      // falls through
+      case ' ': {
+        event.preventDefault();
         props.selection.toggle(id);
         break;
       }
@@ -224,8 +238,8 @@
           <div class="thumb-actions">
             <slot name="actions" :element="element" :index="thumbIdx"></slot>
             <!--
-            Kept outside the tile link below, so reaching for an action never
-            navigates to the element instead.
+            Kept outside the tile below, so reaching for an action never
+            selects the element instead.
           -->
             <span
               v-if="sortable"
@@ -250,11 +264,7 @@
           :height="overDropState(element.id)?.draggingRect?.height"
         />
 
-        <component
-          :is="element.url ? 'a' : 'div'"
-          :href="element.url || undefined"
-          class="thumb-tile"
-        >
+        <div class="thumb-tile">
           <span class="thumb-img">
             <DynamicHtmlRenderer
               v-if="element.thumbHtml"
@@ -262,10 +272,20 @@
             />
             <craft-icon v-else name="asset" class="thumb-fallback"></craft-icon>
           </span>
-          <craft-truncate class="thumb-label">{{
-            element.label
-          }}</craft-truncate>
-        </component>
+          <craft-truncate class="thumb-label">
+            <a v-if="element.url" :href="element.url" class="label-link">{{
+              element.label
+            }}</a>
+            <a
+              v-else-if="element.labelUrl"
+              v-bind="element.labelLinkAttributes"
+              :href="element.labelUrl"
+              class="label-link"
+              >{{ element.label }}</a
+            >
+            <template v-else>{{ element.label }}</template>
+          </craft-truncate>
+        </div>
         <DragShadow
           v-if="overDropState(element.id)?.closestEdge === 'bottom'"
           :height="overDropState(element.id)?.draggingRect?.height"
@@ -282,8 +302,12 @@
 
 <style scoped lang="scss">
   .thumbsview-header {
-    padding: var(--c-spacing-md);
-    background-color: var(--c-color-neutral-fill-quiet);
+    margin-block-end: var(--c-spacing-md);
+    display: flex;
+    align-items: center;
+    min-height: calc(var(--c-size-control-sm) + var(--c-spacing-sm) + 1px);
+    padding-block: 0 var(--c-spacing-sm);
+    padding-inline: 0;
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 
@@ -291,23 +315,24 @@
     display: grid;
     gap: var(--c-spacing-md);
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    margin-block: var(--c-spacing-md);
   }
 
   .thumbsview > li {
     position: relative;
     border-radius: var(--c-radius-lg);
-    border: 1px solid var(--c-color-neutral-border-quiet);
+    border-width: 1px;
+    border-style: solid;
+    box-shadow: var(--c-chip-shadow, var(--c-shadow-xs));
   }
 
-  .element:not(.element--selected):has(a.thumb-tile) {
+  // Only the label links; the rest of the tile selects it.
+  .thumb-label a {
+    color: var(--c-text-link);
+    text-decoration-line: var(--c-link-decoration);
+
     &:hover {
-      background-color: var(--c-color-neutral-fill-quiet);
+      text-decoration-line: var(--c-link-decoration-hover);
     }
-  }
-
-  .thumbsview > li[data-is-folder] {
-    cursor: pointer;
   }
 
   .thumb-check {
@@ -325,6 +350,7 @@
     z-index: 1;
     display: flex;
     gap: var(--c-spacing-xs);
+    margin-inline-start: auto;
     align-items: center;
   }
 
@@ -352,15 +378,20 @@
     color: inherit;
   }
 
+  // `data-color="white"` hands its static white palette to inheriting
+  // controls, like the action menu's button, whose hover tints from it. As
+  // white cards do, point it at the tile's own surface and text instead.
   .element {
+    --c-color-fill-quiet: var(--c-surface-raised);
+    --c-color-on-quiet: var(--c-text-default);
     background-color: var(--c-color-fill-quiet);
-    border-color: var(--c-color-border-quiet);
-    color: var(--c-color-on-quiet);
+    border-color: var(--c-border-raised);
+    color: var(--c-text-default);
   }
 
   .element--selected {
-    background-color: var(--c-color-accent-fill-quiet);
-    border-color: var(--c-color-accent-border-quiet);
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-normal);
   }
 
   .thumb-img {

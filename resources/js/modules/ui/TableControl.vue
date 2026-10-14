@@ -15,7 +15,7 @@
   } from './types';
   import TableCell from './table/TableCell.vue';
   import {rowFields} from './table/rowUis';
-  import {firstFocusableWithin} from '@/common/utils/dom';
+  import {firstFocusableWithin, isInteractiveClick} from '@/common/utils/dom';
   import {useReorderableRows} from '@/common/composables/useReorderableRows';
   import DropIndicator from '@/common/components/DropIndicator.vue';
   import {useAutopopulation} from './table/useAutopopulation';
@@ -142,10 +142,6 @@
         value[key] =
           column.value ??
           (['checkbox', 'lightswitch'].includes(column.type) ? false : '');
-      if (column.prefixSelect && !(column.prefixSelect.key in value)) {
-        value[column.prefixSelect.key] =
-          column.prefixSelect.options[0]?.value ?? '';
-      }
     }
     const row = createRow(value);
     row.ui = props.control.props.rowTemplate;
@@ -285,6 +281,38 @@
     if (control && 'updateComplete' in control) await control.updateComplete;
 
     firstFocusableWithin(cell)?.focus();
+  }
+
+  /**
+   * Controls that clicking anywhere in their cell focuses: text and select
+   * controls (which fill their cell, see `.cp-table--editable` in base.css),
+   * plus color and icon pickers, checkboxes, and lightswitches.
+   */
+  const cellFocusControls = [
+    'craft-input',
+    'craft-input-money',
+    'craft-textarea',
+    'craft-select',
+    'craft-combobox',
+    'craft-input-color',
+    'craft-checkbox',
+    'craft-switch',
+  ].join(', ');
+
+  function focusCell(event: MouseEvent): void {
+    if (!props.editable || isInteractiveClick(event)) return;
+    const cell = event.currentTarget as HTMLElement;
+    const control = cell.querySelector<HTMLElement>(cellFocusControls);
+    if (!control) return;
+    // Prefer the control's own input (e.g. a color picker's text input over its
+    // swatch), unless it's hidden, as with icon pickers.
+    const input = control.hasAttribute('hidden-input')
+      ? null
+      : control.querySelector<HTMLElement>(':scope > [slot="input"]');
+    (input && input.tabIndex >= 0
+      ? input
+      : firstFocusableWithin(control)
+    )?.focus();
   }
 
   function compatible(
@@ -428,6 +456,7 @@
               :key="key"
               scope="col"
               :hidden="column.type === 'hidden'"
+              :class="column.class"
               :style="{
                 width:
                   typeof column.width === 'number'
@@ -451,6 +480,7 @@
                   (control.props.allowReorder || control.props.allowDelete))
               "
               scope="col"
+              class="thin"
             >
               <span class="sr-only">{{ t('Row actions') }}</span>
             </th>
@@ -465,8 +495,10 @@
                 setRowRef(element as HTMLTableRowElement | null, row.id)
             "
             :class="{
+              hidden: control.props.hiddenRows?.includes(rowKey(index)),
               'row--dragging': getDragState(row.id).type === 'is-dragging',
             }"
+            :hidden="control.props.hiddenRows?.includes(rowKey(index))"
             :data-row-id="row.id"
           >
             <component
@@ -487,6 +519,7 @@
               ]"
               @keydown="navigate(index, key, $event)"
               @paste="paste(index, key, $event)"
+              @click="focusCell"
             >
               <DropIndicator :edge="closestEdge(row.id)" contained />
               <input
@@ -534,27 +567,6 @@
                 v-html="String(row.value[key] ?? '')"
               />
               <span v-else>{{ row.value[key] }}</span>
-              <TableCell
-                v-if="
-                  column.prefixSelect &&
-                  fieldFor(fields, column.prefixSelect.key)
-                "
-                :node="fieldFor(fields, column.prefixSelect.key)!"
-                :value="row.value[column.prefixSelect.key]"
-                :label="column.prefixSelect.label"
-                :editable="
-                  editable && !disabledCell(row, key) && !column.static
-                "
-                :values="effectiveValues"
-                :errors="errors ?? []"
-                :touched-paths="effectiveTouched"
-                :ui-scope="uiScope ?? []"
-                :ui-refreshable="Boolean(uiRefreshable)"
-                @update:value="
-                  (value, kind) =>
-                    updateCell(index, column.prefixSelect!.key, value, kind)
-                "
-              />
             </component>
             <td
               v-if="
@@ -562,6 +574,7 @@
                 (editable &&
                   (control.props.allowReorder || control.props.allowDelete))
               "
+              class="thin"
             >
               <DropIndicator :edge="closestEdge(row.id)" contained />
               <div class="flex items-center justify-end gap-2">
@@ -591,6 +604,7 @@
                   type="button"
                   icon="trash"
                   variant="plain"
+                  size="small"
                   .disabled="!canDelete"
                   :aria-label="t('Delete row {row}', {row: index + 1})"
                   @click="deleteRow(index)"
@@ -617,10 +631,6 @@
 </template>
 
 <style scoped>
-  :deep(craft-checkbox) {
-    --c-checkbox-size: 24px;
-  }
-
   .row--dragging {
     opacity: 0.4;
   }

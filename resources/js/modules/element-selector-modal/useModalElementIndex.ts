@@ -5,8 +5,36 @@ import {
   type ElementIndexRow,
 } from '@/modules/elements/index/composables/useContentIndexData';
 import {useDetachedElementIndex} from '@/modules/elements/index/composables/useDetachedElementIndex';
+import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
 
 type Row = ElementIndexRow;
+
+/** A step of `ModalIndexViewModel::folderBreadcrumbs()`. */
+export interface FolderCrumb {
+  label: string;
+  folderId: number;
+  url: string | null;
+}
+
+type ModalIndexData = ContentIndexData & {folderBreadcrumbs?: FolderCrumb[]};
+
+/** The row keys folder handling reads; `ElementIndex` hands behaviors bare items. */
+interface IndexItem {
+  id: string | number;
+  isFolder?: unknown;
+  folderId?: unknown;
+}
+
+/** Whether a click should go where the link says — a new tab, say. */
+export function isModifiedClick(event: MouseEvent): boolean {
+  return (
+    event.button !== 0 ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey
+  );
+}
 
 /**
  * What the modal hands back for each selected row.
@@ -38,6 +66,13 @@ interface Options {
   params: Record<string, unknown>;
   /** Element ids that can't be selected (already related, self-relation). */
   disabledElementIds?: () => number[];
+  /**
+   * Picks folders rather than elements, for the folder picker: folder rows
+   * become selectable (bar `disabledFolderIds`), one at a time, and still open
+   * from their title link or Enter.
+   */
+  selectFolders?: boolean;
+  disabledFolderIds?: () => number[];
 }
 
 /** Adds modal fetching and selection rules to the shared detached index. */
@@ -45,6 +80,10 @@ export function useModalElementIndex(options: Options) {
   const disabledIds = computed(
     () => new Set(options.disabledElementIds?.() ?? [])
   );
+  const disabledFolderIds = computed(
+    () => new Set(options.disabledFolderIds?.() ?? [])
+  );
+  const selectFolders = options.selectFolders ?? false;
   const index = useDetachedElementIndex({
     initial: options.initial,
     fetch: async (query) => {
@@ -56,9 +95,99 @@ export function useModalElementIndex(options: Options) {
       return data.props as ContentIndexData;
     },
     enableRowSelection: (row) =>
-      !row.isFolder && !disabledIds.value.has(Number(row.id)),
+      selectFolders
+        ? Boolean(row.isFolder) &&
+          !disabledFolderIds.value.has(Number(row.folderId))
+        : !row.isFolder && !disabledIds.value.has(Number(row.id)),
+    // A move has one destination.
+    multiSelect: !selectFolders,
   });
+  // Brings back the view mode, columns and sort this index last used, which
+  // the server can't know when it renders the first payload.
+  index.restore();
+
   const {table} = index.view;
+
+  /** The trail from the volume root to the folder on screen, for assets. */
+  const folderBreadcrumbs = computed(
+    () => (index.payload.value as ModalIndexData).folderBreadcrumbs ?? []
+  );
+
+  /**
+   * Lists a folder's contents in place of the current listing.
+   *
+   * The selection is cleared first: it can only hand back rows that are on
+   * screen, so one made in the old listing would linger in the table's state
+   * without being selectable or submitted.
+   */
+  function openFolder(folderId: number): void {
+    index.clearSelection();
+    index.visitor.merge({folderId}, {resetPage: true});
+  }
+
+  /**
+   * Leaves any open folder, so switching volumes lands on the new volume's
+   * root rather than a folder id it doesn't have — and choosing the current
+   * volume again goes back up to its root.
+   */
+  function changeSource(key: string): void {
+    if (
+      key === index.view.elementIndex.source?.key &&
+      index.visitor.query.value.folderId === undefined
+    ) {
+      return;
+    }
+
+    index.clearSelection();
+    index.visitor.merge(
+      {source: key, folderId: undefined, viewMode: index.view.mode.value},
+      {resetPage: true}
+    );
+  }
+
+  /**
+   * A folder opens from its title link, or Enter. Its title is a real link, so
+   * a modified click still opens it in a new tab. Folders can't be selected,
+   * so a click anywhere else on one does nothing — except when picking
+   * folders, where it (and Space) selects the folder as any row would.
+   */
+  const itemBehavior: ElementIndexItemBehavior<IndexItem> = {
+    attrs: (row) => (row.isFolder ? {'data-is-folder': ''} : undefined),
+    onClick(row, event) {
+      if (!row.isFolder || typeof row.folderId !== 'number') {
+        return false;
+      }
+
+      const target = event.target instanceof Element ? event.target : null;
+
+      if (target?.closest('a[data-folder-link]')) {
+        if (!isModifiedClick(event)) {
+          event.preventDefault();
+          openFolder(row.folderId);
+        }
+
+        return true;
+      }
+
+      return !selectFolders;
+    },
+    onKeydown(row, event) {
+      if (!row.isFolder || typeof row.folderId !== 'number') {
+        return false;
+      }
+
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        openFolder(row.folderId);
+
+        return true;
+      }
+
+      // Space would select it, but folders can't be selected — unless that's
+      // what's being picked.
+      return event.key === ' ' && !selectFolders;
+    },
+  };
 
   /**
    * The selected rows, in the shape the relation field expects.
@@ -74,7 +203,9 @@ export function useModalElementIndex(options: Options) {
         // Type-specific extras first — `kind`/`alt` for assets, `folderId` for
         // folders — so the named keys below always win.
         ...info,
-        id: Number(original.id),
+        // A folder row's own id is `folder:{id}`, not a number.
+        ...(original.isFolder ? {folderId: Number(original.folderId)} : {}),
+        id: Number(original.isFolder ? original.folderId : original.id),
         siteId: info.siteId != null ? Number(info.siteId) : null,
         label:
           typeof info.label === 'string' || typeof info.label === 'number'
@@ -91,6 +222,10 @@ export function useModalElementIndex(options: Options) {
 
   return {
     ...index,
+    changeSource,
+    folderBreadcrumbs,
+    openFolder,
+    itemBehavior,
     selectedElements,
     hasSelection,
   };
