@@ -189,6 +189,7 @@ class ElementEditorActions
         if (
             $element->getIsDraft() &&
             ! $element->isProvisionalDraft &&
+            $element::hasDrafts() &&
             $canSave &&
             Gate::check('saveCanonical', $element)
         ) {

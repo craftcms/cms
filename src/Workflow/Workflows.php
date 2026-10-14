@@ -488,6 +488,10 @@ class Workflows
     /** @param list<int> $draftIds */
     public function lockDraftIds(array $draftIds): void
     {
+        if ($draftIds === []) {
+            return;
+        }
+
         DB::table(Table::DRAFTS)->whereIn('id', $draftIds)->orderBy('id')->lockForUpdate()->get(['id']);
     }
 

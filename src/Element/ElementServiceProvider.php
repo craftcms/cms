@@ -16,6 +16,8 @@ use CraftCms\Cms\Element\Commands\Resave\ResaveAssetsCommand;
 use CraftCms\Cms\Element\Commands\Resave\ResaveEntriesCommand;
 use CraftCms\Cms\Element\Commands\Resave\ResaveUsersCommand;
 use CraftCms\Cms\Element\Commands\RestoreCommand;
+use CraftCms\Cms\Element\Commands\SyncEloquentElementsCommand;
+use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,6 +34,8 @@ class ElementServiceProvider extends ServiceProvider
 
         app()->terminating(fn () => app(BulkOpDeferrals::class)->persistPending());
 
+        $this->app->booted(fn () => $this->app->make(EloquentElements::class)->registerRoutes());
+
         if (! $this->app->runningInConsole()) {
             return;
         }
@@ -40,6 +44,7 @@ class ElementServiceProvider extends ServiceProvider
             DeleteCommand::class,
             DeleteAllOfTypeCommand::class,
             RestoreCommand::class,
+            SyncEloquentElementsCommand::class,
             ResaveAllCommand::class,
             ResaveEntriesCommand::class,
             ResaveAssetsCommand::class,

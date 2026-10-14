@@ -150,7 +150,8 @@ readonly class DraftActivity
 
     public function handleDraftApplied(DraftApplied $event): void
     {
-        if ($event->provisional) {
+        // A type without drafts only uses one to create the element; recording that is the type's job.
+        if ($event->provisional || ! $event->canonical::hasDrafts()) {
             return;
         }
 
