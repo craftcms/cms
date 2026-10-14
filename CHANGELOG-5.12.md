@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5.12 (WIP)
 
+### Content Management
+
+- Addresses within Addresses fields can now be edited from drafts of their owner elements, by users who can save the drafts but not the canonical owner elements. ([#19881](https://github.com/craftcms/cms/issues/19881))
+
 ### Administration
 
 - Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
@@ -11,6 +15,7 @@
 
 ### Extensibility
 
+- Addresses now support drafts.
 - Element fixtures no longer create revisions by default. Set their `createRevisions` property to `true` to retain the previous behavior. ([#19626](https://github.com/craftcms/cms/pull/19626))
 - Added `craft\base\FieldTrait::$tip`.
 - Added `craft\base\FieldTrait::$warning`.
