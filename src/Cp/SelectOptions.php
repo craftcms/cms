@@ -618,8 +618,6 @@ class SelectOptions
      *                                                            parameter (`#[CurrentElement]`, or else `$element`) can’t accept this element type.
      *
      * @phpstan-return list<array{label: string, type: 'optgroup', options: list<array{label: string, value: string, data: array{hint: string|null, keywords: string|null}}>}>
-     *
-     * @since 6.0.0
      */
     public static function getRouteSuggestions(?string $elementType = null): array
     {
