@@ -29,15 +29,15 @@
     var(--c-color-neutral-border-quiet) 60%,
     transparent
   );
-  --c-surface-raised-border: color-mix(
+  --c-border-raised: color-mix(
     in srgb,
     var(--color-slate-400),
     transparent var(--c-color-border-quiet-transparency)
   );
-  --c-surface-raised-border-selected: var(--color-static-gray-200);
-  --c-card-selected-fill: var(--c-color-neutral-fill-loud);
-  --c-card-selected-border-color: var(--c-color-neutral-border-loud);
-  --c-card-selected-text: var(--c-color-neutral-on-loud);
+  --c-border-raised-selected: var(--color-static-gray-200);
+  --c-card-fill-selected: var(--c-color-neutral-fill-loud);
+  --c-card-border-selected: var(--c-color-neutral-border-loud);
+  --c-card-text-selected: var(--c-color-neutral-on-loud);
 
   /*
   Needs to remain statically dark between dark and light mode
@@ -139,8 +139,6 @@
   --c-shadow-2xs: var(--shadow-2xs);
   --c-shadow-xs: var(--shadow-xs);
   --c-shadow-sm: var(--shadow-sm);
-  --c-shadow-card: var(--c-shadow-sm);
-  --c-shadow-chip: var(--c-shadow-xs);
   --c-shadow-md: var(--shadow-md);
   --c-shadow-lg: var(--shadow-lg);
   --c-shadow-xl: var(--shadow-xl);
@@ -332,10 +330,10 @@
   /* Shadows read fainter against dark surfaces. */
   --c-shadow-multiplier: 1.5;
 
-  --c-surface-raised-border-selected: var(--color-base-500);
-  --c-card-selected-fill: var(--color-base-300);
-  --c-card-selected-border-color: var(--color-base-500);
-  --c-card-selected-text: var(--c-text-default);
+  --c-border-raised-selected: var(--color-base-500);
+  --c-card-fill-selected: var(--color-base-300);
+  --c-card-border-selected: var(--color-base-500);
+  --c-card-text-selected: var(--c-text-default);
   --c-color-border-quiet-transparency: 40%;
 }
 

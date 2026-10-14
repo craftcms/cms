@@ -27,7 +27,7 @@ export default css`
     border: var(--c-card-border-width, 1px) solid
       var(--c-color-border-quiet, var(--c-color-neutral-border-quiet));
     border-radius: var(--c-card-radius, var(--c-radius-md));
-    box-shadow: var(--c-card-shadow, var(--c-shadow-card));
+    box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
     position: relative;
     box-sizing: border-box;
     height: 100%;
@@ -35,23 +35,23 @@ export default css`
   }
 
   :host(:not([data-color]):not([active])) .card {
-    --c-color-border-quiet: var(--c-surface-raised-border);
+    --c-color-border-quiet: var(--c-border-raised);
   }
 
   :host(:not([data-color])[active]) .card {
-    --c-color-fill-loud: var(--c-card-selected-fill);
-    --c-color-border-loud: var(--c-card-selected-border-color);
-    --c-color-on-loud: var(--c-card-selected-text);
+    --c-color-fill-loud: var(--c-card-fill-selected);
+    --c-color-border-loud: var(--c-card-border-selected);
+    --c-color-on-loud: var(--c-card-text-selected);
   }
 
   :host([data-color='white']) .card {
     --c-color-fill-quiet: var(--c-surface-raised);
     --c-color-fill-loud: var(--c-surface-raised);
-    --c-color-border-quiet: var(--c-surface-raised-border);
-    --c-color-border-loud: var(--c-surface-raised-border-selected);
+    --c-color-border-quiet: var(--c-border-raised);
+    --c-color-border-loud: var(--c-border-raised-selected);
     --c-color-on-quiet: var(--c-text-default);
     --c-color-on-loud: var(--c-text-default);
-    box-shadow: var(--c-card-shadow, var(--c-shadow-chip));
+    box-shadow: var(--c-card-shadow, var(--c-shadow-xs));
   }
 
   /* White fills the whole card, not just the header over a translucent body. */

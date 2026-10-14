@@ -54,12 +54,12 @@ import {
  * @cssproperty --c-card-border-width - Border width. Defaults to `1px`.
  * @cssproperty --c-card-radius - Corner radius. Defaults to `--c-radius-md`.
  * @cssproperty --c-card-shadow - Box shadow. Defaults to the theme's
- *   `--c-shadow-card`, or `--c-shadow-chip` for a white card.
- * @cssproperty --c-card-selected-fill - Header and footer fill of a selected
+ *   `--c-shadow-sm`, or `--c-shadow-xs` for a white card.
+ * @cssproperty --c-card-fill-selected - Header and footer fill of a selected
  *   card without a color. Defaults to the neutral loud fill.
- * @cssproperty --c-card-selected-border-color - Border color of a selected card
+ * @cssproperty --c-card-border-selected - Border color of a selected card
  *   without a color. Defaults to the neutral loud border.
- * @cssproperty --c-card-selected-text - Header and footer text color of a
+ * @cssproperty --c-card-text-selected - Header and footer text color of a
  *   selected card without a color. Defaults to the neutral loud text color.
  * @cssproperty --c-card-padding-inline - Inline (horizontal) padding of the
  *   header, body, and footer. Defaults to `--c-spacing-md`.

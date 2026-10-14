@@ -104,7 +104,7 @@
 <style scoped>
   .support-tiles {
     border-radius: var(--c-card-radius, var(--c-radius-md));
-    box-shadow: var(--c-card-shadow, var(--c-shadow-card));
+    box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
   }
   .support-tile {
     --c-color-fill-normal: color-mix(
@@ -116,7 +116,7 @@
     min-height: 150px;
     padding-block: 24px;
     padding-inline: 16px;
-    border: var(--c-card-border-width, 1px) solid var(--c-surface-raised-border);
+    border: var(--c-card-border-width, 1px) solid var(--c-border-raised);
     border-radius: 0;
     white-space: normal;
   }

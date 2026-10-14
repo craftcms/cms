@@ -201,7 +201,7 @@
     max-width: calc(100vw - (var(--c-spacing-lg) * 2));
     max-height: calc(100vh - (var(--c-spacing-lg) * 2));
     background-color: var(--c-modal-fill);
-    box-shadow: var(--c-shadow-2xl);
+    box-shadow: var(--c-shadow-overlay);
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-modal-radius);
     border-width: var(--c-modal-border-width);

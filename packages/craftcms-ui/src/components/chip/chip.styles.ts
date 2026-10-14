@@ -45,7 +45,7 @@ export default css`
     gap: var(--_chip-gap);
     border-radius: var(--_radius);
     align-items: center;
-    box-shadow: var(--c-chip-shadow, var(--c-shadow-chip));
+    box-shadow: var(--c-chip-shadow, var(--c-shadow-xs));
     background-color: var(--c-chip-fill, var(--c-surface-raised));
 
     border-width: var(--_border-width);
@@ -287,7 +287,7 @@ export default css`
     --c-color-fill-quiet: var(--c-chip-fill, var(--c-surface-raised));
     --c-color-on-quiet: var(--c-chip-text, var(--c-text-default));
     background-color: var(--c-chip-fill, var(--c-surface-raised));
-    border-color: var(--c-chip-border-color, var(--c-surface-raised-border));
+    border-color: var(--c-chip-border-color, var(--c-border-raised));
     color: var(--c-chip-text, var(--c-text-default));
   }
 
