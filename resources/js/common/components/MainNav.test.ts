@@ -163,3 +163,54 @@ it('drops top-level group headings from the collapsed rail', async () => {
   expect(collapsed.some((item) => item.hasAttribute('group'))).toBe(false);
   expect(collapsed.map(label)).toEqual(['Entries', 'Utilities']);
 });
+
+it('counts a source once its deferred badge counts arrive, and keeps them across visits', async () => {
+  const tree = [
+    {
+      ...nav()[0],
+      subnav: [
+        {
+          ...nav()[0],
+          label: 'Blog',
+          href: '/admin/content/entries/blog',
+          id: 'nav-content-entries-source-sectionabc',
+        },
+      ],
+    },
+  ];
+  await mount('/admin/content/entries/blog', {}, {tree});
+
+  const count = () => {
+    const badge = container.querySelector(
+      'craft-badge-indicator[slot="actions"]'
+    ) as any;
+
+    return badge
+      ? Number(badge.badgeCount ?? badge.getAttribute('badge-count'))
+      : null;
+  };
+
+  expect(count()).toBeNull();
+
+  state.page.props = {
+    ...state.page.props,
+    navSourceBadges: {'nav-content-entries-source-sectionabc': 7},
+  };
+  await nextTick();
+
+  expect(count()).toBe(7);
+
+  // The next visit arrives without them, while they're still on their way.
+  state.page.deferredProps = {default: ['navSourceBadges']};
+  state.page.props = {...state.page.props, navSourceBadges: undefined};
+  await nextTick();
+
+  expect(count()).toBe(7);
+
+  // A response that isn't deferring them means no source counts anymore.
+  state.page.deferredProps = {};
+  state.page.props = {...state.page.props};
+  await nextTick();
+
+  expect(count()).toBeNull();
+});

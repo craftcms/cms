@@ -80,3 +80,21 @@ it('carries a source’s status across, and leaves it off when there is none', (
   expect(draft!.status).toBe('blue');
   expect(all!).not.toHaveProperty('status');
 });
+
+it('marks a top-level badge with a dot and counts a nested one', () => {
+  const [entries] = navItemActions([
+    node('Entries', {
+      href: '/admin/content/entries',
+      badgeCount: 2,
+      subnav: [
+        node('Blog', {href: '/admin/content/entries/blog', badgeCount: 12}),
+      ],
+    }),
+  ]) as ActionItemLink[];
+  const blog = entries!.subnav![0] as ActionItemLink;
+
+  expect(entries!.indicator).toBe(true);
+  expect(entries!).not.toHaveProperty('count');
+  expect(blog.count).toBe(12);
+  expect(blog).not.toHaveProperty('indicator');
+});

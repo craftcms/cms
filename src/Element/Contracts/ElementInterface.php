@@ -273,6 +273,8 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *   `orange`, `red`, `yellow`, `pink`, `purple`, `blue`, `turquoise`, `light`, `grey`, `black`, and `white`. (Optional)
      * - **`badgeCount`** – The badge count that should be displayed alongside the label. (Optional)
      * - **`badgeLabel`** – The badge count label that should be provided for screen readers. (Optional)
+     * - **`defaultBadgeCount`** – Whether the source should show a count of its elements in the nav until an admin
+     *   chooses otherwise. Only applies when [[supportsSourceBadgeCounts()]] returns `true`. (Optional)
      * - **`sites`** – An array of site IDs or UUIDs that the source should be shown for, on multi-site element indexes.
      *   (Optional; by default the source will be shown for all sites.)
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
@@ -335,6 +337,28 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * @return SourceConfig
      */
     public static function modifyCustomSource(array $config): array;
+
+    /**
+     * Returns whether this element type’s sources can show a count of their elements in the control panel nav.
+     *
+     * Each source’s count is still opt-in, from the “Customize sources” modal.
+     */
+    public static function supportsSourceBadgeCounts(): bool;
+
+    /**
+     * Returns whether a given source can show a count of its elements.
+     *
+     * @param  SourceConfig  $source
+     */
+    public static function sourceSupportsBadgeCount(array $source): bool;
+
+    /**
+     * Returns the total number of elements in a source, for its badge.
+     *
+     * @param  SourceConfig  $source
+     * @param  int|null  $siteId  The site to count elements for, or `null` for the current site
+     */
+    public static function sourceBadgeCount(array $source, ?int $siteId): int;
 
     /**
      * Returns the available [bulk element actions](https://craftcms.com/docs/5.x/extend/element-actions.html)

@@ -6,6 +6,7 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Dropdown;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
@@ -737,4 +738,44 @@ it('normalizes the UI defaultSort shape and an empty source scope', function () 
     expect($config['native-enabled']['defaultSort'])->toBe(['slug', 'desc'])
         ->and($config['custom:scoped']['sites'])->toBeFalse()
         ->and($config['custom:scoped']['userGroups'])->toBeFalse();
+});
+
+it('offers a count toggle only on sources that can show one', function () {
+    $ui = fn (string $elementType, string $key) => postJson(action([ElementSourcesController::class, 'ui']), [
+        'elementType' => $elementType,
+        'sourceKey' => $key,
+        'type' => ElementSources::TYPE_NATIVE,
+    ])->assertOk()->json('ui');
+
+    $entries = $ui(Entry::class, '*');
+
+    $custom = postJson(action([ElementSourcesController::class, 'ui']), [
+        'elementType' => Entry::class,
+        'sourceKey' => 'custom:new',
+        'type' => ElementSources::TYPE_CUSTOM,
+    ])->assertOk()->json('ui');
+
+    // Last, so it sits in the same place for every kind of source.
+    expect(collect(controlPaths($entries))->last())->toBe(['sources', '*', 'showBadgeCount'])
+        ->and(collect(controlPaths($custom))->last())->toBe(['sources', 'custom:new', 'showBadgeCount'])
+        ->and($entries['values']['sources']['*']['showBadgeCount'])->toBeFalse()
+        ->and(control($ui(TestElementSourcesElement::class, 'structured'), ['sources', 'structured', 'showBadgeCount']))->toBeNull();
+});
+
+it('stores the count toggle', function () {
+    postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => Entry::class,
+        'sourceOrder' => ['*'],
+        'sources' => [
+            '*' => [
+                'tableAttributes' => [],
+                'enabled' => true,
+                'showBadgeCount' => true,
+            ],
+        ],
+    ])->assertOk();
+
+    $config = app(ProjectConfig::class)->get(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class));
+
+    expect($config[0]['showBadgeCount'])->toBeTrue();
 });

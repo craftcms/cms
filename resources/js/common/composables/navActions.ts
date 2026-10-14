@@ -19,7 +19,8 @@ type NavItem = CraftCms.Cms.Cp.Data.NavItem;
  * a second, differently-shaped description of the same nav to find them.
  */
 export function navItemActions(
-  items: Array<NavItem>
+  items: Array<NavItem>,
+  nested = false
 ): Array<ActionItemLink | ActionItemButton | ActionItemGroup> {
   return items.map((item) =>
     // A group heads its children rather than being somewhere to go. It becomes
@@ -29,14 +30,19 @@ export function navItemActions(
       ? {
           type: 'group',
           heading: item.label ?? undefined,
-          items: item.subnav.map(navItemAction),
+          items: item.subnav.map((child) => navItemAction(child, nested)),
         }
-      : navItemAction(item)
+      : navItemAction(item, nested)
   );
 }
 
+/**
+ * A badge is a dot on a top-level item, and a number on one nested under
+ * another — an element index source, counting what it lists.
+ */
 export function navItemAction(
-  item: NavItem
+  item: NavItem,
+  nested = false
 ): ActionItemLink | ActionItemButton {
   const children = Array.isArray(item.subnav) ? item.subnav : [];
   const shared = {
@@ -45,8 +51,12 @@ export function navItemAction(
     ...(item.icon ? {icon: item.icon} : {}),
     ...(item.iconSvg ? {iconSvg: item.iconSvg} : {}),
     ...(item.status ? {status: item.status} : {}),
-    ...(item.badgeCount > 0 ? {indicator: true} : {}),
-    ...(children.length > 0 ? {subnav: navItemActions(children)} : {}),
+    ...(item.badgeCount > 0
+      ? nested
+        ? {count: item.badgeCount}
+        : {indicator: true}
+      : {}),
+    ...(children.length > 0 ? {subnav: navItemActions(children, true)} : {}),
   };
 
   // Not everything in a nav is a destination — a heading isn't, and neither is

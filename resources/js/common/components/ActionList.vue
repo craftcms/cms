@@ -300,6 +300,10 @@
     return action.type === 'group' ? undefined : action.status;
   }
 
+  function countOf(action: NavItem): number | undefined {
+    return action.type === 'group' ? undefined : action.count;
+  }
+
   const actionsLentTo = useNavItemActions();
 
   /**
@@ -418,6 +422,13 @@
       ></craft-indicator>
 
       {{ labelOf(action) }}
+
+      <craft-badge-indicator
+        v-if="countOf(action)"
+        slot="actions"
+        variant="inverse"
+        :badge-count="countOf(action)"
+      ></craft-badge-indicator>
 
       <craft-button
         v-for="lent in lentActions(action)"

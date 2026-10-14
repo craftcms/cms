@@ -125,6 +125,84 @@ readonly class Navigation
         return $counts;
     }
 
+    /**
+     * Counts for the element index sources that show one, keyed by nav item id.
+     *
+     * Kept apart from {@see getBadgeCounts()} so the control panel can load
+     * them after the page, rather than holding every response up on a count
+     * query per source.
+     *
+     * @return array<string, int>
+     */
+    public function getSourceBadgeCounts(): array
+    {
+        $siteId = $this->navSiteId();
+
+        return array_map(
+            fn (array $badge): int => $badge['elementType']::sourceBadgeCount($badge['source'], $siteId),
+            $this->sourceBadges(),
+        );
+    }
+
+    /**
+     * Whether an admin has turned on a count for any source the nav lists.
+     */
+    public function hasSourceBadges(): bool
+    {
+        return $this->elementSources->hasBadgeCountsEnabled([Entry::class, Asset::class, User::class]);
+    }
+
+    /**
+     * The sources in the nav that show a count, keyed by nav item id.
+     *
+     * @return array<string, array{elementType: class-string<ElementInterface>, source: array<string, mixed>}>
+     */
+    private function sourceBadges(): array
+    {
+        $badges = [];
+
+        foreach ([Entry::class, Asset::class, User::class] as $elementType) {
+            if (! $this->listsSources($elementType)) {
+                continue;
+            }
+
+            foreach ($this->sourceIndexes($elementType) as [$indexUri, $page]) {
+                $sources = $this->elementSources->getSources(
+                    $elementType,
+                    context: ElementSources::CONTEXT_NAVIGATION,
+                    page: $page,
+                    siteId: $this->navSiteId(),
+                );
+
+                foreach ($sources as $source) {
+                    if ($this->elementSources->showsBadgeCount($elementType, $source)) {
+                        $badges[$this->sourceItemId($indexUri, (string) $source['key'])] = [
+                            'elementType' => $elementType,
+                            'source' => $source,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $badges;
+    }
+
+    /**
+     * Whether the nav lists an element type's sources for the current user.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    private function listsSources(string $elementType): bool
+    {
+        return match ($elementType) {
+            Entry::class => Sections::getTotalEditableSections() > 0,
+            Asset::class => Volumes::getTotalViewableVolumes() > 0,
+            User::class => Edition::get() !== Edition::Solo && Gate::check('viewUsers'),
+            default => false,
+        };
+    }
+
     /** @return NavItem[] */
     private function buildTree(): array
     {
@@ -141,7 +219,7 @@ readonly class Navigation
         $contentGroup = new NavItem()->label(t('Content'))->group(true);
         $contentItems = collect();
 
-        if (Sections::getTotalEditableSections()) {
+        if ($this->listsSources(Entry::class)) {
             $entryPages = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION);
 
             if ($entryPages->isNotEmpty()) {
@@ -172,7 +250,7 @@ readonly class Navigation
             }
         }
 
-        if (Volumes::getTotalViewableVolumes()) {
+        if ($this->listsSources(Asset::class)) {
             $contentItems->add(new NavItem()
                 ->label(t('Assets'))
                 ->href('assets')
@@ -223,7 +301,7 @@ readonly class Navigation
         $administrationGroup = new NavItem()->label(t('Administration'))->group(true);
         $administrationItems = [];
 
-        if (Edition::get() !== Edition::Solo && Gate::check('viewUsers')) {
+        if ($this->listsSources(User::class)) {
             $administrationItems[] =
                 new NavItem()
                     ->label(t('Users'))
@@ -362,10 +440,15 @@ readonly class Navigation
             }
 
             $item = new NavItem()
+                ->id($this->sourceItemId($indexUri, $key))
                 ->label((string) ($source['label'] ?? ''))
                 ->href(
                     $this->sourceUri($elementType, $indexUri, $source, $page),
                 );
+
+            if (isset($source['badgeCount'])) {
+                $item->badgeCount((int) $source['badgeCount']);
+            }
 
             if ($group !== null) {
                 $group->subnav = [...$group->subnav, $item];
@@ -469,6 +552,15 @@ readonly class Navigation
     ): string {
         return $elementType::sourceCpUri($source, $page) ??
             $this->sourceQueryUri($indexUri, (string) $source['key']);
+    }
+
+    /**
+     * A source's nav item id. Not derived from its URL like other items, since
+     * the “all elements” source shares its URL with the index it hangs off.
+     */
+    private function sourceItemId(string $indexUri, string $key): string
+    {
+        return $this->itemId(sprintf('%s/source-%s', $indexUri, $key));
     }
 
     /**

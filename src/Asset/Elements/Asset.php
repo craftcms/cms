@@ -1020,6 +1020,42 @@ class Asset extends Element
     }
 
     #[Override]
+    public static function supportsSourceBadgeCounts(): bool
+    {
+        return true;
+    }
+
+    #[Override]
+    public static function sourceSupportsBadgeCount(array $source): bool
+    {
+        if (! parent::sourceSupportsBadgeCount($source)) {
+            return false;
+        }
+
+        return ($source['type'] ?? null) === ElementSources::TYPE_CUSTOM
+            || str_starts_with((string) $source['key'], 'volume:');
+    }
+
+    /**
+     * A volume's count covers every asset in it the current user can view, not just those in its root folder.
+     */
+    #[Override]
+    public static function sourceBadgeCount(array $source, ?int $siteId): int
+    {
+        if (($source['type'] ?? null) === ElementSources::TYPE_CUSTOM) {
+            return parent::sourceBadgeCount($source, $siteId);
+        }
+
+        $volume = Volumes::getVolumeByUid(Str::after((string) $source['key'], 'volume:'));
+
+        if ($volume === null) {
+            return 0;
+        }
+
+        return parent::sourceBadgeCount(['criteria' => ['volumeId' => $volume->id, 'editable' => true]], $siteId);
+    }
+
+    #[Override]
     public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
     {
         $count = 0;
