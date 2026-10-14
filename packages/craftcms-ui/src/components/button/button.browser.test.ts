@@ -1,6 +1,19 @@
+/// <reference types="vite-plus/test/browser/providers/playwright" />
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {cdp} from 'vite-plus/test/browser';
 import type CraftButton from './button.js';
 import './button.js';
+
+interface FrameTree {
+  frame: {id: string};
+  childFrames?: FrameTree[];
+}
+
+interface AXNode {
+  ignored: boolean;
+  role?: {value: string};
+  name?: {value: unknown};
+}
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -413,6 +426,59 @@ describe('[disabled]', () => {
 
     expect(getComputedStyle(disabled).backgroundColor).toBe(
       getComputedStyle(enabled).backgroundColor
+    );
+  });
+});
+
+describe('[loading]', () => {
+  /**
+   * The text Chromium exposes in the accessibility tree, across every frame.
+   * Screen readers such as JAWS read a button's content from here, so text
+   * that's missing from it is unreadable even if the button keeps its name.
+   */
+  async function accessibleTexts(): Promise<string[]> {
+    const session = cdp();
+    const {frameTree} = (await session.send('Page.getFrameTree')) as {
+      frameTree: FrameTree;
+    };
+    const frameIds: string[] = [];
+    const collect = (tree: FrameTree) => {
+      frameIds.push(tree.frame.id);
+      tree.childFrames?.forEach(collect);
+    };
+    collect(frameTree);
+
+    const texts: string[] = [];
+    for (const frameId of frameIds) {
+      const {nodes} = (await session.send('Accessibility.getFullAXTree', {
+        frameId,
+      })) as {nodes: AXNode[]};
+      for (const node of nodes) {
+        if (!node.ignored && node.role?.value === 'StaticText') {
+          texts.push(String(node.name?.value ?? ''));
+        }
+      }
+    }
+
+    return texts;
+  }
+
+  it('keeps the label in the accessibility tree while loading', async () => {
+    const button = document.createElement('craft-button') as CraftButton;
+    button.textContent = 'Reset password';
+    document.body.append(button);
+    await button.updateComplete;
+
+    button.loading = true;
+    await button.updateComplete;
+
+    // Reading the whole tree is slow when the suite runs in parallel.
+    await vi.waitFor(
+      async () =>
+        expect(await accessibleTexts()).toEqual(
+          expect.arrayContaining(['Reset password', 'Loading'])
+        ),
+      {timeout: 5000}
     );
   });
 });
