@@ -599,7 +599,7 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     border: var(--cp-body-border-width) solid
       var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-xl);
-    box-shadow: var(--shadow-xs), var(--shadow-lg);
+    box-shadow: var(--c-shadow-xs), var(--c-shadow-lg);
     overflow: clip;
   }
 

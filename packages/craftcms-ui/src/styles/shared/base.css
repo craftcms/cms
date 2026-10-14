@@ -239,7 +239,9 @@ craft-chip .cp-code {
   max-width: var(--_icon-size);
   display: inline-flex;
 
+  /* SVGs fill black by default; shapes with their own fill keep it */
   svg {
+    fill: currentColor;
     width: var(--icon-size);
     height: var(--icon-size);
     max-width: var(--icon-size) !important;

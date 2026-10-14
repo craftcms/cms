@@ -550,7 +550,7 @@
   }
 
   .slideout-screen__header {
-    border-block-end: 1px solid var(--c-color-border-quiet, #e5e5e5);
+    border-block-end: 1px solid var(--c-color-border-quiet);
     min-height: var(--cp-header-height);
     display: grid;
     align-items: center;
@@ -575,7 +575,7 @@
 
   .slideout-screen__tabs {
     padding-inline: var(--c-spacing-md, 1rem);
-    border-block-end: 1px solid var(--c-border-quiet, #e5e5e5);
+    border-block-end: 1px solid var(--c-color-border-quiet);
   }
 
   .slideout-screen__body {
