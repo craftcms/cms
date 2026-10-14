@@ -1047,7 +1047,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
   /**
    * Set each reorder button's `position` (`first`/`middle`/`last`) so Move up
-   * is disabled on the first chip and Move down on the last, and disable the
+   * is disabled on the first chip and Move down on the last, and hide the
    * buttons entirely when there's nothing to reorder against.
    */
   #updateReorderPositions(): void {
@@ -1069,6 +1069,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       }
 
       btn.toggleAttribute('disabled', lis.length < 2);
+      btn.hidden = lis.length < 2;
       btn.setAttribute(
         'position',
         index === 0 ? 'first' : index === lis.length - 1 ? 'last' : 'middle'

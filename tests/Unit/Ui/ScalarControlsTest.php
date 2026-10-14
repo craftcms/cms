@@ -247,6 +247,28 @@ it('renders a create option in an ordinary combobox', function () {
     ]);
 });
 
+it('renders single-choice buttons as radios, naming an icon-only option by its icon', function () {
+    $crawler = renderChoice(
+        Choice::make('choice')
+            ->options([
+                ['label' => 'Sort ascending', 'icon' => 'asc', 'value' => 'asc'],
+                ['label' => 'Descending', 'value' => 'desc'],
+            ])
+            ->presentation(ChoicePresentation::Buttons),
+        'asc',
+    );
+    $radios = $crawler->filter('craft-radio-group[buttons] craft-radio');
+    $icon = $radios->eq(0)->filter('label[slot="label"] craft-icon');
+
+    expect($radios)->toHaveCount(2)
+        ->and($radios->eq(0)->filter('input[type="radio"]')->attr('checked'))->not->toBeNull()
+        ->and($icon->attr('name'))->toBe('arrow-down-short-wide')
+        ->and($icon->attr('label'))->toBe('Sort ascending')
+        ->and($radios->eq(0)->attr('title'))->toBe('Sort ascending')
+        ->and(trim($radios->eq(1)->filter('label[slot="label"]')->text()))->toBe('Descending')
+        ->and($radios->eq(1)->attr('title'))->toBeNull();
+});
+
 it('renders an icon-only choice button with an accessible name and no label', function () {
     $crawler = renderChoice(
         Choice::make('choice')
@@ -254,8 +276,9 @@ it('renders an icon-only choice button with an accessible name and no label', fu
                 ['label' => 'Sort ascending', 'icon' => 'asc', 'value' => 'asc'],
                 ['label' => 'Display as cards', 'icon' => 'custom-icons/element-cards', 'value' => 'cards'],
             ])
+            ->multiple()
             ->presentation(ChoicePresentation::Buttons),
-        'asc',
+        ['asc'],
     );
     $buttons = $crawler->filter('craft-button');
 
@@ -291,7 +314,7 @@ it('renders choice presentations through CP components', function (ChoicePresent
     'select' => [ChoicePresentation::Select, false, 'craft-select', 'craft-select option', 3],
     'checkboxes' => [ChoicePresentation::Checkboxes, true, 'craft-checkbox-group', 'craft-checkbox'],
     'radios' => [ChoicePresentation::Radios, false, 'craft-radio-group', 'craft-radio'],
-    'buttons' => [ChoicePresentation::Buttons, false, 'craft-button-group', 'craft-button'],
+    'buttons' => [ChoicePresentation::Buttons, false, 'craft-radio-group[buttons]', 'craft-radio'],
     'multiple buttons' => [ChoicePresentation::Buttons, true, 'craft-button-group[multiple]', 'craft-button'],
 ]);
 

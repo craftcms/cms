@@ -35,18 +35,21 @@ const panels = [
 ];
 
 const exposed = ref<{select(panelId: string): void} | null>(null);
+/** Whether the shell is overlaying the column, which tests can flip. */
+const overlay = ref(false);
 
 async function mount(
   rail: string | null,
   {syncLocationHash = false, overlaid = false} = {}
 ): Promise<HTMLElement> {
   document.body.innerHTML = '<div id="details"></div><div id="rail"></div>';
+  overlay.value = overlaid;
 
   app = createApp(
     defineComponent({
       setup() {
         provide(ScreenDetailsRailKey, rail);
-        provide(ScreenDetailsOverlayKey, ref(overlaid));
+        provide(ScreenDetailsOverlayKey, overlay);
 
         return () =>
           h(
@@ -110,6 +113,38 @@ it('puts the triggers in the rail and the panels in place', async () => {
 
 it('stays folded to the rail when the shell mounts it overlaid', async () => {
   await mount('#rail', {overlaid: true});
+
+  expect(panel('info').hidden).toBe(true);
+  expect(trigger('info').getAttribute('aria-expanded')).toBe('false');
+});
+
+// Resizing a slideout narrow and back shouldn't lose the person's panel.
+it('reopens the panel the shell folded away once there’s room again', async () => {
+  await mount('#rail');
+
+  trigger('history').click();
+  await settle();
+
+  overlay.value = true;
+  await settle();
+  expect(panel('history').hidden).toBe(true);
+
+  overlay.value = false;
+  await settle();
+  expect(panel('history').hidden).toBe(false);
+  expect(panel('info').hidden).toBe(true);
+});
+
+it('leaves a panel closed that the person closed', async () => {
+  await mount('#rail');
+
+  trigger('info').click();
+  await settle();
+
+  overlay.value = true;
+  await settle();
+  overlay.value = false;
+  await settle();
 
   expect(panel('info').hidden).toBe(true);
   expect(trigger('info').getAttribute('aria-expanded')).toBe('false');

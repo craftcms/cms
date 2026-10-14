@@ -8,6 +8,8 @@ export default css`
 
   :host {
     --c-option-wide-threshold: 640;
+    /* LionOption hard-codes a white fill */
+    background-color: transparent;
     padding-inline: var(--c-spacing-md);
     padding-block: var(--c-spacing-sm);
     font: inherit;

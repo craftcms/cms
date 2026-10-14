@@ -16,17 +16,16 @@ const columns = {
   title: {heading: 'Title', type: 'singleline'},
   enabled: {heading: 'Enabled', type: 'lightswitch'},
   homepage: {heading: 'Homepage', type: 'checkbox'},
-  route: {
-    heading: 'Route',
-    type: 'singleline',
-    prefixSelect: {
-      key: 'routeType',
-      label: 'Route type',
-      options: [
-        {label: 'Template', value: 'template'},
-        {label: 'Route', value: 'route'},
-      ],
-    },
+  destination: {
+    heading: 'Route To',
+    type: 'template',
+    options: [
+      {label: 'news/_entry.twig', value: 'news/_entry.twig'},
+      {
+        label: 'App\\Http\\Controllers\\PageController@show',
+        value: 'App\\Http\\Controllers\\PageController@show',
+      },
+    ],
   },
 };
 
@@ -34,18 +33,12 @@ const cellControls: Array<[string, string, string, string, UiProperties?]> = [
   ['title', 'Title', 'Text', 'craft:text'],
   ['enabled', 'Enabled', 'Lightswitch', 'craft:lightswitch'],
   ['homepage', 'Homepage', 'Checkbox', 'craft:checkbox'],
-  ['route', 'Route', 'Text', 'craft:text'],
   [
-    'routeType',
-    'Route type',
-    'Choice',
-    'craft:choice',
-    {
-      options: columns.route.prefixSelect.options,
-      multiple: false,
-      presentation: 'select',
-      placeholder: false,
-    },
+    'destination',
+    'Route To',
+    'Combobox',
+    'craft:combobox',
+    {options: columns.destination.options, showAllOnEmpty: true},
   ],
 ];
 
@@ -96,8 +89,7 @@ const row = {
   title: 'Craft',
   enabled: true,
   homepage: false,
-  route: '',
-  routeType: 'template',
+  destination: '',
 };
 
 // Two tables with the same column keys, the way the section form has them.
@@ -158,25 +150,19 @@ const roles: Record<string, 'textbox' | 'switch' | 'checkbox' | 'combobox'> = {
   Title: 'textbox',
   Enabled: 'switch',
   Homepage: 'checkbox',
-  Route: 'textbox',
-  'Route type': 'combobox',
+  'Route To': 'combobox',
 };
 
 it('names each cell after its column header and row', async () => {
   await mount();
 
   // Row 1 appears in both tables, row 2 only in the first.
-  const expected: Array<[role: string, name: string, count: number]> = [
-    ...Object.entries(roles)
-      .filter(([heading]) => heading !== 'Route type')
-      .flatMap(
-        ([heading, role]): Array<[string, string, number]> => [
-          [role, `${heading}, row 1`, 2],
-          [role, `${heading}, row 2`, 1],
-        ]
-      ),
-    ['combobox', 'Route type', 3],
-  ];
+  const expected = Object.entries(roles).flatMap(
+    ([heading, role]): Array<[role: string, name: string, count: number]> => [
+      [role, `${heading}, row 1`, 2],
+      [role, `${heading}, row 2`, 1],
+    ]
+  );
 
   for (const [role, name, count] of expected) {
     const matches = page

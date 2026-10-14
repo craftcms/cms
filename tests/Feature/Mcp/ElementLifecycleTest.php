@@ -376,7 +376,8 @@ it('validates proposed nested content without saving or deleting nested entries'
         'id' => $owner->id,
         'attributes' => ['authorId' => $this->actor->id],
         'fields' => ['blocks' => [
-            'new1' => ['type' => 'proposedBlock', 'title' => str_repeat('x', 256)],
+            'entries' => [['proposedBlock' => ['title' => str_repeat('x', 256)]]],
+            'sortOrder' => ['new:1'],
         ]],
     ])->assertOk()->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.valid', false)
@@ -386,7 +387,8 @@ it('validates proposed nested content without saving or deleting nested entries'
         'id' => $owner->id,
         'attributes' => ['authorId' => $this->actor->id],
         'fields' => ['blocks' => [
-            'new1' => ['type' => 'proposedBlock', 'title' => 'Proposed block'],
+            'entries' => [['proposedBlock' => ['title' => 'Proposed block']]],
+            'sortOrder' => ['new:1'],
         ]],
     ])->assertOk()->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.valid', true);

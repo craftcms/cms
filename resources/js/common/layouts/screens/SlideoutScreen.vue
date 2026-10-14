@@ -153,10 +153,13 @@
   const tabsEl = useTemplateRef<HTMLElement>('tabsEl');
 
   // The overlay threshold lives in the stylesheet below; this reads it back.
-  const {width: detailsWidth} = useElementSize(detailsEl);
+  // Re-read as the slideout's width changes, which is what the container query
+  // measures. The column's own width won't do: folded to its rail, it holds
+  // still as the slideout is resized, so it would never unfold again.
+  const {width: screenWidth} = useElementSize(formEl);
   provide(
     ScreenDetailsOverlayKey,
-    useDetailsOverlay(() => detailsEl.value, detailsWidth)
+    useDetailsOverlay(() => detailsEl.value, screenWidth)
   );
   // A slideout keeps its details rail beside its panels, even when it
   // opens over a page that has a rail of its own.
@@ -582,7 +585,7 @@
   }
 
   .slideout-screen__header {
-    border-block-end: 1px solid var(--c-color-border-quiet, #e5e5e5);
+    border-block-end: 1px solid var(--c-color-border-quiet);
     min-height: var(--cp-header-height);
     display: grid;
     align-items: center;
@@ -607,7 +610,7 @@
 
   .slideout-screen__tabs {
     padding-inline: var(--c-spacing-md, 1rem);
-    border-block-end: 1px solid var(--c-border-quiet, #e5e5e5);
+    border-block-end: 1px solid var(--c-color-border-quiet);
   }
 
   .slideout-screen__body {
@@ -706,7 +709,7 @@
     align-items: center;
     gap: var(--c-spacing-sm, 0.5rem);
     padding: var(--c-spacing-md, 1rem);
-    border-block-start: 1px solid var(--c-border-quiet, #e5e5e5);
+    border-block-start: 1px solid var(--c-color-border-quiet);
     min-height: var(--cp-footer-height);
   }
 

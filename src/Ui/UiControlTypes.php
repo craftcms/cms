@@ -8,6 +8,7 @@ use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Address;
 use CraftCms\Cms\Ui\Controls\AssetSelect;
+use CraftCms\Cms\Ui\Controls\BooleanMenu;
 use CraftCms\Cms\Ui\Controls\Checkbox;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Color;
@@ -59,6 +60,7 @@ class UiControlTypes extends TypeRegistry
     protected const array DEFAULT_TYPES = [
         Address::class,
         AssetSelect::class,
+        BooleanMenu::class,
         Checkbox::class,
         Choice::class,
         ConditionBuilder::class,

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Middleware;
 
+use Closure;
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Override;
@@ -18,6 +20,16 @@ use Override;
  */
 class AuthenticateCraftSession extends AuthenticateSession
 {
+    #[Override]
+    public function handle(mixed $request, Closure $next): mixed
+    {
+        if (! $this->auth->guard() instanceof StatefulGuard) {
+            return $next($request);
+        }
+
+        return parent::handle($request, $next);
+    }
+
     #[Override]
     /** @param Request $request */
     protected function logout(mixed $request): never

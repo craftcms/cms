@@ -157,7 +157,11 @@ Nav states:
       v-if="isLarge && hasActions"
       class="secondary-nav__actions flex flex-wrap gap-2 mt-4"
     >
-      <ActionMenu :actions="actions" :button-variant="ButtonVariant.Outline">
+      <ActionMenu
+        :actions="actions"
+        :button-variant="ButtonVariant.Outline"
+        :inherit="false"
+      >
         <template #actions><slot name="actions"></slot></template>
       </ActionMenu>
     </div>
