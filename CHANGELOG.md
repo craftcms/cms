@@ -68,6 +68,7 @@
 - Fixed a bug where fields’ “Used by” metadata listed asset volumes’ field layouts as unlinked counts, and showed oversized icons. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where the Notification Position and Slideout Position preferences had large gaps between their labels and buttons, and their button groups had no accessible names. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where clicking the selected button in a single-choice button group again could make it look deselected. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where the “Save” button in element editors kept the user on the edit page instead of returning to the element index. ([#19970](https://github.com/craftcms/cms/pull/19970))
 - Fixed a bug where page-header actions could be clipped on narrow screens. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Fixed a bug where the public GraphQL schema could be deleted through its numeric URL. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Plugins’ control panel nav items can now be shown as groups, by calling `group(true)` on the item returned by `getCpNavItem()` and passing its items to `subnav()`. ([#19903](https://github.com/craftcms/cms/pull/19903))
@@ -78,7 +79,6 @@
 - Added the `max-height` attribute to `<craft-markdown-field>`, which sets how tall the editor grows before it scrolls. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - Added the `outline-fill` appearance to `<craft-pane>`, and `CraftCms\Cms\Cp\Enums\PaneAppearance::OutlineFill`. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `appearance` and `size` properties to `<craft-disclosure>`. `appearance="plain"` drops the content’s hairline and indent, and `size` sizes the default toggle. ([#19942](https://github.com/craftcms/cms/pull/19942))
-- Added the `--c-button-prefix-gap` CSS custom property to `<craft-button>`, which sets the space after a button’s prefix. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `hyperlinkUrl`, `hyperlinkTag`, and `hyperlinkAttributes` config options to `CraftCms\Cms\Cp\Html\ElementHtml::elementChipHtml()`, and the `bare` prop to the `CpLink` Vue component. ([#19932](https://github.com/craftcms/cms/pull/19932))
 - Added `Cp.$elementDetailsPanels`, for registering element details panels, along with the `ElementDetailsPanelDescriptor`, `ElementDetailsPanelContext`, `ElementDetailsPanelStatus`, and `ElementDetailsPanelRegistry` types.
 - Element details panels’ content is no longer padded by the details pane. Panels registered via `Cp.$elementDetailsPanels` with a `component` should set their own padding, using `--cp-container-padding` for the inline padding. ([#19919](https://github.com/craftcms/cms/pull/19919))
@@ -125,6 +125,7 @@
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - Fixed a bug where sorting the Sections, Fields, or Entry Types settings tables from a later page showed the first page’s rows with the later page’s pagination. ([#19912](https://github.com/craftcms/cms/issues/19912))
 - Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing. ([#19889](https://github.com/craftcms/cms/pull/19889))
+- Fixed a bug where failed queue jobs weren’t removed when releasing all jobs. ([#19969](https://github.com/craftcms/cms/pull/19969))
 - Fixed a bug where new control panel assets weren’t getting published when updating via the control panel or `craft:update` command.
 - Fixed an error when rendering the Craft 5 starter homepage with the Yii adapter installed. ([#19917](https://github.com/craftcms/cms/pull/19917)
 - Fixed a bug where fields in element editors didn’t receive their text direction or translation settings. ([#19915](https://github.com/craftcms/cms/pull/19915))

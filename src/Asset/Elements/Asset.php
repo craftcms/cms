@@ -2627,6 +2627,8 @@ JS, [
      * Returns the image editor settings that are the same for every asset.
      *
      * @return array<string, mixed>
+     *
+     * @internal
      */
     public static function sharedImageEditorSettings(): array
     {
