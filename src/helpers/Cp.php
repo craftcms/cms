@@ -16,6 +16,7 @@ use craft\base\CpEditable;
 use craft\base\Describable;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\Grippable;
 use craft\base\Iconic;
@@ -386,6 +387,7 @@ class Cp
                 'label' => $component->getUiLabel(),
                 'description' => $component instanceof Describable ? $component->getDescription() : null,
                 'handle' => $component instanceof Grippable ? $component->getHandle() : null,
+                'instructions' => $component instanceof FieldInterface && $component->instructions ? Craft::t('site', $component->instructions) : null,
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => Craft::$app->getView()->namespaceInputId($config['id']),

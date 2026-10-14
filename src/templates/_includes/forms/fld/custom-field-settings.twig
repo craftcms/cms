@@ -46,7 +46,7 @@
 
           const newName = $chip.data('label');
           const newHandle = $chip.data('handle');
-          const newInstructions = $chip.data('instructions');
+          const newInstructions = $chip.data('instructions') ?? null;
 
           $labelInput.attr('placeholder', newName);
           $handleInput.attr('placeholder', newHandle);
