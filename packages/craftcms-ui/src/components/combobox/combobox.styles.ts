@@ -78,6 +78,13 @@ export default css`
     outline-offset: var(--c-focus-outline-offset);
   }
 
+  /* Lion turns off the textbox's own outline, so draw the ring on its wrapper */
+  :host(:not([multiple-choice])) ::slotted(.form-control:focus-within) {
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
   :host([multiple-choice][has-feedback-for='error']) .input-group__input {
     border-color: var(--c-color-danger-border-loud);
   }

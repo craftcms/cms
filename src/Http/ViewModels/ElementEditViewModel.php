@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementEditorActions;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
@@ -843,8 +844,15 @@ class ElementEditViewModel extends ViewModel
         ));
     }
 
-    public function statusLabelHtml(): string
+    /**
+     * Element types without statuses only get a label for drafts.
+     */
+    public function statusLabelHtml(): ?string
     {
+        if (! $this->element::hasStatuses() && $this->element->getStatus() !== Element::STATUS_DRAFT) {
+            return null;
+        }
+
         return app(StatusHtml::class)->componentStatusLabelHtml($this->element);
     }
 

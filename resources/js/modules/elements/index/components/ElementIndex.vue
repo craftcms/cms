@@ -116,6 +116,10 @@
       editableRows.value.length > 0
   );
   const selectable = computed(() => !isInlineEditing.value);
+  /** Single-select lists get no select-all checkbox. */
+  const multiSelect = computed(
+    () => props.view.table.options.enableMultiRowSelection !== false
+  );
   const showFooter = computed(
     () =>
       props.footerActive ||
@@ -249,7 +253,15 @@
         @reorder="reorder"
         @site-change="emit('site-change', $event)"
       >
-        <template #actions>
+        <template
+          v-if="
+            canEditInline ||
+            exportElements ||
+            $slots['toolbar-actions'] ||
+            $slots['toolbar-actions-after']
+          "
+          #actions
+        >
           <div class="flex flex-wrap gap-md">
             <craft-button
               v-if="canEditInline"
@@ -300,6 +312,9 @@
     >
       <div
         ref="body"
+        :class="{
+          'element-index__grid': mode === 'cards' || mode === 'thumbs',
+        }"
         @mousedown.capture="
           isInlineEditing
             ? undefined
@@ -316,6 +331,7 @@
           :read-only="selection.readOnly.value"
           :data="data"
           :selectable="selectable"
+          :select-all="multiSelect"
           :loading="loading"
           :item-behavior="itemBehavior"
           :sortable="rowReorder?.enabled.value ?? false"
@@ -333,6 +349,7 @@
           :read-only="selection.readOnly.value"
           :data="data"
           :selectable="selectable"
+          :select-all="multiSelect"
           :loading="loading"
           :item-behavior="itemBehavior"
           :interactions-disabled="processing"
@@ -450,6 +467,25 @@
 
   .element-index__header {
     margin-block-end: var(--c-spacing-md);
+  }
+
+  // Card and thumb grids leave their own spacing to where they're placed. A
+  // grid's select-all header sits flush at the top, with the grid below it.
+  .element-index__grid {
+    padding-block-end: var(--c-spacing-lg);
+
+    > :deep(:is(.card-grid, .thumbsview)) {
+      margin-block-start: var(--c-spacing-lg);
+    }
+
+    // Like a flush table, the select-all header spans the container's padding
+    // and pads its content back in by the same amount.
+    > :deep(:is(.card-grid-header, .thumbsview-header)) {
+      margin-inline: calc(var(--cp-container-padding) * -1);
+      margin-block-end: 0;
+      padding-block-start: var(--c-spacing-sm);
+      padding-inline: var(--cp-container-padding);
+    }
   }
 
   .element-index__body {

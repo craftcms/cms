@@ -108,3 +108,36 @@ export function expandFormData(data: FormData): PostValues {
 
   return expanded;
 }
+
+/**
+ * Posts to an action the browser should handle itself — a file download,
+ * which can't come back through Inertia.
+ */
+export function submitNativeForm(
+  action: string,
+  params: Record<string, unknown>
+): void {
+  const form = document.createElement('form');
+  form.method = 'post';
+  form.action = action;
+  form.hidden = true;
+
+  const fields = {...params};
+  if (Craft.csrfTokenName) {
+    fields[Craft.csrfTokenName] = Craft.csrfTokenValue;
+  }
+
+  for (const [name, value] of Object.entries(fields)) {
+    for (const item of Array.isArray(value) ? value : [value]) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = Array.isArray(value) ? `${name}[]` : name;
+      input.value = String(item);
+      form.append(input);
+    }
+  }
+
+  document.body.append(form);
+  form.submit();
+  form.remove();
+}
