@@ -137,25 +137,118 @@ export default class CraftInputDateTime extends LitElement {
    */
   @property({attribute: 'described-by'}) describedBy?: string;
 
+  /*
+    The parts read as one control: the host draws a single input border around
+    the inputs and any slotted content, such as a clear button, and the inputs
+    drop their own chrome. A hairline divides one input from the next, and
+    focus rings sit inside the shared border, as they do in editable tables.
+  */
   static override styles = css`
     :host {
-      display: flex;
-      align-items: center;
+      --_border-width: var(
+        --c-input-border-width,
+        var(--c-form-control-border-width, 1px)
+      );
+      --_border-color: var(
+        --c-input-border-color,
+        var(--c-form-control-border-color)
+      );
+      --_height: var(--c-input-height, var(--c-size-control-md));
+      display: inline-flex;
+      align-items: stretch;
+      max-width: 100%;
+      box-sizing: border-box;
+      min-height: var(--_height);
+      border: var(--_border-width)
+        var(--c-input-border-style, var(--c-form-control-border-style, solid))
+        var(--_border-color);
+      border-radius: var(--c-input-radius, var(--c-radius-md));
+      background-color: var(--c-input-fill);
+      box-shadow: var(--c-input-shadow);
+      /* Keeps a slotted button's fill inside the rounded corners. */
+      overflow: clip;
     }
 
+    :host([width='full']) {
+      display: flex;
+    }
+
+    /*
+      The inputs share a row while they fit at their natural widths, and wrap
+      onto rows of their own when they don't. A slotted button stays to their
+      right, spanning every row.
+    */
     .inputs {
       display: flex;
-      flex-flow: row wrap;
+      flex-wrap: wrap;
       align-items: center;
-      gap: var(--c-spacing-md);
       min-width: 0;
     }
 
-    :host([width='full']) .inputs {
-      flex: 1 1 auto;
+    ::slotted(:is(craft-input, craft-input-date, craft-input-time)) {
+      --c-input-border-width: 0px;
+      --c-input-radius: 0px;
+      --c-input-shadow: none;
+      --c-input-fill: transparent;
+      --c-input-height: calc(var(--_height) - var(--_border-width) * 2);
+      --c-focus-outline-offset: -2px;
     }
 
-    :host([width='full']) slot[name='inputs']::slotted([data-date-time-part]) {
+    /* Split the row evenly, but never narrower than an input's own width. */
+    slot[name='inputs']::slotted([data-date-time-part]) {
+      flex: 1 1 0;
+      min-width: max-content;
+    }
+
+    slot[name='inputs']::slotted([data-date-time-part]:not(:first-child)) {
+      border-inline-start: var(--_border-width) solid var(--_border-color);
+    }
+
+    /*
+      Stacked, the divider runs above the input instead. The side border stays
+      as wide, just transparent, so the inputs need the same room either way
+      and don't flip back and forth at the threshold.
+    */
+    :host([stacked])
+      slot[name='inputs']::slotted([data-date-time-part]:not(:first-child)) {
+      border-inline-start-color: transparent;
+      border-block-start: var(--_border-width) solid var(--_border-color);
+    }
+
+    /*
+      Slotted controls, such as a clear button, sit inside the border too. A
+      button fills a segment behind a divider, as wide as an input's suffix.
+    */
+    slot:not([name])::slotted(*) {
+      --c-focus-outline-offset: -2px;
+      align-self: center;
+    }
+
+    slot:not([name])::slotted(craft-button) {
+      flex: none;
+      align-self: stretch;
+      box-sizing: border-box;
+      width: calc(
+        var(--c-input-spacing-inline) * 2 + var(--c-size-control-sm) +
+          var(--_border-width)
+      );
+      height: auto;
+      min-height: 0;
+      margin: 0;
+      border-inline-start: var(--_border-width) solid var(--_border-color);
+      border-radius: 0;
+    }
+
+    /*
+      A disabled button fades with opacity, which would fade its divider too.
+      Fade just its icon instead, so the divider matches the outer border.
+    */
+    slot:not([name])::slotted(craft-button[disabled]) {
+      opacity: 1;
+      color: color-mix(in srgb, currentColor 50%, transparent);
+    }
+
+    :host([width='full']) .inputs {
       flex: 1 1 auto;
     }
   `;
@@ -167,14 +260,49 @@ export default class CraftInputDateTime extends LitElement {
       <slot></slot>`;
   }
 
+  /** Watches for the inputs wrapping onto rows of their own. */
+  #resizeObserver?: ResizeObserver;
+
+  #stackedFrame?: number;
+
   override connectedCallback() {
     super.connectedCallback();
     this.addEventListener('model-value-changed', this.#onModelValueChanged);
+    this.#resizeObserver ??= new ResizeObserver(() => this.#queueStackedSync());
+    this.#resizeObserver.observe(this);
   }
 
   override disconnectedCallback() {
     this.removeEventListener('model-value-changed', this.#onModelValueChanged);
+    this.#resizeObserver?.disconnect();
+    if (this.#stackedFrame !== undefined) {
+      cancelAnimationFrame(this.#stackedFrame);
+      this.#stackedFrame = undefined;
+    }
     super.disconnectedCallback();
+  }
+
+  /**
+   * Marks the host `stacked` once its inputs have wrapped, so the divider
+   * between them can move from beside the later one to above it. Deferred a
+   * frame, because toggling the attribute resizes the host, which a resize
+   * observer can't take within the same notification.
+   */
+  #queueStackedSync() {
+    if (this.#stackedFrame !== undefined) {
+      return;
+    }
+
+    this.#stackedFrame = requestAnimationFrame(() => {
+      this.#stackedFrame = undefined;
+      const tops = [
+        ...this.querySelectorAll<HTMLElement>(':scope > [data-date-time-part]'),
+      ].map((part) => part.getBoundingClientRect().top);
+      this.toggleAttribute(
+        'stacked',
+        tops.some((top) => top > (tops[0] ?? top) + 1)
+      );
+    });
   }
 
   override updated(changedProperties: PropertyValues) {
@@ -185,6 +313,7 @@ export default class CraftInputDateTime extends LitElement {
     this.#syncTimezoneInput();
     this.#syncHiddenInput('locale', this.locale, true);
     this.#syncHiddenInput('timezone', this.timezone, !this.showTimezone);
+    this.#queueStackedSync();
   }
 
   #syncDateInput() {

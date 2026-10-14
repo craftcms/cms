@@ -153,6 +153,26 @@ craft-radio[data-button] > input[type='radio'] {
   }
 }
 
+/*
+  Date and time inputs lead with their picker icon, as inputs with a prefix
+  icon do. The icon is the browser's own picker button, in the native input's
+  light DOM, so it's styled here rather than in the components.
+*/
+:is(craft-input-date, craft-input-time)
+  > input:is([type='date'], [type='time'])::-webkit-calendar-picker-indicator {
+  order: -1;
+  margin-inline: 0 var(--c-spacing-sm);
+  /*
+    The browser draws the picker's focus ring and doesn't match focus
+    pseudo-classes on it, but it does take the outline color, width, and
+    offset given here.
+  */
+  outline-color: var(--c-color-focus-outline);
+  outline-width: var(--c-focus-outline-width);
+  outline-offset: 1px;
+  border-radius: var(--c-radius-sm);
+}
+
 h1,
 h2,
 h3,
