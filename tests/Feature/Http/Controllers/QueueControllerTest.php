@@ -207,6 +207,22 @@ it('cancels all jobs', function () {
     expect(app(JobProgress::class)->getTotalJobs())->toBe(0);
 });
 
+it('releases failed jobs when cancelling all jobs', function () {
+    Cms::config()->runQueueAutomatically(false);
+    $queue = app(QueueManager::class)->connection('database');
+    $queue->push(new FindAndReplace('missing', 'replacement'), queue: Cms::config()->queueName);
+    $job = $queue->pop(Cms::config()->queueName);
+    app('queue.failer')->log('database', Cms::config()->queueName, $job->getRawBody(), new RuntimeException('Failed'));
+    $job->delete();
+    app(JobProgress::class)->failed($job->uuid(), 'Failed Job', 'Failed');
+
+    post(action([QueueController::class, 'cancelAll']))
+        ->assertRedirectBack();
+
+    expect(app(JobProgress::class)->getTotalJobs())->toBe(0)
+        ->and(app('queue.failer')->ids(Cms::config()->queueName))->toBeEmpty();
+});
+
 it('explicitly reactivates retried jobs with the same UID', function (string $method) {
     Cms::config()->runQueueAutomatically(false);
     $queue = app(QueueManager::class)->connection('database');
