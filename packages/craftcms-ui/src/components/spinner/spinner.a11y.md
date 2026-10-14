@@ -9,7 +9,7 @@
 ### Semantics
 
 - [x] Slotted text is visually hidden but kept in the accessibility tree as the spinner's text alternative. Per WCAG 1.1.1 (Non-text Content). Verified by `keeps its slotted label for assistive technology` in `spinner.test.ts`.
-- [x] A hidden spinner drops its slotted text from the accessibility tree along with the animation. Per WCAG 1.3.1 (Info and Relationships). Verified by `hides without leaving the layout` in `spinner.test.ts`, which asserts the `hidden` class (`display: none`).
+- [x] A hidden spinner drops its slotted text from the accessibility tree along with the animation. Per WCAG 1.3.1 (Info and Relationships). Verified by `hides without leaving the layout` in `spinner.test.ts`, which asserts the `hidden` class. That class hides the spinner with display: none.
 - [ ] A spinner with no slotted text still has a text alternative. Per WCAG 1.1.1 (Non-text Content). Known gap: there is no default text such as "Loading", so an empty spinner is silent.
 - [ ] Showing the spinner is announced as a status message. Per WCAG 4.1.3 (Status Messages). Known gap: there is no `role="status"` or live region, so the slotted text is only read when a screen reader reaches it. `show()` doesn't announce, although its JSDoc says it does.
 
