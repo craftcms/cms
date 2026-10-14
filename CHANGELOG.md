@@ -45,6 +45,8 @@
 - Date and time inputs now share a single border, with a divider between them, and their picker icons now come before their values.
 - Date and time fields’ clear buttons are now always shown, within the input’s border, and are disabled when there’s nothing to clear.
 - Text inputs’ suffix buttons, such as the Slug field’s refresh button, now fill their segment of the input.
+- Matrix fields’ blocks views now outline the block that’s being edited. ([#19974](https://github.com/craftcms/cms/pull/19974))
+- Clicking a Matrix block in blocks view no longer selects it. Blocks are selected with their checkboxes instead. ([#19974](https://github.com/craftcms/cms/pull/19974))
 - Fields without a visible label or instructions no longer have an action menu.
 - Double-clicking an element in a relational field’s card or thumbnail view now opens its slideout, as it does in list views.
 - Image transform mode and view mode illustrations now have transparent backgrounds, and follow the control panel’s light or dark theme.
