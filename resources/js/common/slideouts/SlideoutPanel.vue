@@ -26,7 +26,11 @@
     setFocusWithin,
     trapFocusWithin,
   } from '@craftcms/garnish';
+  import {t} from '@craftcms/ui/utilities/translate';
+  import {useWindowSize} from '@vueuse/core';
   import AppLayout from '@/common/layouts/AppLayout.vue';
+  import ResizeHandle from '@/common/components/ResizeHandle.vue';
+  import {useResizable} from '@/common/composables/useResizable';
   import SlideoutScreen from '@/common/layouts/screens/SlideoutScreen.vue';
   import {
     createScreenPropsStore,
@@ -47,6 +51,10 @@
   const props = defineProps<{
     instance: SlideoutInstance;
   }>();
+
+  const SLIDEOUT_MIN_WIDTH = 400;
+  /** Room kept beside a slideout. Mirrored by the panel's stylesheet cap. */
+  const SLIDEOUT_MIN_GAP = 80;
 
   provide(ScreenShellKey, SlideoutScreen);
   provide(ScreenPropsStoreKey, createScreenPropsStore());
@@ -82,6 +90,31 @@
   const panelEl = useTemplateRef<HTMLElement>('panel');
 
   /**
+   * Drag-to-resize from the panel's inner edge, as the details column does.
+   *
+   * The width lands on `--slideout-width`, which the stack offset reads too, so
+   * stacked panels keep peeking out correctly. It's shared by every slideout,
+   * except one opened with a width of its own, which keeps it to itself.
+   */
+  const {width: viewportWidth} = useWindowSize();
+  const resizer = useResizable({
+    target: panelEl,
+    edge: () =>
+      positionProp.value === 'inset-inline-start'
+        ? 'inline-start'
+        : 'inline-end',
+    minWidth: () => Math.min(SLIDEOUT_MIN_WIDTH, slideoutMaxWidth()),
+    maxWidth: slideoutMaxWidth,
+    cssVariable: '--slideout-width',
+    storageKey: props.instance.width ? undefined : 'Slideout.width',
+  });
+
+  function slideoutMaxWidth(): number {
+    // Leave room beside the panel, so the page behind can still be clicked to close it.
+    return Math.max(0, viewportWidth.value - SLIDEOUT_MIN_GAP);
+  }
+
+  /**
    * Where this panel sits, driven by the shared stack rather than by this
    * component's position in the Vue list — a legacy jQuery slideout can be
    * open at the same time, and only the stack sees both.
@@ -102,15 +135,23 @@
    * Spreading the stack across the leftover space rather than stepping by a
    * constant means it never runs off the edge however deep it goes; each
    * panel just peeks out a little less.
+   *
+   * Each step is capped at half the panel's width, though. A panel resized
+   * narrow leaves so much space beside it that an even spread would open gaps
+   * between the panels, rather than keeping them stacked.
    */
   const stackPanel: StackedPanel = {
     get element() {
       return panelEl.value!;
     },
     position(index: number, total: number) {
-      offset.value = `calc((100vw - var(--slideout-panel-width)) * ${
-        (index + 1) / total
-      })`;
+      const depth = total - 1 - index;
+      const step = `min((100vw - var(--slideout-panel-width)) / ${total}, var(--slideout-panel-width) / 2)`;
+
+      offset.value =
+        depth === 0
+          ? 'calc(100vw - var(--slideout-panel-width))'
+          : `calc(100vw - var(--slideout-panel-width) - ${depth} * ${step})`;
     },
     handleShadeClick() {
       closeSlideout(props.instance.id);
@@ -180,13 +221,24 @@
   <div
     ref="panel"
     class="slideout-panel"
+    :class="{'slideout-panel--resizing': resizer.isResizing.value}"
     tabindex="-1"
     :data-slideout-id="instance.id"
     :style="{
       ...(instance.width ? {'--slideout-width': instance.width} : {}),
+      ...resizer.style.value,
       [positionProp]: offset,
     }"
   >
+    <ResizeHandle
+      class="slideout-panel__resize-handle"
+      :class="{
+        'slideout-panel__resize-handle--end':
+          positionProp === 'inset-inline-end',
+      }"
+      :resizer="resizer"
+      :label="t('Resize slideout')"
+    />
     <div v-if="instance.loading" class="slideout-panel__status">
       <craft-spinner></craft-spinner>
     </div>
@@ -209,7 +261,13 @@
        length, not a percentage — the stack offset subtracts it from `100vw`.
        Resolved into a local so the fallback lives in exactly one place; the
        offset `calc()` reads this too. */
-    --slideout-panel-width: var(--slideout-width, 55vw);
+    /* Capped at the viewport less the gap `SLIDEOUT_MIN_GAP` keeps beside it,
+       so a width chosen in a wider window still fits after it shrinks. The
+       chosen width itself is kept, and comes back once there's room again. */
+    --slideout-panel-width: min(
+      var(--slideout-width, 55vw),
+      calc(100vw - 80px)
+    );
 
     position: fixed;
     inset-block: 0;
@@ -252,6 +310,35 @@
       border-end-start-radius: 0;
       container-name: slideout;
       container-type: inline-size;
+    }
+  }
+
+  /* Inside the panel, which clips anything past its edge, with the grip on
+     the edge itself and the panel's own rounded corners. */
+  .slideout-panel .slideout-panel__resize-handle {
+    inset-inline-start: 0;
+    transform: none;
+    justify-content: flex-start;
+    border-radius: 0;
+    border-start-start-radius: var(--c-radius-lg, 0.5rem);
+    border-end-start-radius: var(--c-radius-lg, 0.5rem);
+  }
+
+  .slideout-panel .slideout-panel__resize-handle--end {
+    inset-inline: auto 0;
+    justify-content: flex-end;
+    border-radius: 0;
+  }
+
+  /* The offset follows the width, so let it keep up with the pointer. */
+  .slideout-panel--resizing {
+    transition: none;
+  }
+
+  @media (width < var(--breakpoint-sm)) {
+    /* A full-width sheet has no width to resize. */
+    .slideout-panel {
+      --resize-handle-display: none;
     }
   }
 
