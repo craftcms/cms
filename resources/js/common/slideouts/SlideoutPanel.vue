@@ -222,7 +222,7 @@
     display: flex;
     flex-direction: column;
     background: var(--c-surface-default, #fff);
-    box-shadow: 0 0 16px rgb(0 0 0 / 15%);
+    box-shadow: var(--c-slideout-shadow);
     overflow: hidden;
     /* Same as the legacy `.slideout-container`. */
     z-index: var(--c-layer-overlay);
