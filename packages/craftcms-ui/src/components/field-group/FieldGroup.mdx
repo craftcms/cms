@@ -31,6 +31,13 @@ This is what you want for a component that has no idea where it will be placed â
 
 Between roughly 25rem and 50rem, `width-25` widens to a half rather than collapsing straight to full, so a row of four short fields becomes two rows of two.
 
+## Accessibility
+
+The group is layout only. It has no role or name, so a screen reader doesn't hear the fields as a group.
+
+- **Name related fields with a fieldset.** When several fields answer one question, such as a date and a time, wrap them in a `craft-field` with `fieldset` so the group has a name. For a set of options, use `craft-checkbox-group` or `craft-radio-group`.
+- **Write children in reading order.** The grid places children in source order, so the order you write them in is the order they're read and tabbed through.
+
 ## Properties
 
 <ArgTypes of={FieldGroupStories} />
