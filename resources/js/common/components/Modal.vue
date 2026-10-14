@@ -201,7 +201,7 @@
     max-width: calc(100vw - (var(--c-spacing-lg) * 2));
     max-height: calc(100vh - (var(--c-spacing-lg) * 2));
     background-color: var(--c-modal-fill);
-    box-shadow: var(--c-modal-shadow);
+    box-shadow: var(--c-shadow-2xl);
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-modal-radius);
     border-width: var(--c-modal-border-width);
@@ -225,6 +225,7 @@
     max-inline-size: none;
     max-block-size: none;
     background: none;
+    border: 0;
     box-shadow: none;
     overflow: visible;
   }

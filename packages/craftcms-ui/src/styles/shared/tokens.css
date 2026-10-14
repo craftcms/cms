@@ -298,11 +298,14 @@
   --c-modal-fill: var(--c-pane-fill);
   --c-modal-text: var(--c-pane-text);
   --c-modal-radius: var(--c-radius-lg);
-  --c-modal-border-width: var(--c-pane-border-width);
-  --c-modal-border-style: var(--c-pane-border-style);
-  --c-modal-border-color: var(--c-pane-border-color);
+  /* A hairline, on top of the shadow, so modals keep an edge in either theme. */
+  --c-modal-border-width: 1px;
+  --c-modal-border-style: solid;
+  --c-modal-border-color: var(--c-color-border-quiet);
   --c-modal-padding: var(--c-pane-padding);
-  --c-modal-shadow:
+
+  /* Slideouts */
+  --c-slideout-shadow:
     0 0 0 1px rgb(0 0 0 / calc(0.25 * var(--c-shadow-multiplier))),
     var(--c-shadow-2xl);
 }
