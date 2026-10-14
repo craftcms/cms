@@ -77,7 +77,6 @@
 - Added the `max-height` attribute to `<craft-markdown-field>`, which sets how tall the editor grows before it scrolls. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - Added the `outline-fill` appearance to `<craft-pane>`, and `CraftCms\Cms\Cp\Enums\PaneAppearance::OutlineFill`. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `appearance` and `size` properties to `<craft-disclosure>`. `appearance="plain"` drops the content’s hairline and indent, and `size` sizes the default toggle. ([#19942](https://github.com/craftcms/cms/pull/19942))
-- Added the `--c-button-prefix-gap` CSS custom property to `<craft-button>`, which sets the space after a button’s prefix. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `hyperlinkUrl`, `hyperlinkTag`, and `hyperlinkAttributes` config options to `CraftCms\Cms\Cp\Html\ElementHtml::elementChipHtml()`, and the `bare` prop to the `CpLink` Vue component. ([#19932](https://github.com/craftcms/cms/pull/19932))
 - Added `Cp.$elementDetailsPanels`, for registering element details panels, along with the `ElementDetailsPanelDescriptor`, `ElementDetailsPanelContext`, `ElementDetailsPanelStatus`, and `ElementDetailsPanelRegistry` types.
 - Element details panels’ content is no longer padded by the details pane. Panels registered via `Cp.$elementDetailsPanels` with a `component` should set their own padding, using `--cp-container-padding` for the inline padding. ([#19919](https://github.com/craftcms/cms/pull/19919))
