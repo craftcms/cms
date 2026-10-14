@@ -47,6 +47,9 @@ The native date input brings its own keyboard support and its own picker, both o
 
 As with any [Input](?path=/docs/form-controls-text-controls-input--docs), the one thing to get right is the label: set `label`, slot one, or wrap the control in `craft-field`.
 
+The browser shows the date in the person's own format, so don't spell out a fixed format like `YYYY-MM-DD` in help text — it may not match what they see.
+When you set `min` or `max`, say the earliest or latest allowed date in help text, so the limit is known before a date is rejected.
+
 ## Properties
 
 <ArgTypes of={InputDateStories} />

@@ -88,7 +88,7 @@ describe('WorkflowStagesInput', () => {
 
     const item = [
       ...menu.querySelectorAll<HTMLElement>('craft-action-item'),
-    ].find((item) => item.textContent === label)!;
+    ].find((item) => item.textContent?.trim() === label)!;
     item.click();
     await nextTick();
   }
@@ -101,7 +101,7 @@ describe('WorkflowStagesInput', () => {
     await nextTick();
 
     container!.querySelector('craft-reorder-button')!.dispatchEvent(
-      new CustomEvent('reorder', {
+      new CustomEvent('craft-reorder', {
         detail: {direction: 'down'},
         bubbles: true,
       })
@@ -116,7 +116,7 @@ describe('WorkflowStagesInput', () => {
 
     const removeAction = [
       ...container!.querySelectorAll('craft-action-item'),
-    ].find((item) => item.textContent === 'Remove stage') as
+    ].find((item) => item.textContent?.trim() === 'Remove stage') as
       | (HTMLElement & {disabled: boolean})
       | undefined;
     expect(removeAction?.disabled).toBe(true);
@@ -126,7 +126,7 @@ describe('WorkflowStagesInput', () => {
       stage('editorial', 'Editorial'),
       {
         uid: 'new-stage',
-        name: 'Review',
+        name: '',
         type,
         settings: {approvalsRequired: 1, approvalMode: 'total', userGroups: []},
         settingsUi: null,
@@ -135,7 +135,9 @@ describe('WorkflowStagesInput', () => {
 
     const firstRemoveAction = [
       ...container!.querySelectorAll('craft-action-item'),
-    ].find((item) => item.textContent === 'Remove stage') as HTMLElement;
+    ].find(
+      (item) => item.textContent?.trim() === 'Remove stage'
+    ) as HTMLElement;
     firstRemoveAction.click();
     expect(updates.at(-1)?.map(({uid}) => uid)).toEqual(['new-stage']);
   });

@@ -14,6 +14,7 @@ use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use yii\db\ExpressionInterface;
 
 /**
  * Active Record base class.
@@ -146,6 +147,10 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      */
     private function _prepareValue(string $name, mixed $value): mixed
     {
+        if ($value instanceof ExpressionInterface) {
+            return $value;
+        }
+
         $columnType = static::getTableSchema()->getColumn($name)->dbType ?? null;
         return Query::prepareValueForDb($value, $columnType);
     }

@@ -176,11 +176,6 @@ class Table extends Control
         foreach ($this->columns as $key => $column) {
             $control = $column['control'] ?? null;
             $defaults[$key] ??= $column['value'] ?? ($control instanceof ControlContract ? $control->getValue() : null);
-
-            if (isset($column['prefixSelect'])) {
-                $prefix = $column['prefixSelect'];
-                $defaults[$prefix['key']] ??= $prefix['options'][0]['value'] ?? '';
-            }
         }
 
         return $defaults;
@@ -196,7 +191,7 @@ class Table extends Control
 
         foreach ($this->columns as $key => $column) {
             $column = array_replace($column, $cellOptions[$key] ?? []);
-            if (($column['type'] ?? null) === 'html' || ($column['html'] ?? false)) {
+            if (in_array($column['type'] ?? null, ['heading', 'html'], true) || ($column['html'] ?? false)) {
                 continue;
             }
 
@@ -205,14 +200,6 @@ class Table extends Control
                 $control->value($row[$key] ?? $this->rowDefaults()[$key] ?? null);
             }
             $ui->add(Field::make($column['heading'] ?? null, $control)->labelSrOnly()->required($column['required'] ?? false));
-
-            if (isset($column['prefixSelect'])) {
-                $prefix = $column['prefixSelect'];
-                $ui->add(Field::make($prefix['label'], Choice::make([$prefix['key']])
-                    ->options(TableColumn::options($prefix['options']))
-                    ->withoutPlaceholder()
-                    ->value($row[$prefix['key']] ?? $this->rowDefaults()[$prefix['key']] ?? null))->labelSrOnly());
-            }
         }
 
         return $ui;

@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {createApp, nextTick} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
-import MarkdownControl from '../forms/MarkdownControl.vue';
+import MarkdownControl from '../ui/MarkdownControl.vue';
 import './markdown-field';
 
 // The stylesheet's own text. happy-dom applies none of it, so an assertion

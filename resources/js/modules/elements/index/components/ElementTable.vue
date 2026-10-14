@@ -370,8 +370,4 @@
   :deep(.row--drop-child > td) {
     background-color: var(--c-color-accent-fill-quiet);
   }
-
-  .cp-table-row[data-is-folder] {
-    cursor: pointer;
-  }
 </style>

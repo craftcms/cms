@@ -25,7 +25,9 @@ The trail is a navigation landmark named by `label`, defaulting to a translated 
 
 A page with more than one set should name each of them. Two landmarks both called "Breadcrumbs" are indistinguishable in the list a screen reader offers.
 
-The current page is the last crumb and should have no `href` — it is where the person already is, so linking it goes nowhere.
+The current page is the last crumb and should have no `href` — it is where the person already is, so linking it goes nowhere. The trail marks whichever crumb comes last with `aria-current="page"`, so don't end it on anything but the current page.
+
+Separators are decorative and hidden from screen readers. A custom separator is hidden the same way, so don't put anything in it that the trail needs to convey.
 
 ## Properties
 

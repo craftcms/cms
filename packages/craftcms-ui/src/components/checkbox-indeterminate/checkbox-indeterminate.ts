@@ -1,7 +1,6 @@
 import {LionCheckboxIndeterminate} from '@lion/ui/checkbox-group.js';
 import {css, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
-import {choiceInputStyles} from '@src/styles/form.styles';
 import {SsrChoiceInputMixin} from '@src/mixins/SsrChoiceInputMixin';
 
 /**
@@ -71,7 +70,6 @@ export default class CraftCheckboxIndeterminate extends SsrChoiceInputMixin(
   static override get styles() {
     return [
       ...LionCheckboxIndeterminate.styles,
-      choiceInputStyles,
       css`
         :host {
           display: flex;
