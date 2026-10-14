@@ -53,7 +53,7 @@ readonly class Elements
 
     private const array FieldValuesSchema = [
         'type' => 'object',
-        'description' => 'Custom field values keyed by field handle. Call elements.field-schema for the applicable schema.',
+        'description' => 'Custom field values keyed by field handle. Values must match the schema from elements.field-schema.',
         'additionalProperties' => true,
     ];
 
@@ -411,7 +411,11 @@ readonly class Elements
         $adapter = $this->adapters->find($type);
 
         if ($adapter === null) {
-            throw new ResourceReadException("Unsupported element type [$type].");
+            throw new ResourceReadException(sprintf(
+                'Unsupported element type [%s]. Supported types: %s.',
+                $type,
+                implode(', ', $this->adapters->handles()),
+            ));
         }
 
         return $adapter->schema();

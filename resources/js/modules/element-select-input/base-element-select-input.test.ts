@@ -1,3 +1,4 @@
+import jquery from 'jquery';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {
   BaseElementSelectInput,
@@ -126,6 +127,41 @@ it('routes its injected chip actions through those methods', () => {
 
   actions[1].callback();
   expect(removeElement).toHaveBeenCalledWith($chip);
+});
+
+it("moves elements from their reorder buttons' menus", () => {
+  vi.stubGlobal('$', jquery);
+
+  class UninitializedElementSelectInput extends BaseElementSelectInput {}
+
+  const input = new UninitializedElementSelectInput();
+  const list = document.createElement('ul');
+  list.innerHTML =
+    '<li><div class="element"><craft-reorder-button></craft-reorder-button></div></li>';
+  input.$elementsContainer = jquery(list);
+  input.moveElementForward = vi.fn();
+  input.moveElementBackward = vi.fn();
+  input.initReorderButtons();
+
+  const button = list.querySelector('craft-reorder-button')!;
+  const reorder = (direction: 'up' | 'down') =>
+    button.dispatchEvent(
+      new CustomEvent('craft-reorder', {
+        bubbles: true,
+        composed: true,
+        detail: {direction},
+      })
+    );
+
+  reorder('up');
+  expect(input.moveElementForward).toHaveBeenCalledOnce();
+  expect(vi.mocked(input.moveElementForward).mock.calls[0]![0][0]).toBe(button);
+
+  reorder('down');
+  expect(input.moveElementBackward).toHaveBeenCalledOnce();
+  expect(vi.mocked(input.moveElementBackward).mock.calls[0]![0][0]).toBe(
+    button
+  );
 });
 
 /**

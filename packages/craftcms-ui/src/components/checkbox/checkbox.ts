@@ -1,6 +1,5 @@
 import {LionCheckbox} from '@lion/ui/checkbox-group.js';
 import {css, type PropertyValues} from 'lit';
-import {choiceInputStyles} from '@src/styles/form.styles';
 import {property} from 'lit/decorators.js';
 import {SsrChoiceInputMixin} from '../../mixins/SsrChoiceInputMixin.js';
 
@@ -115,7 +114,6 @@ export default class CraftCheckbox extends SsrChoiceInputMixin(LionCheckbox) {
   static override get styles() {
     return [
       ...LionCheckbox.styles,
-      choiceInputStyles,
       css`
         /* same as radio, potentially consolidate */
         :host(:not([label-sr-only])) {

@@ -218,7 +218,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function uiControl(FieldContext $context): Control
     {
         $value = $context->value instanceof LinkData
-            ? $context->value->serialize()
+            ? [...$context->value->serialize(), 'defaultLabel' => $context->value->getLabel(false)]
             : $context->value;
 
         $types = array_values(array_map(
@@ -229,7 +229,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return LinkControl::make($context->path)
             ->types($types)
             ->showLabelField($this->showLabelField)
-            ->advancedFields(array_values(array_intersect($this->advancedFields, ['urlSuffix', 'title'])))
+            ->advancedFields(array_values($this->advancedFields))
             ->value($value);
     }
 

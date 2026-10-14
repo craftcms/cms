@@ -579,3 +579,24 @@ it('centers a truncated label on its capitals without clipping its descenders', 
   expect(capTop - body.top).toBeCloseTo(body.bottom - capBottom, 0);
   expect(range.getBoundingClientRect().bottom).toBeLessThanOrEqual(rect.bottom);
 });
+
+it('draws a selected chip with the accent’s normal border', async () => {
+  document.body.innerHTML = `
+    <span class="probe" style="border: 1px solid var(--c-color-accent-border-normal)"></span>
+    <craft-chip selectable selected>Label</craft-chip>
+    <craft-chip selectable selected appearance="plain">Label</craft-chip>`;
+  const [chip, plain] = Array.from(document.querySelectorAll('craft-chip'));
+  await Promise.all([chip!.updateComplete, plain!.updateComplete]);
+
+  const expected = getComputedStyle(
+    document.querySelector('.probe')!
+  ).borderTopColor;
+
+  expect(
+    getComputedStyle(chip!.shadowRoot!.querySelector('.cp-chip')!)
+      .borderTopColor
+  ).toBe(expected);
+  expect(
+    getComputedStyle(plain!.shadowRoot!.querySelector('.cp-chip')!).outlineColor
+  ).toBe(expected);
+});

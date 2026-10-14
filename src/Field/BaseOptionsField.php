@@ -317,13 +317,13 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $columns['icon'] = ['heading' => t('Icon'), 'type' => 'icon', 'class' => 'thin'];
         }
         if (static::$optionColors) {
-            $columns['color'] = ['heading' => t('Color'), 'type' => 'color'];
+            $columns['color'] = ['heading' => t('Color'), 'type' => 'color', 'class' => 'thin'];
         }
         $columns['default'] = [
             'heading' => t('Default?'),
             'type' => 'checkbox',
             'radioMode' => ! static::$multi,
-            'class' => 'thin',
+            'class' => 'thin centered',
         ];
 
         $rows = array_map(function (array $option): array {

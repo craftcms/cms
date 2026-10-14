@@ -17,6 +17,10 @@ import * as DisclosureStories from './disclosure.stories';
 
 <Canvas of={DisclosureStories.DefaultInvoker} sourceState="shown" />
 
+The default invoker is a `plain`, `flush` button with a chevron after its label. The chevron points toward the end of the line while the disclosure is closed (right, or left in right-to-left text) and down while it's open. A slotted `craft-button` invoker with a chevron `icon` follows along, its chevron moved after its label.
+
+In slotted mode, the content hangs off a hairline at the disclosure's start edge. Set `appearance="plain"` to drop the hairline and indent.
+
 **External-target mode** wraps a bare `button` whose `aria-controls` names an element elsewhere in the document. Toggling flips that target's `data-state` between `expanded` and `collapsed`, and your CSS hides or shows it.
 
 That second mode exists for server-rendered markup, where the trigger and the thing it reveals are rendered in different places and cannot be nested. It can also persist the state to a cookie via `cookie-name`, so a section stays as a person left it.

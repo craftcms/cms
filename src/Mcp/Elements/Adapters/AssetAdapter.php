@@ -155,7 +155,7 @@ class AssetAdapter extends BaseElementAdapter
         $relocation = $this->relocation($element, $attributes, $actor);
 
         Typecast::configure($element, Arr::except($attributes, ['filename', 'folderId']));
-        $element->setFieldValues($fields);
+        $this->setFieldValues($element, $fields);
         $this->authorizeSave($actor, $element);
 
         if ($relocation === null) {
@@ -175,7 +175,7 @@ class AssetAdapter extends BaseElementAdapter
         $this->authorizeSave($actor, $element);
         $this->relocation($element, $attributes, $actor);
         Typecast::configure($element, $attributes);
-        $element->setFieldValues($fields);
+        $this->setFieldValues($element, $fields);
         $this->authorizeSave($actor, $element);
     }
 
