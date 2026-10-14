@@ -408,8 +408,14 @@ abstract class BaseField extends FieldLayoutElement
     protected function noticeSettingsNodes(UiContext $context): array
     {
         return [
-            Field::make(t('Tip'), Textarea::make('tip')->rows(1)->value($this->tip)),
-            Field::make(t('Warning'), Textarea::make('warning')->rows(1)->value($this->warning)),
+            Field::make(t('Tip'), Textarea::make('tip')
+                ->rows(1)
+                ->value($this->tip)
+                ->placeholder($this->defaultTip())),
+            Field::make(t('Warning'), Textarea::make('warning')
+                ->rows(1)
+                ->value($this->warning)
+                ->placeholder($this->defaultWarning())),
         ];
     }
 
@@ -955,7 +961,18 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function tipText(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->tip ? t($this->tip, category: 'site') : null;
+        return $this->tip ? t($this->tip, category: 'site') : $this->defaultTip($element, $static);
+    }
+
+    /**
+     * Returns the field’s default tip text, which will be used if [[tip]] is null.
+     *
+     * @param  ElementInterface|null  $element  The element the form is being rendered for
+     * @param  bool  $static  Whether the form should be static (non-interactive)
+     */
+    protected function defaultTip(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return null;
     }
 
     /**
@@ -966,7 +983,18 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function warningText(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->warning ? t($this->warning, category: 'site') : null;
+        return $this->warning ? t($this->warning, category: 'site') : $this->defaultWarning($element, $static);
+    }
+
+    /**
+     * Returns the field’s default warning text, which will be used if [[warning]] is null.
+     *
+     * @param  ElementInterface|null  $element  The element the form is being rendered for
+     * @param  bool  $static  Whether the form should be static (non-interactive)
+     */
+    protected function defaultWarning(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return null;
     }
 
     /**

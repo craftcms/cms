@@ -75,6 +75,8 @@ class FieldEditViewModel extends ViewModel
                 ->required(),
             UiField::make(t('Default Instructions'), Textarea::make('instructions'))
                 ->instructions(t('Helper text to guide the author.')),
+            UiField::make(t('Default Tip'), Textarea::make('tip')->rows(1)),
+            UiField::make(t('Default Warning'), Textarea::make('warning')->rows(1)),
             UiField::make(t('Use this field’s values as search keywords'), Lightswitch::make('searchable')),
         ];
         $typeField = UiField::make(t('Field Type'), Combobox::make('type')
@@ -138,6 +140,8 @@ class FieldEditViewModel extends ViewModel
                 'name' => $this->field->name ?? '',
                 'handle' => $this->field->handle ?? '',
                 'instructions' => $this->field->instructions ?? '',
+                'tip' => $this->field->tip ?? '',
+                'warning' => $this->field->warning ?? '',
                 'searchable' => $this->field->searchable,
                 'translationMethod' => $translationMethod,
                 'translationKeyFormat' => $this->field->translationKeyFormat ?? '',
