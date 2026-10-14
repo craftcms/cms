@@ -54,7 +54,7 @@ class ImportHelper
     }
 
     /**
-     * Normalizes match criteria coming from an importer config (UI or file-based)
+     * Normalizes match criteria coming from an importer config (UI or a registered import plan)
      * into an array where keys are the fields/attributes/properties to update,
      * and values containing the incoming data keys.
      *
@@ -64,17 +64,17 @@ class ImportHelper
     {
         // for the same key, the order of importance is (see Import::importItem()):
         // matchCriteria coming from the incoming data, are merged with and overwritten by
-        // matchCriteria coming from the UI or file-based config (those two never exist together), are merged with and overwritten by
+        // matchCriteria coming from the UI or a registered import plan (those two never exist together), are merged with and overwritten by
         // the BaseTransformer::additionalMatchCriteria() values (if custom transformer is specified)
 
         // get the map
         $map = $importer->map;
 
-        // get the matchCriteria that are coming from the UI or from a file-based config
+        // get the matchCriteria that are coming from the UI or from a registered import plan
         $matchCriteria = $importer->matchCriteria ?? [];
 
         // ones coming from the UI will have a value of 1
-        // ones coming from the file-based config should be strings that point to the original data keys
+        // ones coming from a registered import plan should be strings that point to the original data keys
 
         // for the ones coming from the UI - we need to resolve those to the mapped column names
         $dottedMap = Arr::dot($map);

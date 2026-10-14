@@ -7,7 +7,7 @@ Bulk-imports data from a JSON, CSV or XML source (a local file or a URL) into Cr
 create new records or find and update existing ones, and it understands nested content (Matrix,
 Addresses, Content Blocks) to arbitrary depth.
 
-Three ways to drive it: the control panel, a PHP config file, or the CLI.
+Three ways to drive it: the control panel, import plans registered in code, or the CLI.
 
 ---
 
@@ -21,43 +21,48 @@ importer instance with its own `uid`, `type` (the importer FQCN), `source`, `tra
 `fieldSettings`). Two flavours:
 
 - **Editable** — created in the CP, stored in `import_plans`.
-- **Non-editable** — defined in `config/craft/import.php`, read via
-  `Config::get('craft.import')`.
+- **Non-editable** — registered in code from a service provider's `boot()` via
+  `ImportPlan::register()`. They're never stored, and since they live outside the config,
+  `artisan config:cache` isn't affected by their closures.
 
 `ImportPlan::isEditable()` reads the `$editable` flag, which is set for plans loaded from the
-database. `ImportPlan::getAllImportPlans()` (`src/Import/ImportPlan.php:69`) lists DB plans
-first, in their saved `sortOrder` (then name, then handle), followed by file-based plans sorted
-by name. The result is keyed by handle and memoized. An invalid file-based plan is **skipped and
-logged** as a warning rather than blowing up the list.
+database. `ImportPlan::getAllImportPlans()` (`src/Import/ImportPlan.php:128`) lists DB plans
+first, in their saved `sortOrder` (then name, then handle), followed by registered plans sorted
+by name. The result is keyed by handle and memoized. Registered plans are created lazily, the
+first time the list is built, and re-created whenever it's rebuilt after a save, delete or
+reorder. An invalid registered plan is **skipped and logged** as a warning rather than blowing up
+the list.
 
 New and duplicated editable plans are appended to the end of the order (`nextSortOrder()`);
 `reorderImportPlans(array $uids)` saves a new order.
 
-### File-based plan shape
+### Registering an import plan
 
-Returns an array of closures, each returning a configured import plan. Steps can be given as
+Register a handle with a factory that returns a configured import plan. Steps can be given as
 importer instances or as step arrays:
 
 ```php
-return [
-    'entriesFromFile' => fn () => new ImportPlan()
+public function boot(ImportPlan $importPlans): void
+{
+    $importPlans->register('entriesFromFile', fn () => new ImportPlanData()
         ->name('Entries from file')
-        ->handle('entriesFromFile')
         ->steps([
             EntryImporter::create()
                 ->source('resources/import/entry-with-plain-text.json')
                 ->site('default')
+                ->section('news')
                 ->matchCriteria(['title' => 'title']),
-        ]),
-];
+        ]));
+}
 ```
 
-Plans are re-keyed by `handle` (the array key is the fallback when a plan has none), but only
-after the file-based plans have been merged into the DB ones with `+` (`src/Import/ImportPlan.php:91`).
-The DB plans are a 0-indexed list, so the config file must use string keys — a file-based plan
-under a numeric key that matches a DB plan's index is silently dropped. File-based steps typically
-set no `->map()` and no field layout; the transformer (or the per-row `type`/`sectionId` data)
-does that work, which is why one step can span multiple sections and entry types.
+`register()` only stores the factory; it's called through the container when the list is built,
+so it can type-hint dependencies. The registered handle is the plan's handle: a plan that sets
+none gets it, and one that sets a different handle is skipped and logged. Registering a handle
+twice throws an `InvalidArgumentException`; `remove(...$handles)` unregisters plans (e.g. to
+replace one). Registered steps typically set no `->map()` and no field layout; the transformer
+(or the per-row `type`/`sectionId` data) does that work, which is why one step can span multiple
+sections and entry types.
 
 ### What's persisted for an editable plan
 
@@ -96,7 +101,7 @@ rebinding, and doesn't follow redirects. A remote file's data type comes from th
 `Content-Type`, falling back to the URL path's extension, and its contents are then checked like
 a local file's.
 
-File-based plans are validated every time they're loaded, so their URLs are checked without
+Registered plans are validated every time they're loaded, so their URLs are checked without
 resolving the hostname (`resolveHost: false`); the import job validates the step fully before
 downloading. `withLocalFile(Closure $callback)` hands a local path to one-off callers (the CLI,
 mapping), downloading a remote source to a temp file and deleting it afterwards.
@@ -492,9 +497,9 @@ warning that import plans can create and update data regardless of the user's ot
 
 Screens are Vue/Inertia under `resources/js/pages/import/`, backed by `ImportPlansController`:
 
-- `import` — two tables, editable and file-based. Editable rows get Edit, plus Run (with
+- `import` — two tables, editable and registered (non-editable). Editable rows get Edit, plus Run (with
   `triggerImportPlans`), Duplicate (with `saveImportPlans`) and Delete (with `deleteImportPlans`);
-  file-based rows get Run only (with `triggerImportPlans`). Run queues the plan via `dispatchImport()`. With
+  registered rows get Run only (with `triggerImportPlans`). Run queues the plan via `dispatchImport()`. With
   `saveImportPlans`, the editable table can be reordered by drag and drop (`import/reorder`,
   rolled back client-side if the request fails).
 - `import/new|{handle}` — name, handle, description, then the **Steps** list
@@ -576,6 +581,8 @@ Registries (register from a service provider's `boot()`; see `Component\TypeRegi
   `ModelImporter` subclass that implements `targetClass()`.
 - `Import\FieldHandlers\FieldImportHandlers` — `$handlers->register(MyFieldImportHandler::class);`
   (keyed by the handler's `fieldClass()`; see §7).
+- `Import\ImportPlan` — `$importPlans->register('myHandle', fn () => new ImportPlanData()...);`
+  registers a non-editable import plan (keyed by handle; see §2).
 - `ItemImporting` / `ItemImported` (the latter with `$importedItem`),
   `ImportPlanSaving` / `ImportPlanSaved`, `ImportDispatching` / `ImportDispatched`.
   The `*ing` variants are cancelable: a listener sets `$event->isValid = false` (`ValidatableEvent`).

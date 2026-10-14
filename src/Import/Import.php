@@ -195,7 +195,7 @@ class Import
         //      the key is the property, field handle or column name in the system
         //      a string value is replaced by the item's own value for that key (from the item or its `fields`), if it has one;
         //      otherwise (or if it isn't a string) the value is used to match on as it is
-        // 2. matchCriteria coming from the importer config (either UI- or file-based);
+        // 2. matchCriteria coming from the importer config (either from the UI or a registered import plan);
         //      those values are the same for all the items in the import (it doesn't change for the entire import step),
         //      which is why we grab it once, in the Import job
         // 3. matchCriteria coming from the BaseTransformer::additionalMatchCriteria() method - if the import uses a transformer that has it

@@ -12,6 +12,8 @@ use Override;
 
 /**
  * @method static ?BaseImporter createImporter(array $step)
+ * @method static void register(string $handle, \Closure $factory)
+ * @method static void remove(string ...$handles)
  * @method static LaravelCollection getAllImportPlans()
  * @method static LaravelCollection getEditableImportPlans()
  * @method static LaravelCollection getNonEditableImportPlans()

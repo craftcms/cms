@@ -47,7 +47,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
 
     /**
      * Whether this import plan is stored in the database, and so editable via the control panel.
-     * File-based import plans, declared through the `craft.import` config, are not.
+     * Import plans registered in code, via `ImportPlan::register()`, are not.
      */
     public bool $editable = false;
 
@@ -222,7 +222,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
      * Validates each step against its own importer type's rules, folding any errors back into
      * the import plan's error bag under `steps.<key>.<attribute>`.
      *
-     * File-based import plans are validated whenever they're loaded, so their URLs' hostnames aren't
+     * Registered import plans are validated whenever they're loaded, so their URLs' hostnames aren't
      * resolved here; the import job validates the step fully before downloading its file.
      */
     #[Override]
@@ -291,7 +291,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
 
     /**
      * Determines whether the import plan is stored in the database, and therefore editable via the
-     * control panel. File-based import plans are not.
+     * control panel. Registered import plans are not.
      */
     public function isEditable(): bool
     {

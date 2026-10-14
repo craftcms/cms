@@ -76,7 +76,7 @@ abstract class BaseImporter
      * array => key is the field/attribute handle to clear when the incoming data doesn't provide a value for it
      *  (or provides an empty one); value is truthy (1/true) to mark it as clearable;
      *  the array can be multidimensional to reach into container fields, mirroring $matchCriteria's shape;
-     *  for convenience, file-based configs may instead provide a flat list of dot-notation handles
+     *  for convenience, registered import plans may instead provide a flat list of dot-notation handles
      *  (e.g. ['heading', 'body']), which gets normalized into the nested truthy-leaf shape;
      *
      *  null => nothing is cleared; missing/empty incoming values are left untouched

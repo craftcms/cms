@@ -10,7 +10,6 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\ImportPlan;
 use CraftCms\Cms\Support\Facades\Fields;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -113,30 +112,26 @@ it('validateTransformer passes for a transformer class and an empty value, and f
         ->and($failing)->toHaveKey('transformer');
 });
 
-it('excludes an invalid file-based import from getAllImportPlans', function () {
-    Config::set('craft.import', [
-        'invalidFileImport' => fn () => new ImportPlanData()
-            ->name('Invalid File Import')
-            ->handle('invalidFileImport')
-            ->steps([]),
-    ]);
-
+it('excludes an invalid registered import from getAllImportPlans', function () {
     $imports = app(ImportPlan::class);
+
+    $imports->register('invalidFileImport', fn () => new ImportPlanData()
+        ->name('Invalid File Import')
+        ->handle('invalidFileImport')
+        ->steps([]));
 
     expect($imports->getAllImportPlans()->has('invalidFileImport'))->toBeFalse()
         ->and($imports->getNonEditableImportPlans()->has('invalidFileImport'))->toBeFalse()
         ->and($imports->getImportPlanByHandle('invalidFileImport'))->toBeNull();
 });
 
-it('excludes only the file-based import whose source alias isn’t defined', function () {
-    Config::set('craft.import', [
-        'badAlias' => fn () => new ImportPlanData()
-            ->name('Bad Alias')
-            ->handle('badAlias')
-            ->steps([['type' => EntryImporter::class, 'source' => '@nope/entries.json']]),
-    ]);
-
+it('excludes only the registered import whose source alias isn’t defined', function () {
     $imports = app(ImportPlan::class);
+
+    $imports->register('badAlias', fn () => new ImportPlanData()
+        ->name('Bad Alias')
+        ->handle('badAlias')
+        ->steps([['type' => EntryImporter::class, 'source' => '@nope/entries.json']]));
 
     expect(fn () => $imports->getAllImportPlans())->not->toThrow(Throwable::class)
         ->and($imports->getAllImportPlans()->has('badAlias'))->toBeFalse();
@@ -161,7 +156,7 @@ it('leaves out a step whose importer can’t be created instead of failing', fun
     expect($importPlan->steps)->toBe([]);
 });
 
-it('doesn’t resolve URL hostnames when validating a file-based import', function () {
+it('doesn’t resolve URL hostnames when validating a registered import', function () {
     $step = new EntryImporter(['type' => EntryImporter::class, 'source' => 'https://unresolvable.invalid/entries.json']);
 
     $fileBased = new ImportPlanData()->name('Remote')->handle('remote')->steps([$step]);

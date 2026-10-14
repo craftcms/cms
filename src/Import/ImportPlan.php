@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
+use Closure;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportPlanSaved;
@@ -13,24 +14,82 @@ use CraftCms\Cms\Import\Models\ImportPlan as ImportPlanModel;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection as LaravelCollection;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Throwable;
 
 /**
+ * Manages import plans: editable ones stored in the database, and non-editable ones registered in code.
+ *
+ * Non-editable import plans are registered as factories, which aren't called until the import plans
+ * are first needed.
+ *
+ * ```php
+ * public function boot(ImportPlan $importPlans): void
+ * {
+ *     $importPlans->register('entriesFromFile', fn () => new ImportPlanData()
+ *         ->name('Entries from file')
+ *         ->steps([
+ *             EntryImporter::create()
+ *                 ->source('resources/import/entries.json')
+ *                 ->section('news'),
+ *         ]));
+ * }
+ * ```
+ *
  * @since 6.0.0
  */
 #[Singleton]
 class ImportPlan
 {
+    /** @var array<string, Closure> */
+    private array $registeredImportPlans = [];
+
     /**
      * @param  LaravelCollection<array-key, ImportPlanData>|null  $importPlans  The cached collection of import plans.
      */
     public function __construct(
+        private readonly Container $container,
         private ?LaravelCollection $importPlans = null,
     ) {}
+
+    /**
+     * Registers a factory for a non-editable import plan. The factory must return an import plan
+     * whose handle is either unset or matches the registered handle.
+     *
+     * @param  string  $handle  The import plan's handle.
+     * @param  Closure  $factory  The factory that creates the import plan.
+     */
+    public function register(string $handle, Closure $factory): void
+    {
+        if ($handle === '') {
+            throw new InvalidArgumentException('Import plan handles cannot be empty.');
+        }
+
+        if (isset($this->registeredImportPlans[$handle])) {
+            throw new InvalidArgumentException("Import plan [$handle] is already registered.");
+        }
+
+        $this->registeredImportPlans[$handle] = $factory;
+        $this->importPlans = null;
+    }
+
+    /**
+     * Removes registered non-editable import plans.
+     *
+     * @param  string  ...$handles  The handles of the import plans to remove.
+     */
+    public function remove(string ...$handles): void
+    {
+        foreach ($handles as $handle) {
+            unset($this->registeredImportPlans[$handle]);
+        }
+
+        $this->importPlans = null;
+    }
 
     /**
      * Instantiates an importer from an import plan step, applying its properties and decoded
@@ -62,7 +121,7 @@ class ImportPlan
 
     /**
      * Lazily loads/caches all import plans, merging DB-stored import plans, in their saved order,
-     * with the file-based `craft.import` config, sorted by name, keyed by handle.
+     * with the registered ones, sorted by name, keyed by handle.
      *
      * @return LaravelCollection<array-key, ImportPlanData>
      */
@@ -74,25 +133,54 @@ class ImportPlan
                 $this->_importPlanQuery()->get()->all(),
             );
 
-            $fileImportPlans = array_filter(array_map(function ($fileImportPlan) {
-                $fileImportPlan = $fileImportPlan();
+            $registeredImportPlans = [];
 
-                if (! $fileImportPlan->validate()) {
-                    ImportLog::warning("Skipping invalid file-based import plan \"{$fileImportPlan->handle}\": ".implode(' ', $fileImportPlan->errors()->all()));
+            foreach ($this->registeredImportPlans as $handle => $factory) {
+                $importPlan = $this->resolveRegisteredImportPlan($handle, $factory);
 
-                    return null;
+                if ($importPlan !== null) {
+                    $registeredImportPlans[$handle] = $importPlan;
                 }
+            }
 
-                return $fileImportPlan;
-            }, Config::get('craft.import', [])));
+            $registeredImportPlans = new LaravelCollection($registeredImportPlans)->all();
 
-            $fileImportPlans = new LaravelCollection($fileImportPlans)->sortBy('name')->all();
-
-            $this->importPlans = new LaravelCollection($dbImportPlans + $fileImportPlans)
+            $this->importPlans = new LaravelCollection($dbImportPlans + $registeredImportPlans)
                 ->keyBy(fn (ImportPlanData $item, $key) => $item->handle ?? $key);
         }
 
         return $this->importPlans;
+    }
+
+    /**
+     * Calls a registered import plan's factory and validates the result. Returns null, and logs a
+     * warning, if the import plan is invalid or its handle doesn't match the registered one.
+     */
+    private function resolveRegisteredImportPlan(string $handle, Closure $factory): ?ImportPlanData
+    {
+        $importPlan = $this->container->call($factory);
+
+        if (! $importPlan instanceof ImportPlanData) {
+            ImportLog::warning("Skipping registered import plan \"$handle\": its factory must return an import plan.");
+
+            return null;
+        }
+
+        $importPlan->handle ??= $handle;
+
+        if ($importPlan->handle !== $handle) {
+            ImportLog::warning("Skipping registered import plan \"$handle\": its handle doesn’t match the registered one (\"{$importPlan->handle}\").");
+
+            return null;
+        }
+
+        if (! $importPlan->validate()) {
+            ImportLog::warning("Skipping invalid registered import plan \"$handle\": ".implode(' ', $importPlan->errors()->all()));
+
+            return null;
+        }
+
+        return $importPlan;
     }
 
     /**
@@ -106,7 +194,7 @@ class ImportPlan
     }
 
     /**
-     * Filters all import plans down to non-editable (file-based) ones.
+     * Filters all import plans down to non-editable (registered) ones.
      *
      * @return LaravelCollection<array-key, ImportPlanData>
      */
@@ -119,7 +207,7 @@ class ImportPlan
      * Looks up an import plan by handle, optionally restricted to editable import plans.
      *
      * Falls back to querying the DB directly while the cache is still being built, so that
-     * validating a file-based import plan — which checks its handle against the saved ones —
+     * validating a registered import plan — which checks its handle against the saved ones —
      * doesn't re-enter `getAllImportPlans()`.
      *
      * @param  string|null  $handle  The import plan handle to look up.

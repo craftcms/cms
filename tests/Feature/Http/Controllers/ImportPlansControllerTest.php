@@ -420,6 +420,22 @@ it('saves and maps a model importer step', function () {
         ->and($importer->matchCriteria)->toBe(['key' => 'key']);
 });
 
+it('lists a registered import plan alongside the saved ones, keyed by its registered handle', function () {
+    $imports = app(ImportPlan::class);
+
+    $imports->register('registeredImport', fn () => new ImportPlanData()
+        ->name('Registered Import')
+        ->steps([($this->entryStep)()]));
+
+    expect($imports->getAllImportPlans()->keys()->all())->toBe(['registeredImport']);
+
+    ($this->createImportPlan)('Saved Import', 'savedImport');
+
+    expect($imports->getEditableImportPlans()->keys()->all())->toBe(['savedImport'])
+        ->and($imports->getNonEditableImportPlans()->keys()->all())->toBe(['registeredImport'])
+        ->and($imports->getImportPlanByHandle('registeredImport')?->isEditable())->toBeFalse();
+});
+
 it('saves the order the editable import plans are put in', function () {
     ($this->createImportPlan)('Alpha', 'alpha');
     ($this->createImportPlan)('Bravo', 'bravo');

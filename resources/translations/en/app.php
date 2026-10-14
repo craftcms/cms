@@ -2026,7 +2026,7 @@ return [
     'This {type} doesn’t have revisions.' => 'This {type} doesn’t have revisions.',
     'This {type} has been edited.' => 'This {type} has been edited.',
     'This {type} has been updated.' => 'This {type} has been updated.',
-    'Those import plans can be edited in the config file.' => 'Those import plans can be edited in the config file.',
+    'Those import plans are registered in code and can’t be edited in the control panel.' => 'Those import plans are registered in code and can’t be edited in the control panel.',
     'Those import plans can be edited in the control panel.' => 'Those import plans can be edited in the control panel.',
     'Thumbnail Alignment' => 'Thumbnail Alignment',
     'Thumbnail Source' => 'Thumbnail Source',

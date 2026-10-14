@@ -54,7 +54,7 @@ it('gives a user who can view import plans the edit URL of an editable plan', fu
     expect($importPlan->getCpEditUrl())->toBe(Url::cpUrl('import/myImport'));
 });
 
-it('gives a file-based plan no edit URL, even for an admin', function () {
+it('gives a registered plan no edit URL, even for an admin', function () {
     actingAs(User::find()->admin()->one());
 
     $importPlan = new ImportPlanData(['handle' => 'fileBased', 'editable' => false]);

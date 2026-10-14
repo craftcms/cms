@@ -252,7 +252,11 @@
         <div>
           <h2>{{ t('Non-Editable Import Plans') }}</h2>
           <p>
-            {{ t('Those import plans can be edited in the config file.') }}
+            {{
+              t(
+                'Those import plans are registered in code and can’t be edited in the control panel.'
+              )
+            }}
           </p>
         </div>
         <AdminTable :table="nonEditableTable" :reorderable="false"></AdminTable>
