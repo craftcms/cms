@@ -29,7 +29,13 @@ Without that, upgrading would reset the control to the component's own defaults 
 
 Lion wires the label and any validation feedback to the input, so a labeled checkbox is announced with its state and its name.
 
-Label every checkbox. An unlabeled one is announced only as "checkbox", which tells a person the shape of the control and nothing about what ticking it does.
+Label every checkbox. An unlabeled one is announced only as "checkbox", which tells a person the shape of the control and nothing about what ticking it does. The label should say what checking the box does, and clicking it toggles the box, which also gives pointer users a larger target.
+
+Use `label-sr-only` only when the surrounding content already names the box, such as a checkbox in a table row.
+
+`indeterminate` is announced as "mixed", so keep it in step with the items it stands for. If it summarizes a set of nested checkboxes, use [Checkbox Indeterminate](?path=/docs/form-controls-choice-controls-checkbox-indeterminate--docs), which keeps it in step for you.
+
+Write validation messages that say how to fix the choice, not just that it's wrong.
 
 ## Properties
 
