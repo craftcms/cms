@@ -313,10 +313,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             foreach ($config['siteSettings'] as &$siteSettings) {
                 if (is_array($siteSettings)) {
                     unset($siteSettings['heading']);
-                    if (isset($siteSettings['routeType'])) {
+                    if (array_key_exists('destination', $siteSettings)) {
                         $settings = new ElementSiteSettings;
                         $settings->applyForm($siteSettings);
-                        unset($siteSettings['routeType']);
+                        unset($siteSettings['destination']);
                         $siteSettings = [
                             ...$siteSettings,
                             ...Arr::only($settings->toArray(), ['template', 'route']),
@@ -459,7 +459,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ],
         ];
         if (! Cms::config()->headlessMode) {
-            $siteColumns['route'] = ElementSiteSettings::routeColumn();
+            $siteColumns['destination'] = ElementSiteSettings::destinationColumn(Entry::class);
         }
 
         $indexViewModes = array_values(array_map(fn (array $viewMode): array => [

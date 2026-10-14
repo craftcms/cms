@@ -306,6 +306,13 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
    * name, so the check waits until it's visible.
    */
   #checkAccessibleName(): void {
+    // Removed while the check waited on its icons. Detached, the button is its
+    // own root, which can't resolve an `aria-labelledby` ID, and there's no
+    // longer anything to flag.
+    if (!this.isConnected) {
+      return;
+    }
+
     // In link mode the host is role="presentation" (name not computable on
     // it); the real accessible element is the inner anchor.
     const nameTarget = this.isLink

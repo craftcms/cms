@@ -107,4 +107,11 @@
   .asset-preview :deep(.preview-thumb-container) {
     overflow: hidden;
   }
+
+  /* On the wrapper, not the container: an image's container is themed dark,
+     which would resolve the border to the dark theme's color, and its
+     background would show through the border. */
+  .asset-preview {
+    border-block-end: 1px solid var(--c-color-border-quiet);
+  }
 </style>

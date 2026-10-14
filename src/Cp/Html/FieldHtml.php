@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Html;
 
 use CraftCms\Cms\Component\Contracts\Chippable;
-use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Icons;
@@ -68,7 +67,8 @@ readonly class FieldHtml
             /** @var class-string<ElementInterface> $type */
             /** @phpstan-ignore-next-line */
             foreach ($type::fieldLayouts(null) as $layout) {
-                if (isset($typeLayouts[$layout->uid]) && $layout->provider instanceof Chippable) {
+                // Not just chippable providers: asset volumes have labels and edit URLs too
+                if (isset($typeLayouts[$layout->uid]) && $layout->provider !== null && method_exists($layout->provider, 'getUiLabel')) {
                     $layoutsWithProviders[] = $layout;
                     unset($typeLayouts[$layout->uid]);
                 }
@@ -85,16 +85,10 @@ readonly class FieldHtml
             $icon = $provider instanceof Iconic ? $provider->getIcon() : null;
 
             $labelHtml = Html::beginTag('span', [
-                'class' => ['flex', 'flex-nowrap', 'gap-s'],
+                'class' => ['flex', 'flex-nowrap', 'items-center', 'gap-1'],
             ]);
             if ($icon) {
-                $labelHtml .= Html::tag('div', Icons::svg($icon), [
-                    'class' => array_filter([
-                        'cp-icon',
-                        'small',
-                        $provider instanceof Colorable ? $provider->getColor()?->value : null,
-                    ]),
-                ]);
+                $labelHtml .= Html::tag('craft-icon', '', Icons::resolveIconData($icon));
             }
             $labelHtml .= Html::tag('span', Html::encode($label)).
                 Html::endTag('span');
