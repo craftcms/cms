@@ -290,6 +290,49 @@ Model attributes read like any other element property, and custom fields by thei
 
 Templates written in the control panel are rendered sandboxed, such as object templates and generated fields. In those, an element's model attributes can be read except the ones listed in the model's `$hidden` property, so a column the app keeps out of serialization, like an API token, also stays out of those templates. Sandboxed templates can't call `getModel()`.
 
+## Relating elements to records
+
+To let editors relate elements, such as entries, to an element type's elements, give the type a relation field type. Extend `EloquentElementsField` and return the element type:
+
+```php
+use CraftCms\Cms\Element\Eloquent\EloquentElementsField;
+
+class CustomersField extends EloquentElementsField
+{
+    public static function elementType(): string
+    {
+        return Customer::class;
+    }
+}
+```
+
+Then return the field type from the element type, so registering the element type registers the field type too:
+
+```php
+public static function relationFieldType(): ?string
+{
+    return CustomersField::class;
+}
+```
+
+The field type is listed as **Customers**, with the element type's nav icon. Its settings work as they do for Craft's own relation fields. Override `defaultSelectionLabel()` to replace the default **Choose** label, for example with **Add a customer**.
+
+Related elements load like any other relation field's value:
+
+```twig
+{% for customer in entry.customers.all() %}
+    {{ customer.name }}
+{% endfor %}
+
+{% set entries = craft.entries().relatedTo(customer).all() %}
+```
+
+Eager-load the field with `.with(['customers'])` like any other relation field.
+
+Craft stores a field's type by its class name. Renaming the field type class breaks the fields that use it.
+
+These fields aren't available in GraphQL, because Eloquent element types have no GraphQL types.
+
 ## Permissions
 
 ### Craft permissions

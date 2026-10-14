@@ -144,6 +144,16 @@ abstract class EloquentElement extends Element
     }
 
     /**
+     * The field type that relates elements to this type's elements, registered along with the type.
+     *
+     * @return class-string<EloquentElementsField>|null
+     */
+    public static function relationFieldType(): ?string
+    {
+        return null;
+    }
+
+    /**
      * The nav item linking to the element type's index, or `null` to leave it out of the nav.
      *
      * Its sources are listed beneath it once there's more than one; a lone

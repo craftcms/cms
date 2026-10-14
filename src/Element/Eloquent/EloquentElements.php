@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Eloquent;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Element\ElementServiceProvider;
 use CraftCms\Cms\Element\ElementTypes;
+use CraftCms\Cms\Field\FieldTypes;
 use CraftCms\Cms\Http\Controllers\Elements\EditElementController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementTypeIndexController;
 use CraftCms\Cms\Http\Controllers\Elements\NewElementController;
@@ -36,7 +37,8 @@ use function CraftCms\Cms\currentUser;
  * {@see EloquentElement::cpNavItem()}, registers its Craft permissions
  * ({@see EloquentElement::permissionGroup()}), and lets templates query it
  * through `craft.customers()` — the plural of its handle, camel-cased. The index and nav item are shown
- * to users {@see EloquentElement::canViewIndex()} allows.
+ * to users {@see EloquentElement::canViewIndex()} allows. It also registers the type's
+ * {@see EloquentElement::relationFieldType()}, if it has one.
  *
  * ```php
  * public function boot(EloquentElements $eloquentElements): void
@@ -58,6 +60,7 @@ class EloquentElements
     public function __construct(
         private readonly Application $app,
         private readonly ElementTypes $elementTypes,
+        private readonly FieldTypes $fieldTypes,
         private readonly ModelSync $modelSync,
     ) {}
 
@@ -78,6 +81,11 @@ class EloquentElements
             );
             $this->registerIndexRoute($elementType);
             $this->registerTemplateQuery($elementType);
+
+            if (($fieldType = $elementType::relationFieldType()) !== null) {
+                $this->fieldTypes->register($fieldType);
+            }
+
             $this->types[$elementType] = true;
         }
     }

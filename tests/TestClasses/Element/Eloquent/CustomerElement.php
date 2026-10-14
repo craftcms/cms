@@ -25,6 +25,11 @@ class CustomerElement extends EloquentElement
         return 'address-card';
     }
 
+    public static function relationFieldType(): string
+    {
+        return CustomersField::class;
+    }
+
     public static function defineFieldLayout(FieldLayout $layout): FieldLayout
     {
         return $layout

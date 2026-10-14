@@ -14,6 +14,8 @@ use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Element\Eloquent\ModelTrashBehavior;
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
@@ -28,6 +30,7 @@ use CraftCms\Cms\Support\Facades\UserPermissions as UserPermissionsFacade;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\Element\Eloquent\Customer;
 use CraftCms\Cms\Tests\TestClasses\Element\Eloquent\CustomerElement;
+use CraftCms\Cms\Tests\TestClasses\Element\Eloquent\CustomersField;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\UserPermissions;
@@ -656,6 +659,28 @@ describe('registration', function () {
             expect($element->canView(UserModel::factory()->createElement(['admin' => false, 'email' => 'ada@example.com'])))->toBeTrue()
                 ->and($element->canView(UserModel::factory()->createElement(['admin' => false, 'email' => 'grace@example.com'])))->toBeFalse();
         });
+    });
+});
+
+describe('relation fields', function () {
+    it('registers the type’s relation field type, named after the type', function () {
+        expect(app(Fields::class)->getAllFieldTypes())->toContain(CustomersField::class)
+            ->and(CustomersField::displayName())->toBe('Customers');
+    });
+
+    it('relates elements to the type’s elements', function () {
+        $customer = CustomerElement::findForModel(Customer::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']));
+        $entry = EntryModel::factory()
+            ->withField('customers', CustomersField::class, value: [$customer->id])
+            ->createElementWithFields()
+            ->element;
+
+        $lazy = Entry::find()->id($entry->id)->one()->customers->all();
+        $eager = Entry::find()->id($entry->id)->with(['customers'])->one()->customers->all();
+
+        expect(array_map(fn (CustomerElement $customer) => $customer->email, $lazy))->toBe(['ada@example.com'])
+            ->and(array_map(fn (CustomerElement $customer) => $customer->email, $eager))->toBe(['ada@example.com'])
+            ->and(Entry::find()->relatedTo($customer)->ids())->toBe([$entry->id]);
     });
 });
 
