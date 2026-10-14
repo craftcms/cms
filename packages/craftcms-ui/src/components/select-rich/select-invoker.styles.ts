@@ -15,9 +15,29 @@ export default css`
     overflow: clip;
   }
 
+  /* Replace LionButton's hard-coded hover, press, and disabled fills */
+  :host(:hover) {
+    background-color: color-mix(
+      in oklab,
+      var(--c-input-fill, var(--c-form-control-fill)),
+      var(--c-color-mix-hover)
+    );
+  }
+
+  :host(:active),
+  :host([active]) {
+    background-color: color-mix(
+      in oklab,
+      var(--c-input-fill, var(--c-form-control-fill)),
+      var(--c-color-mix-active)
+    );
+  }
+
   :host([disabled]) {
     cursor: not-allowed;
     opacity: 0.5;
+    background-color: var(--c-input-fill, var(--c-form-control-fill));
+    color: inherit;
   }
 
   #content-wrapper {

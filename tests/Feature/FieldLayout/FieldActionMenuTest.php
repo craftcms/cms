@@ -156,3 +156,16 @@ it('reports the control mode to listeners', function () {
 
     fieldActionNodes(new TitleField, ControlMode::ReadOnly);
 });
+
+it('shows no action menu for a field without a visible label or instructions', function () {
+    $field = customTextField()->label('__blank__');
+
+    expect(collect(fieldActionNodes($field))->contains(fn ($node) => $node instanceof ActionMenu))->toBeFalse();
+});
+
+it('keeps the action menu for a field with a hidden label but instructions', function () {
+    $field = customTextField()->label('__blank__');
+    $field->instructions = 'Write something.';
+
+    expect(collect(fieldActionNodes($field))->contains(fn ($node) => $node instanceof ActionMenu))->toBeTrue();
+});

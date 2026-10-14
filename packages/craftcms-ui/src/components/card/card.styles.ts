@@ -34,8 +34,23 @@ export default css`
     overflow: clip;
   }
 
+  :host(:not([data-color]):not([active])) .card {
+    --c-color-border-quiet: var(--c-border-raised);
+  }
+
+  :host(:not([data-color])[active]) .card {
+    --c-color-fill-loud: var(--c-card-fill-selected);
+    --c-color-border-loud: var(--c-card-border-selected);
+    --c-color-on-loud: var(--c-card-text-selected);
+  }
+
   :host([data-color='white']) .card {
-    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+    --c-color-fill-quiet: var(--c-surface-raised);
+    --c-color-fill-loud: var(--c-surface-raised);
+    --c-color-border-quiet: var(--c-border-raised);
+    --c-color-border-loud: var(--c-border-raised-selected);
+    --c-color-on-quiet: var(--c-text-default);
+    --c-color-on-loud: var(--c-text-default);
     box-shadow: var(--c-card-shadow, var(--c-shadow-xs));
   }
 

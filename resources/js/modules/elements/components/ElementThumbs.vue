@@ -9,6 +9,7 @@
   } from '@/common/composables/useReorderableItems';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
+  import {isInteractiveClick} from '@/common/utils/dom';
   import {
     isInteractiveItemEvent,
     type ElementIndexItemBehavior,
@@ -64,6 +65,7 @@
 
   const emit = defineEmits<{
     (event: 'reorder', startIndex: number, finishIndex: number): void;
+    (event: 'edit', element: ThumbElement): void;
   }>();
 
   const ids = computed(() => props.data.map((element) => element.id));
@@ -108,6 +110,16 @@
 
     if (props.selectable && !readOnly.value && !props.interactionsDisabled) {
       props.selection.handleClick(element.id, event);
+    }
+  }
+
+  /**
+   * A double-click opens the element, except on the tile's own controls — the
+   * checkbox, an action menu, the reorder button, the label's link.
+   */
+  function onTileDblclick(element: ThumbElement, event: MouseEvent) {
+    if (!isInteractiveClick(event, event.currentTarget)) {
+      emit('edit', element);
     }
   }
 
@@ -203,6 +215,7 @@
         :tabindex="selectable ? 0 : undefined"
         @keydown="onTileKeydown(element.id, thumbIdx, $event)"
         @click="onTileClick(element, $event)"
+        @dblclick="onTileDblclick(element, $event)"
         data-color="white"
         :class="{
           element: true,
@@ -378,14 +391,19 @@
     color: inherit;
   }
 
+  // `data-color="white"` hands its static white palette to inheriting
+  // controls, like the action menu's button, whose hover tints from it. As
+  // white cards do, point it at the tile's own surface and text instead.
   .element {
+    --c-color-fill-quiet: var(--c-surface-raised);
+    --c-color-on-quiet: var(--c-text-default);
     background-color: var(--c-color-fill-quiet);
-    border-color: var(--c-color-neutral-border-quiet);
-    color: var(--c-color-on-quiet);
+    border-color: var(--c-border-raised);
+    color: var(--c-text-default);
   }
 
   .element--selected {
-    background-color: var(--c-color-accent-fill-quiet);
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-normal);
   }
 

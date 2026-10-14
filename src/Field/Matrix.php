@@ -438,8 +438,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ...(Cms::config()->headlessMode ? Arr::only($settings, ['uriFormat']) : $settings),
             ];
         }
+        // The URI and Route columns share the remaining width equally
+        $uriWidth = Cms::config()->headlessMode ? [] : ['width' => 50];
         $siteColumns = [
-            'heading' => ['heading' => t('Site'), 'type' => 'heading'],
+            'heading' => ['heading' => t('Site'), 'type' => 'heading', 'class' => 'thin'],
             'uriFormat' => [
                 'heading' => t('Entry URI Format'),
                 'type' => 'singleline',
@@ -447,10 +449,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'code' => true,
                 'info' => $objectTemplateTip,
                 'textExpanderTriggers' => $entryTemplateTriggers,
+                ...$uriWidth,
             ],
         ];
         if (! Cms::config()->headlessMode) {
-            $siteColumns['destination'] = ElementSiteSettings::destinationColumn(Entry::class);
+            $siteColumns['destination'] = [
+                ...ElementSiteSettings::destinationColumn(Entry::class),
+                'width' => 50,
+            ];
         }
 
         $indexViewModes = array_values(array_map(fn (array $viewMode): array => [

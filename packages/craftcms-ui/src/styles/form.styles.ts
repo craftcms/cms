@@ -159,6 +159,26 @@ export const inputStyles = css`
     border-end-start-radius: 0;
   }
 
+  /*
+    A button suffix fills its segment, as craft-input-date-time's clear button
+    does, with its focus ring inside it. The segment clips the button's fill
+    to its rounded corners.
+  */
+  .input-group__suffix {
+    overflow: clip;
+  }
+
+  ::slotted(craft-button[slot='suffix']) {
+    --c-focus-outline-offset: -2px;
+    align-self: stretch;
+    box-sizing: border-box;
+    width: calc(var(--c-input-spacing-inline) * 2 + var(--c-size-control-sm));
+    height: auto;
+    min-height: 0;
+    margin-inline: calc(var(--c-input-spacing-inline) * -1);
+    border-radius: 0;
+  }
+
   .input-group__prefix + .input-group__input ::slotted([slot='input']) {
     --_input-start-start-radius: 0;
     --_input-end-start-radius: 0;

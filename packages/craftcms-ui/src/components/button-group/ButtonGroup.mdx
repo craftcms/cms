@@ -35,6 +35,12 @@ For a form setting that picks one value from a set of options, use a [radio grou
 
 A segmented control of icons is compact and easy to misread. Each button still needs a name — see [Icon](?path=/docs/components-icon--docs) — because the group announces the choice, not what each option means.
 
+## Accessibility
+
+- Given a `name`, name the group too, with `aria-label` or `aria-labelledby` on `craft-button-group`. Its buttons are announced as pressed or not, and the group name says what they choose between.
+- Each button is its own Tab stop. Arrow keys don't move between them.
+- For a single choice that should be announced and operated as radio buttons, use `craft-radio-group`.
+
 ## Properties
 
 <ArgTypes of={ButtonGroupStories} />

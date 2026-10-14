@@ -21,7 +21,7 @@ The default invoker is a `plain`, `flush` button with a chevron after its label.
 
 In slotted mode, the content hangs off a hairline at the disclosure's start edge. Set `appearance="plain"` to drop the hairline and indent.
 
-**External-target mode** wraps a bare `button` whose `aria-controls` names an element elsewhere in the document. Toggling flips that target's `data-state` between `expanded` and `collapsed`, and the consumer supplies the CSS.
+**External-target mode** wraps a bare `button` whose `aria-controls` names an element elsewhere in the document. Toggling flips that target's `data-state` between `expanded` and `collapsed`, and your CSS hides or shows it.
 
 That second mode exists for server-rendered markup, where the trigger and the thing it reveals are rendered in different places and cannot be nested. It can also persist the state to a cookie via `cookie-name`, so a section stays as a person left it.
 
@@ -39,7 +39,19 @@ The invoker carries `aria-expanded` and `aria-controls`, so the state and the re
 
 In external-target mode the component mirrors `aria-expanded` onto the button it wraps — which is why that mode expects a real `button`, not a div dressed as one.
 
-Label the invoker with what it reveals rather than with the action. "Advanced settings" says what is behind it; "Show more" says only that there is more.
+Label the invoker with what it reveals rather than with the action, through `label` or the invoker's own content. "Advanced settings" says what is behind it; "Show more" says only that there is more.
+
+If you slot your own invoker, make it a real `button` or `craft-button`. Anything else has no role for `aria-expanded` to attach to.
+
+In external-target mode the rest is up to the page:
+
+- Write the button's `aria-controls` yourself. The component logs an error when it names no element.
+- Hide the collapsed target with `display: none` or the `hidden` attribute, keyed off `data-state="collapsed"`. Hiding it visually any other way leaves it in the accessibility tree and the Tab order.
+- Render the target right after the button, so expanded content follows the trigger in the Tab order with nothing in between.
+- If the target can't come right after the button, manage focus yourself. When it expands, move focus to the start of the target: its heading, or the target itself with `tabindex="-1"`. When it collapses while focus is inside it, move focus back to the button. Otherwise a keyboard or screen reader user is left at the trigger, with the content they just opened somewhere else on the page.
+- Style the button with a visible focus indicator and a target of at least 24×24 CSS px.
+
+For an accordion, each trigger belongs inside a heading. In external-target mode, wrap the whole `craft-disclosure` in the heading.
 
 ## Properties
 

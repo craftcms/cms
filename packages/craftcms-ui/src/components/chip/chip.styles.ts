@@ -273,25 +273,28 @@ export default css`
   /*
    * Without an author-chosen color the chip stamps data-color="white", whose
    * fill, border, and text are all static colors — they stay light in dark
-   * mode. A default chip takes the theme-aware surface instead, paired with
-   * the same text and border tokens craft-pane uses on that surface, so the
-   * three move together. Scoped to the two filled tiers so outline and plain
+   * mode. A default chip takes the theme-aware raised surface, its border,
+   * and the default text color instead, so the three move together. Scoped to the two filled tiers so outline and plain
    * stay transparent, and to the stamped color so a variant still fills with
    * its own.
+   *
+   * The palette is repointed too, for controls that inherit it, like the
+   * action menu's button, whose hover tints from --c-color-fill-quiet.
    */
   :host([data-color='white'][appearance~='fill']:not([selected])) .cp-chip,
   :host([data-color='white'][appearance~='outline-fill']:not([selected]))
     .cp-chip {
+    --c-color-fill-quiet: var(--c-chip-fill, var(--c-surface-raised));
+    --c-color-on-quiet: var(--c-chip-text, var(--c-text-default));
     background-color: var(--c-chip-fill, var(--c-surface-raised));
-    border-color: var(
-      --c-chip-border-color,
-      var(--c-color-neutral-border-quiet)
-    );
+    border-color: var(--c-chip-border-color, var(--c-border-raised));
     color: var(--c-chip-text, var(--c-text-default));
   }
 
   :host([data-color='white'][appearance~='outline']) .cp-chip,
   :host([data-color='white'][appearance~='plain']) .cp-chip {
+    --c-color-fill-quiet: transparent;
+    --c-color-on-quiet: var(--c-chip-text, var(--c-text-default));
     color: var(--c-chip-text, var(--c-text-default));
   }
 
@@ -331,6 +334,7 @@ export default css`
    * specificity: a selected chip stays legible as selected even when it is plain.
    */
   :host([selected]) .cp-chip {
+    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
     background-color: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-normal);
   }

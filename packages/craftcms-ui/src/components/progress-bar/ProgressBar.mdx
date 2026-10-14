@@ -55,6 +55,12 @@ The bar itself is a visual fill. **`show-status` is what makes it perceivable as
 
 Where the status is hidden, the surrounding interface has to say the same thing another way — a caption, a count, a live region. A bar with no text is a progress indicator only for people who can see it.
 
+The bar exposes a `progressbar` named by `label`. Set `label` to what is progressing; the default, "Progress", says nothing.
+
+The component has no live region, and a changing value isn't reliably announced. When completion or failure matters, announce it through one — once, at the end, rather than at every step. The `craft-complete` event is a convenient place to do it in item count mode.
+
+If you set `--c-progress-bar-fill-color` or `--c-progress-bar-track-color`, check the fill reaches 3:1 against the surface and the pending stripes.
+
 ## Properties
 
 <ArgTypes of={ProgressBarStories} />
