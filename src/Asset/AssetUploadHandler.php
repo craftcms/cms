@@ -168,9 +168,7 @@ readonly class AssetUploadHandler
         if ($moveAfterSelection && ! $asset->title) {
             $asset->title = AssetsHelper::filename2Title(pathinfo($destinationFilename, PATHINFO_FILENAME));
         }
-        if ($asset->ruleset) {
-            $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
-        }
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
         if (! $validTarget) {
             $asset->errors()->add('newLocation', t('The target folder provided for uploading is not valid.'));
@@ -198,9 +196,7 @@ readonly class AssetUploadHandler
             if ($moveAfterSelection) {
                 $asset->newFilename = $destinationFilename;
                 $asset->newFolderId = $destinationFolder->id;
-                if ($asset->ruleset) {
-                    $asset->ruleset->useScenario(AssetRules::SCENARIO_MOVE);
-                }
+                $asset->ruleset->useScenario(AssetRules::SCENARIO_MOVE);
 
                 if (! $this->elements->saveElement($asset)) {
                     return new AssetIngestResult(AssetIngestStatus::Invalid, $asset);

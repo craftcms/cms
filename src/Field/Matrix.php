@@ -1531,7 +1531,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->ruleset || ! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -1554,10 +1554,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     /** @param EntryQuery<Entry>|ElementCollection<int,Entry> $value */
     private function validateEntries(ElementInterface $element, string $attribute, EntryQuery|ElementCollection $value, Closure $fail): void
     {
-        if (! $element->ruleset) {
-            return;
-        }
-
         $new = 0;
 
         if ($value instanceof EntryQuery) {
@@ -1576,13 +1572,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 $entry->setOwner($element);
 
                 if (! $entry->enabled) {
-                    if ($entry->ruleset) {
-                        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-                    }
+                    $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                 } else {
-                    if ($entry->ruleset) {
-                        $entry->ruleset->useScenario($scenario);
-                    }
+                    $entry->ruleset->useScenario($scenario);
                 }
 
                 if (! $entry->validate()) {
@@ -1614,7 +1606,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         if (
-            $element->ruleset && $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE) &&
+            $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE) &&
             ($this->minEntries || $this->maxEntries)
         ) {
             $rules = array_filter([

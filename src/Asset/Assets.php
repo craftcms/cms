@@ -99,9 +99,7 @@ class Assets
         $asset->setMimeType(File::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
         $asset->uploaderId = currentUser()?->getCraftUserId();
         $asset->avoidFilenameConflicts = true;
-        if ($asset->ruleset) {
-            $asset->ruleset->useScenario(AssetRules::SCENARIO_REPLACE);
-        }
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_REPLACE);
         $this->elements->saveElement($asset);
 
         event(new AssetReplaced(
@@ -125,13 +123,9 @@ class Assets
 
         if ($filenameChanging) {
             $asset->newFilename = $filename;
-            if ($asset->ruleset) {
-                $asset->ruleset->useScenario(AssetRules::SCENARIO_FILEOPS);
-            }
+            $asset->ruleset->useScenario(AssetRules::SCENARIO_FILEOPS);
         } else {
-            if ($asset->ruleset) {
-                $asset->ruleset->useScenario(AssetRules::SCENARIO_MOVE);
-            }
+            $asset->ruleset->useScenario(AssetRules::SCENARIO_MOVE);
         }
 
         return $this->elements->saveElement($asset);

@@ -126,7 +126,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
         $folder = $this->rootFolder();
 
         if ($folder === null) {
-            return $actions ? array_values($actions) : null;
+            return $actions ?: null;
         }
 
         if (Gate::check('renameFolder', $folder)) {
@@ -156,7 +156,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
             );
         }
 
-        return $actions ? array_values($actions) : null;
+        return $actions ?: null;
     }
 
     /**

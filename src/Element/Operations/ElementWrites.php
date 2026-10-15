@@ -216,9 +216,7 @@ readonly class ElementWrites
             try {
                 $query->cursor()->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $skipRevisions, $touch, $updateSearchIndex) {
                     $position++;
-                    if ($element->ruleset) {
-                        $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-                    }
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                     $element->resaving = true;
 
                     $throwable = null;
@@ -286,9 +284,7 @@ readonly class ElementWrites
                     $position++;
 
                     event(new ElementPropagating($query, $element, $position));
-                    if ($element->ruleset) {
-                        $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-                    }
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                     $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
                     $supportedSiteIds = array_keys($supportedSites);
                     $elementSiteIds = $siteIds !== null ? array_intersect($siteIds,
@@ -796,9 +792,7 @@ readonly class ElementWrites
                 return false;
             }
         } finally {
-            if ($element->ruleset) {
-                $element->ruleset->useScenario($originalScenario);
-            }
+            $element->ruleset->useScenario($originalScenario);
         }
 
         event(new ElementSaved($element, $isNewElement));
@@ -898,18 +892,14 @@ readonly class ElementWrites
                 // carry on
             }
         }
-        if ($siteElement->ruleset) {
-            $siteElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-        }
+        $siteElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
         if (
             ($crossSiteValidate || $element->propagateRequired) &&
             $siteElement->enabled &&
             $siteElement->getEnabledForSite()
         ) {
-            if ($siteElement->ruleset) {
-                $siteElement->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-            }
+            $siteElement->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         }
 
         $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(),

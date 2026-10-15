@@ -787,7 +787,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->ruleset || ! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -806,10 +806,6 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     /** @param ElementCollection<int, Address>|AddressQuery $value */
     private function validateAddresses(ElementInterface $element, AddressQuery|ElementCollection $value, Closure $fail): void
     {
-        if (! $element->ruleset) {
-            return;
-        }
-
         if ($value instanceof AddressQuery) {
             $addresses = $value->getResultOverride() ?? (clone $value)
                 ->drafts(null)
@@ -827,9 +823,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                     $scenario === ElementRules::SCENARIO_ESSENTIALS ||
                     ($address->enabled && $scenario === ElementRules::SCENARIO_LIVE)
                 ) {
-                    if ($address->ruleset) {
-                        $address->ruleset->useScenario($scenario);
-                    }
+                    $address->ruleset->useScenario($scenario);
                 }
 
                 if (! $address->validate()) {
@@ -853,7 +847,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         }
 
         if (
-            $element->ruleset && $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE) &&
+            $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE) &&
             ($this->minAddresses || $this->maxAddresses)
         ) {
             $rules = [

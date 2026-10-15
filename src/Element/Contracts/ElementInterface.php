@@ -20,6 +20,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -42,6 +43,8 @@ use Symfony\Component\HttpFoundation\Response;
  * ElementInterface defines the common interface to be implemented by element classes.
  *
  * @phpstan-require-extends Element
+ *
+ * @property ElementRules<Element> $ruleset
  *
  * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
  * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:iterable<EagerLoadingMapItem>,criteria?:array<string,mixed>,createElement?:callable}

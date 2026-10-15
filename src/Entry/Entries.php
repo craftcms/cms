@@ -182,9 +182,7 @@ class Entries
         $entry->sectionId = $section->id;
 
         // Validate
-        if ($entry->ruleset) {
-            $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-        }
+        $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $entry->validate();
 
         // If there are any errors on the URI, re-validate as disabled

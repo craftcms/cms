@@ -450,9 +450,7 @@ readonly class Drafts
         $draft->firstSave = true;
 
         // We still need to validate so the SlugValidator gets run
-        if ($draft->ruleset) {
-            $draft->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-        }
+        $draft->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $draft->validate();
 
         // If there are any errors on the URI, re-validate as disabled

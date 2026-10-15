@@ -872,7 +872,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->ruleset || ! $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -1006,9 +1006,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         // Prevent relational fields on this element from enforcing related element validation
         self::$validatingRelatedElements = true;
 
-        if ($target->ruleset) {
-            $target->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-        }
+        $target->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         $validates = $target->validate();
 
         self::$validatingRelatedElements = false;

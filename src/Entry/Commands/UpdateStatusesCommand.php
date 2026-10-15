@@ -143,9 +143,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
 
         foreach ($query->cursor() as $entry) {
             $position++;
-            if ($entry->ruleset) {
-                $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-            }
+            $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
             $entry->resaving = true;
 
             event(new ElementResaving($query, $entry, $position));

@@ -652,7 +652,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $element->ruleset || ! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
+        if (! $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_DEFAULT, ElementRules::SCENARIO_LIVE)) {
             return [];
         }
 
@@ -665,10 +665,8 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     {
         $value->setOwner($element);
 
-        if ($element->ruleset && $element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_LIVE)) {
-            if ($value->ruleset) {
-                $value->ruleset->useScenario($element->ruleset->getScenario());
-            }
+        if ($element->ruleset->inScenarios(ElementRules::SCENARIO_ESSENTIALS, ElementRules::SCENARIO_LIVE)) {
+            $value->ruleset->useScenario($element->ruleset->getScenario());
         }
 
         if (! $value->validate()) {

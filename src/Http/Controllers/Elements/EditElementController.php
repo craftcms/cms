@@ -104,9 +104,7 @@ class EditElementController
 
         // Prevalidate?
         if ($this->request->boolean('prevalidate') && $element->enabled && $element->getEnabledForSite()) {
-            if ($element->ruleset !== false) {
-                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-            }
+            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
             $element->validate();
         }
 

@@ -620,9 +620,7 @@ class Assets extends BaseRelationField
                         $asset->setVolumeId($uploadFolder->volumeId);
                         $asset->uploaderId = currentUser()?->getCraftUserId();
                         $asset->avoidFilenameConflicts = true;
-                        if ($asset->ruleset) {
-                            $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
-                        }
+                        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
                         if (Elements::saveElement($asset)) {
                             $assetIds[] = $asset->id;

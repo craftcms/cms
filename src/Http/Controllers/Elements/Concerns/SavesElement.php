@@ -109,11 +109,7 @@ trait SavesElement
             }
         };
 
-        if ($element->ruleset === false) {
-            $configure();
-        } else {
-            $element->ruleset->withScenario(ElementRules::SCENARIO_LIVE, $configure);
-        }
+        $element->ruleset->withScenario(ElementRules::SCENARIO_LIVE, $configure);
 
         // Now that the element is fully configured, make sure the user can actually view it
         Gate::authorize('view', $element);

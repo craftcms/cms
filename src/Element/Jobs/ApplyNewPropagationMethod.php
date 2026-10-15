@@ -197,9 +197,7 @@ class ApplyNewPropagationMethod extends BatchedJob
 
     private function resaveItem(ElementInterface $item): void
     {
-        if ($item->ruleset) {
-            $item->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-        }
+        $item->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $item->resaving = true;
 
         try {

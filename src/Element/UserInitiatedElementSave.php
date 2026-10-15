@@ -37,9 +37,7 @@ readonly class UserInitiatedElementSave
         bool $crossSiteValidate = false,
     ): UserInitiatedElementSaveResult {
         if ($element->enabled && $element->getEnabledForSite()) {
-            if ($element->ruleset) {
-                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-            }
+            $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         }
 
         $isNotNew = (bool) $element->id;

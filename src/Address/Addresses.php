@@ -193,9 +193,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
     {
         $requiredFields = [];
         $scenario = $address->ruleset->getScenario();
-        if ($address->ruleset) {
-            $address->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-        }
+        $address->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
 
         foreach ($address->ruleset->rules() as $attribute => $rules) {
             foreach (Arr::wrap($rules) as $rule) {
@@ -206,9 +204,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
                 }
             }
         }
-        if ($address->ruleset) {
-            $address->ruleset->useScenario($scenario);
-        }
+        $address->ruleset->useScenario($scenario);
         $belongsToCurrentUser ??= $address->getBelongsToCurrentUser();
         $visibleFields = array_fill_keys(array_merge(
             $this->getUsedFields($address->countryCode),

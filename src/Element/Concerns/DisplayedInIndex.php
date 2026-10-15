@@ -271,9 +271,7 @@ trait DisplayedInIndex
         if ($viewState['prevalidate'] ?? request()->boolean('prevalidate')) {
             foreach ($elements as $element) {
                 if ($element->enabled && $element->getEnabledForSite()) {
-                    if ($element->ruleset) {
-                        $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-                    }
+                    $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
                 }
                 $element->validate();
             }

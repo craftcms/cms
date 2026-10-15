@@ -139,9 +139,7 @@ readonly class ElementDuplicates
                 trackChanges: $mainClone->trackDraftChanges,
             );
         }
-        if ($mainClone->ruleset) {
-            $mainClone->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-        }
+        $mainClone->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $mainClone->validate();
 
         if ($mainClone->errors()->has('uri') && $mainClone->enabled) {

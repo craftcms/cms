@@ -675,9 +675,7 @@ class AssetIndexer
             && $timeModified !== null
             && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
         $needsColors = $asset->colors === null || $fileChanged;
-        if ($asset->ruleset) {
-            $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
-        }
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
         $tempPath = null;
 
         try {

@@ -179,14 +179,10 @@ class SaveElementIndexElementsController
             }
 
             if (! empty($attributes)) {
-                if ($element->ruleset === false) {
-                    $element->setAttributesFromRequest($attributes);
-                } else {
-                    $element->ruleset->withScenario(
-                        ElementRules::SCENARIO_LIVE,
-                        fn () => $element->setAttributesFromRequest($attributes),
-                    );
-                }
+                $element->ruleset->withScenario(
+                    ElementRules::SCENARIO_LIVE,
+                    fn () => $element->setAttributesFromRequest($attributes),
+                );
             }
 
             $element->setFieldValuesFromRequest("$namespace.$postedElementKey.fields");
@@ -196,13 +192,9 @@ class SaveElementIndexElementsController
             }
 
             if ($element->getIsUnpublishedDraft()) {
-                if ($element->ruleset !== false) {
-                    $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-                }
+                $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
             } elseif ($element->enabled && $element->getEnabledForSite()) {
-                if ($element->ruleset !== false) {
-                    $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-                }
+                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
             }
 
             $names = array_merge(

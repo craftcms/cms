@@ -176,9 +176,7 @@ readonly class SaveElementController
             Gate::authorize('save', $element);
 
             if ($element->enabled && $element->getEnabledForSite()) {
-                if ($element->ruleset !== false) {
-                    $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-                }
+                $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
             }
 
             try {

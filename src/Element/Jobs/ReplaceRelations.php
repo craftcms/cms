@@ -70,9 +70,7 @@ class ReplaceRelations extends BatchedElementJob
         }
 
         if ($saveElement) {
-            if ($element->ruleset) {
-                $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-            }
+            $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
             $element->resaving = true;
 
             try {

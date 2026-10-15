@@ -537,9 +537,7 @@ readonly class ElementDeletions
                 } else {
                     $siteElements = [];
                 }
-                if ($element->ruleset) {
-                    $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-                }
+                $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                 if (! $element->validate()) {
                     Log::warning("Unable to restore element $element->id: doesn't pass essential validation: ".print_r($element->errors()->all(), true), [__METHOD__]);
                     DB::rollBack();
@@ -551,9 +549,7 @@ readonly class ElementDeletions
                     if ($siteElement === $element) {
                         continue;
                     }
-                    if ($siteElement->ruleset) {
-                        $siteElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-                    }
+                    $siteElement->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
                     if (! $siteElement->validate()) {
                         Log::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: ".print_r($element->errors()->all(), true), [__METHOD__]);
