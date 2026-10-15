@@ -55,6 +55,14 @@ Two attributes govern it.
 
 <Canvas of={CardStories.ThumbnailAlignment} sourceState="shown" />
 
+## Colors
+
+`data-color` tints the card with a palette color.
+On a colored card, links take the card's text color and are underlined until hovered, so they don't clash with the fill.
+White, gray, and slate cards keep the default link styling.
+
+<Canvas of={CardStories.Colors} />
+
 ## Active State
 
 `active` marks a card as selected, and is reflected to the host so it can be styled from outside the component.
