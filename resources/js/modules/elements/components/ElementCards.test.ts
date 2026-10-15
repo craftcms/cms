@@ -97,4 +97,22 @@ describe('ElementCards', () => {
     first.dispatchEvent(new MouseEvent('dblclick', {bubbles: true}));
     expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({id: 5}));
   });
+
+  // An asset folder opens on double-click rather than being edited.
+  it('leaves a double-click its item behavior handled alone', async () => {
+    const onEdit = vi.fn();
+    const onDblClick = vi.fn(() => true);
+    const {root} = mount({onEdit, itemBehavior: {onDblClick}});
+    await nextTick();
+
+    const event = new MouseEvent('dblclick', {bubbles: true, cancelable: true});
+    root.querySelector('.card-grid > *')!.dispatchEvent(event);
+
+    expect(onDblClick).toHaveBeenCalledWith(
+      expect.objectContaining({id: 5}),
+      event
+    );
+    expect(event.defaultPrevented).toBe(true);
+    expect(onEdit).not.toHaveBeenCalled();
+  });
 });
