@@ -31,7 +31,7 @@ class ReleaseDateGroup
         return Group::make($path, [
             Field::make(t('Date'), Date::make("$path.date")->min($min)),
             Field::make(t('Time'), Time::make("$path.time")),
-            Field::make(t('Time zone'), Combobox::make("$path.timezone")
+            Field::make(t('Time Zone'), Combobox::make("$path.timezone")
                 ->options(SelectOptions::getTimeZoneOptions())
                 ->showAllOnEmpty()),
         ])
