@@ -55,7 +55,7 @@
 - Slideouts can now be resized horizontally, and remember their width. ([#19978](https://github.com/craftcms/cms/pull/19978))
 - Slideouts’ details panes that were folded away for lack of room now reopen once the slideout is wide enough again. ([#19978](https://github.com/craftcms/cms/pull/19978))
 - Slideouts’ details panes now start out folded. ([#19961](https://github.com/craftcms/cms/pull/19961))
-- Links within colored chips and cards now use the chip’s or card’s text color, and are underlined until hovered. ([#19989](https://github.com/craftcms/cms/pull/19989))
+- Links within colored badges, chips, and cards now use the badge’s, chip’s, or card’s text color, and are underlined until hovered. ([#19989](https://github.com/craftcms/cms/pull/19989))
 - The image editor’s header, tabs, controls, and footer now share the control panel’s standard container padding.
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.

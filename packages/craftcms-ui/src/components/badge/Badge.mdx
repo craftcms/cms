@@ -24,6 +24,13 @@ Unlike Indicator, the badge is limited to the palette and does not take arbitrar
 Setting it reflects the resolved color onto the host's `data-color` attribute, which is what scopes the `--c-color-*` tokens the badge's styles read.
 That is the same mechanism described on the [Colorable](?path=/docs/tokens-colorable--docs) page.
 
+### Links
+
+Links in the label take the badge's text color and are underlined, losing the underline on hover.
+Only a white badge keeps the default link styling, since blue falls short of contrast against the other fills.
+
+<Canvas of={BadgeStories.Links} sourceState="shown" />
+
 ### Semantic colors
 
 `Color` also carries aliases that resolve to palette values — `Color.Success` is `emerald`, `Color.Warning` is `orange`, `Color.Danger` is `red`, `Color.Info` is `blue`.
