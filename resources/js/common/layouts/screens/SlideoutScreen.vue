@@ -677,7 +677,6 @@
        off rather than against the content. */
     inline-size: clamp(calc(300rem / 16), 80cqi, calc(400rem / 16));
     max-inline-size: 80cqi;
-    overflow-y: auto;
     background-color: var(--c-surface-overlay);
     border-inline-start: 1px solid var(--c-color-border-quiet);
     box-shadow: var(--c-shadow-overlay);
@@ -698,7 +697,6 @@
       inline-size: calc(350rem / 16);
       min-inline-size: 0;
       max-inline-size: none;
-      overflow: visible;
       border-inline-start: 0;
       box-shadow: none;
     }

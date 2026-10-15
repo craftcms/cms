@@ -779,6 +779,14 @@
     padding: 0;
   }
 
+  /* The header, tab strip, panels and footer share the CP's container padding,
+     so their contents line up along both edges. */
+  craft-dialog::part(header),
+  craft-dialog::part(footer),
+  .image-editor__sidebar craft-tabs::part(strip) {
+    padding-inline: var(--cp-container-padding);
+  }
+
   .image-editor {
     flex: 1;
     /* The fullscreen dialog's surface is a header/body/footer grid whose body
@@ -807,7 +815,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-lg);
-    padding: var(--c-spacing-lg);
+    padding-block: var(--c-spacing-lg);
+    padding-inline: var(--cp-container-padding);
   }
 
   .image-editor__image {
