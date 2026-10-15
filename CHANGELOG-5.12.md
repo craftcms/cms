@@ -12,6 +12,8 @@
 
 - The `capitalize`, `lower`, `title`, and `upper` Twig filters now have `language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - Added the `project-config/check` command, which checks project config schema compatibility without applying changes.
+- Added the `{% render %}` Twig tag. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
 
 ### Extensibility
 
@@ -20,16 +22,20 @@
 - Added `craft\base\FieldTrait::$tip`.
 - Added `craft\base\FieldTrait::$warning`.
 - Added `craft\base\NestedElementTrait::$touchOwnersOnSave`.
+- Added `craft\base\Renderable`. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - Added `craft\elements\db\NestedElementQueryTrait::mustHaveField()`.
 - Added `craft\elements\db\NestedElementQueryTrait::mustHaveOwner()`.
 - Added `craft\fieldlayoutelements\BaseField::defaultTip()`.
 - Added `craft\fieldlayoutelements\BaseField::defaultWarning()`.
+- Added `craft\helpers\Template::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - Added `craft\i18n\Locale::languageId()`.
 - Added `craft\services\Images::getSupportsBmp()`.
 - Added `craft\services\Images::getSupportsJxl()`.
 - Added `craft\test\ElementFixtureTrait`. ([#19626](https://github.com/craftcms/cms/pull/19626))
+- `Illuminate\Support\Collection` now has a `render()` macro, which replaces `craft\elements\ElementCollection::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - `craft\helpers\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `craft\helpers\StringHelper::toLowerCase()`, `::toTitleCase()`, and `::toUpperCase()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- Deprecated `craft\helpers\ElementHelper::renderElements()`. `craft\helpers\Template::render()` should be used instead. ([#19988](https://github.com/craftcms/cms/pull/19988))
 
 ### System
 
