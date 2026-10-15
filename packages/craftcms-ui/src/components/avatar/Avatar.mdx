@@ -35,7 +35,9 @@ A labeled avatar is an SVG with `role="img"` whose title is the label, so it is 
 
 Without a label there is nothing to announce, so the disc is `aria-hidden` instead of being exposed as an unnamed image — the same rule [Icon](?path=/docs/components-icon--docs) follows.
 
-Where an avatar sits beside the same name in text, the name would be announced twice. That is the case for leaving the label off deliberately.
+Where an avatar sits beside the same name in text, the name would be announced twice. That is the case for leaving the label off deliberately. Set it whenever nothing nearby names the person, such as an avatar on its own in a list of reviewers.
+
+The initials are drawn in the inherited text color on a white disc. If you change the gradient stops or the text color, check the initials still reach 4.5:1 against the disc.
 
 ## Properties
 

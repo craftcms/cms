@@ -78,12 +78,17 @@ export default css`
     block-size: var(--_dialog-block-size);
     max-block-size: var(--_dialog-max-block-size);
     background-color: var(--c-surface-raised);
+    box-sizing: border-box;
+    border-width: var(--c-modal-border-width, 1px);
+    border-style: var(--c-modal-border-style, solid);
+    border-color: var(--c-modal-border-color, var(--c-color-border-quiet));
     border-radius: var(--c-radius-lg);
-    box-shadow: var(--c-shadow-lg);
+    box-shadow: var(--c-shadow-overlay);
     overflow: hidden;
   }
 
   :host([fullscreen]) .surface {
+    border-width: 0;
     border-radius: 0;
   }
 

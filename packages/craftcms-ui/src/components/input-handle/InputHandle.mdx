@@ -42,6 +42,9 @@ The rest comes from [Input](?path=/docs/form-controls-text-controls-input--docs)
 Nothing here changes how the control is announced; see [Input](?path=/docs/form-controls-text-controls-input--docs).
 
 Because the field is monospace and the value is machine-readable, it is worth saying in the help text what a valid handle looks like rather than leaving someone to discover the rules through validation.
+The field accepts any character, so name the allowed ones there, and reject invalid ones with a validator message rather than stripping them silently.
+
+If a script fills the handle from another field, such as a name, leave focus where it is and stop overwriting the handle once someone has edited it.
 
 ## Properties
 

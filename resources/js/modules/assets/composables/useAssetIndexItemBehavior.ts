@@ -1,4 +1,5 @@
 import {router} from '@inertiajs/vue3';
+import {isInteractiveClick} from '@/common/utils/dom';
 import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
 
 interface AssetIndexItem {
@@ -118,6 +119,20 @@ export function useAssetIndexItemBehavior(
       // A folder only opens from its link. The rest of it behaves like an
       // asset's row, card or thumb, selecting it.
       return false;
+    },
+    // Double-clicking a folder opens it, as double-clicking an asset edits it,
+    // unless it landed on a control inside the folder's row, card or thumb.
+    onDblClick(item, event) {
+      if (!isFolderRow(item)) {
+        return false;
+      }
+
+      if (!isInteractiveClick(event, event.currentTarget)) {
+        event.preventDefault();
+        navigateToFolder(item.folderUrl);
+      }
+
+      return true;
     },
     onKeydown(item, event) {
       if (previewAsset(item, event)) {

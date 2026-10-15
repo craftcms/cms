@@ -15,6 +15,8 @@ export interface TableLink {
   url?: string | null;
   /** Opens the URL's screen in a slideout, reloading the table once it's saved. */
   slideout?: boolean;
+  /** The slideout's width, as a CSS length. */
+  slideoutWidth?: string | null;
 }
 
 /** A menu item that opens a server-built form in a modal instead of following a link. */
@@ -99,6 +101,8 @@ export interface TableProps {
   emptyMessage: string | null;
   createLabel: string | null;
   createUrl: string | null;
+  createSlideout?: boolean;
+  createSlideoutWidth?: string | null;
   createMenuItems: Array<{label: string; url: string}> | null;
   createActionInPageHeader: boolean;
   reorderUrl: string | null;
