@@ -159,6 +159,26 @@ export const inputStyles = css`
     border-end-start-radius: 0;
   }
 
+  /*
+    A button suffix fills its segment, as craft-input-date-time's clear button
+    does, with its focus ring inside it. The segment clips the button's fill
+    to its rounded corners.
+  */
+  .input-group__suffix {
+    overflow: clip;
+  }
+
+  ::slotted(craft-button[slot='suffix']) {
+    --c-focus-outline-offset: -2px;
+    align-self: stretch;
+    box-sizing: border-box;
+    width: calc(var(--c-input-spacing-inline) * 2 + var(--c-size-control-sm));
+    height: auto;
+    min-height: 0;
+    margin-inline: calc(var(--c-input-spacing-inline) * -1);
+    border-radius: 0;
+  }
+
   .input-group__prefix + .input-group__input ::slotted([slot='input']) {
     --_input-start-start-radius: 0;
     --_input-end-start-radius: 0;
@@ -191,32 +211,5 @@ export const inputStyles = css`
 
   ::slotted([slot='input']) {
     width: 100%;
-  }
-`;
-
-/**
- * The native input a choice control (checkbox, indeterminate "all" checkbox)
- * slots into its light DOM. Shared so every choice renders the same box —
- * without it a control falls back to the browser's default checkbox, which is
- * a visibly different size from its siblings.
- */
-export const choiceInputStyles = css`
-  ::slotted([slot='input']) {
-    background-color: var(--c-input-fill, var(--c-form-control-fill));
-    border-width: var(
-      --c-input-border-width,
-      var(--c-form-control-border-width)
-    );
-    border-style: var(
-      --c-input-border-style,
-      var(--c-form-control-border-style)
-    );
-    border-color: var(
-      --c-input-border-color,
-      var(--c-form-control-border-color)
-    );
-    border-radius: var(--c-input-radius, var(--c-radius-sm));
-    width: var(--c-checkbox-size);
-    height: var(--c-checkbox-size);
   }
 `;

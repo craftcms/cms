@@ -79,7 +79,8 @@ export default class CraftActionMenu extends CraftPopover {
       }
 
       ::slotted([slot='content']) hr {
-        margin: 0;
+        margin-block: calc(var(--c-spacing-sm) - var(--c-spacing-xs));
+        margin-inline: 0;
       }
 
       :host([disabled]) ::slotted([slot='invoker']) {
@@ -551,8 +552,10 @@ export default class CraftActionMenu extends CraftPopover {
       // The separator lives in light DOM (inside the slotted content
       // container), so the shadow `::slotted()` selector can't reach it —
       // style it directly here.
+      // With the content's gap, the space around it matches the menu's padding.
       Object.assign(hr.style, {
-        margin: '0',
+        marginBlock: 'calc(var(--c-spacing-sm) - var(--c-spacing-xs))',
+        marginInline: '0',
         border: '0',
         borderBlockStart: '1px solid var(--c-color-neutral-border-quiet)',
       });
@@ -753,13 +756,20 @@ export default class CraftActionMenu extends CraftPopover {
       craft-action-menu [data-search-hidden] {
         display: none !important;
       }
+      craft-action-menu .action-menu__search {
+        padding: var(--c-spacing-sm);
+      }
       craft-action-menu .action-menu__search input {
         box-sizing: border-box;
         width: 100%;
-        padding: var(--c-spacing-xs);
-        border: 1px solid var(--c-border-form);
-        border-radius: var(--c-radius-sm);
-        background-color: var(--c-surface-form);
+        padding-block: var(--c-spacing-xs);
+        padding-inline: var(--c-spacing-sm);
+        border: var(--c-input-border-width) var(--c-input-border-style)
+          var(--c-input-border-color);
+        border-radius: var(--c-input-radius);
+        background-color: var(--c-input-fill);
+        box-shadow: var(--c-input-shadow);
+        color: var(--c-input-text);
         font: inherit;
       }
     `;

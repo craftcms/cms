@@ -29,6 +29,7 @@ beforeEach(function (): void {
 it('describes each element type through elements.schema and the element type resources', function (): void {
     $types = McpRequest::send($this, 'resources/read', ['uri' => 'craft://element-types'])->json('result.contents.0.text');
     $assets = McpRequest::send($this, 'resources/read', ['uri' => 'craft://element-types/assets'])->json('result.contents.0.text');
+    $asset = McpRequest::send($this, 'resources/read', ['uri' => 'craft://element-types/asset'])->json('result.contents.0.text');
 
     expect(json_decode($types, true)['types'])->toBe([
         ['type' => 'entries', 'name' => 'Entries', 'elementType' => Entry::class, 'schema' => 'craft://element-types/entries'],
@@ -37,7 +38,8 @@ it('describes each element type through elements.schema and the element type res
         ['type' => 'addresses', 'name' => 'Addresses', 'elementType' => Address::class, 'schema' => 'craft://element-types/addresses'],
     ])
         ->and(json_decode($assets, true))->not->toHaveKey('createAttributes')
-        ->and(json_decode($assets, true)['notes'][0])->toContain('assets.create');
+        ->and(json_decode($assets, true)['notes'][0])->toContain('assets.create')
+        ->and($asset)->toBe($assets);
 
     ($this->call)('elements.schema', ['type' => 'entries'])
         ->assertJsonPath('result.isError', false)

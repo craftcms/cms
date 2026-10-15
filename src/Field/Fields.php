@@ -57,6 +57,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use PDO;
@@ -69,6 +70,8 @@ use function CraftCms\Cms\t;
  *     name:string|null,
  *     handle:string|null,
  *     instructions:string|null,
+ *     tip?:string|null,
+ *     warning?:string|null,
  *     searchable?:bool,
  *     translationMethod:string,
  *     translationKeyFormat:string|null,
@@ -560,6 +563,8 @@ class Fields
             'name' => $field->name,
             'handle' => $field->handle,
             'instructions' => $field->instructions,
+            'tip' => $field->tip,
+            'warning' => $field->warning,
             'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
@@ -822,6 +827,8 @@ class Fields
                     $layoutElement->label = $this->layoutElementOverride($persistingField->name, $outgoingField->name, $layoutElement->label);
                     $layoutElement->handle = $this->layoutElementOverride($persistingField->handle, $outgoingField->handle, $layoutElement->handle);
                     $layoutElement->instructions = $this->layoutElementOverride($persistingField->instructions, $outgoingField->instructions, $layoutElement->instructions);
+                    $layoutElement->tip = $this->layoutElementOverride($persistingField->tip, $outgoingField->tip, $layoutElement->tip);
+                    $layoutElement->warning = $this->layoutElementOverride($persistingField->warning, $outgoingField->warning, $layoutElement->warning);
 
                     // Lets saveLayout() update any condition rules that reference the outgoing field
                     $layoutElement->oldFieldUid ??= $outgoingField->uid;
@@ -1400,6 +1407,10 @@ class Fields
             $fieldRecord->handle = $data['handle'];
             $fieldRecord->context = $context;
             $fieldRecord->instructions = $data['instructions'];
+            if ($this->hasTipAndWarningColumns()) {
+                $fieldRecord->tip = $data['tip'] ?? null;
+                $fieldRecord->warning = $data['warning'] ?? null;
+            }
             $fieldRecord->searchable = (bool) $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
             $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
@@ -1593,7 +1604,22 @@ class Fields
             ])
             ->orderBy('fields.name')
             ->orderBy('fields.handle')
-            ->whereNull('fields.dateDeleted');
+            ->whereNull('fields.dateDeleted')
+            // Until the migration that adds them has run, Craft has to boot without them.
+            ->when($this->hasTipAndWarningColumns(), fn (Builder $query) => $query->addSelect([
+                'fields.tip',
+                'fields.warning',
+            ]));
+    }
+
+    /**
+     * Returns whether the `fields` table has its `tip` and `warning` columns yet.
+     *
+     * @todo Remove after the next breakpoint.
+     */
+    private function hasTipAndWarningColumns(): bool
+    {
+        return Schema::hasColumn(Table::FIELDS, 'tip');
     }
 
     private function _createLayoutQuery(bool $withTrashed = false): Builder
