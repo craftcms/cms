@@ -7,6 +7,7 @@
 - Fixed a bug where curly quotes were allowed within asset folder and filenames. ([#19904](https://github.com/craftcms/cms/issues/19904))
 - Fixed a bug where the “Instructions” setting’s placeholder text wasn’t getting updated when changing a field layout element’s selected field.
 - Fixed a bug where renaming an asset without including its file extension resulted in a validation error. ([#19950](https://github.com/craftcms/cms/issues/19950))
+- Fixed a bug where the Image Editor’s crop box couldn’t be resized in some cases. ([#19980](https://github.com/craftcms/cms/issues/19980))
 
 ## 5.11.5.1 - 2026-10-08
 
