@@ -81,6 +81,7 @@
 - Fixed a bug where dates more than six days out, such as pending entries’ post dates in element indexes, were shown as a day of the week. ([#19972](https://github.com/craftcms/cms/pull/19972))
 - Fixed a bug where nested elements weren’t indented in structure views’ element index tables. ([#19972](https://github.com/craftcms/cms/pull/19972))
 - Fixed a bug where users’ Permissions, Preferences, and Password screens had two “Save and continue editing” actions. ([#19972](https://github.com/craftcms/cms/pull/19972))
+- Fixed an accessibility issue where buttons were still announced as “Loading” after they finished loading, and lost their accessible name if loading took more than five seconds. ([#19975](https://github.com/craftcms/cms/pull/19975))
 - Fixed a bug where thumbnails in relational fields linked to their elements. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes had no visible focus ring. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes’ combobox element had no accessible name in Chromium. ([#19942](https://github.com/craftcms/cms/pull/19942))
