@@ -93,7 +93,7 @@
     .min="control.props.min"
     .max="control.props.max"
     .minuteIncrement="control.props.minuteIncrement"
-    :width="control.props.fullWidth ? 'full' : undefined"
+    :width.attr="control.props.fullWidth ? 'full' : 'auto'"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"

@@ -8,6 +8,7 @@ export interface TableColumn {
   sortable?: boolean;
   width?: string;
   headerSrOnly?: boolean;
+  wrap?: boolean;
 }
 
 export interface TableLink {
@@ -85,6 +86,7 @@ export type TableRow = Record<string, TableCellValue> & {
   _deleteDisabledReason?: string | null;
   _deleteUrl?: string;
   _deleteConfirmMessage?: string;
+  _deleteLabel?: string;
   _status?: TableStatus | null;
   _search?: string;
   _sort?: Record<string, string | number | boolean | null>;

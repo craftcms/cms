@@ -28,8 +28,16 @@ export interface LayoutSlotRegistry {
    * so `LayoutSlot` watches {@link targetRevision} and re-teleports.
    */
   targetMounted(name: string): void;
+  /** Called by an outlet when its target element goes away. */
+  targetUnmounted(name: string): void;
   /** How many times the named outlet's target has been created. */
   targetRevision(name: string): number;
+  /**
+   * Whether the named outlet's target is in the DOM right now. Revisions
+   * outlive the target, so they can't answer this once a page has replaced
+   * the shell region holding it.
+   */
+  hasTarget(name: string): boolean;
 }
 
 export const LayoutSlotRegistryKey: InjectionKey<LayoutSlotRegistry> =
@@ -40,6 +48,7 @@ let nextScope = 0;
 export function createLayoutSlotRegistry(scope?: string): LayoutSlotRegistry {
   const counts = reactive(new Map<string, number>());
   const targets = reactive(new Map<string, number>());
+  const liveTargets = reactive(new Map<string, number>());
 
   return {
     scope: scope ?? `screen-${++nextScope}`,
@@ -64,10 +73,25 @@ export function createLayoutSlotRegistry(scope?: string): LayoutSlotRegistry {
 
     targetMounted(name) {
       targets.set(name, (targets.get(name) ?? 0) + 1);
+      liveTargets.set(name, (liveTargets.get(name) ?? 0) + 1);
+    },
+
+    targetUnmounted(name) {
+      const next = (liveTargets.get(name) ?? 0) - 1;
+
+      if (next <= 0) {
+        liveTargets.delete(name);
+      } else {
+        liveTargets.set(name, next);
+      }
     },
 
     targetRevision(name) {
       return targets.get(name) ?? 0;
+    },
+
+    hasTarget(name) {
+      return (liveTargets.get(name) ?? 0) > 0;
     },
   };
 }

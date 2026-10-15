@@ -114,6 +114,7 @@ class UserPermissions
         $this->userPermissions($permissions);
         $this->sitePermissions($permissions);
         $this->entryPermissions($permissions);
+        $this->releasePermissions($permissions);
         $this->volumePermissions($permissions);
         $this->utilityPermissions($permissions);
 
@@ -555,6 +556,32 @@ class UserPermissions
         });
 
         $permissions->push(...$entryPermissions);
+    }
+
+    /** @param Collection<int, PermissionGroup> $permissions */
+    private function releasePermissions(Collection $permissions): void
+    {
+        if (! Edition::get()->supportsReleases()) {
+            return;
+        }
+
+        $permissions->add(new PermissionGroup(
+            handle: 'releases',
+            heading: t('Releases'),
+            permissions: collect([
+                new Permission(
+                    key: 'manageReleases',
+                    label: t('Manage releases'),
+                    nested: collect([
+                        new Permission(
+                            key: 'publishReleases',
+                            label: t('Publish releases'),
+                            info: t('Allows scheduling and publishing every draft in a release, regardless of content permissions.'),
+                        ),
+                    ]),
+                ),
+            ]),
+        ));
     }
 
     private function singleSectionPermission(Section $section): Permission

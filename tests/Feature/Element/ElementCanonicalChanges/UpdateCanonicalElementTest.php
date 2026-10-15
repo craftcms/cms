@@ -272,5 +272,5 @@ function createActionSpy(?ElementInterface $duplicateResult = null): array
             return $duplicateResult ?? $element;
         });
 
-    return [new ElementCanonicalChanges(Mockery::mock(BulkOps::class), Mockery::mock(ElementWrites::class), $duplicates), $state];
+    return [app(ElementCanonicalChanges::class, ['bulkOps' => Mockery::mock(BulkOps::class), 'elementWrites' => Mockery::mock(ElementWrites::class), 'elementDuplicates' => $duplicates]), $state];
 }

@@ -136,8 +136,10 @@ describe('DateTimeControl', () => {
     mount({});
     await nextTick();
 
+    // `auto` rather than unset, so the surrounding craft-field doesn't stretch
+    // the control across the column the way it would a text input.
     expect(
-      container!.querySelector('craft-input-date-time')!.hasAttribute('width')
-    ).toBe(false);
+      container!.querySelector('craft-input-date-time')!.getAttribute('width')
+    ).toBe('auto');
   });
 });

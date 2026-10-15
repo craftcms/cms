@@ -240,6 +240,7 @@
     link: TableLink & {url: string},
     event: MouseEvent
   ): void {
+    // A modified click still follows the link, to open the screen in a tab.
     if (
       event.altKey ||
       event.ctrlKey ||
@@ -361,6 +362,7 @@
           meta: {
             trackSize: column.width,
             headerSrOnly: column.headerSrOnly,
+            wrap: column.wrap,
           },
           cell: ({getValue, row}) => {
             const value = getValue();
@@ -412,6 +414,7 @@
             ) {
               actions.push(
                 h(DeleteButton, {
+                  label: row.original._deleteLabel,
                   disabled: deletePending.value,
                   disabledReason: row.original._deleteDisabledReason,
                   onClick: () => deleteRow(row.original),
