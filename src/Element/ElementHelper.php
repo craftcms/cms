@@ -17,11 +17,9 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\HtmlString;
 use RuntimeException;
 use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -655,21 +653,6 @@ class ElementHelper
         }
 
         return empty($element->$attribute);
-    }
-
-    /**
-     * Renders the given elements using their partial templates.
-     *
-     * If no partial template exists for an element, its string representation will be output instead.
-     *
-     * @param  ElementInterface[]  $elements
-     * @param  array<string,mixed>  $variables
-     *
-     * @deprecated in 6.0.0. {@see Template::render()} should be used instead.
-     */
-    public static function renderElements(array $elements, array $variables = []): HtmlString
-    {
-        return Template::render($elements, $variables);
     }
 
     /**
