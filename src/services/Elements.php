@@ -3561,9 +3561,21 @@ class Elements extends Component
                         $siteCriteria = Arr::only($map['criteria'] ?? [], $siteParams);
                         $otherCriteria = Arr::except($map['criteria'] ?? [], $siteParams);
 
+                        $planCriteria = ElementHelper::cleanseQueryCriteria($plan->criteria);
+
+                        // Allow custom ordering, as long as it can't contain raw SQL
+                        // (see https://github.com/craftcms/cms/issues/19992)
+                        if (!empty($plan->criteria['orderBy'])) {
+                            if (Db::isSafeOrderBy($plan->criteria['orderBy'])) {
+                                $planCriteria['orderBy'] = $plan->criteria['orderBy'];
+                            } else {
+                                Craft::warning("Ignoring unsafe `orderBy` criteria for the eager-loaded `$plan->handle` elements.", __METHOD__);
+                            }
+                        }
+
                         $criteria = array_merge(
                             $siteCriteria,
-                            ElementHelper::cleanseQueryCriteria($plan->criteria),
+                            $planCriteria,
                             $otherCriteria,
                         );
 

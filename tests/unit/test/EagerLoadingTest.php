@@ -9,11 +9,13 @@ namespace crafttests\unit\test;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
 use craft\test\TestCase;
 use crafttests\fixtures\EntryWithMatrixFixture;
 use yii\base\ErrorException;
+use yii\db\Expression;
 
 /**
  * Unit tests for eager loading content
@@ -179,5 +181,46 @@ class EagerLoadingTest extends TestCase
 
         $tabs[0]->setElements($layoutElements);
         $fieldsService->saveLayout($fieldLayout);
+    }
+
+    /**
+     * Test that custom `orderBy` criteria is applied to eager-loaded elements, as long as it’s safe
+     * (see https://github.com/craftcms/cms/issues/19992)
+     *
+     * @return void
+     */
+    public function testEagerLoadingOrderBy(): void
+    {
+        $nestedEntryIds = $this->eagerLoadMatrixIds();
+        self::assertCount(2, $nestedEntryIds);
+        self::assertTrue($nestedEntryIds[0] < $nestedEntryIds[1]);
+        $reversedIds = array_reverse($nestedEntryIds);
+
+        self::assertSame($reversedIds, $this->eagerLoadMatrixIds(['orderBy' => 'id desc']));
+        self::assertSame($reversedIds, $this->eagerLoadMatrixIds(['orderBy' => ['elements.id' => SORT_DESC]]));
+        self::assertSame($reversedIds, $this->eagerLoadMatrixIds(['orderBy' => new Expression('[[elements.id]] desc')]));
+        self::assertSame([$reversedIds[0]], $this->eagerLoadMatrixIds(['orderBy' => 'id desc', 'limit' => 1]));
+
+        // unsafe values should be ignored
+        self::assertSame($nestedEntryIds, $this->eagerLoadMatrixIds(['orderBy' => 'id desc, (select 1)']));
+        self::assertSame($nestedEntryIds, $this->eagerLoadMatrixIds(['orderBy' => ['(select 1)' => SORT_DESC]]));
+    }
+
+    /**
+     * @param array $criteria
+     * @return int[]
+     */
+    private function eagerLoadMatrixIds(array $criteria = []): array
+    {
+        $entry = Entry::find()
+            ->title('Matrix with relational field')
+            ->with([
+                ['matrixSecond', $criteria],
+            ])
+            ->one();
+
+        self::assertNotNull($entry);
+
+        return array_map(fn(ElementInterface $element) => $element->id, $entry->getEagerLoadedElements('matrixSecond')->all());
     }
 }
