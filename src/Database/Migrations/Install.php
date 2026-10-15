@@ -603,6 +603,8 @@ class Install extends Migration
             $table->string('handle', 64);
             $table->string('context')->default('global');
             $table->text('instructions')->nullable();
+            $table->text('tip')->nullable();
+            $table->text('warning')->nullable();
             $table->boolean('searchable')->default(true);
             $table->string('translationMethod')->default(TranslationMethod::None->value);
             $table->text('translationKeyFormat')->nullable();

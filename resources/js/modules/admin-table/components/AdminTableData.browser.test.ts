@@ -16,20 +16,23 @@ import type {
   AdminTableRequest,
 } from '../types';
 
-const {reload, get, openSlideout} = vi.hoisted(() => ({
+const {reload, get} = vi.hoisted(() => ({
   reload: vi.fn(),
   get: vi.fn(),
-  openSlideout: vi.fn(),
 }));
+const slideout = vi.hoisted(() => vi.fn().mockResolvedValue(null));
 let inertiaPage: {url: string; props: {readOnly: boolean}};
+
+vi.mock('@/common/slideouts', async () => ({
+  ...(await vi.importActual('@/common/slideouts')),
+  openSlideout: slideout,
+}));
 
 vi.mock('@inertiajs/vue3', async () => ({
   ...(await vi.importActual('@inertiajs/vue3')),
   usePage: () => inertiaPage,
   router: {reload, get},
 }));
-
-vi.mock('@/common/slideouts', () => ({openSlideout}));
 
 const records = [
   {id: 1, name: 'Beta', status: 'enabled', count: 2},
@@ -45,7 +48,7 @@ beforeEach(() => {
   vi.stubGlobal('Craft', {systemUid: 'admin-table-test'});
   reload.mockClear();
   get.mockReset();
-  openSlideout.mockReset().mockResolvedValue(null);
+  slideout.mockClear();
   inertiaPage = reactive({url: '/', props: {readOnly: false}});
   vi.stubGlobal(
     'fetch',
@@ -86,7 +89,10 @@ function mountTable(options: Record<string, unknown> = {}) {
   return {host, handle};
 }
 
-function mountNode(options: Partial<TableProps> = {}) {
+function mountNode(
+  options: Partial<TableProps> = {},
+  nodeProps: {onRefresh?: () => void} = {}
+) {
   const host = document.createElement('div');
   document.body.append(host);
   const app = createApp(() =>
@@ -127,6 +133,7 @@ function mountNode(options: Partial<TableProps> = {}) {
           ...options,
         },
       },
+      ...nodeProps,
     })
   );
   app.mount(host);
@@ -158,8 +165,8 @@ it.each(['mouse', 'keyboard'])(
       await userEvent.keyboard('{Enter}');
     }
 
-    expect(openSlideout).toHaveBeenCalledOnce();
-    expect(openSlideout).toHaveBeenCalledWith(
+    expect(slideout).toHaveBeenCalledOnce();
+    expect(slideout).toHaveBeenCalledWith(
       '/content/draft',
       expect.any(Object)
     );
@@ -965,4 +972,217 @@ it('moves the selected row to another page, reloads rows, and clears selection',
   await vi.waitFor(() => expect(rowNames(host)).toEqual(['Replacement']));
   expect(moveToPage).toHaveBeenCalledWith(1, 2, 50);
   expect(handle.value?.selectedIds).toEqual([]);
+});
+
+async function expectDebouncedDraftRefresh(
+  onSaved: (result: {draft?: boolean}) => void,
+  refresh: ReturnType<typeof vi.fn>
+): Promise<void> {
+  vi.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+  try {
+    onSaved({draft: true});
+    expect(refresh).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(400);
+    onSaved({draft: true});
+    await vi.advanceTimersByTimeAsync(400);
+    expect(refresh).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(200);
+    expect(refresh).toHaveBeenCalledTimes(1);
+
+    onSaved({draft: true});
+    onSaved({});
+    expect(refresh).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(600);
+    expect(refresh).toHaveBeenCalledTimes(2);
+
+    onSaved({draft: true});
+    teardown?.();
+    teardown = undefined;
+    await vi.advanceTimersByTimeAsync(600);
+    expect(refresh).toHaveBeenCalledTimes(2);
+  } finally {
+    vi.useRealTimers();
+  }
+}
+
+it('opens slideout links at their width and refreshes through its own handler', async () => {
+  const onRefresh = vi.fn();
+  const navigate = vi
+    .spyOn(inertiaRouter, 'visit')
+    .mockImplementation(() => {});
+  const host = mountNode(
+    {
+      rows: [
+        {
+          id: 1,
+          name: {
+            label: 'Summer sale',
+            url: '/admin/rules/1',
+            slideout: true,
+            slideoutWidth: '85vw',
+          },
+        },
+        {
+          id: 2,
+          name: {
+            label: 'Winter sale',
+            url: '/admin/rules/2',
+            slideoutWidth: '85vw',
+          },
+        },
+      ],
+    },
+    {onRefresh}
+  );
+
+  await userEvent.click(page.getByRole('link', {name: 'Winter sale'}));
+  expect(navigate).toHaveBeenCalledWith('/admin/rules/2', expect.anything());
+  expect(slideout).not.toHaveBeenCalled();
+  navigate.mockClear();
+
+  const link = await vi.waitFor(() => {
+    const element = host.querySelector<HTMLAnchorElement>(
+      'a[href="/admin/rules/1"]'
+    );
+    expect(element).not.toBeNull();
+    return element!;
+  });
+  link
+    .closest('td')!
+    .dispatchEvent(
+      new MouseEvent('dblclick', {bubbles: true, cancelable: true})
+    );
+  expect(slideout).not.toHaveBeenCalled();
+  await userEvent.click(page.getByRole('link', {name: 'Summer sale'}));
+  expect(navigate).not.toHaveBeenCalled();
+
+  expect(slideout).toHaveBeenCalledWith(
+    '/admin/rules/1',
+    expect.objectContaining({opener: link, width: '85vw'})
+  );
+  await expectDebouncedDraftRefresh(
+    slideout.mock.lastCall![1].onSaved,
+    onRefresh
+  );
+  expect(reload).not.toHaveBeenCalled();
+});
+
+it('lets the owner refresh a paginated table after a slideout saves', async () => {
+  const options = reactive<Partial<TableProps>>({
+    rows: [
+      {id: 1, name: {label: 'Original', url: '/admin/rules/1', slideout: true}},
+    ],
+    pagination: result('Unused').pagination,
+  });
+  const host = mountNode(options, {
+    onRefresh: () => {
+      options.rows = [{id: 1, name: 'Updated by owner'}];
+    },
+  });
+
+  host.querySelector<HTMLAnchorElement>('a[href="/admin/rules/1"]')!.click();
+  slideout.mock.lastCall![1].onSaved({});
+
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Updated by owner']));
+  expect(get).not.toHaveBeenCalled();
+  expect(reload).not.toHaveBeenCalled();
+});
+
+it('opens menu links in slideouts without losing native modified-click behavior', async () => {
+  const onRefresh = vi.fn();
+  const navigate = vi
+    .spyOn(inertiaRouter, 'visit')
+    .mockImplementation(() => {});
+  const host = mountNode(
+    {
+      rows: [
+        {
+          id: 1,
+          name: {
+            label: 'Actions',
+            items: [
+              {
+                label: 'Edit rule',
+                url: '/admin/rules/1',
+                slideout: true,
+                slideoutWidth: '72vw',
+              },
+              {label: 'View rule', url: '/admin/rules/1/view'},
+            ],
+          },
+        },
+      ],
+    },
+    {onRefresh}
+  );
+  const menu = host.querySelector('craft-action-menu')!;
+  await menu.show();
+  const item = await vi.waitFor(() => {
+    const element = menu.querySelector('craft-action-item');
+    expect(element).toBeTruthy();
+    return element!;
+  });
+  await item.updateComplete;
+  const anchor = item.shadowRoot!.querySelector('a')!;
+  expect(anchor.getAttribute('href')).toBe('/admin/rules/1');
+
+  for (const modifier of ['altKey', 'ctrlKey', 'metaKey', 'shiftKey']) {
+    const click = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      [modifier]: true,
+    });
+    item.dispatchEvent(click);
+    expect(click.defaultPrevented).toBe(false);
+  }
+  expect(slideout).not.toHaveBeenCalled();
+  expect(navigate).not.toHaveBeenCalled();
+
+  await menu.show();
+  item.focus();
+  await userEvent.keyboard('{Enter}');
+  expect(slideout).toHaveBeenCalledWith(
+    '/admin/rules/1',
+    expect.objectContaining({
+      opener: menu.querySelector('[slot="invoker"]'),
+      width: '72vw',
+    })
+  );
+  slideout.mock.lastCall![1].onSaved();
+  expect(onRefresh).toHaveBeenCalledOnce();
+  expect(reload).not.toHaveBeenCalled();
+
+  await menu.show();
+  await userEvent.click(page.getByRole('link', {name: 'View rule'}));
+  expect(navigate).toHaveBeenCalledWith(
+    '/admin/rules/1/view',
+    expect.anything()
+  );
+});
+
+it('opens the create action in a slideout when asked to', async () => {
+  const host = mountNode({
+    createLabel: 'New rule',
+    createUrl: '/admin/rules/new',
+    createSlideout: true,
+    createSlideoutWidth: '85vw',
+  });
+
+  const button = await vi.waitFor(() => {
+    const element = host.querySelector<HTMLElement>(
+      'craft-button[href="/admin/rules/new"]'
+    );
+    expect(element).not.toBeNull();
+    return element!;
+  });
+  const click = new MouseEvent('click', {bubbles: true, cancelable: true});
+  button.dispatchEvent(click);
+
+  expect(click.defaultPrevented).toBe(true);
+  expect(slideout).toHaveBeenCalledWith(
+    '/admin/rules/new',
+    expect.objectContaining({opener: button, width: '85vw'})
+  );
+  await expectDebouncedDraftRefresh(slideout.mock.lastCall![1].onSaved, reload);
+  expect(reload).toHaveBeenCalledWith({only: ['ui']});
 });

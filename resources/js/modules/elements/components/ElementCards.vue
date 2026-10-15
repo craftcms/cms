@@ -5,6 +5,7 @@
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
+  import {isInteractiveClick} from '@/common/utils/dom';
   import {
     isInteractiveItemEvent,
     type ElementIndexItemBehavior,
@@ -56,6 +57,7 @@
 
   const emit = defineEmits<{
     (event: 'reorder', startIndex: number, finishIndex: number): void;
+    (event: 'edit', element: CardElement): void;
   }>();
 
   const ids = computed(() => props.data.map((element) => element.id));
@@ -104,6 +106,28 @@
 
     if (props.selectable && !readOnly.value && !props.interactionsDisabled) {
       props.selection.handleClick(id, event);
+    }
+  }
+
+  /**
+   * A double-click opens the element, except on the card's own controls — the
+   * checkbox, an action menu, the reorder button, a link.
+   */
+  function onCardDblclick(id: string | number, event: MouseEvent) {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    if (!element) {
+      return;
+    }
+
+    if (props.itemBehavior?.onDblClick?.(element, event)) {
+      event.preventDefault();
+
+      return;
+    }
+
+    if (!isInteractiveClick(event, event.currentTarget)) {
+      emit('edit', element);
     }
   }
 
@@ -170,6 +194,7 @@
       :aria-busy="loading ? 'true' : undefined"
       @reorder="(from, to) => emit('reorder', from, to)"
       @item-click="onCardClick"
+      @item-dblclick="onCardDblclick"
       @item-keydown="onCardKeydown"
     >
       <template #thumbnail="{index}">

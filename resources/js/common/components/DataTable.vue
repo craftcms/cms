@@ -38,6 +38,7 @@
       getRowLabel?: (row: TData) => string;
       rowBehavior?: {
         onClick?: (row: TData, event: MouseEvent) => boolean;
+        onDblClick?: (row: TData, event: MouseEvent) => boolean;
         onKeydown?: (row: TData, event: KeyboardEvent) => boolean;
       };
       title?: string;
@@ -138,6 +139,15 @@
     )
       return;
     props.selection?.selectRowFromEvent(row, event);
+  }
+
+  function onRowDblClick(
+    row: Row<CraftTableFeatures, TData>,
+    event: MouseEvent
+  ): void {
+    if (props.rowBehavior?.onDblClick?.(row.original, event)) {
+      event.preventDefault();
+    }
   }
 
   const rootRef = useTemplateRef<HTMLElement>('root-ref');
@@ -475,6 +485,7 @@
             :tabindex="selectable ? 0 : undefined"
             v-bind="rowAttributes?.(row)"
             @click="onRowClick(row, $event)"
+            @dblclick="onRowDblClick(row, $event)"
             @keydown="onRowKeydown(row, rowIdx, $event)"
           >
             <slot

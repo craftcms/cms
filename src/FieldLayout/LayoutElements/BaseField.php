@@ -408,8 +408,14 @@ abstract class BaseField extends FieldLayoutElement
     protected function noticeSettingsNodes(UiContext $context): array
     {
         return [
-            Field::make(t('Tip'), Textarea::make('tip')->rows(1)->value($this->tip)),
-            Field::make(t('Warning'), Textarea::make('warning')->rows(1)->value($this->warning)),
+            Field::make(t('Tip'), Textarea::make('tip')
+                ->rows(1)
+                ->value($this->tip)
+                ->placeholder($this->defaultTip())),
+            Field::make(t('Warning'), Textarea::make('warning')
+                ->rows(1)
+                ->value($this->warning)
+                ->placeholder($this->defaultWarning())),
         ];
     }
 
@@ -463,6 +469,9 @@ abstract class BaseField extends FieldLayoutElement
      * “⋮” action menu, and — for admins with the “Show field handles in edit
      * forms” preference — the copyable handle chip.
      *
+     * The action menu is left out when the field has no visible label or
+     * instructions, since there's no heading for it to belong to.
+     *
      * @return list<Node>
      */
     protected function uiActionNodes(FieldLayoutElementContext $context, Control $control): array
@@ -470,7 +479,7 @@ abstract class BaseField extends FieldLayoutElement
         $nodes = [];
         $uidPrefix = $this->uiActionsUid($control);
 
-        $items = $this->resolveActionMenuItems($context);
+        $items = $this->hasVisibleHeading($context) ? $this->resolveActionMenuItems($context) : [];
         if ($items !== []) {
             $nodes[] = ActionMenu::make("$uidPrefix:menu", $items)
                 ->label(t('Field actions'));
@@ -481,6 +490,20 @@ abstract class BaseField extends FieldLayoutElement
         }
 
         return $nodes;
+    }
+
+    /**
+     * Returns whether the field shows a label or instructions above its input.
+     */
+    private function hasVisibleHeading(FieldLayoutElementContext $context): bool
+    {
+        if ($this->showLabel() && filled($this->label())) {
+            return true;
+        }
+
+        $static = $context->mode !== ControlMode::Editable || $context->ui->mode !== ControlMode::Editable;
+
+        return filled($this->instructionsText($context->element, $static));
     }
 
     /**
@@ -938,7 +961,18 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function tipText(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->tip ? t($this->tip, category: 'site') : null;
+        return $this->tip ? t($this->tip, category: 'site') : $this->defaultTip($element, $static);
+    }
+
+    /**
+     * Returns the field’s default tip text, which will be used if [[tip]] is null.
+     *
+     * @param  ElementInterface|null  $element  The element the form is being rendered for
+     * @param  bool  $static  Whether the form should be static (non-interactive)
+     */
+    protected function defaultTip(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return null;
     }
 
     /**
@@ -949,7 +983,18 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function warningText(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->warning ? t($this->warning, category: 'site') : null;
+        return $this->warning ? t($this->warning, category: 'site') : $this->defaultWarning($element, $static);
+    }
+
+    /**
+     * Returns the field’s default warning text, which will be used if [[warning]] is null.
+     *
+     * @param  ElementInterface|null  $element  The element the form is being rendered for
+     * @param  bool  $static  Whether the form should be static (non-interactive)
+     */
+    protected function defaultWarning(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return null;
     }
 
     /**

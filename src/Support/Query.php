@@ -373,7 +373,7 @@ readonly class Query
             $operator = self::parseParamOperator($val, $defaultOperator);
 
             // Assume that date params are set in the system timezone
-            $val = Date::parse($val);
+            $val = self::prepareDateForDb(Date::parse($val));
 
             $normalizedValues[] = $operator.$val;
         }

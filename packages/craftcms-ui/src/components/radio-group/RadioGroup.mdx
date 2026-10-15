@@ -39,6 +39,16 @@ Use a [Button Group](?path=/docs/components-button-group--docs) instead when the
 
 A group rendered by the server adopts the name already present on its inputs, for the same reason as the checkbox group: Lion syncs each child's name to the group's, so upgrading a nameless group would strip the server's names and break native posting.
 
+## Accessibility
+
+The group is announced as a radio group named by its label, and takes one Tab stop. The arrow keys move between options and select them as they go, because every option is a native radio sharing the group's name.
+
+Give the group a visible label that names the question, and keep each option's text in its radio's label.
+
+When a choice is required, say so with `craft-field`'s `required` or in the label text, as well as adding the `Required` validator; the validator alone doesn't show anything until an error appears. Write validator messages that say what to choose.
+
+Don't submit the form or navigate away when the selection changes. Arrow keys select each option they pass, so a person moving through the list would trigger the change on every step.
+
 ## Properties
 
 <ArgTypes of={RadioGroupStories} />
