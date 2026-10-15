@@ -673,6 +673,7 @@
     }
   }
 
+  /* Matches the page shell's `.cp-content__footer`. */
   .slideout-screen__footer {
     display: grid;
     align-content: center;

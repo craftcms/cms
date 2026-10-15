@@ -31,7 +31,7 @@
         defaultFormActions: Array<DefaultFormAction>;
         /** The response's `primaryAction()` button, rendered server-side. */
         primaryActionHtml?: string | null;
-        /** Shows the native submit button spinner. */
+        /** Shows the plain submit button's spinner, for shells that submit natively. */
         submitting?: boolean;
         /**
          * Keeps the row within the content's column, for a constrained content
@@ -53,6 +53,7 @@
       ScreenSlots,
       'content-footer' | 'footer-meta' | 'additional-buttons' | 'primary-action'
     > & {
+      /** The shell's own buttons at the end of the row, e.g. a slideout's Cancel. */
       'shell-actions'?: () => any;
     }
   >();
@@ -101,6 +102,10 @@
         </template>
       </FormActions>
 
+      <!-- A bridged legacy screen has no Inertia form to drive `FormActions`.
+           It posts natively instead, so it gets a plain submit button — the
+           same contract as Craft 5's page form. `craft-button` extends
+           `LionButtonSubmit`, so `type="submit"` submits the enclosing form. -->
       <LayoutSlotOutlet
         v-else-if="fullPageForm && !readOnly"
         name="primary-action"

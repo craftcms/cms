@@ -2,7 +2,6 @@
   import {actionClient, t} from '@craftcms/ui';
   import {router} from '@inertiajs/vue3';
   import type {ColumnDef} from '@tanstack/vue-table';
-  import {useTimeoutFn} from '@vueuse/core';
   import {computed, h, inject, provide, ref, shallowRef} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
@@ -15,7 +14,6 @@
     type PaginationData,
     type TableAppearanceValue,
   } from '@/common/types';
-  import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import type {CraftTableFeatures} from '@/common/table/craftTable';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -32,6 +30,7 @@
     BulkActionItem,
   } from '@/modules/elements/types/actions';
   import {AdminTableCreateSlideout} from '@/modules/admin-table/create-slideout';
+  import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
   import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
@@ -65,13 +64,14 @@
   }>();
   const pageTableFlush = inject(UiTableFlush, ref(false));
   provide(UiTableFlush, ref(false));
+  const quickEdit = useElementQuickEdit({refreshResults: refreshTable});
   provide(
     AdminTableCreateSlideout,
     computed(() =>
       props.node.props.createSlideout
         ? {
             width: props.node.props.createSlideoutWidth ?? undefined,
-            onSaved: onSlideoutSaved,
+            onSaved: quickEdit.onSaved,
           }
         : null
     )
@@ -222,9 +222,15 @@
       {
         href: url,
         inertia: !link.slideout,
-        onClick: link.slideout
-          ? (event: MouseEvent) => onLinkClick({...link, url}, event)
-          : undefined,
+        ...(link.slideout
+          ? {
+              'data-cp-url': url,
+              'data-editable': '',
+              'data-slideout-width': link.slideoutWidth ?? undefined,
+              onClick: (event: MouseEvent) =>
+                onLinkClick({...link, url}, event),
+            }
+          : {}),
       },
       () => link.label
     );
@@ -259,10 +265,8 @@
     link: TableLink & {url: string},
     opener: HTMLElement | null
   ): void {
-    void openSlideout(link.url, {
-      opener,
+    quickEdit.openEditor(link.url, opener, {
       width: link.slideoutWidth ?? undefined,
-      onSaved: onSlideoutSaved,
     });
   }
 
@@ -631,24 +635,10 @@
 
     void adminTable.value?.refresh();
   }
-
-  const draftRefresh = useTimeoutFn(refreshTable, 600, {immediate: false});
-
-  function onSlideoutSaved(result: SlideoutSaveResult = {}): void {
-    draftRefresh.stop();
-
-    if (result.draft) {
-      draftRefresh.start();
-
-      return;
-    }
-
-    refreshTable();
-  }
 </script>
 
 <template>
-  <div :data-ui-node="node.uid">
+  <div :data-ui-node="node.uid" @dblclick="quickEdit.onDblClick">
     <LayoutSlot
       v-if="hasCreateAction && node.props.createActionInPageHeader"
       name="content-actions"

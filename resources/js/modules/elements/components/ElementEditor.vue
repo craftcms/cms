@@ -18,6 +18,7 @@
   import MetadataDetailsContent from '@/common/components/MetadataDetailsContent.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
   import ElementActionMenu from '@/modules/elements/components/ElementActionMenu.vue';
+  import {createElementActionDispatcher} from '@/modules/elements/composables/useElementActionMenu';
   import ElementActivityAvatars from '@/modules/elements/components/ElementActivityAvatars.vue';
   import ElementViewButtons from '@/modules/elements/components/ElementViewButtons.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
@@ -142,6 +143,11 @@
       onClick: () => submitAction(action),
     }))
   );
+
+  const dispatchBehavior = createElementActionDispatcher({
+    currentEntryTypeId: () => form.typeId ?? null,
+    slideout,
+  });
 
   const saveButtons = computed(() =>
     payload.editorActions.buttons.map((action) => ({
@@ -291,6 +297,23 @@
       v-if="showElementControls"
       :targets="payload.previewTargets"
     />
+  </LayoutSlot>
+
+  <LayoutSlot v-if="payload.additionalButtons.length" name="additional-buttons">
+    <craft-button
+      v-for="button in payload.additionalButtons"
+      :key="button.label"
+      type="button"
+      :variant="button.variant ?? 'outline'"
+      @click="dispatchBehavior(button.behavior)"
+    >
+      <craft-icon
+        v-if="button.icon"
+        :name="button.icon"
+        slot="prefix"
+      ></craft-icon>
+      {{ button.label }}
+    </craft-button>
   </LayoutSlot>
 
   <LayoutSlot
