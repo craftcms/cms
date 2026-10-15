@@ -5,7 +5,6 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
-use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementHtmlAttributesResolving;
@@ -49,27 +48,6 @@ describe('getPostEditUrl', function () {
         $url = $this->entry->getPostEditUrl();
 
         expect($url)->toBeString()->toContain(Cms::config()->cpTrigger);
-    });
-});
-
-describe('getAdditionalButtons', function () {
-    test('returns empty string by default', function () {
-        expect((string) $this->entry->getAdditionalButtons())->toBe('');
-    });
-
-    test('triggers ElementAdditionalButtonsResolving event', function () {
-        $eventTriggered = false;
-        $customHtml = '<button>Custom Button</button>';
-
-        Event::listen(function (ElementAdditionalButtonsResolving $event) use (&$eventTriggered, $customHtml) {
-            $eventTriggered = true;
-            $event->html = $customHtml;
-        });
-
-        $buttons = $this->entry->getAdditionalButtons();
-
-        expect($eventTriggered)->toBeTrue();
-        expect((string) $buttons)->toBe($customHtml);
     });
 });
 

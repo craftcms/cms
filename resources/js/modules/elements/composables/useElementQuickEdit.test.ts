@@ -439,4 +439,21 @@ describe('refreshing the index after a save', () => {
       vi.useRealTimers();
     }
   });
+
+  it('drops a pending draft refresh once a full save refreshes', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const onSaved = openedWith();
+
+      onSaved({draft: true});
+      onSaved({});
+      expect(refreshResults).toHaveBeenCalledTimes(1);
+
+      await vi.advanceTimersByTimeAsync(600);
+      expect(refreshResults).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

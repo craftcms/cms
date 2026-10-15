@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="80px" height="60px" viewBox="0 0 80 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <title>thumbs</title>
+    <style>
+        /* Follows the embedding page's color-scheme, so it matches the CP theme. */
+        @media (prefers-color-scheme: dark) {
+            [fill="#F3F7FD" i] { fill: #333D51; }
+            [fill="#CDD8E4" i] { fill: #4E5B71; }
+            [stroke="#CDD8E4" i] { stroke: #4E5B71; }
+            [fill="#5A6572" i] { fill: #A6B2C2; }
+            [stroke="#5A6572" i] { stroke: #A6B2C2; }
+            [fill="#FFFFFF" i] { fill: #273043; }
+        }
+    </style>
     <defs>
         <path d="M0,0 L80,0 L80,60 L0,60 L0,0 Z" id="path-1"></path>
         <path d="M0,0 L25,0 L25,18 L0,18 L0,0 Z" id="path-2"></path>
@@ -14,7 +25,6 @@
         <path d="M0,0 L25,0 L25,18 L0,18 L0,0 Z" id="path-10"></path>
     </defs>
     <g id="thumbs" stroke="none" fill="none" xlink:href="#path-1" fill-rule="evenodd">
-        <use fill="#FFFFFF" xlink:href="#path-1"></use>
         <g id="thumb" xlink:href="#path-2" stroke-width="1">
             <rect id="chip-copy" stroke="#CDD8E4" fill="#F3F7FD" x="0.5" y="0.5" width="24" height="17" rx="5"></rect>
             <g id="Group" transform="translate(5, 4)" fill="#CDD8E4">

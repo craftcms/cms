@@ -136,7 +136,7 @@ export interface ScreenSlots {
    * `actionButton`.
    */
   'content-actions'?: () => any;
-  /** Extra buttons before the form save UI, in the content footer. Craft 5: `additionalButtons`. */
+  /** Buttons at the end of the content footer, apart from the save controls. Craft 5: `additionalButtons`. */
   'additional-buttons'?: () => any;
   /**
    * Replaces the Save button while keeping its action menu. Defaults to the
@@ -157,6 +157,8 @@ export interface ScreenSlots {
   'subnav-actions'?: () => any;
   /** Bottom of the content column (pagination, meta info, …), beside the form save UI. Craft 5: `footer` (content pane). */
   'content-footer'?: () => any;
+  /** Status beside the content footer's save controls, e.g. an element editor's autosave state. */
+  'footer-meta'?: () => any;
   /** Right details column beside the content. Craft 5: `details`. */
   'content-details'?: () => any;
   /** Global page footer. */

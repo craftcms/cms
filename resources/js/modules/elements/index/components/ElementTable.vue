@@ -314,7 +314,7 @@
     min-width: 14rem;
   }
 
-  .cp-table-row {
+  :deep(.cp-table-row) {
     --_structure-indent: calc(44px * (var(--structure-level, 1) - 1));
   }
 

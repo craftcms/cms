@@ -186,6 +186,24 @@ need additional payload or a different save action. `ElementEditorPayloadResolvi
 prepared payload for edit screens and autosave responses. With the Yii adapter installed, existing editor HTML events
 and `prepareEditScreen()` customizations are rendered around the native forms.
 
+Buttons at the end of the editor's footer, apart from the save controls, come from `additionalButtonDescriptors()`.
+Element types override `defineAdditionalButtonDescriptors()` and plugins listen for `ElementAdditionalButtonDescriptorsResolving`.
+Each item takes the same `behavior` descriptor as an action menu item (`link`, `download`, `slideout`, `formModal`, …)
+plus optional `icon` and `variant`, so it runs without submitting the editor's form. With the Yii
+adapter installed, Craft 5 additional buttons HTML (`getAdditionalButtons()`, `EVENT_DEFINE_ADDITIONAL_BUTTONS`,
+and `additionalButtonsHtml()` from `prepareEditScreen()`) renders in the same place:
+
+```php
+protected function defineAdditionalButtonDescriptors(): array
+{
+    return [[
+        'label' => t('View report'),
+        'icon' => 'chart-line',
+        'behavior' => ['type' => 'link', 'href' => $this->getReportUrl(), 'newTab' => true],
+    ]];
+}
+```
+
 ### FieldLayout component settings
 
 Field layout components — tabs and layout elements — describe the UI shown in the designer's settings slideout by

@@ -1593,7 +1593,6 @@
         :item-attrs="blockAttrs"
         :card-attrs="blockCardAttrs"
         @reorder="move"
-        @item-click="(uid, event) => selection.handleClick(uid, event)"
         @header-dblclick="toggleFromTitlebar"
       >
         <template #label="{id: uid}">

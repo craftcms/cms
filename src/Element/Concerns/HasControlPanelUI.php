@@ -17,7 +17,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
-use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
+use CraftCms\Cms\Element\Events\ElementAdditionalButtonDescriptorsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementHtmlAttributesResolving;
@@ -94,13 +94,6 @@ trait HasControlPanelUI
      * Performs any action after the element's editor is fully ready.
      */
     public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void {}
-
-    public function getAdditionalButtons(): string|Stringable
-    {
-        event($event = new ElementAdditionalButtonsResolving($this));
-
-        return $event->html;
-    }
 
     public function getAltActions(): array
     {
@@ -528,6 +521,32 @@ JS, [
     protected function extraActionMenuDescriptors(
         ElementActionContext $context = ElementActionContext::Editor,
     ): array {
+        return [];
+    }
+
+    /**
+     * Buttons shown at the end of the element editor's footer, as behavior
+     * descriptors (see {@see actionMenuDescriptors()}).
+     *
+     * Element types extend this via {@see defineAdditionalButtonDescriptors()};
+     * plugins listen for {@see ElementAdditionalButtonDescriptorsResolving}.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function additionalButtonDescriptors(): array
+    {
+        event($event = new ElementAdditionalButtonDescriptorsResolving($this, $this->defineAdditionalButtonDescriptors()));
+
+        return array_values($event->items);
+    }
+
+    /**
+     * Element-type additions to {@see additionalButtonDescriptors()}.
+     *
+     * @return list<array<string, mixed>>
+     */
+    protected function defineAdditionalButtonDescriptors(): array
+    {
         return [];
     }
 
