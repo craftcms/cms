@@ -255,6 +255,23 @@ it.each([false, true])(
   }
 );
 
+it('shows the empty state right under the column headers, without an empty row', async () => {
+  const host = mountNode({
+    columns: [{key: 'name', label: 'Name'}],
+    rows: [],
+    emptyMessage: 'No releases exist yet.',
+  });
+  await nextTick();
+
+  const empty = host.querySelector<HTMLElement>('craft-empty')!;
+  const head = host.querySelector('thead')!;
+
+  expect(host.querySelectorAll('tbody tr')).toHaveLength(0);
+  expect(empty.getBoundingClientRect().top).toBe(
+    head.getBoundingClientRect().bottom
+  );
+});
+
 async function setControl(host: HTMLElement, selector: string, value: string) {
   const control = host.querySelector<HTMLElement & {modelValue: string}>(
     selector

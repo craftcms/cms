@@ -8,7 +8,14 @@
   import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
   import {usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
-  import {computed, defineComponent, h, ref, useTemplateRef} from 'vue';
+  import {
+    computed,
+    defineComponent,
+    h,
+    ref,
+    useSlots,
+    useTemplateRef,
+  } from 'vue';
   import {useMutationObserver, useResizeObserver} from '@vueuse/core';
   import {
     TableAppearance,
@@ -144,6 +151,12 @@
   const hasRows = computed(() => table.value.getRowModel().rows.length > 0);
   const loading = computed(
     () => props.loading || !!managed?.loading.value || moving.value
+  );
+  const slots = useSlots();
+  // Shown below the table rather than in its body, so it stays in view when
+  // the table scrolls sideways; the table's own empty row is left out then.
+  const showEmptyState = computed(
+    () => !!managed && !hasRows.value && !loading.value && !slots['empty-row']
   );
   const reorderable = computed(
     () =>
@@ -327,6 +340,7 @@
             : TableAppearance.Plain
         "
         :with-bottom-border="!footerVisible"
+        :empty-row="!showEmptyState"
         :selection="selection"
         :get-row-label="getRowLabel"
         :interactions-disabled="interactionsDisabled || loading"
@@ -337,10 +351,7 @@
         </template>
       </DataTable>
     </div>
-    <craft-empty
-      v-if="managed && !hasRows && !loading && !$slots['empty-row']"
-      :label="emptyLabel"
-    >
+    <craft-empty v-if="showEmptyState" :label="emptyLabel">
       <slot name="empty-actions">
         <CreateActionButton
           v-if="!readOnly"

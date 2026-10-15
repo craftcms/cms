@@ -62,6 +62,12 @@
        * up to whatever contains the table; see `AdminTable`.)
        */
       appearance?: Exclude<TableAppearanceValue, 'raised'>;
+      /**
+       * Whether to render a row when there are no rows to show. Turn it off
+       * when the empty state is shown outside the table instead, so the empty
+       * row doesn't add height above it.
+       */
+      emptyRow?: boolean;
     }>(),
 
     {
@@ -73,6 +79,7 @@
       layout: 'auto',
       withBottomBorder: true,
       appearance: TableAppearance.Plain,
+      emptyRow: true,
     }
   );
 
@@ -554,7 +561,7 @@
             </component>
           </tr>
         </template>
-        <template v-else>
+        <template v-else-if="emptyRow">
           <tr
             style="
               --table-template-columns: 1fr;
