@@ -76,6 +76,7 @@
   const emit = defineEmits<{
     (event: 'reorder', startIndex: number, finishIndex: number): void;
     (event: 'item-click', id: Id, mouseEvent: MouseEvent): void;
+    (event: 'item-dblclick', id: Id, mouseEvent: MouseEvent): void;
     (event: 'header-dblclick', id: Id, mouseEvent: MouseEvent): void;
     (
       event: 'item-keydown',
@@ -229,6 +230,7 @@
       :data-selected="selection.isSelected(id) ? '' : undefined"
       :tabindex="selectable ? 0 : undefined"
       @click="emit('item-click', id, $event)"
+      @dblclick="emit('item-dblclick', id, $event)"
       @keydown="onItemKeydown(id, index, $event)"
     >
       <DragShadow

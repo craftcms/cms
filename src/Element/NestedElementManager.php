@@ -1087,7 +1087,7 @@ class NestedElementManager extends Component
         $query = $this->nestedElementQuery($owner)
             ->drafts(null)
             ->canonicalsOnly()
-            ->savedDraftsOnly(false)
+            ->savedDraftsOnly()
             ->status(null)
             ->siteId($owner->siteId);
 

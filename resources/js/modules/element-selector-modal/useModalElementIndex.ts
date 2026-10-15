@@ -5,6 +5,7 @@ import {
   type ElementIndexRow,
 } from '@/modules/elements/index/composables/useContentIndexData';
 import {useDetachedElementIndex} from '@/modules/elements/index/composables/useDetachedElementIndex';
+import {isInteractiveClick} from '@/common/utils/dom';
 import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
 
 type Row = ElementIndexRow;
@@ -170,6 +171,36 @@ export function useModalElementIndex(options: Options) {
       }
 
       return !selectFolders;
+    },
+    /**
+     * Double-clicking a folder opens it. Double-clicking anything selectable
+     * makes sure it's selected — its two clicks toggled it on and back off —
+     * then lets the event through, so the picker chooses it. Anything else,
+     * including a double-click on a control inside an item, is consumed.
+     */
+    onDblClick(row, event) {
+      if (isInteractiveClick(event, event.currentTarget)) {
+        return true;
+      }
+
+      if (row.isFolder && typeof row.folderId === 'number') {
+        event.preventDefault();
+        openFolder(row.folderId);
+
+        return true;
+      }
+
+      const tableRow = table
+        .getRowModel()
+        .rows.find(({original}) => original.id === row.id);
+
+      if (!tableRow?.getCanSelect()) {
+        return true;
+      }
+
+      index.view.selection.selectRow(tableRow, {checked: true});
+
+      return false;
     },
     onKeydown(row, event) {
       if (!row.isFolder || typeof row.folderId !== 'number') {
