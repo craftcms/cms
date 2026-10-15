@@ -53,6 +53,7 @@ use craft\web\twig\tokenparsers\NavTokenParser;
 use craft\web\twig\tokenparsers\PaginateTokenParser;
 use craft\web\twig\tokenparsers\RedirectTokenParser;
 use craft\web\twig\tokenparsers\RegisterResourceTokenParser;
+use craft\web\twig\tokenparsers\RenderTokenParser;
 use craft\web\twig\tokenparsers\RequireAdminTokenParser;
 use craft\web\twig\tokenparsers\RequireEditionTokenParser;
 use craft\web\twig\tokenparsers\RequireGuestTokenParser;
@@ -210,6 +211,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new NavTokenParser(),
             new PaginateTokenParser(),
             new RedirectTokenParser(),
+            new RenderTokenParser(),
             new RequireAdminTokenParser(),
             new RequireEditionTokenParser(),
             new RequireLoginTokenParser(),
