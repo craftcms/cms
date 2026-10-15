@@ -20,6 +20,11 @@ export interface ScreenProps {
   debug?: any;
   /** Hides save controls without hiding non-save element actions. */
   saveDisabled?: boolean;
+  /**
+   * Hides the content footer altogether, for a page that puts its save
+   * controls elsewhere and has nothing else to show there.
+   */
+  hideFooter?: boolean;
   form?: InertiaForm<any> | null;
   defaultFormActions?: Array<DefaultFormAction>;
   formActions?: Array<ActionItem>;

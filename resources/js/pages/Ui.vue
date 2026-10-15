@@ -41,6 +41,13 @@
     sidebarUi?: UiPayload;
     contentMaxWidth?: boolean;
     formAdditionalButtons?: ActionItemButton[];
+    /**
+     * Leaves the form actions out of the footer, for a page that renders its
+     * own Save button in the `sidebar-actions` slot, which receives them.
+     */
+    formActionsInSidebar?: boolean;
+    /** See `ScreenProps.hideFooter`. */
+    hideFooter?: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: UiChange, values: UiPayload['values']): void;
@@ -189,16 +196,19 @@
 
   useAppLayout(() => ({
     form: props.submit ? inertiaForm : null,
-    defaultFormActions: submissionActions.value.some(
-      (action) =>
-        !action.hidden &&
-        ((action.shortcut && !action.shift) ||
-          action.label === t('Save and continue editing'))
-    )
+    defaultFormActions: props.formActionsInSidebar
       ? []
-      : props.defaultFormActions,
-    formActions: translatedFormActions.value,
+      : submissionActions.value.some(
+            (action) =>
+              !action.hidden &&
+              ((action.shortcut && !action.shift) ||
+                action.label === t('Save and continue editing'))
+          )
+        ? []
+        : props.defaultFormActions,
+    formActions: props.formActionsInSidebar ? [] : translatedFormActions.value,
     formAdditionalButtons: props.formAdditionalButtons,
+    hideFooter: props.hideFooter,
     contentMaxWidth: props.contentMaxWidth ?? true,
     onSave: save,
   }));
@@ -283,7 +293,19 @@
             @update:mutation="onSidebarMutation"
           />
         </craft-field-group>
-        <slot name="sidebar-actions" />
+        <slot
+          name="sidebar-actions"
+          :form="inertiaForm"
+          :form-action-items="translatedFormActions"
+        />
+      </template>
+      <!-- Without sidebar controls, the actions follow the metadata instead. -->
+      <template v-else-if="$slots['sidebar-actions']" #actions>
+        <slot
+          name="sidebar-actions"
+          :form="inertiaForm"
+          :form-action-items="translatedFormActions"
+        />
       </template>
     </MetadataDetails>
   </component>

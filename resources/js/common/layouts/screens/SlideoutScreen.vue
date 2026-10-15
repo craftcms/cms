@@ -508,7 +508,7 @@
       </aside>
     </div>
 
-    <footer class="slideout-screen__footer">
+    <footer v-if="!props.hideFooter" class="slideout-screen__footer">
       <ContentFooter
         :read-only="readOnly"
         :form="form"

@@ -162,11 +162,12 @@
   // standing empty.
   const hasFooter = computed(
     () =>
-      Boolean(props.form) ||
-      Boolean(props.fullPageForm) ||
-      regions.has('content-footer') ||
-      regions.has('footer-meta') ||
-      regions.has('additional-buttons')
+      !props.hideFooter &&
+      (Boolean(props.form) ||
+        Boolean(props.fullPageForm) ||
+        regions.has('content-footer') ||
+        regions.has('footer-meta') ||
+        regions.has('additional-buttons'))
   );
   const contentConstrained = computed(() => Boolean(props.contentMaxWidth));
   const contentMainStyle = computed(() =>

@@ -124,4 +124,46 @@ describe('PageScreen', () => {
       );
     }
   );
+
+  it('hides the footer for a page that asks it to, even with a form', async () => {
+    stubViewport(true);
+
+    const hideFooter = ref(false);
+    const form = {
+      hasErrors: false,
+      errors: {},
+      processing: false,
+      isDirty: false,
+    } as unknown as InstanceType<typeof Object>;
+    const container = document.createElement('div');
+    document.body.append(container);
+
+    const app = createApp({
+      render: () =>
+        h(PageScreen, {
+          form,
+          defaultFormActions: [],
+          hideFooter: hideFooter.value,
+        } as never),
+    });
+    app.mount(container);
+    teardown = () => {
+      app.unmount();
+      container.remove();
+    };
+    await nextTick();
+
+    const footer = () =>
+      container.querySelector<HTMLElement>('.content-footer');
+    expect(
+      footer()?.closest<HTMLElement>('[style*="display: none"]')
+    ).toBeNull();
+
+    hideFooter.value = true;
+    await nextTick();
+
+    expect(
+      footer()?.closest<HTMLElement>('[style*="display: none"]')
+    ).not.toBeNull();
+  });
 });

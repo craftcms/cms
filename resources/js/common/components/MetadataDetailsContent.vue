@@ -6,6 +6,8 @@
   }>();
   defineSlots<{
     default?(): unknown;
+    /** Buttons below the metadata, at the end of the panel. */
+    actions?(): unknown;
   }>();
 </script>
 
@@ -14,5 +16,8 @@
     <slot />
     <hr v-if="html && $slots.default" class="my-lg" />
     <DynamicHtmlRenderer v-if="html" :html="html" />
+    <div v-if="$slots.actions" :class="{'mt-lg': html || $slots.default}">
+      <slot name="actions" />
+    </div>
   </div>
 </template>
