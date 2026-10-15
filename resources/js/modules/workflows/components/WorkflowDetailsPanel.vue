@@ -9,6 +9,10 @@
   } from '@/modules/elements/composables/useElementEditor';
   import WorkflowDraftReviews from './WorkflowDraftReviews.vue';
   import WorkflowReviewPanel from './WorkflowReviewPanel.vue';
+  import type {WorkflowReleaseState} from '../composables/useWorkflowTransition';
+  import ReleasePicker from '@/modules/releases/components/ReleasePicker.vue';
+  import {useReleaseEditorActions} from '@/modules/releases/releaseEditor';
+  import type {ReleaseOption} from '@/modules/elements/composables/useElementEditor';
 
   const props = defineProps<{
     payload: ElementEditPayload;
@@ -23,10 +27,33 @@
         ) ?? null)
       : null
   );
+  function applyDraft(): void {
+    if (applyDraftAction.value && !applyDraftAction.value.disabled) {
+      props.submitAction(applyDraftAction.value);
+    }
+  }
+
+  const releaseActions = useReleaseEditorActions();
+  const canChooseRelease = computed(
+    () =>
+      releaseActions !== null &&
+      props.payload.canAddToRelease &&
+      (props.payload.releaseOptions.length > 0 ||
+        props.payload.canCreateRelease)
+  );
+
+  function selectRelease(release: ReleaseOption): void {
+    releaseActions?.select(release);
+  }
+
+  function createRelease(opener: HTMLElement | null): void {
+    releaseActions?.create(opener);
+  }
 
   function updateWorkflowReview(
     workflowReview: CraftCms.Cms.Workflow.Data.WorkflowReviewData,
-    editorActions: ElementEditorActions
+    editorActions: ElementEditorActions,
+    release: WorkflowReleaseState | null | undefined
   ): void {
     props.updatePayload((payload) => ({
       workflow: {
@@ -34,6 +61,7 @@
         current: workflowReview,
       },
       editorActions,
+      ...release,
     }));
   }
 </script>
@@ -56,14 +84,42 @@
         :site-id="payload.siteId"
         @review-updated="updateWorkflowReview"
       >
-        <div v-if="applyDraftAction">
-          <craft-button
-            type="button"
-            :variant="ButtonVariant.Primary"
-            @click="props.submitAction(applyDraftAction)"
-          >
-            {{ applyDraftAction.label }}
-          </craft-button>
+        <div
+          v-if="applyDraftAction || canChooseRelease"
+          class="flex flex-wrap justify-end gap-2"
+        >
+          <template v-if="applyDraftAction">
+            <craft-button
+              id="workflow-apply-draft"
+              type="button"
+              :variant="ButtonVariant.Primary"
+              .disabled="applyDraftAction.disabled ?? false"
+              :focusable-when-disabled="
+                applyDraftAction.disabled && applyDraftAction.disabledReason
+                  ? true
+                  : undefined
+              "
+              @click="applyDraft"
+            >
+              {{ applyDraftAction.label }}
+            </craft-button>
+            <craft-tooltip
+              v-if="
+                applyDraftAction.disabled && applyDraftAction.disabledReason
+              "
+              for="workflow-apply-draft"
+            >
+              {{ applyDraftAction.disabledReason }}
+            </craft-tooltip>
+          </template>
+          <ReleasePicker
+            v-if="canChooseRelease"
+            :releases="payload.releaseOptions"
+            :can-create="payload.canCreateRelease"
+            :button-variant="ButtonVariant.Primary"
+            @select="selectRelease"
+            @create="createRelease"
+          />
         </div>
       </WorkflowReviewPanel>
     </div>
@@ -72,7 +128,7 @@
       v-if="payload.workflow.draftReviews.length"
       class="workflow-details-panel__drafts"
     >
-      <h3>{{ t('Drafts in review') }}</h3>
+      <h3>{{ t('Drafts in Review') }}</h3>
       <WorkflowDraftReviews :drafts="payload.workflow.draftReviews" />
     </section>
   </div>

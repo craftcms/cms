@@ -39,7 +39,7 @@
       :aria-labelledby="headingId"
       class="workflow-drafts-popover"
     >
-      <h2 :id="headingId">{{ t('Drafts in review') }}</h2>
+      <h2 :id="headingId">{{ t('Drafts in Review') }}</h2>
       <WorkflowDraftReviews :drafts="drafts" />
     </div>
   </craft-popover>

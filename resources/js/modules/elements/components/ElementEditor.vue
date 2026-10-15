@@ -5,13 +5,20 @@
    * `useAppLayout()` and `LayoutSlot`, so the shell decides where the header,
    * save controls and details column go.
    */
-  import {t} from '@craftcms/ui';
-  import {computed, provide, useTemplateRef, type Component} from 'vue';
+  import {ButtonVariant, t} from '@craftcms/ui';
+  import {
+    computed,
+    nextTick,
+    provide,
+    useTemplateRef,
+    type Component,
+  } from 'vue';
   import {router, usePage} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import MetadataDetailsContent from '@/common/components/MetadataDetailsContent.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
   import ElementActionMenu from '@/modules/elements/components/ElementActionMenu.vue';
+  import {createElementActionDispatcher} from '@/modules/elements/composables/useElementActionMenu';
   import ElementActivityAvatars from '@/modules/elements/components/ElementActivityAvatars.vue';
   import ElementViewButtons from '@/modules/elements/components/ElementViewButtons.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
@@ -30,6 +37,22 @@
   import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
+  import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
+  import ReleasePicker from '@/modules/releases/components/ReleasePicker.vue';
+  import {provideReleaseEditorActions} from '@/modules/releases/releaseEditor';
+  import type {ReleaseOption} from '@/modules/elements/composables/useElementEditor';
+  import {create} from '@actions/ReleasesController';
+  import {openSlideout} from '@/common/slideouts';
+  import {firstFocusableWithin} from '@/common/utils/dom';
+
+  interface CreatedReleaseResponse {
+    release?: {
+      id: number;
+      name: string;
+      status: 'draft';
+      targetDate?: string | null;
+    };
+  }
 
   const contentEl = useTemplateRef<HTMLElement>('content');
   const slideout = useSlideout();
@@ -55,6 +78,7 @@
     activity,
     activityTimelineVersion,
     autosave,
+    addToRelease,
     discardDraft,
     errors,
     form,
@@ -69,7 +93,8 @@
     sidebarErrors,
     sidebarPayload,
     sidebarRenderer,
-    startEditingReviewedDraft,
+    startEditingDraft,
+    releaseDraftLocked,
     submitAction,
     updatePayload,
     workflowReviewLocked,
@@ -99,6 +124,16 @@
     'detailsPanels'
   );
 
+  const editorLocked = computed(
+    () =>
+      workflowReviewLocked.value || payload.readOnly || releaseDraftLocked.value
+  );
+
+  const canChooseRelease = computed(
+    () =>
+      payload.canAddToRelease &&
+      (payload.releaseOptions.length > 0 || payload.canCreateRelease)
+  );
   // Alternate saves in the Save button's menu, and the buttons grouped with
   // it (Create a draft, …).
   const formActionItems = computed(() =>
@@ -108,6 +143,11 @@
       onClick: () => submitAction(action),
     }))
   );
+
+  const dispatchBehavior = createElementActionDispatcher({
+    currentEntryTypeId: () => form.typeId ?? null,
+    slideout,
+  });
 
   const saveButtons = computed(() =>
     payload.editorActions.buttons.map((action) => ({
@@ -151,21 +191,60 @@
     save(options);
   }
 
-  // The View buttons stay out of slideouts, which have no room for them. The
-  // action menu goes in their header, as in Craft 5. Neither shows on pages the
-  // shell marks read-only.
+  async function startEditing(): Promise<void> {
+    startEditingDraft();
+    await nextTick();
+
+    if (contentEl.value) {
+      firstFocusableWithin(contentEl.value)?.focus();
+    }
+  }
+
+  function chooseRelease(release: ReleaseOption): void {
+    addToRelease(release);
+  }
+
+  function createRelease(opener: HTMLElement | null): void {
+    void openSlideout(create().url, {
+      opener,
+      onSaved: ({data}) => {
+        const release = (data as CreatedReleaseResponse | undefined)?.release;
+
+        if (!release) {
+          throw new Error(
+            'The saved release response did not include a release.'
+          );
+        }
+
+        chooseRelease({
+          id: release.id,
+          name: release.name,
+          status: release.status,
+          targetDate: release.targetDate ?? null,
+        });
+      },
+    });
+  }
+
+  provideReleaseEditorActions({
+    select: chooseRelease,
+    create: createRelease,
+  });
+
   const isSlideout = useIsSlideout();
   const page = usePage<{readOnly?: boolean}>();
   const showElementControls = computed(
-    () => !isSlideout && !page.props.readOnly
+    () => !isSlideout && !page.props.readOnly && !payload.release
   );
-  const showActionMenu = computed(() => isSlideout || !page.props.readOnly);
+  const showActionMenu = computed(
+    () => (isSlideout || !page.props.readOnly) && !payload.release
+  );
 
   useAppLayout(() => ({
     title: payload.title,
     form,
-    onSave: workflowReviewLocked.value ? undefined : primaryAction,
-    saveDisabled: workflowReviewLocked.value,
+    onSave: editorLocked.value ? undefined : primaryAction,
+    saveDisabled: editorLocked.value,
     submitButtonLabel: payload.editorActions.primary.label,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
@@ -220,6 +299,23 @@
     />
   </LayoutSlot>
 
+  <LayoutSlot v-if="payload.additionalButtons.length" name="additional-buttons">
+    <craft-button
+      v-for="button in payload.additionalButtons"
+      :key="button.label"
+      type="button"
+      :variant="button.variant ?? 'outline'"
+      @click="dispatchBehavior(button.behavior)"
+    >
+      <craft-icon
+        v-if="button.icon"
+        :name="button.icon"
+        slot="prefix"
+      ></craft-icon>
+      {{ button.label }}
+    </craft-button>
+  </LayoutSlot>
+
   <LayoutSlot
     v-if="showActionMenu && payload.actionMenu.length"
     name="content-toolbar-actions"
@@ -233,7 +329,7 @@
   </LayoutSlot>
 
   <!-- Where the legacy editor puts its spinner and checkmark. -->
-  <LayoutSlot v-if="autosave.status.value !== 'idle'" name="additional-buttons">
+  <LayoutSlot v-if="autosave.status.value !== 'idle'" name="footer-meta">
     <AutosaveMessage
       :status="autosave.status.value"
       :saved-at="autosave.savedAt.value"
@@ -244,13 +340,28 @@
   </LayoutSlot>
 
   <LayoutSlot
+    v-if="!payload.readOnly && canChooseRelease"
+    name="additional-buttons"
+  >
+    <ReleasePicker
+      :releases="payload.releaseOptions"
+      :can-create="payload.canCreateRelease"
+      :disabled="form.processing"
+      :button-variant="ButtonVariant.Outline"
+      @select="chooseRelease"
+      @create="createRelease"
+    />
+  </LayoutSlot>
+
+  <LayoutSlot
     v-if="
       activity.isStale.value ||
       payload.readOnly ||
       payload.notice ||
       payload.mergeNotice ||
       payload.workflow.convertedToDraft ||
-      workflowReviewLocked
+      workflowReviewLocked ||
+      payload.release
     "
     name="content-notices"
   >
@@ -273,7 +384,16 @@
       <WorkflowEditLockCallout
         v-if="workflowReviewLocked"
         class="mb-4"
-        @start-editing="startEditingReviewedDraft"
+        @start-editing="startEditing"
+      />
+
+      <ReleaseCallout
+        v-if="payload.release"
+        :release="payload.release"
+        :can-edit="!payload.readOnly"
+        :editing="!releaseDraftLocked"
+        @start-editing="startEditing"
+        class="mb-4"
       />
 
       <craft-callout
@@ -358,7 +478,7 @@
             :errors="errors"
             :refresh="uiPayload.refreshable ? refreshLayout : undefined"
             :modified="autosave.modified.value"
-            :disabled="workflowReviewLocked"
+            :disabled="editorLocked"
             @update:mutation="onMutation"
           />
         </component>
@@ -397,7 +517,7 @@
                   :payload="sidebarPayload"
                   :errors="sidebarErrors"
                   :modified="autosave.modified.value"
-                  :disabled="workflowReviewLocked"
+                  :disabled="editorLocked"
                   @update:mutation="onSidebarMutation"
                 />
               </craft-field-group>

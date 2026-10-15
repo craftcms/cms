@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
-  import type {ActionMenuItem} from '@craftcms/ui';
+  import {computed, useTemplateRef, watch} from 'vue';
+  import type {ActionMenuItem, ButtonVariant} from '@craftcms/ui';
 
   export type TypePickerOption = {
     value: string;
@@ -15,8 +15,20 @@
     label: string;
     disabled?: boolean;
     adding?: boolean;
+    buttonVariant?: ButtonVariant;
   }>();
   const emit = defineEmits<{select: [value: string]}>();
+
+  // The invoker renders once, so later variant changes are applied directly.
+  const invoker = useTemplateRef<HTMLElement & {variant: string}>('invoker');
+  const invokerVariant = computed(
+    () => props.buttonVariant ?? (props.adding ? 'dashed' : 'fill')
+  );
+  watch(invokerVariant, (variant) => {
+    if (invoker.value) {
+      invoker.value.variant = variant;
+    }
+  });
 
   const actions = computed<ActionMenuItem[]>(() => {
     const groups = new Map<
@@ -52,10 +64,11 @@
     searchable
   >
     <craft-button
+      ref="invoker"
       slot="invoker"
       v-once
       type="button"
-      :variant="adding ? 'dashed' : 'fill'"
+      :variant="invokerVariant"
       icon="chevron-down"
       icon-position="suffix"
     >

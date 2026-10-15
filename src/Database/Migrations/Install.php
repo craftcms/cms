@@ -349,6 +349,35 @@ class Install extends Migration
             $table->integer('fieldId')->nullable();
         });
 
+        $logger?->subLabel('releases');
+        Schema::create(Table::RELEASES, function (Blueprint $table) {
+            $table->integer('id', true);
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->dateTime('targetDate')->nullable();
+            $table->dateTime('publishedAt')->nullable();
+            $table->string('status')->default('draft');
+            $table->integer('createdById')->nullable();
+            $table->integer('scheduledById')->nullable();
+            $table->text('lastError')->nullable();
+            $table->unsignedSmallInteger('publishAttempts')->default(0);
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+            $table->char('uid', 36)->unique();
+        });
+
+        $logger?->subLabel('releaseitems');
+        Schema::create(Table::RELEASE_ITEMS, function (Blueprint $table) {
+            $table->integer('id', true);
+            $table->integer('releaseId');
+            $table->integer('draftId')->nullable();
+            $table->integer('canonicalId');
+            $table->integer('publishedElementId')->nullable();
+            $table->dateTime('publishedAt')->nullable();
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+        });
+
         /** @todo change back to Table::DEPRECATIONERRORS once larastan is updated */
         $logger?->subLabel('deprecationerrors');
         Schema::create(Table::DEPRECATIONERRORS, function (Blueprint $table) {
@@ -582,6 +611,8 @@ class Install extends Migration
             $table->string('handle', 64);
             $table->string('context')->default('global');
             $table->text('instructions')->nullable();
+            $table->text('tip')->nullable();
+            $table->text('warning')->nullable();
             $table->boolean('searchable')->default(true);
             $table->string('translationMethod')->default(TranslationMethod::None->value);
             $table->text('translationKeyFormat')->nullable();
@@ -1041,6 +1072,10 @@ class Install extends Migration
         Schema::createIndex(Table::CHANGEDFIELDS, ['elementId', 'siteId', 'dateUpdated']);
         Schema::createIndex(Table::CONTENTBLOCKS, ['primaryOwnerId']);
         Schema::createIndex(Table::CONTENTBLOCKS, ['fieldId']);
+        Schema::createIndex(Table::RELEASES, ['status', 'publishedAt']);
+        Schema::createIndex(Table::RELEASE_ITEMS, ['draftId'], unique: true);
+        Schema::createIndex(Table::RELEASE_ITEMS, ['releaseId', 'canonicalId'], unique: true);
+        Schema::createIndex(Table::RELEASE_ITEMS, ['canonicalId']);
         Schema::createIndex(Table::DEPRECATIONERRORS, ['key', 'fingerprint'], unique: true);
         Schema::createIndex(Table::DRAFTS, ['creatorId', 'provisional']);
         Schema::createIndex(Table::DRAFTS, ['saved']);
@@ -1198,6 +1233,10 @@ class Install extends Migration
         Schema::table(Table::CONTENTBLOCKS, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::CONTENTBLOCKS, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
         Schema::table(Table::CONTENTBLOCKS, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::RELEASES, fn (Blueprint $table) => $table->foreign('createdById')->references('id')->on(Table::USERS)->nullOnDelete());
+        Schema::table(Table::RELEASES, fn (Blueprint $table) => $table->foreign('scheduledById')->references('id')->on(Table::USERS)->nullOnDelete());
+        Schema::table(Table::RELEASE_ITEMS, fn (Blueprint $table) => $table->foreign('releaseId')->references('id')->on(Table::RELEASES)->cascadeOnDelete());
+        Schema::table(Table::RELEASE_ITEMS, fn (Blueprint $table) => $table->foreign('draftId')->references('id')->on(Table::DRAFTS)->cascadeOnDelete());
         Schema::table(Table::CHANGEDFIELDS, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::CHANGEDFIELDS, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::CHANGEDFIELDS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->nullOnDelete()->cascadeOnUpdate());

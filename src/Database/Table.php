@@ -35,6 +35,10 @@ readonly class Table
 
     public const string CONTENTBLOCKS = 'contentblocks';
 
+    public const string RELEASES = 'releases';
+
+    public const string RELEASE_ITEMS = 'releaseitems';
+
     public const string DEPRECATIONERRORS = 'deprecationerrors';
 
     public const string DRAFTS = 'drafts';

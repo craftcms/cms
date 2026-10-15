@@ -2,7 +2,7 @@
   import CraftInput from '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/input-date-time/input-date-time';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed} from 'vue';
+  import {computed, nextTick, useTemplateRef} from 'vue';
   import type {UiControlPayload} from './types';
   import {ignoreModelValueInitialization, inputName} from './runtime';
 
@@ -30,6 +30,7 @@
   const emit = defineEmits<{
     (event: 'update:value', value: DateTimeValue, kind: 'discrete'): void;
   }>();
+  const root = useTemplateRef<HTMLElement>('root');
   const hasValue = computed(
     () =>
       (props.control.props.showDate && Boolean(props.value.date)) ||
@@ -45,6 +46,14 @@
     if (props.control.props.showTimeZone) value.timezone = '';
 
     emit('update:value', value, 'discrete');
+
+    // Clearing disables the button that has focus, which would drop focus to
+    // the page, so hand it to the first input instead.
+    void nextTick(() =>
+      root.value
+        ?.querySelector<HTMLElement>('[data-date-time-part] input')
+        ?.focus()
+    );
   }
 
   const update = ignoreModelValueInitialization((event) => {
@@ -72,6 +81,7 @@
 
 <template>
   <craft-input-date-time
+    ref="root"
     :name="editable ? inputName(control.path) : undefined"
     :locale="control.props.locale"
     :timezone="value.timezone"
@@ -83,18 +93,21 @@
     .min="control.props.min"
     .max="control.props.max"
     .minuteIncrement="control.props.minuteIncrement"
-    :width="control.props.fullWidth ? 'full' : undefined"
+    :width.attr="control.props.fullWidth ? 'full' : 'auto'"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     @model-value-changed="update"
   >
+    <!--
+      `null` rather than `false`, so the attribute is removed: until
+      craft-button is defined, Vue writes `disabled="false"`, which still
+      disables it.
+    -->
     <craft-button
       v-if="editable"
-      :class="{
-        invisible: !hasValue,
-      }"
       type="button"
+      :disabled="!hasValue || null"
       icon="xmark-large"
       :aria-label="t('Clear')"
       variant="plain"
@@ -103,17 +116,3 @@
     ></craft-button>
   </craft-input-date-time>
 </template>
-
-<style scoped>
-  craft-input-date-time[width='full']::part(inputs) {
-    width: calc(
-      100% - ((var(--c-input-spacing-inline) * 2) + var(--c-size-control-sm)) -
-        1px
-    );
-  }
-
-  craft-input-date-time[width='full'] > craft-button {
-    margin-inline-start: var(--c-input-spacing-inline);
-    margin-inline-end: calc(var(--c-input-spacing-inline) + 1px);
-  }
-</style>

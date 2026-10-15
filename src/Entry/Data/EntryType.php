@@ -26,8 +26,6 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
@@ -200,25 +198,18 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
             return [];
         }
 
-        $editId = sprintf('action-edit-%s', mt_rand());
-        $items = [
+        return [
             [
-                'id' => $editId,
+                'id' => sprintf('action-edit-%s', mt_rand()),
                 'icon' => 'gear',
                 'label' => t('Entry type settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-entry-type',
+                    'detail' => ['entryTypeId' => $this->id],
+                ],
             ],
         ];
-
-        HtmlStack::jsWithVars(fn ($id, $url) => <<<JS
-$(document).on('click', '#' + $id, () => {
-new Craft.CpScreenSlideout($url)
-});
-JS, [
-            InputNamespace::namespaceId($editId),
-            Url::cpUrl("settings/entry-types/$this->id"),
-        ]);
-
-        return $items;
     }
 
     /** @return array<string, int|\Closure> */

@@ -12,6 +12,11 @@ export interface ElementIndexItemBehavior<
 > {
   attrs?: (item: Item) => Record<string, unknown> | undefined;
   onClick?: (item: Item, event: MouseEvent) => boolean;
+  /**
+   * Returning `true` also marks the event handled (`preventDefault()`), so the
+   * index's own double-click handling, such as opening an editor, stands down.
+   */
+  onDblClick?: (item: Item, event: MouseEvent) => boolean;
   onKeydown?: (item: Item, event: KeyboardEvent) => boolean;
 }
 

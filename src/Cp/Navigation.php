@@ -181,6 +181,13 @@ readonly class Navigation
                 ->subnav($this->sourceSubnav(Asset::class, 'assets')));
         }
 
+        if (Edition::get()->supportsReleases() && (Sections::getTotalEditableSections() || Gate::check('manageReleases'))) {
+            $contentItems->add(new NavItem()
+                ->label(t('Releases'))
+                ->href(route('craft.cp.releases.index'))
+                ->icon('calendar'));
+        }
+
         // Add the nav items of registered Eloquent element types, then any plugins'
         $pluginNavItems = collect(app(EloquentElements::class)->navItems());
 

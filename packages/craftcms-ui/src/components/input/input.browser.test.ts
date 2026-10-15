@@ -1,5 +1,6 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftInput from './input.js';
+import {contrast} from '../../../test/contrast';
 import type CraftInputDateTime from '../input-date-time/input-date-time.js';
 import './input.js';
 import '../input-date-time/input-date-time.js';
@@ -87,4 +88,32 @@ describe('craft-input maxlength sizing', () => {
 
     expect(input.getBoundingClientRect().width).toBe(300);
   });
+});
+
+describe('craft-input placeholder', () => {
+  it.each(['light', 'dark'])(
+    'sets the placeholder at 4.5:1 against the surface in the %s theme',
+    async (theme) => {
+      await import('../../styles/cp.css');
+      document.body.innerHTML = `
+        <div data-theme="${theme}" style="background-color: var(--c-surface-default)">
+          <craft-input aria-label="Search" placeholder="Search"></craft-input>
+        </div>`;
+      const element = document.querySelector<CraftInput>('craft-input')!;
+      await element.updateComplete;
+
+      const placeholder = getComputedStyle(
+        element.querySelector('input')!,
+        '::placeholder'
+      );
+      const surface = getComputedStyle(
+        document.querySelector('[data-theme]')!
+      ).backgroundColor;
+
+      expect(placeholder.opacity).toBe('1');
+      expect(
+        contrast(placeholder.color, surface)
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  );
 });

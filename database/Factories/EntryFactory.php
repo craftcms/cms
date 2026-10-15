@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Date;
 use Override;
 
 class EntryFactory extends Factory
@@ -39,7 +40,7 @@ class EntryFactory extends Factory
             'sectionId' => Section::factory(),
             'typeId' => EntryType::factory(),
             'status' => EntryElement::STATUS_LIVE,
-            'postDate' => $created = $this->faker->dateTime(),
+            'postDate' => $created = $this->faker->dateTime(Date::now()),
             'dateCreated' => $created,
             'dateUpdated' => $created,
         ];
@@ -65,8 +66,8 @@ class EntryFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'postDate' => $pending
-                ? fake()->dateTimeBetween('+1 day', '+1 year')
-                : fake()->dateTime(),
+                ? fake()->dateTimeBetween(Date::now()->addDay(), Date::now()->addYear())
+                : fake()->dateTime(Date::now()),
         ]);
     }
 
@@ -74,8 +75,8 @@ class EntryFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'expiryDate' => $expired
-                ? fake()->dateTime()
-                : fake()->dateTimeBetween('+1 day', '+1 year'),
+                ? fake()->dateTime(Date::now())
+                : fake()->dateTimeBetween(Date::now()->addDay(), Date::now()->addYear()),
         ]);
     }
 

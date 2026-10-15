@@ -5,6 +5,18 @@ export default css`
     display: inline-flex;
   }
 
+  /*
+   * As with chips, a blue link would clash with the fill, so links take the
+   * badge's text color, and are underlined so they still stand apart from it.
+   * Only a white badge keeps the default link styling: blue falls short of
+   * contrast against even the gray and slate fills.
+   */
+  :host(:not([fill='white'])) {
+    --c-text-link: currentColor;
+    --c-link-decoration: underline;
+    --c-link-decoration-hover: none;
+  }
+
   .badge {
     display: inline-flex;
     gap: 0.3em;
@@ -39,6 +51,10 @@ export default css`
     box-sizing: border-box;
     block-size: var(--c-size-control-sm);
     padding-inline: calc(0.5em + 1px);
+  }
+
+  .badge--small.badge--labeled {
+    block-size: var(--c-size-control-xs);
   }
 
   .badge__label--text {

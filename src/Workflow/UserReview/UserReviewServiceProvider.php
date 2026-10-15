@@ -29,6 +29,13 @@ class UserReviewServiceProvider extends ServiceProvider
                 'heading' => $heading,
                 'subject' => $subject,
                 'body' => $body,
+                'variables' => [
+                    'workflow' => t('Workflow name'),
+                    'entry' => t('Entry title'),
+                    'stage' => t('Stage name'),
+                    'note' => t('Review note'),
+                    'link' => t('Entry link'),
+                ],
             ]));
         }
     }

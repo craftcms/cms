@@ -116,7 +116,7 @@
     <div class="grid gap-3">
       <template v-if="reviewSession.skippedEntries">
         <div>
-          <h2 class="mb-2">{{ t('Skipped files') }}</h2>
+          <h2 class="mb-2">{{ t('Skipped Files') }}</h2>
           <p>{{ t('The following items were not indexed.') }}</p>
           <ul class="my-2">
             <li v-for="entry in reviewSession.skippedEntries" :key="entry">

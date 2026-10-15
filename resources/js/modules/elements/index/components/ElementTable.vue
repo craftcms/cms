@@ -314,7 +314,7 @@
     min-width: 14rem;
   }
 
-  .cp-table-row {
+  :deep(.cp-table-row) {
     --_structure-indent: calc(44px * (var(--structure-level, 1) - 1));
   }
 
@@ -369,9 +369,5 @@
 
   :deep(.row--drop-child > td) {
     background-color: var(--c-color-accent-fill-quiet);
-  }
-
-  .cp-table-row[data-is-folder] {
-    cursor: pointer;
   }
 </style>

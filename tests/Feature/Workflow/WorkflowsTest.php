@@ -18,6 +18,7 @@ use CraftCms\Cms\Http\Controllers\Workflows\UserReviewController;
 use CraftCms\Cms\Http\Controllers\Workflows\WorkflowTransitionsController;
 use CraftCms\Cms\Http\Requests\ActivityCommentRequest;
 use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -658,6 +659,7 @@ it('exposes stage components and safely handles user review decisions', function
     $workflow = workflowFor($this->entry, [userReviewStage('Review', $group)]);
     $stage = $workflow->stages->sole();
     $run = submitAs($this->workflows, $this->draft, $this->author);
+    $release = app(Releases::class)->create('Review launch', null, $this->author);
     actingAs($this->reviewers[0]);
 
     $review = $this->workflows->reviewData($this->draft, $this->reviewers[0]);
@@ -668,7 +670,7 @@ it('exposes stage components and safely handles user review decisions', function
             'canRequestReviewAgain' => false,
         ]);
 
-    postJson(action([UserReviewController::class, 'approve'], [
+    $response = postJson(action([UserReviewController::class, 'approve'], [
         'workflowRun' => $run,
         'stage' => $stage->uid,
     ]), elementIdentity($this->entry, $this->draft, ['message' => 'Looks good.']))
@@ -678,7 +680,16 @@ it('exposes stage components and safely handles user review decisions', function
         ->assertJsonPath('workflowReview.showDefaultActions', true)
         ->assertJsonPath('workflowReview.actionProps', [])
         ->assertJsonPath('editorActions.buttons.0.disabled', false)
-        ->assertJsonPath('editorActions.buttons.0.params.workflowRunId', $run->id);
+        ->assertJsonPath('editorActions.buttons.0.params.workflowRunId', $run->id)
+        ->assertJsonPath('release.releaseOptions.0.id', $release->id);
+
+    postJson(route('craft.cp.releases.attach', $response->json('release.releaseOptions.0.id')), [
+        'draftId' => $this->draft->draftId,
+        'siteId' => $this->draft->siteId,
+    ])->assertOk();
+
+    expect($release->items()->where('draftId', $this->draft->draftId)->exists())->toBeTrue()
+        ->and($run->fresh()->status)->toBe(WorkflowStatus::Approved);
 
     $event = workflowEvents($this->entry, WorkflowTransition::Approve)->sole();
     expect($event->actorId)->toBe($this->reviewers[0]->id)

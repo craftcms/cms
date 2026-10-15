@@ -1,6 +1,19 @@
+/// <reference types="vite-plus/test/browser/providers/playwright" />
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {cdp} from 'vite-plus/test/browser';
 import type CraftButton from './button.js';
 import './button.js';
+
+interface FrameTree {
+  frame: {id: string};
+  childFrames?: FrameTree[];
+}
+
+interface AXNode {
+  ignored: boolean;
+  role?: {value: string};
+  name?: {value: unknown};
+}
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -294,6 +307,39 @@ describe('[inherit]', () => {
   });
 });
 
+describe('outline and dashed borders', () => {
+  async function mount(variant: string): Promise<CraftButton> {
+    document.body.innerHTML = `
+      <div style="--c-form-control-border-color: rgb(0, 128, 0)">
+        <craft-button variant="${variant}">Add</craft-button>
+      </div>`;
+    const button = document.querySelector('craft-button') as CraftButton;
+    await button.updateComplete;
+
+    return button;
+  }
+
+  it.each(['outline', 'dashed'])(
+    'gives a %s button the form control border color',
+    async (variant) => {
+      const button = await mount(variant);
+
+      expect(getComputedStyle(button).borderTopColor).toBe('rgb(0, 128, 0)');
+    }
+  );
+
+  it.each(['outline primary', 'dashed danger'])(
+    'leaves a %s button its own border color',
+    async (variant) => {
+      const button = await mount(variant);
+
+      expect(getComputedStyle(button).borderTopColor).not.toBe(
+        'rgb(0, 128, 0)'
+      );
+    }
+  );
+});
+
 describe('themed subtrees', () => {
   async function loadTokens(): Promise<void> {
     await import('../../styles/shared/color-palette.css');
@@ -417,6 +463,59 @@ describe('[disabled]', () => {
   });
 });
 
+describe('[loading]', () => {
+  /**
+   * The text Chromium exposes in the accessibility tree, across every frame.
+   * Screen readers such as JAWS read a button's content from here, so text
+   * that's missing from it is unreadable even if the button keeps its name.
+   */
+  async function accessibleTexts(): Promise<string[]> {
+    const session = cdp();
+    const {frameTree} = (await session.send('Page.getFrameTree')) as {
+      frameTree: FrameTree;
+    };
+    const frameIds: string[] = [];
+    const collect = (tree: FrameTree) => {
+      frameIds.push(tree.frame.id);
+      tree.childFrames?.forEach(collect);
+    };
+    collect(frameTree);
+
+    const texts: string[] = [];
+    for (const frameId of frameIds) {
+      const {nodes} = (await session.send('Accessibility.getFullAXTree', {
+        frameId,
+      })) as {nodes: AXNode[]};
+      for (const node of nodes) {
+        if (!node.ignored && node.role?.value === 'StaticText') {
+          texts.push(String(node.name?.value ?? ''));
+        }
+      }
+    }
+
+    return texts;
+  }
+
+  it('keeps the label in the accessibility tree while loading', async () => {
+    const button = document.createElement('craft-button') as CraftButton;
+    button.textContent = 'Reset password';
+    document.body.append(button);
+    await button.updateComplete;
+
+    button.loading = true;
+    await button.updateComplete;
+
+    // Reading the whole tree is slow when the suite runs in parallel.
+    await vi.waitFor(
+      async () =>
+        expect(await accessibleTexts()).toEqual(
+          expect.arrayContaining(['Reset password', 'Loading'])
+        ),
+      {timeout: 5000}
+    );
+  });
+});
+
 describe('craft-button link click area', () => {
   async function linkArea(markup: string): Promise<string> {
     document.body.innerHTML = markup;
@@ -449,6 +548,36 @@ describe('craft-button link click area', () => {
         '<div style="--_link-min-width: 28px; --c-size-touch-target-sm: 24px"><craft-button href="/" size="xsmall">Go</craft-button></div>'
       )
     ).toBe('24px');
+  });
+});
+
+describe('craft-button link padding', () => {
+  async function linkPadding(markup: string): Promise<string> {
+    document.body.innerHTML = `<div style="--c-button-spacing-inline: 12px">${markup}</div>`;
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+
+    return getComputedStyle(button.shadowRoot!.querySelector('.link')!)
+      .paddingInlineStart;
+  }
+
+  it('pads a link with an icon and a label like one without an icon', async () => {
+    const plain = await linkPadding('<craft-button href="/">Go</craft-button>');
+
+    expect(plain).toBe('12px');
+    expect(
+      await linkPadding(
+        '<craft-button href="/" icon="arrow-right" icon-position="suffix">Go</craft-button>'
+      )
+    ).toBe(plain);
+  });
+
+  it('leaves an icon-only link unpadded', async () => {
+    expect(
+      await linkPadding(
+        '<craft-button href="/" icon="arrow-right" aria-label="Go"></craft-button>'
+      )
+    ).toBe('0px');
   });
 });
 
@@ -515,5 +644,32 @@ describe('text box', () => {
     const label = button.shadowRoot!.querySelector<HTMLElement>('.label')!;
 
     expect(getComputedStyle(label).display).toBe('contents');
+  });
+});
+
+describe('small icon buttons', () => {
+  it('sizes an icon the same whether it is an attribute or slotted', async () => {
+    document.body.innerHTML = `
+      <craft-button size="small" icon="plus"></craft-button>
+      <craft-button size="small">
+        <craft-icon slot="prefix" name="plus"></craft-icon>
+      </craft-button>
+      <craft-button size="small" icon="plus">Add</craft-button>
+      <craft-button size="small">Add</craft-button>`;
+    const [attribute, slotted, labeledIcon, labeled] = Array.from(
+      document.querySelectorAll<CraftButton>('craft-button')
+    );
+    await Promise.all(
+      [attribute, slotted, labeledIcon, labeled].map(
+        (button) => button!.updateComplete
+      )
+    );
+
+    expect(getComputedStyle(attribute!).fontSize).toBe(
+      getComputedStyle(slotted!).fontSize
+    );
+    expect(getComputedStyle(labeledIcon!).fontSize).toBe(
+      getComputedStyle(labeled!).fontSize
+    );
   });
 });

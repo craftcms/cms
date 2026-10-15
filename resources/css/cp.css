@@ -178,15 +178,6 @@ Sidebar metadata
     gap: unset;
     grid-template-columns: subgrid;
   }
-
-  /* Values against the far edge, now they have a column of their own. */
-  .cp-metadata-list dd {
-    text-align: end;
-  }
-
-  .cp-metadata-list dd > ul.path {
-    justify-content: flex-end;
-  }
 }
 
 /**
@@ -248,6 +239,21 @@ Remove once we have a stable way to create a `<craft-checkbox/>` via twig
 .cp-checkbox-select__item craft-reorder-button {
   position: relative;
   z-index: 1;
+}
+
+/**
+Component select chips, spaced like relational fields' chips
+ */
+[data-id='component-select-items'] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--c-spacing-sm);
+}
+
+[data-id='component-select-items'].inline-chips {
+  flex-flow: row wrap;
+  align-items: center;
 }
 
 /**

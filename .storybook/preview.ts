@@ -5,6 +5,7 @@ import '@craftcms/ui';
 import '../resources/css/cp.css';
 import './preview.css';
 import {installInertiaMock, setPageProps} from './inertia-mock';
+import {ThemedDocsContainer} from '../packages/craftcms-ui/.storybook/themed-docs-container';
 
 // The slice of the CP's `window.Craft` config that components read directly.
 window.Craft ??= {pageTrigger: 'page'};
@@ -30,6 +31,9 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+    docs: {
+      container: ThemedDocsContainer,
+    },
     options: {
       storySort: {
         method: 'alphabetical',
@@ -40,6 +44,17 @@ const preview: Preview = {
       // 'error' - fail CI on a11y violations
       // 'off' - skip a11y checks entirely
       test: 'todo',
+      config: {
+        rules: [
+          {
+            // Links in running text are told apart from it by color alone,
+            // unless the user turns on the “Underline links” accessibility
+            // preference, which underlines them everywhere.
+            id: 'link-in-text-block',
+            enabled: false,
+          },
+        ],
+      },
     },
   },
   decorators: [

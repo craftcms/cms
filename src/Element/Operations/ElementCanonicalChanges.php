@@ -49,47 +49,49 @@ readonly class ElementCanonicalChanges
 
         event(new CanonicalChangesMerging($element));
 
-        $this->bulkOps->ensure(function () use ($element, $supportedSites) {
-            DB::transaction(function () use ($element, $supportedSites) {
-                $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
-                if (! empty($otherSiteIds)) {
-                    $siteElements = $element->getLocalizedQuery()
-                        ->siteId($otherSiteIds)
-                        ->status(null)
-                        ->all();
-                } else {
-                    $siteElements = [];
-                }
+        try {
+            $this->bulkOps->ensure(function () use ($element, $supportedSites) {
+                DB::transaction(function () use ($element, $supportedSites) {
+                    $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
+                    if (! empty($otherSiteIds)) {
+                        $siteElements = $element->getLocalizedQuery()
+                            ->siteId($otherSiteIds)
+                            ->status(null)
+                            ->all();
+                    } else {
+                        $siteElements = [];
+                    }
 
-                foreach ($siteElements as $siteElement) {
-                    $siteElement->mergeCanonicalChanges();
-                    $siteElement->mergingCanonicalChanges = true;
+                    foreach ($siteElements as $siteElement) {
+                        $siteElement->mergeCanonicalChanges();
+                        $siteElement->mergingCanonicalChanges = true;
+                        $this->elementWrites->save(
+                            element: $siteElement,
+                            runValidation: false,
+                            propagate: false,
+                            supportedSites: $supportedSites,
+                        );
+                    }
+
+                    $element->mergeCanonicalChanges();
+                    $duplicateOf = $element->duplicateOf;
+                    $element->duplicateOf = null;
+                    $element->dateLastMerged = now();
+                    $element->mergingCanonicalChanges = true;
                     $this->elementWrites->save(
-                        element: $siteElement,
+                        element: $element,
                         runValidation: false,
                         propagate: false,
                         supportedSites: $supportedSites,
                     );
-                }
+                    $element->duplicateOf = $duplicateOf;
 
-                $element->mergeCanonicalChanges();
-                $duplicateOf = $element->duplicateOf;
-                $element->duplicateOf = null;
-                $element->dateLastMerged = now();
-                $element->mergingCanonicalChanges = true;
-                $this->elementWrites->save(
-                    element: $element,
-                    runValidation: false,
-                    propagate: false,
-                    supportedSites: $supportedSites,
-                );
-                $element->duplicateOf = $duplicateOf;
-
-                $this->elementWrites->afterPropagate($element, false, [...$siteElements, $element]);
+                    $this->elementWrites->afterPropagate($element, false, [...$siteElements, $element]);
+                });
             });
-
+        } finally {
             $element->mergingCanonicalChanges = false;
-        });
+        }
 
         event(new CanonicalChangesMerged($element));
     }

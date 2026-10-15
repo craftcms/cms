@@ -13,6 +13,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Models\Draft;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Activities;
@@ -156,7 +157,7 @@ class Workflows
         $submittedDraft = $draft;
 
         $run = DB::transaction(function () use ($draft, $author, $note, &$submittedDraft): WorkflowRun {
-            $this->lockDraft($draft);
+            Draft::lockIds((int) $draft->draftId);
             $submittedDraft = $draft::find()
                 ->draftId($draft->draftId)
                 ->provisionalDrafts(null)
@@ -202,7 +203,7 @@ class Workflows
         $restartedRun = null;
 
         $run = DB::transaction(function () use ($draft, $runId, $actor, &$submittedDraft, &$restartedRun): WorkflowRun {
-            $this->lockDraft($draft);
+            Draft::lockIds((int) $draft->draftId);
             $submittedDraft = $draft::find()
                 ->draftId($draft->draftId)
                 ->provisionalDrafts(null)
@@ -264,7 +265,7 @@ class Workflows
         $stageCompleted = false;
         $completedTransition = $activityTransition;
         $run = DB::transaction(function () use ($draft, $runId, $stageUid, $result, $actor, $activityTransition, $activityNote, &$stageCompleted, &$completedTransition): ?WorkflowRun {
-            $this->lockDraft($draft);
+            Draft::lockIds((int) $draft->draftId);
             $run = WorkflowRun::query()
                 ->whereKey($runId)
                 ->with('activityRootEvent')
@@ -360,7 +361,7 @@ class Workflows
         }
 
         $run = DB::transaction(function () use ($draft, $runId, $reason, $actor): WorkflowRun {
-            $this->lockDraft($draft);
+            Draft::lockIds((int) $draft->draftId);
             $run = $this->lockedRun($draft, $runId);
 
             if (! in_array($run->status, [WorkflowStatus::Pending, WorkflowStatus::Failed], true)) {
@@ -477,22 +478,12 @@ class Workflows
     public function withContentChangeLock(array $draftIds, Closure $callback): mixed
     {
         return DB::transaction(function () use ($draftIds, $callback): mixed {
-            $this->lockDraftIds($draftIds);
+            Draft::lockIds(...$draftIds);
             $result = $callback();
             $this->contentChangedByDraftIds($draftIds);
 
             return $result;
         });
-    }
-
-    /** @param list<int> $draftIds */
-    public function lockDraftIds(array $draftIds): void
-    {
-        if ($draftIds === []) {
-            return;
-        }
-
-        DB::table(Table::DRAFTS)->whereIn('id', $draftIds)->orderBy('id')->lockForUpdate()->get(['id']);
     }
 
     /**
@@ -504,7 +495,7 @@ class Workflows
     public function withApplicationLock(ElementInterface $draft, ?int $expectedRunId, ?int $expectedStage, Closure $callback): mixed
     {
         return DB::transaction(function () use ($draft, $expectedRunId, $expectedStage, $callback): mixed {
-            $this->lockDraft($draft);
+            Draft::lockIds((int) $draft->draftId);
             $run = $this->latestRun($draft);
             if ($run === null) {
                 throw new WorkflowException('This draft must be approved before it can be applied.');
@@ -710,11 +701,6 @@ class Workflows
 
         return $run->stages()->get($index)
             ?? throw new WorkflowException('The workflow stage could not be found.');
-    }
-
-    private function lockDraft(ElementInterface $draft): void
-    {
-        DB::table(Table::DRAFTS)->where('id', $draft->draftId)->lockForUpdate()->value('id');
     }
 
     private function ensureAvailable(): void

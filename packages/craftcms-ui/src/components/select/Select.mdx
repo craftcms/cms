@@ -31,6 +31,10 @@ The native select brings its own semantics, keyboard handling, and mobile afford
 
 Label it with the thing being chosen. A select is announced with its current value, so an unlabeled one reads as a value with no question attached.
 
+Group related options with `<optgroup label="…">` rather than indenting or prefixing option text, so the grouping is announced.
+
+Don't submit the form or navigate when the value changes. Keyboard users step through the options with the arrow keys, and each step changes the value.
+
 ## Properties
 
 <ArgTypes of={SelectStories} />

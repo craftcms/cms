@@ -44,7 +44,20 @@ class Edit extends ElementAction
         validateSelection: (selectedItems, elementIndex) => Garnish.hasAttr(selectedItems.find('.element'), 'data-savable'),
         activate: (selectedItems, elementIndex) => {
             const \$element = selectedItems.find('.element:first');
-            Craft.createElementEditor(\$element.data('type'), \$element);
+            window.dispatchEvent(new CustomEvent('craft:edit-element', {
+                detail: {
+                    elementType: \$element.data('type'),
+                    settings: {
+                        elementId: \$element.data('id'),
+                        draftId: \$element.data('draft-id') ?? null,
+                        revisionId: \$element.data('revision-id') ?? null,
+                        siteId: \$element.data('site-id') ?? null,
+                        ownerId: \$element.data('owner-id') ?? null,
+                    },
+                    cpEditUrl: \$element.data('cp-url') ?? null,
+                    trigger: \$element[0],
+                },
+            }));
         },
     });
 })();

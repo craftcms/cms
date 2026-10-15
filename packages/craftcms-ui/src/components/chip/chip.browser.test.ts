@@ -524,6 +524,45 @@ function decoration(element: Element): string {
  * Element chips nest their label link in a craft-truncate, out of reach of
  * ::slotted(), so the chip hands the decoration down instead.
  */
+it('draws a default chip’s border lighter than its fill in the dark theme', async () => {
+  await import('../../styles/shared/color-palette.css');
+  await import('../../styles/shared/colorable.css');
+  await import('../../styles/shared/variables.css');
+  await import('../../styles/shared/tokens.css');
+
+  document.body.innerHTML = `
+    <div data-theme="dark">
+      <craft-chip appearance="outline-fill">Label</craft-chip>
+    </div>`;
+  const chip = document.querySelector('craft-chip')!;
+  await chip.updateComplete;
+
+  const style = getComputedStyle(chip.shadowRoot!.querySelector('.cp-chip')!);
+  const luminance = (color: string, over: string): number => {
+    const parse = (value: string) => {
+      const numbers = value.match(/[\d.]+/g)!.map(Number);
+      const scale = value.startsWith('color(') ? 255 : 1;
+      return {
+        rgb: numbers.slice(0, 3).map((n) => n * scale),
+        alpha: numbers[3] ?? 1,
+      };
+    };
+    const {rgb, alpha} = parse(color);
+    const base = parse(over).rgb;
+    const [r, g, b] = rgb.map((value, i) => {
+      const channel = (value * alpha + base[i]! * (1 - alpha)) / 255;
+      return channel <= 0.03928
+        ? channel / 12.92
+        : ((channel + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+  };
+
+  expect(
+    luminance(style.borderTopColor, style.backgroundColor)
+  ).toBeGreaterThan(luminance(style.backgroundColor, style.backgroundColor));
+});
+
 it('does not underline a label link, nested or slotted directly', async () => {
   document.body.innerHTML = `
     <craft-chip id="nested">
@@ -579,3 +618,57 @@ it('centers a truncated label on its capitals without clipping its descenders', 
   expect(capTop - body.top).toBeCloseTo(body.bottom - capBottom, 0);
   expect(range.getBoundingClientRect().bottom).toBeLessThanOrEqual(rect.bottom);
 });
+
+it('draws a selected chip with the accent’s normal border', async () => {
+  document.body.innerHTML = `
+    <span class="probe" style="border: 1px solid var(--c-color-accent-border-normal)"></span>
+    <craft-chip selectable selected>Label</craft-chip>
+    <craft-chip selectable selected appearance="plain">Label</craft-chip>`;
+  const [chip, plain] = Array.from(document.querySelectorAll('craft-chip'));
+  await Promise.all([chip!.updateComplete, plain!.updateComplete]);
+
+  const expected = getComputedStyle(
+    document.querySelector('.probe')!
+  ).borderTopColor;
+
+  expect(
+    getComputedStyle(chip!.shadowRoot!.querySelector('.cp-chip')!)
+      .borderTopColor
+  ).toBe(expected);
+  expect(
+    getComputedStyle(plain!.shadowRoot!.querySelector('.cp-chip')!).outlineColor
+  ).toBe(expected);
+});
+
+// Inheriting controls, like the action menu's button, tint their hover from
+// --c-color-fill-quiet. The stamped white palette's is static white, which
+// left a white hover on a dark chip.
+it.each([
+  ['default', ''],
+  ['selected', 'selected'],
+])(
+  'hands its own fill to slotted controls in the dark theme (%s)',
+  async (_, attrs) => {
+    await import('../../styles/shared/color-palette.css');
+    await import('../../styles/shared/colorable.css');
+    await import('../../styles/shared/variables.css');
+    await import('../../styles/shared/tokens.css');
+
+    document.body.innerHTML = `
+      <div data-theme="dark">
+        <craft-chip appearance="outline-fill" ${attrs}>
+          Label
+          <div slot="suffix" id="action" style="background-color: var(--c-color-fill-quiet)">…</div>
+        </craft-chip>
+      </div>`;
+    const chip = document.querySelector('craft-chip')!;
+    await chip.updateComplete;
+
+    expect(
+      getComputedStyle(document.querySelector('#action')!).backgroundColor
+    ).toBe(
+      getComputedStyle(chip.shadowRoot!.querySelector('.cp-chip')!)
+        .backgroundColor
+    );
+  }
+);

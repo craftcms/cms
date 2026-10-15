@@ -1,6 +1,9 @@
 import '../../../../css/cp.css';
-import {createApp, h, nextTick, reactive, ref} from 'vue';
-import {mergeDataIntoQueryString} from '@inertiajs/core';
+import {createApp, defineComponent, h, nextTick, reactive, ref} from 'vue';
+import {
+  mergeDataIntoQueryString,
+  router as inertiaRouter,
+} from '@inertiajs/core';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
 import AdminTable from './AdminTable.vue';
@@ -13,13 +16,23 @@ import type {
   AdminTableRequest,
 } from '../types';
 
-const {reload, get} = vi.hoisted(() => ({reload: vi.fn(), get: vi.fn()}));
+const {reload, get, visit} = vi.hoisted(() => ({
+  reload: vi.fn(),
+  get: vi.fn(),
+  visit: vi.fn(),
+}));
+const slideout = vi.hoisted(() => vi.fn().mockResolvedValue(null));
 let inertiaPage: {url: string; props: {readOnly: boolean}};
+
+vi.mock('@/common/slideouts', async () => ({
+  ...(await vi.importActual('@/common/slideouts')),
+  openSlideout: slideout,
+}));
 
 vi.mock('@inertiajs/vue3', async () => ({
   ...(await vi.importActual('@inertiajs/vue3')),
   usePage: () => inertiaPage,
-  router: {reload, get},
+  router: {reload, get, visit},
 }));
 
 const records = [
@@ -36,6 +49,8 @@ beforeEach(() => {
   vi.stubGlobal('Craft', {systemUid: 'admin-table-test'});
   reload.mockClear();
   get.mockReset();
+  slideout.mockClear();
+  visit.mockClear();
   inertiaPage = reactive({url: '/', props: {readOnly: false}});
   vi.stubGlobal(
     'fetch',
@@ -76,7 +91,10 @@ function mountTable(options: Record<string, unknown> = {}) {
   return {host, handle};
 }
 
-function mountNode(options: Partial<TableProps> = {}) {
+function mountNode(
+  options: Partial<TableProps> = {},
+  nodeProps: {onRefresh?: () => void} = {}
+) {
   const host = document.createElement('div');
   document.body.append(host);
   const app = createApp(() =>
@@ -117,12 +135,44 @@ function mountNode(options: Partial<TableProps> = {}) {
           ...options,
         },
       },
+      ...nodeProps,
     })
   );
   app.mount(host);
   teardown = () => app.unmount();
   return host;
 }
+
+it.each(['mouse', 'keyboard'])(
+  'opens slideout links by %s without navigating the underlying page',
+  async (activation) => {
+    const visit = vi.spyOn(inertiaRouter, 'visit').mockImplementation(() => {});
+    const prefetch = vi
+      .spyOn(inertiaRouter, 'prefetch')
+      .mockImplementation(() => {});
+    mountNode({
+      rows: [
+        {
+          id: 1,
+          name: {label: 'Release draft', url: '/content/draft', slideout: true},
+        },
+      ],
+    });
+    const link = page.getByRole('link', {name: 'Release draft'});
+
+    if (activation === 'mouse') {
+      await link.click();
+    } else {
+      link.element().focus();
+      await userEvent.keyboard('{Enter}');
+    }
+
+    expect(slideout).toHaveBeenCalledOnce();
+    expect(slideout).toHaveBeenCalledWith('/content/draft', expect.any(Object));
+    expect(visit).not.toHaveBeenCalled();
+    expect(prefetch).not.toHaveBeenCalled();
+  }
+);
 
 it('renders HTML icon descriptions and hides only their column header text', async () => {
   mountNode({
@@ -204,6 +254,23 @@ it.each([false, true])(
     expect(link.shadowRoot!.activeElement).toBe(anchor);
   }
 );
+
+it('shows the empty state right under the column headers, without an empty row', async () => {
+  const host = mountNode({
+    columns: [{key: 'name', label: 'Name'}],
+    rows: [],
+    emptyMessage: 'No releases exist yet.',
+  });
+  await nextTick();
+
+  const empty = host.querySelector<HTMLElement>('craft-empty')!;
+  const head = host.querySelector('thead')!;
+
+  expect(host.querySelectorAll('tbody tr')).toHaveLength(0);
+  expect(empty.getBoundingClientRect().top).toBe(
+    head.getBoundingClientRect().bottom
+  );
+});
 
 async function setControl(host: HTMLElement, selector: string, value: string) {
   const control = host.querySelector<HTMLElement & {modelValue: string}>(
@@ -921,4 +988,365 @@ it('moves the selected row to another page, reloads rows, and clears selection',
   await vi.waitFor(() => expect(rowNames(host)).toEqual(['Replacement']));
   expect(moveToPage).toHaveBeenCalledWith(1, 2, 50);
   expect(handle.value?.selectedIds).toEqual([]);
+});
+
+async function expectDebouncedDraftRefresh(
+  onSaved: (result: {draft?: boolean}) => void,
+  refresh: ReturnType<typeof vi.fn>
+): Promise<void> {
+  vi.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+  try {
+    onSaved({draft: true});
+    expect(refresh).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(400);
+    onSaved({draft: true});
+    await vi.advanceTimersByTimeAsync(400);
+    expect(refresh).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(200);
+    expect(refresh).toHaveBeenCalledTimes(1);
+
+    onSaved({draft: true});
+    onSaved({});
+    expect(refresh).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(600);
+    expect(refresh).toHaveBeenCalledTimes(2);
+
+    onSaved({draft: true});
+    teardown?.();
+    teardown = undefined;
+    await vi.advanceTimersByTimeAsync(600);
+    expect(refresh).toHaveBeenCalledTimes(2);
+  } finally {
+    vi.useRealTimers();
+  }
+}
+
+it('opens slideout links at their width and refreshes through its own handler', async () => {
+  const onRefresh = vi.fn();
+  const navigate = vi
+    .spyOn(inertiaRouter, 'visit')
+    .mockImplementation(() => {});
+  const host = mountNode(
+    {
+      rows: [
+        {
+          id: 1,
+          name: {
+            label: 'Summer sale',
+            url: '/admin/rules/1',
+            slideout: true,
+            slideoutWidth: '85vw',
+          },
+        },
+        {
+          id: 2,
+          name: {
+            label: 'Winter sale',
+            url: '/admin/rules/2',
+            slideoutWidth: '85vw',
+          },
+        },
+      ],
+    },
+    {onRefresh}
+  );
+
+  await userEvent.click(page.getByRole('link', {name: 'Winter sale'}));
+  expect(navigate).toHaveBeenCalledWith('/admin/rules/2', expect.anything());
+  expect(slideout).not.toHaveBeenCalled();
+  navigate.mockClear();
+
+  const link = await vi.waitFor(() => {
+    const element = host.querySelector<HTMLAnchorElement>(
+      'a[href="/admin/rules/1"]'
+    );
+    expect(element).not.toBeNull();
+    return element!;
+  });
+  await userEvent.click(page.getByRole('link', {name: 'Summer sale'}));
+  expect(navigate).not.toHaveBeenCalled();
+
+  expect(slideout).toHaveBeenCalledWith(
+    '/admin/rules/1',
+    expect.objectContaining({opener: link, width: '85vw'})
+  );
+  await expectDebouncedDraftRefresh(
+    slideout.mock.lastCall![1].onSaved,
+    onRefresh
+  );
+  expect(reload).not.toHaveBeenCalled();
+});
+
+it('lets the owner refresh a paginated table after a slideout saves', async () => {
+  const options = reactive<Partial<TableProps>>({
+    rows: [
+      {id: 1, name: {label: 'Original', url: '/admin/rules/1', slideout: true}},
+    ],
+    pagination: result('Unused').pagination,
+  });
+  const host = mountNode(options, {
+    onRefresh: () => {
+      options.rows = [{id: 1, name: 'Updated by owner'}];
+    },
+  });
+
+  host.querySelector<HTMLAnchorElement>('a[href="/admin/rules/1"]')!.click();
+  slideout.mock.lastCall![1].onSaved({});
+
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Updated by owner']));
+  expect(get).not.toHaveBeenCalled();
+  expect(reload).not.toHaveBeenCalled();
+});
+
+it('opens menu links in slideouts without losing native modified-click behavior', async () => {
+  const onRefresh = vi.fn();
+  const navigate = vi
+    .spyOn(inertiaRouter, 'visit')
+    .mockImplementation(() => {});
+  const host = mountNode(
+    {
+      rows: [
+        {
+          id: 1,
+          name: {
+            label: 'Actions',
+            items: [
+              {
+                label: 'Edit rule',
+                url: '/admin/rules/1',
+                slideout: true,
+                slideoutWidth: '72vw',
+              },
+              {label: 'View rule', url: '/admin/rules/1/view'},
+            ],
+          },
+        },
+      ],
+    },
+    {onRefresh}
+  );
+  const menu = host.querySelector('craft-action-menu')!;
+  await menu.show();
+  const item = await vi.waitFor(() => {
+    const element = menu.querySelector('craft-action-item');
+    expect(element).toBeTruthy();
+    return element!;
+  });
+  await item.updateComplete;
+  const anchor = item.shadowRoot!.querySelector('a')!;
+  expect(anchor.getAttribute('href')).toBe('/admin/rules/1');
+
+  for (const modifier of ['altKey', 'ctrlKey', 'metaKey', 'shiftKey']) {
+    const click = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      [modifier]: true,
+    });
+    item.dispatchEvent(click);
+    expect(click.defaultPrevented).toBe(false);
+  }
+  expect(slideout).not.toHaveBeenCalled();
+  expect(navigate).not.toHaveBeenCalled();
+
+  await menu.show();
+  item.focus();
+  await userEvent.keyboard('{Enter}');
+  expect(slideout).toHaveBeenCalledWith(
+    '/admin/rules/1',
+    expect.objectContaining({
+      opener: menu.querySelector('[slot="invoker"]'),
+      width: '72vw',
+    })
+  );
+  slideout.mock.lastCall![1].onSaved();
+  expect(onRefresh).toHaveBeenCalledOnce();
+  expect(reload).not.toHaveBeenCalled();
+
+  await menu.show();
+  await userEvent.click(page.getByRole('link', {name: 'View rule'}));
+  expect(navigate).toHaveBeenCalledWith(
+    '/admin/rules/1/view',
+    expect.anything()
+  );
+});
+
+it('opens the create action in a slideout when asked to', async () => {
+  const host = mountNode({
+    createLabel: 'New rule',
+    createUrl: '/admin/rules/new',
+    createSlideout: true,
+    createSlideoutWidth: '85vw',
+  });
+
+  const button = await vi.waitFor(() => {
+    const element = host.querySelector<HTMLElement>(
+      'craft-button[href="/admin/rules/new"]'
+    );
+    expect(element).not.toBeNull();
+    return element!;
+  });
+  const click = new MouseEvent('click', {bubbles: true, cancelable: true});
+  button.dispatchEvent(click);
+
+  expect(click.defaultPrevented).toBe(true);
+  expect(slideout).toHaveBeenCalledWith(
+    '/admin/rules/new',
+    expect.objectContaining({opener: button, width: '85vw'})
+  );
+  await expectDebouncedDraftRefresh(slideout.mock.lastCall![1].onSaved, reload);
+  expect(reload).toHaveBeenCalledWith({only: ['ui']});
+});
+
+async function doubleClickRow(
+  host: HTMLElement,
+  index: number
+): Promise<Element> {
+  const row = await vi.waitFor(() => {
+    const element = host.querySelectorAll('tbody tr')[index];
+    expect(element?.lastElementChild).toBeTruthy();
+    return element!;
+  });
+  await userEvent.dblClick(row.lastElementChild!);
+  return row;
+}
+
+it('opens a double-clicked row’s slideout link, returning focus to the link', async () => {
+  const {openSlideout, closeAllSlideouts, setSlideoutPageLoader} =
+    await import('@/common/slideouts/store');
+  const {default: SlideoutHost} =
+    await import('@/common/slideouts/SlideoutHost.vue');
+  setSlideoutPageLoader(async () => ({
+    component: defineComponent({
+      render: () => h('input', {'aria-label': 'Editor'}),
+    }),
+    props: {},
+    url: '/admin/rules/1',
+  }));
+  slideout.mockImplementationOnce(openSlideout);
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {key: 'handle', label: 'Handle'},
+    ],
+    rows: [
+      {
+        id: 1,
+        name: {label: 'Summer sale', url: '/admin/rules/1', slideout: true},
+        handle: 'summerSale',
+      },
+    ],
+  });
+  const unmountTable = teardown;
+  const root = document.createElement('div');
+  document.body.append(root);
+  const app = createApp(() => h(SlideoutHost, {assetVersion: ''}));
+  app.mount(root);
+  teardown = () => {
+    closeAllSlideouts();
+    app.unmount();
+    unmountTable?.();
+    setSlideoutPageLoader();
+  };
+  const row = await doubleClickRow(host, 0);
+  const link = row.querySelector('a[href="/admin/rules/1"]');
+  expect(link).toBeInstanceOf(HTMLAnchorElement);
+  await expect
+    .poll(() =>
+      document
+        .querySelector('.slideout-panel')
+        ?.contains(document.activeElement)
+    )
+    .toBe(true);
+  expect(document.querySelectorAll('.slideout-panel')).toHaveLength(1);
+  closeAllSlideouts();
+  await expect.poll(() => document.activeElement === link).toBe(true);
+});
+
+it('ignores double-clicks on rows without a slideout link', async () => {
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {key: 'handle', label: 'Handle'},
+    ],
+    rows: [
+      {
+        id: 1,
+        name: {label: 'Summer sale', url: '/admin/rules/1'},
+        handle: 'summerSale',
+      },
+      {
+        id: 2,
+        name: {html: '<a href="/admin/rules/2">Winter sale</a>'},
+        handle: 'winterSale',
+      },
+      {id: 3, name: 'Spring sale', handle: 'springSale'},
+    ],
+  });
+  await doubleClickRow(host, 0);
+  await doubleClickRow(host, 1);
+  await doubleClickRow(host, 2);
+  expect(slideout).not.toHaveBeenCalled();
+  expect(visit).not.toHaveBeenCalled();
+});
+
+it.each([
+  '<button type="button"><span>Own action</span></button>',
+  '<a href="#own-action"><span>Own link</span></a>',
+  '<input type="text" value="Editable" aria-label="Description">',
+  '<label><input type="checkbox"><span>Enable rule</span></label>',
+])('leaves double-clicks on a row’s controls to them: %s', async (html) => {
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {key: 'detail', label: 'Detail'},
+    ],
+    rows: [
+      {
+        id: 1,
+        name: {label: 'Editor', url: '/admin/rules/1', slideout: true},
+        detail: {html},
+      },
+    ],
+  });
+  const target = host
+    .querySelector('tbody td:last-child')!
+    .querySelector('span, input')!;
+  target.addEventListener('click', (event) => event.preventDefault());
+  await userEvent.dblClick(target);
+  expect(slideout).not.toHaveBeenCalled();
+});
+
+it('preserves width and owner refresh handling for a double-clicked editor', async () => {
+  const onRefresh = vi.fn();
+  const host = mountNode(
+    {
+      columns: [
+        {key: 'name', label: 'Name'},
+        {key: 'detail', label: 'Detail'},
+      ],
+      rows: [
+        {
+          id: 1,
+          name: {
+            label: 'Editor',
+            url: '/admin/rules/1',
+            slideout: true,
+            slideoutWidth: '72vw',
+          },
+          detail: 'Text',
+        },
+      ],
+    },
+    {onRefresh}
+  );
+  await doubleClickRow(host, 0);
+  expect(slideout).toHaveBeenCalledWith(
+    '/admin/rules/1',
+    expect.objectContaining({width: '72vw'})
+  );
+  await expectDebouncedDraftRefresh(
+    slideout.mock.lastCall![1].onSaved,
+    onRefresh
+  );
+  expect(reload).not.toHaveBeenCalled();
 });

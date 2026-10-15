@@ -43,7 +43,7 @@ const userReviewUi: UiPayload = {
     {
       type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
       component: 'craft:field',
-      props: {label: 'Approvals required', required: true},
+      props: {label: 'Approvals Required', required: true},
       control: {
         type: 'CraftCms\\Cms\\Ui\\Controls\\Number',
         component: 'craft:text',

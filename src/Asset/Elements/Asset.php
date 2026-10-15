@@ -1678,7 +1678,6 @@ $('#' + $id).on('activate', () => {
     allowDegreeFractions: Craft.isImagick,
     onSave: (data) => {
       if (data.newAssetId) {
-        {$this->_replaceSlideoutAssetJs("$('#' + $id)")}
         return;
       }
 
@@ -1699,26 +1698,15 @@ JS, [
         ) {
             $items[] = ['type' => MenuItemType::HR];
 
-            // Volume settings
-            $volumeEditId = sprintf('edit-volume-%s', mt_rand());
             $items[] = [
-                'id' => $volumeEditId,
                 'icon' => 'gear',
                 'label' => t('Volume settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:open-slideout',
+                    'detail' => ['url' => Url::cpUrl("settings/assets/volumes/$this->volumeId")],
+                ],
             ];
-
-            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-(() => {
-  $('#' + $id).on('activate', function() {
-    const params = $params;
-    new Craft.CpScreenSlideout('volumes/edit-volume', {params});
-  });
-})();
-JS, [
-                InputNamespace::namespaceId($volumeEditId),
-                ['volumeId' => $this->volumeId],
-            ]);
-
         }
 
         return $items;
@@ -2186,6 +2174,22 @@ JS, [
         return $this->getPlaceholderDataUrl();
     }
 
+    /**
+     * A fit thumbnail is the image scaled to fit within `$size`×`$size`, the same as its transform.
+     */
+    #[Override]
+    protected function thumbDimensions(int $size, ImageTransformMode $mode): ?array
+    {
+        $width = (int) $this->getWidth();
+        $height = (int) $this->getHeight();
+
+        if ($this->isFolder || $mode !== ImageTransformMode::Fit || ! $width || ! $height) {
+            return null;
+        }
+
+        return AssetsHelper::scaledDimensions($width, $height, $size, $size);
+    }
+
     #[Override]
     protected function hasCheckeredThumb(): bool
     {
@@ -2603,6 +2607,20 @@ JS, [
             // `orientation` below, which is the locale's text direction.
             'imageWidth' => $this->getWidth(),
             'imageHeight' => $this->getHeight(),
+            ...static::sharedImageEditorSettings(),
+        ];
+    }
+
+    /**
+     * Returns the image editor settings that are the same for every asset.
+     *
+     * @return array<string, mixed>
+     *
+     * @internal
+     */
+    public static function sharedImageEditorSettings(): array
+    {
+        return [
             'imageEditorRatios' => Cms::config()->imageEditorRatios,
             // Only Imagick can rotate by a fraction of a degree; GD rounds.
             'allowDegreeFractions' => Images::getIsImagick(),
@@ -2822,6 +2840,8 @@ JS, [
      * edges show. Others get a gradient between the colors of the image's
      * left and right edges, so it bleeds out to the sides, with a black
      * overlay that darkens it by 25% at the top, fading to 5% at the bottom.
+     * The edge colors are 40% opaque over a transparent background, so the
+     * gradient takes on the color of whatever it sits on.
      *
      * @return array<string, array<string, string>>
      */
@@ -2867,30 +2887,10 @@ CSS,
                 'theme' => 'dark',
             ],
             'style' => [
-                'background-color' => '#000',
-                'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, $left, $right)",
+                'background-color' => 'transparent',
+                'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, color-mix(in srgb, $left 40%, transparent), color-mix(in srgb, $right 40%, transparent))",
             ],
         ];
-    }
-
-    /**
-     * Returns JavaScript that will replace this asset with `data.newAssetId`, if the given element is within an
-     * Assets field’s editor slideout.
-     *
-     * @param  string  $elementJs  JavaScript expression for a jQuery object within the slideout
-     */
-    private function _replaceSlideoutAssetJs(string $elementJs): string
-    {
-        return <<<JS
-// If this is within an Assets field’s editor slideout, replace the selected asset and close the slideout,
-// since it's still editing the old asset
-const slideout = $elementJs?.closest('[data-slideout]').data('slideout');
-if (slideout && slideout.settings.elementSelectInput) {
-    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
-        .then(() => slideout.closeMeMaybe())
-        .catch(() => {});
-}
-JS;
     }
 
     private function _updatePreviewThumbJs(): string
@@ -3110,6 +3110,20 @@ JS;
             } elseif (isset($this->newFilename)) {
                 $this->filename = $this->newFilename;
                 $this->newFilename = null;
+            }
+        }
+
+        // A rename without an extension keeps the current one (#19950)
+        if (
+            isset($this->newFilename, $this->_filename) &&
+            $this->newFilename !== '' &&
+            ! isset($this->tempFilePath) &&
+            pathinfo($this->newFilename, PATHINFO_EXTENSION) === ''
+        ) {
+            $extension = pathinfo($this->_filename, PATHINFO_EXTENSION);
+
+            if ($extension !== '') {
+                $this->newFilename = rtrim($this->newFilename, '.').".$extension";
             }
         }
 

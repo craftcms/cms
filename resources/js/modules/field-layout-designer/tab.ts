@@ -1,9 +1,6 @@
 import {Base, HUD} from '@craftcms/garnish';
 import {FieldLayoutDesigner} from './field-layout-designer';
-import {
-  canUseVueSlideout,
-  openLayoutComponentSettings,
-} from './settings-slideout';
+import {openLayoutComponentSettings} from './settings-slideout';
 import {Element as FldElement} from './element';
 import {
   firstFocusableInSiblings,
@@ -29,7 +26,6 @@ export class Tab extends Base {
   $container: any = null;
   $addBtn: any = null;
   $actionBtn: any = null;
-  slideout: any = null;
   hud: any = null;
   destroyed = false;
 
@@ -211,52 +207,12 @@ export class Tab extends Base {
       throw e;
     }
 
-    if (canUseVueSlideout()) {
-      await openLayoutComponentSettings(data, {
-        title: this.config?.name || Craft.t('app', 'Settings'),
-        triggerElement: this.$actionBtn,
-        requestData: () => this.settingsRequestData(),
-        apply: (settings) => this.applyTabSettings(settings),
-      });
-
-      return;
-    }
-
-    this.slideout = await FieldLayoutDesigner.createSlideout(data, {
+    await openLayoutComponentSettings(data, {
+      title: this.config?.name || Craft.t('app', 'Settings'),
       triggerElement: this.$actionBtn,
       requestData: () => this.settingsRequestData(),
+      apply: (settings) => this.applyTabSettings(settings),
     });
-
-    // slideout.$container is a Craft jQuery object; bind on the native form.
-    this.addListener(this.slideout.$container[0], 'submit', (ev: any) => {
-      ev.preventDefault();
-      this.applySettings();
-    });
-    this.slideout.on('close', () => {
-      this.slideout.destroy();
-      this.slideout = null;
-    });
-  }
-
-  applySettings(): void {
-    const $container = this.slideout.$container[0];
-    const settingsUi = this.slideout.settingsUi;
-    const settings = settingsUi?.currentValues() ?? {};
-
-    // update the UI
-    const $submitBtn = $container.querySelector('button[type=submit]');
-    $submitBtn?.classList.add('loading');
-
-    this.applyTabSettings(settings)
-      .catch((e: any) => {
-        Craft.cp.displayError(
-          e?.name === 'TabNameRequired' ? e.message : undefined
-        );
-      })
-      .finally(() => {
-        $submitBtn?.classList.remove('loading');
-        this.slideout?.close();
-      });
   }
 
   /**
@@ -405,7 +361,7 @@ export class Tab extends Base {
    * Release this tab's controller resources for a designer reboot (host innerHTML
    * swap). Unlike {@link destroy}, this does NOT mutate the config, move focus, or
    * remove DOM — it only disposes what outlives the detached tab subtree: the HUD
-   * (lives in `<body>`) and any open settings slideout. Detached-node listeners are
+   * (lives in `<body>`). Detached-node listeners are
    * released by `super.destroy()` / GC.
    */
   dispose(): void {
@@ -415,7 +371,6 @@ export class Tab extends Base {
 
     this.destroyed = true;
     this.hud?.destroy();
-    this.slideout?.destroy?.();
     super.destroy();
   }
 

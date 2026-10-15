@@ -5,12 +5,60 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19882](https://github.com/craftcms/cms/pull/19882) for details.
 
+- Added a “Theme” user preference, with “Light”, “Dark”, and “System” options. “System” is the default. Pages shown to logged-out users, such as the login page, use the theme of whoever last used the control panel in the same browser, or “System”. ([#19966](https://github.com/craftcms/cms/pull/19966))
 - Improved chip styling. ([#19902](https://github.com/craftcms/cms/pull/19902))
 - Links are no longer underlined until they’re hovered, unless the “Underline links” accessibility preference is enabled, in which case they’re underlined until hovered. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Folder names in asset indexes are now links.
+- The “License purchase required” screen is now shown in a centered pane, like other message pages.
+- Field labels and headings throughout the control panel now consistently use title case.
 - Element index tables and padded admin tables now span the page’s inline padding, with their outer cells padded to match. ([#19906](https://github.com/craftcms/cms/pull/19906), [#19936](https://github.com/craftcms/cms/pull/19936))
 - Double-clicking an element chip in an element index now opens the chip’s own element in a slideout, rather than the row’s element or the chip’s link. ([#19907](https://github.com/craftcms/cms/pull/19907))
 - In element index tables, only an element’s title now links to it, rather than its whole chip, and clicking a link or button no longer waits to rule out a double-click. ([#19932](https://github.com/craftcms/cms/pull/19932))
+- Link fields now show their Link Type and destination inputs side by side, with their other settings nested under an “Advanced” section, within an outlined pane. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- In element index thumbnail views, only an element’s label now links to it. Clicking anywhere else on a thumbnail, card, or table row selects it, including for asset folders, which now only open from their links. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Asset folders’ labels are now links in thumbnail and card views. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Element index view mode buttons now have tooltips. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Empty states’ messages and icons are now lighter. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- User preference screens now have “General”, “Accessibility”, and “Development” tabs. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- The Notification Position and Slideout Position preferences’ buttons now have tooltips. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Buttons in button groups no longer have gaps between them, and adjacent buttons now share a border. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Outline and dashed buttons now have the same border color as text inputs and checkboxes. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Selected buttons in single-choice button groups, such as element index view modes, no longer show hover effects or pointer cursors. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Element selection modals no longer have a header, and their toolbars now fit on one row. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Expand/collapse toggles’ chevrons now follow their labels, and point toward the end of the line while collapsed and down while expanded. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Image thumbnails’ placeholders now cover the same area as the image, and thumbnails no longer shift once their image loads. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Asset previews’ background gradients are now more transparent, and asset edit pages now have a hairline below the preview. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Edit pages for elements without statuses, such as assets, no longer show a status badge or “Status” metadata, except for drafts. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Section and Matrix site settings now have a single “Route To” setting, in place of separate Route Type and Route settings. Namespaced controller actions and values that match a named route are saved as routes, and anything else is saved as a template. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- “Route To” settings now suggest the app’s named routes and controller actions, as well as templates. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Editable tables’ text and select inputs now fill their cells, and clicking anywhere in a cell focuses its control. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Editable tables’ headers now have a background color, and their checkbox, lightswitch, color, and icon cells are more compact. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Checkboxes and radio buttons now look the same in every browser, and their focus rings follow their rounded shape. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Text inputs and selects now take on their container’s background color. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Disabled lightswitches are now dimmed. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Chips’ handles are now shown as plain text below their labels. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Component selects no longer show a reorder button when only one item is selected. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Relational fields’ chips and cards now have reorder buttons with menu options for moving them, including on touch devices. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Move icons on Matrix blocks, chips, and editable table rows are now larger. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Action menu buttons’ ellipsis icons are now larger, and chips’ action menu and reorder buttons are now closer together. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Nav items’ icons are now closer to their labels, and expanded nav sections now have a hairline in line with the selected item’s indicator. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Metadata values in details panes are now left-aligned. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Collapsible sections’ hairlines now start at the section’s edge. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Date and time inputs now share a single border, with a divider between them, and their picker icons now come before their values.
+- Date and time fields’ clear buttons are now always shown, within the input’s border, and are disabled when there’s nothing to clear.
+- Text inputs’ suffix buttons, such as the Slug field’s refresh button, now fill their segment of the input.
+- Matrix fields’ blocks views now outline the block that’s being edited. ([#19974](https://github.com/craftcms/cms/pull/19974))
+- Clicking a Matrix block in blocks view no longer selects it. Blocks are selected with their checkboxes instead. ([#19974](https://github.com/craftcms/cms/pull/19974))
+- Fields without a visible label or instructions no longer have an action menu.
+- Double-clicking an element in a relational field’s card or thumbnail view now opens its slideout, as it does in list views.
+- Double-clicking an asset folder in an asset index or element selection modal now opens it, and double-clicking an element’s thumbnail in an element index now opens its slideout. ([#19979](https://github.com/craftcms/cms/pull/19979))
+- Image transform mode and view mode illustrations now have transparent backgrounds, and follow the control panel’s light or dark theme.
+- Matrix fields’ Site Settings tables now have a narrow Site column, and give the Entry URI Format and Route To columns equal widths, as Sections’ do.
+- Slideouts can now be resized horizontally, and remember their width. ([#19978](https://github.com/craftcms/cms/pull/19978))
+- Slideouts’ details panes that were folded away for lack of room now reopen once the slideout is wide enough again. ([#19978](https://github.com/craftcms/cms/pull/19978))
+- Slideouts’ details panes now start out folded. ([#19961](https://github.com/craftcms/cms/pull/19961))
+- Links within colored badges, chips, and cards now use the badge’s, chip’s, or card’s text color, and are underlined until hovered. ([#19989](https://github.com/craftcms/cms/pull/19989))
+- The image editor’s header, tabs, controls, and footer now share the control panel’s standard container padding.
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - Saving the Customize Sources modal from an element index’s action menu now goes to the source that was last edited, as it does from the secondary nav. ([#19929](https://github.com/craftcms/cms/pull/19929))
@@ -23,21 +71,56 @@
 - Comments can now be submitted with <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in the Activity and Workflow details panels. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - Comment fields in the Activity and Workflow details panels now start one line high, keep the Comment button inside the field, and show how many characters a comment is over the limit. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))
+- Activity timeline day headings now show the date as a badge, and the Workflow details panel’s review panes are no longer outlined. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Selectize fields are now rendered as `<craft-combobox>` web components, rather than Selectize instances.
 - Autosuggest inputs are now rendered as `<craft-combobox>` web components, rather than Vue 2 `vue-autosuggest` instances.
 - Autosuggest inputs now match suggestions on their hint as well as their label, and no longer cap each suggestion group at five items.
 - Updated the index pages for user groups, GraphQL schemas and tokens, image transforms, asset volumes and transformers, workflows, sections, entry types, fields, and sites to use shared UI tables. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
+- The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Added `CraftCms\Cms\Ui\Nodes\Table`, for rendering admin tables from PHP UI definitions. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Added `CraftCms\Cms\Cp\Components\CopyAttribute` for rendering inline copyable values in PHP and templates. ([#19935](https://github.com/craftcms/cms/pull/19935))
+- Removed `CraftCms\Cms\Element\ElementHelper::renderElements()`. `CraftCms\Cms\Support\Template::render()` should be used instead.
+- System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
+- Admin table links and create actions can now open in a slideout with a custom width, via the `slideoutWidth` link option and new `slideout` and `slideoutWidth` arguments on `CraftCms\Cms\Ui\Nodes\Table::createAction()`. ([#19956](https://github.com/craftcms/cms/pull/19956))
+- Double-clicking an admin table row now opens its link’s slideout, if it has one. ([#19957](https://github.com/craftcms/cms/pull/19957))
+- Core slideouts now open on the Vue slideout stack. Core no longer uses `Craft.CpScreenSlideout`, `Craft.ElementEditorSlideout`, or `Craft.createElementEditor()`, except for two-step verification setup. ([#19961](https://github.com/craftcms/cms/pull/19961))
+- Action menu items can now open a control panel screen in a slideout via a `craft:open-slideout` event action, with the screen’s `url` in its detail. ([#19961](https://github.com/craftcms/cms/pull/19961))
+- `openSlideout()` now accepts an `onClosed` callback, which is called once the slideout is gone, however it was closed. ([#19961](https://github.com/craftcms/cms/pull/19961))
+- `useAppLayout()` now accepts a `submitButtonLabel` option. ([#19961](https://github.com/craftcms/cms/pull/19961))
+- Fixed a bug where element query date params, such as `postDate`, `before`, `after`, `dateCreated`, and Date field params, as well as date condition rules, were off by the system time zone’s UTC offset. ([#19963](https://github.com/craftcms/cms/pull/19963))
+- Fixed a bug where dates more than six days out, such as pending entries’ post dates in element indexes, were shown as a day of the week. ([#19972](https://github.com/craftcms/cms/pull/19972))
+- Fixed a bug where nested elements weren’t indented in structure views’ element index tables. ([#19972](https://github.com/craftcms/cms/pull/19972))
+- Fixed a bug where users’ Permissions, Preferences, and Password screens had two “Save and continue editing” actions. ([#19972](https://github.com/craftcms/cms/pull/19972))
+- Fixed an accessibility issue where buttons were still announced as “Loading” after they finished loading, and lost their accessible name if loading took more than five seconds. ([#19975](https://github.com/craftcms/cms/pull/19975))
+- Fixed a bug where some elements’ action menu items, such as “Section settings”, “Entry type settings”, and “Field settings”, didn’t open their slideouts on some control panel pages. ([#19961](https://github.com/craftcms/cms/pull/19961))
+- Fixed a bug where assets’ “Volume settings” and user groups’ “User group settings” action menu items led to 404 errors. ([#19961](https://github.com/craftcms/cms/pull/19961))
+- Fixed a bug where saving an image as a new asset, from an asset opened via an Assets field, didn’t replace the asset in the field. ([#19961](https://github.com/craftcms/cms/pull/19961))
+- Fixed a bug where field layout designers’ field library didn’t reflect changes saved from a field’s settings slideout. ([#19961](https://github.com/craftcms/cms/pull/19961))
+- Fixed a bug where errors added with `Craft.ui.addErrorsToField()` weren’t shown. ([#19961](https://github.com/craftcms/cms/pull/19961))
+- Fixed a bug where black cards’ body text had insufficient contrast. ([#19989](https://github.com/craftcms/cms/pull/19989))
+- Fixed a bug where thumbnails in relational fields linked to their elements. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where single-select comboboxes had no visible focus ring. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where single-select comboboxes’ combobox element had no accessible name in Chromium. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where some focus rings were clipped within editable tables. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where fields’ “Used by” metadata listed asset volumes’ field layouts as unlinked counts, and showed oversized icons. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where the Notification Position and Slideout Position preferences had large gaps between their labels and buttons, and their button groups had no accessible names. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where clicking the selected button in a single-choice button group again could make it look deselected. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where the “Save” button in element editors kept the user on the edit page instead of returning to the element index. ([#19970](https://github.com/craftcms/cms/pull/19970))
 - Fixed a bug where page-header actions could be clipped on narrow screens. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Fixed a bug where the public GraphQL schema could be deleted through its numeric URL. ([#19935](https://github.com/craftcms/cms/pull/19935))
+- Fixed a bug where the System Messages utility’s language menu was empty. ([#19946](https://github.com/craftcms/cms/pull/19946))
+- Fixed a bug where variables weren’t HTML-escaped in system messages’ HTML bodies, because Twig string and object templates reused whichever escaping they were first compiled with. The default system messages no longer use the `|e` filter, which showed HTML entities in their plain-text bodies. ([#19946](https://github.com/craftcms/cms/pull/19946))
+- Fixed a bug where new nested elements, such as Commerce product variants or entries in Matrix fields set to the element index view mode, could be deleted by the owner element’s autosave before they were saved. ([#19943](https://github.com/craftcms/cms/pull/19943))
+- Fixed a bug where nested element indexes with a single “New” option showed it as a menu containing that one item, rather than a button, when there wasn’t room for their create buttons. ([#19944](https://github.com/craftcms/cms/pull/19944))
 - Plugins’ control panel nav items can now be shown as groups, by calling `group(true)` on the item returned by `getCpNavItem()` and passing its items to `subnav()`. ([#19903](https://github.com/craftcms/cms/pull/19903))
 - Plugin bundles can now import the control panel’s components and composables from the `@craftcms/cp` import-map module, including `ElementIndexPage`, `ElementEditor`, `AdminTable`, `SearchForm`, `DeleteButton`, `useCraftTable`, `createCraftColumnHelper`, and `useInertiaReorder`. ([#19912](https://github.com/craftcms/cms/issues/19912))
 - `useCraftTable` now has an `inertia` option, which pages and sorts a table through Inertia visits that reload its rows, `pagination`, and `sort` props together. ([#19912](https://github.com/craftcms/cms/issues/19912))
 - Added the `cp-table--flush` class, which pads the outer edges of each table row by `--cp-container-padding`. ([#19906](https://github.com/craftcms/cms/pull/19906), [#19936](https://github.com/craftcms/cms/pull/19936))
 - Added the `appearance` prop to the `AdminTable` Vue component, and `CraftCms\Cms\Ui\Nodes\Table::appearance()`, which set how a table meets its container: `plain`, `flush`, or `raised`. The values are available as `TableAppearance` from `@craftcms/cp` and `CraftCms\Cms\Cp\Enums\TableAppearance`. ([#19936](https://github.com/craftcms/cms/pull/19936))
 - Added the `max-height` attribute to `<craft-markdown-field>`, which sets how tall the editor grows before it scrolls. ([#19923](https://github.com/craftcms/cms/pull/19923))
+- Added the `outline-fill` appearance to `<craft-pane>`, and `CraftCms\Cms\Cp\Enums\PaneAppearance::OutlineFill`. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Added the `appearance` and `size` properties to `<craft-disclosure>`. `appearance="plain"` drops the content’s hairline and indent, and `size` sizes the default toggle. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `hyperlinkUrl`, `hyperlinkTag`, and `hyperlinkAttributes` config options to `CraftCms\Cms\Cp\Html\ElementHtml::elementChipHtml()`, and the `bare` prop to the `CpLink` Vue component. ([#19932](https://github.com/craftcms/cms/pull/19932))
 - Added `Cp.$elementDetailsPanels`, for registering element details panels, along with the `ElementDetailsPanelDescriptor`, `ElementDetailsPanelContext`, `ElementDetailsPanelStatus`, and `ElementDetailsPanelRegistry` types.
 - Element details panels’ content is no longer padded by the details pane. Panels registered via `Cp.$elementDetailsPanels` with a `component` should set their own padding, using `--cp-container-padding` for the inline padding. ([#19919](https://github.com/craftcms/cms/pull/19919))
@@ -54,6 +137,13 @@
 - Added `CraftCms\Cms\Cp\Components\Combobox::labelledBy()`, for a combobox labelled by an element the caller renders itself.
 - Added `CraftCms\Cms\Ui\Nodes\Field::headingPrefix()`, `headingSuffix()`, `translatable()`, `orientation()`, `inputWidth()`, `fieldset()`, and `showStatus()`. ([#19915](https://github.com/craftcms/cms/pull/19915))
 - Updated `CraftCms\Cms\Ui\Nodes\Field::make()` and `label()` to accept `Illuminate\Contracts\Support\Htmlable` and `Twig\Markup` labels. ([#19915](https://github.com/craftcms/cms/pull/19915))
+- Added `CraftCms\Cms\Route\ElementRoute::isRoute()`, which determines whether an element site settings destination refers to a route or a template. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Added `CraftCms\Cms\Cp\SelectOptions::getRouteSuggestions()`, which returns the app’s named routes and controller actions, optionally limited to those that accept a given element type. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Added `CraftCms\Cms\Element\Data\ElementSiteSettings::destinationColumn()`, which replaces `routeColumn()`. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Element site settings forms now post a single `destination` value, in place of `routeType` and `route`. Explicit `template` and `route` values are still supported. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Added the `centered` editable table column class, and column classes now apply to header cells as well as body cells. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Removed the `prefixSelect` editable table column option. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Removed the `--c-select-*`, `--c-input-spacing-block`, and `--c-form-control-spacing-block` CSS custom properties. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added support for field presentation settings, formatted instructions, and field layout identifiers to `CraftCms\Cms\Ui\Nodes\Group` when using `asField()`, and fixed field spacing in UI modals. ([#19940](https://github.com/craftcms/cms/pull/19940))
 - Added `CraftCms\Cms\Plugin\Concerns\HasSettings::createSettings()`, a static method which replaces `CraftCms\Cms\Contracts\PluginInterface::createSettings()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
 - `<craft-tabs>` now always has a tab selected. A `selected-index` of `-1` resolves to the first enabled tab.
@@ -99,6 +189,7 @@
 - Fixed a bug where the “Underline links” accessibility preference wasn’t respected on most control panel screens. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Fixed a bug where section edit slideouts didn’t have “Open in a new tab” buttons.
 - Fixed a bug where the Activity details panel didn’t scroll to the newest activity when opened. ([#19923](https://github.com/craftcms/cms/pull/19923))
+- Fixed a bug where cards with `data-color="white"` had translucent bodies that didn’t match their headers. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where control panel nav flyouts could close as soon as the pointer reached them. ([#19926](https://github.com/craftcms/cms/pull/19926))
 - Fixed a bug where action menus on thumbnails in single-element relation fields were positioned at the start of the thumbnail rather than the end.
 - Fixed a bug where element chips within links weren’t following the link underline behavior or the “Underline links” accessibility preference.
@@ -107,7 +198,18 @@
 - Fixed a bug where asset folders could be selected in asset selection modals. ([#19937](https://github.com/craftcms/cms/pull/19937))
 - Fixed a bug where asset folders in asset selection modals couldn’t be opened. Folders are now linked, and clicking one shows its contents in the modal, with breadcrumbs leading back to the volume’s root. ([#19937](https://github.com/craftcms/cms/pull/19937))
 - Fixed a bug where `yii\db\Expression` values assigned to legacy Active Record attributes were saved as JSON strings. ([#19948](https://github.com/craftcms/cms/issues/19948), [#19953](https://github.com/craftcms/cms/pull/19953))
+- Fixed a bug where the “Users” nav item was marked as the current page when viewing your own account or a user’s edit screen. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where the “Preview file”, “Download”, “Rename file”, “Replace file”, “Copy URL”, “Copy reference tag”, “Show in folder”, “Edit Image”, and “Move…” actions in asset indexes’ Actions menu didn’t do anything, and cleared the selection instead. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where the folder picker for moving assets and folders was unstyled, and offered “Temporary Uploads” as a destination when moving folders. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where element indexes and element selector modals could show empty cards or thumbnails when the view mode they remembered differed from the one they loaded with. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed an error that occurred when a `selectize` or `booleanMenu` form field was passed a boolean or numeric value.
+- Fixed a bug where element edit pages’ and slideouts’ details panes didn’t scroll when their content was too tall to fit. ([#19952](https://github.com/craftcms/cms/pull/19952))
+- Fixed a bug where pages with a secondary nav sidebar, such as Commerce → Store Management → General, showed an empty actions menu below the nav. ([#19959](https://github.com/craftcms/cms/pull/19959))
+- Fixed a bug where double-clicking an element in an element selection modal didn’t select it. ([#19979](https://github.com/craftcms/cms/pull/19979))
 - Fixed a bug where the MCP server’s `elements.create`, `elements.update`, and `elements.validate` tools silently ignored Matrix entries submitted in the format `elements.field-schema` described. ([#19965](https://github.com/craftcms/cms/pull/19965))
+- Fixed a bug where input placeholder text had insufficient contrast in the dark theme.
+- Fixed a bug where the “License purchase required” screen’s Refresh button didn’t work.
+- Fixed a bug where link buttons with an icon and a label had no inline padding.
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
@@ -133,6 +235,9 @@
 - Fixed an accessibility issue where switches in editable tables weren’t labeled by their column headers. ([#19886](https://github.com/craftcms/cms/pull/19886))
 - Fixed a bug where editable tables on the same page could label each other’s inputs, or move focus to another table’s column header when sorting. ([#19886](https://github.com/craftcms/cms/pull/19886))
 - Fixed an accessibility issue where checkboxes and select menus in form-builder table cells were named twice for screen readers, and checkboxes showed their label beside them. ([#19890](https://github.com/craftcms/cms/pull/19890))
+- Button Group fields, single-choice button controls, and the Notification Position and Slideout Position preferences are now radio groups drawn as buttons, so they’re announced as radios and their selection can be changed with the arrow keys. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Single-choice button groups are now announced as groups of toggle buttons rather than radio groups. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed an accessibility issue where element indexes’ view mode and sort direction buttons weren’t in named groups. ([#19942](https://github.com/craftcms/cms/pull/19942))
 
 ### Administration
 
@@ -151,6 +256,7 @@
 
 ### Extensibility
 
+- Added the `buttons` attribute to `<craft-radio-group>`, and `CraftCms\Cms\Cp\Components\RadioGroup::buttons()`, which show a radio group’s options as a row of joined buttons. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added `CraftCms\Cms\Form\Controls\NestedElements` and `CraftCms\Cms\Element\NestedElementManager::formControl()`, allowing plugins to manage custom nested element types as cards or embedded element indexes. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Unified entry edit pages and nested element slideouts under the generic element editor, with a default `CraftCms\Cms\Http\ViewModels\ElementEditViewModel` for custom element types. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Added the `craft:layout-slot`, `craft:app-layout`, and `craft:cp-container` global Vue components, which plugins can use to fill control panel screen layout regions on their own Inertia pages. ([#19854](https://github.com/craftcms/cms/pull/19854))
@@ -159,6 +265,12 @@
 - Added `CraftCms\Cms\Mcp\Elements\ElementAdapter`, `CraftCms\Cms\Mcp\Elements\BaseElementAdapter`, and `CraftCms\Cms\Mcp\Elements\ElementAdapterRegistry`, allowing plugins to make their element types available through the `elements.*` MCP tools. ([#19846](https://github.com/craftcms/cms/pull/19846))
 - Added `CraftCms\Cms\Mcp\Attributes\RequiresHttp`, for MCP capabilities that only work over HTTP. ([#19846](https://github.com/craftcms/cms/pull/19846))
 - Added `directPermissions` to MCP user permission results and `CraftCms\Cms\User\UserPermissions::getDirectPermissionsByUserId()`. ([#19846](https://github.com/craftcms/cms/pull/19846))
+- Element types can now add buttons to the end of the Inertia element editor’s footer by overriding `defineAdditionalButtonDescriptors()`, and plugins can add them via `CraftCms\Cms\Element\Events\ElementAdditionalButtonDescriptorsResolving`. They take the same `behavior` descriptors as action menu items, so they can open links, downloads, modals, and slideouts without submitting the form. ([#19910](https://github.com/craftcms/cms/issues/19910))
+- The `additional-buttons` layout slot now sits at the end of the content footer.
+- Added the `footer-meta` layout slot, beside the content footer’s save controls. Element editors show their autosave status there.
+- `CpScreenResponse::additionalButtonsHtml()` is now rendered in the content footer for screens without their own Inertia page.
+- Slideout footers now share the full-page content footer’s layout and layout slots, including `content-footer`.
+- Craft 5 element edit page additional buttons (`getAdditionalButtons()`, `EVENT_DEFINE_ADDITIONAL_BUTTONS`, and `additionalButtonsHtml()`) are now shown in the Inertia element editor’s footer when the Yii adapter is installed. ([#19910](https://github.com/craftcms/cms/issues/19910))
 - Added `CraftCms\Cms\Element\Events\ElementEditorPayloadResolving`. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Added `CraftCms\Cms\Asset\AssetUploadHandler::ingest()`, allowing non-HTTP adapters to reuse Craft’s asset creation workflow. ([#19823](https://github.com/craftcms/cms/pull/19823))
 - Added support for passing prepared, unsaved assets to `CraftCms\Cms\Asset\Data\AssetIngest`, allowing transport adapters to set metadata and custom field values before validation and persistence. ([#19827](https://github.com/craftcms/cms/pull/19827))
@@ -193,6 +305,7 @@
 - Removed `craft\elements\db\ElementQuery::beforePrepare()`. `CraftCms\Cms\Element\Queries\ElementQuery::elementQueryBeforeQuery()` should be overridden instead. ([#19838](https://github.com/craftcms/cms/pull/19838))
 - Removed `craft\elements\db\ElementQuery::joinElementTable()`. Element queries should now declare their element table via the `$table` property, which is joined automatically. ([#19838](https://github.com/craftcms/cms/pull/19838))
 - Removed `craft\elements\db\ElementQuery::$subQuery`. Element queries are now a single query, so joins and conditions should be applied to `$query`. ([#19838](https://github.com/craftcms/cms/pull/19838))
+- Removed `CraftCms\Cms\Element\Contracts\ElementInterface::getAdditionalButtons()` and `CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving`. `defineAdditionalButtonDescriptors()` and `CraftCms\Cms\Element\Events\ElementAdditionalButtonDescriptorsResolving` should be used instead. The Yii adapter still provides `getAdditionalButtons()` and `EVENT_DEFINE_ADDITIONAL_BUTTONS`. ([#19921](https://github.com/craftcms/cms/pull/19921))
 - Removed the `breadcrumbs` and `submit-button` screen layout slots, which never rendered on full pages. The `crumbs` page prop and the `primary-action` slot should be used instead. ([#19854](https://github.com/craftcms/cms/pull/19854))
 - Removed the `pasteableEntryTypeIds` nested element manager setting. `pasteableData` should be used instead. ([#19792](https://github.com/craftcms/cms/pull/19792))
 
@@ -362,6 +475,10 @@
 ### Entries & Sections
 - Added the “Show the Post Date field” and “Show the Expiry Date field” entry type settings. ([#17675](https://github.com/craftcms/cms/pull/17675))
 - Entry types’ Color fields now show a dropdown menu. ([#19760](https://github.com/craftcms/cms/pull/19760))
+
+### Releases
+- Added releases, allowing saved drafts of root elements to be grouped, scheduled, and published atomically.
+- Added the `releaseId` element query and GraphQL argument for selecting drafts attached to a release.
 
 ### Workflows
 - Added publishing workflows, which control when drafts may be applied to entries. Workflows are configured from Settings → Workflows and assigned to sections. (Craft Pro and Enterprise only.) ([#19667](https://github.com/craftcms/cms/pull/19667))

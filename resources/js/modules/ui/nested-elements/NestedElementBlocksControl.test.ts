@@ -1600,6 +1600,21 @@ describe('NestedElementBlocksControl', () => {
     ).toBe(true);
   });
 
+  // A block is a form, so clicking around in it to edit shouldn't select it.
+  it('selects a block only from its checkbox, not by clicking the block', async () => {
+    mount({
+      entries: {'block-a': {type: 'newType', enabled: true}},
+      sortOrder: ['block-a'],
+    });
+    await nextTick();
+
+    const block = container!.querySelector('[data-matrix-block]')!;
+    block.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    await nextTick();
+
+    expect(block.hasAttribute('data-selected')).toBe(false);
+  });
+
   it('disables a mixed selection globally from any selected block’s menu', async () => {
     mount(
       {
@@ -1627,10 +1642,19 @@ describe('NestedElementBlocksControl', () => {
     await nextTick();
 
     const blocks = [...container!.querySelectorAll('[data-matrix-block]')];
-    blocks[0]!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-    blocks[1]!.dispatchEvent(
-      new MouseEvent('click', {bubbles: true, shiftKey: true})
-    );
+    // Blocks are selected from their checkboxes; `craft-checkbox` reports its
+    // change from the host, after the click that carries the Shift key.
+    const check = (block: Element, shiftKey = false): void => {
+      const box = block.querySelector('craft-checkbox')!;
+      Object.assign(box, {checked: true});
+      box.dispatchEvent(new MouseEvent('click', {bubbles: true, shiftKey}));
+      box.dispatchEvent(
+        new CustomEvent('model-value-changed', {bubbles: true})
+      );
+    };
+    check(blocks[0]!);
+    await nextTick();
+    check(blocks[1]!, true);
     await nextTick();
 
     expect(blocks[0]!.hasAttribute('data-selected')).toBe(true);

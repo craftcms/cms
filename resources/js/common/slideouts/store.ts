@@ -126,6 +126,7 @@ export async function openSlideout(
     error: null,
     opener,
     onSaved: options.onSaved ?? null,
+    onClosed: options.onClosed ?? null,
     nestedOwnerId: options.nestedOwnerId,
     prepareNestedOwner: options.prepareNestedOwner,
     width: options.width ?? null,
@@ -179,6 +180,7 @@ export function openSlideoutWith(
     error: null,
     opener,
     onSaved: options.onSaved ?? null,
+    onClosed: options.onClosed ?? null,
     nestedOwnerId: options.nestedOwnerId,
     width: options.width ?? null,
   });
@@ -320,6 +322,7 @@ function removePanel(id: string, {restoreFocus = true} = {}): void {
 
   const [panel] = panels.splice(index, 1);
   dirtyChecks.delete(id);
+  panel?.onClosed?.();
 
   if (restoreFocus) {
     // Focus has to go somewhere deliberate — the panel that owned it is gone.

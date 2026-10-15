@@ -58,7 +58,7 @@ export const InAForm: Story = {
     <form>
       <craft-slide-picker
         name="columns"
-        label="Number of columns"
+        label="Number of Columns"
         value-unit=" columns"
         min="1"
         max="6"

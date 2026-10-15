@@ -77,6 +77,7 @@
   const HEADER_SLOTS = ['title'] as const;
   const FOOTER_SLOTS = [
     'content-footer',
+    'footer-meta',
     'additional-buttons',
     'primary-action',
   ] as const;
@@ -106,6 +107,7 @@
   const page = usePage<{
     title: string;
     readOnly?: boolean;
+    showReadOnlyNotice?: boolean;
     primaryAction?: string | null;
     crumbs?: Array<BreadcrumbItem> | null;
     subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
@@ -160,10 +162,12 @@
   // standing empty.
   const hasFooter = computed(
     () =>
-      Boolean(props.form) ||
-      Boolean(props.fullPageForm) ||
-      regions.has('content-footer') ||
-      regions.has('additional-buttons')
+      !props.hideFooter &&
+      (Boolean(props.form) ||
+        Boolean(props.fullPageForm) ||
+        regions.has('content-footer') ||
+        regions.has('footer-meta') ||
+        regions.has('additional-buttons'))
   );
   const contentConstrained = computed(() => Boolean(props.contentMaxWidth));
   const contentMainStyle = computed(() =>
@@ -322,7 +326,10 @@
                                 :items="navItemActions(subnav)"
                                 :actions="subnavActions"
                               >
-                                <template #actions>
+                                <template
+                                  v-if="regions.has('subnav-actions')"
+                                  #actions
+                                >
                                   <LayoutSlotOutlet name="subnav-actions">
                                     <slot name="subnav-actions"></slot>
                                   </LayoutSlotOutlet>
@@ -345,7 +352,12 @@
                               />
                             </slot>
                           </LayoutSlotOutlet>
-                          <CalloutReadOnly v-if="readOnly" />
+                          <CalloutReadOnly
+                            v-if="
+                              readOnly &&
+                              page.props.showReadOnlyNotice !== false
+                            "
+                          />
                           <div
                             :class="{
                               'cp-content-view': true,
@@ -597,7 +609,7 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     border: var(--cp-body-border-width) solid
       var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-xl);
-    box-shadow: var(--shadow-xs), var(--shadow-lg);
+    box-shadow: var(--c-shadow-xs), var(--c-shadow-lg);
     overflow: clip;
   }
 
@@ -701,8 +713,13 @@ Content: the secondary nav, content, and details panes
 
   .cp-content--sidebar .cp-content__sidebar {
     min-width: calc(250rem / 16);
-    border-block-end: 1px solid var(--c-color-border-quiet);
     padding: var(--c-spacing-md);
+
+    /* Only stacked above the content; beside it, the panel's own border
+       already closes it off. */
+    @media (width < var(--breakpoint-lg)) {
+      border-block-end: 1px solid var(--c-color-border-quiet);
+    }
   }
 
   .cp-content__main {

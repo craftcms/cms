@@ -99,8 +99,10 @@ describe('DateTimeControl', () => {
     expect(input!.dateValue).toBe('');
     expect(input!.timeValue).toBe('');
     expect(
-      container!.querySelector('craft-button[aria-label="Clear"]')!.classList
-    ).toContain('invisible');
+      container!
+        .querySelector('craft-button[aria-label="Clear"]')!
+        .hasAttribute('disabled')
+    ).toBe(true);
   });
 
   it('renders the value it was given', async () => {
@@ -115,8 +117,10 @@ describe('DateTimeControl', () => {
     expect(input.dateValue).toBe('2026-08-07');
     expect(input.timeValue).toBe('14:30');
     expect(
-      container!.querySelector('craft-button[aria-label="Clear"]')!.classList
-    ).not.toContain('invisible');
+      container!
+        .querySelector('craft-button[aria-label="Clear"]')!
+        .hasAttribute('disabled')
+    ).toBe(false);
   });
 
   it('stretches the inputs when the control asks for full width', async () => {
@@ -132,8 +136,10 @@ describe('DateTimeControl', () => {
     mount({});
     await nextTick();
 
+    // `auto` rather than unset, so the surrounding craft-field doesn't stretch
+    // the control across the column the way it would a text input.
     expect(
-      container!.querySelector('craft-input-date-time')!.hasAttribute('width')
-    ).toBe(false);
+      container!.querySelector('craft-input-date-time')!.getAttribute('width')
+    ).toBe('auto');
   });
 });

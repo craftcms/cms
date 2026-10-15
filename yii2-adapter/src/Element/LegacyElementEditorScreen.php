@@ -6,10 +6,12 @@ namespace CraftCms\Yii2Adapter\Element;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\ElementAdditionalButtonDescriptorsResolving;
 use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
 use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;
 use ReflectionMethod;
@@ -36,7 +38,9 @@ class LegacyElementEditorScreen
             ->contentHtml($formHtml)
             ->metaSidebarHtml($sidebarHtml);
 
-        $assets = HtmlStack::capture(function() use ($element, $screen, $containerId, $data): string {
+        $buttonsHtml = '';
+
+        $assets = HtmlStack::capture(function() use ($element, $screen, $containerId, $data, &$buttonsHtml): string {
             event($content = new ElementEditorContentResolving($element, (string) $screen->contentHtml, $data['readOnly']));
             $screen->contentHtml($content->html);
 
@@ -51,9 +55,20 @@ class LegacyElementEditorScreen
 
             $screen->contentHtml($this->resolveHtml($screen->contentHtml));
             $screen->metaSidebarHtml($this->resolveHtml($screen->metaSidebarHtml));
+            $buttonsHtml = trim($this->resolveHtml($screen->additionalButtonsHtml) . (method_exists($element, 'getAdditionalButtons') ? $element->getAdditionalButtons() : ''));
 
             return '';
         });
+
+        if ($buttonsHtml !== '') {
+            Deprecator::log(
+                'element-editor-additional-buttons',
+                sprintf(
+                    'Additional buttons HTML for element edit pages (`getAdditionalButtons()`, `EVENT_DEFINE_ADDITIONAL_BUTTONS`, or `additionalButtonsHtml()`) is deprecated. Override `defineAdditionalButtonDescriptors()` or listen for `%s` instead.',
+                    ElementAdditionalButtonDescriptorsResolving::class,
+                ),
+            );
+        }
 
         $event->data = [
             ...$data,
@@ -63,6 +78,7 @@ class LegacyElementEditorScreen
             'crumbs' => is_callable($screen->crumbs) ? ($screen->crumbs)() : $screen->crumbs,
             'editorContentHtml' => $screen->contentHtml === $formHtml ? null : $screen->contentHtml,
             'editorSidebarHtml' => $screen->metaSidebarHtml === $sidebarHtml ? null : $screen->metaSidebarHtml,
+            'editorAdditionalButtonsHtml' => $buttonsHtml === '' ? null : $buttonsHtml,
             'editorAssets' => $assets,
             'editorContainerId' => $containerId,
         ];

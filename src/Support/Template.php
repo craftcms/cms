@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Support;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Component\Contracts\Renderable;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Shared\BaseModel;
@@ -17,7 +18,9 @@ use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Support\MessageBag as MessageBagContract;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\ViewErrorBag;
+use InvalidArgumentException;
 use RuntimeException;
 use Stringable;
 use Twig\Environment;
@@ -245,6 +248,60 @@ class Template
         }
 
         $context += $singles;
+    }
+
+    /**
+     * Renders the given renderable object(s).
+     *
+     * If an array or other iterable is passed, each of its items will be rendered and joined with newlines,
+     * and a `loop` variable will be made available to each of them, like within `{% for %}` loops.
+     *
+     * @param  Renderable|iterable<Renderable>|null  $objects  The object(s) to render
+     * @param  array<string,mixed>  $variables  Variables that should be passed to each object’s `render()` method
+     *
+     * @throws InvalidArgumentException if any of the objects aren’t renderable
+     *
+     * @since 6.0.0
+     */
+    public static function render(Renderable|iterable|null $objects, array $variables = []): HtmlString
+    {
+        if ($objects instanceof Renderable) {
+            return $objects->render($variables);
+        }
+
+        if ($objects === null) {
+            $objects = [];
+        } elseif (is_array($objects)) {
+            $objects = array_values($objects);
+        } else {
+            $objects = iterator_to_array($objects, false);
+        }
+
+        $length = count($objects);
+        $output = [];
+
+        foreach ($objects as $i => $object) {
+            if (! $object instanceof Renderable) {
+                throw new InvalidArgumentException(sprintf('%s isn’t renderable.', get_debug_type($object)));
+            }
+
+            // Provide a `loop` variable, like {% for %} loops
+            $output[] = (string) $object->render([
+                ...$variables,
+                'loop' => [
+                    'parent' => $variables,
+                    'index0' => $i,
+                    'index' => $i + 1,
+                    'revindex0' => $length - $i - 1,
+                    'revindex' => $length - $i,
+                    'first' => $i === 0,
+                    'last' => $i === $length - 1,
+                    'length' => $length,
+                ],
+            ]);
+        }
+
+        return new HtmlString(implode("\n", $output));
     }
 
     /** @return array{Paginate, list<mixed>} */
