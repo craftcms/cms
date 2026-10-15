@@ -74,6 +74,13 @@ export default css`
      let a light page through and wash the text out. It fills the whole card
      instead, selected or not. */
   :host([data-color='black']) .card {
+    /* Light lines against the dark fill, in either theme. Black's own quiet
+       border is barely lighter than the fill, so it all but disappears. */
+    --c-color-border-quiet: color-mix(
+      in srgb,
+      var(--c-color-black-on-quiet),
+      transparent 80%
+    );
     background-color: var(--c-color-fill-quiet);
   }
 
