@@ -43,7 +43,9 @@ export default class CraftThumbnail extends LitElement {
 
   /**
    * URL of a small image, such as an asset's `placeholderDataUrl`, that's
-   * scaled up behind the thumbnail box until the image has loaded.
+   * scaled up behind the image until it has loaded. A `fit` thumbnail with a
+   * `width` and `height` gets it across exactly the image's own box; otherwise
+   * it fills the thumbnail box.
    */
   @property() placeholder: string | null = null;
 
@@ -192,13 +194,15 @@ export default class CraftThumbnail extends LitElement {
   }
 
   override render() {
+    const sized = this.sizedImage;
     const classes = {
       thumbnail: true,
       'thumbnail--checkered': this.checkered,
       'thumbnail--rounded': this.rounded,
       'thumbnail--crop': this.mode === 'crop',
       'thumbnail--stretch': this.mode === 'stretch',
-      'thumbnail--placeholder': this.showsPlaceholder,
+      // A sized image carries its own placeholder instead.
+      'thumbnail--placeholder': this.showsPlaceholder && !sized,
     };
     const placeholderStyles = this.showsPlaceholder
       ? {'--_placeholder': `url(${JSON.stringify(this.placeholder)})`}
@@ -207,15 +211,29 @@ export default class CraftThumbnail extends LitElement {
     return html`
       <div
         class="${classMap(classes)}"
-        style="${styleMap(placeholderStyles)}"
+        style="${styleMap(sized ? {} : placeholderStyles)}"
         part="thumbnail"
       >
         ${this.src
           ? html`<img
               class="${classMap({
                 thumbnail__image: true,
+                'thumbnail__image--landscape': sized === 'landscape',
+                'thumbnail__image--portrait': sized === 'portrait',
+                'thumbnail__image--placeholder':
+                  Boolean(sized) && this.showsPlaceholder,
                 'cp-visually-hidden': this.frozen,
               })}"
+              style="${styleMap(
+                sized
+                  ? {
+                      ...placeholderStyles,
+                      '--_width': `${this.width}px`,
+                      '--_height': `${this.height}px`,
+                      'aspect-ratio': `${this.width} / ${this.height}`,
+                    }
+                  : {}
+              )}"
               part="image"
               src="${this.src}"
               srcset="${ifDefined(this.srcset ?? undefined)}"
@@ -242,6 +260,19 @@ export default class CraftThumbnail extends LitElement {
         <slot @slotchange=${this.updateSlottedSvgs}></slot>
       </div>
     `;
+  }
+
+  /**
+   * For a `fit` image whose `width` and `height` are known, which way it's
+   * oriented. Its box is sized from those up front, the way it will be once
+   * loaded, so the placeholder can cover exactly the same area.
+   */
+  private get sizedImage(): 'landscape' | 'portrait' | null {
+    if (this.mode !== 'fit' || !this.width || !this.height) {
+      return null;
+    }
+
+    return this.width >= this.height ? 'landscape' : 'portrait';
   }
 
   private get showsPlaceholder(): boolean {

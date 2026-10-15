@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Data;
 
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Route\ElementRoute;
 
 use function CraftCms\Cms\t;
@@ -22,45 +24,59 @@ class ElementSiteSettings extends Component
         set => $value === null ? null : ElementRoute::normalize($value);
     }
 
-    /** @return array{heading: string, type: string, code: bool, prefixSelect: array{key: string, label: string, options: list<array{label: string, value: string}>}} */
-    public static function routeColumn(): array
+    /**
+     * Returns the table column config for choosing a site’s template or route.
+     *
+     * @param  class-string<ElementInterface>|null  $elementType  The element type being routed, used to filter
+     *                                                            controller action suggestions.
+     * @return array{heading: string, type: string, code: bool, options: list<array<string, mixed>>}
+     */
+    public static function destinationColumn(?string $elementType = null): array
     {
         return [
-            'heading' => t('Route'),
-            'type' => 'singleline',
+            'heading' => t('Route To'),
+            'type' => 'template',
             'code' => true,
-            'prefixSelect' => [
-                'key' => 'routeType',
-                'label' => t('Route type'),
-                'options' => [
-                    ['label' => t('Template'), 'value' => 'template'],
-                    ['label' => t('Route'), 'value' => 'route'],
-                ],
+            'options' => [
+                ...SelectOptions::getTemplateSuggestions(),
+                ...SelectOptions::getRouteSuggestions($elementType),
             ],
         ];
     }
 
-    /** @return array{uriFormat: string, routeType: 'template'|'route', route: string} */
+    /** @return array{uriFormat: string, destination: string} */
     public function toForm(): array
     {
         return [
             'uriFormat' => $this->uriFormat ?? '',
-            'routeType' => empty($this->route) ? 'template' : 'route',
-            'route' => $this->route ?? $this->template ?? '',
+            'destination' => $this->route ?? $this->template ?? '',
         ];
     }
 
-    /** @param array<string, mixed> $data */
+    /**
+     * Applies posted site settings.
+     *
+     * A `destination` value is resolved to a template or route via {@see ElementRoute::isRoute()}.
+     * Otherwise, explicit `template` and `route` values are used as-is.
+     *
+     * @param  array<string, mixed>  $data
+     */
     public function applyForm(array $data): void
     {
-        $routeType = $data['routeType'] ?? null;
+        if (array_key_exists('destination', $data)) {
+            $destination = trim((string) $data['destination']);
+            $isRoute = $destination !== '' && ElementRoute::isRoute($destination);
+            $template = $destination !== '' && ! $isRoute ? $destination : null;
+            $route = $isRoute ? $destination : null;
+        } else {
+            $template = $data['template'] ?? null;
+            $route = $data['route'] ?? null;
+        }
 
         self::configure($this, [
             'uriFormat' => $data['uriFormat'] ?? null,
-            'template' => $routeType === 'template'
-                ? ($data['route'] ?? null)
-                : ($routeType === 'route' ? null : ($data['template'] ?? null)),
-            'route' => $routeType === 'template' ? null : ($data['route'] ?? null),
+            'template' => $template,
+            'route' => $route,
         ]);
     }
 }

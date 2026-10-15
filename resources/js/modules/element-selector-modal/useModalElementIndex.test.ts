@@ -61,6 +61,31 @@ function click(target: Element, init: MouseEventInit = {}) {
   return event;
 }
 
+/** Double-clicks `target` inside `item`, returning what `onDblClick` said. */
+function dblClick(
+  index: ReturnType<typeof mountIndex>,
+  row: (typeof index.view.elementIndex.data)[number],
+  target?: HTMLElement
+) {
+  const item = document.createElement('li');
+  item.append(target ?? document.createElement('span'));
+  let handled: boolean | undefined;
+  let prevented = false;
+  item.addEventListener(
+    'dblclick',
+    (event) => {
+      handled = index.itemBehavior.onDblClick?.(row, event as MouseEvent);
+      prevented = event.defaultPrevented;
+    },
+    {once: true}
+  );
+  item.firstElementChild!.dispatchEvent(
+    new MouseEvent('dblclick', {bubbles: true, cancelable: true})
+  );
+
+  return {handled, prevented};
+}
+
 beforeEach(() => {
   vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
   post.mockResolvedValue({data: {props: assetsData()}});
@@ -84,7 +109,9 @@ it('marks folder rows, so a double-click on one isn’t taken as a choice', () =
 });
 
 describe('opening a folder', () => {
-  it('opens it when its row is clicked', () => {
+  // Only its title link opens it. Folders can't be selected either, so a click
+  // anywhere else on the row does nothing.
+  it('ignores a click elsewhere on its row', () => {
     const index = mountIndex();
 
     const handled = index.itemBehavior.onClick?.(
@@ -93,7 +120,7 @@ describe('opening a folder', () => {
     );
 
     expect(handled).toBe(true);
-    expect(lastQuery()).toMatchObject({folderId: 7});
+    expect(post).not.toHaveBeenCalled();
   });
 
   it('opens it in place when its title link is clicked', () => {
@@ -121,15 +148,28 @@ describe('opening a folder', () => {
     expect(post).not.toHaveBeenCalled();
   });
 
-  it.each(['Enter', ' '])('opens it with %j', (key) => {
+  it('opens it with Enter', () => {
     const index = mountIndex();
-    const event = new KeyboardEvent('keydown', {key, cancelable: true});
+    const event = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      cancelable: true,
+    });
 
     const handled = index.itemBehavior.onKeydown?.(folderRow(index), event);
 
     expect(handled).toBe(true);
     expect(event.defaultPrevented).toBe(true);
     expect(lastQuery()).toMatchObject({folderId: 7});
+  });
+
+  it('neither opens nor selects it with Space', () => {
+    const index = mountIndex();
+    const event = new KeyboardEvent('keydown', {key: ' ', cancelable: true});
+
+    const handled = index.itemBehavior.onKeydown?.(folderRow(index), event);
+
+    expect(handled).toBe(true);
+    expect(post).not.toHaveBeenCalled();
   });
 
   it('clears the selection made in the listing it leaves', () => {
@@ -151,6 +191,67 @@ describe('opening a folder', () => {
       )
     ).toBe(false);
     expect(post).not.toHaveBeenCalled();
+  });
+});
+
+describe('double-clicking', () => {
+  it('selects an asset and lets the double-click through, to choose it', () => {
+    const index = mountIndex();
+
+    expect(dblClick(index, index.view.elementIndex.data[1]!)).toEqual({
+      handled: false,
+      prevented: false,
+    });
+    expect(index.view.selection.selectedIds.value).toEqual([12]);
+  });
+
+  it('keeps an asset its clicks already selected', () => {
+    const index = mountIndex();
+    index.view.table.getRowModel().rows[1]!.toggleSelected(true);
+
+    dblClick(index, index.view.elementIndex.data[1]!);
+
+    expect(index.view.selection.selectedIds.value).toEqual([12]);
+  });
+
+  it('opens a folder instead of choosing it', () => {
+    const index = mountIndex();
+
+    expect(dblClick(index, folderRow(index))).toEqual({
+      handled: true,
+      prevented: true,
+    });
+    expect(lastQuery()).toMatchObject({folderId: 7});
+  });
+
+  it('chooses nothing from a disabled asset', () => {
+    scope = effectScope();
+    const index = scope.run(() =>
+      useModalElementIndex({
+        action: 'element-selector-modals/body',
+        initial: assetsData(),
+        params: {elementType: 'Asset'},
+        disabledElementIds: () => [12],
+      })
+    )!;
+
+    expect(dblClick(index, index.view.elementIndex.data[1]!).handled).toBe(
+      true
+    );
+    expect(index.view.selection.selectedIds.value).toEqual([]);
+  });
+
+  it('chooses nothing from a control inside an asset', () => {
+    const index = mountIndex();
+
+    expect(
+      dblClick(
+        index,
+        index.view.elementIndex.data[1]!,
+        document.createElement('button')
+      ).handled
+    ).toBe(true);
+    expect(index.view.selection.selectedIds.value).toEqual([]);
   });
 });
 
@@ -180,5 +281,74 @@ describe('leaving a folder', () => {
 
     expect(lastQuery()).toMatchObject({source: volume.key});
     expect(lastQuery()).not.toHaveProperty('folderId');
+  });
+});
+
+describe('picking folders', () => {
+  function mountFolderPicker(disabledFolderIds: number[] = []) {
+    scope = effectScope();
+
+    return scope.run(() =>
+      useModalElementIndex({
+        action: 'element-selector-modals/body',
+        initial: assetsData({
+          data: [
+            {id: 'folder:7', label: 'Photos', isFolder: true, folderId: 7},
+            {id: 'folder:8', label: 'Video', isFolder: true, folderId: 8},
+          ],
+        } as Partial<ContentIndexData>),
+        params: {elementType: 'Asset'},
+        selectFolders: true,
+        disabledFolderIds: () => disabledFolderIds,
+      })
+    )!;
+  }
+
+  it('makes folders selectable, bar the disabled ones, and hands back their folder ids', async () => {
+    const index = mountFolderPicker([8]);
+    const [photos, video] = index.view.table.getRowModel().rows;
+
+    expect(photos!.getCanSelect()).toBe(true);
+    expect(video!.getCanSelect()).toBe(false);
+
+    photos!.toggleSelected(true);
+    await nextTick();
+
+    expect(index.selectedElements.value).toEqual([
+      expect.objectContaining({id: 7, folderId: 7}),
+    ]);
+  });
+
+  it('selects one folder at a time', async () => {
+    const index = mountFolderPicker();
+    const [photos, video] = index.view.table.getRowModel().rows;
+
+    photos!.toggleSelected(true);
+    video!.toggleSelected(true);
+    await nextTick();
+
+    expect(index.selectedElements.value.map(({folderId}) => folderId)).toEqual([
+      8,
+    ]);
+  });
+
+  it('leaves a click elsewhere on a folder row to the selection', () => {
+    const index = mountFolderPicker();
+    const row = document.createElement('div');
+
+    expect(index.itemBehavior.onClick?.(folderRow(index), click(row))).toBe(
+      false
+    );
+  });
+
+  it('still opens a folder from its title link', () => {
+    const index = mountFolderPicker();
+    const link = document.createElement('a');
+    link.setAttribute('data-folder-link', '');
+
+    expect(index.itemBehavior.onClick?.(folderRow(index), click(link))).toBe(
+      true
+    );
+    expect(lastQuery()).toMatchObject({folderId: 7});
   });
 });

@@ -51,16 +51,6 @@ export default css`
   }
 
   /*
-    The close button is always present, so the header always has something in
-    it. With the title hidden the heading is taken out of flow, leaving the
-    button as the only flex item — and space-between would then push it to the
-    left, so it is pinned to the end instead.
-  */
-  .header {
-    justify-content: flex-end;
-  }
-
-  /*
     Kept in the accessibility tree when the title is hidden: the <dialog> is
     labeled by it, so removing it would leave the dialog unnamed.
   */
@@ -74,11 +64,6 @@ export default css`
     clip-path: inset(50%);
     white-space: nowrap;
     border: 0;
-  }
-
-  :host([show-title]) .header {
-    justify-content: space-between;
-    padding-block-end: var(--c-spacing-md);
   }
 
   /*

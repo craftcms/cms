@@ -225,7 +225,7 @@
 <style scoped lang="scss">
   .icon-preview {
     aspect-ratio: 1;
-    width: calc(34rem / 16);
+    width: var(--c-input-height, calc(34rem / 16));
     background-color: var(--c-color-fill-quiet);
     border: 1px solid var(--c-color-border-quiet);
     color: var(--c-color-on-quiet);

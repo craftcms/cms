@@ -58,14 +58,18 @@ export const Default: Story = {
 
 /**
  * `appearance` picks the surface treatment. `raised` is the default; `outline`
- * drops the shadow; `plain` falls back to the bare pane tokens; `sunken`
- * recesses the surface.
+ * drops the shadow; `outline-fill` adds a quiet tinted fill to that, as cards
+ * have; `plain` falls back to the bare pane tokens; `sunken` recesses the
+ * surface.
  */
 export const Appearance: Story = {
   render: () => html`
     <div style="display: grid; gap: 1rem;">
       <craft-pane appearance="raised">appearance="raised" (default)</craft-pane>
       <craft-pane appearance="outline">appearance="outline"</craft-pane>
+      <craft-pane appearance="outline-fill"
+        >appearance="outline-fill"</craft-pane
+      >
       <craft-pane appearance="plain">appearance="plain"</craft-pane>
       <craft-pane appearance="sunken">appearance="sunken"</craft-pane>
     </div>

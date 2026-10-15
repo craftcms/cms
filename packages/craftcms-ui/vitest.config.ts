@@ -136,6 +136,10 @@ export default defineConfig({
         ],
         test: {
           name: 'storybook',
+          // Stories that render every permutation of a component, such as the
+          // chip's, can take 14–15s in CI to render and pass the a11y check,
+          // right at Vitest's 15s default. The addon has no per-story timeout.
+          testTimeout: 30_000,
           browser: {
             enabled: true,
             headless: true,

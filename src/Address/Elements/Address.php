@@ -200,6 +200,12 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
+    public static function hasDrafts(): bool
+    {
+        return true;
+    }
+
+    #[Override]
     public static function hasStatuses(): bool
     {
         return false;

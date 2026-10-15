@@ -16,6 +16,7 @@ namespace CraftCms\Cms\Ui\Controls\Concerns;
  *     refHandle?: string,
  *     elementSelectConfig?: array<string, mixed>,
  * }
+ * @phpstan-type LinkAdvancedField 'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'|'download'
  */
 trait HasLinkFieldSettings
 {
@@ -24,7 +25,7 @@ trait HasLinkFieldSettings
 
     private bool $showLabelField = false;
 
-    /** @var list<'urlSuffix'|'title'> */
+    /** @var list<LinkAdvancedField> */
     private array $advancedFields = [];
 
     /** @param list<LinkType> $types */
@@ -42,7 +43,7 @@ trait HasLinkFieldSettings
         return $this;
     }
 
-    /** @param list<'urlSuffix'|'title'> $advancedFields */
+    /** @param list<LinkAdvancedField> $advancedFields */
     public function advancedFields(array $advancedFields): static
     {
         $this->advancedFields = $advancedFields;
@@ -50,7 +51,7 @@ trait HasLinkFieldSettings
         return $this;
     }
 
-    /** @return array{types: list<LinkType>, showLabelField: bool, advancedFields: list<'urlSuffix'|'title'>} */
+    /** @return array{types: list<LinkType>, showLabelField: bool, advancedFields: list<LinkAdvancedField>} */
     protected function linkFieldSettingsProps(): array
     {
         return [

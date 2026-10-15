@@ -253,7 +253,7 @@ describe('ElementSelectControl', () => {
 
   it('appends what the selector returns', async () => {
     await mount({value: [5]});
-    const button = container!.querySelector('craft-button')!;
+    const button = container!.querySelector('[data-element-select-add]')!;
 
     (button as HTMLElement).click();
     await flushSelector();
@@ -371,6 +371,11 @@ describe('ElementSelectControl', () => {
     expect(root.querySelector('craft-card craft-button')).not.toBeNull();
   });
 
+  /** The toolbar's bulk menu — each chip carries a menu of its own too. */
+  function toolbarMenu(root: HTMLElement): HTMLElement | null {
+    return root.querySelector('.element-selections-header craft-action-menu');
+  }
+
   function addButton(root: HTMLElement): HTMLElement | null {
     return root.querySelector('[data-element-select-add]');
   }
@@ -395,6 +400,25 @@ describe('ElementSelectControl', () => {
     const root = await mount({props: {limit: 2}, value: [5, 6, 7]});
 
     expect(addButton(root)).toBeNull();
+  });
+
+  it('shows how much of the limit is used', async () => {
+    const root = await mount({props: {limit: 3}, value: [5, 6]});
+
+    expect(
+      root
+        .querySelector('.element-selections-header craft-badge')
+        ?.textContent?.trim()
+    ).toBe('2/3');
+  });
+
+  it('shows no count badge when the field has no limit', async () => {
+    const root = await mount({props: {limit: null}, value: [5, 6]});
+
+    expect(root.querySelector('.element-selections-header')).not.toBeNull();
+    expect(
+      root.querySelector('.element-selections-header craft-badge')
+    ).toBeNull();
   });
 
   it('keeps the add control when the field has no limit', async () => {
@@ -563,6 +587,27 @@ describe('ElementSelectControl', () => {
 
       expect(root.querySelector('.thumb-tile')).not.toBeNull();
       expect(root.querySelectorAll('craft-chip')).toHaveLength(0);
+    });
+
+    // Clicking a related element selects or edits it, so its tile mustn't
+    // navigate away, even though its URL still backs "View in a new tab".
+    it('doesn’t link thumbnails to the element’s URL', async () => {
+      const root = await mount({
+        props: {
+          viewMode: 'thumbs',
+          elements: [
+            {
+              id: 5,
+              label: 'Some entry',
+              url: 'https://example.test/some-entry',
+            },
+          ],
+        },
+        value: [5],
+      });
+
+      expect(root.querySelector('.thumb-tile')).not.toBeNull();
+      expect(root.querySelector('.thumb-tile a, a.thumb-tile')).toBeNull();
     });
 
     /** The list item a card / thumb body draws per element. */
@@ -847,9 +892,7 @@ describe('ElementSelectControl', () => {
 
     /** The toolbar's own menu — each chip carries one too. */
     function actionsMenu(root: HTMLElement): HTMLElement | null {
-      const bar = selectAllBox(root)?.parentElement?.parentElement;
-
-      return bar?.querySelector(':scope > craft-action-menu') ?? null;
+      return toolbarMenu(root);
     }
 
     /** Reports a new checked state the way `craft-checkbox` does. */
@@ -874,7 +917,44 @@ describe('ElementSelectControl', () => {
     it('has no toolbar on a field that can’t be selected', async () => {
       const root = await mount({props: {limit: 1}, value: [5]});
 
-      expect(selectAllBox(root)).toBeNull();
+      expect(root.querySelector('.element-selections-header')).toBeNull();
+    });
+
+    it('shows the add control, but no toolbar, on an empty field', async () => {
+      const root = await mount({props: {limit: 1}, value: []});
+
+      expect(root.querySelector('.element-selections-header')).toBeNull();
+      expect(addButton(root)).not.toBeNull();
+    });
+
+    it('puts the add and upload controls below the selections', async () => {
+      const root = await mount({
+        props: {limit: 3, canUpload: true},
+        value: [5],
+      });
+      const stage = root.querySelector('.elements-stage')!;
+      const following = (element: Element) =>
+        stage.compareDocumentPosition(element) &
+        Node.DOCUMENT_POSITION_FOLLOWING;
+
+      expect(stage.contains(addButton(root))).toBe(false);
+      expect(following(addButton(root)!)).toBeTruthy();
+      expect(following(uploadButton(root)!)).toBeTruthy();
+      expect(
+        root.querySelector(
+          '.element-selections-header [data-element-select-add]'
+        )
+      ).toBeNull();
+    });
+
+    it('has no toolbar on a read-only field', async () => {
+      const root = await mount({
+        props: {limit: 3},
+        value: [5, 6],
+        editable: false,
+      });
+
+      expect(root.querySelector('.element-selections-header')).toBeNull();
     });
 
     it('shows no count, clear button or actions until something is selected', async () => {
@@ -987,9 +1067,7 @@ describe('ElementSelectControl', () => {
     }
 
     function bulkMenu(root: HTMLElement): any {
-      const bar = selectAllBox(root)?.parentElement?.parentElement;
-
-      return bar?.querySelector(':scope > craft-action-menu') ?? null;
+      return toolbarMenu(root);
     }
 
     function labels(root: HTMLElement): string[] {
@@ -1556,9 +1634,7 @@ describe('ElementSelectControl', () => {
       );
       await nextTick();
 
-      const bar =
-        root.querySelector('craft-checkbox')!.parentElement?.parentElement;
-      const menu = bar?.querySelector(':scope > craft-action-menu') as any;
+      const menu = toolbarMenu(root) as any;
 
       expect(variantOf(menu, 'Remove selected')).toBe('danger');
     });

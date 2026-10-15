@@ -279,6 +279,20 @@
     );
   }
 
+  /**
+   * Preview file is single-element, so it previews the one selected asset.
+   */
+  function onPreviewFile(event: Event) {
+    if (!owns(event)) {
+      return;
+    }
+    const [id] = event.detail.elementIds ?? props.selectedIds;
+
+    if (id !== undefined) {
+      new Craft.PreviewFileModal(Number(id));
+    }
+  }
+
   function owns(event: Event): event is CustomEvent<{
     trigger: HTMLElement;
     elementIds?: ReadonlyArray<string | number>;
@@ -303,6 +317,7 @@
   }
 
   useEventListener(window, 'craft:copy-elements', onCopyElements);
+  useEventListener(window, 'craft:preview-file', onPreviewFile);
   /**
    * `craft-action-item` bubbles `craft-state-change` through its lifecycle. A
    * successful `http` action means the selection was acted on, so refresh the

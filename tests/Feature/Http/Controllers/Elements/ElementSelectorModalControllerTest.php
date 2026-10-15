@@ -155,8 +155,8 @@ describe('asset folders', function () {
         $rows = collect(($this->postAssets)()['data']);
 
         expect($rows->pluck('isFolder')->all())->toBe([true, true])
-            ->and($rows->pluck('id')->sort()->values()->all())
-            ->toBe(["folder:{$first}", "folder:{$second}"]);
+            ->and($rows->pluck('id')->all())
+            ->toEqualCanonicalizing(["folder:{$first}", "folder:{$second}"]);
     });
 
     it('links folder titles’ labels to the folder', function () {
@@ -167,6 +167,19 @@ describe('asset folders', function () {
         // Only the label is the link, not the whole chip.
         expect($title)->toStartWith('<craft-chip')
             ->toMatch('/<a class="label-link" href="[^"]*assets\/testvolume\/a-subfolder" data-folder-link>/');
+    });
+
+    it('links folder labels in the card and thumb views', function () {
+        Folders::ensureFolderByFullPathAndVolume('a-subfolder', $this->volume);
+
+        $card = ($this->postAssets)(['viewMode' => 'cards'])['data'][0];
+        $thumb = ($this->postAssets)(['viewMode' => 'thumbs'])['data'][0];
+
+        expect($card['cardContentHtml'])
+            ->toMatch('/<a class="label-link" href="[^"]*assets\/testvolume\/a-subfolder" data-folder-link>/')
+            ->and($thumb['url'])->toBeNull()
+            ->and($thumb['labelUrl'])->toEndWith('assets/testvolume/a-subfolder')
+            ->and($thumb['labelLinkAttributes'])->toBe(['data-folder-link' => '']);
     });
 
     it('lists the requested subfolder, with a trail back to the volume root', function () {

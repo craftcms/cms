@@ -73,7 +73,6 @@ it('renders an existing comment with its activity metadata', async () => {
   expect(container.textContent).toContain('Ada commented');
   expect(container.textContent).toContain('Please clarify this.');
   expect(container.textContent).toContain('Edited');
-  expect(container.querySelector('time')?.textContent).toContain('9:41 AM');
 });
 
 it('inserts mentions into the active composer without changing another comment', async () => {

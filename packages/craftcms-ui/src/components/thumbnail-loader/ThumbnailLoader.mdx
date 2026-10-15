@@ -34,6 +34,12 @@ Only with server-rendered thumb placeholders. For a single image in a component 
 
 The underlying `ThumbnailLoader` class is also exported from `@craftcms/ui` for imperative use, and `craft-chip` instantiates one directly.
 
+## Accessibility
+
+The loader adds nothing to the accessibility tree and announces nothing while thumbnails load. Each image it inserts takes its `alt` from the placeholder's `data-alt`, and is decorative (`alt=""`) without one.
+
+Set `data-alt` when a thumbnail says something the text around it doesn't. Leave it off when the element's title or filename sits beside the thumbnail, so the name isn't read twice.
+
 ## Properties
 
 <ArgTypes of="craft-thumbnail-loader" />
