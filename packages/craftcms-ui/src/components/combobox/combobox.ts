@@ -359,7 +359,8 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       // the input only gets its leading padding while an icon is showing.
       this.toggleAttribute(
         'has-prefix-icon',
-        this.#selectedOption()?.data?.icon != null
+        this.#selectedOption()?.data?.icon != null ||
+          this.#selectedOption()?.data?.indicator != null
       );
     }
   }
@@ -656,7 +657,9 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   };
 
   override _inputGroupInputTemplate() {
-    const icon = this.#selectedOption()?.data?.icon;
+    const selectedData = this.#selectedOption()?.data;
+    const icon = selectedData?.icon;
+    const indicator = selectedData?.indicator;
 
     return html`
       <div class="input-group__input">
@@ -688,7 +691,14 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
         <div class="combobox__textbox">
           ${icon
             ? html`<craft-icon class="prefix" name=${icon}></craft-icon>`
-            : nothing}
+            : indicator
+              ? html`<span class="prefix prefix--indicator">
+                  <craft-indicator
+                    fill=${indicator.fill ?? nothing}
+                    appearance=${indicator.appearance ?? nothing}
+                  ></craft-indicator>
+                </span>`
+              : nothing}
           <slot name="input"></slot>
           ${this.clearable && this.#hasValue() && !this.inactive
             ? html`<craft-button
