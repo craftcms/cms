@@ -421,6 +421,12 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     #[Override]
+    public static function supportsSourceBadgeCounts(): bool
+    {
+        return true;
+    }
+
+    #[Override]
     protected static function defineSources(string $context): array
     {
         if (in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL, ElementSources::CONTEXT_NAVIGATION])) {

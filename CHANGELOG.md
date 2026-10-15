@@ -64,6 +64,7 @@
 - Saving the Customize Sources modal from an element index’s action menu now goes to the source that was last edited, as it does from the secondary nav. ([#19929](https://github.com/craftcms/cms/pull/19929))
 - The global nav now groups Entries, Assets under a “Content” heading, and Users, GraphQL, Utilities, Settings, and Plugin Store under an “Administration” heading. ([#19903](https://github.com/craftcms/cms/pull/19903))
 - Element sources’ `status` and `badgeCount` values are now shown in the secondary nav, as they were in the Craft 5 sidebar. ([#19892](https://github.com/craftcms/cms/pull/19892))
+- Element index sources can now show a count of their elements in the control panel nav, via a new “Show count” setting in the “Customize sources” modal. Entries, assets, and users support it. ([#19967](https://github.com/craftcms/cms/pull/19967))
 - Tabs now mirror the selected tab in the URL hash, select the tab named by the hash on page load, and keep it after saving.
 - Element details panels (Info, Activity, Revisions, and plugin-provided panels) are now opened by disclosure buttons rather than tabs. Opening a panel moves focus to its heading, and pressing <kbd>Esc</kbd> or the panel’s close button returns focus to its button.
 - The element details pane now spans the full viewport height once the page is scrolled, and the Activity panel’s timeline scrolls within the panel, keeping the comment form in view. ([#19919](https://github.com/craftcms/cms/pull/19919))
@@ -82,6 +83,9 @@
 - Added `CraftCms\Cms\Cp\Components\CopyAttribute` for rendering inline copyable values in PHP and templates. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - `CraftCms\Cms\Filesystem\RemoteFileDownloader::download()` now returns the response.
 - The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
+- Added `CraftCms\Cms\Element\Contracts\ElementInterface::supportsSourceBadgeCounts()`, `sourceSupportsBadgeCount()`, and `sourceBadgeCount()`, and the `defaultBadgeCount` source key, for element types whose sources can show a count of their elements. ([#19967](https://github.com/craftcms/cms/pull/19967))
+- Added `CraftCms\Cms\Cp\Data\ActionItem::$badgeLabel`. Element sources’ `badgeLabel` keys are now passed to screen readers in the control panel nav. ([#19967](https://github.com/craftcms/cms/pull/19967))
+- `<craft-badge-indicator>` now has a `max` property, which sets the largest count shown before it’s shortened to “99+”. Set it to `Infinity` to show the whole count. Counts are now formatted for the page’s language. ([#19967](https://github.com/craftcms/cms/pull/19967))
 - Removed `CraftCms\Cms\Element\ElementHelper::renderElements()`. `CraftCms\Cms\Support\Template::render()` should be used instead.
 - System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Admin table links and create actions can now open in a slideout with a custom width, via the `slideoutWidth` link option and new `slideout` and `slideoutWidth` arguments on `CraftCms\Cms\Ui\Nodes\Table::createAction()`. ([#19956](https://github.com/craftcms/cms/pull/19956))
@@ -104,6 +108,7 @@
 - Fixed a bug where thumbnails in relational fields linked to their elements. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes had no visible focus ring. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes’ combobox element had no accessible name in Chromium. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where comboboxes didn’t show the selected option’s status indicator while closed.
 - Fixed a bug where some focus rings were clipped within editable tables. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where fields’ “Used by” metadata listed asset volumes’ field layouts as unlinked counts, and showed oversized icons. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where the Notification Position and Slideout Position preferences had large gaps between their labels and buttons, and their button groups had no accessible names. ([#19942](https://github.com/craftcms/cms/pull/19942))

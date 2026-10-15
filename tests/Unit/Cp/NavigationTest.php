@@ -592,3 +592,39 @@ it('links a source the way the nav does, on whichever page it lives', function (
         ->and($navigation->sourceUrl(Entry::class, 'custom:1'))->toBe("https://cp.example.test/$cpTrigger/content/blog-posts?source=custom%3A1")
         ->and($navigation->sourceUrl(Entry::class, 'nope'))->toBeNull();
 });
+
+it('gives each source its own nav item id, apart from the index it hangs off', function () {
+    $this->totalEditableSections = 1;
+
+    $sources = Mockery::mock(ElementSources::class);
+    $sources->shouldReceive('getPages')->andReturn(collect());
+    $sources->shouldReceive('getSources')->andReturn(collect([
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'label' => 'All entries'],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:1', 'label' => 'Recent', 'badgeCount' => 4, 'badgeLabel' => '4 new'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'foo:bar', 'label' => 'Foo bar'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'foobar', 'label' => 'Foobar'],
+    ]));
+
+    $navigation = new Navigation(
+        Request::create('/admin/content/entries'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, [
+            'getAuthorizedUtilityTypes' => new Collection,
+            'getUtilitiesBadgeCount' => 0,
+        ]),
+        Cms::config(),
+        $sources,
+        cpSettings(),
+    );
+
+    $entries = findNavItem($navigation->getTree(), 'Entries');
+    [$all, $recent, $fooBar, $foobar] = $entries->subnav;
+
+    expect($all->href)->toBe($entries->href)
+        ->and($all->id)->not->toBe($entries->id)
+        ->and($fooBar->id)->not->toBe($foobar->id)
+        ->and($recent->badgeCount)->toBe(4)
+        ->and($recent->badgeLabel)->toBe('4 new')
+        ->and($all->badgeCount)->toBe(0)
+        ->and($all->badgeLabel)->toBeNull();
+});
