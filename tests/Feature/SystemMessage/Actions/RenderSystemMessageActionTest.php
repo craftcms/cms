@@ -50,3 +50,26 @@ it('uses the site language when rendering from a site context', function () {
 
     expect($message->language)->toBe($site->getLanguage());
 });
+
+it('escapes variables in the html body but not in the text body', function () {
+    $user = UserModel::factory()->createElement();
+    $user = User::find()->id($user->id)->one();
+
+    $mailable = app(SystemMessages::class)->mailable('comment_mention', $user, [
+        'author' => "O'Brien <b>&",
+        'subject' => 'Entry',
+        'comment' => 'Comment',
+        'link' => 'https://example.test/entry',
+    ]);
+
+    $message = app(RenderSystemMessageAction::class)->handle(
+        key: $mailable->key,
+        variables: $mailable->variables,
+        language: $mailable->language,
+        siteId: $mailable->siteId,
+    );
+
+    expect($message->textBody)->toContain("O'Brien <b>&")
+        ->and($message->htmlBody)->toContain('&lt;b&gt;&amp;')
+        ->and($message->htmlBody)->not->toContain('<b>');
+});

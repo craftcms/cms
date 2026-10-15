@@ -10,6 +10,7 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
 
 /**
  * @property string $heading
+ * @property array<string, string> $variables The Twig variables the message is rendered with, as name => label pairs. Names may use dot notation for properties, e.g. `user.email`.
  *
  * @since 6.0.0
  */
@@ -24,7 +25,7 @@ class SystemMessage extends BaseModel
     protected static function booted(): void
     {
         self::saving(function (self $model) {
-            unset($model->attributes['heading']);
+            unset($model->attributes['heading'], $model->attributes['variables']);
         });
     }
 }
