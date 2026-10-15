@@ -109,6 +109,25 @@ it('creates new entries as saved unpublished drafts only when asked', function (
         ->and(Entry::find()->id($live['element']['id'])->one()->getIsCanonical())->toBeTrue();
 });
 
+it('lists unpublished drafts only when asked', function (): void {
+    $elements = app(ElementCapabilities::class);
+    $drafts = app(Drafts::class);
+    $attributes = ['sectionId' => $this->section->id, 'title' => 'Proposed article'];
+
+    $unpublished = $elements->create('entries', $attributes, asUnpublishedDraft: true)['element'];
+    $entry = $elements->create('entries', $attributes, ['summary' => 'Live summary'])['element'];
+    $draftOfEntry = $drafts->create(type: 'entries', id: $entry['id'])['draft'];
+
+    expect(collect($drafts->list(type: 'entries')['drafts'])->pluck('id')->all())->toBe([$draftOfEntry['id']])
+        ->and(collect($drafts->list(type: 'entries', unpublished: true)['drafts'])->pluck('id')->all())->toBe([$unpublished['id']])
+        ->and(fn () => $drafts->list(type: 'entries', id: $unpublished['id']))
+        ->toThrow(ToolCallException::class, "Element {$unpublished['id']} is an unpublished draft and has no canonical element.")
+        ->and(fn () => $drafts->list(type: 'entries', id: $unpublished['id'], unpublished: true))
+        ->toThrow(ToolCallException::class, 'omit id and uid when unpublished is true.')
+        ->and(fn () => $drafts->list(type: 'entries', id: 999999))
+        ->toThrow(ToolCallException::class, 'Canonical element not found.');
+});
+
 it('updates entry drafts by their element ID without changing the canonical entry', function (): void {
     $elements = app(ElementCapabilities::class);
     $entry = $elements->create('entries', [
