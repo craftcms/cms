@@ -325,7 +325,7 @@ class ElementEditViewModel extends ViewModel
             id: $release->id,
             name: $release->name,
             status: $release->status,
-            plannedAt: $release->plannedAt,
+            targetDate: $release->targetDate,
             canManage: $actor->can('manage', $release),
             draftId: (int) $this->element->draftId,
             siteId: $this->element->siteId,
@@ -351,8 +351,8 @@ class ElementEditViewModel extends ViewModel
 
         return Release::query()
             ->whereIn('status', [ReleaseStatus::Draft, ReleaseStatus::Failed])
-            ->orderBy(new IsNull('plannedAt'))
-            ->orderBy('plannedAt')
+            ->orderBy(new IsNull('targetDate'))
+            ->orderBy('targetDate')
             ->orderBy('name')
             ->get()
             ->filter(fn (Release $release): bool => ! in_array($release->id, $releaseIdsWithCanonical, true)
@@ -361,7 +361,7 @@ class ElementEditViewModel extends ViewModel
                 id: $release->id,
                 name: $release->name,
                 status: $release->status,
-                plannedAt: $release->plannedAt,
+                targetDate: $release->targetDate,
                 publishedAt: $release->publishedAt,
                 itemCount: null,
             ))

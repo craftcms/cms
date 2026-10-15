@@ -94,7 +94,7 @@ export interface ElementPreviewTarget {
 
 export type ReleaseOption = Pick<
   CraftCms.Cms.Release.Data.ReleaseSummaryData,
-  'id' | 'name' | 'status' | 'plannedAt'
+  'id' | 'name' | 'status' | 'targetDate'
 >;
 export type AttachedRelease = CraftCms.Cms.Release.Data.AttachedReleaseData;
 

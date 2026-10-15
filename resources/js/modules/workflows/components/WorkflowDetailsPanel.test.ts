@@ -117,7 +117,7 @@ describe('WorkflowDetailsPanel', () => {
               id: 4,
               name: 'October launch',
               status: 'draft',
-              plannedAt: '2026-10-16T06:30:00+09:00',
+              targetDate: '2026-10-16T06:30:00+09:00',
             },
           ],
         },
@@ -209,7 +209,7 @@ describe('WorkflowDetailsPanel', () => {
       id: 4,
       name: 'October launch',
       status: 'draft',
-      plannedAt: '2026-10-16T06:30:00+09:00',
+      targetDate: '2026-10-16T06:30:00+09:00',
     });
   });
 

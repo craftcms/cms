@@ -354,7 +354,7 @@ class Install extends Migration
             $table->integer('id', true);
             $table->string('name');
             $table->text('description')->nullable();
-            $table->dateTime('plannedAt')->nullable();
+            $table->dateTime('targetDate')->nullable();
             $table->dateTime('publishedAt')->nullable();
             $table->string('status')->default('draft');
             $table->integer('createdById')->nullable();

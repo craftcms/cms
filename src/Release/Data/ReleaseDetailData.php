@@ -16,7 +16,7 @@ readonly class ReleaseDetailData
         public int $id,
         public string $name,
         public ReleaseStatus $status,
-        public ?DateTimeInterface $plannedAt,
+        public ?DateTimeInterface $targetDate,
         public ?DateTimeInterface $publishedAt,
         public ?string $lastError,
         public bool $canManage,

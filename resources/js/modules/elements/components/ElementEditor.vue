@@ -50,7 +50,7 @@
       id: number;
       name: string;
       status: 'draft';
-      plannedAt?: string | null;
+      targetDate?: string | null;
     };
   }
 
@@ -220,7 +220,7 @@
           id: release.id,
           name: release.name,
           status: release.status,
-          plannedAt: release.plannedAt ?? null,
+          targetDate: release.targetDate ?? null,
         });
       },
     });

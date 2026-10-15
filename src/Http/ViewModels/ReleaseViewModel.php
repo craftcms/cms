@@ -56,7 +56,7 @@ class ReleaseViewModel extends ViewModel
             id: $this->release->id,
             name: $this->release->name,
             status: $this->release->status,
-            plannedAt: $this->release->plannedAt,
+            targetDate: $this->release->targetDate,
             publishedAt: $this->release->publishedAt,
             lastError: $canPublish ? $this->release->lastError : null,
             canManage: $canManage,
@@ -174,12 +174,12 @@ class ReleaseViewModel extends ViewModel
             Field::make(t('Name'), Text::make('name'))->required(),
             Field::make(t('Description'), Markdown::make('description')
                 ->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)),
-            ReleaseDateGroup::make('plannedAt', t('Planned date'))
+            ReleaseDateGroup::dateTimeField('targetDate', t('Target Date'), fullWidth: true)
                 ->instructions(t('This date is for planning only. Scheduling is a separate action.')),
         ]), new UiContext(values: [
             'name' => $this->release->name,
             'description' => $this->release->description,
-            'plannedAt' => ReleaseDateGroup::value($this->release->plannedAt),
+            'targetDate' => ReleaseDateGroup::dateTimeValue($this->release->targetDate),
         ], mode: ControlMode::Editable));
     }
 

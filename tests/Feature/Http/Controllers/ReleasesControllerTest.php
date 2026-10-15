@@ -39,15 +39,15 @@ beforeEach(function () {
 
 afterEach(fn () => Date::setTestNow());
 
-it('stores a release with its planned time in the submitted timezone', function () {
+it('stores a release with its target time in the submitted timezone', function () {
     postJson(route('craft.cp.releases.store'), [
         'name' => '  October launch  ',
-        'plannedAt' => ['date' => '2026-10-16', 'time' => '06:30', 'timezone' => 'Asia/Tokyo'],
+        'targetDate' => ['date' => '2026-10-16', 'time' => '06:30', 'timezone' => 'Asia/Tokyo'],
     ])->assertOk();
 
     $release = Release::query()->where('name', 'October launch')->sole();
 
-    expect($release->plannedAt->utc()->toDateTimeString())->toBe('2026-10-15 21:30:00');
+    expect($release->targetDate->utc()->toDateTimeString())->toBe('2026-10-15 21:30:00');
 
     postJson(route('craft.cp.releases.store'), ['name' => ''])
         ->assertJsonValidationErrorFor('name');
@@ -199,7 +199,7 @@ it('filters, paginates, and sorts release rows through Ui reloads', function () 
             ->where('ui.nodes.0.props.rows.0.id', $beta->id));
 });
 
-it('sorts releases by their publication or planned date with undated releases last', function () {
+it('sorts releases by their publication or target date with undated releases last', function () {
     $undated = $this->releases->create('Undated', null, $this->actor);
     $late = $this->releases->create('Late', Date::parse('2026-12-01 09:00:00'), $this->actor);
     $early = $this->releases->create('Early', Date::parse('2026-11-01 09:00:00'), $this->actor);

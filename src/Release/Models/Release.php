@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $name
  * @property string|null $description
- * @property Carbon|null $plannedAt
+ * @property Carbon|null $targetDate
  * @property Carbon|null $publishedAt
  * @property ReleaseStatus $status
  * @property int|null $createdById
@@ -57,7 +57,7 @@ class Release extends BaseModel
     protected function casts(): array
     {
         return [
-            'plannedAt' => 'datetime',
+            'targetDate' => 'datetime',
             'publishedAt' => 'datetime',
             'status' => ReleaseStatus::class,
             'publishAttempts' => 'integer',

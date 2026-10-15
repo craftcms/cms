@@ -30,7 +30,7 @@ readonly class Releases
         'properties' => [
             'name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255],
             'description' => ['type' => ['string', 'null']],
-            'plannedAt' => ['type' => ['string', 'null'], 'format' => 'date-time'],
+            'targetDate' => ['type' => ['string', 'null'], 'format' => 'date-time'],
         ],
         'additionalProperties' => false,
     ];
@@ -96,20 +96,20 @@ readonly class Releases
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases.create', description: 'Creates an empty content release. plannedAt is a planning date; scheduling is a separate operation.')]
+    #[McpTool(name: 'releases.create', description: 'Creates an empty content release. targetDate is a target date for planning; scheduling is a separate operation.')]
     #[RequiresPermission('manageReleases')]
-    public function create(string $name, ?string $description = null, #[Schema(format: 'date-time')] ?string $plannedAt = null): array
+    public function create(string $name, ?string $description = null, #[Schema(format: 'date-time')] ?string $targetDate = null): array
     {
-        $changes = $this->metadata(['name' => $name, 'description' => $description, 'plannedAt' => $plannedAt]);
+        $changes = $this->metadata(['name' => $name, 'description' => $description, 'targetDate' => $targetDate]);
 
-        return $this->result(fn (): Release => $this->releases->create($changes['name'], $changes['plannedAt'], $this->actor->user(), $changes['description']));
+        return $this->result(fn (): Release => $this->releases->create($changes['name'], $changes['targetDate'], $this->actor->user(), $changes['description']));
     }
 
     /**
      * @param  array<string, mixed>  $changes
      * @return array{release: array<string, mixed>}
      */
-    #[McpTool(name: 'releases.update', description: 'Updates mutable release metadata. Omitted properties are preserved; null clears description or plannedAt. Scheduling is separate.')]
+    #[McpTool(name: 'releases.update', description: 'Updates mutable release metadata. Omitted properties are preserved; null clears description or targetDate. Scheduling is separate.')]
     #[RequiresPermission('manageReleases')]
     public function update(#[Schema(minimum: 1)] int $id, #[Schema(definition: self::MetadataSchema)] array $changes): array
     {
@@ -172,7 +172,7 @@ readonly class Releases
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases.unschedule', description: 'Unschedules a release and makes it mutable while preserving its planning date.')]
+    #[McpTool(name: 'releases.unschedule', description: 'Unschedules a release and makes it mutable while preserving its target date.')]
     #[RequiresPermission('publishReleases')]
     public function unschedule(#[Schema(minimum: 1)] int $id): array
     {
@@ -220,7 +220,7 @@ readonly class Releases
 
     /**
      * @param  array<string, mixed>  $changes
-     * @return array{name?: string, description?: string|null, plannedAt?: CarbonImmutable|null}
+     * @return array{name?: string, description?: string|null, targetDate?: CarbonImmutable|null}
      */
     private function metadata(array $changes): array
     {
@@ -229,14 +229,14 @@ readonly class Releases
         }
 
         $changes = $this->validate(['changes' => $changes], [
-            'changes' => ['required', 'array:name,description,plannedAt'],
+            'changes' => ['required', 'array:name,description,targetDate'],
             'changes.name' => ['sometimes', 'required', 'string', 'max:255'],
             'changes.description' => ['sometimes', 'nullable', 'string'],
-            'changes.plannedAt' => ['sometimes', 'nullable', ...$this->timestampRules()],
+            'changes.targetDate' => ['sometimes', 'nullable', ...$this->timestampRules()],
         ])['changes'];
 
-        if (isset($changes['plannedAt'])) {
-            $changes['plannedAt'] = CarbonImmutable::parse($changes['plannedAt'])->setTimezone(date_default_timezone_get());
+        if (isset($changes['targetDate'])) {
+            $changes['targetDate'] = CarbonImmutable::parse($changes['targetDate'])->setTimezone(date_default_timezone_get());
         }
 
         return $changes;

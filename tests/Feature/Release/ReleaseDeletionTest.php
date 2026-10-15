@@ -29,7 +29,7 @@ beforeEach(function () {
 it('removes deleted drafts and unschedules an emptied release', function (bool $canonical, bool $hardDelete) {
     $this->release = $this->releases->schedule($this->release, now()->addDay(), $this->actor);
     $target = $canonical ? $this->canonical : $this->draft;
-    $plannedAt = $this->release->plannedAt;
+    $targetDate = $this->release->targetDate;
 
     expect(Elements::deleteElement($target, $hardDelete))->toBeTrue();
     $this->release->refresh();
@@ -38,7 +38,7 @@ it('removes deleted drafts and unschedules an emptied release', function (bool $
         ->and($this->release->status)->toBe(ReleaseStatus::Draft)
         ->and($this->release->publishedAt)->toBeNull()
         ->and($this->release->scheduledById)->toBeNull()
-        ->and($this->release->plannedAt->equalTo($plannedAt))->toBeTrue();
+        ->and($this->release->targetDate->equalTo($targetDate))->toBeTrue();
 
     if (! $hardDelete) {
         expect(Elements::restoreElement($target))->toBeTrue()

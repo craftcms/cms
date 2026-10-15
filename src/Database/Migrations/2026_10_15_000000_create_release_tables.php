@@ -11,7 +11,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Installs that ran this migration under its original timestamp have
+        // the tables already, with the target date still called `plannedAt`.
         if (Schema::hasTable(Table::RELEASES)) {
+            if (Schema::hasColumn(Table::RELEASES, 'plannedAt')) {
+                Schema::table(Table::RELEASES, fn (Blueprint $table) => $table->renameColumn('plannedAt', 'targetDate'));
+            }
+
             return;
         }
 
@@ -19,7 +25,7 @@ return new class extends Migration
             $table->integer('id', true);
             $table->string('name');
             $table->text('description')->nullable();
-            $table->dateTime('plannedAt')->nullable();
+            $table->dateTime('targetDate')->nullable();
             $table->dateTime('publishedAt')->nullable();
             $table->string('status')->default('draft');
             $table->integer('createdById')->nullable();

@@ -59,30 +59,30 @@ class Releases
         private readonly ConcurrencyErrorDetector $concurrencyErrorDetector,
     ) {}
 
-    public function create(string $name, ?DateTimeInterface $plannedAt, CraftUser $actor, ?string $description = null): Release
+    public function create(string $name, ?DateTimeInterface $targetDate, CraftUser $actor, ?string $description = null): Release
     {
         abort_unless($actor->can('manageReleases'), Response::HTTP_FORBIDDEN, t('You are not allowed to manage releases.'));
 
         return Release::query()->create([
             'name' => $name,
             'description' => $description,
-            'plannedAt' => $plannedAt,
+            'targetDate' => $targetDate,
             'status' => ReleaseStatus::Draft,
             'createdById' => $actor->getCraftUserId(),
             'uid' => Str::uuid()->toString(),
         ]);
     }
 
-    public function update(Release $release, string $name, ?DateTimeInterface $plannedAt, CraftUser $actor, ?string $description = null): Release
+    public function update(Release $release, string $name, ?DateTimeInterface $targetDate, CraftUser $actor, ?string $description = null): Release
     {
         return $this->updateMetadata($release, [
             'name' => $name,
             'description' => $description,
-            'plannedAt' => $plannedAt,
+            'targetDate' => $targetDate,
         ], $actor);
     }
 
-    /** @param array{name?: string, description?: string|null, plannedAt?: DateTimeInterface|null} $changes */
+    /** @param array{name?: string, description?: string|null, targetDate?: DateTimeInterface|null} $changes */
     public function updateMetadata(Release $release, array $changes, CraftUser $actor): Release
     {
         abort_unless($actor->can('manageReleases'), Response::HTTP_FORBIDDEN, t('You are not allowed to manage releases.'));

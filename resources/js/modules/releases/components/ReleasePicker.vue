@@ -24,9 +24,9 @@
     ...props.releases.map((release) => ({
       value: String(release.id),
       label: release.name,
-      hint: release.plannedAt
-        ? formatReleaseDate(release.plannedAt)
-        : t('No planned date'),
+      hint: release.targetDate
+        ? formatReleaseDate(release.targetDate)
+        : t('No target date'),
       showHint: true,
     })),
     ...(props.canCreate

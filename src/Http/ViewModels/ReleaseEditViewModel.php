@@ -31,7 +31,7 @@ class ReleaseEditViewModel extends ViewModel
         $release = $this->release;
         $name = $release === null ? '' : $release->name;
         $description = $release === null ? null : $release->description;
-        $plannedAt = $release === null ? null : $release->plannedAt;
+        $targetDate = $release === null ? null : $release->targetDate;
 
         return $this->uiResolver->resolve(Ui::make([
             Field::make(t('Name'), Text::make('name')->autofocus())
@@ -39,12 +39,12 @@ class ReleaseEditViewModel extends ViewModel
                 ->instructions(t('What this release will be called in the control panel.')),
             Field::make(t('Description'), Markdown::make('description')
                 ->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)),
-            ReleaseDateGroup::make('plannedAt', t('Planned date'))
+            ReleaseDateGroup::dateTimeField('targetDate', t('Target Date'))
                 ->instructions(t('This date is for planning only. The release will not publish until it is explicitly scheduled.')),
         ]), new UiContext(values: [
             'name' => $name,
             'description' => $description,
-            'plannedAt' => ReleaseDateGroup::value($plannedAt),
+            'targetDate' => ReleaseDateGroup::dateTimeValue($targetDate),
         ]));
     }
 

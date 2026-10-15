@@ -71,7 +71,7 @@ beforeEach(() => {
       canCreateRelease: false,
       release: null,
       releaseOptions: [
-        {id: 4, name: 'Launch', status: 'draft', plannedAt: null},
+        {id: 4, name: 'Launch', status: 'draft', targetDate: null},
       ],
       releaseTimeZone: 'UTC',
       contextMenu: null,
@@ -194,7 +194,7 @@ it.each([null, 'draft'] as const)(
         id: 6,
         name: 'Launch',
         status,
-        plannedAt: null,
+        targetDate: null,
         canManage: true,
         draftId: 9,
         siteId: 1,

@@ -704,7 +704,7 @@ describe('useElementEditor', () => {
         id: 4,
         name: 'Campaign',
         status,
-        plannedAt: null,
+        targetDate: null,
         canManage: true,
         draftId: 7,
         siteId: 1,
@@ -1624,7 +1624,7 @@ describe('useElementEditor', () => {
       id: 4,
       name: 'Launch',
       status: 'draft',
-      plannedAt: null,
+      targetDate: null,
     });
 
     expect(save.last().url).toBe('/actions/elements/save-draft');
@@ -1684,7 +1684,7 @@ describe('useElementEditor', () => {
       id: 4,
       name: 'Launch',
       status: 'draft',
-      plannedAt: null,
+      targetDate: null,
     });
 
     await vi.waitFor(() => expect(slideout.reload).toHaveBeenCalledOnce());
@@ -1718,7 +1718,7 @@ describe('useElementEditor', () => {
       id: 4,
       name: 'Launch',
       status: 'draft',
-      plannedAt: null,
+      targetDate: null,
     });
 
     expect(save.calls()).toBe(0);
@@ -1758,7 +1758,7 @@ describe('useElementEditor', () => {
         id: 4,
         name: 'Launch',
         status: 'draft',
-        plannedAt: null,
+        targetDate: null,
       });
 
       expect(save.last().url).toBe('/actions/elements/save-draft');

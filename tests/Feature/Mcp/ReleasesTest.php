@@ -97,10 +97,10 @@ it('preserves omitted metadata, clears nullable metadata, and pages release name
         ->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.release.name', 'Launch')
         ->assertJsonPath('result.structuredContent.release.description', null)
-        ->assertJsonPath('result.structuredContent.release.plannedAt', $this->release->plannedAt->toIso8601String());
-    ($this->callRelease)('releases.update', ['id' => $this->release->id, 'changes' => ['plannedAt' => null, 'name' => 'Renamed launch']])
+        ->assertJsonPath('result.structuredContent.release.targetDate', $this->release->targetDate->toIso8601String());
+    ($this->callRelease)('releases.update', ['id' => $this->release->id, 'changes' => ['targetDate' => null, 'name' => 'Renamed launch']])
         ->assertJsonPath('result.isError', false)
-        ->assertJsonPath('result.structuredContent.release.plannedAt', null)
+        ->assertJsonPath('result.structuredContent.release.targetDate', null)
         ->assertJsonPath('result.structuredContent.release.name', 'Renamed launch');
     $first = ($this->callRelease)('releases.list', ['criteria' => ['search' => '  launch  ', 'orderBy' => 'name asc', 'limit' => 1]])
         ->assertJsonPath('result.isError', false)

@@ -29,7 +29,7 @@ readonly class ReleaseSerializer
             'name' => $release->name,
             'description' => $release->description,
             'status' => $release->status->value,
-            'plannedAt' => $release->plannedAt?->toIso8601String(),
+            'targetDate' => $release->targetDate?->toIso8601String(),
             'publishedAt' => $release->publishedAt?->toIso8601String(),
             'createdById' => $release->createdById,
             'scheduledById' => $release->scheduledById,

@@ -107,10 +107,10 @@
           })
         }}
       </span>
-      <span v-else-if="release.plannedAt">
+      <span v-else-if="release.targetDate">
         {{
-          t('Planned for {date}', {
-            date: formatReleaseDate(release.plannedAt),
+          t('Targeted for {date}', {
+            date: formatReleaseDate(release.targetDate),
           })
         }}
       </span>

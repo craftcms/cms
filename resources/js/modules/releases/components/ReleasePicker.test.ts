@@ -23,24 +23,24 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-it('shows planned dates and selects releases through the real picker', async () => {
+it('shows target dates and selects releases through the real picker', async () => {
   const selected = vi.fn();
   const create = vi.fn();
   const release = {
     id: 4,
     name: 'October launch',
     status: 'draft' as const,
-    plannedAt: '2026-10-16T06:30:00+09:00',
+    targetDate: '2026-10-16T06:30:00+09:00',
   };
-  const unplanned = {
+  const undated = {
     id: 5,
     name: 'Someday',
     status: 'draft' as const,
-    plannedAt: null,
+    targetDate: null,
   };
 
   app = createApp(ReleasePicker, {
-    releases: [release, unplanned],
+    releases: [release, undated],
     canCreate: true,
     onSelect: selected,
     onCreate: create,
@@ -56,7 +56,7 @@ it('shows planned dates and selects releases through the real picker', async () 
   ];
   expect(items.map((item) => item.textContent?.trim())).toEqual([
     'October launch – Oct 15, 2026, 9:30 PM',
-    'Someday – No planned date',
+    'Someday – No target date',
     'Create a release',
   ]);
 

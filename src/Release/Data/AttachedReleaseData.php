@@ -16,7 +16,7 @@ readonly class AttachedReleaseData
         public int $id,
         public string $name,
         public ReleaseStatus $status,
-        public ?DateTimeInterface $plannedAt,
+        public ?DateTimeInterface $targetDate,
         public bool $canManage,
         public int $draftId,
         public ?int $siteId,

@@ -65,7 +65,7 @@ class ReleasesController
                 match ($request->input('sort.0.field')) {
                     'name' => $query->orderBy('name', $direction),
                     'date' => $query
-                        ->orderBy(new IsNull($releaseDate = new Coalesce(['publishedAt', 'plannedAt'])))
+                        ->orderBy(new IsNull($releaseDate = new Coalesce(['publishedAt', 'targetDate'])))
                         ->orderBy($releaseDate, $direction),
                     default => null,
                 };
@@ -77,7 +77,7 @@ class ReleasesController
 
         $formatter = new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::MEDIUM, IntlDateFormatter::SHORT, Cms::timezone());
         $rows = $paginator->getCollection()->map(function (Release $release) use ($formatter): array {
-            $date = $release->publishedAt ?? $release->plannedAt;
+            $date = $release->publishedAt ?? $release->targetDate;
             $canDelete = $release->status->isMutable() && Gate::allows('manage', $release);
 
             return [
@@ -171,7 +171,7 @@ class ReleasesController
 
         $release = $this->releases->create(
             $data['name'],
-            $this->dateTime($data['plannedAt'] ?? null),
+            $this->dateTime($data['targetDate'] ?? null),
             $request->craftUser(),
             $data['description'] ?? null,
         );
@@ -192,7 +192,7 @@ class ReleasesController
         $this->releases->update(
             $release,
             $data['name'],
-            $this->dateTime($data['plannedAt'] ?? null),
+            $this->dateTime($data['targetDate'] ?? null),
             $request->craftUser(),
             $data['description'] ?? null,
         );
@@ -221,7 +221,7 @@ class ReleasesController
     {
         Gate::authorize('publish', $release);
 
-        $date = $release->publishedAt ?? $release->plannedAt;
+        $date = $release->publishedAt ?? $release->targetDate;
         $timezone = $date?->getTimezone()->getName() ?? Cms::timezone();
         $ui = $uiResolver->resolve(Ui::make([
             ReleaseDateGroup::make('publishAt', t('Publication date'), min: now($timezone)->format('Y-m-d'))
@@ -300,16 +300,16 @@ class ReleasesController
         return $this->asSuccess(t('Draft removed from the release.'));
     }
 
-    /** @return array{name: string, description?: string|null, plannedAt?: array{date?: string, time?: string, timezone?: string}|null} */
+    /** @return array{name: string, description?: string|null, targetDate?: array{date?: string, time?: string, timezone?: string}|null} */
     private function validateReleaseData(Request $request): array
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'plannedAt' => ['nullable', 'array'],
-            'plannedAt.date' => ['nullable', 'date_format:Y-m-d'],
-            'plannedAt.time' => ['nullable', 'date_format:H:i'],
-            'plannedAt.timezone' => ['nullable', 'timezone'],
+            'targetDate' => ['nullable', 'array'],
+            'targetDate.date' => ['nullable', 'date_format:Y-m-d'],
+            'targetDate.time' => ['nullable', 'date_format:H:i'],
+            'targetDate.timezone' => ['nullable', 'timezone'],
         ]);
     }
 
