@@ -86,7 +86,7 @@
         class="condition-group__operator flex items-center gap-2 font-normal"
       >
         <span>{{ t('Where') }}</span>
-        <craft-select :label="t('Group operator')" label-sr-only small>
+        <craft-select :label="t('Group Operator')" label-sr-only small>
           <select
             slot="input"
             :disabled="!editor.editable()"

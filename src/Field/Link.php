@@ -475,7 +475,7 @@ JS;
                 'value' => $valueTypeId,
                 'inputAttributes' => [
                     'aria' => [
-                        'label' => t('URL type'),
+                        'label' => t('URL Type'),
                     ],
                 ],
                 'toggle' => true,

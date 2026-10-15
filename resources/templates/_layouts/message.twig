@@ -4,8 +4,8 @@
 {% set message = block('message') %}
 
 {% block body %}
-  <main class="message-container">
-    <div class="modal">
+  <main class="message-container grid min-h-dvh place-items-center p-(--cp-container-padding)">
+    <div class="w-full max-w-sm">
       {% if includePane %}
         <craft-pane>
           {{ message | raw }}

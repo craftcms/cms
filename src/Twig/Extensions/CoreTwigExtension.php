@@ -55,6 +55,7 @@ use CraftCms\Cms\Twig\TokenParsers\NavTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\PaginateTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\RedirectTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\RegisterResourceTokenParser;
+use CraftCms\Cms\Twig\TokenParsers\RenderTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\RequireAdminTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\RequireEditionTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\RequireGuestTokenParser;
@@ -177,6 +178,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new NavTokenParser,
             new PaginateTokenParser,
             new RedirectTokenParser,
+            new RenderTokenParser,
             new RequireAdminTokenParser,
             new RequireEditionTokenParser,
             new RequireLoginTokenParser,

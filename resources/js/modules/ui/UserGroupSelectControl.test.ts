@@ -79,7 +79,7 @@ describe('UserGroupSelectControl', () => {
         h(UserGroupSelectControl, {
           control,
           value: value.value,
-          label: 'Reviewer groups',
+          label: 'Reviewer Groups',
           editable,
           invalid: false,
           required: true,
@@ -101,7 +101,7 @@ describe('UserGroupSelectControl', () => {
     const group = container!.querySelector('[role="group"]')!;
     const selectedChip = container!.querySelector('craft-chip')!;
 
-    expect(group.getAttribute('aria-label')).toBe('Reviewer groups');
+    expect(group.getAttribute('aria-label')).toBe('Reviewer Groups');
     expect(selectedChip.textContent).toContain('Editors');
 
     const publisher = [
