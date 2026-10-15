@@ -133,6 +133,8 @@ class Table implements Node
      * table once that screen is saved. `'slideoutWidth'` sets that slideout's width as a CSS
      * length (e.g. `'85vw'`).
      *
+     * Double-clicking a row opens its slideout link, if it has one, the way clicking it would.
+     *
      * A menu item can be `['label' => string, 'modalUrl' => string, 'actionUrl' => string,
      * 'params' => ?array]` instead of a link, to open a modal UI. `modalUrl` is requested
      * via GET with `params` and must return JSON `{ui: UiPayload, title?: string,

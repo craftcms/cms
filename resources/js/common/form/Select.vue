@@ -31,24 +31,29 @@
     },
     set(newValue) {
       if (
-        !normalizedOptions.value.some(
+        normalizedOptions.value.some(
           (option) => String(option.value) === String(newValue)
         )
       ) {
-        return;
+        emit('update:modelValue', newValue);
       }
 
-      emit('update:modelValue', newValue);
+      // The parent may decline the change, which leaves `modelValue` as it was
+      // and gives Vue nothing to re-render.
+      void syncNativeSelect();
     },
   });
 
   const nativeSelect = useTemplateRef<HTMLSelectElement>('nativeSelect');
-  watch(normalizedOptions, async () => {
+
+  async function syncNativeSelect(): Promise<void> {
     await nextTick();
     if (nativeSelect.value) {
       nativeSelect.value.value = modelProxy.value;
     }
-  });
+  }
+
+  watch(normalizedOptions, syncNativeSelect);
 </script>
 
 <template>

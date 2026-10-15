@@ -12,10 +12,9 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Validation\Rule;
@@ -87,23 +86,16 @@ class UserGroup extends Component implements Actionable, Chippable, CpEditable, 
             currentUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
-            $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
-                'id' => $editId,
+                'id' => sprintf('action-edit-%s', mt_rand()),
                 'icon' => 'gear',
                 'label' => t('User group settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:open-slideout',
+                    'detail' => ['url' => Url::cpUrl("settings/users/groups/$this->id")],
+                ],
             ];
-
-            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-$('#' + $id).on('click', () => {
-  new Craft.CpScreenSlideout('user-settings/edit-group', {
-    params: $params,
-  })
-});
-JS, [
-                InputNamespace::namespaceId($editId),
-                ['groupId' => $this->id],
-            ]);
         }
 
         return $items;

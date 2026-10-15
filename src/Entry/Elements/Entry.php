@@ -78,7 +78,6 @@ use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -2015,73 +2014,38 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             currentUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
-            // Entry type settings
-            $entryTypeEditId = sprintf('edit-entry-type-%s', mt_rand());
             $actions[] = [
-                'id' => $entryTypeEditId,
                 'icon' => 'gear',
                 'label' => t('Entry type settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-entry-type',
+                    'detail' => ['entryTypeId' => $this->typeId],
+                ],
             ];
 
-            HtmlStack::jsWithVars(fn ($id, $params, $isNestedEntry) => <<<JS
-(() => {
-  $('#' + $id).on('activate', function() {
-    const params = $params;
-    if (!$isNestedEntry) {
-        const input = $(this).closest('.menu').data('disclosureMenu').\$trigger.closest('form').find('.entry-type-select').find('input');
-        if (input.length) {
-          params.entryTypeId = input.val();
-        }
-    }
-    new Craft.CpScreenSlideout(Craft.getCpUrl('settings/entry-types/' + params.entryTypeId));
-  });
-})();
-JS, [
-                InputNamespace::namespaceId($entryTypeEditId),
-                ['entryTypeId' => $this->typeId],
-                isset($this->fieldId),
-            ]);
-
-            // Section settings
             if (! empty($this->sectionId)) {
-                $sectionEditId = sprintf('edit-section-%s', mt_rand());
                 $actions[] = [
-                    'id' => $sectionEditId,
                     'icon' => 'gear',
                     'label' => t('Section settings'),
+                    'action' => [
+                        'type' => 'event',
+                        'name' => 'craft:open-slideout',
+                        'detail' => ['url' => Url::cpUrl("settings/sections/$this->sectionId")],
+                    ],
                 ];
-
-                HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-    (() => {
-      $('#' + $id).on('activate', function() {
-        new Craft.CpScreenSlideout('sections/edit-section', {params: $params})
-      });
-    })();
-    JS, [
-                    InputNamespace::namespaceId($sectionEditId),
-                    ['sectionId' => $this->sectionId],
-                ]);
             }
 
-            // Field settings
             if (! empty($this->fieldId)) {
-                $fieldEditId = sprintf('edit-field-%s', mt_rand());
                 $actions[] = [
-                    'id' => $fieldEditId,
                     'icon' => 'gear',
                     'label' => t('Field settings'),
+                    'action' => [
+                        'type' => 'event',
+                        'name' => 'craft:edit-field',
+                        'detail' => ['fieldId' => $this->fieldId],
+                    ],
                 ];
-
-                HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-    (() => {
-      $('#' + $id).on('activate', function() {
-        new Craft.CpScreenSlideout(Craft.getCpUrl('settings/fields/edit'), {params: $params})
-      });
-    })();
-    JS, [
-                    InputNamespace::namespaceId($fieldEditId),
-                    ['fieldId' => $this->fieldId],
-                ]);
             }
         }
 

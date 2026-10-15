@@ -1,0 +1,17 @@
+# Do not export those files in the Composer archive (lighter dependency)
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/codeception.yml export-ignore
+/composer.lock export-ignore
+/ecs.php export-ignore
+/legacy/web/assets/*/src/ export-ignore
+/phpstan.neon export-ignore
+/phpunit.xml.dist export-ignore
+/resources/js/ export-ignore
+/stubs/ export-ignore
+/testbench.yaml export-ignore
+/tests/ export-ignore
+/tests-laravel/ export-ignore
+
+# Identify generated files
+/legacy/web/assets/*/dist/** linguist-generated=true
