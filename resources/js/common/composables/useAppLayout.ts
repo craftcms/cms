@@ -11,6 +11,7 @@ import type {
 export interface UseAppLayoutOptions {
   title?: string;
   saveDisabled?: boolean;
+  submitButtonLabel?: string;
   form?: InertiaForm<any> | null;
   defaultFormActions?: Array<'saveAndContinueEditing'>;
   formActions?: Array<ActionItem>;

@@ -11,8 +11,10 @@ import {
   type App,
 } from 'vue';
 import {
+  ScreenContextKey,
   ScreenDetailsOverlayKey,
   ScreenDetailsRailKey,
+  type ScreenMode,
 } from '@/common/composables/screen';
 import DetailsPanels from './DetailsPanels.vue';
 
@@ -40,7 +42,11 @@ const overlay = ref(false);
 
 async function mount(
   rail: string | null,
-  {syncLocationHash = false, overlaid = false} = {}
+  {
+    syncLocationHash = false,
+    overlaid = false,
+    screenMode = 'page' as ScreenMode,
+  } = {}
 ): Promise<HTMLElement> {
   document.body.innerHTML = '<div id="details"></div><div id="rail"></div>';
   overlay.value = overlaid;
@@ -48,6 +54,7 @@ async function mount(
   app = createApp(
     defineComponent({
       setup() {
+        provide(ScreenContextKey, {mode: screenMode});
         provide(ScreenDetailsRailKey, rail);
         provide(ScreenDetailsOverlayKey, overlay);
 
@@ -148,6 +155,19 @@ it('leaves a panel closed that the person closed', async () => {
 
   expect(panel('info').hidden).toBe(true);
   expect(trigger('info').getAttribute('aria-expanded')).toBe('false');
+});
+
+it('starts folded to the rail in a slideout', async () => {
+  await mount('#rail', {screenMode: 'slideout'});
+
+  expect(panel('info').hidden).toBe(true);
+  expect(trigger('info').getAttribute('aria-expanded')).toBe('false');
+});
+
+it('starts open on a page with room beside the content', async () => {
+  await mount('#rail');
+
+  expect(panel('info').hidden).toBe(false);
 });
 
 it('labels each trigger with a tooltip', async () => {

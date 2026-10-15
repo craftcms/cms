@@ -130,7 +130,7 @@ readonly class Drafts
     }
 
     /** @return array{draft: array<string, mixed>} */
-    #[McpTool(name: 'drafts.create', description: 'Creates a draft of a Craft CMS element.')]
+    #[McpTool(name: 'drafts.create', description: 'Creates a draft of an existing Craft CMS element. Edit the draft with elements.update using the draft’s ID. To create a new entry as a draft, use elements.create with asUnpublishedDraft.')]
     public function create(
         #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
         string $type,

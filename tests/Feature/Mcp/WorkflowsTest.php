@@ -134,6 +134,12 @@ it('saves enabled entries in a workflow section as drafts and suggests submittin
         'title' => 'Proposed entry',
         'enabled' => true,
     ]], true],
+    'new entry as unpublished draft' => ['elements.create', fn ($test): array => ['type' => 'entries', 'asUnpublishedDraft' => true, 'attributes' => [
+        'sectionId' => $test->section->id,
+        'typeId' => $test->entry->typeId,
+        'title' => 'Proposed entry',
+        'enabled' => true,
+    ]], true],
     'existing entry' => ['elements.update', fn ($test): array => ['type' => 'entries', 'id' => $test->entry->id, 'attributes' => ['title' => 'Proposed title']], false],
 ]);
 
