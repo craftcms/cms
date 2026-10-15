@@ -20,6 +20,7 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
 use Override;
+use RuntimeException;
 
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
@@ -356,7 +357,7 @@ abstract class FieldLayoutComponent extends Component
     {
         event($event = new FieldLayoutComponentShowInFormResolving(
             fieldLayoutComponent: $this,
-            fieldLayout: $this->getLayout(),
+            fieldLayout: $this->getLayout() ?? throw new RuntimeException('Field layout component is missing its field layout.'),
             element: $element,
         ));
 

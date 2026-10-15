@@ -90,7 +90,7 @@ readonly class CreateEntryController
         $this->setDates($entry);
 
         // Custom fields
-        foreach ($entry->getFieldLayout()->getCustomFields() as $field) {
+        foreach ($entry->getFieldLayout()?->getCustomFields() ?? [] as $field) {
             if (($value = $this->request->input($field->handle)) !== null) {
                 $entry->setFieldValue($field->handle, $value);
             }

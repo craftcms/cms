@@ -238,7 +238,7 @@ trait FieldConditionRuleTrait
             array_map(fn (FieldInterface $field) => $field->layoutElement?->uid, $fieldInstances),
         );
 
-        foreach ($element->getFieldLayout()->getCustomFields() as $field) {
+        foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
             if (isset($instanceUids[$field->layoutElement?->uid])) {
                 $value = $element->getFieldValue($field->handle);
                 if ($this->matchFieldValue($value)) {

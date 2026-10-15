@@ -372,7 +372,7 @@ readonly class ElementDuplicates
             $fieldLayout = $to->getFieldLayout();
 
             foreach ($modifiedFields as $handle) {
-                $field = $fieldLayout->getFieldByHandle($handle);
+                $field = $fieldLayout?->getFieldByHandle($handle);
                 if ($field) {
                     $data[] = [
                         'elementId' => $to->id,

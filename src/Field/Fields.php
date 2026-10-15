@@ -1076,7 +1076,7 @@ class Fields
      *
      * @param  class-string<ElementInterface>  $type  The associated element type
      * @param  bool  $create  Whether to create a field layout if one doesn’t exist
-     * @return FieldLayout|null The field layout
+     * @return ($create is true ? FieldLayout : FieldLayout|null) The field layout
      */
     public function getLayoutByType(string $type, bool $create = true): ?FieldLayout
     {

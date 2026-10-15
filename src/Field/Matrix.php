@@ -36,6 +36,7 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
@@ -619,7 +620,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ];
             $blocks[$uid] = $this->blockPresentation($entry, $uid, $creationTypes);
             $uis[$uid] = app(FieldLayoutCompiler::class)->ui(
-                $entry->getFieldLayout(),
+                $entry->getFieldLayout() ?? new FieldLayout(['type' => Entry::class]),
                 $entry,
                 new UiContext(mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode),
             );

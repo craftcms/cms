@@ -124,7 +124,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         // If this is one of multiple instances of the relation field in the layout,
         // look at the JSON values rather than the `relations` table data
         // (see https://github.com/craftcms/cms/issues/17290)
-        $allInstances = $field->layoutElement?->getLayout()->getFields(fn (BaseField $field) => (
+        $allInstances = $field->layoutElement?->getLayout()?->getFields(fn (BaseField $field) => (
             $field instanceof CustomField &&
             $field->getFieldUid() === $this->_fieldUid
         ));

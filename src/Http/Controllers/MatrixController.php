@@ -15,6 +15,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Events\MatrixBlockHtmlRendering;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Sites;
@@ -205,7 +206,7 @@ readonly class MatrixController
     {
         $scope = [...$path, 'entries', $entry->uid];
         $payload = app(FieldLayoutCompiler::class)->compile(
-            $entry->getFieldLayout(),
+            $entry->getFieldLayout() ?? new FieldLayout(['type' => Entry::class]),
             $entry,
             new UiContext(namespace: $scope, refreshable: true),
         );

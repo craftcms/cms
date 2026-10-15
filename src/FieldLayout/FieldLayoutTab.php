@@ -237,11 +237,8 @@ class FieldLayoutTab extends FieldLayoutComponent
             throw new RuntimeException('Field layout tab is missing its field layout.');
         }
 
-        if (($this->_layout = app(Fields::class)->getLayoutById($this->layoutId)) === null) {
-            throw new RuntimeException('Invalid layout ID: '.$this->layoutId);
-        }
-
-        return $this->_layout;
+        return $this->_layout = app(Fields::class)->getLayoutById($this->layoutId)
+            ?? throw new RuntimeException('Invalid layout ID: '.$this->layoutId);
     }
 
     /**

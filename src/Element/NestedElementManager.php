@@ -196,7 +196,7 @@ class NestedElementManager extends Component
                 $keywords[] = $element->title;
             }
 
-            foreach ($element->getFieldLayout()->getCustomFields() as $field) {
+            foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
                 if ($field->searchable) {
                     $fieldValue = $element->getFieldValue($field->handle);
                     $keywords[] = $field->getSearchKeywords($fieldValue, $element);

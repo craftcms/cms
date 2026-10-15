@@ -211,7 +211,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     {
         foreach ($instances as $instance) {
             // See if this instance is used multiple times within its field layout
-            $allInstances = $instance->layoutElement?->getLayout()->getFields(fn (BaseField $field) => (
+            $allInstances = $instance->layoutElement?->getLayout()?->getFields(fn (BaseField $field) => (
                 $field instanceof CustomField &&
                 $field->getFieldUid() === $instance->uid
             ));

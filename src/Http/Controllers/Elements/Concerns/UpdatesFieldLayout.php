@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements\Concerns;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
@@ -31,7 +32,7 @@ trait UpdatesFieldLayout
     protected function compileFieldLayout(ElementInterface $element): UiPayload
     {
         return app(FieldLayoutCompiler::class)->compile(
-            $element->getFieldLayout(),
+            $element->getFieldLayout() ?? new FieldLayout(['type' => $element::class]),
             $element,
             new UiContext(
                 namespace: $this->fieldLayoutRootScope(),

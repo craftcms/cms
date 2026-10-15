@@ -8,6 +8,7 @@ use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -74,7 +75,7 @@ readonly class CopyElementValuesController
             throw new UnsupportedSiteException($element, $copyFromSiteId, 'Attempting to copy element content from an unsupported site.');
         }
 
-        $layoutElement = $element->getFieldLayout()->getElementByUid($layoutElementUid);
+        $layoutElement = $element->getFieldLayout()?->getElementByUid($layoutElementUid);
         if (! $layoutElement instanceof BaseField || ! $layoutElement->isCrossSiteCopyable($element)) {
             abort(400, "Invalid layout element UUID: $layoutElementUid");
         }
@@ -89,7 +90,7 @@ readonly class CopyElementValuesController
         }
 
         $payload = app(FieldLayoutCompiler::class)->compile(
-            $element->getFieldLayout(),
+            $element->getFieldLayout() ?? new FieldLayout(['type' => $element::class]),
             $element,
             new UiContext(namespace: $namespace ?? []),
         );
