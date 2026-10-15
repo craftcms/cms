@@ -75,7 +75,7 @@ class Asset extends ElementMutationResolver
             }
 
             if (empty($newFolderId)) {
-                $newFolderId = Folders::getRootFolderByVolumeId($volume->id)->id;
+                $newFolderId = Folders::getRootFolderByVolume($volume)->id;
             }
 
             $asset = Elements::createElement([
@@ -88,7 +88,7 @@ class Asset extends ElementMutationResolver
         if (empty($newFolderId)) {
             if (! $canIdentify) {
                 /** @var AssetElement $asset */
-                $asset->newFolderId = Folders::getRootFolderByVolumeId($volume->id)->id;
+                $asset->newFolderId = Folders::getRootFolderByVolume($volume)->id;
             }
         } else {
             $folder = Folders::getFolderById($newFolderId);
@@ -155,8 +155,11 @@ class Asset extends ElementMutationResolver
             $fileInformation = Arr::pull($arguments, '_file');
         }
 
-        /** @var AssetElement $element */
         $element = parent::populateElementWithData($element, $arguments, $resolveInfo);
+
+        if (! $element instanceof AssetElement) {
+            throw new Error('Asset mutations require an asset element.');
+        }
 
         if (! empty($fileInformation) && $this->handleUpload($element, $fileInformation)) {
             $element->ruleset->useScenario($element->id

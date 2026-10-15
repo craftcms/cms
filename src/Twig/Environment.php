@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig;
 
+use Fruitcake\LaravelDebugbar\LaravelDebugbar;
 use Twig\Environment as TwigEnvironment;
 use Twig\Extension\EscaperExtension;
 use Twig\Loader\LoaderInterface;
@@ -27,12 +28,17 @@ class Environment extends TwigEnvironment
     #[\Override]
     public function compileSource(Source $source): string
     {
-        debugbar()->startMeasure($source->getName(), "Compile {$source->getName()}");
+        $debugbar = debugbar();
+        if ($debugbar instanceof LaravelDebugbar) {
+            $debugbar->startMeasure($source->getName(), "Compile {$source->getName()}");
+        }
 
         try {
             return parent::compileSource($source);
         } finally {
-            debugbar()->stopMeasure($source->getName());
+            if ($debugbar instanceof LaravelDebugbar) {
+                $debugbar->stopMeasure($source->getName());
+            }
         }
     }
 

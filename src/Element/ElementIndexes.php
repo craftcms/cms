@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use CraftCms\Cms\Database\Expressions\SourceSortExpression;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -14,6 +15,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Database\Query\Expression as ExpressionInterface;
@@ -283,9 +285,7 @@ class ElementIndexes
     {
         foreach (Arr::wrap($orderBy) as $column => $direction) {
             if ($direction instanceof ExpressionInterface) {
-                $elementQuery->getQuery()->orderByRaw(
-                    $direction->getValue(DB::getQueryGrammar()),
-                );
+                Query::orderByExpression($elementQuery->getQuery(), $direction);
 
                 continue;
             }
@@ -310,13 +310,17 @@ class ElementIndexes
         $sortDirection = strcasecmp($direction, 'desc') === 0 ? SORT_DESC : SORT_ASC;
         $columns = $this->indexOrderByColumns($elementType, $sourceKey, $attribute, $sortDirection);
 
-        if ($columns === false || $columns instanceof ExpressionInterface) {
-            return $columns;
+        if (is_bool($columns) || $columns instanceof ExpressionInterface) {
+            return $columns === true ? false : $columns;
         }
 
         $columns = is_string($columns)
             ? preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY)
             : $columns;
+
+        if ($columns === false) {
+            throw new \InvalidArgumentException('Unable to parse index sort columns.');
+        }
 
         return $this->normalizeOrderByColumns($columns, $sortDirection);
     }
@@ -411,17 +415,11 @@ class ElementIndexes
 
             $orderBy = $sortOption['orderBy'];
 
-            if ($orderBy instanceof Coalesce) {
-                $sql = $orderBy->getValue(DB::getQueryGrammar());
-            } elseif (is_string($orderBy)) {
-                $sql = $orderBy;
-            } else {
+            if (! $orderBy instanceof Coalesce && ! is_string($orderBy)) {
                 return $orderBy;
             }
 
-            $sqlDirection = $direction === SORT_ASC ? 'ASC' : 'DESC';
-
-            return DB::raw("$sql $sqlDirection");
+            return new SourceSortExpression($orderBy, $direction);
         }
 
         return false;

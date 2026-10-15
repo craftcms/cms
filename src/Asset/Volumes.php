@@ -30,6 +30,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -236,7 +237,8 @@ class Volumes
         }
 
         event(new VolumeSaved(
-            volume: $this->getVolumeById($volumeModel->id),
+            volume: $this->getVolumeById($volumeModel->id)
+                ?? throw new RuntimeException("Volume $volumeModel->id could not be loaded after saving."),
             isNew: $isNewVolume,
         ));
 
@@ -294,7 +296,8 @@ class Volumes
             return;
         }
 
-        $volume = $this->getVolumeById($volumeModel->id);
+        $volume = $this->getVolumeById($volumeModel->id)
+            ?? throw new RuntimeException("Volume $volumeModel->id could not be loaded.");
 
         event(new VolumeDeletionApplied(volume: $volume));
 

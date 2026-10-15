@@ -147,7 +147,7 @@ class Paginate extends Component
      */
     public function getDynamicRangeUrls(int $max = 10): array
     {
-        $start = max(1, $this->currentPage - floor($max / 2));
+        $start = max(1, $this->currentPage - intdiv($max, 2));
         $end = min($this->totalPages, $start + $max - 1);
 
         if ($end - $start < $max) {

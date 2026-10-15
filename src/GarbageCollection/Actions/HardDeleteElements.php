@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,10 @@ class HardDeleteElements extends GarbageCollectionAction
         $nestedElementTypes = [];
 
         foreach (Elements::getAllElementTypes() as $elementType) {
+            if (! is_subclass_of($elementType, ElementInterface::class)) {
+                continue;
+            }
+
             if (is_subclass_of($elementType, NestedElementInterface::class)) {
                 $nestedElementTypes[] = $elementType;
             } else {

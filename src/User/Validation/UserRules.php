@@ -121,7 +121,7 @@ class UserRules extends ElementRules
         $requiredNameField = (fn (bool $requiredWhenFirstAndLastNameFields) => Cms::config()->showFirstAndLastNameFields === $requiredWhenFirstAndLastNameFields
             && ($this->subject
                 ->getFieldLayout()
-                ->getFirstVisibleElementByType(FullNameField::class, $this->subject)
+                ?->getFirstVisibleElementByType(FullNameField::class, $this->subject)
                 ->required ?? false));
 
         if ($this->inScenarios(self::SCENARIO_LIVE)) {

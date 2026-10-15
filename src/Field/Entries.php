@@ -118,7 +118,7 @@ class Entries extends BaseRelationField
         if (! $this->hasSelectionCondition() && $this->showSearchInput($element)) {
             /** @var string[] $sources */
             $sources = $this->getInputSources($element);
-            if (preg_match('/^section:(.+)$/', reset($sources), $matches)) {
+            if (preg_match('/^section:(.+)$/', reset($sources) ?: '', $matches)) {
                 if ($section = Sections::getSectionByUid($matches[1])) {
                     $variables['jsSettings']['sectionId'] = $section->id;
                 }
@@ -158,12 +158,18 @@ class Entries extends BaseRelationField
         ];
     }
 
-    /** @return array{sectionId:list<int>, typeId:list<int>}|null */
+    /** @return array{}|array{sectionId:list<int>, typeId:list<int>}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        $sectionUids = array_flip($allowedEntities['sections'] ?? []);
+        $allowedSectionUids = $allowedEntities['sections'] ?? [];
+
+        if ($allowedSectionUids === true) {
+            return [];
+        }
+
+        $sectionUids = array_flip($allowedSectionUids);
 
         if (empty($sectionUids)) {
             return null;
@@ -184,7 +190,7 @@ class Entries extends BaseRelationField
 
         return [
             'sectionId' => $sectionIds,
-            'typeId' => array_unique($entryTypeIds),
+            'typeId' => array_values(array_unique(array_filter($entryTypeIds, fn (?int $id): bool => $id !== null))),
         ];
     }
 

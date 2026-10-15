@@ -57,7 +57,7 @@ class PruneRevisions extends Job
         $total = count($extraRevisions);
 
         foreach ($extraRevisions as $i => $extraRevision) {
-            $this->setProgress((int) ((($i + 1) / $total) * 100));
+            $this->setProgress(min(100, max(0, (int) ((($i + 1) / $total) * 100))));
             Elements::deleteElement($extraRevision, true);
         }
     }

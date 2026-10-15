@@ -117,8 +117,12 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
      */
     public ?string $suffix = null;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         unset($config['numberInputSize']);
 
         // Config normalization
@@ -243,9 +247,9 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
         if (! $value) {
             if ($this->step === 0) {
                 // Zero is not really a valid HTML `step` attribute value, and we definitely can’t divide by it:
-                $value = random_int($this->min, $this->max);
+                $value = random_int((int) ceil($this->min), (int) floor($this->max));
             } else {
-                $value = random_int($this->min / $this->step, $this->max / $this->step) * $this->step;
+                $value = random_int((int) ceil($this->min / $this->step), (int) floor($this->max / $this->step)) * $this->step;
             }
         }
 

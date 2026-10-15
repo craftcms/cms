@@ -26,7 +26,7 @@ class TextFieldConditionRule extends BaseTextConditionRule implements ElementCon
         }
 
         return [
-            'value' => $this->paramValue(),
+            'value' => is_array($value) ? array_values($value) : $value,
             'caseInsensitive' => true,
         ];
     }

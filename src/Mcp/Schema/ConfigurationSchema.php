@@ -107,7 +107,7 @@ readonly class ConfigurationSchema
     /**
      * @param  array<string, mixed>  $properties
      * @param  list<string>  $required
-     * @return array<string, mixed>
+     * @return array{type: 'object', properties: array<string, mixed>, required: list<string>, additionalProperties: false}
      */
     private function object(array $properties, array $required = []): array
     {

@@ -53,6 +53,7 @@ use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\Separator;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
+use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -61,9 +62,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use Override;
+use RuntimeException;
 use Symfony\Component\Mime\MimeTypes;
 
-use function CraftCms\Cms\craftAuth;
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -387,7 +389,7 @@ class Assets extends BaseRelationField
         }
     }
 
-    /** @return list<Closure> */
+    /** @return list<object|string> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -529,7 +531,7 @@ class Assets extends BaseRelationField
      * @return array{
      *     name: string|null,
      *     type: Type,
-     *     args: array<string, ArgumentConfig>,
+     *     args: array<string, ArgumentConfig|(Type&InputType)>,
      *     resolve: string,
      *     complexity: callable,
      * }
@@ -610,14 +612,15 @@ class Assets extends BaseRelationField
                                 break;
                         }
 
-                        $uploadFolder = Folders::getFolderById($uploadFolderId);
+                        $uploadFolder = Folders::getFolderById($uploadFolderId)
+                            ?? throw new RuntimeException("Invalid folder ID: $uploadFolderId");
                         $asset = new Asset;
                         $asset->tempFilePath = $tempPath;
                         $asset->setFilename($file['filename']);
                         $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false) ?? $file['mimeType']);
                         $asset->newFolderId = $uploadFolderId;
                         $asset->setVolumeId($uploadFolder->volumeId);
-                        $asset->uploaderId = craftAuth()->id();
+                        $asset->uploaderId = currentUser()?->getCraftUserId();
                         $asset->avoidFilenameConflicts = true;
                         $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
@@ -689,8 +692,8 @@ class Assets extends BaseRelationField
                             $rootRestrictedFolder = Folders::getFolderById($rootRestrictedFolderId);
 
                             return
-                                $asset->volumeId !== $rootRestrictedFolder->volumeId ||
-                                ! str_starts_with((string) $asset->folderPath, (string) $rootRestrictedFolder->path);
+                                $asset->volumeId !== $rootRestrictedFolder?->volumeId ||
+                                ! str_starts_with((string) $asset->folderPath, (string) $rootRestrictedFolder?->path);
                         });
                     } else {
                         // Find the files with temp sources and just move those.
@@ -701,7 +704,9 @@ class Assets extends BaseRelationField
                     }
 
                     if (! empty($assetsToMove)) {
-                        $uploadFolder = Folders::getFolderById($getUploadFolderId());
+                        $uploadFolderId = $getUploadFolderId();
+                        $uploadFolder = Folders::getFolderById($uploadFolderId)
+                            ?? throw new RuntimeException("Invalid folder ID: $uploadFolderId");
 
                         // Resolve all conflicts by keeping both
                         foreach ($assetsToMove as $asset) {
@@ -722,12 +727,16 @@ class Assets extends BaseRelationField
         parent::afterElementSave($element, $isNew);
     }
 
-    /** @return array{volumeId:list<int>}|null */
+    /** @return array{}|array{volumeId:list<int>}|null */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $volumeUids = $allowedEntities['volumes'] ?? [];
+
+        if ($volumeUids === true) {
+            return [];
+        }
 
         if (empty($volumeUids)) {
             return null;
@@ -740,7 +749,7 @@ class Assets extends BaseRelationField
         }, $volumeUids));
 
         return [
-            'volumeId' => $volumeIds,
+            'volumeId' => array_values($volumeIds),
         ];
     }
 
@@ -1232,8 +1241,12 @@ class Assets extends BaseRelationField
     {
         $folders = [$folder];
 
-        while ($folder->parentId && $folder->volumeId !== null && (! $untilFolder || $folder->id !== $untilFolder->id)) {
-            $folder = $folder->getParent();
+        while (
+            $folder->volumeId !== null &&
+            (! $untilFolder || $folder->id !== $untilFolder->id) &&
+            ($parent = $folder->getParent()) !== null
+        ) {
+            $folder = $parent;
             array_unshift($folders, $folder);
         }
 

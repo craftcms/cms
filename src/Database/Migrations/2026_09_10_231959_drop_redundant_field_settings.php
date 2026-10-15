@@ -82,7 +82,16 @@ return new class extends Migration
      */
     private function findFields(ProjectConfig $projectConfig, string $type): array
     {
-        return $projectConfig->find(fn (array $config) => isset($config['type']) && $config['type'] === $type);
+        $fields = [];
+        foreach ($projectConfig->find(fn (array $config): bool => isset($config['type']) && $config['type'] === $type) as $path => $config) {
+            if (! isset($config['type']) || $config['type'] !== $type) {
+                continue;
+            }
+
+            $fields[$path] = $config;
+        }
+
+        return $fields;
     }
 
     /**

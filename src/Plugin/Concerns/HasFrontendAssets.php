@@ -65,10 +65,25 @@ trait HasFrontendAssets
             $config = ['input' => $config];
         }
 
-        $publicDirectory = Str::finish($config['publicDirectory'] ?? 'public', '/');
+        $publicDirectory = $config['publicDirectory'] ?? 'public';
+        if (! is_string($publicDirectory)) {
+            throw new \InvalidArgumentException('The Vite public directory must be a string.');
+        }
+        $publicDirectory = Str::finish($publicDirectory, '/');
         $hotFile = $config['hotFile'] ?? "{$directory}{$publicDirectory}hot";
 
-        [$source, $target] = $this->getSourceAndTarget(static::getInstance(), $config);
+        if (! is_string($hotFile) || ! isset($config['input']) || ! is_array($config['input'])) {
+            throw new \InvalidArgumentException('Invalid Vite asset configuration.');
+        }
+        $buildDirectory = $config['buildDirectory'] ?? 'build';
+        if (! is_string($buildDirectory)) {
+            throw new \InvalidArgumentException('The Vite build directory must be a string.');
+        }
+
+        [$source, $target] = $this->getSourceAndTarget(static::getInstance(), [
+            'publicDirectory' => $publicDirectory,
+            'buildDirectory' => $buildDirectory,
+        ]);
 
         $this->publishes([$source => $this->app->publicPath($target)], self::getInstance()->handle);
 
@@ -112,7 +127,11 @@ trait HasFrontendAssets
     private function getSourceAndTarget(PluginInterface $plugin, array $config): array
     {
         $directory = Str::finish(dirname($plugin->getBasePath()), '/');
-        $publicDirectory = Str::finish($config['publicDirectory'] ?? 'public', '/');
+        $publicDirectory = $config['publicDirectory'] ?? 'public';
+        if (! is_string($publicDirectory)) {
+            throw new \InvalidArgumentException('The Vite public directory must be a string.');
+        }
+        $publicDirectory = Str::finish($publicDirectory, '/');
         $buildDirectory = Str::finish($config['buildDirectory'] ?? 'build', '/');
 
         $source = "{$directory}{$publicDirectory}{$buildDirectory}";

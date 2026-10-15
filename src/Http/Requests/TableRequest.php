@@ -35,9 +35,22 @@ class TableRequest extends FormRequest
     /** @return list<array{field:string, direction:string}> */
     public function sort(): array
     {
-        return ! empty($this->array('sort')) ? $this->array('sort') : [
-            ['field' => 'name', 'direction' => 'asc'],
-        ];
+        $sort = $this->array('sort');
+
+        if ($sort === []) {
+            return [['field' => 'name', 'direction' => 'asc']];
+        }
+
+        $items = [];
+        foreach ($sort as $item) {
+            if (! is_array($item) || ! is_string($item['field'] ?? null) || ! is_string($item['direction'] ?? null)) {
+                abort(400, 'Invalid table sort configuration.');
+            }
+
+            $items[] = ['field' => $item['field'], 'direction' => $item['direction']];
+        }
+
+        return $items;
     }
 
     public function orderBy(): string

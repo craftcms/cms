@@ -117,14 +117,13 @@ class Addresses extends InputObjectType
 
                 // Get the field input types
                 foreach (AddressesFacade::getFieldLayout()->getCustomFields() as $field) {
-                    /** @var Field $field */
                     $fields[$field->handle] = $field->getContentGqlMutationArgumentType();
                 }
 
                 return $fields;
             },
             'normalizeValue' => [self::class, 'normalizeValue'],
-        ]));
+        ]), InputObjectType::class);
     }
 
     public static function normalizeValue(mixed $value): mixed

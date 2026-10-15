@@ -36,6 +36,10 @@ readonly class DuplicateElementController
     {
         $element = $this->request->element();
 
+        if ($element instanceof Response) {
+            return $element;
+        }
+
         if (! $element || $element->getIsRevision()) {
             abort(400, 'No element was identified by the request.');
         }
@@ -113,6 +117,10 @@ readonly class DuplicateElementController
 
                 foreach ($elementInfo as $info) {
                     $element = $this->request->element($info);
+
+                    if ($element instanceof Response) {
+                        abort(400, 'The element could not be resolved for duplication.');
+                    }
 
                     if (! $element instanceof ElementInterface) {
                         Log::warning(sprintf('Unable to duplicate element: %s', Json::encode($info)), [__METHOD__]);

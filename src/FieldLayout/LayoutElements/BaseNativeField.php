@@ -58,6 +58,7 @@ abstract class BaseNativeField extends BaseField
     /**
      * @var string|null The field’s orientation (`ltr` or `rtl`)
      */
+    /** @var 'ltr'|'rtl'|null */
     public ?string $orientation = null;
 
     /**

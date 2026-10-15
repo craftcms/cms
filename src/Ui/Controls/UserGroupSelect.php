@@ -44,7 +44,7 @@ class UserGroupSelect extends Combobox
             ->options($groups->map(fn (UserGroup $group): array => [
                 'label' => $group->getUiLabel(),
                 'value' => $group->uid,
-            ])->all());
+            ])->values()->all());
 
         return [
             ...parent::props($value),

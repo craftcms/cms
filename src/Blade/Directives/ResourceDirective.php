@@ -63,6 +63,10 @@ class ResourceDirective
     {
         $content = ob_get_clean();
 
+        if ($content === false) {
+            throw new InvalidArgumentException('No resource output buffer is active.');
+        }
+
         match ($method) {
             'css' => Template::css($content),
             'js' => Template::js($content),

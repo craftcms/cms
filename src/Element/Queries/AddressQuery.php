@@ -17,7 +17,11 @@ use Illuminate\Support\Collection;
 use Override;
 
 /**
- * @extends ElementQuery<Address>
+ * @template TAsArray of bool = false
+ *
+ * @extends ElementQuery<Address, TAsArray>
+ *
+ * @implements NestedElementQueryInterface<Address, TAsArray>
  *
  * @since 6.0.0
  */

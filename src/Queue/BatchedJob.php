@@ -98,7 +98,7 @@ abstract class BatchedJob extends Job
             $step = $this->itemOffset + 1;
             $total = $this->totalItems();
             $this->setProgress(
-                (int) (($step / $total) * 100),
+                min(100, max(0, (int) (($step / max($total, 1)) * 100))),
                 I18N::prep('{step, number} of {total, number}', compact('step', 'total')),
             );
 

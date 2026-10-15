@@ -13,6 +13,8 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
+use stdClass;
 use Tpetry\QueryExpressions\Language\Alias;
 
 /**
@@ -130,7 +132,7 @@ readonly class FieldReferences
 
     /**
      * @param  int[]  $targetIds
-     * @return Collection<string, Collection<string, Collection<int, object>>>
+     * @return Collection<class-string<ElementInterface>, Collection<int|string, Collection<int, stdClass&object{fieldInstanceUid: string, sourceId: int, sourceSiteId: int|null, type: class-string<ElementInterface>}>>>
      */
     public function replacementGroupsForTargets(array $targetIds): Collection
     {
@@ -138,20 +140,38 @@ readonly class FieldReferences
             return Collection::make();
         }
 
-        /** @var Collection<string, Collection<string, Collection<int, object>>> $groups */
-        $groups = $this->referencesToTargetsQuery($targetIds)
+        $references = $this->referencesToTargetsQuery($targetIds)
             ->select(['fr.fieldInstanceUid', 'fr.sourceId', 'fr.sourceSiteId', 'e.type'])
             ->distinct()
             ->orderBy('e.type')
             ->orderBy('fr.sourceSiteId')
             ->orderBy('fr.sourceId')
             ->get()
-            ->groupBy([
-                'type',
-                fn (object $row) => $row->sourceSiteId === null ? '*' : (string) $row->sourceSiteId,
-            ]);
+            ->map($this->normalizeReference(...));
 
-        return $groups;
+        $groups = [];
+
+        foreach ($references as $reference) {
+            $siteKey = $reference->sourceSiteId ?? '*';
+            $groups[$reference->type][$siteKey][] = $reference;
+        }
+
+        return collect($groups)->map(fn (array $sites) => collect($sites)->map(fn (array $rows) => collect($rows)));
+    }
+
+    /** @return stdClass&object{fieldInstanceUid: string, sourceId: int, sourceSiteId: int|null, type: class-string<ElementInterface>} */
+    private function normalizeReference(stdClass $row): stdClass
+    {
+        if (! is_string($row->type) || ! is_subclass_of($row->type, ElementInterface::class)) {
+            throw new InvalidArgumentException('Field references must belong to an element type.');
+        }
+
+        return (object) [
+            'fieldInstanceUid' => (string) $row->fieldInstanceUid,
+            'sourceId' => (int) $row->sourceId,
+            'sourceSiteId' => $row->sourceSiteId === null ? null : (int) $row->sourceSiteId,
+            'type' => $row->type,
+        ];
     }
 
     /**

@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Ui\Contracts\Node;
 use Illuminate\Database\Query\Builder;
 use RuntimeException;
@@ -52,7 +53,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         /** @var BaseRelationField $field */
         $field = $this->field();
 
-        return (array) $field->getInputSources();
+        return array_values(array_filter((array) $field->getInputSources(), fn (?string $source): bool => $source !== null));
     }
 
     protected function selectionCondition(): ?ElementConditionInterface
@@ -123,18 +124,23 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         // If this is one of multiple instances of the relation field in the layout,
         // look at the JSON values rather than the `relations` table data
         // (see https://github.com/craftcms/cms/issues/17290)
-        $allInstances = $field->layoutElement?->getLayout()->getFields(fn (BaseField $field) => (
+        $allInstances = $field->layoutElement?->getLayout()?->getFields(fn (BaseField $field) => (
             $field instanceof CustomField &&
             $field->getFieldUid() === $this->_fieldUid
         ));
 
         if ($allInstances && count($allInstances) > 1) {
             $valueSql = $field->getValueSql();
+
+            if ($valueSql === null) {
+                return;
+            }
+
             switch ($this->operator) {
                 case self::OPERATOR_RELATED_TO:
                     $query->where(function (Builder $query) use ($valueSql) {
-                        foreach ($this->getElementIds() as $id) {
-                            $query->orWhereJsonContains($valueSql, $id);
+                        foreach ((array) $this->getElementIds() as $id) {
+                            Query::whereJsonContains($query, $valueSql, $id, boolean: 'or');
                         }
                     });
                     break;
@@ -170,7 +176,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     protected function elementQueryParam(): ?array
     {
         // $this->operator will always be OPERATOR_RELATED_TO at this point
-        return $this->getElementIds();
+        return array_values(array_map(intval(...), (array) $this->getElementIds()));
     }
 
     /** @param ElementQueryInterface|ElementCollection<int, ElementInterface> $value */

@@ -24,20 +24,20 @@ class Facade
         $instance = $facade::getFacadeRoot();
 
         if (! $instance) {
-            return forward_static_call_array([$facade, $method], $arguments);
+            return $facade::$method(...$arguments);
         }
 
         if (method_exists($instance, $method)) {
-            return forward_static_call_array([$facade, $method], $arguments);
+            return $facade::$method(...$arguments);
         }
 
         $getter = 'get'.ucfirst($method);
 
         if ($arguments === [] && method_exists($instance, $getter)) {
-            return forward_static_call_array([$facade, $getter], []);
+            return $facade::$getter();
         }
 
-        return forward_static_call_array([$facade, $method], $arguments);
+        return $facade::$method(...$arguments);
     }
 
     public function __get(string $name): mixed

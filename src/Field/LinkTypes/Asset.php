@@ -29,8 +29,12 @@ class Asset extends BaseElementLinkType
      */
     public bool $showUnpermittedVolumes = false;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         parent::__construct($config);
 
         // Add the “Viewable” rule by default
@@ -69,6 +73,7 @@ class Asset extends BaseElementLinkType
 
         return $volumes
             ->map(fn (Volume $volume) => "volume:$volume->uid")
+            ->values()
             ->all();
     }
 

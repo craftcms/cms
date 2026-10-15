@@ -374,6 +374,11 @@ readonly class TestPropagateElementsWrites extends ElementWrites
             throw $this->exceptionToThrow;
         }
 
+        if (! $siteElement instanceof ElementInterface) {
+            $siteElement = clone $element;
+            $siteElement->siteId = $siteId;
+        }
+
         return true;
     }
 }

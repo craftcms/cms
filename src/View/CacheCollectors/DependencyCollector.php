@@ -58,8 +58,8 @@ class DependencyCollector implements CacheCollectorInterface
         [$dependency, $expiryTimestamp] = $this->finish();
 
         return [
-            'tags' => $dependency->tags ?? [],
-            'expiryDate' => $expiryTimestamp !== null ? DateTimeHelper::toIso8601(now()->setTimestamp($expiryTimestamp)) : null,
+            'tags' => array_values($dependency->tags ?? []),
+            'expiryDate' => $expiryTimestamp !== null ? now()->setTimestamp($expiryTimestamp)->toIso8601String() : null,
         ];
     }
 
@@ -76,7 +76,7 @@ class DependencyCollector implements CacheCollectorInterface
         }
 
         if ($cacheInfo['expiryDate']) {
-            $this->mergeExpiryTimestamp(DateTimeHelper::toDateTime($cacheInfo['expiryDate'])->getTimestamp());
+            $this->mergeExpiryTimestamp((DateTimeHelper::toDateTime($cacheInfo['expiryDate']) ?: throw new \InvalidArgumentException('Invalid cache expiration date.'))->getTimestamp());
         }
     }
 

@@ -30,7 +30,7 @@ trait QueriesCustomFields
     public ?array $customFields = null;
 
     /**
-     * @var array<int, array{handle: string, uid: string}>|null The generated field handles that may be involved in this query.
+     * @var array<int, array{uid: string, name?: string, handle?: string, template?: string}>|null The generated field handles that may be involved in this query.
      */
     public ?array $generatedFields = null;
 
@@ -132,7 +132,7 @@ trait QueriesCustomFields
 
             foreach ($dbTypes as $key => $dbType) {
                 $alias = $field->handle.($key !== '*' ? ".$key" : '');
-                $resolver = fn () => $field->getValueSql($key !== '*' ? $key : null);
+                $resolver = fn () => $field->getValueSql($key !== '*' ? (string) $key : null);
 
                 $this->addToColumnMap($alias, $resolver);
 
@@ -140,7 +140,7 @@ trait QueriesCustomFields
                 // see https://github.com/craftcms/cms/issues/15609
                 /** @var Connection $connection */
                 $connection = $this->query->getConnection();
-                if ($connection->isMysql() && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
+                if ($dbType !== false && $connection->isMysql() && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
                     $this->columnsToCast[$alias] = 'CHAR(255)';
                 }
             }
@@ -210,7 +210,7 @@ trait QueriesCustomFields
                     : $value;
 
                 if (is_array($value) && in_array(null, $value, true)) {
-                    $values = [...$value];
+                    $values = array_values($value);
                     $operator = QueryParam::extractOperator($values) ?? QueryParam::OR;
                     if ($operator === QueryParam::OR) {
                         continue;

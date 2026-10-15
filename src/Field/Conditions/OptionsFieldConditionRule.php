@@ -63,7 +63,9 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
             return null;
         }
 
-        return $this->paramValue();
+        $value = $this->paramValue();
+
+        return is_array($value) ? array_values($value) : $value;
     }
 
     /** @param MultiOptionsFieldData|SingleOptionFieldData|string|null $value */

@@ -28,7 +28,7 @@ class Money extends ScalarType implements SingularTypeInterface
 
     public static function getType(): Money
     {
-        return GqlEntityRegistry::getOrCreate(static::getName(), fn () => new self);
+        return GqlEntityRegistry::getOrCreate(static::getName(), fn () => new self, self::class);
     }
 
     public static function getName(): string

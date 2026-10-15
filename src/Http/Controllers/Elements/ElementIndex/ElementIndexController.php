@@ -111,10 +111,20 @@ class ElementIndexController
             $conditionConfig = $conditionConfig['condition'] ?? null;
         }
 
-        /** @var ElementConditionInterface $condition */
-        $condition = $conditionConfig
-            ? $this->conditions->createCondition([...$conditionConfig, 'conditionRules' => []])
-            : $elementType::createCondition();
+        if ($conditionConfig) {
+            if (! is_array($conditionConfig) || ! is_string($conditionConfig['class'] ?? null)
+                || ! is_a($conditionConfig['class'], ElementConditionInterface::class, true)) {
+                abort(400, 'Invalid element condition configuration.');
+            }
+
+            $condition = $this->conditions->createCondition([...$conditionConfig, 'conditionRules' => []]);
+        } else {
+            $condition = $elementType::createCondition();
+        }
+
+        if (! $condition instanceof ElementConditionInterface) {
+            abort(400, 'Invalid element condition.');
+        }
 
         $condition->forQuery = true;
 

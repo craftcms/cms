@@ -21,8 +21,11 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
+use RuntimeException;
 use stdClass;
 use Throwable;
+use Tpetry\QueryExpressions\Value\Value;
 
 use function CraftCms\Cms\t;
 
@@ -85,11 +88,19 @@ class Folders
         if ($criteria->order) {
             if (is_string($criteria->order)) {
                 $parts = explode(' ', $criteria->order, 2);
-                $query->orderBy($parts[0], $parts[1] ?? 'asc');
+                $query->orderBy($parts[0], match (strtolower($parts[1] ?? 'asc')) {
+                    'asc' => 'asc',
+                    'desc' => 'desc',
+                    default => throw new InvalidArgumentException('Folder sort direction must be asc or desc.'),
+                });
             } else {
                 foreach ($criteria->order as $column => $direction) {
                     if (is_int($column)) {
-                        $query->orderByRaw((string) $direction);
+                        if (is_int($direction)) {
+                            $query->orderBy(new Value($direction));
+                        } else {
+                            $query->orderByRaw($direction);
+                        }
                     } else {
                         $query->orderBy($column, $direction === SORT_DESC ? 'desc' : 'asc');
                     }
@@ -152,7 +163,8 @@ class Folders
 
         foreach ($results as $result) {
             $folder = $this->hydrateFolder($result);
-            $descendantFolders[$folder->id] = $folder;
+            $folderId = $folder->id ?? throw new RuntimeException('Persisted folders must have an ID.');
+            $descendantFolders[$folderId] = $folder;
         }
 
         if ($asTree) {
@@ -160,6 +172,17 @@ class Folders
         }
 
         return $descendantFolders;
+    }
+
+    /**
+     * Returns a volume's root folder, creating it if it doesn't exist yet.
+     */
+    public function getRootFolderByVolume(Volume $volume): VolumeFolder
+    {
+        $volumeId = $volume->id ?? throw new InvalidArgumentException('The volume must be saved before its root folder can be fetched.');
+
+        return $this->getRootFolderByVolumeId($volumeId)
+            ?? throw new RuntimeException("Volume $volumeId has no root folder.");
     }
 
     public function getRootFolderByVolumeId(int $volumeId): ?VolumeFolder
@@ -183,7 +206,8 @@ class Folders
                 $folder->name = $volume->name;
                 $folder->path = '';
                 $this->storeFolderModel($folder);
-                $this->foldersById[$folder->id] = $folder;
+                $folderId = $folder->id ?? throw new RuntimeException('Persisted folders must have an ID.');
+                $this->foldersById[$folderId] = $folder;
                 $this->folderIdsByUid[$folder->uid] = $folder->id;
             }
 
@@ -354,7 +378,7 @@ class Folders
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, Volume $volume, bool $justRecord = true): VolumeFolder
     {
-        $parentFolder = $this->getRootFolderByVolumeId($volume->id);
+        $parentFolder = $this->getRootFolderByVolume($volume);
         $folderModel = $parentFolder;
         $parentId = $parentFolder->id;
 
@@ -400,7 +424,7 @@ class Folders
             $model = VolumeFolderModel::findOrFail($folder->id);
         }
 
-        $model->parentId = $folder->parentId;
+        $model->parentId = $folder->parentId === null ? null : (int) $folder->parentId;
         $model->volumeId = $folder->volumeId;
         $model->name = $folder->name;
         $model->path = $folder->path;
@@ -428,7 +452,8 @@ class Folders
     private function hydrateFolder(stdClass $result): VolumeFolder
     {
         $folder = new VolumeFolder((array) $result);
-        $this->foldersById[$folder->id] = $folder;
+        $folderId = $folder->id ?? throw new RuntimeException('Persisted folders must have an ID.');
+        $this->foldersById[$folderId] = $folder;
         $this->folderIdsByUid[$folder->uid] = $folder->id;
 
         return $folder;

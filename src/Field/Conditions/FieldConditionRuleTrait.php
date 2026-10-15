@@ -95,10 +95,12 @@ trait FieldConditionRuleTrait
 
         foreach ($this->getCondition()->getFieldLayouts() as $fieldLayout) {
             foreach ($fieldLayout->getCustomFields() as $field) {
-                if ($field->uid === $this->_fieldUid || $field->layoutElement->oldFieldUid === $this->_fieldUid) {
+                $layoutElement = $field->layoutElement;
+
+                if ($field->uid === $this->_fieldUid || $layoutElement?->oldFieldUid === $this->_fieldUid) {
                     // skip if it doesn't have a label
-                    $label = $field->layoutElement->label();
-                    if ($label === null) {
+                    $label = $layoutElement?->label();
+                    if ($layoutElement === null || $label === null) {
                         continue;
                     }
 
@@ -110,8 +112,8 @@ trait FieldConditionRuleTrait
                     // is this the selected field instance?
                     // (if we aren't looking for a specific instance, include it if the handle isn't overridden)
                     if (
-                        (isset($this->_layoutElementUid) && $field->layoutElement->uid === $this->_layoutElementUid) ||
-                        (! isset($this->_layoutElementUid) && ! isset($field->layoutElement->handle))
+                        (isset($this->_layoutElementUid) && $layoutElement->uid === $this->_layoutElementUid) ||
+                        (! isset($this->_layoutElementUid) && ! isset($layoutElement->handle))
                     ) {
                         $this->_fieldInstances[] = $field;
 
@@ -138,14 +140,14 @@ trait FieldConditionRuleTrait
             // Just go with the first one
             $this->_fieldInstances[] = $first = array_shift($potentialInstances);
             $selectedInstance = $first;
-            $selectedInstanceLabel = $first->layoutElement->label();
+            $selectedInstanceLabel = $first->layoutElement?->label();
         }
 
         // Add any potential fields to the mix if they have a matching label and handle
         foreach ($potentialInstances as $field) {
             if (
-                $field->handle === $selectedInstance->handle &&
-                $field->layoutElement->label() === $selectedInstanceLabel
+                $field->handle === $selectedInstance?->handle &&
+                $field->layoutElement?->label() === $selectedInstanceLabel
             ) {
                 $this->_fieldInstances[] = $field;
             }
@@ -195,7 +197,7 @@ trait FieldConditionRuleTrait
             throw new RuntimeException('No field instances for this condition rule.');
         }
 
-        return $instances[0]->layoutElement->label();
+        return $instances[0]->layoutElement?->label() ?? throw new RuntimeException('The condition rule’s field instance has no label.');
     }
 
     public function getLabelHint(): ?string
@@ -233,11 +235,11 @@ trait FieldConditionRuleTrait
 
         // index the field instance UUIDs
         $instanceUids = array_flip(
-            array_map(fn (FieldInterface $field) => $field->layoutElement->uid, $fieldInstances),
+            array_map(fn (FieldInterface $field) => $field->layoutElement?->uid, $fieldInstances),
         );
 
-        foreach ($element->getFieldLayout()->getCustomFields() as $field) {
-            if (isset($instanceUids[$field->layoutElement->uid])) {
+        foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            if (isset($instanceUids[$field->layoutElement?->uid])) {
                 $value = $element->getFieldValue($field->handle);
                 if ($this->matchFieldValue($value)) {
                     return true;

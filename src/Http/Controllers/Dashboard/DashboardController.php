@@ -64,7 +64,7 @@ readonly class DashboardController
         $widgetTypeInfo = Collection::make();
 
         foreach ($widgetConfigs as $type => $config) {
-            $widget = $this->dashboard->createWidget($config);
+            $widget = $this->dashboard->createWidget(is_string($config) ? ['type' => $config] : $config);
 
             $widgetTypeInfo->put($type, [
                 'iconSvg' => $this->getWidgetIconSvg($widget),

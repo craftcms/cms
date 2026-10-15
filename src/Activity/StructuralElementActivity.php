@@ -33,8 +33,8 @@ class StructuralElementActivity
     }
 
     /**
-     * @param  array<string, mixed>  $origin
-     * @param  array<string, mixed>  $destination
+     * @param  array{structure: string, parent: array{type: string, id: string, label: string}|null, previousSibling: array{type: string, id: string, label: string}|null}  $origin
+     * @param  array{structure: string, parent: array{type: string, id: string, label: string}|null, previousSibling: array{type: string, id: string, label: string}|null}  $destination
      */
     public static function recordMoved(ElementInterface $element, array $origin, array $destination): void
     {

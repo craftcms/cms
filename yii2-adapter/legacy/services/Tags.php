@@ -5,6 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
+declare(strict_types=1);
+
 namespace craft\services;
 
 use Craft;
@@ -28,6 +30,7 @@ use DateTime;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use UnexpectedValueException;
 use yii\base\Component;
 
 /**
@@ -112,7 +115,13 @@ class Tags extends Component
 
             $this->_tagGroups = new MemoizableArray(
                 $records,
-                fn(TagGroupRecord $record) => $this->_createTagGroupFromRecord($record),
+                function(mixed $record) {
+                    if (!$record instanceof TagGroupRecord) {
+                        throw new UnexpectedValueException('Expected a TagGroupRecord from the group query.');
+                    }
+
+                    return $this->_createTagGroupFromRecord($record);
+                },
             );
         }
 

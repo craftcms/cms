@@ -30,9 +30,7 @@ class BladeRenderer implements TemplateRendererInterface
         ?TemplateMode $templateMode = null,
         ?string $resolvedTemplate = null,
     ): string {
-        if ($resolvedTemplate === null) {
-            return view($template, $variables)->render();
-        }
+        $resolvedTemplate ??= $this->factory->getFinder()->find($template);
 
         $view = new View(
             $this->factory,

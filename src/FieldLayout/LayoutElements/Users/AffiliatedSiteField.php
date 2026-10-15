@@ -28,8 +28,12 @@ class AffiliatedSiteField extends BaseNativeField
     #[Override]
     public string $attribute = 'affiliatedSiteId';
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         // We didn't start removing autofocus from fields() until 3.5.6
         parent::__construct(Arr::except($config, [
             'mandatory',
@@ -75,13 +79,13 @@ class AffiliatedSiteField extends BaseNativeField
         }
 
         return Choice::make($this->attribute())
-            ->options([
+            ->options(array_values([
                 ['label' => t('None'), 'value' => ''],
                 ...Sites::getAllSites()->map(fn (Site $site) => [
                     'label' => $site->getUiLabel(),
-                    'value' => $site->id,
+                    'value' => $site->id ?? '',
                 ])->all(),
-            ])
+            ]))
             ->value($context->element?->affiliatedSiteId);
     }
 
@@ -102,7 +106,7 @@ class AffiliatedSiteField extends BaseNativeField
                 ['label' => t('None'), 'value' => ''],
                 ...Sites::getAllSites()->map(fn (Site $site) => [
                     'label' => $site->getUiLabel(),
-                    'value' => $site->id,
+                    'value' => $site->id ?? '',
                 ])->all(),
             ],
             'value' => $element?->affiliatedSiteId,

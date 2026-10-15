@@ -73,8 +73,12 @@ abstract class BaseField extends FieldLayoutElement
      */
     public bool $required = false;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         if (Arr::pull($config, 'labelHidden')) {
             $config['label'] = '__blank__';
         }
@@ -758,12 +762,14 @@ abstract class BaseField extends FieldLayoutElement
     #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
-        return Arr::merge(parent::containerAttributes($element, $static), [
-            'data' => [
-                'base-input-name' => InputNamespace::namespaceInputName($this->baseInputName()),
-                'error-key' => $this->errorKey(),
-            ],
-        ]);
+        $attributes = parent::containerAttributes($element, $static);
+        $attributes['data'] = [
+            ...($attributes['data'] ?? []),
+            'base-input-name' => InputNamespace::namespaceInputName($this->baseInputName()),
+            'error-key' => $this->errorKey(),
+        ];
+
+        return $attributes;
     }
 
     /**
@@ -808,10 +814,12 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns or sets the field’s label.
+     *
+     * @return ($label is false ? string|null : static)
      */
-    public function label(?string $label = null): static|string|null
+    public function label(string|null|false $label = false): static|string|null
     {
-        if (func_num_args() !== 0) {
+        if ($label !== false) {
             $this->label = $label;
 
             return $this;
@@ -1003,6 +1011,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
      */
+    /** @return 'ltr'|'rtl' */
     protected function orientation(?ElementInterface $element = null, bool $static = false): string
     {
         // If there’s only one site, go with its language

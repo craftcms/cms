@@ -47,6 +47,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Router;
+use Illuminate\Routing\ViewController;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
@@ -86,7 +87,7 @@ class RouteServiceProvider extends ServiceProvider
         LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {
             $templates = require $this->app->getCachedRoutesPath();
 
-            CraftMaintenanceMiddleware::registerRouteExceptions(is_array($templates) ? $templates : null);
+            CraftMaintenanceMiddleware::registerRouteExceptions(is_array($templates) ? array_map(strval(...), array_values($templates)) : null);
             $this->bootRequestForgeryExceptions();
         });
     }
@@ -124,7 +125,13 @@ class RouteServiceProvider extends ServiceProvider
 
             $routes->getProjectConfigRoutes()->each(
                 fn (Route $route) => $router
-                    ->view($route->getUri(), $route->template)
+                    ->match(['GET', 'HEAD'], $route->getUri(), ViewController::class)
+                    ->setDefaults([
+                        'view' => $route->template,
+                        'data' => [],
+                        'status' => 200,
+                        'headers' => [],
+                    ])
                     ->middleware(['craft', 'craft.web']),
             );
         });

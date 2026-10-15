@@ -31,7 +31,7 @@ class Handle extends Control
             $sourcePath = [...array_slice($control->path, 0, -1), ...$source];
             HtmlStack::jsWithVars(fn ($sourceId, $targetId) => <<<JS
 new Craft.HandleGenerator('#' + $sourceId, '#' + $targetId)
-JS, [$renderer->inputId($sourcePath), $attributes['id']]);
+JS, [$renderer->inputId(array_values(array_map(strval(...), $sourcePath))), $attributes['id']]);
         }
 
         return InputHandle::make()

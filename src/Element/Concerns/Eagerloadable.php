@@ -77,7 +77,7 @@ trait Eagerloadable
      *                          or `false` if the result should be ignored (and not used anywhere else), or `null` if the result should be ignored for this handle,
      *                          but still used elsewhere.
      *
-     * @phpstan-return EagerLoadingMap|null|false
+     * @phpstan-return EagerLoadingMap|list<EagerLoadingMap>|null|false
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -180,7 +180,7 @@ trait Eagerloadable
      */
     private static function _mapDescendants(array $sourceElements, bool $children): ?array
     {
-        $elementStructureData = self::_structureDataForElements($sourceElements, $children);
+        $elementStructureData = self::_structureDataForElements($sourceElements);
 
         if (empty($elementStructureData)) {
             return null;
@@ -200,13 +200,18 @@ trait Eagerloadable
 
         // Fetch the descendant data
         $descendantStructureQuery
-            ->select(['structureId', 'lft', 'rgt', 'elementId'])
-            ->when($children, fn (Builder $query) => $query->addSelect('level'))
+            ->select(['structureId', 'lft', 'rgt', 'elementId', 'level'])
             ->orderBy('lft');
 
         $descendantStructureData = $descendantStructureQuery
             ->get()
-            ->map(fn (object $data) => (array) $data);
+            ->map(fn (\stdClass $data) => [
+                'structureId' => (int) $data->structureId,
+                'elementId' => (int) $data->elementId,
+                'lft' => (int) $data->lft,
+                'rgt' => (int) $data->rgt,
+                'level' => (int) $data->level,
+            ]);
 
         // Map the elements to their descendants
         $map = [];
@@ -243,7 +248,7 @@ trait Eagerloadable
      */
     private static function _mapAncestors(array $sourceElements, bool $parents): ?array
     {
-        $elementStructureData = self::_structureDataForElements($sourceElements, $parents);
+        $elementStructureData = self::_structureDataForElements($sourceElements);
 
         if (empty($elementStructureData)) {
             return null;
@@ -263,13 +268,18 @@ trait Eagerloadable
 
         // Fetch the ancestor data
         $ancestorStructureQuery
-            ->select(['structureId', 'lft', 'rgt', 'elementId'])
-            ->when($parents, fn (Builder $query) => $query->addSelect('level'))
+            ->select(['structureId', 'lft', 'rgt', 'elementId', 'level'])
             ->orderBy('lft');
 
         $ancestorStructureData = $ancestorStructureQuery
             ->get()
-            ->map(fn (object $data) => (array) $data);
+            ->map(fn (\stdClass $data) => [
+                'structureId' => (int) $data->structureId,
+                'elementId' => (int) $data->elementId,
+                'lft' => (int) $data->lft,
+                'rgt' => (int) $data->rgt,
+                'level' => (int) $data->level,
+            ]);
 
         // Map the elements to their ancestors
         $map = [];
@@ -304,9 +314,9 @@ trait Eagerloadable
 
     /**
      * @param  ElementInterface[]  $elements
-     * @return array<int,array{structureId:int,elementId:int,lft:int,rgt:int,level?:int}>
+     * @return array<int,array{structureId:int,elementId:int,lft:int,rgt:int,level:int}>
      */
-    private static function _structureDataForElements(array $elements, bool $withLevel): array
+    private static function _structureDataForElements(array $elements): array
     {
         $data = [];
         $fetchDataForIds = [];
@@ -328,10 +338,15 @@ trait Eagerloadable
         if (! empty($fetchDataForIds)) {
             $fetched = DB::table(Table::STRUCTUREELEMENTS)
                 ->whereIn('elementId', $fetchDataForIds)
-                ->select(['structureId', 'elementId', 'lft', 'rgt'])
-                ->when($withLevel, fn (Builder $query) => $query->addSelect('level'))
+                ->select(['structureId', 'elementId', 'lft', 'rgt', 'level'])
                 ->get()
-                ->map(fn (object $data) => (array) $data)
+                ->map(fn (\stdClass $data) => [
+                    'structureId' => (int) $data->structureId,
+                    'elementId' => (int) $data->elementId,
+                    'lft' => (int) $data->lft,
+                    'rgt' => (int) $data->rgt,
+                    'level' => (int) $data->level,
+                ])
                 ->all();
 
             array_push($data, ...$fetched);
@@ -400,7 +415,10 @@ trait Eagerloadable
                 're.id as target',
             ])
             ->get()
-            ->map(fn (object $data) => (array) $data);
+            ->map(fn (\stdClass $data) => [
+                'source' => (int) $data->source,
+                'target' => (int) $data->target,
+            ]);
 
         return [
             'elementType' => static::class,
@@ -428,7 +446,10 @@ trait Eagerloadable
                 'e.id as target',
             ])
             ->get()
-            ->map(fn (object $data) => (array) $data);
+            ->map(fn (\stdClass $data) => [
+                'source' => (int) $data->source,
+                'target' => (int) $data->target,
+            ]);
 
         return [
             'elementType' => static::class,
@@ -456,7 +477,10 @@ trait Eagerloadable
                 'e.id as target',
             ])
             ->get()
-            ->map(fn (object $data) => (array) $data);
+            ->map(fn (\stdClass $data) => [
+                'source' => (int) $data->source,
+                'target' => (int) $data->target,
+            ]);
 
         return [
             'elementType' => static::class,
@@ -485,7 +509,10 @@ trait Eagerloadable
                 'd.creatorId as target',
             ])
             ->get()
-            ->map(fn (object $data) => (array) $data);
+            ->map(fn (\stdClass $data) => [
+                'source' => (int) $data->source,
+                'target' => (int) $data->target,
+            ]);
 
         return [
             'elementType' => User::class,
@@ -513,7 +540,10 @@ trait Eagerloadable
                 'r.creatorId as target',
             ])
             ->get()
-            ->map(fn (object $data) => (array) $data);
+            ->map(fn (\stdClass $data) => [
+                'source' => (int) $data->source,
+                'target' => (int) $data->target,
+            ]);
 
         return [
             'elementType' => User::class,

@@ -47,7 +47,7 @@ class SessionAuth
     public static function deauthorize(string $action): void
     {
         Cache::lock(self::AUTH_LOCK_NAME)->block(5, function () use ($action) {
-            $access = Session::get(self::$authAccessParam, []);
+            $access = array_values(Session::get(self::$authAccessParam, []));
             $index = array_search($action, $access, true);
 
             if ($index === false) {

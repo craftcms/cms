@@ -77,8 +77,12 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
      */
     public bool $allowCustomColors = false;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         // presets => palette
         if (array_key_exists('presets', $config) || array_key_exists('defaultColor', $config)) {
             $defaultColor = Arr::pull($config, 'defaultColor');

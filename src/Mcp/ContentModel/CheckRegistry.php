@@ -46,9 +46,9 @@ class CheckRegistry extends TypeRegistry
     /** @return list<string> */
     public function ids(): array
     {
-        return $this->types()
+        return array_values($this->types()
             ->map(static fn (string $type): string => $type::id())
-            ->all();
+            ->all());
     }
 
     public function find(string $id): ?Check

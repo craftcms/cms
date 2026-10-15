@@ -28,7 +28,8 @@ class ElementPlaceholders
             throw new InvalidArgumentException('Placeholder element is missing an ID');
         }
 
-        $this->elements[$element->getCanonicalId()][$element->siteId] = $element;
+        $canonicalId = $element->getCanonicalId() ?? throw new InvalidArgumentException('Placeholder element is missing a canonical ID.');
+        $this->elements[$canonicalId][$element->siteId] = $element;
 
         if ($element->uri) {
             $this->uris[$element->uri][$element->siteId] = $element;

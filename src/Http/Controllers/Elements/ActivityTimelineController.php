@@ -44,7 +44,7 @@ readonly class ActivityTimelineController
             'events' => $this->presenter->events(
                 $query->get()->reverse()->values(),
                 currentUserElement() ?? abort(401),
-            )->all(),
+            )->toArray(),
         ]);
     }
 }

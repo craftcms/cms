@@ -78,6 +78,27 @@ class NativeFields
             }
         }
 
-        return $fields;
+        $normalizedFields = [];
+
+        foreach ($fields as $field) {
+            $class = is_array($field) ? ($field['class'] ?? null) : $field;
+
+            if (! $class instanceof BaseField && (! is_string($class) || ! is_subclass_of($class, BaseField::class))) {
+                throw new InvalidArgumentException('Native fields must be field instances, field classes, or field configurations.');
+            }
+
+            if (is_array($field)) {
+                if (! is_string($class)) {
+                    throw new InvalidArgumentException('Native field configurations must name a field class.');
+                }
+
+                $field['class'] = $class;
+                $normalizedFields[] = $field;
+            } else {
+                $normalizedFields[] = $class;
+            }
+        }
+
+        return $normalizedFields;
     }
 }

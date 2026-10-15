@@ -184,6 +184,7 @@ class ImageTransformEditViewModel extends ViewModel
                 'value' => (string) $option['value'],
             ])
             ->prepend(['label' => t('Auto'), 'value' => ''])
+            ->values()
             ->all();
     }
 
@@ -191,6 +192,7 @@ class ImageTransformEditViewModel extends ViewModel
     private function formatOptions(mixed $format): array
     {
         return collect(ImageTransformFormat::asOptions())
+            ->map(fn (array $option): array => [...$option, 'value' => (string) $option['value']])
             ->prepend(['label' => t('Auto'), 'value' => ''])
             ->reject(fn (array $option): bool => $format !== $option['value']
                 && $option['value'] !== ''

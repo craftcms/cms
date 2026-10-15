@@ -51,9 +51,9 @@ readonly class CapabilityDiscovery implements DiscovererInterface
     }
 
     /**
-     * @param  list<string>  $directories
-     * @param  list<string>  $excludeDirs
-     * @param  list<string>  $namePatterns
+     * @param  array<string>  $directories
+     * @param  array<string>  $excludeDirs
+     * @param  array<string>  $namePatterns
      */
     public function discoverPublic(
         string $basePath,
@@ -70,9 +70,9 @@ readonly class CapabilityDiscovery implements DiscovererInterface
     }
 
     /**
-     * @param  list<string>  $directories
-     * @param  list<string>  $excludeDirs
-     * @param  list<string>  $namePatterns
+     * @param  array<string>  $directories
+     * @param  array<string>  $excludeDirs
+     * @param  array<string>  $namePatterns
      */
     public function discoverStdio(
         string $basePath,
@@ -87,9 +87,9 @@ readonly class CapabilityDiscovery implements DiscovererInterface
     }
 
     /**
-     * @param  list<string>  $directories
-     * @param  list<string>  $excludeDirs
-     * @param  list<string>  $namePatterns
+     * @param  array<string>  $directories
+     * @param  array<string>  $excludeDirs
+     * @param  array<string>  $namePatterns
      */
     private function discoverAll(string $basePath, array $directories, array $excludeDirs, array $namePatterns): DiscoveryState
     {

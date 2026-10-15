@@ -41,6 +41,6 @@ class IconDataType implements GeneratorInterface, SingleGeneratorInterface
 
                 return Gql::prepareFieldDefinitions($fields, $typeName);
             },
-        ]));
+        ]), IconData::class);
     }
 }

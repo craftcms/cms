@@ -39,18 +39,22 @@ class MemoizableArray implements Countable, IteratorAggregate
     /** @var array<int|string, T> Normalized elements */
     private array $normalized = [];
 
-    /** @var array<string, T|self<T>|null> Memoized array elements */
+    /** @var array<string, self<T>> Memoized filtered arrays */
     private array $memoized = [];
 
+    /** @var array<string, T|null> */
+    private array $memoizedValues = [];
+
     /**
-     * @param  array<T>  $elements  The items to be memoized
-     * @param  callable|null  $normalizer  A method that the items should be normalized with when first
-     *                                     returned by `all()` or `firstWhere()`.
+     * @template TInput
+     *
+     * @param  array<array-key, TInput>  $elements  The items to be memoized
+     * @param  (callable(TInput, array-key): T)|null  $normalizer  A method that the items should be normalized with when first
+     *                                                             returned by `all()` or `firstWhere()`.
+     *
+     * @phpstan-self-out self<($normalizer is null ? TInput : T)>
      */
-    public function __construct(
-        private readonly array $elements,
-        private readonly mixed $normalizer = null,
-    ) {}
+    public function __construct(private readonly array $elements, private readonly mixed $normalizer = null) {}
 
     /**
      * @return array<T>
@@ -151,8 +155,8 @@ class MemoizableArray implements Countable, IteratorAggregate
         $memKey = $this->memKey('firstWhere', $key, $value, $strict);
 
         // Use array_key_exists() because the value could be null
-        if (array_key_exists($memKey, $this->memoized)) {
-            return $this->memoized[$memKey];
+        if (array_key_exists($memKey, $this->memoizedValues)) {
+            return $this->memoizedValues[$memKey];
         }
 
         $valueKey = null;
@@ -165,7 +169,7 @@ class MemoizableArray implements Countable, IteratorAggregate
             }
         }
 
-        return $this->memoized[$memKey] = $this->normalizeByKey($valueKey);
+        return $this->memoizedValues[$memKey] = $this->normalizeByKey($valueKey);
     }
 
     /** @return ArrayIterator<array-key, T> */
@@ -180,7 +184,7 @@ class MemoizableArray implements Countable, IteratorAggregate
     }
 
     /**
-     * @param  array<array-key, T>  $elements
+     * @param  array<array-key, mixed>  $elements
      * @return array<array-key, T>
      */
     private function normalize(array $elements): array

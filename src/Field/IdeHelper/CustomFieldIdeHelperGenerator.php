@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Field\IdeHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -247,6 +248,10 @@ readonly class CustomFieldIdeHelperGenerator
         $elementFields = [];
 
         foreach ($this->fields->getAllLayouts() as $layout) {
+            if (! is_subclass_of($layout->type, ElementInterface::class)) {
+                continue;
+            }
+
             $elementFields[$layout->type] = array_merge(
                 $elementFields[$layout->type] ?? [],
                 $this->collectFieldsFromLayout($layout),
@@ -412,7 +417,13 @@ readonly class CustomFieldIdeHelperGenerator
         foreach ($classes as $class) {
             foreach ($class['fields'] as $type) {
                 // Split on non-word characters to find all identifiers (handles generics, unions)
-                foreach (preg_split('/[^A-Za-z0-9_]+/', $type) as $token) {
+                $tokens = preg_split('/[^A-Za-z0-9_]+/', $type);
+
+                if ($tokens === false) {
+                    throw new \RuntimeException('Unable to parse the field type.');
+                }
+
+                foreach ($tokens as $token) {
                     if ($token !== '') {
                         $usedShortNames[$token] = true;
                     }

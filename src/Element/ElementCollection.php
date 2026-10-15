@@ -40,7 +40,7 @@ class ElementCollection extends Collection
      *
      * @param  int|TElement|Arrayable<array-key,int>|iterable<array-key,int>  $key
      * @param  TFindDefault  $default
-     * @return static<TKey,TElement>|TElement|TFindDefault
+     * @return ($key is int|ElementInterface ? TElement|TFindDefault : static)
      */
     public function find(mixed $key, mixed $default = null): mixed
     {
@@ -250,9 +250,15 @@ class ElementCollection extends Collection
                 ->all();
         }
 
-        return $this
-            ->filter(fn (ElementInterface $element) => isset($freshElements[$element::class][$element->siteSettingsId]))
-            ->map(fn (ElementInterface $element) => $freshElements[$element::class][$element->siteSettingsId]);
+        $fresh = [];
+
+        foreach ($this->items as $key => $element) {
+            if ($element->siteSettingsId !== null && isset($freshElements[$element::class][$element->siteSettingsId])) {
+                $fresh[$key] = $freshElements[$element::class][$element->siteSettingsId];
+            }
+        }
+
+        return static::make($fresh);
     }
 
     /**
@@ -262,7 +268,7 @@ class ElementCollection extends Collection
     public function diff($items): self
     {
         $diff = self::make();
-        $ids = array_flip(array_map(fn (ElementInterface $element) => $element->siteSettingsId, $items));
+        $ids = array_flip(array_map(fn (ElementInterface $element) => $element->siteSettingsId, $this->getArrayableItems($items)));
 
         foreach ($this->items as $element) {
             /** @var TElement $element */
@@ -288,7 +294,7 @@ class ElementCollection extends Collection
             return $intersect;
         }
 
-        $ids = array_flip(array_map(fn (ElementInterface $element) => $element->siteSettingsId, $items));
+        $ids = array_flip(array_map(fn (ElementInterface $element) => $element->siteSettingsId, $this->getArrayableItems($items)));
 
         foreach ($this->items as $element) {
             /** @var TElement $element */
@@ -337,7 +343,7 @@ class ElementCollection extends Collection
         }
 
         if (! Arr::isNumeric($keys)) {
-            return parent::only($keys);
+            return static::make(array_intersect_key($this->items, array_flip($keys)));
         }
 
         $keys = array_flip($keys);
@@ -367,7 +373,7 @@ class ElementCollection extends Collection
         }
 
         if (! Arr::isNumeric($keys)) {
-            return parent::except($keys);
+            return static::make(array_diff_key($this->items, array_flip($keys)));
         }
 
         $keys = array_flip($keys);
@@ -418,7 +424,7 @@ class ElementCollection extends Collection
     #[Override]
     public function flatten($depth = INF): Collection
     {
-        return $this->toBase()->flatten($depth);
+        return $this->toBase()->flatten(is_infinite($depth) ? PHP_INT_MAX : (int) $depth);
     }
 
     /**

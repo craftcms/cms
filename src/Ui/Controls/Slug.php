@@ -38,7 +38,7 @@ class Slug extends Text
             $sourcePath = [...array_slice($control->path, 0, -1), ...$source];
             HtmlStack::jsWithVars(fn ($sourceId, $targetId, $charMap) => <<<JS
 new Craft.SlugGenerator('#' + $sourceId, '#' + $targetId, {charMap: $charMap})
-JS, [$renderer->inputId($sourcePath), $attributes['id'], $control->props['charMap'] ?? null]);
+JS, [$renderer->inputId(array_values(array_map(strval(...), $sourcePath))), $attributes['id'], $control->props['charMap'] ?? null]);
         }
 
         return parent::renderHtml($control, $value, $attributes, $renderer);

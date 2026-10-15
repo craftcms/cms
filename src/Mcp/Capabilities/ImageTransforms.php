@@ -37,7 +37,7 @@ readonly class ImageTransforms
 
         return [
             'count' => $transforms->count(),
-            'transforms' => $transforms->all(),
+            'transforms' => array_values($transforms->all()),
         ];
     }
 

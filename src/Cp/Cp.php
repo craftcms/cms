@@ -328,6 +328,9 @@ readonly class Cp
         }
 
         $parsed = parse_url($generalConfig->httpProxy);
+        if ($parsed === false || ! isset($parsed['host'], $parsed['scheme'])) {
+            throw new \InvalidArgumentException('Invalid HTTP proxy URL.');
+        }
 
         return array_filter([
             'host' => $parsed['host'],

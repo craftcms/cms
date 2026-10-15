@@ -29,11 +29,15 @@ class ElementRevisionsController
         private readonly ElementRequest $request,
     ) {}
 
-    public function index(): CpScreenResponse
+    public function index(): CpScreenResponse|Response
     {
         $element = $this->request->element([
             'id' => $this->request->route('id'),
         ]);
+
+        if ($element instanceof Response) {
+            return $element;
+        }
 
         if ($element->getIsUnpublishedDraft()) {
             abort(400, 'Unpublished drafts don\'t have revisions');
@@ -67,6 +71,10 @@ class ElementRevisionsController
     public function revert(Revisions $revisions, ElementActivity $elementActivity): Response
     {
         $element = $this->request->element();
+
+        if ($element instanceof Response) {
+            return $element;
+        }
 
         if (! $element || ! $element->getIsRevision()) {
             abort(400, 'No revision was identified by the request.');

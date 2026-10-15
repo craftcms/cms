@@ -41,6 +41,6 @@ class AddressType extends Generator implements GeneratorInterface, SingleGenerat
                     AddressElement::GQL_TYPE_NAME
                 );
             },
-        ]));
+        ]), Address::class);
     }
 }

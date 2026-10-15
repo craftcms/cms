@@ -11,6 +11,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Override;
 use Yiisoft\Arrays\ArrayableInterface;
+use Yiisoft\Arrays\ArrayHelper;
 
 /**
  * @since 6.0.0
@@ -64,6 +65,10 @@ class Arr extends \Illuminate\Support\Arr
             // Split it on the non-escaped commas
             $object = preg_split('/(?<!\\\),/', $object);
 
+            if ($object === false) {
+                throw new \InvalidArgumentException('Unable to split the string into an array.');
+            }
+
             // Remove any of the backslashes used to escape the commas
             foreach ($object as $key => $val) {
                 // Remove leading/trailing whitespace
@@ -103,10 +108,12 @@ class Arr extends \Illuminate\Support\Arr
                 if (! empty($properties[$className])) {
                     $result = [];
                     foreach ($properties[$className] as $key => $name) {
-                        if (is_int($key)) {
+                        if (! is_string($name)) {
+                            $result[$key] = $name($object);
+                        } elseif (is_int($key)) {
                             $result[$name] = $object->$name;
                         } else {
-                            $result[$key] = static::get($object, $name);
+                            $result[$key] = ArrayHelper::getValue($object, $name);
                         }
                     }
 
@@ -121,7 +128,7 @@ class Arr extends \Illuminate\Support\Arr
             } else {
                 $result = [];
 
-                foreach ($object as $key => $value) {
+                foreach ($object instanceof \Traversable ? $object : get_object_vars($object) as $key => $value) {
                     $result[$key] = $value;
                 }
             }
@@ -260,7 +267,7 @@ class Arr extends \Illuminate\Support\Arr
     public static function containsRecursive(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
     {
         foreach ($array as $element) {
-            $elementValue = static::get($element, $key);
+            $elementValue = ! is_string($key) ? $key($element) : static::get($element, $key);
 
             if (($strict && $elementValue === $value) || (! $strict && $elementValue == $value)) {
                 return true;

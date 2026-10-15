@@ -38,7 +38,7 @@ readonly class ElementSourcesController
             'sources' => $sources
                 ->map(fn (array $source) => [
                     'key' => $source['key'] ?? null,
-                    'type' => $source['type'],
+                    'type' => $source['type'] ?? (isset($source['heading']) ? 'heading' : 'source'),
                     'label' => $source['label'] ?? null,
                     'heading' => $source['heading'] ?? null,
                     // Shown under the label, as the legacy modal did.
@@ -293,6 +293,6 @@ readonly class ElementSourcesController
             ->values()
             ->all();
 
-        return $attributes ?: '-';
+        return $attributes ? array_values($attributes) : '-';
     }
 }

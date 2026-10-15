@@ -155,7 +155,9 @@ readonly class ElementRefs
                     ->id(array_keys($refs));
 
                 foreach ($query->all() as $element) {
-                    $targetIds[$element->id] = true;
+                    if ($element->id !== null) {
+                        $targetIds[$element->id] = true;
+                    }
                 }
             }
         }

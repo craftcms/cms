@@ -48,7 +48,7 @@ class EditAssetController
         return Inertia::render('assets/Edit', new AssetEditViewModel(
             asset: $element,
             request: $this->request,
-            canSave: $this->canSave($element, $this->request->craftUser()),
+            canSave: $this->canSave($element, $this->request->requireCraftUser()),
         ));
     }
 }

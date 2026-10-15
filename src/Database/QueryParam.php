@@ -62,7 +62,7 @@ class QueryParam
 
         if (is_string($value)) {
             // Split it on the non-escaped commas
-            $value = preg_split('/(?<!\\\),/', $value);
+            $value = preg_split('/(?<!\\\),/', $value) ?: throw new \InvalidArgumentException('Invalid query parameter.');
 
             // Remove any of the backslashes used to escape the commas
             foreach ($value as $key => $val) {
@@ -90,7 +90,7 @@ class QueryParam
             return array_values(Arr::whereNotEmpty($value));
         }
 
-        return Arr::toArray($value);
+        return array_values(Arr::toArray($value));
     }
 
     /**

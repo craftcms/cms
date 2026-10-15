@@ -27,6 +27,8 @@ use CraftCms\Cms\Validation\Contracts\Validatable;
 use DateTimeInterface;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InputObjectField;
+use GraphQL\Type\Definition\InputType;
+use GraphQL\Type\Definition\OutputType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Query\Builder;
@@ -40,6 +42,8 @@ use Illuminate\Database\Query\Builder;
  */
 interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEditable, Grippable, SavableComponentInterface, Validatable
 {
+    public function getId(): ?int;
+
     /** @var string|null The field’s name */
     public ?string $name { get; set; }
 
@@ -124,7 +128,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * - 'site' (values will never be copied to other sites)
      * - 'custom' (values will be copied/not copied depending on a custom translation key)
      *
-     * @return TranslationMethod[]
+     * @return list<TranslationMethod>
      *
      * @see getTranslationKey()
      */
@@ -189,6 +193,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      *
      * @param  ElementInterface|null  $element  The element being edited
      */
+    /** @return 'ltr'|'rtl' */
     public function getOrientation(?ElementInterface $element): string;
 
     /**
@@ -451,19 +456,19 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Returns the GraphQL type to be used for this field type.
      */
-    /** @phpstan-return Type|FieldDefinitionConfig */
+    /** @phpstan-return (Type&OutputType)|FieldDefinitionConfig */
     public function getContentGqlType(): Type|array;
 
     /**
      * Returns the GraphQL type to be used as an argument in mutations for this field type.
      */
-    /** @phpstan-return Type|InputObjectFieldConfig */
+    /** @phpstan-return (Type&InputType)|InputObjectFieldConfig */
     public function getContentGqlMutationArgumentType(): Type|array;
 
     /**
      * Returns the GraphQL type to be used as an argument in queries for this field type.
      */
-    /** @phpstan-return Type|InputObjectFieldConfig */
+    /** @phpstan-return (Type&InputType)|InputObjectFieldConfig */
     public function getContentGqlQueryArgumentType(): Type|array;
 
     // Events

@@ -52,11 +52,14 @@ class ImageHelper
     public static function targetDimensions(
         int $sourceWidth,
         int $sourceHeight,
-        ?int $transformWidth,
-        ?int $transformHeight,
+        int|float|null $transformWidth,
+        int|float|null $transformHeight,
         string $mode = 'crop',
         ?bool $upscale = null,
     ): array {
+        $transformWidth = $transformWidth === null ? null : (int) $transformWidth;
+        $transformHeight = $transformHeight === null ? null : (int) $transformHeight;
+
         [$width, $height] = self::calculateMissingDimension($transformWidth, $transformHeight, $sourceWidth, $sourceHeight);
         $factor = max($sourceWidth / $width, $sourceHeight / $height);
 
@@ -118,16 +121,22 @@ class ImageHelper
         return in_array(strtolower($extension), self::webSafeFormats(), true);
     }
 
-    /** @return array<string,int|string>|false */
+    /** @return array{channels: int, ...<string, int|string>}|false */
     public static function pngImageInfo(string $file): array|false
     {
         if ($file === '') {
             return false;
         }
 
+        $header = file_get_contents($file, false, null, 0, 29);
+
+        if ($header === false) {
+            return false;
+        }
+
         $info = unpack(
             'A8sig/Nchunksize/A4chunktype/Nwidth/Nheight/Cbit-depth/Ccolor/Ccompression/Cfilter/Cinterface',
-            file_get_contents($file, false, null, 0, 29)
+            $header
         );
 
         if (empty($info)) {
@@ -149,6 +158,10 @@ class ImageHelper
         }
 
         $color = $info['color'];
+
+        if (! is_int($color)) {
+            return false;
+        }
 
         $type = [
             0 => 'Greyscale',
@@ -190,7 +203,13 @@ class ImageHelper
     {
         try {
             if (File::isSvg($filePath)) {
-                return self::parseSvgSize(file_get_contents($filePath));
+                $contents = file_get_contents($filePath);
+
+                if ($contents === false) {
+                    throw new ImageException('Unable to read the SVG file.');
+                }
+
+                return self::parseSvgSize($contents);
             }
 
             $image = Images::loadImage($filePath);
@@ -222,7 +241,7 @@ class ImageHelper
                     $validFrames = [0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF];
 
                     while (true) {
-                        $frameInfo = unpack('Cmarker/Ctype/nlength', stream_get_contents($stream, 4));
+                        $frameInfo = (unpack('Cmarker/Ctype/nlength', stream_get_contents($stream, 4)) ?: throw new ImageException('Unrecognized image file structure.'));
 
                         if ($frameInfo['marker'] !== 0xFF) {
                             throw new ImageException('Unrecognized JPG file structure.');
@@ -234,7 +253,7 @@ class ImageHelper
 
                         if (in_array($frameInfo['type'], $validFrames, true)) {
                             stream_get_contents($stream, 1);
-                            $data = unpack('nheight/nwidth', stream_get_contents($stream, 4));
+                            $data = (unpack('nheight/nwidth', stream_get_contents($stream, 4)) ?: throw new ImageException('Unrecognized image file structure.'));
                             $dimensions = [$data['width'], $data['height']];
                             break;
                         }
@@ -249,7 +268,7 @@ class ImageHelper
                         throw new ImageException('Unrecognized image signature.');
                     }
 
-                    $data = unpack('v2', stream_get_contents($stream, 4));
+                    $data = (unpack('v2', stream_get_contents($stream, 4)) ?: throw new ImageException('Unrecognized image file structure.'));
                     $dimensions = array_values($data);
                     break;
                 case '8950':
@@ -266,7 +285,7 @@ class ImageHelper
                         throw new ImageException('Unrecognized PNG file structure.');
                     }
 
-                    $data = unpack('N2', stream_get_contents($stream, 8));
+                    $data = (unpack('N2', stream_get_contents($stream, 8)) ?: throw new ImageException('Unrecognized image file structure.'));
                     $dimensions = array_values($data);
                     break;
                     // Maybe BMP
@@ -338,7 +357,7 @@ class ImageHelper
 
             $bytesRead += 8;
             $chunk = substr($chunkHeader, 0, 4);
-            $chunkSize = unpack('V', substr($chunkHeader, 4, 4))[1];
+            $chunkSize = (unpack('V', substr($chunkHeader, 4, 4)) ?: throw new ImageException('Unrecognized image file structure.'))[1];
             $paddedChunkSize = $chunkSize + ($chunkSize % 2);
 
             switch ($chunk) {
@@ -366,7 +385,7 @@ class ImageHelper
                         throw new ImageException('Unrecognized WebP file structure.');
                     }
 
-                    $bytes = unpack('C4', substr($data, 1, 4));
+                    $bytes = (unpack('C4', substr($data, 1, 4)) ?: throw new ImageException('Unrecognized image file structure.'));
 
                     return [
                         1 + $bytes[1] + (($bytes[2] & 0x3F) << 8),
@@ -382,7 +401,7 @@ class ImageHelper
                         throw new ImageException('Unrecognized WebP file structure.');
                     }
 
-                    $dimensions = unpack('vwidth/vheight', substr($data, 6, 4));
+                    $dimensions = (unpack('vwidth/vheight', substr($data, 6, 4)) ?: throw new ImageException('Unrecognized image file structure.'));
 
                     return [
                         $dimensions['width'] & 0x3FFF,
@@ -412,7 +431,7 @@ class ImageHelper
             return null;
         }
 
-        $ftypSize = unpack('N', substr($buffer, 0, 4))[1];
+        $ftypSize = (unpack('N', substr($buffer, 0, 4)) ?: throw new ImageException('Unrecognized image file structure.'))[1];
         if ($ftypSize < 16 || $ftypSize > self::MAX_IMAGE_SIZE_STREAM_BYTES) {
             return null;
         }
@@ -454,17 +473,17 @@ class ImageHelper
             return null;
         }
 
-        $dibHeaderSize = unpack('V', substr($buffer, 12, 4))[1];
+        $dibHeaderSize = (unpack('V', substr($buffer, 12, 4)) ?: throw new ImageException('Unrecognized image file structure.'))[1];
 
         if ($dibHeaderSize === 12) {
             // BITMAPCOREHEADER (OS/2 1.x): unsigned 16-bit dimensions
-            $width = unpack('v', substr($buffer, 16, 2))[1];
-            $height = unpack('v', substr($buffer, 18, 2))[1];
+            $width = (unpack('v', substr($buffer, 16, 2)) ?: throw new ImageException('Unrecognized image file structure.'))[1];
+            $height = (unpack('v', substr($buffer, 18, 2)) ?: throw new ImageException('Unrecognized image file structure.'))[1];
         } elseif ($dibHeaderSize >= 40 && strlen($buffer) >= 24) {
             // BITMAPINFOHEADER and later: signed 32-bit dimensions, where a negative height means top-down
             [$width, $height] = array_map(
                 fn (int $value) => $value >= 0x80000000 ? $value - 0x100000000 : $value,
-                array_values(unpack('V2', substr($buffer, 16, 8))),
+                array_values((unpack('V2', substr($buffer, 16, 8)) ?: throw new ImageException('Unrecognized image file structure.'))),
             );
             $height = abs($height);
         } else {
@@ -496,9 +515,13 @@ class ImageHelper
                 return null;
             }
 
-            $size = unpack('N', substr($header, 0, 4))[1];
+            $size = (unpack('N', substr($header, 0, 4)) ?: throw new ImageException('Unrecognized image file structure.'))[1];
             $type = substr($header, 4, 4);
             $bytesRead += 8;
+
+            if (! is_int($size)) {
+                return null;
+            }
 
             if ($size === 1) {
                 // 64-bit box size
@@ -507,7 +530,13 @@ class ImageHelper
                     return null;
                 }
                 $bytesRead += 8;
-                $contentSize = unpack('J', $largeSize)[1] - 16;
+                $largeSize = (unpack('J', $largeSize) ?: throw new ImageException('Unrecognized image file structure.'))[1];
+
+                if (! is_int($largeSize) || $largeSize < 16) {
+                    return null;
+                }
+
+                $contentSize = $largeSize - 16;
             } elseif ($size === 0) {
                 // Box extends to the end of the file
                 $contentSize = PHP_INT_MAX;
@@ -593,7 +622,7 @@ class ImageHelper
                 5 => [16, 9],
                 6 => [5, 4],
                 7 => [2, 1],
-            ][$ratio];
+            ][$ratio] ?? throw new ImageException('Invalid JPEG XL aspect ratio.');
             $width = intdiv($height * $numerator, $denominator);
         }
 
@@ -609,7 +638,7 @@ class ImageHelper
             return null;
         }
 
-        $size = unpack('N', substr($buffer, $offset, 4))[1];
+        $size = (unpack('N', substr($buffer, $offset, 4)) ?: throw new ImageException('Unrecognized image file structure.'))[1];
         $contentOffset = $offset + 8;
         $endOffset = $offset + $size;
 
@@ -698,11 +727,11 @@ class ImageHelper
 
         $version = ord($buffer[0]);
         if ($version === 0) {
-            return unpack('n', substr($buffer, 4, 2))[1];
+            return (unpack('n', substr($buffer, 4, 2)) ?: throw new ImageException('Unrecognized image file structure.'))[1];
         }
 
         if ($version === 1 && strlen($buffer) >= 8) {
-            return unpack('N', substr($buffer, 4, 4))[1];
+            return (unpack('N', substr($buffer, 4, 4)) ?: throw new ImageException('Unrecognized image file structure.'))[1];
         }
 
         return null;
@@ -717,7 +746,7 @@ class ImageHelper
 
         while (($box = self::imageSizeBoxAt($buffer, $offset)) !== null) {
             if ($box['type'] === 'ispe' && $box['contentSize'] >= 12) {
-                $size = unpack('Nwidth/Nheight', substr($buffer, $box['contentOffset'] + 4, 8));
+                $size = (unpack('Nwidth/Nheight', substr($buffer, $box['contentOffset'] + 4, 8)) ?: throw new ImageException('Unrecognized image file structure.'));
                 $dimensions[$propertyIndex] = [$size['width'], $size['height']];
             }
 
@@ -736,7 +765,7 @@ class ImageHelper
         }
 
         $version = ord($buffer[0]);
-        $entryCount = unpack('N', substr($buffer, 4, 4))[1];
+        $entryCount = (unpack('N', substr($buffer, 4, 4)) ?: throw new ImageException('Unrecognized image file structure.'))[1];
         $offset = 8;
 
         for ($i = 0; $i < $entryCount; $i++) {
@@ -745,7 +774,7 @@ class ImageHelper
                 return [];
             }
 
-            $itemId = $itemIdLength === 2 ? unpack('n', substr($buffer, $offset, 2))[1] : unpack('N', substr($buffer, $offset, 4))[1];
+            $itemId = $itemIdLength === 2 ? (unpack('n', substr($buffer, $offset, 2)) ?: throw new ImageException('Unrecognized image file structure.'))[1] : (unpack('N', substr($buffer, $offset, 4)) ?: throw new ImageException('Unrecognized image file structure.'))[1];
             $offset += $itemIdLength;
 
             $associationCount = ord($buffer[$offset]);
@@ -761,7 +790,7 @@ class ImageHelper
                 if ($associationLength === 1) {
                     $propertyIndex = ord($buffer[$offset]) & 0x7F;
                 } else {
-                    $propertyIndex = unpack('n', substr($buffer, $offset, 2))[1] & 0x7FFF;
+                    $propertyIndex = (unpack('n', substr($buffer, $offset, 2)) ?: throw new ImageException('Unrecognized image file structure.'))[1] & 0x7FFF;
                 }
 
                 $offset += $associationLength;
@@ -781,7 +810,7 @@ class ImageHelper
 
     private static function littleEndian24(string $bytes): int
     {
-        $bytes = unpack('C3', $bytes);
+        $bytes = (unpack('C3', $bytes) ?: throw new ImageException('Unrecognized image file structure.'));
 
         return $bytes[1] + ($bytes[2] << 8) + ($bytes[3] << 16);
     }

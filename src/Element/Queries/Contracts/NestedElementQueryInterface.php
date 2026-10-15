@@ -9,6 +9,11 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 /**
  * NestedElementQueryInterface defines the common interface to be implemented by element query classes
  * which can query for nested elements.
+ *
+ * @template TElement of ElementInterface = ElementInterface
+ * @template TAsArray of bool = false
+ *
+ * @extends ElementQueryInterface<TElement, TAsArray>
  */
 interface NestedElementQueryInterface extends ElementQueryInterface
 {

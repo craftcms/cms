@@ -10,6 +10,7 @@ use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use Override;
 
@@ -108,10 +109,10 @@ class NewUsers extends Widget
             Field::make(t('User Group'))
                 ->control(Choice::make('userGroupId')->value($this->userGroupId)->options([
                     ['label' => t('All'), 'value' => ''],
-                    ...$userGroups->map(fn ($userGroup): array => [
+                    ...$userGroups->map(fn (UserGroup $userGroup): array => [
                         'label' => t($userGroup->name, category: 'site'),
-                        'value' => $userGroup->id,
-                    ])->all(),
+                        'value' => $userGroup->id ?? '',
+                    ])->values()->all(),
                 ])),
         ));
     }

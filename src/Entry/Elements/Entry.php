@@ -13,6 +13,7 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Cp\RequestedSite;
+use CraftCms\Cms\Database\Expressions\EntryPostDateSort;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -106,6 +107,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;
+use Stringable;
 use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
@@ -190,7 +192,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     public ?DateTimeInterface $expiryDate = null;
 
     /**
-     * @var self::STATUS_*|null The entry’s previous status, if it had one
+     * @var string|null The entry’s previous status, including statuses provided by subclasses.
      */
     public ?string $oldStatus = null;
 
@@ -570,7 +572,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * limits some entries rather than all of them.
      *
      * @param  array<array-key, mixed>  $rules
-     * @return list<array{class: class-string, values?: string[]}>
+     * @return list<array{class:string, ...}>
      */
     private static function sourceWideConditionRules(array $rules): array
     {
@@ -582,10 +584,15 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $rules = is_array($rules['rules'] ?? null) ? $rules['rules'] : [];
         }
 
-        return array_values(array_filter(
-            $rules,
-            fn (mixed $rule): bool => is_array($rule) && isset($rule['class']) && is_string($rule['class']),
-        ));
+        $sourceRules = [];
+
+        foreach ($rules as $rule) {
+            if (is_array($rule) && isset($rule['class']) && is_string($rule['class'])) {
+                $sourceRules[] = $rule;
+            }
+        }
+
+        return $sourceRules;
     }
 
     #[Override]
@@ -642,7 +649,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
             if (
                 $section->type === SectionType::Structure &&
-                $user->can('createEntries:'.$section->uid)
+                $user?->can('createEntries:'.$section->uid)
             ) {
                 $newEntryUrl = 'entries/'.$section->handle.'/new';
                 // $newEntryUrl = sprintf('%s/new', $section->getCpIndexUri());
@@ -671,7 +678,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             }
 
             if (
-                $user->can("createEntries:$section->uid") &&
+                $user?->can("createEntries:$section->uid") &&
                 $user->can("saveEntries:$section->uid")
             ) {
                 $actions[] = [
@@ -693,7 +700,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
             $actions[] = Delete::class;
 
-            if ($user->can("deleteEntries:$section->uid")
+            if ($user?->can("deleteEntries:$section->uid")
                 && $section->type === SectionType::Structure
                 && $section->maxLevels !== 1
                 && $user->can("deletePeerEntries:$section->uid")
@@ -712,7 +719,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 $section &&
                 $section->propagationMethod === PropagationMethod::Custom &&
                 $section->getHasMultiSiteEntries() &&
-                $user->can("deleteEntriesForSite:$section->uid")
+                $user?->can("deleteEntriesForSite:$section->uid")
             ) ||
             (
                 ! $section &&
@@ -764,6 +771,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                                 : $b->name <=> $a->name
                         )
                         ->pluck('id')
+                        ->values()
                         ->all();
 
                     return new FixedOrderExpression('entries.sectionId', $sectionIds);
@@ -778,6 +786,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                             ? $a->name <=> $b->name
                             : $b->name <=> $a->name)
                         ->pluck('id')
+                        ->values()
                         ->all();
 
                     return new FixedOrderExpression('entries.typeId', $entryTypeIds);
@@ -786,22 +795,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ],
             [
                 'label' => t('Post Date'),
-                'orderBy' => function (int $dir) {
-                    $postDate = DB::getQueryGrammar()->wrap('entries.postDate');
-
-                    if ($dir === SORT_ASC) {
-                        if (DB::isMysql()) {
-                            return DB::raw("$postDate IS NOT NULL DESC, $postDate ASC");
-                        }
-
-                        return DB::raw("$postDate ASC NULLS LAST");
-                    }
-                    if (DB::isMysql()) {
-                        return DB::raw("$postDate IS NULL DESC, $postDate DESC");
-                    }
-
-                    return DB::raw("$postDate DESC NULLS FIRST");
-                },
+                'orderBy' => fn (int $dir) => new EntryPostDateSort($dir),
                 'attribute' => 'postDate',
                 'defaultDir' => 'desc',
             ],
@@ -1104,7 +1098,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $this->getType()->getColor();
     }
 
-    /** @return array<int, array{siteId: int, propagate: bool, enabledByDefault: bool}> */
+    /** @return list<int|array{siteId:int, propagate?:bool, enabledByDefault?:bool}> */
     #[Override]
     public function getSupportedSites(): array
     {
@@ -1352,7 +1346,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $crumbs[] = new ActionItem()
                 ->label($current['label'])
                 ->href($current['href'])
-                ->items($sectionOptions->count() > 1 ? $sectionOptions->all() : []);
+                ->items($sectionOptions->count() > 1 ? $sectionOptions->values()->all() : []);
         } elseif ($section->type !== SectionType::Single) {
             // Just show its name w/o a link
             $crumbs[] = new ActionItem()->label($section->getUiLabel());
@@ -1363,16 +1357,14 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
             $ancestors = $this->getAncestors();
             if ($ancestors instanceof ElementQueryInterface) {
-                $ancestors->status(null);
+                $ancestors = $ancestors->status(null)->collect();
             }
 
-            foreach ($ancestors->get()->filter(fn ($ancestor) => $user->can('view', $ancestor)) as $ancestor) {
-                $crumbs[] = [
-                    'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
-                        'appearance' => Appearance::Plain->value,
-                        'hyperlink' => true,
-                    ]),
-                ];
+            foreach ($ancestors->filter(fn ($ancestor) => $user?->can('view', $ancestor) ?? false) as $ancestor) {
+                $crumbs[] = new ActionItem()->html(app(ElementHtml::class)->elementChipHtml($ancestor, [
+                    'appearance' => Appearance::Plain->value,
+                    'hyperlink' => true,
+                ]));
             }
         }
 
@@ -1423,7 +1415,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     #[Override]
-    public function getChipLabelHtml(): string
+    public function getChipLabelHtml(): string|Stringable
     {
         $html = parent::getChipLabelHtml();
 
@@ -1447,7 +1439,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $this->getType()->getUiLabel();
     }
 
-    /** @return array<int, array{label: string, urlFormat: string}> */
+    /** @return array<array<string,mixed>> */
     #[Override]
     protected function previewTargets(): array
     {
@@ -1737,7 +1729,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         // make sure we're working with an array
         $authorIds = Arr::wrap($authorIds);
 
-        return array_map(fn ($id) => (int) $id, $authorIds);
+        return array_map(fn (User|int|string $id) => $id instanceof User ? $id->id : (int) $id, $authorIds);
     }
 
     /**
@@ -2068,7 +2060,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     // -------------------------------------------------------------------------
 
     #[Override]
-    protected function attributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string|Stringable
     {
         switch ($attribute) {
             case 'authors':
@@ -2185,8 +2177,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     Choice::make('typeId')
                         ->options(array_map(fn (EntryType $entryType) => [
                             'label' => t($entryType->name, category: 'site'),
-                            'value' => $entryType->id,
-                        ], $entryTypes))
+                            'value' => $entryType->id ?? '',
+                        ], array_values($entryTypes)))
                         ->value($this->getType()->id)
                         ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
                 );
@@ -2468,7 +2460,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             }
         }
 
-        $fields[] = parent::metaFieldsHtml($static);
+        $fields[] = (string) parent::metaFieldsHtml($static);
+        $fields = array_map(fn (string|Stringable|null $field): string => (string) $field, $fields);
 
         event($event = new EntryMetaFieldsResolving($this, $static, $fields));
 

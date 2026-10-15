@@ -239,7 +239,7 @@ class LinkData implements Arrayable, Serializable, Stringable
     /** @return array{type: string, value?: string, label?: string, urlSuffix?: string, target?: string, title?: string, class?: string, id?: string, rel?: string, ariaLabel?: string, download?: true, filename?: string} */
     public function serialize(): array
     {
-        return array_filter([
+        $data = array_filter([
             'value' => $this->value,
             'type' => $this->getType(),
             'label' => $this->label,
@@ -253,6 +253,9 @@ class LinkData implements Arrayable, Serializable, Stringable
             'download' => $this->download,
             'filename' => $this->filename,
         ]);
+        $data['type'] = $this->getType();
+
+        return $data;
     }
 
     public function toArray(): array

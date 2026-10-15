@@ -95,7 +95,7 @@ class SiteSwitcher
         $groups = SiteGroups::getAllGroups();
 
         if ($groups->count() < 2) {
-            return $sites->map(fn (Site $site): array => $this->item($site, $selected))->all();
+            return $sites->map(fn (Site $site): array => $this->item($site, $selected))->values()->all();
         }
 
         return $groups

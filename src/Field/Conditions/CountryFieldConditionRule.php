@@ -36,14 +36,16 @@ class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements 
         return parent::inputNodes();
     }
 
-    /** @return list<string>|null */
-    protected function elementQueryParam(): ?array
+    /** @return list<string>|string|null */
+    protected function elementQueryParam(): array|string|null
     {
         if (! $this->field() instanceof Country) {
             return null;
         }
 
-        return $this->paramValue();
+        $value = $this->paramValue();
+
+        return is_array($value) ? array_values($value) : $value;
     }
 
     /** @param string|null $value */

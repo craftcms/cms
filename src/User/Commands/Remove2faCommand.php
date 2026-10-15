@@ -70,7 +70,7 @@ class Remove2faCommand extends Command implements PromptsForMissingInput
         }
 
         foreach ($methodsToRemove as $method) {
-            $this->remove2faMethod($auth, $activeMethods[$method], $user);
+            $this->remove2faMethod($auth, $activeMethods[$method] ?? throw new \InvalidArgumentException('Unknown verification method.'), $user);
         }
 
         return self::SUCCESS;

@@ -21,13 +21,14 @@ use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 /**
  * @internal
  *
  * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
  * @phpstan-type NormalizedEagerLoadingMap array{elementType:class-string<ElementInterface>,map?:EagerLoadingMapItem[],criteria?:array<array-key, mixed>,createElement?:callable(ElementQueryInterface, array<string, mixed>, ElementInterface): ElementInterface}
- * @phpstan-type EagerLoadingMap NormalizedEagerLoadingMap|array{map:EagerLoadingMapItem[],criteria?:array<array-key, mixed>,createElement?:callable(ElementQueryInterface, array<string, mixed>, ElementInterface): ElementInterface}
+ * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map?:EagerLoadingMapItem[],criteria?:array<array-key, mixed>,createElement?:callable(ElementQueryInterface, array<string, mixed>, ElementInterface): ElementInterface}
  *
  * @since 6.0.0
  */
@@ -169,7 +170,7 @@ readonly class ElementEagerLoader
         }
 
         $elementsBySite = $elements
-            ->groupBy(fn (ElementInterface $element) => $element->siteId)
+            ->groupBy(fn (ElementInterface $element) => $element->siteId ?? '')
             ->map(fn (Collection $elements) => $elements->all())
             ->all();
 
@@ -431,34 +432,89 @@ readonly class ElementEagerLoader
     }
 
     /**
-     * @param  EagerLoadingMap|EagerLoadingMap[]|false  $map
-     * @return NormalizedEagerLoadingMap[]|false[]
+     * @param  EagerLoadingMap|list<EagerLoadingMap>|false  $map
+     * @return list<NormalizedEagerLoadingMap|false>
      */
     private function normalizeEagerLoadingMaps(array|false $map): array
     {
-        if ($map === false || isset($map['elementType'])) {
-            // a normal, one-dimensional map
-            return [$map];
+        if ($map === false) {
+            return [false];
         }
 
-        if (! array_is_list($map)) {
-            // no single element type was provided, so split it up into multiple maps - one for each unique type
-            $maps = $this->groupMapsByElementType($map['map']);
-            if (isset($map['criteria']) || isset($map['createElement'])) {
-                foreach ($maps as &$m) {
-                    $m['criteria'] ??= $map['criteria'] ?? [];
-                    $m['createElement'] ??= $map['createElement'] ?? null;
+        if (array_is_list($map)) {
+            $maps = [];
+
+            foreach ($map as $entry) {
+                if (! is_array($entry)) {
+                    throw new InvalidArgumentException('Eager-loading map sets must contain maps.');
+                }
+
+                if (isset($entry['map'])) {
+                    array_push($maps, ...$this->normalizeSingleEagerLoadingMap($entry));
                 }
             }
 
             return $maps;
         }
 
-        // multiple maps were provided, so normalize and return each of them
-        $maps = [];
-        foreach ($map as $m) {
-            if (isset($m['map'])) {
-                $maps += $this->normalizeEagerLoadingMaps($m);
+        return $this->normalizeSingleEagerLoadingMap($map);
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $map
+     * @return list<NormalizedEagerLoadingMap>
+     */
+    private function normalizeSingleEagerLoadingMap(array $map): array
+    {
+        $elementType = $map['elementType'] ?? null;
+        $criteria = $map['criteria'] ?? [];
+        $createElement = $map['createElement'] ?? null;
+
+        if ($elementType !== null && (! is_string($elementType) || ! is_a($elementType, ElementInterface::class, true))) {
+            throw new InvalidArgumentException('Eager-loading maps require an element class.');
+        }
+
+        if (! is_array($criteria) || ($createElement !== null && ! is_callable($createElement))) {
+            throw new InvalidArgumentException('Eager-loading maps require criteria arrays and callable element factories.');
+        }
+
+        $mapping = $map['map'] ?? [];
+
+        if (! is_iterable($mapping)) {
+            throw new InvalidArgumentException('Eager-loading maps require iterable mappings.');
+        }
+
+        $items = [];
+
+        foreach ($mapping as $item) {
+            if (! is_array($item) || ! is_int($item['source'] ?? null) || ! is_int($item['target'] ?? null)) {
+                throw new InvalidArgumentException('Eager-loading map items require integer source and target IDs.');
+            }
+
+            $itemElementType = $item['elementType'] ?? null;
+
+            if ($itemElementType !== null && (! is_string($itemElementType) || ! is_a($itemElementType, ElementInterface::class, true))) {
+                throw new InvalidArgumentException('Eager-loading map items require an element class.');
+            }
+
+            $items[] = [
+                'source' => $item['source'],
+                'target' => $item['target'],
+                ...($itemElementType !== null ? ['elementType' => $itemElementType] : []),
+            ];
+        }
+
+        $maps = $elementType !== null
+            ? [['elementType' => $elementType, ...(isset($map['map']) ? ['map' => $items] : [])]]
+            : array_values($this->groupMapsByElementType($items));
+
+        foreach ($maps as &$normalizedMap) {
+            if (isset($map['criteria']) || ($elementType === null && $createElement !== null)) {
+                $normalizedMap['criteria'] = $criteria;
+            }
+
+            if ($createElement !== null) {
+                $normalizedMap['createElement'] = $createElement;
             }
         }
 

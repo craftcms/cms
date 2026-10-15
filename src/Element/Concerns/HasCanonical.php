@@ -55,11 +55,13 @@ trait HasCanonical
     /**
      * @see getCanonical()
      */
+    /** @phpstan-var static|false|null */
     private ElementInterface|false|null $_canonical = null;
 
     /**
      * @see getCanonical()
      */
+    /** @phpstan-var static|false|null */
     private ElementInterface|false|null $_canonicalAnySite = null;
 
     /**
@@ -82,6 +84,7 @@ trait HasCanonical
         return ! $this->getIsCanonical();
     }
 
+    /** @return static */
     public function getCanonical(bool $anySite = false): ElementInterface
     {
         if ($this->getIsCanonical()) {
@@ -111,6 +114,7 @@ trait HasCanonical
         return $this->$prop ?: $this;
     }
 
+    /** @param static $element */
     public function setCanonical(ElementInterface $element): void
     {
         if ($this->getIsCanonical()) {

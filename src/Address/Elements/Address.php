@@ -31,6 +31,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Override;
 use RuntimeException;
+use Stringable;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -242,7 +243,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
-    protected function attributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string|Stringable
     {
         return match ($attribute) {
             'address' => Html::tag('div', app(Addresses::class)->formatAddress($this), [
@@ -392,7 +393,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
         if (
             app(ElementRequest::class)->element === $this &&
-            currentUser()->isAdmin() &&
+            currentUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges &&
             ! empty($this->fieldId)
         ) {

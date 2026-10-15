@@ -26,14 +26,13 @@ class ContentBlock extends InputObjectType
 
                 // Get the field input types
                 foreach ($context->getFieldLayout()->getCustomFields() as $field) {
-                    /** @var Field $field */
                     $fields[$field->handle] = $field->getContentGqlMutationArgumentType();
                 }
 
                 return $fields;
             },
             'normalizeValue' => [self::class, 'normalizeValue'],
-        ]));
+        ]), InputObjectType::class);
     }
 
     public static function normalizeValue(mixed $value): mixed

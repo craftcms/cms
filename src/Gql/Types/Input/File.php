@@ -36,6 +36,6 @@ class File extends InputObjectType
                     'description' => 'The URL of the file.',
                 ],
             ],
-        ]));
+        ]), InputObjectType::class);
     }
 }

@@ -45,6 +45,9 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @template TElement of ElementInterface
+ * @template TAsArray of bool = false
+ *
+ * @implements ElementQueryInterface<TElement, TAsArray>
  *
  * @mixin Builder
  *
@@ -76,6 +79,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
     use Concerns\CachesQueries;
     use Concerns\CollectsCacheTags;
+
+    /** @use Concerns\FormatsResults<TElement, TAsArray> */
     use Concerns\FormatsResults;
 
     /** @use Concerns\HydratesElements<TElement> */
@@ -176,19 +181,19 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * The callbacks that should be invoked before retrieving data from the database.
      */
-    /** @var array<int, callable(self<TElement>): void> */
+    /** @var array<int, callable(self<TElement, TAsArray>): void> */
     protected array $beforeQueryCallbacks = [];
 
     /**
      * The callbacks that should be invoked after retrieving data from the database.
      */
-    /** @var array<int, callable(mixed, self<TElement>): mixed> */
+    /** @var array<int, callable(mixed, self<TElement, TAsArray>): mixed> */
     protected array $afterQueryCallbacks = [];
 
     /**
      * The callbacks that should be invoked on clone.
      */
-    /** @var array<int, callable(self<TElement>): void> */
+    /** @var array<int, callable(self<TElement, TAsArray>): void> */
     protected array $onCloneCallbacks = [];
 
     // Use ** as a placeholder for "all the default columns"
@@ -225,7 +230,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /** @var array<string,string|callable|array<array-key, mixed>>|null */
     private ?array $columnMapBeforePrepare = null;
 
-    /** @var array<int, callable(self<TElement>): void>|null */
+    /** @var array<int, callable(self<TElement, TAsArray>): void>|null */
     private ?array $beforeQueryCallbacksBeforePrepare = null;
 
     /**
@@ -320,14 +325,23 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /** @param array<string, mixed> $variables */
     public function render(array $variables = []): HtmlString
     {
-        return ElementHelper::renderElements($this->all(), $variables);
+        $query = clone $this;
+        $query->asArray(false);
+
+        $elements = $query->get();
+
+        if (! $elements instanceof ElementCollection) {
+            throw new RuntimeException('Only hydrated elements can be rendered.');
+        }
+
+        return ElementHelper::renderElements($elements->all(), $variables);
     }
 
     /**
      * Find a model by its primary key.
      *
      * @param  int|string|Arrayable<array-key, mixed>|array<mixed>  $id
-     * @param  string|Expression|array<int, string|Expression>  $columns
+     * @param  string|array<int, string|Expression>  $columns
      * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<int, TElement>|Collection<int, array<string, mixed>> : TElement|array<string, mixed>|null)
      */
     public function find(mixed $id, $columns = ['*']): ElementInterface|ElementCollection|Collection|array|null
@@ -343,7 +357,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * Find multiple elements by their primary keys.
      *
      * @param  Arrayable<array-key, mixed>|array<array-key, mixed>  $ids
-     * @param  array<int, string>  $columns
+     * @param  array<int, string|Expression>|string  $columns
      * @return ElementCollection<int, TElement>|Collection<int, array<string, mixed>>
      */
     public function findMany(mixed $ids, array|string $columns = ['*']): ElementCollection|Collection
@@ -360,18 +374,17 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Find a model by its primary key or throw an exception.
      *
-     * @param  array<int, string>  $columns
+     * @param  array<int, string|Expression>|string  $columns
      * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<int, TElement>|Collection<int, array<string, mixed>> : TElement|array<string, mixed>)
      *
      * @throws ElementNotFoundException<TElement>
      */
     public function findOrFail(mixed $id, array|string $columns = ['*']): ElementInterface|ElementCollection|Collection|array
     {
-        $result = $this->find($id, $columns);
-
         $id = $id instanceof Arrayable ? $id->toArray() : $id;
 
         if (is_array($id)) {
+            $result = $this->findMany($id, $columns);
             if (count($result) !== count(array_unique($id))) {
                 throw (new ElementNotFoundException)->setElement(
                     $this->elementType, array_diff($id, $result->pluck('id')->all()),
@@ -380,6 +393,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
             return $result;
         }
+
+        $result = $this->find($id, $columns);
 
         if (is_null($result)) {
             throw (new ElementNotFoundException)->setElement(
@@ -399,8 +414,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @param  (Closure(): TValue)|null  $callback
      * @return (
      *     $id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>)
-     *     ? \CraftCms\Cms\Element\ElementCollection<int, TElement>
-     *     : TElement|TValue
+     *     ? (TAsArray is true ? Collection<int, array<string, mixed>> : ElementCollection<int, TElement>)
+     *     : (TAsArray is true ? array<string, mixed> : TElement)|TValue
      * )
      */
     public function findOr(mixed $id, array|string|Closure $columns = ['*'], ?Closure $callback = null): mixed
@@ -421,8 +436,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Execute the query and get the first result or throw an exception.
      *
-     * @param  array<int, string>  $columns
-     * @return TElement|array<string, mixed>
+     * @param  array<int, string|Expression>|string  $columns
+     * @return (TAsArray is true ? array<string, mixed> : TElement)
      *
      * @throws ElementNotFoundException<TElement>
      */
@@ -442,7 +457,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @param  (Closure(): TValue)|list<string>  $columns
      * @param  (Closure(): TValue)|null  $callback
-     * @return TElement|TValue
+     * @return (TAsArray is true ? array<string, mixed> : TElement)|TValue
      */
     public function firstOr(array|string|Closure $columns = ['*'], ?Closure $callback = null): mixed
     {
@@ -462,8 +477,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Execute the query and get the first result if it's the sole matching record.
      *
-     * @param  array<int, string>  $columns
-     * @return TElement|array<string, mixed>
+     * @param  array<int, string|Expression>|string  $columns
+     * @return (TAsArray is true ? array<string, mixed> : TElement)
      *
      * @throws ElementNotFoundException<TElement>
      * @throws MultipleRecordsFoundException
@@ -478,8 +493,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
-     * @param  array<int, string>  $columns
-     * @return TElement|array<string, mixed>|null
+     * @param  array<int, string|Expression>|string  $columns
+     * @return (TAsArray is true ? array<string, mixed> : TElement)|null
      */
     public function first($columns = ['*']): ElementInterface|array|null
     {
@@ -499,16 +514,22 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Execute the query as a "select" statement.
      *
-     * @param  string|Expression|array<int, string|Expression>  $columns
-     * @return ElementCollection<array-key, TElement>|Collection<array-key, array<string, mixed>>
+     * @param  string|array<int, string|Expression>  $columns
+     * @return (TAsArray is true ? Collection<array-key, array<string, mixed>> : ElementCollection<array-key, TElement>)
      */
     public function get($columns = ['*']): ElementCollection|Collection
     {
         $models = $this->getModels($columns);
 
-        $results = $this->asArray
-            ? new Collection($models)
-            : new ElementCollection($models);
+        if ($this->asArray) {
+            $results = new Collection($models);
+        } else {
+            $models = array_map(fn ($model) => $model instanceof $this->elementType
+                ? $model
+                : throw new RuntimeException('Element queries must return instances of their element type.'), $models);
+
+            $results = new ElementCollection($models);
+        }
 
         return $this->applyAfterQueryCallbacks($results)
             ->when($this->indexBy, fn (ElementCollection|Collection $collection) => $collection->keyBy($this->indexBy));
@@ -517,7 +538,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Execute the query as a "select" statement and return a collection.
      *
-     * @return ElementCollection<array-key, TElement>|Collection<array-key, array<string, mixed>>
+     * @return (TAsArray is true ? Collection<array-key, array<string, mixed>> : ElementCollection<array-key, TElement>)
      */
     public function collect(): ElementCollection|Collection
     {
@@ -527,8 +548,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Get the hydrated elements
      *
-     * @param  array<int, string>  $columns
-     * @return array<int, TElement|array<string, mixed>>
+     * @param  array<int, string|Expression>|string  $columns
+     * @return array<int, (TAsArray is true ? array<string, mixed> : TElement)>
      */
     public function getModels(array|string $columns = ['*']): array
     {
@@ -541,7 +562,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         if (($eagerResult = $this->eagerLoad(columns: $columns)) !== null) {
-            return $eagerResult->all();
+            return $eagerResult->map(fn ($element) => $element instanceof $this->elementType
+                ? $element
+                : throw new RuntimeException('Eager-loaded elements must match the query element type.'))->all();
         }
 
         try {
@@ -567,8 +590,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Execute the query as a "select" statement.
      *
-     * @param  array<int, string>|string  $columns
-     * @return array<int, TElement|array<string, mixed>>
+     * @param  array<int, string|Expression>|string  $columns
+     * @return array<int, (TAsArray is true ? array<string, mixed> : TElement)>
      */
     public function all($columns = ['*']): array
     {
@@ -576,8 +599,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
-     * @param  array<int, string>  $columns
-     * @return TElement|array<string, mixed>|null
+     * @param  array<int, string|Expression>|string  $columns
+     * @return (TAsArray is true ? array<string, mixed> : TElement)|null
      */
     public function one($columns = ['*']): ElementInterface|array|null
     {
@@ -587,8 +610,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /** @return Collection<array-key, mixed> */
     public function pluck(string $column, ?string $key = null): Collection
     {
-        $column = $this->columnMap[$column] ?? $column;
-
         if (! is_null($result = $this->getResultOverride())) {
             return collect($result)->pluck($column, $key);
         }
@@ -599,7 +620,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return new Collection;
         }
 
-        $column = $this->columnMap[$column] ?? $column;
+        $column = isset($this->columnMap[$column]) ? $this->resolveColumnMapping($column) : $column;
+
+        if (is_array($column)) {
+            $column = new Coalesce($column);
+        }
 
         if ((int) $this->queryCacheDuration >= 0) {
             return DependencyCache::remember(
@@ -617,11 +642,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * Paginate the given query.
      *
      * @param  int|null|Closure  $perPage
-     * @param  array<int, string>|string  $columns
+     * @param  array<int, string|Expression>|string  $columns
      * @param  string  $pageName
      * @param  int|null  $page
      * @param  Closure|int|null  $total
-     * @return LengthAwarePaginator<array-key, TElement|array<string, mixed>>
+     * @return LengthAwarePaginator<array-key, (TAsArray is true ? array<string, mixed> : TElement)>
      *
      * @throws InvalidArgumentException
      */
@@ -647,10 +672,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * Paginate the given query into a simple paginator.
      *
      * @param  int|null  $perPage
-     * @param  array<int, string>|string  $columns
+     * @param  array<int, string|Expression>|string  $columns
      * @param  string  $pageName
      * @param  int|null  $page
-     * @return \Illuminate\Contracts\Pagination\Paginator<array-key, TElement|array<string, mixed>>
+     * @return \Illuminate\Contracts\Pagination\Paginator<array-key, (TAsArray is true ? array<string, mixed> : TElement)>
      */
     public function simplePaginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null)
     {
@@ -690,11 +715,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             $result = DependencyCache::remember(
                 key: $this->queryCacheKey($this, 'count', $columns),
                 ttl: $this->queryCacheDuration,
-                callback: fn () => $this->query->count($columns),
+                callback: fn () => (int) $this->query->aggregate('count', Arr::wrap($columns)),
                 dependency: $this->getCacheDependency(),
             );
         } else {
-            $result = $this->query->count($columns);
+            $result = (int) $this->query->aggregate('count', Arr::wrap($columns));
         }
 
         return $this->applyAfterQueryCallbacks($result);
@@ -750,8 +775,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
-     * @param  array<int, string>  $columns
-     * @return TElement|array<string, mixed>|null
+     * @param  array<int, string|Expression>|string  $columns
+     * @return (TAsArray is true ? array<string, mixed> : TElement)|null
      */
     public function nth(int $n, $columns = ['*']): ElementInterface|array|null
     {
@@ -780,7 +805,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Register a closure to be invoked with the result and executing query after execution.
      */
-    /** @return self<TElement> */
+    /** @return self<TElement, TAsArray> */
     public function afterQuery(Closure $callback): self
     {
         $this->afterQueryCallbacks[] = $callback;
@@ -803,7 +828,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Get a lazy collection for the given query.
      *
-     * @return LazyCollection<int, TElement|array<string, mixed>>
+     * @return LazyCollection<int, TElement>
      */
     public function cursor(): LazyCollection
     {
@@ -832,7 +857,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->query;
     }
 
-    /** @return self<TElement> */
+    /** @return self<TElement, TAsArray> */
     public function limit(?int $value): self
     {
         $this->getQuery()->limit = $value;
@@ -848,7 +873,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->getQuery()->getLimit();
     }
 
-    /** @return self<TElement> */
+    /** @return self<TElement, TAsArray> */
     public function offset(?int $value): self
     {
         $this->getQuery()->offset = $value;
@@ -859,7 +884,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * @param  string|Expression|array<int|string, int|string|Expression>  $column
      * @param  int|string  $direction
-     * @return self<TElement>
+     * @return self<TElement, TAsArray>
      */
     public function orderBy($column, $direction = 'asc'): self
     {
@@ -870,7 +895,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             Deprecator::log(static::class.'::orderBy', static::class.'::orderBy() with an array argument is deprecated in 6.0.0.');
 
             foreach ($column as $c => $dir) {
-                $this->query->orderBy($c, $dir === SORT_ASC ? 'asc' : 'desc');
+                $this->query->orderBy((string) $c, $dir === SORT_ASC ? 'asc' : 'desc');
             }
 
             return $this;
@@ -909,22 +934,26 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             default => 'asc',
         };
 
-        return str($columns)
-            ->explode(',')
-            ->map(fn (string $column) => trim($column))
-            ->filter()
-            ->map(function (string $column) use ($defaultDirection) {
-                $direction = $defaultDirection;
+        $orders = [];
 
-                if (preg_match('/^(.+?)\s+(asc|desc)$/i', $column, $matches)) {
-                    $column = $matches[1];
-                    $direction = strtolower($matches[2]);
-                }
+        foreach (explode(',', $columns) as $column) {
+            $column = trim($column);
 
-                return [trim($column), $direction];
-            })
-            ->values()
-            ->all();
+            if ($column === '') {
+                continue;
+            }
+
+            $direction = $defaultDirection;
+
+            if (preg_match('/^(.+?)\s+(asc|desc)$/i', $column, $matches)) {
+                $column = $matches[1];
+                $direction = strtolower($matches[2]) === 'desc' ? 'desc' : 'asc';
+            }
+
+            $orders[] = [trim($column), $direction];
+        }
+
+        return $orders;
     }
 
     /**
@@ -1182,7 +1211,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Register a closure to be invoked on a clone.
      */
-    /** @return self<TElement> */
+    /** @return self<TElement, TAsArray> */
     public function onClone(Closure $callback): self
     {
         $this->onCloneCallbacks[] = $callback;
@@ -1223,7 +1252,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Register a closure to be invoked before the query is executed.
      */
-    /** @return self<TElement> */
+    /** @return self<TElement, TAsArray> */
     public function beforeQuery(Closure $callback): self
     {
         $this->beforeQueryCallbacks[] = $callback;
@@ -1391,8 +1420,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         $this->query->columns = $select;
     }
 
-    /** @return string|array<array-key, mixed> */
-    private function resolveColumnMapping(string $key): string|array
+    /** @return string|Expression|non-empty-array<array-key, string|Expression> */
+    private function resolveColumnMapping(string $key): string|Expression|array
     {
         if (! isset($this->columnMap[$key])) {
             throw new InvalidArgumentException("Invalid column map key: $key");
@@ -1409,7 +1438,13 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             }
         }
 
-        return $this->columnMap[$key];
+        $mapping = $this->columnMap[$key];
+
+        if (is_array($mapping) && $mapping === []) {
+            throw new InvalidArgumentException("Column mappings cannot be empty: $key");
+        }
+
+        return $mapping;
     }
 
     /**

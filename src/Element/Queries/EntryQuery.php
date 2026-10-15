@@ -31,8 +31,11 @@ use function CraftCms\Cms\currentUser;
 
 /**
  * @template T of Entry
+ * @template TAsArray of bool = false
  *
- * @extends ElementQuery<T>
+ * @extends ElementQuery<T, TAsArray>
+ *
+ * @implements NestedElementQueryInterface<T, TAsArray>
  *
  * @since 6.0.0
  */
@@ -103,15 +106,18 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      */
     public ?bool $savable = null;
 
-    /** @param array<string, mixed> $config */
-    public function __construct(array $config = [])
+    /**
+     * @param  array<string, mixed>  $config
+     * @param  class-string<T>  $elementType
+     */
+    public function __construct(array $config = [], string $elementType = Entry::class)
     {
         // Default status
         $config['status'] ??= [
             Entry::STATUS_LIVE,
         ];
 
-        parent::__construct(Entry::class, $config);
+        parent::__construct($elementType, $config);
 
         $this->query->addSelect([
             'entries.sectionId as sectionId',
@@ -253,7 +259,6 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     }
 
     /**
-     * @param  self<T>  $query
      * @param  EntryQuery<Entry>  $entryQuery
      */
     private static function applyAuthParam(

@@ -154,7 +154,7 @@ class FieldLayout extends Component
 
         if (! isset($this->_cardView)) {
             if ($this->type && class_exists($this->type)) {
-                $this->setCardView($this->type::defaultCardAttributes());
+                $this->setCardView(array_values($this->type::defaultCardAttributes()));
             } else {
                 $this->setCardView([]);
             }
@@ -271,7 +271,7 @@ class FieldLayout extends Component
         return [
             'id' => ['nullable', 'integer'],
             'customFields' => [function (string $attribute, array $value, Closure $fail) {
-                $this->validateFields($value, $fail);
+                $this->validateFields(array_values($this->getCustomFields()), $fail);
             }],
         ];
     }
@@ -329,10 +329,10 @@ class FieldLayout extends Component
             return;
         }
 
-        $rule = new HandleRule([
+        $rule = new HandleRule(array_values([
             ...Field::RESERVED_HANDLES,
             ...(array) $this->reservedFieldHandles,
-        ]);
+        ]));
 
         foreach ($generatedFields as &$field) {
             $field['name'] = trim($field['name'] ?? '');
@@ -791,7 +791,7 @@ class FieldLayout extends Component
         }
 
         return [
-            'tabs' => $tabConfigs,
+            'tabs' => array_values($tabConfigs),
             'generatedFields' => $generatedFields,
             'cardView' => $cardViewConfig,
             'thumbFieldKey' => $this->thumbFieldKey,
@@ -1250,7 +1250,7 @@ class FieldLayout extends Component
     private function cardHtmlForAttribute(string $key, ?ElementInterface $element): ?string
     {
         if ($element) {
-            return $element->getAttributeHtml($key);
+            return (string) $element->getAttributeHtml($key);
         }
 
         $attribute = $this->cardAttributes()[$key] ?? null;

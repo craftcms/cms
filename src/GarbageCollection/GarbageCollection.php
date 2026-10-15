@@ -170,14 +170,18 @@ class GarbageCollection
      */
     public function runActions(array $actions): void
     {
-        foreach ($actions as $action) {
-            if (is_array($action)) {
-                [$action, $params] = $action;
+        foreach ($actions as $definition) {
+            if (is_string($definition)) {
+                $action = $definition;
+                $params = [];
+            } else {
+                $action = $definition[0];
+                $params = $definition[1];
             }
 
             app($action, array_merge([
                 'garbageCollection' => $this,
-            ], $params ?? []))();
+            ], $params))();
         }
     }
 

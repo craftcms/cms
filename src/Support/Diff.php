@@ -124,6 +124,7 @@ class Diff
             ->rtrim()
             ->explode("\n")
             ->map(fn (string $line) => self::_buildLine($line, $indent, $level, $char))
+            ->values()
             ->all();
     }
 

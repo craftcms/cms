@@ -17,7 +17,7 @@ readonly class UserReviewDecisions
     /** @param array<string, mixed> $payload */
     public static function fromPayload(array $payload): self
     {
-        return new self(array_map(UserReviewDecisionData::fromArray(...), $payload['decisions'] ?? []));
+        return new self(array_values(array_map(UserReviewDecisionData::fromArray(...), $payload['decisions'] ?? [])));
     }
 
     public function hasRejection(): bool

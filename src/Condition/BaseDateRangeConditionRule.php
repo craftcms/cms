@@ -62,6 +62,8 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
 
     public function __construct($config = [])
     {
+        $config = (array) $config;
+
         if (
             ! isset($config['attributes']['rangeType']) &&
             (! empty($config['attributes']['startDate']) || ! empty($config['attributes']['endDate']))
@@ -93,7 +95,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
             $value = null;
         }
 
-        $this->_startDate = ($value ? DateTimeHelper::toIso8601($value) : null);
+        $this->_startDate = ($value ? (DateTimeHelper::toIso8601($value) ?: throw new \InvalidArgumentException('Invalid date range value.')) : null);
     }
 
     public function getEndDate(): ?string
@@ -107,7 +109,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
             $value = null;
         }
 
-        $this->_endDate = ($value ? DateTimeHelper::toIso8601($value) : null);
+        $this->_endDate = ($value ? (DateTimeHelper::toIso8601($value) ?: throw new \InvalidArgumentException('Invalid date range value.')) : null);
     }
 
     /** @return array<string, mixed> */

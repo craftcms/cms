@@ -168,7 +168,6 @@ readonly class AssetUploadHandler
         if ($moveAfterSelection && ! $asset->title) {
             $asset->title = AssetsHelper::filename2Title(pathinfo($destinationFilename, PATHINFO_FILENAME));
         }
-
         $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
 
         if (! $validTarget) {

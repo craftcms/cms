@@ -234,7 +234,7 @@ class Locale implements Stringable
         // If no target locale is specified, default to this locale
         $inLocale ??= $this->id;
 
-        return IntlLocale::getDisplayName($this->id, $inLocale);
+        return IntlLocale::getDisplayName($this->id, $inLocale) ?: throw new \InvalidArgumentException('Invalid locale.');
     }
 
     public function setDisplayName(?string $displayName): self
@@ -246,6 +246,8 @@ class Locale implements Stringable
 
     /**
      * Returns the language’s orientation (ltr or rtl).
+     *
+     * @return 'ltr'|'rtl'
      */
     public function getOrientation(): string
     {
@@ -369,7 +371,7 @@ class Locale implements Stringable
             default => $formatter->setPattern($standAlone ? 'LLLL' : 'MMMM'),
         };
 
-        return $formatter->format(Date::parse('1970-'.sprintf('%02d', $month).'-01'));
+        return $formatter->format(Date::parse('1970-'.sprintf('%02d', $month).'-01')) ?: throw new \InvalidArgumentException($formatter->getErrorMessage());
     }
 
     /**
@@ -381,11 +383,11 @@ class Locale implements Stringable
      */
     public function getMonthNames(?string $length = null, bool $standAlone = true): array
     {
-        return Collection::times(
+        return array_values(Collection::times(
             12,
             fn (int $month): string => $this->getMonthName($month, $length, $standAlone),
         )
-            ->all();
+            ->all());
     }
 
     /**
@@ -424,7 +426,7 @@ class Locale implements Stringable
         // 1970-01-08 => Thursday (4 + 4)
         // 1970-01-09 => Friday (5 + 4)
         // 1970-01-10 => Saturday (6 + 4)
-        return $formatter->format(Date::parse('1970-01-'.sprintf('%02d', $day + 4)));
+        return $formatter->format(Date::parse('1970-01-'.sprintf('%02d', $day + 4))) ?: throw new \InvalidArgumentException($formatter->getErrorMessage());
     }
 
     /**
@@ -436,11 +438,11 @@ class Locale implements Stringable
      */
     public function getWeekDayNames(?string $length = null, bool $standAlone = true): array
     {
-        return Collection::times(
+        return array_values(Collection::times(
             7,
             fn (int $day): string => $this->getWeekDayName($day - 1, $length, $standAlone),
         )
-            ->all();
+            ->all());
     }
 
     /**
@@ -606,7 +608,7 @@ class Locale implements Stringable
         }
 
         $formatter = new IntlDateFormatter($locale, $dateType, $timeType);
-        $pattern = $formatter->getPattern();
+        $pattern = $formatter->getPattern() ?: throw new \InvalidArgumentException($formatter->getErrorMessage());
 
         // Use 4-digit years
         return $patterns[$dateType][$timeType] = strtr($pattern, [

@@ -145,6 +145,10 @@ class PruneRevisionsCommand extends Command
         $sectionIds = [];
 
         foreach ($handles as $handle) {
+            if (! is_string($handle)) {
+                throw new \InvalidArgumentException('Invalid section handle.');
+            }
+
             $section = Sections::getSectionByHandle($handle);
 
             if (! $section) {

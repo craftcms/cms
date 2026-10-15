@@ -87,7 +87,7 @@ class ColorGrid
             }
         }
 
-        return $output;
+        return array_map(array_values(...), $output);
     }
 
     /**

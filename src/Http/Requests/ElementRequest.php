@@ -126,7 +126,7 @@ class ElementRequest extends FormRequest
             return $element;
         }
 
-        abort_unless($this->craftUser()->can('view', $element), 403, 'User not authorized to view this element.');
+        abort_unless($this->requireCraftUser()->can('view', $element), 403, 'User not authorized to view this element.');
 
         // When site resolution is non-strict, the element may have been resolved
         // in a fallback site (via preferSites) rather than the requested one. In
@@ -139,7 +139,7 @@ class ElementRequest extends FormRequest
             ! in_array($element->siteId, $preferSites, true) &&
             ! $this->wantsJson()
         ) {
-            return redirect($element->getCpEditUrl());
+            return redirect()->to($element->getCpEditUrl() ?? abort(400, 'Element has no edit URL.'));
         }
 
         $this->element = $element;
@@ -157,6 +157,10 @@ class ElementRequest extends FormRequest
         $elementUid = Arr::get($this->overrides, 'uid', $this->input('elementUid'));
 
         if ($elementType) {
+            if (! is_string($elementType) || ! is_a($elementType, ElementInterface::class, true)) {
+                abort(400, 'Invalid element type.');
+            }
+
             return $this->elementType = $elementType;
         }
 
@@ -167,6 +171,10 @@ class ElementRequest extends FormRequest
                 "Invalid element ID: $elementId",
             );
 
+            if (! is_a($elementType, ElementInterface::class, true)) {
+                abort(400, 'Invalid element type.');
+            }
+
             return $this->elementType = $elementType;
         }
 
@@ -176,6 +184,10 @@ class ElementRequest extends FormRequest
                 400,
                 "Invalid element UUID: $elementUid",
             );
+
+            if (! is_a($elementType, ElementInterface::class, true)) {
+                abort(400, 'Invalid element type.');
+            }
 
             return $this->elementType = $elementType;
         }
@@ -224,7 +236,7 @@ class ElementRequest extends FormRequest
 
             abort_if(is_null($site), 400, "Invalid site ID: $siteId");
 
-            if (Sites::isMultiSite() && ! $this->craftUser()->can("editSite:$site->uid")) {
+            if (Sites::isMultiSite() && ! $this->requireCraftUser()->can("editSite:$site->uid")) {
                 abort(403, 'User not authorized to edit content for this site.');
             }
         } else {
@@ -272,9 +284,9 @@ class ElementRequest extends FormRequest
             // check for the canonical element as a fallback
             $element = $this->elementById() ?? $this->elementByUid();
 
-            if ($element && $this->craftUser()->can('view', $element)) {
+            if ($element && $this->requireCraftUser()->can('view', $element)) {
                 if (! $this->wantsJson()) {
-                    return redirect($element->getCpEditUrl());
+                    return redirect()->to($element->getCpEditUrl() ?? abort(400, 'Element has no edit URL.'));
                 }
 
                 return $element;
@@ -310,7 +322,7 @@ class ElementRequest extends FormRequest
                 ->status(null)
                 ->one();
 
-            if ($element && $this->canSave($element, $this->craftUser())) {
+            if ($element && $this->canSave($element, $this->requireCraftUser())) {
                 return $element;
             }
         }

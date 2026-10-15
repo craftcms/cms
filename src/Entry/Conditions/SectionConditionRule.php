@@ -73,6 +73,10 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
+        if (! $elementQuery instanceof EntryQuery) {
+            throw new \InvalidArgumentException('This condition requires an entry query.');
+        }
+
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
             $sectionIds = Sections::getAllSectionIds()->values()->all();
         } else {

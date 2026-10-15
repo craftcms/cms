@@ -57,7 +57,7 @@ class UpdateSearchIndex extends Job
 
         foreach ($query->cursor() as $element) {
             $processed++;
-            $this->setProgress((int) (($processed / max($total, 1)) * 100));
+            $this->setProgress(min(100, max(0, (int) (($processed / max($total, 1)) * 100))));
             Search::indexElementAttributes($element, $this->fieldHandles);
         }
     }

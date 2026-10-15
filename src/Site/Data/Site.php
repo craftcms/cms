@@ -89,7 +89,7 @@ class Site extends Component implements Chippable, Stringable
 
     public static function get(int|string $id): ?self
     {
-        return Sites::getSiteById($id);
+        return Sites::getSiteById((int) $id);
     }
 
     public function getId(): ?int

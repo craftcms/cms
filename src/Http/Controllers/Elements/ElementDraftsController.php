@@ -83,7 +83,7 @@ class ElementDraftsController
 
         if (! $element->getIsDraft() && ! $provisional) {
             Gate::authorize('createDrafts', $element);
-        } elseif (! $this->canSave($element, $this->request->craftUser())) {
+        } elseif (! $this->canSave($element, $this->request->requireCraftUser())) {
             abort(403, 'User not authorized to save this element.');
         }
 
@@ -143,7 +143,7 @@ class ElementDraftsController
                 DB::commit();
             } else {
                 // Make sure nothing just changed that would prevent the user from saving
-                if (! $this->canSave($element, $this->request->craftUser())) {
+                if (! $this->canSave($element, $this->request->requireCraftUser())) {
                     abort(403, 'User not authorized to save this element.');
                 }
 
@@ -279,6 +279,10 @@ class ElementDraftsController
     public function ensure(): Response
     {
         $element = $this->request->element(checkForProvisionalDraft: true);
+
+        if ($element instanceof Response) {
+            return $element;
+        }
 
         if (! $element || $element->getIsRevision()) {
             abort(400, 'No element was identified by the request.');

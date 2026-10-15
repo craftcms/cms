@@ -15,7 +15,10 @@ use ReflectionProperty;
  */
 class Utils
 {
-    /** @return Collection<int, ReflectionProperty> */
+    /**
+     * @param  object|class-string  $target
+     * @return Collection<int, ReflectionProperty>
+     */
     public static function getPublicReflectionProperties(object|string $target, ?Closure $filter = null): Collection
     {
         return collect(new ReflectionClass($target)->getProperties())
@@ -23,13 +26,18 @@ class Utils
             ->filter($filter ?? fn () => true);
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @param  object|class-string  $target
+     * @return array<string, mixed>
+     */
     public static function getPublicProperties(object|string $target, ?Closure $filter = null): array
     {
         return self::getPublicReflectionProperties($target, $filter)
             ->reject(fn (ReflectionProperty $property) => $property->isVirtual() && ! $property->hasHook(PropertyHookType::Get))
             ->mapWithKeys(function (ReflectionProperty $property) use ($target) {
-                if (! $property->isInitialized($target)) {
+                if (! is_object($target)) {
+                    $value = $property->getDefaultValue();
+                } elseif (! $property->isInitialized($target)) {
                     // If a type of `array` is given with no value, let's assume users want
                     // it prefilled with an empty array...
                     $value = $property->getType()
@@ -44,7 +52,10 @@ class Utils
             ->all();
     }
 
-    /** @return string[] */
+    /**
+     * @param  object|class-string  $target
+     * @return string[]
+     */
     public static function getPublicAttributes(object|string $target, ?Closure $filter = null): array
     {
         return self::getPublicReflectionProperties($target, $filter)

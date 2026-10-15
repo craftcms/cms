@@ -45,7 +45,11 @@ readonly class ElementDuplicates
     ) {}
 
     /**
+     * @template T of ElementInterface
+     *
+     * @param  T  $element
      * @param  array<string, mixed>  $newAttributes
+     * @return T
      *
      * @throws UnsupportedSiteException
      * @throws InvalidElementException
@@ -135,7 +139,6 @@ readonly class ElementDuplicates
                 trackChanges: $mainClone->trackDraftChanges,
             );
         }
-
         $mainClone->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         $mainClone->validate();
 
@@ -369,7 +372,7 @@ readonly class ElementDuplicates
             $fieldLayout = $to->getFieldLayout();
 
             foreach ($modifiedFields as $handle) {
-                $field = $fieldLayout->getFieldByHandle($handle);
+                $field = $fieldLayout?->getFieldByHandle($handle);
                 if ($field) {
                     $data[] = [
                         'elementId' => $to->id,

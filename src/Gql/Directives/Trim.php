@@ -25,7 +25,7 @@ class Trim extends Directive
             ],
             'description' => 'Trims leading and trailing whitespace from the field value.',
             'args' => [],
-        ]));
+        ]), self::class);
     }
 
     public static function name(): string

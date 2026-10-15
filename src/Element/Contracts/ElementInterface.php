@@ -20,6 +20,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -43,10 +44,12 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @phpstan-require-extends Element
  *
+ * @property ElementRules<Element> $ruleset
+ *
  * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
  * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:iterable<EagerLoadingMapItem>,criteria?:array<string,mixed>,createElement?:callable}
  * @phpstan-type SourceConfig array<string,mixed>
- * @phpstan-type AttributeConfig array<string,mixed>
+ * @phpstan-type AttributeConfig array{label: string, icon?: string, placeholder?: mixed, ...}
  *
  * @extends ArrayAccess<array-key,mixed>
  * @extends IteratorAggregate<array-key,mixed>
@@ -180,7 +183,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * }
      * ```
      *
-     * @return ElementQueryInterface The newly created [[ElementQueryInterface]] instance.
+     * @return ElementQueryInterface<static> The newly created [[ElementQueryInterface]] instance.
      */
     public static function find(): ElementQueryInterface;
 
@@ -677,7 +680,10 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * If this is a draft or revision, the canonical element will be returned.
      *
+     *
      * @param  bool  $anySite  Whether the canonical element can be retrieved in any site
+     *
+     * @phpstan-return static
      */
     #[AllowedInSandbox]
     public function getCanonical(bool $anySite = false): self;
@@ -959,6 +965,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * {@see CpScreenResponse::altActions()} for documentation on supported action properties.
      */
     /** @return array<array-key,mixed> */
+    /** @return list<array<string, mixed>> */
     public function getAltActions(): array;
 
     /**
@@ -976,6 +983,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * :::
      */
     /** @return array<array-key,mixed> */
+    /** @return list<array<string, mixed>> */
     public function getPreviewTargets(): array;
 
     /**
@@ -1625,7 +1633,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * under one name but posted under another needs remapping here, or its
      * messages never reach the field that produced them.
      *
-     * @return array<string, list<string>>
+     * @return array<string, array<string>>
      */
     public function uiErrors(): array;
 

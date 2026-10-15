@@ -29,7 +29,7 @@ abstract class BaseCheck implements Check
 
         return [
             'count' => $findings->count(),
-            'findings' => $findings->take($limit)->values()->all(),
+            'findings' => array_values($findings->take($limit)->all()),
         ];
     }
 
@@ -46,7 +46,7 @@ abstract class BaseCheck implements Check
             ->all();
     }
 
-    /** @return array{id: int|null, uid: string|null, handle: string, name: string} */
+    /** @return array{id: int|string|null, uid: string|null, handle: string, name: string} */
     protected function fieldFinding(FieldInterface $field): array
     {
         return [

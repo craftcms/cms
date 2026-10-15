@@ -53,6 +53,6 @@ trait EnforcesPermissions
 
     protected function requireAdmin(): void
     {
-        abort_unless(currentUser()->isAdmin(), 403, 'User is not permitted to perform this action.');
+        abort_unless(currentUser()?->isAdmin(), 403, 'User is not permitted to perform this action.');
     }
 }

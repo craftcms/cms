@@ -74,8 +74,11 @@ class ArrayTwigExtension extends AbstractExtension
     public function sortFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, string|callable|null $arrow = null): array
     {
         CoreExtension::checkArrow($isSandboxed, $arrow, 'sort', 'filter');
+        if ($arrow !== null && ! is_callable($arrow)) {
+            throw new RuntimeError('The sort comparator must be callable.');
+        }
 
-        return CoreExtension::sort($env, $isSandboxed, $array, $arrow);
+        return CoreExtension::sort($env, $isSandboxed, $array, $arrow !== null ? \Closure::fromCallable($arrow) : null);
     }
 
     /** @throws RuntimeError */
@@ -116,7 +119,7 @@ class ArrayTwigExtension extends AbstractExtension
 
         CoreExtension::checkArrow($isSandboxed, $arrow, 'filter', 'filter');
 
-        $filtered = CoreExtension::filter($env, $isSandboxed, $arr, $arrow);
+        $filtered = CoreExtension::filter($env, $isSandboxed, $arr, \Closure::fromCallable($arrow));
 
         if (is_array($filtered)) {
             return $filtered;
@@ -301,7 +304,7 @@ class ArrayTwigExtension extends AbstractExtension
         $array = array_merge($array);
 
         return collect($array)
-            ->sortBy($key, collect($sortFlag)->sum(), $direction === SORT_DESC)
+            ->sortBy($key, collect(is_array($sortFlag) ? $sortFlag : [$sortFlag])->sum(), $direction === SORT_DESC)
             ->all();
     }
 

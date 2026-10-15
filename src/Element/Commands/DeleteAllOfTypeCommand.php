@@ -106,7 +106,7 @@ final class DeleteAllOfTypeCommand extends Command implements PromptsForMissingI
     }
 
     /**
-     * @param  class-string<ElementInterface>  $type
+     * @param  string  $type  The configured element class, including unavailable plugin classes.
      */
     private function typeLabel(string $type, int $total, bool $isValidType, bool $includeClass = false): string
     {
@@ -150,7 +150,7 @@ final class DeleteAllOfTypeCommand extends Command implements PromptsForMissingI
                     options: array_keys($options),
                 );
 
-                return $options[$selection];
+                return $options[$selection] ?? null;
             },
         ];
     }

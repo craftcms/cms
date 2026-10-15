@@ -32,7 +32,9 @@ class Sms extends BaseTextLinkType
     #[Override]
     public function normalizeValue(string $value): string
     {
-        preg_match('/^([^?&]*)(?:[?&]+(.*))?$/', $value, $matches);
+        if (! preg_match('/^([^?&]*)(?:[?&]+(.*))?$/', $value, $matches)) {
+            return parent::normalizeValue($value);
+        }
         $root = $matches[1];
         $qs = $matches[2] ?? null;
         $qs = str_replace(' ', '%20', $qs);

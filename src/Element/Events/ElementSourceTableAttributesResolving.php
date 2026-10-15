@@ -26,7 +26,7 @@ class ElementSourceTableAttributesResolving
         public string $source,
 
         /**
-         * @var Collection<string, array<string, mixed>> The available columns that can be shown.
+         * @var Collection<string,array{label: string, icon?: string, placeholder?: mixed, ...}> The available columns that can be shown.
          *
          * This should be set to an array whose keys represent element attribute names, and whose values are
          * nested arrays with the following keys:

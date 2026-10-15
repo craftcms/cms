@@ -14,9 +14,12 @@ use Illuminate\Support\Collection;
  * ElementQueryInterface defines the common interface to be implemented by element query classes.
  * The default implementation of this interface is provided by [[ElementQuery]].
  *
- * @mixin ElementQuery<ElementInterface>
+ * @template TElement of ElementInterface = ElementInterface
+ * @template TAsArray of bool = false
  *
- * @phpstan-require-extends ElementQuery
+ * @mixin ElementQuery<TElement, TAsArray>
+ *
+ * @phpstan-require-extends ElementQuery<TElement, TAsArray>
  */
 interface ElementQueryInterface extends Builder
 {
@@ -24,8 +27,8 @@ interface ElementQueryInterface extends Builder
      * Executes the query and returns a single row of result.
      *
      * @param  array<int, string>|string  $columns
-     * @return ElementInterface|array<string, mixed>|null the first row (in terms of an array) of the query result. False is returned if the query
-     *                                                    results in nothing.
+     * @return (TAsArray is true ? array<string, mixed> : TElement)|null the first row (in terms of an array) of the query result. False is returned if the query
+     *                                                                   results in nothing.
      */
     public function one($columns = ['*']);
 
@@ -72,8 +75,13 @@ interface ElementQueryInterface extends Builder
      *     ->all();
      * ```
      *
-     * @param  bool  $value  The property value (defaults to true)
-     * @return static self reference
+     * @template TNewAsArray of bool
+     *
+     * @param  TNewAsArray  $value  The property value (defaults to true)
+     *
+     * @phpstan-return $this
+     *
+     * @phpstan-self-out static<TElement, TNewAsArray>
      */
     public function asArray(bool $value = true): static;
 
@@ -1575,7 +1583,7 @@ interface ElementQueryInterface extends Builder
      * Executes the query and returns all results as an array.
      *
      * @param  array<int, string>  $columns  = ['*']
-     * @return ElementInterface[]|array<array<string, mixed>> The resulting elements.
+     * @return array<array-key, (TAsArray is true ? array<string, mixed> : TElement)> The resulting elements.
      */
     public function all($columns = ['*']): array;
 
@@ -1619,7 +1627,7 @@ interface ElementQueryInterface extends Builder
     /**
      * Returns the resulting elements set by [[setResultOverride()]], if the criteria params haven’t changed since then.
      *
-     * @return ElementInterface[]|null $elements The resulting elements, or null if setResultOverride() was never called or the criteria has changed
+     * @return array<array-key, TElement>|null $elements The resulting elements, or null if setResultOverride() was never called or the criteria has changed
      *
      * @see setResultOverride()
      */

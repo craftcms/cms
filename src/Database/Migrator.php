@@ -57,7 +57,7 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
             $paths = $this->paths;
         }
 
-        $paths = array_map(Aliases::get(...), $paths);
+        $paths = array_map(Aliases::get(...), (array) $paths);
 
         if (! $this->repository->repositoryExists()) {
             $this->repository->createRepository();
@@ -85,7 +85,7 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
     #[Override]
     public function resetMigrations(array $migrations, array $paths, $pretend = false): array
     {
-        return parent::resetMigrations($migrations, $paths, $pretend);
+        return array_values(parent::resetMigrations($migrations, $paths, $pretend));
     }
 
     /**
@@ -98,12 +98,12 @@ class Migrator extends \Illuminate\Database\Migrations\Migrator
             $paths = $this->paths;
         }
 
-        $paths = array_map(Aliases::get(...), $paths);
+        $paths = array_map(Aliases::get(...), (array) $paths);
 
         $files = $this->getMigrationFiles($paths);
 
-        return $this->pendingMigrations(
+        return array_values($this->pendingMigrations(
             $files, $this->repository->getRan()
-        );
+        ));
     }
 }

@@ -53,12 +53,12 @@ class ExportCommand extends Command
         if ($path !== null) {
             // Prefix with the working directory if a relative path or no path is given
             if (str_starts_with($path, '.') || ! str_contains(File::normalizePath($path, '/'), '/')) {
-                $path = join_paths(getcwd(), $path);
+                $path = join_paths((getcwd() ?: throw new \RuntimeException('Unable to resolve current directory.')), $path);
             }
 
             $path = File::normalizePath($path);
         } else {
-            $path = getcwd();
+            $path = (getcwd() ?: throw new \RuntimeException('Unable to resolve current directory.'));
         }
 
         if (is_dir($path)) {
@@ -101,7 +101,7 @@ class ExportCommand extends Command
             }
         );
 
-        $size = I18N::getFormatter()->asShortSize(filesize($path));
+        $size = I18N::getFormatter()->asShortSize((filesize($path) ?: 0));
 
         $this->components->info("Exported to <fg=cyan>{$path}</> ($size)");
 

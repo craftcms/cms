@@ -4,6 +4,18 @@ includes:
 
 services:
     -
+        class: CraftCms\Cms\Tests\Support\ArrWhereNotNullReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicStaticMethodReturnTypeExtension
+    -
+        class: CraftCms\Cms\Tests\Support\CollectionValuesReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicMethodReturnTypeExtension
+    -
+        class: CraftCms\Cms\Tests\Support\JsonEncodeReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicStaticMethodReturnTypeExtension
+    -
         class: CraftCms\Cms\Tests\Support\RequireSinceTagRule
         arguments:
             sourceDirectory: %currentWorkingDirectory%/src
@@ -12,7 +24,7 @@ services:
 
 parameters:
     phpVersion: 80500
-    level: 6
+    level: 7
     paths:
         - src
         - config
@@ -30,9 +42,10 @@ parameters:
             identifier: argument.templateType
             path: src/Asset/Commands/Concerns/IndexesAssets.php
     stubFiles:
+        - yii2-adapter/stubs/svg-sanitize.stub
+        - yii2-adapter/stubs/laravel-aliases.stub
         - yii2-adapter/stubs/laravel-ruleset-validation.stub
         - yii2-adapter/stubs/_generated.stub
-        - yii2-adapter/stubs/GraphQL/Type/Definition/FieldDefinition.stub
         - yii2-adapter/stubs/GraphQL/Type/Definition/ResolveInfo.stub
         - yii2-adapter/stubs/samdark/log/PsrTarget.stub
         - yii2-adapter/stubs/yii/base/Component.stub

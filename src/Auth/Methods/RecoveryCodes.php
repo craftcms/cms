@@ -86,7 +86,7 @@ class RecoveryCodes extends BaseAuthMethod
 
         // check if secret is stored, if not, we need to store it
         [$codes] = $this->getRecoveryCodes();
-        $codeExists = in_array($code, $codes, true);
+        $codeExists = is_array($codes) && in_array($code, $codes, true);
 
         if (! $codeExists) {
             return false;
@@ -125,7 +125,7 @@ class RecoveryCodes extends BaseAuthMethod
     /**
      * Returns the user’s recovery codes.
      *
-     * @return array{0:array<string|false>,1:CarbonInterface|null}
+     * @return array{0:array<string>|false,1:CarbonInterface|null}
      */
     public function getRecoveryCodes(): array
     {

@@ -78,7 +78,7 @@ class PropagateElements extends BatchedElementJob
         $element->newSiteIds = [];
         $element->isNewSite = $this->isNewSite;
         $supportedSiteIds = array_map(fn ($siteInfo) => $siteInfo['siteId'], ElementHelper::supportedSitesForElement($element));
-        $elementSiteIds = $this->siteId !== null ? array_intersect($this->siteId, $supportedSiteIds) : $supportedSiteIds;
+        $elementSiteIds = $this->siteId !== null ? array_intersect((array) $this->siteId, $supportedSiteIds) : $supportedSiteIds;
         $siteElements = [];
 
         foreach ($elementSiteIds as $siteId) {

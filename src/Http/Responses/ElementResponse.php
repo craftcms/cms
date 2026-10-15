@@ -48,7 +48,7 @@ class ElementResponse
         ]);
 
         if ($supportsAddAnother && request()->boolean('addAnother')) {
-            $user = request()->craftUser();
+            $user = request()->requireCraftUser();
             $newElement = $element->createAnother();
 
             if (! $newElement || ! Gate::check('save', $newElement)) {
@@ -160,7 +160,7 @@ class ElementResponse
                 }
             }
             $errorsList = [];
-            $tabs = $element->getFieldLayout()->getTabs();
+            $tabs = $element->getFieldLayout()?->getTabs() ?? [];
             foreach ($allErrors as $key => $errors) {
                 foreach ($errors as $error) {
                     // this is true in case of e.g. cross site validation error

@@ -235,7 +235,7 @@ class Path
         // Sanitize
         $path = Str::convertToUtf8($path);
 
-        $segs = Arr::whereNotEmpty(preg_split('/[\\/\\\\]/', $path));
+        $segs = Arr::whereNotEmpty((preg_split('/[\\/\\\\]/', $path) ?: throw new \InvalidArgumentException('Unable to split the path.')));
         $level = 0;
 
         foreach ($segs as $seg) {

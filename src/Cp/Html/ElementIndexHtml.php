@@ -126,7 +126,7 @@ readonly class ElementIndexHtml
         ) {
             $representedSiteIds = [];
             foreach ($sources as $source) {
-                if (isset($source['sites'])) {
+                if (isset($source['sites']) && is_array($source['sites'])) {
                     foreach ($source['sites'] as $siteId) {
                         $representedSiteIds[$siteId] = true;
                     }

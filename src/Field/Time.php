@@ -77,8 +77,12 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
      */
     public int $minuteIncrement = 30;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         // Config normalization
         foreach (['min', 'max'] as $name) {
             if (isset($config[$name]) && is_array($config[$name])) {

@@ -18,6 +18,11 @@ use Mcp\Capability\Discovery\ElementMetadataResolver;
 use Mcp\Capability\Discovery\SchemaGenerator;
 use Mcp\Capability\Registry;
 use Mcp\Capability\Registry\Loader\ReflectedElementLoader;
+use Mcp\Capability\Registry\ResourceReference;
+use Mcp\Schema\Prompt;
+use Mcp\Schema\ResourceDefinition;
+use Mcp\Schema\ResourceTemplate;
+use Mcp\Schema\Tool;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -48,7 +53,8 @@ class CapabilityRegistry extends TypeRegistry
             return new DiscoveryState;
         }
 
-        $elements = ['tools' => [], 'resources' => [], 'resourceTemplates' => [], 'prompts' => []];
+        $registry = new Registry;
+        $identities = [];
         $attributes = [
             'tools' => McpTool::class,
             'resources' => McpResource::class,
@@ -78,11 +84,7 @@ class CapabilityRegistry extends TypeRegistry
                         continue;
                     }
 
-                    $data = ['handler' => [$class, $method->getName()], ...get_object_vars($attribute)];
-
-                    if ($attribute instanceof McpTool) {
-                        $data['outputSchema'] ??= $schemas->generateOutputSchema($method);
-                    }
+                    $handler = [$class, $method->getName()];
 
                     $identity = match (true) {
                         $attribute instanceof McpResource => $attribute->uri,
@@ -90,23 +92,98 @@ class CapabilityRegistry extends TypeRegistry
                         default => ElementMetadataResolver::resolveName($method, $attribute->name),
                     };
 
-                    if (isset($elements[$category][$identity])) {
+                    if (isset($identities[$category][$identity])) {
                         throw new LogicException("Duplicate MCP capability identity [$identity].");
                     }
 
-                    $elements[$category][$identity] = $data;
+                    $identities[$category][$identity] = true;
+
+                    if ($attribute instanceof McpTool) {
+                        $registry->loadFrom(new ReflectedElementLoader(tools: [[
+                            'handler' => $handler,
+                            'name' => $attribute->name,
+                            'title' => $attribute->title,
+                            'description' => $attribute->description,
+                            'annotations' => $attribute->annotations,
+                            'icons' => $attribute->icons,
+                            'meta' => $attribute->meta,
+                            'outputSchema' => $attribute->outputSchema ?? $schemas->generateOutputSchema($method),
+                        ]]));
+                    } elseif ($attribute instanceof McpResource) {
+                        $registry->loadFrom(new ReflectedElementLoader(resources: [[
+                            'handler' => $handler,
+                            'uri' => $attribute->uri,
+                            'name' => $attribute->name,
+                            'title' => $attribute->title,
+                            'description' => $attribute->description,
+                            'mimeType' => $attribute->mimeType,
+                            'size' => $attribute->size,
+                            'annotations' => $attribute->annotations,
+                            'icons' => $attribute->icons,
+                            'meta' => $attribute->meta,
+                        ]]));
+                    } elseif ($attribute instanceof McpResourceTemplate) {
+                        $registry->loadFrom(new ReflectedElementLoader(resourceTemplates: [[
+                            'handler' => $handler,
+                            'uriTemplate' => $attribute->uriTemplate,
+                            'name' => $attribute->name,
+                            'title' => $attribute->title,
+                            'description' => $attribute->description,
+                            'mimeType' => $attribute->mimeType,
+                            'annotations' => $attribute->annotations,
+                            'meta' => $attribute->meta,
+                        ]]));
+                    } elseif ($attribute instanceof McpPrompt) {
+                        $registry->loadFrom(new ReflectedElementLoader(prompts: [[
+                            'handler' => $handler,
+                            'name' => $attribute->name,
+                            'title' => $attribute->title,
+                            'description' => $attribute->description,
+                            'icons' => $attribute->icons,
+                            'meta' => $attribute->meta,
+                        ]]));
+                    }
                     break;
                 }
             }
         }
 
-        $registry = new Registry(loader: new ReflectedElementLoader(...array_map(array_values(...), $elements)));
+        $tools = [];
+        foreach ($registry->getTools()->references as $tool) {
+            if ($tool instanceof Tool) {
+                $tools[$tool->name] = $registry->getTool($tool->name);
+            }
+        }
+
+        $resources = [];
+        foreach ($registry->getResources()->references as $resource) {
+            if ($resource instanceof ResourceDefinition) {
+                $reference = $registry->getResource($resource->uri, false);
+                if ($reference instanceof ResourceReference) {
+                    $resources[$resource->uri] = $reference;
+                }
+            }
+        }
+
+        $templates = [];
+        foreach ($registry->getResourceTemplates()->references as $template) {
+            if ($template instanceof ResourceTemplate) {
+                $templates[$template->uriTemplate] = $registry->getResourceTemplate($template->uriTemplate);
+            }
+        }
+
+        $prompts = [];
+        foreach ($registry->getPrompts()->references as $prompt) {
+            if ($prompt instanceof Prompt) {
+                $prompts[$prompt->name] = $registry->getPrompt($prompt->name);
+            }
+        }
 
         return new DiscoveryState(
-            tools: array_map(fn ($tool) => $registry->getTool($tool->name), $registry->getTools()->references),
-            resources: array_map(fn ($resource) => $registry->getResource($resource->uri, false), $registry->getResources()->references),
-            resourceTemplates: array_map(fn ($template) => $registry->getResourceTemplate($template->uriTemplate), $registry->getResourceTemplates()->references),
-            prompts: array_map(fn ($prompt) => $registry->getPrompt($prompt->name), $registry->getPrompts()->references),
+            tools: $tools,
+            resources: $resources,
+            resourceTemplates: $templates,
+            prompts: $prompts,
         );
     }
 

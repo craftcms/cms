@@ -49,7 +49,7 @@ readonly class NotificationCenter
                 ->orWhere('read_at', '>', now()->subDays(7)))
             ->get()
             ->map(fn (DatabaseNotification $notification): NotificationData => $this->prepare($notification))
-            ->all();
+            ->values()->all();
     }
 
     /** @param list<string> $ids */
@@ -105,7 +105,7 @@ readonly class NotificationCenter
                 target: $button['target'] ?? null,
                 icon: $button['icon'] ?? null,
                 variant: ButtonVariant::from($button['variant'] ?? ButtonVariant::Solid->value),
-            ), $data['buttons']),
+            ), array_values($data['buttons'])),
             createdAt: $createdAt->toIso8601String(),
             createdAtLabel: I18N::getFormatter()->asRelativeTime($createdAt),
             unread: $notification->getAttribute('read_at') === null,

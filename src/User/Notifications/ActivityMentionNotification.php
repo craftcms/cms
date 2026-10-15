@@ -80,7 +80,7 @@ class ActivityMentionNotification extends CpNotification implements ShouldQueueA
             user: $recipient,
             variables: [
                 'author' => $this->event->data['author']['label'],
-                'subject' => $this->event->snapshots['subject']['label'],
+                'subject' => $this->event->snapshots['subject']['label'] ?? $subject->getUiLabel(),
                 'comment' => app(ActivityComments::class)->notificationText($this->event, $recipient),
                 'link' => Template::raw(Url::cpUrl($editUrl)),
             ],

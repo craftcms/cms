@@ -98,7 +98,7 @@ readonly class Revisions
             'limit' => $page['limit'],
             'offset' => $page['offset'],
             'nextOffset' => $page['nextOffset'],
-            'revisions' => $revisions->all(),
+            'revisions' => array_values($revisions->all()),
         ];
     }
 

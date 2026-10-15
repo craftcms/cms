@@ -389,7 +389,7 @@ trait NestedElement
     {
         parent::addInvalidNestedElementIds($ids);
 
-        if (isset($this->_owner)) {
+        if ($this->_owner instanceof ElementInterface) {
             $this->_owner->addInvalidNestedElementIds($ids);
         }
     }

@@ -32,6 +32,7 @@ use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\requireCurrentUser;
 
 /**
  * @since 6.0.0
@@ -46,10 +47,7 @@ readonly class Dashboard
     /**
      * Creates a widget with a given config.
      *
-     * @template T of WidgetInterface
-     *
-     * @param  class-string<T>|array{type: class-string<T>, id?: int, colspan?: int, settings?: array<string, mixed>, dateCreated?: DateTimeInterface, dateUpdated?: DateTimeInterface}  $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
-     * @return T
+     * @param  class-string<WidgetInterface>|array{type: class-string<WidgetInterface>, id?: int, colspan?: int, settings?: array<string, mixed>, dateCreated?: DateTimeInterface, dateUpdated?: DateTimeInterface}  $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
      */
     public function createWidget(string|array $config): WidgetInterface
     {
@@ -76,7 +74,7 @@ readonly class Dashboard
             $widgets = $this->getUserWidgets();
         }
 
-        return $widgets;
+        return $widgets === false ? collect() : $widgets;
     }
 
     /**
@@ -108,7 +106,7 @@ readonly class Dashboard
     {
         $result = Models\Widget::query()
             ->where('id', $id)
-            ->where('userId', currentUser()->getAuthIdentifier())
+            ->where('userId', requireCurrentUser()->getAuthIdentifier())
             ->firstOrFail();
 
         return Widget::fromConfig($result);
@@ -151,7 +149,7 @@ readonly class Dashboard
         DB::beginTransaction();
 
         try {
-            $widgetModel = $this->getUserWidgetModelById($widget->id);
+            $widgetModel = $this->getUserWidgetModelById($widget->id === null ? null : (int) $widget->id);
 
             $widgetModel->type = $widget::class;
             $widgetModel->settings = $widget->getSettings();
@@ -159,10 +157,10 @@ readonly class Dashboard
             if ($isNewWidget) {
                 // Set the sortOrder
                 $maxSortOrder = Models\Widget::query()
-                    ->where('userId', currentUser()->getAuthIdentifier())
+                    ->where('userId', requireCurrentUser()->getAuthIdentifier())
                     ->max('sortOrder');
 
-                $widgetModel->sortOrder = $maxSortOrder + 1;
+                $widgetModel->sortOrder = max(0, (int) $maxSortOrder) + 1;
             }
 
             $widgetModel->save();
@@ -217,7 +215,7 @@ readonly class Dashboard
         DB::beginTransaction();
 
         try {
-            $widgetRecord = $this->getUserWidgetModelById($widget->id);
+            $widgetRecord = $this->getUserWidgetModelById($widget->id === null ? null : (int) $widget->id);
             $widgetRecord->delete();
             $widget->afterDelete();
             DB::commit();
@@ -242,6 +240,10 @@ readonly class Dashboard
      */
     public function reorderWidgets(array $widgetIds): bool
     {
+        if ($widgetIds === []) {
+            return true;
+        }
+
         $cases = [];
 
         foreach ($widgetIds as $index => $id) {
@@ -274,7 +276,7 @@ readonly class Dashboard
      */
     private function addDefaultUserWidgets(): void
     {
-        $user = currentUser();
+        $user = requireCurrentUser();
         $customWidgets = $this->customWidgets->all()
             ->filter(fn (CustomWidgetDefinition $definition) => $definition->showByDefault);
 
@@ -316,7 +318,7 @@ readonly class Dashboard
 
     private function getUserWidgetModelById(?int $widgetId = null): Models\Widget
     {
-        $userId = currentUser()->getAuthIdentifier();
+        $userId = requireCurrentUser()->getAuthIdentifier();
 
         if ($widgetId !== null) {
             return Models\Widget::query()

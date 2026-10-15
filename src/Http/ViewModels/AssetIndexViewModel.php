@@ -514,7 +514,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
     {
         $uri = array_last($folder->sourcePath ?? [])['uri'] ?? null;
 
-        return $uri !== null ? Url::cpUrl($uri) : null;
+        return is_string($uri) ? Url::cpUrl($uri) : null;
     }
 
     /**
@@ -698,7 +698,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
 
         return $volume === null
             ? null
-            : Folders::getRootFolderByVolumeId($volume->id);
+            : Folders::getRootFolderByVolume($volume);
     }
 
     private function subfolder(): ?VolumeFolder

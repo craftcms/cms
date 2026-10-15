@@ -72,7 +72,7 @@ class UpdateCommand extends Command
         $this->composer = $composer;
         $this->plugins = $plugins;
 
-        $handles = $this->argument('handle');
+        $handles = array_values($this->argument('handle'));
 
         if (empty($handles)) {
             return $this->call(InfoCommand::class);
@@ -388,6 +388,9 @@ class UpdateCommand extends Command
 
         $jsonContents = file_get_contents($jsonBackup);
         $lockContents = file_get_contents($lockBackup);
+        if ($jsonContents === false || $lockContents === false) {
+            throw new \RuntimeException('Unable to read Composer backups.');
+        }
 
         // The composer.lock backup could be just a placeholder
         if (! array_key_exists('packages', Json::decode($lockContents))) {

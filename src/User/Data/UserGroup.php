@@ -45,7 +45,7 @@ class UserGroup extends Component implements Actionable, Chippable, CpEditable, 
 
     public static function get(int|string $id): ?self
     {
-        return UserGroups::getGroupById($id);
+        return UserGroups::getGroupById((int) $id);
     }
 
     public function getUiLabel(): string

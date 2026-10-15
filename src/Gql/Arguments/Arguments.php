@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Gql\Arguments;
 
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use GraphQL\Type\Definition\Argument;
+use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -15,7 +16,7 @@ use GraphQL\Type\Definition\Type;
  */
 abstract class Arguments
 {
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     public static function getArguments(): array
     {
         return [
@@ -32,7 +33,7 @@ abstract class Arguments
         ];
     }
 
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     public static function getContentArguments(): array
     {
         return [];

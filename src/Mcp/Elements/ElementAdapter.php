@@ -35,7 +35,7 @@ interface ElementAdapter
      *     elementType: class-string<ElementInterface>,
      *     criteria: array<string, mixed>,
      *     createAttributes?: array<string, mixed>,
-     *     updateAttributes: array<string, mixed>,
+     *     updateAttributes?: array<string, mixed>,
      *     fieldSchemaContext?: array<string, mixed>,
      *     duplicateModes?: list<string>,
      *     notes?: list<string>,

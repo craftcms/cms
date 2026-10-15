@@ -181,7 +181,7 @@ class TOTP extends BaseAuthMethod
         $model = Authenticator::firstOrNew(['userId' => $userId]);
 
         // whenever we store the secret, we should ensure the oldTimestamp is accurate too
-        $model->oldTimestamp = new Google2FA()->getTimestamp();
+        $model->oldTimestamp = max(0, new Google2FA()->getTimestamp());
         $model->auth2faSecret = $secret;
         $model->save();
     }

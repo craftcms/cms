@@ -1,0 +1,11 @@
+<?php
+
+declare(strict_types=1);
+
+namespace enshrined\svgSanitize\data;
+
+class AllowedAttributes
+{
+    /** @return list<string> */
+    public static function getAttributes() {}
+}

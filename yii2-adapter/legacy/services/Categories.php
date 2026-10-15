@@ -5,6 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
+declare(strict_types=1);
+
 namespace craft\services;
 
 use Craft;
@@ -38,6 +40,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
+use UnexpectedValueException;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -141,7 +144,13 @@ class Categories extends Component
 
             $this->_groups = new MemoizableArray(
                 $groupRecords,
-                fn(CategoryGroupRecord $record) => $this->_createCategoryGroupFromRecord($record),
+                function(mixed $record) {
+                    if (!$record instanceof CategoryGroupRecord) {
+                        throw new UnexpectedValueException('Expected a CategoryGroupRecord from the group query.');
+                    }
+
+                    return $this->_createCategoryGroupFromRecord($record);
+                },
             );
         }
 

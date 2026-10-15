@@ -36,6 +36,10 @@ class File extends \Illuminate\Support\Facades\File
      */
     public static function normalizePath(string $path, string $ds = DIRECTORY_SEPARATOR): string
     {
+        if ($ds === '') {
+            throw new InvalidArgumentException('The directory separator cannot be empty.');
+        }
+
         // Remove any file protocol wrappers
         $path = preg_replace('/^(file:\\/\\/)*/i', '', $path);
 
@@ -100,7 +104,7 @@ class File extends \Illuminate\Support\Facades\File
         $to = static::absolutePath($to, ds: $ds);
 
         if ($from === null) {
-            $from = static::normalizePath(getcwd(), $ds);
+            $from = static::normalizePath(getcwd() ?: throw new RuntimeException('Unable to determine the working directory.'), $ds);
         } else {
             $from = static::absolutePath($from, ds: $ds);
         }
@@ -139,7 +143,7 @@ class File extends \Illuminate\Support\Facades\File
         }
 
         if ($from === null) {
-            $from = static::normalizePath(getcwd(), $ds);
+            $from = static::normalizePath(getcwd() ?: throw new RuntimeException('Unable to determine the working directory.'), $ds);
         } else {
             $from = static::absolutePath($from, ds: $ds);
         }

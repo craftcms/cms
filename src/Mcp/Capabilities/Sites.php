@@ -47,7 +47,7 @@ readonly class Sites
 
         return [
             'count' => $sites->count(),
-            'sites' => $sites->all(),
+            'sites' => array_values($sites->all()),
         ];
     }
 

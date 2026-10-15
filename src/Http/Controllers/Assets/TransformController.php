@@ -100,7 +100,7 @@ readonly class TransformController
             return new JsonResponse(['url' => $url]);
         }
 
-        return redirect($url);
+        return redirect()->to($url);
     }
 
     /**

@@ -227,7 +227,7 @@ class SelectOptions
                 return [];
             }
 
-            $allowedValues = array_flip(array_filter($allowedValues));
+            $allowedValues = array_flip(array_map(strval(...), array_filter($allowedValues)));
         }
 
         $options = [];
@@ -354,7 +354,7 @@ class SelectOptions
      * @param  bool  $showLocalizedNames  Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
      * @param  bool  $appLocales  Whether to limit the returned locales to just app locales (cp translation options) or show them all
      */
-    /** @return list<array<string, mixed>> */
+    /** @return list<array{label: string, value: string, data: array{keywords: string, hintLang?: string, hint?: string}}> */
     public static function getLanguageOptions(
         bool $showLocaleIds = false,
         bool $showLocalizedNames = false,
@@ -427,7 +427,7 @@ class SelectOptions
     /**
      * Returns all options for a volume input.
      */
-    /** @return array<int|string, array{label: string, value: int}> */
+    /** @return list<array{label: string, value: int}> */
     public static function getVolumeOptions(): array
     {
         return Volumes::getAllVolumes()
@@ -436,10 +436,11 @@ class SelectOptions
                 'value' => $volume->id,
             ])
             ->sortBy('label')
+            ->values()
             ->all();
     }
 
-    /** @return list<array<string, mixed>> */
+    /** @return list<array{label: string, value: string, data?: array{hint: string}}> */
     public static function getTimeZoneOptions(?DateTimeInterface $offsetDate = null): array
     {
         // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
@@ -478,11 +479,11 @@ class SelectOptions
 
             $offsets[] = $offset;
             $timezoneIds[] = $timezoneId;
-            $options[] = array_filter([
+            $options[] = [
                 'value' => $timezoneId,
                 'label' => $label,
-                'data' => ! empty($data) ? $data : null,
-            ]);
+                ...($data !== [] ? ['data' => $data] : []),
+            ];
         }
 
         array_multisort($offsets, SORT_ASC, SORT_NUMERIC, $timezoneIds, $options);

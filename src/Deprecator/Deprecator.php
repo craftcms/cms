@@ -49,7 +49,7 @@ class Deprecator
     private array $pendingRequestLogs = [];
 
     /**
-     * @var DeprecationError[]|null All the unique deprecation warnings that have been logged
+     * @var list<DeprecationError>|null All the unique deprecation warnings that have been logged
      */
     private ?array $allLogs = null;
 
@@ -116,7 +116,7 @@ class Deprecator
         $this->pendingRequestLogs = [];
     }
 
-    /** @return list<DeprecationError> */
+    /** @return array<DeprecationError> */
     public function getRequestLogs(): array
     {
         return $this->requestLogs;
@@ -134,7 +134,7 @@ class Deprecator
             ->limit($limit)
             ->latest('lastOccurrence')
             ->get()
-            ->all();
+            ->values()->all();
     }
 
     public function getLogById(int $logId): ?DeprecationError

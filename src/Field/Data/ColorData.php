@@ -83,7 +83,7 @@ class ColorData implements Serializable, Stringable
     #[AllowedInSandbox]
     public function getRed(): int
     {
-        return hexdec(substr($this->_hex, 1, 2));
+        return intval(substr($this->_hex, 1, 2), 16);
     }
 
     #[AllowedInSandbox]
@@ -95,7 +95,7 @@ class ColorData implements Serializable, Stringable
     #[AllowedInSandbox]
     public function getGreen(): int
     {
-        return hexdec(substr($this->_hex, 3, 2));
+        return intval(substr($this->_hex, 3, 2), 16);
     }
 
     #[AllowedInSandbox]
@@ -107,7 +107,7 @@ class ColorData implements Serializable, Stringable
     #[AllowedInSandbox]
     public function getBlue(): int
     {
-        return hexdec(substr($this->_hex, 5, 2));
+        return intval(substr($this->_hex, 5, 2), 16);
     }
 
     #[AllowedInSandbox]

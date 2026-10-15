@@ -233,7 +233,7 @@ class ConfigStorage
             $entry = array_filter($change, fn (mixed $value): bool => $value !== []);
 
             foreach (array_intersect_key($change['added'] ?? [], $change['removed'] ?? []) as $path => $value) {
-                $old = $change['removed'][$path];
+                $old = ($change['removed'] ?? [])[$path];
                 $comparableOld = is_bool($old) ? (int) $old : $old;
                 $comparableNew = is_bool($value) ? (int) $value : $value;
 

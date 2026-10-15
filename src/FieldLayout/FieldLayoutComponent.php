@@ -20,6 +20,7 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
 use Override;
+use RuntimeException;
 
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
@@ -206,7 +207,7 @@ abstract class FieldLayoutComponent extends Component
      *
      * @template T of ConditionInterface
      *
-     * @param  ConditionInterface|class-string<T>|array{class:class-string<T>}|null  $condition
+     * @param  T|class-string<T>|array{class:class-string<T>}|null  $condition
      * @return T|null
      */
     protected function normalizeCondition(mixed $condition): ?ConditionInterface
@@ -297,6 +298,8 @@ abstract class FieldLayoutComponent extends Component
     /**
      * Builds a fieldset of user/element condition builders — the shared shape
      * behind the visibility and editability condition groups.
+     *
+     * @param  class-string<ConditionInterface>|null  $defaultElementConditionClass
      */
     protected function conditionGroupNode(
         string $groupUid,
@@ -354,7 +357,7 @@ abstract class FieldLayoutComponent extends Component
     {
         event($event = new FieldLayoutComponentShowInFormResolving(
             fieldLayoutComponent: $this,
-            fieldLayout: $this->getLayout(),
+            fieldLayout: $this->getLayout() ?? throw new RuntimeException('Field layout component is missing its field layout.'),
             element: $element,
         ));
 

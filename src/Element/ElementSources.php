@@ -28,6 +28,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
@@ -37,7 +38,7 @@ use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
- * @phpstan-type SourceConfig array{sites?: array<array-key, int|string>|false, ...}
+ * @phpstan-type SourceConfig array{type:'heading', key?:string, sites?:array<array-key,int|string>|false, page?:string|null, ...}|array{type:'native'|'custom', key:string, sites?:array<array-key,int|string>|false, page?:string|null, ...}
  *
  * @since 6.0.0
  */
@@ -167,12 +168,11 @@ class ElementSources
             $context = self::CONTEXT_INDEX;
         }
 
-        $sources = $this
-            ->sources($elementType, $context)
-            ->unless(
-                $withDisabled,
-                fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false)),
-            );
+        $sources = $this->sources($elementType, $context);
+
+        if (! $withDisabled) {
+            $sources = $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false));
+        }
 
         if (
             $page &&
@@ -182,10 +182,13 @@ class ElementSources
             ($sources[0]['page'] !== '' || count($this->getPages($elementType, $context)) !== 1)
         ) {
             $pageNameId = $this->pageNameId($page);
-            $sources = $sources->filter(fn (array $source) => (
-                isset($source['page']) &&
-                $this->pageNameId($source['page']) === $pageNameId
-            ));
+            $sources = $sources->filter(function (array $source) use ($pageNameId): bool {
+                if (! isset($source['page'])) {
+                    return false;
+                }
+
+                return $this->pageNameId($source['page']) === $pageNameId;
+            });
         }
 
         if ($siteId !== null) {
@@ -228,7 +231,7 @@ class ElementSources
 
             foreach ($sourceConfigs as $source) {
                 if ($source['type'] === self::TYPE_NATIVE) {
-                    if (isset($indexedNativeSources[$source['key']])) {
+                    if (isset($source['key'], $indexedNativeSources[$source['key']])) {
                         $sources[] = $source + $indexedNativeSources[$source['key']];
                         $nativeSourceKeys[$source['key']] = true;
                     }
@@ -241,7 +244,7 @@ class ElementSources
                         continue;
                     }
 
-                    $source = $elementType::modifyCustomSource($source);
+                    $source = $this->validatedSource($elementType::modifyCustomSource($source));
                 }
 
                 if ($source['type'] === self::TYPE_HEADING) {
@@ -254,7 +257,7 @@ class ElementSources
             // Make sure all native sources are accounted for
             $missingSources = array_filter($nativeSources, fn ($s) => (
                 $s['type'] === self::TYPE_NATIVE &&
-                isset($indexedNativeSources[$s['key']]) &&
+                isset($s['key'], $indexedNativeSources[$s['key']]) &&
                 ! isset($nativeSourceKeys[$s['key']])
             ));
 
@@ -287,6 +290,41 @@ class ElementSources
         }
 
         return $sources;
+    }
+
+    /**
+     * @param  array<string, mixed>  $source
+     * @return SourceConfig
+     */
+    private function validatedSource(array $source): array
+    {
+        $type = $source['type'] ?? null;
+
+        if (! in_array($type, [self::TYPE_NATIVE, self::TYPE_CUSTOM, self::TYPE_HEADING], true)) {
+            throw new \InvalidArgumentException('Element sources require a registered source type.');
+        }
+
+        if ($type !== self::TYPE_HEADING && ! is_string($source['key'] ?? null)) {
+            throw new \InvalidArgumentException('Element sources require a source key.');
+        }
+
+        if (isset($source['key']) && ! is_string($source['key'])) {
+            throw new \InvalidArgumentException('Element source keys must be strings.');
+        }
+
+        if (isset($source['page']) && ! is_string($source['page'])) {
+            throw new \InvalidArgumentException('Element source pages must be strings.');
+        }
+
+        if (isset($source['sites']) && $source['sites'] !== false) {
+            if (! is_array($source['sites']) || array_any($source['sites'], fn ($siteId): bool => ! is_int($siteId) && ! is_string($siteId))) {
+                throw new \InvalidArgumentException('Element source sites require IDs or UIDs.');
+            }
+        }
+
+        $source['type'] = $type;
+
+        return $source;
     }
 
     /**
@@ -511,7 +549,7 @@ class ElementSources
      * Saves an element’s source configs.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @param  SourceConfig[]  $sources
+     * @param  array<array<string, mixed>>  $sources  Raw source settings; omitted types default to native sources.
      */
     public function saveSources(string $elementType, array $sources): void
     {
@@ -576,7 +614,7 @@ class ElementSources
      * Returns the common table attributes that are available for a given element type, across all its sources.
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
-     * @return Collection<string,array<string,mixed>>
+     * @return Collection<string,array{label:string, icon?:string, placeholder?:mixed, ...}>
      */
     public function getAvailableTableAttributes(string $elementType): Collection
     {
@@ -605,7 +643,7 @@ class ElementSources
      * @param  string  $sourceKey  The element type source key
      * @param  string[]|null  $customAttributes  Custom attributes to show rather than the defaults
      * @param  FieldLayout[]|null  $fieldLayouts  The field layouts that should be factored in
-     * @return Collection<int,array{0:mixed,1:array<string,mixed>}>
+     * @return Collection<int,array{0:mixed,1:array{label:string,icon?:string,placeholder?:mixed,...}}>
      */
     public function getTableAttributes(
         string $elementType,
@@ -726,8 +764,22 @@ class ElementSources
             return $option;
         }
 
+        $expressions = [];
+
+        foreach ($orderBys as $orderBy) {
+            if (! is_string($orderBy) && ! $orderBy instanceof Expression) {
+                return $option;
+            }
+
+            $expressions[] = $orderBy;
+        }
+
+        if ($expressions === []) {
+            return $option;
+        }
+
         return array_merge($option, [
-            'orderBy' => new Coalesce($orderBys->all()),
+            'orderBy' => new Coalesce($expressions),
         ]);
     }
 
@@ -778,7 +830,7 @@ class ElementSources
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $sourceKey  The element source key
-     * @return Collection<array-key,array<string,mixed>>
+     * @return Collection<string,array{label: string, icon?: string, placeholder?: mixed, ...}>
      */
     public function getSourceTableAttributes(string $elementType, string $sourceKey): Collection
     {
@@ -803,7 +855,7 @@ class ElementSources
      * field layouts.
      *
      * @param  FieldLayout[]|Collection<int,FieldLayout>  $fieldLayouts
-     * @return Collection<string,array<string,mixed>>
+     * @return Collection<string,array{label: string, icon?: string, placeholder?: mixed, ...}>
      */
     public function getTableAttributesForFieldLayouts(array|Collection $fieldLayouts): Collection
     {
@@ -869,7 +921,7 @@ class ElementSources
             $field = $fieldElements[0]->getField();
             $labels = array_unique(array_map(fn (CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
             $attributes["field:$field->uid"] = [
-                'label' => count($labels) === 1 ? $labels[0] : t($field->name, category: 'site'),
+                'label' => count($labels) === 1 ? ($labels[0] ?? t($field->name, category: 'site')) : t($field->name, category: 'site'),
             ];
         }
 
@@ -945,7 +997,7 @@ class ElementSources
 
         return Arr::first(
             $sourceConfigs,
-            fn ($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey,
+            fn ($s) => $s['type'] !== self::TYPE_HEADING && ($s['key'] ?? null) === $sourceKey,
         );
     }
 

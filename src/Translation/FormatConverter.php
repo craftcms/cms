@@ -49,7 +49,7 @@ class FormatConverter
         if (preg_match_all('/(?<!\')\'(.*?[^\'])\'(?!\')/', $pattern, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {
                 $match[1] = str_replace('\'\'', '\'', $match[1]);
-                $escaped[$match[0]] = '\\'.implode('\\', preg_split('//u', $match[1], -1, PREG_SPLIT_NO_EMPTY));
+                $escaped[$match[0]] = '\\'.implode('\\', (preg_split('//u', $match[1], -1, PREG_SPLIT_NO_EMPTY) ?: throw new \InvalidArgumentException('Invalid date format pattern.')));
             }
         }
 
@@ -474,6 +474,6 @@ class FormatConverter
             default => new IntlDateFormatter($locale, self::$icuShortFormats[$pattern], self::$icuShortFormats[$pattern])
         };
 
-        return $formatter->getPattern();
+        return $formatter->getPattern() ?: throw new \InvalidArgumentException($formatter->getErrorMessage());
     }
 }

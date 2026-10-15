@@ -10,6 +10,8 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Support\Str;
 
 /**
+ * @property array<int, array<string, mixed>>|null $traces
+ *
  * @since 6.0.0
  */
 class DeprecationError extends BaseModel

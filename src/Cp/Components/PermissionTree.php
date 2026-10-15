@@ -48,7 +48,7 @@ class PermissionTree extends ViewComponent
             $this->groups[] = $group;
             $this->permissionKeys = [
                 ...$this->permissionKeys,
-                ...array_map(strval(...), $group['keys']),
+                ...array_map(strval(...), array_values($group['keys'])),
             ];
         }
 

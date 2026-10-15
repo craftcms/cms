@@ -37,6 +37,10 @@ trait InteractsWithWidgets
 
         $settingsUi = $this->getWidgetSettingsUi($widget, "widget{$widget->id}-settings");
 
+        if (! is_int($widget->id)) {
+            throw new \LogicException('Dashboard widgets must have a persistent integer ID.');
+        }
+
         return new WidgetData(
             id: $widget->id,
             type: $widget->getType(),

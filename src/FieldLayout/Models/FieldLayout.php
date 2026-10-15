@@ -14,6 +14,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
+ * @phpstan-import-type GeneratedField from \CraftCms\Cms\FieldLayout\FieldLayout
+ *
+ * @property array{tabs:list<array<string,mixed>>, generatedFields:list<GeneratedField>, cardView:list<string>, thumbFieldKey:string|null, cardThumbAlignment:string}|null $config
+ *
  * @since 6.0.0
  */
 class FieldLayout extends BaseModel

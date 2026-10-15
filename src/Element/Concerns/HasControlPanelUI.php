@@ -95,6 +95,7 @@ trait HasControlPanelUI
      */
     public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void {}
 
+    /** @return list<array<string, mixed>> */
     public function getAltActions(): array
     {
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
@@ -175,7 +176,7 @@ trait HasControlPanelUI
 
         event($event = new ElementAltActionsResolving($this, $altActions));
 
-        return $event->altActions;
+        return array_values($event->altActions);
     }
 
     public function getActionMenuItems(): array
@@ -185,7 +186,7 @@ trait HasControlPanelUI
             ...array_map(fn (array $item) => $item + ['destructive' => true], $this->destructiveActionMenuItems()),
         ];
 
-        event($event = new ElementActionMenuItemsResolving($this, $items));
+        event($event = new ElementActionMenuItemsResolving($this, array_values($items)));
 
         return $event->items;
     }
@@ -198,7 +199,7 @@ trait HasControlPanelUI
      * @see getActionMenuItems()
      * @see MenuHtml::disclosureMenu()
      */
-    /** @return array<array-key,array<string,mixed>> */
+    /** @return list<array<string,mixed>> */
     protected function safeActionMenuItems(): array
     {
         $items = [];
@@ -802,7 +803,7 @@ JS,
     {
         $components = [];
 
-        $metaFieldsHtml = trim($this->metaFieldsHtml($static));
+        $metaFieldsHtml = trim((string) $this->metaFieldsHtml($static));
         if ($metaFieldsHtml !== '') {
             $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta'])
                 .Html::tag('h2', t('Metadata'), ['class' => 'visually-hidden']);
@@ -998,7 +999,7 @@ JS,
      * its `newFilename` field — needs remapping here, or its messages never
      * reach the field that produced them.
      *
-     * @return array<string, list<string>>
+     * @return array<string, array<string>>
      */
     public function uiErrors(): array
     {

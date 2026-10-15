@@ -255,7 +255,7 @@ class Template
 
         return [
             Paginate::create($paginator),
-            $paginator->items(),
+            array_values($paginator->items()),
         ];
     }
 

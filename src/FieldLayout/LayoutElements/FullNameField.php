@@ -30,8 +30,12 @@ class FullNameField extends TextField
     #[Override]
     public bool $requirable = true;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         parent::__construct(Arr::except($config, [
             'mandatory',
             'translatable',

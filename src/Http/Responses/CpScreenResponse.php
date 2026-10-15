@@ -1177,7 +1177,7 @@ class CpScreenResponse implements Responsable
             }
 
             return $action;
-        }, $altActions);
+        }, array_values($altActions));
     }
 
     private function contextMenu(?string $namespace = null): ?string

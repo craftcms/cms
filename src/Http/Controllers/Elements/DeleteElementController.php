@@ -26,6 +26,10 @@ class DeleteElementController
     {
         $element = $this->request->element();
 
+        if ($element instanceof Response) {
+            return $element;
+        }
+
         // If this is a provisional draft, delete the canonical
         if ($element && $element->isProvisionalDraft) {
             $element = $element->getCanonical(true);
@@ -51,6 +55,10 @@ class DeleteElementController
     public function destroyForSite(): Response
     {
         $element = $this->request->element(checkForProvisionalDraft: true);
+
+        if ($element instanceof Response) {
+            return $element;
+        }
 
         if (! $element || $element->getIsRevision()) {
             abort(400, 'No element was identified by the request.');

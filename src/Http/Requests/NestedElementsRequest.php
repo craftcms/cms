@@ -88,7 +88,7 @@ class NestedElementsRequest extends FormRequest
 
         abort_if(is_null($this->elementIds), 400, 'Invalid elementIds param');
 
-        return $this->elementIds;
+        return array_values($this->elementIds);
     }
 
     /**

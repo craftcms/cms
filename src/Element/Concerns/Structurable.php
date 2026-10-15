@@ -390,7 +390,7 @@ trait Structurable
         }
 
         /** @var ElementQuery<ElementInterface> $query */
-        $elementIds = $query->cache()->ids();
+        $elementIds = array_values($query->cache()->ids());
         $key = array_search($this->getCanonicalId(), $elementIds);
 
         if ($key === false || ! isset($elementIds[$key + $direction])) {

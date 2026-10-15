@@ -73,14 +73,22 @@ class Raster extends Image
         return $this->_image;
     }
 
+    /**
+     * @throws ImageException if no image has been loaded.
+     */
+    private function image(): ImageInterface
+    {
+        return $this->_image ?? throw new ImageException('No image has been loaded.');
+    }
+
     public function getWidth(): int
     {
-        return $this->_image->width();
+        return $this->image()->width();
     }
 
     public function getHeight(): int
     {
-        return $this->_image->height();
+        return $this->image()->height();
     }
 
     public function getExtension(): string
@@ -124,15 +132,15 @@ class Raster extends Image
         // Convert CMYK images to RGB.
         if (
             ! Cms::config()->preserveCmykColorspace
-            && $this->_image->colorspace() instanceof CmykColorspace
+            && $this->image()->colorspace() instanceof CmykColorspace
         ) {
-            $native = $this->_image->core()->native();
+            $native = $this->image()->core()->native();
 
             try {
                 if ($native instanceof VipsImage) {
-                    $this->_image->core()->setNative($native->icc_transform(Interpretation::SRGB));
+                    $this->image()->core()->setNative($native->icc_transform(Interpretation::SRGB));
                 } else {
-                    $this->_image->setColorspace(RgbColorspace::class);
+                    $this->image()->setColorspace(RgbColorspace::class);
                 }
             } catch (InterventionImageException|VipsException $e) {
                 throw new ImageException(t('Failed to convert the image to the sRGB color space.'), $e->getCode(), $e);
@@ -150,7 +158,7 @@ class Raster extends Image
         $width = $x2 - $x1;
         $height = $y2 - $y1;
 
-        $this->_image->crop($width, $height, $x1, $y1);
+        $this->image()->crop($width, $height, $x1, $y1);
 
         return $this;
     }
@@ -188,7 +196,11 @@ class Raster extends Image
         $this->normalizeDimensions($targetWidth, $targetHeight);
         $this->scaleToFit($targetWidth, $targetHeight, $upscale);
         $this->setFill($fill);
-        $this->_image->resizeCanvas($targetWidth, $targetHeight, $this->_fill, $position);
+        if (is_array($position)) {
+            throw new \InvalidArgumentException('Letterbox alignment must be a position string.');
+        }
+
+        $this->image()->resizeCanvas($targetWidth, $targetHeight, $this->_fill, $position);
 
         return $this;
     }
@@ -284,28 +296,28 @@ class Raster extends Image
     public function resize(?int $targetWidth, ?int $targetHeight): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
-        $this->_image->resize($targetWidth, $targetHeight);
+        $this->image()->resize($targetWidth, $targetHeight);
 
         return $this;
     }
 
     public function rotate(float $degrees): self
     {
-        $this->_image->rotate((int) $degrees);
+        $this->image()->rotate((int) $degrees);
 
         return $this;
     }
 
     public function flipHorizontally(): self
     {
-        $this->_image->flip(Direction::HORIZONTAL);
+        $this->image()->flip(Direction::HORIZONTAL);
 
         return $this;
     }
 
     public function flipVertically(): self
     {
-        $this->_image->flip(Direction::VERTICAL);
+        $this->image()->flip(Direction::VERTICAL);
 
         return $this;
     }
@@ -343,6 +355,10 @@ class Raster extends Image
 
                 if ($quality === null) {
                     $originalSize = filesize($this->_imageSourcePath);
+
+                    if ($originalSize === false) {
+                        throw new ImageException('Unable to determine the source image size.');
+                    }
                     $tempFile = $this->autoGuessImageQuality($targetPath, $originalSize, $extension);
                     rename($tempFile, $targetPath);
 
@@ -393,7 +409,7 @@ class Raster extends Image
 
     public function getIsTransparent(): bool
     {
-        foreach ($this->_image as $frame) {
+        foreach ($this->image() as $frame) {
             $native = $frame->native();
 
             if ($native instanceof Imagick) {
@@ -497,9 +513,9 @@ class Raster extends Image
 
         $font = clone $this->_font;
         $font->setAngle($angle);
-        $fontProcessor = $this->_image->driver()->fontProcessor();
+        $fontProcessor = $this->image()->driver()->fontProcessor();
         $size = $fontProcessor->boxSize($text, $font);
-        $native = $this->_image->core()->native();
+        $native = $this->image()->core()->native();
 
         if ($native instanceof Imagick && $fontProcessor instanceof ImagickFontProcessor && $text !== '') {
             $metrics = $native->queryFontMetrics($fontProcessor->toImagickDraw($font), $text);
@@ -531,7 +547,7 @@ class Raster extends Image
 
         $font = clone $this->_font;
         $font->setAngle($angle);
-        $this->_image->text($text, $x, $y, $font);
+        $this->image()->text($text, $x, $y, $font);
     }
 
     /**
@@ -541,8 +557,8 @@ class Raster extends Image
      */
     public function disableAnimation(): self
     {
-        if ($this->_image->isAnimated()) {
-            $this->_image->removeAnimation(0);
+        if ($this->image()->isAnimated()) {
+            $this->image()->removeAnimation(0);
         }
 
         return $this;
@@ -550,7 +566,7 @@ class Raster extends Image
 
     public function orient(): self
     {
-        $this->_image->orient();
+        $this->image()->orient();
 
         return $this;
     }
@@ -577,8 +593,8 @@ class Raster extends Image
     {
         maxPowerCaptain();
 
-        if ($this->_image->core() instanceof VipsCore) {
-            VipsCore::ensureInMemory($this->_image->core());
+        if ($this->image()->core() instanceof VipsCore) {
+            VipsCore::ensureInMemory($this->image()->core());
         }
 
         $tempPath = pathinfo($targetPath, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.File::uniqueName(
@@ -626,7 +642,7 @@ class Raster extends Image
             return;
         }
 
-        $this->_image->encode($this->encoder($extension, $quality))->save($targetPath);
+        $this->image()->encode($this->encoder($extension, $quality))->save($targetPath);
     }
 
     private function encoder(string $extension, int $quality): EncoderInterface
@@ -652,7 +668,7 @@ class Raster extends Image
 
     private function applyInterlace(): void
     {
-        $native = $this->_image->core()->native();
+        $native = $this->image()->core()->native();
         if (! $native instanceof Imagick) {
             return;
         }
@@ -667,7 +683,7 @@ class Raster extends Image
 
     private function encodePng(string $targetPath, int $quality): void
     {
-        $native = $this->_image->core()->native();
+        $native = $this->image()->core()->native();
 
         // Valid PNG quality settings are 0-9, so normalize and flip, because we're talking about compression
         // levels, not quality, like jpg and gif.
@@ -689,8 +705,8 @@ class Raster extends Image
         }
 
         if ($native instanceof VipsImage) {
-            if ($this->_image->isAnimated()) {
-                $native = $this->_image->core()->frame(0)->native();
+            if ($this->image()->isAnimated()) {
+                $native = $this->image()->core()->frame(0)->native();
             }
 
             $result = $native->writeToBuffer('.png', [
@@ -705,12 +721,18 @@ class Raster extends Image
             return;
         }
 
-        $this->_image->encode(new PngEncoder($this->_interlace !== 'none'))->save($targetPath);
+        $this->image()->encode(new PngEncoder($this->_interlace !== 'none'))->save($targetPath);
     }
 
     private function encodeImagickPng(string $targetPath, int $compression): void
     {
-        $output = clone $this->_image->core()->native();
+        $native = $this->image()->core()->native();
+
+        if (! $native instanceof Imagick) {
+            throw new ImageException('The image must use the Imagick driver.');
+        }
+
+        $output = clone $native;
         $output->setOption('png:compression-level', (string) $compression);
 
         $pngInfo = $this->_imageSourcePath ? ImageHelper::pngImageInfo($this->_imageSourcePath) : false;
@@ -734,7 +756,7 @@ class Raster extends Image
 
     private function prepareMetadata(): void
     {
-        $native = $this->_image->core()->native();
+        $native = $this->image()->core()->native();
         if ($native instanceof VipsImage) {
             if (! Cms::config()->preserveExifData) {
                 foreach (['exif-data', 'xmp-data', 'iptc-data', 'orientation'] as $field) {
@@ -754,7 +776,7 @@ class Raster extends Image
         if (! $native instanceof Imagick) {
             if (! Cms::config()->preserveImageColorProfiles) {
                 try {
-                    $this->_image->removeProfile();
+                    $this->image()->removeProfile();
                 } catch (InterventionImageException) {
                 }
             }

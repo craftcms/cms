@@ -29,7 +29,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  *
- * @phpstan-type Resolution array{type: string, plugin?: string, licenseId: string|int|null, edition?: string}
+ * @phpstan-type Resolution array{type: string, plugin?: string, licenseId?: string|int|null, edition?: string}
  * @phpstan-type Issue array{string, string, Resolution|null}
  * @phpstan-type LicenseInfo array{id: string|int|null, edition: string|null, status: string|LicenseKeyStatus, timestamp?: int|null}
  *
@@ -169,7 +169,7 @@ readonly class License
             $issues = array_filter($issues);
         }
 
-        return $issues;
+        return array_values($issues);
     }
 
     /**

@@ -58,7 +58,7 @@ class BulkOps
 
     public function end(string $key): void
     {
-        $this->activeKeys = Arr::exceptValues($this->activeKeys, $key, true);
+        $this->activeKeys = array_values(Arr::exceptValues($this->activeKeys, $key, true));
 
         event(new BulkOpCompleted($key));
 

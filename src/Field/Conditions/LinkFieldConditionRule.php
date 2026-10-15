@@ -33,7 +33,7 @@ class LinkFieldConditionRule extends TextFieldConditionRule
     protected function operators(): array
     {
         return [
-            ...parent::operators(),
+            ...array_values(parent::operators()),
             self::OPERATOR_TYPE,
         ];
     }
@@ -92,7 +92,11 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         /** @phpstan-ignore-next-line */
         $valueSql = array_map(fn (Link $field) => $field->getValueSql('type'), $this->fieldInstances());
 
-        $query->where(new Coalesce($valueSql), $this->linkType);
+        $valueSql = array_values(array_filter($valueSql, fn ($sql) => $sql !== null));
+
+        if ($valueSql !== []) {
+            $query->where(new Coalesce($valueSql), $this->linkType);
+        }
     }
 
     /** @param LinkData|null $value */

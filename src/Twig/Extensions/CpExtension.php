@@ -171,7 +171,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
                 'name' => $option['label'],
                 'hint' => $option['data']['hint'] ?? null,
             ], $group['options']),
-        ], $options);
+        ], array_values($options));
     }
 
     /**

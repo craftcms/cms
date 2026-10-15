@@ -23,6 +23,7 @@ class NotRelatedToConditionRule extends RelatedToConditionRule
     }
 
     #[\Override]
+    /** @param ElementQueryInterface&ElementQuery<*> $elementQuery */
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
         ElementQuery::applyNotRelatedTo($query, $this->getElementIds(), $elementQuery);

@@ -44,7 +44,7 @@ class Markdown extends Directive
                 ],
             ],
             'description' => 'Parses the passed field value as Markdown.',
-        ]));
+        ]), self::class);
     }
 
     public static function name(): string

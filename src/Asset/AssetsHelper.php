@@ -86,7 +86,7 @@ class AssetsHelper
     /**
      * Returns revision query parameters that should be appended to as asset URL.
      *
-     * @return array{v: string}
+     * @return array{v?: string}
      */
     public static function revParams(Asset $asset, ?DateTimeInterface $dateUpdated = null): array
     {
@@ -104,8 +104,10 @@ class AssetsHelper
 
         if ($asset->getHasFocalPoint()) {
             $fp = $asset->getFocalPoint();
-            $v[] = $fp['x'];
-            $v[] = $fp['y'];
+            if (is_array($fp)) {
+                $v[] = $fp['x'];
+                $v[] = $fp['y'];
+            }
         }
 
         return array_filter([
@@ -242,7 +244,7 @@ class AssetsHelper
     {
         $sourceTree = Folders::getAllDescendantFolders($sourceParentFolder);
         $previousParent = $sourceParentFolder->getParent();
-        $sourcePrefixLength = strlen((string) $previousParent->path);
+        $sourcePrefixLength = strlen($previousParent->path ?? '');
         $folderIdChanges = [];
 
         foreach ($sourceTree as $sourceFolder) {
@@ -282,6 +284,10 @@ class AssetsHelper
 
         // Build the transfer list for files
         foreach ($assets as $asset) {
+            if ($asset->folderId === null || ! isset($folderIdChanges[$asset->folderId])) {
+                continue;
+            }
+
             $newFolderId = $folderIdChanges[$asset->folderId];
 
             $fileTransferList[] = [
@@ -379,9 +385,9 @@ class AssetsHelper
      */
     public static function getMaxUploadSize(): float|int
     {
-        $maxUpload = PHP::sizeToBytes(ini_get('upload_max_filesize'));
-        $maxPost = PHP::sizeToBytes(ini_get('post_max_size'));
-        $memoryLimit = PHP::sizeToBytes(ini_get('memory_limit'));
+        $maxUpload = PHP::sizeToBytes(ini_get('upload_max_filesize') ?: '0');
+        $maxPost = PHP::sizeToBytes(ini_get('post_max_size') ?: '0');
+        $memoryLimit = PHP::sizeToBytes(ini_get('memory_limit') ?: '0');
 
         $uploadInBytes = min($maxUpload, $maxPost);
 
@@ -392,7 +398,7 @@ class AssetsHelper
         $configLimit = Cms::config()->maxUploadFileSize;
 
         if ($configLimit) {
-            return min($uploadInBytes, $configLimit);
+            return min($uploadInBytes, PHP::sizeToBytes($configLimit));
         }
 
         return $uploadInBytes;
@@ -473,12 +479,24 @@ class AssetsHelper
 
         $outputStream = fopen($localPath, 'wb');
 
-        $bytes = stream_copy_to_stream($stream, $outputStream);
+        if ($outputStream === false) {
+            fclose($stream);
 
-        fclose($stream);
-        fclose($outputStream);
+            throw new FilesystemException("Unable to open $localPath.");
+        }
 
-        return $bytes;
+        try {
+            $bytes = stream_copy_to_stream($stream, $outputStream);
+
+            if ($bytes === false) {
+                throw new FilesystemException("Unable to copy $uriPath to $localPath.");
+            }
+
+            return $bytes;
+        } finally {
+            fclose($stream);
+            fclose($outputStream);
+        }
     }
 
     /**
@@ -496,7 +514,11 @@ class AssetsHelper
             return $path;
         }
 
-        $svg = file_get_contents(Aliases::get('@resources/public/images/thumbs/file.svg'));
+        $path = Aliases::get('@resources/public/images/thumbs/file.svg');
+
+        if ($path === false || ($svg = file_get_contents($path)) === false) {
+            throw new FilesystemException('Unable to read the default asset icon.');
+        }
 
         $extLength = strlen($extension);
 
@@ -529,7 +551,7 @@ class AssetsHelper
      */
     public static function resolveSubpath(Volume $volume, ?string $subpath, ?ElementInterface $element = null): array
     {
-        $rootFolder = Folders::getRootFolderByVolumeId($volume->id);
+        $rootFolder = Folders::getRootFolderByVolume($volume);
 
         // Are we looking for the root folder?
         $subpath = trim($subpath ?? '', '/');

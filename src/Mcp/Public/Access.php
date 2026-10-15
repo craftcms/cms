@@ -88,20 +88,26 @@ readonly class Access
         return array_values($types);
     }
 
-    /** @return list<Site|Section|ElementContainerFieldInterface|Volume|UserGroup> */
+    /** @return ($scope is 'sites' ? list<Site> : ($scope is 'sections' ? list<Section> : ($scope is 'volumes' ? list<Volume> : ($scope is 'userGroups' ? list<UserGroup> : list<ElementContainerFieldInterface>)))) */
     public function models(string $scope): array
     {
-        return collect($this->handles($scope))
+        return array_values(collect($this->handles($scope))
             ->map(fn (string $handle) => $this->resolveHandle($scope, $handle))
-            ->all();
+            ->all());
     }
 
     /** @return list<int> */
     public function ids(string $scope): array
     {
-        return collect($this->models($scope))
-            ->map(static fn (object $model): int => $model->id)
-            ->all();
+        return array_values(collect($this->models($scope))
+            ->map(static function (object $model): int {
+                if (! is_int($model->id)) {
+                    throw new InvalidArgumentException('Public MCP scope models must have an integer ID.');
+                }
+
+                return $model->id;
+            })
+            ->all());
     }
 
     /** @return array{drafts: bool, revisions: bool, inactive: bool} */

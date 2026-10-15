@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
+use CraftCms\Cms\Element\Contracts\ElementExporterInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 
 /**
@@ -16,7 +17,7 @@ class ElementExportersResolving
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  string  $source  The selected source's key
-     * @param  list<class-string>  $exporters  List of registered exporters for the element type
+     * @param  array<ElementExporterInterface|class-string<ElementExporterInterface>|array{type:class-string<ElementExporterInterface>}>  $exporters  List of registered exporters for the element type
      */
     public function __construct(
         public string $elementType,

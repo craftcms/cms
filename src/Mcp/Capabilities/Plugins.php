@@ -62,7 +62,7 @@ readonly class Plugins
         return [
             'count' => count($plugins),
             'updatesChecked' => $pluginUpdates !== null,
-            'plugins' => $plugins,
+            'plugins' => array_values($plugins),
         ];
     }
 

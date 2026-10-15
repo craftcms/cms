@@ -26,7 +26,6 @@ parameters:
     stubFiles:
         - stubs/laravel-ruleset-validation.stub
         - stubs/_generated.stub
-        - stubs/GraphQL/Type/Definition/FieldDefinition.stub
         - stubs/GraphQL/Type/Definition/ResolveInfo.stub
         - stubs/samdark/log/PsrTarget.stub
         - stubs/yii/base/Component.stub
@@ -51,7 +50,6 @@ parameters:
         - '#PHPDoc tag @mixin contains invalid type craft\\base\\+[a-zA-Z0-9]#'
         - '#^Dead catch#'
         - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'
-        - '#is never assigned CraftCms\\Cms\\Support\\MemoizableArray#'
         - '#does not accept CraftCms\\Cms\\Support\\MemoizableArray#'
         -
             identifier: parameter.implicitlyNullable

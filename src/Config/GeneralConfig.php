@@ -835,7 +835,7 @@ class GeneralConfig extends BaseConfig
     public int $defaultImageQuality = 82;
 
     /**
-     * @var array<string, bool|string> The default options that should be applied to each search term.
+     * @var array{subLeft?: bool, subRight?: bool, exclude?: bool, exact?: bool} The default options that should be applied to each search term.
      *
      * Options include:
      *
@@ -847,7 +847,7 @@ class GeneralConfig extends BaseConfig
      * ```php Static Config
      * ->defaultSearchTermOptions([
      *     'subLeft' => true,
-     *     'exclude' => 'secret',
+     *     'exclude' => true,
      * ])
      * ```
      *
@@ -3189,7 +3189,7 @@ class GeneralConfig extends BaseConfig
             ->extraAppLocales($this->extraAppLocales)
             // misc
             ->maxUploadFileSize($this->maxUploadFileSize)
-            ->disabledPlugins($this->disabledPlugins);
+            ->disabledPlugins(is_array($this->disabledPlugins) ? array_values($this->disabledPlugins) : $this->disabledPlugins);
     }
 
     /**
@@ -3992,13 +3992,13 @@ class GeneralConfig extends BaseConfig
      * ```php
      * ->defaultSearchTermOptions([
      *     'subLeft' => true,
-     *     'exclude' => 'secret',
+     *     'exclude' => true,
      * ])
      * ```
      *
      * @group System
      *
-     * @param  array<string, bool|string>  $value
+     * @param  array{subLeft?: bool, subRight?: bool, exclude?: bool, exact?: bool}  $value
      *
      * @see $defaultSearchTermOptions
      */

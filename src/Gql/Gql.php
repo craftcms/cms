@@ -30,7 +30,6 @@ use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Models\GqlSchema as GqlSchemaModel;
 use CraftCms\Cms\Gql\Models\GqlToken as GqlTokenModel;
 use CraftCms\Cms\Gql\Types\Mutation;
-use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Gql\Types\Query;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -56,6 +55,8 @@ use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InputObjectType;
+use GraphQL\Type\Definition\InputType;
+use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
 use GraphQL\Utils\TypeInfo;
@@ -121,14 +122,14 @@ class Gql
     private ?GqlSchema $_schema = null;
 
     /**
-     * @var array<class-string<BaseElementInterface>, array<string, ArgumentConfig>> Content arguments by element class
+     * @var array<class-string<BaseElementInterface>, array<string, ArgumentConfig|(Type&InputType)>> Content arguments by element class
      *
      * @see getOrSetContentArguments()
      */
     private array $_contentArguments = [];
 
     /**
-     * @var array<string, array<string, ArgumentConfig>> Custom field arguments by field layout UUID
+     * @var array<string, array<string, ArgumentConfig|(Type&InputType)>> Custom field arguments by field layout UUID
      *
      * @see getFieldLayoutArguments()
      */
@@ -173,10 +174,16 @@ class Gql
             $this->_registerGqlQueries();
             $this->_registerGqlMutations();
 
+            $queryType = TypeLoader::loadType('Query');
+            $mutationType = TypeLoader::loadType('Mutation');
+            if (! $queryType instanceof GqlObjectType || ! $mutationType instanceof GqlObjectType) {
+                throw new GqlException('GraphQL root types must be object types.');
+            }
+
             $schemaConfig = [
                 'typeLoader' => TypeLoader::loadType(...),
-                'query' => TypeLoader::loadType('Query'),
-                'mutation' => TypeLoader::loadType('Mutation'),
+                'query' => $queryType,
+                'mutation' => $mutationType,
                 'directives' => $this->_loadGqlDirectives($schema),
             ];
 
@@ -189,15 +196,13 @@ class Gql
                 $this->_schemaDef->description ??= $schema?->name;
 
                 // but we always have to add the InputObjectType mutation args
-                /** @var ObjectType $mutation */
                 $mutation = $schemaConfig['mutation'];
-                foreach ($mutation->config['fields'] as $item) {
-                    if (isset($item['args'])) {
-                        foreach ($item['args'] as $arg) {
-                            $argType = Type::getNamedType($arg->getType());
-                            if ($argType instanceof InputObjectType) {
-                                TypeInfo::extractTypes($argType, $arg);
-                            }
+                foreach ($mutation->getFields() as $item) {
+                    foreach ($item->args as $arg) {
+                        $argType = Type::getNamedType($arg->getType());
+                        if ($argType instanceof InputObjectType) {
+                            $typeMap = [];
+                            TypeInfo::extractTypes($argType, $typeMap);
                         }
                     }
                 }
@@ -851,9 +856,9 @@ class Gql
     /**
      * @param  class-string<BaseElementInterface>  $elementType
      *
-     * @phpstan-param callable(): array<string, ArgumentConfig> $setter
+     * @phpstan-param callable(): array<string, ArgumentConfig|(Type&InputType)> $setter
      *
-     * @return array<string, ArgumentConfig>
+     * @return array<string, ArgumentConfig|(Type&InputType)>
      */
     public function getOrSetContentArguments(string $elementType, callable $setter): array
     {
@@ -862,7 +867,7 @@ class Gql
         return $this->_contentArguments[$elementType];
     }
 
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     public function getFieldLayoutArguments(FieldLayout $fieldLayout): array
     {
         if (! isset($fieldLayout->type)) {
@@ -878,7 +883,7 @@ class Gql
     /**
      * @param  class-string<BaseElementInterface>  $elementType
      * @param  FieldLayout[]  $fieldLayouts
-     * @return array<string, ArgumentConfig>
+     * @return array<string, ArgumentConfig|(Type&InputType)>
      */
     public function defineContentArgumentsForFieldLayouts(string $elementType, array $fieldLayouts): array
     {
@@ -906,7 +911,7 @@ class Gql
     /**
      * @param  class-string<BaseElementInterface>  $elementType
      * @param  FieldInterface[]  $fields
-     * @return array<string, ArgumentConfig>
+     * @return array<string, ArgumentConfig|(Type&InputType)>
      */
     public function defineContentArgumentsForFields(string $elementType, array $fields): array
     {
@@ -929,7 +934,7 @@ class Gql
     /**
      * @param  class-string<BaseElementInterface>  $elementType
      * @param  array<array-key, array{handle?: string}>  $fields
-     * @return array<string, ArgumentConfig>
+     * @return array<string, ArgumentConfig|(Type&InputType)>
      */
     public function defineContentArgumentsForGeneratedFields(string $elementType, array $fields): array
     {
@@ -956,7 +961,7 @@ class Gql
     /**
      * @param  class-string<BaseElementInterface>  $elementType
      * @param  array<array-key, FieldLayoutProviderInterface>  $contexts
-     * @return array<string, ArgumentConfig>
+     * @return array<string, ArgumentConfig|(Type&InputType)>
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
@@ -1095,7 +1100,7 @@ class Gql
 
         foreach ($types as $type) {
             /** @var class-string<SingularTypeInterface> $type */
-            TypeLoader::registerType($type::getName(), "$type::getType");
+            TypeLoader::registerType($type::getName(), $type::getType(...));
         }
 
         return $types;

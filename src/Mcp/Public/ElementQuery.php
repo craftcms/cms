@@ -210,7 +210,15 @@ readonly class ElementQuery
             }
 
             $siteIds = collect($requestedHandles)
-                ->map(fn (string $handle): int => $allowedIds[array_search($handle, $handles, true)])
+                ->map(function (int|string $handle) use ($allowedIds, $handles): int {
+                    $index = array_search($handle, $handles, true);
+
+                    if ($index === false || ! isset($allowedIds[$index])) {
+                        throw new ToolCallException('Unknown public site handle.');
+                    }
+
+                    return $allowedIds[$index];
+                })
                 ->all();
         }
 
@@ -348,13 +356,13 @@ readonly class ElementQuery
             throw new ToolCallException('Public query criteria.with must contain at most five eager-loading paths, at most three levels deep.');
         }
 
-        $plans = $this->elements->createEagerLoadingPlans(array_unique($paths));
+        $plans = array_values($this->elements->createEagerLoadingPlans(array_unique($paths)));
         $this->constrainEagerLoadingPlans($plans);
 
         return $plans;
     }
 
-    /** @param list<EagerLoadPlan> $plans */
+    /** @param array<EagerLoadPlan> $plans */
     private function constrainEagerLoadingPlans(array $plans): void
     {
         foreach ($plans as $plan) {

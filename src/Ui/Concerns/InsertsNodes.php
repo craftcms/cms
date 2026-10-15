@@ -61,7 +61,7 @@ trait InsertsNodes
      */
     public function insertBefore(string $target, Node ...$nodes): static
     {
-        return $this->insertRelativeTo($target, $nodes, after: false);
+        return $this->insertRelativeTo($target, array_values($nodes), after: false);
     }
 
     /**
@@ -73,7 +73,7 @@ trait InsertsNodes
      */
     public function insertAfter(string $target, Node ...$nodes): static
     {
-        return $this->insertRelativeTo($target, $nodes, after: true);
+        return $this->insertRelativeTo($target, array_values($nodes), after: true);
     }
 
     /** @param list<Node> $nodes */

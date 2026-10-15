@@ -38,6 +38,9 @@ class DisableCommand extends Command
         }
 
         $handle = $this->getHandle(fn (array $info) => $info['isInstalled'] && $info['isEnabled']);
+        if ($handle === false) {
+            return self::FAILURE;
+        }
 
         $this->disablePluginByHandle($handle);
 

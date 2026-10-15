@@ -48,6 +48,10 @@ class FieldLayoutDesigner extends Control
         bool $withGeneratedFields = false,
         bool $withCardViewDesigner = false,
     ): string {
+        if (! is_subclass_of($elementType, ElementInterface::class)) {
+            throw new InvalidArgumentException('Invalid field layout element type.');
+        }
+
         $layout = Fields::createLayout($value);
         $layout->type = $elementType;
         $namespace = $name === null ? null : self::parentInputName($name);

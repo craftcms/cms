@@ -44,6 +44,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use LogicException;
 use Override;
+use Stringable;
 
 use function CraftCms\Cms\t;
 
@@ -271,8 +272,12 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     /** @var TableRowData The default values for newly added rows */
     public array $defaultRowValues = [];
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         // Config normalization
         if (array_key_exists('columns', $config)) {
             if (! is_array($config['columns'])) {
@@ -564,7 +569,11 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return $this->_normalizeValueInternal($value, $element, true);
     }
 
-    /** @return list<TableRowData>|null */
+    /**
+     * Missing cell types retain their serialized payloads so plugin data is not discarded.
+     *
+     * @return array<array-key,mixed>|null
+     */
     private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): ?array
     {
         if (empty($this->columns)) {
@@ -582,8 +591,8 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         // Apply static translations
         foreach ($defaults as &$row) {
             foreach ($this->columns as $colId => $col) {
-                if ($col['type'] === 'heading' && isset($row[$colId])) {
-                    $row[$colId] = t($row[$colId], category: 'site', locale: $element?->getLanguage());
+                if ($col['type'] === 'heading' && isset($row[$colId]) && (is_scalar($row[$colId]) || $row[$colId] instanceof Stringable)) {
+                    $row[$colId] = t((string) $row[$colId], category: 'site', locale: $element?->getLanguage());
                 }
             }
         }
@@ -603,7 +612,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
         if ($this->staticRows) {
             // get the order of the default rows
-            $order = Arr::pluck($this->defaults ?? [], 'rowId');
+            $order = array_values(Arr::pluck($this->defaults ?? [], 'rowId'));
             $missingValueRowIds = null;
 
             if (! empty($order)) {
@@ -649,7 +658,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                     $posA = array_search($a['rowId'], $order);
                     $posB = array_search($b['rowId'], $order);
 
-                    return $posA - $posB;
+                    return $posA <=> $posB;
                 });
             }
 
@@ -825,9 +834,9 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             return [];
         }
 
-        return ValidatorFacade::make(
+        return array_values(ValidatorFacade::make(
             ['value' => $cell->serializeValue($value)],
             ['value' => $rules],
-        )->errors()->get('value');
+        )->errors()->messages()['value'] ?? []);
     }
 }

@@ -63,7 +63,7 @@ class GqlHelper
      * @param  string  $action  The action for which the entities should be extracted. Defaults to "read".
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
      */
-    /** @return array<string, list<string>> */
+    /** @return array<string, list<string>|true> */
     public static function extractAllowedEntitiesFromSchema(string $action = 'read', ?GqlSchema $schema = null): array
     {
         try {
@@ -185,7 +185,7 @@ class GqlHelper
             'name' => $typeName,
             'types' => $includedTypes,
             'resolveType' => $resolveFunction,
-        ]));
+        ]), UnionType::class);
     }
 
     public static function wrapInNonNull(mixed $type): mixed
@@ -342,7 +342,7 @@ class GqlHelper
         $allowedSiteUids = $allowedEntities['sites'] ?? [];
 
         return Sites::getAllSites(true)
-            ->filter(fn (Site $site) => in_array($site->uid, $allowedSiteUids, true))
+            ->filter(fn (Site $site) => ($allowedSiteUids === true || in_array($site->uid, $allowedSiteUids, true)))
             ->values()
             ->all();
     }
@@ -388,7 +388,7 @@ class GqlHelper
             $complexityScore = $childComplexity + $baseComplexity;
 
             foreach (array_keys($args) as $argumentName) {
-                if (str_starts_with($argumentName, 'relatedTo')) {
+                if (str_starts_with((string) $argumentName, 'relatedTo')) {
                     $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY;
                 }
             }

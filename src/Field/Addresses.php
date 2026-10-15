@@ -42,6 +42,7 @@ use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
+use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -62,7 +63,7 @@ use function CraftCms\Cms\t;
  *
  * @phpstan-type AddressEagerLoadingMap array{
  *     elementType:class-string<Address>,
- *     map:list<array{source:int, target:int}>,
+ *     map:array<int,array{source:int, target:int}>,
  *     criteria:array{fieldId:int|null, allowOwnerDrafts:true, allowOwnerRevisions:true},
  *     createElement:callable,
  * }
@@ -174,8 +175,12 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
      */
     private NestedElementManager $_addressManager;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         parent::__construct($config);
 
         if ($this->minAddresses === 0) {
@@ -543,7 +548,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
                 $address->forceSave = true;
             } else {
                 $address = new Address;
-                $address->fieldId = $this->id;
+                $address->fieldId = $this->getId();
                 $address->setPrimaryOwner($element);
                 $address->setOwner($element);
                 $address->siteId = $element->siteId;
@@ -593,7 +598,6 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             if ($prevAddress) {
                 /** @var ElementInterface $prevAddress */
                 $prevAddress->setNext($address);
-                /** @var ElementInterface $address */
                 $address->setPrev($prevAddress);
             }
             $prevAddress = $address;
@@ -601,7 +605,6 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             $addresses[] = $address;
         }
 
-        /** @var Address[] $addresses */
         return $addresses;
     }
 
@@ -905,14 +908,17 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             ->where('addresses.fieldId', $this->id)
             ->orderBy('elements_owners.sortOrder')
             ->get()
-            ->map(fn (object $row) => (array) $row)
+            ->map(fn (\stdClass $row) => [
+                'source' => (int) $row->source,
+                'target' => (int) $row->target,
+            ])
             ->all();
 
         return [
             'elementType' => Address::class,
             'map' => $map,
             'criteria' => [
-                'fieldId' => $this->id,
+                'fieldId' => $this->getId(),
                 'allowOwnerDrafts' => true,
                 'allowOwnerRevisions' => true,
             ],
@@ -936,7 +942,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
      * @return array{
      *     name: string|null,
      *     type: Type,
-     *     args: array<string, ArgumentConfig>,
+     *     args: array<string, ArgumentConfig|(Type&InputType)>,
      *     resolve: string,
      *     complexity: callable,
      * }

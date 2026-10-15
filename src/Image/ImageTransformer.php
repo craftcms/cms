@@ -147,7 +147,9 @@ class ImageTransformer
                     // Wait a second and check again
                     maxPowerCaptain();
                     Sleep::sleep(1);
-                    $index = $this->getTransformIndexModelById($index->id);
+                    $index = $this->getTransformIndexModelById($index->id) ?? throw new ImageTransformException(t('Failed to generate transform with id of {id}.', [
+                        'id' => $index->id,
+                    ]));
                     if (! $index->inProgress) {
                         break;
                     }
@@ -712,44 +714,44 @@ class ImageTransformer
     public function flipImage(bool $flipX, bool $flipY): void
     {
         if ($flipX) {
-            $this->editingImage->flipHorizontally();
+            $this->editingImage()->flipHorizontally();
         }
 
         if ($flipY) {
-            $this->editingImage->flipVertically();
+            $this->editingImage()->flipVertically();
         }
     }
 
     public function scaleImage(int $width, int $height): void
     {
-        $this->editingImage->scaleToFit($width, $height);
+        $this->editingImage()->scaleToFit($width, $height);
     }
 
     public function rotateImage(float $degrees): void
     {
-        $this->editingImage->rotate($degrees);
+        $this->editingImage()->rotate($degrees);
     }
 
     public function getEditedImageWidth(): int
     {
-        return $this->editingImage->getWidth();
+        return $this->editingImage()->getWidth();
     }
 
     public function getEditedImageHeight(): int
     {
-        return $this->editingImage->getHeight();
+        return $this->editingImage()->getHeight();
     }
 
     public function crop(int $x, int $y, int $width, int $height): void
     {
-        $this->editingImage->crop($x, $x + $width, $y, $y + $height);
+        $this->editingImage()->crop($x, $x + $width, $y, $y + $height);
     }
 
     public function finishImageEditing(): string
     {
-        $this->editingImage->saveAs($this->editingTempPath);
+        $tempPath = $this->editingTempPath();
+        $this->editingImage()->saveAs($tempPath);
 
-        $tempPath = $this->editingTempPath;
         $this->editingImage = null;
         $this->editingTempPath = null;
 
@@ -758,11 +760,21 @@ class ImageTransformer
 
     public function cancelImageEditing(): string
     {
-        $tempPath = $this->editingTempPath;
+        $tempPath = $this->editingTempPath();
         $this->editingImage = null;
         $this->editingTempPath = null;
 
         return $tempPath;
+    }
+
+    private function editingImage(): Raster
+    {
+        return $this->editingImage ?? throw new RuntimeException('Image editing has not been started.');
+    }
+
+    private function editingTempPath(): string
+    {
+        return $this->editingTempPath ?? throw new RuntimeException('Image editing has not been started.');
     }
 
     private function getTransformBasePath(Asset $asset): string

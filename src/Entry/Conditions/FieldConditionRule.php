@@ -52,7 +52,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     protected function options(): array
     {
         return $this->nestedEntryFields()
-            ->keyBy(fn (ElementContainerFieldInterface $field) => $field->uid)
+            ->keyBy(fn (ElementContainerFieldInterface $field) => $field->uid ?? '')
             ->map(
                 fn (ElementContainerFieldInterface $field) => $field->getUiLabel().($this->showLabelHint() ? " ($field->handle)" : '')
             )
@@ -61,6 +61,10 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
+        if (! $elementQuery instanceof EntryQuery) {
+            throw new \InvalidArgumentException('This condition requires an entry query.');
+        }
+
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
             $fieldIds = $this->nestedEntryFields()->all();
         } elseif ($this->operator === self::OPERATOR_EMPTY) {

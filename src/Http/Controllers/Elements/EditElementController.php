@@ -126,7 +126,7 @@ class EditElementController
         $canEditMultipleSites = count($propEditableSiteIds) > 1 || $addlEditableSites;
 
         // Permissions
-        $canSave = $this->canSave($element, $this->request->craftUser());
+        $canSave = $this->canSave($element, $this->request->requireCraftUser());
         $canSaveCanonical = Gate::check('saveCanonical', $element);
         $canCreateDrafts = Gate::check('createDrafts', $canonical);
 
@@ -343,7 +343,7 @@ class EditElementController
                 ->orderByDesc('dateUpdated')
                 ->with(['draftCreator'])
                 ->get()
-                ->filter(fn (ElementInterface $draft) => $this->request->craftUser()->can('view', $draft))
+                ->filter(fn (ElementInterface $draft) => $this->request->requireCraftUser()->can('view', $draft))
                 ->all();
         } else {
             $drafts = [];
@@ -516,7 +516,7 @@ class EditElementController
 
         $hideViewAction = ! empty($previewTargets) && ! $this->isSlideout();
 
-        return array_filter(
+        return array_values(array_filter(
             $element->getActionMenuItems(),
             function (array $item) use ($hideViewAction) {
                 // filter out "Edit" item - no point showing edit action on the edit page,
@@ -533,7 +533,7 @@ class EditElementController
 
                 return true;
             },
-        );
+        ));
     }
 
     private function prepareEditor(

@@ -90,13 +90,13 @@ readonly class WidgetsController
         // Create a new widget model with the new settings
         $settings = $widget instanceof Custom
             ? $widget->getSettings()
-            : $request->input('settings', []);
+            : $request->array('settings');
 
         Validator::validate($settings, $widget->getRules());
 
         $widget = $this->dashboard->createWidget([
-            'id' => $widget->id,
-            'colspan' => $widget->colspan,
+            'id' => $request->integer('widgetId'),
+            'colspan' => $widget->colspan ?? 1,
             'type' => $widget::class,
             'settings' => $settings,
         ]);

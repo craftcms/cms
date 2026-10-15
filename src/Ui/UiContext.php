@@ -16,7 +16,7 @@ readonly class UiContext
     /**
      * @param  string|list<string>  $namespace
      * @param  array<string, mixed>  $values
-     * @param  array<string, string|list<string>>  $errors
+     * @param  array<string, string|array<string>>  $errors
      * @param  list<string>  $globalErrors
      */
     public function __construct(

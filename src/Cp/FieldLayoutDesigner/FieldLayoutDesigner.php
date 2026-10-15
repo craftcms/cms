@@ -267,7 +267,7 @@ class FieldLayoutDesigner
         $errors = [];
 
         foreach ($fields as $index => $field) {
-            $messages = $fieldLayout->errors()->get("generatedFields.{$field['uid']}.handle");
+            $messages = $fieldLayout->errors()->getMessages()["generatedFields.{$field['uid']}.handle"] ?? [];
             if ($messages !== []) {
                 $errors["generatedFields.{$index}.handle"] = $messages;
             }

@@ -39,7 +39,7 @@ readonly class MoneyRule implements ValidationRule
         }
 
         if ($this->max !== null) {
-            $max = new Money($this->max, $value->getCurrency());
+            $max = new Money((string) $this->max, $value->getCurrency());
 
             if ($value->greaterThan($max)) {
                 $fail(t('{attribute} must be no greater than {max}.', [
@@ -50,7 +50,7 @@ readonly class MoneyRule implements ValidationRule
         }
 
         if ($this->min !== null) {
-            $min = new Money($this->min, $value->getCurrency());
+            $min = new Money((string) $this->min, $value->getCurrency());
 
             if ($value->lessThan($min)) {
                 $fail(t('{attribute} must be no less than {min}.', [

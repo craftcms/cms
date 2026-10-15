@@ -113,8 +113,12 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
      */
     public int $minuteIncrement = 30;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         // dateTime => showDate + showTime
         if (isset($config['dateTime'])) {
             switch ($config['dateTime']) {

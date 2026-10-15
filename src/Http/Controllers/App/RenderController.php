@@ -87,7 +87,7 @@ readonly class RenderController
                 $query->trashed(null);
             }
 
-            $elements = $query->all();
+            $elements = $query->asArray(false)->all();
 
             // See if there are any provisional changes we should show
             $this->drafts->loadProvisionalChanges($elements);
@@ -176,7 +176,7 @@ readonly class RenderController
                 $component = $this->volumes->getVolumeById((int) $id);
             }
 
-            if ($component) {
+            if ($component instanceof Chippable) {
                 foreach ($componentInfo['instances'] as $config) {
                     $instance = $component;
                     if (! empty($config['overrides'])) {

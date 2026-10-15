@@ -48,7 +48,7 @@ class Money extends Directive
                 ],
             ],
             'description' => 'Formats a money object to the desired format. It can be applied to any fields, but only changes a Money field.',
-        ]));
+        ]), self::class);
     }
 
     public static function name(): string

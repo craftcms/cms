@@ -75,6 +75,7 @@ readonly class CredentialRepository
                 CredentialRecord::class,
                 'json',
             ))
+            ->values()
             ->all();
     }
 

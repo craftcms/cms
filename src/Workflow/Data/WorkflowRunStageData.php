@@ -67,7 +67,7 @@ readonly class WorkflowRunStageData
             message: $isCurrent && $summaryComponent === null ? $run->currentStageResult : null,
             summaryComponent: $summaryComponent,
             summaryProps: $component->summaryProps($context, $viewer),
-            events: $events->all(),
+            events: array_values($events->all()),
         );
     }
 }

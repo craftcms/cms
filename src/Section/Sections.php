@@ -171,7 +171,7 @@ class Sections
         /** @var MemoizableArray<Section> $sections */
         $sections = new MemoizableArray(
             elements: $results->all(),
-            normalizer: function (object $result) use (&$siteSettingsBySection) {
+            normalizer: function (\stdClass $result) use (&$siteSettingsBySection) {
                 if (! empty($result->previewTargets) && is_string($result->previewTargets)) {
                     $result->previewTargets = Json::decode($result->previewTargets);
                 } else {
@@ -1214,7 +1214,7 @@ class Sections
     /**
      * Returns data for the Sections index page in the control panel.
      */
-    /** @return array{array<string, int|string|null>, array<int, array<string, int|string|null>>} */
+    /** @return array{array{total: int, per_page: int, current_page: int, last_page: int, next_page_url: string|null, prev_page_url: string|null, from: int|null, to: int|null}, list<array<string, int|string|null>>} */
     public function getSectionTableData(
         int $page,
         int $limit,
@@ -1227,7 +1227,7 @@ class Sections
 
         /** @var Collection<int, Section> $sections */
         $sections = $results
-            ->map(fn (object $result) => $this->_sections()->firstWhere('id', $result->id))
+            ->map(fn (\stdClass $result) => $this->_sections()->firstWhere('id', $result->id))
             ->filter()
             ->values();
 
@@ -1245,16 +1245,16 @@ class Sections
             ];
         }
 
-        $pagination = Arr::only($paginator->toArray(), [
-            'total',
-            'per_page',
-            'current_page',
-            'last_page',
-            'next_page_url',
-            'prev_page_url',
-            'from',
-            'to',
-        ]);
+        $pagination = [
+            'total' => $paginator->total(),
+            'per_page' => $paginator->perPage(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'next_page_url' => $paginator->nextPageUrl(),
+            'prev_page_url' => $paginator->previousPageUrl(),
+            'from' => $paginator->firstItem(),
+            'to' => $paginator->lastItem(),
+        ];
 
         return [$pagination, $tableData];
     }
@@ -1263,7 +1263,7 @@ class Sections
      * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
      *
      *
-     * @return array{0: Collection<int, object>, 1: LengthAwarePaginator<int, object>}
+     * @return array{0: Collection<int, \stdClass>, 1: LengthAwarePaginator<int, \stdClass>}
      */
     private function prepTableData(
         Builder $query,

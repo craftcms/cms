@@ -225,7 +225,10 @@ class Api
 
             switch ($name) {
                 case 'curl':
-                    $versions["lib-$name"] = normalizeVersion(curl_version()['version']);
+                    $curlVersion = curl_version();
+                    if ($curlVersion !== false) {
+                        $versions["lib-$name"] = normalizeVersion($curlVersion['version']);
+                    }
                     break;
                 case 'gd':
                     $versions["lib-$name"] = normalizeVersion(GD_VERSION);
@@ -273,7 +276,7 @@ class Api
 
         // did we just get a new license key?
         if (isset($headers['x-craft-license'])) {
-            $license = reset($headers['x-craft-license']);
+            $license = $headers['x-craft-license'][0] ?? '';
             $path = $this->license->keyPath();
 
             //  just in case there's some race condition where two licenses were requested simultaneously...
@@ -304,7 +307,7 @@ class Api
 
         // did we just get any new plugin license keys?
         if (isset($headers['x-craft-plugin-licenses'])) {
-            $pluginLicenseKeys = explode(',', reset($headers['x-craft-plugin-licenses']));
+            $pluginLicenseKeys = explode(',', $headers['x-craft-plugin-licenses'][0] ?? '');
             foreach ($pluginLicenseKeys as $key) {
                 [$pluginHandle, $key] = explode(':', $key);
                 $this->plugins->setPluginLicenseKey($pluginHandle, $key);
@@ -315,7 +318,7 @@ class Api
         if (isset($headers['x-craft-license-info'])) {
             $oldLicenseInfo = $this->cache->get(License::CACHE_KEY_LICENSE_INFO, []);
             $licenseInfo = [];
-            $allCombinedInfo = array_filter(explode(',', reset($headers['x-craft-license-info'])));
+            $allCombinedInfo = array_filter(explode(',', $headers['x-craft-license-info'][0] ?? ''));
             foreach ($allCombinedInfo as $combinedInfo) {
                 $parts = explode(':', $combinedInfo, 2);
                 if (count($parts) !== 2) {

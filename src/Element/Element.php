@@ -267,8 +267,12 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
      */
     private bool $_serializeFields = false;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         // Make sure the field layout ID is set before any custom fields
         if (isset($config['fieldLayoutId'])) {
             $config = ['fieldLayoutId' => $config['fieldLayoutId']] + $config;
@@ -735,7 +739,7 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     #[Override]
     public function offsetExists($offset): bool
     {
-        if (parent::offsetExists($offset)) {
+        if (is_string($offset) && parent::offsetExists($offset)) {
             return true;
         }
 

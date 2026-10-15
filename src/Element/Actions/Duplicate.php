@@ -149,6 +149,10 @@ JS, [
                 continue;
             }
 
+            if (! is_int($element->id) || ! is_int($duplicate->id)) {
+                throw new \LogicException('Duplicated elements require persisted IDs.');
+            }
+
             $successCount++;
             $duplicatedElementIds[$element->id] = true;
             $this->duplicateIdsBySourceId[$element->id] = $duplicate->id;

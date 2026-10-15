@@ -64,6 +64,9 @@ trait Installable
         }
 
         $realPath = realpath($path);
+        if ($realPath === false) {
+            throw new \RuntimeException("Unable to resolve install migration: {$path}");
+        }
 
         $migration = $this->findMigrationClassByFile($realPath);
 

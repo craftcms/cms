@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\ElementRelationParamFilter;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Support\Arr;
@@ -44,7 +43,7 @@ trait QueriesRelatedElements
         });
     }
 
-    /** @param ElementQuery<ElementInterface> $elementQuery */
+    /** @param ElementQuery<*> $elementQuery */
     public static function applyRelatedTo(BuilderContract $query, mixed $value, ElementQuery $elementQuery): void
     {
         if (! $value) {
@@ -71,7 +70,7 @@ trait QueriesRelatedElements
         }
     }
 
-    /** @param ElementQuery<ElementInterface> $elementQuery */
+    /** @param ElementQuery<*> $elementQuery */
     public static function applyNotRelatedTo(BuilderContract $query, mixed $value, ElementQuery $elementQuery): void
     {
         if (! $value) {

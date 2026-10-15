@@ -102,6 +102,10 @@ class D3Asset implements LegacyAssetInterface
             return '{}';
         }
 
+        if ($handle === false) {
+            return '{}';
+        }
+
         while (($file = readdir($handle)) !== false) {
             if (strncmp($file, $language, 2) === 0) {
                 closedir($handle);
@@ -121,6 +125,6 @@ class D3Asset implements LegacyAssetInterface
     {
         $path = $dir.DIRECTORY_SEPARATOR.$file.'.json';
 
-        return file_exists($path) ? file_get_contents($path) : null;
+        return file_exists($path) ? (file_get_contents($path) ?: null) : null;
     }
 }

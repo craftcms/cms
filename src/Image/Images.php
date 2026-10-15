@@ -435,6 +435,10 @@ class Images
             $sanitizer = new Sanitizer;
             $sanitizer->setAllowedAttrs(new SvgAllowedAttributes);
             $svgContents = file_get_contents($filePath);
+
+            if ($svgContents === false) {
+                throw new Exception('Unable to read the SVG file contents.');
+            }
             $svgContents = $sanitizer->sanitize($svgContents);
 
             if (! $svgContents) {
@@ -522,7 +526,7 @@ class Images
             return false;
         }
 
-        $native = $image->getInterventionImage()->core()->native();
+        $native = $image->getInterventionImage()?->core()->native();
         if ($native instanceof VipsImage && $native->getType('orientation') !== 0) {
             $native->remove('orientation');
         }

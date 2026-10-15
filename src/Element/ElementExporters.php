@@ -253,9 +253,13 @@ class ElementExporters
                         fseek($handle, $begin);
                     }
 
-                    while (! feof($handle) && ($position = ftell($handle)) <= $end) {
+                    while (! feof($handle) && ($position = ftell($handle)) !== false && $position <= $end) {
                         if ($position + $chunkSize > $end) {
                             $chunkSize = $end - $position + 1;
+                        }
+
+                        if ($chunkSize <= 0) {
+                            break;
                         }
 
                         echo fread($handle, $chunkSize);
@@ -315,6 +319,10 @@ class ElementExporters
 
         $path = tempnam(sys_get_temp_dir(), 'export');
         $handle = fopen($path, 'wb');
+
+        if ($handle === false) {
+            throw new \RuntimeException('Unable to open the spreadsheet export file.');
+        }
         $writerFactory($spreadsheet)->save($handle);
         fclose($handle);
         $content = file_get_contents($path);

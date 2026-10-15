@@ -30,7 +30,7 @@ readonly class SiteGroups
 
         return [
             'count' => $groups->count(),
-            'groups' => $groups->all(),
+            'groups' => array_values($groups->all()),
         ];
     }
 

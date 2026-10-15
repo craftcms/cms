@@ -16,6 +16,7 @@ use Override;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\normalizeVersion;
+use function CraftCms\Cms\requireCurrentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -129,7 +130,7 @@ EOD;
             ],
             'showBackupOption' => $this->generalConfig->backupCommand !== false,
             'canContactSupport' => Edition::get()->value >= Edition::Pro->value,
-            'email' => in_array(currentUser()->asElement()->email, ['support@pixelandtonic.com', 'support@craftcms.com'], true) ? '' : currentUser()->asElement()->email,
+            'email' => in_array(requireCurrentUser()->asElement()->email, ['support@pixelandtonic.com', 'support@craftcms.com'], true) ? '' : requireCurrentUser()->asElement()->email,
         ];
     }
 }

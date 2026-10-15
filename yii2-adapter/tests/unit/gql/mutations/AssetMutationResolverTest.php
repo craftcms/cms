@@ -40,8 +40,8 @@ class AssetMutationResolverTest extends TestCase
 
         $folder = new VolumeFolder(['id' => 1, 'volumeId' => 1]);
 
-        Folders::shouldReceive('getRootFolderByVolumeId')
-            ->with(1)
+        Folders::shouldReceive('getRootFolderByVolume')
+            ->with($volume)
             ->andReturn($folder);
         Folders::shouldReceive('getFolderById')
             ->andReturn($folder);

@@ -55,7 +55,7 @@ trait HasSources
     {
         if (! isset(self::$sources[static::class][$context])) {
             // Memoize the results immediately, in case sources() gets called again via the event
-            self::$sources[static::class][$context] = static::defineSources($context);
+            self::$sources[static::class][$context] = array_values(static::defineSources($context));
 
             event($event = new ElementSourcesResolving(static::class, $context, self::$sources[static::class][$context]));
             self::$sources[static::class][$context] = $event->sources;

@@ -15,7 +15,7 @@ class ElementTableAttributesResolving
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
-     * @param  array<string, array<string, mixed>>  $tableAttributes  The table attributes
+     * @param  array<string, array{label: string, icon?: string, placeholder?: mixed, ...}>  $tableAttributes  The table attributes
      */
     public function __construct(
         public string $elementType,

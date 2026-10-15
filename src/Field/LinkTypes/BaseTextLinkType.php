@@ -81,7 +81,7 @@ abstract class BaseTextLinkType extends BaseLinkType
 JS, [
             $containerId,
             [
-                'prefixes' => (array) $this->urlPrefix(),
+                'prefixes' => array_values((array) $this->urlPrefix()),
                 'pattern' => $this->pattern(),
                 'inputAttributes' => $textInputAttributes,
             ],
@@ -128,7 +128,7 @@ JS, [
      * @return array{
      *     id: string,
      *     label: string,
-     *     kind: string,
+     *     kind: 'custom'|'element'|'text',
      *     prefixes: list<string>,
      *     pattern: string,
      *     inputAttributes: array<string, string>,
@@ -139,7 +139,7 @@ JS, [
     {
         return array_merge(parent::pickerConfig(), [
             'kind' => 'text',
-            'prefixes' => (array) $this->urlPrefix(),
+            'prefixes' => array_values((array) $this->urlPrefix()),
             'pattern' => $this->pattern(),
             'inputAttributes' => $this->inputAttributes(),
         ]);

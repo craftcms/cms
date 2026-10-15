@@ -42,6 +42,6 @@ readonly class ElementQueryFactory
     /** @return list<class-string<ElementInterface>> */
     public function registeredTypes(): array
     {
-        return $this->elements->getAllElementTypes();
+        return array_values($this->elements->getAllElementTypes());
     }
 }

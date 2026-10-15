@@ -73,7 +73,7 @@ readonly class Sections
 
         return [
             'count' => $sections->count(),
-            'sections' => $sections->all(),
+            'sections' => array_values($sections->all()),
         ];
     }
 

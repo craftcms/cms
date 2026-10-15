@@ -20,12 +20,15 @@ use Tpetry\QueryExpressions\Value\Value;
 use UnexpectedValueException;
 
 /**
+ * @template TElement of ElementInterface
+ * @template TAsArray of bool
+ *
  * @internal
  */
 trait FormatsResults
 {
     /**
-     * @var array<int|string, Expression<*>|string|int> The default [[orderBy]] value to use if [[orderBy]] is empty but not null.
+     * @var array<int|string, Expression<covariant literal-string>|string|int> The default [[orderBy]] value to use if [[orderBy]] is empty but not null.
      */
     protected array $defaultOrderBy = [
         'elements.dateCreated' => SORT_DESC,
@@ -117,7 +120,12 @@ trait FormatsResults
      *     ->all();
      * ```
      *
-     * @param  bool  $value  The property value (defaults to true)
+     * @template TNewAsArray of bool
+     *
+     * @param  TNewAsArray  $value  The property value (defaults to true)
+     * @return $this
+     *
+     * @phpstan-self-out static<TElement, TNewAsArray>
      */
     public function asArray(bool $value = true): static
     {
@@ -249,7 +257,7 @@ trait FormatsResults
                 $ids = is_string($ids) ? str($ids)->explode(',')->all() : [$ids];
             }
 
-            $elementQuery->orderBy(new FixedOrderExpression('elements.id', $ids));
+            $elementQuery->orderBy(new FixedOrderExpression('elements.id', array_values($ids)));
 
             return;
         }
@@ -276,7 +284,7 @@ trait FormatsResults
                 default => 'asc',
             };
 
-            $elementQuery->getQuery()->orderBy($column, $direction);
+            $elementQuery->getQuery()->orderBy((string) $column, $direction);
         }
     }
 

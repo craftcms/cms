@@ -42,7 +42,7 @@ readonly class ActivityCommentsController
         );
 
         return new JsonResponse([
-            'event' => $this->presenter->events(collect([$event]), $user)->first(),
+            'event' => $this->presenter->events(collect([$event]), $user)->first()?->toArray(),
         ]);
     }
 
@@ -108,7 +108,7 @@ readonly class ActivityCommentsController
                 collect([$comment]),
                 $viewer,
                 collect([$comment->id => $version]),
-            )->first(),
+            )->first()?->toArray(),
         ]);
     }
 

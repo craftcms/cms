@@ -27,8 +27,11 @@ use InvalidArgumentException;
  * @property string|null $subjectId
  * @property int|null $siteId
  * @property int|null $rootEventId
- * @property array{snapshots: array<string, array<string, int|string>>, changes: list<array<string, mixed>>, data: array<string, mixed>} $payload
- * @property array<string, array<string, int|string>> $snapshots
+ *
+ * @phpstan-type Snapshots array{actor: array{label: string}, source: array{label: string}, event: array{label: string}, subject?: array{label: string}, site?: array{name: string}, impersonator?: array{id: int, label: string}, origin?: string}
+ *
+ * @property array{snapshots: Snapshots, changes: list<array{label: string, old: mixed, new: mixed}>, data: array<string, mixed>} $payload
+ * @property Snapshots $snapshots
  * @property list<ActivityChange> $changes
  * @property array<string, mixed> $data
  * @property CarbonImmutable $occurredAt
@@ -56,7 +59,7 @@ class ActivityEvent extends BaseModel
         ];
     }
 
-    /** @return Attribute<array<string, array<string, int|string>>, never> */
+    /** @return Attribute<Snapshots, never> */
     protected function snapshots(): Attribute
     {
         return Attribute::get(fn () => $this->payload['snapshots']);

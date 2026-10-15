@@ -61,6 +61,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use PDO;
+use RuntimeException;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -284,7 +285,7 @@ class Fields
     {
         // If the field has any validation errors and has an ID, swap it with the saved field
         if (! $field->getIsNew() && $field->errors()->isNotEmpty()) {
-            $field = $this->getFieldById($field->id);
+            $field = $field->getId() !== null ? ($this->getFieldById($field->getId()) ?? $field) : $field;
         }
 
         $types = new Collection;
@@ -373,7 +374,7 @@ class Fields
         }
 
         if (! empty($config['id']) && empty($config['uid']) && is_numeric($config['id'])) {
-            $uid = DB::table(Table::FIELDS)->uidById($config['id']);
+            $uid = DB::table(Table::FIELDS)->uidById((int) $config['id']);
             $config['uid'] = $uid;
         }
 
@@ -390,6 +391,17 @@ class Fields
         return $field;
     }
 
+    private function fieldFromRow(object $row): FieldInterface
+    {
+        $config = get_object_vars($row);
+
+        if (! isset($config['type']) || ! is_string($config['type'])) {
+            throw new InvalidArgumentException('Field records must contain a field type.');
+        }
+
+        return $this->createField($config);
+    }
+
     /**
      * Returns a memoizable array of fields.
      *
@@ -402,12 +414,12 @@ class Fields
         $context ??= $this->fieldContext;
 
         if (! Cms::isInstalled()) {
-            return new MemoizableArray([], fn () => []);
+            return new MemoizableArray([], $this->fieldFromRow(...));
         }
 
         $this->_fields ??= new MemoizableArray(
             $this->_createFieldQuery()->get()->all(),
-            fn (object $config) => $this->createField((array) $config),
+            $this->fieldFromRow(...),
         );
 
         if ($context === false) {
@@ -415,7 +427,7 @@ class Fields
         }
 
         if (is_array($context)) {
-            return $this->_fields->whereIn('context', $context, true);
+            return $this->_fields->whereIn('context', array_values($context), true);
         }
 
         return $this->_fields->where('context', $context, true);
@@ -652,7 +664,7 @@ class Fields
                 $field->uid = Str::uuid7()->toString();
             }
         } elseif (! $field->uid) {
-            $field->uid = DB::table(Table::FIELDS)->uidById($field->id);
+            $field->uid = DB::table(Table::FIELDS)->uidById($field->getId() ?? throw new InvalidArgumentException('Saved fields must have an integer ID.'));
         }
 
         // Store with all the populated data for future reference.
@@ -676,7 +688,34 @@ class Fields
             return;
         }
 
-        $this->applyFieldSave($fieldUid, $data, 'global');
+        if (! isset($data['type'], $data['translationMethod']) || ! is_string($data['type']) || ! is_string($data['translationMethod'])) {
+            throw new InvalidArgumentException('Field configuration requires a type and translation method.');
+        }
+
+        $nullableString = static function (mixed $value): ?string {
+            if ($value !== null && ! is_string($value)) {
+                throw new InvalidArgumentException('Field configuration text must be a string or null.');
+            }
+
+            return $value;
+        };
+        $searchable = $data['searchable'] ?? false;
+        $settings = $data['settings'] ?? [];
+
+        if (! is_bool($searchable) || ! is_array($settings)) {
+            throw new InvalidArgumentException('Invalid field configuration settings.');
+        }
+
+        $this->applyFieldSave($fieldUid, [
+            'name' => $nullableString($data['name'] ?? null),
+            'handle' => $nullableString($data['handle'] ?? null),
+            'instructions' => $nullableString($data['instructions'] ?? null),
+            'translationKeyFormat' => $nullableString($data['translationKeyFormat'] ?? null),
+            'translationMethod' => $data['translationMethod'],
+            'type' => $data['type'],
+            'searchable' => $searchable,
+            'settings' => $settings,
+        ] + $data, 'global');
     }
 
     /**
@@ -889,6 +928,10 @@ class Fields
         ]);
         $content = ob_get_clean();
 
+        if ($content === false) {
+            throw new RuntimeException('Unable to capture the field merge migration.');
+        }
+
         File::put($migrationPath, $content);
 
         app(Migrator::class)->track('content')->run();
@@ -919,7 +962,9 @@ class Fields
         foreach ($this->getAllLayouts() as $layout) {
             $uniqueFieldIds = [];
             foreach ($layout->getCustomFields() as $field) {
-                $uniqueFieldIds[$field->id] = true;
+                if ($field->getId() !== null) {
+                    $uniqueFieldIds[$field->getId()] = true;
+                }
             }
             foreach (array_keys($uniqueFieldIds) as $fieldId) {
                 $usages[$fieldId][] = $layout;
@@ -1023,7 +1068,7 @@ class Fields
      */
     public function getLayoutsByIds(array $layoutIds): Collection
     {
-        return $this->_layouts()->whereIn('id', $layoutIds)->collect();
+        return $this->_layouts()->whereIn('id', array_values($layoutIds))->collect();
     }
 
     /**
@@ -1031,7 +1076,7 @@ class Fields
      *
      * @param  class-string<ElementInterface>  $type  The associated element type
      * @param  bool  $create  Whether to create a field layout if one doesn’t exist
-     * @return FieldLayout|null The field layout
+     * @return ($create is true ? FieldLayout : FieldLayout|null) The field layout
      */
     public function getLayoutByType(string $type, bool $create = true): ?FieldLayout
     {
@@ -1078,16 +1123,17 @@ class Fields
      *
      * @phpstan-param array{type:class-string<T>} $config
      *
-     * @return T
+     * @return T|MissingLayoutElement
      *
      * @throws InvalidArgumentException if `$config['type']` does not implement [[FieldLayoutElement]]
      */
     public function createLayoutElement(array $config): FieldLayoutElement
     {
-        $type = Arr::pull($config, 'type');
+        $type = $config['type'];
+        unset($config['type']);
 
-        if (! $type) {
-            throw new InvalidArgumentException("Invalid field layout element class: $type");
+        if (! is_string($type) || $type === '') {
+            throw new InvalidArgumentException('Invalid field layout element class.');
         }
 
         if (class_exists($type) && ! is_subclass_of($type, FieldLayoutElement::class)) {
@@ -1104,6 +1150,10 @@ class Fields
                 'uid' => $config['uid'] ?? null,
                 'width' => $config['width'] ?? 100,
             ]);
+        }
+
+        if (! is_subclass_of($type, FieldLayoutElement::class)) {
+            throw new InvalidArgumentException("Invalid field layout element class: $type");
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
@@ -1490,7 +1540,7 @@ class Fields
                 descending: $sortDir === 'desc',
             );
 
-            $query->orderBy(new FixedOrderExpression('type', $types->all()))
+            $query->orderBy(new FixedOrderExpression('type', $types->values()->all()))
                 ->orderBy('name', $sortDir)
                 ->orderBy('handle', $sortDir);
         } else {
@@ -1522,10 +1572,10 @@ class Fields
         $usages = $this->allFieldUsages();
 
         foreach ($result as $item) {
-            $field = $this->createField((array) $item);
+            $field = $this->fieldFromRow($item);
 
             $tableData[] = [
-                'id' => $field->id,
+                'id' => $field->getId(),
                 'title' => t($field->name, category: 'site'),
                 'translatable' => $field->getIsTranslatable(null)
                     ? ($field->getTranslationDescription(null) ?? t('This field is translatable.'))
@@ -1548,16 +1598,16 @@ class Fields
 
         $paginator->appends(request()->except($pageParam));
 
-        $pagination = Arr::only($paginator->toArray(), [
-            'total',
-            'per_page',
-            'current_page',
-            'last_page',
-            'next_page_url',
-            'prev_page_url',
-            'from',
-            'to',
-        ]);
+        $pagination = [
+            'total' => $paginator->total(),
+            'per_page' => $paginator->perPage(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'next_page_url' => $paginator->nextPageUrl(),
+            'prev_page_url' => $paginator->previousPageUrl(),
+            'from' => $paginator->firstItem(),
+            'to' => $paginator->lastItem(),
+        ];
 
         return [$pagination, $tableData];
     }

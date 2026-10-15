@@ -45,7 +45,15 @@ readonly class ConditionsController
         ]);
 
         try {
-            $rule = $condition->createConditionRule($request->array('rule'));
+            $config = $request->array('rule');
+
+            if (isset($config['class']) && is_string($config['class'])) {
+                $rule = $condition->createConditionRule($config);
+            } elseif (isset($config['type']) && is_string($config['type'])) {
+                $rule = $condition->createConditionRule($config);
+            } else {
+                throw new InvalidArgumentException('Missing condition rule type.');
+            }
             $condition->addConditionRule($rule);
         } catch (InvalidArgumentException) {
             throw ValidationException::withMessages(['rule' => t('The selected condition rule is invalid.')]);

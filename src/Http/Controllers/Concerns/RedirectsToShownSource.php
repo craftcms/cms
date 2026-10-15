@@ -54,7 +54,7 @@ trait RedirectsToShownSource
         }
 
         $query = [...$request->query(), ...$query];
-        $base = strtok($url, '?');
+        $base = explode('?', $url, 2)[0];
 
         return redirect($query === [] ? $base : $base.'?'.http_build_query($query));
     }

@@ -84,7 +84,7 @@ class Entries
     public function getSingleEntriesByHandle(array $handles): array
     {
         $entries = [];
-        $siteId = Sites::getCurrentSite()->id;
+        $siteId = Sites::getCurrentSite()->id ?? throw new \RuntimeException('Single entries require a persisted site.');
         $missingEntries = [];
 
         $this->singleEntries[$siteId] ??= [];

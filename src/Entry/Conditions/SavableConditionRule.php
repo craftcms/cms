@@ -42,6 +42,10 @@ class SavableConditionRule extends BaseLightswitchConditionRule implements Eleme
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
+        if (! $elementQuery instanceof EntryQuery) {
+            throw new \InvalidArgumentException('This condition requires an entry query.');
+        }
+
         EntryQuery::applySavable($query, $this->value, $elementQuery);
     }
 

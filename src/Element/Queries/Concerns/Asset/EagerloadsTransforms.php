@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use Illuminate\Support\Collection;
 
@@ -57,7 +58,10 @@ trait EagerloadsTransforms
                     : [$transforms];
             }
 
-            app(AssetTransformers::class)->preload($result->all(), $transforms);
+            app(AssetTransformers::class)->preload(
+                $result->filter(fn ($element): bool => $element instanceof Asset)->values()->all(),
+                array_values($transforms),
+            );
 
             return $result;
         });

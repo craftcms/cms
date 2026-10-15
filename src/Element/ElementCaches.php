@@ -96,8 +96,8 @@ readonly class ElementCaches
 
     /** @return list<string> */
     /**
-     * @param  string[]  $tags
-     * @return string[]
+     * @param  list<string>  $tags
+     * @return list<string>
      */
     private function invalidateTags(array $tags): array
     {

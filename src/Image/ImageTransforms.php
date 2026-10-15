@@ -26,6 +26,7 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 /**
  * @since 6.0.0
@@ -152,7 +153,8 @@ class ImageTransforms
         $this->transforms = null;
 
         event(new TransformSaved(
-            transform: $this->getTransformById($transformModel->id),
+            transform: $this->getTransformById($transformModel->id)
+                ?? throw new RuntimeException("Image transform $transformModel->id could not be loaded after saving."),
             isNew: $isNewTransform,
         ));
 

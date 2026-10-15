@@ -52,7 +52,7 @@ readonly class Workflows
             ->map($this->definition(...))
             ->values();
 
-        return ['count' => $workflows->count(), 'workflows' => $workflows->all()];
+        return ['count' => $workflows->count(), 'workflows' => array_values($workflows->all())];
     }
 
     /** @return array{workflow: array<string, mixed>} */

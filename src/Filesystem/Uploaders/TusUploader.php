@@ -23,7 +23,7 @@ class TusUploader implements Uploader
 {
     public function start(UploadSession $session): UploadSetup
     {
-        $requestLimit = PHP::sizeToBytes(ini_get('post_max_size'));
+        $requestLimit = PHP::sizeToBytes((ini_get('post_max_size') ?: '0'));
         $chunkSize = min(
             Cms::config()->uploadChunkSize,
             $requestLimit > 0 ? $requestLimit : PHP_INT_MAX,

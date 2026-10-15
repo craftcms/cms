@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use Exception;
 use Illuminate\Support\Facades\Gate;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -145,7 +146,7 @@ readonly class FolderController
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
                 ->all();
-            $fileTransferList = AssetsHelper::fileTransferList($foundAssets, $folderIdChanges);
+            $fileTransferList = AssetsHelper::fileTransferList(array_values($foundAssets), $folderIdChanges);
         } else {
             $targetTreeMap = [];
 
@@ -177,11 +178,12 @@ readonly class FolderController
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
                 ->all();
-            $fileTransferList = AssetsHelper::fileTransferList($foundAssets, $folderIdChanges);
+            $fileTransferList = AssetsHelper::fileTransferList(array_values($foundAssets), $folderIdChanges);
         }
 
         $newFolderId = $folderIdChanges[$request->folderBeingMovedId()] ?? null;
-        $newFolder = $this->folders->getFolderById($newFolderId);
+        $newFolder = ($newFolderId !== null ? $this->folders->getFolderById($newFolderId) : null)
+            ?? throw new RuntimeException('The moved folder could not be found.');
 
         return $this->asSuccess(data: [
             'transferList' => $fileTransferList,

@@ -9,6 +9,8 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 
 /**
+ * @property array<mixed>|string|null $route
+ *
  * @since 6.0.0
  */
 class RouteToken extends BaseModel

@@ -251,7 +251,7 @@ trait HasCustomFields
 
     public function setDirtyFields(array $fieldHandles, bool $merge = true): void
     {
-        $newDirtyFields = array_flip($fieldHandles);
+        $newDirtyFields = array_fill_keys($fieldHandles, true);
 
         $this->_dirtyFields = $merge && $this->_dirtyFields
             ? array_merge($this->_dirtyFields, $newDirtyFields)
@@ -273,7 +273,7 @@ trait HasCustomFields
         $uidLookup = array_flip($layoutElementUids);
         $handles = [];
 
-        foreach ($this->getFieldLayout()->getCustomFieldElements() as $layoutElement) {
+        foreach ($this->getFieldLayout()?->getCustomFieldElements() ?? [] as $layoutElement) {
             if (isset($uidLookup[$layoutElement->uid])) {
                 $handles[$layoutElement->attribute()] = true;
             }

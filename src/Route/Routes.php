@@ -318,7 +318,7 @@ class Routes
         ]);
 
         if ($validator->fails()) {
-            throw new InvalidRouteException($route, $validator->errors()->messages());
+            throw new InvalidRouteException($route, array_map(array_values(...), $validator->errors()->messages()));
         }
     }
 }

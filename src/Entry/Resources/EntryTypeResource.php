@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Entry\Resources;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\JsonResource;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Shared\Enums\Color;
 use Illuminate\Http\Request;
 
 /**
@@ -16,7 +17,7 @@ use Illuminate\Http\Request;
  */
 class EntryTypeResource extends JsonResource
 {
-    /** @return array<string, scalar|array<array-key, scalar|array<string, scalar|null>|null>|object|null> */
+    /** @return array{name:string|null, id:int|null, handle:string|null, description:string|null, color:Color|null, indicators:array<array-key,mixed>, actions:array<array-key,mixed>, icon:array{name:string,family:string}|null, original:self} */
     #[\Override]
     public function toArray(Request $request): array
     {

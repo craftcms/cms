@@ -149,7 +149,7 @@ class ConditionBuilder extends Control
         }
 
         $condition = self::condition(is_array($value) ? $value : [], $this->conditionClass, $this->queryParams, $this->forProjectConfig, $this->fieldLayouts, $this->addRuleLabel);
-        $props['builder'] = Json::decode(Json::encode(app(\CraftCms\Cms\Condition\ConditionBuilder::class)->resolve($condition)));
+        $props['builder'] = Json::decode(Json::encode(app(\CraftCms\Cms\Condition\ConditionBuilder::class)->resolve($condition), JSON_THROW_ON_ERROR));
 
         return $props;
     }

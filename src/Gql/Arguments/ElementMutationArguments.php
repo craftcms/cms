@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Arguments;
 
 use GraphQL\Type\Definition\Argument;
+use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -14,7 +15,7 @@ use GraphQL\Type\Definition\Type;
  */
 abstract class ElementMutationArguments extends MutationArguments
 {
-    /** @return array<string, ArgumentConfig> */
+    /** @return array<string, ArgumentConfig|(Type&InputType)> */
     #[\Override]
     public static function getArguments(): array
     {

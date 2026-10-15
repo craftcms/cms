@@ -254,7 +254,7 @@ class HtmlStack
      */
     public function scriptWithVars(callable $fn, array $vars, Position $position = Position::BodyEnd, array $options = [], ?string $key = null): void
     {
-        $encodedVars = array_map(fn (mixed $var): string => Json::encode($var), $vars);
+        $encodedVars = array_map(fn (mixed $var): string => Json::encode($var, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?: throw new \RuntimeException('Unable to encode script variables.'), $vars);
         $script = $fn(...array_values($encodedVars));
 
         $this->script($script, $position, $options, $key);
@@ -784,11 +784,11 @@ class HtmlStack
      * merged by key, with overwritten entries keeping the position of their first
      * registration. Icons are deduplicated and appended.
      *
-     * @param  array<string, mixed>  $buffer  The captured state from [[clearBuffer()]], keyed by property name.
+     * @param  array{js?: array<int, array<string, string>>, html?: array<int, array<string, string>>, scripts?: array<int, array<string, string|Stringable>>, jsFiles?: array<int, array<string, string|Stringable>>, cssFiles?: array<string, string|Stringable>, css?: array<string, string|Stringable>, jsImports?: array<string, string>, metaTags?: array<string, string|Stringable>, linkTags?: array<string, string|Stringable>, icons?: list<string>}  $buffer  The captured state from [[clearBuffer()]], keyed by property name.
      */
     public function applyBuffer(array $buffer): void
     {
-        foreach (['js', 'scripts', 'jsFiles', 'html'] as $property) {
+        foreach (['js', 'html'] as $property) {
             $propertyEntries = $this->{$property};
 
             foreach ($buffer[$property] ?? [] as $position => $entries) {
@@ -802,7 +802,21 @@ class HtmlStack
             $this->{$property} = $propertyEntries;
         }
 
-        foreach (['cssFiles', 'css', 'jsImports', 'metaTags', 'linkTags'] as $property) {
+        foreach (['scripts', 'jsFiles'] as $property) {
+            $propertyEntries = $this->{$property};
+
+            foreach ($buffer[$property] ?? [] as $position => $entries) {
+                foreach ($entries as $key => $value) {
+                    $positionEntries = $propertyEntries[$position] ?? [];
+                    $this->registerEntry($positionEntries, $key, $value);
+                    $propertyEntries[$position] = $positionEntries;
+                }
+            }
+
+            $this->{$property} = $propertyEntries;
+        }
+
+        foreach (['cssFiles', 'css', 'metaTags', 'linkTags'] as $property) {
             $propertyEntries = $this->{$property};
 
             foreach ($buffer[$property] ?? [] as $key => $value) {
@@ -810,6 +824,10 @@ class HtmlStack
             }
 
             $this->{$property} = $propertyEntries;
+        }
+
+        foreach ($buffer['jsImports'] ?? [] as $key => $value) {
+            $this->registerEntry($this->jsImports, $key, $value);
         }
 
         if (! empty($buffer['icons'])) {
@@ -936,7 +954,10 @@ JS;
     /**
      * Keeps overwritten entries in the position of their first registration.
      *
-     * @param  array<string, Stringable|string>  $entries
+     * @template TValue of Stringable|string
+     *
+     * @param  array<string, TValue>  $entries
+     * @param  TValue  $value
      */
     private function registerEntry(array &$entries, string $key, Stringable|string $value): void
     {

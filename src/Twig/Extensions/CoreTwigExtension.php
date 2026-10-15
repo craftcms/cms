@@ -310,7 +310,13 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('addresses', fn (array $config = []) => new AddressQuery($config)),
             new TwigFunction('assets', fn (array $config = []) => new AssetQuery($config)),
             new TwigFunction('contentBlocks', fn (array $config = []) => new ContentBlockQuery($config)),
-            new TwigFunction('elements', fn (string $elementType = Element::class, array $config = []) => new ElementQuery($elementType, $config)),
+            new TwigFunction('elements', function (string $elementType = Element::class, array $config = []): ElementQuery {
+                if (! is_a($elementType, ElementInterface::class, true)) {
+                    throw new InvalidArgumentException('Invalid element type.');
+                }
+
+                return new ElementQuery($elementType, $config);
+            }),
             new TwigFunction('entries', fn (array $config = []) => new EntryQuery($config)),
             new TwigFunction('users', fn (array $config = []) => new UserQuery($config)),
 
@@ -343,7 +349,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             return null;
         }
 
-        return MoneyHelper::toString($money, $locale);
+        return MoneyHelper::toString($money, $locale) ?: throw new InvalidArgumentException('Unable to format money.');
     }
 
     public function translateFilter(mixed $message, mixed $category = null, mixed $params = null, ?string $language = null): string
@@ -466,6 +472,10 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             }
         }
 
+        if ($depth < 1) {
+            throw new InvalidArgumentException('JSON depth must be positive.');
+        }
+
         return Json::encode($value, $options, $depth);
     }
 
@@ -500,7 +510,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 
         $class = is_string($type) ? $type : ($type['__class'] ?? $type['class'] ?? null);
 
-        if (! $class) {
+        if (! is_string($class) || $class === '') {
             throw new InvalidArgumentException('No class specified for create().');
         }
 
@@ -570,7 +580,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         foreach ($vars as $var) {
             ob_start();
             dump($var);
-            $output .= str_replace('<code>', '<code style="display:block;">', ob_get_clean());
+            $output .= str_replace('<code>', '<code style="display:block;">', (ob_get_clean() ?: ''));
         }
 
         return $output;
@@ -597,7 +607,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
         $valueSql = $provider->getFieldLayout()->getFieldByHandle($fieldHandle)->getValueSql($key);
 
         if ($valueSql instanceof Expression) {
-            return $valueSql->getValue(DB::getQueryGrammar());
+            return (string) $valueSql->getValue(DB::getQueryGrammar());
         }
 
         return $valueSql;

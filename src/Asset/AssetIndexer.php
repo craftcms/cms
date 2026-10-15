@@ -101,7 +101,7 @@ class AssetIndexer
                 ]);
 
                 $path = $listing->getUri();
-                $segments = preg_split('/\\\\|\//', $path);
+                $segments = explode('/', str_replace('\\', '/', $path));
                 $lastSegmentIndex = count($segments) - 1;
 
                 foreach ($segments as $i => $segment) {
@@ -328,7 +328,8 @@ class AssetIndexer
         $skipped = [];
 
         foreach ($skippedItems as $skippedItem) {
-            $skipped[] = $this->volumes->getVolumeById((int) $skippedItem->volumeId)->name.'/'.$skippedItem->uri;
+            $volumeName = $this->volumes->getVolumeById((int) $skippedItem->volumeId)?->name;
+            $skipped[] = ($volumeName !== null ? "$volumeName/" : '').$skippedItem->uri;
         }
 
         return $skipped;
@@ -608,8 +609,8 @@ class AssetIndexer
         $uriPath = $indexEntry->uri;
         $dirname = dirname((string) $uriPath);
 
-        foreach (preg_split('/\\\\|\//', $dirname) as $part) {
-            if ($part[0] === '_') {
+        foreach (explode('/', str_replace('\\', '/', $dirname)) as $part) {
+            if (str_starts_with($part, '_')) {
                 throw new AssetNotIndexableException("File \"{$indexEntry->uri}\" is in a directory that cannot be indexed.");
             }
         }
@@ -675,7 +676,6 @@ class AssetIndexer
             && $timeModified !== null
             && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
         $needsColors = $asset->colors === null || $fileChanged;
-
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
         $tempPath = null;
 
@@ -719,7 +719,7 @@ class AssetIndexer
                     }
                 }
 
-                [$w, $h] = $dimensions;
+                [$w, $h] = $dimensions ?: [null, null];
                 $asset->setWidth($w);
                 $asset->setHeight($h);
 
@@ -763,8 +763,8 @@ class AssetIndexer
     public function indexFolderByEntry(AssetIndexData $indexEntry, bool $createIfMissing = true): VolumeFolder
     {
         if ($indexEntry->uri !== null) {
-            foreach (preg_split('/\\\\|\//', $indexEntry->uri) as $part) {
-                if ($part[0] === '_') {
+            foreach (explode('/', str_replace('\\', '/', $indexEntry->uri)) as $part) {
+                if (str_starts_with($part, '_')) {
                     throw new AssetNotIndexableException("The directory \"{$indexEntry->uri}\" cannot be indexed.");
                 }
             }

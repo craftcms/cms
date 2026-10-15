@@ -158,7 +158,7 @@ readonly class MenuHtml
             }
 
             return $item;
-        }, $items);
+        }, array_values($items));
     }
 
     /**

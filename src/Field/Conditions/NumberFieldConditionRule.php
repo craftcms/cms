@@ -20,7 +20,9 @@ class NumberFieldConditionRule extends BaseNumberConditionRule implements Elemen
     /** @return list<string>|string|null */
     protected function elementQueryParam(): string|array|null
     {
-        return $this->paramValue();
+        $value = $this->paramValue();
+
+        return is_array($value) ? array_values($value) : $value;
     }
 
     /** @param Money|float|int|null $value */

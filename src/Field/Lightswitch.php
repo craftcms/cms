@@ -104,8 +104,12 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
      */
     public bool $showLabelsInCards = false;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         // Config normalization
         if (($onLabel = Arr::pull($config, 'label')) !== null) {
             $config['onLabel'] = $onLabel;

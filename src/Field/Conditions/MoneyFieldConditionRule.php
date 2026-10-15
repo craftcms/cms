@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Money as MoneyControl;
 use CraftCms\Cms\Ui\Nodes\Field;
+use InvalidArgumentException;
 use Money\Money as MoneyLibrary;
 use Override;
 use RuntimeException;
@@ -43,11 +44,11 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements Element
     #[Override]
     protected function operators(): array
     {
-        return array_filter(
+        return array_values(array_filter(
             parent::operators(),
             // Remove IN/NOT IN operators as they don't fit with the implementation of money inputs
             fn (string $operator) => ! in_array($operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])
-        );
+        ));
     }
 
     /**
@@ -77,12 +78,24 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements Element
         if (isset($value, $this->_fieldUid)) {
             $value['currency'] ??= $field->currency;
 
-            $this->value = MoneyHelper::toDecimal(MoneyHelper::toMoney($value));
+            $decimal = MoneyHelper::toDecimal(MoneyHelper::toMoney($value));
+
+            if ($decimal === false) {
+                throw new InvalidArgumentException('Invalid money condition value.');
+            }
+
+            $this->value = $decimal;
         }
 
         if (isset($maxValue, $this->_fieldUid)) {
             $maxValue['currency'] ??= $field->currency;
-            $this->maxValue = MoneyHelper::toDecimal(MoneyHelper::toMoney($maxValue));
+            $decimal = MoneyHelper::toDecimal(MoneyHelper::toMoney($maxValue));
+
+            if ($decimal === false) {
+                throw new InvalidArgumentException('Invalid money condition value.');
+            }
+
+            $this->maxValue = $decimal;
         }
     }
 
@@ -118,13 +131,16 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements Element
         return [Field::make($this->getLabel(), $control('value', $this->value))];
     }
 
-    protected function elementQueryParam(): ?string
+    /** @return list<string>|string|null */
+    protected function elementQueryParam(): array|string|null
     {
         if (! $this->field() instanceof Money) {
             return null;
         }
 
-        return $this->paramValue();
+        $value = $this->paramValue();
+
+        return is_array($value) ? array_values($value) : $value;
     }
 
     /** @param MoneyLibrary|float|int|null $value */
@@ -138,10 +154,18 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements Element
             return $this->matchValue($value instanceof MoneyLibrary ? $value->getAmount() : $value);
         }
 
-        $compare = fn (string $amount): int => $value->compare(MoneyHelper::toMoney([
-            'value' => $amount,
-            'currency' => $value->getCurrency(),
-        ]));
+        $compare = function (string $amount) use ($value): int {
+            $money = MoneyHelper::toMoney([
+                'value' => $amount,
+                'currency' => $value->getCurrency(),
+            ]);
+
+            if ($money === false) {
+                throw new InvalidArgumentException('Invalid money condition value.');
+            }
+
+            return $value->compare($money);
+        };
 
         if ($this->operator === self::OPERATOR_BETWEEN) {
             return ($this->value === '' || $compare($this->value) >= 0)

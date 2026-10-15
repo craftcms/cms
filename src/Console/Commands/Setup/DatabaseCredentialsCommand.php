@@ -70,7 +70,7 @@ class DatabaseCredentialsCommand extends Command
         top:
 
         $envDriver = Config::get('database.default') ?? Env::get('DB_CONNECTION', Env::get('CRAFT_DB_DRIVER'));
-        $this->driver = $this->option('driver') ?? select(
+        $driver = $this->option('driver') ?? select(
             label: 'Which database driver are you using?',
             options: [
                 'mysql' => 'MySQL',
@@ -81,6 +81,10 @@ class DatabaseCredentialsCommand extends Command
             default: $this->driver ?? $envDriver,
             validate: [Rule::in('mysql', 'mariadb', 'pgsql', 'sqlite')]
         );
+        if (! is_string($driver)) {
+            throw new \InvalidArgumentException('Invalid database driver.');
+        }
+        $this->driver = $driver;
 
         if ($this->driver !== 'sqlite') {
             $this->host = $this->option('host') ?? strtolower(text(

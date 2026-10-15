@@ -79,13 +79,13 @@ class WorkflowRequest extends FormRequest
         $data = $this->validated();
 
         return [
-            'name' => $data['name'],
+            'name' => $this->string('name')->toString(),
             'stages' => array_map(fn (array $stage): WorkflowStageData => new WorkflowStageData(
                 uid: $stage['uid'],
                 name: $stage['name'],
                 type: $stage['type'],
                 settings: $stage['settings'],
-            ), $data['stages']),
+            ), array_values($data['stages'])),
         ];
     }
 }

@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Throwable;
@@ -204,8 +205,8 @@ trait QueriesEagerly
 
     /**
      * @param  array<string, mixed>  $criteria
-     * @param  array<int, string>|string  $columns
-     * @return Collection<int, ElementInterface>|int|null
+     * @param  array<int, string|Expression>|string  $columns
+     * @return ($count is true ? int : Collection<int, ElementInterface>)|null
      */
     protected function eagerLoad(bool $count = false, array $criteria = [], array|string $columns = ['*']): Collection|int|null
     {
@@ -213,6 +214,7 @@ trait QueriesEagerly
 
         if (
             $this->eagerly === false ||
+            ($this->asArray && ! $count) ||
             ($automatically && ! Cms::config()->autoEagerLoadElements) ||
             ($automatically && (request()->isCpRequest() || TemplateMode::is(TemplateMode::Cp))) ||
             ($automatically && ($this->asArray || ! in_array($columns, ['*', ['*']], true) || $this->getResultOverride() !== null)) ||

@@ -75,7 +75,11 @@ class GqlSchema extends Component implements Stringable
             $parts = explode('.', $permission);
 
             if (count($parts) === 2) {
-                $this->_cachedPairs[$action][$parts[0]][] = $parts[1];
+                $pairs = $this->_cachedPairs[$action][$parts[0]] ?? [];
+                if ($pairs !== true) {
+                    $pairs[] = $parts[1];
+                    $this->_cachedPairs[$action][$parts[0]] = $pairs;
+                }
 
                 continue;
             }

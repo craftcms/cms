@@ -42,6 +42,10 @@ class ViewableConditionRule extends BaseLightswitchConditionRule implements Elem
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
+        if (! $elementQuery instanceof EntryQuery) {
+            throw new \InvalidArgumentException('This condition requires an entry query.');
+        }
+
         EntryQuery::applyEditable($query, $this->value, $elementQuery);
     }
 

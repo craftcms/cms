@@ -109,7 +109,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
 
     public static function get(int|string $id): ?self
     {
-        return Sections::getSectionById($id);
+        return Sections::getSectionById((int) $id);
     }
 
     public function getUiLabel(): string
@@ -259,7 +259,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
         return 'newspaper';
     }
 
-    /** @return array<string, scalar|array<array-key, scalar|array<string, scalar|null>|null>|null> */
+    /** @return array{name: string|null, handle: string|null, type: string, entryTypes: array<array<string, mixed>>, workflow: string|null, enableVersioning: bool, minAuthors: int, maxAuthors: int|null, propagationMethod: string, siteSettings: array<string, array{enabledByDefault: bool, hasUrls: bool, uriFormat: string|null, template: string|null, route: string|null}>, defaultPlacement: string, previewTargets?: list<array<string, mixed>>, structure?: array{uid: string|null, maxLevels: int|null}} */
     public function getConfig(): array
     {
         $config = [

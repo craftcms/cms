@@ -110,6 +110,8 @@ use function CraftCms\Cms\t;
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
  *
  * @since 6.0.0
+ *
+ * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
 #[Ruleset(UserRules::class)]
 class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, HasLocalePreference, MustVerifyEmailContract
@@ -332,7 +334,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @see getFriendlyName()
      * @see setFriendlyName()
      */
-    private string|bool|null $_friendlyName = null;
+    private string|false|null $_friendlyName = null;
 
     /**
      * @var Asset|false|null user photo
@@ -806,7 +808,9 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         ]);
     }
 
-    /** @return array<string, class-string|array<array-key, mixed>|callable>|null|false */
+    /**
+     * @return EagerLoadingMap|array<EagerLoadingMap>|null|false
+     */
     #[Override]
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -821,7 +825,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
                 ])
                 ->where('primaryOwnerId', $sourceElementIds)
                 ->get()
-                ->map(fn (object $row) => (array) $row)
+                ->map(fn (\stdClass $row): array => ['source' => $row->source, 'target' => $row->target])
                 ->all();
 
             return [
@@ -840,7 +844,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
                 ->whereIn('id', $sourceElementIds)
                 ->whereNotNull('photoId')
                 ->get()
-                ->map(fn (object $row) => (array) $row)
+                ->map(fn (\stdClass $row): array => ['source' => $row->source, 'target' => $row->target])
                 ->all();
 
             return [

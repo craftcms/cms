@@ -55,7 +55,7 @@ trait DisplayedInIndex
     {
         event($event = new ElementSearchableAttributesResolving(
             elementType: static::class,
-            attributes: static::defineSearchableAttributes(),
+            attributes: array_values(static::defineSearchableAttributes()),
         ));
 
         return $event->attributes;
@@ -426,7 +426,7 @@ trait DisplayedInIndex
             ->all();
     }
 
-    /** @return array<string,array<string,mixed>> */
+    /** @return array<string,array{label: string, icon?: string, placeholder?: mixed, ...}> */
     public static function tableAttributes(): array
     {
         event($event = new ElementTableAttributesResolving(
@@ -440,7 +440,7 @@ trait DisplayedInIndex
     /**
      * Defines all of the available columns that can be shown in table views.
      *
-     * @return array<string,array<string,mixed>> The table attributes.
+     * @return array<string,array{label: string, icon?: string, placeholder?: mixed, ...}> The table attributes.
      *
      * @see tableAttributes()
      */
@@ -479,7 +479,7 @@ trait DisplayedInIndex
         event($event = new ElementDefaultTableAttributesResolving(
             elementType: static::class,
             source: $source,
-            tableAttributes: static::defineDefaultTableAttributes($source),
+            tableAttributes: array_values(static::defineDefaultTableAttributes($source)),
         ));
 
         return $event->tableAttributes;
@@ -504,7 +504,7 @@ trait DisplayedInIndex
      * Returns the card attributes for the element type.
      *
      * @param  FieldLayout|null  $fieldLayout  The field layout
-     * @return array<string,array<string,mixed>> The card attributes
+     * @return array<string,array{label: string, icon?: string, placeholder?: mixed, ...}> The card attributes
      */
     public static function cardAttributes(?FieldLayout $fieldLayout = null): array
     {
@@ -520,7 +520,7 @@ trait DisplayedInIndex
     /**
      * Defines all the available attributes that can be shown in card views along with their default placeholder values.
      *
-     * @return array<string,array<string,mixed>> The card attributes.
+     * @return array<string,array{label: string, icon?: string, placeholder?: mixed, ...}> The card attributes.
      *
      * @see cardAttributes()
      */
@@ -592,7 +592,7 @@ trait DisplayedInIndex
     {
         event($event = new ElementDefaultCardAttributesResolving(
             elementType: static::class,
-            cardAttributes: static::defineDefaultCardAttributes(),
+            cardAttributes: array_values(static::defineDefaultCardAttributes()),
         ));
 
         return $event->cardAttributes;

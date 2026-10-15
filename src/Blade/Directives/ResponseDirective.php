@@ -52,7 +52,7 @@ class ResponseDirective
                 ? $expiration
                 : (int) now()->diffInSeconds(now()->add($expiration, $unit));
         } elseif ($expiration !== null) {
-            $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - now()->getTimestamp();
+            $duration = (DateTimeHelper::toDateTime($expiration) ?: throw new \InvalidArgumentException('Invalid response expiration date.'))->getTimestamp() - now()->getTimestamp();
         } else {
             $duration = 0;
         }

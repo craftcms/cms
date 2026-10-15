@@ -87,8 +87,8 @@ class ApplyCommand extends Command
         }
 
         // Install new plugins
-        $loadedConfigPlugins = array_keys($projectConfig->get(ProjectConfig::PATH_PLUGINS) ?? []);
-        $yamlPlugins = array_keys($projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? []);
+        $loadedConfigPlugins = array_map(strval(...), array_keys($projectConfig->get(ProjectConfig::PATH_PLUGINS) ?? []));
+        $yamlPlugins = array_map(strval(...), array_keys($projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? []));
 
         if (! $this->installPlugins($plugins, array_diff($yamlPlugins, $loadedConfigPlugins))) {
             $this->components->error('Aborting config apply process.');

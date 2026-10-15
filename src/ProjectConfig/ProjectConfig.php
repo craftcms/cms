@@ -641,7 +641,7 @@ class ProjectConfig
         $old = is_array($old) ? $old : [];
         $new = is_array($new) ? $new : [];
 
-        if (Str::isUuid((string) $key)) {
+        if (is_string($key) && Str::isUuid($key)) {
             if (isset($new['name'])) {
                 $this->setNameMapping($key, $new['name']);
             } elseif (isset($old['name'])) {
@@ -1007,7 +1007,7 @@ class ProjectConfig
             $this->commit(self::PATH_META_NAMES, null);
 
             foreach ($rebuilt->config as $path => $value) {
-                $this->set($path, $value, 'Project config rebuild', updateTimestamp: false, force: true);
+                $this->set((string) $path, $value, 'Project config rebuild', updateTimestamp: false, force: true);
             }
 
             $this->storage->invalidate();

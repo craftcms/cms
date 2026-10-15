@@ -51,6 +51,6 @@ class ContentBlock extends Generator implements GeneratorInterface, SingleGenera
 
                 return Gql::prepareFieldDefinitions($contentBlockFields, $typeName);
             },
-        ]));
+        ]), ContentBlockType::class);
     }
 }

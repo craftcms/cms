@@ -36,6 +36,6 @@ class ElementType implements GeneratorInterface, SingleGeneratorInterface
 
                 return Gql::prepareFieldDefinitions($elementFields, $typeName);
             },
-        ]));
+        ]), Element::class);
     }
 }

@@ -432,8 +432,10 @@ class FieldsController
             'settings' => ['nullable', 'array'],
         ]);
 
-        $type = $request->input('type');
-        $fieldId = $request->input('fieldId');
+        $type = $request->string('type')->toString();
+        $fieldId = $request->integer('fieldId') ?: null;
+
+        abort_unless(is_a($type, FieldInterface::class, true), 400, 'Invalid field type.');
 
         if ($fieldId) {
             $fieldId = (int) $fieldId;
@@ -447,8 +449,8 @@ class FieldsController
 
         $field = $this->fieldsService->createField([
             'type' => $type,
-            'id' => $fieldId,
-            'uid' => $fieldUid,
+            ...($fieldId !== null ? ['id' => $fieldId] : []),
+            ...($fieldUid !== null ? ['uid' => $fieldUid] : []),
             'name' => $request->input('name'),
             'handle' => $request->input('handle'),
             'instructions' => $request->input('instructions'),
@@ -570,7 +572,10 @@ class FieldsController
      * URL-encoded string (`typeSettings`), since its inputs are server-rendered
      * HTML rather than form state. The legacy Twig form posts a `types` array.
      */
-    /** @return array<string, mixed> */
+    /**
+     * @param  class-string<FieldInterface>  $type
+     * @return array<string, mixed>
+     */
     private function typeSettingsFromRequest(Request $request, string $type, ?FieldInterface $oldField = null): array
     {
         if ($request->has('settings')) {
@@ -660,6 +665,12 @@ class FieldsController
         $component = $this->fieldLayoutComponent($request, $settings);
         $payload = $this->layoutComponentSettingsPayload($component, $settings ?? []);
         $scope = $request->array('scope');
+
+        if (array_any($scope, static fn (mixed $attribute): bool => ! is_string($attribute))) {
+            abort(400, 'Invalid settings scope.');
+        }
+
+        $scope = array_values($scope);
 
         return new JsonResponse([
             'ui' => $scope === [] ? $payload : $payload->forScope($scope),

@@ -162,7 +162,7 @@ class EventTagAdder extends BaseEventTagVisitor
 
         return new BaseNode([
             new TextNode($preSplitHtml, $startLine),
-            new DoNode(new FunctionExpression(new TwigFunction($functionName, [$this->lifecycle, $functionName]), new BaseNode, $splitLine), $splitLine),
+            new DoNode(new FunctionExpression(new TwigFunction($functionName, $this->lifecycle->{$functionName}(...)), new BaseNode, $splitLine), $splitLine),
             new TextNode($postSplitHtml, $splitLine),
         ], [], $startLine);
     }

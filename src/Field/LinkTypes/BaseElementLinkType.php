@@ -84,8 +84,12 @@ abstract class BaseElementLinkType extends BaseLinkType
     private array|null|ElementConditionInterface $_selectionCondition = null;
 
     /** @param array<string, bool|list<string>|null> $config */
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = get_object_vars($config);
+        }
+
         if (
             isset($config['sources']) &&
             (! is_array($config['sources']) || empty($config['sources']) || $config['sources'] === ['*'])
@@ -289,12 +293,16 @@ JS, [
      *
      * @param  ElementConditionInterface|string|array|null  $condition
      *
-     * @phpstan-param ElementConditionInterface|string|array{class:string}|null $condition
+     * @phpstan-param ElementConditionInterface|class-string<ElementConditionInterface>|array{class:class-string<ElementConditionInterface>}|null $condition
      */
     public function setSelectionCondition(mixed $condition): void
     {
         if ($condition instanceof ConditionInterface && ! $condition->getConditionRules()->getRules()) {
             $condition = null;
+        }
+
+        if (is_string($condition)) {
+            $condition = ['class' => $condition];
         }
 
         // Don't instantiate it unless we actually end up needing it.
@@ -321,7 +329,7 @@ JS, [
      * @return array{
      *     id: string,
      *     label: string,
-     *     kind: string,
+     *     kind: 'custom'|'element'|'text',
      *     elementType: class-string<ElementInterface>,
      *     refHandle: string,
      *     elementSelectConfig: array{

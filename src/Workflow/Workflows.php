@@ -857,11 +857,11 @@ class Workflows
             ->oldest('occurredAt')->orderBy('id')->get();
         $presented = $this->activityTimelinePresenter->events($events, $viewer->asElement())->keyBy('id');
 
-        return $events->map(function (ActivityEvent $event) use ($presented, $runIdsByRootEvent): WorkflowTimelineItemData {
-            $presentation = $presented->get($event->id);
+        return array_values($events->map(function (ActivityEvent $event) use ($presented, $runIdsByRootEvent): WorkflowTimelineItemData {
+            $presentation = $presented->get($event->id) ?? throw new \LogicException('Workflow events must have a timeline presentation.');
             $type = WorkflowActivityType::from($event->data['type']);
             $runId = $event->data['runId'] ?? $runIdsByRootEvent->get($event->id);
-            $impersonator = $presentation['impersonator'];
+            $impersonator = $presentation->impersonator;
 
             return new WorkflowTimelineItemData(
                 id: (string) $event->id,
@@ -884,8 +884,8 @@ class Workflows
                     WorkflowActivityType::StageFailed => t('failed the stage'),
                     default => t('updated the workflow stage'),
                 },
-                actor: (array) $presentation['actor'],
-                impersonator: is_array($impersonator) ? $impersonator : null,
+                actor: $presentation->actor,
+                impersonator: $impersonator,
                 decision: match ($type) {
                     WorkflowActivityType::Approve, WorkflowActivityType::StageApproved => WorkflowStageStatus::Approved->value,
                     WorkflowActivityType::Reject => 'rejected',
@@ -893,12 +893,12 @@ class Workflows
                     WorkflowActivityType::StageFailed => WorkflowStageStatus::Failed->value,
                     default => null,
                 },
-                noteHtml: $presentation['props']['noteHtml'] ?? null,
-                occurredAt: $presentation['occurredAt'],
-                formattedOccurredAt: (array) $presentation['formattedOccurredAt'],
+                noteHtml: $presentation->props['noteHtml'] ?? null,
+                occurredAt: $presentation->occurredAt,
+                formattedOccurredAt: $presentation->formattedOccurredAt,
                 runId: (int) $runId,
                 stageNumber: isset($event->data['stageNumber']) ? (int) $event->data['stageNumber'] : null,
             );
-        })->all();
+        })->all());
     }
 }

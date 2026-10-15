@@ -88,7 +88,9 @@ trait Draftable
             ->status(null)
             ->first();
 
-        return $this->draftCreator = $creator ?? false;
+        $this->draftCreator = $creator ?? false;
+
+        return $creator;
     }
 
     public function setDraftCreator(?User $creator = null): void

@@ -144,33 +144,33 @@ readonly class SettingsUi
     /** @return list<Permission> */
     private function sitePermissions(): array
     {
-        return $this->sites->getAllSites(true)
+        return array_values($this->sites->getAllSites(true)
             ->map(fn ($site): Permission => new Permission($this->requiredHandle($site->handle, 'site'), t('Query elements in the “{name}” site', ['name' => $site->name])))
-            ->all();
+            ->all());
     }
 
     /** @return list<Permission> */
     private function sectionPermissions(): array
     {
-        return $this->sections->getAllSections()
+        return array_values($this->sections->getAllSections()
             ->map(fn ($section): Permission => new Permission($this->requiredHandle($section->handle, 'section'), t('Query entries in the “{name}” section', ['name' => $section->name])))
-            ->all();
+            ->all());
     }
 
     /** @return list<Permission> */
     private function nestedEntryFieldPermissions(): array
     {
-        return $this->nestedEntryFields()
+        return array_values($this->nestedEntryFields()
             ->map(fn (ElementContainerFieldInterface $field): Permission => new Permission($this->requiredHandle($field->handle, 'nested entry field'), t('Query entries in the “{name}” field', ['name' => $field->name])))
-            ->all();
+            ->all());
     }
 
     /** @return list<Permission> */
     private function volumePermissions(): array
     {
-        return $this->volumes->getAllVolumes()
+        return array_values($this->volumes->getAllVolumes()
             ->map(fn ($volume): Permission => new Permission($this->requiredHandle($volume->handle, 'volume'), t('Query assets in the “{name}” volume', ['name' => $volume->name])))
-            ->all();
+            ->all());
     }
 
     /** @return list<Permission> */
@@ -189,9 +189,9 @@ readonly class SettingsUi
     /** @return list<Permission> */
     private function userGroupPermissions(): array
     {
-        return $this->userGroups->getAllGroups()
+        return array_values($this->userGroups->getAllGroups()
             ->map(fn ($group): Permission => new Permission($this->requiredHandle($group->handle, 'user group'), t('Query users in the “{name}” user group', ['name' => $group->name])))
-            ->all();
+            ->all());
     }
 
     private function requiredHandle(?string $handle, string $type): string

@@ -204,7 +204,7 @@ class ElementEditViewModel extends ViewModel
      * element against that owner (an owner draft included) rather than its
      * primary owner.
      *
-     * @return array{fieldId: int|null, ownerId: int}|null
+     * @return array{fieldId: int|string|null, ownerId: int}|null
      */
     public function nestedContext(): ?array
     {
@@ -465,7 +465,7 @@ class ElementEditViewModel extends ViewModel
             ->orderByDesc('dateUpdated')
             ->with(['draftCreator'])
             ->get()
-            ->filter(fn (ElementInterface $draft): bool => $this->request->craftUser()->can('view', $draft))
+            ->filter(fn (ElementInterface $draft): bool => $this->request->requireCraftUser()->can('view', $draft))
             ->all();
 
         $revisions = $this->recentRevisions($element);

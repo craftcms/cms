@@ -30,14 +30,14 @@ trait HasPreviewTargets
     /**
      * Returns the element's preview targets.
      *
-     * @return array<array-key,array<string,mixed>> The preview targets, each containing at minimum a `label` and `url` key.
+     * @return list<array<string,mixed>> The preview targets, each containing at minimum a `label` and `url` key.
      */
     public function getPreviewTargets(): array
     {
-        event($event = new ElementPreviewTargetsResolving($this, $this->previewTargets()));
+        event($event = new ElementPreviewTargetsResolving($this, array_values($this->previewTargets())));
 
         // Normalize the targets
-        return new Collection($event->previewTargets)
+        return array_values(new Collection($event->previewTargets)
             ->map(function (array $previewTarget) {
                 if (isset($previewTarget['urlFormat'])) {
                     $url = trim(renderObjectTemplate(Env::parse($previewTarget['urlFormat']), $this));
@@ -60,7 +60,7 @@ trait HasPreviewTargets
                 return $previewTarget;
             })
             ->filter()
-            ->all();
+            ->all());
     }
 
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use Closure;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
@@ -113,7 +112,7 @@ trait QueriesStatuses
     /**
      * Applies the 'status' param to the query being prepared.
      *
-     * @param  ElementQuery<ElementInterface>  $elementQuery
+     * @param  ElementQuery<*>  $elementQuery
      *
      * @throws QueryAbortedException
      */

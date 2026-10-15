@@ -137,7 +137,7 @@ class ElementQueryCriteria
             ->map(fn (array $schema, string $name): array => [
                 'name' => $name,
                 'type' => $this->type($schema),
-                'description' => $schema['description'] ?? '',
+                'description' => is_string($schema['description'] ?? null) ? $schema['description'] : '',
             ])
             ->values()
             ->all();
@@ -145,7 +145,7 @@ class ElementQueryCriteria
 
     /**
      * @param  array<string, mixed>  $criteria
-     * @return array<string, mixed> Normalized criteria applied to the query.
+     * @return array<string, mixed>&array{limit: int, offset: int} Normalized criteria applied to the query.
      */
     public function apply(ElementQueryInterface $query, array $criteria): array
     {
@@ -161,7 +161,7 @@ class ElementQueryCriteria
      * Reads a page and determines continuation before callers filter records by permission.
      *
      * @param  array<string, mixed>  $criteria
-     * @return array{elements: array<ElementInterface|array<string, mixed>>, limit: int, offset: int, nextOffset: int|null}
+     * @return array{elements: list<ElementInterface>, limit: int, offset: int, nextOffset: int|null}
      */
     public function page(ElementQueryInterface $query, array $criteria): array
     {

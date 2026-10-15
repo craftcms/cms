@@ -50,7 +50,7 @@ class FieldsAutoMergeCommand extends Command
                 (int) $field->searchable,
                 $field->translationMethod,
                 $field->translationKeyFormat ?? '-',
-                md5(Json::encode($field->getSettings())),
+                md5(Json::encode($field->getSettings(), JSON_THROW_ON_ERROR)),
             ]))
             ->filter(function (Collection $group) {
                 if ($group->count() === 1) {
@@ -95,7 +95,7 @@ class FieldsAutoMergeCommand extends Command
                 })
                 ->sortBy(fn (FieldInterface $field) => $field->handle)
                 ->sortBy(fn (FieldInterface $field) => count($usagesByField[$field->id]), SORT_NUMERIC, true)
-                ->keyBy(fn (FieldInterface $field) => $field->handle);
+                ->keyBy(fn (FieldInterface $field) => $field->handle ?? '');
 
             $this->components->bulletList($group->map(function (FieldInterface $field) use (&$usagesByField) {
                 return sprintf(
@@ -128,16 +128,16 @@ class FieldsAutoMergeCommand extends Command
             $choice = select(
                 'Which one should persist?',
                 $group
-                    ->keyBy(fn (FieldInterface $field) => $field->handle)
+                    ->keyBy(fn (FieldInterface $field) => $field->handle ?? '')
                     ->mapWithKeys(fn (FieldInterface $field) => [$field->handle => $field->getUiLabel()])
                     ->all(),
             );
 
             /** @var FieldInterface&MergeableFieldInterface $persistentField */
-            $persistentField = $group->get($choice);
+            $persistentField = $group->get((string) $choice);
 
             $group
-                ->except($choice)
+                ->except((string) $choice)
                 ->each(function (FieldInterface&MergeableFieldInterface $outgoingField) use ($fieldsService, $persistentField, &$migrationPaths) {
                     $this->components->info("Merging `{$outgoingField->handle}` → `{$persistentField->handle}`");
                     $this->components->task("Merging `{$outgoingField->handle}` → `{$persistentField->handle}`", function () use ($fieldsService, $persistentField, $outgoingField, &$migrationPaths) {

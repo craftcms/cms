@@ -59,7 +59,7 @@ class FormatDateTime extends Directive
                 ],
             ],
             'description' => 'Formats a date in the desired format. Can be applied to all fields, only changes output of DateTime fields.',
-        ]));
+        ]), self::class);
     }
 
     public static function name(): string

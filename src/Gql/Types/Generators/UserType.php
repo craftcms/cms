@@ -39,6 +39,6 @@ class UserType extends Generator implements GeneratorInterface, SingleGeneratorI
 
                 return Gql::prepareFieldDefinitions($userFields, UserElement::GQL_TYPE_NAME);
             },
-        ]));
+        ]), User::class);
     }
 }

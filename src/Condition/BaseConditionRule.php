@@ -198,8 +198,8 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @param  array<int|string, string|array<string, mixed>>  $options
-     * @return list<array<string, mixed>>
+     * @param  array<int|string, string|array{label: string, value: string}>  $options
+     * @return list<array{label: string, value: string}>
      */
     protected function uiOptions(array $options): array
     {
@@ -234,7 +234,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     /** @return list<Node> */
     protected function operatorNodes(): array
     {
-        $operators = $this->operators();
+        $operators = array_values($this->operators());
         $nodes = [];
 
         if (count($operators) > 1) {

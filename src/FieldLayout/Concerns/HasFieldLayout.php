@@ -147,6 +147,6 @@ trait HasFieldLayout
      */
     public function getCustomFields(): array
     {
-        return $this->getFieldLayout()->getCustomFields();
+        return array_values($this->getFieldLayout()->getCustomFields());
     }
 }

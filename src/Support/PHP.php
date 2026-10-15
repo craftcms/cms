@@ -37,7 +37,7 @@ class PHP
     {
         $version = phpversion($name);
 
-        return normalizeVersion($version);
+        return normalizeVersion($version === false ? '0' : $version);
     }
 
     /**
@@ -62,7 +62,7 @@ class PHP
      */
     public static function configValueInBytes(string $var): int
     {
-        $value = trim(ini_get($var));
+        $value = trim(ini_get($var) ?: '');
 
         return self::sizeToBytes($value);
     }
@@ -105,7 +105,7 @@ class PHP
      */
     public static function configValueAsPaths(string $var): array
     {
-        return self::normalizePaths(ini_get($var));
+        return self::normalizePaths(ini_get($var) ?: '');
     }
 
     /**
@@ -179,8 +179,10 @@ class PHP
     public static function executable(): ?string
     {
         // If PHP_BINARY was set to $_SERVER, update the environment variable to match
-        if (isset($_SERVER['PHP_BINARY']) && Request::server('PHP_BINARY') !== getenv('PHP_BINARY')) {
-            putenv(sprintf('PHP_BINARY=%s', Request::server('PHP_BINARY')));
+        $phpBinary = Request::server('PHP_BINARY');
+
+        if (is_string($phpBinary) && $phpBinary !== getenv('PHP_BINARY')) {
+            putenv(sprintf('PHP_BINARY=%s', $phpBinary));
         }
 
         if (

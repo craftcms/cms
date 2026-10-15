@@ -30,7 +30,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     public string $value = '' {
         /** @param string|list<string|int|float> $value */
         set(string|array $value) {
-            $this->value = is_array($value) ? Json::encode($value) : $value;
+            $this->value = is_array($value) ? (Json::encode($value, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) ?: throw new \InvalidArgumentException('Invalid condition value.')) : $value;
         }
     }
 

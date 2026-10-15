@@ -11,7 +11,6 @@ use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\NestedUiPayload;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
-use Illuminate\Support\Arr;
 use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
@@ -293,26 +292,54 @@ class NestedElementBlocks extends Control
     /** @return NestedElementBlocksValue */
     private function validatedValue(mixed $value): array
     {
-        if (! is_array($value) || ! is_array(Arr::get($value, 'entries')) || ! is_array(Arr::get($value, 'sortOrder'))) {
+        if (! is_array($value) || ! is_array($value['entries'] ?? null) || ! is_array($value['sortOrder'] ?? null)) {
             throw new InvalidArgumentException('Matrix values must contain entries and sortOrder arrays.');
         }
 
-        if (count($value['sortOrder']) !== count(array_unique($value['sortOrder']))) {
-            throw new InvalidArgumentException('Matrix sortOrder identities must be unique.');
+        $entries = [];
+
+        foreach ($value['entries'] as $uid => $entry) {
+            if (! is_string($uid) || ! is_array($entry)) {
+                throw new InvalidArgumentException('Matrix entries require string identities and entry data arrays.');
+            }
+
+            $entryData = [];
+
+            foreach ($entry as $attribute => $attributeValue) {
+                if (! is_string($attribute)) {
+                    throw new InvalidArgumentException('Matrix entry attributes require string names.');
+                }
+
+                $entryData[$attribute] = $attributeValue;
+            }
+
+            $entries[$uid] = $entryData;
         }
 
-        foreach ($value['sortOrder'] as $uid) {
-            $entry = is_string($uid) ? ($value['entries'][$uid] ?? null) : null;
+        $sortOrder = [];
 
-            if (! is_array($entry) || ! is_string($entry['type'] ?? null) || ! isset($this->entryTypes[$entry['type']])) {
+        foreach ($value['sortOrder'] as $uid) {
+            if (! is_string($uid)) {
+                throw new InvalidArgumentException('Matrix sortOrder identities must be strings.');
+            }
+
+            $entry = $entries[$uid] ?? null;
+
+            if ($entry === null || ! is_string($entry['type'] ?? null) || ! isset($this->entryTypes[$entry['type']])) {
                 throw new InvalidArgumentException('Matrix entries require ordered identities and registered types.');
             }
 
             if (! isset($this->uis[$uid])) {
                 throw new InvalidArgumentException("Matrix entry [{$uid}] requires a nested Ui.");
             }
+
+            $sortOrder[] = $uid;
         }
 
-        return $value;
+        if (count($sortOrder) !== count(array_unique($sortOrder))) {
+            throw new InvalidArgumentException('Matrix sortOrder identities must be unique.');
+        }
+
+        return ['entries' => $entries, 'sortOrder' => $sortOrder];
     }
 }

@@ -36,19 +36,23 @@ abstract class Image extends Component
     abstract public function getIsTransparent(): bool;
 
     /**
-     * @param-out int|string $width
-     * @param-out int|string $height
+     * @param-out int $width
+     * @param-out int $height
      */
     protected function normalizeDimensions(int|string|null &$width, int|string|null &$height): void
     {
-        if (preg_match('/^([\d]+|AUTO)x([\d]+|AUTO)/', (string) $width, $matches)) {
-            $width = $matches[1] !== 'AUTO' ? (int) $matches[1] : '';
-            $height = $matches[2] !== 'AUTO' ? (int) $matches[2] : '';
+        $targetWidth = $width;
+        $targetHeight = $height;
+
+        if (preg_match('/^([\d]+|AUTO)x([\d]+|AUTO)/', (string) $targetWidth, $matches)) {
+            $targetWidth = $matches[1] !== 'AUTO' ? (int) $matches[1] : null;
+            $targetHeight = $matches[2] !== 'AUTO' ? (int) $matches[2] : null;
         }
 
-        if (! $height || ! $width) {
-            [$width, $height] = ImageHelper::calculateMissingDimension($width, $height, $this->getWidth(), $this->getHeight());
-        }
+        $targetWidth = $targetWidth === null ? null : (int) $targetWidth;
+        $targetHeight = $targetHeight === null ? null : (int) $targetHeight;
+
+        [$width, $height] = ImageHelper::calculateMissingDimension($targetWidth, $targetHeight, $this->getWidth(), $this->getHeight());
     }
 
     public function setHeartbeatCallback(?callable $method = null): void

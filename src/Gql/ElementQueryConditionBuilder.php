@@ -60,6 +60,7 @@ class ElementQueryConditionBuilder extends Component
 
     public function __construct($config = [])
     {
+        $config = (array) $config;
         $this->_resolveInfo = Arr::pull($config, 'resolveInfo');
 
         if ($this->_resolveInfo) {
@@ -166,7 +167,7 @@ class ElementQueryConditionBuilder extends Component
         $nodeList = $this->_getKnownSpecialEagerLoadNodes();
 
         if (isset($nodeList[$nodeName])) {
-            return $nodeList[$nodeName]['canBeAliased'] ?? true;
+            return ($nodeList[$nodeName]['canBeAliased'] ?? true) === true;
         }
 
         return false;
@@ -337,7 +338,7 @@ class ElementQueryConditionBuilder extends Component
                                     }
 
                                     // See what remains after we enforce the scope by schema.
-                                    $allowed = array_intersect($arguments[$argumentName], $argumentValue);
+                                    $allowed = is_array($argumentValue) ? array_intersect($arguments[$argumentName], $argumentValue) : $arguments[$argumentName];
 
                                     // If they wanted to filter by values that were not allowed by schema, make it impossible
                                     if (empty($allowed)) {

@@ -45,6 +45,7 @@ abstract class ElementMutationResolver extends MutationResolver
      */
     protected function populateElementWithData(ElementInterface $element, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
     {
+        $elementType = $element::class;
         $normalized = false;
 
         if ($resolveInfo) {
@@ -65,6 +66,9 @@ abstract class ElementMutationResolver extends MutationResolver
             element: $element,
         ));
         $arguments = $event->arguments;
+        if (! $event->element instanceof $elementType) {
+            throw new GqlException('GraphQL mutation listeners must preserve the element type.');
+        }
         $element = $event->element;
 
         foreach ($arguments as $argument => $value) {
@@ -84,6 +88,10 @@ abstract class ElementMutationResolver extends MutationResolver
             arguments: $arguments,
             element: $element,
         ));
+
+        if (! $event->element instanceof $elementType) {
+            throw new GqlException('GraphQL mutation listeners must preserve the element type.');
+        }
 
         return $event->element;
     }

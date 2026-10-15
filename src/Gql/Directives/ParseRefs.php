@@ -26,7 +26,7 @@ class ParseRefs extends Directive
             ],
             'description' => 'Parses the element references on the field.',
             'args' => [],
-        ]));
+        ]), self::class);
     }
 
     public static function name(): string
