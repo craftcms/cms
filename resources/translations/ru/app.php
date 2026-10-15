@@ -1616,6 +1616,7 @@ return [
     'Show Time Zone' => 'Показать часовой пояс',
     'Show Toolbar' => 'Show Toolbar',
     'Show all changes' => 'Показать все изменения',
+    'Show count' => 'Show count',
     'Show date and time' => 'Показать дату и время',
     'Show date' => 'Показать дату',
     'Show field handles in edit forms' => 'Показывать дескрипторы полей в формах редактирования',
@@ -2178,6 +2179,7 @@ return [
     'Whether the editor toolbar should be visible.' => 'Whether the editor toolbar should be visible.',
     'Whether the element index should allow viewing nested {type} in a table.' => 'Определяет, разрешено ли просматривать в индексе элементов вложенные {type} в таблице.',
     'Whether the field should only render inline Markdown, without wrapping paragraphs.' => 'Whether the field should only render inline Markdown, without wrapping paragraphs.',
+    'Whether the number of elements in this source should be shown beside it in the navigation.' => 'Whether the number of elements in this source should be shown beside it in the navigation.',
     'Whether the site menu should be shown for {type} selection modals.' => 'Определяет, будет ли отображаться меню сайта для модальных окон выбора {type}.',
     'Whether the structure of the related {type} should be maintained.' => 'Следует ли сохранять структуру связанного типа {type}.',
     'Whether the table rows should be restricted to those defined by the “Default Values” setting.' => 'Будут ли строки таблицы ограничены указанными в настройке "Значения по умолчанию".',
@@ -2430,6 +2432,7 @@ return [
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, =1{день} other{дни}}',
     '{num, number} {num, plural, =1{degree} other{degrees}}' => '{num, number} {num, plural, =1{градус} other{градусы}}',
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, =1{час} other{часы}}',
+    '{num, number} {num, plural, =1{item} other{items}}' => '{num, number} {num, plural, =1{item} other{items}}',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, =1{минута} other{минуты}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, =1{месяц} other{месяцы}}
 ',
