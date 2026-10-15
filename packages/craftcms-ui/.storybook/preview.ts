@@ -5,6 +5,7 @@ import type {
 import '../src/styles/cp.css';
 import './preview.css';
 import {withThemeByDataAttribute} from '@storybook/addon-themes';
+import {ThemedDocsContainer} from './themed-docs-container';
 import {setCustomElementsManifest} from '@storybook/web-components';
 import manifest from '../dist/custom-elements.json' with {type: 'json'};
 import {setStorybookHelpersConfig} from '@wc-toolkit/storybook-helpers';
@@ -55,6 +56,7 @@ const preview: Preview = {
       // markup is available from the story view and not only from the docs
       // page. Stories that pin `docs.source.code` supply that value here too.
       codePanel: true,
+      container: ThemedDocsContainer,
     },
 
     options: {
