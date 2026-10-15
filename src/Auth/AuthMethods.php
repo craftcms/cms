@@ -218,7 +218,7 @@ class AuthMethods
 
         if ($this->user) {
             Session::put('user.id', $this->user->id);
-            Session::put('user.login_id', ($loginUser ?? $user)->getCraftUserId());
+            Session::put('user.login_id', ($loginUser ?? $this->user)->getCraftUserId());
             Session::put('user.remember', $remember);
             Session::put('user.pending_2fa_at', now()->timestamp);
         } else {

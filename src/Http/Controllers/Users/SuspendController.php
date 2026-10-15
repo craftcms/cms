@@ -37,7 +37,7 @@ readonly class SuspendController
 
         abort_if(! $user, 400, 'User not found');
 
-        if (! $this->users->canSuspend($request->craftUser(), $user)) {
+        if (! $this->users->canSuspend($request->requireCraftUser(), $user)) {
             return $this->asFailure(t('Couldn’t suspend user.'));
         }
 
@@ -63,7 +63,7 @@ readonly class SuspendController
         abort_if(! $user, 400, 'User not found');
 
         // Even if you have moderateUsers permissions, only and admin should be able to unsuspend another admin.
-        if (! $this->users->canSuspend($request->craftUser(), $user)) {
+        if (! $this->users->canSuspend($request->requireCraftUser(), $user)) {
             return $this->asFailure(t('Couldn’t unsuspend user.'));
         }
 

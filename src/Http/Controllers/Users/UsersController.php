@@ -77,7 +77,7 @@ readonly class UsersController
         return Inertia::render('users/Edit', new UserEditViewModel(
             user: $user,
             request: $request,
-            canSave: $request->craftUser()->can('save', $user),
+            canSave: $request->requireCraftUser()->can('save', $user),
         ));
     }
 }

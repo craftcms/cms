@@ -55,7 +55,7 @@ class UserReviewController
                     throw new WorkflowException('The current workflow stage does not accept user reviews.');
                 }
 
-                return $component->requestReviewAgain($context, $this->request->craftUser());
+                return $component->requestReviewAgain($context, $this->request->requireCraftUser());
             },
             actor: $this->request->craftUser(),
             activityTransition: WorkflowTransition::RequestReview,
@@ -90,7 +90,7 @@ class UserReviewController
                     throw new WorkflowException('The current workflow stage does not accept user reviews.');
                 }
 
-                return $component->decide($decision, $message, $context, $this->request->craftUser());
+                return $component->decide($decision, $message, $context, $this->request->requireCraftUser());
             },
             actor: $this->request->craftUser(),
             activityTransition: $transition,
@@ -110,13 +110,13 @@ class UserReviewController
 
     private function response(ElementInterface $draft, string $message): JsonResponse
     {
-        $review = $this->workflows->reviewData($draft, $this->request->craftUser());
+        $review = $this->workflows->reviewData($draft, $this->request->requireCraftUser());
 
         return new JsonResponse([
             'workflowReview' => $review,
             'editorActions' => $this->editorActions->for(
                 element: $draft,
-                canSave: $this->request->craftUser()->can('save', $draft),
+                canSave: $this->request->requireCraftUser()->can('save', $draft),
                 review: $review,
             ),
             'message' => $message,

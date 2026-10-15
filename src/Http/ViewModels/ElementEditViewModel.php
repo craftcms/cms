@@ -465,7 +465,7 @@ class ElementEditViewModel extends ViewModel
             ->orderByDesc('dateUpdated')
             ->with(['draftCreator'])
             ->get()
-            ->filter(fn (ElementInterface $draft): bool => $this->request->craftUser()->can('view', $draft))
+            ->filter(fn (ElementInterface $draft): bool => $this->request->requireCraftUser()->can('view', $draft))
             ->all();
 
         $revisions = $this->recentRevisions($element);

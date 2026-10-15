@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Structure\Data;
 
 use CraftCms\Cms\Structure\Models\StructureElement;
+use LogicException;
 
 /**
  * @since 6.0.0
@@ -53,6 +54,16 @@ readonly class Operation
     public static function insertAfter(StructureElement $target): self
     {
         return new self(self::InsertAfter, $target);
+    }
+
+    /**
+     * Returns the node a positional operation is relative to.
+     *
+     * @throws LogicException if the operation has no target node.
+     */
+    public function target(): StructureElement
+    {
+        return $this->target ?? throw new LogicException("The $this->type operation has no target node.");
     }
 
     public static function remove(): self

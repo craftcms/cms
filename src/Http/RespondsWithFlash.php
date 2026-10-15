@@ -179,7 +179,7 @@ trait RespondsWithFlash
 
     public function redirectToPostedUrl(?object $object = null, ?string $redirect = null): RedirectResponse
     {
-        return redirect()->to($this->getPostedRedirectUrl($object) ?? $redirect);
+        return redirect()->to($this->getPostedRedirectUrl($object) ?? $redirect ?? url()->previous());
     }
 
     protected function getPostedRedirectUrl(?object $object = null): ?string

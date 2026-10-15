@@ -48,7 +48,7 @@ class ElementResponse
         ]);
 
         if ($supportsAddAnother && request()->boolean('addAnother')) {
-            $user = request()->craftUser();
+            $user = request()->requireCraftUser();
             $newElement = $element->createAnother();
 
             if (! $newElement || ! Gate::check('save', $newElement)) {

@@ -22,15 +22,15 @@ trait StructureNode
     public static function bootStructureNode(): void
     {
         static::creating(function (self $model) {
-            $operation = $model->nestedSetOperation;
-            $operation?->target?->refresh();
+            $operation = $model->nestedSetOperation ?? throw new RuntimeException('::create is not supported for inserting new nodes.');
+            $operation->target?->refresh();
 
-            match ($operation?->type) {
+            match ($operation->type) {
                 Operation::MakeRoot => $model->beforeSavingRootNode(),
-                Operation::PrependTo => $model->beforeSavingNode($operation->target->lft + 1, 1, $operation->target),
-                Operation::AppendTo => $model->beforeSavingNode($operation->target->rgt, 1, $operation->target),
-                Operation::InsertBefore => $model->beforeSavingNode($operation->target->lft, 0, $operation->target),
-                Operation::InsertAfter => $model->beforeSavingNode($operation->target->rgt + 1, 0, $operation->target),
+                Operation::PrependTo => $model->beforeSavingNode($operation->target()->lft + 1, 1, $operation->target()),
+                Operation::AppendTo => $model->beforeSavingNode($operation->target()->rgt, 1, $operation->target()),
+                Operation::InsertBefore => $model->beforeSavingNode($operation->target()->lft, 0, $operation->target()),
+                Operation::InsertAfter => $model->beforeSavingNode($operation->target()->rgt + 1, 0, $operation->target()),
                 default => throw new RuntimeException('::create is not supported for inserting new nodes.'),
             };
         });
@@ -58,7 +58,11 @@ trait StructureNode
         static::saving(function (self $model) {
             $operation = $model->nestedSetOperation;
 
-            switch ($operation?->type) {
+            if ($operation === null) {
+                return;
+            }
+
+            switch ($operation->type) {
                 case Operation::MakeRoot:
                     if ($model->isRoot()) {
                         throw new RuntimeException('Can not move the root node as the root.');
@@ -67,20 +71,20 @@ trait StructureNode
                     break;
                 case Operation::InsertBefore:
                 case Operation::InsertAfter:
-                    if ($operation->target->isRoot()) {
+                    if ($operation->target()->isRoot()) {
                         throw new RuntimeException('Can not move a node when the target node is root.');
                     }
                 case Operation::PrependTo:
                 case Operation::AppendTo:
-                    if (! $operation->target->exists) {
+                    if (! $operation->target()->exists) {
                         throw new RuntimeException('Can not move a node when the target node is new record.');
                     }
 
-                    if ($model->is($operation->target)) {
+                    if ($model->is($operation->target())) {
                         throw new RuntimeException('Can not move a node when the target node is same.');
                     }
 
-                    if ($operation->target->isChildOf($model)) {
+                    if ($operation->target()->isChildOf($model)) {
                         throw new RuntimeException('Can not move a node when the target node is child.');
                     }
             }
@@ -95,21 +99,25 @@ trait StructureNode
 
             $operation = $model->nestedSetOperation;
 
-            switch ($operation?->type) {
+            if ($operation === null) {
+                return;
+            }
+
+            switch ($operation->type) {
                 case Operation::MakeRoot:
                     $model->moveNodeAsRoot();
                     break;
                 case Operation::PrependTo:
-                    $model->moveNode($operation->target->lft + 1, 1, $operation->target);
+                    $model->moveNode($operation->target()->lft + 1, 1, $operation->target());
                     break;
                 case Operation::AppendTo:
-                    $model->moveNode($operation->target->rgt, 1, $operation->target);
+                    $model->moveNode($operation->target()->rgt, 1, $operation->target());
                     break;
                 case Operation::InsertBefore:
-                    $model->moveNode($operation->target->lft, 0, $operation->target);
+                    $model->moveNode($operation->target()->lft, 0, $operation->target());
                     break;
                 case Operation::InsertAfter:
-                    $model->moveNode($operation->target->rgt + 1, 0, $operation->target);
+                    $model->moveNode($operation->target()->rgt + 1, 0, $operation->target());
                     break;
                 default:
                     return;

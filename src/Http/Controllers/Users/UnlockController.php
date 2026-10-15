@@ -34,7 +34,7 @@ readonly class UnlockController
         abort_if(! $user, 400, 'User not found');
 
         if ($user->admin) {
-            abort_if(! $request->craftUser()->isAdmin(), 403, 'Only admins can unlock other admins.');
+            abort_if(! $request->requireCraftUser()->isAdmin(), 403, 'Only admins can unlock other admins.');
             abort_if($user->id === $impersonation->getImpersonatorId(), 403, 'You can’t unlock yourself via impersonation.');
         }
 

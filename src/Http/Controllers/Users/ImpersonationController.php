@@ -140,7 +140,7 @@ readonly class ImpersonationController
 
     private function enforceImpersonatePermission(User $user): void
     {
-        $currentUser = $this->request->craftUser();
+        $currentUser = $this->request->requireCraftUser();
 
         abort_unless(
             $this->users->canImpersonate($currentUser, $user),

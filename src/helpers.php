@@ -102,6 +102,16 @@ function currentUser(): ?CraftUser
     ));
 }
 
+/**
+ * Returns the authenticated Craft user.
+ *
+ * @throws AuthenticationException if no user is authenticated.
+ */
+function requireCurrentUser(): CraftUser
+{
+    return currentUser() ?? throw new AuthenticationException;
+}
+
 function craftAuth(): Guard
 {
     return Auth::guard(Cms::config()->getAuthGuard());

@@ -95,14 +95,14 @@ class WorkflowTransitionsController
     {
         $review = $this->workflows->reviewData(
             draft: $draft,
-            viewer: $this->request->craftUser(),
+            viewer: $this->request->requireCraftUser(),
         );
 
         return new JsonResponse([
             'workflowReview' => $review,
             'editorActions' => $this->editorActions->for(
                 element: $draft,
-                canSave: $this->request->craftUser()->can('save', $draft),
+                canSave: $this->request->requireCraftUser()->can('save', $draft),
                 review: $review,
             ),
             ...($message !== null ? ['message' => $message] : []),

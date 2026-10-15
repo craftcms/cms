@@ -1692,7 +1692,7 @@ JS, [
 
         if (
             app(ElementRequest::class)->element() === $this &&
-            currentUser()->isAdmin() &&
+            currentUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
             $items[] = ['type' => MenuItemType::HR];

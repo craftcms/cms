@@ -129,7 +129,7 @@ readonly class FormFields
 
         $showAttribute = (
             ($config['showAttribute'] ?? false) &&
-            currentUser()->isAdmin() &&
+            currentUser()?->isAdmin() &&
             currentUser()->getPreference('showFieldHandles')
         );
         $showActionMenu = (

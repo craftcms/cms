@@ -9,7 +9,7 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\requireCurrentUser;
 
 /**
  * @since 6.0.0
@@ -23,7 +23,7 @@ readonly class FeedController
             'data' => ['required'],
         ]);
 
-        $key = sprintf('feed:%s:%s', currentUser()->getCraftUserId(), $request->input('url'));
+        $key = sprintf('feed:%s:%s', requireCurrentUser()->getCraftUserId(), $request->input('url'));
         $cache->put($key, $request->input('data'), $generalConfig->cacheDuration);
 
         return new JsonResponse;

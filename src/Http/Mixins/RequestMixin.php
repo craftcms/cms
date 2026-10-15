@@ -44,6 +44,23 @@ class RequestMixin
         };
     }
 
+    /**
+     * Returns the request's Craft user, or throws an {@see AuthenticationException} if there isn't one.
+     */
+    public function requireCraftUser(): Closure
+    {
+        return function (): CraftUser {
+            /**
+             * @var Request $request
+             *
+             * @phpstan-ignore-next-line
+             */
+            $request = $this;
+
+            return $request->craftUser() ?? throw new AuthenticationException;
+        };
+    }
+
     public function isMobileBrowser(): Closure
     {
         return function (bool $detectTablets = false): bool {

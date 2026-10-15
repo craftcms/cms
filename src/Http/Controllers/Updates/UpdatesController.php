@@ -60,7 +60,7 @@ readonly class UpdatesController
         $allowUpdates = (
             $this->generalConfig->allowUpdates &&
             $this->generalConfig->allowAdminChanges &&
-            currentUser()->can('performUpdates')
+            currentUser()?->can('performUpdates')
         );
 
         $res = [

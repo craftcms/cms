@@ -649,7 +649,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
             if (
                 $section->type === SectionType::Structure &&
-                $user->can('createEntries:'.$section->uid)
+                $user?->can('createEntries:'.$section->uid)
             ) {
                 $newEntryUrl = 'entries/'.$section->handle.'/new';
                 // $newEntryUrl = sprintf('%s/new', $section->getCpIndexUri());
@@ -678,7 +678,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             }
 
             if (
-                $user->can("createEntries:$section->uid") &&
+                $user?->can("createEntries:$section->uid") &&
                 $user->can("saveEntries:$section->uid")
             ) {
                 $actions[] = [
@@ -700,7 +700,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
             $actions[] = Delete::class;
 
-            if ($user->can("deleteEntries:$section->uid")
+            if ($user?->can("deleteEntries:$section->uid")
                 && $section->type === SectionType::Structure
                 && $section->maxLevels !== 1
                 && $user->can("deletePeerEntries:$section->uid")
@@ -719,7 +719,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 $section &&
                 $section->propagationMethod === PropagationMethod::Custom &&
                 $section->getHasMultiSiteEntries() &&
-                $user->can("deleteEntriesForSite:$section->uid")
+                $user?->can("deleteEntriesForSite:$section->uid")
             ) ||
             (
                 ! $section &&

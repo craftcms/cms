@@ -32,6 +32,7 @@ use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\requireCurrentUser;
 
 /**
  * @since 6.0.0
@@ -105,7 +106,7 @@ readonly class Dashboard
     {
         $result = Models\Widget::query()
             ->where('id', $id)
-            ->where('userId', currentUser()->getAuthIdentifier())
+            ->where('userId', requireCurrentUser()->getAuthIdentifier())
             ->firstOrFail();
 
         return Widget::fromConfig($result);
@@ -156,7 +157,7 @@ readonly class Dashboard
             if ($isNewWidget) {
                 // Set the sortOrder
                 $maxSortOrder = Models\Widget::query()
-                    ->where('userId', currentUser()->getAuthIdentifier())
+                    ->where('userId', requireCurrentUser()->getAuthIdentifier())
                     ->max('sortOrder');
 
                 $widgetModel->sortOrder = max(0, (int) $maxSortOrder) + 1;
@@ -275,7 +276,7 @@ readonly class Dashboard
      */
     private function addDefaultUserWidgets(): void
     {
-        $user = currentUser();
+        $user = requireCurrentUser();
         $customWidgets = $this->customWidgets->all()
             ->filter(fn (CustomWidgetDefinition $definition) => $definition->showByDefault);
 
@@ -317,7 +318,7 @@ readonly class Dashboard
 
     private function getUserWidgetModelById(?int $widgetId = null): Models\Widget
     {
-        $userId = currentUser()->getAuthIdentifier();
+        $userId = requireCurrentUser()->getAuthIdentifier();
 
         if ($widgetId !== null) {
             return Models\Widget::query()

@@ -393,7 +393,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
         if (
             app(ElementRequest::class)->element === $this &&
-            currentUser()->isAdmin() &&
+            currentUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges &&
             ! empty($this->fieldId)
         ) {

@@ -33,7 +33,7 @@ class Updates extends Widget
     public static function isSelectable(): bool
     {
         // Gotta have update permission to get this widget
-        return parent::isSelectable() && currentUser()->can('performUpdates');
+        return parent::isSelectable() && currentUser()?->can('performUpdates');
     }
 
     #[Override]
@@ -50,7 +50,7 @@ class Updates extends Widget
 
     public function component(): ?string
     {
-        return currentUser()->can('performUpdates') ? 'craft:widget-updates' : null;
+        return currentUser()?->can('performUpdates') ? 'craft:widget-updates' : null;
     }
 
     /** @return array{cached: bool, total: int} */
