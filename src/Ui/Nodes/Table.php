@@ -50,6 +50,10 @@ class Table implements Node
 
     private ?string $createUrl = null;
 
+    private bool $createSlideout = false;
+
+    private ?string $createSlideoutWidth = null;
+
     /** @var list<array{label: string, url: string}>|null */
     private ?array $createMenuItems = null;
 
@@ -126,7 +130,8 @@ class Table implements Node
      * {@see Html::encode()} before passing it.
      *
      * A link with `'slideout' => true` opens its URL's screen in a slideout, and reloads the
-     * table once that screen is saved.
+     * table once that screen is saved. `'slideoutWidth'` sets that slideout's width as a CSS
+     * length (e.g. `'85vw'`).
      *
      * A menu item can be `['label' => string, 'modalUrl' => string, 'actionUrl' => string,
      * 'params' => ?array]` instead of a link, to open a modal UI. `modalUrl` is requested
@@ -263,10 +268,16 @@ class Table implements Node
         return $this;
     }
 
-    public function createAction(?string $label, ?string $url): static
+    /**
+     * With `$slideout`, the create screen opens in a slideout, optionally `$slideoutWidth` wide
+     * (a CSS length), and the table reloads once it's saved.
+     */
+    public function createAction(?string $label, ?string $url, bool $slideout = false, ?string $slideoutWidth = null): static
     {
         $this->createLabel = $label;
         $this->createUrl = $url;
+        $this->createSlideout = $slideout;
+        $this->createSlideoutWidth = $slideoutWidth;
         $this->createMenuItems = null;
 
         return $this;
@@ -281,6 +292,8 @@ class Table implements Node
     {
         $this->createLabel = $label;
         $this->createUrl = null;
+        $this->createSlideout = false;
+        $this->createSlideoutWidth = null;
         $this->createMenuItems = $items;
 
         return $this;
@@ -548,6 +561,8 @@ class Table implements Node
             'emptyMessage' => $this->emptyMessage,
             'createLabel' => $this->createLabel,
             'createUrl' => $this->createUrl,
+            'createSlideout' => $this->createSlideout,
+            'createSlideoutWidth' => $this->createSlideoutWidth,
             'createMenuItems' => $this->createMenuItems,
             'createActionInPageHeader' => $this->createActionInPageHeader,
             'reorderUrl' => $this->reorderUrl,

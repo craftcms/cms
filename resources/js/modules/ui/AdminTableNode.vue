@@ -2,6 +2,7 @@
   import {actionClient, t} from '@craftcms/ui';
   import {router} from '@inertiajs/vue3';
   import type {ColumnDef} from '@tanstack/vue-table';
+  import {useTimeoutFn} from '@vueuse/core';
   import {computed, h, inject, provide, ref, shallowRef} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
@@ -14,7 +15,7 @@
     type PaginationData,
     type TableAppearanceValue,
   } from '@/common/types';
-  import {openSlideout} from '@/common/slideouts';
+  import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
   import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
   import type {CraftTableFeatures} from '@/common/table/craftTable';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -30,6 +31,7 @@
     BulkAction,
     BulkActionItem,
   } from '@/modules/elements/types/actions';
+  import {AdminTableCreateSlideout} from '@/modules/admin-table/create-slideout';
   import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
@@ -55,9 +57,25 @@
     node: TableNodePayload;
     /** Overrides the node's own appearance. */
     appearance?: TableAppearanceValue;
+    /**
+     * Replaces the default refresh after the table's rows change, for a
+     * table that isn't part of the page's own `ui` (such as one in a slideout).
+     */
+    onRefresh?: () => void;
   }>();
   const pageTableFlush = inject(UiTableFlush, ref(false));
   provide(UiTableFlush, ref(false));
+  provide(
+    AdminTableCreateSlideout,
+    computed(() =>
+      props.node.props.createSlideout
+        ? {
+            width: props.node.props.createSlideoutWidth ?? undefined,
+            onSaved: onSlideoutSaved,
+          }
+        : null
+    )
+  );
 
   /**
    * The prop, then the node's own appearance, then `flush` when the table is
@@ -203,26 +221,48 @@
       CpLink,
       {
         href: url,
-        // A modified click still follows the link, to open the screen in a tab.
+        inertia: !link.slideout,
         onClick: link.slideout
-          ? (event: MouseEvent) => {
-              if (
-                event.altKey ||
-                event.ctrlKey ||
-                event.metaKey ||
-                event.shiftKey ||
-                event.button !== 0
-              ) {
-                return;
-              }
-
-              event.preventDefault();
-              void openSlideout(url, {onSaved: refreshTable});
-            }
+          ? (event: MouseEvent) => onLinkClick({...link, url}, event)
           : undefined,
       },
       () => link.label
     );
+  }
+
+  function onLinkClick(
+    link: TableLink & {url: string},
+    event: MouseEvent
+  ): void {
+    if (
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.button !== 0
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    const target = event.currentTarget as HTMLElement;
+    openLinkSlideout(
+      link,
+      target
+        .closest('craft-action-menu')
+        ?.querySelector<HTMLElement>('[slot="invoker"]') ?? target
+    );
+  }
+
+  function openLinkSlideout(
+    link: TableLink & {url: string},
+    opener: HTMLElement | null
+  ): void {
+    void openSlideout(link.url, {
+      opener,
+      width: link.slideoutWidth ?? undefined,
+      onSaved: onSlideoutSaved,
+    });
   }
 
   function renderIcon(icon: TableIcon) {
@@ -264,6 +304,14 @@
                 type: 'link',
                 href: item.url ?? '#',
                 label: item.label,
+                onClick:
+                  item.slideout && item.url
+                    ? (event: Event) =>
+                        onLinkClick(
+                          {...item, url: item.url!},
+                          event as MouseEvent
+                        )
+                    : undefined,
               }
         ),
       },
@@ -560,13 +608,39 @@
   }
 
   function refreshUi(): void {
+    if (props.onRefresh) {
+      props.onRefresh();
+
+      return;
+    }
+
     router.reload({only: ['ui']});
   }
 
   function refreshTable(): void {
+    if (props.onRefresh) {
+      props.onRefresh();
+
+      return;
+    }
+
     if (!props.node.props.pagination) refreshUi();
 
     void adminTable.value?.refresh();
+  }
+
+  const draftRefresh = useTimeoutFn(refreshTable, 600, {immediate: false});
+
+  function onSlideoutSaved(result: SlideoutSaveResult = {}): void {
+    draftRefresh.stop();
+
+    if (result.draft) {
+      draftRefresh.start();
+
+      return;
+    }
+
+    refreshTable();
   }
 </script>
 
