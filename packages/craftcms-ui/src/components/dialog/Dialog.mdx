@@ -34,10 +34,11 @@ Default-slot children are the body; `slot="footer"` children are right-aligned b
 
 The dialog renders inside a native `<dialog>`, so the browser supplies the modal behavior — the focus trap, the inert background, and Escape to dismiss.
 
-Two things stay with you:
+Three things stay with you:
 
 - **Name it.** Set `label`. It renders as the header's heading and names the dialog, which is otherwise announced only as "dialog".
 - **Give it a way out that is not Escape.** Escape works, but a visible close or cancel control is what makes that discoverable.
+- **Keep other targets clear of the close button.** Don't place another button, link, or control within 24px of it, in the header or at the top of the body. The space around it is what keeps it easy to hit.
 
 ## Properties
 

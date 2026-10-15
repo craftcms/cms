@@ -148,6 +148,12 @@ describe('craft-dialog', () => {
     expect(dialog.opened).toBe(false);
   });
 
+  it('names the close button "Close"', async () => {
+    const dialog = await createDialog();
+
+    expect(shadow(dialog, '.close')!.getAttribute('aria-label')).toBe('Close');
+  });
+
   it('opens when the open attribute is set before connecting', async () => {
     const dialog = await createDialog((d) => d.setAttribute('open', ''));
 

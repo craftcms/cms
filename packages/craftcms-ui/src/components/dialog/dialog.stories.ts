@@ -30,6 +30,26 @@ const footerClose = html`
   <craft-button slot="footer" data-dialog="close">Close</craft-button>
 `;
 
+/** Renders the dialog after a button that opens it. */
+function withOpener(
+  args: Parameters<typeof template>[0],
+  content: Parameters<typeof template>[1]
+) {
+  return html`
+    <craft-button
+      @click=${(event: Event) => {
+        const dialog = (
+          event.currentTarget as HTMLElement
+        ).parentElement!.querySelector('craft-dialog') as CraftDialog;
+        dialog.opened = true;
+      }}
+    >
+      Open dialog
+    </craft-button>
+    ${template(args, content)}
+  `;
+}
+
 const meta: Meta<CraftDialog & typeof args> = {
   title: 'Components/Dialog',
   component: 'craft-dialog',
@@ -37,7 +57,7 @@ const meta: Meta<CraftDialog & typeof args> = {
   // step with the component's attributes on their own.
   args: {...args, label: 'Dialog'},
   argTypes,
-  render: (args) => template(args, html`${body}${footerClose}`),
+  render: (args) => withOpener(args, html`${body}${footerClose}`),
   parameters: {
     layout: 'centered',
     actions: {handles: dialogEvents},
@@ -79,7 +99,7 @@ export const NoHeader: Story = {
 
 /** No footer slotted — the footer row collapses rather than leaving a gap. */
 export const NoFooter: Story = {
-  render: (args) => template(args, body),
+  render: (args) => withOpener(args, body),
 };
 
 /**
@@ -124,7 +144,7 @@ export const Fullscreen: Story = {
 /** Long content scrolls inside the body rather than growing the surface. */
 export const Scrolling: Story = {
   render: (args) =>
-    template(
+    withOpener(
       args,
       html`
         ${Array.from(

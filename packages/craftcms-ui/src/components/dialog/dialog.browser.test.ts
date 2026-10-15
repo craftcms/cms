@@ -1,10 +1,54 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
 import type CraftDialog from './dialog.js';
+import '../../styles/cp.css';
 import './dialog.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
 });
+
+async function openDialog(
+  configure: (dialog: CraftDialog) => void = () => {}
+): Promise<CraftDialog> {
+  const dialog = document.createElement('craft-dialog') as CraftDialog;
+  dialog.label = 'Test dialog';
+  configure(dialog);
+  document.body.append(dialog);
+  dialog.opened = true;
+  await dialog.updateComplete;
+  return dialog;
+}
+
+function shadow<E extends Element = HTMLElement>(
+  dialog: CraftDialog,
+  selector: string
+): E {
+  return dialog.shadowRoot!.querySelector<E>(selector)!;
+}
+
+function button(text: string, slot?: string): HTMLButtonElement {
+  const element = document.createElement('button');
+  element.textContent = text;
+  if (slot) {
+    element.slot = slot;
+  }
+  return element;
+}
+
+function deepActiveElement(): Element | null {
+  let active = document.activeElement;
+  while (active?.shadowRoot?.activeElement) {
+    active = active.shadowRoot.activeElement;
+  }
+  return active;
+}
+
+function longText(): string {
+  return Array.from(
+    {length: 80},
+    (_, i) => `Line ${i + 1} of a dialog body that has to scroll. `
+  ).join('');
+}
 
 it('centers a modal dialog in the viewport', async () => {
   const dialog = document.createElement('craft-dialog') as CraftDialog;
@@ -24,4 +68,241 @@ it('centers a modal dialog in the viewport', async () => {
   expect(
     Math.abs(bounds.top + bounds.height / 2 - window.innerHeight / 2)
   ).toBeLessThan(1);
+});
+
+it('opens a default dialog as modal', async () => {
+  const outside = button('Outside');
+  document.body.append(outside);
+  const dialog = await openDialog();
+
+  expect(shadow(dialog, 'dialog').matches(':modal')).toBe(true);
+
+  outside.focus();
+  expect(document.activeElement).not.toBe(outside);
+});
+
+it('moves focus into the dialog on open', async () => {
+  const dialog = await openDialog((dialog) => dialog.append(button('Inside')));
+
+  expect(deepActiveElement()).toBe(shadow(dialog, '.close'));
+});
+
+it('focuses an autofocus element on open', async () => {
+  const target = button('Autofocus');
+  target.autofocus = true;
+  await openDialog((dialog) => dialog.append(button('First'), target));
+
+  expect(deepActiveElement()).toBe(target);
+});
+
+it('keeps Tab and Shift+Tab inside a modal dialog', async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  document.body.append(button('Before'));
+  const inside = button('Inside');
+  const footer = button('Footer', 'footer');
+  const dialog = await openDialog((dialog) => dialog.append(inside, footer));
+  const close = shadow(dialog, '.close');
+  const allowed = [close, inside, footer];
+
+  for (let i = 0; i < 6; i++) {
+    await userEvent.keyboard('{Tab}');
+    const active = deepActiveElement();
+    if (active !== document.body) {
+      expect(allowed).toContain(active);
+    }
+  }
+
+  for (let i = 0; i < 6; i++) {
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+    const active = deepActiveElement();
+    if (active !== document.body) {
+      expect(allowed).toContain(active);
+    }
+  }
+});
+
+it('returns focus to the invoker on close', async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  const invoker = button('Open');
+  document.body.append(invoker);
+  const dialog = document.createElement('craft-dialog') as CraftDialog;
+  dialog.label = 'Test dialog';
+  document.body.append(dialog);
+  invoker.addEventListener('click', () => (dialog.opened = true));
+
+  await userEvent.click(invoker);
+  await dialog.updateComplete;
+  await userEvent.click(shadow(dialog, '.close'));
+  await dialog.updateComplete;
+
+  expect(dialog.opened).toBe(false);
+  expect(document.activeElement).toBe(invoker);
+});
+
+it('closes on Escape through craft-before-hide', async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  const dialog = await openDialog();
+  let asked = 0;
+  dialog.addEventListener('craft-before-hide', () => asked++);
+
+  await userEvent.keyboard('{Escape}');
+  await dialog.updateComplete;
+
+  expect(asked).toBe(1);
+  expect(dialog.opened).toBe(false);
+});
+
+it('stays open on Escape when craft-before-hide is canceled', async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  const invoker = button('Open');
+  document.body.append(invoker);
+  const dialog = document.createElement('craft-dialog') as CraftDialog;
+  dialog.label = 'Test dialog';
+  document.body.append(dialog);
+  invoker.addEventListener('click', () => (dialog.opened = true));
+  dialog.addEventListener('craft-before-hide', (event) =>
+    event.preventDefault()
+  );
+
+  await userEvent.click(invoker);
+  await dialog.updateComplete;
+  await userEvent.keyboard('{Escape}');
+  await dialog.updateComplete;
+
+  expect(dialog.opened).toBe(true);
+  expect(shadow<HTMLDialogElement>(dialog, 'dialog').open).toBe(true);
+});
+
+it('lets the keyboard reach a scrolling body with nothing focusable', async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  const dialog = await openDialog((dialog) => {
+    dialog.noClose = true;
+    dialog.textContent = longText();
+  });
+  const body = shadow(dialog, '.body');
+  expect(body.scrollHeight).toBeGreaterThan(body.clientHeight);
+  expect(deepActiveElement()).toBe(body);
+
+  await userEvent.keyboard('{ArrowDown}');
+  await expect.poll(() => body.scrollTop).toBeGreaterThan(0);
+});
+
+it('contains Tab in a non-modal dialog and releases it on close', async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  const after = button('After');
+  const inside = button('Inside');
+  const dialog = await openDialog((dialog) => {
+    dialog.nonModal = true;
+    dialog.noClose = true;
+    dialog.append(inside);
+  });
+  document.body.append(after);
+
+  inside.focus();
+  await userEvent.keyboard('{Tab}');
+  expect(document.activeElement).toBe(inside);
+
+  dialog.opened = false;
+  await dialog.updateComplete;
+  inside.blur();
+  await userEvent.keyboard('{Tab}');
+  expect(document.activeElement).not.toBe(inside);
+});
+
+it('scrolls a focused control clear of the footer', async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  const first = button('First');
+  const last = button('Last');
+  const dialog = await openDialog((dialog) => {
+    dialog.noClose = true;
+    dialog.label = '';
+    const text = document.createElement('p');
+    text.textContent = longText();
+    dialog.append(first, text, last, button('Footer', 'footer'));
+  });
+
+  first.focus();
+  await userEvent.keyboard('{Tab}');
+  expect(document.activeElement).toBe(last);
+
+  const control = last.getBoundingClientRect();
+  const footer = shadow(dialog, '.footer').getBoundingClientRect();
+  expect(control.bottom).toBeLessThanOrEqual(footer.top + 1);
+});
+
+it('scrolls a focused control clear of the header', async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  const first = button('First');
+  const last = button('Last');
+  const dialog = await openDialog((dialog) => {
+    const text = document.createElement('p');
+    text.textContent = longText();
+    dialog.append(first, text, last);
+  });
+  shadow(dialog, '.body').scrollTop = 10_000;
+
+  last.focus();
+  await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+  expect(document.activeElement).toBe(first);
+
+  const control = first.getBoundingClientRect();
+  const header = shadow(dialog, '.header').getBoundingClientRect();
+  expect(control.top).toBeGreaterThanOrEqual(header.bottom);
+});
+
+it('gives the close button 24px of vertical room in the header', async () => {
+  const dialog = await openDialog((dialog) => (dialog.label = ''));
+  const {height} = shadow(dialog, '.header').getBoundingClientRect();
+
+  expect(height).toBeGreaterThan(24);
+});
+
+it('outlines the surface when it overlays the page', async () => {
+  const dialog = await openDialog();
+  const style = getComputedStyle(shadow(dialog, '.surface'));
+
+  expect(style.borderTopStyle).toBe('solid');
+  expect(parseFloat(style.borderTopWidth)).toBeGreaterThanOrEqual(1);
+});
+
+it('fits a 320px viewport without horizontal scroll', async () => {
+  const {page} = await import('@vitest/browser/context');
+  await page.viewport(320, 640);
+  try {
+    const dialog = await openDialog((dialog) => {
+      dialog.append(longText(), button('Footer', 'footer'));
+    });
+
+    const surface = shadow(dialog, '.surface').getBoundingClientRect();
+    const header = shadow(dialog, '.header').getBoundingClientRect();
+    const footer = shadow(dialog, '.footer').getBoundingClientRect();
+    const body = shadow(dialog, '.body');
+
+    expect(surface.left).toBeGreaterThanOrEqual(0);
+    expect(surface.right).toBeLessThanOrEqual(320);
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(320);
+    expect(body.scrollWidth).toBeLessThanOrEqual(body.clientWidth);
+    expect(body.scrollHeight).toBeGreaterThan(body.clientHeight);
+    expect(header.top).toBeGreaterThanOrEqual(0);
+    expect(footer.bottom).toBeLessThanOrEqual(640);
+  } finally {
+    await page.viewport(1280, 720);
+  }
+});
+
+it('does not animate opening or closing', async () => {
+  const dialog = await openDialog();
+
+  for (const element of [
+    shadow(dialog, 'dialog'),
+    shadow(dialog, '.surface'),
+  ]) {
+    const style = getComputedStyle(element);
+    expect(style.animationName).toBe('none');
+    expect(
+      style.transitionDuration.split(',').every((d) => parseFloat(d) === 0)
+    ).toBe(true);
+  }
+  const backdrop = getComputedStyle(shadow(dialog, 'dialog'), '::backdrop');
+  expect(backdrop.animationName).toBe('none');
 });
