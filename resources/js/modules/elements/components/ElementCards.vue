@@ -116,7 +116,17 @@
   function onCardDblclick(id: string | number, event: MouseEvent) {
     const element = props.data.find((candidate) => candidate.id === id);
 
-    if (element && !isInteractiveClick(event, event.currentTarget)) {
+    if (!element) {
+      return;
+    }
+
+    if (props.itemBehavior?.onDblClick?.(element, event)) {
+      event.preventDefault();
+
+      return;
+    }
+
+    if (!isInteractiveClick(event, event.currentTarget)) {
       emit('edit', element);
     }
   }

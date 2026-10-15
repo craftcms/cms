@@ -77,6 +77,7 @@
   const HEADER_SLOTS = ['title'] as const;
   const FOOTER_SLOTS = [
     'content-footer',
+    'footer-meta',
     'additional-buttons',
     'primary-action',
   ] as const;
@@ -163,6 +164,7 @@
       Boolean(props.form) ||
       Boolean(props.fullPageForm) ||
       regions.has('content-footer') ||
+      regions.has('footer-meta') ||
       regions.has('additional-buttons')
   );
   const contentConstrained = computed(() => Boolean(props.contentMaxWidth));
@@ -322,7 +324,10 @@
                                 :items="navItemActions(subnav)"
                                 :actions="subnavActions"
                               >
-                                <template #actions>
+                                <template
+                                  v-if="regions.has('subnav-actions')"
+                                  #actions
+                                >
                                   <LayoutSlotOutlet name="subnav-actions">
                                     <slot name="subnav-actions"></slot>
                                   </LayoutSlotOutlet>

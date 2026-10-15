@@ -220,10 +220,10 @@ export default css`
   :host([action-state='loading']) {
     position: relative;
 
-    .prefix,
-    .label,
-    .suffix {
-      visibility: hidden;
+    /* Hidden with opacity, not visibility, so the label stays in the button's
+       accessible name. The live region adds "Loading" to it. */
+    .button-content {
+      opacity: 0;
     }
 
     craft-spinner {

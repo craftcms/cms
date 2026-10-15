@@ -61,6 +61,31 @@ function click(target: Element, init: MouseEventInit = {}) {
   return event;
 }
 
+/** Double-clicks `target` inside `item`, returning what `onDblClick` said. */
+function dblClick(
+  index: ReturnType<typeof mountIndex>,
+  row: (typeof index.view.elementIndex.data)[number],
+  target?: HTMLElement
+) {
+  const item = document.createElement('li');
+  item.append(target ?? document.createElement('span'));
+  let handled: boolean | undefined;
+  let prevented = false;
+  item.addEventListener(
+    'dblclick',
+    (event) => {
+      handled = index.itemBehavior.onDblClick?.(row, event as MouseEvent);
+      prevented = event.defaultPrevented;
+    },
+    {once: true}
+  );
+  item.firstElementChild!.dispatchEvent(
+    new MouseEvent('dblclick', {bubbles: true, cancelable: true})
+  );
+
+  return {handled, prevented};
+}
+
 beforeEach(() => {
   vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
   post.mockResolvedValue({data: {props: assetsData()}});
@@ -166,6 +191,67 @@ describe('opening a folder', () => {
       )
     ).toBe(false);
     expect(post).not.toHaveBeenCalled();
+  });
+});
+
+describe('double-clicking', () => {
+  it('selects an asset and lets the double-click through, to choose it', () => {
+    const index = mountIndex();
+
+    expect(dblClick(index, index.view.elementIndex.data[1]!)).toEqual({
+      handled: false,
+      prevented: false,
+    });
+    expect(index.view.selection.selectedIds.value).toEqual([12]);
+  });
+
+  it('keeps an asset its clicks already selected', () => {
+    const index = mountIndex();
+    index.view.table.getRowModel().rows[1]!.toggleSelected(true);
+
+    dblClick(index, index.view.elementIndex.data[1]!);
+
+    expect(index.view.selection.selectedIds.value).toEqual([12]);
+  });
+
+  it('opens a folder instead of choosing it', () => {
+    const index = mountIndex();
+
+    expect(dblClick(index, folderRow(index))).toEqual({
+      handled: true,
+      prevented: true,
+    });
+    expect(lastQuery()).toMatchObject({folderId: 7});
+  });
+
+  it('chooses nothing from a disabled asset', () => {
+    scope = effectScope();
+    const index = scope.run(() =>
+      useModalElementIndex({
+        action: 'element-selector-modals/body',
+        initial: assetsData(),
+        params: {elementType: 'Asset'},
+        disabledElementIds: () => [12],
+      })
+    )!;
+
+    expect(dblClick(index, index.view.elementIndex.data[1]!).handled).toBe(
+      true
+    );
+    expect(index.view.selection.selectedIds.value).toEqual([]);
+  });
+
+  it('chooses nothing from a control inside an asset', () => {
+    const index = mountIndex();
+
+    expect(
+      dblClick(
+        index,
+        index.view.elementIndex.data[1]!,
+        document.createElement('button')
+      ).handled
+    ).toBe(true);
+    expect(index.view.selection.selectedIds.value).toEqual([]);
   });
 });
 

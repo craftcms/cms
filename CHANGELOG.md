@@ -49,10 +49,12 @@
 - Clicking a Matrix block in blocks view no longer selects it. Blocks are selected with their checkboxes instead. ([#19974](https://github.com/craftcms/cms/pull/19974))
 - Fields without a visible label or instructions no longer have an action menu.
 - Double-clicking an element in a relational field’s card or thumbnail view now opens its slideout, as it does in list views.
+- Double-clicking an asset folder in an asset index or element selection modal now opens it, and double-clicking an element’s thumbnail in an element index now opens its slideout. ([#19979](https://github.com/craftcms/cms/pull/19979))
 - Image transform mode and view mode illustrations now have transparent backgrounds, and follow the control panel’s light or dark theme.
 - Matrix fields’ Site Settings tables now have a narrow Site column, and give the Entry URI Format and Route To columns equal widths, as Sections’ do.
 - Slideouts can now be resized horizontally, and remember their width. ([#19978](https://github.com/craftcms/cms/pull/19978))
 - Slideouts’ details panes that were folded away for lack of room now reopen once the slideout is wide enough again. ([#19978](https://github.com/craftcms/cms/pull/19978))
+- The image editor’s header, tabs, controls, and footer now share the control panel’s standard container padding.
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - Saving the Customize Sources modal from an element index’s action menu now goes to the source that was last edited, as it does from the secondary nav. ([#19929](https://github.com/craftcms/cms/pull/19929))
@@ -73,6 +75,13 @@
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Added `CraftCms\Cms\Ui\Nodes\Table`, for rendering admin tables from PHP UI definitions. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Added `CraftCms\Cms\Cp\Components\CopyAttribute` for rendering inline copyable values in PHP and templates. ([#19935](https://github.com/craftcms/cms/pull/19935))
+- Admin table links and create actions can now open in a slideout with a custom width, via the `slideoutWidth` link option and new `slideout` and `slideoutWidth` arguments on `CraftCms\Cms\Ui\Nodes\Table::createAction()`. ([#19956](https://github.com/craftcms/cms/pull/19956))
+- Double-clicking an admin table row now opens its link’s slideout, if it has one. ([#19957](https://github.com/craftcms/cms/pull/19957))
+- Fixed a bug where element query date params, such as `postDate`, `before`, `after`, `dateCreated`, and Date field params, as well as date condition rules, were off by the system time zone’s UTC offset. ([#19963](https://github.com/craftcms/cms/pull/19963))
+- Fixed a bug where dates more than six days out, such as pending entries’ post dates in element indexes, were shown as a day of the week. ([#19972](https://github.com/craftcms/cms/pull/19972))
+- Fixed a bug where nested elements weren’t indented in structure views’ element index tables. ([#19972](https://github.com/craftcms/cms/pull/19972))
+- Fixed a bug where users’ Permissions, Preferences, and Password screens had two “Save and continue editing” actions. ([#19972](https://github.com/craftcms/cms/pull/19972))
+- Fixed an accessibility issue where buttons were still announced as “Loading” after they finished loading, and lost their accessible name if loading took more than five seconds. ([#19975](https://github.com/craftcms/cms/pull/19975))
 - Fixed a bug where thumbnails in relational fields linked to their elements. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes had no visible focus ring. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes’ combobox element had no accessible name in Chromium. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -172,6 +181,9 @@
 - Fixed a bug where the “Preview file”, “Download”, “Rename file”, “Replace file”, “Copy URL”, “Copy reference tag”, “Show in folder”, “Edit Image”, and “Move…” actions in asset indexes’ Actions menu didn’t do anything, and cleared the selection instead. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where the folder picker for moving assets and folders was unstyled, and offered “Temporary Uploads” as a destination when moving folders. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where element indexes and element selector modals could show empty cards or thumbnails when the view mode they remembered differed from the one they loaded with. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed a bug where element edit pages’ and slideouts’ details panes didn’t scroll when their content was too tall to fit. ([#19952](https://github.com/craftcms/cms/pull/19952))
+- Fixed a bug where pages with a secondary nav sidebar, such as Commerce → Store Management → General, showed an empty actions menu below the nav. ([#19959](https://github.com/craftcms/cms/pull/19959))
+- Fixed a bug where double-clicking an element in an element selection modal didn’t select it. ([#19979](https://github.com/craftcms/cms/pull/19979))
 - Fixed a bug where the MCP server’s `elements.create`, `elements.update`, and `elements.validate` tools silently ignored Matrix entries submitted in the format `elements.field-schema` described. ([#19965](https://github.com/craftcms/cms/pull/19965))
 
 ## 6.0.0-alpha.20 - 2026-10-07
@@ -228,6 +240,12 @@
 - Added `CraftCms\Cms\Mcp\Elements\ElementAdapter`, `CraftCms\Cms\Mcp\Elements\BaseElementAdapter`, and `CraftCms\Cms\Mcp\Elements\ElementAdapterRegistry`, allowing plugins to make their element types available through the `elements.*` MCP tools. ([#19846](https://github.com/craftcms/cms/pull/19846))
 - Added `CraftCms\Cms\Mcp\Attributes\RequiresHttp`, for MCP capabilities that only work over HTTP. ([#19846](https://github.com/craftcms/cms/pull/19846))
 - Added `directPermissions` to MCP user permission results and `CraftCms\Cms\User\UserPermissions::getDirectPermissionsByUserId()`. ([#19846](https://github.com/craftcms/cms/pull/19846))
+- Element types can now add buttons to the end of the Inertia element editor’s footer by overriding `defineAdditionalButtonDescriptors()`, and plugins can add them via `CraftCms\Cms\Element\Events\ElementAdditionalButtonDescriptorsResolving`. They take the same `behavior` descriptors as action menu items, so they can open links, downloads, modals, and slideouts without submitting the form. ([#19910](https://github.com/craftcms/cms/issues/19910))
+- The `additional-buttons` layout slot now sits at the end of the content footer.
+- Added the `footer-meta` layout slot, beside the content footer’s save controls. Element editors show their autosave status there.
+- `CpScreenResponse::additionalButtonsHtml()` is now rendered in the content footer for screens without their own Inertia page.
+- Slideout footers now share the full-page content footer’s layout and layout slots, including `content-footer`.
+- Craft 5 element edit page additional buttons (`getAdditionalButtons()`, `EVENT_DEFINE_ADDITIONAL_BUTTONS`, and `additionalButtonsHtml()`) are now shown in the Inertia element editor’s footer when the Yii adapter is installed. ([#19910](https://github.com/craftcms/cms/issues/19910))
 - Added `CraftCms\Cms\Element\Events\ElementEditorPayloadResolving`. ([#19792](https://github.com/craftcms/cms/pull/19792))
 - Added `CraftCms\Cms\Asset\AssetUploadHandler::ingest()`, allowing non-HTTP adapters to reuse Craft’s asset creation workflow. ([#19823](https://github.com/craftcms/cms/pull/19823))
 - Added support for passing prepared, unsaved assets to `CraftCms\Cms\Asset\Data\AssetIngest`, allowing transport adapters to set metadata and custom field values before validation and persistence. ([#19827](https://github.com/craftcms/cms/pull/19827))
@@ -262,6 +280,7 @@
 - Removed `craft\elements\db\ElementQuery::beforePrepare()`. `CraftCms\Cms\Element\Queries\ElementQuery::elementQueryBeforeQuery()` should be overridden instead. ([#19838](https://github.com/craftcms/cms/pull/19838))
 - Removed `craft\elements\db\ElementQuery::joinElementTable()`. Element queries should now declare their element table via the `$table` property, which is joined automatically. ([#19838](https://github.com/craftcms/cms/pull/19838))
 - Removed `craft\elements\db\ElementQuery::$subQuery`. Element queries are now a single query, so joins and conditions should be applied to `$query`. ([#19838](https://github.com/craftcms/cms/pull/19838))
+- Removed `CraftCms\Cms\Element\Contracts\ElementInterface::getAdditionalButtons()` and `CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving`. `defineAdditionalButtonDescriptors()` and `CraftCms\Cms\Element\Events\ElementAdditionalButtonDescriptorsResolving` should be used instead. The Yii adapter still provides `getAdditionalButtons()` and `EVENT_DEFINE_ADDITIONAL_BUTTONS`. ([#19921](https://github.com/craftcms/cms/pull/19921))
 - Removed the `breadcrumbs` and `submit-button` screen layout slots, which never rendered on full pages. The `crumbs` page prop and the `primary-action` slot should be used instead. ([#19854](https://github.com/craftcms/cms/pull/19854))
 - Removed the `pasteableEntryTypeIds` nested element manager setting. `pasteableData` should be used instead. ([#19792](https://github.com/craftcms/cms/pull/19792))
 

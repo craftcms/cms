@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Date;
 
@@ -46,9 +47,9 @@ it('can query users that have photos', function () {
 it('can query by last login date', function (mixed $param, int $expectedCount) {
     Date::setTestNow(now());
 
-    User::factory()->create(['lastLoginDate' => now()->subDay()]);
-    User::factory()->create(['lastLoginDate' => now()]);
-    User::factory()->create(['lastLoginDate' => now()->addDay()]);
+    User::factory()->create(['lastLoginDate' => Query::prepareDateForDb(now()->subDay())]);
+    User::factory()->create(['lastLoginDate' => Query::prepareDateForDb(now())]);
+    User::factory()->create(['lastLoginDate' => Query::prepareDateForDb(now()->addDay())]);
 
     expect(userQuery()->lastLoginDate($param)->count())->toBe($expectedCount);
 })->with([
