@@ -31,6 +31,7 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Contracts\CraftUser;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\t;
@@ -72,16 +73,21 @@ class ReleaseViewModel extends ViewModel
         return ! $this->release->status->isMutable();
     }
 
-    /** @return list<array{label: string, variant: string, action: array{type: 'http', method: 'DELETE', url: string, confirm: string}}> */
-    public function formAdditionalButtons(): array
+    /**
+     * The content toolbar's action menu.
+     *
+     * @return list<array{label: string, icon: string, variant: string, action: array{type: 'http', method: 'DELETE', url: string, confirm: string}}>
+     */
+    public function actionMenu(): array
     {
-        if ($this->readOnly() || ! $this->actor->can('manage', $this->release)) {
+        if (! $this->editable()) {
             return [];
         }
 
         return [[
             'label' => t('Delete release'),
-            'variant' => 'danger-plain',
+            'icon' => 'trash',
+            'variant' => 'danger',
             'action' => [
                 'type' => 'http',
                 'method' => 'DELETE',
@@ -89,6 +95,36 @@ class ReleaseViewModel extends ViewModel
                 'confirm' => t('Delete this release? Its unpublished drafts will be preserved.'),
             ],
         ]];
+    }
+
+    /** Where saving returns to, encrypted as the form's posted `redirect`. */
+    public function redirectUrl(): ?string
+    {
+        return $this->editable() ? Crypt::encrypt(route('craft.cp.releases.index')) : null;
+    }
+
+    /**
+     * The Save button's alternate actions.
+     *
+     * @return list<array{label: string, redirect: string, shortcut: bool, retainScroll: bool}>
+     */
+    public function formActions(): array
+    {
+        if (! $this->editable()) {
+            return [];
+        }
+
+        return [[
+            'label' => t('Save and continue editing'),
+            'redirect' => Crypt::encrypt(route('craft.cp.releases.show', $this->release)),
+            'shortcut' => true,
+            'retainScroll' => true,
+        ]];
+    }
+
+    private function editable(): bool
+    {
+        return ! $this->readOnly() && $this->actor->can('manage', $this->release);
     }
 
     /** @return list<ReleaseItemData> */
@@ -140,7 +176,7 @@ class ReleaseViewModel extends ViewModel
         }, $this->items());
 
         $columns = [
-            ['key' => 'title', 'label' => t('Content'), 'wrap' => true],
+            ['key' => 'title', 'label' => t('Entry'), 'wrap' => true],
             ['key' => 'draftName', 'label' => t('Draft')],
             ...match (true) {
                 $published => [['key' => 'publishedAt', 'label' => t('Published')]],

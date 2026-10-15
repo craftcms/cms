@@ -9,6 +9,8 @@
     update,
     unschedule as unscheduleRelease,
   } from '@actions/ReleasesController';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import FormActions from '@/common/components/FormActions.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import UiPage from '@/pages/Ui.vue';
   import ReleaseStatusBadge from '@/modules/releases/components/ReleaseStatusBadge.vue';
@@ -21,7 +23,8 @@
   const props = defineProps<{
     release: ReleaseViewModel['release'];
     readOnly: boolean;
-    formAdditionalButtons: ReleaseViewModel['formAdditionalButtons'];
+    actionMenu: ReleaseViewModel['actionMenu'];
+    formActions: ReleaseViewModel['formActions'];
     readiness: ReleaseViewModel['readiness'];
     ui: UiPayload;
     editUi: UiPayload | null;
@@ -117,6 +120,10 @@
       <span v-if="readinessSummary">{{ readinessSummary }}</span>
     </LayoutSlot>
 
+    <LayoutSlot v-if="actionMenu.length" name="content-toolbar-actions">
+      <ActionMenu :actions="actionMenu" />
+    </LayoutSlot>
+
     <!-- Filling the primary action keeps the form's Save button out of the
     footer even when there is nothing to publish; Save sits in the sidebar. -->
     <LayoutSlot
@@ -141,12 +148,6 @@
           {{ t('Schedule') }}
         </craft-button>
       </div>
-    </LayoutSlot>
-
-    <LayoutSlot v-if="release.canUnschedule" name="footer-meta">
-      <craft-button type="button" variant="outline" @click="unschedule">
-        {{ t('Unschedule') }}
-      </craft-button>
     </LayoutSlot>
 
     <craft-callout
@@ -182,12 +183,27 @@
       :submit="editUi ? update({release: release.id}) : undefined"
       :sidebar-ui="editUi ?? undefined"
       :metadata-html="editUi ? undefined : (metadataHtml ?? undefined)"
-      :default-form-actions="[]"
-      :form-additional-buttons="formAdditionalButtons"
+      :form-actions="formActions"
+      form-actions-in-sidebar
+      :hide-footer="!canPublishNow"
     >
-      <template #sidebar-actions>
-        <craft-button type="submit" variant="primary" class="mt-lg">
-          {{ t('Save') }}
+      <template
+        v-if="editUi || release.canUnschedule"
+        #sidebar-actions="{form, formActionItems}"
+      >
+        <FormActions
+          v-if="editUi"
+          class="mt-lg"
+          :form="form"
+          :action-items="formActionItems"
+        />
+        <craft-button
+          v-else
+          type="button"
+          variant="outline"
+          @click="unschedule"
+        >
+          {{ t('Unschedule') }}
         </craft-button>
       </template>
     </UiPage>

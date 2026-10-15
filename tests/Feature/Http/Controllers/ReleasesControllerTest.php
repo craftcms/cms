@@ -67,6 +67,24 @@ it('updates release details using the resource HTTP methods', function (string $
         ->and($release->description)->toBe('Ready for publication.');
 })->with(['PUT', 'PATCH']);
 
+it('returns to the releases index after saving, unless continuing to edit', function () {
+    $release = $this->releases->create('Launch', null, $this->actor);
+    $props = get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
+        ->assertOk()
+        ->assertJsonPath('props.formActions.0.label', 'Save and continue editing')
+        ->json('props');
+
+    $this->json('PATCH', route('craft.cp.releases.update', $release), [
+        'name' => 'Launch',
+        'redirect' => $props['redirectUrl'],
+    ])->assertJsonPath('redirect', route('craft.cp.releases.index'));
+
+    $this->json('PATCH', route('craft.cp.releases.update', $release), [
+        'name' => 'Launch',
+        'redirect' => $props['formActions'][0]['redirect'],
+    ])->assertJsonPath('redirect', route('craft.cp.releases.show', $release));
+});
+
 it('schedules a release at the submitted local time and requires a time', function () {
     Date::setTestNow('2026-10-01 12:00:00');
 
@@ -104,7 +122,9 @@ it('schedules a release at the submitted local time and requires a time', functi
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('readOnly', true)
-            ->where('formAdditionalButtons', [])
+            ->where('actionMenu', [])
+            ->where('formActions', [])
+            ->where('redirectUrl', null)
             ->where('editUi', null));
 
     getJson(route('craft.cp.releases.scheduleModal', $release))->assertForbidden();
@@ -406,7 +426,7 @@ it('deletes a mutable release through its advertised action without deleting its
         $response = get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
             ->assertOk()
             ->assertJsonPath('props.readOnly', false);
-        $action = $response->json('props.formAdditionalButtons.0.action');
+        $action = $response->json('props.actionMenu.0.action');
     } else {
         $response = get(route('craft.cp.releases.index'), headers: ['X-Inertia' => 'true'])
             ->assertOk()

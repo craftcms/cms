@@ -161,7 +161,9 @@ class ReleasesController
             'readiness' => Inertia::always($viewModel->readiness(...)),
             'readOnly' => Inertia::always($viewModel->readOnly(...)),
             'showReadOnlyNotice' => false,
-            'formAdditionalButtons' => Inertia::always($viewModel->formAdditionalButtons(...)),
+            'actionMenu' => Inertia::always($viewModel->actionMenu(...)),
+            'formActions' => Inertia::always($viewModel->formActions(...)),
+            'redirectUrl' => Inertia::always($viewModel->redirectUrl(...)),
         ]);
     }
 
