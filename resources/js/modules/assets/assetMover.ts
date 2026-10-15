@@ -11,10 +11,10 @@ export interface AssetMoveConflict {
 }
 
 export interface MoveAssetsResult {
-  moved: number;
-  cancelled: number;
+  movedCount: number;
+  cancelledCount: number;
   /** Clashes settled by keeping both or replacing, which can't be undone. */
-  conflicted: number;
+  conflictedCount: number;
 }
 
 export interface MovedAssetsResult extends MoveAssetsResult {
@@ -111,9 +111,9 @@ export async function moveAssets(
   targetFolderId: number,
   resolveConflict: (conflict: AssetMoveConflict) => Promise<ConflictResolution>
 ): Promise<MovedAssetsResult> {
-  let moved = 0;
-  let cancelled = 0;
-  let conflicted = 0;
+  let movedCount = 0;
+  let cancelledCount = 0;
+  let conflictedCount = 0;
   const movedAssetIds: number[] = [];
 
   for (const assetId of assetIds) {
@@ -131,7 +131,7 @@ export async function moveAssets(
       });
 
       if (choice === 'cancel') {
-        cancelled++;
+        cancelledCount++;
         continue;
       }
 
@@ -144,18 +144,18 @@ export async function moveAssets(
       // A forced/renamed move shouldn't clash again; if it somehow does, count
       // it as canceled rather than looping.
       if (data.conflict) {
-        cancelled++;
+        cancelledCount++;
         continue;
       }
 
-      conflicted++;
+      conflictedCount++;
     }
 
-    moved++;
+    movedCount++;
     movedAssetIds.push(assetId);
   }
 
-  return {moved, cancelled, conflicted, movedAssetIds};
+  return {movedCount, cancelledCount, conflictedCount, movedAssetIds};
 }
 
 export async function moveFolders(
@@ -163,9 +163,9 @@ export async function moveFolders(
   targetFolderId: number,
   resolveConflict: (message: string) => Promise<FolderConflictResolution>
 ): Promise<MoveFoldersResult> {
-  let moved = 0;
-  let cancelled = 0;
-  let conflicted = 0;
+  let movedCount = 0;
+  let cancelledCount = 0;
+  let conflictedCount = 0;
   const movedFolders: MovedFolder[] = [];
   const movedFolderUrls: string[] = [];
 
@@ -183,7 +183,7 @@ export async function moveFolders(
       const choice = await resolveConflict(data.conflict);
 
       if (choice === 'cancel') {
-        cancelled++;
+        cancelledCount++;
         continue;
       }
 
@@ -192,7 +192,7 @@ export async function moveFolders(
         getActionUrl('assets/move-folder'),
         params
       ));
-      conflicted++;
+      conflictedCount++;
     }
 
     if (!Array.isArray(data.transferList) || !data.newFolderUrl) {
@@ -218,8 +218,14 @@ export async function moveFolders(
       movedFolders.push({folderId, newFolderId});
     }
     movedFolderUrls.push(data.newFolderUrl);
-    moved++;
+    movedCount++;
   }
 
-  return {moved, cancelled, conflicted, movedFolders, movedFolderUrls};
+  return {
+    movedCount,
+    cancelledCount,
+    conflictedCount,
+    movedFolders,
+    movedFolderUrls,
+  };
 }

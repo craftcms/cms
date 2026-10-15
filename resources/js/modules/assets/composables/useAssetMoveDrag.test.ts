@@ -29,17 +29,17 @@ beforeEach(() => {
   vi.mocked(moveAssets)
     .mockReset()
     .mockImplementation(async (assetIds) => ({
-      moved: assetIds.length,
-      cancelled: 0,
-      conflicted: 0,
+      movedCount: assetIds.length,
+      cancelledCount: 0,
+      conflictedCount: 0,
       movedAssetIds: assetIds,
     }));
   vi.mocked(moveFolders)
     .mockReset()
     .mockImplementation(async (folderIds) => ({
-      moved: folderIds.length,
-      cancelled: 0,
-      conflicted: 0,
+      movedCount: folderIds.length,
+      cancelledCount: 0,
+      conflictedCount: 0,
       movedFolders: folderIds.map((folderId) => ({
         folderId,
         newFolderId: folderId + 100,
@@ -199,9 +199,9 @@ it('moves each item back to the folder it came from', async () => {
 
 it('doesn’t offer to undo a move that resolved a conflict', async () => {
   vi.mocked(moveAssets).mockResolvedValue({
-    moved: 1,
-    cancelled: 0,
-    conflicted: 1,
+    movedCount: 1,
+    cancelledCount: 0,
+    conflictedCount: 1,
     movedAssetIds: [5],
   });
   const {performMove} = mountMoveDrag();

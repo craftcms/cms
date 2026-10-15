@@ -192,26 +192,26 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
    */
   function undoableMove(
     origins: MoveOrigins,
-    folders: MoveFoldersResult,
-    assets: MovedAssetsResult
+    folderResult: MoveFoldersResult,
+    assetResult: MovedAssetsResult
   ): UndoableMove | null {
     if (
-      folders.conflicted ||
-      assets.conflicted ||
-      folders.movedFolders.length !== folders.moved
+      folderResult.conflictedCount ||
+      assetResult.conflictedCount ||
+      folderResult.movedFolders.length !== folderResult.movedCount
     ) {
       return null;
     }
 
     const move: UndoableMove = {folders: [], assets: []};
 
-    for (const {folderId, newFolderId} of folders.movedFolders) {
+    for (const {folderId, newFolderId} of folderResult.movedFolders) {
       const parentId = origins.folderParentIds.get(folderId);
       if (parentId === undefined) return null;
       move.folders.push({folderId: newFolderId, parentId});
     }
 
-    for (const assetId of assets.movedAssetIds) {
+    for (const assetId of assetResult.movedAssetIds) {
       const folderId = origins.assetFolderIds.get(assetId);
       if (folderId === undefined) return null;
       move.assets.push({assetId, folderId});
@@ -240,7 +240,7 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
   }
 
   async function undoMove(move: UndoableMove) {
-    let moved = 0;
+    let movedCount = 0;
 
     try {
       for (const [parentId, folderIds] of groupBy(
@@ -248,8 +248,9 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
         (folder) => folder.parentId,
         (folder) => folder.folderId
       )) {
-        moved += (await moveFolders(folderIds, parentId, resolveFolderConflict))
-          .moved;
+        movedCount += (
+          await moveFolders(folderIds, parentId, resolveFolderConflict)
+        ).movedCount;
       }
 
       for (const [folderId, assetIds] of groupBy(
@@ -257,25 +258,26 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
         (asset) => asset.folderId,
         (asset) => asset.assetId
       )) {
-        moved += (await moveAssets(assetIds, folderId, resolveConflict)).moved;
+        movedCount += (await moveAssets(assetIds, folderId, resolveConflict))
+          .movedCount;
       }
     } catch (e) {
       Craft.cp?.displayError?.(t('Couldn’t move the selected items.'));
       throw e;
     } finally {
-      if (moved > 0) {
+      if (movedCount > 0) {
         onActionPerformed();
       }
     }
 
-    if (moved > 0) {
+    if (movedCount > 0) {
       Craft.cp?.displayNotification?.('notice', t('Move reverted.'));
     }
   }
 
-  function showMovedNotice(moved: number, move: UndoableMove | null) {
+  function showMovedNotice(movedCount: number, move: UndoableMove | null) {
     const message = t('{num, plural, =1{Item} other{Items}} moved.', {
-      num: moved,
+      num: movedCount,
     });
 
     if (!move) {
@@ -352,25 +354,25 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
     const origins = moveOrigins(assetIds, folderIds);
 
     try {
-      const folders = await moveFolders(
+      const folderResult = await moveFolders(
         folderIds,
         targetFolderId,
         resolveFolderConflict
       );
-      const assets = await moveAssets(
+      const assetResult = await moveAssets(
         assetIds,
         targetFolderId,
         resolveConflict
       );
-      const moved = folders.moved + assets.moved;
-      if (moved > 0) {
+      const movedCount = folderResult.movedCount + assetResult.movedCount;
+      if (movedCount > 0) {
         showMovedNotice(
-          moved,
-          largeMove ? null : undoableMove(origins, folders, assets)
+          movedCount,
+          largeMove ? null : undoableMove(origins, folderResult, assetResult)
         );
         onActionPerformed();
       }
-      return moved;
+      return movedCount;
     } catch (e) {
       const message = isHttpError<{message?: string}>(e)
         ? e.response?.data?.message
@@ -515,8 +517,8 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
 
         dragDrop?.fadeOutHelpers();
         void performMove(folderId, assetIds, folderIds)
-          .then((moved) => {
-            if (!moved) showDraggees();
+          .then((movedCount) => {
+            if (!movedCount) showDraggees();
           })
           .catch((e) => {
             showDraggees();

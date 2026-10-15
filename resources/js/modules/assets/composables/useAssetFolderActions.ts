@@ -266,10 +266,10 @@ export function useAssetFolderActions(
             Number(targetFolder.folderId),
             resolveConflict
           );
-          if (result.moved > 0) {
+          if (result.movedCount > 0) {
             Craft.cp?.displayNotice?.(
               t('{num, plural, =1{Item} other{Items}} moved.', {
-                num: result.moved,
+                num: result.movedCount,
               })
             );
             if (action.redirectUrl) {

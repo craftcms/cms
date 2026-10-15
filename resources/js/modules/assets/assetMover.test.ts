@@ -26,9 +26,9 @@ it('moves a folder’s assets before deleting its old tree', async () => {
     .mockResolvedValueOnce({data: {}});
 
   await expect(moveFolders([11], 30, async () => 'cancel')).resolves.toEqual({
-    moved: 1,
-    cancelled: 0,
-    conflicted: 0,
+    movedCount: 1,
+    cancelledCount: 0,
+    conflictedCount: 0,
     movedFolders: [{folderId: 11, newFolderId: 31}],
     movedFolderUrls: ['/admin/assets/photos/moved'],
   });
@@ -56,9 +56,9 @@ it('retries a conflicting folder move with the chosen resolution', async () => {
     .mockResolvedValueOnce({data: {}});
 
   await expect(moveFolders([11], 30, async () => 'merge')).resolves.toEqual({
-    moved: 1,
-    cancelled: 0,
-    conflicted: 1,
+    movedCount: 1,
+    cancelledCount: 0,
+    conflictedCount: 1,
     movedFolders: [{folderId: 11, newFolderId: 32}],
     movedFolderUrls: ['/admin/assets/photos/merged'],
   });
@@ -124,9 +124,9 @@ it('reports which assets moved and how many needed a conflict resolved', async (
   await expect(
     moveAssets([1, 2, 3], 30, async () => choices[choice++]!)
   ).resolves.toEqual({
-    moved: 2,
-    cancelled: 1,
-    conflicted: 1,
+    movedCount: 2,
+    cancelledCount: 1,
+    conflictedCount: 1,
     movedAssetIds: [1, 2],
   });
 });
