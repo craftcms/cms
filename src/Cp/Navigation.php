@@ -172,7 +172,7 @@ readonly class Navigation
             }
         }
 
-        if (Sections::getTotalEditableSections() || Gate::check('manageReleases')) {
+        if (Edition::get()->supportsReleases() && (Sections::getTotalEditableSections() || Gate::check('manageReleases'))) {
             $contentItems->add(new NavItem()
                 ->label(t('Releases'))
                 ->href(route('craft.cp.releases.index'))

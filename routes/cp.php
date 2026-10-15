@@ -126,18 +126,20 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
 
     Route::post('notifications/mark-read', [NotificationsController::class, 'markRead']);
 
-    Route::resource('releases', ReleasesController::class)
-        ->except('edit')
-        ->whereNumber('release');
+    Route::middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
+        Route::resource('releases', ReleasesController::class)
+            ->except('edit')
+            ->whereNumber('release');
 
-    Route::prefix('releases/{release}')->name('releases.')->whereNumber('release')->group(function () {
-        Route::post('validate', [ReleasesController::class, 'validateRelease'])->name('validate');
-        Route::get('schedule', [ReleasesController::class, 'scheduleModal'])->name('scheduleModal');
-        Route::post('schedule', [ReleasesController::class, 'schedule'])->name('schedule');
-        Route::post('unschedule', [ReleasesController::class, 'unschedule'])->name('unschedule');
-        Route::post('publish', [ReleasesController::class, 'publish'])->name('publish');
-        Route::post('drafts', [ReleasesController::class, 'attach'])->name('attach');
-        Route::delete('drafts/{draft}', [ReleasesController::class, 'detach'])->whereNumber('draft')->name('detach');
+        Route::prefix('releases/{release}')->name('releases.')->whereNumber('release')->group(function () {
+            Route::post('validate', [ReleasesController::class, 'validateRelease'])->name('validate');
+            Route::get('schedule', [ReleasesController::class, 'scheduleModal'])->name('scheduleModal');
+            Route::post('schedule', [ReleasesController::class, 'schedule'])->name('schedule');
+            Route::post('unschedule', [ReleasesController::class, 'unschedule'])->name('unschedule');
+            Route::post('publish', [ReleasesController::class, 'publish'])->name('publish');
+            Route::post('drafts', [ReleasesController::class, 'attach'])->name('attach');
+            Route::delete('drafts/{draft}', [ReleasesController::class, 'detach'])->whereNumber('draft')->name('detach');
+        });
     });
 
     Route::prefix('workflows')->middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {

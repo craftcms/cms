@@ -42,6 +42,22 @@ beforeEach(function (): void {
     ])->assertOk();
 });
 
+it('offers no release tools below Craft Pro', function (): void {
+    Edition::set(Edition::Team);
+
+    // The list is paginated, so follow it to the end.
+    $tools = collect();
+    $cursor = null;
+    do {
+        $result = McpRequest::send($this, 'tools/list', $cursor === null ? [] : ['cursor' => $cursor])->assertOk()->json('result');
+        $tools->push(...collect($result['tools'])->pluck('name'));
+        $cursor = $result['nextCursor'] ?? null;
+    } while ($cursor !== null);
+
+    expect($tools)->not->toBeEmpty()
+        ->and($tools->filter(fn (string $name): bool => str_starts_with($name, 'releases.')))->toBeEmpty();
+});
+
 it('refuses the shipped draft apply tool on a scheduled release member', function (): void {
     $this->draft->title = 'Prepared release title';
     expect(Elements::saveElement($this->draft))->toBeTrue();

@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -379,7 +380,8 @@ class ElementEditViewModel extends ViewModel
     {
         $actor = currentUser();
         if (
-            ! $this->canSave
+            ! Edition::get()->supportsReleases()
+            || ! $this->canSave
             || ! $this->element::hasDrafts()
             || ! $this->element->getIsDraft()
             || $this->attachedRelease() !== null

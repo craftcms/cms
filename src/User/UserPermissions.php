@@ -561,6 +561,10 @@ class UserPermissions
     /** @param Collection<int, PermissionGroup> $permissions */
     private function releasePermissions(Collection $permissions): void
     {
+        if (! Edition::get()->supportsReleases()) {
+            return;
+        }
+
         $permissions->add(new PermissionGroup(
             handle: 'releases',
             heading: t('Releases'),

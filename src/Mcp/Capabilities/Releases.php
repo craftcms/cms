@@ -6,8 +6,10 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 
 use Carbon\CarbonImmutable;
 use Closure;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Models\Draft;
+use CraftCms\Cms\Mcp\Attributes\RequiresEdition;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\McpActor;
@@ -23,6 +25,7 @@ use Mcp\Schema\ToolAnnotations;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /** @since 6.0.0 */
+#[RequiresEdition(Edition::Pro)]
 readonly class Releases
 {
     private const array MetadataSchema = [

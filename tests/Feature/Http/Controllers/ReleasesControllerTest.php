@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -19,6 +22,7 @@ use CraftCms\Cms\Tests\TestClasses\Release\DraftableReleaseElement;
 use CraftCms\Cms\Tests\TestClasses\Release\ReleasePermissions;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Facades\Date;
 use Inertia\Testing\AssertableInertia;
 
@@ -38,6 +42,22 @@ beforeEach(function () {
 });
 
 afterEach(fn () => Date::setTestNow());
+
+it('is a Craft Pro feature', function () {
+    Edition::set(Edition::Team);
+    config()->set('app.debug', false);
+    $release = $this->releases->create('Launch', null, $this->actor);
+
+    get(route('craft.cp.releases.index'))->assertNotFound();
+    get(route('craft.cp.releases.show', $release))->assertNotFound();
+
+    $navLabels = collect(app(Navigation::class)->getItems())
+        ->flatMap(fn (NavItem $item): array => [$item->label, ...collect($item->subnav ?: [])->pluck('label')])
+        ->all();
+
+    expect($navLabels)->not->toContain('Releases')
+        ->and(app(UserPermissions::class)->getAllPermissions()->pluck('handle'))->not->toContain('releases');
+});
 
 it('stores a release with its target time in the submitted timezone', function () {
     postJson(route('craft.cp.releases.store'), [
