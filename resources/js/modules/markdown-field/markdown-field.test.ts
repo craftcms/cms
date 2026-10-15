@@ -18,6 +18,39 @@ afterEach(() => {
   document.body.replaceChildren();
 });
 
+// As attributes, `false` would still read as present, so a Markdown Control
+// that turned the stats or toolbar off would show them anyway.
+it('turns off stats and the toolbar from the Vue Markdown Control', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
+  const container = document.createElement('div');
+  document.body.append(container);
+  createApp(MarkdownControl, {
+    control: {
+      type: 'Markdown',
+      component: 'craft:markdown',
+      props: {showStats: false, showToolbar: false},
+      path: ['description'],
+      mode: 'editable',
+      deltaGroup: ['description'],
+    },
+    value: '',
+    editable: true,
+    invalid: false,
+    required: false,
+  }).mount(container);
+  await nextTick();
+
+  const field = container.querySelector(
+    'craft-markdown-field'
+  ) as HTMLElement & {
+    showStats: boolean;
+    showToolbar: boolean;
+  };
+
+  expect(field.showStats).toBe(false);
+  expect(field.showToolbar).toBe(false);
+});
+
 it('applies properties from the Vue Markdown Control', async () => {
   const frames: FrameRequestCallback[] = [];
   let laidOut = false;
