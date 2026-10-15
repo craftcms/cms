@@ -99,6 +99,7 @@ it('autosaves and submits custom HTML inputs together with native field edits', 
     autosaveUrl: '/actions/elements/save-draft',
     activityUrl: null,
     updatedTimestamps: {element: 1, canonical: 1},
+    additionalButtons: [],
     editorActions: {
       primary: {
         label: 'Save',
@@ -134,6 +135,7 @@ it('autosaves and submits custom HTML inputs together with native field edits', 
           [
             h(EditPage, props),
             h('button', {type: 'submit'}, 'Save'),
+            h(LayoutSlotOutlet, {name: 'footer-meta'}),
             h(LayoutSlotOutlet, {name: 'additional-buttons'}),
           ]
         );

@@ -1678,7 +1678,6 @@ $('#' + $id).on('activate', () => {
     allowDegreeFractions: Craft.isImagick,
     onSave: (data) => {
       if (data.newAssetId) {
-        {$this->_replaceSlideoutAssetJs("$('#' + $id)")}
         return;
       }
 
@@ -1699,26 +1698,15 @@ JS, [
         ) {
             $items[] = ['type' => MenuItemType::HR];
 
-            // Volume settings
-            $volumeEditId = sprintf('edit-volume-%s', mt_rand());
             $items[] = [
-                'id' => $volumeEditId,
                 'icon' => 'gear',
                 'label' => t('Volume settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:open-slideout',
+                    'detail' => ['url' => Url::cpUrl("settings/assets/volumes/$this->volumeId")],
+                ],
             ];
-
-            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-(() => {
-  $('#' + $id).on('activate', function() {
-    const params = $params;
-    new Craft.CpScreenSlideout('volumes/edit-volume', {params});
-  });
-})();
-JS, [
-                InputNamespace::namespaceId($volumeEditId),
-                ['volumeId' => $this->volumeId],
-            ]);
-
         }
 
         return $items;
@@ -2903,26 +2891,6 @@ CSS,
                 'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, color-mix(in srgb, $left 40%, transparent), color-mix(in srgb, $right 40%, transparent))",
             ],
         ];
-    }
-
-    /**
-     * Returns JavaScript that will replace this asset with `data.newAssetId`, if the given element is within an
-     * Assets field’s editor slideout.
-     *
-     * @param  string  $elementJs  JavaScript expression for a jQuery object within the slideout
-     */
-    private function _replaceSlideoutAssetJs(string $elementJs): string
-    {
-        return <<<JS
-// If this is within an Assets field’s editor slideout, replace the selected asset and close the slideout,
-// since it's still editing the old asset
-const slideout = $elementJs?.closest('[data-slideout]').data('slideout');
-if (slideout && slideout.settings.elementSelectInput) {
-    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
-        .then(() => slideout.closeMeMaybe())
-        .catch(() => {});
-}
-JS;
     }
 
     private function _updatePreviewThumbJs(): string

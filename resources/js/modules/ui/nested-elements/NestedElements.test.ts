@@ -14,7 +14,6 @@ const request = vi.hoisted(() => ({post: vi.fn()}));
 const actions = vi.hoisted(() => ({run: vi.fn(async () => {})}));
 const slideout = vi.hoisted(() => vi.fn().mockResolvedValue(null));
 vi.mock('@/common/slideouts', () => ({
-  canUseVueSlideout: () => true,
   openSlideout: slideout,
 }));
 vi.mock('@/modules/matrix/copied-elements', () => ({

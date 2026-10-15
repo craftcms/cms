@@ -30,7 +30,9 @@ Follows the WAI-ARIA APG [Button](https://www.w3.org/WAI/ARIA/apg/patterns/butto
 
 ### Status
 
-- [ ] Turning `loading` on announces "Loading" through the button's own `role="status"` live region, cleared after 5 seconds. The string is translated. Per WCAG 4.1.3 (Status Messages). Not yet verified.
+- [x] Turning `loading` on puts "Loading" in the button's own `role="status"` live region, and it stays there for as long as loading lasts, so a slow request is announced and the button never loses its name. The string is translated. Per WCAG 4.1.3 (Status Messages). Verified by `keeps the loading announcement for as long as loading lasts` in `button.test.ts`.
+- [x] "Loading" is cleared as soon as loading ends. The live region sits inside the button, so a leftover "Loading" would stay in its accessible name in some browsers. Per WCAG 4.1.2 (Name, Role, Value). Verified by `clears the loading announcement when loading ends` in `button.test.ts`.
+- [x] While loading, the label is hidden with `opacity`, not `visibility`, so it stays in the accessibility tree. Per WCAG 4.1.2 (Name, Role, Value). Verified by `keeps the label in the accessibility tree while loading` in `button.browser.test.ts`.
 
 ### Visual
 

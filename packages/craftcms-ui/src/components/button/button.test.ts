@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftButton from './button.js';
 import './button.js';
 
@@ -371,6 +371,44 @@ describe('craft-button toggle', () => {
     button.click();
 
     expect(fired).toBe(false);
+  });
+});
+
+describe('craft-button loading', () => {
+  function liveRegion(element: CraftButton): string {
+    return (
+      element.shadowRoot?.querySelector('[data-live-region]')?.textContent ?? ''
+    );
+  }
+
+  it('clears the loading announcement when loading ends', async () => {
+    const button = await createButton({}, 'Reset password');
+
+    button.loading = true;
+    await button.updateComplete;
+
+    expect(liveRegion(button)).toBe('Loading');
+
+    button.loading = false;
+    await button.updateComplete;
+
+    expect(liveRegion(button)).toBe('');
+  });
+
+  it('keeps the loading announcement for as long as loading lasts', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const button = await createButton({}, 'Reset password');
+
+      button.loading = true;
+      await button.updateComplete;
+      vi.advanceTimersByTime(10000);
+
+      expect(liveRegion(button)).toBe('Loading');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
