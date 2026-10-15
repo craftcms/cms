@@ -82,6 +82,24 @@ describe('renderString', function () {
         'escapeHtml disabled' => [false],
         'escapeHtml enabled' => [true],
     ]);
+
+    it('escapes HTML only when asked, whichever way the template was first rendered', function (bool $escapeFirst) {
+        $variables = ['html' => '<b>&</b>'];
+        $template = '{{ html }}'.($escapeFirst ? '@escaped-first' : '@plain-first');
+        $render = fn (bool $escapeHtml) => $this->manager->renderTwigString($template, $variables, escapeHtml: $escapeHtml);
+
+        $renders = $escapeFirst ? [true, false] : [false, true];
+        $results = array_combine(
+            array_map(fn (bool $escapeHtml) => $escapeHtml ? 'escaped' : 'plain', $renders),
+            array_map($render, $renders),
+        );
+
+        expect($results['plain'])->toStartWith('<b>&</b>')
+            ->and($results['escaped'])->toStartWith('&lt;b&gt;&amp;&lt;/b&gt;');
+    })->with([
+        'plain first' => [false],
+        'escaped first' => [true],
+    ]);
 });
 
 describe('renderTemplate', function () {
@@ -177,8 +195,17 @@ describe('renderObjectTemplate', function () {
         expect($result)->toBe('<script>alert(1)</script>@1');
     });
 
+    it('escapes output per escaper strategy when the same template is rendered both ways', function () {
+        $object = (object) ['value' => '<b>&</b>'];
+
+        $plain = $this->manager->renderObjectTemplate('{value}@3', $object);
+        $escaped = $this->manager->renderObjectTemplate('{value}@3', $object, escaperStrategy: 'html');
+
+        expect($plain)->toBe('<b>&</b>@3')
+            ->and($escaped)->toBe('&lt;b&gt;&amp;&lt;/b&gt;@3');
+    });
+
     it('escapes output when an escaper strategy is given', function () {
-        // Use a unique template so it doesn't share a compiled template with the unescaped case above.
         $object = (object) ['value' => '<script>alert(1)</script>'];
 
         $result = $this->manager->renderObjectTemplate('{value}@2', $object, escaperStrategy: 'html');

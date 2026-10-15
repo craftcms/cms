@@ -74,8 +74,11 @@
 - Autosuggest inputs now match suggestions on their hint as well as their label, and no longer cap each suggestion group at five items.
 - Updated the index pages for user groups, GraphQL schemas and tokens, image transforms, asset volumes and transformers, workflows, sections, entry types, fields, and sites to use shared UI tables. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
+- The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Added `CraftCms\Cms\Ui\Nodes\Table`, for rendering admin tables from PHP UI definitions. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Added `CraftCms\Cms\Cp\Components\CopyAttribute` for rendering inline copyable values in PHP and templates. ([#19935](https://github.com/craftcms/cms/pull/19935))
+- Removed `CraftCms\Cms\Element\ElementHelper::renderElements()`. `CraftCms\Cms\Support\Template::render()` should be used instead.
+- System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Admin table links and create actions can now open in a slideout with a custom width, via the `slideoutWidth` link option and new `slideout` and `slideoutWidth` arguments on `CraftCms\Cms\Ui\Nodes\Table::createAction()`. ([#19956](https://github.com/craftcms/cms/pull/19956))
 - Double-clicking an admin table row now opens its link’s slideout, if it has one. ([#19957](https://github.com/craftcms/cms/pull/19957))
 - Core slideouts now open on the Vue slideout stack. Core no longer uses `Craft.CpScreenSlideout`, `Craft.ElementEditorSlideout`, or `Craft.createElementEditor()`, except for two-step verification setup. ([#19961](https://github.com/craftcms/cms/pull/19961))
@@ -102,6 +105,8 @@
 - Fixed a bug where the “Save” button in element editors kept the user on the edit page instead of returning to the element index. ([#19970](https://github.com/craftcms/cms/pull/19970))
 - Fixed a bug where page-header actions could be clipped on narrow screens. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Fixed a bug where the public GraphQL schema could be deleted through its numeric URL. ([#19935](https://github.com/craftcms/cms/pull/19935))
+- Fixed a bug where the System Messages utility’s language menu was empty. ([#19946](https://github.com/craftcms/cms/pull/19946))
+- Fixed a bug where variables weren’t HTML-escaped in system messages’ HTML bodies, because Twig string and object templates reused whichever escaping they were first compiled with. The default system messages no longer use the `|e` filter, which showed HTML entities in their plain-text bodies. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Fixed a bug where new nested elements, such as Commerce product variants or entries in Matrix fields set to the element index view mode, could be deleted by the owner element’s autosave before they were saved. ([#19943](https://github.com/craftcms/cms/pull/19943))
 - Fixed a bug where nested element indexes with a single “New” option showed it as a menu containing that one item, rather than a button, when there wasn’t room for their create buttons. ([#19944](https://github.com/craftcms/cms/pull/19944))
 - Plugins’ control panel nav items can now be shown as groups, by calling `group(true)` on the item returned by `getCpNavItem()` and passing its items to `subnav()`. ([#19903](https://github.com/craftcms/cms/pull/19903))

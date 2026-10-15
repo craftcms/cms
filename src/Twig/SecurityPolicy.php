@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig;
 
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use Illuminate\Support\HtmlString;
 use ReflectionClass;
 use ReflectionException;
 use Twig\Markup;
@@ -198,7 +199,8 @@ class SecurityPolicy implements SecurityPolicyInterface
             return;
         }
 
-        if ($obj instanceof Template || $obj instanceof Markup) {
+        // HtmlString is Laravel's equivalent of Markup, which render() methods return.
+        if ($obj instanceof Template || $obj instanceof Markup || $obj instanceof HtmlString) {
             return;
         }
 

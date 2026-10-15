@@ -79,7 +79,7 @@ readonly class Drafts
      */
     #[McpTool(
         name: 'drafts.list',
-        description: 'Lists Craft CMS drafts for a supported element type.',
+        description: 'Lists Craft CMS drafts of existing elements for a supported element type. Unpublished drafts (new elements that have never been published) have no canonical element and are only listed with unpublished: true.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(
@@ -93,19 +93,35 @@ readonly class Drafts
         array $criteria = [],
         #[Schema(definition: ElementSerializer::FieldsSchema)]
         ?array $fields = [],
+        #[Schema(description: 'List saved unpublished drafts instead of drafts of existing elements. Cannot be combined with id or uid.')]
+        bool $unpublished = false,
     ): array {
         $actor = $this->actor->user();
         $query = $this->elementQueries->make($type)
             ->drafts()
             ->provisionalDrafts(null)
-            ->draftOf('*')
+            ->draftOf($unpublished ? false : '*')
             ->status(null)
             ->orderBy('elements.id');
+
+        if ($unpublished) {
+            if ($id !== null || $uid !== null) {
+                throw new ToolCallException('Unpublished drafts have no canonical element; omit id and uid when unpublished is true.');
+            }
+
+            $query->savedDraftsOnly();
+        }
 
         if ($id !== null || $uid !== null) {
             $canonical = $this->findCanonical($type, $id, $uid, $siteId);
 
             if (! $canonical || ! Gate::forUser($actor)->allows('view', $canonical)) {
+                $draft = $canonical ? null : $this->findDraft($type, $id, $uid, $siteId);
+
+                if ($draft?->getIsUnpublishedDraft() && Gate::forUser($actor)->allows('view', $draft)) {
+                    throw new ToolCallException("Element {$draft->id} is an unpublished draft and has no canonical element. Load it with elements.get, or list unpublished drafts with unpublished: true.");
+                }
+
                 throw new ToolCallException('Canonical element not found.');
             }
 
