@@ -141,24 +141,22 @@ export default css`
   }
 
   :host([collapsed]) .card__header {
-    padding-block-end: var(--c-card-padding-block, var(--c-spacing-sm));
+    min-height: var(--c-card-header-min-height, var(--c-size-header));
     border-block-end-width: 0;
   }
 
   .card__header {
-    /* Its content is as tall as a small button, like an element index's card
-       grid header, so a header is the same height with or without actions.
-       The bottom border stands in for a pixel of the padding, so it doesn't
-       add to that height. */
-    min-height: var(--c-card-header-min-height, var(--c-size-control-sm));
-    padding-block-end: calc(
-      var(--c-card-padding-block, var(--c-spacing-sm)) - 1px
+    /* Room for a small button, like other header bars, so a header is the
+       same height with or without actions; plus its bottom border. */
+    min-height: var(
+      --c-card-header-min-height,
+      calc(var(--c-size-header) + 1px)
     );
     border-block-end-width: 1px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-sizing: content-box;
+    box-sizing: border-box;
   }
 
   .card__label-text,

@@ -243,12 +243,9 @@
     margin-block-end: var(--c-spacing-md);
     display: flex;
     align-items: center;
-    // Content as tall as a small button, like a card header, whatever the
-    // padding around it. The bottom border stands in for a pixel of the
-    // padding, so it doesn't add to that height.
-    box-sizing: content-box;
-    min-height: var(--c-size-control-sm);
-    padding-block: 0 calc(var(--c-spacing-sm) - 1px);
+    // As tall as other header bars, such as a card's, plus its bottom border.
+    min-height: calc(var(--c-size-header) + 1px);
+    padding-block: 0 var(--c-spacing-sm);
     padding-inline: 0;
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
