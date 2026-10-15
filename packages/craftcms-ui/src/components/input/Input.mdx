@@ -88,6 +88,16 @@ Lion wires the label, help text, and validation feedback to the input with `aria
 The thing to watch is an input with no label at all.
 Nothing stops you rendering one, and it is not announced as anything — so either set `label`, slot one, or wrap the control in `craft-field`.
 
+A few more things the component can't do for you:
+
+- **Keep the label visible.** `placeholder` is not a label: it disappears as soon as someone types, and it is often too faint to read. Use it, if at all, for an example value. If the design really has no room for a visible label, an `aria-label` must contain the text shown next to the field, so voice control users can say what they see.
+- **Show which fields are required.** A `Required` validator sets `aria-required`, but nothing visible. Wrap the input in `craft-field` with `required`, which draws the indicator, or say so in the label.
+- **Write errors that explain the fix.** The danger border only reinforces the message, so every invalid state needs a message in `feedback`, and the message should say what a valid value looks like ("Use letters, numbers and dashes"), not just that the value is wrong.
+- **Name the expected format** — a date pattern, a unit, a character limit — in help text, where it stays visible while the person types.
+- **Set `autocomplete`** on fields that collect the person's own details (`email`, `name`, `tel`, `postal-code` and so on), so browsers and assistive tech can fill them.
+- **Make `prefix` and `suffix` text count.** Slotted text isn't announced as part of the field unless you mark it: add `data-label` to text that belongs in the name (a unit like "px"), or `data-description` to text that explains the value.
+- **Size and name slotted buttons.** A button in `prefix` or `suffix` needs an accessible name and a target of at least 24×24 CSS px.
+
 ## Properties
 
 <ArgTypes of={InputStories} />

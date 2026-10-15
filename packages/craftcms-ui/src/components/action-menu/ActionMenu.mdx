@@ -67,9 +67,15 @@ That last one is deliberate: a filtered menu has two states to leave, and closin
 
 ## Accessibility
 
-The `change` event carries the chosen item in `detail.item` — the descriptor in data-driven mode, the element in slot-based mode.
+The menu follows the [Disclosure Navigation Menu](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/) example, plus arrow-key navigation. It isn't an ARIA `menu`: the items stay ordinary buttons and links. The requirements it meets on its own, and its known gaps, are in `action-menu.a11y.md`.
 
-Give the invoker a real name. The generated one is labeled, but a custom invoker is yours to name, and an unnamed ellipsis button is announced as nothing at all.
+The `craft-select` event carries the chosen item in `detail.item` — the descriptor in data-driven mode, the element in slot-based mode.
+
+Give the invoker a real name. The generated one is labeled, but a custom invoker is yours to name, and an unnamed ellipsis button is announced as nothing at all. Slot a real button (`craft-button` or `<button>`), not a `div` or a link, so it's focusable and activates on Enter and Space.
+
+Set `label` to say whose actions these are, such as "Actions for Blog post", when a page has several menus. The default, "Actions", names both the generated invoker and the menu panel, and a list of identical names is hard to tell apart.
+
+In slot-based mode, build the items from `craft-action-item`. Arrow-key navigation only moves between `craft-action-item` elements, so plain buttons or links in the content are reachable by Tab alone.
 
 ## Properties
 

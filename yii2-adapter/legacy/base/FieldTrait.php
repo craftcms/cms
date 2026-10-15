@@ -43,6 +43,18 @@ trait FieldTrait
     public ?string $instructions = null;
 
     /**
+     * @var string|null The field’s default tip text
+     * @since 5.12.0
+     */
+    public ?string $tip = null;
+
+    /**
+     * @var string|null The field’s default warning text
+     * @since 5.12.0
+     */
+    public ?string $warning = null;
+
+    /**
      * @var bool Whether the field's values should be registered as search keywords on the elements.
      */
     public bool $searchable = false;

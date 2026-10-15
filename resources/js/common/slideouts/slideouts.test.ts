@@ -671,8 +671,50 @@ describe('SlideoutPanel', () => {
     // Derived from the width rather than Craft 5's hard-coded `45vw`, so
     // changing `--slideout-width` keeps the stack geometry correct.
     expect(panel.getAttribute('style')).toContain(
-      'calc((100vw - var(--slideout-panel-width)) * 1)'
+      'calc(100vw - var(--slideout-panel-width))'
     );
+  });
+
+  // Resized narrow, an even spread across the room beside the newest panel
+  // would leave gaps between them. Each step stops at half a panel instead.
+  it('keeps outer panels overlapping the ones above them', async () => {
+    const {root} = await mountPanel(defineComponent({render: () => h('div')}));
+    const panel = root.querySelector<HTMLElement>('.slideout-panel')!;
+    const above = {
+      element: document.createElement('div'),
+      position: () => {},
+      handleShadeClick: () => {},
+    };
+
+    registerPanel(above);
+    await nextTick();
+
+    expect(panel.getAttribute('style')).toContain(
+      'min((100vw - var(--slideout-panel-width)) / 2, var(--slideout-panel-width) / 2)'
+    );
+
+    unregisterPanel(above);
+  });
+
+  it('resizes from its inner edge, as the details column does', async () => {
+    const {root} = await mountPanel(defineComponent({render: () => h('div')}));
+    const panel = root.querySelector<HTMLElement>('.slideout-panel')!;
+    const handle = panel.querySelector<HTMLElement>('[role="separator"]')!;
+
+    expect(handle.getAttribute('aria-label')).toBe('Resize slideout');
+
+    // End jumps to the widest the panel may be, which lands on the variable
+    // the stack offset reads too.
+    handle.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'End', bubbles: true})
+    );
+    await nextTick();
+
+    expect(panel.style.getPropertyValue('--slideout-width')).toBe(
+      `${handle.getAttribute('aria-valuemax')}px`
+    );
+
+    localStorage.clear();
   });
 
   /**
