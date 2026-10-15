@@ -21,7 +21,8 @@ A static marker, with an optional count, that sits beside or inside the thing it
 ### Counts
 
 - [x] A count of zero or less isn't shown, so the marker stays a dot rather than reporting "0". Per WCAG 1.3.1 (Info and Relationships). Verified by `stays a dot at zero` in `badge-indicator.test.ts`.
-- [x] A count above 99 is shown as `99+`. Per WCAG 1.4.10 (Reflow). Verified by `caps the count at 99+` in `badge-indicator.test.ts`.
+- [x] A count above `max` (99 by default) is shown as `99+`. Per WCAG 1.4.10 (Reflow). Verified by `caps the count at 99+` in `badge-indicator.test.ts`.
+- [x] With `max` set to `Infinity`, the whole count is shown, formatted for the page's language, and the marker grows to fit it. Per WCAG 1.3.1 (Info and Relationships). Verified by `shows the whole count, formatted, when uncapped` in `badge-indicator.test.ts`.
 - [ ] `99+` is read sensibly ("99 plus …"). Per WCAG 1.3.1 (Info and Relationships). Not yet verified with a screen reader. The exact count isn't available as hidden text.
 - [ ] A change to the count isn't announced. The marker has no live region, so a count that updates while the page is open is silent. Per WCAG 4.1.3 (Status Messages). Not yet verified.
 

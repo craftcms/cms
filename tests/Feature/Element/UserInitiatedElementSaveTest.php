@@ -22,6 +22,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -85,7 +86,7 @@ it('saves canonical changes with caller-selected cross-site validation and remov
     app(Drafts::class)->createDraft($entry, $this->actor->id, provisional: true);
     $entry->title = 'Updated title';
 
-    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
+    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
     {
         public ?bool $crossSiteValidate = null;
 
@@ -184,7 +185,7 @@ it('returns exception validation failures without leaking persistence exceptions
         ->forEntryType($this->entryType)
         ->createElement(['title' => 'Canonical title']);
 
-    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
+    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
     {
         /** @var class-string<InvalidElementException|UnsupportedSiteException> */
         public string $exceptionClass;
@@ -235,7 +236,7 @@ it('marks nested elements to update their owner search index before saving', fun
         ->withOwnedElement($this->actor->asElement(), 1)
         ->createElement();
 
-    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class)) extends ElementsService
+    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
     {
         public bool $updatesOwnerSearchIndex = false;
 

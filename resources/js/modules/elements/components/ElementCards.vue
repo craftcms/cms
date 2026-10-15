@@ -243,7 +243,8 @@
     margin-block-end: var(--c-spacing-md);
     display: flex;
     align-items: center;
-    min-height: calc(var(--c-size-control-sm) + var(--c-spacing-sm) + 1px);
+    // As tall as other header bars, such as a card's, plus its bottom border.
+    min-height: calc(var(--c-size-header) + 1px);
     padding-block: 0 var(--c-spacing-sm);
     padding-inline: 0;
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);

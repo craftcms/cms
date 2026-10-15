@@ -24,7 +24,7 @@ export interface ElementAutosaveOptions {
    */
   isProvisional: boolean;
   /** Autosave is skipped entirely when this is false (revisions, read-only). */
-  enabled: boolean;
+  enabled: boolean | (() => boolean);
   /**
    * Extra params sent with every save, such as a nested element's owner, which
    * the server needs to resolve it through the owner it's being edited in.
@@ -103,6 +103,12 @@ export function useElementAutosave<T extends object>(
   let pending = false;
   let controller: AbortController | null = null;
   let canceled = false;
+
+  function enabled(): boolean {
+    return typeof options.enabled === 'function'
+      ? options.enabled()
+      : options.enabled;
+  }
 
   async function send(): Promise<void> {
     const savingGeneration = changeGeneration.value;
@@ -183,7 +189,7 @@ export function useElementAutosave<T extends object>(
   async function save(): Promise<void> {
     // A real submission is authoritative — don't race a draft write against it,
     // and don't autosave the values it just wrote back.
-    if (!options.enabled || form.processing) {
+    if (!enabled() || form.processing) {
       return;
     }
 

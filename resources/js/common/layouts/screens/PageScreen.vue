@@ -107,6 +107,7 @@
   const page = usePage<{
     title: string;
     readOnly?: boolean;
+    showReadOnlyNotice?: boolean;
     primaryAction?: string | null;
     crumbs?: Array<BreadcrumbItem> | null;
     subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
@@ -161,11 +162,12 @@
   // standing empty.
   const hasFooter = computed(
     () =>
-      Boolean(props.form) ||
-      Boolean(props.fullPageForm) ||
-      regions.has('content-footer') ||
-      regions.has('footer-meta') ||
-      regions.has('additional-buttons')
+      !props.hideFooter &&
+      (Boolean(props.form) ||
+        Boolean(props.fullPageForm) ||
+        regions.has('content-footer') ||
+        regions.has('footer-meta') ||
+        regions.has('additional-buttons'))
   );
   const contentConstrained = computed(() => Boolean(props.contentMaxWidth));
   const contentMainStyle = computed(() =>
@@ -321,7 +323,7 @@
                               <!-- The subnav-actions outlet lives inside this fallback, so a page can
                               teleport `content-sidebar` or `subnav-actions`, never both. -->
                               <SecondaryNav
-                                :items="navItemActions(subnav)"
+                                :items="navItemActions(subnav, true)"
                                 :actions="subnavActions"
                               >
                                 <template
@@ -350,7 +352,12 @@
                               />
                             </slot>
                           </LayoutSlotOutlet>
-                          <CalloutReadOnly v-if="readOnly" />
+                          <CalloutReadOnly
+                            v-if="
+                              readOnly &&
+                              page.props.showReadOnlyNotice !== false
+                            "
+                          />
                           <div
                             :class="{
                               'cp-content-view': true,
