@@ -139,7 +139,7 @@ test('draftOf', function () {
     expect(entryQuery()->draftOf([$element->id])->count())->toBe(1);
     expect(entryQuery()->draftOf([$element])->count())->toBe(1);
     expect(entryQuery()->draftOf($element)->count())->toBe(1);
-    expect(entryQuery()->draftOf(999)->count())->toBe(0);
+    expect(entryQuery()->draftOf($element->id + 1)->count())->toBe(0);
 
     $this->expectException(InvalidArgumentException::class);
     entryQuery()->draftOf('foo')->count();
@@ -153,7 +153,7 @@ test('draftCreator', function () {
 
     expect(entryQuery()->draftCreator($user->id)->count())->toBe(1);
     expect(entryQuery()->draftCreator($user)->count())->toBe(1);
-    expect(entryQuery()->draftCreator(999)->count())->toBe(0);
+    expect(entryQuery()->draftCreator($user->id + 1)->count())->toBe(0);
 });
 
 test('provisionalDrafts', function () {
@@ -203,7 +203,7 @@ test('revisionCreator', function () {
 
     expect(entryQuery()->revisionCreator($user->id)->count())->toBe(1);
     expect(entryQuery()->revisionCreator($user)->count())->toBe(1);
-    expect(entryQuery()->revisionCreator(999)->count())->toBe(0);
+    expect(entryQuery()->revisionCreator($user->id + 1)->count())->toBe(0);
 });
 
 function refreshQueryTestEntrySources(): void
