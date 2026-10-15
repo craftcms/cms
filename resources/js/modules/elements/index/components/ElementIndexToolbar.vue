@@ -9,7 +9,8 @@
   import FilterHud from './FilterHud.vue';
   import type {ConditionConfig} from '@/modules/conditions/types';
   import type {IndexSite} from '@/modules/elements/types/sites';
-  import {computed, ref} from 'vue';
+  import {computed, ref, useId} from 'vue';
+  import '@craftcms/ui/components/tooltip/tooltip';
 
   const props = withDefaults(
     defineProps<{
@@ -101,6 +102,10 @@
     event.stopPropagation();
     emit('submit');
   }
+
+  // Unique per toolbar, since an index can share the page with another (e.g.
+  // an element selection modal).
+  const viewModeIdPrefix = `element-view-mode-${useId()}`;
 </script>
 
 <template>
@@ -109,7 +114,12 @@
     class="w-full"
     @submit.prevent="emit('submit')"
   >
-    <div class="element-toolbar">
+    <div
+      :class="{
+        'element-toolbar': true,
+        'element-toolbar--actions': !!$slots.actions,
+      }"
+    >
       <div
         v-if="showSiteMenu || statusOptions?.length"
         class="element-toolbar__status"
@@ -211,11 +221,13 @@
         <div class="flex gap-md justify-end">
           <craft-button-group
             name="viewState[mode]"
+            :aria-label="t('View Mode')"
             .value="mode"
             @change="(event: CustomEvent) => (mode = event.detail.value)"
           >
             <template v-for="viewMode in viewModes" :key="viewMode.mode">
               <craft-button
+                :id="`${viewModeIdPrefix}-${viewMode.mode}`"
                 type="button"
                 :variant="Appearance.Fill"
                 :icon="viewMode.icon"
@@ -225,6 +237,17 @@
               ></craft-button>
             </template>
           </craft-button-group>
+          <!-- Icon-only buttons, so their names show on hover and focus too.
+            They label the buttons rather than describing them, so the name
+            isn't announced twice. -->
+          <craft-tooltip
+            v-for="viewMode in viewModes"
+            :key="viewMode.mode"
+            :for="`${viewModeIdPrefix}-${viewMode.mode}`"
+            invoker-relation="label"
+          >
+            {{ viewMode.title }}
+          </craft-tooltip>
 
           <IndexViewSettings
             :options="columnOptions"
@@ -242,7 +265,7 @@
       <!-- The index's own actions: the entries index puts its New Entry button
         here. Search still submits on Enter — the field is the form's only text
         input, so the browser submits it implicitly. -->
-      <div class="element-toolbar__actions">
+      <div v-if="$slots.actions" class="element-toolbar__actions">
         <slot name="actions"></slot>
       </div>
     </div>
@@ -255,16 +278,25 @@
     gap: var(--c-spacing-md);
     justify-content: space-between;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: 'status' 'filter' 'state' 'actions';
+    grid-template-areas: 'status' 'filter' 'state';
 
     @container cp-content-view (width >= 480px) {
       gap: var(--c-spacing-md);
       grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: 'status filter state';
+    }
+  }
+
+  /* Only reserve room for actions when there are some. An empty track would
+     still take a gap, leaving a hole at the end of the row. */
+  .element-toolbar--actions {
+    grid-template-areas: 'status' 'filter' 'state' 'actions';
+
+    @container cp-content-view (width >= 480px) {
       grid-template-areas: 'status filter state' 'actions actions actions';
     }
 
     @container cp-content-view (width >= var(--breakpoint-sm)) {
-      gap: var(--c-spacing-md);
       grid-template-columns: auto minmax(0, 1fr) auto auto;
       grid-template-areas: 'status filter state actions';
     }

@@ -12,6 +12,8 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
@@ -23,6 +25,14 @@ beforeEach(function () {
     actingAs($this->admin);
 
     Edition::set(Edition::Team);
+});
+
+// Each test gets its own photo directory: one shared between parallel test
+// processes let two of them claim the same filename at once.
+afterEach(function () {
+    if (isset($this->photoRoot)) {
+        File::deleteDirectory($this->photoRoot);
+    }
 });
 
 it('succeeds when authenticated admin registers a new user', function () {
@@ -215,7 +225,7 @@ it('can upload a photo for new user', function () {
 
     config()->set('filesystems.disks.test', [
         'driver' => 'local',
-        'root' => public_path('test'),
+        'root' => $this->photoRoot = storage_path('framework/testing/user-photos/'.Str::uuid()),
         'url' => '/test',
     ]);
 

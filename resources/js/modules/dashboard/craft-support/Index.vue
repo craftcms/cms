@@ -116,8 +116,7 @@
     min-height: 150px;
     padding-block: 24px;
     padding-inline: 16px;
-    border: var(--c-card-border-width, 1px) solid
-      var(--c-color-neutral-border-quiet);
+    border: var(--c-card-border-width, 1px) solid var(--c-border-raised);
     border-radius: 0;
     white-space: normal;
   }

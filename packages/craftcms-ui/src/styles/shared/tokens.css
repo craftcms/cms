@@ -25,6 +25,19 @@
   --c-surface-form: var(--color-base-100);
   --c-surface-overlay: var(--color-base-50);
   --c-surface-shade: rgba(0 0 0 / 25%);
+  --c-table-border-color: color-mix(
+    var(--c-color-neutral-border-quiet) 60%,
+    transparent
+  );
+  --c-border-raised: color-mix(
+    in srgb,
+    var(--color-slate-400),
+    transparent var(--c-color-border-quiet-transparency)
+  );
+  --c-border-raised-selected: var(--color-static-gray-200);
+  --c-card-fill-selected: var(--c-color-neutral-fill-loud);
+  --c-card-border-selected: var(--c-color-neutral-border-loud);
+  --c-card-text-selected: var(--c-color-neutral-on-loud);
 
   /*
   Needs to remain statically dark between dark and light mode
@@ -49,9 +62,10 @@
   );
 
   /* Shadows */
-  --c-shadow-sunken: var(--inset-shadow-sm);
-  --c-shadow-raised: var(--shadow-sm);
-  --c-shadow-overlay: var(--shadow-lg);
+  --c-shadow-sunken: inset 0 2px 4px
+    rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
+  --c-shadow-raised: var(--c-shadow-sm);
+  --c-shadow-overlay: var(--c-shadow-lg);
 
   /* Color mixes */
   --c-color-mix-hover: currentColor 10%;
@@ -95,16 +109,30 @@
   --c-size-control-md: calc(34rem / 16);
   --c-size-control-lg: calc(44rem / 16);
 
-  --c-shadow-2xs: 0 1px rgb(0 0 0 / 0.05);
-  --c-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --c-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  /*
+    Craft's box shadows scale their opacity by this, so each theme can deepen
+    them all at once. Tailwind's own --shadow-* stay stock. Declared here
+    rather than in variables.css so a themed subtree re-resolves them against
+    its own multiplier.
+  */
+  --c-shadow-multiplier: 1;
+  --c-shadow-2xs: 0 1px rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
+  --c-shadow-xs: 0 1px 2px 0
+    rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
+  --c-shadow-sm:
+    0 1px 3px 0 rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
+    0 1px 2px -1px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
   --c-shadow-md:
-    0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    0 4px 6px -1px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
+    0 2px 4px -2px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
   --c-shadow-lg:
-    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    0 10px 15px -3px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
+    0 4px 6px -4px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
   --c-shadow-xl:
-    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --c-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    0 20px 25px -5px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
+    0 8px 10px -6px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
+  --c-shadow-2xl: 0 25px 50px -12px
+    rgb(0 0 0 / calc(0.25 * var(--c-shadow-multiplier)));
 
   /**
   Status
@@ -188,33 +216,23 @@
   --c-form-control-border-style: solid;
   --c-form-control-radius: var(--c-radius-md);
   --c-form-control-spacing-inline: var(--c-spacing-md);
-  --c-form-control-spacing-block: var(--c-spacing-sm);
   --c-form-control-height: var(--c-size-control-md);
 
   /* Input */
-  --c-input-fill: var(--c-form-control-fill);
+  /* Inputs take on their container's background */
+  --c-input-fill: transparent;
   --c-input-text: var(--c-form-control-text);
   --c-input-border-color: var(--c-form-control-border-color);
   --c-input-border-width: var(--c-form-control-border-width);
   --c-input-border-style: var(--c-form-control-border-style);
   --c-input-radius: var(--c-form-control-radius);
   --c-input-spacing-inline: var(--c-form-control-spacing-inline);
-  --c-input-spacing-block: var(--c-form-control-spacing-block);
-  --c-input-shadow: var(--inset-shadow-sm);
-
-  /* Select */
-  --c-select-fill: var(--c-form-control-fill);
-  --c-select-text: var(--c-form-control-text);
-  --c-select-border-color: var(--c-form-control-border-color);
-  --c-select-border-width: var(--c-form-control-border-width);
-  --c-select-border-style: var(--c-form-control-border-style);
-  --c-select-radius: var(--c-form-control-radius);
-  --c-select-spacing-inline: var(--c-form-control-spacing-inline);
-  --c-select-spacing-block: var(--c-form-control-spacing-block);
-  --c-select-shadow: var(--shadow-sm);
+  --c-input-shadow: inset 0 2px 4px
+    rgb(0 0 0 / calc(0.08 * var(--c-shadow-multiplier)));
 
   /* Checkbox */
   --c-checkbox-size: var(--c-size-control-xs);
+  --c-checkbox-radius: var(--c-radius-sm);
   --c-checkbox-group-spacing: calc(24px - var(--c-checkbox-size));
 
   /* Slide rule */
@@ -268,13 +286,45 @@
   --c-modal-fill: var(--c-pane-fill);
   --c-modal-text: var(--c-pane-text);
   --c-modal-radius: var(--c-radius-lg);
-  --c-modal-border-width: var(--c-pane-border-width);
-  --c-modal-border-style: var(--c-pane-border-style);
-  --c-modal-border-color: var(--c-pane-border-color);
+  /* A hairline, on top of the shadow, so modals keep an edge in either theme. */
+  --c-modal-border-width: 1px;
+  --c-modal-border-style: solid;
+  --c-modal-border-color: var(--c-color-border-quiet);
   --c-modal-padding: var(--c-pane-padding);
-  --c-modal-shadow:
-    0 0 0 1px hsl(from var(--color-gray-400) h s l / 25%),
-    0 25px 100px hsl(from var(--color-gray-900) h s l / 50%);
+
+  /* Slideouts */
+  --c-slideout-shadow:
+    0 0 0 1px rgb(0 0 0 / calc(0.25 * var(--c-shadow-multiplier))),
+    var(--c-shadow-2xl);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --c-surface-default: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--color-base-100), var(--color-base-50) 30%),
+    var(--color-black) 15%
+  );
+  --c-surface-raised: var(--c-surface-default);
+  --c-surface-sunken: color-mix(
+    in oklab,
+    var(--color-base-50),
+    var(--color-black) 25%
+  );
+  --c-surface-overlay: var(--c-surface-default);
+
+  /* Shadows read fainter against dark surfaces. */
+  --c-shadow-multiplier: 1.5;
+
+  --c-border-raised-selected: var(--color-base-500);
+  --c-card-fill-selected: var(--color-base-300);
+  --c-card-border-selected: var(--color-base-500);
+  --c-card-text-selected: var(--c-text-default);
+  --c-color-border-quiet-transparency: 40%;
 }
 
 .underline-links {
