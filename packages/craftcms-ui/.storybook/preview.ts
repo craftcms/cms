@@ -92,6 +92,13 @@ const preview: Preview = {
             id: 'aria-allowed-role',
             selector: '*:not(dialog[data-overlay-outer-wrapper])',
           },
+          {
+            // Links in running text are told apart from it by color alone,
+            // unless the user turns on the “Underline links” accessibility
+            // preference, which underlines them everywhere.
+            id: 'link-in-text-block',
+            enabled: false,
+          },
         ],
       },
     },

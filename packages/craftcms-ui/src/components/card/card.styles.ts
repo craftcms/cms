@@ -5,6 +5,22 @@ export default css`
     display: block;
   }
 
+  /* On a colored card links take the card's text color, and are underlined so
+     they still stand apart from it. White, gray, and slate cards (which the
+     neutral, disabled, and inactive names map to) keep the default link
+     styling, which has enough contrast against their fills. */
+  :host(
+    [data-color]:not(
+      [data-color='white'],
+      [data-color='gray'],
+      [data-color='slate']
+    )
+  ) {
+    --c-text-link: currentColor;
+    --c-link-decoration: underline;
+    --c-link-decoration-hover: none;
+  }
+
   :host([active]) .card {
     color: var(--c-color-on-quiet);
     background-color: color-mix(var(--c-color-fill-quiet), transparent 40%);
@@ -52,6 +68,26 @@ export default css`
     --c-color-on-quiet: var(--c-text-default);
     --c-color-on-loud: var(--c-text-default);
     box-shadow: var(--c-card-shadow, var(--c-shadow-xs));
+  }
+
+  /* Black's quiet fill is dark under light text, so the translucent body would
+     let a light page through and wash the text out. It fills the whole card
+     instead, selected or not. */
+  :host([data-color='black']) .card {
+    /* Light lines against the dark fill, in either theme. Black's own quiet
+       border is barely lighter than the fill, so it all but disappears. */
+    --c-color-border-quiet: color-mix(
+      in srgb,
+      var(--c-color-black-on-quiet),
+      transparent 80%
+    );
+    background-color: var(--c-color-fill-quiet);
+  }
+
+  /* Black's loud fill is the same as its quiet one, so with the body filled
+     too, selection shows in the border, as a white card's does. */
+  :host([data-color='black'][active]) .card {
+    border-color: var(--c-color-accent-border-normal);
   }
 
   /* White fills the whole card, not just the header over a translucent body. */
@@ -105,11 +141,17 @@ export default css`
   }
 
   :host([collapsed]) .card__header {
+    min-height: var(--c-card-header-min-height, var(--c-size-header));
     border-block-end-width: 0;
   }
 
   .card__header {
-    min-height: var(--c-card-header-min-height, 1lh);
+    /* Room for a small button, like other header bars, so a header is the
+       same height with or without actions; plus its bottom border. */
+    min-height: var(
+      --c-card-header-min-height,
+      calc(var(--c-size-header) + 1px)
+    );
     border-block-end-width: 1px;
     display: flex;
     justify-content: space-between;
@@ -132,10 +174,18 @@ export default css`
     gap: var(--c-spacing-sm);
   }
 
+  /* The body matches the CP's container padding, and falls back to the same
+     value outside the CP, where nothing defines it. */
   .card-body {
     gap: var(--c-spacing-md);
-    padding-inline: var(--c-card-padding-inline, var(--cp-container-padding));
-    padding-block: var(--c-card-padding-block, var(--cp-container-padding));
+    padding-inline: var(
+      --c-card-padding-inline,
+      var(--cp-container-padding, var(--c-spacing-lg))
+    );
+    padding-block: var(
+      --c-card-padding-block,
+      var(--cp-container-padding, var(--c-spacing-lg))
+    );
   }
 
   .card-body--thumb-start {
