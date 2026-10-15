@@ -71,3 +71,19 @@ it('leaves an icon without a colour unstyled', async () => {
     false
   );
 });
+
+it('shows the selected option’s indicator while closed', async () => {
+  const control = await fixture([
+    {label: 'Online', value: 'true', data: {indicator: {fill: 'success'}}},
+    {label: 'Offline', value: 'false', data: {indicator: {fill: 'danger'}}},
+  ]);
+  control.modelValue = 'false';
+  await control.updateComplete;
+
+  const indicator = control.shadowRoot!.querySelector(
+    '.prefix craft-indicator'
+  )!;
+
+  expect(indicator.getAttribute('fill')).toBe('danger');
+  expect(control.hasAttribute('has-prefix-icon')).toBe(true);
+});
