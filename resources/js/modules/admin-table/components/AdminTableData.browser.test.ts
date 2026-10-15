@@ -168,10 +168,7 @@ it.each(['mouse', 'keyboard'])(
     }
 
     expect(slideout).toHaveBeenCalledOnce();
-    expect(slideout).toHaveBeenCalledWith(
-      '/content/draft',
-      expect.any(Object)
-    );
+    expect(slideout).toHaveBeenCalledWith('/content/draft', expect.any(Object));
     expect(visit).not.toHaveBeenCalled();
     expect(prefetch).not.toHaveBeenCalled();
   }

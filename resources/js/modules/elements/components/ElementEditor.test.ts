@@ -64,6 +64,7 @@ beforeEach(() => {
     onSidebarMutation: vi.fn(),
     props: reactive({
       actionMenu: [],
+      additionalButtons: [],
       activityPageUrl: null,
       activityTimelineUrl: null,
       canAddToRelease: true,
