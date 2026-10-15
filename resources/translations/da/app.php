@@ -2246,11 +2246,7 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Du ser en revision. Ingen af {type}s felter kan redigeres.',
     'Zip Code' => 'Postnummer',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` og `fieldId` kan ikke begge indstilles på en post.',
-    'account_activation_body' => 'Hej {{user.friendlyName}}. Tak fordi du opretter en konto med {{systemName}}! Aktiver din konto ved at klikke på følgende link:
-
-<{{link}}>
-
-Hvis du ikke forventede denne e-mail, bare ignorere den.',
+    'account_activation_body' => "Hey {{user.friendlyName}},\n\nThanks for creating an account with {{systemName}}! To activate your account, click the following link:\n\n<{{link}}>\n\nIf you were not expecting this email, just ignore it.",
     'account_activation_heading' => 'Når nogen opretter en bruger:',
     'account_activation_subject' => 'Aktiver din bruger',
     'address' => 'adresse',
@@ -2288,7 +2284,7 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'files' => 'filer',
     'five' => 'fem',
     'folders' => 'mapper',
-    'forgot_password_body' => "Hej {{user.friendlyName}}.\n\nFor at nulstille din {{systemName}} adgangskode skal du klikke på følgende link:\n\n<{{link}}>\n\nHvis du ikke forventede denne email, så bare ignorer den.",
+    'forgot_password_body' => "Hey {{user.friendlyName}},\n\nTo reset your {{systemName}} password, click on this link:\n\n<{{link}}>\n\nIf you were not expecting this email, just ignore it.",
     'forgot_password_heading' => 'Når nogen glemmer deres adgangskode:',
     'forgot_password_subject' => 'Nulstil din adgangskode',
     'four' => 'fire',
@@ -2336,7 +2332,7 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'six' => 'seks',
     'tag' => 'tag',
     'tags' => 'mærker',
-    'test_email_body' => "Hej {{user.friendlyName}},\n\nTillykke! Craft var succesfuldt i stamd til at sende en email.\n\nHer er indstillingerne du har brugt:\n\n{{ settings }}",
+    'test_email_body' => "Hey {{user.friendlyName}},\n\nCongratulations! Craft was successfully able to send an email.\n\nHere are the settings you used:\n\n{{ settings }}",
     'test_email_heading' => 'Når du tester dine e-mail indstillinger:',
     'test_email_subject' => 'Dette er en test email fra Craft',
     'three' => 'tre',
@@ -2347,11 +2343,7 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'user' => 'bruger',
     'users' => 'brugere',
     'validation.required' => 'validation.required',
-    'verify_new_email_body' => 'Hej {{user.friendlyName}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
-
-<{{link}}>
-
-Hvis du ikke forventede denne e-mail, bare ignorere den.',
+    'verify_new_email_body' => "Hey {{user.friendlyName}},\n\nPlease verify your new email address by clicking on this link:\n\n<{{link}}>\n\nIf you were not expecting this email, just ignore it.",
     'verify_new_email_heading' => 'Når nogen ændrer deres e-mailadresse:',
     'verify_new_email_subject' => 'Bekræft din nye e-mailadresse',
     'week' => 'uge',
