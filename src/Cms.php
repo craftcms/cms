@@ -32,7 +32,6 @@ readonly class Cms
 
     public const string VERSION = '6.0.0-alpha.20';
 
-    # CONFLICT-REVIEW: this branch bumped to 6.0.0.24 (elements_models migration) and 6.x bumped to 6.0.0.25 (release tables); bumped past both so sites already on 6.0.0.25 still pick up this branch's migration.
     public const string SCHEMA_VERSION = '6.0.0.26';
 
     public const string MIN_VERSION_REQUIRED = '5.9.0';
