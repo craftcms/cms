@@ -9,6 +9,7 @@
 - Improved chip styling. ([#19902](https://github.com/craftcms/cms/pull/19902))
 - Links are no longer underlined until they’re hovered, unless the “Underline links” accessibility preference is enabled, in which case they’re underlined until hovered. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Folder names in asset indexes are now links.
+- The “License purchase required” screen is now shown in a centered pane, like other message pages.
 - Field labels and headings throughout the control panel now consistently use title case.
 - Element index tables and padded admin tables now span the page’s inline padding, with their outer cells padded to match. ([#19906](https://github.com/craftcms/cms/pull/19906), [#19936](https://github.com/craftcms/cms/pull/19936))
 - Double-clicking an element chip in an element index now opens the chip’s own element in a slideout, rather than the row’s element or the chip’s link. ([#19907](https://github.com/craftcms/cms/pull/19907))
@@ -205,6 +206,8 @@
 - Fixed a bug where double-clicking an element in an element selection modal didn’t select it. ([#19979](https://github.com/craftcms/cms/pull/19979))
 - Fixed a bug where the MCP server’s `elements.create`, `elements.update`, and `elements.validate` tools silently ignored Matrix entries submitted in the format `elements.field-schema` described. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - Fixed a bug where input placeholder text had insufficient contrast in the dark theme.
+- Fixed a bug where the “License purchase required” screen’s Refresh button didn’t work.
+- Fixed a bug where link buttons with an icon and a label had no inline padding.
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
