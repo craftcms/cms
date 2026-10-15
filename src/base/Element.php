@@ -7255,7 +7255,15 @@ JS,
     }
 
     /**
-     * @inheritdoc
+     * Renders the element using its partial template.
+     *
+     * If no partial template exists for the element, its string representation will be output instead.
+     *
+     * @param array $variables
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @since 5.8.0
      */
     public function render(array $variables = []): Markup
     {

@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\Renderable;
 use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
@@ -22,6 +23,7 @@ use Twig\Source;
 use Twig\Template as TwigTemplate;
 use Twig\TemplateWrapper;
 use yii\base\BaseObject;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownMethodException;
 use yii\base\UnknownPropertyException;
@@ -379,6 +381,58 @@ class Template
         }
 
         return [$templatePath, $templateLine];
+    }
+
+    /**
+     * Renders the given renderable object(s).
+     *
+     * If an array or other iterable is passed, each of its items will be rendered and joined with newlines,
+     * and a `loop` variable will be made available to each of them, like within `{% for %}` loops.
+     *
+     * @param Renderable|iterable<Renderable>|null $objects The object(s) to render
+     * @param array $variables Variables that should be passed to each object’s `render()` method
+     * @return Markup
+     * @throws InvalidArgumentException if any of the objects aren’t renderable
+     * @since 5.12.0
+     */
+    public static function render(Renderable|iterable|null $objects, array $variables = []): Markup
+    {
+        if ($objects instanceof Renderable) {
+            return $objects->render($variables);
+        }
+
+        if ($objects === null) {
+            $objects = [];
+        } elseif (is_array($objects)) {
+            $objects = array_values($objects);
+        } else {
+            $objects = iterator_to_array($objects, false);
+        }
+
+        $length = count($objects);
+        $output = [];
+
+        foreach ($objects as $i => $object) {
+            if (!$object instanceof Renderable) {
+                throw new InvalidArgumentException(sprintf('%s isn’t renderable.', get_debug_type($object)));
+            }
+
+            // Provide a `loop` variable, like {% for %} loops
+            $output[] = (string)$object->render(array_merge($variables, [
+                'loop' => [
+                    'parent' => $variables,
+                    'index0' => $i,
+                    'index' => $i + 1,
+                    'revindex0' => $length - $i - 1,
+                    'revindex' => $length - $i,
+                    'first' => $i === 0,
+                    'last' => $i === $length - 1,
+                    'length' => $length,
+                ],
+            ]));
+        }
+
+        return new Markup(implode("\n", $output), Craft::$app->charset);
     }
 
     /**
