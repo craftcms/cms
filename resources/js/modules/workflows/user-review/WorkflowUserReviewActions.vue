@@ -176,7 +176,7 @@
     </craft-callout>
 
     <label class="visually-hidden" :for="`workflow-user-review-message-${id}`">
-      {{ t('Review comment') }}
+      {{ t('Review Comment') }}
     </label>
     <div
       class="workflow-user-review-actions__field"
@@ -223,7 +223,7 @@
     </div>
 
     <fieldset v-if="canReview" class="workflow-user-review-actions__choices">
-      <legend class="visually-hidden">{{ t('Review action') }}</legend>
+      <legend class="visually-hidden">{{ t('Review Action') }}</legend>
 
       <label
         v-if="review.canComment"

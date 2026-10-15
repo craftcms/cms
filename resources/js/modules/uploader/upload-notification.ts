@@ -107,7 +107,7 @@ export function showUploadConflict(
   onChoice: (choice: UploadConflictChoice) => void
 ): () => void {
   const dialog = document.createElement('craft-dialog');
-  dialog.setAttribute('label', t('Filename conflict'));
+  dialog.setAttribute('label', t('Filename Conflict'));
 
   const choices: Array<[UploadConflictChoice, string]> = [
     ['cancel', t('Cancel upload')],

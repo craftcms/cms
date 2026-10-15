@@ -16,7 +16,7 @@ import {t} from '@src/utilities/translate';
 const PART_LABELS: Record<string, () => string> = {
   date: () => t('Date'),
   time: () => t('Time'),
-  timezone: () => t('Time zone'),
+  timezone: () => t('Time Zone'),
 };
 
 /**

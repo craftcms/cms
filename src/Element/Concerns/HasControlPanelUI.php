@@ -834,7 +834,7 @@ JS,
         }
 
         if ($this->hasRevisions() && ! $this->getIsRevision()) {
-            $nodes[] = Field::make(t('Notes about your changes'))
+            $nodes[] = Field::make(t('Notes About Your Changes'))
                 ->control(
                     Textarea::make('notes')
                         ->rows(1)
@@ -1112,7 +1112,7 @@ JS,
     {
         // todo: this should accept a $static arg
         return FormFields::textareaFieldHtml([
-            'label' => t('Notes about your changes'),
+            'label' => t('Notes About Your Changes'),
             'labelClass' => 'h6',
             'class' => ['nicetext', 'notes'],
             'name' => 'notes',
@@ -1120,7 +1120,7 @@ JS,
             'rows' => 1,
             'inputAttributes' => [
                 'aria' => [
-                    'label' => t('Notes about your changes'),
+                    'label' => t('Notes About Your Changes'),
                 ],
             ],
         ]);

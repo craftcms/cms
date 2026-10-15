@@ -103,7 +103,7 @@ class SectionEditViewModel extends ViewModel
                     ->allowOverrides()
                     ->create(! $this->readOnly)),
             Separator::make('site-settings-separator'),
-            Field::make(t('Site settings'))
+            Field::make(t('Site Settings'))
                 ->instructions(t('Choose which sites this section should be available in, and configure the site-specific settings.'))
                 ->control($this->siteSettingsControl($type)),
         ]);

@@ -128,7 +128,7 @@
       v-if="payload.workflow.draftReviews.length"
       class="workflow-details-panel__drafts"
     >
-      <h3>{{ t('Drafts in review') }}</h3>
+      <h3>{{ t('Drafts in Review') }}</h3>
       <WorkflowDraftReviews :drafts="payload.workflow.draftReviews" />
     </section>
   </div>

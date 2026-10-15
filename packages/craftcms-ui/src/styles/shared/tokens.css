@@ -211,6 +211,7 @@
   /* Form Controls */
   --c-form-control-fill: color-mix(in oklab, var(--color-base-100), white 50%);
   --c-form-control-text: var(--c-text-default);
+  --c-form-control-placeholder: var(--c-text-quiet);
   --c-form-control-border-color: var(--color-slate-400);
   --c-form-control-border-width: 1px;
   --c-form-control-border-style: solid;

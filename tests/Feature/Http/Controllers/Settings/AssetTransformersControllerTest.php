@@ -206,7 +206,7 @@ it('renders stored settings for an unavailable transformer driver', function () 
         app(UiResolver::class),
     )->ui();
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
-    $settings = $crawler->filter('craft-field[label="Stored settings"] textarea');
+    $settings = $crawler->filter('craft-field[label="Stored Settings"] textarea');
 
     expect(json_decode($settings->text(), true, flags: JSON_THROW_ON_ERROR))
         ->toBe(['endpoint' => 'https://saved.example.test'])

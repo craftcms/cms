@@ -219,7 +219,7 @@ it('opens the existing transfer dialog for the selected row and resets it after 
 it('retains group rename and creation dialogs while hiding mutations in read-only mode', async () => {
   const host = mount();
   const menu = host.querySelector('craft-action-menu')!;
-  await page.getByRole('button', {name: 'Site group Actions'}).click();
+  await page.getByRole('button', {name: 'Site group actions'}).click();
   await page
     .elementLocator(menu)
     .getByText('Rename Group', {exact: true})

@@ -19,6 +19,16 @@ body {
 }
 
 /*
+  Placeholders take the quiet text color rather than the browser default, which
+  falls short of contrast against dark surfaces. Firefox also dims them with
+  opacity, which would undo that.
+*/
+::placeholder {
+  color: var(--c-form-control-placeholder);
+  opacity: 1;
+}
+
+/*
   Global keyboard-focus indicator: any focusable element gets a visible ring
   when focused via the keyboard. Uses :focus-visible so it stays off during
   pointer interaction. Placeholder treatment — adjust as needed.

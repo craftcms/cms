@@ -32,7 +32,7 @@ export default class CraftSlidePicker extends FormAssociated(LitElement) {
   /** The currently selected value. */
   @property({type: Number}) value = 0;
   /** Accessible name for the slider. */
-  @property() label = t('Number of columns');
+  @property() label = t('Number of Columns');
   /**
    * Id of the element describing the control, applied as `aria-describedby`.
    * `craft-field` supplies this for you.
