@@ -172,19 +172,19 @@ readonly class Navigation
             }
         }
 
-        if (Edition::get()->supportsReleases() && (Sections::getTotalEditableSections() || Gate::check('manageReleases'))) {
-            $contentItems->add(new NavItem()
-                ->label(t('Releases'))
-                ->href(route('craft.cp.releases.index'))
-                ->icon('calendar'));
-        }
-
         if (Volumes::getTotalViewableVolumes()) {
             $contentItems->add(new NavItem()
                 ->label(t('Assets'))
                 ->href('assets')
                 ->icon('image')
                 ->subnav($this->sourceSubnav(Asset::class, 'assets')));
+        }
+
+        if (Edition::get()->supportsReleases() && (Sections::getTotalEditableSections() || Gate::check('manageReleases'))) {
+            $contentItems->add(new NavItem()
+                ->label(t('Releases'))
+                ->href(route('craft.cp.releases.index'))
+                ->icon('calendar'));
         }
 
         // Add any Plugin nav items
