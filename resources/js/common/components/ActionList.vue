@@ -446,6 +446,7 @@
         slot="actions"
         variant="inverse"
         :badge-count="countOf(action)"
+        :max.prop="Infinity"
         :alt-text="countLabelOf(action)"
       ></craft-badge-indicator>
 

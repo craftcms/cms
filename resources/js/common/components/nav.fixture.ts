@@ -69,11 +69,18 @@ export const navFixture: Array<NavNode> = [
     '/admin/content',
     [
       branch('Entries', '/admin/content/entries', [
-        leaf('All Entries', '/admin/content/entries'),
+        node('All Entries', {
+          href: '/admin/content/entries',
+          badgeCount: 50000,
+        }),
         group('Channels', [
           // The deepest selection the tree can hold, so the trail it
           // produces is `Content › Entries › Channels › Blog`.
-          node('Blog', {href: '/admin/content/entries/blog', selected: true}),
+          node('Blog', {
+            href: '/admin/content/entries/blog',
+            selected: true,
+            badgeCount: 1234,
+          }),
           leaf('CMS-15980', '/admin/content/entries/cms-15980'),
           leaf('Github Issues', '/admin/content/entries/github-issues'),
         ]),

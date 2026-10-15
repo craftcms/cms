@@ -13,6 +13,10 @@ It attaches to whatever it sits beside — a nav item, a tab, a button — and s
 
 <Canvas of={BadgeIndicatorStories.Numbered} sourceState="shown" />
 
+A count above `max` (99 by default) is shown as `99+`. For a tally rather than a nudge, such as how many elements a source has, set `max` to `Infinity` and the marker grows to fit the whole number, formatted for the page's language:
+
+<Canvas of={BadgeIndicatorStories.Uncapped} sourceState="shown" />
+
 ## Not the Same as Badge
 
 [Badge](?path=/docs/components-badge--docs) is a pill with a label, naming a state in place. This is a marker that draws attention to something else.
