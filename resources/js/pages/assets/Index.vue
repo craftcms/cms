@@ -236,7 +236,7 @@
         <CraftInput
           ref="newFolderNameInput"
           v-model="newFolderName"
-          :label="t('Folder name')"
+          :label="t('Folder Name')"
           :error="newFolderError"
           :aria-invalid="newFolderError ? 'true' : 'false'"
           autofocus
@@ -264,7 +264,7 @@
       <form class="flex flex-col gap-lg" @submit.prevent="submitRename">
         <CraftInput
           v-model="renameName"
-          :label="t('Folder name')"
+          :label="t('Folder Name')"
           :error="renameError"
           :aria-invalid="renameError ? 'true' : 'false'"
           autofocus

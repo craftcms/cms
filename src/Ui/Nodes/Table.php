@@ -26,7 +26,7 @@ class Table implements Node
 {
     use Conditionable;
 
-    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool}> */
+    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool, wrap?: bool}> */
     private array $columns = [];
 
     /** @var list<array<string, mixed>> */
@@ -83,7 +83,7 @@ class Table implements Node
     /** @var list<array<string, mixed>> */
     private array $statusActions = [];
 
-    /** @var list<array{value: string, label: string}>|null */
+    /** @var list<array{value: string, label: string, fill?: string|null}>|null */
     private ?array $statusFilterOptions = null;
 
     private bool $columnsToggleable = false;
@@ -111,8 +111,9 @@ class Table implements Node
      * then back to the rows' own order. See {@see rows()} for the `_sort` override.
      * `width` sets a fixed or relative column width (e.g. `34px` or `1.5fr`).
      * `headerSrOnly` hides only the visible header text.
+     * `wrap` lets long cell content wrap instead of widening the column.
      *
-     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool}>  $columns
+     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool, wrap?: bool}>  $columns
      */
     public function columns(array $columns): static
     {
@@ -143,6 +144,7 @@ class Table implements Node
      *
      * `_deleteUrl` overrides the shared deletion URL with a row's named resource route.
      * `_deleteConfirmMessage` overrides the shared deletion confirmation for one row.
+     * `_deleteLabel` customizes the delete button's accessible name.
      * `_deletable => false` suppresses deletion of one row. `_deleteDisabledReason`
      * shows a disabled delete button with an explanation instead of hiding it.
      * `_status` accepts a
@@ -398,9 +400,10 @@ class Table implements Node
     /**
      * Adds a status dropdown to the toolbar, defaulting to enabled/disabled. Filters
      * {@see rows()} locally on `_status`, or sends the chosen `status` to the {@see dataUrl()}
-     * endpoint and resets to page 1. "All" sends no `status`.
+     * endpoint or as a {@see pagination()} query parameter, and resets to page 1. "All"
+     * sends no `status`. An option's `fill` overrides the indicator color derived from its value.
      *
-     * @param  list<array{value: string, label: string}>|null  $options
+     * @param  list<array{value: string, label: string, fill?: string|null}>|null  $options
      */
     public function statusFilter(?array $options = null): static
     {
@@ -607,7 +610,7 @@ class Table implements Node
             ...array_map(fn (array $option) => [
                 'value' => $option['value'],
                 'label' => $option['label'],
-                'fill' => self::statusFill($option['value']),
+                'fill' => $option['fill'] ?? self::statusFill($option['value']),
             ], $this->statusFilterOptions),
         ];
     }

@@ -6,9 +6,11 @@ namespace CraftCms\Cms\Mcp;
 
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Mcp\Attributes\PublicMcp;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\Attributes\RequiresEdition;
 use CraftCms\Cms\Mcp\Attributes\RequiresHttp;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use Illuminate\Http\Request;
@@ -142,6 +144,11 @@ readonly class CapabilityDiscovery implements DiscovererInterface
     private function allows(ElementReference $reference): bool
     {
         $method = $this->reflection($reference->handler);
+
+        if (! $this->editionAllows($method)) {
+            return false;
+        }
+
         $requiresAdminChanges = ($method?->getAttributes(RequiresAdminChanges::class) ?? []) !== [];
         $requiresAdmin = $requiresAdminChanges || ($method?->getAttributes(RequiresAdmin::class) ?? []) !== [];
         $requiredPermissions = $method?->getAttributes(RequiresPermission::class) ?? [];
@@ -165,6 +172,21 @@ readonly class CapabilityDiscovery implements DiscovererInterface
         }
 
         return array_all($requiredPermissions, fn ($attribute) => $user->can($attribute->newInstance()->permission));
+    }
+
+    /** Whether the edition meets any `RequiresEdition` on the tool or its capability class. */
+    private function editionAllows(?ReflectionMethod $method): bool
+    {
+        if ($method === null) {
+            return true;
+        }
+
+        $attributes = [
+            ...$method->getDeclaringClass()->getAttributes(RequiresEdition::class),
+            ...$method->getAttributes(RequiresEdition::class),
+        ];
+
+        return array_all($attributes, fn ($attribute) => Edition::isAtLeast($attribute->newInstance()->edition));
     }
 
     /**

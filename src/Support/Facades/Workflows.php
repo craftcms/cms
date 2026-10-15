@@ -28,7 +28,6 @@ use Override;
  * @method static void invalidateRuns(\CraftCms\Cms\Workflow\Models\Workflow $workflow, string $reason)
  * @method static void invalidateSectionRuns(int $sectionId)
  * @method static mixed withContentChangeLock(array $draftIds, \Closure $callback)
- * @method static void lockDraftIds(array $draftIds)
  * @method static mixed withApplicationLock(\CraftCms\Cms\Element\Contracts\ElementInterface $draft, int|null $expectedRunId, int|null $expectedStage, \Closure $callback)
  *
  * @see \CraftCms\Cms\Workflow\Workflows

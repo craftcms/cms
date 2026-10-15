@@ -596,8 +596,10 @@ export default css`
     padding-inline: var(--c-spacing-lg);
   }
 
+  /* Only an icon-only link sits flush in its square; one with a label keeps
+     its padding. */
   :host([href][size~='zero']:not([disabled])) .link,
-  :host([href][icon]:not([disabled])) .link {
+  :host([href][icon]:empty:not([disabled])) .link {
     padding-inline: 0;
   }
 

@@ -6,6 +6,7 @@
   import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
   import {
     useWorkflowTransition,
+    type WorkflowReleaseState,
     type WorkflowIdentity,
   } from '../composables/useWorkflowTransition';
   import {
@@ -28,6 +29,7 @@
     reviewUpdated: [
       review: WorkflowReviewData,
       editorActions: ElementEditorActions,
+      release: WorkflowReleaseState | null | undefined,
     ];
   }>();
 
@@ -52,8 +54,8 @@
 
   const {error, processing, transition} = useWorkflowTransition(
     identity,
-    (review, actions) => {
-      emit('reviewUpdated', review, actions);
+    (review, actions, release) => {
+      emit('reviewUpdated', review, actions, release);
       note.value = '';
     }
   );

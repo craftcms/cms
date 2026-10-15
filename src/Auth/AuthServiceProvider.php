@@ -19,6 +19,8 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Policies\EntryPolicy;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Policies\ContentBlockPolicy;
+use CraftCms\Cms\Release\Models\Release;
+use CraftCms\Cms\Release\Policies\ReleasePolicy;
 use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Structure\Policies\StructurePolicy;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -200,6 +202,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::policy(ContentBlock::class, ContentBlockPolicy::class);
         Gate::policy(Entry::class, EntryPolicy::class);
         Gate::policy(Structure::class, StructurePolicy::class);
+        Gate::policy(Release::class, ReleasePolicy::class);
         Gate::policy(UserElement::class, UserPolicy::class);
     }
 }

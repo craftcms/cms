@@ -143,6 +143,37 @@ function mountNode(
   return host;
 }
 
+it.each(['mouse', 'keyboard'])(
+  'opens slideout links by %s without navigating the underlying page',
+  async (activation) => {
+    const visit = vi.spyOn(inertiaRouter, 'visit').mockImplementation(() => {});
+    const prefetch = vi
+      .spyOn(inertiaRouter, 'prefetch')
+      .mockImplementation(() => {});
+    mountNode({
+      rows: [
+        {
+          id: 1,
+          name: {label: 'Release draft', url: '/content/draft', slideout: true},
+        },
+      ],
+    });
+    const link = page.getByRole('link', {name: 'Release draft'});
+
+    if (activation === 'mouse') {
+      await link.click();
+    } else {
+      link.element().focus();
+      await userEvent.keyboard('{Enter}');
+    }
+
+    expect(slideout).toHaveBeenCalledOnce();
+    expect(slideout).toHaveBeenCalledWith('/content/draft', expect.any(Object));
+    expect(visit).not.toHaveBeenCalled();
+    expect(prefetch).not.toHaveBeenCalled();
+  }
+);
+
 it('renders HTML icon descriptions and hides only their column header text', async () => {
   mountNode({
     columns: [
@@ -223,6 +254,23 @@ it.each([false, true])(
     expect(link.shadowRoot!.activeElement).toBe(anchor);
   }
 );
+
+it('shows the empty state right under the column headers, without an empty row', async () => {
+  const host = mountNode({
+    columns: [{key: 'name', label: 'Name'}],
+    rows: [],
+    emptyMessage: 'No releases exist yet.',
+  });
+  await nextTick();
+
+  const empty = host.querySelector<HTMLElement>('craft-empty')!;
+  const head = host.querySelector('thead')!;
+
+  expect(host.querySelectorAll('tbody tr')).toHaveLength(0);
+  expect(empty.getBoundingClientRect().top).toBe(
+    head.getBoundingClientRect().bottom
+  );
+});
 
 async function setControl(host: HTMLElement, selector: string, value: string) {
   const control = host.querySelector<HTMLElement & {modelValue: string}>(

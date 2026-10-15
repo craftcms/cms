@@ -341,7 +341,7 @@ it('names the view mode and sort direction button groups', () => {
 
   expect(viewModes.getAttribute('aria-label')).toBe('View Mode');
   expect(sortDirection.getAttribute('role')).toBe('group');
-  expect(sortDirection.getAttribute('aria-label')).toBe('Sort direction');
+  expect(sortDirection.getAttribute('aria-label')).toBe('Sort Direction');
 });
 
 it('changes sort direction when its actual direction button is clicked', async () => {

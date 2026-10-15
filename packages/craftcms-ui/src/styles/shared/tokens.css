@@ -110,6 +110,12 @@
   --c-size-control-lg: calc(44rem / 16);
 
   /*
+    The minimum height of a header bar, such as a card's: a small button with
+    small padding above and below. Add a header's own border widths to it.
+  */
+  --c-size-header: calc(var(--c-size-control-sm) + var(--c-spacing-sm) * 2);
+
+  /*
     Craft's box shadows scale their opacity by this, so each theme can deepen
     them all at once. Tailwind's own --shadow-* stay stock. Declared here
     rather than in variables.css so a themed subtree re-resolves them against
@@ -211,6 +217,7 @@
   /* Form Controls */
   --c-form-control-fill: color-mix(in oklab, var(--color-base-100), white 50%);
   --c-form-control-text: var(--c-text-default);
+  --c-form-control-placeholder: var(--c-text-quiet);
   --c-form-control-border-color: var(--color-slate-400);
   --c-form-control-border-width: 1px;
   --c-form-control-border-style: solid;

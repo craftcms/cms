@@ -551,6 +551,36 @@ describe('craft-button link click area', () => {
   });
 });
 
+describe('craft-button link padding', () => {
+  async function linkPadding(markup: string): Promise<string> {
+    document.body.innerHTML = `<div style="--c-button-spacing-inline: 12px">${markup}</div>`;
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+
+    return getComputedStyle(button.shadowRoot!.querySelector('.link')!)
+      .paddingInlineStart;
+  }
+
+  it('pads a link with an icon and a label like one without an icon', async () => {
+    const plain = await linkPadding('<craft-button href="/">Go</craft-button>');
+
+    expect(plain).toBe('12px');
+    expect(
+      await linkPadding(
+        '<craft-button href="/" icon="arrow-right" icon-position="suffix">Go</craft-button>'
+      )
+    ).toBe(plain);
+  });
+
+  it('leaves an icon-only link unpadded', async () => {
+    expect(
+      await linkPadding(
+        '<craft-button href="/" icon="arrow-right" aria-label="Go"></craft-button>'
+      )
+    ).toBe('0px');
+  });
+});
+
 describe('craft-button link keyboard focus', () => {
   it('is a single tab stop on its anchor', async () => {
     const {userEvent} = await import('@vitest/browser/context');

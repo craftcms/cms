@@ -38,6 +38,7 @@ Lion's `FormControlMixin` does the label, help text and feedback wiring. `HasLab
 
 - [ ] The input's border, and the borders of the `prefix` and `suffix` chrome, reach 3:1 against the surface and the input fill, in the light and dark themes. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified. The default `--c-form-control-border-color` is close to the threshold.
 - [ ] The error border (`--c-color-danger-border-loud`) reaches 3:1 against the surface. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified.
+- [x] Placeholder text (`--c-form-control-placeholder`, the quiet text color) reaches 4.5:1 against the surface, in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Verified by `sets the placeholder at 4.5:1 against the surface in the %s theme` in `input.browser.test.ts`.
 - [ ] Help text (`--c-text-quiet`) and the value text reach 4.5:1 against their backgrounds, including the input fill, in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Not yet verified.
 - [ ] In forced colors mode the input's border and focus ring stay visible. Not yet verified.
 

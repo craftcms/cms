@@ -282,6 +282,40 @@ it('inspects custom stages without exposing settings or pretending they accept u
         ->assertJsonPath('result.content.0.text', 'The current workflow stage does not accept user reviews.');
 });
 
+it('requires edit permission and resets approval when MCP changes the existing draft', function (): void {
+    $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
+    ($this->callWorkflow)('workflows.approve', [
+        'runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid'],
+    ], $this->reviewer)->assertJsonPath('result.structuredContent.review.status', 'approved');
+    Passport::actingAs($this->reviewer, ['mcp:use'], 'craft-mcp');
+    McpRequest::send($this, 'tools/call', [
+        'name' => 'drafts.get', 'arguments' => ['draftId' => $this->draft->draftId],
+    ])->assertOk()->assertJsonPath('result.isError', false)
+        ->assertJsonPath('result.structuredContent.draft.title', 'Reviewed title');
+    McpRequest::send($this, 'tools/call', [
+        'name' => 'drafts.update',
+        'arguments' => ['draftId' => $this->draft->draftId, 'attributes' => ['title' => 'Unauthorized edit']],
+    ])->assertOk()->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'You are not authorized to save this entry.');
+
+    expect(EntryElement::find()->draftId($this->draft->draftId)->status(null)->one()->title)->toBe('Reviewed title')
+        ->and(WorkflowRun::find($submitted['runId'])->status)->toBe(WorkflowStatus::Approved);
+
+    Passport::actingAs($this->author, ['mcp:use'], 'craft-mcp');
+
+    McpRequest::send($this, 'tools/call', [
+        'name' => 'drafts.update',
+        'arguments' => ['draftId' => $this->draft->draftId, 'attributes' => ['title' => 'Unreviewed edit']],
+    ])->assertOk()->assertJsonPath('result.isError', false)
+        ->assertJsonPath('result.structuredContent.draft.id', $this->draft->id);
+
+    ($this->callWorkflow)('drafts.apply')->assertJsonPath('result.isError', true);
+    expect(WorkflowRun::find($submitted['runId'])->status)->not->toBe(WorkflowStatus::Approved)
+        ->and(EntryElement::find()->draftId($this->draft->draftId)->status(null)->one()->title)->toBe('Unreviewed edit')
+        ->and(EntryElement::find()->draftOf($this->entry->id)->status(null)->count())->toBe(1)
+        ->and(EntryElement::find()->id($this->entry->id)->status(null)->one()->title)->toBe('Canonical title');
+});
+
 it('rejects stale approvals on draft application without changing the canonical entry', function (): void {
     $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
     $restarted = ($this->callWorkflow)('workflows.restart', ['runId' => $submitted['runId']])->json('result.structuredContent.review');
