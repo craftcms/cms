@@ -1,21 +1,22 @@
 <?php
 
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Support\Query;
 
 test('postDate & expiryDate', function (string $column, mixed $param, int $expectedCount) {
     // Yesterday
     EntryModel::factory()->create([
-        $column => today()->subDay(),
+        $column => Query::prepareDateForDb(today()->subDay()),
     ]);
 
     // Today
     EntryModel::factory()->create([
-        $column => today(),
+        $column => Query::prepareDateForDb(today()),
     ]);
 
     // Tomorrow
     EntryModel::factory()->create([
-        $column => today()->addDay(),
+        $column => Query::prepareDateForDb(today()->addDay()),
     ]);
 
     // status(null) otherwise it filters out the entry from tomorrow
@@ -32,17 +33,17 @@ test('postDate & expiryDate', function (string $column, mixed $param, int $expec
 test('before & after', function () {
     // Yesterday
     EntryModel::factory()->create([
-        'postDate' => today()->subDay(),
+        'postDate' => Query::prepareDateForDb(today()->subDay()),
     ]);
 
     // Today
     EntryModel::factory()->create([
-        'postDate' => today(),
+        'postDate' => Query::prepareDateForDb(today()),
     ]);
 
     // Tomorrow
     EntryModel::factory()->create([
-        'postDate' => today()->addDay(),
+        'postDate' => Query::prepareDateForDb(today()->addDay()),
     ]);
 
     expect(entryQuery()->before('today')->status(null)->count())->toBe(1);

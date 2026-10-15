@@ -2,6 +2,7 @@
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Facades\DB;
 
 test('id', function () {
@@ -48,17 +49,17 @@ test('trashed', function () {
 test('dateCreated & dateUpdated', function (string $column, mixed $param, int $expectedCount) {
     // Yesterday
     EntryModel::factory()->create()->element->update([
-        $column => today()->subDay(),
+        $column => Query::prepareDateForDb(today()->subDay()),
     ]);
 
     // Today
     EntryModel::factory()->create()->element->update([
-        $column => today(),
+        $column => Query::prepareDateForDb(today()),
     ]);
 
     // Tomorrow
     EntryModel::factory()->create()->element->update([
-        $column => today()->addDay(),
+        $column => Query::prepareDateForDb(today()->addDay()),
     ]);
 
     expect(entryQuery()->$column($param)->count())->toBe($expectedCount);
