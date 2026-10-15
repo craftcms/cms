@@ -2186,6 +2186,22 @@ JS, [
         return $this->getPlaceholderDataUrl();
     }
 
+    /**
+     * A fit thumbnail is the image scaled to fit within `$size`×`$size`, the same as its transform.
+     */
+    #[Override]
+    protected function thumbDimensions(int $size, ImageTransformMode $mode): ?array
+    {
+        $width = (int) $this->getWidth();
+        $height = (int) $this->getHeight();
+
+        if ($this->isFolder || $mode !== ImageTransformMode::Fit || ! $width || ! $height) {
+            return null;
+        }
+
+        return AssetsHelper::scaledDimensions($width, $height, $size, $size);
+    }
+
     #[Override]
     protected function hasCheckeredThumb(): bool
     {
@@ -2603,6 +2619,20 @@ JS, [
             // `orientation` below, which is the locale's text direction.
             'imageWidth' => $this->getWidth(),
             'imageHeight' => $this->getHeight(),
+            ...static::sharedImageEditorSettings(),
+        ];
+    }
+
+    /**
+     * Returns the image editor settings that are the same for every asset.
+     *
+     * @return array<string, mixed>
+     *
+     * @internal
+     */
+    public static function sharedImageEditorSettings(): array
+    {
+        return [
             'imageEditorRatios' => Cms::config()->imageEditorRatios,
             // Only Imagick can rotate by a fraction of a degree; GD rounds.
             'allowDegreeFractions' => Images::getIsImagick(),
@@ -2822,6 +2852,8 @@ JS, [
      * edges show. Others get a gradient between the colors of the image's
      * left and right edges, so it bleeds out to the sides, with a black
      * overlay that darkens it by 25% at the top, fading to 5% at the bottom.
+     * The edge colors are 40% opaque over a transparent background, so the
+     * gradient takes on the color of whatever it sits on.
      *
      * @return array<string, array<string, string>>
      */
@@ -2867,8 +2899,8 @@ CSS,
                 'theme' => 'dark',
             ],
             'style' => [
-                'background-color' => '#000',
-                'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, $left, $right)",
+                'background-color' => 'transparent',
+                'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, color-mix(in srgb, $left 40%, transparent), color-mix(in srgb, $right 40%, transparent))",
             ],
         ];
     }

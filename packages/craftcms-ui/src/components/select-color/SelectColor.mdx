@@ -33,7 +33,9 @@ It also emits `model-value-changed`, Lion's internal protocol name. Prefer the n
 
 ## Accessibility
 
-Each option is named by its color, so the list is usable without seeing the swatches.
+Each option is named by its color, so the list is usable without seeing the swatches, including in forced colors mode, where the swatches lose their fill. The swatches are hidden from screen readers. Keyboard and listbox behavior come from [Select Rich](?path=/docs/form-controls-select-controls-select-rich--docs).
+
+Always set `label`. Without one the control has no name.
 
 Color names are not meanings, though. If a color carries significance in your interface — red for a problem, green for a healthy state — say so in the label or help text, because "Red" alone does not tell a person what choosing red will do.
 

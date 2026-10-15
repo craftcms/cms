@@ -79,4 +79,40 @@ describe('ElementCards', () => {
       'Server action'
     );
   });
+
+  // A relational field opens the element's slideout from this.
+  it('asks to edit a double-clicked card, but not from its controls', async () => {
+    const onEdit = vi.fn();
+    const {root} = mount({onEdit});
+    await nextTick();
+
+    const first = root.querySelector('.card-grid > *')!;
+    // Custom elements aren't defined here, so a plain button stands in for the
+    // checkbox and the other controls a double-click should leave alone.
+    const control = document.createElement('button');
+    first.append(control);
+    control.dispatchEvent(new MouseEvent('dblclick', {bubbles: true}));
+    expect(onEdit).not.toHaveBeenCalled();
+
+    first.dispatchEvent(new MouseEvent('dblclick', {bubbles: true}));
+    expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({id: 5}));
+  });
+
+  // An asset folder opens on double-click rather than being edited.
+  it('leaves a double-click its item behavior handled alone', async () => {
+    const onEdit = vi.fn();
+    const onDblClick = vi.fn(() => true);
+    const {root} = mount({onEdit, itemBehavior: {onDblClick}});
+    await nextTick();
+
+    const event = new MouseEvent('dblclick', {bubbles: true, cancelable: true});
+    root.querySelector('.card-grid > *')!.dispatchEvent(event);
+
+    expect(onDblClick).toHaveBeenCalledWith(
+      expect.objectContaining({id: 5}),
+      event
+    );
+    expect(event.defaultPrevented).toBe(true);
+    expect(onEdit).not.toHaveBeenCalled();
+  });
 });

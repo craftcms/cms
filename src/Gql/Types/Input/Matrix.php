@@ -9,6 +9,7 @@ use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Support\Arr;
+use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
@@ -25,11 +26,12 @@ class Matrix extends InputObjectType
             'name' => $typeName,
             'description' => sprintf('Defines a block within the “%s” Matrix field’s data.', $context->name),
             'fields' => function () use ($context) {
-                // All the different field entry types now get wrapped in a container input.
-                // If two different entry types are passed, the selected entry type to parse is undefined.
+                // All the different field entry types now get wrapped in a container input that accepts one of them.
                 $entryTypeContainerName = $context->handle.'_MatrixEntryContainerInput';
                 $entryContainerInputType = GqlEntityRegistry::createEntity($entryTypeContainerName, new InputObjectType([
                     'name' => $entryTypeContainerName,
+                    'description' => sprintf('An entry within the “%s” Matrix field, keyed by its entry type handle.', $context->name),
+                    'isOneOf' => true,
                     'fields' => function () use ($context) {
                         $entryInputTypes = [];
                         foreach ($context->getEntryTypes() as $entryType) {
@@ -74,10 +76,12 @@ class Matrix extends InputObjectType
                     'sortOrder' => [
                         'name' => 'sortOrder',
                         'type' => Type::listOf(QueryArgument::getType()),
+                        'description' => 'The entries the field should contain, in order: IDs of existing entries, and `new:1`, `new:2`, etc. for entries without an ID, numbered in the order they appear in `entries`. Omitted entries are removed. Required when adding entries.',
                     ],
                     'entries' => [
                         'name' => 'entries',
                         'type' => Type::listOf($entryContainerInputType),
+                        'description' => 'Entry data. Include `id` to update an existing entry.',
                     ],
                 ];
             },
@@ -111,6 +115,10 @@ class Matrix extends InputObjectType
             }
 
             $value['entries'] = $preparedEntries;
+
+            if ($entryCounter > 1 && ! isset($value['sortOrder'])) {
+                throw new UserError('New entries must be listed in `sortOrder`, as `new:1`, `new:2`, etc. in the order they appear in `entries`, along with the IDs of any existing entries to keep.');
+            }
         }
 
         return $value;

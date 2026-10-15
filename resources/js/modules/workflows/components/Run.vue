@@ -15,10 +15,11 @@
 </script>
 
 <template>
-  <craft-pane appearance="outline" padding="sm">
+  <craft-pane appearance="outline-fill" padding="sm">
     <component
       :is="collapsible ? 'craft-disclosure' : 'section'"
       class="workflow-review-run"
+      :appearance="collapsible ? 'plain' : undefined"
       :opened.prop="collapsible ? run.current : undefined"
     >
       <craft-button
@@ -26,6 +27,8 @@
         slot="invoker"
         type="button"
         variant="plain"
+        size="small"
+        flush
         align="start"
         class="workflow-review-run__heading"
       >
@@ -79,8 +82,9 @@
     display: block;
   }
 
+  /* Block-level, so it fills the row even as `flush` pulls it outward. */
   .workflow-review-run__heading {
-    width: 100%;
+    display: flex;
     --c-button-height: var(--c-size-touch-target);
     --c-button-spacing-inline: var(--c-spacing-xs);
   }
@@ -111,11 +115,16 @@
   }
 
   .workflow-review-run__chevron {
+    transform: rotate(-90deg);
     transition: transform 100ms ease;
+
+    &:dir(rtl) {
+      transform: rotate(90deg);
+    }
   }
 
   .workflow-review-run[opened] .workflow-review-run__chevron {
-    transform: rotate(180deg);
+    transform: none;
   }
 
   .workflow-review-run__content,
@@ -135,8 +144,6 @@
   .workflow-review-run__content {
     margin-block-start: var(--c-spacing-xs);
     padding-block-end: var(--c-spacing-sm);
-    padding-inline-start: 0;
-    border-inline-start: 0;
   }
 
   .workflow-review-submission {

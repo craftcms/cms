@@ -23,9 +23,31 @@ A radio group also cannot be cleared once an option is chosen. When "none of the
 
 The group takes its own `label`, `help-text`, and `feedback`. The radios name the options; only the group can name the question.
 
+## Buttons
+
+`buttons` shows the options as a row of joined buttons, for a short choice that reads better side by side. The options are still radios: they're announced as radios, the group is a single tab stop, and the arrow keys move the selection.
+
+<Canvas of={RadioGroupStories.Buttons} sourceState="shown" />
+
+An option labeled only by an icon gets a square button. Give the icon a `label`, so the radio has a name.
+
+<Canvas of={RadioGroupStories.IconButtons} sourceState="shown" />
+
+Use a [Button Group](?path=/docs/components-button-group--docs) instead when the buttons act immediately, such as switching a view, rather than set a value.
+
 ## Server-Rendered Markup
 
 A group rendered by the server adopts the name already present on its inputs, for the same reason as the checkbox group: Lion syncs each child's name to the group's, so upgrading a nameless group would strip the server's names and break native posting.
+
+## Accessibility
+
+The group is announced as a radio group named by its label, and takes one Tab stop. The arrow keys move between options and select them as they go, because every option is a native radio sharing the group's name.
+
+Give the group a visible label that names the question, and keep each option's text in its radio's label.
+
+When a choice is required, say so with `craft-field`'s `required` or in the label text, as well as adding the `Required` validator; the validator alone doesn't show anything until an error appears. Write validator messages that say what to choose.
+
+Don't submit the form or navigate away when the selection changes. Arrow keys select each option they pass, so a person moving through the list would trigger the change on every step.
 
 ## Properties
 

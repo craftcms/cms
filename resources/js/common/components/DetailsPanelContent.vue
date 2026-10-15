@@ -52,13 +52,13 @@
       ></craft-button>
     </div>
   </div>
-  <slot>
-    <div class="grow basis-0 min-h-0">
+  <div class="grow basis-0 min-h-0 overflow-y-auto">
+    <slot>
       <component
         v-if="panel.component"
         :is="panel.component"
         v-bind="componentProps"
       />
-    </div>
-  </slot>
+    </slot>
+  </div>
 </template>

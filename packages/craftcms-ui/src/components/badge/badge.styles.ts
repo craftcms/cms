@@ -41,6 +41,10 @@ export default css`
     padding-inline: calc(0.5em + 1px);
   }
 
+  .badge--small.badge--labeled {
+    block-size: var(--c-size-control-xs);
+  }
+
   .badge__label--text {
     display: block;
     text-box: trim-both cap alphabetic;
