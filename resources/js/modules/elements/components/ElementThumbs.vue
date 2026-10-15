@@ -118,6 +118,12 @@
    * checkbox, an action menu, the reorder button, the label's link.
    */
   function onTileDblclick(element: ThumbElement, event: MouseEvent) {
+    if (props.itemBehavior?.onDblClick?.(element, event)) {
+      event.preventDefault();
+
+      return;
+    }
+
     if (!isInteractiveClick(event, event.currentTarget)) {
       emit('edit', element);
     }
