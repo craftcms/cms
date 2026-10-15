@@ -161,10 +161,18 @@ export default css`
     gap: var(--c-spacing-sm);
   }
 
+  /* The body matches the CP's container padding, and falls back to the same
+     value outside the CP, where nothing defines it. */
   .card-body {
     gap: var(--c-spacing-md);
-    padding-inline: var(--c-card-padding-inline, var(--cp-container-padding));
-    padding-block: var(--c-card-padding-block, var(--cp-container-padding));
+    padding-inline: var(
+      --c-card-padding-inline,
+      var(--cp-container-padding, var(--c-spacing-lg))
+    );
+    padding-block: var(
+      --c-card-padding-block,
+      var(--cp-container-padding, var(--c-spacing-lg))
+    );
   }
 
   .card-body--thumb-start {

@@ -312,3 +312,24 @@ it('keeps a black card’s body text readable on a light page, selected or not',
     expect(contrast).toBeGreaterThanOrEqual(4.5);
   }
 });
+
+it('pads its body with the container padding, or the same value without it', async () => {
+  document.body.innerHTML = `
+    <craft-card id="fallback">Body</craft-card>
+    <div style="--cp-container-padding: 40px">
+      <craft-card id="container">Body</craft-card>
+    </div>
+    <div id="spacing" style="padding: var(--c-spacing-lg)"></div>`;
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+  const padding = (id: string) =>
+    getComputedStyle(
+      document.getElementById(id)!.shadowRoot!.querySelector('.card-body')!
+    ).paddingInlineStart;
+
+  expect(padding('fallback')).toBe(
+    getComputedStyle(document.getElementById('spacing')!).paddingInlineStart
+  );
+  expect(padding('fallback')).not.toBe('0px');
+  expect(padding('container')).toBe('40px');
+});
