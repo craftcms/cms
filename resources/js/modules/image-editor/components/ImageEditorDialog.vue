@@ -581,7 +581,7 @@
                           type="text"
                           class="custom-constraint-w"
                           size="3"
-                          :aria-label="t('Width unit')"
+                          :aria-label="t('Width Unit')"
                           @input="onCustomConstraintInput"
                         />
                         <span
@@ -595,7 +595,7 @@
                           type="text"
                           class="custom-constraint-h"
                           size="3"
-                          :aria-label="t('Height unit')"
+                          :aria-label="t('Height Unit')"
                           @input="onCustomConstraintInput"
                         />
                       </div>

@@ -395,7 +395,7 @@ abstract class BaseField extends FieldLayoutElement
             Field::make(t('Instructions'), Textarea::make('instructions')
                 ->value($this->instructions)
                 ->placeholder($this->defaultInstructions())),
-            Field::make(t('Instructions position'), Choice::make('instructionsPosition')
+            Field::make(t('Instructions Position'), Choice::make('instructionsPosition')
                 ->options([
                     ['label' => t('Before the input'), 'value' => 'before'],
                     ['label' => t('After the input'), 'value' => 'after'],

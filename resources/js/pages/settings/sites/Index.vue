@@ -100,7 +100,7 @@
           <craft-button type="button" icon size="small" slot="invoker">
             <craft-icon
               name="gear"
-              :label="t('Site group Actions')"
+              :label="t('Site group actions')"
             ></craft-icon>
           </craft-button>
 

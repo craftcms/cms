@@ -94,7 +94,7 @@ export class Element extends Base {
 
     if (this.hasCustomWidth) {
       const widthSlider = document.createElement('craft-slide-picker');
-      widthSlider.setAttribute('label', Craft.t('app', 'Number of columns'));
+      widthSlider.setAttribute('label', Craft.t('app', 'Number of Columns'));
       widthSlider.setAttribute('value-unit', '%');
       widthSlider.setAttribute('min', '25');
       widthSlider.setAttribute('max', '100');
