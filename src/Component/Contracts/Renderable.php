@@ -10,6 +10,8 @@ use Illuminate\Support\HtmlString;
 /**
  * Renderable defines the common interface to be implemented by objects that
  * can be rendered as HTML, such as with the `{% render %}` Twig tag.
+ *
+ * @since 6.0.0
  */
 interface Renderable
 {

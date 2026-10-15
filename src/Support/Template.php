@@ -260,6 +260,8 @@ class Template
      * @param  array<string,mixed>  $variables  Variables that should be passed to each object’s `render()` method
      *
      * @throws InvalidArgumentException if any of the objects aren’t renderable
+     *
+     * @since 6.0.0
      */
     public static function render(Renderable|iterable|null $objects, array $variables = []): HtmlString
     {
