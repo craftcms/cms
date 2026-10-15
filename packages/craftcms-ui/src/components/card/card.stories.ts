@@ -189,9 +189,9 @@ export const CustomProperties: Story = {
   render: () => html`
     <craft-card
       label="Card label"
-      style="--c-card-radius: 0; --c-card-shadow: none; --c-card-padding-inline: 1.5rem;"
+      style="--c-card-radius: 0; --c-card-shadow: none;"
     >
-      Square corners, no shadow, and roomier padding via
+      Square corners and no shadow via
       <code>--c-card-*</code> custom properties.
     </craft-card>
   `,

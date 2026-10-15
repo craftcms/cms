@@ -2,6 +2,7 @@ import {beforeEach, expect, it} from 'vite-plus/test';
 import '../../styles/cp.css';
 import './card.js';
 import '../chip/chip.js';
+import '../button/button.js';
 import type CraftCard from './card.js';
 
 beforeEach(() => {
@@ -332,4 +333,22 @@ it('pads its body with the container padding, or the same value without it', asy
   );
   expect(padding('fallback')).not.toBe('0px');
   expect(padding('container')).toBe('40px');
+});
+
+it('gives a header the same height with or without actions', async () => {
+  document.body.innerHTML = `
+    <craft-card id="label" label="Card label">Body</craft-card>
+    <craft-card id="actions" label="Card label">
+      <craft-button slot="actions" size="small" icon="ellipsis" label="Actions"></craft-button>
+      Body
+    </craft-card>`;
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+  const height = (id: string) =>
+    document
+      .getElementById(id)!
+      .shadowRoot!.querySelector('.card__header')!
+      .getBoundingClientRect().height;
+
+  expect(height('label')).toBe(height('actions'));
 });

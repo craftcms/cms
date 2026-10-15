@@ -145,12 +145,15 @@ export default css`
   }
 
   .card__header {
-    min-height: var(--c-card-header-min-height, 1lh);
+    /* Its content is as tall as a small button, like an element index's card
+       grid header, so a header is the same height with or without actions.
+       Measured without padding or border, so neither needs adding back. */
+    min-height: var(--c-card-header-min-height, var(--c-size-control-sm));
     border-block-end-width: 1px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-sizing: border-box;
+    box-sizing: content-box;
   }
 
   .card__label-text,

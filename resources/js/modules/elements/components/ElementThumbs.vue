@@ -324,7 +324,10 @@
     margin-block-end: var(--c-spacing-md);
     display: flex;
     align-items: center;
-    min-height: calc(var(--c-size-control-sm) + var(--c-spacing-sm) + 1px);
+    // Content as tall as a small button, like a card header, whatever the
+    // padding around it.
+    box-sizing: content-box;
+    min-height: var(--c-size-control-sm);
     padding-block: 0 var(--c-spacing-sm);
     padding-inline: 0;
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
