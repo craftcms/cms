@@ -665,7 +665,7 @@ class ElementHelper
      * @param  ElementInterface[]  $elements
      * @param  array<string,mixed>  $variables
      *
-     * @deprecated in 5.12.0. {@see Template::render()} should be used instead.
+     * @deprecated in 6.0.0. {@see Template::render()} should be used instead.
      */
     public static function renderElements(array $elements, array $variables = []): HtmlString
     {

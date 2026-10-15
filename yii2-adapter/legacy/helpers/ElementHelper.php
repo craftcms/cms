@@ -581,7 +581,7 @@ class ElementHelper
      * @throws \yii\base\InvalidConfigException
      * @throws \yii\base\NotSupportedException
      * @since 5.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Template::render()} instead.
+     * @deprecated 5.12.0 use {@see \CraftCms\Cms\Support\Template::render()} instead.
      */
     public static function renderElements(array $elements, array $variables = []): HtmlString
     {
