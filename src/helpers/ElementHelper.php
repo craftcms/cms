@@ -1070,7 +1070,7 @@ class ElementHelper
      * @throws InvalidConfigException
      * @throws NotSupportedException
      * @since 5.0.0
-     * @deprecated in 5.12.0. [[Template::render()]] should be used instead.
+     * @deprecated in 5.12.0. [[\craft\helpers\Template::render()]] should be used instead.
      */
     public static function renderElements(array $elements, array $variables = []): Markup
     {
