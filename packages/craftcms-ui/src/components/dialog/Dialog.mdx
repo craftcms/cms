@@ -37,6 +37,8 @@ The dialog renders inside a native `<dialog>`, so the browser supplies the modal
 Three things stay with you:
 
 - **Name it.** Set `label`. It renders as the header's heading and names the dialog, which is otherwise announced only as "dialog".
+
+  When the content draws its own title, set `no-header` and keep `label` matching that title. The dialog is still named by it. `no-header` removes the close button too, so give the dialog a visible way out, such as a footer Cancel button.
 - **Give it a way out that is not Escape.** Escape works, but a visible close or cancel control is what makes that discoverable.
 - **Keep other targets clear of the close button.** Don't place another button, link, or control within 24px of it, in the header or at the top of the body. The space around it is what keeps it easy to hit.
 

@@ -56,7 +56,8 @@ function releasePageScroll(): void {
  * The header renders when there is something to put in it — a `label`, a close
  * button, or both. Set `no-close` on a dialog that dismisses itself some other
  * way; with no label either, the header is dropped rather than left as an empty
- * band of padding.
+ * band of padding. Set `no-header` to drop it outright when the content draws
+ * its own title; the `label` still names the dialog.
  *
  * @slot - The dialog body.
  * @slot footer - Footer content, typically buttons.
@@ -131,6 +132,17 @@ export default class CraftDialog extends LitElement {
   @property({type: Boolean, attribute: 'no-close', reflect: true})
   noClose = false;
 
+  /**
+   * Drop the header row, close button included.
+   *
+   * For content that draws its own title. The `label` still names the dialog
+   * through a hidden heading, so keep it matching that title, and give the
+   * dialog a visible way out — a Cancel button in the footer, say — since the
+   * close button goes too.
+   */
+  @property({type: Boolean, attribute: 'no-header', reflect: true})
+  noHeader = false;
+
   protected readonly titleId = `craft-dialog-title-${++nextId}`;
 
   /**
@@ -199,16 +211,14 @@ export default class CraftDialog extends LitElement {
         : nothing}
       <dialog
         part="dialog"
-        aria-labelledby=${this.hasHeader && this.label !== ''
-          ? this.titleId
-          : nothing}
+        aria-labelledby=${this.label !== '' ? this.titleId : nothing}
         @cancel=${this.#onNativeCancel}
         @close=${this.#onNativeClose}
         @click=${this.#onDialogClick}
       >
         <div class="surface" part="surface">
-          ${this.hasHeader ? this.renderHeader() : nothing} ${this.renderBody()}
-          ${this.renderFooter()}
+          ${this.hasHeader ? this.renderHeader() : this.renderHiddenTitle()}
+          ${this.renderBody()} ${this.renderFooter()}
         </div>
       </dialog>
     `;
@@ -217,16 +227,26 @@ export default class CraftDialog extends LitElement {
   /**
    * Whether to render the header at all.
    *
-   * It goes when there is nothing to put in it — no label *and* no close
-   * button — because the row is otherwise just a band of padding above the
-   * body. A close button on its own is reason enough to keep it; it needs
-   * somewhere to live.
-   *
-   * Also governs `aria-labelledby`, which must not point at a heading that
-   * isn't rendered.
+   * It goes under `no-header`, and when there is nothing to put in it — no
+   * label *and* no close button — because the row is otherwise just a band of
+   * padding above the body. A close button on its own is reason enough to keep
+   * it; it needs somewhere to live.
    */
   protected get hasHeader(): boolean {
-    return this.label !== '' || !this.noClose;
+    return !this.noHeader && (this.label !== '' || !this.noClose);
+  }
+
+  /**
+   * The heading `aria-labelledby` points at when there is no header row.
+   *
+   * `hidden` rather than visually hidden: the content draws its own title, so
+   * a second heading would only repeat it in a screen reader's heading list.
+   * A hidden element still supplies the name it is referenced for.
+   */
+  protected renderHiddenTitle(): TemplateResult | typeof nothing {
+    return this.label === ''
+      ? nothing
+      : html`<h2 part="title" id=${this.titleId} hidden>${this.label}</h2>`;
   }
 
   protected renderHeader(): TemplateResult {

@@ -119,6 +119,25 @@ describe('craft-dialog', () => {
     );
   });
 
+  it('drops the header under no-header', async () => {
+    const dialog = await createDialog((dialog) => (dialog.noHeader = true));
+
+    expect(shadow(dialog, '.header')).toBeNull();
+    expect(shadow(dialog, '.close')).toBeNull();
+  });
+
+  it('still labels the dialog under no-header', async () => {
+    const dialog = await createDialog((dialog) => (dialog.noHeader = true));
+    const labelledBy = shadow(dialog, 'dialog')!.getAttribute(
+      'aria-labelledby'
+    );
+    const heading = dialog.shadowRoot!.getElementById(labelledBy ?? '');
+
+    expect(heading?.localName).toBe('h2');
+    expect(heading?.hidden).toBe(true);
+    expect(heading?.textContent?.trim()).toBe('Test Dialog');
+  });
+
   it('brings the header back when a label is set later', async () => {
     const dialog = document.createElement('craft-dialog') as CraftDialog;
     // No close button either, so the header really is absent to begin with.

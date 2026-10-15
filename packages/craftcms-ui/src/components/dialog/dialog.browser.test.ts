@@ -251,10 +251,28 @@ it('scrolls a focused control clear of the header', async () => {
 });
 
 it('gives the close button 24px of vertical room in the header', async () => {
-  const dialog = await openDialog((dialog) => (dialog.label = ''));
+  const dialog = await openDialog();
   const {height} = shadow(dialog, '.header').getBoundingClientRect();
 
   expect(height).toBeGreaterThan(24);
+});
+
+it('keeps the label as the name under no-header', async () => {
+  const dialog = await openDialog((dialog) => {
+    dialog.noHeader = true;
+    dialog.append(button('Inside'));
+  });
+
+  const labelledBy = shadow(dialog, 'dialog').getAttribute('aria-labelledby');
+  const heading = dialog.shadowRoot!.getElementById(labelledBy ?? '')!;
+  expect(heading.textContent?.trim()).toBe('Test dialog');
+
+  const {width, height} = heading.getBoundingClientRect();
+  expect([width, height]).toEqual([0, 0]);
+
+  const surface = shadow(dialog, '.surface').getBoundingClientRect();
+  const body = shadow(dialog, '.body').getBoundingClientRect();
+  expect(body.top - surface.top).toBeLessThanOrEqual(1);
 });
 
 it('outlines the surface when it overlays the page', async () => {
