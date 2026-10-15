@@ -31,6 +31,31 @@ it('gives a white card a body as white as its header', async () => {
   expect(opaque(headerFill) ? headerFill : body).toBe(body);
 });
 
+it('gives a colored card’s links its text color and an underline', async () => {
+  document.body.innerHTML = ['red', 'white', 'gray', 'slate']
+    .map(
+      (color) =>
+        `<craft-card data-color="${color}">Body with <a href="#">a link</a></craft-card>`
+    )
+    .join('');
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+
+  const link = (card: CraftCard) => getComputedStyle(card.querySelector('a')!);
+  const text = (card: CraftCard) =>
+    getComputedStyle(card.shadowRoot!.querySelector('.card')!).color;
+  const [red, ...neutral] = cards;
+
+  expect(link(red!).color).toBe(text(red!));
+  expect(link(red!).textDecorationLine).toBe('underline');
+
+  // The neutral colors keep the default link styling.
+  for (const card of neutral) {
+    expect(link(card).color).not.toBe(text(card));
+    expect(link(card).textDecorationLine).toBe('none');
+  }
+});
+
 it('gives a white card a lighter shadow than other cards', async () => {
   document.body.innerHTML = `
     <span class="xs" style="box-shadow: var(--c-shadow-xs)"></span>
@@ -264,3 +289,26 @@ it.each([['dark'], ['light']])(
     );
   }
 );
+
+it('keeps a black card’s body text readable on a light page, selected or not', async () => {
+  document.body.innerHTML = `
+    <div id="page" style="background: var(--c-surface-sunken)">
+      <craft-card data-color="black">Body</craft-card>
+      <craft-card data-color="black" active>Body</craft-card>
+    </div>`;
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+  const page = getComputedStyle(
+    document.getElementById('page')!
+  ).backgroundColor;
+
+  for (const card of cards) {
+    const style = getComputedStyle(card.shadowRoot!.querySelector('.card')!);
+    const fill = luminanceOver(style.backgroundColor, page);
+    const text = luminanceOver(style.color, page);
+    const contrast =
+      (Math.max(fill, text) + 0.05) / (Math.min(fill, text) + 0.05);
+
+    expect(contrast).toBeGreaterThanOrEqual(4.5);
+  }
+});

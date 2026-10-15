@@ -61,3 +61,37 @@ it('underlines a chip inside a link as a link', async () => {
   expect(decoration()).toBe('none');
   document.body.classList.remove('underline-links');
 });
+
+it('gives a non-white chip’s links its text color and an underline until hovered', async () => {
+  document.body.innerHTML = `
+    <craft-chip id="color" data-color="red">
+      <craft-truncate><a href="#">Nested</a></craft-truncate>
+    </craft-chip>
+    <craft-chip id="variant" variant="danger"><a href="#">Direct</a></craft-chip>
+    <craft-chip id="gray" data-color="gray"><a href="#">Gray</a></craft-chip>
+    <craft-chip id="neutral" variant="neutral"><a href="#">Neutral</a></craft-chip>
+    <craft-chip id="default"><a href="#">Default</a></craft-chip>`;
+  for (const chip of document.querySelectorAll('craft-chip')) {
+    await (chip as HTMLElement & {updateComplete: Promise<unknown>})
+      .updateComplete;
+  }
+
+  // Blue falls short of contrast against the gray and slate fills, so only a
+  // white chip keeps it.
+  for (const id of ['color', 'variant', 'gray', 'neutral']) {
+    const chip = document.getElementById(id)!;
+    const link = chip.querySelector('a')!;
+    const body = chip.shadowRoot!.querySelector('.cp-chip')!;
+
+    expect(getComputedStyle(link).color).toBe(getComputedStyle(body).color);
+    expect(getComputedStyle(link).textDecorationLine).toBe('underline');
+
+    await userEvent.hover(link);
+    expect(getComputedStyle(link).textDecorationLine).toBe('none');
+    await userEvent.unhover(link);
+  }
+
+  const plain = document.querySelector<HTMLElement>('#default a')!;
+  expect(getComputedStyle(plain).color).toBe(linkColor());
+  expect(getComputedStyle(plain).textDecorationLine).toBe('none');
+});

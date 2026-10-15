@@ -3,6 +3,7 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 import {html} from 'lit';
 
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
+import {Color} from '../../constants/colors';
 
 import type CraftCard from './card.js';
 import './card.js';
@@ -155,6 +156,29 @@ export const Active: Story = {
       <craft-card label="Card label" active>
         An active card — loud header/footer fill and border.
       </craft-card>
+    </div>
+  `,
+};
+
+/**
+ * `data-color` tints the card with a palette color. On a colored card, links
+ * take the card's text color and are underlined, losing the underline on
+ * hover.
+ */
+export const Colors: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem"
+    >
+      ${Object.entries(Color).map(
+        ([name, value]) =>
+          html`<craft-card data-color="${value}">
+            <a slot="label" href="#">${name}</a>
+            Body text with <a href="#">a link</a>.
+            <span slot="footer">Footer <a href="#">link</a></span>
+          </craft-card>`
+      )}
     </div>
   `,
 };
