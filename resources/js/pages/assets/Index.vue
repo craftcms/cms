@@ -129,7 +129,7 @@
     submitRename,
     conflictPrompt: folderConflictPrompt,
     resolveConflictChoice: resolveFolderConflictChoice,
-  } = useAssetFolderActions(elementIndex);
+  } = useAssetFolderActions(elementIndex, performMove);
 </script>
 
 <template>

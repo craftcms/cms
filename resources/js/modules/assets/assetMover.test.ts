@@ -1,5 +1,5 @@
 import {beforeEach, expect, it, vi} from 'vite-plus/test';
-import {moveFolders} from './assetMover';
+import {moveAssets, moveFolders} from './assetMover';
 
 const post = vi.hoisted(() => vi.fn());
 
@@ -18,6 +18,7 @@ it('moves a folder’s assets before deleting its old tree', async () => {
     .mockResolvedValueOnce({
       data: {
         transferList: [{assetId: 7, folderId: 30, filename: 'photo.jpg'}],
+        newFolderId: 31,
         newFolderUrl: '/admin/assets/photos/moved',
       },
     })
@@ -27,6 +28,8 @@ it('moves a folder’s assets before deleting its old tree', async () => {
   await expect(moveFolders([11], 30, async () => 'cancel')).resolves.toEqual({
     moved: 1,
     cancelled: 0,
+    conflicted: 0,
+    movedFolders: [{folderId: 11, newFolderId: 31}],
     movedFolderUrls: ['/admin/assets/photos/moved'],
   });
 
@@ -44,13 +47,19 @@ it('retries a conflicting folder move with the chosen resolution', async () => {
   post
     .mockResolvedValueOnce({data: {conflict: 'Already exists'}})
     .mockResolvedValueOnce({
-      data: {transferList: [], newFolderUrl: '/admin/assets/photos/merged'},
+      data: {
+        transferList: [],
+        newFolderId: 32,
+        newFolderUrl: '/admin/assets/photos/merged',
+      },
     })
     .mockResolvedValueOnce({data: {}});
 
   await expect(moveFolders([11], 30, async () => 'merge')).resolves.toEqual({
     moved: 1,
     cancelled: 0,
+    conflicted: 1,
+    movedFolders: [{folderId: 11, newFolderId: 32}],
     movedFolderUrls: ['/admin/assets/photos/merged'],
   });
 
@@ -65,6 +74,7 @@ it('keeps the source folder when an asset transfer reports a conflict', async ()
     .mockResolvedValueOnce({
       data: {
         transferList: [{assetId: 7, folderId: 30, filename: 'photo.jpg'}],
+        newFolderId: 31,
         newFolderUrl: '/admin/assets/photos/moved',
       },
     })
@@ -87,4 +97,36 @@ it('keeps the source folder when the move response is incomplete', async () => {
   );
 
   expect(post).toHaveBeenCalledOnce();
+});
+
+it('reports which assets moved and how many needed a conflict resolved', async () => {
+  post
+    .mockResolvedValueOnce({data: {}})
+    .mockResolvedValueOnce({
+      data: {
+        conflict: 'Already exists',
+        filename: 'b.jpg',
+        suggestedFilename: 'b_1.jpg',
+      },
+    })
+    .mockResolvedValueOnce({data: {}})
+    .mockResolvedValueOnce({
+      data: {
+        conflict: 'Already exists',
+        filename: 'c.jpg',
+        suggestedFilename: 'c_1.jpg',
+      },
+    });
+
+  const choices = ['keepBoth', 'cancel'] as const;
+  let choice = 0;
+
+  await expect(
+    moveAssets([1, 2, 3], 30, async () => choices[choice++]!)
+  ).resolves.toEqual({
+    moved: 2,
+    cancelled: 1,
+    conflicted: 1,
+    movedAssetIds: [1, 2],
+  });
 });
