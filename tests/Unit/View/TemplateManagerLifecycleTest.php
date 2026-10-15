@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Exceptions\TemplateExitException;
@@ -10,10 +11,13 @@ use CraftCms\Cms\View\Events\PageTemplateRendered;
 use CraftCms\Cms\View\Events\PageTemplateRendering;
 use CraftCms\Cms\View\Events\TemplateRendered;
 use CraftCms\Cms\View\Events\TemplateRendering;
+use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\PageLifecycle;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 
 class TemplateManagerLifecycleTestRenderer implements TemplateRendererInterface
@@ -280,3 +284,21 @@ it('renders inline strings without file lifecycle events', function () {
     Event::assertNotDispatched(PageTemplateRendering::class);
     Event::assertNotDispatched(PageTemplateRendered::class);
 });
+
+it('registers the iframe resizer for Live Preview page requests', function (bool $enabled, ?string $param, bool $expected) {
+    Cms::config()->useIframeResizer = $enabled;
+    app()->instance('request', Request::create('/', parameters: array_filter(['x-craft-live-preview' => $param])));
+
+    $registry = Mockery::spy(InternalAssetRegistry::class);
+    app()->instance(InternalAssetRegistry::class, $registry);
+
+    $this->manager->renderPageTemplate('example', ['value' => 'test'], TemplateMode::Site, renderer: 'test');
+
+    $expected
+        ? $registry->shouldHaveReceived('register')->with(ContentWindowAsset::class)->once()
+        : $registry->shouldNotHaveReceived('register', [ContentWindowAsset::class]);
+})->with([
+    'enabled, live preview' => [true, 'x', true],
+    'disabled' => [false, 'x', false],
+    'not live preview' => [true, null, false],
+]);

@@ -9,7 +9,9 @@ use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
 
 use function Pest\Laravel\actingAs;
@@ -115,4 +117,52 @@ it('ignores params that are not part of the token', function () {
         // Control panel URLs carry this; it isn't a token property.
         'site' => 'default',
     ]))->assertRedirect('https://example.com');
+});
+
+it('reuses a pre-generated token that already exists', function () {
+    $params = [
+        'elementType' => CraftCms\Cms\Entry\Elements\Entry::class,
+        'siteId' => Site::firstOrFail()->id,
+        'canonicalId' => $this->entry->id,
+        'previewToken' => Crypt::encrypt($token = Str::random(32)),
+    ];
+
+    postJson(action([PreviewController::class, 'createToken']), $params)
+        ->assertOk()
+        ->assertJson(['token' => $token]);
+
+    get(action([PreviewController::class, 'createToken'], [...$params, 'redirect' => 'https://example.com']))
+        ->assertRedirect('https://example.com');
+
+    expect(RouteToken::count())->toBe(1);
+});
+
+it('rejects a pre-generated token that routes somewhere else', function () {
+    $other = Entry::factory()->create();
+    SessionAuth::authorize("previewElement:{$other->id}");
+
+    $params = [
+        'elementType' => CraftCms\Cms\Entry\Elements\Entry::class,
+        'siteId' => Site::firstOrFail()->id,
+        'canonicalId' => $this->entry->id,
+        'previewToken' => Crypt::encrypt(Str::random(32)),
+    ];
+
+    postJson(action([PreviewController::class, 'createToken']), $params)->assertOk();
+    postJson(action([PreviewController::class, 'createToken']), [...$params, 'canonicalId' => $other->id])
+        ->assertBadRequest();
+});
+
+it('keeps the preview param on the previewed request', function () {
+    $token = postJson(action([PreviewController::class, 'createToken']), [
+        'elementType' => CraftCms\Cms\Entry\Elements\Entry::class,
+        'siteId' => Site::firstOrFail()->id,
+        'canonicalId' => $this->entry->id,
+    ])->json('token');
+
+    Route::get('/', fn () => request()->isPreview() ? 'is preview' : 'not preview');
+
+    get('/?token='.$token.'&x-craft-live-preview='.urlencode(Crypt::encrypt('x')))
+        ->assertOk()
+        ->assertSee('is preview');
 });

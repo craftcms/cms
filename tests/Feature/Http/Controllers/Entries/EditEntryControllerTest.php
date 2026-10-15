@@ -732,6 +732,38 @@ it('links preview targets through a token when the element is not public', funct
         );
 });
 
+it('gives Live Preview untokenized targets and the token the View links share', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('preview.targets.0.label', 'Primary entry page')
+            ->where('preview.targets.0.url', $this->entry->getUrl())
+            ->where('preview.targets.0.refresh', true)
+            ->where('preview.tokenParams.canonicalId', $this->entry->id)
+            ->where('preview.token', fn (string $token) => strlen($token) === 32)
+            ->where('preview.iframeResizerOptions', false)
+            ->etc()
+        );
+});
+
+it('withholds Live Preview from revisions', function () {
+    $revision = Elements::getElementById(
+        app(Revisions::class)->createRevision($this->entry, auth()->id()),
+    );
+
+    get(cp_url(sprintf(
+        'entries/news/%d-%s?revisionId=%d',
+        $this->entry->id,
+        $this->entry->slug,
+        $revision->revisionId,
+    )))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('preview', null)
+            ->etc()
+        );
+});
+
 it('polls for activity against the canonical element', function () {
     get($this->entry->getCpEditUrl())
         ->assertOk()

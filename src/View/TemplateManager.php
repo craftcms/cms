@@ -6,6 +6,7 @@ namespace CraftCms\Cms\View;
 
 use Closure;
 use CraftCms\Cms\Blade\BladeRenderer;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Twig\Contracts\TwigRendererInterface;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TwigRenderer;
@@ -14,6 +15,8 @@ use CraftCms\Cms\View\Events\PageTemplateRendered;
 use CraftCms\Cms\View\Events\PageTemplateRendering;
 use CraftCms\Cms\View\Events\TemplateRendered;
 use CraftCms\Cms\View\Events\TemplateRendering;
+use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Log;
@@ -187,6 +190,8 @@ class TemplateManager extends Manager
                 $publicOnly,
                 $renderer,
             ): string {
+                $this->registerLivePreviewAssets($templateMode);
+
                 return $this->renderFileTemplate(
                     $template,
                     $variables,
@@ -307,6 +312,20 @@ class TemplateManager extends Manager
     protected function createBladeDriver(): TemplateRendererInterface
     {
         return $this->container->make(BladeRenderer::class);
+    }
+
+    /**
+     * Lets Live Preview size its iframe to the page, when that's enabled.
+     */
+    private function registerLivePreviewAssets(TemplateMode $templateMode): void
+    {
+        if (
+            $templateMode === TemplateMode::Site &&
+            Cms::config()->useIframeResizer &&
+            request()->query('x-craft-live-preview') !== null
+        ) {
+            app(InternalAssetRegistry::class)->register(ContentWindowAsset::class);
+        }
     }
 
     /** @param array<string, mixed> $variables */
