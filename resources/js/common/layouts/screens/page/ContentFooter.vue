@@ -74,7 +74,7 @@
       'content-footer--contained': contained,
     }"
   >
-    <div class="flex gap-md items-center">
+    <div class="flex flex-wrap gap-md items-center">
       <FormActions
         v-if="form"
         :form="form"
@@ -151,6 +151,7 @@
 <style scoped>
   .content-footer__actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--c-spacing-sm);
   }

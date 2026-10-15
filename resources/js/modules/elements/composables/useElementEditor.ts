@@ -7,7 +7,13 @@ import {
 } from '@/modules/elements/nested-owner';
 import {toReactive, useEventListener} from '@vueuse/core';
 import {router, useForm} from '@inertiajs/vue3';
-import {actionClient, appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
+import {
+  actionClient,
+  appendBodyHtml,
+  appendHeadHtml,
+  t,
+  type ButtonVariant,
+} from '@craftcms/ui';
 import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
 import {
   useScreenPageProps,
@@ -26,6 +32,7 @@ import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
+import {attach} from '@actions/ReleasesController';
 
 export interface ElementEditFormData {
   typeId?: string | number | null;
@@ -53,7 +60,7 @@ export interface ElementFormAction {
   disabledReason?: string | null;
   /** Pre-encrypted by the server; the save controllers decrypt it. */
   redirect: string | null;
-  variant?: string;
+  variant?: ButtonVariant;
   shortcut?: boolean;
   shift?: boolean;
 }
@@ -84,6 +91,12 @@ export interface ElementPreviewTarget {
   url: string;
   icon?: string;
 }
+
+export type ReleaseOption = Pick<
+  CraftCms.Cms.Release.Data.ReleaseSummaryData,
+  'id' | 'name' | 'status' | 'targetDate'
+>;
+export type AttachedRelease = CraftCms.Cms.Release.Data.AttachedReleaseData;
 
 /**
  * An entry in the drafts-and-revisions switcher. Groups arrive flattened, with
@@ -129,6 +142,7 @@ export interface ElementEditPayload {
   fresh?: boolean;
   isProvisionalDraft: boolean;
   draftId: number | null;
+  draftIsSaved: boolean;
   canAutosave: boolean;
   notice: string | null;
   mergeNotice: string | null;
@@ -149,6 +163,11 @@ export interface ElementEditPayload {
     current: CraftCms.Cms.Workflow.Data.WorkflowReviewData | null;
     draftReviews: CraftCms.Cms.Workflow.Data.WorkflowDraftReviewData[];
   };
+  release: AttachedRelease | null;
+  releaseOptions: ReleaseOption[];
+  canCreateRelease: boolean;
+  canAddToRelease: boolean;
+  releaseTimeZone: string;
 }
 
 type IncomingElementEditPayload = Omit<ElementEditPayload, 'workflow'> & {
@@ -229,10 +248,18 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     })
   );
 
-  const editingReviewedDraft = shallowRef(false);
+  const editingDraft = shallowRef(false);
+  const releaseDraftLocked = computed(
+    () => Boolean(props.release) && !editingDraft.value
+  );
+
+  watch([() => props.draftId, () => props.release?.id], () => {
+    editingDraft.value = false;
+  });
+
   const workflowReviewLocked = computed(
     () =>
-      !editingReviewedDraft.value &&
+      !editingDraft.value &&
       ['pending', 'approved'].includes(props.workflow?.current?.status ?? '')
   );
 
@@ -243,13 +270,13 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         status !== previousStatus &&
         (status === 'pending' || status === 'approved')
       ) {
-        editingReviewedDraft.value = false;
+        editingDraft.value = false;
       }
     }
   );
 
-  function startEditingReviewedDraft(): void {
-    editingReviewedDraft.value = true;
+  function startEditingDraft(): void {
+    editingDraft.value = true;
   }
 
   // The field layout comes back on the response separately from the screen
@@ -321,7 +348,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     siteId: props.siteId,
     draftId: props.draftId,
     isProvisional: props.isProvisionalDraft,
-    enabled: props.canAutosave,
+    enabled: () =>
+      props.canAutosave && !props.readOnly && !releaseDraftLocked.value,
     transform: (data) =>
       requestValues(
         preparingOwnerGroups.size
@@ -514,6 +542,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     async prepare(path, initialContext) {
       if (
         props.readOnly ||
+        releaseDraftLocked.value ||
         workflowReviewLocked.value ||
         !(nestedOwnerContext(uiPayload.value, path) ?? initialContext)
       ) {
@@ -665,6 +694,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   // so the shared save pipeline (elevated sessions, error handling, the
   // processing flag) is reused rather than reimplemented per action.
   const pendingAction = ref<ElementFormAction | null>(null);
+  const pendingRelease = shallowRef<ReleaseOption | null>(null);
   const activityTimelineVersion = ref(0);
 
   /**
@@ -716,7 +746,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       method: 'post' as const,
     }),
     {
-      keyboardShortcutEnabled: () => !props.readOnly,
+      keyboardShortcutEnabled: () =>
+        !props.readOnly && !releaseDraftLocked.value,
       transform: (data) => {
         // Identity first, so the form wins where they overlap: the entry type
         // can be changed in the sidebar, and `saveData()` only knows the one
@@ -759,6 +790,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       // is gone, so there's nothing left to keep editing.
       forceClose: () => nestedOwnerId.value !== null,
       onError: (data) => {
+        pendingRelease.value = null;
+
         if (data?.message) {
           window.Craft?.cp?.displayError(data.message);
         }
@@ -801,9 +834,113 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         }
 
         activityTimelineVersion.value++;
+
+        if (pendingRelease.value) {
+          const release = pendingRelease.value;
+          const finalDraftId = savedDraftId(data);
+          pendingRelease.value = null;
+
+          if (finalDraftId !== null) {
+            void attachDraft(release, finalDraftId);
+          }
+        }
       },
     }
   );
+
+  function savedDraftId(result: unknown): number | null {
+    const response = result as
+      | {
+          props?: {draftId?: unknown; screen?: {draftId?: unknown}};
+          draftId?: unknown;
+          screen?: {draftId?: unknown};
+        }
+      | undefined;
+    const value =
+      response?.props?.draftId ??
+      response?.props?.screen?.draftId ??
+      response?.draftId ??
+      response?.screen?.draftId ??
+      props.draftId ??
+      autosave.draftId.value;
+    const id = Number(value);
+
+    return Number.isInteger(id) && id > 0 ? id : null;
+  }
+
+  /**
+   * Adds a saved draft to a release and shows it as a release member. In a
+   * slideout that's the panel's own request: an Inertia visit would follow the
+   * redirect on the page behind it and leave the panel showing the old state.
+   */
+  async function attachDraft(
+    release: ReleaseOption,
+    draftId: number
+  ): Promise<void> {
+    const target = attach({release: release.id});
+    const data = {draftId, siteId: props.siteId};
+
+    if (!slideout) {
+      router.visit(target, {data});
+
+      return;
+    }
+
+    try {
+      const {data: response} = await actionClient.post<{
+        message?: string;
+        redirect?: string;
+      }>(target.url, data);
+
+      if (response.message) {
+        window.Craft?.cp?.displayNotice(response.message);
+      }
+
+      if (response.redirect) {
+        slideout.instance.href = response.redirect;
+      }
+
+      await slideout.reload();
+    } catch (error: any) {
+      window.Craft?.cp?.displayError(
+        error?.response?.data?.message ?? t('A server error occurred.')
+      );
+    }
+  }
+
+  function addToRelease(release: ReleaseOption): void {
+    const savedDraftId = props.draftId ?? autosave.draftId.value;
+    const savedAndClean =
+      savedDraftId !== null &&
+      props.draftIsSaved &&
+      !draftIsProvisional.value &&
+      (!form.isDirty || !autosave.hasPendingChanges.value);
+
+    if (savedAndClean) {
+      void attachDraft(release, savedDraftId);
+
+      return;
+    }
+
+    pendingRelease.value = release;
+    pendingAction.value =
+      props.isProvisionalDraft || props.draftId === null
+        ? {
+            label: t('Save draft'),
+            actionUrl: props.autosaveUrl,
+            params: {dropProvisional: 1},
+            redirect: null,
+          }
+        : {
+            label: t('Save draft'),
+            actionUrl: props.autosaveUrl,
+            params: {draftId: savedDraftId},
+            redirect: null,
+          };
+
+    save({redirect: false});
+    void nextTick(() => (pendingAction.value = null));
+  }
 
   /**
    * Submits the edit form under an alternate action — a Save-menu entry or a
@@ -1032,6 +1169,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     activity,
     activityTimelineVersion,
     autosave,
+    addToRelease,
     discardDraft,
     submitAction,
     errors,
@@ -1048,7 +1186,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     sidebarErrors,
     sidebarPayload,
     sidebarRenderer,
-    startEditingReviewedDraft,
+    releaseDraftLocked,
+    startEditingDraft,
     updatePayload,
     values,
     workflowReviewLocked,

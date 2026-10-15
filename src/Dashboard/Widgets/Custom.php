@@ -107,7 +107,10 @@ class Custom extends Widget
         $twig->setDefaultEscaperStrategy($escaper);
 
         try {
-            return $twig->createTemplate($template, $this->definition()?->filename)->render();
+            // Escaping is compiled into the template, so each strategy needs its own name.
+            $name = sprintf('%s, escaper %s', $this->definition()->filename ?? 'custom widget', $escaper ?: 'none');
+
+            return $twig->createTemplate($template, $name)->render();
         } finally {
             $twig->setDefaultEscaperStrategy();
         }

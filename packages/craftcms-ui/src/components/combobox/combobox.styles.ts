@@ -59,6 +59,10 @@ export default css`
     pointer-events: none;
   }
 
+  .prefix--indicator {
+    display: flex;
+  }
+
   :host([has-prefix-icon]) ::slotted(.form-control) {
     padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
   }

@@ -27,6 +27,7 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\EmailConditionRule;
@@ -474,15 +475,16 @@ it('rolls back prior saves when a later element fails', function () {
         'title' => 'Second Before Save',
     ]);
 
-    app()->instance(Elements::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), $secondEntry->id) extends Elements
+    app()->instance(Elements::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class), $secondEntry->id) extends Elements
     {
         public function __construct(
             ElementPlaceholders $placeholders,
             ElementTypes $elementTypes,
             ElementCaches $elementCaches,
+            Releases $releases,
             private readonly int $failingElementId,
         ) {
-            parent::__construct($placeholders, $elementTypes, $elementCaches);
+            parent::__construct($placeholders, $elementTypes, $elementCaches, $releases);
         }
 
         public function saveElement(

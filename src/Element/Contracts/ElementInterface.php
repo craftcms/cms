@@ -9,6 +9,7 @@ use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Contracts\Renderable;
 use CraftCms\Cms\Component\Contracts\Statusable;
 use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Data\ActionItem;
@@ -34,7 +35,6 @@ use CraftCms\Cms\View\Contracts\ProvidesObjectTemplateSuggestions;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\HtmlString;
 use IteratorAggregate;
-use RuntimeException;
 use Stringable;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -51,7 +51,7 @@ use Symfony\Component\HttpFoundation\Response;
  * @extends ArrayAccess<array-key,mixed>
  * @extends IteratorAggregate<array-key,mixed>
  */
-interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, ProvidesObjectTemplateSuggestions, Statusable, Thumbable, Validatable
+interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, ProvidesObjectTemplateSuggestions, Renderable, Statusable, Thumbable, Validatable
 {
     /**
      * Returns the lowercase version of [[displayName()]].
@@ -1757,15 +1757,4 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the string representation of the element.
      */
     public function __toString(): string;
-
-    /**
-     * Renders the element using its partial template.
-     *
-     * If no partial template exists for the element, its string representation will be output instead.
-     *
-     * @param  array<string,mixed>  $variables
-     *
-     * @throws RuntimeException
-     */
-    public function render(array $variables = []): HtmlString;
 }

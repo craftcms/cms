@@ -2,6 +2,7 @@ import {beforeEach, expect, it} from 'vite-plus/test';
 import '../../styles/cp.css';
 import './card.js';
 import '../chip/chip.js';
+import '../button/button.js';
 import type CraftCard from './card.js';
 
 beforeEach(() => {
@@ -29,6 +30,31 @@ it('gives a white card a body as white as its header', async () => {
   const headerFill = getComputedStyle(header).backgroundColor;
   expect(opaque(body)).toBe(true);
   expect(opaque(headerFill) ? headerFill : body).toBe(body);
+});
+
+it('gives a colored card’s links its text color and an underline', async () => {
+  document.body.innerHTML = ['red', 'white', 'gray', 'slate']
+    .map(
+      (color) =>
+        `<craft-card data-color="${color}">Body with <a href="#">a link</a></craft-card>`
+    )
+    .join('');
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+
+  const link = (card: CraftCard) => getComputedStyle(card.querySelector('a')!);
+  const text = (card: CraftCard) =>
+    getComputedStyle(card.shadowRoot!.querySelector('.card')!).color;
+  const [red, ...neutral] = cards;
+
+  expect(link(red!).color).toBe(text(red!));
+  expect(link(red!).textDecorationLine).toBe('underline');
+
+  // The neutral colors keep the default link styling.
+  for (const card of neutral) {
+    expect(link(card).color).not.toBe(text(card));
+    expect(link(card).textDecorationLine).toBe('none');
+  }
 });
 
 it('gives a white card a lighter shadow than other cards', async () => {
@@ -264,3 +290,65 @@ it.each([['dark'], ['light']])(
     );
   }
 );
+
+it('keeps a black card’s body text readable on a light page, selected or not', async () => {
+  document.body.innerHTML = `
+    <div id="page" style="background: var(--c-surface-sunken)">
+      <craft-card data-color="black">Body</craft-card>
+      <craft-card data-color="black" active>Body</craft-card>
+    </div>`;
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+  const page = getComputedStyle(
+    document.getElementById('page')!
+  ).backgroundColor;
+
+  for (const card of cards) {
+    const style = getComputedStyle(card.shadowRoot!.querySelector('.card')!);
+    const fill = luminanceOver(style.backgroundColor, page);
+    const text = luminanceOver(style.color, page);
+    const contrast =
+      (Math.max(fill, text) + 0.05) / (Math.min(fill, text) + 0.05);
+
+    expect(contrast).toBeGreaterThanOrEqual(4.5);
+  }
+});
+
+it('pads its body with the container padding, or the same value without it', async () => {
+  document.body.innerHTML = `
+    <craft-card id="fallback">Body</craft-card>
+    <div style="--cp-container-padding: 40px">
+      <craft-card id="container">Body</craft-card>
+    </div>
+    <div id="spacing" style="padding: var(--c-spacing-lg)"></div>`;
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+  const padding = (id: string) =>
+    getComputedStyle(
+      document.getElementById(id)!.shadowRoot!.querySelector('.card-body')!
+    ).paddingInlineStart;
+
+  expect(padding('fallback')).toBe(
+    getComputedStyle(document.getElementById('spacing')!).paddingInlineStart
+  );
+  expect(padding('fallback')).not.toBe('0px');
+  expect(padding('container')).toBe('40px');
+});
+
+it('gives a header the same height with or without actions', async () => {
+  document.body.innerHTML = `
+    <craft-card id="label" label="Card label">Body</craft-card>
+    <craft-card id="actions" label="Card label">
+      <craft-button slot="actions" size="small" icon="ellipsis" label="Actions"></craft-button>
+      Body
+    </craft-card>`;
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+  const height = (id: string) =>
+    document
+      .getElementById(id)!
+      .shadowRoot!.querySelector('.card__header')!
+      .getBoundingClientRect().height;
+
+  expect(height('label')).toBe(height('actions'));
+});

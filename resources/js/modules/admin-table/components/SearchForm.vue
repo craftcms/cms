@@ -29,7 +29,7 @@
       <CraftInput
         class="flex-1"
         name="search"
-        :label="t('Search term')"
+        :label="t('Search Term')"
         v-model="searchTerm"
         @input="autoSearch(submit)"
         label-sr-only

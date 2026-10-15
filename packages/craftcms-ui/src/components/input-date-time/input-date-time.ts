@@ -16,7 +16,7 @@ import {t} from '@src/utilities/translate';
 const PART_LABELS: Record<string, () => string> = {
   date: () => t('Date'),
   time: () => t('Time'),
-  timezone: () => t('Time zone'),
+  timezone: () => t('Time Zone'),
 };
 
 /**
@@ -118,9 +118,11 @@ export default class CraftInputDateTime extends LitElement {
 
   /**
    * Set to `full` to stretch the inputs across the container. Slotted
-   * content, such as a clear button, keeps its own width.
+   * content, such as a clear button, keeps its own width. Set to `auto` to keep
+   * the control at its inputs' width within a `craft-field`, which otherwise
+   * stretches its control across the column, as it does a text input.
    */
-  @property({reflect: true}) width?: 'full';
+  @property({reflect: true}) width?: 'full' | 'auto';
 
   /** Disables every input the component owns. */
   @property({type: Boolean}) disabled = false;

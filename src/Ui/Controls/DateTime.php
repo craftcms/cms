@@ -46,7 +46,7 @@ class DateTime extends Control
             ->min($control->props['min'] ?? null)
             ->max($control->props['max'] ?? null)
             ->minuteIncrement($control->props['minuteIncrement'])
-            ->width(($control->props['fullWidth'] ?? false) ? 'full' : null)
+            ->width(($control->props['fullWidth'] ?? false) ? 'full' : 'auto')
             ->disabled($attributes['disabled'])
             ->readOnly($attributes['readonly'])
             ->required($attributes['required'])

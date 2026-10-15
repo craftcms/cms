@@ -245,7 +245,7 @@ readonly class ElementSourceUi
                 $options,
             ))->reactive())->width(75),
             Group::make('source-sort-direction', [
-                Field::make(t('Sort direction'), $dir),
+                Field::make(t('Sort Direction'), $dir),
             ])
                 ->width(25)
                 ->dependsOn('defaultSort.attr'),
