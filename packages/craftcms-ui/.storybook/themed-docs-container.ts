@@ -1,13 +1,10 @@
-import {createElement, useEffect, useState} from 'react';
-import type {ComponentProps} from 'react';
 import {DocsContainer} from '@storybook/addon-docs/blocks';
-import {GLOBALS_UPDATED, SET_GLOBALS} from 'storybook/internal/core-events';
-import {addons} from 'storybook/preview-api';
 import {create, themes} from 'storybook/theming';
 import type {ThemeVars} from 'storybook/theming';
 
-type DocsContainerProps = ComponentProps<typeof DocsContainer>;
-type GlobalsPayload = {globals?: {theme?: string}};
+type DocsContainerProps = Parameters<typeof DocsContainer>[0];
+
+let darkTheme: ThemeVars | undefined;
 
 /**
  * Builds the docs theme from the control panel's own dark tokens, so a docs
@@ -60,27 +57,17 @@ function currentTheme(context: DocsContainerProps['context']): string {
  * The docs container, themed to follow the toolbar's theme switcher. Storybook
  * only themes docs pages from a static `docs.theme` parameter, so the page
  * chrome would otherwise stay light while the stories on it turn dark.
+ *
+ * Storybook re-renders a docs page when globals change, so the theme is read
+ * on each render. This wraps `DocsContainer` by calling it, rather than through
+ * `createElement()`, so the file doesn't import React: only the docs addon's
+ * Vite preset aliases it, and the Vitest runner loads this preview without it.
  */
 export function ThemedDocsContainer(props: DocsContainerProps) {
-  const [theme, setTheme] = useState(() => currentTheme(props.context));
-  const [darkTheme] = useState(cpDarkTheme);
+  const theme =
+    currentTheme(props.context) === 'dark'
+      ? (darkTheme ??= cpDarkTheme())
+      : themes.light;
 
-  useEffect(() => {
-    const channel = addons.getChannel();
-    const update = ({globals}: GlobalsPayload) => {
-      setTheme(globals?.theme ?? 'light');
-    };
-    channel.on(SET_GLOBALS, update);
-    channel.on(GLOBALS_UPDATED, update);
-
-    return () => {
-      channel.off(SET_GLOBALS, update);
-      channel.off(GLOBALS_UPDATED, update);
-    };
-  }, []);
-
-  return createElement(DocsContainer, {
-    ...props,
-    theme: theme === 'dark' ? darkTheme : themes.light,
-  });
+  return DocsContainer({...props, theme});
 }
