@@ -251,6 +251,19 @@ export function createElementActionDispatcher({
         void openImageEditorDialog(behavior.settings, (result) => {
           if (!result.newAssetId) {
             reload();
+            return;
+          }
+
+          // Saved as a new asset, which takes the edited one's place wherever
+          // the panel was opened from; the panel is still editing the old one.
+          if (slideout) {
+            slideout.saved({
+              data: {
+                replacedAssetId: behavior.assetId,
+                newAssetId: result.newAssetId,
+              },
+            });
+            slideout.close({force: true});
           }
         });
     }

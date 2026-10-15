@@ -3,7 +3,6 @@ import {
   deferUntil,
   ESC_KEY,
   hasAttr,
-  requestAnimationFrame,
   RETURN_KEY,
 } from '@craftcms/garnish';
 // Listbox was migrated out of `@craftcms/garnish` into the app.
@@ -19,36 +18,14 @@ import {
   type FieldLayoutHud,
 } from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
-import type {UiPayload, UiValues} from '@/modules/ui/types';
 import {ButtonVariant, t} from '@craftcms/ui';
 import {openSlideout} from '@/common/slideouts';
-import {Slideout} from '@/modules/slideout';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
 // used ONLY at the Craft-interop seams (Craft.ui/Grid/listbox/Slideout return or
 // require jQuery). Everywhere else FLD uses native DOM.
 declare const Craft: any;
 declare const $: any;
-
-interface LayoutComponentSettingsUi extends HTMLElement {
-  payload: UiPayload;
-  requestData: () => UiValues;
-}
-
-interface FieldLayoutSlideoutData {
-  ui: UiPayload;
-  headHtml?: string;
-  bodyHtml?: string;
-}
-
-interface FieldLayoutSlideoutSettings {
-  triggerElement?: HTMLElement;
-  requestData?: () => UiValues;
-}
-
-type FieldLayoutSettingsSlideout = Slideout & {
-  settingsUi: LayoutComponentSettingsUi;
-};
 
 /**
  * Field Layout Designer — a port of the legacy `Craft.FieldLayoutDesigner` onto
@@ -264,6 +241,38 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
         ?.querySelector('.card-view-designer');
       this.initCvd();
     }
+
+    // "Field settings" announces a save as `field-saved` from its menu item,
+    // which sits in a settings panel outside the designer.
+    this.addListener(document, 'field-saved', (ev) => {
+      const selectorHtml =
+        ev instanceof CustomEvent ? ev.detail?.selectorHtml : null;
+      if (selectorHtml) {
+        this.refreshField(String(selectorHtml));
+      }
+    });
+  }
+
+  /** Swaps in a saved field's library selector and refreshes its instances. */
+  refreshField(selectorHtml: string): void {
+    const $newSelector = htmlToElement(selectorHtml);
+    const fieldId = $newSelector.dataset.id;
+    const $oldSelector = this.$fieldLibrary.querySelector(
+      `.fld-field[data-id="${fieldId}"]`
+    );
+
+    if (!$oldSelector) {
+      return;
+    }
+
+    $oldSelector.replaceWith($newSelector);
+    this.refreshLibraryFields();
+    this.elementDrag!.removeItems($oldSelector);
+    this.elementDrag!.addItems($newSelector);
+
+    this.$tabContainer
+      .querySelectorAll(`.fld-field[data-id="${fieldId}"]`)
+      .forEach((el: HTMLElement) => fldElementData.get(el)?.refresh());
   }
 
   /** Direct `.fld-element` children of every field group, in DOM order. */
@@ -607,91 +616,5 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     const element = tab!.initElement($element);
     element.onSelect();
     element.updatePositionInConfig();
-  }
-
-  static async createSlideout(
-    data: FieldLayoutSlideoutData,
-    settings: FieldLayoutSlideoutSettings = {}
-  ): Promise<FieldLayoutSettingsSlideout> {
-    const $body = document.createElement('div');
-    $body.className = 'fld-element-settings-body';
-    const $fields = document.createElement('div');
-    $fields.className = 'fields';
-    const $ui = document.createElement('craft-layout-component-settings-ui');
-    if (!('payload' in $ui) || !('requestData' in $ui)) {
-      throw new Error('Layout component settings UI is not registered.');
-    }
-    // SAFETY: The registration check above establishes the UI element's public contract.
-    const settingsUi = $ui as LayoutComponentSettingsUi;
-    settingsUi.payload = data.ui;
-    if (settings.requestData) {
-      settingsUi.requestData = settings.requestData;
-    }
-    $fields.appendChild(settingsUi);
-    $body.appendChild($fields);
-
-    const $footer = document.createElement('div');
-    $footer.className = 'fld-element-settings-footer';
-    const $flexGrow = document.createElement('div');
-    $flexGrow.className = 'flex-grow';
-    $footer.appendChild($flexGrow);
-
-    const cancelBtn = document.createElement('craft-button');
-    cancelBtn.type = 'button';
-    cancelBtn.variant = ButtonVariant.Fill;
-    cancelBtn.innerText = t('Close');
-    $footer.appendChild(cancelBtn);
-
-    const submitBtn = document.createElement('craft-button');
-    submitBtn.type = 'submit';
-    submitBtn.variant = ButtonVariant.Primary;
-    submitBtn.innerText = t('Apply');
-    $footer.appendChild(submitBtn);
-
-    // Craft.Slideout is a jQuery widget — pass a jQuery wrapper at the seam.
-    const {requestData: _requestData, ...slideoutSettings} = settings;
-    const slideout = new Slideout(
-      [$body, $footer],
-      Object.assign(
-        {
-          containerElement: 'form',
-          containerAttributes: {
-            action: '',
-            method: 'post',
-            novalidate: '',
-            class: 'fld-element-settings',
-          },
-        },
-        slideoutSettings
-      )
-    );
-
-    slideout.on('open', () => {
-      // Hold off until it's positioned and the form has mounted...
-      requestAnimationFrame(() => {
-        // Focus on the first editable control
-        const focusTarget = slideout.$container[0].querySelector(
-          'input:not([type=hidden]):not([disabled]), textarea:not([disabled]), craft-input, craft-combobox, .text'
-        );
-        if (focusTarget instanceof HTMLElement) {
-          focusTarget.focus();
-        }
-      });
-    });
-
-    cancelBtn.addEventListener('click', () => {
-      slideout.close();
-    });
-
-    if (data.headHtml) {
-      await Craft.appendHeadHtml(data.headHtml);
-    }
-    if (data.bodyHtml) {
-      await Craft.appendBodyHtml(data.bodyHtml);
-    }
-
-    Craft.initUiElements(slideout.$container);
-
-    return Object.assign(slideout, {settingsUi});
   }
 }

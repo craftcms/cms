@@ -23,6 +23,20 @@ import {
 
 const request = vi.hoisted(() => ({post: vi.fn()}));
 const actions = vi.hoisted(() => ({run: vi.fn()}));
+const slideout = vi.hoisted(() => ({
+  onSaved: null as ((result: {draft?: boolean}) => void) | null,
+}));
+vi.mock('@/common/slideouts', () => ({
+  openSlideout: vi.fn(
+    async (
+      _url: string,
+      options?: {onSaved?: (result: {draft?: boolean}) => void}
+    ) => {
+      slideout.onSaved = options?.onSaved ?? null;
+      return null;
+    }
+  ),
+}));
 
 vi.mock('@craftcms/ui', async (original) => ({
   ...(await original<Record<string, unknown>>()),
@@ -56,9 +70,6 @@ describe('NestedElementsControl', () => {
 
     const movedToSecondPage = new Set<number>();
     let inlineSaveFailures = 1;
-    let submitElement:
-      | ((event: {response: {data: {draft: boolean}}}) => void)
-      | undefined;
     let reorderFailures = 0;
     const pasteElements = vi.fn(async () => [{id: 92}]);
     const ownerRefresh = vi.fn(async () => {});
@@ -81,20 +92,6 @@ describe('NestedElementsControl', () => {
       elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
       findDeltaData: (_before: string, after: string, names: string[]) =>
         `${after}&modifiedDeltaNames[]=${encodeURIComponent(names[0]!)}`,
-      createElementEditor: vi.fn(() => ({
-        elementEditor: {
-          settings: {draftId: 44, saveParams: null},
-          saveDraft: vi.fn(async () => {}),
-        },
-        on: (
-          event: string,
-          callback: (event: {response: {data: {draft: boolean}}}) => void
-        ) => {
-          if (event === 'submit') {
-            submitElement = callback;
-          }
-        },
-      })),
       cp: {
         copyElements: vi.fn(),
         displayError: vi.fn(),
@@ -214,7 +211,7 @@ describe('NestedElementsControl', () => {
       root,
       ownerRefresh,
       pasteElements,
-      submitElement: () => submitElement,
+      submitElement: () => slideout.onSaved,
       failNextReorder: () => reorderFailures++,
     };
   }
@@ -277,6 +274,7 @@ describe('NestedElementsControl', () => {
   }, 15_000);
 
   it('resets paging after the first create save and a toolbar paste', async () => {
+    slideout.onSaved = null;
     const {root, ownerRefresh, pasteElements, submitElement} = mount();
     await waitForPage(root, 1);
     await goToPage(root, 'Next page', 2);
@@ -286,7 +284,7 @@ describe('NestedElementsControl', () => {
     await vi.waitFor(() => expect(submitElement()).toBeTypeOf('function'));
     expect(indexRequests()).toHaveLength(readsBeforeCreate);
 
-    submitElement()!({response: {data: {draft: false}}});
+    submitElement()!({draft: false});
     await waitForPage(root, 1);
     expect(ownerRefresh).toHaveBeenCalledOnce();
 
@@ -308,6 +306,7 @@ describe('NestedElementsControl', () => {
   });
 
   it('reloads the index after a nested child saves', async () => {
+    slideout.onSaved = null;
     const {root, ownerRefresh, submitElement} = mount();
     await waitForPage(root, 1);
     const readsBeforeSave = indexRequests().length;
@@ -317,7 +316,7 @@ describe('NestedElementsControl', () => {
       .dispatchEvent(new MouseEvent('dblclick', {bubbles: true}));
     await vi.waitFor(() => expect(submitElement()).toBeTypeOf('function'));
 
-    submitElement()!({response: {data: {draft: false}}});
+    submitElement()!({draft: false});
 
     await vi.waitFor(() =>
       expect(indexRequests()).toHaveLength(readsBeforeSave + 1)

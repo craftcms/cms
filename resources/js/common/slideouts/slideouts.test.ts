@@ -334,6 +334,37 @@ describe('reporting a save to the opener', () => {
   });
 });
 
+describe('telling the opener the panel closed', () => {
+  beforeEach(() => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+  });
+
+  it('calls the handler when the panel closes', async () => {
+    const onClosed = vi.fn();
+    const panel = (await openSlideout('/a', {onClosed}))!;
+
+    expect(onClosed).not.toHaveBeenCalled();
+
+    closeSlideout(panel.id, {force: true});
+
+    expect(onClosed).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls it for nested panels closed along with their parent', async () => {
+    const onClosed = vi.fn();
+    const first = (await openSlideout('/a'))!;
+    await openSlideout('/b', {opener: openerInPanel(first.id), onClosed});
+
+    closeSlideout(first.id, {force: true});
+
+    expect(onClosed).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('discarding unsaved changes', () => {
   let confirmSpy: ReturnType<typeof vi.fn>;
 

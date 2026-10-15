@@ -33,6 +33,8 @@ vi.mock('@craftcms/ui', async (original) => ({
   actionClient: request,
 }));
 vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
+const openSlideout = vi.hoisted(() => vi.fn(async () => null));
+vi.mock('@/common/slideouts', () => ({openSlideout}));
 
 vi.mock('@inertiajs/vue3', async () => ({
   ...(await vi.importActual('@inertiajs/vue3')),
@@ -45,6 +47,7 @@ describe('NestedElementsIndex', () => {
   let restoreElementInternals = () => {};
 
   afterEach(() => {
+    openSlideout.mockClear();
     app?.unmount();
     root?.remove();
     request.post.mockReset();
@@ -140,10 +143,6 @@ describe('NestedElementsIndex', () => {
         getCopiedElements: () => [],
         onCopyElements: vi.fn(),
       },
-      createElementEditor: vi.fn(() => ({
-        elementEditor: {settings: {}, saveDraft: vi.fn()},
-        on: vi.fn(),
-      })),
       elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
       findDeltaData: (_before: string, after: string, names: string[]) =>
         `${after}&modifiedDeltaNames[]=${encodeURIComponent(names[0]!)}`,
@@ -708,10 +707,7 @@ describe('NestedElementsIndex', () => {
         new MouseEvent('click', {bubbles: true, cancelable: true})
       )
     ).toBe(false);
-    expect(craft.createElementEditor).toHaveBeenCalledWith(
-      'Entry',
-      expect.objectContaining({elementId: '11'})
-    );
+    expect(openSlideout).toHaveBeenCalledWith(editUrl, expect.any(Object));
 
     expect(
       editLink.dispatchEvent(
@@ -732,7 +728,7 @@ describe('NestedElementsIndex', () => {
         })
       )
     ).toBe(true);
-    expect(craft.createElementEditor).toHaveBeenCalledTimes(1);
+    expect(openSlideout).toHaveBeenCalledTimes(1);
 
     const otherLink =
       firstRow.querySelector<HTMLAnchorElement>('a[href="/other"]')!;
@@ -741,7 +737,7 @@ describe('NestedElementsIndex', () => {
         new MouseEvent('click', {bubbles: true, cancelable: true})
       )
     ).toBe(true);
-    expect(craft.createElementEditor).toHaveBeenCalledTimes(1);
+    expect(openSlideout).toHaveBeenCalledTimes(1);
   });
 
   it('leaves table links native when the owner is read-only', () => {
@@ -760,7 +756,7 @@ describe('NestedElementsIndex', () => {
         new MouseEvent('click', {bubbles: true, cancelable: true})
       )
     ).toBe(true);
-    expect(craft.createElementEditor).not.toHaveBeenCalled();
+    expect(openSlideout).not.toHaveBeenCalled();
   });
 });
 

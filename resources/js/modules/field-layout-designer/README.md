@@ -40,11 +40,6 @@ these seams:
 
 - **`Craft.Grid`** on `.fld-tabs` — instantiated and fed via `$(...)`. _TODO:_ a
   later pass can replace it with CSS Grid (out of scope here).
-- **`Craft.Slideout` / `Craft.CpScreenSlideout`** — instantiated at the seam;
-  their jQuery `$container` is unwrapped with `[0]`.
-- **`slideout.$container.serialize()`** (jQuery-only form serialize) and the
-  `Craft.ui.addErrorsToField`/`clearErrorsFromField` error path require jQuery
-  fields.
 - Plain (non-jQuery) Craft calls — `Craft.t`, `Craft.sendActionRequest`,
   `Craft.cp.*`, `Craft.escapeHtml`, `Craft.uuid`, `Craft.appendHead/BodyHtml`,
   `Craft.initUiElements` — are left as-is.
@@ -67,8 +62,9 @@ to the `@craftcms/garnish` package.
 
 ## Files
 
-- `field-layout-designer.ts` — the main designer class (+ static `defaults` /
-  `createSlideout`).
+- `field-layout-designer.ts` — the main designer class (+ static `defaults`).
+- `settings-slideout.ts` / `LayoutComponentSettings.vue` — tab and element
+  settings, opened with `openSlideoutWith()`.
 - `tab.ts` — a tab.
 - `element.ts` — a layout element (field / UI element).
 - `card-view-designer.ts` — the card view designer.

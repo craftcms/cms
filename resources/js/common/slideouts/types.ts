@@ -20,6 +20,8 @@ export interface SlideoutInstance {
   opener: HTMLElement | null;
   /** See {@link OpenSlideoutOptions.onSaved}. */
   onSaved: ((result: SlideoutSaveResult) => void) | null;
+  /** See {@link OpenSlideoutOptions.onClosed}. */
+  onClosed: (() => void) | null;
   /** Derivative owner for a nested element being edited within its owner's draft. */
   nestedOwnerId?: number;
   /** Called immediately before saving, never just for opening the editor. */
@@ -60,6 +62,8 @@ export interface OpenSlideoutOptions {
    * should say so here and refresh just that.
    */
   onSaved?: (result: SlideoutSaveResult) => void;
+  /** Called once the panel is gone, however it was closed. */
+  onClosed?: () => void;
 }
 
 export interface SlideoutController {

@@ -6,7 +6,7 @@ import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Eleme
 import NestedElementsController from '@/actions/CraftCms/Cms/Http/Controllers/NestedElementsController';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import type {Selectable} from '@/common/composables/useSelectable';
-import {canUseVueSlideout, openSlideout} from '@/common/slideouts';
+import {openSlideout} from '@/common/slideouts';
 import type {SlideoutSaveResult} from '@/common/slideouts';
 import type {
   NestedOwnerContext,
@@ -34,21 +34,6 @@ export interface NestedElementQuickEdit {
   onDblClick(event: MouseEvent): void;
   onPrimaryLink(event: MouseEvent): void;
   suppressPrimaryLinkVisit(event: MouseEvent): void;
-}
-
-export interface LegacyElementEditorSlideout {
-  on(
-    event: string,
-    callback: (event: {response?: {data?: {draft?: boolean}}}) => void
-  ): void;
-  elementEditor: {
-    settings: {
-      canCreateDrafts?: boolean;
-      draftId?: number | null;
-      saveParams?: Record<string, unknown> | null;
-    };
-    saveDraft(): Promise<void>;
-  };
 }
 
 export interface UseNestedElementOperationsOptions {
@@ -277,26 +262,6 @@ export function useNestedElementOperations(
     }
   }
 
-  function openLegacyEditor(
-    settings: Record<string, unknown>,
-    onBeforeSubmit?: (slideout: LegacyElementEditorSlideout) => Promise<void>,
-    onSaved: (draft: boolean) => void = onChildSaved
-  ): LegacyElementEditorSlideout {
-    const slideout = Craft.createElementEditor(
-      options.manager.value!.elementType,
-      {
-        ...settings,
-        onBeforeSubmit: () => onBeforeSubmit?.(slideout) ?? Promise.resolve(),
-      }
-    ) as unknown as LegacyElementEditorSlideout;
-
-    slideout.on('submit', ({response}) => {
-      onSaved(Boolean(response?.data?.draft));
-    });
-
-    return slideout;
-  }
-
   function rememberElement(element: NestedElement): void {
     focusElementId = element.id;
     focusElementIndex = options.elements.value.findIndex(
@@ -318,47 +283,11 @@ export function useNestedElementOperations(
       onChildSaved(draft);
     };
 
-    if (canUseVueSlideout()) {
-      void openSlideout(element.editUrl, {
-        opener,
-        prepareNestedOwner,
-        onSaved,
-      });
-
-      return;
-    }
-
-    (opener ?? options.container.value)?.focus();
-    const editUrl = new URL(element.editUrl, window.location.origin);
-
-    openLegacyEditor(
-      Object.fromEntries(editUrl.searchParams),
-      prepareNestedOwner
-        ? async (slideout) => {
-            const preparedOwnerId = await prepareNestedOwner();
-            if (
-              !preparedOwnerId ||
-              !slideout.elementEditor.settings.canCreateDrafts
-            ) {
-              return;
-            }
-
-            if (!slideout.elementEditor.settings.draftId) {
-              await slideout.elementEditor.saveDraft();
-            }
-            if (!slideout.elementEditor.settings.draftId) {
-              throw new Error(t('Could not save the nested element draft.'));
-            }
-
-            slideout.elementEditor.settings.saveParams = {
-              ...slideout.elementEditor.settings.saveParams,
-              action: 'elements/save-nested-element-for-derivative',
-              newOwnerId: preparedOwnerId,
-            };
-          }
-        : undefined,
-      (draft) => onSaved({draft})
-    );
+    void openSlideout(element.editUrl, {
+      opener,
+      prepareNestedOwner,
+      onSaved,
+    });
   }
 
   function elementById(id: string | number): NestedElement | null {
@@ -500,22 +429,6 @@ export function useNestedElementOperations(
         onChildSaved(draft, firstSave);
         firstSave = false;
       };
-
-      if (!canUseVueSlideout()) {
-        opener?.focus();
-        openLegacyEditor(
-          {
-            ...editParams,
-            params: {fresh: 1},
-          },
-          undefined,
-          onSaved
-        );
-
-        return options.refreshCreatedElementOnOpen === false
-          ? false
-          : undefined;
-      }
 
       const editUrl = EditElementController[
         '/{cpTrigger?}/{actionTrigger?}/elements/edit'
