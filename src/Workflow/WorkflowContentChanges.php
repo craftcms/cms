@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Workflow;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
@@ -64,7 +65,7 @@ readonly class WorkflowContentChanges
             return;
         }
 
-        if (($event->element->applyingDraft || $event->element->propagatingFrom?->applyingDraft) && WorkflowRun::query()
+        if ($this->isApplyingDraft($event->element) && WorkflowRun::query()
             ->whereIn('draftId', $draftIds)
             ->where('status', WorkflowStatus::Approved)
             ->exists()) {
@@ -72,6 +73,39 @@ readonly class WorkflowContentChanges
         }
 
         $this->workflows->contentChangedByDraftIds($draftIds);
+    }
+
+    /**
+     * Whether a save is part of applying an approved draft: the draft itself,
+     * or anything saved along with it — copies propagating to other sites and
+     * nested elements, in any combination.
+     */
+    private function isApplyingDraft(ElementInterface $element): bool
+    {
+        $queue = [$element];
+        $visited = [];
+
+        while (($element = array_shift($queue)) !== null) {
+            if (isset($visited[spl_object_id($element)])) {
+                continue;
+            }
+
+            $visited[spl_object_id($element)] = true;
+
+            if ($element->applyingDraft) {
+                return true;
+            }
+
+            if ($element->propagatingFrom !== null) {
+                $queue[] = $element->propagatingFrom;
+            }
+
+            if ($element instanceof NestedElementInterface && ($owner = $element->getOwner()) !== null) {
+                $queue[] = $owner;
+            }
+        }
+
+        return false;
     }
 
     public function handleElementLifecycleDeleting(ElementLifecycleDeleting $event): void

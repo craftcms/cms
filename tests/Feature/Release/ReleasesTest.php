@@ -5,14 +5,19 @@ declare(strict_types=1);
 use CraftCms\Cms\Activity\Activities;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Events\DraftApplying;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Lightswitch;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Release\Activity\ReleaseDraftPublished;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
@@ -24,6 +29,7 @@ use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserPermissions;
@@ -31,10 +37,19 @@ use CraftCms\Cms\Tests\TestClasses\Release\DraftableReleaseElement;
 use CraftCms\Cms\Tests\TestClasses\Release\ReleasePermissions;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Models\UserGroup;
+use CraftCms\Cms\Workflow\Data\WorkflowStageContext;
+use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
+use CraftCms\Cms\Workflow\Enums\WorkflowTransition;
+use CraftCms\Cms\Workflow\Models\Workflow;
+use CraftCms\Cms\Workflow\UserReview\UserReviewDecision;
+use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
+use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function Pest\Laravel\actingAs;
@@ -182,6 +197,89 @@ it('rolls back every member and notifies release managers when a later draft fai
             && $notification->toDatabase($this->actor)['url'] === route('craft.cp.releases.show', $release),
     );
     Notification::assertNotSentTo($editor, ReleaseFailed::class);
+});
+
+it('publishes an approved draft with Matrix content without resetting its approval', function () {
+    Edition::set(Edition::Pro);
+
+    $secondSite = Site::factory()->create();
+    Sites::refreshSites();
+    $blockText = Field::factory()->create(['handle' => 'blockText', 'type' => PlainText::class]);
+    // A field the draft leaves unset, so it takes its default when the draft is validated for publication.
+    $topBorder = Field::factory()->create(['handle' => 'topBorder', 'type' => Lightswitch::class, 'settings' => ['default' => true]]);
+    $blockType = EntryType::factory()->withFieldLayout(FieldLayoutModel::factory()->withContentTab([
+        new CustomField(config: ['fieldUid' => $blockText->uid]),
+        new CustomField(config: ['fieldUid' => $topBorder->uid]),
+    ]))->create(['hasTitleField' => false, 'titleFormat' => '{id}']);
+    $blocks = Field::factory()->create(['handle' => 'blocks', 'type' => Matrix::class, 'settings' => ['entryTypes' => [$blockType->id]]]);
+    $entryType = EntryType::factory()->withFieldLayout(FieldLayoutModel::factory()->forField($blocks))->create();
+    $section = Section::factory()->withEntryTypes($entryType)->withSites($secondSite)->create();
+    Sections::refreshSections();
+    EntryTypes::refreshEntryTypes();
+    Fields::refreshFields();
+
+    $reviewer = UserModel::factory()->admin()->createElement();
+    $group = UserGroup::factory()->create();
+    $group->users()->sync([$reviewer->id]);
+    $stageUid = Str::uuid7()->toString();
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial review',
+        'uid' => Str::uuid7()->toString(),
+        'stages' => [[
+            'uid' => $stageUid,
+            'name' => 'Review',
+            'type' => UserReviewStage::class,
+            'settings' => ['approvalsRequired' => 1, 'approvalMode' => 'total', 'userGroups' => [$group->uid]],
+        ]],
+    ]);
+    $section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+
+    $entry = new EntryElement;
+    $entry->sectionId = $section->id;
+    $entry->typeId = $entryType->id;
+    $entry->title = 'Launch announcement';
+    $entry->setAuthorIds([$this->actor->id]);
+    $entry->setFieldValue('blocks', [
+        'sortOrder' => ['new1'],
+        'entries' => ['new1' => ['type' => $blockType->handle, 'fields' => ['blockText' => 'Doors open at ten.']]],
+    ]);
+    expect(app(Drafts::class)->saveElementAsDraft($entry, $this->actor->id, 'Launch'))->toBeTrue();
+
+    // A person approves it, so a reset would leave it pending rather than re-approving automatically.
+    $workflows = app(Workflows::class);
+    $approve = function () use ($workflows, $entry, $reviewer, $stageUid): void {
+        actingAs($reviewer);
+        $workflows->reportStageResult(
+            runId: $workflows->latestRun($entry)->id,
+            stageUid: $stageUid,
+            result: fn (WorkflowStageContext $context) => $context->stage->component()
+                ->decide(UserReviewDecision::Approved, null, $context, $reviewer),
+            actor: $reviewer,
+            activityTransition: WorkflowTransition::Approve,
+        );
+        actingAs($this->actor);
+    };
+    $workflows->submitForReview($entry);
+    $approve();
+    expect($workflows->latestRun($entry)->status)->toBe(WorkflowStatus::Approved);
+
+    // Editing a block is still a change to the draft, which needs approving again.
+    $block = $entry->getFieldValue('blocks')->one();
+    $block->setFieldValue('blockText', 'Doors open at nine.');
+    expect(Elements::saveElement($block))->toBeTrue()
+        ->and($workflows->latestRun($entry)->status)->toBe(WorkflowStatus::Pending);
+    $approve();
+
+    $release = $this->releases->create('Launch', null, $this->actor);
+    $this->releases->attach($release, $entry, $this->actor);
+    $published = $this->releases->publish($release, $this->actor);
+
+    $canonical = EntryElement::find()->id($entry->getCanonicalId())->status(null)->one();
+
+    expect($published->status)->toBe(ReleaseStatus::Published)
+        ->and($canonical->getIsDraft())->toBeFalse()
+        ->and($canonical->getFieldValue('blocks')->one()?->getFieldValue('blockText'))->toBe('Doors open at nine.');
 });
 
 it('rejects an unpublished member with a conflicting URI during publication without disabling it', function () {
