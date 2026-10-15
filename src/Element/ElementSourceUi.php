@@ -133,6 +133,7 @@ readonly class ElementSourceUi
             $this->viewModeField($elementType, $source),
             ...$this->sortFields($elementType, $source, $values),
             $this->tableAttributesField($elementType, $source, false),
+            $this->badgeCountField($elementType, $source),
         ];
     }
 
@@ -172,7 +173,22 @@ readonly class ElementSourceUi
                 ? Field::make(t('User Groups'), Choice::make('userGroups')->options($groupOptions)->allOption())
                     ->instructions(t('Choose which user groups should have access to this source.'))
                 : null,
+            $this->badgeCountField($elementType, $source),
         ];
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string, mixed>  $source
+     */
+    private function badgeCountField(string $elementType, array $source): ?Field
+    {
+        if (! $elementType::sourceSupportsBadgeCount($source)) {
+            return null;
+        }
+
+        return Field::make(t('Show count'), Lightswitch::make('showBadgeCount'))
+            ->instructions(t('Whether the number of elements in this source should be shown beside it in the navigation.'));
     }
 
     /**
@@ -379,6 +395,10 @@ readonly class ElementSourceUi
             'defaultViewMode' => $this->seedViewMode($elementType, $source),
             'tableAttributes' => $this->seedTableAttributes($elementType, $source),
         ];
+
+        if ($elementType::sourceSupportsBadgeCount($source)) {
+            $shared['showBadgeCount'] = $this->elementSources->showsBadgeCount($elementType, $source);
+        }
 
         if (($source['type'] ?? null) !== ElementSources::TYPE_CUSTOM) {
             return ['enabled' => empty($source['disabled'])] + $shared;

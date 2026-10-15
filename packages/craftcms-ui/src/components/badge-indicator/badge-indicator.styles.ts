@@ -27,7 +27,9 @@ export default css`
 
   .badge-indicator--with-number {
     --badge-size: var(--c-size-icon-md);
-    padding: calc(2rem / 16);
+    padding-block: calc(2rem / 16);
+    /* Room either side of a longer count, so its digits don't touch the edge. */
+    padding-inline: calc(4rem / 16);
   }
 
   .number {

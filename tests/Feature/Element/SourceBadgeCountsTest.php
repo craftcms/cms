@@ -1,0 +1,226 @@
+<?php
+
+declare(strict_types=1);
+
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Element\Conditions\TitleConditionRule;
+use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\ElementSourceUi;
+use CraftCms\Cms\Element\Events\ElementSourcesResolving;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Http\ViewModels\LegacyElementIndexViewModel;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Event;
+
+use function Pest\Laravel\actingAs;
+
+beforeEach(function () {
+    actingAs(User::findOne());
+});
+
+it('counts every entry in a section, enabled or not, leaving out drafts and trashed entries', function () {
+    $section = Section::factory()->create();
+    $other = Section::factory()->create();
+
+    $live = EntryModel::factory()->forSection($section)->createElement();
+    $disabled = EntryModel::factory()->forSection($section)->createElement();
+    $disabled->enabled = false;
+    Elements::saveElement($disabled);
+
+    $trashed = EntryModel::factory()->forSection($section)->createElement();
+    Elements::deleteElement($trashed);
+
+    app(Drafts::class)->createDraft($live, User::findOne()->id);
+    EntryModel::factory()->forSection($other)->createElement();
+
+    expect(Entry::sourceBadgeCount([
+        'type' => ElementSources::TYPE_NATIVE,
+        'key' => "section:$section->uid",
+        'criteria' => ['sectionId' => $section->id, 'editable' => true],
+    ], null))->toBe(2);
+});
+
+it('applies a custom source’s condition when counting', function () {
+    $section = Section::factory()->create();
+    EntryModel::factory()->forSection($section)->createElement(['title' => 'Keep']);
+    EntryModel::factory()->forSection($section)->createElement(['title' => 'Skip']);
+
+    $condition = Entry::createCondition();
+    $condition->addConditionRule($condition->createConditionRule([
+        'class' => TitleConditionRule::class,
+        'operator' => '=',
+        'value' => 'Keep',
+    ]));
+
+    expect(Entry::sourceBadgeCount([
+        'type' => ElementSources::TYPE_CUSTOM,
+        'key' => 'custom:keep',
+        'condition' => $condition->getConfig(),
+    ], null))->toBe(1);
+});
+
+it('only offers counts on sources that can have one', function () {
+    expect(Entry::sourceSupportsBadgeCount(['type' => ElementSources::TYPE_NATIVE, 'key' => '*']))->toBeTrue()
+        ->and(Entry::sourceSupportsBadgeCount(['type' => ElementSources::TYPE_HEADING, 'heading' => 'Channels']))->toBeFalse()
+        ->and(Entry::sourceSupportsBadgeCount(['heading' => 'Channels']))->toBeFalse()
+        ->and(Entry::sourceSupportsBadgeCount(app(ElementSourceUi::class)->blankSource(ElementSources::TYPE_CUSTOM, 'custom:new')))->toBeTrue()
+        ->and(User::sourceSupportsBadgeCount(['type' => ElementSources::TYPE_NATIVE, 'key' => 'admins']))->toBeTrue()
+        ->and(Asset::sourceSupportsBadgeCount(['type' => ElementSources::TYPE_NATIVE, 'key' => 'volume:abc']))->toBeTrue()
+        ->and(Asset::sourceSupportsBadgeCount(['type' => ElementSources::TYPE_NATIVE, 'key' => 'temp']))->toBeFalse()
+        ->and(Asset::sourceSupportsBadgeCount(['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:1']))->toBeTrue()
+        ->and(Element::sourceSupportsBadgeCount(['type' => ElementSources::TYPE_NATIVE, 'key' => '*']))->toBeFalse();
+});
+
+it('shows a count when an admin turns it on, or the source does by default', function () {
+    $elementSources = app(ElementSources::class);
+
+    expect($elementSources->showsBadgeCount(Entry::class, ['type' => ElementSources::TYPE_NATIVE, 'key' => '*']))->toBeFalse()
+        ->and($elementSources->showsBadgeCount(Entry::class, ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'showBadgeCount' => true]))->toBeTrue()
+        ->and($elementSources->showsBadgeCount(TestBadgeCountElement::class, ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'defaultBadgeCount' => true]))->toBeTrue()
+        ->and($elementSources->showsBadgeCount(TestBadgeCountElement::class, [
+            'type' => ElementSources::TYPE_NATIVE,
+            'key' => '*',
+            'defaultBadgeCount' => true,
+            'showBadgeCount' => false,
+        ]))->toBeFalse()
+        ->and($elementSources->showsBadgeCount(Element::class, ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'showBadgeCount' => true]))->toBeFalse();
+});
+
+it('leaves entry, asset and user counts off by default, since the nav only checks project config for them', function () {
+    expect(app(ElementSources::class)->showsBadgeCount(Entry::class, [
+        'type' => ElementSources::TYPE_NATIVE,
+        'key' => '*',
+        'defaultBadgeCount' => true,
+    ]))->toBeFalse();
+});
+
+it('keeps the setting when sources are saved', function () {
+    app(ElementSources::class)->saveSources(Entry::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'showBadgeCount' => 'true'],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:1', 'label' => 'Mine', 'showBadgeCount' => false],
+    ]);
+
+    $config = app(ProjectConfig::class)->get(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class));
+
+    expect($config[0]['showBadgeCount'])->toBeTrue()
+        ->and($config[1]['showBadgeCount'])->toBeFalse();
+});
+
+it('gives the nav a count for each source that shows one', function () {
+    EntryModel::factory()->count(3)->create();
+
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'showBadgeCount' => true],
+    ]);
+
+    $navigation = app(Navigation::class);
+    $counts = $navigation->getSourceBadgeCounts();
+
+    expect($navigation->hasSourceBadges())->toBeTrue()
+        ->and($counts)->toBe(['nav-content-entries-source-_2a' => Entry::find()->status(null)->count()])
+        ->and($counts['nav-content-entries-source-_2a'])->toBeGreaterThanOrEqual(3);
+});
+
+it('leaves a source’s own badge count alone, even with “Show count” on', function () {
+    $section = Section::factory()->create();
+
+    Event::listen(function (ElementSourcesResolving $event) use ($section) {
+        if ($event->elementType !== Entry::class) {
+            return;
+        }
+
+        $event->sources = collect($event->sources)
+            ->map(fn (array $source): array => ($source['key'] ?? null) === "section:$section->uid"
+                ? [...$source, 'badgeCount' => 4, 'badgeLabel' => '4 new']
+                : $source)
+            ->all();
+    });
+
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'showBadgeCount' => true],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$section->uid", 'showBadgeCount' => true],
+    ]);
+
+    expect(array_keys(app(Navigation::class)->getSourceBadgeCounts()))->toBe(['nav-content-entries-source-_2a']);
+});
+
+it('leaves the nav without counts when no source shows one', function () {
+    $navigation = app(Navigation::class);
+
+    expect($navigation->hasSourceBadges())->toBeFalse()
+        ->and($navigation->getSourceBadgeCounts())->toBe([]);
+});
+
+it('counts only the entries a user can view in a native source', function () {
+    $section = Section::factory()->create();
+    $editor = UserModel::factory()
+        ->withPermissions(['accessCp', "viewEntries:$section->uid"])
+        ->createElement(['admin' => false]);
+
+    $own = EntryModel::factory()->forSection($section)->createElement();
+    $own->setAuthorIds([$editor->id]);
+    Elements::saveElement($own);
+    EntryModel::factory()->forSection($section)->createElement();
+
+    $source = [
+        'type' => ElementSources::TYPE_NATIVE,
+        'key' => "section:$section->uid",
+        'criteria' => ['sectionId' => $section->id, 'editable' => true],
+    ];
+
+    expect(Entry::sourceBadgeCount($source, null))->toBe(2);
+
+    actingAs($editor);
+
+    expect(Entry::sourceBadgeCount($source, null))->toBe(1);
+});
+
+it('counts a plugin element type’s sources in its own secondary nav', function () {
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, TestBadgeCountElement::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'showBadgeCount' => true],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'quiet'],
+    ]);
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'showBadgeCount' => true],
+    ]);
+
+    $navItems = fn (string $elementType) => collect(
+        new LegacyElementIndexViewModel($elementType, ElementIndexRequest::create('/admin/test')->setContainer(app()))->sourceNavItems(),
+    )->keyBy('label');
+
+    $items = $navItems(TestBadgeCountElement::class);
+
+    expect($items['All']->badgeCount)->toBe(5)
+        ->and($items['Quiet']->badgeCount)->toBe(0)
+        ->and($navItems(Entry::class)['All entries']->badgeCount)->toBe(0);
+});
+
+class TestBadgeCountElement extends Element
+{
+    public static function supportsSourceBadgeCounts(): bool
+    {
+        return true;
+    }
+
+    public static function sourceBadgeCount(array $source, ?int $siteId): int
+    {
+        return 5;
+    }
+
+    protected static function defineSources(string $context): array
+    {
+        return [
+            ['key' => '*', 'label' => 'All'],
+            ['key' => 'quiet', 'label' => 'Quiet'],
+        ];
+    }
+}

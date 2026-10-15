@@ -8,6 +8,7 @@
   } from '@/common/composables/navSelection';
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
+  import {useSourceBadges} from '@/common/composables/useSourceBadges';
 
   const page = usePage<{
     queue: {
@@ -19,6 +20,7 @@
   }>();
 
   const {nav: sharedNav, navBadges} = useCraftData();
+  const sourceBadges = useSourceBadges();
 
   // The tree arrives once and then stays put, so neither the trail nor the
   // badge counts are in it — both are decided per page, here.
@@ -27,10 +29,10 @@
   // descriptors a menu would draw.
   const nav = computed(() =>
     navItemActions(
-      withNavBadges(
-        withNavSelection(sharedNav.value, page.url),
-        navBadges.value
-      )
+      withNavBadges(withNavSelection(sharedNav.value, page.url), {
+        ...navBadges.value,
+        ...sourceBadges.value,
+      })
     )
   );
 

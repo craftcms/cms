@@ -190,6 +190,9 @@ class HandleInertiaRequests extends Middleware
             'isMultiSite' => fn () => Sites::isMultiSite(),
             'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
             'locale' => fn () => app()->getLocale(),
+            ...($currentUser !== null && $nav->hasSourceBadges() ? [
+                'navSourceBadges' => Inertia::defer(fn (): object => (object) $nav->getSourceBadgeCounts()),
+            ] : []),
             'craft' => fn () => [
                 'csrfTokenValue' => csrf_token(),
                 'csrfTokenName' => '_token',
