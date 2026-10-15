@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -662,16 +663,13 @@ class ElementHelper
      * If no partial template exists for an element, its string representation will be output instead.
      *
      * @param  ElementInterface[]  $elements
-     */
-    /**
-     * @param  ElementInterface[]  $elements
      * @param  array<string,mixed>  $variables
+     *
+     * @deprecated in 5.12.0. {@see Template::render()} should be used instead.
      */
     public static function renderElements(array $elements, array $variables = []): HtmlString
     {
-        $output = array_map(fn (ElementInterface $element) => (string) $element->render($variables), $elements);
-
-        return new HtmlString(implode("\n", $output));
+        return Template::render($elements, $variables);
     }
 
     /**
