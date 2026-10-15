@@ -60,17 +60,9 @@
     index.openFolder(folderId);
   }
 
-  // Folders can't be chosen, so a double-click on one isn't a choice — unless
-  // folders are what's being picked.
-  function onDblClick(event: MouseEvent) {
-    if (
-      !props.selectFolders &&
-      event.target instanceof Element &&
-      event.target.closest('[data-is-folder]')
-    ) {
-      return;
-    }
-
+  // Reached only by a double-click the item behavior let through, after it
+  // selected the double-clicked item; folders open instead.
+  function onDblClick() {
     emit('choose', selectedElements.value);
   }
 
