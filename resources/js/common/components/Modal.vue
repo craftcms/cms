@@ -172,7 +172,7 @@
       ref="dialog"
       :label="label"
       .opened="true"
-      no-close
+      no-header
       .closeOnOutsideClick="dismissible"
       :class="{'without-overlay': !overlay || isNested}"
       @craft-before-hide="requestClose"
@@ -213,10 +213,6 @@
      from painting over the modal's chrome, such as the resize handle. Nothing
      can escape this box visually anyway; it scrolls. */
     isolation: isolate;
-  }
-
-  craft-dialog::part(header) {
-    display: none;
   }
 
   craft-dialog::part(surface) {
