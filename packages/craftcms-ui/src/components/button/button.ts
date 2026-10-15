@@ -109,11 +109,6 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     this.#contentObserver?.disconnect();
     this.#contentObserver = null;
     this.#stopAwaitingRender();
-
-    if (this.announcementTimer) {
-      clearTimeout(this.announcementTimer);
-      this.announcementTimer = null;
-    }
   }
 
   /**
@@ -201,20 +196,22 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     if (changedProperties.has('loading')) {
       if (this.loading) {
         this.announceLoading();
+      } else if (changedProperties.get('loading')) {
+        this.clearLoadingAnnouncement();
       }
     }
   }
 
+  /**
+   * "Loading" stays in the live region until loading ends, since the region
+   * sits inside the button and some screen readers read it as button content.
+   */
   private announceLoading() {
     this.liveRegion.textContent = t('Loading');
+  }
 
-    if (this.announcementTimer) {
-      clearTimeout(this.announcementTimer);
-    }
-
-    this.announcementTimer = setTimeout(() => {
-      this.liveRegion.textContent = '';
-    }, 5000);
+  private clearLoadingAnnouncement() {
+    this.liveRegion.textContent = '';
   }
 
   private syncLinkHostState() {
@@ -306,6 +303,13 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
    * name, so the check waits until it's visible.
    */
   #checkAccessibleName(): void {
+    // Removed while the check waited on its icons. Detached, the button is its
+    // own root, which can't resolve an `aria-labelledby` ID, and there's no
+    // longer anything to flag.
+    if (!this.isConnected) {
+      return;
+    }
+
     // In link mode the host is role="presentation" (name not computable on
     // it); the real accessible element is the inner anchor.
     const nameTarget = this.isLink
@@ -469,8 +473,6 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
 
   /** The caller's `type` before link mode forced it to "button". */
   private originalType: string | null = null;
-
-  private announcementTimer: ReturnType<typeof setTimeout> | null = null;
 
   private get isLink(): boolean {
     return !!this.href && !this.disabled;

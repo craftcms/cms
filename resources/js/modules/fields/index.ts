@@ -1,5 +1,5 @@
 import {createCopyTextPrompt} from '@craftcms/ui/factory';
-import {canUseVueSlideout, openSlideout} from '@/common/slideouts';
+import {openSlideout} from '@/common/slideouts';
 import type {SlideoutSaveResult} from '@/common/slideouts/types';
 import {matrixField} from '@/modules/matrix/selection-menu';
 
@@ -17,7 +17,7 @@ import {matrixField} from '@/modules/matrix/selection-menu';
 // `craft:edit-field` — the "Field settings" item. Opens the field's settings
 // screen in a slideout and, on save, re-announces it as the bubbling
 // `field-saved` event the field layout designer listens for to refresh its
-// selector (see `field-layout-designer/element.ts`).
+// selector (see `FieldLayoutDesigner.refreshField()`).
 // SAFETY: craft:edit-field is a registered CustomEvent with a {fieldId} payload.
 window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
   const {fieldId, trigger} = ev.detail ?? {};
@@ -27,8 +27,7 @@ window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
   }
 
   const announceSaved = (detail: unknown) => {
-    // Dispatched from the trigger, not the window: the designer scopes its
-    // listener to the settings slideout the menu was opened from.
+    // Dispatched from the trigger so it bubbles; the window gets it too.
     (trigger instanceof HTMLElement ? trigger : window).dispatchEvent(
       new CustomEvent('field-saved', {bubbles: true, detail})
     );
@@ -41,28 +40,19 @@ window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
 
   const url = Craft.getCpUrl('settings/fields/edit', {fieldId});
 
-  if (canUseVueSlideout()) {
-    void openSlideout(url, {
-      opener: trigger instanceof HTMLElement ? trigger : null,
-      onSaved: ({data, draft}: SlideoutSaveResult) => {
-        // An autosaved draft isn't a finished save; don't refresh on it.
-        if (!draft) {
-          announceSaved(data);
-        }
-      },
-    });
-
-    return;
-  }
-
-  const slideout = new Craft.CpScreenSlideout('fields/edit-field', {
-    params: {fieldId},
+  void openSlideout(url, {
+    opener: trigger instanceof HTMLElement ? trigger : null,
+    onSaved: ({data, draft}: SlideoutSaveResult) => {
+      // An autosaved draft isn't a finished save; don't refresh on it.
+      if (!draft) {
+        announceSaved(data);
+      }
+    },
   });
-
-  slideout.on('submit', ({response}: any) => announceSaved(response?.data));
 }) as EventListener);
 
-// `craft:edit-entry-type` — the "Entry type settings" item on a Matrix block.
+// `craft:edit-entry-type` — "Entry type settings" items on entries, entry
+// types, and Matrix blocks.
 // Admin-only; the server only emits the item when admin changes are allowed.
 // SAFETY: craft:edit-entry-type is a registered CustomEvent with an {entryTypeId} payload.
 window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
@@ -78,15 +68,9 @@ window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
 
   const url = Craft.getCpUrl(`settings/entry-types/${entryTypeId}`);
 
-  if (canUseVueSlideout()) {
-    void openSlideout(url, {
-      opener: trigger instanceof HTMLElement ? trigger : null,
-    });
-
-    return;
-  }
-
-  new Craft.CpScreenSlideout(url);
+  void openSlideout(url, {
+    opener: trigger instanceof HTMLElement ? trigger : null,
+  });
 }) as EventListener);
 
 // `craft:copy-text-prompt` — the "Copy field handle" / "Copy attribute name"

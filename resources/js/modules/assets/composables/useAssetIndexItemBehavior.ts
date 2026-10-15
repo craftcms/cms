@@ -1,4 +1,5 @@
 import {router} from '@inertiajs/vue3';
+import {isInteractiveClick} from '@/common/utils/dom';
 import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
 
 interface AssetIndexItem {
@@ -94,9 +95,9 @@ export function useAssetIndexItemBehavior(
         return false;
       }
 
-      // The folder's title links to it for new tabs and copied links, but a
-      // plain click navigates like the rest of the row, keeping the index's
-      // current state.
+      // The folder's title is a real link, for new tabs and copied links, but
+      // a plain click on it navigates within the index, keeping its current
+      // state.
       if (
         event.target instanceof HTMLElement &&
         event.target.closest('a[data-folder-link]')
@@ -115,16 +116,21 @@ export function useAssetIndexItemBehavior(
         return true;
       }
 
-      if (
-        event.target instanceof HTMLElement &&
-        event.target.closest(
-          'a[href], button, input, craft-checkbox, craft-reorder-button'
-        )
-      ) {
-        return true;
+      // A folder only opens from its link. The rest of it behaves like an
+      // asset's row, card or thumb, selecting it.
+      return false;
+    },
+    // Double-clicking a folder opens it, as double-clicking an asset edits it,
+    // unless it landed on a control inside the folder's row, card or thumb.
+    onDblClick(item, event) {
+      if (!isFolderRow(item)) {
+        return false;
       }
 
-      navigateToFolder(item.folderUrl);
+      if (!isInteractiveClick(event, event.currentTarget)) {
+        event.preventDefault();
+        navigateToFolder(item.folderUrl);
+      }
 
       return true;
     },
@@ -133,7 +139,8 @@ export function useAssetIndexItemBehavior(
         return true;
       }
 
-      if ((event.key === ' ' || event.key === 'Enter') && isFolderRow(item)) {
+      // Space selects a folder, as a click on it does; Enter opens it.
+      if (event.key === 'Enter' && isFolderRow(item)) {
         event.preventDefault();
         navigateToFolder(item.folderUrl);
 

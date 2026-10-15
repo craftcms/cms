@@ -11,15 +11,15 @@ import * as ButtonGroupStories from './button-group.stories';
 
 <Canvas of={ButtonGroupStories.WithActions} sourceState="shown" />
 
-## Radio Mode
+## Selection Mode
 
-Given a `name`, the group becomes a single-choice control — a segmented toggle rather than a row of independent buttons:
+Given a `name`, the group becomes a set of toggle buttons, of which one is pressed at a time:
 
-<Canvas of={ButtonGroupStories.RadioMode} sourceState="shown" />
+<Canvas of={ButtonGroupStories.SelectionMode} sourceState="shown" />
 
-<Canvas of={ButtonGroupStories.RadioModeVariants} sourceState="shown" />
+<Canvas of={ButtonGroupStories.SelectionModeVariants} sourceState="shown" />
 
-<Canvas of={ButtonGroupStories.RadioModeIcons} sourceState="shown" />
+<Canvas of={ButtonGroupStories.SelectionModeIcons} sourceState="shown" />
 
 <Canvas of={ButtonGroupStories.FormAssociated} sourceState="shown" />
 
@@ -27,13 +27,19 @@ In this mode the group is form-associated and posts like any other field, so a s
 
 ## Choosing Between Modes
 
-Without a `name` the buttons are actions; with one they are options.
+Without a `name` the buttons are actions; with one they are toggle buttons, each announced as pressed or not, and each its own tab stop.
 
-That is a real semantic difference, not styling: in radio mode the group is announced as a radio group and arrow keys move between the options, which is wrong for a row of independent actions and right for a choice.
+For a form setting that picks one value from a set of options, use a [radio group](?path=/docs/form-controls-choice-controls-radio-group--docs) with `buttons` instead. It looks the same, but it's announced as radios, and the arrow keys move the selection.
 
 ## Icon Buttons
 
 A segmented control of icons is compact and easy to misread. Each button still needs a name — see [Icon](?path=/docs/components-icon--docs) — because the group announces the choice, not what each option means.
+
+## Accessibility
+
+- Given a `name`, name the group too, with `aria-label` or `aria-labelledby` on `craft-button-group`. Its buttons are announced as pressed or not, and the group name says what they choose between.
+- Each button is its own Tab stop. Arrow keys don't move between them.
+- For a single choice that should be announced and operated as radio buttons, use `craft-radio-group`.
 
 ## Properties
 

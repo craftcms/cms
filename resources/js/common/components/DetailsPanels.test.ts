@@ -11,8 +11,10 @@ import {
   type App,
 } from 'vue';
 import {
+  ScreenContextKey,
   ScreenDetailsOverlayKey,
   ScreenDetailsRailKey,
+  type ScreenMode,
 } from '@/common/composables/screen';
 import DetailsPanels from './DetailsPanels.vue';
 
@@ -35,18 +37,26 @@ const panels = [
 ];
 
 const exposed = ref<{select(panelId: string): void} | null>(null);
+/** Whether the shell is overlaying the column, which tests can flip. */
+const overlay = ref(false);
 
 async function mount(
   rail: string | null,
-  {syncLocationHash = false, overlaid = false} = {}
+  {
+    syncLocationHash = false,
+    overlaid = false,
+    screenMode = 'page' as ScreenMode,
+  } = {}
 ): Promise<HTMLElement> {
   document.body.innerHTML = '<div id="details"></div><div id="rail"></div>';
+  overlay.value = overlaid;
 
   app = createApp(
     defineComponent({
       setup() {
+        provide(ScreenContextKey, {mode: screenMode});
         provide(ScreenDetailsRailKey, rail);
-        provide(ScreenDetailsOverlayKey, ref(overlaid));
+        provide(ScreenDetailsOverlayKey, overlay);
 
         return () =>
           h(
@@ -113,6 +123,51 @@ it('stays folded to the rail when the shell mounts it overlaid', async () => {
 
   expect(panel('info').hidden).toBe(true);
   expect(trigger('info').getAttribute('aria-expanded')).toBe('false');
+});
+
+// Resizing a slideout narrow and back shouldn't lose the person's panel.
+it('reopens the panel the shell folded away once there’s room again', async () => {
+  await mount('#rail');
+
+  trigger('history').click();
+  await settle();
+
+  overlay.value = true;
+  await settle();
+  expect(panel('history').hidden).toBe(true);
+
+  overlay.value = false;
+  await settle();
+  expect(panel('history').hidden).toBe(false);
+  expect(panel('info').hidden).toBe(true);
+});
+
+it('leaves a panel closed that the person closed', async () => {
+  await mount('#rail');
+
+  trigger('info').click();
+  await settle();
+
+  overlay.value = true;
+  await settle();
+  overlay.value = false;
+  await settle();
+
+  expect(panel('info').hidden).toBe(true);
+  expect(trigger('info').getAttribute('aria-expanded')).toBe('false');
+});
+
+it('starts folded to the rail in a slideout', async () => {
+  await mount('#rail', {screenMode: 'slideout'});
+
+  expect(panel('info').hidden).toBe(true);
+  expect(trigger('info').getAttribute('aria-expanded')).toBe('false');
+});
+
+it('starts open on a page with room beside the content', async () => {
+  await mount('#rail');
+
+  expect(panel('info').hidden).toBe(false);
 });
 
 it('labels each trigger with a tooltip', async () => {

@@ -45,6 +45,7 @@ function payload(): ElementEditPayload {
     statusLabelHtml: null,
     saveUrl: '',
     applyDraftUrl: '',
+    additionalButtons: [],
     editorActions: {
       primary: {
         label: 'Save',

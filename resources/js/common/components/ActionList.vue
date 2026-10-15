@@ -228,9 +228,13 @@
   /**
    * Whether this is the page you're on rather than an ancestor of it.
    * Selection marks the whole trail, so the page is the selected item with
-   * nothing selected beneath it.
+   * nothing selected beneath it, unless the item says it's only on the trail.
    */
   function isCurrent(action: NavItem): boolean {
+    if (action.type !== 'group' && action.current === false) {
+      return false;
+    }
+
     return (
       isSelected(action) &&
       !childrenOf(action).some(
@@ -540,10 +544,13 @@
 
 <style scoped lang="css">
   /* `craft-action-menu` styles the separators it generates itself inline, and
-     its shadow `::slotted()` rule only zeroes the margin — so a slotted rule
-     has to bring its own line to match. */
+     its shadow `::slotted()` rule can't reach inside the slotted content — so
+     a slotted rule has to bring its own margin and line to match. With the
+     menu's gap between items, the space around it matches the menu's
+     padding. */
   .action-list__separator {
-    margin: 0;
+    margin-block: calc(var(--c-spacing-sm) - var(--c-spacing-xs));
+    margin-inline: 0;
     border: 0;
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
   }

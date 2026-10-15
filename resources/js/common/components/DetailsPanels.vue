@@ -15,6 +15,7 @@
   import {computed, nextTick, shallowRef, watch} from 'vue';
   import type {Component} from 'vue';
   import {
+    useIsSlideout,
     useScreenDetailsOverlay,
     useScreenDetailsRail,
   } from '@/common/composables/screen';
@@ -85,10 +86,13 @@
     props.syncLocationHash && window.location.hash
       ? window.location.hash.slice(1)
       : null;
+  // A slideout opens on its content; the column starts folded to the rail.
   const openPanelId = shallowRef<string | null>(
-    initialHash && isVisible(initialHash)
-      ? initialHash
-      : (visiblePanels.value[0]?.id ?? null)
+    useIsSlideout()
+      ? null
+      : initialHash && isVisible(initialHash)
+        ? initialHash
+        : (visiblePanels.value[0]?.id ?? null)
   );
 
   // An open panel that goes away falls back to the first.
@@ -104,28 +108,35 @@
   /**
    * The column folds to its rail once the shell overlays it. The width that
    * happens at is the shell's call, so this follows the flag rather than
-   * measuring, and only reopens a panel the shell closed itself.
+   * measuring.
+   *
+   * A panel the shell closed for lack of room comes back once there's room
+   * again; one the person closed stays closed. So this remembers which panel
+   * the shell closed, and forgets it as soon as the person opens or closes a
+   * panel themselves.
    */
   const overlaid = useScreenDetailsOverlay();
-  let closedByShell = false;
+  let panelClosedByShell: string | null = null;
 
   watch(
     () => overlaid?.value ?? false,
     (isOverlaid) => {
       if (isOverlaid) {
         if (openPanelId.value !== null) {
+          panelClosedByShell = openPanelId.value;
           openPanelId.value = null;
-          closedByShell = true;
         }
 
         return;
       }
 
-      if (closedByShell && openPanelId.value === null) {
-        openPanelId.value = visiblePanels.value[0]?.id ?? null;
+      if (panelClosedByShell !== null && openPanelId.value === null) {
+        openPanelId.value = isVisible(panelClosedByShell)
+          ? panelClosedByShell
+          : (visiblePanels.value[0]?.id ?? null);
       }
 
-      closedByShell = false;
+      panelClosedByShell = null;
     },
     {immediate: true}
   );
@@ -137,7 +148,7 @@
 
   function open(panelId: string, withFocus: boolean): void {
     openPanelId.value = panelId;
-    closedByShell = false;
+    panelClosedByShell = null;
     updateLocationHash();
 
     if (withFocus) {
@@ -151,6 +162,7 @@
     }
 
     openPanelId.value = null;
+    panelClosedByShell = null;
 
     if (returnFocus) {
       focusAfterRender(triggerId(panelId));
@@ -286,8 +298,6 @@
   .details-panels__content {
     flex: 1;
     min-inline-size: 0;
-    block-size: 100%;
-    overflow-y: auto;
 
     > section {
       display: flex;

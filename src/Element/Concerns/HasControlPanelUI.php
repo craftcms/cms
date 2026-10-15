@@ -17,7 +17,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
-use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
+use CraftCms\Cms\Element\Events\ElementAdditionalButtonDescriptorsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementHtmlAttributesResolving;
@@ -94,13 +94,6 @@ trait HasControlPanelUI
      * Performs any action after the element's editor is fully ready.
      */
     public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void {}
-
-    public function getAdditionalButtons(): string|Stringable
-    {
-        event($event = new ElementAdditionalButtonsResolving($this));
-
-        return $event->html;
-    }
 
     public function getAltActions(): array
     {
@@ -270,30 +263,28 @@ JS, [
 
         if (Gate::check('view', $this)) {
             // Edit
-            $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
-                'id' => $editId,
+                'id' => sprintf('action-edit-%s', mt_rand()),
                 'icon' => 'edit',
                 'label' => mb_ucfirst(t('Edit {type}', [
                     'type' => static::lowerDisplayName(),
                 ])),
-            ];
-
-            HtmlStack::jsWithVars(fn ($id, $elementType, $settings) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.createElementEditor($elementType, $settings)
-});
-JS, [
-                InputNamespace::namespaceId($editId),
-                static::class,
-                [
-                    'elementId' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
-                    'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
-                    'revisionId' => $this->revisionId,
-                    'siteId' => $this->siteId,
-                    'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-element',
+                    'detail' => [
+                        'elementType' => static::class,
+                        'settings' => [
+                            'elementId' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
+                            'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
+                            'revisionId' => $this->revisionId,
+                            'siteId' => $this->siteId,
+                            'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                        ],
+                        'cpEditUrl' => $this->getCpEditUrl(),
+                    ],
                 ],
-            ]);
+            ];
 
             // Copy
             if (! $this->getIsRevision() && Gate::check('copy', $this)) {
@@ -528,6 +519,32 @@ JS, [
     protected function extraActionMenuDescriptors(
         ElementActionContext $context = ElementActionContext::Editor,
     ): array {
+        return [];
+    }
+
+    /**
+     * Buttons shown at the end of the element editor's footer, as behavior
+     * descriptors (see {@see actionMenuDescriptors()}).
+     *
+     * Element types extend this via {@see defineAdditionalButtonDescriptors()};
+     * plugins listen for {@see ElementAdditionalButtonDescriptorsResolving}.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function additionalButtonDescriptors(): array
+    {
+        event($event = new ElementAdditionalButtonDescriptorsResolving($this, $this->defineAdditionalButtonDescriptors()));
+
+        return array_values($event->items);
+    }
+
+    /**
+     * Element-type additions to {@see additionalButtonDescriptors()}.
+     *
+     * @return list<array<string, mixed>>
+     */
+    protected function defineAdditionalButtonDescriptors(): array
+    {
         return [];
     }
 
@@ -1133,7 +1150,9 @@ JS,
 
         return array_merge([
             t('ID') => fn () => $this->id ?? false,
-            t('Status') => fn () => app(StatusHtml::class)->componentStatusLabelHtml($this),
+            t('Status') => fn () => static::hasStatuses() || $this->getStatus() === static::STATUS_DRAFT
+                ? app(StatusHtml::class)->componentStatusLabelHtml($this)
+                : false,
         ], $metadata, [
             t('Created at') => $this->dateCreated && ! $this->getIsUnpublishedDraft()
                 ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT, true)

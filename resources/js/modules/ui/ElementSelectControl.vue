@@ -13,7 +13,7 @@
   import type {UiChangeKind, UiControlPayload, UiProperties} from './types';
   import {inputName} from './runtime';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
-  import {canUseVueSlideout, openSlideout} from '@/common/slideouts';
+  import {openSlideout} from '@/common/slideouts';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
 
   /**
@@ -599,43 +599,41 @@
     updateValue(limit === null ? next : next.slice(-Math.max(limit, 1)));
   }
 
-  /**
-   * Double-click opens the element's editor slideout, as it does on chips
-   * everywhere else in the CP (Craft 5 binds the same gesture in
-   * `BaseElementSelectInput`, via `createElementEditor`).
-   */
+  /** Double-click opens the element's editor slideout, as it does on chips elsewhere. */
   function openEditor(value: number | string): void {
     const element = presentation(value);
-    const elementType = props.control.props.elementType;
-
-    if (canUseVueSlideout()) {
-      const href =
-        element.cpEditUrl ??
-        EditElementController[
-          '/{cpTrigger?}/{actionTrigger?}/elements/edit'
-        ].url(undefined, {
+    const href =
+      element.cpEditUrl ??
+      EditElementController['/{cpTrigger?}/{actionTrigger?}/elements/edit'].url(
+        undefined,
+        {
           query: {
-            elementType,
+            elementType: props.control.props.elementType,
             elementId: element.id,
             siteId: element.siteId ?? null,
           },
-        });
+        }
+      );
 
-      if (href) {
-        void openSlideout(href, {
-          // Registering a handler keeps a save from reloading the page behind,
-          // which would throw away the owner's unsaved edits.
-          onSaved: () => {},
-        });
+    void openSlideout(href, {
+      // Registering a handler keeps a save from reloading the page behind,
+      // which would throw away the owner's unsaved edits.
+      onSaved: ({data}) =>
+        replaceAsset(data?.replacedAssetId, data?.newAssetId),
+    });
+  }
 
-        return;
-      }
+  /** An image saved as a new asset takes the edited asset's place. */
+  function replaceAsset(replacedId: unknown, newId: unknown): void {
+    const from = Number(replacedId);
+    const to = Number(newId);
+
+    if (!from || !to || !ids.value.includes(from)) {
+      return;
     }
 
-    Craft.createElementEditor(elementType, {
-      elementId: element.id,
-      siteId: element.siteId ?? null,
-    });
+    presentations.set(to, {...presentation(from), id: to});
+    updateValue(ids.value.map((id) => (id === from ? to : id)));
   }
 </script>
 
@@ -650,33 +648,6 @@
       value=""
     />
     <component :is="control.props.customElement" :id="id">
-      <div v-if="editable && !atLimit" class="flex gap-md pb-md" slot="header">
-        <craft-button
-          ref="addButton"
-          type="button"
-          variant="dashed"
-          icon="plus"
-          data-element-select-add=""
-          :disabled="atLimit || undefined"
-          :aria-label="control.props.selectionLabel"
-          @click="openSelector()"
-        >
-          {{ control.props.selectionLabel }}
-        </craft-button>
-
-        <AssetUploadButton
-          v-if="control.props.canUpload !== undefined"
-          variant="dashed"
-          :can-upload="control.props.canUpload"
-          :folder-id="control.props.uploadFolderId ?? undefined"
-          :allowed-kinds="uploadKinds"
-          :drop-zone="dropZone"
-          :reload-on-complete="false"
-          :disabled="!showUpload"
-          @uploaded="attachUploaded"
-        />
-      </div>
-
       <div class="relative" v-if="ids.length > 0">
         <!--
           Selection toolbar. The whole bar is selection-only, so a field that
@@ -709,33 +680,35 @@
             </template>
           </div>
 
-          <ActionMenu
-            :actions="bulkActions"
-            :class="{
-              invisible: !hasSelection || !bulkActions.length,
-            }"
-          >
-            <template #invoker="{attributes}">
-              <craft-button
-                type="button"
-                variant="plain"
-                size="small"
-                v-bind="attributes"
-              >
-                {{ t('Actions') }}
-                <craft-icon name="chevron-down" slot="suffix"></craft-icon>
-              </craft-button>
-            </template>
-          </ActionMenu>
+          <div class="flex items-center gap-sm ms-auto">
+            <ActionMenu
+              :actions="bulkActions"
+              :class="{
+                invisible: !hasSelection || !bulkActions.length,
+              }"
+            >
+              <template #invoker="{attributes}">
+                <craft-button
+                  type="button"
+                  variant="plain"
+                  size="small"
+                  flush
+                  v-bind="attributes"
+                >
+                  {{ t('Actions') }}
+                  <craft-icon name="chevron-down" slot="suffix"></craft-icon>
+                </craft-button>
+              </template>
+            </ActionMenu>
 
-          <craft-badge
-            size="small"
-            class="me-sm"
-            no-prefix
-            v-if="!hasSelection || !bulkActions.length"
-          >
-            {{ ids.length }}/{{ limit }}
-          </craft-badge>
+            <craft-badge
+              size="small"
+              no-prefix
+              v-if="limit !== null && (!hasSelection || !bulkActions.length)"
+            >
+              {{ ids.length }}/{{ limit }}
+            </craft-badge>
+          </div>
         </div>
         <div class="elements-stage">
           <ElementList
@@ -781,6 +754,36 @@
         </div>
       </div>
 
+      <div
+        v-if="editable && !atLimit"
+        class="flex gap-md"
+        :class="{'pt-md': ids.length > 0}"
+      >
+        <craft-button
+          ref="addButton"
+          type="button"
+          variant="dashed"
+          icon="plus"
+          data-element-select-add=""
+          :aria-label="control.props.selectionLabel"
+          @click="openSelector()"
+        >
+          {{ control.props.selectionLabel }}
+        </craft-button>
+
+        <AssetUploadButton
+          v-if="control.props.canUpload !== undefined"
+          variant="dashed"
+          :can-upload="control.props.canUpload"
+          :folder-id="control.props.uploadFolderId ?? undefined"
+          :allowed-kinds="uploadKinds"
+          :drop-zone="dropZone"
+          :reload-on-complete="false"
+          :disabled="!showUpload"
+          @uploaded="attachUploaded"
+        />
+      </div>
+
       <div slot="footer">
         <div class="element-selection-footer"></div>
       </div>
@@ -791,13 +794,9 @@
 <style lang="scss" scoped>
   .element-selections-header {
     margin-block-end: var(--c-spacing-md);
-    padding: var(--c-spacing-sm);
-    padding-inline-start: calc(
-      var(--c-spacing-md) + 1px
-    ); // so the checkboxes line up
-    background-color: var(--c-color-neutral-fill-quiet);
-    border-start-start-radius: var(--c-radius-md);
-    border-start-end-radius: var(--c-radius-md);
+    min-height: calc(var(--c-size-control-sm) + var(--c-spacing-sm) + 1px);
+    padding-block: 0 var(--c-spacing-sm);
+    padding-inline: 0;
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 

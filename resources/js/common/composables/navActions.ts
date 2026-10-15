@@ -48,6 +48,7 @@ export function navItemAction(
   const shared = {
     label: item.label ?? '',
     selected: item.selected,
+    ...('pageBeneath' in item && item.pageBeneath ? {current: false} : {}),
     ...(item.icon ? {icon: item.icon} : {}),
     ...(item.iconSvg ? {iconSvg: item.iconSvg} : {}),
     ...(item.status ? {status: item.status} : {}),

@@ -22,6 +22,7 @@ use CraftCms\Cms\Mcp\Attributes\RequiresHttp;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
 use CraftCms\Cms\Mcp\Elements\Adapters\AssetAdapter;
 use CraftCms\Cms\Mcp\McpActor;
+use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
@@ -87,6 +88,7 @@ readonly class Assets
         private Folders $folders,
         private McpAssetUploads $mcpAssetUploads,
         private Request $request,
+        private CustomFieldSchema $customFieldSchema,
     ) {}
 
     /**
@@ -366,7 +368,7 @@ readonly class Assets
         $asset->newFolderId = $folder->id;
         $asset->setVolumeId($folder->volumeId);
         $asset->uploaderId = $actor->getCraftUserId();
-        $asset->setFieldValues($fields);
+        $asset->setFieldValues($this->customFieldSchema->prepareValues($asset, $fields));
         $this->assetAdapter->authorizeAssetSave($actor, $asset);
 
         return $asset;

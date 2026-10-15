@@ -27,6 +27,7 @@
   <component
     :is="isCollapsible ? 'craft-disclosure' : 'section'"
     class="workflow-review-stage"
+    :appearance="isCollapsible ? 'plain' : undefined"
     :opened.prop="isCollapsible ? stage.current : undefined"
   >
     <craft-button
@@ -34,6 +35,8 @@
       slot="invoker"
       type="button"
       variant="plain"
+      size="small"
+      flush
       align="start"
       class="workflow-review-stage__heading"
     >
@@ -93,8 +96,9 @@
 </template>
 
 <style scoped>
+  /* Block-level, so it fills the row even as `flush` pulls it outward. */
   .workflow-review-stage__heading {
-    width: 100%;
+    display: flex;
     --c-button-height: var(--c-size-touch-target);
     --c-button-spacing-inline: var(--c-spacing-xs);
   }
@@ -119,11 +123,16 @@
   }
 
   .workflow-review-stage__chevron {
+    transform: rotate(-90deg);
     transition: transform 100ms ease;
+
+    &:dir(rtl) {
+      transform: rotate(90deg);
+    }
   }
 
   .workflow-review-stage[opened] .workflow-review-stage__chevron {
-    transform: rotate(180deg);
+    transform: none;
   }
 
   .workflow-review-stage__content,
@@ -134,8 +143,6 @@
 
   .workflow-review-stage__content {
     margin-block-start: var(--c-spacing-sm);
-    padding-inline-start: 0;
-    border-inline-start: 0;
   }
 
   .workflow-review-events {

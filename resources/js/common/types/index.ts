@@ -55,8 +55,7 @@ export interface SectionSiteSettingsData {
   singleHomepage: boolean;
   singleUri: string | null;
   uriFormat: string | null;
-  routeType: 'template' | 'route';
-  route: string | null;
+  destination: string;
 }
 
 export interface ChipIndicator {
@@ -131,6 +130,11 @@ export interface ActionItemButton {
    * labels stay aligned whichever one is current.
    */
   selected?: boolean;
+  /**
+   * Whether this is the page you're on rather than an ancestor of it. Left
+   * out, a nav takes the selected item with nothing selected beneath it.
+   */
+  current?: boolean;
   variant?: VariantKey | string;
   icon?: string;
   /**
@@ -197,6 +201,11 @@ export interface ActionItemLink {
    * labels stay aligned whichever one is current.
    */
   selected?: boolean;
+  /**
+   * Whether this is the page you're on rather than an ancestor of it. Left
+   * out, a nav takes the selected item with nothing selected beneath it.
+   */
+  current?: boolean;
   variant?: VariantKey | string;
   hidden?: boolean;
   disabled?: boolean;

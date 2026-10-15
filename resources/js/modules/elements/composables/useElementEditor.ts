@@ -15,7 +15,10 @@ import {
 } from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
 import type {UiChangeKind, UiPayload, UiValues} from '@/modules/ui/types';
-import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
+import type {
+  ElementActionBehavior,
+  ElementActionMenuItem,
+} from '@/modules/elements/composables/useElementActionMenu';
 import {useInertiaUiRenderer} from '@/modules/ui/useInertiaUiRenderer';
 import {useElementAutosave} from '@/modules/elements/composables/useElementAutosave';
 import {useElementActivity} from '@/modules/elements/composables/useElementActivity';
@@ -67,6 +70,14 @@ export interface ElementEditorActions {
   buttons: Array<ElementFormAction>;
 }
 
+/** A button the element type or a plugin adds to the footer, beside the save controls. */
+export interface ElementAdditionalButton {
+  label: string;
+  icon?: string;
+  variant?: string;
+  behavior: ElementActionBehavior;
+}
+
 /** Somewhere on the front end the element can be viewed. */
 export interface ElementPreviewTarget {
   label: string;
@@ -108,6 +119,7 @@ export interface ElementEditPayload {
   cpEditUrl?: string | null;
   applyDraftUrl: string;
   editorActions: ElementEditorActions;
+  additionalButtons: Array<ElementAdditionalButton>;
   autosaveUrl: string;
   discardDraftUrl: string;
   saveForDerivativeUrl?: string;

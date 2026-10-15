@@ -99,10 +99,14 @@ An item inherits the palette of any `data-color` ancestor, so a menu can tint it
 The item renders a real `<button>` or `<a>`, so it is focusable and activates on Enter and Space without any help.
 Focus is delegated into the shadow root, which means `item.focus()` lands on the control rather than the host — that is how the parent menu's arrow-key navigation works.
 
-Two things are on you:
+The item's requirements, and its known gaps, are in `action-item.a11y.md`. The menu pattern it belongs to is described in `action-menu.a11y.md`.
+
+A few things are on you:
 
 - **Give an icon-only item a label.** The default slot is the accessible name. An item with nothing but an `icon` is nameless.
 - **Do not put controls in the `suffix` slot.** The slot sits inside the item's own button, so an interactive suffix nests a control inside a control — a shape assistive technology cannot present, and one that swallows the click meant for the item. The item marks the suffix in red when it finds one, the same way [Button](?path=/docs/components-button--docs) marks itself when it has no accessible name.
+- **Say what a destructive item does in its label.** `variant="danger"` only changes the color, so "Delete" carries the meaning and the red reinforces it.
+- **Say when a link opens in a new window.** The `icon` is always decorative, so an external-link icon alone tells a screen reader user nothing. Put it in the label, as in "View in a new tab".
 
 ## Properties
 

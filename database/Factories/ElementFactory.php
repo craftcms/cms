@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Override;
 
@@ -42,7 +43,7 @@ class ElementFactory extends Factory
         return [
             'type' => Entry::class,
             'enabled' => true,
-            'dateCreated' => $created = $this->faker->dateTime(),
+            'dateCreated' => $created = $this->faker->dateTime(Date::now()),
             'dateUpdated' => $created,
         ];
     }

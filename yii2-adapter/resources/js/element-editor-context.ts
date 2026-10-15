@@ -12,6 +12,7 @@ export type ElementEditor = ReturnType<typeof useElementEditor>;
 export interface LegacyEditorPayload extends ElementEditPayload {
   editorContentHtml?: string | null;
   editorSidebarHtml?: string | null;
+  editorAdditionalButtonsHtml?: string | null;
   editorAssets?: CraftCms.Cms.View.HtmlFragment;
 }
 interface LegacyFormData extends ElementEditFormData {
