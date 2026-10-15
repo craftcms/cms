@@ -660,7 +660,7 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             return null;
         }
 
-        return Folders::getRootFolderByVolumeId($volume->id)?->id;
+        return Folders::getRootFolderByVolume($volume)->id;
     }
 
     private function uploadVolume(): ?Volume

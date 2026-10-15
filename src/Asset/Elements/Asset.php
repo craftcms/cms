@@ -575,6 +575,10 @@ class Asset extends Element
         foreach ($volumeIds as $volumeId) {
             $folder = Folders::getRootFolderByVolumeId($volumeId);
 
+            if ($folder === null) {
+                continue;
+            }
+
             if ($forNavigation) {
                 $volume = $folder->getVolume();
                 $sources[] = [
@@ -944,11 +948,10 @@ class Asset extends Element
 
             if ($totalFolders > (int) $elementQuery->offset) {
                 $source = ElementSources::findSource(self::class, $sourceKey);
-                if (isset($source['criteria']['folderId'])) {
-                    $baseFolder = Folders::getFolderById($source['criteria']['folderId']);
-                } else {
-                    $baseFolder = Folders::getRootFolderByVolumeId($queryFolder->getVolume()->id);
-                }
+                $baseFolder = isset($source['criteria']['folderId'])
+                    ? Folders::getFolderById($source['criteria']['folderId'])
+                    : null;
+                $baseFolder ??= Folders::getRootFolderByVolume($queryFolder->getVolume());
                 $baseSourcePathStep = $baseFolder->getSourcePathInfo();
 
                 $folderQuery
@@ -1042,6 +1045,7 @@ class Asset extends Element
         return $count;
     }
 
+    /** @phpstan-assert-if-true VolumeFolder $queryFolder */
     private static function _includeFoldersInIndexElements(AssetQuery $assetQuery, ?string $sourceKey, ?VolumeFolder &$queryFolder = null): bool
     {
         if (
@@ -3149,7 +3153,7 @@ JS;
         }
 
         // Set the field layout
-        $volume = Folders::getFolderById($folderId)->getVolume();
+        $volume = (Folders::getFolderById($folderId) ?? throw new RuntimeException("Invalid folder ID: $folderId"))->getVolume();
 
         if (! $volume->isTemporary()) {
             $this->fieldLayoutId = $volume->fieldLayoutId;
@@ -3451,11 +3455,11 @@ JS;
             return [null, null];
         }
 
+        $transform = ImageTransformHelper::normalizeTransform($transform);
+
         if ($transform === null || ! ImageHelper::canManipulateAsImage($this->getExtension())) {
             return [$this->_width, $this->_height];
         }
-
-        $transform = ImageTransformHelper::normalizeTransform($transform);
 
         return ImageHelper::targetDimensions(
             $this->_width,
@@ -3490,8 +3494,9 @@ JS;
         $oldFolder = $this->folderId ? Folders::getFolderById($this->folderId) : null;
         $oldVolume = $oldFolder?->getVolume();
 
-        $newFolder = $hasNewFolder ? Folders::getFolderById($folderId) : $oldFolder;
-        $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;
+        $newFolder = ($hasNewFolder ? Folders::getFolderById($folderId) : $oldFolder)
+            ?? throw new RuntimeException("Invalid folder ID: $folderId");
+        $newVolume = $newFolder->getVolume();
 
         $oldPath = $this->folderId ? $this->getPath() : null;
         $newPath = ($newFolder->path ? rtrim((string) $newFolder->path, '/').'/' : '').$filename;
@@ -3534,7 +3539,7 @@ JS;
                 throw new FileException(t('There was an error relocating the file.'));
             }
 
-            if ($oldVolume->id === $newVolume->id) {
+            if ($oldVolume?->id === $newVolume->id) {
                 if (! $oldDisk->move($oldPath, $newPath)) {
                     throw new FilesystemException("Unable to move $oldPath to $newPath");
                 }

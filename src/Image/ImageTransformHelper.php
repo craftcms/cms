@@ -309,7 +309,9 @@ class ImageTransformHelper
             if (array_key_exists('transform', $transform)) {
                 $baseTransform = self::normalizeTransform(Arr::pull($transform, 'transform'));
 
-                return self::extendTransform($baseTransform, $transform);
+                if ($baseTransform !== null) {
+                    return self::extendTransform($baseTransform, $transform);
+                }
             }
 
             return new ImageTransform($transform);

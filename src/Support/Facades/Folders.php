@@ -13,6 +13,7 @@ use Override;
  * @method static \Illuminate\Support\Collection findFolders(mixed $criteria = [])
  * @method static \CraftCms\Cms\Asset\Data\VolumeFolder|null findFolder(mixed $criteria = [])
  * @method static array getAllDescendantFolders(\CraftCms\Cms\Asset\Data\VolumeFolder $parentFolder, string $orderBy = 'path', bool $withParent = true, bool $asTree = false)
+ * @method static \CraftCms\Cms\Asset\Data\VolumeFolder getRootFolderByVolume(\CraftCms\Cms\Asset\Data\Volume $volume)
  * @method static \CraftCms\Cms\Asset\Data\VolumeFolder|null getRootFolderByVolumeId(int $volumeId)
  * @method static int getTotalFolders(mixed $criteria)
  * @method static bool foldersExist(mixed $criteria = null)

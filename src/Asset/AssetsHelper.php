@@ -244,7 +244,7 @@ class AssetsHelper
     {
         $sourceTree = Folders::getAllDescendantFolders($sourceParentFolder);
         $previousParent = $sourceParentFolder->getParent();
-        $sourcePrefixLength = strlen((string) $previousParent->path);
+        $sourcePrefixLength = strlen($previousParent->path ?? '');
         $folderIdChanges = [];
 
         foreach ($sourceTree as $sourceFolder) {
@@ -551,7 +551,7 @@ class AssetsHelper
      */
     public static function resolveSubpath(Volume $volume, ?string $subpath, ?ElementInterface $element = null): array
     {
-        $rootFolder = Folders::getRootFolderByVolumeId($volume->id);
+        $rootFolder = Folders::getRootFolderByVolume($volume);
 
         // Are we looking for the root folder?
         $subpath = trim($subpath ?? '', '/');

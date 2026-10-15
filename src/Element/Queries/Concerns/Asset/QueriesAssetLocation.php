@@ -112,7 +112,8 @@ trait QueriesAssetLocation
                 ->when(
                     is_numeric($value) && $assetQuery->includeSubfolders,
                     function (Builder $q) use ($value) {
-                        $descendants = Folders::getAllDescendantFolders(Folders::getFolderById($value));
+                        $folder = Folders::getFolderById((int) $value);
+                        $descendants = $folder ? Folders::getAllDescendantFolders($folder) : [];
 
                         $q->orWhereIn('assets.folderId', array_keys($descendants));
                     }

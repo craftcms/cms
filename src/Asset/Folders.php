@@ -21,6 +21,8 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
+use RuntimeException;
 use stdClass;
 use Throwable;
 use Tpetry\QueryExpressions\Value\Value;
@@ -89,7 +91,7 @@ class Folders
                 $query->orderBy($parts[0], match (strtolower($parts[1] ?? 'asc')) {
                     'asc' => 'asc',
                     'desc' => 'desc',
-                    default => throw new \InvalidArgumentException('Folder sort direction must be asc or desc.'),
+                    default => throw new InvalidArgumentException('Folder sort direction must be asc or desc.'),
                 });
             } else {
                 foreach ($criteria->order as $column => $direction) {
@@ -161,7 +163,7 @@ class Folders
 
         foreach ($results as $result) {
             $folder = $this->hydrateFolder($result);
-            $folderId = $folder->id ?? throw new \RuntimeException('Persisted folders must have an ID.');
+            $folderId = $folder->id ?? throw new RuntimeException('Persisted folders must have an ID.');
             $descendantFolders[$folderId] = $folder;
         }
 
@@ -170,6 +172,17 @@ class Folders
         }
 
         return $descendantFolders;
+    }
+
+    /**
+     * Returns a volume's root folder, creating it if it doesn't exist yet.
+     */
+    public function getRootFolderByVolume(Volume $volume): VolumeFolder
+    {
+        $volumeId = $volume->id ?? throw new InvalidArgumentException('The volume must be saved before its root folder can be fetched.');
+
+        return $this->getRootFolderByVolumeId($volumeId)
+            ?? throw new RuntimeException("Volume $volumeId has no root folder.");
     }
 
     public function getRootFolderByVolumeId(int $volumeId): ?VolumeFolder
@@ -193,7 +206,7 @@ class Folders
                 $folder->name = $volume->name;
                 $folder->path = '';
                 $this->storeFolderModel($folder);
-                $folderId = $folder->id ?? throw new \RuntimeException('Persisted folders must have an ID.');
+                $folderId = $folder->id ?? throw new RuntimeException('Persisted folders must have an ID.');
                 $this->foldersById[$folderId] = $folder;
                 $this->folderIdsByUid[$folder->uid] = $folder->id;
             }
@@ -365,7 +378,7 @@ class Folders
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, Volume $volume, bool $justRecord = true): VolumeFolder
     {
-        $parentFolder = $this->getRootFolderByVolumeId($volume->id);
+        $parentFolder = $this->getRootFolderByVolume($volume);
         $folderModel = $parentFolder;
         $parentId = $parentFolder->id;
 
@@ -439,7 +452,7 @@ class Folders
     private function hydrateFolder(stdClass $result): VolumeFolder
     {
         $folder = new VolumeFolder((array) $result);
-        $folderId = $folder->id ?? throw new \RuntimeException('Persisted folders must have an ID.');
+        $folderId = $folder->id ?? throw new RuntimeException('Persisted folders must have an ID.');
         $this->foldersById[$folderId] = $folder;
         $this->folderIdsByUid[$folder->uid] = $folder->id;
 

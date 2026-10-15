@@ -75,7 +75,7 @@ class Asset extends ElementMutationResolver
             }
 
             if (empty($newFolderId)) {
-                $newFolderId = Folders::getRootFolderByVolumeId($volume->id)->id;
+                $newFolderId = Folders::getRootFolderByVolume($volume)->id;
             }
 
             $asset = Elements::createElement([
@@ -88,7 +88,7 @@ class Asset extends ElementMutationResolver
         if (empty($newFolderId)) {
             if (! $canIdentify) {
                 /** @var AssetElement $asset */
-                $asset->newFolderId = Folders::getRootFolderByVolumeId($volume->id)->id;
+                $asset->newFolderId = Folders::getRootFolderByVolume($volume)->id;
             }
         } else {
             $folder = Folders::getFolderById($newFolderId);

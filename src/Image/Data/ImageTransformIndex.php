@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image\Data;
 
+use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use DateTimeInterface;
@@ -65,7 +66,8 @@ class ImageTransformIndex extends Component
     public function getTransform(): ImageTransform
     {
         if ($this->_transform === null) {
-            $this->_transform = clone ImageTransformHelper::normalizeTransform($this->transformString);
+            $this->_transform = clone (ImageTransformHelper::normalizeTransform($this->transformString)
+                ?? throw new ImageTransformException("Invalid transform string: $this->transformString"));
             $this->_transform->format = $this->format;
         }
 

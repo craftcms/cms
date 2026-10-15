@@ -62,6 +62,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use Override;
+use RuntimeException;
 use Symfony\Component\Mime\MimeTypes;
 
 use function CraftCms\Cms\currentUser;
@@ -611,7 +612,8 @@ class Assets extends BaseRelationField
                                 break;
                         }
 
-                        $uploadFolder = Folders::getFolderById($uploadFolderId);
+                        $uploadFolder = Folders::getFolderById($uploadFolderId)
+                            ?? throw new RuntimeException("Invalid folder ID: $uploadFolderId");
                         $asset = new Asset;
                         $asset->tempFilePath = $tempPath;
                         $asset->setFilename($file['filename']);
@@ -690,8 +692,8 @@ class Assets extends BaseRelationField
                             $rootRestrictedFolder = Folders::getFolderById($rootRestrictedFolderId);
 
                             return
-                                $asset->volumeId !== $rootRestrictedFolder->volumeId ||
-                                ! str_starts_with((string) $asset->folderPath, (string) $rootRestrictedFolder->path);
+                                $asset->volumeId !== $rootRestrictedFolder?->volumeId ||
+                                ! str_starts_with((string) $asset->folderPath, (string) $rootRestrictedFolder?->path);
                         });
                     } else {
                         // Find the files with temp sources and just move those.
@@ -702,7 +704,9 @@ class Assets extends BaseRelationField
                     }
 
                     if (! empty($assetsToMove)) {
-                        $uploadFolder = Folders::getFolderById($getUploadFolderId());
+                        $uploadFolderId = $getUploadFolderId();
+                        $uploadFolder = Folders::getFolderById($uploadFolderId)
+                            ?? throw new RuntimeException("Invalid folder ID: $uploadFolderId");
 
                         // Resolve all conflicts by keeping both
                         foreach ($assetsToMove as $asset) {
@@ -1237,8 +1241,12 @@ class Assets extends BaseRelationField
     {
         $folders = [$folder];
 
-        while ($folder->parentId && $folder->volumeId !== null && (! $untilFolder || $folder->id !== $untilFolder->id)) {
-            $folder = $folder->getParent();
+        while (
+            $folder->volumeId !== null &&
+            (! $untilFolder || $folder->id !== $untilFolder->id) &&
+            ($parent = $folder->getParent()) !== null
+        ) {
+            $folder = $parent;
             array_unshift($folders, $folder);
         }
 

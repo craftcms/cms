@@ -526,7 +526,7 @@ class Images
             return false;
         }
 
-        $native = $image->getInterventionImage()->core()->native();
+        $native = $image->getInterventionImage()?->core()->native();
         if ($native instanceof VipsImage && $native->getType('orientation') !== 0) {
             $native->remove('orientation');
         }

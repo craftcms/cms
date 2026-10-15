@@ -328,7 +328,8 @@ class AssetIndexer
         $skipped = [];
 
         foreach ($skippedItems as $skippedItem) {
-            $skipped[] = $this->volumes->getVolumeById((int) $skippedItem->volumeId)->name.'/'.$skippedItem->uri;
+            $volumeName = $this->volumes->getVolumeById((int) $skippedItem->volumeId)?->name;
+            $skipped[] = ($volumeName !== null ? "$volumeName/" : '').$skippedItem->uri;
         }
 
         return $skipped;
