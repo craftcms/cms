@@ -151,6 +151,19 @@
 - Removed the `--c-select-*`, `--c-input-spacing-block`, and `--c-form-control-spacing-block` CSS custom properties. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added support for field presentation settings, formatted instructions, and field layout identifiers to `CraftCms\Cms\Ui\Nodes\Group` when using `asField()`, and fixed field spacing in UI modals. ([#19940](https://github.com/craftcms/cms/pull/19940))
 - Added `CraftCms\Cms\Plugin\Concerns\HasSettings::createSettings()`, a static method which replaces `CraftCms\Cms\Contracts\PluginInterface::createSettings()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Added `CraftCms\Cms\Shared\Enums\ModelIdentifier`.
+- Added `CraftCms\Cms\Validation\Rules\ModelReferenceRule`.
+- Added `CraftCms\Cms\Asset\Validation\Rules\VolumeRule`.
+- Added `CraftCms\Cms\Entry\Validation\Rules\EntryTypeRule`.
+- Added `CraftCms\Cms\Section\Validation\Rules\SectionRule`.
+- Added `CraftCms\Cms\Site\Validation\Rules\SiteRule`.
+- Added `CraftCms\Cms\User\Validation\Rules\UserGroupRule`.
+- Added `CraftCms\Cms\Asset\Volumes::resolveVolume()`.
+- Added `CraftCms\Cms\Entry\EntryTypes::resolveEntryType()`.
+- Added `CraftCms\Cms\Section\Sections::resolveSection()`.
+- Added `CraftCms\Cms\Site\Sites::resolveSite()`.
+- `CraftCms\Cms\User\UserGroups::resolveGroup()` now accepts `CraftCms\Cms\User\Data\UserGroup` objects, and has a `$by` argument for limiting which identifier types are accepted.
+- Removed `CraftCms\Cms\Validation\Rules\SiteIdRule`. `CraftCms\Cms\Site\Validation\Rules\SiteRule` should be used instead.
 - `<craft-tabs>` now always has a tab selected. A `selected-index` of `-1` resolves to the first enabled tab.
 - Updated `CraftCms\Cms\Cp\Components\Tabs` to throw an `InvalidArgumentException` when rendered without a label, and `<craft-tabs>` to log a console error when rendered without a `label` attribute.
 - `CraftCms\Cms\Element\Element::searchableAttributes()` is now `final`. `defineSearchableAttributes()` should be overridden instead, including by element types extending `craft\base\Element` through the Yii adapter.

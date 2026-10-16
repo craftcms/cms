@@ -10,6 +10,7 @@ use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Arr;
@@ -194,6 +195,8 @@ class ImportHelper
 
     /**
      * Returns the mapping columns for each importable element in the given field layout.
+     *
+     * @return list<MappingColumn|CompoundMappingColumn>
      */
     public static function getDestinationColsForFieldLayout(
         ?FieldLayout $fieldLayout,
@@ -714,7 +717,7 @@ class ImportHelper
      * still fall back to a heading that names less of its path, but a heading claimed by a
      * full-path match is never offered as a fallback.
      *
-     * @param  CompoundMappingColumn  $destinationCols
+     * @param  list<MappingColumn|CompoundMappingColumn>  $destinationCols
      * @param  list<SourceColumn>  $sourceDataCols
      * @param  array<mixed>  $map  The current (possibly partially saved) map tree.
      * @return array<mixed>
@@ -804,7 +807,7 @@ class ImportHelper
      * Collects every destination leaf that still needs a value, keeping each one's map path
      * alongside the normalized segments it should be matched on.
      *
-     * @param  CompoundMappingColumn  $destinationCols
+     * @param  list<MappingColumn|CompoundMappingColumn>  $destinationCols
      * @param  array<mixed>  $map
      * @param  list<MappableLeaf>  $leaves
      */
