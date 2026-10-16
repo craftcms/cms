@@ -305,6 +305,11 @@
     var(--c-shadow-2xl);
 }
 
+/* The light theme is the default, with no `data-theme` on <html>, so it sets
+   its color scheme explicitly too. Otherwise native UI and theme-aware SVG
+   images (which follow their embedding element's color scheme) would follow
+   the OS instead, coming out dark on a dark OS. */
+:root,
 [data-theme='light'] {
   color-scheme: light;
 }
