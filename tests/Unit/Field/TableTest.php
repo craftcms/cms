@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\Field\TableCells\MissingTableCell;
@@ -165,6 +166,17 @@ it('rejects unavailable currencies in money column settings', function () {
         ->and($field->errors()->has('columns.amount.currency'))->toBeTrue();
 });
 
+it('names link column settings by their labels in validation errors', function () {
+    $field = new Table([
+        'name' => 'Resources',
+        'handle' => 'resources',
+        'columns' => ['col1' => ['heading' => 'Link', 'handle' => 'link', 'type' => 'link', 'types' => []]],
+    ]);
+
+    expect($field->validate())->toBeFalse()
+        ->and($field->errors()->get('columns.col1.types'))->toBe(['The Allowed Link Types field is required.']);
+});
+
 it('keeps column handles scalar while rendering validation errors by cell', function () {
     $field = new Table([
         'name' => 'Details',
@@ -312,6 +324,69 @@ it('renders registered cells and their validation feedback in inline HTML inputs
             ['path' => ['details', '0', 'col1'], 'messages' => ['Quantity must be positive.']],
         ])
         ->and($payload['globalErrors'])->toBe([]);
+});
+
+it('round-trips link cells through request values, storage, and editor values', function () {
+    $field = new Table([
+        'handle' => 'links',
+        'columns' => ['col1' => [
+            'heading' => 'Link', 'handle' => 'link', 'type' => 'link',
+            'types' => ['url', 'email'], 'showLabelField' => true, 'advancedFields' => ['urlSuffix'],
+        ]],
+    ]);
+
+    $normalized = $field->normalizeValueFromRequest([
+        ['col1' => ['type' => 'url', 'value' => ' https://example.com ', 'label' => 'Docs', 'urlSuffix' => 'page=2', 'target' => '_blank']],
+        ['col1' => ['type' => 'url', 'value' => '']],
+    ], null);
+    $stored = $field->serializeValueForDb($normalized, new Entry);
+    $payload = app(UiResolver::class)->resolve(Ui::make([
+        UiField::make('Links', $field->uiControl(new FieldContext('links', value: $field->normalizeValue($stored, null)))),
+    ]), new UiContext);
+    $cell = $payload->nodes[0]->control->uis[0]->nodes[0]->control;
+
+    expect($normalized[0]['link'])->toBeInstanceOf(LinkData::class)
+        ->and((string) $normalized[0]['link']->getLink())->toBe('<a href="https://example.com?page=2">Docs</a>')
+        ->and($normalized[1]['link'])->toBeNull()
+        ->and($stored)->toBe([
+            ['col1' => ['value' => 'https://example.com', 'type' => 'url', 'label' => 'Docs', 'urlSuffix' => '?page=2']],
+            ['col1' => null],
+        ])
+        ->and($payload->values['links'][0]['col1'])->toBe([...$stored[0]['col1'], 'defaultLabel' => 'example.com'])
+        ->and($cell->component)->toBe('craft:link')
+        ->and(array_column($cell->props['types'], 'id'))->toBe(['url', 'email'])
+        ->and($cell->props['advancedFields'])->toBe(['urlSuffix'])
+        ->and($field->getSearchKeywords($normalized, new Entry))->toContain('https://example.com?page=2');
+});
+
+it('validates link cells against their column settings', function (array $value, ?string $expected) {
+    $field = new Table([
+        'handle' => 'links',
+        'columns' => ['col1' => ['heading' => 'Resource', 'handle' => 'resource', 'type' => 'link', 'types' => ['url'], 'maxLength' => 20]],
+    ]);
+    $errors = [];
+
+    $field->validateTableData($field->normalizeValue([['col1' => $value]], null), function (string $path, string $message) use (&$errors): void {
+        $errors[$path][] = $message;
+    }, 'links');
+
+    expect($errors['links.0.col1'][0] ?? null)->toBe($expected);
+})->with([
+    'valid URL' => [['type' => 'url', 'value' => 'https://example.com'], null],
+    'disallowed type' => [['type' => 'email', 'value' => 'author@example.com'], 'Resource no longer allows Email links.'],
+    'too long' => [['type' => 'url', 'value' => 'https://example.com/long-path'], 'Resource should contain at most 20 characters.'],
+]);
+
+it('indexes cells that serialize to arrays as words by default', function () {
+    $cell = new class extends TableCell
+    {
+        public function serializeValue(mixed $value, bool $forDb = false): array
+        {
+            return ['first', ['second', 3]];
+        }
+    };
+
+    expect($cell->searchKeywords(null))->toBe('first second 3');
 });
 
 class ScaledTableCell extends TableCell

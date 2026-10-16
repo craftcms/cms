@@ -8,8 +8,12 @@ use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
+use CraftCms\Cms\Field\Contracts\ElementAwareTableCellInterface;
 use CraftCms\Cms\Field\Contracts\TableCellInterface;
+use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
+use CraftCms\Cms\Field\Data\LinkData;
+use CraftCms\Cms\Field\Data\LinkElementLoader;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\TableCells\MissingTableCell;
 use CraftCms\Cms\Field\TableCells\TableCellContext;
@@ -53,12 +57,12 @@ use function CraftCms\Cms\t;
  * @phpstan-type TableColumnType string
  * @phpstan-type TableOption array{label: string, value: string, default?: bool}
  * @phpstan-type TableColumn array{heading: string, handle: string, type: TableColumnType, width?: int|string, options?: list<TableOption>, settings?: array<string, mixed>}
- * @phpstan-type TableCellValue bool|float|int|string|DateTimeInterface|ColorData|null
+ * @phpstan-type TableCellValue bool|float|int|string|DateTimeInterface|ColorData|LinkData|array<string, mixed>|null
  * @phpstan-type TableRowData array<string, TableCellValue>
  *
  * @since 6.0.0
  */
-class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface
+class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, TracksReferencesFieldInterface
 {
     /** @var array<string, array<string, true>> */
     private array $columnErrors = [];
@@ -664,6 +668,9 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             return null;
         }
 
+        $cells = array_map($this->cellType(...), $this->columns);
+        $cellValues = [];
+
         foreach ($value as $rowIndex => &$row) {
             foreach ($this->columns as $colId => $col) {
                 if ($col['type'] === 'heading') {
@@ -675,13 +682,34 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
                 } else {
                     $cellValue = null;
                 }
-                $cellValue = $this->cellType($col)->normalizeValue($cellValue, $fromRequest);
-                $row[$colId] = $cellValue;
-                if ($col['handle']) {
-                    $row[$col['handle']] = $cellValue;
+                $row[$colId] = $cellValues[] = $cells[$colId]->normalizeValue($cellValue, $fromRequest);
+            }
+        }
+        unset($row);
+
+        // Before localizing, which loads the linked elements
+        LinkElementLoader::attach($cellValues);
+
+        if ($element && $this->isPropagatingAcrossTranslations($element)) {
+            foreach ($cells as $colId => $cell) {
+                if ($cell instanceof ElementAwareTableCellInterface) {
+                    $localized = $cell->localizeValues(array_column($value, $colId), $element);
+                    foreach ($value as $rowIndex => &$row) {
+                        $row[$colId] = $localized[$rowIndex];
+                    }
+                    unset($row);
                 }
             }
         }
+
+        foreach ($value as &$row) {
+            foreach ($this->columns as $colId => $col) {
+                if ($col['handle']) {
+                    $row[$col['handle']] = $row[$colId];
+                }
+            }
+        }
+        unset($row);
 
         return $value;
     }
@@ -787,6 +815,65 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return implode(' ', $keywords);
     }
 
+    public function getReferenceTargetIds(ElementInterface $element): array
+    {
+        $value = $element->getFieldValue($this->handle);
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $targetIds = [];
+        foreach ($this->elementAwareCells() as $colId => $cell) {
+            foreach ($value as $row) {
+                array_push($targetIds, ...$cell->referenceTargetIds($row[$colId] ?? null));
+            }
+        }
+
+        return array_values(array_unique($targetIds));
+    }
+
+    public function replaceReferences(ElementInterface $element, array $oldTargetIds, int $newTargetId): bool
+    {
+        $value = $element->getFieldValue($this->handle);
+        if (! is_array($value)) {
+            return false;
+        }
+
+        $replaced = false;
+        foreach ($this->elementAwareCells() as $colId => $cell) {
+            $handle = $this->columns[$colId]['handle'] ?? null;
+
+            foreach ($value as &$row) {
+                $newCellValue = $cell->replaceReferences($row[$colId] ?? null, $oldTargetIds, $newTargetId);
+                if ($newCellValue === null) {
+                    continue;
+                }
+
+                $row[$colId] = $newCellValue;
+                if ($handle) {
+                    $row[$handle] = $newCellValue;
+                }
+                $replaced = true;
+            }
+            unset($row);
+        }
+
+        if ($replaced) {
+            $element->setFieldValue($this->handle, $value);
+        }
+
+        return $replaced;
+    }
+
+    /** @return array<string, ElementAwareTableCellInterface> */
+    private function elementAwareCells(): array
+    {
+        return array_filter(
+            array_map($this->cellType(...), $this->columns),
+            fn (TableCellInterface $cell): bool => $cell instanceof ElementAwareTableCellInterface,
+        );
+    }
+
     #[Override]
     public function getContentGqlType(): Type
     {
@@ -828,6 +915,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return ValidatorFacade::make(
             ['value' => $cell->serializeValue($value)],
             ['value' => $rules],
+            attributes: ['value' => ($column['heading'] ?? '') !== '' ? $column['heading'] : t('Value')],
         )->errors()->get('value');
     }
 }

@@ -548,6 +548,15 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         ], $this->linkSettingsRules());
     }
 
+    #[Override]
+    public function attributeLabels(): array
+    {
+        return [
+            ...parent::attributeLabels(),
+            ...$this->linkSettingsAttributeLabels(),
+        ];
+    }
+
     protected function linkSettingsNamespace(): ?string
     {
         return 'linkSettings';

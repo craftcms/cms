@@ -1,7 +1,10 @@
 import {createApp, h, nextTick, type App} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
-import type CraftDialog from '@craftcms/ui/components/dialog/dialog';
 import {createCpComponentRegistry} from '@/bootstrap/components';
+import {
+  openColumnSettings,
+  type OpenColumnSettingsOptions,
+} from './table/columnSettingsSlideout';
 import UiRenderer from './UiRenderer.vue';
 import {registerUiComponents} from './register';
 import {columnMetadata} from './table.test-support';
@@ -12,35 +15,96 @@ const cellTypes = [
   {label: 'Plugin select', value: 'plugin:select'},
 ];
 
+const slideout = vi.hoisted(() => ({
+  options: undefined as OpenColumnSettingsOptions | undefined,
+}));
+
+// The slideout itself is only chrome around the settings, which the control
+// teleports into it.
+vi.mock('./table/columnSettingsSlideout', () => ({
+  openColumnSettings: vi.fn(async (options: OpenColumnSettingsOptions) => {
+    slideout.options = options;
+    return {id: 'slideout-1'};
+  }),
+}));
+
 let app: App | undefined;
 let form: HTMLFormElement;
+let panel: HTMLElement | undefined;
 
 afterEach(() => {
   app?.unmount();
   form?.remove();
+  panel?.remove();
+  slideout.options = undefined;
+  vi.mocked(openColumnSettings).mockClear();
 });
 
 async function settle() {
   await nextTick();
-  for (const element of form.querySelectorAll('*')) {
+  for (const element of document.body.querySelectorAll('*')) {
     if ('updateComplete' in element) await element.updateComplete;
   }
   await nextTick();
 }
+
+/** Opens a column's settings, and renders them into a stand-in panel. */
+async function configureColumn(heading: string): Promise<HTMLElement> {
+  form
+    .querySelector<HTMLElement>(
+      `craft-button[aria-label="Configure column ${heading}"]`
+    )!
+    .click();
+  await vi.waitFor(() => expect(slideout.options).toBeDefined());
+
+  panel = document.createElement('div');
+  document.body.append(panel);
+  slideout.options!.mount(panel);
+  await settle();
+
+  return panel;
+}
+
+async function changeEmptyLabel(
+  panel: HTMLElement,
+  value: string
+): Promise<void> {
+  const input = panel.querySelector<HTMLElement & {modelValue: string}>(
+    'craft-input[name="columns[col1][emptyLabel]"]'
+  )!;
+  input.modelValue = value;
+  input.dispatchEvent(new CustomEvent('model-value-changed', {bubbles: true}));
+  await settle();
+}
+
+const statusColumn = {
+  columns: {
+    col1: {
+      heading: 'Status',
+      handle: 'status',
+      width: '',
+      type: 'plugin:select',
+      emptyLabel: 'Choose a status',
+      privateSetting: 'retain',
+    },
+  },
+};
 
 async function mountColumns(
   values: UiValues,
   rendererProps: {
     refresh?: (values: UiValues) => Promise<UiPayload>;
     'onUpdate:mutation'?: (values: UiValues) => void;
-  } = {}
+  } = {},
+  columnErrors?: Record<string, Record<string, true>>
 ): Promise<void> {
   form = document.createElement('form');
   const host = document.createElement('div');
   form.append(host);
   document.body.append(form);
   app = createApp({
-    render: () => h(UiRenderer, {payload: payload(values), ...rendererProps}),
+    render: () =>
+      h(UiRenderer, {payload: payload(values, columnErrors), ...rendererProps}),
   });
   const registry = createCpComponentRegistry();
   registerUiComponents(registry);
@@ -49,7 +113,10 @@ async function mountColumns(
   await settle();
 }
 
-function payload(values: UiValues): UiPayload {
+function payload(
+  values: UiValues,
+  columnErrors?: Record<string, Record<string, true>>
+): UiPayload {
   const columns = values.columns as UiValues;
   const config = (columns.col1 ?? {}) as UiValues;
   const select = config.type === 'plugin:select';
@@ -73,6 +140,7 @@ function payload(values: UiValues): UiPayload {
           reactive: true,
           props: {
             cellTypes,
+            ...(columnErrors ? {errors: columnErrors} : {}),
             rowTemplate: {
               scope: [],
               refreshable: true,
@@ -110,7 +178,7 @@ function payload(values: UiValues): UiPayload {
 }
 
 describe('Table column settings', () => {
-  it('refreshes cell settings after a type change and preserves configured values when the dialog closes', async () => {
+  it('refreshes cell settings after a type change and submits settings applied in the slideout', async () => {
     const refresh = vi.fn(async (values: UiValues) => payload(values));
     const initial = {
       columns: {
@@ -121,6 +189,7 @@ describe('Table column settings', () => {
           type: 'singleline',
           emptyLabel: 'Choose a status',
           privateSetting: 'retain',
+          emptyList: [],
         },
       },
     };
@@ -136,26 +205,16 @@ describe('Table column settings', () => {
     type.dispatchEvent(new Event('change', {bubbles: true}));
     await vi.waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
     await settle();
-    form
-      .querySelector<HTMLElement>(
-        'craft-button[aria-label="Configure column Status"]'
-      )!
-      .click();
-    await settle();
+    const settings = await configureColumn('Status');
 
-    const input = form.querySelector<HTMLElement & {modelValue: string}>(
-      'craft-input[name="columns[col1][emptyLabel]"]'
-    )!;
-    expect(input).not.toBeNull();
-    expect(input.modelValue).toBe('Choose a status');
-    input.modelValue = 'No status';
-    input.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
-    await settle();
-    [...form.querySelectorAll<HTMLElement>('craft-button')]
-      .find((button) => button.textContent?.trim() === 'Done')!
-      .click();
+    expect(
+      settings.querySelector<HTMLElement & {modelValue: string}>(
+        'craft-input[name="columns[col1][emptyLabel]"]'
+      )?.modelValue
+    ).toBe('Choose a status');
+    await changeEmptyLabel(settings, 'No status');
+    slideout.options!.apply();
+    slideout.options!.onClosed();
     await settle();
 
     expect(new FormData(form).get('columns[col1][emptyLabel]')).toBe(
@@ -164,7 +223,63 @@ describe('Table column settings', () => {
     expect(new FormData(form).get('columns[col1][privateSetting]')).toBe(
       'retain'
     );
-    expect(form.querySelector<CraftDialog>('craft-dialog')?.opened).toBe(false);
+    expect(new FormData(form).getAll('columns[col1][emptyList]')).toEqual(['']);
+  });
+
+  it('flags columns whose settings are invalid', async () => {
+    await mountColumns(
+      statusColumn,
+      {refresh: async (values) => payload(values)},
+      {col1: {emptyLabel: true}}
+    );
+
+    expect(
+      form.querySelector(
+        'craft-button[aria-label="Configure column Status (contains errors)"]'
+      )
+    ).not.toBeNull();
+  });
+
+  it('opens one slideout at a time', async () => {
+    await mountColumns(statusColumn, {
+      refresh: async (values) => payload(values),
+    });
+    const button = form.querySelector<HTMLElement>(
+      'craft-button[aria-label="Configure column Status"]'
+    )!;
+
+    button.click();
+    button.click();
+    await settle();
+
+    expect(openColumnSettings).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the columns alone when the slideout closes without changes', async () => {
+    const refresh = vi.fn(async (values: UiValues) => payload(values));
+    await mountColumns(statusColumn, {refresh});
+
+    await configureColumn('Status');
+    slideout.options!.onClosed();
+    await settle();
+
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it('restores the column settings when the slideout closes without applying them', async () => {
+    await mountColumns(statusColumn, {
+      refresh: async (values) => payload(values),
+    });
+
+    const settings = await configureColumn('Status');
+    await changeEmptyLabel(settings, 'No status');
+    expect(slideout.options!.settings()).toContain('No status');
+    slideout.options!.onClosed();
+    await settle();
+
+    expect(new FormData(form).get('columns[col1][emptyLabel]')).toBe(
+      'Choose a status'
+    );
   });
 
   it('adds a column to an empty table, generates its handle, and retains a manually edited handle', async () => {
