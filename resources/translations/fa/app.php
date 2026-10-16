@@ -1775,6 +1775,7 @@ return [
     'The Craft CMS license located at {file} belongs to {domain}.' => 'مجوز Craft CMS واقع در {file} متعلق به {domain} است.',
     'The Markdown flavor that should be used when rendering this field.' => 'The Markdown flavor that should be used when rendering this field.',
     'The Plugin Store is not available, please try again later.' => 'فروشگاه پلاگین در دسترس نیست، لطفا بعدا دوباره تلاش نمایید.',
+    'The Quick Brown Fox' => 'The Quick Brown Fox',
     'The Reply-To email address Craft CMS should use when sending email.' => 'آدرس پاسخ-به پست الکترونیکی که Craft CMS در هنگام ارسال پست الکترونیکی باید استفاده نماید.',
     'The URI can’t begin with the {setting} config setting.' => 'URI نمی تواند با تنظیم پیکربندی {setting} شروع گردد.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'هدر `Authorization` که باید برای استفاده از این توکن با درخواست‌های GraphQL API ارسال شود.',
