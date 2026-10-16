@@ -1775,6 +1775,7 @@ return [
     'The Craft CMS license located at {file} belongs to {domain}.' => 'A {file} fájlban található Craft CMS licenc a {domain} tartományhoz tartozik.',
     'The Markdown flavor that should be used when rendering this field.' => 'The Markdown flavor that should be used when rendering this field.',
     'The Plugin Store is not available, please try again later.' => 'A Beépülőmodul-áruház nem érhető el, próbálkozz később újra.',
+    'The Quick Brown Fox' => 'The Quick Brown Fox',
     'The Reply-To email address Craft CMS should use when sending email.' => 'A válaszadás e-mail címe, amelyet a Craft CMS használjon az e-mail küldéséhez.',
     'The URI can’t begin with the {setting} config setting.' => 'Az URI nem kezdődhet {setting} konfigurációs beállítással.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'A GraphQL API-vel küldendő `Authorization` fejléc igényli a token használatát.',
