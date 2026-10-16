@@ -61,9 +61,7 @@ export default class CraftBadgeIndicator extends LitElement {
         value
       );
 
-    return count > this.max
-      ? `${format(this.max)}+`
-      : format(count);
+    return count > this.max ? `${format(this.max)}+` : format(count);
   }
 
   private getBadgeRole() {

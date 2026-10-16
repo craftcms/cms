@@ -111,9 +111,7 @@ describe('craft-input placeholder', () => {
       ).backgroundColor;
 
       expect(placeholder.opacity).toBe('1');
-      expect(
-        contrast(placeholder.color, surface)
-      ).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(placeholder.color, surface)).toBeGreaterThanOrEqual(4.5);
     }
   );
 });

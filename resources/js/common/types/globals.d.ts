@@ -85,9 +85,9 @@ interface CpStatic extends CpServices {
 }
 
 interface CpNotificationSettings {
-  icon: string;
-  iconLabel: string;
-  details: string;
+  icon?: string;
+  iconLabel?: string;
+  details?: string | HTMLElement;
 }
 
 interface SlideoutInstance {

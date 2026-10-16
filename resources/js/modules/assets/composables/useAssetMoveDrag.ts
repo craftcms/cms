@@ -1,10 +1,14 @@
 import {DragDrop} from '@craftcms/garnish';
-import {t} from '@craftcms/ui';
+import {createButton, isHttpError, t} from '@craftcms/ui';
 import {onBeforeUnmount, onMounted, ref} from 'vue';
 import {
   type AssetMoveConflict,
   type ConflictResolution,
   type FolderConflictResolution,
+  type MovedAssetsResult,
+  type MoveFoldersResult,
+  getMoveInfo,
+  isLargeMove,
   moveAssets,
   moveFolders,
 } from '@/modules/assets/assetMover';
@@ -19,6 +23,23 @@ export interface AssetMoveConflictPrompt {
 export interface FolderMoveConflictPrompt {
   message: string;
   resolve: (choice: FolderConflictResolution) => void;
+}
+
+/** Where each moved item came from, so the move can be undone. */
+interface MoveOrigins {
+  /** Asset ID → the folder it was in. */
+  assetFolderIds: Map<number, number>;
+  /** Folder ID → the folder it was in. */
+  folderParentIds: Map<number, number>;
+}
+
+interface UndoableMove {
+  assets: Array<{assetId: number; folderId: number}>;
+  folders: Array<{folderId: number; parentId: number}>;
+}
+
+interface Notice {
+  close?: () => void;
 }
 
 /**
@@ -45,6 +66,10 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
   // grab force-selects the dragged row. Restored on drop so a row that wasn't
   // already selected doesn't stay checked (a pre-selected group survives).
   let restoreSelection = () => {};
+
+  // The notice of the last move, while it still offers to undo it. A new move
+  // closes it, so Undo only ever reverts the latest move.
+  let undoNotice: Notice | null = null;
 
   const conflictPrompt = ref<AssetMoveConflictPrompt | null>(null);
   const folderConflictPrompt = ref<FolderMoveConflictPrompt | null>(null);
@@ -138,36 +163,223 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
     );
   }
 
+  function rowFolderId(id: string, key: string): number | null {
+    const value = Number(index.findRow(id)?.[key]);
+    return Number.isFinite(value) ? value : null;
+  }
+
+  /** Reads where each item is, before the move refreshes the listing. */
+  function moveOrigins(assetIds: number[], folderIds: number[]): MoveOrigins {
+    const assetFolderIds = new Map<number, number>();
+    const folderParentIds = new Map<number, number>();
+
+    for (const assetId of assetIds) {
+      const folderId = rowFolderId(String(assetId), 'folderId');
+      if (folderId !== null) assetFolderIds.set(assetId, folderId);
+    }
+
+    for (const folderId of folderIds) {
+      const parentId = rowFolderId(`folder:${folderId}`, 'parentFolderId');
+      if (parentId !== null) folderParentIds.set(folderId, parentId);
+    }
+
+    return {assetFolderIds, folderParentIds};
+  }
+
+  /**
+   * What undoing a move takes, or null when it can't be undone: a resolved
+   * conflict renamed or replaced something, or an item's origin is unknown.
+   */
+  function undoableMove(
+    origins: MoveOrigins,
+    folderResult: MoveFoldersResult,
+    assetResult: MovedAssetsResult
+  ): UndoableMove | null {
+    if (
+      folderResult.conflictedCount ||
+      assetResult.conflictedCount ||
+      folderResult.movedFolders.length !== folderResult.movedCount
+    ) {
+      return null;
+    }
+
+    const move: UndoableMove = {folders: [], assets: []};
+
+    for (const {folderId, newFolderId} of folderResult.movedFolders) {
+      const parentId = origins.folderParentIds.get(folderId);
+      if (parentId === undefined) return null;
+      move.folders.push({folderId: newFolderId, parentId});
+    }
+
+    for (const assetId of assetResult.movedAssetIds) {
+      const folderId = origins.assetFolderIds.get(assetId);
+      if (folderId === undefined) return null;
+      move.assets.push({assetId, folderId});
+    }
+
+    return move;
+  }
+
+  function groupBy<T>(
+    items: T[],
+    key: (item: T) => number,
+    id: (item: T) => number
+  ): Map<number, number[]> {
+    const groups = new Map<number, number[]>();
+    for (const item of items) {
+      const ids = groups.get(key(item)) ?? [];
+      ids.push(id(item));
+      groups.set(key(item), ids);
+    }
+    return groups;
+  }
+
+  function closeUndoNotice() {
+    undoNotice?.close?.();
+    undoNotice = null;
+  }
+
+  async function undoMove(move: UndoableMove) {
+    let movedCount = 0;
+
+    try {
+      for (const [parentId, folderIds] of groupBy(
+        move.folders,
+        (folder) => folder.parentId,
+        (folder) => folder.folderId
+      )) {
+        movedCount += (
+          await moveFolders(folderIds, parentId, resolveFolderConflict)
+        ).movedCount;
+      }
+
+      for (const [folderId, assetIds] of groupBy(
+        move.assets,
+        (asset) => asset.folderId,
+        (asset) => asset.assetId
+      )) {
+        movedCount += (await moveAssets(assetIds, folderId, resolveConflict))
+          .movedCount;
+      }
+    } catch (e) {
+      Craft.cp?.displayError?.(t('Couldn’t move the selected items.'));
+      throw e;
+    } finally {
+      if (movedCount > 0) {
+        onActionPerformed();
+      }
+    }
+
+    if (movedCount > 0) {
+      Craft.cp?.displayNotification?.('notice', t('Move reverted.'));
+    }
+  }
+
+  function showMovedNotice(movedCount: number, move: UndoableMove | null) {
+    const message = t('{num, plural, =1{Item} other{Items}} moved.', {
+      num: movedCount,
+    });
+
+    if (!move) {
+      Craft.cp?.displayNotification?.('notice', message);
+      return;
+    }
+
+    const undoButton = createButton({label: t('Undo')});
+    const notice = (Craft.cp?.displayNotification?.('notice', message, {
+      details: undoButton,
+    }) ?? null) as Notice | null;
+    undoNotice = notice;
+
+    const dismiss = () => {
+      notice?.close?.();
+      if (undoNotice === notice) {
+        undoNotice = null;
+      }
+    };
+
+    undoButton.addEventListener('click', async () => {
+      if (undoButton.loading) {
+        return;
+      }
+
+      if (!confirm(t('Are you sure you want to undo the move?'))) {
+        dismiss();
+        return;
+      }
+
+      undoButton.loading = true;
+      try {
+        await undoMove(move);
+      } finally {
+        undoButton.loading = false;
+        dismiss();
+      }
+    });
+  }
+
+  /**
+   * Moves the items into a folder, and returns how many were moved. Moves
+   * that are large or that needed a conflict resolved can't be undone.
+   */
   async function performMove(
     targetFolderId: number,
     assetIds: number[],
     folderIds: number[]
-  ) {
+  ): Promise<number> {
     if (!assetIds.length && !folderIds.length) {
-      return;
+      return 0;
     }
 
+    closeUndoNotice();
+
+    let largeMove: boolean;
     try {
-      const folders = await moveFolders(
+      largeMove = isLargeMove(await getMoveInfo(folderIds, assetIds));
+    } catch (e) {
+      const message = isHttpError<{message?: string}>(e)
+        ? e.response?.data?.message
+        : undefined;
+      Craft.cp?.displayError?.(message ?? t('A server error occurred.'));
+      return 0;
+    }
+
+    if (
+      largeMove &&
+      !confirm(t('Are you sure you want to move the selected items?'))
+    ) {
+      return 0;
+    }
+
+    const origins = moveOrigins(assetIds, folderIds);
+
+    try {
+      const folderResult = await moveFolders(
         folderIds,
         targetFolderId,
         resolveFolderConflict
       );
-      const assets = await moveAssets(
+      const assetResult = await moveAssets(
         assetIds,
         targetFolderId,
         resolveConflict
       );
-      const moved = folders.moved + assets.moved;
-      if (moved > 0) {
-        Craft.cp?.displayNotification?.(
-          'notice',
-          t('{num, plural, =1{Item} other{Items}} moved.', {num: moved})
+      const movedCount = folderResult.movedCount + assetResult.movedCount;
+      if (movedCount > 0) {
+        showMovedNotice(
+          movedCount,
+          largeMove ? null : undoableMove(origins, folderResult, assetResult)
         );
         onActionPerformed();
       }
+      return movedCount;
     } catch (e) {
-      Craft.cp?.displayError?.(t('Couldn’t move the selected items.'));
+      const message = isHttpError<{message?: string}>(e)
+        ? e.response?.data?.message
+        : undefined;
+      Craft.cp?.displayError?.(
+        message ?? t('Couldn’t move the selected items.')
+      );
       throw e;
     }
   }
@@ -294,8 +506,24 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
           return;
         }
 
+        // The draggees stay hidden under the fading helpers until the listing
+        // refreshes; when nothing moves, there's no refresh to bring them back.
+        const draggees = [...(dragDrop?.$draggee ?? [])];
+        const showDraggees = () => {
+          for (const draggee of draggees) {
+            draggee.style.visibility = '';
+          }
+        };
+
         dragDrop?.fadeOutHelpers();
-        void performMove(folderId, assetIds, folderIds);
+        void performMove(folderId, assetIds, folderIds)
+          .then((movedCount) => {
+            if (!movedCount) showDraggees();
+          })
+          .catch((e) => {
+            showDraggees();
+            throw e;
+          });
       },
     });
 
@@ -306,6 +534,7 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
   onMounted(setup);
 
   onBeforeUnmount(() => {
+    closeUndoNotice();
     unbindDragKeys();
     observer?.disconnect();
     observer = null;
