@@ -434,3 +434,23 @@ it('reports outdated status for fields changed on the canonical element since th
         ->and($props['title']['statusLabel'])->toBe('This field was updated in the Current revision.')
         ->and($props['fields.body']['status'])->toBe('outdated');
 });
+
+it('gives tabs their icons, in the designer and on edit forms', function () {
+    $layout = FieldLayout::make(CraftCms\Cms\Entry\Elements\Entry::class)
+        ->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(new EntryTitleField))
+        ->tab('Meta', fn (FieldLayoutTab $tab) => $tab->add(new Heading(['uid' => 'meta-heading', 'heading' => 'Meta'])));
+    [$content, $meta] = $layout->getTabs();
+    $content->uid = 'tab-content';
+    $content->icon = 'newspaper';
+    $meta->uid = 'tab-meta';
+
+    $payload = app(FieldLayoutCompiler::class)->compile($layout);
+    $tabMenu = app(UiHtmlRenderer::class)->tabMenu($payload);
+
+    expect($content->getConfig())->toMatchArray(['icon' => 'newspaper'])
+        ->and($content->labelHtml())->toContain('<craft-icon')->toContain('name="newspaper"')
+        ->and($meta->labelHtml())->not->toContain('<craft-icon')
+        ->and($payload->nodes[0]->props)->toMatchArray(['label' => 'Content', 'icon' => 'newspaper'])
+        ->and($payload->nodes[1]->props)->not->toHaveKey('icon')
+        ->and(array_column($tabMenu, 'icon'))->toBe(['newspaper']);
+});

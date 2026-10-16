@@ -24,6 +24,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Controls\IconPicker;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\UiContext;
@@ -38,7 +39,7 @@ use function CraftCms\Cms\t;
  * @property FieldLayoutElement[]|null $elements The tab’s layout elements
  * @property FieldLayout|null $layout The tab’s layout
  *
- * @phpstan-type TabConfig array{id?: int, layoutId?: int, name?: string|null, sortOrder?: int, uid?: string, userCondition?: array<string, mixed>|null, elementCondition?: array<string, mixed>|null, fields?: array<string, array{sortOrder: int, required: bool}>, elements?: list<array<string, mixed>>}
+ * @phpstan-type TabConfig array{id?: int, layoutId?: int, name?: string|null, icon?: string|null, sortOrder?: int, uid?: string, userCondition?: array<string, mixed>|null, elementCondition?: array<string, mixed>|null, fields?: array<string, array{sortOrder: int, required: bool}>, elements?: list<array<string, mixed>>}
  *
  * @since 6.0.0
  */
@@ -58,6 +59,12 @@ class FieldLayoutTab extends FieldLayoutComponent
      * @var string|null Name
      */
     public ?string $name = null;
+
+    /**
+     * @var string|null An icon shown before the tab's name, in field layout
+     *                  designers and on edit forms' tabs.
+     */
+    public ?string $icon = null;
 
     /**
      * @var int|null Sort order
@@ -117,6 +124,10 @@ class FieldLayoutTab extends FieldLayoutComponent
     public function labelHtml(): string
     {
         return
+            ($this->icon ? Html::tag('craft-icon', '', [
+                ...Icons::resolveIconData($this->icon),
+                'class' => 'fld-tab__icon',
+            ]) : '').
             Html::tag('h3', Html::encode($this->name), [
                 'class' => 'fld-tab__name',
             ]).
@@ -166,6 +177,7 @@ class FieldLayoutTab extends FieldLayoutComponent
             'id' => ['nullable', 'integer'],
             'layoutId' => ['nullable', 'integer'],
             'name' => ['nullable', 'string', 'max:255'],
+            'icon' => ['nullable', 'string', 'max:255'],
             'sortOrder' => ['nullable', 'string', 'max:4'],
         ]);
     }
@@ -181,6 +193,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     {
         return [
             Field::make(t('Name'), Text::make('name')->value($this->name))->required(),
+            Field::make(t('Icon'), IconPicker::make('icon')->value($this->icon)),
         ];
     }
 
@@ -193,7 +206,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     {
         $this->uid ??= Str::uuid()->toString();
 
-        $config = $this->toArray(['name', 'uid', 'userCondition', 'elementCondition']);
+        $config = $this->toArray(['name', 'icon', 'uid', 'userCondition', 'elementCondition']);
         $config['elements'] = $this->getElementConfigs();
 
         return $config;

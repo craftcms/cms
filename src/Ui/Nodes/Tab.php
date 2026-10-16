@@ -17,6 +17,8 @@ use Illuminate\Support\HtmlString;
  */
 class Tab extends Container
 {
+    private ?string $icon = null;
+
     /** @param list<Node> $children */
     private function __construct(
         string $uid,
@@ -50,6 +52,14 @@ class Tab extends Container
         return new self($uid, $label, $children);
     }
 
+    /** An icon shown before the tab's label. */
+    public function icon(?string $icon): static
+    {
+        $this->icon = $icon !== '' ? $icon : null;
+
+        return $this;
+    }
+
     public function component(): string
     {
         return 'craft:tab';
@@ -57,6 +67,9 @@ class Tab extends Container
 
     public function props(): array
     {
-        return ['label' => $this->label];
+        return array_filter([
+            'label' => $this->label,
+            'icon' => $this->icon,
+        ], fn (?string $value): bool => $value !== null);
     }
 }

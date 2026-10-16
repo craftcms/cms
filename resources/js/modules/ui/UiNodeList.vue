@@ -28,8 +28,11 @@
   }>();
   const tabs = computed(() =>
     props.nodes.filter(
-      (node): node is UiNodePayload<{label: string}> & {uid: string} =>
-        node.component === 'craft:tab' && node.uid != null
+      (
+        node
+      ): node is UiNodePayload<{label: string; icon?: string}> & {
+        uid: string;
+      } => node.component === 'craft:tab' && node.uid != null
     )
   );
   const activeTab = ref<string | null>(null);
@@ -106,6 +109,11 @@
       :key="tab.uid"
       :controls="`${tabPanelId(tab)}-tab`"
     >
+      <craft-icon
+        v-if="tab.props.icon"
+        :name="tab.props.icon"
+        slot="prefix"
+      ></craft-icon>
       {{ tab.props.label }}
       <craft-icon
         v-if="nodeHasErrors(tab)"

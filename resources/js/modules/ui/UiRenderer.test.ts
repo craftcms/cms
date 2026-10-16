@@ -1478,7 +1478,7 @@ describe('UiRenderer', () => {
         {
           type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
           component: 'craft:tab',
-          props: {label: 'Content'},
+          props: {label: 'Content', icon: 'newspaper'},
           uid: 'tab-content',
           children: [
             {
@@ -1637,6 +1637,13 @@ describe('UiRenderer', () => {
     expect(tabButtons[0]?.getAttribute('aria-selected')).toBe('true');
     expect(tabButtons[1]?.getAttribute('aria-selected')).toBe('false');
     expect(tabButtons[1]?.querySelector('craft-icon')).not.toBeNull();
+    // A tab's icon comes before its label; tabs without one get none.
+    expect(
+      tabButtons[0]
+        ?.querySelector('craft-icon[slot="prefix"]')
+        ?.getAttribute('name')
+    ).toBe('newspaper');
+    expect(tabButtons[1]?.querySelector('[slot="prefix"]')).toBeNull();
     expect(tab?.getAttribute('aria-label')).toBe('Content');
     // `craft-tabs` pairs the two in external-panel mode: the tab points at the
     // panel id this component assigned, and the panel back at the tab's own id

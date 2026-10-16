@@ -75,6 +75,7 @@ class FieldLayoutCompiler
                 t($layoutTab->name ?? '', category: 'site'),
                 $nodes,
                 $layoutTab->uid,
+                $layoutTab->icon,
             );
         }
 
