@@ -118,15 +118,28 @@ readonly class Navigation
     }
 
     /**
+     * Each utility with a badge count gets its own, so it's clear which ones
+     * the Utilities item's total comes from.
+     *
      * @return array<string, int>
      */
     public function getBadgeCounts(): array
     {
         $counts = [];
-        $utilities = $this->utilities->getUtilitiesBadgeCount();
+        $total = 0;
 
-        if ($utilities > 0) {
-            $counts[$this->itemId('utilities')] = $utilities;
+        /** @var class-string<Utility> $class */
+        foreach ($this->utilities->getAuthorizedUtilityTypes() as $class) {
+            $count = $class::badgeCount();
+
+            if ($count > 0) {
+                $counts[$this->itemId('utilities/'.$class::id())] = $count;
+                $total += $count;
+            }
+        }
+
+        if ($total > 0) {
+            $counts[$this->itemId('utilities')] = $total;
         }
 
         return $counts;
@@ -623,7 +636,7 @@ readonly class Navigation
      * The utilities, as children of the Utilities item.
      *
      * Badge counts are left off — they're request-scoped, and `getBadgeCounts()`
-     * fills them in.
+     * fills them in, for each utility as well as the Utilities item.
      *
      * @param  Collection<int, class-string<Utility>>  $utilities
      * @return NavItem[]
