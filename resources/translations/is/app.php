@@ -1775,6 +1775,7 @@ return [
     'The Craft CMS license located at {file} belongs to {domain}.' => 'Craft CMS leyfið sem staðsett er á {file} tilheyrir {domain}.',
     'The Markdown flavor that should be used when rendering this field.' => 'The Markdown flavor that should be used when rendering this field.',
     'The Plugin Store is not available, please try again later.' => 'Plugin Store er ekki tiltækt, vinsamlegast reyndu aftur síðar.',
+    'The Quick Brown Fox' => 'The Quick Brown Fox',
     'The Reply-To email address Craft CMS should use when sending email.' => 'Svarnetfangið Craft CMS ætti að nota þegar tölvupóstur er sendur.',
     'The URI can’t begin with the {setting} config setting.' => 'Vefslóðin getur ekki byrjað með stillingu {setting}.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => '`Authorization` hausinn sem ætti að senda með GraphQL API beiðnum um að nota þetta tákn.',
