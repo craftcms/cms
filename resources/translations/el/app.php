@@ -1775,6 +1775,7 @@ return [
     'The Craft CMS license located at {file} belongs to {domain}.' => 'Η άδεια χρήσης του Craft CMS που βρίσκεται στο {file} ανήκει στο {domain}.',
     'The Markdown flavor that should be used when rendering this field.' => 'The Markdown flavor that should be used when rendering this field.',
     'The Plugin Store is not available, please try again later.' => 'Το Plugin Store δεν είναι διαθέσιμο αυτή τη στιγμή, δοκιμάστε ξανά αργότερα.',
+    'The Quick Brown Fox' => 'The Quick Brown Fox',
     'The Reply-To email address Craft CMS should use when sending email.' => 'Η διεύθυνση email απάντησης που πρέπει να χρησιμοποιεί το Craft CMS κατά την αποστολή email.',
     'The URI can’t begin with the {setting} config setting.' => 'Το URI δεν μπορεί να ξεκινά με τη ρύθμιση διαμόρφωσης {setting}.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'Η επικεφαλίδα `Authorization` που πρέπει να αποστέλλεται με τα αιτήματα GraphQL API για να χρησιμοποιηθεί αυτό το token.',
