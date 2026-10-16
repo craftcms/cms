@@ -318,7 +318,9 @@ export const Appearances: Story = {
 /**
  * A chip inherits the palette of any `data-color` ancestor, so chips can be
  * tinted per row without overriding tokens. On a colored chip, links take the
- * chip's text color and are underlined, losing the underline on hover.
+ * chip's text color and are underlined, losing the underline on hover. Plain
+ * chips have no fill, so they keep the default link styling. Plain
+ * chips have no fill, so they keep the default link styling.
  */
 export const Colors: Story = {
   parameters: {controls: {disable: true}},

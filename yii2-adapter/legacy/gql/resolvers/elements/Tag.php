@@ -64,7 +64,7 @@ class Tag extends ElementResolver
             return $tagGroup->id ?? null;
         }, $pairs['taggroups']));
 
-        $query->andWhere(['in', 'tags.groupId', $tagGroupIds]);
+        $query->whereIn('tags.groupId', $tagGroupIds);
 
         return $query;
     }

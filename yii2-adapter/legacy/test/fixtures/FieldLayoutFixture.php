@@ -21,6 +21,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use PDO;
@@ -186,7 +187,7 @@ abstract class FieldLayoutFixture extends DbFixture
         throw new InvalidArgumentException(
             implode(
                 ' ',
-                $model->getErrorSummary(true)
+                $model instanceof Validatable ? $model->errors()->all() : $model->getErrorSummary(true)
             )
         );
     }

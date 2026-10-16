@@ -64,7 +64,7 @@ class Category extends ElementResolver
             return $group->id ?? null;
         }, $pairs['categorygroups']));
 
-        $query->andWhere(['in', 'categories.groupId', $groupIds]);
+        $query->whereIn('categories.groupId', $groupIds);
 
         return $query;
     }
