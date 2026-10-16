@@ -117,6 +117,12 @@ class AssetImporter extends ElementImporter
     }
 
     #[Override]
+    protected static function settingNames(): array
+    {
+        return [...parent::settingNames(), 'volume'];
+    }
+
+    #[Override]
     public static function getSettingsRules(): array
     {
         return array_merge(parent::getSettingsRules(), [

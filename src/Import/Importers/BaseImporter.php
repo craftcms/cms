@@ -294,21 +294,13 @@ abstract class BaseImporter
     }
 
     /**
-     * Returns the names of the settings the importer can be configured with: the ones its settings rules declare.
+     * Returns the names of the settings the importer can be configured with, each applied through the setter of the same name.
      *
      * @return list<string>
      */
     protected static function settingNames(): array
     {
-        $names = [];
-
-        foreach (array_keys(static::getSettingsRules()) as $key) {
-            if (str_starts_with($key, 'settings.')) {
-                $names[] = explode('.', substr($key, strlen('settings.')))[0];
-            }
-        }
-
-        return array_values(array_unique($names));
+        return ['map', 'matchCriteria', 'clearableItems'];
     }
 
     /**

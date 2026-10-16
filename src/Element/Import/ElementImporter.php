@@ -226,6 +226,12 @@ abstract class ElementImporter extends BaseImporter
     }
 
     #[Override]
+    protected static function settingNames(): array
+    {
+        return [...parent::settingNames(), 'site', 'fieldLayout', 'keepMissingNestedElements', 'fieldSettings'];
+    }
+
+    #[Override]
     public static function getSettingsRules(): array
     {
         return array_merge(parent::getSettingsRules(), [

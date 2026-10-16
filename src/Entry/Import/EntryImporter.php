@@ -143,6 +143,12 @@ class EntryImporter extends ElementImporter
     }
 
     #[Override]
+    protected static function settingNames(): array
+    {
+        return [...parent::settingNames(), 'section', 'entryType'];
+    }
+
+    #[Override]
     public static function getSettingsRules(): array
     {
         return array_merge(parent::getSettingsRules(), [
