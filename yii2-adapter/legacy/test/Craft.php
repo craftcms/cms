@@ -468,7 +468,7 @@ class Craft extends Yii2
         if (!Elements::saveElement($element)) {
             if ($failHard) {
                 throw new InvalidArgumentException(
-                    implode(', ', $element->getErrorSummary(true))
+                    implode(', ', $element->errors()->all())
                 );
             }
 
@@ -490,7 +490,7 @@ class Craft extends Yii2
         if (!Elements::deleteElement($element, $hardDelete)) {
             if ($failHard) {
                 throw new InvalidArgumentException(
-                    implode(', ', $element->getErrorSummary(true))
+                    implode(', ', $element->errors()->all())
                 );
             }
 

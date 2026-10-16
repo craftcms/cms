@@ -128,7 +128,12 @@
 
         <div slot="content">
           <div class="p-2">
-            <CraftInput :label="t('Search')" v-model="groupQuery" label-sr-only>
+            <CraftInput
+              :label="t('Search')"
+              :placeholder="t('Search')"
+              v-model="groupQuery"
+              label-sr-only
+            >
               <craft-icon name="search" slot="prefix"></craft-icon>
             </CraftInput>
           </div>
