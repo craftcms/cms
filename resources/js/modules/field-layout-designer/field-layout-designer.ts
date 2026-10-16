@@ -126,10 +126,10 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       () =>
         !!Craft?.Grid &&
         typeof $ === 'function' &&
-        !!this.$fieldLibrary.querySelector('input[type="search"]')
+        !!this.$fieldLibrary.querySelector('craft-input-search input')
     ).then(() => {
       this.$fieldSearch = this.$fieldLibrary.querySelector(
-        'input[type="search"]'
+        'craft-input-search input'
       );
       this.deferredInit();
     });

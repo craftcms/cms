@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import {t} from '@craftcms/ui';
-  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
   import CraftSelectRich, {
     type SelectRichOption,
   } from '@craftcms/ui/vue/CraftSelectRich.vue';
@@ -62,29 +62,11 @@
       </CraftSelectRich>
     </template>
     <template v-if="searchable" #search>
-      <CraftInput
+      <CraftInputSearch
         name="search"
-        :label="t('Search')"
-        :placeholder="searchPlaceholder ?? t('Search')"
-        label-sr-only
+        :placeholder="searchPlaceholder ?? undefined"
         v-model="search"
-      >
-        <div slot="suffix" class="flex">
-          <craft-button
-            v-if="search"
-            type="button"
-            icon
-            size="small"
-            variant="plain"
-            @click="search = ''"
-          >
-            <craft-icon name="x" :label="t('Clear search')"></craft-icon>
-          </craft-button>
-          <span class="flex items-center px-md">
-            <craft-icon name="search"></craft-icon>
-          </span>
-        </div>
-      </CraftInput>
+      />
     </template>
     <template v-if="columnsToggleable" #view>
       <IndexViewSettings

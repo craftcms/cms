@@ -3,7 +3,7 @@
 
   import {t} from '@craftcms/ui';
   import Modal from '@/common/components/Modal.vue';
-  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
   import {computed, nextTick, ref, watch} from 'vue';
   import {watchDebounced} from '@vueuse/core';
   import {useHttp} from '@inertiajs/vue3';
@@ -177,20 +177,15 @@
           slot="header"
           role="search"
           @submit.prevent="loadIcons()"
-          class="sticky top-0 pt-lg px-lg pb-md bg-white"
+          class="sticky top-0 pt-lg px-lg pb-md bg-(--c-surface-raised)"
         >
-          <CraftInput
-            :label="t('Search')"
-            :placeholder="t('Search')"
-            v-model="query"
-          >
-            <div slot="suffix" class="flex self-center w-[1em] h-[1em]">
-              <craft-spinner
-                style="--size: 1em"
-                :visible="http.processing && icons !== null"
-              ></craft-spinner>
-            </div>
-          </CraftInput>
+          <CraftInputSearch v-model="query">
+            <craft-spinner
+              slot="after"
+              style="--size: 1em"
+              .visible="http.processing && icons !== null"
+            ></craft-spinner>
+          </CraftInputSearch>
         </form>
         <div>
           <!-- This only shows on the initial load -->
@@ -285,5 +280,6 @@
   :deep(svg) {
     width: calc(20rem / 16);
     height: calc(20rem / 16);
+    fill: currentColor;
   }
 </style>

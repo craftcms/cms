@@ -85,15 +85,9 @@
 
             <div class="fld-field-library">
                 <div class="search">
-                    <craft-input
-                        label="{{ \CraftCms\Cms\t('Search') }}"
-                        placeholder="{{ \CraftCms\Cms\t('Search') }}"
-                        label-sr-only
-                        type="search"
-                        inputmode="search"
+                    <craft-input-search
                         @disabled($disabled)
-                    >
-                    </craft-input>
+                    ></craft-input-search>
                 </div>
 
                 {!! $designer->fldFieldSelectorsHtml(\CraftCms\Cms\t('Native Fields'), $availableNativeFields, $fieldLayout) !!}

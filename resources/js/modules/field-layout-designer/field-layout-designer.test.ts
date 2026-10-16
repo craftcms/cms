@@ -46,11 +46,12 @@ it('waits for the jQuery seam before initializing', async () => {
 
   expect(deferredInit).not.toHaveBeenCalled();
 
+  const field = document.createElement('craft-input-search');
   const search = document.createElement('input');
-  search.type = 'search';
+  field.append(search);
   const library = container.querySelector('.fld-field-library');
   if (!library) throw new Error('Expected the field library fixture.');
-  library.prepend(search);
+  library.prepend(field);
 
   window.$ = $;
   await vi.advanceTimersByTimeAsync(100);

@@ -432,7 +432,7 @@ function indexResponse(
 function searchInput(root: HTMLElement) {
   return root.querySelector<
     HTMLElement & {modelValue: string; updateComplete?: Promise<unknown>}
-  >('craft-input[name="search"]')!;
+  >('craft-input-search[name="search"]')!;
 }
 
 async function search(root: HTMLElement, value: string): Promise<void> {

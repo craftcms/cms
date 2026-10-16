@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {computed, ref} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
-  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
   import SlideoutButton from '@/common/components/SlideoutButton.vue';
   import type {SlideoutSaveResult} from '@/common/slideouts';
   import Text from '@/common/components/Text.vue';
@@ -128,14 +128,7 @@
 
         <div slot="content">
           <div class="p-2">
-            <CraftInput
-              :label="t('Search')"
-              :placeholder="t('Search')"
-              v-model="groupQuery"
-              label-sr-only
-            >
-              <craft-icon name="search" slot="prefix"></craft-icon>
-            </CraftInput>
+            <CraftInputSearch v-model="groupQuery" />
           </div>
           <hr class="m-0" />
           <div v-if="selectableGroups.length < 1" class="p-2">
