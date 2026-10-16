@@ -214,6 +214,7 @@
 - Fixed a bug where input placeholder text had insufficient contrast in the dark theme.
 - Fixed a bug where the “License purchase required” screen’s Refresh button didn’t work.
 - Fixed a bug where link buttons with an icon and a label had no inline padding.
+- Fixed a bug where the Deprecation Warnings utility listed warnings caused by Craft’s own Yii adapter code, rather than by project or plugin code. ([#19995](https://github.com/craftcms/cms/pull/19995))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
