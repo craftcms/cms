@@ -140,17 +140,25 @@ export default css`
     display: none;
   }
 
+  /* With the card's own top and bottom borders, a header bar's height. */
   :host([collapsed]) .card__header {
-    min-height: var(--c-card-header-min-height, var(--c-size-header));
+    min-height: var(
+      --c-card-header-min-height,
+      calc(var(--c-size-header) - var(--c-card-border-width, 1px) * 2)
+    );
     border-block-end-width: 0;
   }
 
   .card__header {
     /* Room for a small button, like other header bars, so a header is the
-       same height with or without actions; plus its bottom border. */
-    min-height: var(
-      --c-card-header-min-height,
-      calc(var(--c-size-header) + 1px)
+       same height with or without actions. With the card's top border and the
+       header's own bottom border, it's a header bar's height. */
+    --_header-height: calc(
+      var(--c-size-header) - var(--c-card-border-width, 1px)
+    );
+    min-height: var(--c-card-header-min-height, var(--_header-height));
+    padding-block: calc(
+      (var(--_header-height) - 1px - var(--c-size-control-sm)) / 2
     );
     border-block-end-width: 1px;
     display: flex;

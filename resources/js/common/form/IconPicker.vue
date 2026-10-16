@@ -224,7 +224,7 @@
 <style scoped lang="scss">
   .icon-preview {
     aspect-ratio: 1;
-    width: var(--c-input-height, calc(34rem / 16));
+    width: var(--c-input-height, var(--c-size-control-md));
     background-color: var(--c-color-fill-quiet);
     border: 1px solid var(--c-color-border-quiet);
     color: var(--c-color-on-quiet);
@@ -251,7 +251,10 @@
 
   .icon-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(var(--c-size-control-md), 1fr)
+    );
     gap: var(--c-spacing-sm);
   }
 

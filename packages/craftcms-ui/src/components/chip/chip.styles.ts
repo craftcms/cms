@@ -89,7 +89,7 @@ export default css`
      line up side by side. */
   .cp-chip--medium {
     --_chip-spacing: 0.5em;
-    --_thumb-size: calc(34rem / 16);
+    --_thumb-size: var(--c-size-control-md);
     min-height: var(--c-size-control-md);
   }
 
