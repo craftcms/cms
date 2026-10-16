@@ -153,6 +153,8 @@ export default css`
 
   /* Tip/warning notices (field-notice.blade.php renders these with p-0 mt-1) */
   .field-notice {
+    --c-callout-icon-padding-inline: 0;
+    --c-callout-text-padding-inline: var(--c-spacing-sm) 0;
     padding: 0;
     margin-block-start: var(--c-spacing-xs, 0.25rem);
   }
