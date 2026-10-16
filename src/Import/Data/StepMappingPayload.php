@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Data;
 
+use CraftCms\Cms\Support\Arr;
 use JsonSerializable;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\Optional;
@@ -41,7 +42,7 @@ readonly class StepMappingPayload implements JsonSerializable
     /** @return array<string, mixed> */
     public function jsonSerialize(): array
     {
-        return array_filter([
+        return Arr::whereNotNull([
             'available' => $this->available,
             'message' => $this->message,
             'attribute' => $this->attribute,
@@ -55,6 +56,6 @@ readonly class StepMappingPayload implements JsonSerializable
             ),
             'values' => $this->values?->jsonSerialize(),
             'suggestions' => $this->suggestions,
-        ], fn (mixed $value): bool => $value !== null);
+        ]);
     }
 }
