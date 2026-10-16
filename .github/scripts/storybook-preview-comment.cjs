@@ -38,8 +38,10 @@ async function sectionFor(preview, changed) {
   const entries = await storyIndex(preview.url);
 
   // A component "changed" if any changed file lives in the same directory as one
-  // of this Storybook's story entries. Collapse the several entries per story
-  // file down to one link per component, preferring the Docs page when present.
+  // of this Storybook's story entries. Collapse its entries down to one link per
+  // component, preferring the Docs page when present. Group by title rather than
+  // importPath: a component's Docs page comes from its `.mdx` file, and its
+  // stories from its `.stories.ts` file.
   //
   // Scope the changed-file matching to the relevant subtree so similarly-named
   // directories elsewhere in the repo don't create false positives.
@@ -56,19 +58,19 @@ async function sectionFor(preview, changed) {
         .map((file) => file.slice(baseDir.length + 1))
     : changed;
 
-  const byImport = new Map();
+  const byTitle = new Map();
   for (const entry of entries) {
     if (!entry?.importPath) continue;
     const dir = dirOf(entry.importPath);
     if (!dir || !changedInScope.some((file) => file.startsWith(`${dir}/`)))
       continue;
-    const current = byImport.get(entry.importPath);
+    const current = byTitle.get(entry.title);
     if (!current || (entry.type === 'docs' && current.type !== 'docs')) {
-      byImport.set(entry.importPath, entry);
+      byTitle.set(entry.title, entry);
     }
   }
 
-  const links = [...byImport.values()]
+  const links = [...byTitle.values()]
     .sort((a, b) => a.title.localeCompare(b.title))
     .map((entry) => {
       const kind = entry.type === 'docs' ? 'docs' : 'story';

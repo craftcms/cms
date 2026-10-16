@@ -45,7 +45,7 @@ class GlobalSet extends ElementResolver
             return ElementCollection::empty();
         }
 
-        $query->andWhere(['in', 'globalsets.uid', $pairs['globalsets']]);
+        $query->whereIn('globalsets.uid', $pairs['globalsets']);
 
         return $query;
     }

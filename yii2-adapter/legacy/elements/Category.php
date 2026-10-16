@@ -765,11 +765,10 @@ class Category extends Element
             if ($this->id) {
                 // Figure out how deep the ancestors go
                 $maxDepth = self::find()
-                    ->select('level')
                     ->descendantOf($this)
                     ->status(null)
                     ->leaves()
-                    ->scalar();
+                    ->value('level');
                 $depth = 1 + ($maxDepth ?: $this->level) - $this->level;
             } else {
                 $depth = 1;
@@ -922,11 +921,10 @@ class Category extends Element
         // If this is a provisional draft and its new parent matches the canonical entry’s, just drop it from the structure
         if ($this->isProvisionalDraft) {
             $canonicalParentId = self::find()
-                ->select(['elements.id'])
                 ->ancestorOf($this->getCanonicalId())
                 ->ancestorDist(1)
                 ->status(null)
-                ->scalar();
+                ->value('elements.id');
 
             if ($parentId == $canonicalParentId) {
                 Structures::remove($this->structureId, $this);
