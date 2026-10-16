@@ -123,7 +123,7 @@ it('applies custom ordering, offset, and limit to elements eager-loaded via eage
         ->and($lazyIds)->toBe($expected($relatedIds));
 })->with([
     'default order' => [fn (EntryQuery $query) => $query, fn (array $ids) => $ids],
-    'appended orderBy' => [fn (EntryQuery $query) => $query->orderBy('elements.id', 'desc'), fn (array $ids) => $ids],
+    'orderBy' => [fn (EntryQuery $query) => $query->orderBy('elements.id', 'desc'), array_reverse(...)],
     'replaced orderBy' => [fn (EntryQuery $query) => $query->reorder()->orderBy('elements.id', 'desc'), array_reverse(...)],
     'replaced orderBy and limit' => [fn (EntryQuery $query) => $query->reorder()->orderBy('elements.id', 'desc')->limit(1), fn (array $ids) => [$ids[1]]],
     'replaced orderBy and offset' => [fn (EntryQuery $query) => $query->reorder()->orderBy('elements.id', 'desc')->offset(1), fn (array $ids) => [$ids[0]]],
