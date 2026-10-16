@@ -282,15 +282,8 @@
     height: 100%;
   }
 
-  // craft-thumbnail defaults its own size via :host, so the card thumbnail
-  // renders at the tiny default instead of filling its 120px column. Match the
-  // thumbnail view (and Craft 5's 120px card thumb column).
-  .card-grid :deep(craft-thumbnail) {
-    --c-thumbnail-size: 120px;
-  }
-
   // Non-image thumbs (folder / file-kind SVGs) render at a fixed small size.
-  // Center them in the same 120px box an image thumbnail fills, at the size
+  // Center them in a box as big as the largest image thumbnail, at the size
   // they get in the thumbnail view.
   .card-thumb:has(> .thumb) {
     display: grid;

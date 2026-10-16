@@ -59,10 +59,10 @@ craft-radio > input[type='radio'] {
   width: var(--c-checkbox-size);
   height: var(--c-checkbox-size);
   border: var(--c-form-control-border-width) var(--c-form-control-border-style)
-    var(--c-form-control-border-color);
+    var(--c-checkbox-border-color, var(--c-form-control-border-color));
   border-radius: var(--c-checkbox-radius);
   background-color: var(--c-input-fill);
-  color: var(--c-color-accent-on-loud);
+  color: var(--c-checkbox-checked-mark, var(--c-color-accent-on-loud));
   cursor: pointer;
 
   &::before {
@@ -75,7 +75,10 @@ craft-radio > input[type='radio'] {
 
   &:checked {
     border-color: transparent;
-    background-color: var(--c-color-accent-fill-loud);
+    background-color: var(
+      --c-checkbox-checked-fill,
+      var(--c-color-accent-fill-loud)
+    );
 
     &::before {
       visibility: visible;
@@ -109,7 +112,10 @@ craft-radio > input[type='radio'] {
 
   &:indeterminate {
     border-color: transparent;
-    background-color: var(--c-color-accent-fill-loud);
+    background-color: var(
+      --c-checkbox-checked-fill,
+      var(--c-color-accent-fill-loud)
+    );
 
     &::before {
       visibility: visible;
@@ -253,6 +259,67 @@ fieldset {
   border-radius: var(--c-radius-sm);
 }
 
+kbd {
+  font-family: var(--c-font-mono);
+  font-size: 0.85em;
+  padding-inline: 0.4em;
+  border: 1px solid var(--c-color-neutral-border-quiet);
+  border-block-end-width: 2px;
+  border-radius: var(--c-radius-sm);
+  box-shadow: var(--c-shadow-xs);
+  white-space: nowrap;
+}
+
+/* Captures a colored element's palette where it's set, so descendants that
+   swap in another palette (as neutral buttons do) can still reach it. */
+[data-color] {
+  --_colorable-fill-quiet: var(--c-color-fill-quiet);
+  --_colorable-fill-normal: var(--c-color-fill-normal);
+  --_colorable-fill-loud: var(--c-color-fill-loud);
+  --_colorable-border-quiet: var(--c-color-border-quiet);
+  --_colorable-border-normal: var(--c-color-border-normal);
+  --_colorable-border-loud: var(--c-color-border-loud);
+  --_colorable-on-quiet: var(--c-color-on-quiet);
+  --_colorable-on-normal: var(--c-color-on-normal);
+  --_colorable-on-loud: var(--c-color-on-loud);
+}
+
+/* Neutral buttons on a colored card take the card's color, as its other
+   controls do, rather than gray. */
+craft-card[data-color]:not([data-color='white'])
+  craft-button:not([inherit]):not(
+    [variant~='primary'],
+    [variant~='danger'],
+    [variant~='danger-plain']
+  ) {
+  --c-color-neutral-fill-quiet: var(--_colorable-fill-quiet);
+  --c-color-neutral-fill-normal: var(--_colorable-fill-normal);
+  --c-color-neutral-fill-loud: var(--_colorable-fill-loud);
+  --c-color-neutral-border-quiet: var(--_colorable-border-quiet);
+  --c-color-neutral-border-normal: var(--_colorable-border-normal);
+  --c-color-neutral-border-loud: var(--_colorable-border-loud);
+  --c-color-neutral-on-quiet: var(--_colorable-on-quiet);
+  --c-color-neutral-on-normal: var(--_colorable-on-normal);
+  --c-color-neutral-on-loud: var(--_colorable-on-loud);
+}
+
+/* A card's attribute previews are capped at two lines, unless they opt out
+   with `no-truncate` (generated fields, chips, addresses). */
+.card-attribute-preview:not(:has(> .no-truncate)) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  max-block-size: 2lh;
+  overflow: hidden;
+  text-wrap: pretty;
+}
+
+/* The status badges after a card's attributes */
+.card-attribute-preview + ul {
+  margin-block-start: var(--c-spacing-sm);
+}
+
 craft-chip .cp-code {
   /* Block, so the label's line height doesn't add space above it */
   display: block;
@@ -371,7 +438,7 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
   --_cell-spacing-block: var(--c-spacing-sm);
-  --_row-height: calc(34rem / 16);
+  --_row-height: var(--c-size-control-md);
   text-align: start;
   width: 100%;
   border-spacing: 0;
@@ -472,6 +539,7 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
   table-layout: auto;
   border: 1px solid var(--c-color-border-quiet);
   border-radius: var(--c-radius-sm);
+  overflow: clip;
   margin-block-end: var(--c-spacing-md);
 
   thead,
@@ -485,6 +553,12 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
 
   thead th {
     font-weight: var(--font-weight-semibold);
+  }
+
+  thead:not(:last-child):not(:has(~ :is(tbody, tfoot) > tr))
+    tr:last-child
+    > :is(th, td) {
+    border-block-end: 0;
   }
 
   /* Keep the header's background inside the table's rounded corners */

@@ -76,3 +76,25 @@ describe('craft-tab', () => {
     expect(element.getAttribute('controls')).toBe('panel-content');
   });
 });
+
+describe('craft-tab suffix', () => {
+  it('slots suffix content after the label', async () => {
+    document.body.innerHTML = `
+      <craft-tab>Content<craft-icon slot="suffix" name="circle-exclamation" label="Errors"></craft-icon></craft-tab>`;
+    const tab = document.querySelector<CraftTab>('craft-tab')!;
+    await tab.updateComplete;
+
+    const suffix = tab.shadowRoot!.querySelector<HTMLSlotElement>(
+      'slot[name="suffix"]'
+    )!;
+
+    expect(suffix.assignedElements()).toEqual([
+      tab.querySelector('craft-icon'),
+    ]);
+    expect(
+      suffix.compareDocumentPosition(
+        tab.shadowRoot!.querySelector('.tab__label')!
+      ) & Node.DOCUMENT_POSITION_PRECEDING
+    ).toBeTruthy();
+  });
+});

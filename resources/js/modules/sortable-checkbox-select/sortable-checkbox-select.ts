@@ -1,6 +1,6 @@
 import {Base, DragSort, Y_AXIS} from '@craftcms/garnish';
 import {sortableCheckboxSelectData} from './support';
-import type {ReorderDirection} from '@craftcms/ui';
+import type {ActionMenuItem, ReorderDirection} from '@craftcms/ui';
 
 // `Craft` and `$` (jQuery) remain page globals. This class extends the modern
 // `@craftcms/garnish` `Base` but orchestrates jQuery Craft widgets/DOM and exposes
@@ -20,11 +20,17 @@ declare const $: any;
  * its item is checked AND 2+ items are checked overall (so there's a set to
  * reorder); see {@link updateReorderButtons}. Emits a `sortChange` event on
  * reorder (drag or menu).
+ *
+ * Only checked items are shown, each with a Remove button in place of its
+ * checkbox; unchecked ones are offered by an "Add item" menu at the end, which
+ * goes away once everything is checked. The checkboxes stay in the DOM (hidden)
+ * as the source of truth, so consumers keep reading and listening to them.
  */
 export class SortableCheckboxSelect extends Base {
   $container: any = null;
   dragSort: any = null;
   itemObserver: MutationObserver | null = null;
+  addMenuContainer: HTMLElement | null = null;
 
   constructor(container?: any) {
     super();
@@ -51,6 +57,9 @@ export class SortableCheckboxSelect extends Base {
     const $sortItems = this.$container.children(
       '.cp-checkbox-select__item:not(.all)'
     );
+
+    this.$container.addClass('cp-checkbox-select--selected-only');
+    this.createAddMenu();
 
     this.initDrag();
 
@@ -137,6 +146,13 @@ export class SortableCheckboxSelect extends Base {
       // Refresh button enabled/disabled state, sorter membership, and positions
       // for the new item set.
       if (changed) {
+        // Items appended after boot belong before the "Add item" menu.
+        if (
+          this.addMenuContainer &&
+          containerEl.lastElementChild !== this.addMenuContainer
+        ) {
+          containerEl.append(this.addMenuContainer);
+        }
         this.updateReorderButtons();
       }
     });
@@ -153,6 +169,9 @@ export class SortableCheckboxSelect extends Base {
   override destroy(): void {
     this.itemObserver?.disconnect();
     this.itemObserver = null;
+
+    this.addMenuContainer?.remove();
+    this.addMenuContainer = null;
 
     this.dragSort?.destroy?.();
     this.dragSort = null;
@@ -176,9 +195,127 @@ export class SortableCheckboxSelect extends Base {
    * The input's checkedness is already current when `change` fires.
    */
   isItemChecked(item: HTMLElement): boolean {
-    return !!item.querySelector<HTMLInputElement>(
+    return !!this.itemCheckbox(item)?.checked;
+  }
+
+  itemCheckbox(item: HTMLElement): HTMLInputElement | null {
+    return item.querySelector<HTMLInputElement>(
       ':scope > input[type=checkbox], :scope > craft-checkbox input[type=checkbox]'
-    )?.checked;
+    );
+  }
+
+  /** The item's label text, as rendered for its checkbox. */
+  itemLabel(item: HTMLElement): string {
+    return (
+      item
+        .querySelector(':scope > label, :scope > craft-checkbox > label')
+        ?.textContent?.trim() ?? ''
+    );
+  }
+
+  items(): HTMLElement[] {
+    const containerEl: Element | undefined = this.$container?.[0];
+    return containerEl
+      ? Array.from(
+          containerEl.querySelectorAll<HTMLElement>(
+            ':scope > .cp-checkbox-select__item:not(.all)'
+          )
+        )
+      : [];
+  }
+
+  /**
+   * Unchecked items that can be checked — what the "Add item" menu offers.
+   */
+  addableItems(): HTMLElement[] {
+    return this.items().filter((item) => {
+      const checkbox = this.itemCheckbox(item);
+      return checkbox && !checkbox.checked && !checkbox.disabled;
+    });
+  }
+
+  createAddMenu(): void {
+    const containerEl: HTMLElement | undefined = this.$container?.[0];
+    if (!containerEl) {
+      return;
+    }
+
+    const menu = document.createElement('craft-action-menu');
+    menu.searchable = true;
+
+    const invoker = document.createElement('craft-button');
+    invoker.setAttribute('slot', 'invoker');
+    invoker.setAttribute('type', 'button');
+    invoker.setAttribute('size', 'small');
+    invoker.setAttribute('variant', 'dashed');
+    const icon = document.createElement('craft-icon');
+    icon.setAttribute('name', 'plus');
+    icon.setAttribute('slot', 'prefix');
+    invoker.append(icon, Craft.t('app', 'Add item'));
+    menu.append(invoker);
+
+    // Re-evaluated each time the menu opens, so labels and the set of
+    // unchecked items are always current.
+    menu.actions = (): ActionMenuItem[] =>
+      this.addableItems().map((item) => ({
+        label: this.itemLabel(item),
+        onClick: () => {
+          this.addItem(item);
+        },
+      }));
+
+    this.addMenuContainer = document.createElement('div');
+    this.addMenuContainer.className = 'cp-checkbox-select__add';
+    this.addMenuContainer.append(menu);
+    containerEl.append(this.addMenuContainer);
+  }
+
+  /** Check an item, moving it to the end of the checked ones. */
+  addItem(item: HTMLElement): void {
+    const checkbox = this.itemCheckbox(item);
+    if (!checkbox) {
+      return;
+    }
+
+    if (this.addMenuContainer) {
+      this.addMenuContainer.before(item);
+    }
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event('change', {bubbles: true}));
+
+    // Once nothing's left to add, the menu (and the focus it returns to its
+    // button) is gone, so land on the new item instead.
+    if (!this.addableItems().length) {
+      requestAnimationFrame(() => {
+        item.querySelector<HTMLElement>('.cp-checkbox-select__remove')?.focus();
+      });
+    }
+  }
+
+  /** Uncheck an item, moving focus to a neighbor (or the "Add item" button). */
+  removeItem(item: HTMLElement): void {
+    const checkbox = this.itemCheckbox(item);
+    if (!checkbox) {
+      return;
+    }
+
+    // The next removable item, or else the previous one.
+    const checked = this.items().filter((other) => this.isItemChecked(other));
+    const index = checked.indexOf(item);
+    const neighbor =
+      [...checked.slice(index + 1), ...checked.slice(0, index).reverse()].find(
+        (other) => !this.itemCheckbox(other)?.disabled
+      ) ?? null;
+
+    checkbox.checked = false;
+    checkbox.dispatchEvent(new Event('change', {bubbles: true}));
+
+    const target =
+      neighbor?.querySelector<HTMLElement>('.cp-checkbox-select__remove') ??
+      this.addMenuContainer?.querySelector<HTMLElement>(
+        'craft-button[slot="invoker"]'
+      );
+    target?.focus();
   }
 
   /**
@@ -204,6 +341,8 @@ export class SortableCheckboxSelect extends Base {
     const enableReorder = items.filter(isChecked).length >= 2;
 
     for (const item of items) {
+      item.hidden = !isChecked(item);
+
       const btn = item.querySelector(':scope > craft-reorder-button');
       if (!btn) {
         continue;
@@ -216,6 +355,10 @@ export class SortableCheckboxSelect extends Base {
         btn.setAttribute('disabled', '');
         this.dragSort?.removeItems(item);
       }
+    }
+
+    if (this.addMenuContainer) {
+      this.addMenuContainer.hidden = !this.addableItems().length;
     }
 
     this.updateReorderPositions();
@@ -275,6 +418,7 @@ export class Item extends Base {
   $item: any = null;
   $checkbox: any = null;
   reorderBtn: HTMLElement | null = null;
+  labelObserver: MutationObserver | null = null;
 
   constructor(select?: SortableCheckboxSelect, item?: any) {
     super();
@@ -309,6 +453,52 @@ export class Item extends Base {
       }
     });
     this.$item.prepend(this.reorderBtn);
+
+    // The checkbox is hidden; the item shows its label and a Remove button.
+    // Marked on the item itself so drag helpers (clones appended to the body)
+    // hide it too.
+    const itemEl: HTMLElement = this.$item[0];
+    itemEl.classList.add('cp-checkbox-select__item--selected-only');
+    const label = document.createElement('span');
+    label.className = 'cp-checkbox-select__label';
+    this.reorderBtn.after(label);
+
+    let removeBtn: HTMLElement | null = null;
+    if (!this.$checkbox.prop('disabled')) {
+      removeBtn = document.createElement('craft-button');
+      removeBtn.className = 'cp-checkbox-select__remove';
+      removeBtn.setAttribute('type', 'button');
+      removeBtn.setAttribute('icon', 'xmark');
+      removeBtn.setAttribute('size', 'small');
+      removeBtn.setAttribute('variant', 'plain');
+      removeBtn.addEventListener('click', () => {
+        select.removeItem(itemEl);
+      });
+      label.after(removeBtn);
+    }
+
+    const syncLabel = () => {
+      const text = select.itemLabel(itemEl);
+      label.textContent = text;
+      removeBtn?.setAttribute(
+        'aria-label',
+        Craft.t('app', 'Remove {name}', {name: text})
+      );
+    };
+    syncLabel();
+
+    // Consumers (like the Card View Designer) rename items in place.
+    const checkboxLabel = itemEl.querySelector(
+      ':scope > label, :scope > craft-checkbox > label'
+    );
+    if (checkboxLabel) {
+      this.labelObserver = new MutationObserver(syncLabel);
+      this.labelObserver.observe(checkboxLabel, {
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
+    }
 
     this.addListener(this.$checkbox, 'change', () => {
       this.handleCheckboxChange();

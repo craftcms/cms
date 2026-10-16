@@ -92,3 +92,11 @@ it('drops collapsible in field appearance', function () {
     expect($payload->nodes[0]->props)->not->toHaveKey('collapsible')
         ->and($payload->nodes[0]->props['asField'])->toBeTrue();
 });
+
+it('passes its outlet to the client, and renders in place in server-rendered HTML', function () {
+    $group = locationGroup()->outlet('field-layout-designer.display');
+
+    expect($group->props())->toMatchArray(['outlet' => 'field-layout-designer.display'])
+        ->and(locationGroup()->props())->not->toHaveKey('outlet')
+        ->and(renderGroup($group)->filter('[data-ui-node="asset-location"]')->count())->toBe(1);
+});
