@@ -2,13 +2,12 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\fields\MissingField;
 use craft\records\Field as FieldRecord;
-use craft\services\Fields;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
+use CraftCms\Cms\Field\Fields;
 
 /**
  * Base field merge migration class.
@@ -80,7 +79,7 @@ class BaseFieldMergeMigration extends Migration
 
     private function field(string $uid): FieldInterface|false
     {
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         $field = $fieldsService->getFieldByUid($uid);
         if (!$field) {
             // maybe it's soft-deleted

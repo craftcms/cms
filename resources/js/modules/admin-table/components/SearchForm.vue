@@ -30,6 +30,7 @@
         class="flex-1"
         name="search"
         :label="t('Search Term')"
+        :placeholder="t('Search')"
         v-model="searchTerm"
         @input="autoSearch(submit)"
         label-sr-only

@@ -9,6 +9,7 @@
   import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import {useSourceBadges} from '@/common/composables/useSourceBadges';
+  import {useNavBadges} from '@/common/composables/useNavBadges';
 
   const page = usePage<{
     queue: {
@@ -19,7 +20,8 @@
     };
   }>();
 
-  const {nav: sharedNav, navBadges} = useCraftData();
+  const {nav: sharedNav} = useCraftData();
+  const navBadges = useNavBadges();
   const sourceBadges = useSourceBadges();
 
   // The tree arrives once and then stays put, so neither the trail nor the

@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\File;
 use FilesystemIterator;
 use Illuminate\Filesystem\Filesystem;
@@ -108,11 +109,11 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function copyDirectory($src, $dst, $options = []): void
     {
         if (!isset($options['fileMode'])) {
-            $options['fileMode'] = Craft::$app->getConfig()->getGeneral()->defaultFileMode;
+            $options['fileMode'] = Cms::config()->defaultFileMode;
         }
 
         if (!isset($options['dirMode'])) {
-            $options['dirMode'] = Craft::$app->getConfig()->getGeneral()->defaultDirMode;
+            $options['dirMode'] = Cms::config()->defaultDirMode;
         }
 
         parent::copyDirectory($src, $dst, $options);

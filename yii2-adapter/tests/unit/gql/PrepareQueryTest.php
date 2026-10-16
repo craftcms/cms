@@ -180,8 +180,8 @@ class PrepareQueryTest extends TestCase
             ],
             [
                 CategoryResolver::class, [null, []], fn(CategoryQuery $result) => (
-                    $result->getQuery()->wheres[0]['type'] === 'raw' &&
-                    str_contains($result->getQuery()->wheres[0]['sql'], 'groupId')
+                    $result->getQuery()->wheres[0]['type'] === 'In' &&
+                    $result->getQuery()->wheres[0]['column'] === 'categories.groupId'
                 ),
             ],
 
@@ -210,8 +210,8 @@ class PrepareQueryTest extends TestCase
             ],
             [
                 GlobalSetResolver::class, [null, []], fn(GlobalSetQuery $result) => (
-                    $result->getQuery()->wheres[0]['type'] === 'raw' &&
-                    str_contains($result->getQuery()->wheres[0]['sql'], 'uid')
+                    $result->getQuery()->wheres[0]['type'] === 'In' &&
+                    $result->getQuery()->wheres[0]['column'] === 'globalsets.uid'
                 ),
             ],
 
@@ -224,8 +224,8 @@ class PrepareQueryTest extends TestCase
             ],
             [
                 TagResolver::class, [null, []], fn(TagQuery $result) => (
-                    $result->getQuery()->wheres[0]['type'] === 'raw' &&
-                    str_contains($result->getQuery()->wheres[0]['sql'], 'groupId')
+                    $result->getQuery()->wheres[0]['type'] === 'In' &&
+                    $result->getQuery()->wheres[0]['column'] === 'tags.groupId'
                 ),
             ],
 

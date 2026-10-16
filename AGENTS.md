@@ -44,7 +44,7 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 
 - Run `composer ci` before creating a pull request.
 - Prefix the title with the origin version branch, such as `[6.x]` or `[5.x]`.
-- Use a `### Description` section and add `### Related issues` only when applicable. Do not add validation summaries.
+- Use a `### Description` section and add `### Related issues` only when applicable.
 
 - When the branch already identifies a Linear issue, reference the related GitHub issue instead of repeating the Linear identifier.
 

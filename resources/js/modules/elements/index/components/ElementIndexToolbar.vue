@@ -169,6 +169,7 @@
         <CraftInput
           name="search"
           :label="t('Search')"
+          :placeholder="t('Search')"
           v-model="search"
           label-sr-only
           @keydown.enter="onSearchEnter"

@@ -40,6 +40,7 @@ use CraftCms\Cms\Field\LinkTypes\Url;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\NestedEntryFieldTypes;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Utility\Utilities\PhpInfo;
 use CraftCms\Cms\Utility\Utilities\SystemReport;
@@ -395,3 +396,10 @@ class AdapterRegistryLink extends Url
 class AdapterUrlRegistryLink extends Url
 {
 }
+
+it('reconciles legacy field types without logging the fields service deprecation', function() {
+    LegacyFields::finalizeRegistrationEvents();
+
+    expect(collect(Deprecator::getRequestLogs())->pluck('key'))
+        ->not->toContain('Craft::$app->fields');
+});
