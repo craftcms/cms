@@ -310,9 +310,10 @@ trait QueriesEagerly
      * Returns the query's orders as `orderBy` criteria for an eager-loading plan, if they were customized after
      * {@see prepForEagerLoading()} was called.
      *
-     * Orders that were in place by then only apply to this query's source element (e.g. a relation field's fixed
-     * order), and the eager-loading map's order is used in their place. They also take precedence over any orders
-     * added after them, so those are only passed along if the original orders were replaced (e.g. via `reorder()`).
+     * Orders that were in place by then only apply to this query's source element, and the eager-loading map's order
+     * is used in their place. They also take precedence over any orders added after them, so those are only passed
+     * along if the original orders were replaced (e.g. via `reorder()`). A default order held by the order
+     * placeholder (e.g. a relation field's fixed order) is replaced by any added orders, so those are passed along.
      *
      * Raw orders are passed as expressions. Returns `null` if any of them can't be carried over to another query,
      * such as raw orders with bindings, or subquery orders.
