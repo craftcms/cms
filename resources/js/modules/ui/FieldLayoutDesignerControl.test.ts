@@ -8,7 +8,7 @@ import type {UiPayload} from './types';
 const html = `
   <div class="fld-cvd">
     <craft-tabs>
-      <craft-tab slot="tab" data-fld-tab="content">Content Tabs</craft-tab>
+      <craft-tab slot="tab" data-fld-tab="content">Content</craft-tab>
       <div slot="panel"></div>
       <craft-tab slot="tab" data-fld-tab="display">Display</craft-tab>
       <div slot="panel"><div data-ui-outlet="field-layout-designer.display"></div></div>

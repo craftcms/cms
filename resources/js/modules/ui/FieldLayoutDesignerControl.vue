@@ -79,7 +79,7 @@
     display: ['cardView', 'thumbFieldKey'],
   };
 
-  /** Flags the designer's Content Tabs and Display tabs that have errors. */
+  /** Flags the designer's Content and Display tabs that have errors. */
   function syncTabErrors(root: HTMLElement): void {
     const base = props.control.path;
     // The designer owns every error raised within it, so where each one

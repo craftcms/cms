@@ -48,7 +48,7 @@
             @endphp
             <craft-tabs label="{{ \CraftCms\Cms\t('Field Layout') }}">
                 <craft-tab slot="tab" data-fld-tab="content">
-                    {{ \CraftCms\Cms\t('Content Tabs') }}
+                    {{ \CraftCms\Cms\t('Content') }}
                     @if ($hasErrors(['customFields', 'tabs.']))
                         {!! $errorIcon !!}
                     @endif
