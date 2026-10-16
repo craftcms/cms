@@ -483,6 +483,7 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
   table-layout: auto;
   border: 1px solid var(--c-color-border-quiet);
   border-radius: var(--c-radius-sm);
+  overflow: clip;
   margin-block-end: var(--c-spacing-md);
 
   thead,
@@ -496,6 +497,12 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
 
   thead th {
     font-weight: var(--font-weight-semibold);
+  }
+
+  thead:not(:last-child):not(:has(~ :is(tbody, tfoot) > tr))
+    tr:last-child
+    > :is(th, td) {
+    border-block-end: 0;
   }
 
   /* Keep the header's background inside the table's rounded corners */
