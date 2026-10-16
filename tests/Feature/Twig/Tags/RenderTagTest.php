@@ -111,6 +111,23 @@ describe('the loop variable', function () {
         ))->toBe("i1/1\ni2/1\ni1/2\ni2/2");
     });
 
+    it('leaves a `loop` variable passed via `with` alone', function (string $template) {
+        $vars = ['obj' => renderable('a', '{{ name }}:{{ loop }}')];
+
+        expect($this->manager->renderString($template, $vars))->toBe('a:custom');
+    })->with([
+        'with' => '{% render [obj] with {loop: "custom"} %}',
+        'with only' => '{% render [obj] with {loop: "custom"} only %}',
+        'within a for loop' => '{% for x in 1..1 %}{% render [obj] with {loop: "custom"} %}{% endfor %}',
+    ]);
+
+    it('replaces a `loop` variable in the context', function () {
+        expect($this->manager->renderString('{% render [obj] %}', [
+            'obj' => renderable('a', '{{ name }}{{ loop.index }}/{{ loop.length }}'),
+            'loop' => 'context',
+        ]))->toBe('a1/1');
+    });
+
     it('isn’t given to a single object outside a for loop, or with `only`', function () {
         $vars = ['one' => renderable('a', '{{ loop is defined ? "yes" : "no" }}')];
 
@@ -151,4 +168,12 @@ it('renders a single object without a loop variable', function () {
     $one = renderable('a', '{{ loop is defined ? "yes" : "no" }}');
 
     expect((string) Template::render($one))->toBe('no');
+});
+
+it('leaves a `loop` variable in the variables alone, but replaces one in the context', function () {
+    expect((string) Template::render([renderable('a', '{{ name }}:{{ loop }}')], ['loop' => 'custom']))->toBe('a:custom')
+        ->and((string) Template::render(
+            [renderable('a', '{{ name }}{{ loop.index }}/{{ loop.length }}')],
+            context: ['loop' => 'context'],
+        ))->toBe('a1/1');
 });

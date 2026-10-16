@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\Database\Query\Expression as ExpressionContract;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Collection;
 use Throwable;
 
@@ -64,6 +67,15 @@ trait QueriesEagerly
     private ?string $eagerLoadQueryState = null;
 
     private int $eagerLoadBeforeQueryCallbackCount = 0;
+
+    /**
+     * The query's orders at the time {@see prepForEagerLoading()} was called.
+     *
+     * @var array<int, mixed>|null
+     *
+     * @see eagerLoad()
+     */
+    private ?array $eagerLoadOrders = null;
 
     /**
      * Causes the query to return matching {elements} eager-loaded with related elements.
@@ -144,6 +156,9 @@ trait QueriesEagerly
         $this->eagerLoadSourceElement = $sourceElement;
         $this->eagerLoadQueryState = $this->queryState($this->getQuery());
         $this->eagerLoadBeforeQueryCallbackCount = count($this->beforeQueryCallbacks);
+
+        // Remember the current orders, so eagerLoad() can tell whether they were customized afterward
+        $this->eagerLoadOrders = $this->getQuery()->orders;
 
         return $this;
     }
@@ -256,6 +271,18 @@ trait QueriesEagerly
         };
 
         if (! $eagerLoaded) {
+            $query = $this->queryBeforePrepare ?? $this->getQuery();
+
+            if (($orderBy = $this->eagerLoadOrderBy($query)) !== null) {
+                $criteria += ['orderBy' => $orderBy];
+            }
+
+            // `offset` and `limit` aren't included in getCriteria() either
+            $criteria += array_filter([
+                'offset' => $query->offset,
+                'limit' => $query->limit,
+            ], fn ($value) => $value !== null);
+
             Elements::eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
@@ -277,6 +304,52 @@ trait QueriesEagerly
         }
 
         return $this->eagerLoadSourceElement->getEagerLoadedElements($alias);
+    }
+
+    /**
+     * Returns the query's orders as `orderBy` criteria for an eager-loading plan, if they were customized after
+     * {@see prepForEagerLoading()} was called.
+     *
+     * Orders that were in place by then only apply to this query's source element (e.g. a relation field's fixed
+     * order), and the eager-loading map's order is used in their place. They also take precedence over any orders
+     * added after them, so those are only passed along if the original orders were replaced (e.g. via `reorder()`).
+     *
+     * Raw orders are passed as expressions. Returns `null` if any of them can't be carried over to another query,
+     * such as raw orders with bindings, or subquery orders.
+     *
+     * @return list<array{0: string|ExpressionContract, 1: 'asc'|'desc'|null}>|null
+     */
+    private function eagerLoadOrderBy(Builder $query): ?array
+    {
+        $withoutPlaceholder = fn (?array $orders) => array_values(array_filter(
+            $orders ?? [],
+            fn (array $order) => ! ($order['column'] ?? null) instanceof OrderByPlaceholderExpression,
+        ));
+
+        $orders = $withoutPlaceholder($query->orders);
+        $prepOrders = $withoutPlaceholder($this->eagerLoadOrders);
+
+        if (
+            $orders === [] ||
+            ($prepOrders !== [] && array_slice($orders, 0, count($prepOrders)) === $prepOrders) ||
+            ! empty($query->getRawBindings()['order'])
+        ) {
+            return null;
+        }
+
+        $orderBy = [];
+
+        foreach ($orders as $order) {
+            if (($order['type'] ?? null) === 'Raw') {
+                $orderBy[] = [new Expression($order['sql']), null];
+            } elseif (isset($order['column'], $order['direction']) && (is_string($order['column']) || $order['column'] instanceof ExpressionContract)) {
+                $orderBy[] = [$order['column'], $order['direction']];
+            } else {
+                return null;
+            }
+        }
+
+        return $orderBy;
     }
 
     private function queryState(Builder $query): string
