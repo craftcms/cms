@@ -2,12 +2,17 @@
 
 ## Unreleased
 
+- Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
 - Fixed a bug where the `fields/merge` and `fields/auto-merge` commands weren’t updating field condition rules that referenced the merged fields. ([#19901](https://github.com/craftcms/cms/issues/19901))
 - Fixed a bug where the `fields/merge` and `fields/auto-merge` commands weren’t updating Content Block fields’ layouts. ([#19901](https://github.com/craftcms/cms/issues/19901))
 - Fixed a bug where curly quotes were allowed within asset folder and filenames. ([#19904](https://github.com/craftcms/cms/issues/19904))
 - Fixed a bug where the “Instructions” setting’s placeholder text wasn’t getting updated when changing a field layout element’s selected field.
 - Fixed a bug where renaming an asset without including its file extension resulted in a validation error. ([#19950](https://github.com/craftcms/cms/issues/19950))
 - Fixed a bug where the Image Editor’s crop box couldn’t be resized in some cases. ([#19980](https://github.com/craftcms/cms/issues/19980))
+- Fixed an error that occurred when opening element selector modals on element edit pages with a `returnUrl` param. ([#19983](https://github.com/craftcms/cms/issues/19983))
+- Fixed a bug where `orderBy` criteria wasn’t getting applied to eager-loaded elements. ([#19994](https://github.com/craftcms/cms/pull/19994))
+- Fixed a bug where `orderBy`, `offset`, and `limit` params weren’t getting applied to element queries executed via `eagerly()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
+- Fixed a bug where eager-loaded elements were getting reversed twice when both `orderBy` and `inReverse` criteria were set. ([#19994](https://github.com/craftcms/cms/pull/19994))
 
 ## 5.11.5.1 - 2026-10-08
 
