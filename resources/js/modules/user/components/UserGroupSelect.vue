@@ -145,7 +145,7 @@
               :checked="isSelected(group.id)"
               @click="selectGroup(group)"
             >
-              <div>
+              <div class="user-group-option">
                 {{ groupLabel(group) }}
                 <pre>{{ group.handle }}</pre>
                 <small v-if="group.description">{{ group.description }}</small>
@@ -176,5 +176,17 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: var(--c-spacing-sm);
+  }
+
+  /* Action item labels don't wrap by default, but descriptions should. */
+  .user-group-option {
+    white-space: normal;
+  }
+
+  /* As a block, the description's lines follow its own smaller text rather
+     than the label's line height. */
+  .user-group-option small {
+    display: block;
+    line-height: 1.3;
   }
 </style>

@@ -74,6 +74,8 @@ export default class CraftActionMenu extends CraftPopover {
     css`
       ::slotted([slot='content']) {
         display: grid;
+        /* Keep items within the popover, however wide their content. */
+        grid-template-columns: minmax(0, 1fr);
         gap: var(--c-spacing-xs);
         padding: var(--c-spacing-sm);
         font-size: var(--c-text-base);
