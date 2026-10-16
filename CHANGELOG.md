@@ -68,6 +68,7 @@
 - Grouped inputs’ sub-labels, such as Field Limit’s “Maximum” and “Unit”, are now smaller and lighter. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Colored chips’ fills are now subtler, matching colored cards’ bodies, and selected colored chips now use their own color rather than the accent color. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Checkboxes in colored chips and card headers now take the chip’s or header’s text color. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Neutral buttons on colored cards, such as the “+5” button after a card’s related elements, now take the card’s color rather than gray. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Relational fields’ chips now take their element’s color, as element index chips do. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Colored action menu items’ icons are now more vibrant in the dark theme. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Card thumbnails are no longer cropped to squares, as in Craft 5, and now sit closer to the card’s edges. ([#20001](https://github.com/craftcms/cms/pull/20001))
@@ -279,6 +280,7 @@
 - Fixed a bug where field layout element settings slideouts weren’t padded. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Fixed a bug where chips’ statuses, such as the draft icon, took the chip’s color. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Fixed an error that occurred when rendering Number fields’ previews without a preview format. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Fixed a bug where view mode and image transform mode illustrations, along with native controls, were dark in the light theme when the operating system was set to dark mode. ([#20001](https://github.com/craftcms/cms/pull/20001))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

@@ -414,3 +414,35 @@ it('keeps the accent color for a white card’s checked checkbox', async () => {
     getComputedStyle(reference).color
   );
 });
+
+it('gives neutral buttons in a colored card’s body the card’s color', async () => {
+  document.body.innerHTML = `
+    <craft-card data-color="cyan">
+      <div class="card-body">
+        <craft-button variant="plain" size="small">+5</craft-button>
+      </div>
+    </craft-card>
+    <craft-card data-color="white">
+      <craft-button variant="plain" size="small">+5</craft-button>
+    </craft-card>
+  `;
+  const [cyan, white] = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await cyan!.updateComplete;
+  const neutralFill = (button: Element) =>
+    getComputedStyle(button).getPropertyValue('--c-color-neutral-fill-quiet');
+  const button = cyan!.querySelector('craft-button')!;
+
+  // It reads like the card's text, and hovers in the card's color.
+  expect(getComputedStyle(button).color).toBe(
+    getComputedStyle(cyan!.querySelector('.card-body')!).color
+  );
+  expect(neutralFill(button)).toBe(
+    getComputedStyle(cyan!).getPropertyValue('--c-color-fill-quiet')
+  );
+  // A white card's buttons keep the neutral palette.
+  expect(neutralFill(white!.querySelector('craft-button')!)).toBe(
+    getComputedStyle(document.documentElement).getPropertyValue(
+      '--c-color-neutral-fill-quiet'
+    )
+  );
+});
