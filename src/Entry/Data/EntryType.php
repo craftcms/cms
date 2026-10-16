@@ -13,6 +13,7 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Validation\EntryTypeRules;
@@ -223,21 +224,22 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
                     return Html::tag('i', t('No usages'));
                 }
 
+                $elementHtml = app(ElementHtml::class);
                 $labels = [];
-                $items = array_map(function (Section|ElementContainerFieldInterface $usage) use (&$labels) {
-                    $icon = $usage instanceof FieldInterface && ! $usage instanceof Iconic
-                        ? $usage::icon()
-                        : $usage->getIcon();
-                    $label = $labels[] = $usage->getUiLabel();
-                    $labelHtml = Html::beginTag('span', [
-                        'class' => ['flex', 'flex-nowrap', 'items-center', 'gap-1'],
-                    ]).
-                        Html::tag('craft-icon', '', Icons::resolveIconData($icon)).
-                        Html::tag('span', Html::encode($label)).
-                        Html::endTag('span');
+                $items = array_map(function (Section|ElementContainerFieldInterface $usage) use (&$labels, $elementHtml) {
+                    $labels[] = $usage->getUiLabel();
 
-                    return Html::a($labelHtml, $usage->getCpEditUrl());
-                }, $this->findUsages());
+                    return $elementHtml->chipHtml($usage, [
+                        'appearance' => 'plain',
+                        'autoReload' => false,
+                        'hyperlink' => true,
+                        'showStatus' => false,
+                        // Fields without their own icon show their type's.
+                        'attributes' => $usage instanceof FieldInterface && ! $usage instanceof Iconic
+                            ? ['icon' => Icons::resolveIconName($usage::icon())]
+                            : [],
+                    ]);
+                }, $usages);
 
                 // sort by label
                 array_multisort($labels, SORT_ASC, $items);
