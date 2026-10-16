@@ -90,16 +90,6 @@ class Import
     }
 
     /**
-     * Returns the available field import handler classes, indexed by the field class they handle.
-     *
-     * @return array<class-string<FieldInterface>, class-string<FieldImportHandlerInterface>>
-     */
-    public function getAllFieldImportHandlers(): array
-    {
-        return $this->fieldImportHandlers->all();
-    }
-
-    /**
      * Returns the import handler registered for the given field’s class, or for its nearest parent class
      * that has one, or null if there isn’t any.
      *

@@ -152,20 +152,6 @@ abstract class BaseImporter
     abstract public function refreshSettingsUi(array $settings): void;
 
     /**
-     * Gives importers a chance to store their specific settings.
-     *
-     * @param  array<string, mixed>  $settings
-     */
-    abstract public function storeSettings(array $settings): void;
-
-    /**
-     * Returns an array of importer-specific settings.
-     *
-     * @return array<string, mixed>
-     */
-    abstract public function getSettings(): array;
-
-    /**
      * Specifies a default transformer that the importer should use if none is provided.
      */
     abstract public static function getDefaultTransformer(): ?string;

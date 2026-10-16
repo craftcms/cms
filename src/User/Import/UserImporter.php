@@ -54,14 +54,6 @@ class UserImporter extends ElementImporter
         return t('Users');
     }
 
-    #[Override]
-    public function storeSettings(array $settings): void
-    {
-        parent::storeSettings($settings);
-
-        $this->resolveDefaultFieldLayout();
-    }
-
     /**
      * Users have one field layout for the element type, so there's nothing for the step to
      * choose — resolve it as soon as the importer is built.

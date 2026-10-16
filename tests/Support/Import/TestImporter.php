@@ -46,15 +46,6 @@ class TestImporter extends BaseImporter
     public function refreshSettingsUi(array $settings): void {}
 
     #[Override]
-    public function storeSettings(array $settings): void {}
-
-    #[Override]
-    public function getSettings(): array
-    {
-        return [];
-    }
-
-    #[Override]
     public static function getDefaultTransformer(): ?string
     {
         return null;

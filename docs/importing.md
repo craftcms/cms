@@ -70,9 +70,9 @@ sections and entry types.
 each importer's `toImportStep()` (which uses `BaseImporter::toArrayData()`). On load,
 `ImportPlan::createImporter()` instantiates `$step['type']`, and `BaseImporter::__construct()`
 applies `uid`, `source`, `transformer` and `batchSize`, then replays each `settings` key through the
-importer's setter of the same name. Only settings declared in the importer's `getSettingsRules()`
-(`settings.<name>`) and backed by an existing setter are applied; any other key is ignored, since
-step config can come from a request. An element importer left without a field layout then gets
+importer's setter of the same name. Only settings listed in the importer's `settingNames()` and backed
+by an existing setter are applied; any other key is ignored, since step config can come from a
+request. An element importer left without a field layout then gets
 one from `resolveDefaultFieldLayout()`. Steps whose importer can't be created are left out. The target class is fixed by the importer
 subclass itself, so it isn't stored.
 
@@ -167,10 +167,9 @@ All of them carry `importPlan` and `runId`. Failures are tracked across jobs thr
 ## 4. Importers
 
 Every importer extends `BaseImporter`, whose abstract `targetClass()` names what it imports
-into. Each importer also owns its settings: `settingsUi()`, `refreshSettingsUi()`,
-`storeSettings()`, `getSettings()` and `getSettingsRules()` drive the step slideout in the CP
-and its validation. `settingsUi()` returns a list of [UI](ui.md) nodes, which the step's UI
-wraps in a `settings` `Scope`.
+into. Each importer also owns its settings: `settingsUi()`, `refreshSettingsUi()` and
+`getSettingsRules()` drive the step slideout in the CP and its validation. `settingsUi()` returns
+a list of [UI](ui.md) nodes, which the step's UI wraps in a `settings` `Scope`.
 
 - **`ElementImporter`** is abstract. Each importable element type is represented by its own
   concrete subclass: `EntryImporter`, `AssetImporter`, `UserImporter` are the built-ins (there's

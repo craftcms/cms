@@ -112,23 +112,6 @@ abstract class ElementImporter extends BaseImporter
         }
     }
 
-    #[Override]
-    public function storeSettings(array $settings): void
-    {
-        $this->site($settings['site']);
-    }
-
-    #[Override]
-    public function getSettings(): array
-    {
-        $settings['keepMissingNestedElements'] = $this->keepMissingNestedElements;
-        $settings['fieldSettings'] = $this->fieldSettings;
-        $settings['site'] = $this->site->uid;
-        $settings['fieldLayout'] = $this->fieldLayout;
-
-        return $settings;
-    }
-
     /**
      * Resolves and sets the target site from a Site instance, id, handle, or uid.
      * Defaults to the primary site if null.

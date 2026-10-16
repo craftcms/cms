@@ -81,24 +81,6 @@ class AssetImporter extends ElementImporter
         }
     }
 
-    #[Override]
-    public function storeSettings(array $settings): void
-    {
-        parent::storeSettings($settings);
-
-        $this->volume($settings['volume'] ?? null);
-    }
-
-    #[Override]
-    public function getSettings(): array
-    {
-        $settings = parent::getSettings();
-
-        $settings['volume'] = $this->volume;
-
-        return $settings;
-    }
-
     /**
      * Sets the target volume by uid.
      */

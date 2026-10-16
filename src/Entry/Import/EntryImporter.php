@@ -94,26 +94,6 @@ class EntryImporter extends ElementImporter
         }
     }
 
-    #[Override]
-    public function storeSettings(array $settings): void
-    {
-        parent::storeSettings($settings);
-
-        $this->section($settings['section'] ?? null);
-        $this->entryType($settings['entryType'] ?? null);
-    }
-
-    #[Override]
-    public function getSettings(): array
-    {
-        $settings = parent::getSettings();
-
-        $settings['section'] = $this->section;
-        $settings['entryType'] = $this->entryType;
-
-        return $settings;
-    }
-
     /**
      * Sets the target section by uid.
      */
