@@ -37,16 +37,22 @@ export default class CraftFieldGroup extends LitElement {
           max-width: 100%;
         }
 
-        craft-field[fieldset][data-ui-node]
+        craft-field[fieldset]
           > craft-field-group.auto-widths:not(:has(> [class*='width-'])) {
           display: flex;
           flex-wrap: wrap;
           gap: var(--c-spacing-sm) var(--c-spacing-md);
         }
 
-        craft-field[fieldset][data-ui-node] > craft-field-group.auto-widths {
-          --c-field-label-font-weight: normal;
-          --c-field-label-margin-block-end: 0;
+        /* Sub-labels of grouped inputs. --c-text-quiet is the lightest text
+           color that still meets WCAG AA contrast at this size. */
+        craft-field[fieldset] > craft-field-group.auto-widths {
+          --c-field-label-font-size: var(--c-text-sm);
+          --c-field-label-font-weight: var(--font-weight-semibold, 600);
+          --c-field-label-color: var(--c-text-quiet);
+          --c-field-label-line-height: 1;
+          --c-field-label-margin-block-end: var(--c-spacing-sm);
+          margin-block-start: var(--c-spacing-sm);
         }
 
         craft-field[fieldset][required]

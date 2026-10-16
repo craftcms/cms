@@ -26,6 +26,15 @@
   }
 }
 
+/* The library sits beside the (often taller) preview; keep its fields packed
+   at the top instead of spreading the spare height between them. It also
+   drops the wider --gap inherited from the surrounding field layout field
+   group, so its fields are spaced like any other adjacent fields. */
+.cvd-library {
+  --gap: initial;
+  align-content: start;
+}
+
 .cvd-library .draggable {
   display: flex;
 }
@@ -34,6 +43,14 @@
   display: grid;
   height: 100%;
   align-items: center;
+}
+
+/* A card's body is translucent, so give it the surface it normally sits on,
+   rather than the workspace grid. */
+.cvd-preview craft-card {
+  margin: -1px;
+  background-color: var(--c-surface-raised);
+  border-radius: var(--c-card-radius, var(--c-radius-md));
 }
 
 .cvd-preview:not(.loading) .spinner {
@@ -63,13 +80,4 @@
 .field.cvd-field {
   margin-block-start: 0.2em;
   margin-inline-start: 0.5em;
-}
-
-/* Thumbnail management */
-.thumb-management {
-  margin-block: var(--c-spacing-xl);
-}
-
-.thumb-management .field:first-child {
-  margin-inline-end: var(--c-spacing-xl);
 }

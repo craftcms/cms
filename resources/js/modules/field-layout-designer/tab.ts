@@ -179,6 +179,13 @@ export class Tab extends Base {
     };
 
     $tab.appendChild(menu);
+
+    // Line the generated invoker's icon up with the tab's inline-end padding.
+    void menu.updateComplete.then(() => {
+      menu
+        .querySelector(':scope > craft-button[slot="invoker"]')
+        ?.setAttribute('flush', 'inline-end');
+    });
   }
 
   private settingsRequestData() {

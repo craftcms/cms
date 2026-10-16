@@ -489,6 +489,15 @@ export default css`
     color: inherit;
   }
 
+  /* A selected button keeps its selected look while hovered. After the
+     variants' hover rules, which would otherwise paint over it. */
+  :host([variant][active]:not(:disabled):not(.loading):hover),
+  :host([variant].is-active:not(:disabled):not(.loading):hover) {
+    background-color: var(--c-color-fill-loud);
+    color: var(--c-color-on-loud);
+    border-color: var(--c-color-border-loud);
+  }
+
   /* After the variants, whose colors would otherwise paint over Lion's own
      disabled rule and leave a disabled button looking enabled. */
   :host([disabled]) {

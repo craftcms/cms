@@ -210,7 +210,7 @@ class SelectOptions
 
     public static function getObjectTemplateTip(): string
     {
-        return t('Type `{` to choose an object template variable.');
+        return t('Type <kbd>{</kbd> to choose an object template variable.');
     }
 
     /**

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
-use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Controls\Markdown as MarkdownControl;
 use CraftCms\Cms\Ui\Nodes\Callout;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\UiContext;
@@ -89,7 +90,9 @@ class Tip extends BaseUiElement
     protected function settingsNodes(UiContext $context): array
     {
         return [
-            Field::make($this->_isTip() ? t('Tip') : t('Warning'), Textarea::make('tip')
+            Field::make($this->_isTip() ? t('Tip') : t('Warning'), MarkdownControl::make('tip')
+                ->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)
+                ->rows(1)
                 ->value($this->tip))
                 ->instructions(t('Can contain Markdown formatting.')),
             Field::make(t('Can be dismissed?'), Lightswitch::make('dismissible')

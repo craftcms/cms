@@ -126,10 +126,10 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       () =>
         !!Craft?.Grid &&
         typeof $ === 'function' &&
-        !!this.$fieldLibrary.querySelector('input[type="search"]')
+        !!this.$fieldLibrary.querySelector('craft-input-search input')
     ).then(() => {
       this.$fieldSearch = this.$fieldLibrary.querySelector(
-        'input[type="search"]'
+        'craft-input-search input'
       );
       this.deferredInit();
     });
@@ -137,11 +137,18 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
   deferredInit(): void {
     // Set up the layout grids — Craft.Grid is a jQuery seam.
+    // Tabs are 19 cells of the workspace's background grid wide, and each row
+    // of them is snapped to a whole number of cells tall, so later rows and
+    // the New Tab button land on the grid too.
+    const gridSize =
+      parseFloat(
+        getComputedStyle(this.$tabContainer.parentElement).backgroundSize
+      ) || 16;
     this.tabGrid = new Craft.Grid($(this.$tabContainer), {
       itemSelector: '.fld-tab',
-      minColWidth: 24 * 13,
+      minColWidth: gridSize * 19,
       fillMode: 'grid',
-      snapToGrid: 24,
+      snapToGrid: gridSize,
     });
 
     const $tabs = Array.from(this.$tabContainer.children);

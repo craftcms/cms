@@ -45,6 +45,7 @@ export {default as CraftInputFile} from './components/input-file/input-file.js';
 export {default as CraftInputHandle} from './components/input-handle/input-handle.js';
 export {default as CraftInputMoney} from './components/input-money/input-money.js';
 export {default as CraftInputPassword} from './components/input-password/input-password.js';
+export {default as CraftInputSearch} from './components/input-search/input-search.js';
 export {default as CraftInputTime} from './components/input-time/input-time.js';
 export {default as CraftInput} from './components/input/input.js';
 export {default as CraftMissingComponent} from './components/missing-component/missing-component.js';

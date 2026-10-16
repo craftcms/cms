@@ -624,7 +624,7 @@ it('filters rows by status and search, clears selection, and restores manual ord
   expect(handle.value?.selectedIds).toEqual([]);
   expect(host.querySelector('tbody craft-reorder-button')).toBeNull();
 
-  await setControl(host, 'craft-input[name="search"]', 'alpha');
+  await setControl(host, 'craft-input-search[name="search"]', 'alpha');
   await vi.waitFor(() =>
     expect(
       host.querySelector<HTMLElement & {label: string}>('craft-empty')?.label
@@ -635,7 +635,7 @@ it('filters rows by status and search, clears selection, and restores manual ord
   await vi.waitFor(() => expect(rowNames(host)).toEqual(['Alpha']));
   expect(host.querySelector('tbody craft-reorder-button')).toBeNull();
 
-  await setControl(host, 'craft-input[name="search"]', '');
+  await setControl(host, 'craft-input-search[name="search"]', '');
   expect(rowNames(host)).toEqual(['Beta', 'Alpha']);
   expect(host.querySelectorAll('tbody craft-reorder-button')).toHaveLength(2);
 });
@@ -712,7 +712,7 @@ it('renders the initial server page and updates it through Inertia without echoi
   expect(get).not.toHaveBeenCalled();
   expect(
     host.querySelector<HTMLElement & {modelValue: string}>(
-      'craft-input[name=search]'
+      'craft-input-search[name=search]'
     )?.modelValue
   ).toBe('Article');
   get.mockImplementationOnce((_url, _query, visit) => {
@@ -728,7 +728,7 @@ it('renders the initial server page and updates it through Inertia without echoi
       '/settings/entry-types?site=secondary&p=1&per_page=100&search=Filtered&sort[0][field]=name&sort[0][direction]=desc';
     void visit.onSuccess().then(() => visit.onFinish());
   });
-  await setControl(host, 'craft-input[name=search]', 'Filtered');
+  await setControl(host, 'craft-input-search[name=search]', 'Filtered');
   await vi.waitFor(() => expect(rowNames(host)).toEqual(['Filtered']));
 
   expect(get).toHaveBeenCalledExactlyOnceWith(
@@ -764,7 +764,7 @@ it('renders the initial server page and updates it through Inertia without echoi
   expect(rowNames(host)).toEqual(['Loaded']);
   expect(
     host.querySelector<HTMLElement & {modelValue: string}>(
-      'craft-input[name=search]'
+      'craft-input-search[name=search]'
     )?.modelValue
   ).toBe('Article');
   await new Promise((resolve) => setTimeout(resolve, 350));
@@ -847,9 +847,9 @@ it('keeps a newer search while an earlier Inertia response updates the node', as
     [];
   get.mockImplementation((_url, _query, visit) => visits.push(visit));
 
-  await setControl(host, 'craft-input[name=search]', 'First');
+  await setControl(host, 'craft-input-search[name=search]', 'First');
   await vi.waitFor(() => expect(get).toHaveBeenCalledTimes(1));
-  await setControl(host, 'craft-input[name=search]', 'Latest');
+  await setControl(host, 'craft-input-search[name=search]', 'Latest');
   options.rows = [{id: 1, name: 'First response'}];
   inertiaPage.url = '/settings/entry-types?search=First';
   await visits[0]!.onSuccess();
@@ -857,7 +857,7 @@ it('keeps a newer search while an earlier Inertia response updates the node', as
 
   expect(
     host.querySelector<HTMLElement & {modelValue: string}>(
-      'craft-input[name=search]'
+      'craft-input-search[name=search]'
     )?.modelValue
   ).toBe('Latest');
   await vi.waitFor(() => expect(get.mock.lastCall?.[1].search).toBe('Latest'));
@@ -870,7 +870,7 @@ it('keeps a newer search while an earlier Inertia response updates the node', as
   await vi.waitFor(() => expect(rowNames(host)).toEqual(['Latest response']));
   expect(
     host.querySelector<HTMLElement & {modelValue: string}>(
-      'craft-input[name=search]'
+      'craft-input-search[name=search]'
     )?.modelValue
   ).toBe('Latest');
 });
@@ -929,7 +929,7 @@ it('adapts node endpoint requests and renders serialized cells in the shared tab
   expect(host.querySelector('tbody craft-checkbox label')?.textContent).toBe(
     'Select Settings link'
   );
-  await setControl(host, 'craft-input[name="search"]', 'Settings');
+  await setControl(host, 'craft-input-search[name="search"]', 'Settings');
   await vi.waitFor(() =>
     expect(post).toHaveBeenLastCalledWith(
       '/settings/table-data',

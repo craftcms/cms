@@ -147,7 +147,7 @@ readonly class GeneralSettingsController
                 ->required()
                 ->tip(sprintf(
                     '%s [%s](%s)',
-                    t('Type `$` to choose an environment variable.'),
+                    t('Type <kbd>$</kbd> to choose an environment variable.'),
                     t('Learn more'),
                     'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                 )),

@@ -83,3 +83,35 @@ it('sizes an intrinsic select for its longest option', async () => {
     minimum.getBoundingClientRect().top
   );
 });
+
+it('renders grouped inputs’ sub-labels smaller, lighter, and semibold', async () => {
+  await import('../../styles/cp.css');
+  await import('../field/field.js');
+  document.body.innerHTML = `
+    <craft-field fieldset label="Field Limit">
+      <craft-field-group slot="input" class="auto-widths">
+        <craft-field><span slot="label">Maximum</span><input slot="input"></craft-field>
+      </craft-field-group>
+    </craft-field>
+  `;
+  const outer = document.querySelector('craft-field')!;
+  const inner = outer.querySelector('craft-field-group craft-field')!;
+  await outer.updateComplete;
+  await inner.updateComplete;
+
+  const label = (field: Element) =>
+    getComputedStyle(field.shadowRoot!.querySelector('.form-field__label')!);
+
+  expect(label(inner).fontWeight).toBe('600');
+  expect(parseFloat(label(inner).fontSize)).toBeLessThan(
+    parseFloat(label(outer).fontSize)
+  );
+  expect(label(inner).color).not.toBe(label(outer).color);
+  expect(label(outer).fontWeight).toBe('700');
+  // A <span> label sits as tightly as a <label> one.
+  const subLabel = inner.querySelector('[slot="label"]');
+  expect(subLabel).toBeInstanceOf(HTMLSpanElement);
+  expect(getComputedStyle(subLabel!).lineHeight).toBe(
+    getComputedStyle(subLabel!).fontSize
+  );
+});

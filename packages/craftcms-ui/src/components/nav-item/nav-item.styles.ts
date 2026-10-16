@@ -4,9 +4,14 @@ import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 export default css`
   :host {
     --_padding-inline: var(--c-spacing-md);
-    --_padding-block: var(--c-spacing-sm);
     /* The icon column of a row with a prefix. */
     --_prefix-size: calc(24rem / 16);
+    /* Enough to center the icon column in a touch target, border included. */
+    --_padding-block: calc(
+      (var(--c-size-touch-target) - var(--_prefix-size) - var(--_rail-border) *
+          2) /
+        2
+    );
     /* The space between the icon column and the label (tighter than the row's gap). */
     --_prefix-gap: var(--c-spacing-sm);
     /* The rule down the side of an inline subnav. */

@@ -62,6 +62,23 @@ const VALUE_COMPONENTS = [
     ],
   },
   {
+    tagName: 'craft-input-search',
+    className: 'CraftInputSearch',
+    fileName: 'CraftInputSearch',
+    modelType: 'string',
+    importPath: '../components/input-search/input-search',
+    slots: [
+      'label',
+      'help-text',
+      'input',
+      'feedback',
+      'prefix',
+      'suffix',
+      'before',
+      'after',
+    ],
+  },
+  {
     tagName: 'craft-input-handle',
     className: 'CraftInputHandle',
     fileName: 'CraftInputHandle',

@@ -483,6 +483,7 @@ it('compiles legacy FieldLayout elements into namespaced multi-root HTML islands
         ->and($payload->errors)->toBe([[
             'path' => ['nested', 'block', '__legacyFieldLayout', 'legacy-element'],
             'messages' => ['Title is invalid.'],
+            'source' => ['nested', 'block', '__legacyFieldLayout', 'legacy-element', 'title'],
         ]])
         ->and($layoutElement->uid)->toBe('legacy-element')
         ->and($layout->getConfig())->toBe($config)
