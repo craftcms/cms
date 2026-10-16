@@ -1775,6 +1775,7 @@ return [
     'The Craft CMS license located at {file} belongs to {domain}.' => 'La licenza Craft CMS che si trova nel {file} appartiene a {domain}.',
     'The Markdown flavor that should be used when rendering this field.' => 'The Markdown flavor that should be used when rendering this field.',
     'The Plugin Store is not available, please try again later.' => 'Lo store di plug-in non è al momento disponibile. Riprova più tardi.',
+    'The Quick Brown Fox' => 'The Quick Brown Fox',
     'The Reply-To email address Craft CMS should use when sending email.' => 'L\'indirizzo e-mail di risposta che dovrebbe usare Craft CMS quando si invia un\'e-mail.',
     'The URI can’t begin with the {setting} config setting.' => 'L\'URI non può iniziare con l\'impostazione di configurazione {setting}.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'Intestazione di `Authorization` da inviare con le richieste API GraphQL per l\'utilizzo di questo token.',
