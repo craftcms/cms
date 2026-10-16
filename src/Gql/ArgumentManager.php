@@ -73,7 +73,7 @@ class ArgumentManager extends Component
                 }
                 if (
                     Str::contains($chunk, ['(', ')']) ||
-                    ! preg_match('/^(\w+(\.\w+)?)( (asc|desc))?$/i', $chunk, $matches)
+                    ! preg_match('/^(\w+(\.\w+)?)(\s+(asc|desc))?$/i', $chunk, $matches)
                 ) {
                     throw new GqlException('Illegal value for `orderBy` argument: `'.$orderBy.'`');
                 }

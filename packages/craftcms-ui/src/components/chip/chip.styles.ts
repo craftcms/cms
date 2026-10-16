@@ -18,11 +18,12 @@ export default css`
    * On a colored chip a blue link would clash with the fill, so links take the
    * chip's text color, and are underlined so they still stand apart from it.
    * Only a white chip keeps the default link styling: blue falls short of
-   * contrast against even the gray and slate fills. Set on the host, so the
-   * truncate properties above resolve to them too.
+   * contrast against even the gray and slate fills. A plain chip has no fill
+   * to clash with, so it keeps the default link styling too. Set on the host,
+   * so the truncate properties above resolve to them too.
    */
-  :host([variant]),
-  :host([data-color]:not([data-color='white'])) {
+  :host([variant]:not([appearance~='plain'])),
+  :host([data-color]:not([data-color='white']):not([appearance~='plain'])) {
     --c-text-link: currentColor;
     --c-link-decoration: underline;
     --c-link-decoration-hover: none;

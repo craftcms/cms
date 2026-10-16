@@ -399,6 +399,55 @@ class Db
     }
 
     /**
+     * Returns whether the given `orderBy` value is safe to apply to a query, because it can’t contain raw SQL.
+     *
+     * The value is considered safe if it’s:
+     *
+     * - an [[ExpressionInterface]] object
+     * - a string of comma-separated column names (optionally prefixed with a table name), each optionally followed by
+     *   `asc` or `desc`
+     * - an array of column names (optionally prefixed with a table name) set to `SORT_ASC` or `SORT_DESC`, and/or
+     *   [[ExpressionInterface]] objects
+     *
+     * @param mixed $orderBy
+     * @return bool
+     * @since 5.11.6
+     */
+    public static function isSafeOrderBy(mixed $orderBy): bool
+    {
+        if ($orderBy instanceof ExpressionInterface) {
+            return true;
+        }
+
+        if (is_string($orderBy)) {
+            foreach (StringHelper::split(trim($orderBy)) as $chunk) {
+                if (!preg_match('/^\w+(\.\w+)?(\s+(asc|desc))?$/i', $chunk)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        if (is_array($orderBy)) {
+            foreach ($orderBy as $column => $direction) {
+                if ($direction instanceof ExpressionInterface) {
+                    continue;
+                }
+                if (
+                    !is_string($column) ||
+                    !preg_match('/^\w+(\.\w+)?$/', $column) ||
+                    !in_array($direction, [SORT_ASC, SORT_DESC], true)
+                ) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Escapes commas, asterisks, and colons in a string, so they are not treated as special characters in
      * [[parseParam()]].
      *
