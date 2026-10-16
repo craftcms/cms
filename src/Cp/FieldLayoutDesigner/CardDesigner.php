@@ -85,7 +85,7 @@ class CardDesigner
 
         // get heading
         $headingHtml = Html::tag('craft-truncate',
-            Html::tag('a', Html::tag('span', t('Title')), [
+            Html::tag('a', Html::tag('span', t('The Quick Brown Fox')), [
                 'class' => ['label-link'],
                 'href' => '#',
                 'aria-disabled' => 'true',
@@ -96,7 +96,9 @@ class CardDesigner
         );
 
         // get status label placeholder
-        $labels = [$fieldLayout->type::hasStatuses() ? app(StatusHtml::class)->componentStatusLabelHtml(new ($fieldLayout->type)()) : null];
+        $hasStatuses = $fieldLayout->type::hasStatuses();
+        $sampleElement = $hasStatuses ? new ($fieldLayout->type)() : null;
+        $labels = [$sampleElement ? app(StatusHtml::class)->componentStatusLabelHtml($sampleElement) : null];
         $bodyHtml = Html::beginTag('div');
 
         // get body elements (fields and attributes)
@@ -129,6 +131,8 @@ class CardDesigner
             'showThumb' => $showThumb,
             'thumbAlignment' => $thumbAlignment,
             'thumbnailHtml' => $thumbnailHtml,
+            // The sample chip shows a status indicator, rather than a label.
+            'statusIndicatorHtml' => $sampleElement ? app(StatusHtml::class)->componentStatusIndicatorHtml($sampleElement) : null,
         ])->render();
 
     }

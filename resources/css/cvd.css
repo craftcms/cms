@@ -17,7 +17,9 @@
   position: relative;
   overflow: hidden;
   box-shadow: none;
-  gap: var(--c-spacing-xl);
+  /* The library and the preview are as far apart as content is from a
+     container's edge. */
+  gap: var(--cp-container-padding);
 }
 
 @container cvd (width > 37.5rem) {
@@ -43,12 +45,79 @@
   display: grid;
   height: 100%;
   align-items: center;
+  position: relative;
+  overflow: clip;
+  isolation: isolate;
+}
+
+/* The grid is drawn by the preview, below, so it can line up with it. */
+.cvd-preview-container.cp-workspace {
+  background-image: none;
+}
+
+/* The workspace grid, anchored to the preview's top-left corner (the chip's),
+   wherever centering puts it: an oversized layer whose offset is a whole number
+   of cells, clipped by the container. */
+.cvd-preview {
+  position: relative;
+  /* The pane's padding is one cell, so without this a grid line would run
+     right along its left edge. Shifted, that line falls outside and is
+     clipped, while the chip and card keep their lines. */
+  margin-inline-start: -1px;
+}
+
+.cvd-preview::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--c-spacing-lg) * -100);
+  z-index: -1;
+  background-image: var(--workspace-bg-image);
+  background-size: var(--workspace-bg-size);
+  pointer-events: none;
+}
+
+/* Thumbnail Source starts as wide as its longest option and takes whatever
+   room Alignment leaves. When the two don't fit side by side, the row wraps and
+   Source spans the full width. */
+.thumb-management craft-field[data-attribute='thumb-source'] {
+  flex: 1 1 auto;
+}
+
+.thumb-management
+  craft-field[data-attribute='thumb-source']
+  :is(.cp-select, select) {
+  inline-size: 100%;
+}
+
+/* The sample chip sits above the card, at its own width. (Set on the grid:
+   chips' hosts are `display: contents`, so their box is the grid item.) */
+.cvd-preview {
+  display: grid;
+  justify-items: start;
+  /* Two cells, so the card's top edge stays on a grid line. */
+  gap: calc(var(--c-spacing-lg) * 2);
+}
+
+.cvd-preview > craft-card {
+  justify-self: stretch;
+}
+
+/* Fills the chip's thumbnail box, like the card's thumbnail placeholder. */
+.cvd-chip-thumbnail {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--c-color-border-quiet);
+  background-color: var(--c-color-fill-quiet);
+  border-radius: var(--c-radius-sm);
+  font-size: 0.75em;
 }
 
 /* A card's body is translucent, so give it the surface it normally sits on,
    rather than the workspace grid. */
 .cvd-preview craft-card {
-  margin: -1px;
   background-color: var(--c-surface-raised);
   border-radius: var(--c-card-radius, var(--c-radius-md));
 }

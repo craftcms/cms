@@ -187,6 +187,7 @@ it('gives the card preview the owner’s name, color, and icon', () => {
       <craft-input data-ui-control-path='["icon"]'></craft-input>
       <div class="cvd">
         <div class="cvd-preview">
+          <craft-chip class="cvd-chip"><div>Title</div></craft-chip>
           <craft-card><div slot="header"></div></craft-card>
         </div>
       </div>
@@ -216,12 +217,18 @@ it('gives the card preview the owner’s name, color, and icon', () => {
   expect(header.querySelector('.card-titlebar-label')?.textContent).toBe(
     'Article'
   );
+  // The sample chip takes the color, but not the icon or name.
+  const chip = document.querySelector('craft-chip')!;
+  expect(chip.getAttribute('data-color')).toBe('rose');
+  expect(chip.querySelector('craft-icon')).toBeNull();
+  expect(chip.textContent).toBe('Title');
 
   control('color').modelValue = '';
   control('icon').modelValue = '';
   designer.syncPreviewAppearance();
 
   expect(card.getAttribute('data-color')).toBe('white');
+  expect(chip.getAttribute('data-color')).toBe('white');
   expect(header.querySelector('craft-icon')).toBeNull();
   expect(header.textContent).toBe('Article');
 

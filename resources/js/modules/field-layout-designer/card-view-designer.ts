@@ -148,6 +148,11 @@ export class CardViewDesigner extends Base {
     const color = value('color');
     const icon = value('icon');
     card.setAttribute('data-color', color || 'white');
+    // The sample chip takes the color too, but not the icon: chips show a
+    // thumbnail or status instead.
+    this.$previewContainer
+      ?.querySelector('craft-chip.cvd-chip')
+      ?.setAttribute('data-color', color || 'white');
 
     const header = card.querySelector(':scope > [slot="header"]');
     if (!header) {

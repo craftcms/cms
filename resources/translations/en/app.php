@@ -1775,6 +1775,7 @@ return [
     'The Craft CMS license located at {file} belongs to {domain}.' => 'The Craft CMS license located at {file} belongs to {domain}.',
     'The Markdown flavor that should be used when rendering this field.' => 'The Markdown flavor that should be used when rendering this field.',
     'The Plugin Store is not available, please try again later.' => 'The Plugin Store is not available, please try again later.',
+    'The Quick Brown Fox' => 'The Quick Brown Fox',
     'The Reply-To email address Craft CMS should use when sending email.' => 'The Reply-To email address Craft CMS should use when sending email.',
     'The URI can’t begin with the {setting} config setting.' => 'The URI can’t begin with the {setting} config setting.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'The `Authorization` header that should be sent with GraphQL API requests to use this token.',
