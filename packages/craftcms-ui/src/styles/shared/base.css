@@ -59,10 +59,10 @@ craft-radio > input[type='radio'] {
   width: var(--c-checkbox-size);
   height: var(--c-checkbox-size);
   border: var(--c-form-control-border-width) var(--c-form-control-border-style)
-    var(--c-form-control-border-color);
+    var(--c-checkbox-border-color, var(--c-form-control-border-color));
   border-radius: var(--c-checkbox-radius);
   background-color: var(--c-input-fill);
-  color: var(--c-color-accent-on-loud);
+  color: var(--c-checkbox-checked-mark, var(--c-color-accent-on-loud));
   cursor: pointer;
 
   &::before {
@@ -75,7 +75,10 @@ craft-radio > input[type='radio'] {
 
   &:checked {
     border-color: transparent;
-    background-color: var(--c-color-accent-fill-loud);
+    background-color: var(
+      --c-checkbox-checked-fill,
+      var(--c-color-accent-fill-loud)
+    );
 
     &::before {
       visibility: visible;
@@ -109,7 +112,10 @@ craft-radio > input[type='radio'] {
 
   &:indeterminate {
     border-color: transparent;
-    background-color: var(--c-color-accent-fill-loud);
+    background-color: var(
+      --c-checkbox-checked-fill,
+      var(--c-color-accent-fill-loud)
+    );
 
     &::before {
       visibility: visible;

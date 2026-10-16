@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -326,6 +327,8 @@ class ElementSelect extends Control
             'draftId' => $element->draftId,
             'revisionId' => $element->revisionId,
             'status' => self::statusPayload($element),
+            // The chip takes the element's color (an entry's type color, say), as element index chips do.
+            'color' => $element instanceof Colorable ? $element->getColor()?->value : null,
             'actions' => $element->actionMenuDescriptors(ElementActionContext::Field),
         ];
     }

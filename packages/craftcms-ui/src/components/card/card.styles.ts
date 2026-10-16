@@ -31,6 +31,26 @@ export default css`
       background-color: var(--c-color-fill-loud);
       border-color: var(--c-color-border-loud);
       color: var(--c-color-on-loud);
+      --c-checkbox-border-color: var(--c-color-on-loud);
+    }
+  }
+
+  /* A checked header checkbox is filled with the header's text color, with
+     the mark cut out in its fill, rather than the accent color, which can
+     clash with the card's color or blend into it. */
+  :host([data-color]:not([data-color='white'])) .card {
+    .card__header,
+    .card__footer {
+      --c-checkbox-checked-fill: var(--c-color-on-quiet);
+      --c-checkbox-checked-mark: var(--c-color-fill-quiet);
+    }
+  }
+
+  :host([data-color]:not([data-color='white'])[active]) .card {
+    .card__header,
+    .card__footer {
+      --c-checkbox-checked-fill: var(--c-color-on-loud);
+      --c-checkbox-checked-mark: var(--c-color-fill-loud);
     }
   }
 
@@ -114,6 +134,15 @@ export default css`
   :host([data-color='white'][active]) .card .card__footer {
     background-color: transparent;
     border-color: var(--c-color-accent-border-quiet);
+  }
+
+  /* Checkboxes match the header's other controls, which take its text color. */
+  .card__header,
+  .card__footer {
+    --c-checkbox-border-color: var(
+      --c-color-on-quiet,
+      var(--c-color-neutral-on-quiet)
+    );
   }
 
   .card__header,

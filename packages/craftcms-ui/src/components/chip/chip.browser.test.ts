@@ -3,6 +3,7 @@ import '../icon/icon.js';
 import '../thumbnail/thumbnail.js';
 import '../truncate/truncate.js';
 import './chip.js';
+import {contrast} from '../../../test/contrast';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -672,3 +673,204 @@ it.each([
     );
   }
 );
+
+it.each(['plain', 'outline', 'fill'])(
+  'colors only the chip’s own icon with its color, not a %s chip’s status',
+  async (appearance) => {
+    await import('../../styles/cp.css');
+    document.body.innerHTML = `
+      <craft-chip data-color="amber" appearance="${appearance}" icon="building-columns">
+        <craft-icon slot="status" name="scribble" label="Status: Draft"></craft-icon>
+        Northern Light
+      </craft-chip>`;
+    const chip = document.querySelector<
+      HTMLElement & {updateComplete: Promise<unknown>}
+    >('craft-chip')!;
+    await chip.updateComplete;
+
+    const ownIcon = chip.shadowRoot!.querySelector(
+      '.cp-chip__icon craft-icon'
+    )!;
+    const status = chip.querySelector('[slot="status"]')!;
+    const reference = document.createElement('span');
+    reference.style.color = 'var(--c-text-default)';
+    document.body.append(reference);
+
+    expect(getComputedStyle(status).color).toBe(
+      getComputedStyle(reference).color
+    );
+    expect(getComputedStyle(ownIcon).color).not.toBe(
+      getComputedStyle(reference).color
+    );
+  }
+);
+
+it('draws a colored chip’s selection checkbox in its text color, with the mark cut out once checked', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `
+    <craft-chip data-color="violet" appearance="outline-fill" selectable select-label="Select">Work</craft-chip>`;
+  const chip = document.querySelector<
+    HTMLElement & {updateComplete: Promise<unknown>}
+  >('craft-chip')!;
+  await chip.updateComplete;
+  const checkbox =
+    chip.shadowRoot!.querySelector<HTMLInputElement>('.cp-chip__select')!;
+  const text = getComputedStyle(
+    chip.shadowRoot!.querySelector('.cp-chip')!
+  ).color;
+
+  expect(getComputedStyle(checkbox).appearance).toBe('none');
+  expect(getComputedStyle(checkbox).borderTopColor).toBe(text);
+
+  checkbox.checked = true;
+
+  expect(getComputedStyle(checkbox).backgroundColor).toBe(text);
+  expect(getComputedStyle(checkbox).maskImage).toContain('svg');
+});
+
+it('keeps the standard checkbox colors on a white chip', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `
+    <craft-chip selectable select-label="Select">Default</craft-chip>`;
+  const chip = document.querySelector<
+    HTMLElement & {updateComplete: Promise<unknown>}
+  >('craft-chip')!;
+  await chip.updateComplete;
+  const checkbox =
+    chip.shadowRoot!.querySelector<HTMLInputElement>('.cp-chip__select')!;
+  const reference = document.createElement('span');
+  reference.style.borderColor = 'var(--c-form-control-border-color)';
+  reference.style.color = 'var(--c-color-accent-fill-loud)';
+  document.body.append(reference);
+
+  expect(chip.getAttribute('data-color')).toBe('white');
+  expect(getComputedStyle(checkbox).borderTopColor).toBe(
+    getComputedStyle(reference).borderTopColor
+  );
+
+  checkbox.checked = true;
+
+  expect(getComputedStyle(checkbox).backgroundColor).toBe(
+    getComputedStyle(reference).color
+  );
+});
+
+it('sizes the selection checkbox at 14px, with 24px of clear space around it', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `
+    <craft-chip data-color="violet" size="small" selectable select-label="Select"><a href="#">Work</a></craft-chip>`;
+  const chip = document.querySelector<
+    HTMLElement & {updateComplete: Promise<unknown>}
+  >('craft-chip')!;
+  await chip.updateComplete;
+  const box = chip
+    .shadowRoot!.querySelector('.cp-chip__select')!
+    .getBoundingClientRect();
+  const link = chip.querySelector('a')!.getBoundingClientRect();
+  const centerX = box.left + box.width / 2;
+  const centerY = box.top + box.height / 2;
+  const nearestX = Math.max(link.left, Math.min(centerX, link.right));
+  const nearestY = Math.max(link.top, Math.min(centerY, link.bottom));
+
+  expect(box.width).toBeCloseTo(14, 0);
+  expect(box.height).toBeCloseTo(14, 0);
+  expect(
+    Math.hypot(centerX - nearestX, centerY - nearestY)
+  ).toBeGreaterThanOrEqual(12);
+});
+
+it('gives a colored chip a card body’s background, and its color’s normal fill when selected', async () => {
+  await import('../../styles/cp.css');
+  await import('../card/card.js');
+  document.body.innerHTML = `
+    <craft-chip data-color="violet" appearance="outline-fill">Work</craft-chip>
+    <craft-card data-color="violet">Body</craft-card>`;
+  const chip = document.querySelector<
+    HTMLElement & {updateComplete: Promise<unknown>}
+  >('craft-chip')!;
+  const card = document.querySelector<
+    HTMLElement & {updateComplete: Promise<unknown>}
+  >('craft-card')!;
+  await Promise.all([chip, card].map((el) => el.updateComplete));
+  const chipStyle = () =>
+    getComputedStyle(chip.shadowRoot!.querySelector('.cp-chip')!);
+  const body = getComputedStyle(card.shadowRoot!.querySelector('.card')!);
+  const normal = document.createElement('span');
+  normal.dataset.color = 'violet';
+  normal.style.backgroundColor = 'var(--c-color-fill-normal)';
+  normal.style.color = 'var(--c-color-on-normal)';
+  document.body.append(normal);
+
+  expect(chipStyle().backgroundColor).toBe(body.backgroundColor);
+  expect(chipStyle().color).toBe(body.color);
+
+  chip.setAttribute('selected', '');
+  await chip.updateComplete;
+
+  expect(chipStyle().backgroundColor).toBe(
+    getComputedStyle(normal).backgroundColor
+  );
+  expect(chipStyle().color).toBe(getComputedStyle(normal).color);
+});
+
+it.each(['light', 'dark'])(
+  'keeps colored chips’ text at 4.5:1, selected or not, in the %s theme',
+  async (theme) => {
+    await import('../../styles/cp.css');
+    const {Color} = await import('../../constants/colors');
+    const colors = Object.values(Color).filter(
+      (color) => color !== 'white' && color !== 'black'
+    );
+    document.body.innerHTML = `
+      <div data-theme="${theme}" style="background-color: var(--c-surface-default)">
+        ${colors
+          .flatMap((color) => [
+            `<craft-chip data-color="${color}" appearance="outline-fill">${color}</craft-chip>`,
+            `<craft-chip data-color="${color}" appearance="outline-fill" selected>${color}</craft-chip>`,
+          ])
+          .join('')}
+      </div>`;
+    const surface = getComputedStyle(
+      document.querySelector('[data-theme]')!
+    ).backgroundColor;
+    const failures: string[] = [];
+
+    for (const chip of document.querySelectorAll<
+      HTMLElement & {updateComplete: Promise<unknown>}
+    >('craft-chip')) {
+      await chip.updateComplete;
+      const style = getComputedStyle(
+        chip.shadowRoot!.querySelector('.cp-chip')!
+      );
+      const ratio = contrast(style.color, style.backgroundColor, surface);
+      if (ratio < 4.5) {
+        failures.push(
+          `${chip.dataset.color}${chip.hasAttribute('selected') ? ' (selected)' : ''}: ${ratio.toFixed(2)}`
+        );
+      }
+    }
+
+    expect(failures).toEqual([]);
+  }
+);
+
+it('tints a selected colored chip’s controls from its own fill, not the accent color', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `
+    <craft-chip data-color="violet" appearance="outline-fill" selected>
+      Work
+      <span slot="suffix" id="control" style="background-color: var(--c-color-fill-quiet)"></span>
+    </craft-chip>`;
+  const chip = document.querySelector<
+    HTMLElement & {updateComplete: Promise<unknown>}
+  >('craft-chip')!;
+  await chip.updateComplete;
+  const own = document.createElement('span');
+  own.dataset.color = 'violet';
+  own.style.backgroundColor = 'var(--c-color-fill-normal)';
+  document.body.append(own);
+
+  expect(
+    getComputedStyle(document.getElementById('control')!).backgroundColor
+  ).toBe(getComputedStyle(own).backgroundColor);
+});

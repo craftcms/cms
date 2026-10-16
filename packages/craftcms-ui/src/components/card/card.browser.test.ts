@@ -3,6 +3,8 @@ import '../../styles/cp.css';
 import './card.js';
 import '../chip/chip.js';
 import '../button/button.js';
+import '../checkbox/checkbox.js';
+import {contrast} from '../../../test/contrast';
 import type CraftCard from './card.js';
 
 beforeEach(() => {
@@ -351,4 +353,64 @@ it('gives a header the same height with or without actions', async () => {
       .getBoundingClientRect().height;
 
   expect(height('label')).toBe(height('actions'));
+});
+
+it.each(['light', 'dark'])(
+  'colors a header checkbox like the header’s other controls in the %s theme',
+  async (theme) => {
+    document.body.innerHTML = `
+      <div data-theme="${theme}">
+        <craft-card data-color="indigo">
+          <div slot="header">
+            <craft-checkbox label-sr-only><label slot="label">Select</label></craft-checkbox>
+            <craft-button variant="plain" inherit icon="edit" aria-label="Edit"></craft-button>
+          </div>
+        </craft-card>
+      </div>`;
+    const card = document.querySelector<CraftCard>('craft-card')!;
+    await card.updateComplete;
+    const input = card.querySelector<HTMLInputElement>(
+      'craft-checkbox > input'
+    )!;
+    const header = () =>
+      getComputedStyle(card.shadowRoot!.querySelector('.card__header')!);
+    const control = () =>
+      getComputedStyle(card.querySelector('craft-button')!).color;
+    const box = () => getComputedStyle(input);
+    const mark = () => getComputedStyle(input, '::before').backgroundColor;
+
+    expect(box().borderTopColor).toBe(control());
+
+    input.checked = true;
+    expect(box().backgroundColor).toBe(control());
+    expect(mark()).toBe(header().backgroundColor);
+    expect(contrast(mark(), box().backgroundColor)).toBeGreaterThanOrEqual(3);
+
+    card.setAttribute('active', '');
+    await card.updateComplete;
+
+    expect(box().backgroundColor).toBe(control());
+    expect(mark()).toBe(header().backgroundColor);
+    expect(contrast(mark(), box().backgroundColor)).toBeGreaterThanOrEqual(3);
+  }
+);
+
+it('keeps the accent color for a white card’s checked checkbox', async () => {
+  document.body.innerHTML = `
+    <craft-card data-color="white">
+      <div slot="header">
+        <craft-checkbox label-sr-only checked><label slot="label">Select</label></craft-checkbox>
+      </div>
+    </craft-card>`;
+  const card = document.querySelector<CraftCard>('craft-card')!;
+  await card.updateComplete;
+  const input = card.querySelector<HTMLInputElement>('craft-checkbox > input')!;
+  input.checked = true;
+  const reference = document.createElement('span');
+  reference.style.color = 'var(--c-color-accent-fill-loud)';
+  document.body.append(reference);
+
+  expect(getComputedStyle(input).backgroundColor).toBe(
+    getComputedStyle(reference).color
+  );
 });
