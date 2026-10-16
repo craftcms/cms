@@ -209,6 +209,45 @@ describe('slideout store', () => {
     opener.remove();
   });
 
+  it('focuses what returnFocus returns on close', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+    const hidden = document.createElement('div');
+    hidden.hidden = true;
+    const opener = document.createElement('button');
+    hidden.appendChild(opener);
+    const target = document.createElement('button');
+    document.body.append(hidden, target);
+    const returnFocus = vi.fn(() => target);
+
+    const panel = (await openSlideout('/a', {opener, returnFocus}))!;
+    closeSlideout(panel.id);
+
+    expect(returnFocus).toHaveBeenCalledWith(opener);
+    expect(document.activeElement).toBe(target);
+  });
+
+  it('falls back to the opener when returnFocus finds nothing', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+
+    const panel = (await openSlideout('/a', {
+      opener,
+      returnFocus: () => null,
+    }))!;
+    closeSlideout(panel.id);
+
+    expect(document.activeElement).toBe(opener);
+  });
+
   it('surfaces a load failure on the panel instead of throwing', async () => {
     fetchSlideoutPage.mockRejectedValue(new Error('boom'));
 

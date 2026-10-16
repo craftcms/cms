@@ -34,10 +34,13 @@
 </script>
 
 <template>
+  <!-- The uid stays the same across re-renders, so `data-focus-key` lets focus
+    find this menu's button again after one (see `focusReturnFor()`). -->
   <ActionMenu
     :actions="items"
     :icon="props.node.props.icon"
     :label="props.node.props.label"
     :data-ui-node="props.node.uid"
+    :data-focus-key="props.node.uid"
   />
 </template>

@@ -1,4 +1,5 @@
 import {markRaw, reactive, shallowReadonly} from 'vue';
+import {isFocusable} from '@craftcms/ui/utilities/focus-return';
 import {t} from '@craftcms/ui/utilities/translate';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {stackedPanels} from './panel-stack';
@@ -125,6 +126,7 @@ export async function openSlideout(
     loading: true,
     error: null,
     opener,
+    returnFocus: options.returnFocus,
     onSaved: options.onSaved ?? null,
     nestedOwnerId: options.nestedOwnerId,
     prepareNestedOwner: options.prepareNestedOwner,
@@ -178,6 +180,7 @@ export function openSlideoutWith(
     loading: false,
     error: null,
     opener,
+    returnFocus: options.returnFocus,
     onSaved: options.onSaved ?? null,
     nestedOwnerId: options.nestedOwnerId,
     width: options.width ?? null,
@@ -321,10 +324,20 @@ function removePanel(id: string, {restoreFocus = true} = {}): void {
   const [panel] = panels.splice(index, 1);
   dirtyChecks.delete(id);
 
-  if (restoreFocus) {
+  if (restoreFocus && panel) {
     // Focus has to go somewhere deliberate — the panel that owned it is gone.
-    panel?.opener?.focus?.();
+    returnFocusFrom(panel)?.focus?.();
   }
+}
+
+/**
+ * Where focus goes when `panel` closes: what its `returnFocus` says, when that
+ * can take focus, else its opener.
+ */
+function returnFocusFrom(panel: SlideoutInstance): HTMLElement | null {
+  const target = panel.returnFocus?.(panel.opener);
+
+  return isFocusable(target) ? target : panel.opener;
 }
 
 /**

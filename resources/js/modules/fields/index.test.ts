@@ -77,6 +77,31 @@ describe('field action listeners', () => {
     });
   });
 
+  it('passes the menu action’s returnFocus to the copy prompt and slideouts', () => {
+    const returnFocus = vi.fn();
+
+    window.dispatchEvent(
+      new CustomEvent('craft:copy-text-prompt', {
+        detail: {label: 'Attribute', value: 'title', returnFocus},
+      })
+    );
+    window.dispatchEvent(
+      new CustomEvent('craft:edit-field', {detail: {fieldId: 7, returnFocus}})
+    );
+    window.dispatchEvent(
+      new CustomEvent('craft:edit-entry-type', {
+        detail: {entryTypeId: 3, returnFocus},
+      })
+    );
+
+    expect(createCopyTextPrompt.mock.calls[0]![0].returnFocus).toBe(
+      returnFocus
+    );
+    expect(
+      openSlideout.mock.calls.map(([, options]) => options.returnFocus)
+    ).toEqual([returnFocus, returnFocus]);
+  });
+
   it('ignores a copy prompt with no value', () => {
     window.dispatchEvent(
       new CustomEvent('craft:copy-text-prompt', {detail: {label: 'Nope'}})

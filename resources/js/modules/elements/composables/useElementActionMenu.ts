@@ -1,5 +1,6 @@
 import {router} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
+import {focusReturnFor} from '@craftcms/ui/utilities/focus-return';
 import {computed, type ComputedRef} from 'vue';
 import {openSlideout, type SlideoutController} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
@@ -131,7 +132,8 @@ export function createElementActionMenu({
 }: Options = {}) {
   function dispatch(
     behavior: ElementActionBehavior,
-    destructive = false
+    destructive = false,
+    event?: Event
   ): void {
     switch (behavior.type) {
       case 'link':
@@ -198,12 +200,22 @@ export function createElementActionMenu({
 
       case 'slideout': {
         const entryTypeId = currentEntryTypeId?.();
-
-        void openSlideout(
+        const url =
           behavior.entryTypeFromField && entryTypeId
             ? Craft.getCpUrl(`settings/entry-types/${entryTypeId}`)
-            : behavior.url
-        );
+            : behavior.url;
+        // The menu item, which is hidden once the menu closes, so focus is
+        // sent back to the menu's button instead.
+        const trigger = event?.currentTarget;
+
+        if (trigger instanceof HTMLElement) {
+          void openSlideout(url, {
+            opener: trigger,
+            returnFocus: focusReturnFor(trigger),
+          });
+        } else {
+          void openSlideout(url);
+        }
 
         return;
       }
@@ -320,7 +332,8 @@ export function createElementActionMenu({
               icon: item.icon,
               iconColor: item.color,
               variant: item.destructive ? 'danger' : undefined,
-              onClick: () => dispatch(item.behavior, item.destructive),
+              onClick: (event: Event) =>
+                dispatch(item.behavior, item.destructive, event),
             }
     );
 }

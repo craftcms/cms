@@ -65,6 +65,13 @@ describe('createCopyTextPrompt', () => {
     expect(textarea?.readOnly).toBe(true);
     expect(textarea?.value).toBe('{"a":1}');
   });
+
+  it('hands returnFocus to the dialog', () => {
+    const returnFocus = () => null;
+    const dialog = createCopyTextPrompt({value: 'x', returnFocus});
+
+    expect(dialog.returnFocus).toBe(returnFocus);
+  });
 });
 
 describe('createTextInput', () => {

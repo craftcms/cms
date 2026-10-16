@@ -4,6 +4,7 @@ import {property} from 'lit/decorators.js';
 import hostStyles from '@src/styles/host.styles.js';
 import {t} from '@src/utilities/translate.js';
 import {trapFocus} from '@src/utilities/focus-trap.js';
+import {isFocusable} from '@src/utilities/focus-return.js';
 import styles from './dialog.styles.js';
 import '../icon/icon.js';
 
@@ -143,6 +144,22 @@ export default class CraftDialog extends LitElement {
   @property({type: Boolean, attribute: 'no-header', reflect: true})
   noHeader = false;
 
+  /**
+   * Decides where focus goes once the dialog closes.
+   *
+   * Called with whatever had focus when the dialog opened. If it returns an
+   * element that can take focus, that element gets it; otherwise the browser's
+   * own return applies, which goes back to that opener. Set it when the opener
+   * may not be there to take focus — an item in a menu that has since closed,
+   * or content that re-renders while the dialog is open — and look the target
+   * up when it's called rather than holding on to an element. For menu
+   * actions, `focusReturnFor()` from `utilities/focus-return` does this.
+   */
+  @property({attribute: false})
+  returnFocus?: (opener: HTMLElement | null) => HTMLElement | null | undefined;
+
+  #opener: HTMLElement | null = null;
+
   protected readonly titleId = `craft-dialog-title-${++nextId}`;
 
   /**
@@ -185,6 +202,8 @@ export default class CraftDialog extends LitElement {
 
     this.#releaseFocusTrap?.();
     this.#releaseFocusTrap = null;
+
+    this.#opener = null;
 
     // Removed while still open — an unmounting Vue view, say — must not leave
     // the page stuck.
@@ -298,6 +317,8 @@ export default class CraftDialog extends LitElement {
 
   #showDialog(): void {
     const dialog = this.dialogElement;
+    const focused = document.activeElement;
+    this.#opener = focused instanceof HTMLElement ? focused : null;
 
     if (dialog && !dialog.open) {
       // `showModal()` throws if the dialog is already open, hence the guard.
@@ -328,6 +349,18 @@ export default class CraftDialog extends LitElement {
     this.#releaseFocusTrap = null;
 
     this.#releaseScrollLock();
+    this.#returnFocusToTarget();
+  }
+
+  /** Runs after the browser's own return, which `close()` does synchronously. */
+  #returnFocusToTarget(): void {
+    const opener = this.#opener;
+    this.#opener = null;
+    const target = this.returnFocus?.(opener);
+
+    if (isFocusable(target)) {
+      target.focus();
+    }
   }
 
   /** Idempotent, so teardown can't release a lock this dialog never took. */

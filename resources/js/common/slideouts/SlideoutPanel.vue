@@ -176,12 +176,14 @@
 
 <template>
   <!-- `data-slideout-id` is how the store works out which panel something was
-    opened from, so it can nest below it rather than replace it. -->
+    opened from, so it can nest below it rather than replace it.
+    `data-focus-scope` keeps a re-rendered menu's focus lookup inside it. -->
   <div
     ref="panel"
     class="slideout-panel"
     tabindex="-1"
     :data-slideout-id="instance.id"
+    :data-focus-scope="instance.id"
     :style="{
       ...(instance.width ? {'--slideout-width': instance.width} : {}),
       [positionProp]: offset,

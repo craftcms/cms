@@ -13,6 +13,8 @@ export interface CopyTextPromptConfig {
   rows?: number;
   size?: number;
   class?: string | string[];
+  /** Where focus goes once the dialog closes. See `CraftDialog.returnFocus`. */
+  returnFocus?: CraftDialog['returnFocus'];
 }
 
 /**
@@ -32,6 +34,9 @@ export function createCopyTextPrompt(
   const dialog = document.createElement('craft-dialog') as CraftDialog;
   if (config.label) {
     dialog.setAttribute('label', config.label);
+  }
+  if (config.returnFocus) {
+    dialog.returnFocus = config.returnFocus;
   }
 
   const copytext = document.createElement('div');

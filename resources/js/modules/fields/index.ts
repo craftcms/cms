@@ -20,7 +20,7 @@ import {matrixField} from '@/modules/matrix/selection-menu';
 // selector (see `field-layout-designer/element.ts`).
 // SAFETY: craft:edit-field is a registered CustomEvent with a {fieldId} payload.
 window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
-  const {fieldId, trigger} = ev.detail ?? {};
+  const {fieldId, trigger, returnFocus} = ev.detail ?? {};
 
   if (!fieldId) {
     return;
@@ -34,16 +34,12 @@ window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
     );
   };
 
-  // Focus the trigger so closing the slideout returns focus to it.
-  if (trigger instanceof HTMLElement) {
-    trigger.focus();
-  }
-
   const url = Craft.getCpUrl('settings/fields/edit', {fieldId});
 
   if (canUseVueSlideout()) {
     void openSlideout(url, {
       opener: trigger instanceof HTMLElement ? trigger : null,
+      returnFocus,
       onSaved: ({data, draft}: SlideoutSaveResult) => {
         // An autosaved draft isn't a finished save; don't refresh on it.
         if (!draft) {
@@ -53,6 +49,11 @@ window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
     });
 
     return;
+  }
+
+  // The legacy slideout returns focus to whatever had it at open time.
+  if (trigger instanceof HTMLElement) {
+    trigger.focus();
   }
 
   const slideout = new Craft.CpScreenSlideout('fields/edit-field', {
@@ -66,14 +67,10 @@ window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
 // Admin-only; the server only emits the item when admin changes are allowed.
 // SAFETY: craft:edit-entry-type is a registered CustomEvent with an {entryTypeId} payload.
 window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
-  const {entryTypeId, trigger} = ev.detail ?? {};
+  const {entryTypeId, trigger, returnFocus} = ev.detail ?? {};
 
   if (!entryTypeId) {
     return;
-  }
-
-  if (trigger instanceof HTMLElement) {
-    trigger.focus();
   }
 
   const url = Craft.getCpUrl(`settings/entry-types/${entryTypeId}`);
@@ -81,9 +78,14 @@ window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
   if (canUseVueSlideout()) {
     void openSlideout(url, {
       opener: trigger instanceof HTMLElement ? trigger : null,
+      returnFocus,
     });
 
     return;
+  }
+
+  if (trigger instanceof HTMLElement) {
+    trigger.focus();
   }
 
   new Craft.CpScreenSlideout(url);
@@ -94,13 +96,13 @@ window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
 // the legacy `Craft.ui.createCopyTextPrompt` handler did.
 // SAFETY: craft:copy-text-prompt is a registered CustomEvent with a {label, value} payload.
 window.addEventListener('craft:copy-text-prompt', ((ev: CustomEvent) => {
-  const {label, value} = ev.detail ?? {};
+  const {label, value, returnFocus} = ev.detail ?? {};
 
   if (typeof value !== 'string') {
     return;
   }
 
-  createCopyTextPrompt({label, value});
+  createCopyTextPrompt({label, value, returnFocus});
 }) as EventListener);
 
 /**

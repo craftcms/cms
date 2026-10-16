@@ -1,5 +1,6 @@
 import type {VariantKey} from '@src/constants/variants';
 import {actionClient} from '@src/utilities/api/actionClient';
+import {focusReturnFor} from '@src/utilities/focus-return';
 
 export type BaseAction =
   | {type: 'clipboard'; value: string}
@@ -74,7 +75,10 @@ export interface RunActionOptions {
    * The element that invoked the action (e.g. the clicked button). For
    * `event` actions it's merged into the dispatched event's `detail` as
    * `trigger`, so listeners can manage focus or read contextual `data-*`
-   * attributes from the invoker's ancestors.
+   * attributes from the invoker's ancestors. The detail also gets
+   * `returnFocus`, a `focusReturnFor()` resolver for it: pass it to a dialog
+   * or slideout the listener opens, so focus can come back even after the
+   * menu holding the trigger has closed or re-rendered.
    */
   trigger?: Element;
   /**
@@ -166,7 +170,12 @@ export async function runAction(
         new CustomEvent(action.name, {
           detail: {
             ...(action.detail ?? {}),
-            ...(options.trigger ? {trigger: options.trigger} : {}),
+            ...(options.trigger
+              ? {
+                  trigger: options.trigger,
+                  returnFocus: focusReturnFor(options.trigger),
+                }
+              : {}),
             ...(options.sourceEvent ? {sourceEvent: options.sourceEvent} : {}),
           },
         })
