@@ -201,6 +201,13 @@
     position: relative;
   }
 
+  /* A section heading over the group's fields. */
+  .group-container > legend {
+    margin-block-end: var(--c-spacing-md);
+    font-size: var(--c-text-lg);
+    font-weight: var(--font-weight-semibold);
+  }
+
   /* Dims the fields rather than the group: in Chrome, changing a
      container-type group's opacity inside a fieldset while the spinner is
      added can leave the group's children without layout boxes. */
