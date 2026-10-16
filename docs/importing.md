@@ -27,9 +27,9 @@ importer instance with its own `uid`, `type` (the importer FQCN), `source`, `tra
 
 `ImportPlan::isEditable()` reads the `$editable` flag, which is set for plans loaded from the
 database. `ImportPlan::getAllImportPlans()` (`src/Import/ImportPlan.php:128`) lists DB plans
-first, in their saved `sortOrder` (then name, then handle), followed by registered plans sorted
-by name. The result is keyed by handle and memoized. Registered plans are created lazily, the
-first time the list is built, and re-created whenever it's rebuilt after a save, delete or
+first, in their saved `sortOrder` (then name, then handle), followed by registered plans in order
+they were registered in. The result is keyed by handle and memoized. Registered plans are created lazily,
+the first time the list is built, and re-created whenever it's rebuilt after a save, delete or
 reorder. An invalid registered plan is **skipped and logged** as a warning rather than blowing up
 the list.
 
