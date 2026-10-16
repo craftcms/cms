@@ -196,7 +196,7 @@ it('creates a new asset when an incoming file matches one and that’s what the 
     ($this->importEntry)('first entry', ['myAssets' => [($this->sourceFile)('photo.txt', 'original')]]);
     $existing = ($this->entry)('first entry')->getFieldValue('myAssets')->one();
 
-    $importer = (clone $this->importer)->fieldSettings(['myAssets' => ['fileConflict' => 'createNew']]);
+    $importer = (clone $this->importer)->fieldSettings(['myAssets' => ['fileConflict' => 'keepBoth']]);
     ($this->importEntry)('second entry', ['myAssets' => [($this->sourceFile)('photo.txt', 'incoming')]], $importer);
     $related = ($this->entry)('second entry')->getFieldValue('myAssets')->one();
 
@@ -305,7 +305,7 @@ it('creates assets for an assets field inside a matrix entry using the entry typ
     $existing = ($this->entry)('first entry')->getFieldValue('myAssets')->one();
 
     $importer = (clone $this->importer)->fieldSettings([
-        'myMatrix' => ['gallery' => ['fields' => ['blockAssets' => ['fileConflict' => 'createNew']]]],
+        'myMatrix' => ['gallery' => ['fields' => ['blockAssets' => ['fileConflict' => 'keepBoth']]]],
     ]);
 
     ($this->importEntry)('second entry', ['myMatrix' => [

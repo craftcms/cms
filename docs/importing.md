@@ -418,7 +418,7 @@ When an incoming file's name matches an existing asset in that folder, the `file
 setting (`ImportFileConflict`) decides what happens: `useExisting` (default; the file isn't
 downloaded), `replace` (the existing asset is related straight away, but its file is only replaced
 via an `afterItemImported()` callback, so not at all if the row fails, and still when the row is
-otherwise unchanged), or `createNew` (a new asset with a suffixed filename). A URL without a file
+otherwise unchanged), or `keepBoth` (a new asset with a suffixed filename). A URL without a file
 extension is downloaded first and gets its extension from the response's content type; URL
 filenames are URL-decoded. If the upload location can't be resolved yet (e.g. a `{id}` subpath on a
 new entry), files go to the temp folder as new assets and the field moves them into place after the

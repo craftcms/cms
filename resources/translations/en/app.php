@@ -506,7 +506,7 @@ return [
     'Create a draft' => 'Create a draft',
     'Create a new GraphQL Schema' => 'Create a new GraphQL Schema',
     'Create a new GraphQL token' => 'Create a new GraphQL token',
-    'Create a new asset for the incoming file' => 'Create a new asset for the incoming file',
+    'Create a new asset for the incoming file and keep the existing one' => 'Create a new asset for the incoming file and keep the existing one',
     'Create a new asset volume' => 'Create a new asset volume',
     'Create a new category group' => 'Create a new category group',
     'Create a new child {type}' => 'Create a new child {type}',

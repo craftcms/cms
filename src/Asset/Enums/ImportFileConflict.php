@@ -19,14 +19,14 @@ enum ImportFileConflict: string
 
     case UseExisting = 'useExisting';
     case Replace = 'replace';
-    case CreateNew = 'createNew';
+    case KeepBoth = 'keepBoth';
 
     public function label(): string
     {
         return match ($this) {
             self::UseExisting => t('Use the existing asset'),
             self::Replace => t('Replace the existing file with the incoming one'),
-            self::CreateNew => t('Create a new asset for the incoming file'),
+            self::KeepBoth => t('Create a new asset for the incoming file and keep the existing one'),
         };
     }
 }

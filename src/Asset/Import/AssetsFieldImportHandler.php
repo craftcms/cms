@@ -124,7 +124,7 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
 
         // a temp folder means the real upload location can’t be resolved until the element is saved,
         // so there’s nothing to match against; the new assets get moved there after the save
-        if ($folder->volumeId === null && $conflict !== ImportFileConflict::CreateNew) {
+        if ($folder->volumeId === null && $conflict !== ImportFileConflict::KeepBoth) {
             // ImportLog::info("The {$field->name} field’s upload location can’t be resolved before the element is saved, so incoming files will be added as new assets.");
         }
 
@@ -168,7 +168,7 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
 
             $this->ensureAllowed($field, $filename);
 
-            $existingAsset = $conflict === ImportFileConflict::CreateNew ? null : $this->findExistingAsset($filename, $folder);
+            $existingAsset = $conflict === ImportFileConflict::KeepBoth ? null : $this->findExistingAsset($filename, $folder);
 
             if ($existingAsset !== null) {
                 // only replace the file once the item has gone through
