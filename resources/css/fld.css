@@ -132,8 +132,11 @@ body:not(.dragging) .fld-tab .tab.draggable {
   min-height: 24px;
 }
 
-/* Drawn on the same surface as the tabs. */
+/* Drawn on the same surface as the tabs. A pixel shorter than other buttons,
+   so its outer 1px ring lands on grid lines above and below, as tabs' do: the
+   lines are 16px apart, so a ring-to-ring span is 16n + 1px. */
 .fld-new-tab-btn {
+  --c-button-height: calc(var(--c-spacing-lg) * 2 - 1px);
   --c-color-neutral-fill-normal: var(--c-surface-overlay);
   border-radius: var(--c-radius-md);
   box-shadow:
@@ -443,6 +446,12 @@ body:not(.dragging) .fld-element {
 }
 
 /* Card view designer styles now live in cvd.css */
+
+/* Drops the wider --gap inherited from the field layout setting's own field
+   group, so the designer and Generated Fields are spaced like other fields. */
+.fld-content-panel {
+  --gap: initial;
+}
 
 /* Flags a Content or Display tab whose panel has errors. */
 [data-fld-tab-error] {

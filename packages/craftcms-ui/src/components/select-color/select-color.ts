@@ -28,6 +28,10 @@ function titleCase(value: string): string {
  * @fires model-value-changed - The selected color changed. Re-dispatched from
  *   the host as a composed event so it crosses the shadow boundary.
  *
+ * @cssproperty [--c-select-color-swatch-edge=rgb(0 0 0 / 15%)] - Edge of the
+ *   swatches that blend into a dark surface: no color and black. The dark
+ *   theme lightens it.
+ *
  * `model-value-changed` is Lion's own protocol name, not one this package
  * chose, and it is kept because Lion's form system dispatches and listens for
  * it. Prefer the native events above: they are the contract this package
@@ -111,11 +115,17 @@ export default class CraftSelectColor extends LitElement {
    */
   protected _swatchTemplate(color: string) {
     const isTransparent = color === '__blank__';
+    // These blend into a dark surface, so they get an edge that holds up
+    // against it (see --c-select-color-swatch-edge).
+    const edge =
+      isTransparent || color === 'black'
+        ? 'var(--c-select-color-swatch-edge, rgb(0 0 0 / 15%))'
+        : 'rgb(0 0 0 / 15%)';
 
     const base =
       'flex:0 0 auto;inline-size:1rem;block-size:1rem;' +
       'border-radius:var(--c-radius-full);' +
-      'box-shadow:inset 0 0 0 1px rgb(0 0 0 / 15%);';
+      `box-shadow:inset 0 0 0 1px ${edge};`;
 
     const transparent =
       'background:' +

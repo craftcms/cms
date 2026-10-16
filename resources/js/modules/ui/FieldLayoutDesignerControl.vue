@@ -75,7 +75,7 @@
    * tabs, relative to the control's own path.
    */
   const tabErrorKeys: Record<string, string[]> = {
-    content: ['customFields', 'tabs'],
+    content: ['customFields', 'tabs', 'generatedFields'],
     display: ['cardView', 'thumbFieldKey'],
   };
 
