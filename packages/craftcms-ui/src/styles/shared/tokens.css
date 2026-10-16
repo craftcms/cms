@@ -316,6 +316,8 @@
 
 [data-theme='dark'] {
   color-scheme: dark;
+  /* Like other hairlines here, so no-color and black swatches keep an edge. */
+  --c-select-color-swatch-edge: var(--c-color-neutral-border-quiet);
   --c-surface-default: color-mix(
     in oklab,
     color-mix(in oklab, var(--color-base-100), var(--color-base-50) 30%),
