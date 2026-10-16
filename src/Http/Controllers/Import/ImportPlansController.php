@@ -485,7 +485,7 @@ class ImportPlansController
             ? $this->importsService->getImportPlanByUid($uid)
             : $this->importsService->getImportPlanByHandle($handle);
 
-        abort_if(is_null($importPlan), 400, 'Import plan not found.');
+        abort_if(is_null($importPlan), 404, 'Import plan not found.');
 
         try {
             $dispatched = $this->importService->dispatchImport($importPlan);
