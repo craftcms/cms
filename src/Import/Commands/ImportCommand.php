@@ -13,7 +13,7 @@ use CraftCms\Cms\Import\Events\ImportStepStarted;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\ImportLog;
-use CraftCms\Cms\Support\Facades\ImportPlan;
+use CraftCms\Cms\Support\Facades\ImportPlans;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json;
@@ -112,7 +112,7 @@ abstract class ImportCommand extends Command implements PromptsForMissingInput
             'settings' => $settings,
         ];
 
-        $importer = ImportPlan::createImporter($config);
+        $importer = ImportPlans::createImporter($config);
 
         if ($importer === null) {
             $this->components->error('Couldn’t create the importer. See the import log for details.');

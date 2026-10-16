@@ -23,13 +23,13 @@ use Override;
  * @method static bool duplicateImportPlan(ImportPlanData $importPlan)
  * @method static void deleteImportPlan(ImportPlanData $importPlan)
  *
- * @see \CraftCms\Cms\Import\ImportPlan
+ * @see \CraftCms\Cms\Import\ImportPlans
  */
-class ImportPlan extends Facade
+class ImportPlans extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string
     {
-        return \CraftCms\Cms\Import\ImportPlan::class;
+        return \CraftCms\Cms\Import\ImportPlans::class;
     }
 }

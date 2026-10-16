@@ -15,7 +15,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportPlanSaved;
-use CraftCms\Cms\Import\ImportPlan;
+use CraftCms\Cms\Import\ImportPlans;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -117,7 +117,7 @@ beforeEach(function () {
         ], $overrides),
     );
     $this->createImportPlan = fn (string $name, string $handle) => expect(
-        app(ImportPlan::class)->saveImportPlan(
+        app(ImportPlans::class)->saveImportPlan(
             new ImportPlanData(['editable' => true])
                 ->name($name)
                 ->handle($handle)
@@ -143,7 +143,7 @@ it('saves an import with several steps of different types in one request', funct
         ],
     ])->assertOk();
 
-    $saved = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport');
+    $saved = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport');
 
     expect($saved)->not->toBeNull()
         ->and($saved->steps)->toHaveCount(2)
@@ -158,7 +158,7 @@ it('rejects an import with no steps', function () {
         ->assertStatus(400)
         ->assertJsonPath('errors.steps.0', 'An import plan needs at least one step.');
 
-    expect(app(ImportPlan::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
+    expect(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
 });
 
 it('reports a step’s own validation errors against that step', function () {
@@ -168,7 +168,7 @@ it('reports a step’s own validation errors against that step', function () {
 
     expect(array_keys($response->json('errors')))->toContain("steps.{$step['uid']}.source");
 
-    expect(app(ImportPlan::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
+    expect(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
 });
 
 it('validates a draft step without saving the import', function () {
@@ -177,7 +177,7 @@ it('validates a draft step without saving the import', function () {
     ]);
 
     $response->assertOk();
-    expect(app(ImportPlan::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
+    expect(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
 });
 
 it('reports a draft step’s validation errors before the import is ever saved', function () {
@@ -227,7 +227,7 @@ it('returns a step’s mapping structure without the import being saved', functi
         ->and($response->json('suggestions'))->not->toBeEmpty()
         ->and($response->json('suggestions.title'))->toBe('title');
 
-    expect(app(ImportPlan::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
+    expect(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
 });
 
 it('builds a step’s settings form from the posted draft step', function () {
@@ -355,7 +355,7 @@ it('persists both levels’ keepMissingNestedElements decisions with the step', 
         ]),
     ])->assertOk();
 
-    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->steps[0];
+    $importer = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport')->steps[0];
 
     expect($importer->keepMissingNestedElements)->toBe([
         'outerMatrix' => [
@@ -378,7 +378,7 @@ it('persists match criteria and clearable items alongside the map', function () 
         ]),
     ])->assertOk();
 
-    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->steps[0];
+    $importer = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport')->steps[0];
 
     expect($importer->matchCriteria)->toBe(['title' => 1])
         ->and($importer->clearableItems)->toBe(['title' => 1]);
@@ -391,7 +391,7 @@ it('still decodes JSON-encoded container branches on save', function () {
         ]),
     ])->assertOk();
 
-    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->steps[0];
+    $importer = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport')->steps[0];
 
     expect($importer->map)->toBe([
         'outerMatrix' => ['outerEt' => ['title' => 'Title']],
@@ -413,7 +413,7 @@ it('saves and maps a model importer step', function () {
         ],
     ])->assertOk();
 
-    $importer = app(ImportPlan::class)->getImportPlanByHandle('fixtureImport')->steps[0];
+    $importer = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport')->steps[0];
 
     expect($importer)->toBeInstanceOf(SystemMessageImporter::class)
         ->and($importer->map)->toBe(['subject' => 'incomingSubject'])
@@ -421,7 +421,7 @@ it('saves and maps a model importer step', function () {
 });
 
 it('lists a registered import plan alongside the saved ones, keyed by its registered handle', function () {
-    $imports = app(ImportPlan::class);
+    $imports = app(ImportPlans::class);
 
     $imports->register('registeredImport', fn () => new ImportPlanData()
         ->name('Registered Import')
@@ -441,7 +441,7 @@ it('saves the order the editable import plans are put in', function () {
     ($this->createImportPlan)('Bravo', 'bravo');
     ($this->createImportPlan)('Charlie', 'charlie');
 
-    $plans = app(ImportPlan::class);
+    $plans = app(ImportPlans::class);
     $uids = array_map(
         fn (string $handle) => $plans->getImportPlanByHandle($handle)->uid,
         ['charlie', 'alpha', 'bravo'],
@@ -457,7 +457,7 @@ it('adds new and duplicated import plans after the existing ones', function () {
     ($this->createImportPlan)('Zulu', 'zulu');
     ($this->createImportPlan)('Alpha', 'alpha');
 
-    $plans = app(ImportPlan::class);
+    $plans = app(ImportPlans::class);
 
     postJson(action([ImportPlansController::class, 'duplicate']), [
         'uid' => $plans->getImportPlanByHandle('zulu')->uid,
@@ -469,7 +469,7 @@ it('adds new and duplicated import plans after the existing ones', function () {
 
 it('saves a duplicated import plan like any other new one, with fresh step uids', function () {
     ($this->createImportPlan)('Zulu', 'zulu');
-    $original = app(ImportPlan::class)->getImportPlanByHandle('zulu');
+    $original = app(ImportPlans::class)->getImportPlanByHandle('zulu');
 
     Event::fake([ImportPlanSaved::class]);
 
@@ -491,7 +491,7 @@ it('rejects reordering an import plan that doesn’t exist', function () {
 
 it('forbids reordering import plans without permission to save them', function () {
     ($this->createImportPlan)('Alpha', 'alpha');
-    $uid = app(ImportPlan::class)->getImportPlanByHandle('alpha')->uid;
+    $uid = app(ImportPlans::class)->getImportPlanByHandle('alpha')->uid;
 
     actingAs(UserModel::factory()->withPermissions(['accessCp'])->createElement());
 

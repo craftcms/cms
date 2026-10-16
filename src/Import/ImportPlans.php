@@ -28,7 +28,7 @@ use Throwable;
  * are first needed.
  *
  * ```php
- * public function boot(ImportPlan $importPlans): void
+ * public function boot(ImportPlans $importPlans): void
  * {
  *     $importPlans->register('entriesFromFile', fn () => new ImportPlanData()
  *         ->name('Entries from file')
@@ -43,7 +43,7 @@ use Throwable;
  * @since 6.0.0
  */
 #[Singleton]
-class ImportPlan
+class ImportPlans
 {
     /** @var array<string, Closure> */
     private array $registeredImportPlans = [];

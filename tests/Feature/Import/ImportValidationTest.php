@@ -8,7 +8,7 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
-use CraftCms\Cms\Import\ImportPlan;
+use CraftCms\Cms\Import\ImportPlans;
 use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -113,7 +113,7 @@ it('validateTransformer passes for a transformer class and an empty value, and f
 });
 
 it('excludes an invalid registered import from getAllImportPlans', function () {
-    $imports = app(ImportPlan::class);
+    $imports = app(ImportPlans::class);
 
     $imports->register('invalidFileImport', fn () => new ImportPlanData()
         ->name('Invalid File Import')
@@ -126,7 +126,7 @@ it('excludes an invalid registered import from getAllImportPlans', function () {
 });
 
 it('excludes only the registered import whose source alias isn’t defined', function () {
-    $imports = app(ImportPlan::class);
+    $imports = app(ImportPlans::class);
 
     $imports->register('badAlias', fn () => new ImportPlanData()
         ->name('Bad Alias')

@@ -9,7 +9,7 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
-use CraftCms\Cms\Support\Facades\ImportPlan as ImportPlanFacade;
+use CraftCms\Cms\Support\Facades\ImportPlans as ImportPlanFacade;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -47,7 +47,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
 
     /**
      * Whether this import plan is stored in the database, and so editable via the control panel.
-     * Import plans registered in code, via `ImportPlan::register()`, are not.
+     * Import plans registered in code, via `ImportPlans::register()`, are not.
      */
     public bool $editable = false;
 

@@ -24,7 +24,7 @@ use CraftCms\Cms\Import\Data\StepMappingPayload;
 use CraftCms\Cms\Import\Data\StepUiPayload;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\Cms\Import\ImportPlan;
+use CraftCms\Cms\Import\ImportPlans;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\ImportHelper;
@@ -53,7 +53,7 @@ class ImportPlansController
     public function __construct(
         private Request $request,
         private readonly Import $importService,
-        private readonly ImportPlan $importsService,
+        private readonly ImportPlans $importsService,
         private readonly Fields $fieldsService,
     ) {}
 
@@ -391,7 +391,7 @@ class ImportPlansController
 
         $step['settings'] = ImportHelper::decodeRecursive($step['settings'] ?? []);
 
-        return ImportPlan::createImporter($step);
+        return ImportPlans::createImporter($step);
     }
 
     /**

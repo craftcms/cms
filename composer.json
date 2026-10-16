@@ -219,7 +219,7 @@
         "Images": "CraftCms\\Cms\\Support\\Facades\\Images",
         "Import": "CraftCms\\Cms\\Support\\Facades\\Import",
         "ImportLog": "CraftCms\\Cms\\Support\\Facades\\ImportLog",
-        "ImportPlan": "CraftCms\\Cms\\Support\\Facades\\ImportPlan",
+        "ImportPlans": "CraftCms\\Cms\\Support\\Facades\\ImportPlans",
         "InputNamespace": "CraftCms\\Cms\\Support\\Facades\\InputNamespace",
         "JobProgress": "CraftCms\\Cms\\Support\\Facades\\JobProgress",
         "Markdown": "CraftCms\\Cms\\Support\\Facades\\Markdown",
