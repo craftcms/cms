@@ -267,9 +267,10 @@ Form controls
   font: inherit;
   color: var(--c-input-text, var(--c-text-default));
   position: relative;
-  min-height: calc(
-    var(--c-input-height, var(--c-size-control-md)) - 2 * var(--_border-width)
-  );
+  /* Border-box, so selects (which the UA already sizes that way) come out as
+     tall as inputs. */
+  box-sizing: border-box;
+  min-height: var(--c-input-height, var(--c-size-control-md));
   border-width: var(--_border-width);
   border-style: var(--c-input-border-style, var(--c-form-control-border-style));
   border-color: var(--c-input-border-color, var(--c-form-control-border-color));
@@ -280,6 +281,39 @@ Form controls
   background-color: var(--c-input-fill, var(--c-form-control-fill));
   box-shadow: var(--c-input-shadow);
   overflow: clip;
+}
+
+/* Native selects draw the same chevron as craft-select, rather than the
+   browser's own, which sits flush against the border. */
+.cp-select:has(> .cp-form-control--select:not([multiple])) {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: var(--c-input-spacing-inline);
+    inline-size: 0.8em;
+    block-size: 0.8em;
+    translate: 0 -50%;
+    background-color: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    pointer-events: none;
+  }
+
+  @media (forced-colors: active) {
+    &::after {
+      forced-color-adjust: none;
+      background-color: CanvasText;
+    }
+  }
+}
+
+.cp-form-control--select:not([multiple]) {
+  appearance: none;
+  padding-inline: var(--c-input-spacing-inline)
+    calc(var(--c-input-spacing-inline) * 2 + 0.8em);
 }
 
 .selectize-dropdown.cp-form-control {
