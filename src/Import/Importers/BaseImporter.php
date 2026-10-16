@@ -96,32 +96,34 @@ abstract class BaseImporter
      */
     public function __construct(?array $config = null)
     {
-        if (! empty($config)) {
-            $this->uid = $config['uid'] ?? null;
-            $this->source($config['source'] ?? null);
-            $this->transformer($config['transformer'] ?? null);
-            $this->batchSize($config['batchSize'] ?? null);
+        if (empty($config)) {
+            return;
+        }
 
-            $settings = $config['settings'] ?? [];
-            if (is_string($settings)) {
-                $settings = JsonSupport::decode($settings);
+        $this->uid = $config['uid'] ?? null;
+        $this->source($config['source'] ?? null);
+        $this->transformer($config['transformer'] ?? null);
+        $this->batchSize($config['batchSize'] ?? null);
+
+        $settings = $config['settings'] ?? [];
+        if (is_string($settings)) {
+            $settings = JsonSupport::decode($settings);
+        }
+
+        // only declared settings, each applied through the setter of the same name; the config can
+        // come from a request, so nothing else on the importer may be called this way
+        $settingNames = static::settingNames();
+
+        foreach ($settings as $setting => $value) {
+            if (in_array($setting, $settingNames, true) && method_exists($this, $setting)) {
+                $this->{$setting}($value);
             }
+        }
 
-            // only declared settings, each applied through the setter of the same name; the config can
-            // come from a request, so nothing else on the importer may be called this way
-            $settingNames = static::settingNames();
-
-            foreach ($settings as $setting => $value) {
-                if (in_array($setting, $settingNames, true) && method_exists($this, $setting)) {
-                    $this->{$setting}($value);
-                }
-            }
-
-            // an element type whose layout isn't chosen through a setting resolves it here, so a
-            // step that has never been saved still knows what it's importing into
-            if ($this instanceof ElementImporter && $this->fieldLayout === null) {
-                $this->resolveDefaultFieldLayout();
-            }
+        // an element type whose layout isn't chosen through a setting resolves it here, so a
+        // step that has never been saved still knows what it's importing into
+        if ($this instanceof ElementImporter && $this->fieldLayout === null) {
+            $this->resolveDefaultFieldLayout();
         }
     }
 
