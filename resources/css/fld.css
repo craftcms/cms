@@ -141,6 +141,18 @@ body:not(.dragging) .fld-tab .tab.draggable {
     0 2px 5px -2px hsl(210deg 24% 16% / 20%);
 }
 
+/* A dark ring vanishes against the dark theme's surfaces, so tabs and the New
+   Tab button get a light one there, like other hairline borders. */
+[data-theme='dark'] :is(.fld-tab .tab, .fld-tabcontent, .fld-new-tab-btn) {
+  box-shadow:
+    0 0 0 1px var(--c-color-neutral-border-quiet),
+    0 2px 5px -2px hsl(210deg 24% 16% / 20%);
+}
+
+[data-theme='dark'] .fld-tab.fld-insertion :is(.tab, .fld-tabcontent) {
+  box-shadow: none;
+}
+
 /* Layout elements (chips) */
 
 /* Width pickers leave the segments past the value unfilled. */
