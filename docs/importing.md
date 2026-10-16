@@ -47,7 +47,7 @@ public function boot(ImportPlan $importPlans): void
     $importPlans->register('entriesFromFile', fn () => new ImportPlanData()
         ->name('Entries from file')
         ->steps([
-            EntryImporter::create()
+            new EntryImporter()
                 ->source('resources/import/entry-with-plain-text.json')
                 ->site('default')
                 ->section('news')

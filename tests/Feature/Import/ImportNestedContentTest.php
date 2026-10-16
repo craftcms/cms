@@ -98,7 +98,7 @@ beforeEach(function () {
     $this->section = $seed->section;
     $this->entryType = $seed->entryType;
 
-    $this->importer = EntryImporter::create()
+    $this->importer = new EntryImporter()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null);
 

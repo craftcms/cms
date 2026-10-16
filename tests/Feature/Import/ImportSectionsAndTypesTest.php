@@ -40,7 +40,7 @@ beforeEach(function () {
     EntryTypes::refreshEntryTypes();
     Fields::refreshFields();
 
-    $this->importer = EntryImporter::create()
+    $this->importer = new EntryImporter()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null)
         ->matchCriteria(['title' => 'title']);

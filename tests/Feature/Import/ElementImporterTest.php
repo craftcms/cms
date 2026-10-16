@@ -21,7 +21,7 @@ use CraftCms\Cms\User\Import\UserImporter;
 it('resolves site() from a numeric ID', function () {
     $site = SiteModel::factory()->create();
 
-    $importer = EntryImporter::create()->site(Sites::getSiteById($site->id)->id);
+    $importer = new EntryImporter()->site(Sites::getSiteById($site->id)->id);
 
     expect($importer->site->id)->toBe($site->id);
 });
@@ -29,30 +29,30 @@ it('resolves site() from a numeric ID', function () {
 it('resolves site() from a UID', function () {
     $site = SiteModel::factory()->create();
 
-    $importer = EntryImporter::create()->site(Sites::getSiteById($site->id)->uid);
+    $importer = new EntryImporter()->site(Sites::getSiteById($site->id)->uid);
 
     expect($importer->site->id)->toBe($site->id);
 });
 
 it('resolves site(null) to the primary site', function () {
-    $importer = EntryImporter::create()->site(null);
+    $importer = new EntryImporter()->site(null);
 
     expect($importer->site->id)->toBe(Sites::getPrimarySite()->id);
 });
 
 it('throws when site() is given a nonexistent numeric ID', function () {
-    EntryImporter::create()->site(999999);
+    new EntryImporter()->site(999999);
 })->throws(InvalidArgumentException::class, 'No site found with ID: 999999');
 
 it('throws when site() is given a nonexistent handle or UID', function () {
-    EntryImporter::create()->site('nonexistent-handle');
+    new EntryImporter()->site('nonexistent-handle');
 })->throws(InvalidArgumentException::class, 'No site found with handle or UID: "nonexistent-handle".');
 
 it('resolves fieldLayout() from a numeric ID', function () {
     $fieldLayout = FieldLayout::factory()->create(['type' => EntryElement::class]);
     Fields::refreshFields();
 
-    $importer = EntryImporter::create()->fieldLayout($fieldLayout->id);
+    $importer = new EntryImporter()->fieldLayout($fieldLayout->id);
 
     expect($importer->fieldLayout)->toBe($fieldLayout->uid);
 });
@@ -61,7 +61,7 @@ it('resolves fieldLayout() from a UID', function () {
     $fieldLayout = FieldLayout::factory()->create(['type' => EntryElement::class]);
     Fields::refreshFields();
 
-    $importer = EntryImporter::create()->fieldLayout($fieldLayout->uid);
+    $importer = new EntryImporter()->fieldLayout($fieldLayout->uid);
 
     expect($importer->fieldLayout)->toBe($fieldLayout->uid);
 });
@@ -70,23 +70,23 @@ it('resolves fieldLayout() from an existing type without creating a new layout',
     $fieldLayout = FieldLayout::factory()->create(['type' => Address::class]);
     Fields::refreshFields();
 
-    $importer = EntryImporter::create()->fieldLayout(Address::class);
+    $importer = new EntryImporter()->fieldLayout(Address::class);
 
     expect($importer->fieldLayout)->toBe($fieldLayout->uid);
 });
 
 it('throws when fieldLayout() is given a nonexistent numeric ID', function () {
-    EntryImporter::create()->fieldLayout(999999);
+    new EntryImporter()->fieldLayout(999999);
 })->throws(InvalidArgumentException::class, 'No field layout found with ID: 999999');
 
 it('resolves fieldLayout() with an element type that has no saved layout to that type', function () {
-    $importer = EntryImporter::create()->fieldLayout(Address::class);
+    $importer = new EntryImporter()->fieldLayout(Address::class);
 
     expect($importer->fieldLayout)->toBe(Address::class);
 });
 
 it('throws when fieldLayout() is given a string that is neither a layout UID nor an element type', function () {
-    EntryImporter::create()->fieldLayout('not-a-real-uid-and-not-a-class-string');
+    new EntryImporter()->fieldLayout('not-a-real-uid-and-not-a-class-string');
 })->throws(InvalidArgumentException::class, 'No field layout found with UID or Type of: "not-a-real-uid-and-not-a-class-string".');
 
 it('registers a concrete ElementImporter subclass per core importable element type', function (string $importerClass, string $elementClass) {
@@ -94,7 +94,7 @@ it('registers a concrete ElementImporter subclass per core importable element ty
         ->and($importerClass::targetClass())->toBe($elementClass)
         ->and($importerClass::displayName())->toBeString()->not->toBe('');
 
-    $importer = $importerClass::create();
+    $importer = new $importerClass;
 
     expect($importer::targetClass())->toBe($elementClass);
 })->with([
@@ -113,7 +113,7 @@ it('lists the concrete element importer subclasses, not a bare ElementImporter, 
 });
 
 it('offers enabled but not parentId on the mapping screen for non-structured element types', function (string $importerClass) {
-    $handles = collect($importerClass::create()->getDestinationCols())
+    $handles = collect(new $importerClass()->getDestinationCols())
         ->whereInstanceOf(MappingColumn::class)
         ->pluck('handle');
 
@@ -127,7 +127,7 @@ it('offers enabled but not parentId on the mapping screen for non-structured ele
 it('offers user groups on the mapping screen only on Craft Pro', function (Edition $edition, bool $offered) {
     Edition::set($edition);
 
-    $handles = collect(UserImporter::create()->getDestinationCols())->pluck('handle');
+    $handles = collect(new UserImporter()->getDestinationCols())->pluck('handle');
 
     expect($handles->contains('groups'))->toBe($offered);
 })->with([
@@ -136,14 +136,14 @@ it('offers user groups on the mapping screen only on Craft Pro', function (Editi
 ]);
 
 it('offers the affiliated site on the mapping screen only on multi-site installs', function () {
-    $handles = collect(UserImporter::create()->getDestinationCols())->pluck('handle');
+    $handles = collect(new UserImporter()->getDestinationCols())->pluck('handle');
 
     expect($handles)->not->toContain('affiliatedSiteId');
 
     SiteModel::factory()->create();
     Sites::refreshSites();
 
-    $handles = collect(UserImporter::create()->getDestinationCols())->pluck('handle');
+    $handles = collect(new UserImporter()->getDestinationCols())->pluck('handle');
 
     expect($handles)->toContain('affiliatedSiteId');
 });
@@ -152,7 +152,7 @@ it('imports the affiliated site only on multi-site installs', function (bool $is
     $site = $isMultiSite ? Sites::getSiteById(SiteModel::factory()->create()->id) : Sites::getPrimarySite();
     Sites::refreshSites();
 
-    app(Import::class)->importItem(UserImporter::create()->site(Sites::getPrimarySite()->handle)->transformer(null), [
+    app(Import::class)->importItem(new UserImporter()->site(Sites::getPrimarySite()->handle)->transformer(null), [
         'username' => 'importeduser',
         'email' => 'imported@example.com',
         'affiliatedSiteId' => $site->id,

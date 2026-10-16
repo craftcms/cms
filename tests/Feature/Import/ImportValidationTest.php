@@ -30,7 +30,7 @@ it('keeps the import’s own name and handle off the step rules', function () {
 });
 
 it('validateSettings throws with settings-only errors for an ad-hoc importer missing source/site', function () {
-    $importer = EntryImporter::create();
+    $importer = new EntryImporter;
 
     try {
         $importer->validateSettings();
@@ -44,7 +44,7 @@ it('validateSettings throws with settings-only errors for an ad-hoc importer mis
 });
 
 it('validate throws for a step missing its source', function () {
-    $importer = EntryImporter::create();
+    $importer = new EntryImporter;
 
     try {
         $importer->validate();

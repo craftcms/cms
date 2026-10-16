@@ -50,7 +50,7 @@ beforeEach(function () {
 
     $volumeData = Volumes::getVolumeById($this->volume->id);
 
-    $this->importer = AssetImporter::create()
+    $this->importer = new AssetImporter()
         ->site(Sites::getPrimarySite()->handle)
         ->fieldLayout($volumeData->getFieldLayout())
         ->transformer(null);
@@ -226,7 +226,7 @@ it('throws for a local temp file path that does not exist on disk', function () 
 });
 
 it('takes the field layout from the volume when the settings form refreshes', function () {
-    $importer = AssetImporter::create();
+    $importer = new AssetImporter;
 
     $importer->refreshSettingsUi(['volume' => $this->volume->uid]);
 

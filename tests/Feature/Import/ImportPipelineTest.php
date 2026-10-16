@@ -155,7 +155,7 @@ it('gives the pipeline and every step job the same run ID when dispatching an im
 it('passes the run ID to the item importing and imported events', function () {
     Event::fake([ItemImporting::class, ItemImported::class]);
 
-    app(Import::class)->importItem(SystemMessageImporter::create(), [
+    app(Import::class)->importItem(new SystemMessageImporter, [
         'key' => 'my_message',
         'language' => 'en',
         'subject' => 'my subject',

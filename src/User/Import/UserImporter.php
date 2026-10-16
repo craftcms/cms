@@ -48,14 +48,6 @@ class UserImporter extends ElementImporter
         return User::class;
     }
 
-    /**
-     * Convenience factory returning a new instance.
-     */
-    public static function create(): self
-    {
-        return new self;
-    }
-
     #[Override]
     public static function displayName(): string
     {

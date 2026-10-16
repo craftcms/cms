@@ -130,8 +130,6 @@ abstract class BaseImporter
      */
     abstract public static function targetClass(): string;
 
-    abstract public static function create(): self;
-
     /**
      * Returns the display name for the importer.
      */

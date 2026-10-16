@@ -33,7 +33,7 @@ use Throwable;
  *     $importPlans->register('entriesFromFile', fn () => new ImportPlanData()
  *         ->name('Entries from file')
  *         ->steps([
- *             EntryImporter::create()
+ *             new EntryImporter()
  *                 ->source('resources/import/entries.json')
  *                 ->section('news'),
  *         ]));

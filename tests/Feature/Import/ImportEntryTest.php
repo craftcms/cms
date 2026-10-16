@@ -34,7 +34,7 @@ beforeEach(function () {
         ['name' => 'With Required Text', 'handle' => 'withRequiredText'],
     );
 
-    $this->importer = EntryImporter::create()
+    $this->importer = new EntryImporter()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null);
 });

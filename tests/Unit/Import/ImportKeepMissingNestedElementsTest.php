@@ -20,7 +20,7 @@ it('does not support keeping missing nested elements for content block fields', 
 });
 
 it('normalizes a flat list of dot-notation handles into the nested __keep__-leaf shape', function () {
-    $importer = EntryImporter::create()->keepMissingNestedElements(['myMatrix', 'some.nested.handle']);
+    $importer = new EntryImporter()->keepMissingNestedElements(['myMatrix', 'some.nested.handle']);
 
     expect($importer->keepMissingNestedElements)->toBe([
         'myMatrix' => ['__keep__' => true],

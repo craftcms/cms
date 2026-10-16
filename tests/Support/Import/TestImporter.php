@@ -31,12 +31,6 @@ class TestImporter extends BaseImporter
     }
 
     #[Override]
-    public static function create(): self
-    {
-        return new self;
-    }
-
-    #[Override]
     public static function displayName(): string
     {
         return 'Test';
