@@ -13,16 +13,18 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
  */
 readonly class FieldLayoutConfig
 {
+    private const string Description = 'Native Craft field layout config: a `tabs` list, each with a `name`, an optional `icon` (a Font Awesome icon name, such as `newspaper`, shown before the tab’s name), and its `elements`. Create fields before referencing their UIDs.';
+
     public const array Schema = [
         'type' => 'object',
-        'description' => 'Native Craft field layout config. Create fields before referencing their UIDs.',
+        'description' => self::Description,
         'additionalProperties' => true,
     ];
 
     public const array NullableSchema = [
         ...self::Schema,
         'type' => ['object', 'null'],
-        'description' => 'Native Craft field layout config. Pass null to clear the layout.',
+        'description' => self::Description.' Pass null to clear the layout.',
     ];
 
     public function __construct(private Fields $fields) {}
