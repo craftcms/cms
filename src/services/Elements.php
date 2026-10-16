@@ -3585,6 +3585,10 @@ class Elements extends Component
 
                         Craft::configure($query, $criteria);
 
+                        // inReverse is applied to each source's target elements below, so make sure the query doesn't
+                        // reverse them as well
+                        $query->inReverse = false;
+
                         if (!$query->siteId) {
                             $query->siteId = $siteId;
                         }
