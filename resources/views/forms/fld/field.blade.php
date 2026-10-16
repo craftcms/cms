@@ -54,8 +54,8 @@
                     @endif
                 </craft-tab>
                 <div slot="panel">{!! $designerHtml !!}</div>
-                <craft-tab slot="tab" data-fld-tab="cards">
-                    {{ \CraftCms\Cms\t('Cards') }}
+                <craft-tab slot="tab" data-fld-tab="display">
+                    {{ \CraftCms\Cms\t('Display') }}
                     @if ($hasErrors(['cardView', 'thumbFieldKey']))
                         {!! $errorIcon !!}
                     @endif

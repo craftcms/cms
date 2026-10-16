@@ -2,6 +2,7 @@ import {actionClient} from '@craftcms/ui';
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
+import {useOutlet} from './outlets';
 import type {UiPayload} from './types';
 
 const html = `
@@ -9,8 +10,8 @@ const html = `
     <craft-tabs>
       <craft-tab slot="tab" data-fld-tab="content">Content Tabs</craft-tab>
       <div slot="panel"></div>
-      <craft-tab slot="tab" data-fld-tab="cards">Cards</craft-tab>
-      <div slot="panel"></div>
+      <craft-tab slot="tab" data-fld-tab="display">Display</craft-tab>
+      <div slot="panel"><div data-ui-outlet="field-layout-designer.display"></div></div>
     </craft-tabs>
   </div>`;
 
@@ -69,7 +70,7 @@ it('flags the designer tabs that have errors', async () => {
 
   expect(icon('content')?.getAttribute('name')).toBe('circle-exclamation');
   expect(icon('content')?.getAttribute('slot')).toBe('suffix');
-  expect(icon('cards')).toBeNull();
+  expect(icon('display')).toBeNull();
 
   errors.value = [
     {
@@ -81,7 +82,7 @@ it('flags the designer tabs that have errors', async () => {
   await flush();
 
   expect(icon('content')).toBeNull();
-  expect(icon('cards')).not.toBeNull();
+  expect(icon('display')).not.toBeNull();
 
   errors.value = [
     {
@@ -93,5 +94,40 @@ it('flags the designer tabs that have errors', async () => {
   await flush();
 
   expect(icon('content')).toBeNull();
-  expect(icon('cards')).toBeNull();
+  expect(icon('display')).toBeNull();
+});
+
+it('provides the Display tab’s outlet while mounted', async () => {
+  vi.spyOn(actionClient, 'post').mockResolvedValue({data: {html}} as never);
+  const container = document.createElement('div');
+  document.body.append(container);
+  const outlet = useOutlet(() => 'field-layout-designer.display');
+
+  app = createApp({
+    render: () =>
+      h(FieldLayoutDesignerControl, {
+        control: {
+          path: ['fieldLayout'],
+          props: {
+            elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+            customizableTabs: true,
+            withGeneratedFields: true,
+            withCardViewDesigner: true,
+          },
+        } as never,
+        value: {},
+        editable: true,
+      }),
+  });
+  app.mount(container);
+  await flush();
+
+  expect(outlet.value).toBe(
+    container.querySelector('[data-ui-outlet="field-layout-designer.display"]')
+  );
+
+  app.unmount();
+  app = undefined;
+
+  expect(outlet.value).toBeNull();
 });

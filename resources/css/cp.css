@@ -239,6 +239,12 @@ Remove once we have a stable way to create a `<craft-checkbox/>` via twig
   z-index: 1;
 }
 
+/* An outlet nothing has rendered into, as in server-rendered forms, takes no
+   room (or gap) in its container. */
+[data-ui-outlet]:empty {
+  display: none;
+}
+
 /* Sortable selects list only the checked items, with each checkbox replaced by
    its label and a Remove button. The checkbox stays as the source of truth. */
 .cp-checkbox-select--selected-only {

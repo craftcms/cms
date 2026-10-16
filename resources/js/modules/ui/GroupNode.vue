@@ -8,6 +8,7 @@
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
   import UiNodeList from './UiNodeList.vue';
   import {UiRefreshingFields} from './runtime';
+  import {useOutlet} from './outlets';
   import type {UiChange, UiNodePayload, UiPayload} from './types';
 
   type GroupNodeProps = {
@@ -41,6 +42,8 @@
     dependsOn?: string[];
     /** Hidden from view; children still resolve and still hold their values. */
     hidden?: boolean;
+    /** A named outlet to render in, when one is present — see `outlets.ts`. */
+    outlet?: string;
   };
 
   const props = defineProps<{
@@ -65,135 +68,138 @@
     );
   });
   const showLoading = useDelayedLoading(loading);
+  const outlet = useOutlet(() => props.node.props.outlet);
 </script>
 
 <template>
-  <craft-field
-    v-if="node.props.asField"
-    fieldset
-    :label-sr-only="node.props.labelSrOnly || undefined"
-    .translatable="Boolean(node.props.translatable)"
-    :translation-description="node.props.translationDescription"
-    :orientation="node.props.orientation"
-    :width="node.props.inputWidth"
-    :status="node.props.showStatus === false ? undefined : node.props.status"
-    :status-label="
-      node.props.showStatus === false ? undefined : node.props.statusLabel
-    "
-    :required="node.props.required || undefined"
-    :help-text="
-      node.props.instructionsHtml
-        ? undefined
-        : (node.props.instructions ?? undefined)
-    "
-    :instructions-position="node.props.instructionsPosition"
-    :class="{
-      [`width-${node.props.width}`]: Boolean(node.props.width),
-      hidden: Boolean(node.props.hidden),
-      'group-container': true,
-    }"
-    :hidden="node.props.hidden || undefined"
-    :data-ui-node="node.uid"
-    :data-layout-element="node.props.layoutUid"
-    :aria-busy="showLoading || undefined"
-  >
-    <span
-      v-if="node.props.labelHtml !== undefined"
-      slot="label"
-      v-html="node.props.labelHtml"
-    />
-    <span v-else-if="node.props.label != null" slot="label">{{
-      node.props.label
-    }}</span>
-    <span
-      v-if="node.props.headingPrefix"
-      slot="heading-prefix"
-      v-html="node.props.headingPrefix"
-    />
-    <span
-      v-if="node.props.headingSuffix"
-      slot="heading-suffix"
-      v-html="node.props.headingSuffix"
-    />
-    <span
-      v-if="node.props.instructionsHtml"
-      slot="help-text"
-      v-html="node.props.instructionsHtml"
-    />
-    <span v-if="node.props.tipHtml" slot="tip" v-html="node.props.tipHtml" />
-    <span
-      v-if="node.props.warningHtml"
-      slot="warning"
-      v-html="node.props.warningHtml"
-    />
-    <craft-field-group
-      slot="input"
+  <Teleport :to="outlet" :disabled="!outlet">
+    <craft-field
+      v-if="node.props.asField"
+      fieldset
+      :label-sr-only="node.props.labelSrOnly || undefined"
+      .translatable="Boolean(node.props.translatable)"
+      :translation-description="node.props.translationDescription"
+      :orientation="node.props.orientation"
+      :width="node.props.inputWidth"
+      :status="node.props.showStatus === false ? undefined : node.props.status"
+      :status-label="
+        node.props.showStatus === false ? undefined : node.props.statusLabel
+      "
+      :required="node.props.required || undefined"
+      :help-text="
+        node.props.instructionsHtml
+          ? undefined
+          : (node.props.instructions ?? undefined)
+      "
+      :instructions-position="node.props.instructionsPosition"
       :class="{
-        'auto-widths': true,
-        'group-fields-loading': showLoading,
+        [`width-${node.props.width}`]: Boolean(node.props.width),
+        hidden: Boolean(node.props.hidden),
+        'group-container': true,
       }"
+      :hidden="node.props.hidden || undefined"
+      :data-ui-node="node.uid"
+      :data-layout-element="node.props.layoutUid"
+      :aria-busy="showLoading || undefined"
     >
-      <UiNodeList
-        :nodes="node.children ?? []"
-        :values="values"
-        :errors="errors"
-        :touched-paths="touchedPaths"
-        :scope="scope"
-        :refreshable="refreshable"
-        @change="emit('change', $event)"
+      <span
+        v-if="node.props.labelHtml !== undefined"
+        slot="label"
+        v-html="node.props.labelHtml"
       />
-    </craft-field-group>
-    <craft-spinner
-      v-if="showLoading"
-      slot="input"
-      class="group-spinner"
-      role="status"
-    >
-      {{ t('Loading') }}
-    </craft-spinner>
-  </craft-field>
-  <component
-    v-else
-    :is="node.props.collapsible ? 'craft-disclosure' : 'fieldset'"
-    :label="node.props.collapsible ? node.props.label : undefined"
-    .opened="
-      node.props.collapsible ? (node.props.expanded ?? false) : undefined
-    "
-    :class="{
-      [`width-${node.props.width}`]: Boolean(node.props.width),
-      hidden: Boolean(node.props.hidden),
-      'group-container': true,
-    }"
-    :hidden="node.props.hidden || undefined"
-    :data-ui-node="node.uid"
-    :aria-busy="showLoading || undefined"
-  >
-    <legend v-if="!node.props.collapsible && node.props.label">
-      {{ node.props.label }}
-    </legend>
-    <craft-field-group
-      :slot="node.props.collapsible ? 'content' : undefined"
-      :class="{'group-fields-loading': showLoading}"
-    >
-      <UiNodeList
-        :nodes="node.children ?? []"
-        :values="values"
-        :errors="errors"
-        :touched-paths="touchedPaths"
-        :scope="scope"
-        :refreshable="refreshable"
-        @change="emit('change', $event)"
+      <span v-else-if="node.props.label != null" slot="label">{{
+        node.props.label
+      }}</span>
+      <span
+        v-if="node.props.headingPrefix"
+        slot="heading-prefix"
+        v-html="node.props.headingPrefix"
       />
-    </craft-field-group>
-    <craft-spinner
-      v-if="showLoading"
-      :slot="node.props.collapsible ? 'content' : undefined"
-      class="group-spinner"
-      role="status"
+      <span
+        v-if="node.props.headingSuffix"
+        slot="heading-suffix"
+        v-html="node.props.headingSuffix"
+      />
+      <span
+        v-if="node.props.instructionsHtml"
+        slot="help-text"
+        v-html="node.props.instructionsHtml"
+      />
+      <span v-if="node.props.tipHtml" slot="tip" v-html="node.props.tipHtml" />
+      <span
+        v-if="node.props.warningHtml"
+        slot="warning"
+        v-html="node.props.warningHtml"
+      />
+      <craft-field-group
+        slot="input"
+        :class="{
+          'auto-widths': true,
+          'group-fields-loading': showLoading,
+        }"
+      >
+        <UiNodeList
+          :nodes="node.children ?? []"
+          :values="values"
+          :errors="errors"
+          :touched-paths="touchedPaths"
+          :scope="scope"
+          :refreshable="refreshable"
+          @change="emit('change', $event)"
+        />
+      </craft-field-group>
+      <craft-spinner
+        v-if="showLoading"
+        slot="input"
+        class="group-spinner"
+        role="status"
+      >
+        {{ t('Loading') }}
+      </craft-spinner>
+    </craft-field>
+    <component
+      v-else
+      :is="node.props.collapsible ? 'craft-disclosure' : 'fieldset'"
+      :label="node.props.collapsible ? node.props.label : undefined"
+      .opened="
+        node.props.collapsible ? (node.props.expanded ?? false) : undefined
+      "
+      :class="{
+        [`width-${node.props.width}`]: Boolean(node.props.width),
+        hidden: Boolean(node.props.hidden),
+        'group-container': true,
+      }"
+      :hidden="node.props.hidden || undefined"
+      :data-ui-node="node.uid"
+      :aria-busy="showLoading || undefined"
     >
-      {{ t('Loading') }}
-    </craft-spinner>
-  </component>
+      <legend v-if="!node.props.collapsible && node.props.label">
+        {{ node.props.label }}
+      </legend>
+      <craft-field-group
+        :slot="node.props.collapsible ? 'content' : undefined"
+        :class="{'group-fields-loading': showLoading}"
+      >
+        <UiNodeList
+          :nodes="node.children ?? []"
+          :values="values"
+          :errors="errors"
+          :touched-paths="touchedPaths"
+          :scope="scope"
+          :refreshable="refreshable"
+          @change="emit('change', $event)"
+        />
+      </craft-field-group>
+      <craft-spinner
+        v-if="showLoading"
+        :slot="node.props.collapsible ? 'content' : undefined"
+        class="group-spinner"
+        role="status"
+      >
+        {{ t('Loading') }}
+      </craft-spinner>
+    </component>
+  </Teleport>
 </template>
 
 <style scoped>

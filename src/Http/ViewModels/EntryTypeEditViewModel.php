@@ -71,12 +71,16 @@ class EntryTypeEditViewModel extends ViewModel
                 ->instructions(t('How you’ll refer to this {type} in the templates.', ['type' => Entry::lowerDisplayName()]))
                 ->required(),
             Field::make(t('Description'), MarkdownControl::make('description')->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)->rows(1)),
-            Field::make(t('Icon'), IconPicker::make('icon')),
-            Field::make(t('Color'), ColorSelect::make('color')
-                ->allowTransparent()
-                ->blankLabel(t('No color'))
-                // The component's own palette is wider than the Color enum.
-                ->colors(array_column(Color::cases(), 'value'))),
+            // Shown above the card designer, in the field layout designer’s
+            // Display tab, since they appear on cards too.
+            Group::make('display-settings', [
+                Field::make(t('Icon'), IconPicker::make('icon')),
+                Field::make(t('Color'), ColorSelect::make('color')
+                    ->allowTransparent()
+                    ->blankLabel(t('No color'))
+                    // The component's own palette is wider than the Color enum.
+                    ->colors(array_column(Color::cases(), 'value'))),
+            ])->outlet('field-layout-designer.display'),
             Field::make(t('UI Label Format'), Text::make('uiLabelFormat')
                 ->monospace()
                 ->textExpanderTriggers($objectTemplateTriggers))

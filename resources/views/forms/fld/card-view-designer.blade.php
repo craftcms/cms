@@ -23,6 +23,10 @@
 
     <div class="cvd-container">
         <craft-field-group class="cvd-library">
+            {{-- Where the owner's own display settings (an entry type's icon and
+                 color, say) render, via `Ui\Nodes\Group::outlet()`. --}}
+            <div data-ui-outlet="field-layout-designer.display"></div>
+
             {!! \CraftCms\Cms\Cp\FormFields::checkboxSelectFieldHtml([
                 'label' => \CraftCms\Cms\t('Card Attributes'),
                 'id' => $id,

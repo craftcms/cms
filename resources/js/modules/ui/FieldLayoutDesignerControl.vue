@@ -1,9 +1,10 @@
 <script setup lang="ts">
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {actionClient, t} from '@craftcms/ui';
-  import {watch} from 'vue';
+  import {onBeforeUnmount, watch} from 'vue';
   import type {UiControlPayload, UiPayload, UiValue, UiValues} from './types';
   import {inputName} from './runtime';
+  import {registerOutlets} from './outlets';
   import {useServerRenderedControl} from './useServerRenderedControl';
 
   type FieldLayoutDesignerProps = {
@@ -59,8 +60,15 @@
         : value;
     },
     update: (value) => emit('update:value', value, 'discrete'),
-    afterRender: syncTabErrors,
+    afterRender(root) {
+      syncTabErrors(root);
+      // The Display tab's outlet, for the owner's own display settings.
+      releaseOutlets?.();
+      releaseOutlets = registerOutlets(root);
+    },
   });
+  let releaseOutlets: (() => void) | undefined;
+  onBeforeUnmount(() => releaseOutlets?.());
 
   /**
    * The top-level settings an error falls under for each of the designer's
@@ -68,10 +76,10 @@
    */
   const tabErrorKeys: Record<string, string[]> = {
     content: ['customFields', 'tabs'],
-    cards: ['cardView', 'thumbFieldKey'],
+    display: ['cardView', 'thumbFieldKey'],
   };
 
-  /** Flags the designer's Content Tabs and Cards tabs that have errors. */
+  /** Flags the designer's Content Tabs and Display tabs that have errors. */
   function syncTabErrors(root: HTMLElement): void {
     const base = props.control.path;
     // The designer owns every error raised within it, so where each one

@@ -122,10 +122,11 @@
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - Entry type and user group descriptions, fields’ default instructions, tips, and warnings, and field layout elements’ instructions, tips, warnings, and Markdown content now have Markdown inputs. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - The Markdown field’s default toolbar now only includes bold, italic, code, list, link, and preview buttons. ([#20001](https://github.com/craftcms/cms/pull/20001))
-- Field layouts with a card view designer now show it and the content tab designer in “Content Tabs” and “Cards” tabs, which show an error icon when their content has errors. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Field layouts with a card view designer now show it and the content tab designer in “Content Tabs” and “Display” tabs, which show an error icon when their content has errors. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Field layout designers now have a 16px background grid, which their tabs and New Tab button line up with. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Card view designers’ previews now reflect the owner’s color, icon, and name, such as an entry type’s, as they’re edited. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Card view designers’ thumbnail settings are now grouped under “Thumbnail”, below Card Attributes. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Entry types’ Icon and Color settings are now in their field layout designer’s Display tab, above Card Attributes. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Field layout element and dashboard widget width pickers now preview the new width on hover. ([#20001](https://github.com/craftcms/cms/pull/20001))
 
 ### Extensibility
@@ -199,6 +200,7 @@
 - Added the `--c-field-label-font-size`, `--c-field-label-font-weight`, `--c-field-label-color`, and `--c-field-label-line-height` CSS custom properties to `<craft-field>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `--c-slide-picker-segment-fill`, `--c-slide-picker-segment-active-fill`, and `--c-slide-picker-segment-hover-fill` CSS custom properties to `<craft-slide-picker>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `--c-thumbnail-height` CSS custom property to `<craft-thumbnail>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Added `CraftCms\Cms\Ui\Nodes\Group::outlet()`, which renders a group in a named outlet elsewhere in the form when the form is rendered by Vue, such as the field layout designer’s Display tab (`field-layout-designer.display`). ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `labelSrOnly` config option to `CraftCms\Cms\Cp\FormFields::fieldHtml()`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - The `--c-size-control-md` and `--c-size-touch-target` CSS custom properties are now 32px. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - UI payload errors that are reassigned to a control’s path now include the path they were raised at, as `source`. ([#20001](https://github.com/craftcms/cms/pull/20001))

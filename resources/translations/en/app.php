@@ -638,6 +638,7 @@ return [
     'Display hierarchically' => 'Display hierarchically',
     'Display in a structured table' => 'Display in a structured table',
     'Display in a table' => 'Display in a table',
+    'Display' => 'Display',
     'District' => 'District',
     'Do Si' => 'Do Si',
     'Documentation' => 'Documentation',
