@@ -673,3 +673,22 @@ describe('small icon buttons', () => {
     );
   });
 });
+
+describe('craft-button selected state', () => {
+  it.each(['outline', 'fill', 'plain'])(
+    'keeps a selected %s button’s look while hovered',
+    async (variant) => {
+      const {userEvent} = await import('@vitest/browser/context');
+      await import('../../styles/cp.css');
+      document.body.innerHTML = `<craft-button variant="${variant}" active>Selected</craft-button>`;
+      const button = document.querySelector('craft-button')!;
+      await button.updateComplete;
+      const before = getComputedStyle(button).backgroundColor;
+
+      await userEvent.hover(button);
+
+      expect(button.matches(':hover')).toBe(true);
+      expect(getComputedStyle(button).backgroundColor).toBe(before);
+    }
+  );
+});

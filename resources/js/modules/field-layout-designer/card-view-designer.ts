@@ -64,22 +64,115 @@ export class CardViewDesigner extends Base {
       this.showThumbAlignment();
     }
 
-    // The thumb-alignment button group is now a <craft-listbox> (wrapping a
-    // <craft-button-group>) that re-emits its garnish selection change as a
-    // native, bubbling `change` CustomEvent; `detail.$selectedOption` is the
-    // selected <craft-button>. Listen for that instead of the old per-button
-    // `activate` event on `.btn` elements.
-    const $thumbAlignmentListbox = this.$thumbManagementContainer
-      .querySelector('craft-button-group[id$="thumb-alignment"]')
-      ?.closest('craft-listbox');
-    if ($thumbAlignmentListbox) {
-      this.addListener($thumbAlignmentListbox, 'change', (ev: any) => {
-        this.manageThumbnailAlignment(ev.detail.$selectedOption);
+    // The thumb-alignment buttons are a plain <craft-button-group> with no
+    // `name`, so it doesn't track a selection itself; mark the clicked button
+    // pressed here and apply its value.
+    const $thumbAlignmentGroup = this.$thumbManagementContainer.querySelector(
+      'craft-button-group[id$="thumb-alignment"]'
+    );
+    if ($thumbAlignmentGroup) {
+      this.addListener($thumbAlignmentGroup, 'click', (ev: any) => {
+        const $button = (ev.target as Element).closest?.(
+          'craft-button[data-value]'
+        );
+        if (!$button || $button.hasAttribute('disabled')) {
+          return;
+        }
+        for (const $option of $thumbAlignmentGroup.querySelectorAll(
+          'craft-button[data-value]'
+        )) {
+          const pressed = $option === $button;
+          $option.toggleAttribute('active', pressed);
+          $option.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+        }
+        this.manageThumbnailAlignment($button);
       });
     }
 
     this.listenToCheckboxEvents();
+    this.listenToAppearanceControls();
     this.disablePreviewLinks();
+    this.syncPreviewAppearance();
+  }
+
+  /**
+   * The Name, Color, and Icon controls of the component that owns the layout
+   * (an entry type, say), when its edit form has them.
+   */
+  appearanceControl(key: 'name' | 'color' | 'icon'): HTMLElement | null {
+    return (this.$container.closest('form') ?? document).querySelector(
+      `[data-ui-control-path='["${key}"]']`
+    );
+  }
+
+  /** Reflects changes to the Name, Color, and Icon controls in the preview card. */
+  listenToAppearanceControls(): void {
+    // The container may not be in the form yet, so listen on the document.
+    document.addEventListener('model-value-changed', this.onAppearanceChange);
+  }
+
+  // The control's field re-dispatches the event, so it may come from either.
+  onAppearanceChange = (ev: Event): void => {
+    const target = ev.target;
+    if (
+      target instanceof Node &&
+      (['name', 'color', 'icon'] as const).some((key) => {
+        const control = this.appearanceControl(key);
+        return control !== null && target.contains(control);
+      })
+    ) {
+      this.syncPreviewAppearance();
+    }
+  };
+
+  /**
+   * Gives the preview card the owner's color, and its icon and name in the
+   * header, as the cards of its elements get them, falling back to a white
+   * card with an empty header.
+   */
+  syncPreviewAppearance(): void {
+    const card = this.$previewContainer?.querySelector('craft-card');
+    if (!card) {
+      return;
+    }
+
+    const value = (key: 'name' | 'color' | 'icon'): string =>
+      String((this.appearanceControl(key) as any)?.modelValue ?? '').trim();
+    // Only for owners with a color or icon, like entry types, whose elements'
+    // cards show the owner in their headers.
+    if (!this.appearanceControl('color') && !this.appearanceControl('icon')) {
+      return;
+    }
+
+    const name = value('name');
+    const color = value('color');
+    const icon = value('icon');
+    card.setAttribute('data-color', color || 'white');
+
+    const header = card.querySelector(':scope > [slot="header"]');
+    if (!header) {
+      return;
+    }
+
+    header.replaceChildren();
+    if (!icon && !name) {
+      return;
+    }
+
+    const label = document.createElement('div');
+    label.className = 'flex flex-nowrap gap-1 grow-1 items-center';
+    if (icon) {
+      const iconElement = document.createElement('craft-icon');
+      iconElement.setAttribute('name', icon);
+      label.append(iconElement);
+    }
+    if (name) {
+      const nameElement = document.createElement('div');
+      nameElement.className = 'card-titlebar-label';
+      nameElement.textContent = name;
+      label.append(nameElement);
+    }
+    header.append(label);
   }
 
   listenToCheckboxEvents(): void {
@@ -161,6 +254,7 @@ export class CardViewDesigner extends Base {
 
     if (response) {
       this.$previewContainer.innerHTML = response.data.previewHtml;
+      this.syncPreviewAppearance();
       this.disablePreviewLinks();
     }
   }
@@ -237,7 +331,7 @@ export class CardViewDesigner extends Base {
   manageThumbnailAlignment(target: any): void {
     const alignment = target.dataset.value;
 
-    if (alignment !== this.designer.config.thumbAlignment) {
+    if (alignment !== this.designer.config.cardThumbAlignment) {
       this.designer.updateConfig((config: any) => {
         config.cardThumbAlignment = alignment;
         return config;
@@ -350,6 +444,10 @@ export class CardViewDesigner extends Base {
   override destroy(): void {
     this.abortController?.abort();
     this.sortableCheckboxSelect = null;
+    document.removeEventListener(
+      'model-value-changed',
+      this.onAppearanceChange
+    );
 
     if (this.$container) {
       cvdData.delete(this.$container);

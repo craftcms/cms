@@ -22,7 +22,7 @@
     <h2 class="sr-only">{{ \CraftCms\Cms\t('Card Layout Editor') }}</h2>
 
     <div class="cvd-container">
-        <div class="cvd-library">
+        <craft-field-group class="cvd-library">
             {!! \CraftCms\Cms\Cp\FormFields::checkboxSelectFieldHtml([
                 'label' => \CraftCms\Cms\t('Card Attributes'),
                 'id' => $id,
@@ -31,19 +31,19 @@
                 'sortable' => true,
                 'disabled' => $disabled,
             ]) !!}
-        </div>
+
+            {!! $thumbManagement !!}
+        </craft-field-group>
 
         <div>
 
             <h3 class="sr-only">{{ \CraftCms\Cms\t('Card Layout Preview') }}</h3>
             <p class="sr-only">{{ \CraftCms\Cms\t('The following content is for preview only.') }}</p>
             <div class="cvd-preview-container cp-workspace">
-                <div class="cvd-preview" data-color="white">
+                <div class="cvd-preview">
                     {!! $previewHtml !!}
                 </div>
             </div>
         </div>
     </div>
-
-    {!! $thumbManagement !!}
 </div>

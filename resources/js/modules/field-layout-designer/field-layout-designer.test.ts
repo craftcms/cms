@@ -178,3 +178,52 @@ it('leaves sortable checkbox teardown to its custom element', () => {
   expect(() => designer.destroy()).not.toThrow();
   expect(baseDestroy).toHaveBeenCalledOnce();
 });
+
+it('gives the card preview the owner’s name, color, and icon', () => {
+  document.body.innerHTML = `
+    <form>
+      <craft-input data-ui-control-path='["name"]'></craft-input>
+      <craft-select-color data-ui-control-path='["color"]'></craft-select-color>
+      <craft-input data-ui-control-path='["icon"]'></craft-input>
+      <div class="cvd">
+        <div class="cvd-preview">
+          <craft-card><div slot="header"></div></craft-card>
+        </div>
+      </div>
+    </form>`;
+  const control = (key: string) =>
+    document.querySelector<HTMLElement & {modelValue: string}>(
+      `[data-ui-control-path='["${key}"]']`
+    )!;
+  control('name').modelValue = 'Article';
+  control('color').modelValue = 'rose';
+  control('icon').modelValue = 'newspaper';
+
+  // SAFETY: This test deliberately creates a CardViewDesigner without running its DOM-heavy constructor.
+  const designer = Object.create(
+    CardViewDesigner.prototype
+  ) as CardViewDesigner;
+  designer.$container = document.querySelector('.cvd')!;
+  designer.$previewContainer = document.querySelector('.cvd-preview');
+  designer.syncPreviewAppearance();
+
+  const card = document.querySelector('craft-card')!;
+  const header = card.querySelector('[slot="header"]')!;
+  expect(card.getAttribute('data-color')).toBe('rose');
+  expect(header.querySelector('craft-icon')?.getAttribute('name')).toBe(
+    'newspaper'
+  );
+  expect(header.querySelector('.card-titlebar-label')?.textContent).toBe(
+    'Article'
+  );
+
+  control('color').modelValue = '';
+  control('icon').modelValue = '';
+  designer.syncPreviewAppearance();
+
+  expect(card.getAttribute('data-color')).toBe('white');
+  expect(header.querySelector('craft-icon')).toBeNull();
+  expect(header.textContent).toBe('Article');
+
+  document.body.innerHTML = '';
+});
