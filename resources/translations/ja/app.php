@@ -1775,6 +1775,7 @@ return [
     'The Craft CMS license located at {file} belongs to {domain}.' => '{file}にあるライセンスは{domain}に属しています。',
     'The Markdown flavor that should be used when rendering this field.' => 'The Markdown flavor that should be used when rendering this field.',
     'The Plugin Store is not available, please try again later.' => 'プラグインストアを利用できません。後でもう一度お試しください。',
+    'The Quick Brown Fox' => 'The Quick Brown Fox',
     'The Reply-To email address Craft CMS should use when sending email.' => 'メール送信の際にCraft CMSが使用する返信先のメールアドレス',
     'The URI can’t begin with the {setting} config setting.' => 'URIは{setting}構成設定から始めることはできません。',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'このトークンを使用するためにGraphQL APIリクエストと共に送信すべき `Authorization` ヘッダーです。',
