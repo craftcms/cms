@@ -121,6 +121,6 @@ readonly class MappingColumn implements JsonSerializable
                 : array_map(fn (FieldMappingSetting $setting): array => $setting->jsonSerialize(), $this->importSettings),
         ];
 
-        return $payload + array_filter($optional, fn (mixed $value): bool => $value !== null);
+        return $payload + Arr::whereNotNull($optional);
     }
 }
