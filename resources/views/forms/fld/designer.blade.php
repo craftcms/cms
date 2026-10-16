@@ -47,6 +47,7 @@
             @if ($customizableTabs)
                 <craft-button
                     type="button"
+                    class="fld-new-tab-btn"
                     command="--add-tab"
                     @disabled($disabled)
                 >

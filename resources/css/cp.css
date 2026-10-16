@@ -38,21 +38,19 @@ CP Styles
   --cp-content-max-width: calc(960rem / 16);
 
   /* Workspace */
-  --workspace-bg-color: var(--c-color-neutral-fill-quiet);
-  --workspace-bg-size: calc(24rem / 16) calc(24rem / 16);
+  --workspace-bg-color: var(--c-surface-sunken);
+  --workspace-bg-size: var(--c-spacing-lg) var(--c-spacing-lg);
   --workspace-bg-image:
     linear-gradient(
       to right,
-      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
-      transparent 0
+      color-mix(var(--c-color-neutral-border-normal), transparent 92%) 1px,
+      transparent 1px
     ),
     linear-gradient(
       to bottom,
-      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
+      color-mix(var(--c-color-neutral-border-normal), transparent 92%) 1px,
       transparent 1px
     );
-  --workspace-bg: var(--workspace-bg-color) var(--workspace-bg-size)
-    var(--workspace-bg-image);
 }
 
 /* Laravel Debugbar pins its header row to the bottom of the viewport. This is
@@ -94,7 +92,7 @@ body.no-scroll {
 Temporary holding for cp-pane styles until craft-pane is a thing
  */
 .cp-workspace {
-  padding: var(--c-spacing-xl);
+  padding: var(--c-spacing-lg);
   border-radius: var(--c-radius-sm);
   background-color: var(--workspace-bg-color);
   background-image: var(--workspace-bg-image);
