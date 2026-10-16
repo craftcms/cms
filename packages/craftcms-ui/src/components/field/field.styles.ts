@@ -53,7 +53,9 @@ export default css`
     flex-wrap: wrap;
     gap: 5px;
     align-items: center;
-    font-weight: bold;
+    font-size: var(--c-field-label-font-size, inherit);
+    font-weight: var(--c-field-label-font-weight, bold);
+    color: var(--c-field-label-color, inherit);
     margin-block-end: var(
       --c-field-label-margin-block-end,
       var(--c-spacing-sm)
@@ -85,6 +87,7 @@ export default css`
     flex-wrap: wrap;
     gap: var(--c-spacing-xs);
     align-items: center;
+    line-height: var(--c-field-label-line-height, inherit);
   }
 
   .read-only-badge {
