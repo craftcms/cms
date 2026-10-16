@@ -512,7 +512,7 @@ class Categories extends Component
             $categories = Category::find()
                 ->groupId($groupRecord->id)
                 ->trashed()
-                ->andWhere(['categories.deletedWithGroup' => true])
+                ->where('categories.deletedWithGroup', true)
                 ->all();
 
             Elements::restoreElements($categories);
