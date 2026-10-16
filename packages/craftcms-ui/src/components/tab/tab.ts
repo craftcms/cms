@@ -18,6 +18,8 @@ import styles from './tab.styles.js';
  *
  * @slot - The tab's label. Any inline content; keep it short enough to sit in
  *   a strip.
+ * @slot suffix - Content after the label, such as an icon flagging errors in
+ *   the tab's panel. Give an icon a `label` so its meaning is announced.
  *
  * @cssproperty --c-tab-spacing-inline - Inline padding. Defaults to `0`, so
  *   the labels line up with the content around the strip; the strip's gap
@@ -75,10 +77,10 @@ export default class CraftTab extends LitElement {
 
   override render() {
     return html`<span
-      class="tab__label"
-      data-text="${this.textContent?.trim() ?? ''}"
-      ><span class="tab__text"><slot></slot></span
-    ></span>`;
+        class="tab__label"
+        data-text="${this.textContent?.trim() ?? ''}"
+        ><span class="tab__text"><slot></slot></span></span
+      ><slot name="suffix" class="tab__suffix"></slot>`;
   }
 }
 

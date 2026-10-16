@@ -431,3 +431,8 @@ body:not(.dragging) .fld-element {
 }
 
 /* Card view designer styles now live in cvd.css */
+
+/* Flags a Content Tabs or Cards tab whose panel has errors. */
+[data-fld-tab-error] {
+  color: var(--c-color-danger-on-quiet);
+}

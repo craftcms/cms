@@ -246,7 +246,7 @@ class UiHtmlRenderer
     }
 
     /** @param list<string> $path
-     * @return list<array{path: list<string>, messages: list<string>}>
+     * @return list<array{path: list<string>, messages: list<string>, source?: list<string>}>
      */
     public function controlErrors(array $path): array
     {
@@ -256,7 +256,7 @@ class UiHtmlRenderer
     }
 
     /**
-     * @param  list<array{path: list<string>, messages: list<string>}>  $errors
+     * @param  list<array{path: list<string>, messages: list<string>, source?: list<string>}>  $errors
      * @param  list<string>  $path
      * @return list<string>
      */

@@ -24,18 +24,50 @@
     <h2 class="sr-only">{{ \CraftCms\Cms\t('Field Layout') }}</h2>
 
     <craft-field-group style="--gap: var(--c-spacing-xl)">
-        {!! \CraftCms\Cms\Cp\FormFields::fieldHtml(
-            fn (array $c) => $designer->html($fieldLayout, $c),
-            [
-                'label' => \CraftCms\Cms\t('Field Layout'),
-                'fieldset' => true,
-                'errors' => $fieldLayout->errors->get('customFields'),
-                'data' => ['error-key' => 'fieldLayout.customFields'],
-                ...$config,
-            ],
-        ) !!}
+        @php
+            $designerHtml = \CraftCms\Cms\Cp\FormFields::fieldHtml(
+                fn (array $c) => $designer->html($fieldLayout, $c),
+                [
+                    'label' => \CraftCms\Cms\t('Field Layout'),
+                    'labelSrOnly' => $withCardViewDesigner,
+                    'fieldset' => true,
+                    'errors' => $fieldLayout->errors->get('customFields'),
+                    'data' => ['error-key' => 'fieldLayout.customFields'],
+                    ...$config,
+                ],
+            );
+        @endphp
+
+        @if ($withCardViewDesigner)
+            @php
+                $errorKeys = $fieldLayout->errors->keys();
+                $hasErrors = fn (array $prefixes) => collect($errorKeys)->contains(
+                    fn (string $key) => \Illuminate\Support\Str::startsWith($key, $prefixes),
+                );
+                $errorIcon = '<craft-icon name="circle-exclamation" slot="suffix" data-fld-tab-error label="'.e(\CraftCms\Cms\t('Errors')).'"></craft-icon>';
+            @endphp
+            <craft-tabs label="{{ \CraftCms\Cms\t('Field Layout') }}">
+                <craft-tab slot="tab" data-fld-tab="content">
+                    {{ \CraftCms\Cms\t('Content Tabs') }}
+                    @if ($hasErrors(['customFields', 'tabs.']))
+                        {!! $errorIcon !!}
+                    @endif
+                </craft-tab>
+                <div slot="panel">{!! $designerHtml !!}</div>
+                <craft-tab slot="tab" data-fld-tab="cards">
+                    {{ \CraftCms\Cms\t('Cards') }}
+                    @if ($hasErrors(['cardView', 'thumbFieldKey']))
+                        {!! $errorIcon !!}
+                    @endif
+                </craft-tab>
+                <div slot="panel">{!! $cardDesigner->html($fieldLayout, ['disabled' => $disabled]) !!}</div>
+            </craft-tabs>
+        @else
+            {!! $designerHtml !!}
+        @endif
 
         @if ($withGeneratedFields)
+            <hr>
             {!! \CraftCms\Cms\Cp\FormFields::fieldHtml(
                 fn (array $c) => $designer->generatedFieldsTableHtml($fieldLayout, $c),
                 [
@@ -47,10 +79,6 @@
                     'disabled' => $disabled,
                 ],
             ) !!}
-        @endif
-
-        @if ($withCardViewDesigner)
-            {!! $cardDesigner->html($fieldLayout, ['disabled' => $disabled]) !!}
         @endif
     </craft-field-group>
 </div>
