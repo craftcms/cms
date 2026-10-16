@@ -6,7 +6,7 @@ use CraftCms\Cms\Field\Fields as FieldsService;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Data\SourceColumn;
-use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
 
 function nestedMatrixDestinationCols(): array

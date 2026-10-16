@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Data\SourceColumn;
-use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Import\ImportHelper;
 
 /** @param list<string> $path */
 function importMappingColumn(array $path, bool $isContainer = false): MappingColumn

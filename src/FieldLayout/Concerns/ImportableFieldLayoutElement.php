@@ -10,7 +10,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\FieldMappingSetting;
 use CraftCms\Cms\Import\Data\MappingColumn;
-use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Import\ImportHelper;
 
 /**
  * Provides a base implementation for {@see ImportableFieldLayoutElementInterface}.

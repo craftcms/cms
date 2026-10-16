@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Import\Import;
-use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 

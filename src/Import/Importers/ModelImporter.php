@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Importers;
 
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\Import;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
