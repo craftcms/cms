@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
@@ -20,8 +21,8 @@ use CraftCms\Cms\Ui\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Ui\Controls\Handle;
 use CraftCms\Cms\Ui\Controls\IconPicker;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Markdown as MarkdownControl;
 use CraftCms\Cms\Ui\Controls\Text;
-use CraftCms\Cms\Ui\Controls\Textarea;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
@@ -69,7 +70,7 @@ class EntryTypeEditViewModel extends ViewModel
             Field::make(t('Handle'), $handle)
                 ->instructions(t('How you’ll refer to this {type} in the templates.', ['type' => Entry::lowerDisplayName()]))
                 ->required(),
-            Field::make(t('Description'), Textarea::make('description')),
+            Field::make(t('Description'), MarkdownControl::make('description')->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)->rows(1)),
             Field::make(t('Icon'), IconPicker::make('icon')),
             Field::make(t('Color'), ColorSelect::make('color')
                 ->allowTransparent()
