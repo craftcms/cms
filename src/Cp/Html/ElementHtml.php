@@ -689,7 +689,7 @@ readonly class ElementHtml
      */
     public function elementCardThumbHtml(ElementInterface $element): string
     {
-        return $element->getThumbHtml(120, ImageTransformMode::Crop) ?? '';
+        return $element->getThumbHtml(120, ImageTransformMode::Fit) ?? '';
     }
 
     /**
@@ -950,7 +950,7 @@ readonly class ElementHtml
             $classes[] = 'error';
         }
 
-        $thumb = $element->getThumbHtml(120, ImageTransformMode::Crop);
+        $thumb = $element->getThumbHtml(120, ImageTransformMode::Fit);
         $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
 
         if ($thumb) {

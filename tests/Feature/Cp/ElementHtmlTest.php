@@ -124,7 +124,7 @@ describe('elementChipHtml', function () {
 });
 
 describe('elementCardHtml', function () {
-    it('uses crop consistently for inline and separate thumbnails and presence', function (string $supportedMode) {
+    it('uses fit consistently for inline and separate thumbnails and presence', function (string $supportedMode) {
         $entry = Entry::factory()->withField('thumbnail', ModeThumbnailField::class, value: $supportedMode)
             ->createElementWithFields()->element;
         $layout = $entry->getFieldLayout();
@@ -136,16 +136,16 @@ describe('elementCardHtml', function () {
         expect($this->elementHtml->elementCardContentHtml($entry, ['withThumb' => false]))
             ->not->toContainTag('craft-thumbnail');
 
-        if ($supportedMode === 'crop') {
+        if ($supportedMode === 'fit') {
             expect($attributes['class'])->toContain('thumb-end');
-            expect($inline)->toContainTag('craft-thumbnail', ['mode' => 'crop', 'sizes' => 'calc(120rem/16)']);
-            expect($separate)->toContainTag('craft-thumbnail', ['mode' => 'crop', 'sizes' => 'calc(120rem/16)']);
+            expect($inline)->toContainTag('craft-thumbnail', ['mode' => 'fit', 'sizes' => 'calc(120rem/16)']);
+            expect($separate)->toContainTag('craft-thumbnail', ['mode' => 'fit', 'sizes' => 'calc(120rem/16)']);
         } else {
             expect($attributes['class'])->not->toContain('thumb-end');
             expect($inline)->not->toContainTag('craft-thumbnail');
             expect($separate)->toBe('');
         }
-    })->with(['crop provider' => 'crop', 'fit-only provider' => 'fit']);
+    })->with(['fit provider' => 'fit', 'crop-only provider' => 'crop']);
 
     it('renders hidden input in field context', function () {
         $user = User::findOne(1);

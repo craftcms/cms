@@ -41,8 +41,8 @@ it('selects thumbnail modes for each relationship presentation', function (strin
     'list' => ['list', 'thumbHtml', 'fit', 30],
     'inline list' => ['list-inline', 'thumbHtml', 'fit', 30],
     'tiles' => ['thumbs', 'thumbHtml', 'fit', 120],
-    'cards' => ['cards', 'cardThumbHtml', 'crop', 120],
-    'card grid' => ['cards-grid', 'cardThumbHtml', 'crop', 120],
+    'cards' => ['cards', 'cardThumbHtml', 'fit', 120],
+    'card grid' => ['cards-grid', 'cardThumbHtml', 'fit', 120],
 ]);
 
 it('resolves and renders ordered element relationships', function () {

@@ -24,6 +24,8 @@ import styles from './thumbnail.styles.js';
  *   animated source's motion (see `animated`).
  *
  * @cssproperty [--c-thumbnail-size=calc(30rem / 16)] - Overall size of the thumbnail box.
+ * @cssproperty [--c-thumbnail-height=--c-thumbnail-size] - Height of the thumbnail box. Set
+ *   to `auto` to let a fit image set the height, up to the image's own.
  * @cssproperty [--c-thumbnail-image-radius=0] - Corner radius of the image when `rounded` isn't set.
  * @cssproperty [--c-thumbnail-radius=--c-radius-full] - Corner radius applied when `rounded` is set.
  * @cssproperty [--c-thumbnail-checker-size=8px] - Size of a single checker square.

@@ -214,15 +214,17 @@ export default css`
   /* The body matches the CP's container padding, and falls back to the same
      value outside the CP, where nothing defines it. */
   .card-body {
-    gap: var(--c-spacing-md);
-    padding-inline: var(
+    --_body-padding-inline: var(
       --c-card-padding-inline,
       var(--cp-container-padding, var(--c-spacing-lg))
     );
-    padding-block: var(
+    --_body-padding-block: var(
       --c-card-padding-block,
       var(--cp-container-padding, var(--c-spacing-lg))
     );
+    gap: var(--c-spacing-md);
+    padding-inline: var(--_body-padding-inline);
+    padding-block: var(--_body-padding-block);
   }
 
   .card-body--thumb-start {
@@ -237,11 +239,35 @@ export default css`
     grid-template-columns: minmax(0, 1fr) calc(120rem / 16);
   }
 
-  .card-body__main {
-    grid-area: main;
+  /* The thumbnail sits closer to the card's edges than the text does. It's
+     shifted rather than given inline margins, so it keeps its column's width. */
+  .card-body__thumb {
+    --_thumb-inset: var(--c-spacing-md);
+    --_thumb-shift: calc(var(--_body-padding-inline) - var(--_thumb-inset));
+    /* Fit within the thumbnail column, at the image's own proportions. */
+    --c-thumbnail-size: calc(120rem / 16);
+    --c-thumbnail-height: auto;
+    --c-thumbnail-image-radius: var(--c-radius-md);
+    position: relative;
+    margin-block: calc(var(--_thumb-inset) - var(--_body-padding-block));
   }
 
-  .card-body__thumbnail {
-    grid-area: thumbnail;
+  .card-body--thumb-start .card-body__thumb {
+    inset-inline-start: calc(var(--_thumb-shift) * -1);
+  }
+
+  .card-body--thumb-end .card-body__thumb {
+    inset-inline-start: var(--_thumb-shift);
+  }
+
+  /* Capped, as a transformed image can round a pixel past the column. */
+  slot[name='thumbnail']::slotted(*) {
+    max-block-size: calc(120rem / 16);
+    border-radius: var(--c-radius-md);
+    overflow: clip;
+  }
+
+  .card-body__main {
+    grid-area: main;
   }
 `;

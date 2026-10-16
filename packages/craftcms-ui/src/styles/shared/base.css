@@ -270,6 +270,23 @@ kbd {
   white-space: nowrap;
 }
 
+/* A card's attribute previews are capped at two lines, unless they opt out
+   with `no-truncate` (generated fields, chips, addresses). */
+.card-attribute-preview:not(:has(> .no-truncate)) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  max-block-size: 2lh;
+  overflow: hidden;
+  text-wrap: pretty;
+}
+
+/* The status badges after a card's attributes */
+.card-attribute-preview + ul {
+  margin-block-start: var(--c-spacing-sm);
+}
+
 craft-chip .cp-code {
   /* Block, so the label's line height doesn't add space above it */
   display: block;
