@@ -78,6 +78,7 @@ use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -103,8 +104,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ReflectionClass;
 use Traversable;
-use Twig\Extension\SandboxExtension;
 use Twig\Markup;
+use Twig\Sandbox\SecurityChecker;
 use UnitEnum;
 use yii\base\ArrayableTrait;
 use yii\base\Event;
@@ -2937,11 +2938,11 @@ abstract class Element extends Component implements ElementInterface, AllowableI
     {
         $attributes = $this->getAttributes();
 
-        // Include custom fields, unless this is coming from Twig’s SandboxExtension
+        // Include custom fields, unless this is coming from Twig’s sandbox
         // (see https://github.com/craftcms/cms/issues/19004)
         $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, limit: 3);
         if (!(
-            ($backtrace[2]['class'] ?? null) === SandboxExtension::class &&
+            ($backtrace[2]['class'] ?? null) === SecurityChecker::class &&
             $backtrace[2]['function'] === 'doEnsureToStringAllowed'
         )) {
             $fieldLayout = $this->getFieldLayout();
@@ -5742,7 +5743,7 @@ JS,
      */
     public function getInvalidNestedElementIds(): array
     {
-        return $this->_invalidNestedElementIds;
+        return array_keys($this->_invalidNestedElementIds);
     }
 
     /**
@@ -5750,7 +5751,9 @@ JS,
      */
     public function addInvalidNestedElementIds(array $ids): void
     {
-        array_push($this->_invalidNestedElementIds, ...$ids);
+        foreach ($ids as $id) {
+            $this->_invalidNestedElementIds[$id] = true;
+        }
     }
 
     /**
@@ -6236,6 +6239,15 @@ JS,
 
     private function contentBlockAttributeHtml(string $attribute): string
     {
+        [$block, , $nestedAttribute] = $this->contentBlockFromAttribute($attribute);
+        return $block?->getAttributeHtml($nestedAttribute) ?? '';
+    }
+
+    /**
+     * @return array{0:ContentBlock|null,1:ContentBlockField|null,2:string|null}
+     */
+    private function contentBlockFromAttribute(string $attribute): array
+    {
         $parts = explode('.', $attribute);
         $uid = StringHelper::removeLeft(array_shift($parts), 'contentBlock:');
 
@@ -6253,11 +6265,13 @@ JS,
         }
 
         if (!$field instanceof ContentBlockField) {
-            return '';
+            return [null, null, null];
         }
 
         $block = $this->getFieldValue($field->handle);
-        return $block?->getAttributeHtml(implode('.', $parts)) ?? '';
+        $nestedAttribute = implode('.', $parts);
+
+        return [$block, $field, $nestedAttribute];
     }
 
     /**
@@ -6389,6 +6403,12 @@ JS,
             }
 
             $field ??= $this->_getFieldFromAlternativeLayouts($instanceUid) ?? null;
+        } elseif (str_starts_with($attribute, 'contentBlock:')) {
+            [$block, $field, $nestedAttribute] = $this->contentBlockFromAttribute($attribute);
+            if (!$block) {
+                return '';
+            }
+            return Craft::$app->getView()->namespaceInputs(fn() => $block->getInlineAttributeInputHtml($nestedAttribute), "$field->handle[fields]");
         }
 
         if ($field !== null) {
@@ -7217,7 +7237,7 @@ JS,
                 ->siteId($this->siteId);
 
             if ($criteria) {
-                Craft::configure($query, $criteria);
+                Craft::configure($query, ComponentHelper::cleanseConfig(ElementHelper::cleanseQueryCriteria($criteria)));
             }
         }
 
@@ -7235,7 +7255,15 @@ JS,
     }
 
     /**
-     * @inheritdoc
+     * Renders the element using its partial template.
+     *
+     * If no partial template exists for the element, its string representation will be output instead.
+     *
+     * @param array $variables
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @since 5.8.0
      */
     public function render(array $variables = []): Markup
     {
@@ -7294,7 +7322,7 @@ JS,
         if ($providerHandle !== null) {
             $templates[] = [
                 'template' => sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $providerHandle),
-                'priority' => 1,
+                'priority' => 2,
             ];
         }
 

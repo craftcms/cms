@@ -19,7 +19,6 @@ use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\Volume;
-use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 
 /**
@@ -450,10 +449,10 @@ class AssetQuery extends ElementQuery
     {
         if ($value instanceof User) {
             $this->uploaderId = $value->id;
-        } elseif (is_numeric($value)) {
-            $this->uploaderId = $value;
         } else {
-            throw new InvalidArgumentException('Invalid uploader value');
+            // the only remaining possibilities are int|null
+            // and neither should lead to an exception
+            $this->uploaderId = $value;
         }
         return $this;
     }
@@ -1015,39 +1014,25 @@ class AssetQuery extends ElementQuery
     protected function afterPrepare(): bool
     {
         if ($this->hasAlt !== null) {
-            $hasAltCondition = [
-                'or',
-                ['not', ['assets_sites.alt' => '']],
-                [
+            $this->subQuery->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
+                'and',
+                '[[assets_sites.assetId]] = [[assets.id]]',
+                '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
+            ]);
+
+            if ($this->hasAlt) {
+                $this->subQuery->andWhere([
                     'and',
+                    ['not', ['assets_sites.alt' => '']],
+                    ['not', ['assets_sites.alt' => null]],
+                ]);
+            } else {
+                $this->subQuery->andWhere([
+                    'or',
+                    ['assets_sites.alt' => ''],
                     ['assets_sites.alt' => null],
-                    ['not', ['assets.alt' => '']],
-                    ['not', ['assets.alt' => null]],
-                ],
-            ];
-
-            $withoutAltCondition = [
-                'or',
-                ['assets_sites.alt' => ''],
-                [
-                    'and',
-                    ['assets_sites.alt' => null],
-                    [
-                        'or',
-                        ['assets.alt' => ''],
-                        ['assets.alt' => null],
-                    ],
-
-                ],
-            ];
-
-            $this->subQuery
-                ->leftJoin(['assets_sites' => Table::ASSETS_SITES], [
-                    'and',
-                    '[[assets_sites.assetId]] = [[assets.id]]',
-                    '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
-                ])
-                ->andWhere($this->hasAlt ? $hasAltCondition : $withoutAltCondition);
+                ]);
+            }
         }
 
         return parent::afterPrepare();
@@ -1154,11 +1139,9 @@ class AssetQuery extends ElementQuery
      */
     public function createElement(array $row): ElementInterface
     {
-        // Use the site-specific alt text, if set
+        // Use the site-specific alt text
         $siteAlt = ArrayHelper::remove($row, 'siteAlt');
-        if ($siteAlt !== null) {
-            $row['alt'] = $siteAlt;
-        }
+        $row['alt'] = $siteAlt;
 
         return parent::createElement($row);
     }

@@ -173,23 +173,49 @@ class ClearCaches extends Utility
                     'path' => sprintf('`%s/`', Craft::$app->getConfig()->getGeneral()->resourceBasePath),
                 ]),
                 'action' => function() {
-                    $basePath = Craft::$app->getConfig()->getGeneral()->resourceBasePath;
+                    $assetManager = Craft::$app->getAssetManager();
                     $request = Craft::$app->getRequest();
+
                     if (
                         $request->getIsConsoleRequest() &&
                         $request->isWebrootAliasSetDynamically &&
-                        str_starts_with($basePath, '@webroot')
+                        str_starts_with($assetManager->basePath, '@webroot')
                     ) {
                         throw new Exception("Unable to clear control panel resources because the location isn't known for console commands.\n" .
                             "Explicitly set the @webroot alias in config/general.php to avoid this error.\n" .
                             'See https://craftcms.com/docs/5.x/configure.html#aliases for more info.');
                     }
 
-                    $basePath = Craft::getAlias($basePath);
+                    $basePath = Craft::getAlias($assetManager->basePath);
+
                     if ($basePath !== false && file_exists($basePath)) {
-                        FileHelper::clearDirectory($basePath, [
-                            'except' => ['.gitignore'],
-                        ]);
+                        if ($assetManager->linkAssets) {
+                            FileHelper::clearDirectory($basePath, [
+                                'except' => ['.gitignore'],
+                            ]);
+                        } else {
+                            $bundles = FileHelper::findDirectories($basePath, ['recursive' => false]);
+                            $mutex = Craft::$app->getMutex();
+
+                            foreach ($bundles as $path) {
+                                // Get a mutex lock to guard against a concurrent request publishing assets
+                                // (see https://github.com/craftcms/cms/issues/19477)
+                                $lockName = sprintf('asset-bundle:%s', basename($path));
+                                $acquiredLock = $mutex->acquire($lockName, 5);
+
+                                if (!$acquiredLock) {
+                                    Craft::warning('Unable to acquire lock for deleting published assets.', __METHOD__);
+                                }
+
+                                try {
+                                    FileHelper::removeDirectory($path);
+                                } finally {
+                                    if ($acquiredLock) {
+                                        $mutex->release($lockName);
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     // truncate the resourcepaths table while we're at it

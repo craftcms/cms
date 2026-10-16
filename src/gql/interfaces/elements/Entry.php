@@ -239,7 +239,7 @@ class Entry extends Structure
     private static function getConditionalFields(array $sectionFieldArguments): array
     {
         $fields = [];
-        if (Gql::canQueryUsers()) {
+        if (Gql::canQueryAllUsers()) {
             $fields = array_merge($fields, [
                 'authorId' => [
                     'name' => 'authorId',
@@ -267,13 +267,13 @@ class Entry extends Structure
         }
 
         if (Gql::canQueryDrafts()) {
-            $fields = array_merge($fields, [
-                'draftCreator' => [
+            $fields = array_merge($fields, array_filter([
+                'draftCreator' => Gql::canQueryAllUsers() ? [
                     'name' => 'draftCreator',
                     'type' => User::getType(),
                     'description' => 'The creator of a given draft.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
-                ],
+                ] : null,
                 'drafts' => [
                     'name' => 'drafts',
                     'args' => $sectionFieldArguments,
@@ -281,17 +281,17 @@ class Entry extends Structure
                     'description' => 'The drafts for the entry.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
                 ],
-            ]);
+            ]));
         }
 
         if (Gql::canQueryRevisions()) {
-            $fields = array_merge($fields, [
-                'revisionCreator' => [
+            $fields = array_merge($fields, array_filter([
+                'revisionCreator' => Gql::canQueryAllUsers() ? [
                     'name' => 'revisionCreator',
                     'type' => User::getType(),
                     'description' => 'The creator of a given revision.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
-                ],
+                ] : null,
                 'currentRevision' => [
                     'name' => 'currentRevision',
                     'type' => EntryInterface::getType(),
@@ -305,7 +305,7 @@ class Entry extends Structure
                     'description' => 'The revisions for the entry.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
                 ],
-            ]);
+            ]));
         }
         return $fields;
     }

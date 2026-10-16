@@ -336,6 +336,27 @@ class Config extends Component
     }
 
     /**
+     * Returns whether an environment variable exists in the project’s `.env` file.
+     *
+     * @param string $name The environment variable name
+     * @return bool
+     * @since 5.11.0
+     */
+    public function doesEnvVarExist(string $name): bool
+    {
+        $path = $this->getDotEnvPath();
+
+        if (!file_exists($path)) {
+            return false;
+        }
+
+        $contents = file_get_contents($path);
+        $qName = preg_quote($name, '/');
+
+        return (bool)preg_match("/\s*^\s*$qName=.*/m", $contents);
+    }
+
+    /**
      * Sets an environment variable value in the project's `.env` file.
      *
      * @param string $name The environment variable name
@@ -356,6 +377,10 @@ class Config extends Component
         if ($value === false) {
             $contents = preg_replace("/\s*^\s*$qName=.*/m", '', $contents);
         } else {
+            if (StringHelper::containsNewlines($value)) {
+                throw new InvalidArgumentException("Invalid environment variable value: $value");
+            }
+
             $slashedValue = addslashes($value);
             // Only surround with quotes if the value contains a space
             if (str_contains($slashedValue, ' ') || str_contains($slashedValue, '#')) {

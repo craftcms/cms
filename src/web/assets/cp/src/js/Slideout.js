@@ -13,12 +13,14 @@ import $ from 'jquery';
       $shade: null,
       $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
       $triggerElement: null,
+      _transitionTimeouts: null,
       isOpen: false,
       isOpening: false,
       useMobileStyles: null,
 
       init: function (contents, settings) {
         this.setSettings(settings, Craft.Slideout.defaults);
+        this._transitionTimeouts = new Set();
 
         this.$outerContainer = $('<div/>', {
           class: 'slideout-container hidden',
@@ -224,7 +226,7 @@ import $ from 'jquery';
       },
 
       /**
-       * Performs the callback after the CSS transition has ended, or immediately if user prefers reduced motion
+       * Performs the callback after the CSS transition has ended, or after its expected duration if no event is emitted
        * @param $target
        * @param callback
        * @private
@@ -233,12 +235,61 @@ import $ from 'jquery';
         // If a user prefers reduced motion, perform the callback immediately
         if (Garnish.prefersReducedMotion()) {
           callback();
-        } else {
-          $target.one('transitionend.slideout', callback);
+          return;
         }
+
+        const styles = getComputedStyle($target[0]);
+        const properties = styles.transitionProperty
+          .split(',')
+          .map((property) => property.trim());
+        const durations = styles.transitionDuration
+          .split(',')
+          .map(Craft.Slideout._timeToMilliseconds);
+        const delays = styles.transitionDelay
+          .split(',')
+          .map(Craft.Slideout._timeToMilliseconds);
+        let transitionDuration = 0;
+
+        properties.forEach((property, i) => {
+          if (property !== 'none') {
+            transitionDuration = Math.max(
+              transitionDuration,
+              durations[i % durations.length] + delays[i % delays.length]
+            );
+          }
+        });
+
+        if (transitionDuration <= 0) {
+          callback();
+          return;
+        }
+
+        let timeout;
+        const complete = () => {
+          if (!this._transitionTimeouts.has(timeout)) {
+            return;
+          }
+
+          clearTimeout(timeout);
+          this._transitionTimeouts.delete(timeout);
+          $target.off('transitionend.slideout', onTransitionEnd);
+          callback();
+        };
+        const onTransitionEnd = (ev) => {
+          if (ev.target === $target[0]) {
+            complete();
+          }
+        };
+
+        $target.on('transitionend.slideout', onTransitionEnd);
+        timeout = setTimeout(complete, transitionDuration + 50);
+        this._transitionTimeouts.add(timeout);
       },
 
       _cancelTransitionListeners: function () {
+        this._transitionTimeouts.forEach(clearTimeout);
+        this._transitionTimeouts.clear();
+
         if (this.$shade) {
           this.$shade.off('transitionend.slideout');
         }
@@ -250,6 +301,8 @@ import $ from 'jquery';
        * Destroy
        */
       destroy: function () {
+        this._cancelTransitionListeners();
+
         if (this.$shade) {
           this.$shade.remove();
           this.$shade = null;
@@ -283,6 +336,10 @@ import $ from 'jquery';
         return `inset-inline-${
           Craft.slideoutPosition === 'start' ? 'end' : 'start'
         }`;
+      },
+      _timeToMilliseconds: function (time) {
+        const value = parseFloat(time);
+        return time.trim().endsWith('ms') ? value : value * 1000;
       },
       totalPanels: function () {
         return Craft.Slideout.openPanels.length;

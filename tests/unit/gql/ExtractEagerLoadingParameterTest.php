@@ -178,36 +178,36 @@ GQL;
 
         $complexResult = [
             'with' => [
-                new EagerLoadPlan(['handle' => 'neverAllowed', 'alias' => 'neverAllowed', 'criteria' => ['id' => ['and', 1, 2]]]),
+                new EagerLoadPlan(['handle' => 'neverAllowed', 'alias' => 'neverAllowed', 'criteria' => ['id' => ['and', 1, 2]], 'siteIds' => []]),
                 new EagerLoadPlan([
                     'handle' => 'matrixField', 'alias' => 'matrixField', 'when' => function() {
                     }, 'nested' => [
                         new EagerLoadPlan([
                             'handle' => 'image', 'alias' => 'im', 'criteria' => ['volumeId' => 2], 'when' => function() {
-                            },
+                            }, 'siteIds' => [],
                         ]),
                         new EagerLoadPlan([
                             'handle' => 'image', 'alias' => 'im', 'criteria' => ['volumeId' => 2], 'when' => function() {
-                            },
+                            }, 'siteIds' => [],
                         ]),
                         new EagerLoadPlan([
                             'handle' => 'entriesInMatrix', 'alias' => 'entriesInMatrix', 'criteria' => ['id' => 80], 'when' => function() {
                             }, 'nested' => [
                                 new EagerLoadPlan([
                                     'handle' => 'linkedEntriesThroughMatrix', 'alias' => 'linkedEntriesThroughMatrix', 'when' => function() {
-                                    }, 'criteria' => ['id' => 99],
+                                    }, 'criteria' => ['id' => 99], 'siteIds' => [],
                                 ]),
-                            ],
+                            ], 'siteIds' => [],
                         ]),
-                    ],
+                    ], 'siteIds' => [],
                 ]),
                 new EagerLoadPlan([
                     'handle' => 'entryField', 'alias' => 'entryField', 'when' => function() {
-                    }, 'criteria' => ['sectionId' => [5], 'typeId' => [2]],
+                    }, 'criteria' => ['sectionId' => [5], 'typeId' => [2]], 'siteIds' => [],
                 ]),
                 new EagerLoadPlan([
                     'handle' => 'assetField', 'alias' => 'assetField', 'when' => function() {
-                    }, 'criteria' => ['volumeId' => [5]],
+                    }, 'criteria' => ['volumeId' => [5]], 'siteIds' => [],
                 ]),
             ],
         ];
@@ -241,7 +241,7 @@ GQL;
                             ['width' => 400],
                             'whammy',
                         ], 'volumeId' => [5, 7],
-                    ],
+                    ], 'siteIds' => [],
                 ]),
             ],
         ];
@@ -250,75 +250,75 @@ GQL;
             [
                 '{ user { photo { id }}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo', 'siteIds' => []])]],
                 'UserInterface',
             ],
             [
                 '{ entry { assetField { localized { id }}}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]]])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]], 'siteIds' => []])]],
                 'UserInterface',
             ],
             [
                 '{ entry { entryField { photo }}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => 'entryField', 'alias' => 'entryField', 'criteria' => ['sectionId' => [5], 'typeId' => [2]]])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'entryField', 'alias' => 'entryField', 'criteria' => ['sectionId' => [5], 'typeId' => [2]], 'siteIds' => []])]],
                 'EntryInterface',
             ],
             [
                 '{ entry { localized { title } alias: localized { title }}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => 'localized', 'alias' => 'localized']), new EagerLoadPlan(['handle' => 'localized', 'alias' => 'alias'])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'localized', 'alias' => 'localized', 'siteIds' => []]), new EagerLoadPlan(['handle' => 'localized', 'alias' => 'alias', 'siteIds' => []])]],
                 'EntryInterface',
             ],
             [
                 '{ user { ph: photo { id }}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo', 'siteIds' => []])]],
                 '[UserInterface]',
             ],
             [
                 '{entry { author { ph: photo { id }}}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => 'author', 'alias' => 'author', 'nested' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'author', 'alias' => 'author', 'nested' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo', 'siteIds' => []])], 'siteIds' => []])]],
                 'EntryInterface',
             ],
             [
                 '{entry { author { photo { id }}}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => 'author', 'alias' => 'author', 'nested' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'author', 'alias' => 'author', 'nested' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo', 'siteIds' => []])], 'siteIds' => []])]],
 
                 'EntryInterface',
             ],
             [
                 '{ entry { assetField (volumeId: 4) { filename }}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['id' => ['and', 1, 2]]])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['id' => ['and', 1, 2]], 'siteIds' => []])]],
                 'EntryInterface',
             ],
             [
                 '{ entry { localized { id }}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => 'localized', 'alias' => 'localized'])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'localized', 'alias' => 'localized', 'siteIds' => []])]],
                 'EntryInterface',
             ],
             [
                 '{ entry { parent { id }}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => 'parent', 'alias' => 'parent'])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'parent', 'alias' => 'parent', 'siteIds' => []])]],
                 'EntryInterface',
             ],
             [
                 '{ entries { _count(field: "assetField") assetField { filename }}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'count' => true, 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]]])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'count' => true, 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]], 'siteIds' => []])]],
                 '[EntryInterface]',
             ],
             [
                 '{ entries { assetField { filename }}}',
                 [],
                 [
-                    'with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]]])],
+                    'with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]], 'siteIds' => []])],
                 ],
                 '[EntryInterface]',
             ],
@@ -337,7 +337,7 @@ GQL;
                 }',
                 ['childSlug' => ['slugslug', 'slugger']],
                 [
-                    'with' => [new EagerLoadPlan(['handle' => 'drafts', 'alias' => 'drafts', 'criteria' => ['orderBy' => 'desc']]), new EagerLoadPlan(['handle' => 'children', 'alias' => 'children', 'criteria' => ['type' => 'child', 'slug' => ['slugslug', 'slugger']]])],
+                    'with' => [new EagerLoadPlan(['handle' => 'drafts', 'alias' => 'drafts', 'criteria' => ['orderBy' => 'desc'], 'siteIds' => []]), new EagerLoadPlan(['handle' => 'children', 'alias' => 'children', 'criteria' => ['type' => 'child', 'slug' => ['slugslug', 'slugger']], 'siteIds' => []])],
                 ],
                 '[EntryInterface]',
             ],

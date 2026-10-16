@@ -577,6 +577,7 @@ class Assets
                         'jpeg',
                         'jpg',
                         'jpx',
+                        'jxl',
                         'pam',
                         'pfm',
                         'pgm',

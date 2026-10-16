@@ -9,6 +9,7 @@ namespace craft\gql\types\elements;
 
 use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -59,5 +60,13 @@ class Asset extends Element
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function elementResolverClass(): ?string
+    {
+        return AssetResolver::class;
     }
 }

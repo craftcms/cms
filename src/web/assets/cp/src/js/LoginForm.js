@@ -210,7 +210,7 @@ Craft.LoginForm = Garnish.Base.extend(
       this.clearErrors();
       this.$form.addClass('hidden');
 
-      const $authForm = $(data.authForm).insertAfter(this.$form);
+      const $authForm = $(data.authForm);
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
       Craft.initUiElements($authForm);
@@ -225,6 +225,10 @@ Craft.LoginForm = Garnish.Base.extend(
           this.showError(error);
         }
       );
+
+      // defer injecting the form until after the form handlers (_authFormHandlers) are loaded
+      // see https://craftcms.slack.com/archives/C040W72JA5N/p1787812546586339
+      $authForm.insertAfter(this.$form);
 
       if (!Garnish.isMobileBrowser()) {
         setTimeout(() => {

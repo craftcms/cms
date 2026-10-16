@@ -936,12 +936,16 @@ class Entries extends Component
      *
      * @param Section $section
      * @param array|null $siteSettings
-     * @return Entry The
      * @throws Exception if reasons
      * @see saveSection()
      */
-    private function _ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
+    private function _ensureSingleEntry(Section $section, ?array $siteSettings = null): void
     {
+        // Don't resave the entry if we are mid-migrations
+        if (Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+            return;
+        }
+
         // Get the section's supported sites
         // ---------------------------------------------------------------------
 
@@ -953,11 +957,11 @@ class Entries extends Component
             throw new Exception('No site settings exist for section ' . $section->id);
         }
 
-        $sites = ArrayHelper::where(Craft::$app->getSites()->getAllSites(), fn(Site $site) =>
-            // Only include it if it's one of this section's sites
-            isset($siteSettings[$site->uid]), true, true, false);
-
-        $siteIds = array_map(fn(Site $site) => $site->id, $sites);
+        $siteIds = Collection::make(Craft::$app->getSites()->getAllSites())
+            ->filter(fn(Site $site) => isset($siteSettings[$site->uid]))
+            ->map(fn(Site $site) => $site->id)
+            ->values()
+            ->all();
 
         // Get the section's entry types
         // ---------------------------------------------------------------------
@@ -979,6 +983,12 @@ class Entries extends Component
             ->sectionId($section->id)
             ->siteId($siteIds)
             ->status(null);
+
+        // Prefer the primary site if it's enabled for the section
+        $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
+        if (in_array($primarySiteId, $siteIds)) {
+            $baseEntryQuery->preferSites([$primarySiteId]);
+        }
 
         // If there are any existing entries, find the first one with a valid typeId
         /** @var Entry|null $entry */
@@ -1064,8 +1074,6 @@ class Entries extends Component
                 $elementsService->deleteElement($entryToDelete, true);
             }
         }
-
-        return $entry;
     }
 
     /**

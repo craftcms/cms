@@ -330,12 +330,14 @@ class Asset extends Element
      */
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($plan->handle === 'uploader') {
-            /** @var User|null $uploader */
-            $uploader = $elements[0] ?? null;
-            $this->setUploader($uploader);
-        } else {
-            parent::setEagerLoadedElements($handle, $elements, $plan);
+        switch ($plan->handle) {
+            case 'uploader':
+                /** @var User|null $uploader */
+                $uploader = $elements[0] ?? null;
+                $this->setUploader($uploader);
+                break;
+            default:
+                parent::setEagerLoadedElements($handle, $elements, $plan);
         }
     }
 
@@ -373,7 +375,7 @@ class Asset extends Element
     {
         $sources = [];
 
-        if ($context === ElementSources::CONTEXT_INDEX) {
+        if (in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL])) {
             $volumeIds = Craft::$app->getVolumes()->getViewableVolumeIds();
         } else {
             $volumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
@@ -1217,20 +1219,6 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function __construct($config = [])
-    {
-        // alt='' actually means something, so we should preserve it.
-        $alt = ArrayHelper::remove($config, 'alt');
-        if ($alt !== null) {
-            $this->alt = $alt;
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function __toString(): string
     {
         if (isset($this->_transform)) {
@@ -1305,20 +1293,6 @@ class Asset extends Element
         }
 
         $this->_oldVolumeId = $this->_volumeId;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setAttributesFromRequest(array $values): void
-    {
-        // alt='' actually means something, so we should preserve it.
-        $alt = ArrayHelper::remove($values, 'alt');
-        if ($alt !== null) {
-            $this->alt = $alt;
-        }
-
-        parent::setAttributesFromRequest($values);
     }
 
     /**
@@ -1828,9 +1802,14 @@ $('#' + $id).on('activate', () => {
   new Craft.AssetImageEditor($assetId, {
     allowDegreeFractions: Craft.isImagick,
     onSave: (data) => {
-      if (!data.newAssetId) {
-        $updatePreviewThumbJs
+      if (data.newAssetId) {
+        // The menu gets moved to the <body> when shown, so look for the slideout from its trigger
+        const \$trigger = $('#' + $id).closest('.menu').data('disclosureMenu')?.\$trigger;
+        {$this->_replaceSlideoutAssetJs('$trigger')}
+        return;
       }
+
+      $updatePreviewThumbJs
     },
   });
 });
@@ -2919,6 +2898,27 @@ JS, [
     }
 
     /**
+     * Returns JavaScript that will replace this asset with `data.newAssetId`, if the given element is within an
+     * Assets field’s editor slideout.
+     *
+     * @param string $elementJs JavaScript expression for a jQuery object within the slideout
+     * @return string
+     */
+    private function _replaceSlideoutAssetJs(string $elementJs): string
+    {
+        return <<<JS
+// If this is within an Assets field’s editor slideout, replace the selected asset and close the slideout,
+// since it's still editing the old asset
+const slideout = $elementJs?.closest('[data-slideout]').data('slideout');
+if (slideout && slideout.settings.elementSelectInput) {
+    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
+        .then(() => slideout.closeMeMaybe())
+        .catch(() => {});
+}
+JS;
+    }
+
+    /**
      * Returns the HTML for asset previews.
      *
      * @return string
@@ -3031,12 +3031,7 @@ $('#$editBtnId').on('activate', () => {
         allowDegreeFractions: Craft.isImagick,
         onSave: data => {
             if (data.newAssetId) {
-                // If this is within an Assets field’s editor slideout, replace the selected asset 
-                const slideout = $('#$editBtnId').closest('[data-slideout]').data('slideout');
-                if (slideout && slideout.settings.elementSelectInput) {
-                    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
-                        .catch(() => {});
-                }
+                {$this->_replaceSlideoutAssetJs("$('#$editBtnId')")}
                 return;
             }
 
@@ -3267,6 +3262,19 @@ JS;
             }
         }
 
+        // If the file is being renamed without an extension, keep the current one
+        if (
+            isset($this->newFilename, $this->_filename) &&
+            $this->newFilename !== '' &&
+            !isset($this->tempFilePath) &&
+            pathinfo($this->newFilename, PATHINFO_EXTENSION) === ''
+        ) {
+            $extension = pathinfo($this->_filename, PATHINFO_EXTENSION);
+            if ($extension !== '') {
+                $this->newFilename = rtrim($this->newFilename, '.') . ".$extension";
+            }
+        }
+
         if ($this->newFilename === '' || $this->newFilename === $this->getFilename()) {
             $this->newFilename = null;
         }
@@ -3406,10 +3414,6 @@ JS;
                 $record->mimeType = $this->_mimeType;
             }
 
-            if ($record->alt === null) {
-                $record->alt = $this->alt;
-            }
-
             if ($this->getHasFocalPoint()) {
                 $focal = $this->getFocalPoint();
                 $record->focalPoint = number_format($focal['x'], 4) . ';' . number_format($focal['y'], 4);
@@ -3418,8 +3422,16 @@ JS;
             }
 
             $record->save(false);
+
+            // we're not propagating at this point, so save the alt ONLY against the site we're saving to
+            Db::upsert(Table::ASSETS_SITES, [
+                'assetId' => $this->id,
+                'siteId' => $this->siteId,
+                'alt' => $this->alt,
+            ]);
         }
 
+        $upsert = false;
         if (
             $this->propagating &&
             $this->propagatingFrom &&
@@ -3432,15 +3444,18 @@ JS;
                 $this->alt !== $from->alt &&
                 $this->getAltTranslationKey() === $from->getAltTranslationKey()
             ) {
+                $upsert = true;
                 $this->alt = $from->alt;
             }
         }
 
-        Db::upsert(Table::ASSETS_SITES, [
-            'assetId' => $this->id,
-            'siteId' => $this->siteId,
-            'alt' => $this->alt,
-        ]);
+        if ($upsert or $this->propagateAll) {
+            Db::upsert(Table::ASSETS_SITES, [
+                'assetId' => $this->id,
+                'siteId' => $this->siteId,
+                'alt' => $this->alt,
+            ]);
+        }
 
         parent::afterSave($isNew);
     }

@@ -918,6 +918,58 @@ class Elements extends Component
         }
     }
 
+    /**
+     * Reorders nested elements for a given owner element.
+     *
+     * @param ElementInterface $owner The owner element
+     * @param ElementQueryInterface|ElementCollection $nestedElements The owner’s nested elements
+     * @param array $elementIds The nested element IDs that are being moved, in their new relative order
+     * @param int $offset The zero-based offset that `$elementIds` should be inserted at, relative to the owner’s
+     * other nested elements
+     * @since 5.11.0
+     */
+    public function reorderNestedElements(
+        ElementInterface $owner,
+        ElementQueryInterface|ElementCollection $nestedElements,
+        array $elementIds,
+        int $offset,
+    ): void {
+        $elementIds = array_map(fn($id) => (int)$id, $elementIds);
+
+        if ($nestedElements instanceof ElementQueryInterface) {
+            $oldSortOrders = (clone $nestedElements)
+                ->status(null)
+                ->asArray()
+                ->select(['id', 'sortOrder'])
+                ->pairs();
+        } else {
+            $oldSortOrders = $nestedElements
+                ->keyBy(fn(ElementInterface $element) => $element->id)
+                /** @phpstan-ignore-next-line */
+                ->map(fn(NestedElementInterface $element) => $element->getSortOrder())
+                ->all();
+        }
+
+        // Build the full list of IDs in the new sort order
+        $allIds = array_diff(array_keys($oldSortOrders), $elementIds);
+        array_splice($allIds, $offset, 0, $elementIds);
+
+        // Update all the incorrect sort orders
+        foreach ($allIds as $i => $id) {
+            $sortOrder = $i + 1;
+            if (!isset($oldSortOrders[$id]) || $sortOrder !== $oldSortOrders[$id]) {
+                Db::update(Table::ELEMENTS_OWNERS, [
+                    'sortOrder' => $sortOrder,
+                ], [
+                    'ownerId' => $owner->id,
+                    'elementId' => $id,
+                ]);
+            }
+        }
+
+        $this->invalidateCachesForElement($owner);
+    }
+
     // Finding Elements
     // -------------------------------------------------------------------------
 
@@ -3509,9 +3561,21 @@ class Elements extends Component
                         $siteCriteria = Arr::only($map['criteria'] ?? [], $siteParams);
                         $otherCriteria = Arr::except($map['criteria'] ?? [], $siteParams);
 
+                        $planCriteria = ElementHelper::cleanseQueryCriteria($plan->criteria);
+
+                        // Allow custom ordering, as long as it can't contain raw SQL
+                        // (see https://github.com/craftcms/cms/issues/19992)
+                        if (!empty($plan->criteria['orderBy'])) {
+                            if (Db::isSafeOrderBy($plan->criteria['orderBy'])) {
+                                $planCriteria['orderBy'] = $plan->criteria['orderBy'];
+                            } else {
+                                Craft::warning("Ignoring unsafe `orderBy` criteria for the eager-loaded `$plan->handle` elements.", __METHOD__);
+                            }
+                        }
+
                         $criteria = array_merge(
                             $siteCriteria,
-                            $plan->criteria,
+                            $planCriteria,
                             $otherCriteria,
                         );
 
@@ -3521,8 +3585,16 @@ class Elements extends Component
 
                         Craft::configure($query, $criteria);
 
+                        // inReverse is applied to each source's target elements below, so make sure the query doesn't
+                        // reverse them as well
+                        $query->inReverse = false;
+
                         if (!$query->siteId) {
                             $query->siteId = $siteId;
+                        }
+
+                        if (isset($plan->siteIds)) {
+                            $query->siteId = array_intersect((array)$query->siteId, $plan->siteIds);
                         }
 
                         if (!$query->id) {
@@ -4329,6 +4401,19 @@ class Elements extends Component
                 }
             }
 
+            // Bump the owner elements' `dateUpdated` timestamps, recursively, so freshness checks based on
+            // `dateUpdated` (e.g. whether a new revision needs to be created for an ancestor) notice that
+            // something changed, even if this nested element was saved independently of its owner.
+            if (
+                !$element->propagating &&
+                $element instanceof NestedElementInterface &&
+                $element->getIsCanonical() &&
+                isset($element->touchOwnersOnSave) &&
+                $element->touchOwnersOnSave
+            ) {
+                $this->touchOwners($element);
+            }
+
             // Update the changed attributes & fields
             if ($trackChanges) {
                 $userId = Craft::$app->getUser()->getId();
@@ -4417,6 +4502,33 @@ class Elements extends Component
                 $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
                 $this->invalidateCachesForElement($owner);
             }
+        }
+    }
+
+    /**
+     * Updates the `dateUpdated` timestamp of a nested element’s owner, and its owner’s owner, and so on up
+     * the ownership chain, so that anything checking an ancestor’s `dateUpdated` to determine whether it’s
+     * changed (e.g. [[\craft\services\Revisions::createRevision()]], deciding whether a new revision needs
+     * to be created) will notice that it has, even though the ancestor itself wasn’t directly modified.
+     *
+     * @param NestedElementInterface $element The (canonical) nested element that was just saved
+     * @see https://github.com/craftcms/cms/issues/19594
+     */
+    private function touchOwners(NestedElementInterface $element): void
+    {
+        $timestamp = Db::prepareDateForDb($element->dateUpdated ?? DateTimeHelper::now());
+        $owner = $element->getOwner();
+
+        while ($owner !== null) {
+            Db::update(Table::ELEMENTS, [
+                'dateUpdated' => $timestamp,
+            ], ['id' => $owner->id]);
+
+            if (!$owner instanceof NestedElementInterface) {
+                return;
+            }
+
+            $owner = $owner->getOwner();
         }
     }
 
@@ -4523,7 +4635,8 @@ class Elements extends Component
             (
                 $siteElement->isNewForSite ||
                 in_array('uri', $element->getDirtyAttributes()) ||
-                $element->resaving
+                $element->resaving ||
+                ElementHelper::containsTempSlug($siteElement->uri)
             )
         ) {
             // Set a unique URI on the site clone

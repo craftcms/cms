@@ -64,4 +64,14 @@ class EagerLoadPlan extends BaseObject
      * @since 5.0.0
      */
     public bool $lazy = false;
+
+    /**
+     * @var int[]|null Restricts the site(s) elements get eager-loaded from.
+     *
+     * If `criteria['siteId']` is also specified, the actual sites will be the intersection of
+     * this property and the criteria.
+     *
+     * @since 5.11.2
+     */
+    public ?array $siteIds = null;
 }

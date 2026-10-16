@@ -18,6 +18,8 @@ use craft\helpers\Html;
 use craft\helpers\Template;
 use craft\web\twig\AllowedInSandbox;
 use Twig\Markup;
+use yii\base\Arrayable;
+use yii\base\ArrayableTrait;
 use yii\base\BaseObject;
 
 /**
@@ -35,8 +37,12 @@ use yii\base\BaseObject;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-class LinkData extends BaseObject implements Serializable
+class LinkData extends BaseObject implements Serializable, Arrayable
 {
+    use ArrayableTrait {
+        fields as traitFields;
+    }
+
     /**
      * @var string|null The link’s URL suffix value.
      * @since 5.6.0
@@ -108,6 +114,29 @@ class LinkData extends BaseObject implements Serializable
     public function __toString(): string
     {
         return $this->getUrl();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields(): array
+    {
+        $fields = $this->traitFields();
+
+        $fields['type'] = 'type';
+        $fields['value'] = 'value';
+        $fields['url'] = 'url';
+        $fields['label'] = 'label';
+        $fields['filename'] = 'filename';
+        $fields['link'] = 'link';
+        $fields['attributes'] = 'attributes';
+        $fields['defaultLabel'] = fn() => $this->getLabel(false);
+        $fields['elementType'] = fn() => $this->getElement() ? $this->getElement()::class : null;
+        $fields['elementId'] = fn() => $this->getElement()?->id;
+        $fields['elementSiteId'] = fn() => $this->getElement()?->siteId;
+        $fields['elementTitle'] = fn() => $this->getElement() ? (string)$this->getElement() : null;
+
+        return $fields;
     }
 
     /**

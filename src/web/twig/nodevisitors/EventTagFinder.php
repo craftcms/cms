@@ -24,6 +24,11 @@ use Twig\Node\PrintNode;
  */
 class EventTagFinder extends BaseEventTagVisitor
 {
+    public function __construct(
+        private EventTagAdder $eventTagAdder,
+    ) {
+    }
+
     /**
      * @inheritdoc
      */
@@ -40,6 +45,7 @@ class EventTagFinder extends BaseEventTagVisitor
             static::$foundHead = false;
             static::$foundBeginBody = false;
             static::$foundEndBody = false;
+            $this->eventTagAdder->reset();
 
             return $node;
         }
