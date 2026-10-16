@@ -36,6 +36,20 @@
                     ...$config,
                 ],
             );
+
+            $generatedFieldsHtml = $withGeneratedFields
+                ? \CraftCms\Cms\Cp\FormFields::fieldHtml(
+                    fn (array $c) => $designer->generatedFieldsTableHtml($fieldLayout, $c),
+                    [
+                        'label' => \CraftCms\Cms\t('Generated Fields'),
+                        'instructions' => \CraftCms\Cms\t('Define any additional values that should be saved on your elements.'),
+                        'errors' => $fieldLayout->errors->get('generatedFields'),
+                        'data' => ['error-key' => 'fieldLayout.generatedFields'],
+                        'fieldLayout' => $fieldLayout,
+                        'disabled' => $disabled,
+                    ],
+                )
+                : null;
         @endphp
 
         @if ($withCardViewDesigner)
@@ -49,11 +63,19 @@
             <craft-tabs label="{{ \CraftCms\Cms\t('Field Layout') }}">
                 <craft-tab slot="tab" data-fld-tab="content">
                     {{ \CraftCms\Cms\t('Content') }}
-                    @if ($hasErrors(['customFields', 'tabs.']))
+                    @if ($hasErrors(['customFields', 'tabs.', 'generatedFields']))
                         {!! $errorIcon !!}
                     @endif
                 </craft-tab>
-                <div slot="panel">{!! $designerHtml !!}</div>
+                {{-- Generated fields are part of the content, so they're in its tab.
+                     (A plain panel: the tabs hide inactive panels, and a field
+                     group's own display would win over that.) --}}
+                <div slot="panel">
+                    <craft-field-group class="fld-content-panel">
+                        {!! $designerHtml !!}
+                        {!! $generatedFieldsHtml !!}
+                    </craft-field-group>
+                </div>
                 <craft-tab slot="tab" data-fld-tab="display">
                     {{ \CraftCms\Cms\t('Display') }}
                     @if ($hasErrors(['cardView', 'thumbFieldKey']))
@@ -64,21 +86,11 @@
             </craft-tabs>
         @else
             {!! $designerHtml !!}
-        @endif
 
-        @if ($withGeneratedFields)
-            <hr>
-            {!! \CraftCms\Cms\Cp\FormFields::fieldHtml(
-                fn (array $c) => $designer->generatedFieldsTableHtml($fieldLayout, $c),
-                [
-                    'label' => \CraftCms\Cms\t('Generated Fields'),
-                    'instructions' => \CraftCms\Cms\t('Define any additional values that should be saved on your elements.'),
-                    'errors' => $fieldLayout->errors->get('generatedFields'),
-                    'data' => ['error-key' => 'fieldLayout.generatedFields'],
-                    'fieldLayout' => $fieldLayout,
-                    'disabled' => $disabled,
-                ],
-            ) !!}
+            @if ($generatedFieldsHtml)
+                <hr>
+                {!! $generatedFieldsHtml !!}
+            @endif
         @endif
     </craft-field-group>
 </div>

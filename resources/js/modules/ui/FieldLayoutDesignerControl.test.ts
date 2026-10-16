@@ -93,7 +93,8 @@ it('flags the designer tabs that have errors', async () => {
   ];
   await flush();
 
-  expect(icon('content')).toBeNull();
+  // Generated fields are in the Content tab.
+  expect(icon('content')).not.toBeNull();
   expect(icon('display')).toBeNull();
 });
 

@@ -422,6 +422,28 @@ it('renders a disabled field layout designer when admin changes are disabled', f
     ])->assertOk();
 });
 
+it('renders generated fields in the Content tab, when there are tabs', function (bool $withCardViewDesigner) {
+    $html = $this->postJson(action([FieldsController::class, 'renderFieldLayoutDesigner']), [
+        'value' => [],
+        'elementType' => Entry::class,
+        'name' => 'fieldLayout',
+        'disabled' => false,
+        'customizableTabs' => true,
+        'withGeneratedFields' => true,
+        'withCardViewDesigner' => $withCardViewDesigner,
+    ])->assertOk()->json('html');
+    $crawler = new Crawler($html);
+    $panels = $crawler->filter('craft-tabs > [slot="panel"]');
+
+    if ($withCardViewDesigner) {
+        expect($panels->eq(0)->filter('craft-generated-fields-table')->count())->toBe(1)
+            ->and($panels->eq(1)->filter('craft-generated-fields-table')->count())->toBe(0);
+    } else {
+        expect($panels->count())->toBe(0)
+            ->and($crawler->filter('craft-generated-fields-table')->count())->toBe(1);
+    }
+})->with(['with tabs' => true, 'without tabs' => false]);
+
 it('renders field layout and generated field values at their root submission paths', function () {
     $response = $this->postJson(action([FieldsController::class, 'renderFieldLayoutDesigner']), [
         'value' => [],
