@@ -19,6 +19,15 @@ import styles from './slide-picker.styles.js';
  * @fires input - Emitted on every alteration to the value.
  * @fires change - Emitted when an alteration to the value is committed by the
  * user. Every alteration is a commit here, so it follows each `input`.
+ *
+ * @cssproperty --c-slide-picker-segment-fill - Fill of the segments past the
+ * value. Defaults to `--c-color-neutral-fill-quiet`.
+ * @cssproperty --c-slide-picker-segment-active-fill - Fill of the segments up
+ * to the value. Defaults to `--c-color-neutral-fill-loud` mixed 25% toward
+ * `--c-color-neutral-fill-normal`.
+ * @cssproperty --c-slide-picker-segment-hover-fill - Fill of the segments up
+ * to the hovered one, previewing a value. Defaults to
+ * `--c-color-neutral-fill-normal`.
  */
 export default class CraftSlidePicker extends FormAssociated(LitElement) {
   static override styles = [styles];
