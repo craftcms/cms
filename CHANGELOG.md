@@ -59,7 +59,7 @@
 - Autosuggest inputs now match suggestions on their hint as well as their label, and no longer cap each suggestion group at five items.
 - Improved control panel styling for medium-sized viewports.
 - Search inputs throughout the control panel now have a search icon and a clear button, and pressing <kbd>Esc</kbd> clears them. ([#20001](https://github.com/craftcms/cms/pull/20001))
-- Medium-sized buttons and inputs, nav items, and header bars are now 32px tall, rather than 34px. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Medium-sized buttons and inputs, nav items, and header bars are now 32px tall, rather than 34px, and small and medium chips are now 32px tall as well, unless they’re plain. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Native select menus now have the same chevron and height as other select menus. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Slug fields’ refresh buttons are now drawn within the input’s border. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Date and time inputs’ divider is now softer and spans the full width when they’re stacked, and their clear button stays aligned with the time input. ([#20001](https://github.com/craftcms/cms/pull/20001))

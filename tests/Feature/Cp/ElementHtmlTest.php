@@ -19,15 +19,19 @@ beforeEach(function () {
 });
 
 describe('elementChipHtml', function () {
-    it('fits thumbnails in both chip sizes', function (string $size, int $pixels) {
+    it('fits thumbnails in both chip sizes', function (string $size, ?string $appearance, int $pixels) {
         $entry = Entry::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')
             ->createElementWithFields()->element;
         $layout = $entry->getFieldLayout();
         $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
 
-        expect($this->elementHtml->elementChipHtml($entry, ['size' => $size]))
+        expect($this->elementHtml->elementChipHtml($entry, ['size' => $size, 'appearance' => $appearance]))
             ->toContainTag('craft-thumbnail', ['mode' => 'fit', 'sizes' => "calc({$pixels}rem/16)"]);
-    })->with(['small' => ['small', 30], 'large' => ['large', 120]]);
+    })->with([
+        'small' => ['small', null, 26],
+        'small plain' => ['small', 'plain', 30],
+        'large' => ['large', null, 120],
+    ]);
 
     it('leaves out the thumbnail when the element has none', function () {
         $entry = Entry::factory()->createElement();

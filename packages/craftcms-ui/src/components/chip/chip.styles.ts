@@ -93,6 +93,18 @@ export default css`
     min-height: var(--c-size-control-md);
   }
 
+  /* Outside the plain appearance, small and medium chips are as tall as a
+     medium button, thumbnail included: it's inset by the border and the
+     padding it keeps from the chip's edges. */
+  .cp-chip--small:not(.cp-chip--plain),
+  .cp-chip--medium:not(.cp-chip--plain) {
+    --_thumb-size: calc(
+      var(--c-size-control-md) - var(--_border-width) * 2 -
+        var(--_chip-block-padding) * 2
+    );
+    min-height: var(--c-size-control-md);
+  }
+
   .cp-chip--large {
     --_chip-spacing: 1em;
     --_thumb-size: calc(40rem / 16);

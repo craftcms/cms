@@ -476,7 +476,7 @@ it('aligns the prefix and suffix against the first line when align-items is star
 
 it('sizes and rounds an image slotted straight into the thumbnail', async () => {
   document.body.innerHTML = `
-    <style>:root { --c-radius-md: 12px; }</style>
+    <style>:root { --c-radius-md: 12px; --c-size-control-md: 32px; }</style>
     <craft-chip show-thumb>
       <img slot="thumbnail" src="${image}" alt="" />
       Label
@@ -487,8 +487,9 @@ it('sizes and rounds an image slotted straight into the thumbnail', async () => 
   expect(
     parseFloat(getComputedStyle(chip.querySelector('img')!).borderRadius)
   ).toBe(concentricRadius(chip));
-  // The source image is 10px; it takes the chip's thumbnail size instead.
-  expect(box(chip.querySelector('img')!)).toEqual({width: 30, height: 30});
+  // The source image is 10px; it takes the chip's thumbnail size instead,
+  // which fits a 32px chip within its border and padding.
+  expect(box(chip.querySelector('img')!)).toEqual({width: 26, height: 26});
 });
 
 it('takes the theme’s text color when it has no fill of its own', async () => {
@@ -873,4 +874,30 @@ it('tints a selected colored chip’s controls from its own fill, not the accent
   expect(
     getComputedStyle(document.getElementById('control')!).backgroundColor
   ).toBe(getComputedStyle(own).backgroundColor);
+});
+
+it('makes non-plain chips as tall as a medium button, thumbnail included', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `
+    <div><craft-chip>Label</craft-chip></div>
+    <div><craft-chip show-thumb>
+      <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+      Label
+    </craft-chip></div>
+    <div><craft-chip size="medium" show-thumb>
+      <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+      Label
+    </craft-chip></div>
+    <div><craft-chip appearance="plain">Label</craft-chip></div>
+  `;
+  const chips = [...document.querySelectorAll('craft-chip')];
+  for (const chip of chips) {
+    await chip.updateComplete;
+  }
+  const heights = chips.map(
+    (chip) => box(chip.shadowRoot!.querySelector('.cp-chip')!).height
+  );
+
+  expect(heights.slice(0, 3)).toEqual([32, 32, 32]);
+  expect(heights[3]).toBeLessThan(32);
 });

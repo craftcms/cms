@@ -270,7 +270,7 @@ class ElementSelect extends Control
         }
 
         if (in_array($viewMode, [self::VIEW_MODE_LIST, self::VIEW_MODE_LIST_INLINE], true)) {
-            return ['thumbHtml' => $element->getThumbHtml(30, ImageTransformMode::Fit)];
+            return ['thumbHtml' => $element->getThumbHtml(ElementHtml::CHIP_THUMB_SIZE, ImageTransformMode::Fit)];
         }
 
         return [];

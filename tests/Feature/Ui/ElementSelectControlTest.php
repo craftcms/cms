@@ -38,8 +38,8 @@ it('selects thumbnail modes for each relationship presentation', function (strin
         expect($element)->not->toHaveKeys(['cardHeaderHtml', 'cardContentHtml', 'cardThumbHtml']);
     }
 })->with([
-    'list' => ['list', 'thumbHtml', 'fit', 30],
-    'inline list' => ['list-inline', 'thumbHtml', 'fit', 30],
+    'list' => ['list', 'thumbHtml', 'fit', 26],
+    'inline list' => ['list-inline', 'thumbHtml', 'fit', 26],
     'tiles' => ['thumbs', 'thumbHtml', 'fit', 120],
     'cards' => ['cards', 'cardThumbHtml', 'fit', 120],
     'card grid' => ['cards-grid', 'cardThumbHtml', 'fit', 120],

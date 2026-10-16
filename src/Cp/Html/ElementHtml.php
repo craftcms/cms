@@ -17,6 +17,7 @@ use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\Icon;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
@@ -58,6 +59,9 @@ readonly class ElementHtml
 
     public const string CHIP_SIZE_LARGE = 'large';
 
+    /** The thumbnail size for small chips, other than plain ones. */
+    public const int CHIP_THUMB_SIZE = 26;
+
     public function __construct(
         private StatusHtml $statusHtml,
         private ContentHtml $contentHtml,
@@ -97,7 +101,7 @@ readonly class ElementHtml
         $config['showDescription'] = $config['showDescription'] && $component instanceof Describable;
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
-        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size']) : null;
+        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size'], $config['appearance'] ?? null) : null;
         $icon = $config['showThumb'] ? $this->chipIcon($component) : null;
 
         $attributes = Arr::merge([
@@ -233,13 +237,19 @@ readonly class ElementHtml
     /**
      * Returns a chip’s thumbnail HTML, or `null` if the component doesn’t have one.
      */
-    private function chipThumbHtml(Chippable $component, string $size): ?string
+    private function chipThumbHtml(Chippable $component, string $size, ?string $appearance = null): ?string
     {
         if (! $component instanceof Thumbable) {
             return null;
         }
 
-        $thumbSize = $size === self::CHIP_SIZE_SMALL ? 30 : 120;
+        // A small chip's thumbnail fits within its 32px height, inside its
+        // border and padding, unless the chip is plain, without either.
+        $thumbSize = match (true) {
+            $size !== self::CHIP_SIZE_SMALL => 120,
+            $appearance === Appearance::Plain->value => 30,
+            default => self::CHIP_THUMB_SIZE,
+        };
 
         return $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?: null;
     }
