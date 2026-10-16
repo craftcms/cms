@@ -46,6 +46,22 @@ export const HtmlFragmentRenderer = defineAsyncComponent(
   () => import('./common/components/HtmlFragmentRenderer.vue')
 );
 
+/**
+ * A screen's details column: an Info panel showing its default slot (sidebar
+ * content) above the server's metadata HTML.
+ */
+export const MetadataDetails = defineAsyncComponent(
+  () => import('./common/components/MetadataDetails.vue')
+);
+
+/**
+ * An element's own actions (Delete, Copy URL, …), from its
+ * `actionMenuDescriptors()`, with their behaviors dispatched client-side.
+ */
+export const ElementActionMenu = defineAsyncComponent(
+  () => import('./modules/elements/components/ElementActionMenu.vue')
+);
+
 export type {ActionItem, ActionItemLink} from './common/types';
 
 export {openUiModal, type UiModalOptions} from './modules/ui/open-ui-modal';
