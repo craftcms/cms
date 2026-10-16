@@ -108,17 +108,18 @@ class ElementHelper
             $slug = StringHelper::toAscii($slug, $language);
         }
 
-        return static::normalizeSlug($slug);
+        return static::normalizeSlug($slug, $language);
     }
 
     /**
      * Normalizes a slug.
      *
      * @param string $slug
+     * @param string|null $language The slug’s langauge
      * @return string
      * @since 3.5.0
      */
-    public static function normalizeSlug(string $slug): string
+    public static function normalizeSlug(string $slug, ?string $language = null): string
     {
         // Special case for the homepage
         if ($slug === Element::HOMEPAGE_URI) {
@@ -134,7 +135,7 @@ class ElementHelper
         // Make it lowercase
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$generalConfig->allowUppercaseInSlug) {
-            $slug = mb_strtolower($slug);
+            $slug = StringHelper::toLowerCase($slug, $language);
         }
 
         // Get the "words". Split on anything that is not alphanumeric or allowed punctuation
@@ -1069,11 +1070,11 @@ class ElementHelper
      * @throws InvalidConfigException
      * @throws NotSupportedException
      * @since 5.0.0
+     * @deprecated in 5.12.0. [[\craft\helpers\Template::render()]] should be used instead.
      */
     public static function renderElements(array $elements, array $variables = []): Markup
     {
-        $output = array_map(fn(ElementInterface $element) => (string)$element->render($variables), $elements);
-        return new Markup(implode("\n", $output), Craft::$app->charset);
+        return Template::render($elements, $variables);
     }
 
     /**
