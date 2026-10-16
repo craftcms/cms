@@ -199,7 +199,8 @@ it('sets an asset’s uploader through elements.update', function (bool $peer, b
     expect(Asset::findOne($id)->uploaderId)->toBe($allowed ? $other->id : $user->id);
 
     if ($allowed) {
-        $update(PHP_INT_MAX)->assertJsonPath('result.isError', true);
+        // Within the integer column's range: PostgreSQL rejects larger IDs outright.
+        $update(User::query()->max('id') + 1)->assertJsonPath('result.isError', true);
         $update(null)->assertJsonPath('result.isError', false);
 
         expect(Asset::findOne($id)->uploaderId)->toBeNull();
