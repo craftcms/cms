@@ -38,6 +38,18 @@ those seams and the public `$container` / `$item` stay jQuery:
   event is `Base` pub/sub (`this.trigger('sortChange')`), consumed by both the
   modern CVD and the legacy `BaseElementIndex` via `.on('sortChange')`.
 
+## Selected-only presentation
+
+Only checked items are shown. Each one's checkbox is hidden (it stays in the DOM
+as the source of truth, so consumers keep reading its state and listening for
+its `change` events) and replaced by a mirrored label plus a Remove button.
+Unchecked items are offered by an "Add item" `<craft-action-menu>` appended to
+the container, which is hidden once everything is checked. Adding an item moves
+it after the checked ones; both adding and removing check/uncheck the input and
+dispatch a bubbling `change`. The Vue counterpart is
+`resources/js/common/form/SelectedOptionList.vue`, which `CheckboxGroup.vue`
+renders when `sortable` is set.
+
 ## Construction & global
 
 `window.Craft.SortableCheckboxSelect` is assigned the **plain modern ES class**

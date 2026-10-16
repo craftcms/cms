@@ -88,7 +88,7 @@ class VolumeEditViewModel extends ViewModel
                 Text::make('subpath')->textExpanderTriggers($envTextExpanderTriggers),
             )
                 ->instructions(t('Where assets should be stored on the filesystem.'))
-                ->tip(t('Type `$` to choose an environment variable.')),
+                ->tip(t('Type <kbd>$</kbd> to choose an environment variable.')),
             Field::make(
                 t('Asset Transformer'),
                 Combobox::make('assetTransformer')

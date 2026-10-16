@@ -10,6 +10,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -17,8 +18,8 @@ use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Combobox;
 use CraftCms\Cms\Ui\Controls\Handle;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Controls\Markdown as MarkdownControl;
 use CraftCms\Cms\Ui\Controls\Text;
-use CraftCms\Cms\Ui\Controls\Textarea;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Nodes\Group;
@@ -73,10 +74,10 @@ class FieldEditViewModel extends ViewModel
             UiField::make(t('Handle'), $handle)
                 ->instructions(t('How you’ll refer to this field in the templates.'))
                 ->required(),
-            UiField::make(t('Default Instructions'), Textarea::make('instructions'))
+            UiField::make(t('Default Instructions'), MarkdownControl::make('instructions')->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)->rows(1))
                 ->instructions(t('Helper text to guide the author.')),
-            UiField::make(t('Default Tip'), Textarea::make('tip')->rows(1)),
-            UiField::make(t('Default Warning'), Textarea::make('warning')->rows(1)),
+            UiField::make(t('Default Tip'), MarkdownControl::make('tip')->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)->rows(1)),
+            UiField::make(t('Default Warning'), MarkdownControl::make('warning')->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)->rows(1)),
             UiField::make(t('Use this field’s values as search keywords'), Lightswitch::make('searchable')),
         ];
         $typeField = UiField::make(t('Field Type'), Combobox::make('type')

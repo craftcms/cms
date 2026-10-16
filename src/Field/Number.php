@@ -386,7 +386,7 @@ JS;
         $formatted = match ($this->previewFormat) {
             self::FORMAT_DECIMAL => I18N::getFormatter()->asDecimal($value, $this->decimals),
             self::FORMAT_CURRENCY => I18N::getFormatter()->asCurrency($value, $this->previewCurrency, ! $this->decimals),
-            default => $value,
+            default => (string) $value,
         };
 
         if ($this->prefix) {

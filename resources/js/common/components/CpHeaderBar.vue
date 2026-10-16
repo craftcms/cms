@@ -111,12 +111,12 @@
         </template>
 
         <template v-if="maintenanceMode">
-          <CpLink :href="maintenanceModeUrl">
-            <craft-badge fill="warning">
-              <craft-icon name="person-digging" slot="prefix"></craft-icon>
-              {{ t('Maintenance mode') }}
-            </craft-badge>
-          </CpLink>
+          <craft-badge fill="warning">
+            <craft-icon name="person-digging" slot="prefix"></craft-icon>
+            <CpLink :href="maintenanceModeUrl">{{
+              t('Maintenance mode')
+            }}</CpLink>
+          </craft-badge>
         </template>
       </div>
 
@@ -164,6 +164,14 @@
 </template>
 
 <style scoped>
+  html:not([data-theme='dark']) .cp-header-bar {
+    --c-surface-sunken: color-mix(
+      in oklab,
+      var(--color-base-50),
+      var(--color-black) 10%
+    );
+  }
+
   .cp-header-bar {
     --badge-border-color: var(--c-surface-sunken);
     background-color: var(--c-surface-sunken);

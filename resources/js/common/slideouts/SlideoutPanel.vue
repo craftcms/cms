@@ -230,8 +230,10 @@
       [positionProp]: offset,
     }"
   >
+    <!-- `prevent-autofocus`: it comes first in the panel, and opening the panel
+      shouldn't land focus on it instead of the screen's first field. -->
     <ResizeHandle
-      class="slideout-panel__resize-handle"
+      class="slideout-panel__resize-handle prevent-autofocus"
       :class="{
         'slideout-panel__resize-handle--end':
           positionProp === 'inset-inline-end',
@@ -315,6 +317,12 @@
 
   /* Inside the panel, which clips anything past its edge, with the grip on
      the edge itself and the panel's own rounded corners. */
+  /* Focus is only parked on the panel while its screen loads (or when the
+     screen has nothing to focus), so there's nothing here to ring. */
+  .slideout-panel:focus-visible {
+    outline: none;
+  }
+
   .slideout-panel .slideout-panel__resize-handle {
     inset-inline-start: 0;
     transform: none;

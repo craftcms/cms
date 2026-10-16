@@ -168,6 +168,48 @@ it('sets and clears an image’s focal point through elements.update', function 
     expect(Asset::findOne($id)->getHasFocalPoint())->toBeFalse();
 });
 
+it('sets an asset’s uploader through elements.update', function (bool $peer, bool $allowed): void {
+    Http::fake(['https://files.example.test/*' => Http::response('abc')]);
+    $user = User::factory()->create(['admin' => false]);
+    $volume = Volume::findOrFail($this->folder->volumeId);
+    app(UserPermissions::class)->saveUserPermissions($user->id, [
+        'accessCp',
+        'useCraftMcp',
+        ...array_map(
+            static fn (string $permission): string => "$permission:$volume->uid",
+            ['viewAssets', 'saveAssets', ...($peer ? ['viewPeerAssets', 'savePeerAssets'] : [])],
+        ),
+    ]);
+    actingAs($user);
+    app(Request::class)->setUserResolver(static fn (): User => $user);
+    $id = app(Assets::class)->create(
+        file: ['download_url' => 'https://files.example.test/download', 'file_id' => 'file_text', 'file_name' => 'file.txt'],
+        volumeId: $this->folder->volumeId,
+    )['asset']['id'];
+    $other = User::factory()->create();
+    config()->set('passport.public_key', openssl_pkey_get_details(openssl_pkey_new(['private_key_bits' => 2048]))['key']);
+    Passport::actingAs($user, ['mcp:use'], 'craft-mcp');
+    $update = fn (mixed $uploaderId) => McpRequest::send($this, 'tools/call', [
+        'name' => 'elements.update',
+        'arguments' => ['type' => 'assets', 'id' => $id, 'attributes' => ['uploaderId' => $uploaderId]],
+    ])->assertOk();
+
+    $update($other->id)->assertJsonPath('result.isError', ! $allowed);
+
+    expect(Asset::findOne($id)->uploaderId)->toBe($allowed ? $other->id : $user->id);
+
+    if ($allowed) {
+        // Within the integer column's range: PostgreSQL rejects larger IDs outright.
+        $update(User::query()->max('id') + 1)->assertJsonPath('result.isError', true);
+        $update(null)->assertJsonPath('result.isError', false);
+
+        expect(Asset::findOne($id)->uploaderId)->toBeNull();
+    }
+})->with([
+    'reassigning requires peer permissions' => [false, false],
+    'peer permissions allow reassigning' => [true, true],
+]);
+
 it('releases the downloaded file when asset validation fails', function (): void {
     Http::fake(['https://files.example.test/*' => Http::response('Downloaded content')]);
     $temporaryFiles = File::files(Path::temp());

@@ -59,6 +59,8 @@ class Group extends Container
     /** @var list<string>|null */
     private ?array $dependsOn = null;
 
+    private ?string $outlet = null;
+
     public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
     {
         $label = $node->props['label'] ?? null;
@@ -132,6 +134,21 @@ class Group extends Container
     }
 
     /**
+     * Renders the group in a named outlet elsewhere in the form, when one is
+     * present, such as the field layout designer's Display tab
+     * (`field-layout-designer.display`). Without one, it renders in place.
+     *
+     * Outlets are only filled when the form is rendered by Vue; server-rendered
+     * HTML always renders the group in place.
+     */
+    public function outlet(?string $outlet): static
+    {
+        $this->outlet = $outlet;
+
+        return $this;
+    }
+
+    /**
      * Shows a loading state while the reactive control at this absolute path refreshes the Ui.
      *
      * @param  string|list<string>  $path
@@ -167,6 +184,7 @@ class Group extends Container
                 ...$this->fieldPresentationProps(),
                 'width' => $this->width,
                 'dependsOn' => $this->dependsOn,
+                'outlet' => $this->outlet,
             ]),
             ...$this->visibilityProps(),
         ];

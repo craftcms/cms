@@ -117,6 +117,14 @@ export const baseFieldStyles = css`
 export const inputStyles = css`
   ${baseFieldStyles}
 
+  :host {
+    --_control-height: var(--c-input-height, var(--c-size-control-md));
+  }
+
+  :host([size~='small']) {
+    --_control-height: var(--c-input-height, var(--c-size-control-sm));
+  }
+
   :host([monospace]) .input-group__container {
     font-family: var(--c-font-mono);
     font-size: 0.9em;
@@ -168,15 +176,44 @@ export const inputStyles = css`
     overflow: clip;
   }
 
-  ::slotted(craft-button[slot='suffix']) {
+  :host(:not([inline-suffix])) ::slotted(craft-button[slot='suffix']) {
     --c-focus-outline-offset: -2px;
     align-self: stretch;
     box-sizing: border-box;
-    width: calc(var(--c-input-spacing-inline) * 2 + var(--c-size-control-sm));
+    width: max(
+      var(--c-size-control-sm),
+      var(--_control-height) - var(--c-input-border-width) * 2
+    );
     height: auto;
     min-height: 0;
     margin-inline: calc(var(--c-input-spacing-inline) * -1);
     border-radius: 0;
+  }
+
+  :host([inline-suffix]) .input-group__suffix {
+    overflow: visible;
+    padding-inline: 0
+      calc((var(--_control-height) - var(--c-size-control-sm)) / 2);
+  }
+
+  :host([inline-suffix]) .input-group__container:has(.input-group__suffix) {
+    border-radius: var(--c-input-radius, var(--c-radius-sm));
+    box-shadow: var(--c-input-shadow);
+  }
+
+  :host([inline-suffix])
+    .input-group__input:has(+ .input-group__suffix)
+    ::slotted([slot='input']) {
+    --c-focus-outline-width: 0px;
+    border-inline-end: 0;
+    box-shadow: none;
+  }
+
+  :host([inline-suffix][focused-visible])
+    .input-group__container:has(.input-group__suffix) {
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
   }
 
   .input-group__prefix + .input-group__input ::slotted([slot='input']) {

@@ -31,6 +31,26 @@ export default css`
       background-color: var(--c-color-fill-loud);
       border-color: var(--c-color-border-loud);
       color: var(--c-color-on-loud);
+      --c-checkbox-border-color: var(--c-color-on-loud);
+    }
+  }
+
+  /* A checked header checkbox is filled with the header's text color, with
+     the mark cut out in its fill, rather than the accent color, which can
+     clash with the card's color or blend into it. */
+  :host([data-color]:not([data-color='white'])) .card {
+    .card__header,
+    .card__footer {
+      --c-checkbox-checked-fill: var(--c-color-on-quiet);
+      --c-checkbox-checked-mark: var(--c-color-fill-quiet);
+    }
+  }
+
+  :host([data-color]:not([data-color='white'])[active]) .card {
+    .card__header,
+    .card__footer {
+      --c-checkbox-checked-fill: var(--c-color-on-loud);
+      --c-checkbox-checked-mark: var(--c-color-fill-loud);
     }
   }
 
@@ -116,6 +136,15 @@ export default css`
     border-color: var(--c-color-accent-border-quiet);
   }
 
+  /* Checkboxes match the header's other controls, which take its text color. */
+  .card__header,
+  .card__footer {
+    --c-checkbox-border-color: var(
+      --c-color-on-quiet,
+      var(--c-color-neutral-on-quiet)
+    );
+  }
+
   .card__header,
   .card__footer {
     font-size: 0.875em;
@@ -140,17 +169,25 @@ export default css`
     display: none;
   }
 
+  /* With the card's own top and bottom borders, a header bar's height. */
   :host([collapsed]) .card__header {
-    min-height: var(--c-card-header-min-height, var(--c-size-header));
+    min-height: var(
+      --c-card-header-min-height,
+      calc(var(--c-size-header) - var(--c-card-border-width, 1px) * 2)
+    );
     border-block-end-width: 0;
   }
 
   .card__header {
     /* Room for a small button, like other header bars, so a header is the
-       same height with or without actions; plus its bottom border. */
-    min-height: var(
-      --c-card-header-min-height,
-      calc(var(--c-size-header) + 1px)
+       same height with or without actions. With the card's top border and the
+       header's own bottom border, it's a header bar's height. */
+    --_header-height: calc(
+      var(--c-size-header) - var(--c-card-border-width, 1px)
+    );
+    min-height: var(--c-card-header-min-height, var(--_header-height));
+    padding-block: calc(
+      (var(--_header-height) - 1px - var(--c-size-control-sm)) / 2
     );
     border-block-end-width: 1px;
     display: flex;
@@ -177,15 +214,17 @@ export default css`
   /* The body matches the CP's container padding, and falls back to the same
      value outside the CP, where nothing defines it. */
   .card-body {
-    gap: var(--c-spacing-md);
-    padding-inline: var(
+    --_body-padding-inline: var(
       --c-card-padding-inline,
       var(--cp-container-padding, var(--c-spacing-lg))
     );
-    padding-block: var(
+    --_body-padding-block: var(
       --c-card-padding-block,
       var(--cp-container-padding, var(--c-spacing-lg))
     );
+    gap: var(--c-spacing-md);
+    padding-inline: var(--_body-padding-inline);
+    padding-block: var(--_body-padding-block);
   }
 
   .card-body--thumb-start {
@@ -200,11 +239,35 @@ export default css`
     grid-template-columns: minmax(0, 1fr) calc(120rem / 16);
   }
 
-  .card-body__main {
-    grid-area: main;
+  /* The thumbnail sits closer to the card's edges than the text does. It's
+     shifted rather than given inline margins, so it keeps its column's width. */
+  .card-body__thumb {
+    --_thumb-inset: var(--c-spacing-md);
+    --_thumb-shift: calc(var(--_body-padding-inline) - var(--_thumb-inset));
+    /* Fit within the thumbnail column, at the image's own proportions. */
+    --c-thumbnail-size: calc(120rem / 16);
+    --c-thumbnail-height: auto;
+    --c-thumbnail-image-radius: var(--c-radius-md);
+    position: relative;
+    margin-block: calc(var(--_thumb-inset) - var(--_body-padding-block));
   }
 
-  .card-body__thumbnail {
-    grid-area: thumbnail;
+  .card-body--thumb-start .card-body__thumb {
+    inset-inline-start: calc(var(--_thumb-shift) * -1);
+  }
+
+  .card-body--thumb-end .card-body__thumb {
+    inset-inline-start: var(--_thumb-shift);
+  }
+
+  /* Capped, as a transformed image can round a pixel past the column. */
+  slot[name='thumbnail']::slotted(*) {
+    max-block-size: calc(120rem / 16);
+    border-radius: var(--c-radius-md);
+    overflow: clip;
+  }
+
+  .card-body__main {
+    grid-area: main;
   }
 `;

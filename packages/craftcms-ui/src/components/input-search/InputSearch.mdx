@@ -1,0 +1,39 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as InputSearchStories from './input-search.stories';
+
+<Meta of={InputSearchStories} name="Docs" />
+
+# Input Search
+
+`<craft-input-search>` is a search field: an input led by a search icon, with a button to clear it.
+
+<Canvas of={InputSearchStories.Default} sourceState="shown" />
+
+The search icon stands in for the visible label, so the label, "Search" by default, is visually hidden and the placeholder says "Search" too.
+The clear button appears while the field has a value. Pressing it, or Escape, empties the field, leaves focus in it, and fires `clear`.
+
+<Canvas of={InputSearchStories.WithValue} />
+
+## Extra Controls
+
+Anything slotted into `suffix`, such as a filter button, sits in its own segment after the input. The clear button stays inside the input, before it.
+
+<Canvas of={InputSearchStories.WithSuffix} />
+
+## Everything Else
+
+It is [Input](?path=/docs/form-controls-text-controls-input--docs) underneath, so the whole base surface applies, including `v-model` through its Vue wrapper.
+
+## Accessibility
+
+When the field searches something specific, give it a label that says what, such as "Search entries", so it isn't one of several fields all named "Search".
+
+<Canvas of={InputSearchStories.CustomLabel} />
+
+When the field is a page's main search, put it in a `role="search"` region, such as a `<form role="search">`, so it can be found as a landmark.
+
+Buttons slotted into `suffix` need an accessible name.
+
+## Properties
+
+<ArgTypes of={InputSearchStories} />
