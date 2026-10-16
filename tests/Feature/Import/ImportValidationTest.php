@@ -147,6 +147,20 @@ it('reports a step without a source instead of failing', function () {
         ->and($importPlan->errors()->keys())->toContain('steps.'.$importPlan->steps[0]->uid.'.source');
 });
 
+it('reports a step’s missing site, section and entry type with the importer’s messages', function () {
+    $importPlan = new ImportPlanData()
+        ->name('No Target')
+        ->handle('noTarget')
+        ->steps([['type' => EntryImporter::class, 'source' => 'entries.csv']]);
+
+    $importPlan->validate();
+    $prefix = 'steps.'.$importPlan->steps[0]->uid.'.settings';
+
+    expect($importPlan->errors()->get("$prefix.site"))->toBe(['Site must be provided.'])
+        ->and($importPlan->errors()->get("$prefix.section"))->toBe(['Section must be provided.'])
+        ->and($importPlan->errors()->get("$prefix.entryType"))->toBe(['Entry Type must be provided.']);
+});
+
 it('leaves out a step whose importer can’t be created instead of failing', function () {
     $importPlan = new ImportPlanData()
         ->name('Bad Type')

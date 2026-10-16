@@ -325,6 +325,16 @@ abstract class BaseImporter
     }
 
     /**
+     * Returns custom validation messages for the importer's settings rules.
+     *
+     * @return array<string, string>
+     */
+    public static function getSettingsMessages(): array
+    {
+        return [];
+    }
+
+    /**
      * Returns the importer's current state as a step, the shape the import plan edit screen holds.
      */
     public function toImportStep(): ImportStep
@@ -369,7 +379,7 @@ abstract class BaseImporter
      */
     public function validate(): void
     {
-        ValidatorFacade::make($this->toArrayData(), static::getRules())->validate();
+        ValidatorFacade::make($this->toArrayData(), static::getRules(), static::getSettingsMessages())->validate();
     }
 
     /**
@@ -379,7 +389,7 @@ abstract class BaseImporter
      */
     public function validateSettings(): void
     {
-        ValidatorFacade::make($this->toArrayData(), static::getSettingsRules())->validate();
+        ValidatorFacade::make($this->toArrayData(), static::getSettingsRules(), static::getSettingsMessages())->validate();
     }
 
     /**

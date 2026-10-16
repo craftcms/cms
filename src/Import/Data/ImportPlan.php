@@ -268,7 +268,7 @@ class ImportPlan extends Component implements CpEditable, Validatable
             return ['type' => $typeValidator->errors()->get('type')];
         }
 
-        $stepValidator = ValidatorFacade::make($stepArray, $type::getRules($resolveHost));
+        $stepValidator = ValidatorFacade::make($stepArray, $type::getRules($resolveHost), $type::getSettingsMessages());
 
         return $stepValidator->fails() ? $stepValidator->errors()->messages() : [];
     }

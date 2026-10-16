@@ -18,6 +18,7 @@ use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Validation\Rules\SiteRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -29,7 +30,6 @@ use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
-use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -137,7 +137,7 @@ abstract class ElementImporter extends BaseImporter
      */
     public function site(string|int|Site|null $site): self
     {
-        $resolved = self::normalizeSite($site);
+        $resolved = $site === null ? Sites::getPrimarySite() : Sites::resolveSite($site);
 
         if ($resolved === null) {
             throw new InvalidArgumentException(is_numeric($site)
@@ -230,12 +230,17 @@ abstract class ElementImporter extends BaseImporter
     {
         return array_merge(parent::getSettingsRules(), [
             'settings.fieldLayout' => fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateFieldLayout($value, $attribute, $fail, $validator),
-            'settings.site' => [
-                'required',
-                fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateSite($value, $attribute, $fail, $validator),
-            ],
+            'settings.site' => ['required', new SiteRule],
             'settings.keepMissingNestedElements' => ['nullable', 'array'],
             'settings.fieldSettings' => ['nullable', 'array'],
+        ]);
+    }
+
+    #[Override]
+    public static function getSettingsMessages(): array
+    {
+        return array_merge(parent::getSettingsMessages(), [
+            'settings.site.required' => t('Site must be provided.'),
         ]);
     }
 
@@ -249,33 +254,6 @@ abstract class ElementImporter extends BaseImporter
         $data['settings']['fieldSettings'] = $this->fieldSettings;
 
         return $data;
-    }
-
-    /**
-     * Validates that the given handle matches a known site.
-     *
-     * @param  mixed  $value  The value of the site handle being validated.
-     * @param  string  $attribute  The name of the attribute being validated.
-     * @param  Closure  $fail  The callback function to invoke when validation fails.
-     * @param  Validator  $validator  The validator instance performing the validation.
-     */
-    public static function validateSite(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
-    {
-        if (empty($value)) {
-            $fail($attribute, t('Site must be provided.'));
-
-            return false;
-        }
-
-        if (self::normalizeSite($value) === null) {
-            $fail($attribute, t('“{site}” is not a valid site handle.', [
-                'site' => $value,
-            ]));
-
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -484,20 +462,6 @@ abstract class ElementImporter extends BaseImporter
     }
 
     /**
-     * Resolves a Site instance, numeric ID, handle, or UID to a Site, or null if not found.
-     * A null value resolves to the primary site.
-     */
-    private static function normalizeSite(string|int|Site|null $value): ?Site
-    {
-        return match (true) {
-            $value instanceof Site => $value,
-            $value === null => Sites::getPrimarySite(),
-            is_numeric($value) => Sites::getSiteById((int) $value),
-            default => self::siteByUidOrNull($value) ?? Sites::getSiteByHandle($value),
-        };
-    }
-
-    /**
      * Resolves a FieldLayout instance, numeric ID, UID, or element-type string to a FieldLayout, or null if not found.
      * A null value resolves to null.
      */
@@ -556,19 +520,6 @@ abstract class ElementImporter extends BaseImporter
     public static function isElementImporter(): bool
     {
         return true;
-    }
-
-    /**
-     * `Sites::getSiteByUid()` throws an error when the UID isn't found,
-     * so we need this method to catch it and return null in that case.
-     */
-    private static function siteByUidOrNull(string $uid): ?Site
-    {
-        try {
-            return Sites::getSiteByUid($uid);
-        } catch (Throwable) {
-            return null;
-        }
     }
 
     /**
