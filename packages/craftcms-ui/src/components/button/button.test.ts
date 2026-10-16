@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftButton from './button.js';
 import './button.js';
 
@@ -26,6 +26,12 @@ function content(element: CraftButton): HTMLElement | null {
 }
 
 beforeEach(() => {
+  document.body.innerHTML = '';
+});
+
+// Disconnects the last test's buttons, which cancels their pending feedback
+// resets before the environment is torn down.
+afterEach(() => {
   document.body.innerHTML = '';
 });
 
@@ -306,6 +312,53 @@ describe('craft-button actions', () => {
     element.click();
 
     expect(fired).toBe(false);
+  });
+});
+
+describe('craft-button action feedback', () => {
+  it('cancels its pending reset to idle once it is removed', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const element = await createButton({
+        action: '{"type":"event","name":"craft:test-feedback"}',
+      });
+      const states: string[] = [];
+      element.addEventListener('craft-state-change', (event) => {
+        states.push((event as CustomEvent<{state: string}>).detail.state);
+      });
+
+      await element.triggerAction();
+      element.remove();
+      vi.advanceTimersByTime(element.feedbackDuration * 2);
+
+      expect(states).toEqual(['success']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps a new run’s feedback for its full duration', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const element = await createButton({
+        action: '{"type":"event","name":"craft:test-feedback"}',
+      });
+
+      await element.triggerAction();
+      vi.advanceTimersByTime(element.feedbackDuration - 1);
+      await element.triggerAction();
+      vi.advanceTimersByTime(element.feedbackDuration - 1);
+
+      expect(element.actionState).toBe('success');
+
+      vi.advanceTimersByTime(1);
+
+      expect(element.actionState).toBe('idle');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
