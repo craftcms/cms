@@ -19,6 +19,7 @@ use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
+use craft\helpers\Template as TemplateHelper;
 use craft\models\FieldLayout;
 use craft\test\TestCase;
 use craft\test\TestSetup;
@@ -1816,13 +1817,37 @@ EOL;
         // single item
         $this->testRenderResult('a:1/1:0:1:0:firstlast:F', '{% render [array[0]] %}', $vars);
 
-        // within a {% for %} loop, the outer loop is available via `loop.parent.loop`
+        // within a {% for %} loop, rendered objects get their own `loop` variable, and the outer loop is available
+        // via `loop.parent.loop`
         $inner = $this->renderable('i', '{{ name }}{{ loop.index }}/{{ loop.parent.loop.index }}');
         $this->testRenderResult(
             "i1/1\ni2/1\ni1/2\ni2/2",
             '{% for x in 1..2 %}{% render items %}{% if not loop.last %}{{ "\n" }}{% endif %}{% endfor %}',
             ['items' => [$inner, $inner]],
         );
+
+        // a `loop` variable passed via `with` is left alone
+        $custom = $this->renderable('a', '{{ name }}:{{ loop }}');
+        $this->testRenderResult('a:custom', '{% render [obj] with {loop: "custom"} %}', ['obj' => $custom]);
+        $this->testRenderResult('a:custom', '{% render [obj] with {loop: "custom"} only %}', ['obj' => $custom]);
+        $this->testRenderResult(
+            'a:custom',
+            '{% for x in 1..1 %}{% render [obj] with {loop: "custom"} %}{% endfor %}',
+            ['obj' => $custom],
+        );
+
+        // ...whereas `loop` variables in the context are replaced
+        $this->testRenderResult('a1/1', '{% render [obj] %}', [
+            'obj' => $this->renderable('a', '{{ name }}{{ loop.index }}/{{ loop.length }}'),
+            'loop' => 'context',
+        ]);
+
+        // the same goes for Template::render()
+        self::assertSame('a:custom', (string)TemplateHelper::render([$custom], ['loop' => 'custom']));
+        self::assertSame('a1/1', (string)TemplateHelper::render(
+            [$this->renderable('a', '{{ name }}{{ loop.index }}/{{ loop.length }}')],
+            context: ['loop' => 'context'],
+        ));
 
         // individual objects rendered within a {% for %} loop get its `loop` variable
         $this->testRenderResult(

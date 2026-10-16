@@ -387,16 +387,23 @@ class Template
      * Renders the given renderable object(s).
      *
      * If an array or other iterable is passed, each of its items will be rendered and joined with newlines,
-     * and a `loop` variable will be made available to each of them, like within `{% for %}` loops.
+     * and a `loop` variable will be made available to each of them, like within `{% for %}` loops. Any `loop`
+     * variable in `$context` will be replaced, but a `loop` variable in `$variables` will be left alone.
      *
      * @param Renderable|iterable<Renderable>|null $objects The object(s) to render
      * @param array $variables Variables that should be passed to each object’s `render()` method
+     * @param array $context Additional variables that should be passed to each object’s `render()` method, such as
+     * the current template context. `$variables` will take precedence over them.
      * @return Markup
      * @throws InvalidArgumentException if any of the objects aren’t renderable
      * @since 5.12.0
      */
-    public static function render(Renderable|iterable|null $objects, array $variables = []): Markup
+    public static function render(Renderable|iterable|null $objects, array $variables = [], array $context = []): Markup
     {
+        // If `loop` was explicitly passed in, leave it alone
+        $defineLoop = !array_key_exists('loop', $variables);
+        $variables = array_merge($context, $variables);
+
         if ($objects instanceof Renderable) {
             return $objects->render($variables);
         }
@@ -415,6 +422,11 @@ class Template
         foreach ($objects as $i => $object) {
             if (!$object instanceof Renderable) {
                 throw new InvalidArgumentException(sprintf('%s isn’t renderable.', get_debug_type($object)));
+            }
+
+            if (!$defineLoop) {
+                $output[] = (string)$object->render($variables);
+                continue;
             }
 
             // Provide a `loop` variable, like {% for %} loops

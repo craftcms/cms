@@ -9,6 +9,7 @@ namespace craft\web\twig\nodes;
 
 use craft\helpers\Template;
 use Twig\Compiler;
+use Twig\Extension\CoreExtension;
 use Twig\Node\IncludeNode;
 
 /**
@@ -33,9 +34,21 @@ class RenderNode extends IncludeNode
             ->subcompile($this->getNode('expr'))
             ->raw(', ');
 
-        $this->addTemplateArguments($compiler);
+        // Pass the `with` variables and the template context separately, so Template::render() can tell whether
+        // `loop` was explicitly passed in
+        if ($this->hasNode('variables')) {
+            $compiler
+                ->raw(sprintf('%s::toArray(', CoreExtension::class))
+                ->subcompile($this->getNode('variables'))
+                ->raw(')');
+        } else {
+            $compiler->raw('[]');
+        }
 
-        $compiler->raw(");\n");
+        $compiler
+            ->raw(', ')
+            ->raw($this->getAttribute('only') ? '[]' : '$context')
+            ->raw(");\n");
     }
 
     /**
