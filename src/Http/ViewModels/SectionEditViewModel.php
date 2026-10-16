@@ -148,7 +148,7 @@ class SectionEditViewModel extends ViewModel
                         'urlFormat' => [
                             'heading' => t('URL Format'),
                             'type' => 'singleline',
-                            'info' => t('Type `$` for an environment variable, `@` for an alias, or `{` for an object template variable.'),
+                            'info' => t('Type <kbd>$</kbd> for an environment variable, <kbd>@</kbd> for an alias, or <kbd>{</kbd> for an object template variable.'),
                             'textExpanderTriggers' => [
                                 ...SelectOptions::getEnvTextExpanderTriggers(true),
                                 ...$objectTemplateTriggers,

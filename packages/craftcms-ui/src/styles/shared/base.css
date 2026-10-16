@@ -253,6 +253,17 @@ fieldset {
   border-radius: var(--c-radius-sm);
 }
 
+kbd {
+  font-family: var(--c-font-mono);
+  font-size: 0.85em;
+  padding-inline: 0.4em;
+  border: 1px solid var(--c-color-neutral-border-quiet);
+  border-block-end-width: 2px;
+  border-radius: var(--c-radius-sm);
+  box-shadow: var(--c-shadow-xs);
+  white-space: nowrap;
+}
+
 craft-chip .cp-code {
   /* Block, so the label's line height doesn't add space above it */
   display: block;
