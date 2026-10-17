@@ -35,6 +35,14 @@ class RouteTokens
     private array $remainingTokenUsages = [];
 
     /**
+     * Routes resolved during this request, so a token with a usage limit is
+     * only used once however many times it's looked up.
+     *
+     * @var array<string,array<mixed>|false>
+     */
+    private array $resolvedTokenRoutes = [];
+
+    /**
      * Creates a new token and returns it.
      * ---
      * ```php
@@ -111,6 +119,18 @@ class RouteTokens
      * @return array<mixed>|false
      */
     public function getTokenRoute(string $token): array|false
+    {
+        if (array_key_exists($token, $this->resolvedTokenRoutes)) {
+            return $this->resolvedTokenRoutes[$token];
+        }
+
+        return $this->resolvedTokenRoutes[$token] = $this->resolveTokenRoute($token);
+    }
+
+    /**
+     * @return array<mixed>|false
+     */
+    private function resolveTokenRoute(string $token): array|false
     {
         // Take the opportunity to delete any expired tokens
         $this->deleteExpiredTokens();
