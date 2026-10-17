@@ -444,3 +444,24 @@ craft-field[data-highlighted] {
 .cp-container > * {
   grid-column: 2;
 }
+
+/* Non-image card thumbnails (user avatars, folder and file-kind icons) render
+   at a fixed small size. Center them in a box as big as the largest image
+   thumbnail, at the size they get in the thumbnail view. Unlayered, so it
+   beats the 24px utility classes thumbnails render with. */
+.card-thumb:has(> .thumb) {
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+}
+
+.card-thumb > .thumb {
+  width: 72px;
+  height: 72px;
+}
+
+.card-thumb > .thumb svg {
+  width: 100%;
+  height: 100%;
+}

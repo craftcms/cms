@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\FieldLayoutDesigner;
 
 use CraftCms\Cms\Cp\Html\StatusHtml;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -12,6 +13,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Throwable;
 
@@ -82,10 +84,18 @@ class CardDesigner
     {
         $showThumb ??= $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
+        $sampleElement = $this->sampleElement($fieldLayout);
+        $sampleUser = $sampleElement instanceof User ? $sampleElement : null;
+        $labelText = $sampleUser?->getName() ?? t('The Quick Brown Fox');
+
+        // A sample user shows their default avatar, unless a field supplies the thumbnail.
+        $avatarHtml = $showThumb && $sampleUser && ! $fieldLayout->hasThumbField()
+            ? $sampleUser->getThumbHtml(120)
+            : null;
 
         // get heading
         $headingHtml = Html::tag('craft-truncate',
-            Html::tag('a', Html::tag('span', t('The Quick Brown Fox')), [
+            Html::tag('a', Html::tag('span', Html::encode($labelText)), [
                 'class' => ['label-link'],
                 'href' => '#',
                 'aria-disabled' => 'true',
@@ -95,10 +105,8 @@ class CardDesigner
             ]
         );
 
-        // get status label placeholder
-        $hasStatuses = $fieldLayout->type::hasStatuses();
-        $sampleElement = $hasStatuses ? new ($fieldLayout->type)() : null;
-        $labels = [$sampleElement ? app(StatusHtml::class)->componentStatusLabelHtml($sampleElement) : null];
+        // User cards don't show a status badge elsewhere in the CP.
+        $labels = [$sampleElement && ! $sampleUser ? app(StatusHtml::class)->componentStatusLabelHtml($sampleElement) : null];
         $bodyHtml = Html::beginTag('div');
 
         // get body elements (fields and attributes)
@@ -131,10 +139,41 @@ class CardDesigner
             'showThumb' => $showThumb,
             'thumbAlignment' => $thumbAlignment,
             'thumbnailHtml' => $thumbnailHtml,
+            'avatarHtml' => $avatarHtml,
+            'labelText' => $labelText,
             // The sample chip shows a status indicator, rather than a label.
             'statusIndicatorHtml' => $sampleElement ? app(StatusHtml::class)->componentStatusIndicatorHtml($sampleElement) : null,
         ])->render();
 
+    }
+
+    /**
+     * Returns a sample element to preview cards and chips with, if the element type has statuses: a live entry,
+     * or an active user with a name (and so a default avatar).
+     */
+    private function sampleElement(FieldLayout $fieldLayout): ?ElementInterface
+    {
+        if (! $fieldLayout->type::hasStatuses()) {
+            return null;
+        }
+
+        $element = new ($fieldLayout->type)();
+
+        // Published, so it shows as live rather than pending.
+        if (property_exists($element, 'postDate')) {
+            $element->postDate = now();
+        }
+
+        if ($element instanceof User) {
+            $element->firstName = 'Olive';
+            $element->lastName = 'Craften';
+            $element->fullName = 'Olive Craften';
+            $element->active = true;
+            // Fixed, so the avatar's colors (picked from its first two bytes) stay the same: teal to violet.
+            $element->uid = '181d3c1a-0000-4000-8000-000000000000';
+        }
+
+        return $element;
     }
 
     /** @return array<string, array<string, string|null>> */

@@ -5,6 +5,8 @@
      * @var string $thumbnailHtml
      * @var string $headingHtml
      * @var string|null $statusIndicatorHtml
+     * @var string|null $avatarHtml
+     * @var string $labelText
      */
 @endphp
 
@@ -18,18 +20,22 @@
     @if ($statusIndicatorHtml)
         <div slot="status">{!! $statusIndicatorHtml !!}</div>
     @endif
-    @if ($showThumb)
+    @if ($avatarHtml)
+        <div slot="thumbnail">{!! $avatarHtml !!}</div>
+    @elseif ($showThumb)
         <div slot="thumbnail" class="cvd-chip-thumbnail">
             <craft-icon name="image"></craft-icon>
         </div>
     @endif
-    <div><a class="label-link" href="#" aria-disabled="true">{{ \CraftCms\Cms\t('The Quick Brown Fox') }}</a></div>
+    <div><a class="label-link" href="#" aria-disabled="true">{{ $labelText }}</a></div>
 </craft-chip>
 
 <craft-card thumb-alignment="{{$thumbAlignment}}">
     <div slot="header"></div>
 
-    @if($showThumb)
+    @if ($avatarHtml)
+        <div slot="thumbnail" class="card-thumb">{!! $avatarHtml !!}</div>
+    @elseif ($showThumb)
         <div slot="thumbnail" class="cvd-thumbnail">
             {!! $thumbnailHtml !!}
         </div>

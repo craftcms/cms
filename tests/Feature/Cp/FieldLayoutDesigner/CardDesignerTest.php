@@ -7,6 +7,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\User\Elements\User;
 use Symfony\Component\DomCrawler\Crawler;
 
 function cardPreview(string $elementType): Crawler
@@ -37,6 +38,27 @@ it('shows the status in the chip and card for element types with statuses', func
     'entries' => [Entry::class, true],
     'addresses' => [Address::class, false],
 ]);
+
+it('shows the sample entry as live', function () {
+    $preview = cardPreview(Entry::class);
+
+    expect($preview->filter('craft-card ul')->text())->toContain('Live')
+        ->and($preview->filter('craft-card ul')->text())->not->toContain('Pending');
+});
+
+it('previews users as an active sample user with a default avatar and no status badge', function () {
+    $preview = cardPreview(User::class);
+    $chip = $preview->filter('craft-chip.cvd-chip');
+    $card = $preview->filter('craft-card');
+
+    expect($chip->text())->toContain('Olive Craften')
+        ->and($card->filter('.label')->text())->toContain('Olive Craften')
+        ->and($chip->filter('[slot="thumbnail"] svg title')->text())->toBe('Olive Craften')
+        ->and($chip->filter('[slot="thumbnail"] svg text')->text())->toBe('OC')
+        ->and($card->filter('[slot="thumbnail"] svg text')->text())->toBe('OC')
+        ->and($chip->filter('[slot="status"] craft-indicator')->attr('label'))->toContain('Active')
+        ->and($card->filter('ul')->count())->toBe(0);
+});
 
 it('shows a thumbnail in the chip when the cards have one', function (string $elementType, bool $hasThumb) {
     $chip = cardPreview($elementType)->filter('craft-chip.cvd-chip');
