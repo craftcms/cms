@@ -70,6 +70,7 @@ it('gives a colored, non-plain chip’s links its text color and an underline un
     </craft-chip>
     <craft-chip id="variant" variant="danger"><a href="#">Direct</a></craft-chip>
     <craft-chip id="gray" data-color="gray"><a href="#">Gray</a></craft-chip>
+    <craft-chip id="slate" data-color="slate"><a href="#">Slate</a></craft-chip>
     <craft-chip id="black" data-color="black"><a href="#">Black</a></craft-chip>
     <craft-chip id="neutral" variant="neutral"><a href="#">Neutral</a></craft-chip>
     <craft-chip id="default"><a href="#">Default</a></craft-chip>
@@ -95,7 +96,13 @@ it('gives a colored, non-plain chip’s links its text color and an underline un
 
   // A plain chip has no fill to clash with, and a gray chip's is light enough
   // for blue (as a gray card's is), so they keep the link styling.
-  for (const id of ['default', 'gray', 'plain-color', 'plain-variant']) {
+  for (const id of [
+    'default',
+    'gray',
+    'slate',
+    'plain-color',
+    'plain-variant',
+  ]) {
     const link = document.querySelector<HTMLElement>(`#${id} a`)!;
     expect(getComputedStyle(link).color).toBe(linkColor());
     expect(getComputedStyle(link).textDecorationLine).toBe('none');

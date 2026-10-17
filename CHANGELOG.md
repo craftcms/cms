@@ -84,7 +84,7 @@
 - Slide pickers, such as field layout designers’ width pickers, now have lighter segments, and the dividers between selected segments are no longer dark.
 - Resizable modals, such as the Customize Sources modal, now have grips along their right and bottom edges, plus a smaller one in their corner, which show on hover. Only the corner grip takes keyboard focus.
 - Element selection modals can now be resized.
-- Controls, hairlines, and UI text within colored cards and Matrix blocks now take the card’s color rather than gray, except for white, gray, and black.
+- Controls, hairlines, and UI text within colored cards and Matrix blocks now take the card’s color rather than gray, except for white, gray, slate, and black, which also keep the default link styling in cards, chips, and badges.
 - Matrix blocks are now styled like cards in their color, including their borders, white blocks’ darker surface in the dark theme, and black blocks’ dark-themed contents.
 - Fixed a bug where Language and Formatting Locale options’ hints were shown in the current language, rather than in each option’s own language.
 - Fixed a bug where control panel pages without a title had extra space above their content.

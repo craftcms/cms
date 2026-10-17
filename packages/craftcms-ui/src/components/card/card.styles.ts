@@ -1,26 +1,41 @@
 import {css} from 'lit';
+import {tintedHost} from '@src/styles/tinted.styles';
 
 export default css`
   :host {
     display: block;
   }
 
-  /* On a colored card links take the card's text color, and are underlined so
-     they still stand apart from it. White, gray, and slate cards (which the
-     neutral, disabled, and inactive names map to) keep the default link
-     styling, which has enough contrast against their fills. So do black cards,
-     whose contents take the dark theme's link color (see color-palette.css). */
-  :host(
-    [data-color]:not(
-      [data-color='white'],
-      [data-color='gray'],
-      [data-color='slate'],
-      [data-color='black']
-    )
-  ) {
+  /* On a tinted card links take the card's text color, and are underlined so
+     they still stand apart from it. Neutral cards keep the default link
+     styling (black's contents take the dark theme's). */
+  ${tintedHost()} {
     --c-text-link: currentColor;
     --c-link-decoration: underline;
     --c-link-decoration-hover: none;
+  }
+
+  /* What's in a tinted card takes the card's color rather than gray, as its
+     body does: neutral controls and hairlines, the selected tab's indicator,
+     form control and checkbox borders, and UI text. */
+  ${tintedHost()} ::slotted(*) {
+    --c-color-neutral-fill-quiet: var(--_colorable-fill-quiet);
+    --c-color-neutral-fill-normal: var(--_colorable-fill-normal);
+    --c-color-neutral-fill-loud: var(--_colorable-fill-loud);
+    --c-color-neutral-border-quiet: var(--_colorable-border-quiet);
+    --c-color-neutral-border-normal: var(--_colorable-border-normal);
+    --c-color-neutral-border-loud: var(--_colorable-border-loud);
+    --c-color-neutral-on-quiet: var(--_colorable-on-quiet);
+    --c-color-neutral-on-normal: var(--_colorable-on-normal);
+    --c-color-neutral-on-loud: var(--_colorable-on-loud);
+    --c-tab-border-active: var(--_colorable-on-quiet);
+    --c-form-control-border-color: var(--_colorable-border-normal);
+    --c-text-default: var(--_colorable-on-quiet);
+    --c-text-quiet: color-mix(
+      in oklab,
+      var(--_colorable-on-quiet) 75%,
+      var(--_colorable-fill-quiet)
+    );
   }
 
   :host([active]) .card {

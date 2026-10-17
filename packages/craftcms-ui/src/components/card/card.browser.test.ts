@@ -505,11 +505,12 @@ it('styles the buttons and badges in a black card as in the dark theme', async (
   expect(looks('black')).not.toEqual(looks('light'));
 });
 
-it('gives what’s in a colored card the card’s color, except for white, gray, and black', async () => {
+it('gives what’s in a tinted card the card’s color, but not in a neutral one', async () => {
   document.body.innerHTML = `
     <craft-card data-color="orange"><span id="colored"></span></craft-card>
     <craft-card><span id="plain"></span></craft-card>
     <craft-card data-color="gray"><span id="gray"></span></craft-card>
+    <craft-card data-color="slate"><span id="slate"></span></craft-card>
     <craft-card data-color="white"><span id="white"></span></craft-card>
     <span id="outside"></span>`;
   const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
@@ -533,7 +534,7 @@ it('gives what’s in a colored card the card’s color, except for white, gray,
     );
   }
 
-  for (const id of ['plain', 'gray', 'white']) {
+  for (const id of ['plain', 'gray', 'slate', 'white']) {
     expect(resolve(id, 'var(--c-text-default)'), id).toBe(
       resolve('outside', 'var(--c-text-default)')
     );
