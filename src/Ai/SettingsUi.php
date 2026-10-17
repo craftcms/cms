@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Controls\BooleanMenu;
 use CraftCms\Cms\Ui\Controls\Combobox;
 use CraftCms\Cms\Ui\Controls\Table;
+use CraftCms\Cms\Ui\Enums\FieldWidth;
 use CraftCms\Cms\Ui\Nodes\Callout;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Heading;
@@ -57,8 +58,10 @@ readonly class SettingsUi
 
         foreach ($modalities as $modality) {
             $nodes[] = Scope::make(['defaults', $modality->value], [
-                Field::make(t('{modality} Provider', ['modality' => $modality->label()]), $this->providerControl()),
-                Field::make(t('{modality} Model', ['modality' => $modality->label()]), $this->modelControl()),
+                Field::make(t('{modality} Provider', ['modality' => $modality->label()]), $this->providerControl())
+                    ->width(FieldWidth::Half),
+                Field::make(t('{modality} Model', ['modality' => $modality->label()]), $this->modelControl())
+                    ->width(FieldWidth::Half),
             ], "ai-defaults-{$modality->value}");
         }
 
