@@ -95,6 +95,7 @@
 - Fixed a bug where element indexes kept the page count of the listing they first loaded, after switching sources or filtering. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where submit buttons created by `Craft.ui.createSubmitButton()` and `createSubmitButton()` from `@craftcms/ui` weren’t styled as primary buttons. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where clicking on a relational field’s chip or card deselected the others. ([#20008](https://github.com/craftcms/cms/pull/20008))
+- Fixed a bug where avatars’ initials were hard to read in the dark theme. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where selectable chips and thumbnails had a text cursor. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where thumbnails’ action menu buttons had light-mode styling while pressed in the dark theme. ([#20008](https://github.com/craftcms/cms/pull/20008))
 
