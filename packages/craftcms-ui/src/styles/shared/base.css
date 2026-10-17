@@ -311,22 +311,13 @@ kbd {
 
 /* What's in a colored card takes the card's color rather than gray, as its
    body does: neutral controls and hairlines, the selected tab's indicator,
-   form control and checkbox borders, and UI text. That covers a card with a
-   color of its own, and one in a colored wrapper, such as a Matrix block. Not
-   for white, gray, or black, whose contents keep their usual colors (black's
-   are themed dark instead). */
-:is(
-    craft-card[data-color]:not(
-      [data-color='white'],
-      [data-color='gray'],
-      [data-color='black']
-    ),
-    [data-color]:not(
-        [data-color='white'],
-        [data-color='gray'],
-        [data-color='black']
-      )
-      > craft-card:not([data-color])
+   form control and checkbox borders, and UI text. Not for white, gray, or
+   black, whose contents keep their usual colors (black's are themed dark
+   instead). */
+craft-card[data-color]:not(
+    [data-color='white'],
+    [data-color='gray'],
+    [data-color='black']
   )
   > * {
   --c-color-neutral-fill-quiet: var(--_colorable-fill-quiet);
@@ -340,9 +331,6 @@ kbd {
   --c-color-neutral-on-loud: var(--_colorable-on-loud);
   --c-tab-border-active: var(--_colorable-on-quiet);
   --c-form-control-border-color: var(--_colorable-border-normal);
-  --c-input-border-color: var(--_colorable-border-normal);
-  --c-slide-rule-graduation-color: var(--_colorable-border-loud);
-  --c-pane-text: var(--_colorable-on-quiet);
   --c-text-default: var(--_colorable-on-quiet);
   --c-text-quiet: color-mix(
     in oklab,

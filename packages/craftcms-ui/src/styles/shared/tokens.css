@@ -235,7 +235,6 @@
   /* Inputs take on their container's background */
   --c-input-fill: transparent;
   --c-input-text: var(--c-form-control-text);
-  --c-input-border-color: var(--c-form-control-border-color);
   --c-input-border-width: var(--c-form-control-border-width);
   --c-input-border-style: var(--c-form-control-border-style);
   --c-input-radius: var(--c-form-control-radius);
@@ -252,13 +251,11 @@
   --c-slide-rule-height: var(--c-size-touch-target);
   --c-slide-rule-graduation-width: 10px;
   --c-slide-rule-graduation-height: 6px;
-  --c-slide-rule-graduation-color: var(--c-color-neutral-border-loud);
   --c-slide-rule-accent-color: var(--c-color-accent-border-loud);
 
   /** Appearances **/
   /* Generic Panes */
   --c-pane-fill: var(--c-surface-overlay);
-  --c-pane-text: var(--c-text-default);
   --c-pane-padding: var(--c-spacing-lg);
   --c-pane-border-width: 1px;
   --c-pane-border-style: solid;
@@ -297,7 +294,7 @@
 
   /* Modals */
   --c-modal-fill: var(--c-pane-fill);
-  --c-modal-text: var(--c-pane-text);
+  --c-modal-text: var(--c-text-default);
   --c-modal-radius: var(--c-radius-lg);
   /* A hairline, on top of the shadow, so modals keep an edge in either theme. */
   --c-modal-border-width: 1px;
