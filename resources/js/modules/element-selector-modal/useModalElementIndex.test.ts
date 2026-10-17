@@ -256,6 +256,38 @@ describe('double-clicking', () => {
 });
 
 describe('switching sources', () => {
+  it('pages the new source by its own total', async () => {
+    const pagination = (total: number) => ({
+      total,
+      per_page: 50,
+      current_page: 1,
+      last_page: Math.ceil(total / 50),
+      next_page_url: null,
+      prev_page_url: null,
+      from: 1,
+      to: Math.min(total, 50),
+    });
+    const index = mountIndex(
+      assetsData({pagination: pagination(58)} as Partial<ContentIndexData>)
+    );
+    expect(index.view.table.getPageCount()).toBe(2);
+
+    post.mockResolvedValue({
+      data: {
+        props: assetsData({
+          source: otherVolume,
+          pagination: pagination(6),
+        } as Partial<ContentIndexData>),
+      },
+    });
+    index.changeSource(otherVolume.key);
+    await vi.waitFor(() =>
+      expect(index.view.elementIndex.source?.key).toBe(otherVolume.key)
+    );
+
+    expect(index.view.table.getPageCount()).toBe(1);
+  });
+
   it('marks the chosen source active before its listing loads', async () => {
     const index = mountIndex();
     post.mockReturnValue(new Promise(() => {}));

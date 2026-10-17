@@ -234,6 +234,12 @@ export function useElementIndex(options: UseElementIndexOptions) {
     },
     ...sortingConfig,
     ...paginationConfig,
+    // A getter, after the spread: the spread copies the total the index was
+    // created with, which every later source or filter would keep showing as
+    // its page count.
+    get rowCount() {
+      return elementIndex.pagination.total;
+    },
     enableMultiSort: false,
   });
 
