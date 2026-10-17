@@ -261,12 +261,9 @@ body:not(.dragging) .fld-tab .tab.draggable {
     var(--color-white) 4%
   );
   /* Rings tabs and previews, just outside their outlines, to keep the grid's
-     dots clear of them: a shade darker than the page. */
-  --fld-halo: color-mix(
-    in oklab,
-    var(--c-surface-default),
-    var(--color-black) 8%
-  );
+     dots clear of them: white in light mode, and a shade darker than the page
+     in dark mode. */
+  --fld-halo: var(--color-white);
   /* A quiet border color, as it'd appear on the page, so the hairlines
      dividing (and edging) the workspace's panes hide the dots under them. */
   --fld-hairline: color-mix(
@@ -276,22 +273,27 @@ body:not(.dragging) .fld-tab .tab.draggable {
   );
   --fld-surface-ring: color-mix(
     in srgb,
-    hsl(210deg 24% 16%) 10%,
+    hsl(210deg 24% 16%) 20%,
     var(--c-surface-default)
   );
   --fld-surface-shadow:
-    0 0 0 1px var(--fld-surface-ring), var(--c-shadow-md),
+    0 0 0 1px var(--fld-surface-ring), var(--c-shadow-sm),
     0 0 0 3px var(--fld-halo);
 }
 
 [data-theme='dark'] {
+  --fld-halo: color-mix(
+    in oklab,
+    var(--c-surface-default),
+    var(--color-black) 8%
+  );
   --fld-surface-ring: color-mix(
     in srgb,
     var(--color-slate-400),
     var(--c-surface-default) var(--c-color-border-quiet-transparency)
   );
   --fld-surface-shadow:
-    0 0 0 1px var(--fld-surface-ring), var(--c-shadow-md),
+    0 0 0 1px var(--fld-surface-ring), var(--c-shadow-sm),
     0 0 0 3px var(--fld-halo);
 }
 
