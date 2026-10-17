@@ -225,6 +225,7 @@
         data-color="white"
         :class="{
           element: true,
+          'element--selectable': selectable,
           'element--selected': selection.isSelected(element.id),
           'element--dragging': getDragState(element.id).type === 'is-dragging',
           'element--hidden':
@@ -411,6 +412,12 @@
     background-color: var(--c-color-fill-quiet);
     border-color: var(--c-border-raised);
     color: var(--c-text-default);
+  }
+
+  // Clicking a selectable tile selects it, so its label doesn't get a text
+  // cursor, as if it were text to select. Links within it keep theirs.
+  .element--selectable {
+    cursor: default;
   }
 
   .element--selected {
