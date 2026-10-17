@@ -8,12 +8,14 @@ export default css`
   /* On a colored card links take the card's text color, and are underlined so
      they still stand apart from it. White, gray, and slate cards (which the
      neutral, disabled, and inactive names map to) keep the default link
-     styling, which has enough contrast against their fills. */
+     styling, which has enough contrast against their fills. So do black cards,
+     whose contents take the dark theme's link color (see color-palette.css). */
   :host(
     [data-color]:not(
       [data-color='white'],
       [data-color='gray'],
-      [data-color='slate']
+      [data-color='slate'],
+      [data-color='black']
     )
   ) {
     --c-text-link: currentColor;

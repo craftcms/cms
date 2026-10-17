@@ -21,3 +21,14 @@ export async function resolveFrom(pattern) {
     return acc;
   }, {});
 }
+
+/**
+ * What's in a black card, badge, or (filled) chip, which is themed dark so it
+ * holds up against the dark fill. Zero specificity, so the contents' own colors
+ * still win. Matches the copies in tokens.css and variables.css.
+ */
+export const BLACK_CONTENTS_SELECTOR = `:where(
+  craft-card[data-color='black'] > *,
+  craft-chip[data-color='black']:not([appearance~='plain']) > *,
+  craft-badge[fill='black'] > *
+)`;

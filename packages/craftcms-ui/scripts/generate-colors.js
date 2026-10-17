@@ -4,6 +4,7 @@ import {createRequire} from 'module';
 import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'url';
 import {transformSync} from 'esbuild';
+import {BLACK_CONTENTS_SELECTOR} from './utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -159,9 +160,11 @@ function generateStyles(paletteColors, semanticColors) {
 /*
   Also on [data-theme]: these tokens are built from the palette with var(),
   which is substituted where it's declared, so a themed subtree re-resolves them.
+  Likewise what's in a black card, chip, or badge (see utils.js).
 */
 :root,
-[data-theme] {
+[data-theme],
+${BLACK_CONTENTS_SELECTOR} {
 ${buildColorableTokens(paletteColors)}
 ${buildSemanticTokens(semanticColors)}
 }

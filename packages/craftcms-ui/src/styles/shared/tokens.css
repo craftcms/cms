@@ -1,10 +1,16 @@
 /*
   [data-theme] re-resolves these var()-based tokens against a themed subtree's
-  palette; a var() is substituted where it's declared.
+  palette; a var() is substituted where it's declared. What's in a black card,
+  chip, or badge is themed dark too (see scripts/utils.js).
 */
 :root,
 :host,
-[data-theme] {
+[data-theme],
+:where(
+  craft-card[data-color='black'] > *,
+  craft-chip[data-color='black']:not([appearance~='plain']) > *,
+  craft-badge[fill='black'] > *
+) {
   --c-text-lg: calc(16rem / 16);
   --c-text-base: calc(14rem / 16);
   --c-text-sm: calc(12rem / 16);
@@ -314,7 +320,12 @@
   color-scheme: light;
 }
 
-[data-theme='dark'] {
+[data-theme='dark'],
+:where(
+  craft-card[data-color='black'] > *,
+  craft-chip[data-color='black']:not([appearance~='plain']) > *,
+  craft-badge[fill='black'] > *
+) {
   color-scheme: dark;
   /* Like other hairlines here, so the no-color swatch keeps an edge. */
   --c-select-color-swatch-edge: var(--c-color-neutral-border-quiet);

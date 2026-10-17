@@ -310,8 +310,9 @@ kbd {
 }
 
 /* Neutral buttons on a colored card take the card's color, as its other
-   controls do, rather than gray. */
-craft-card[data-color]:not([data-color='white'])
+   controls do, rather than gray. Not on a black card, whose contents are
+   themed dark instead. */
+craft-card[data-color]:not([data-color='white'], [data-color='black'])
   craft-button:not([inherit]):not(
     [variant~='primary'],
     [variant~='danger'],

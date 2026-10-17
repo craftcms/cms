@@ -901,3 +901,35 @@ it('makes non-plain chips as tall as a medium button, thumbnail included', async
   expect(heights.slice(0, 3)).toEqual([32, 32, 32]);
   expect(heights[3]).toBeLessThan(32);
 });
+
+it('styles the badges in a filled black chip as in the dark theme', async () => {
+  await import('../../styles/cp.css');
+  await import('../badge/badge.js');
+  const badge = `<craft-badge>Badge</craft-badge>`;
+  document.body.innerHTML = `
+    <div id="black"><craft-chip data-color="black">${badge}</craft-chip></div>
+    <div id="plain"><craft-chip data-color="black" appearance="plain">${badge}</craft-chip></div>
+    <div id="dark" data-theme="dark">${badge}</div>
+    <div id="light">${badge}</div>`;
+  for (const element of document.querySelectorAll<
+    HTMLElement & {updateComplete: Promise<unknown>}
+  >('craft-chip, craft-badge')) {
+    await element.updateComplete;
+  }
+  const look = (id: string) => {
+    const element = document.querySelector(`#${id} craft-badge`)!;
+    const inner = element.shadowRoot!.firstElementChild!;
+    const style = getComputedStyle(
+      inner instanceof HTMLStyleElement ? inner.nextElementSibling! : inner
+    );
+
+    return [
+      getComputedStyle(element).colorScheme,
+      style.backgroundColor,
+      style.borderTopColor,
+    ];
+  };
+
+  expect(look('black')).toEqual(look('dark'));
+  expect(look('plain')).toEqual(look('light'));
+});
