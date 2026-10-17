@@ -255,6 +255,18 @@ describe('double-clicking', () => {
   });
 });
 
+describe('switching sources', () => {
+  it('marks the chosen source active before its listing loads', async () => {
+    const index = mountIndex();
+    post.mockReturnValue(new Promise(() => {}));
+
+    index.changeSource(otherVolume.key);
+
+    expect(index.activeSourceKey.value).toBe(otherVolume.key);
+    expect(index.view.elementIndex.source?.key).toBe(volume.key);
+  });
+});
+
 describe('leaving a folder', () => {
   async function openPhotos(index: ReturnType<typeof mountIndex>) {
     index.openFolder(7);
