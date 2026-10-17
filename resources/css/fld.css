@@ -754,6 +754,13 @@ body:not(.dragging) .fld-element {
 
 /* Card view designer styles now live in cvd.css */
 
+/* craft-tabs insets the focus rings of everything in its panels (so the
+   panel's own ring isn't clipped). Everything within the Content and Display
+   panels gets the usual separated ring instead, standing off its control. */
+.fld-view-tabs > [slot='panel'] > * {
+  --c-focus-outline-offset: 2px;
+}
+
 /* The Content and Display panels sit right under their tabs, so the hairline
    between the field layout designer's panes runs right up to the tabs. */
 .fld-view-tabs {

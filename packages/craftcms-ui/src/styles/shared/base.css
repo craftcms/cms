@@ -170,6 +170,31 @@ craft-radio[data-button] > input[type='radio'] {
 }
 
 /*
+  The input's corners (and so its focus ring's) follow its button's: rounded
+  only on the group's outer ends, and square where options meet. It sits
+  inside the button's border, so it takes the button's inner radius; the
+  ring's outer corners then come to the button's radius plus the space
+  between them plus the ring's width.
+*/
+craft-radio[data-button][data-button-start] > input[type='radio'] {
+  border-start-start-radius: calc(
+    var(--c-button-radius, var(--c-form-control-radius)) - 1px
+  );
+  border-end-start-radius: calc(
+    var(--c-button-radius, var(--c-form-control-radius)) - 1px
+  );
+}
+
+craft-radio[data-button][data-button-end] > input[type='radio'] {
+  border-start-end-radius: calc(
+    var(--c-button-radius, var(--c-form-control-radius)) - 1px
+  );
+  border-end-end-radius: calc(
+    var(--c-button-radius, var(--c-form-control-radius)) - 1px
+  );
+}
+
+/*
   Date and time inputs lead with their picker icon, as inputs with a prefix
   icon do. The icon is the browser's own picker button, in the native input's
   light DOM, so it's styled here rather than in the components.

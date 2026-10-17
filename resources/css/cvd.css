@@ -15,7 +15,6 @@
 .cvd-container {
   display: grid;
   position: relative;
-  overflow: hidden;
   /* A hairline along the bottom, under the settings and the preview alike,
      like the one under the field layout designer's panes. */
   box-shadow: inset 0 -1px 0 var(--fld-hairline);
