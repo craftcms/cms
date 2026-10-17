@@ -635,7 +635,7 @@ describe('ElementSelectControl', () => {
       await nextTick();
 
       expect(
-        tiles(root, '.card-grid > li').map((li) => li.className.includes('sel'))
+        tiles(root, '.card-grid > li').map((li) => li.classList.contains('sel'))
       ).toEqual([true, false]);
     });
 
@@ -661,7 +661,7 @@ describe('ElementSelectControl', () => {
 
       expect(
         tiles(root, '.thumbsview > li').map((li) =>
-          li.className.includes('sel')
+          li.classList.contains('element--selected')
         )
       ).toEqual([true, false]);
     });
@@ -699,7 +699,7 @@ describe('ElementSelectControl', () => {
       await nextTick();
 
       expect(
-        tiles(root, '.card-grid > li').map((li) => li.className.includes('sel'))
+        tiles(root, '.card-grid > li').map((li) => li.classList.contains('sel'))
       ).toEqual([true, false]);
     });
 
