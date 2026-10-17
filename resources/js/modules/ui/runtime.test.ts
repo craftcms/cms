@@ -77,6 +77,25 @@ describe('list row paths', () => {
     unsetValue(values, ['rows', '0', 'enabled']);
     expect(values.rows).toEqual([{name: 'Ada'}, {name: 'Katherine'}]);
   });
+
+  it('keys into an empty map that the server serialized as a list', () => {
+    const values = {fields: {contentBlocks: {entries: [], sortOrder: []}}};
+    setValue(
+      values,
+      ['fields', 'contentBlocks', 'entries', 'c78ab3b1', 'fields', 'heading'],
+      'A Dutch Golden Age icon'
+    );
+    expect(values.fields.contentBlocks.entries).toEqual({
+      c78ab3b1: {fields: {heading: 'A Dutch Golden Age icon'}},
+    });
+  });
+
+  it('rejects a non-numeric key into a list that has rows', () => {
+    const values = {rows: [{name: 'Ada'}]};
+    expect(() => setValue(values, ['rows', 'abc', 'name'], 'Grace')).toThrow(
+      'must be a row index'
+    );
+  });
 });
 
 /**
