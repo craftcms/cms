@@ -54,7 +54,10 @@ export default css`
     position: relative;
     pointer-events: none;
     flex: 1 1 auto;
-    overflow: hidden;
+    /* Clipped for the ellipsis, but with room for the ring and shadow of
+       content at its edges, such as a selected color's swatch. */
+    overflow: clip;
+    overflow-clip-margin: 2px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
