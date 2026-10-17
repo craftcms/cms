@@ -256,7 +256,7 @@ body:not(.dragging) .fld-tab .tab.draggable {
   /* Tabs' (and the New Tab buttons') surface: a shade lighter than the page
      they sit on. */
   --fld-surface: color-mix(
-    in oklab,
+    in srgb,
     var(--c-surface-default),
     var(--color-white) 4%
   );
