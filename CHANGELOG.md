@@ -77,6 +77,12 @@
 - Sortable checkbox selects, such as “Card Attributes”, “Table Columns”, and “Default Table Columns”, now list only the selected options, with an “Add item” menu for the rest. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Entry types’ and fields’ “Used by” metadata now lists usages as chips. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - The global header is now lighter in the light theme. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Content within black cards, chips, and badges, such as buttons and badges, is now styled as in the dark theme.
+- Links in gray chips, and in black chips, cards, and badges, now have the default link styling, rather than an underline in the chip’s or card’s text color.
+- Card view designers now preview entries as live, and users with a sample user’s name, default avatar, and active status.
+- Color selects’ swatches now match the headers of cards in their colors.
+- Slide pickers, such as field layout designers’ width pickers, now have lighter segments, and the dividers between selected segments are no longer dark.
+- Fixed a bug where Language and Formatting Locale options’ hints were shown in the current language, rather than in each option’s own language.
 
 ### Content Management
 
@@ -102,6 +108,8 @@
 
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Opening a slideout no longer focuses its resize handle. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- The card view designer’s “Alignment” setting is now a radio group, which can be changed with the arrow keys.
+- Controls in field layout designers, and rich selects such as color selects, now have the standard focus ring, rather than an inset or flush one.
 - Fixed an accessibility issue where buttons were still announced as “Loading” after they finished loading, and lost their accessible name if loading took more than five seconds. ([#19975](https://github.com/craftcms/cms/pull/19975))
 - Fixed a bug where single-select comboboxes had no visible focus ring. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes’ combobox element had no accessible name in Chromium. ([#19942](https://github.com/craftcms/cms/pull/19942))
