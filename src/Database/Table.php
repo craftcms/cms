@@ -49,6 +49,8 @@ readonly class Table
 
     public const string ELEMENTS_BULKOPS = 'elements_bulkops';
 
+    public const string ELEMENTS_MODELS = 'elements_models';
+
     public const string ELEMENTS_OWNERS = 'elements_owners';
 
     public const string ELEMENTS_SITES = 'elements_sites';
