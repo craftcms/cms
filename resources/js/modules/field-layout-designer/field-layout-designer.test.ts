@@ -60,6 +60,48 @@ it('waits for the jQuery seam before initializing', async () => {
   expect(designer.$fieldSearch).toBe(search);
 });
 
+it.each([
+  [285.5, '288px'],
+  [288.004, '288px'],
+  [288.5, '304px'],
+])(
+  'snaps a %spx sidebar tab to a whole number of grid cells tall',
+  (height, expected) => {
+    let resized: ResizeObserverCallback | undefined;
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          resized = callback;
+        }
+        observe() {}
+        disconnect() {}
+      }
+    );
+    const designer = Object.create(
+      FieldLayoutDesigner.prototype
+    ) as FieldLayoutDesigner;
+    designer.snapSidebarTabHeights(16);
+
+    const tab = document.createElement('div');
+    tab.className = 'fld-tab fld-tab--sidebar';
+    const content = document.createElement('div');
+    content.className = 'fld-tabcontent';
+    tab.append(content);
+    document.body.append(tab);
+    vi.spyOn(tab, 'getBoundingClientRect').mockReturnValue({
+      height,
+    } as DOMRect);
+
+    resized!([{target: content} as unknown as ResizeObserverEntry], {} as any);
+
+    expect(tab.style.blockSize).toBe(expected);
+
+    tab.remove();
+    vi.unstubAllGlobals();
+  }
+);
+
 it('announces config changes so wrappers can read the new layout', () => {
   const designer = Object.create(
     FieldLayoutDesigner.prototype

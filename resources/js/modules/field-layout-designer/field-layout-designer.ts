@@ -15,6 +15,7 @@ import {
   fldTabData,
   htmlToElement,
   hudData,
+  isSidebarTab,
   type FieldLayoutHud,
 } from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
@@ -68,6 +69,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   tabGrid: any = null;
   /** Keeps the workspace a whole number of grid cells tall. */
   workspaceHeightObserver: ResizeObserver | null = null;
+  sidebarTabHeightObserver: ResizeObserver | null = null;
   elementDrag: ElementDrag | null = null;
   tabDrag: TabDrag | null = null;
 
@@ -167,6 +169,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     });
 
     this.snapWorkspaceHeight(gridSize);
+    this.snapSidebarTabHeights(gridSize);
 
     for (const tab of this.tabElements()) {
       this.initTab(tab);
@@ -380,6 +383,13 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   }
 
   initTab($tab: any): Tab {
+    const content = isSidebarTab($tab)
+      ? $tab.querySelector(':scope > .fld-tabcontent')
+      : null;
+    if (content) {
+      this.sidebarTabHeightObserver?.observe(content);
+    }
+
     return new Tab(this, $tab);
   }
 
@@ -393,6 +403,8 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   override destroy(): void {
     this.workspaceHeightObserver?.disconnect();
     this.workspaceHeightObserver = null;
+    this.sidebarTabHeightObserver?.disconnect();
+    this.sidebarTabHeightObserver = null;
     this.cvd?.destroy();
     this.cvd = null;
 
@@ -498,6 +510,31 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     this.workspaceHeightObserver = new ResizeObserver(snap);
     this.workspaceHeightObserver.observe(this.$contentTabContainer);
     this.workspaceHeightObserver.observe(this.$sidebarTabContainer);
+  }
+
+  /**
+   * Sidebar tabs stack in their column rather than wrapping into the grid's
+   * rows, so the grid doesn't snap them. Each is snapped to a whole number of
+   * grid cells tall here instead, as the grid does for content tabs' rows, so
+   * the next tab and the New Tab button below them land on the grid too.
+   * `initTab()` observes each sidebar tab's content, which stays its natural
+   * height however tall the tab is.
+   */
+  snapSidebarTabHeights(gridSize: number): void {
+    this.sidebarTabHeightObserver = new ResizeObserver((entries) => {
+      for (const {target} of entries) {
+        const tab = target.parentElement;
+        if (!tab?.isConnected) {
+          continue;
+        }
+
+        tab.style.removeProperty('block-size');
+        const height = tab.getBoundingClientRect().height;
+        // A sliver of tolerance, so fractional pixels don't add a whole cell.
+        const cells = Math.ceil(height / gridSize - 0.01);
+        tab.style.blockSize = `${cells * gridSize}px`;
+      }
+    });
   }
 
   /** Every tab, in layout order: the content tabs, then the sidebar tabs. */
