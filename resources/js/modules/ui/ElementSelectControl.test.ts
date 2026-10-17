@@ -516,6 +516,17 @@ describe('ElementSelectControl', () => {
     expect(selectedChips(root)).toEqual([]);
   });
 
+  it('adds a clicked chip to the selection, as its checkbox does', async () => {
+    const root = await mount({props: {limit: 3}, value: [5, 6]});
+
+    for (const chip of chips(root)) {
+      chip.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+      await nextTick();
+    }
+
+    expect(selectedChips(root)).toHaveLength(2);
+  });
+
   it('selects through the chip’s own checkbox', async () => {
     const root = await mount({props: {limit: 3}, value: [5, 6]});
 

@@ -221,9 +221,6 @@
     viewMode,
     selectable,
     readOnly: () => !props.editable,
-    // Chips behave like a file list: a plain click collapses the selection to the
-    // one clicked, and ctrl/cmd adds to it.
-    click: 'replace',
   });
 
   const {
