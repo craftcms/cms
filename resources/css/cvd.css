@@ -75,6 +75,41 @@
   }
 }
 
+/* Bands of the tabs' ring color inside the top and bottom edges, keeping the
+   grid's dots clear of them, as in the field layout designer's panes. Drawn
+   over the grid (which the container's own shadow would sit under), but under
+   the chip and card. */
+.cvd-preview-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  box-shadow:
+    inset 0 -1px 0 var(--fld-hairline),
+    inset 0 -3px 0 var(--fld-halo),
+    inset 0 2px 0 var(--fld-halo);
+  pointer-events: none;
+}
+
+/* Beside the settings, a band runs along the dividing hairline too. */
+@container cvd (width > 37.5rem) {
+  .cvd-preview-container::after {
+    box-shadow:
+      inset 0 -1px 0 var(--fld-hairline),
+      inset 0 -3px 0 var(--fld-halo),
+      inset 0 2px 0 var(--fld-halo),
+      inset 2px 0 0 var(--fld-halo);
+  }
+
+  .cvd-preview-container:dir(rtl)::after {
+    box-shadow:
+      inset 0 -1px 0 var(--fld-hairline),
+      inset 0 -3px 0 var(--fld-halo),
+      inset 0 2px 0 var(--fld-halo),
+      inset -2px 0 0 var(--fld-halo);
+  }
+}
+
 /* The workspace grid, anchored to the preview's top-left corner (the chip's),
    wherever centering puts it: an oversized layer whose offset is a whole number
    of cells, clipped by the container. */
@@ -94,6 +129,11 @@
   background-image: var(--fld-dots);
   background-size: var(--workspace-bg-size);
   pointer-events: none;
+}
+
+/* In RTL the chip sits at the top-right, so the grid is anchored there. */
+.cvd-preview:dir(rtl)::before {
+  background-position: right top;
 }
 
 /* Thumbnail Source starts as wide as its longest option and takes whatever

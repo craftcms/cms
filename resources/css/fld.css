@@ -47,14 +47,25 @@
    Content/Display tabs' bottom border. They don't clip, so the outer rings of
    tabs along their edges show. */
 /* A hairline along their bottom edge (which is snapped to the grid) covers
-   the last row of dots, as the Content/Display tabs' border does the first. */
+   the last row of dots, as the Content/Display tabs' border does the first.
+   Bands of the tabs' ring color run inside the top and bottom edges, keeping
+   the dots clear of both. */
 .fld-pane.cp-workspace {
   overflow: visible;
   border: 0;
   border-radius: 0;
-  box-shadow: inset 0 -1px 0 var(--fld-hairline);
+  box-shadow:
+    inset 0 -1px 0 var(--fld-hairline),
+    inset 0 -3px 0 var(--fld-halo),
+    inset 0 2px 0 var(--fld-halo);
   background-color: transparent;
   background-image: var(--fld-dots);
+}
+
+/* In RTL the grid is anchored to the top-right corner instead, where tabs
+   start. */
+.fld-pane.cp-workspace:dir(rtl) {
+  background-position: right top;
 }
 
 .fld-tabs {
@@ -93,6 +104,10 @@
   background-position: 0 -1px;
 }
 
+.fld-pane--content.cp-workspace:dir(rtl) {
+  background-position: right 0 top -1px;
+}
+
 .fld-tabs__content {
   display: flex;
   align-items: flex-start;
@@ -117,6 +132,8 @@
      hairline where the two meet. */
   box-shadow:
     inset 0 -1px 0 var(--fld-hairline),
+    inset 0 -3px 0 var(--fld-halo),
+    inset 0 2px 0 var(--fld-halo),
     inset 2px 0 0 var(--fld-halo),
     -3px 0 0 -1px var(--fld-halo);
 }
@@ -124,6 +141,8 @@
 .fld-pane--sidebar.cp-workspace:dir(rtl) {
   box-shadow:
     inset 0 -1px 0 var(--fld-hairline),
+    inset 0 -3px 0 var(--fld-halo),
+    inset 0 2px 0 var(--fld-halo),
     inset -2px 0 0 var(--fld-halo),
     3px 0 0 -1px var(--fld-halo);
 }
@@ -148,11 +167,12 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /* The sidebar pane's top hairline divides them instead. */
+  /* The sidebar pane's top hairline divides them instead (with its outer
+     band keeping this pane's dots clear of it). */
   .fld-pane--content.cp-workspace {
     padding-inline-end: 0;
     padding-block-end: var(--c-spacing-lg);
-    box-shadow: none;
+    box-shadow: inset 0 2px 0 var(--fld-halo);
   }
 
   /* Reaching a pixel past the inline-start edge, like the content pane. */
@@ -165,6 +185,16 @@
     border-block-start: 1px solid var(--fld-hairline);
     box-shadow:
       inset 0 -1px 0 var(--fld-hairline),
+      inset 0 -3px 0 var(--fld-halo),
+      inset 0 2px 0 var(--fld-halo),
+      0 -3px 0 -1px var(--fld-halo);
+  }
+
+  .fld-pane--sidebar.cp-workspace:dir(rtl) {
+    background-position: right 0 top -1px;
+    box-shadow:
+      inset 0 -1px 0 var(--fld-hairline),
+      inset 0 -3px 0 var(--fld-halo),
       inset 0 2px 0 var(--fld-halo),
       0 -3px 0 -1px var(--fld-halo);
   }
@@ -248,9 +278,13 @@ body:not(.dragging) .fld-tab .tab.draggable {
    through them. */
 :root {
   /* A grid of pixel dots where a workspace's grid lines would cross. */
+  --fld-dot-color: color-mix(
+    var(--c-color-neutral-border-normal),
+    transparent 30%
+  );
   --fld-dots: radial-gradient(
     circle at 0.5px 0.5px,
-    color-mix(var(--c-color-neutral-border-normal), transparent 30%) 0.5px,
+    var(--fld-dot-color) 0.5px,
     transparent 0.5px
   );
   /* Tabs' (and the New Tab buttons') surface: a shade lighter than the page
@@ -279,6 +313,16 @@ body:not(.dragging) .fld-tab .tab.draggable {
   --fld-surface-shadow:
     0 0 0 1px var(--fld-surface-ring), var(--c-shadow-sm),
     0 0 0 3px var(--fld-halo);
+}
+
+/* In RTL the dot sits in each tile's top-right corner, as the grid is
+   anchored to the top-right (see .fld-pane). */
+:root:dir(rtl) {
+  --fld-dots: radial-gradient(
+    circle at calc(100% - 0.5px) 0.5px,
+    var(--fld-dot-color) 0.5px,
+    transparent 0.5px
+  );
 }
 
 [data-theme='dark'] {
