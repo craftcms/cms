@@ -10,28 +10,35 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
+use CraftCms\Cms\Asset\Exceptions\AssetException;
+use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
+use CraftCms\Cms\Filesystem\RemoteFileDownloader;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\UrlValidator\UrlValidator;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use Throwable;
 use Twig\Error\RuntimeError;
 
 use function CraftCms\Cms\renderObjectTemplate;
+use function CraftCms\Cms\t;
 
 /**
  * @since 6.0.0
@@ -573,5 +580,148 @@ class AssetsHelper
         ]);
 
         return [$subpath, $folder];
+    }
+
+    /**
+     * Resolves a local file path given in import data, making sure it points to a file
+     * within Craft’s temp folder, or within the project root but outside the storage folder.
+     *
+     * Files in dot-prefixed files or folders, and in restricted directories, aren’t allowed.
+     *
+     * @throws FileException if the file doesn’t exist or is in a disallowed location
+     */
+    public static function resolveImportFilePath(string $path): string
+    {
+        $resolvedPath = realpath($path);
+
+        if ($resolvedPath === false || ! is_file($resolvedPath)) {
+            throw new FileException(t('Cannot establish absolute pathname for “{filePath}” (e.g. file doesn’t exist) or it’s not a file.', [
+                'filePath' => $path,
+            ]));
+        }
+
+        $resolvedPath = File::normalizePath($resolvedPath);
+
+        // Craft’s own temp folder is always fine (it’s within the storage folder, which is otherwise off-limits)
+        if (Path::isPathWithinRoots($resolvedPath, [[Path::temp(), true]])) {
+            return $resolvedPath;
+        }
+
+        if (! self::isImportFilePathAllowed($resolvedPath)) {
+            throw new FileException(t('File “{filePath}” is in a disallowed location. Only Craft’s temp folder and the project root (outside the storage folder) are allowed.', [
+                'filePath' => $path,
+            ]));
+        }
+
+        return $resolvedPath;
+    }
+
+    /**
+     * Returns whether a resolved local file path is within the project root, outside the storage folder,
+     * restricted directories, and dot-prefixed files or folders.
+     */
+    private static function isImportFilePathAllowed(string $resolvedPath): bool
+    {
+        $root = realpath((string) Aliases::get('@root', false));
+
+        if (
+            $root === false ||
+            ! Path::isPathWithinRoots($resolvedPath, [[$root, false]]) ||
+            Path::isPathWithinRoots($resolvedPath, [[Path::storage(create: false), true]]) ||
+            Security::isRestrictedDir($resolvedPath)
+        ) {
+            return false;
+        }
+
+        // disallow dotfiles and anything within a dot-prefixed folder (e.g. .env, .git/)
+        $relativePath = substr($resolvedPath, strlen(File::normalizePath($root)));
+        $segments = array_filter(explode(DIRECTORY_SEPARATOR, $relativePath), fn (string $segment) => $segment !== '');
+
+        return array_all($segments, fn (string $segment) => ! str_starts_with($segment, '.'));
+    }
+
+    /**
+     * Downloads a remote file to a temp path, checking its URL with the given validator.
+     *
+     * @throws InvalidArgumentException if the URL or the IP it resolves to is disallowed, the file is empty or too large, or the response isn’t a 2xx one
+     */
+    public static function downloadUrl(UrlValidator $urlValidator, string $url, string $tempPath, int $maxBytes = PHP_INT_MAX): Response
+    {
+        try {
+            return new RemoteFileDownloader($urlValidator)->download($url, $tempPath, $maxBytes);
+        } catch (Throwable $e) {
+            throw new InvalidArgumentException(t('{url} couldn’t be downloaded.', ['url' => $url]), previous: $e);
+        }
+    }
+
+    /**
+     * Returns the asset filename for an imported file reference (a local path or an absolute URL).
+     */
+    public static function importFilename(string $source): string
+    {
+        $basename = pathinfo(Url::stripQueryString($source), PATHINFO_BASENAME);
+
+        return self::prepareAssetName(Url::isAbsoluteUrl($source) ? rawurldecode($basename) : $basename);
+    }
+
+    /**
+     * Fetches an imported file (an absolute URL or a local path) to a temp path, and returns the path along with
+     * the file’s extension, taken from its content type when the filename doesn’t have one.
+     *
+     * A local file is copied, so the source file itself is never handed over to be moved into a volume.
+     *
+     * @return array{0: string, 1: string}
+     *
+     * @throws AssetException if the file is too large or its type can’t be determined
+     * @throws FileException if a local file isn’t allowed, can’t be found, or can’t be copied
+     * @throws InvalidArgumentException if a URL can’t be downloaded
+     */
+    public static function fetchImportFile(UrlValidator $urlValidator, string $source, string $filename, bool $allowLocalPath = true): array
+    {
+        $isUrl = Url::isAbsoluteUrl($source);
+
+        // local paths in data from a remote source could point anywhere the remote source’s author wants
+        if (! $isUrl && ! $allowLocalPath) {
+            throw new FileException(t('Local file paths can’t be imported from a remote source.'));
+        }
+
+        // validate a local path before anything gets created for it
+        $localPath = $isUrl ? null : self::resolveImportFilePath($source);
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $tempPath = self::tempFilePath($extension ?: 'tmp');
+
+        try {
+            $mimeType = null;
+
+            if ($localPath === null) {
+                $mimeType = self::downloadUrl($urlValidator, $source, $tempPath, self::getMaxAssetUploadSize())->header('Content-Type');
+            } elseif (! @copy($localPath, $tempPath)) {
+                throw new FileException("Couldn’t copy $localPath to a temp location.");
+            }
+
+            if (filesize($tempPath) > self::getMaxAssetUploadSize()) {
+                throw new AssetException(t('“{filename}” is too large.', [
+                    'filename' => $filename,
+                ]));
+            }
+
+            if ($extension === '') {
+                $mimeType = strtolower(trim(explode(';', $mimeType ?: (File::getMimeType($tempPath, checkExtension: false) ?? ''))[0]));
+
+                try {
+                    $extension = File::getExtensionByMimeType($mimeType);
+                } catch (InvalidArgumentException $e) {
+                    throw new AssetException(t('The file type of “{filename}” couldn’t be determined.', [
+                        'filename' => $filename,
+                    ]), previous: $e);
+                }
+            }
+        } catch (Throwable $e) {
+            File::delete($tempPath);
+
+            throw $e;
+        }
+
+        return [$tempPath, $extension];
     }
 }

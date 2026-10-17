@@ -31,6 +31,7 @@ use CraftCms\Cms\Section\Events\SectionSaving;
 use CraftCms\Cms\Section\Exceptions\SectionNotFoundException;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Models\SectionSiteSettings as SectionSiteSettingsModel;
+use CraftCms\Cms\Shared\Enums\ModelIdentifier;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Structure\Data\Structure;
@@ -461,6 +462,25 @@ class Sections
     public function getSectionByHandle(string $sectionHandle): ?Section
     {
         return $this->_sections()->firstWhere('handle', $sectionHandle, true);
+    }
+
+    /**
+     * Returns a section by its ID, UID or handle.
+     *
+     * @param  ModelIdentifier[]|null  $by
+     */
+    public function resolveSection(mixed $section, ?array $by = null): ?Section
+    {
+        if ($section instanceof Section) {
+            return $section;
+        }
+
+        return match (ModelIdentifier::detect($section, $by)) {
+            ModelIdentifier::Id => $this->getSectionById((int) $section),
+            ModelIdentifier::Uid => $this->getSectionByUid($section),
+            ModelIdentifier::Handle => $this->getSectionByHandle($section),
+            null => null,
+        };
     }
 
     /**

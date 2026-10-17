@@ -22,6 +22,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Shared\Enums\ModelIdentifier;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
@@ -102,6 +103,25 @@ class Volumes
     public function getVolumeByHandle(string $handle): ?Volume
     {
         return $this->volumes()->firstWhere('handle', $handle);
+    }
+
+    /**
+     * Returns a volume by its ID, UID or handle.
+     *
+     * @param  ModelIdentifier[]|null  $by
+     */
+    public function resolveVolume(mixed $volume, ?array $by = null): ?Volume
+    {
+        if ($volume instanceof Volume) {
+            return $volume;
+        }
+
+        return match (ModelIdentifier::detect($volume, $by)) {
+            ModelIdentifier::Id => $this->getVolumeById((int) $volume),
+            ModelIdentifier::Uid => $this->getVolumeByUid($volume),
+            ModelIdentifier::Handle => $this->getVolumeByHandle($volume),
+            null => null,
+        };
     }
 
     public function getTemporaryVolume(): Volume

@@ -1,0 +1,23 @@
+[
+    {
+        "sectionId": "fixtureSection",
+        "typeId": "fixtureType",
+        "title": "file entry with matrix",
+        "myMatrix": [
+            {
+                "type": "blockEt",
+                "title": "file block 1",
+                "fields": {
+                    "plainText": "block one"
+                }
+            },
+            {
+                "type": "blockEt",
+                "title": "file block 2",
+                "fields": {
+                    "plainText": "block two"
+                }
+            }
+        ]
+    }
+]

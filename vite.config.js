@@ -238,6 +238,7 @@ export default defineConfig(({mode}) => {
     fmt: {
       singleQuote: true,
       bracketSpacing: false,
+      tabWidth: 2,
       vueIndentScriptAndStyle: true,
       trailingComma: 'es5',
       printWidth: 80,
@@ -259,6 +260,7 @@ export default defineConfig(({mode}) => {
         'yii2-adapter/resources/*',
         '!yii2-adapter/resources/js',
         'tests-playwright/.authentication.json',
+        'tests/Fixtures/Import/*',
         // Written by `boost:install`
         '.mcp.json',
         'boost.json',

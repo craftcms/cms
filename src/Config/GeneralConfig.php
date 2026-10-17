@@ -381,6 +381,40 @@ class GeneralConfig extends BaseConfig
     ];
 
     /**
+     * @var string[] Hostnames that are allowed to resolve to private IP addresses (e.g. `10.0.0.0/8`, `192.168.0.0/16`)
+     *               when a feature that fetches remote files opts in to it.
+     *
+     * When using UrlValidator, by default, URLs that resolve to private IP addresses are rejected. Use an exact hostname,
+     * or a leading `*.` wildcard to match any subdomain (`*.site.testing.local` matches `api.site.testing.local`, but not `site.testing.local` itself).
+     *
+     * Only the private IP range check is relaxed for these hosts. Loopback, link-local and cloud metadata addresses are still rejected.
+     *
+     * Features apply it by creating their `RemoteFileDownloader` with
+     * `new UrlValidator(options: ['allowedPrivateHosts' => Cms::config()->allowedPrivateHosts])`. Imports apply it; GraphQL and MCP asset uploads don’t.
+     *
+     * ::: warning
+     * Only list hostnames whose DNS you control, and list individual services rather than whole internal domains.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * ->allowedPrivateHosts([
+     *     'api.internal',
+     *     '*.ddev.site',
+     * ])
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ALLOWED_PRIVATE_HOSTS=api.internal,*.ddev.site
+     * ```
+     * :::
+     *
+     * @group Security
+     *
+     * @since 6.0.0
+     */
+    public array $allowedPrivateHosts = [];
+
+    /**
      * @var bool Whether users should be allowed to create similarly-named tags.
      *
      * ::: code
@@ -1473,6 +1507,25 @@ class GeneralConfig extends BaseConfig
         '5:3' => 1.67,
         '3:2' => 1.5,
     ];
+
+    /**
+     * @var string|null The Laravel filesystem disk that import runs should store their parsed source data on, so that each
+     *                  of a step’s queue jobs can read its own items without parsing the whole source again.
+     *
+     *                  A local temp folder will be used by default. Set it to a shared disk if queue jobs can run on different servers.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->importDisk('$IMPORT_DISK')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_IMPORT_DISK=imports
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public ?string $importDisk = null;
 
     /**
      * @var string[] The template filenames Craft will look for within a directory to represent the directory’s “index” template when
@@ -3449,6 +3502,31 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Hostnames that are allowed to resolve to private IP addresses (e.g. `10.0.0.0/8`, `192.168.0.0/16`)
+     * when a feature that fetches remote files opts in to it via UrlValidator.
+     *
+     * ```php
+     * ->allowedPrivateHosts([
+     *     'api.internal',
+     *     '*.ddev.site',
+     * ])
+     * ```
+     *
+     * @group Security
+     *
+     * @param  string[]  $value
+     *
+     * @see $allowedPrivateHosts
+     * @since 6.0.0
+     */
+    public function allowedPrivateHosts(array $value): self
+    {
+        $this->allowedPrivateHosts = $value;
+
+        return $this;
+    }
+
+    /**
      * Whether users should be allowed to create similarly-named tags.
      *
      * ```php
@@ -4683,6 +4761,27 @@ class GeneralConfig extends BaseConfig
     public function imageEditorRatios(array $value): self
     {
         $this->imageEditorRatios = $value;
+
+        return $this;
+    }
+
+    /**
+     * The Laravel filesystem disk that import runs should store their parsed source data on, so that each
+     * of a step’s queue jobs can read its own items without parsing the whole source again.
+     *
+     * A local temp folder will be used by default. Set it to a shared disk if queue jobs can run on different servers.
+     *
+     * ```php
+     * ->importDisk('$IMPORT_DISK')
+     * ```
+     *
+     * @group System
+     *
+     * @see $importDisk
+     */
+    public function importDisk(?string $value): self
+    {
+        $this->importDisk = $value;
 
         return $this;
     }
@@ -6334,6 +6433,14 @@ class GeneralConfig extends BaseConfig
         $this->verifyEmailSuccessPath = $value;
 
         return $this;
+    }
+
+    /**
+     * Returns the import disk name.
+     */
+    public function getImportDisk(): string
+    {
+        return $this->storageDiskName($this->importDisk, 'craft-tmp');
     }
 
     /**

@@ -8,6 +8,7 @@ use CraftCms\Cms\User\Commands\ActivationUrlCommand;
 use CraftCms\Cms\User\Commands\CreateCommand;
 use CraftCms\Cms\User\Commands\DeleteCommand;
 use CraftCms\Cms\User\Commands\ImpersonateCommand;
+use CraftCms\Cms\User\Commands\ImportUsersCommand;
 use CraftCms\Cms\User\Commands\ListAdminsCommand;
 use CraftCms\Cms\User\Commands\LogoutAllCommand;
 use CraftCms\Cms\User\Commands\PasswordResetUrlCommand;
@@ -28,6 +29,7 @@ class UserServiceProvider extends ServiceProvider
             CreateCommand::class,
             DeleteCommand::class,
             ImpersonateCommand::class,
+            ImportUsersCommand::class,
             ListAdminsCommand::class,
             LogoutAllCommand::class,
             PasswordResetUrlCommand::class,
