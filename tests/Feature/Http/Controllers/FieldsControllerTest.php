@@ -900,3 +900,22 @@ class RetiredFieldSettingsTableCell extends FieldSettingsTableCell
         return self::$selectable;
     }
 }
+
+it('returns applied tab settings in the layout config format', function () {
+    $this->postJson(action([FieldsController::class, 'applyLayoutTabSettings']), [
+        'uid' => 'tab-meta',
+        'elementType' => Entry::class,
+        'layoutConfig' => [
+            'tabs' => [
+                ['uid' => 'tab-meta', 'name' => 'Meta', 'type' => 'sidebar', 'elements' => []],
+            ],
+        ],
+        'config' => ['uid' => 'tab-meta', 'name' => 'Meta', 'type' => 'sidebar'],
+        'settings' => ['name' => 'Meta', 'icon' => 'tags'],
+    ])
+        ->assertOk()
+        // The designer stores this as the tab's config, so the type has to
+        // round-trip as its value rather than a serialized enum.
+        ->assertJsonPath('config.type', 'sidebar')
+        ->assertJsonPath('config.icon', 'tags');
+});

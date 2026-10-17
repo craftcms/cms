@@ -64,6 +64,16 @@ CP Styles
   z-index: var(--c-layer-skip-link);
 }
 
+/* A label's first letter standing in for an icon. Its box is trimmed to the
+   letter's cap height, so whatever centers it centers the letter itself
+   rather than a line box with room for descenders. */
+.initial-icon {
+  display: inline-block;
+  font-weight: var(--font-weight-semibold, 600);
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

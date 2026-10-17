@@ -60,7 +60,7 @@
                 );
                 $errorIcon = '<craft-icon name="circle-exclamation" slot="suffix" data-fld-tab-error label="'.e(\CraftCms\Cms\t('Errors')).'"></craft-icon>';
             @endphp
-            <craft-tabs label="{{ \CraftCms\Cms\t('Field Layout') }}">
+            <craft-tabs class="fld-view-tabs" label="{{ \CraftCms\Cms\t('Field Layout') }}">
                 <craft-tab slot="tab" data-fld-tab="content">
                     {{ \CraftCms\Cms\t('Content') }}
                     @if ($hasErrors(['customFields', 'tabs.', 'generatedFields']))
