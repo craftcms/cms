@@ -47,3 +47,22 @@ it('shows a thumbnail in the chip when the cards have one', function (string $el
     'entries without a thumbnail field' => [Entry::class, false],
     'assets' => [Asset::class, true],
 ]);
+
+it('renders the thumbnail alignment setting as radios shown as buttons', function () {
+    $layout = new FieldLayout(['type' => Asset::class]);
+    $layout->setCardThumbAlignment('start');
+    $designer = new Crawler('<div>'.app(CardDesigner::class)->html($layout).'</div>');
+
+    // Radios, rather than toggle buttons, so the whole setting is one tab stop
+    // whose selection the arrow keys move.
+    $group = $designer->filter('craft-radio-group#thumb-alignment[buttons]');
+    $radios = $group->filter('input[type="radio"][name="thumb-alignment"]');
+
+    expect($group->count())->toBe(1)
+        ->and($radios->each(fn (Crawler $radio) => $radio->attr('value')))->toBe(['start', 'end'])
+        ->and($group->filter('input[value="start"]')->attr('checked'))->not->toBeNull()
+        ->and($group->filter('input[value="end"]')->attr('checked'))->toBeNull()
+        ->and($designer->filter('craft-tooltip[for="thumb-alignment-start"]')->text())->toBe('Left')
+        ->and($designer->filter('craft-tooltip[for="thumb-alignment-end"]')->text())->toBe('Right')
+        ->and($designer->filter('craft-button-group#thumb-alignment')->count())->toBe(0);
+});

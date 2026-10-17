@@ -274,20 +274,12 @@ class CardDesigner
                     // The family prefix is required for the client-side icon fetch;
                     // these live in custom-icons/, not the default solid/ folder.
                     'icon' => $orientation === 'ltr' ? 'custom-icons/slideout-left' : 'custom-icons/slideout-right',
-                    'attributes' => [
-                        'aria' => [
-                            'label' => $orientation == 'ltr' ? t('Left') : t('Right'),
-                        ],
-                    ],
+                    'label' => $orientation === 'ltr' ? t('Left') : t('Right'),
                 ],
                 [
                     'value' => 'end',
                     'icon' => $orientation === 'ltr' ? 'custom-icons/slideout-right' : 'custom-icons/slideout-left',
-                    'attributes' => [
-                        'aria' => [
-                            'label' => $orientation == 'ltr' ? t('Right') : t('Left'),
-                        ],
-                    ],
+                    'label' => $orientation === 'ltr' ? t('Right') : t('Left'),
                 ],
             ],
         ])->render();

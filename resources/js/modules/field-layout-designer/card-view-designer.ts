@@ -64,28 +64,17 @@ export class CardViewDesigner extends Base {
       this.showThumbAlignment();
     }
 
-    // The thumb-alignment buttons are a plain <craft-button-group> with no
-    // `name`, so it doesn't track a selection itself; mark the clicked button
-    // pressed here and apply its value.
+    // The thumb-alignment options are radios, so whichever way the selection
+    // changes (clicks or arrow keys), the checked one's value is applied.
     const $thumbAlignmentGroup = this.$thumbManagementContainer.querySelector(
-      'craft-button-group[id$="thumb-alignment"]'
+      '[id$="thumb-alignment"].radio-group'
     );
     if ($thumbAlignmentGroup) {
-      this.addListener($thumbAlignmentGroup, 'click', (ev: any) => {
-        const $button = (ev.target as Element).closest?.(
-          'craft-button[data-value]'
-        );
-        if (!$button || $button.hasAttribute('disabled')) {
-          return;
+      this.addListener($thumbAlignmentGroup, 'change', (ev: any) => {
+        const $radio = ev.target;
+        if ($radio instanceof HTMLInputElement && $radio.checked) {
+          this.manageThumbnailAlignment($radio.value);
         }
-        for (const $option of $thumbAlignmentGroup.querySelectorAll(
-          'craft-button[data-value]'
-        )) {
-          const pressed = $option === $button;
-          $option.toggleAttribute('active', pressed);
-          $option.setAttribute('aria-pressed', pressed ? 'true' : 'false');
-        }
-        this.manageThumbnailAlignment($button);
       });
     }
 
@@ -333,9 +322,7 @@ export class CardViewDesigner extends Base {
   }
 
   /** THUMBNAILS **/
-  manageThumbnailAlignment(target: any): void {
-    const alignment = target.dataset.value;
-
+  manageThumbnailAlignment(alignment: string): void {
     if (alignment !== this.designer.config.cardThumbAlignment) {
       this.designer.updateConfig((config: any) => {
         config.cardThumbAlignment = alignment;
