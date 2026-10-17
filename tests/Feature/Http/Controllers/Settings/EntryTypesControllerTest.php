@@ -219,7 +219,7 @@ it('offers the palette colors for the entry type color', function () {
                     fn (array $node): bool => ($node['control']['path'] ?? null) === ['color'],
                 );
 
-                return data_get($group, 'props.outlet') === 'field-layout-designer.display'
+                return data_get($group, 'props.outlet') === 'field-layout-designer.appearance'
 
                     && data_get($color, 'control.component') === 'craft:color-select'
                     && data_get($color, 'control.props.allowTransparent') === true

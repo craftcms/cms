@@ -229,7 +229,7 @@
 - Added the `--c-field-label-font-size`, `--c-field-label-font-weight`, `--c-field-label-color`, and `--c-field-label-line-height` CSS custom properties to `<craft-field>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `--c-slide-picker-segment-fill`, `--c-slide-picker-segment-active-fill`, and `--c-slide-picker-segment-hover-fill` CSS custom properties to `<craft-slide-picker>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `--c-thumbnail-height` CSS custom property to `<craft-thumbnail>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
-- Added `CraftCms\Cms\Ui\Nodes\Group::outlet()`, which renders a group in a named outlet elsewhere in the form when the form is rendered by Vue, such as the field layout designer’s Appearance tab (`field-layout-designer.display`). ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Added `CraftCms\Cms\Ui\Nodes\Group::outlet()`, which renders a group in a named outlet elsewhere in the form when the form is rendered by Vue, such as the field layout designer’s Appearance tab (`field-layout-designer.appearance`). ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `labelSrOnly` config option to `CraftCms\Cms\Cp\FormFields::fieldHtml()`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - The `--c-size-control-md` and `--c-size-touch-target` CSS custom properties are now 32px. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - UI payload errors that are reassigned to a control’s path now include the path they were raised at, as `source`. ([#20001](https://github.com/craftcms/cms/pull/20001))

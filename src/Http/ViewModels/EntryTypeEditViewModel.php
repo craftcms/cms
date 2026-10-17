@@ -80,7 +80,7 @@ class EntryTypeEditViewModel extends ViewModel
                     // The component's own palette is wider than the Color enum.
                     ->colors(array_column(Color::cases(), 'value'))),
                 Field::make(t('Icon'), IconPicker::make('icon')),
-            ])->outlet('field-layout-designer.display'),
+            ])->outlet('field-layout-designer.appearance'),
             Field::make(t('UI Label Format'), Text::make('uiLabelFormat')
                 ->monospace()
                 ->textExpanderTriggers($objectTemplateTriggers))

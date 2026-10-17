@@ -40,7 +40,7 @@ function mountGroup(outlet?: string): HTMLElement {
 }
 
 it('renders a group in its outlet, and in place without one', async () => {
-  const container = mountGroup('field-layout-designer.display');
+  const container = mountGroup('field-layout-designer.appearance');
   await nextTick();
   const group = () =>
     document.querySelector('[data-ui-node="display-settings"]');
@@ -48,7 +48,8 @@ it('renders a group in its outlet, and in place without one', async () => {
   expect(container.contains(group())).toBe(true);
 
   const host = document.createElement('div');
-  host.innerHTML = '<div data-ui-outlet="field-layout-designer.display"></div>';
+  host.innerHTML =
+    '<div data-ui-outlet="field-layout-designer.appearance"></div>';
   document.body.append(host);
   const release = registerOutlets(host);
   await nextTick();
@@ -64,7 +65,8 @@ it('renders a group in its outlet, and in place without one', async () => {
 it('leaves groups without an outlet in place', async () => {
   const container = mountGroup();
   const host = document.createElement('div');
-  host.innerHTML = '<div data-ui-outlet="field-layout-designer.display"></div>';
+  host.innerHTML =
+    '<div data-ui-outlet="field-layout-designer.appearance"></div>';
   document.body.append(host);
   registerOutlets(host);
   await nextTick();
