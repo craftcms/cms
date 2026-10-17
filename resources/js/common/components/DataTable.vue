@@ -361,8 +361,8 @@
 </script>
 
 <template>
-  <div ref="root-ref">
-    <div v-if="loading" class="grid place-items-center min-h-20">
+  <div ref="root-ref" :class="{'flex flex-1 flex-col': loading}">
+    <div v-if="loading" class="grid flex-1 place-items-center min-h-20">
       <craft-spinner ref="loading-ref">{{ loadingLabel }}</craft-spinner>
     </div>
     <table
