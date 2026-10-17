@@ -355,9 +355,16 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
+  /* A plain chip has no fill or border for its color to show on, so its
+     label takes the default text color. Only its icon takes the chip's color
+     (a status, such as the draft icon, isn't the chip's own; see above). */
   :host([appearance~='plain']) .cp-chip {
     background-color: transparent;
     border-color: transparent;
+    color: var(--c-chip-text, var(--c-text-default));
+  }
+
+  :host([appearance~='plain']) .cp-chip__icon {
     color: var(--c-color-on-quiet);
   }
 

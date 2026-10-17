@@ -933,3 +933,27 @@ it('styles the badges in a filled black chip as in the dark theme', async () => 
   expect(look('black')).toEqual(look('dark'));
   expect(look('plain')).toEqual(look('light'));
 });
+
+it('colors only the icon of a plain colored chip, not its label', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `
+    <craft-chip data-color="amber" appearance="plain" icon="building-columns"><span id="plain-label">Exhibit</span></craft-chip>
+    <craft-chip data-color="amber" appearance="outline"><span id="outline-label">Exhibit</span></craft-chip>
+    <span id="text">Text</span>`;
+  for (const chip of document.querySelectorAll('craft-chip')) {
+    await (chip as HTMLElement & {updateComplete: Promise<unknown>})
+      .updateComplete;
+  }
+  const color = (element: Element) => getComputedStyle(element).color;
+  const plain = document.querySelector('craft-chip')!;
+
+  expect(color(document.getElementById('plain-label')!)).toBe(
+    color(document.getElementById('text')!)
+  );
+  expect(color(plain.shadowRoot!.querySelector('.cp-chip__icon')!)).toBe(
+    color(document.getElementById('outline-label')!)
+  );
+  expect(color(document.getElementById('outline-label')!)).not.toBe(
+    color(document.getElementById('text')!)
+  );
+});
