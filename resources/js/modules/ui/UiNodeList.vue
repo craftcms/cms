@@ -7,6 +7,7 @@
   import {useIsSlideout} from '@/common/composables/screen';
   import UiNode from './UiNode.vue';
   import {uiTabPanelId, pathsMatch} from './runtime';
+  import {isSidebarTab, type SidebarTabOutlets} from './sidebarTabs';
   import type {UiChange, UiNodePayload, UiPayload} from './types';
 
   const props = defineProps<{
@@ -16,6 +17,8 @@
     touchedPaths: Set<string>;
     scope: string[];
     refreshable: boolean;
+    /** Where sidebar tabs render. Without it, they're shown as ordinary tabs. */
+    sidebarTabOutlets?: SidebarTabOutlets;
   }>();
   /**
    * A slideout sits over a page whose URL is about what's behind it, so its
@@ -32,9 +35,18 @@
         node
       ): node is UiNodePayload<{label: string; icon?: string}> & {
         uid: string;
-      } => node.component === 'craft:tab' && node.uid != null
+      } =>
+        node.component === 'craft:tab' && node.uid != null && !inSidebar(node)
     )
   );
+
+  function inSidebar(node: UiNodePayload): boolean {
+    return Boolean(props.sidebarTabOutlets) && isSidebarTab(node);
+  }
+
+  function sidebarOutlet(node: UiNodePayload): HTMLElement | undefined {
+    return node.uid ? props.sidebarTabOutlets?.get(node.uid) : undefined;
+  }
   const activeTab = ref<string | null>(null);
 
   watch(
@@ -123,17 +135,42 @@
       />
     </craft-tab>
   </craft-tabs>
-  <UiNode
+  <template
     v-for="node in nodes"
     :key="node.uid ?? node.control?.path.join('.')"
-    :node="node"
-    :initially-hidden="node.component === 'craft:tab' && node.uid !== activeTab"
-    v-bind="panelAttributes(node)"
-    :values="values"
-    :errors="errors"
-    :touched-paths="touchedPaths"
-    :scope="scope"
-    :refreshable="refreshable"
-    @change="emit('change', $event)"
-  />
+  >
+    <!-- Sidebar tabs wait, hidden, until their outlet exists; the teleport
+      then moves them there without remounting their fields. -->
+    <Teleport
+      v-if="inSidebar(node)"
+      :to="sidebarOutlet(node) ?? 'body'"
+      :disabled="!sidebarOutlet(node)"
+    >
+      <div :hidden="!sidebarOutlet(node)">
+        <UiNode
+          :node="node"
+          :values="values"
+          :errors="errors"
+          :touched-paths="touchedPaths"
+          :scope="scope"
+          :refreshable="refreshable"
+          @change="emit('change', $event)"
+        />
+      </div>
+    </Teleport>
+    <UiNode
+      v-else
+      :node="node"
+      :initially-hidden="
+        node.component === 'craft:tab' && node.uid !== activeTab
+      "
+      v-bind="panelAttributes(node)"
+      :values="values"
+      :errors="errors"
+      :touched-paths="touchedPaths"
+      :scope="scope"
+      :refreshable="refreshable"
+      @change="emit('change', $event)"
+    />
+  </template>
 </template>

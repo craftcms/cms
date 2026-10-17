@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\Enums\TabType;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutUiResolving;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
@@ -76,6 +77,7 @@ class FieldLayoutCompiler
                 $nodes,
                 $layoutTab->uid,
                 $layoutTab->icon,
+                $layoutTab->type === TabType::Sidebar,
             );
         }
 

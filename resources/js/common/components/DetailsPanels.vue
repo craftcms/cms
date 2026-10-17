@@ -20,11 +20,14 @@
     useScreenDetailsRail,
   } from '@/common/composables/screen';
   import DetailsPanelContent from './DetailsPanelContent.vue';
+  import {initialOf} from '@/common/utils/initialIcon';
 
   export interface DetailsPanel {
     id: string;
     label: string;
     icon: string;
+    /** Show the label's first letter instead of the icon. */
+    initialIcon?: boolean;
     order?: number;
     /** A slot to render as the panel. */
     slot?: string;
@@ -272,7 +275,13 @@
             class="details-panels__trigger"
             :aria-controls="panelElementId(panel.id)"
           >
-            <craft-icon :name="panel.icon" :label="panel.label" />
+            <template v-if="panel.initialIcon">
+              <span class="initial-icon" aria-hidden="true">{{
+                initialOf(panel.label)
+              }}</span>
+              <span class="sr-only">{{ panel.label }}</span>
+            </template>
+            <craft-icon v-else :name="panel.icon" :label="panel.label" />
           </button>
         </craft-disclosure>
       </div>
