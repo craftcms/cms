@@ -324,7 +324,7 @@ export default class CraftThumbnail extends LitElement {
     );
     const ctx = canvas?.getContext('2d');
 
-    if (!ctx) {
+    if (!canvas || !ctx) {
       return;
     }
 

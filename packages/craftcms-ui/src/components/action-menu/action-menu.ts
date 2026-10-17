@@ -69,6 +69,9 @@ export type {
  *   mode it is the clicked `craft-action-item` element.
  */
 export default class CraftActionMenu extends CraftPopover {
+  /** Lion's cache of the resolved overlay content node; its types leave it out. */
+  declare _cachedOverlayContentNode?: HTMLElement;
+
   static override styles = [
     ...CraftPopover.styles,
     css`

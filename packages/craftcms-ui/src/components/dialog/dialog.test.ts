@@ -363,7 +363,7 @@ describe('craft-dialog', () => {
 
 describe('craft-dialog before-hide', () => {
   it('stays open when a listener cancels the dismissal', async () => {
-    const dialog = document.createElement('craft-dialog');
+    const dialog = document.createElement('craft-dialog') as CraftDialog;
     dialog.opened = true;
     document.body.append(dialog);
     await dialog.updateComplete;
@@ -379,7 +379,7 @@ describe('craft-dialog before-hide', () => {
   });
 
   it('closes when nothing objects', async () => {
-    const dialog = document.createElement('craft-dialog');
+    const dialog = document.createElement('craft-dialog') as CraftDialog;
     dialog.opened = true;
     document.body.append(dialog);
     await dialog.updateComplete;
@@ -397,7 +397,7 @@ describe('craft-dialog before-hide', () => {
   });
 
   it('does not ask when opened is set to false directly', async () => {
-    const dialog = document.createElement('craft-dialog');
+    const dialog = document.createElement('craft-dialog') as CraftDialog;
     dialog.opened = true;
     document.body.append(dialog);
     await dialog.updateComplete;

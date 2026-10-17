@@ -500,7 +500,9 @@ export default class CraftInputDateTime extends LitElement {
 
     input.disabled = this.disabled;
     input.readOnly = this.readonly;
-    input.required = required;
+    // Known gap (see input-date-time.a11y.md): neither craft-input nor Lion
+    // defines `required`, so this reaches no native input.
+    (input as CraftInput & {required?: boolean}).required = required;
 
     if (input.modelValue !== value) {
       input.modelValue = value;
