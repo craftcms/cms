@@ -5,6 +5,7 @@ import {
   nextTick,
   reactive,
   ref,
+  shallowReactive,
   shallowRef,
   type Ref,
 } from 'vue';
@@ -1469,6 +1470,81 @@ describe('UiRenderer', () => {
     );
   });
 
+  function sidebarTabsPayload(): UiPayload {
+    const tab = (
+      uid: string,
+      label: string,
+      path: string,
+      sidebar = false
+    ) => ({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+      component: 'craft:tab',
+      props: sidebar ? {label, sidebar: true} : {label},
+      uid,
+      children: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+            component: 'craft:text',
+            props: {},
+            path: [path],
+            mode: 'editable',
+            deltaGroup: [path],
+          },
+        },
+      ],
+    });
+
+    return {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        tab('tab-content', 'Content', 'title'),
+        tab('tab-meta', 'Meta', 'slug', true),
+      ],
+      values: {title: 'Hello', slug: 'hello'},
+      errors: [],
+      globalErrors: [],
+    } as unknown as UiPayload;
+  }
+
+  it('moves sidebar tabs into their outlets', async () => {
+    app.unmount();
+    const outlets = shallowReactive(new Map<string, HTMLElement>());
+    const outlet = document.createElement('div');
+    document.body.append(outlet);
+    await mount(sidebarTabsPayload(), {sidebarTabOutlets: outlets});
+
+    // With one content tab left, there's no tab strip.
+    expect(container.querySelector('craft-tab')).toBeNull();
+    expect(
+      container.querySelector('[data-ui-tab="tab-meta"]')?.closest('[hidden]')
+    ).not.toBeNull();
+
+    outlets.set('tab-meta', outlet);
+    await nextTick();
+
+    expect(container.querySelector('[data-ui-tab="tab-meta"]')).toBeNull();
+    expect(
+      outlet.querySelector('[data-ui-tab="tab-meta"]')?.closest('[hidden]')
+    ).toBeNull();
+    outlet.remove();
+  });
+
+  it('shows sidebar tabs as ordinary tabs without outlets', async () => {
+    app.unmount();
+    await mount(sidebarTabsPayload());
+
+    expect(
+      [...container.querySelectorAll('craft-tab')].map((tab) =>
+        tab.textContent?.trim()
+      )
+    ).toEqual(['Content', 'Meta']);
+  });
+
   it('renders FieldLayout tabs and semantic content', async () => {
     app.unmount();
     await mount({
@@ -1478,7 +1554,7 @@ describe('UiRenderer', () => {
         {
           type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
           component: 'craft:tab',
-          props: {label: 'Content'},
+          props: {label: 'Content', icon: 'newspaper'},
           uid: 'tab-content',
           children: [
             {
@@ -1637,6 +1713,13 @@ describe('UiRenderer', () => {
     expect(tabButtons[0]?.getAttribute('aria-selected')).toBe('true');
     expect(tabButtons[1]?.getAttribute('aria-selected')).toBe('false');
     expect(tabButtons[1]?.querySelector('craft-icon')).not.toBeNull();
+    // A tab's icon comes before its label; tabs without one get none.
+    expect(
+      tabButtons[0]
+        ?.querySelector('craft-icon[slot="prefix"]')
+        ?.getAttribute('name')
+    ).toBe('newspaper');
+    expect(tabButtons[1]?.querySelector('[slot="prefix"]')).toBeNull();
     expect(tab?.getAttribute('aria-label')).toBe('Content');
     // `craft-tabs` pairs the two in external-panel mode: the tab points at the
     // panel id this component assigned, and the panel back at the tab's own id
@@ -4413,6 +4496,7 @@ describe('UiRenderer', () => {
         string,
         (props: UiControlOverrideProps) => ReturnType<typeof h>
       >;
+      sidebarTabOutlets?: Map<string, HTMLElement>;
     } = {}
   ): Promise<void> {
     currentPayload = shallowRef(uiPayload);
@@ -4429,6 +4513,7 @@ describe('UiRenderer', () => {
             refresh: options.refresh,
             'onUpdate:mutation': options.onMutation,
             onChange: options.onChange,
+            sidebarTabOutlets: options.sidebarTabOutlets,
           },
           options.slots
         ),

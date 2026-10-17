@@ -16,7 +16,9 @@
   display: grid;
   position: relative;
   overflow: hidden;
-  box-shadow: none;
+  /* A hairline along the bottom, under the settings and the preview alike,
+     like the one under the field layout designer's panes. */
+  box-shadow: inset 0 -1px 0 var(--fld-hairline);
   /* The library and the preview are as far apart as content is from a
      container's edge. */
   gap: var(--cp-container-padding);
@@ -35,6 +37,9 @@
 .cvd-library {
   --gap: initial;
   align-content: start;
+  /* A grid cell of space below the Content/Display tabs (which it sits right
+     under) and above its bottom edge, like the preview's padding. */
+  padding-block: var(--c-spacing-lg);
 }
 
 .cvd-library .draggable {
@@ -50,9 +55,24 @@
   isolation: isolate;
 }
 
-/* The grid is drawn by the preview, below, so it can line up with it. */
+/* Like the field layout designer's panes: no surface or border of its own,
+   just a hairline dividing it from the settings beside (or above) it. (The
+   container draws the one along the bottom.) The grid is drawn by the
+   preview, below, so it can line up with it. */
 .cvd-preview-container.cp-workspace {
+  border: 0;
+  border-block-start: 1px solid var(--fld-hairline);
+  border-radius: 0;
+  box-shadow: none;
+  background-color: transparent;
   background-image: none;
+}
+
+@container cvd (width > 37.5rem) {
+  .cvd-preview-container.cp-workspace {
+    border-block-start: 0;
+    border-inline-start: 1px solid var(--fld-hairline);
+  }
 }
 
 /* The workspace grid, anchored to the preview's top-left corner (the chip's),
@@ -60,9 +80,9 @@
    of cells, clipped by the container. */
 .cvd-preview {
   position: relative;
-  /* The pane's padding is one cell, so without this a grid line would run
-     right along its left edge. Shifted, that line falls outside and is
-     clipped, while the chip and card keep their lines. */
+  /* The pane's padding is one cell, so without this a column of dots would
+     run right along its left edge. Shifted, that column falls outside and is
+     clipped, while the chip and card keep theirs. */
   margin-inline-start: -1px;
 }
 
@@ -71,7 +91,7 @@
   position: absolute;
   inset: calc(var(--c-spacing-lg) * -100);
   z-index: -1;
-  background-image: var(--workspace-bg-image);
+  background-image: var(--fld-dots);
   background-size: var(--workspace-bg-size);
   pointer-events: none;
 }
@@ -94,8 +114,16 @@
 .cvd-preview {
   display: grid;
   justify-items: start;
-  /* Two cells, so the card's top edge stays on a grid line. */
-  gap: calc(var(--c-spacing-lg) * 2);
+  /* Two cells, less the pixel the chip gains (below), so the card's top edge
+     stays on a grid line. */
+  gap: calc(var(--c-spacing-lg) * 2 - 1px);
+}
+
+/* A pixel taller than a medium button, so the chip's outer edges both land
+   on the grid. (Its thumbnail is sized from this too.) */
+.cvd-preview > craft-chip {
+  --c-chip-shadow: var(--c-shadow-xs), 0 0 0 2px var(--fld-halo);
+  --c-size-control-md: calc(32rem / 16 + 1px);
 }
 
 .cvd-preview > craft-card {
@@ -117,9 +145,26 @@
 
 /* A card's body is translucent, so give it the surface it normally sits on,
    rather than the workspace grid. */
+/* Both previews get a ring just darker than the page outside their outlines
+   (beneath their shadows), like the field layout designer's tabs, to keep the grid's
+   dots clear of them. */
 .cvd-preview craft-card {
+  --c-card-shadow: var(--c-shadow-sm), 0 0 0 2px var(--fld-halo);
   background-color: var(--c-surface-raised);
   border-radius: var(--c-card-radius, var(--c-radius-md));
+}
+
+/* A colored chip's fill and outline are translucent too, so it gets the same
+   surface underneath (its own fill, as craft-chip mixes it, layered back on
+   top), and its outline matches the card's. */
+.cvd-preview
+  > craft-chip[data-color]:not(
+    [data-color='white'],
+    [data-color='black']
+  )::part(chip) {
+  --_fill: color-mix(var(--c-color-fill-quiet), transparent 70%);
+  background-color: var(--c-surface-raised);
+  background-image: linear-gradient(var(--_fill), var(--_fill));
 }
 
 .cvd-preview:not(.loading) .spinner {

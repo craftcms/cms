@@ -15,7 +15,7 @@
 
 /* Designer root + container */
 .layoutdesigner {
-  container-type: inline-size;
+  container: fld / inline-size;
 }
 
 .fld-container {
@@ -24,48 +24,168 @@
   position: relative;
   border-radius: var(--c-radius-md);
   box-shadow: none;
-  min-height: 500px;
+  /* 16 grid cells. */
+  min-height: calc(var(--c-spacing-lg) * 16);
 }
 
 .errors > .layoutdesigner > .fld-container {
   border: 1px solid var(--c-color-danger-border-normal);
 }
 
-/* Workspace */
+/* Workspace: content tabs (and the New Tab button below them) fill one pane;
+   sidebar tabs stack in a second pane along the inline end, as edit forms'
+   sidebars do. */
 .fld-workspace {
+  display: grid;
   flex: 1;
-  max-width: 100%;
-  border-start-start-radius: calc(var(--c-radius-sm) - 1px);
-  border-start-end-radius: 0;
-  border-end-end-radius: 0;
-  border-end-start-radius: calc(var(--c-radius-sm) - 1px);
-  box-shadow: var(--c-shadow-sunken);
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+/* The panes sit right on the page, without a surface or border of their own,
+   over a grid of pixel dots where a workspace's grid lines would cross (so
+   tabs still land on the grid). The first row of dots falls just under the
+   Content/Display tabs' bottom border. They don't clip, so the outer rings of
+   tabs along their edges show. */
+/* A hairline along their bottom edge (which is snapped to the grid) covers
+   the last row of dots, as the Content/Display tabs' border does the first. */
+.fld-pane.cp-workspace {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  box-shadow: inset 0 -1px 0 var(--fld-hairline);
+  background-color: transparent;
+  background-image: var(--fld-dots);
+}
+
+.fld-tabs {
+  display: contents;
+}
+
+/* Styled like grouped inputs' sub-labels (see craft-field-group). Each takes
+   up a grid cell, with another below it, so the tabs stay on the grid. */
+.fld-pane-heading {
+  display: flex;
+  align-items: center;
+  block-size: var(--c-spacing-lg);
+  margin-block: 0 var(--c-spacing-lg);
+  margin-inline: 0;
+  font-size: var(--c-text-sm);
+  font-weight: var(--font-weight-semibold, 600);
+  line-height: 1;
+  color: var(--c-text-quiet);
 }
 
 /* Tabs bring their own inline-end padding, which doubles as the gap between
    them. */
-.fld-workspace.cp-workspace {
-  padding-inline: var(--c-spacing-lg) 0;
+.fld-pane.cp-workspace {
+  padding-block: var(--c-spacing-lg);
+  padding-inline: 0;
 }
 
-.fld-tabs {
+/* No inline-end padding: the gap each tab brings after itself is the space
+   before the hairline between the panes. Tabs sit right at the pane's
+   inline-start edge, so their outer rings fall a pixel outside it; the pane
+   reaches a pixel further (padded back in), so the first column of dots is
+   drawn too, in line with those rings. */
+.fld-pane--content.cp-workspace {
+  margin-inline-start: -1px;
+  padding-inline: 1px 0;
+  background-position: 0 -1px;
+}
+
+.fld-tabs__content {
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
+  /* Each tab's trailing gap takes an extra pixel (see .fld-tab), which a
+     row's last tab doesn't need, so the column reaches a pixel past the pane:
+     otherwise the pixel the pane gives up to line its dots up with the tabs
+     would leave a full row of tabs a pixel short. */
+  margin-inline-end: -1px;
+}
+
+/* Divided from the content pane by a hairline, which lands on the grid.
+   Sidebar tabs are 15 grid cells less a pixel, so both of their outer rings
+   land on grid lines like content tabs' do. The column holds its width even
+   when empty. */
+.fld-pane--sidebar.cp-workspace {
+  padding-inline: var(--c-spacing-lg) 1px;
+  border-inline-start: 1px solid var(--fld-hairline);
+  /* The bottom hairline, then a band of the tabs' ring color either side of
+     the dividing one, keeping the dots clear of it. The outer band is inset a
+     pixel at either end, so it doesn't cover the content pane's bottom
+     hairline where the two meet. */
+  box-shadow:
+    inset 0 -1px 0 var(--fld-hairline),
+    inset 2px 0 0 var(--fld-halo),
+    -3px 0 0 -1px var(--fld-halo);
+}
+
+.fld-pane--sidebar.cp-workspace:dir(rtl) {
+  box-shadow:
+    inset 0 -1px 0 var(--fld-hairline),
+    inset -2px 0 0 var(--fld-halo),
+    3px 0 0 -1px var(--fld-halo);
+}
+
+.fld-tabs__sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-inline-size: calc(var(--c-spacing-lg) * 15 - 1px);
+}
+
+.fld-tabs__sidebar > .fld-tab {
+  width: calc(var(--c-spacing-lg) * 15 - 1px);
+  padding-inline-end: 0;
+}
+
+/* Too narrow for a content tab and a sidebar tab side by side (plus the
+   hairline between them), so the sidebar pane drops below the content pane,
+   with the hairline along its top instead. */
+@container fld (width < 34.0625rem) {
+  .fld-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The sidebar pane's top hairline divides them instead. */
+  .fld-pane--content.cp-workspace {
+    padding-inline-end: 0;
+    padding-block-end: var(--c-spacing-lg);
+    box-shadow: none;
+  }
+
+  /* Reaching a pixel past the inline-start edge, like the content pane. */
+  .fld-pane--sidebar.cp-workspace {
+    margin-inline-start: -1px;
+    padding-inline: 1px 0;
+    background-position: 0 -1px;
+    padding-block-start: var(--c-spacing-lg);
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--fld-hairline);
+    box-shadow:
+      inset 0 -1px 0 var(--fld-hairline),
+      inset 0 2px 0 var(--fld-halo),
+      0 -3px 0 -1px var(--fld-halo);
+  }
 }
 
 /* Tabs */
-/* 18 grid cells wide, plus a cell of padding for the gap to the next tab.
+/* 17 grid cells wide, plus a cell of padding for the gap to the next tab.
    The gap takes an extra pixel, so the tab ends just inside a grid line. */
 .fld-tab {
-  width: calc(var(--c-spacing-lg) * 19);
+  width: calc(var(--c-spacing-lg) * 18);
   max-width: 100%;
   padding-inline: 0 calc(var(--c-spacing-lg) + 1px);
   padding-block: 0 var(--c-spacing-lg);
   box-sizing: border-box;
 }
 
+/* Layered over the content, so the tab covers the content's ring (and the
+   ring of page color beyond it) along the seam. */
 .fld-tab .tabs {
+  position: relative;
+  z-index: 1;
   margin-block: -10px 0;
   margin-inline: -12px;
   padding-block: 10px 0;
@@ -84,6 +204,27 @@
   padding-block: 0;
   padding-inline: 14px;
   border-radius: var(--c-radius-md) var(--c-radius-md) 0 0;
+  position: relative;
+  isolation: isolate;
+}
+
+/* The tab's ring (and the ring of page color beyond it) is drawn here rather
+   than on the tab, stopping a pixel short of its bottom edge, so it meets the
+   content's ring there rather than cutting into it. */
+.fld-tab .tab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: var(--fld-surface-shadow);
+  clip-path: polygon(
+    -10px -10px,
+    calc(100% + 10px) -10px,
+    calc(100% + 10px) calc(100% - 1px),
+    -10px calc(100% - 1px)
+  );
+  pointer-events: none;
 }
 
 body:not(.dragging) .fld-tab .tab.draggable {
@@ -100,32 +241,213 @@ body:not(.dragging) .fld-tab .tab.draggable {
   text-overflow: ellipsis;
 }
 
-/* Tab + tab content surface */
+/* Tab + tab content surface. A dark ring vanishes against the dark theme's
+   surfaces, so surfaces get a light one there, like other hairline borders.
+   The rings are those translucent colors as they'd appear on the page
+   (rather than the colors themselves), so the workspace's grid doesn't show
+   through them. */
+:root {
+  /* A grid of pixel dots where a workspace's grid lines would cross. */
+  --fld-dots: radial-gradient(
+    circle at 0.5px 0.5px,
+    color-mix(var(--c-color-neutral-border-normal), transparent 30%) 0.5px,
+    transparent 0.5px
+  );
+  /* Tabs' (and the New Tab buttons') surface: a shade lighter than the page
+     they sit on. */
+  --fld-surface: color-mix(
+    in oklab,
+    var(--c-surface-default),
+    var(--color-white) 4%
+  );
+  /* Rings tabs and previews, just outside their outlines, to keep the grid's
+     dots clear of them: white in light mode, and a shade darker than the page
+     in dark mode. */
+  --fld-halo: var(--color-white);
+  /* A quiet border color, as it'd appear on the page, so the hairlines
+     dividing (and edging) the workspace's panes hide the dots under them. */
+  --fld-hairline: color-mix(
+    in srgb,
+    var(--color-slate-400),
+    var(--c-surface-default) var(--c-color-border-quiet-transparency)
+  );
+  --fld-surface-ring: color-mix(
+    in srgb,
+    hsl(210deg 24% 16%) 20%,
+    var(--c-surface-default)
+  );
+  --fld-surface-shadow:
+    0 0 0 1px var(--fld-surface-ring), var(--c-shadow-sm),
+    0 0 0 3px var(--fld-halo);
+}
+
+[data-theme='dark'] {
+  --fld-halo: color-mix(
+    in oklab,
+    var(--c-surface-default),
+    var(--color-black) 8%
+  );
+  --fld-surface-ring: color-mix(
+    in srgb,
+    var(--color-slate-400),
+    var(--c-surface-default) var(--c-color-border-quiet-transparency)
+  );
+  --fld-surface-shadow:
+    0 0 0 1px var(--fld-surface-ring), var(--c-shadow-sm),
+    0 0 0 3px var(--fld-halo);
+}
+
 .fld-tab .tab,
 .fld-tabcontent {
-  background-color: var(--c-surface-overlay);
-  box-shadow:
-    0 0 0 1px hsl(210deg 24% 16% / 10%),
-    0 2px 5px -2px hsl(210deg 24% 16% / 20%);
+  background-color: var(--fld-surface);
 }
 
 .fld-tabcontent {
+  box-shadow: var(--fld-surface-shadow);
+}
+
+/* At least five grid cells tall, less a pixel, so the outer ring lands on a
+   grid line (a sidebar tab's contents are then taller than the tab beside
+   them), without stretching what's in them (an empty tab's Add button) to
+   fill the extra height. */
+.fld-tabcontent {
   display: grid;
+  align-content: start;
   gap: var(--c-spacing-sm);
-  padding: var(--c-spacing-lg);
+  box-sizing: border-box;
+  min-block-size: calc(var(--c-spacing-lg) * 5 - 1px);
+  padding: calc(var(--c-spacing-lg) - 1px);
   border-start-start-radius: 0;
   border-start-end-radius: var(--c-radius-md);
   border-end-end-radius: var(--c-radius-md);
   border-end-start-radius: var(--c-radius-md);
 }
 
-/* Transparent, so the workspace grid shows through, aligned wherever the
-   placeholder lands. */
+/* An empty tab's Add button needs no space above it. */
+.fld-tabcontent > .fld-add-btn:only-child {
+  margin-block-start: 0;
+}
+
+/* Where a dragged tab will land: a translucent blob in its shape, so the
+   workspace grid shows through, aligned wherever the placeholder lands. */
 .fld-tab.fld-insertion .tab,
 .fld-tab.fld-insertion .fld-tabcontent {
-  border: 2px dashed var(--c-color-neutral-border-quiet);
+  border: 0;
   box-shadow: none;
-  background: transparent;
+  background: color-mix(var(--c-text-default), transparent 88%);
+}
+
+/* Side by side, rather than overlapping, so the blob doesn't double up along
+   the seam. */
+.fld-tab--sidebar.fld-insertion .tabs {
+  margin-inline-start: 0;
+}
+
+/* Sidebar tabs: the tab protrudes off the content's inline-end edge, the side
+   edit forms' sidebars are on, showing just the icon (the name is in a
+   tooltip). The protrusion comes out of the content's width, so both tab types
+   take up the same space. It's only moved visually, so its action menu still
+   comes before the tab's contents in the focus order, as content tabs' do. */
+.fld-tab--sidebar {
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Layered over the content's edge, hiding its ring along the seam. */
+.fld-tab--sidebar .tabs {
+  position: relative;
+  z-index: 1;
+  order: 1;
+  flex-direction: column;
+  flex-shrink: 0;
+  margin-block: -10px;
+  margin-inline: -1px -12px;
+  padding-block: 10px;
+  padding-inline: 0 12px;
+}
+
+.fld-tab--sidebar .tab {
+  flex-direction: column;
+  gap: 0;
+  inline-size: calc(var(--c-spacing-lg) * 2 + 1px);
+  max-width: none;
+  block-size: auto;
+  /* Two grid cells: the icon, then the action menu. */
+  min-block-size: calc(var(--c-spacing-lg) * 4);
+  padding: 0;
+  border-start-start-radius: 0;
+  border-start-end-radius: var(--c-radius-md);
+  border-end-end-radius: var(--c-radius-md);
+  border-end-start-radius: 0;
+}
+
+/* The tab overlaps the content by a pixel, and the content's ring runs down the
+   pixel after that. The tab's own ring is drawn here instead, clear of those
+   two columns, so it meets the content's ring rather than doubling up on it
+   (or landing inside the content) just above and below the seam. */
+.fld-tab--sidebar .tab::before {
+  clip-path: polygon(
+    2px -10px,
+    calc(100% + 10px) -10px,
+    calc(100% + 10px) calc(100% + 10px),
+    2px calc(100% + 10px)
+  );
+  pointer-events: none;
+}
+
+.fld-tab--sidebar .tab:dir(rtl)::before {
+  clip-path: polygon(
+    -10px -10px,
+    calc(100% - 2px) -10px,
+    calc(100% - 2px) calc(100% + 10px),
+    -10px calc(100% + 10px)
+  );
+}
+
+.fld-tab.fld-insertion .tab::before {
+  content: none;
+}
+
+/* The copy of the dragged tab's label that sizes the insertion's tab. */
+.fld-tab.fld-insertion .tab > * {
+  visibility: hidden;
+}
+
+.fld-tab--sidebar .fld-tab__name {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.fld-tab--sidebar .fld-tab__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: calc(var(--c-spacing-lg) * 2);
+}
+
+.fld-tab--sidebar .tab > craft-action-menu > craft-button[slot='invoker'] {
+  margin-block: auto;
+  margin-inline: 0;
+}
+
+.fld-tab--sidebar .tab > .cp-icon {
+  margin-block-end: var(--c-spacing-sm);
+}
+
+.fld-tab--sidebar .fld-tabcontent {
+  flex: 1;
+  min-inline-size: 0;
+  border-start-start-radius: var(--c-radius-md);
+  border-start-end-radius: 0;
+}
+
+/* Sidebar fields always span the full width. */
+.fld-tab--sidebar .fld-element craft-slide-picker {
+  display: none;
 }
 
 .fld-tab-caboose {
@@ -137,23 +459,9 @@ body:not(.dragging) .fld-tab .tab.draggable {
    lines are 16px apart, so a ring-to-ring span is 16n + 1px. */
 .fld-new-tab-btn {
   --c-button-height: calc(var(--c-spacing-lg) * 2 - 1px);
-  --c-color-neutral-fill-normal: var(--c-surface-overlay);
+  --c-color-neutral-fill-normal: var(--fld-surface);
   border-radius: var(--c-radius-md);
-  box-shadow:
-    0 0 0 1px hsl(210deg 24% 16% / 10%),
-    0 2px 5px -2px hsl(210deg 24% 16% / 20%);
-}
-
-/* A dark ring vanishes against the dark theme's surfaces, so tabs and the New
-   Tab button get a light one there, like other hairline borders. */
-[data-theme='dark'] :is(.fld-tab .tab, .fld-tabcontent, .fld-new-tab-btn) {
-  box-shadow:
-    0 0 0 1px var(--c-color-neutral-border-quiet),
-    0 2px 5px -2px hsl(210deg 24% 16% / 20%);
-}
-
-[data-theme='dark'] .fld-tab.fld-insertion :is(.tab, .fld-tabcontent) {
-  box-shadow: none;
+  box-shadow: var(--fld-surface-shadow);
 }
 
 /* Layout elements (chips) */
@@ -195,11 +503,13 @@ body:not(.dragging) .fld-element {
   cursor: grab;
 }
 
+/* Where a dragged element will land: a translucent blob in its shape, like
+   a tab's. */
 .fld-element.fld-insertion {
   box-sizing: border-box;
-  border: 2px dashed var(--c-color-neutral-border-quiet);
+  border: 0;
   border-radius: var(--c-radius-md);
-  background: none;
+  background: color-mix(var(--c-text-default), transparent 88%);
   box-shadow: none;
 }
 
@@ -351,8 +661,6 @@ body:not(.dragging) .fld-element {
   padding-inline: 14px;
   flex: 1;
   min-height: 0;
-  max-height: 550px;
-  overflow: auto;
 }
 
 .fld-field-group {
@@ -381,7 +689,6 @@ body:not(.dragging) .fld-element {
 }
 
 .fld-library-hud .main {
-  height: 100%;
   padding: 14px;
 }
 
@@ -446,6 +753,18 @@ body:not(.dragging) .fld-element {
 }
 
 /* Card view designer styles now live in cvd.css */
+
+/* The Content and Display panels sit right under their tabs, so the hairline
+   between the field layout designer's panes runs right up to the tabs. */
+.fld-view-tabs {
+  --c-tabs-gap: 0;
+}
+
+/* The Content and Display panels grow with the page, rather than scrolling
+   within the tabs as panels in a fixed-height region do. */
+.fld-view-tabs::part(panels) {
+  overflow-y: visible;
+}
 
 /* Drops the wider --gap inherited from the field layout setting's own field
    group, so the designer and Generated Fields are spaced like other fields. */
