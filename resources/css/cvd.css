@@ -65,11 +65,18 @@
   box-shadow: none;
   background-color: transparent;
   background-image: none;
-  padding-inline-end: 0;
+  /* Stacked under the settings, no inline padding, like the field layout
+     designer's stacked panes: it reaches a pixel past the inline-start edge,
+     and the preview pads back in (below), so the chip and card line up with
+     the settings and the first column of dots with their outer rings. */
+  margin-inline-start: -1px;
+  padding-inline: 0;
 }
 
 @container cvd (width > 37.5rem) {
   .cvd-preview-container.cp-workspace {
+    margin-inline-start: 0;
+    padding-inline-start: var(--c-spacing-lg);
     border-block-start: 0;
     border-inline-start: 1px solid var(--fld-hairline);
   }
@@ -115,10 +122,17 @@
    of cells, clipped by the container. */
 .cvd-preview {
   position: relative;
-  /* The pane's padding is one cell, so without this a column of dots would
-     run right along its left edge. Shifted, that column falls outside and is
-     clipped, while the chip and card keep theirs. */
-  margin-inline-start: -1px;
+  padding-inline-start: 1px;
+}
+
+/* Beside the settings, the pane's padding is one cell, so without this a
+   column of dots would run right along its left edge. Shifted, that column
+   falls outside and is clipped, while the chip and card keep theirs. */
+@container cvd (width > 37.5rem) {
+  .cvd-preview {
+    margin-inline-start: -1px;
+    padding-inline-start: 0;
+  }
 }
 
 .cvd-preview::before {
