@@ -1,0 +1,49 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Ai\Contracts;
+
+use CraftCms\Cms\Ai\Enums\Capability;
+use CraftCms\Cms\Ai\Enums\Modality;
+use CraftCms\Cms\Ai\Task;
+
+/**
+ * An AI task that admins map to a provider and model.
+ *
+ * Extend {@see Task} rather than implementing this directly.
+ *
+ * @since 6.0.0
+ */
+interface TaskInterface
+{
+    /**
+     * Returns the task’s globally unique handle, such as `altText:describe`.
+     *
+     * Prefix it with your plugin handle. It may only contain letters, numbers,
+     * underscores, hyphens, and colons, and must start with a letter.
+     */
+    public static function handle(): string;
+
+    /**
+     * Returns the task’s label, shown to admins.
+     */
+    public static function label(): string;
+
+    /**
+     * Returns the kind of operation the task performs, which decides its default provider.
+     */
+    public static function modality(): Modality;
+
+    /**
+     * Returns the model capabilities the task needs. They’re shown to admins and never validated.
+     *
+     * @return list<Capability>
+     */
+    public static function capabilities(): array;
+
+    /**
+     * Returns a description of the task, shown to admins.
+     */
+    public static function description(): ?string;
+}
