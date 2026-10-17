@@ -957,3 +957,22 @@ it('colors only the icon of a plain colored chip, not its label', async () => {
     color(document.getElementById('text')!)
   );
 });
+
+it('centers a chip with a thumbnail on its line, rather than sitting on the baseline', async () => {
+  await import('../../styles/cp.css');
+  await import('../indicator/indicator.js');
+  document.body.innerHTML = `
+    <table><tr><td style="height: 50px; vertical-align: middle; padding: 4px 8px">
+      <craft-chip appearance="plain" size="small" show-thumb show-status><div slot="status"><craft-indicator></craft-indicator></div><div slot="thumbnail"><img alt="" width="30" height="30" src="data:image/gif;base64,R0lGODlhAQABAAAAACw="></div><craft-truncate class="label"><span>Label</span></craft-truncate></craft-chip>
+    </td></tr></table>`;
+  const chip = document.querySelector('craft-chip')!;
+  await chip.updateComplete;
+  const cell = document.querySelector('td')!.getBoundingClientRect();
+  const box = chip
+    .shadowRoot!.querySelector('.cp-chip')!
+    .getBoundingClientRect();
+
+  expect(
+    Math.abs(box.top + box.height / 2 - (cell.top + cell.height / 2))
+  ).toBeLessThanOrEqual(1);
+});

@@ -63,6 +63,11 @@ export default css`
     padding-block: 0;
     padding-inline: var(--_chip-gap) var(--_chip-spacing);
     display: inline-flex;
+    /* Centered on the line, rather than sitting on its baseline: an inline
+       flex box's baseline comes from its first item, which for a thumbnail
+       is the image's bottom edge, lifting the chip above the text's
+       descenders. */
+    vertical-align: middle;
     gap: var(--_chip-gap);
     border-radius: var(--_radius);
     align-items: center;
