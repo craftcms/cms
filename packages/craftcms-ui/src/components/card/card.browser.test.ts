@@ -504,3 +504,41 @@ it('styles the buttons and badges in a black card as in the dark theme', async (
   expect(looks('black')).toEqual(looks('dark'));
   expect(looks('black')).not.toEqual(looks('light'));
 });
+
+it('gives what’s in a colored card, or a card in a colored wrapper, the card’s color, except for white, gray, and black', async () => {
+  document.body.innerHTML = `
+    <div data-color="orange"><craft-card><span id="wrapped"></span></craft-card></div>
+    <craft-card data-color="orange"><span id="colored"></span></craft-card>
+    <craft-card><span id="plain"></span></craft-card>
+    <craft-card data-color="gray"><span id="gray"></span></craft-card>
+    <div data-color="white"><craft-card><span id="white"></span></craft-card></div>
+    <span id="outside"></span>`;
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+  const resolve = (id: string, value: string) => {
+    const element = document.getElementById(id)!;
+    element.style.color = value;
+    return getComputedStyle(element).color;
+  };
+  const tokens = {
+    '--c-text-default': '--c-color-orange-on-quiet',
+    '--c-input-border-color': '--c-color-orange-border-normal',
+    '--c-tab-border-active': '--c-color-orange-on-quiet',
+    '--c-color-neutral-border-quiet': '--c-color-orange-border-quiet',
+    '--c-color-neutral-fill-normal': '--c-color-orange-fill-normal',
+  };
+
+  for (const [token, orange] of Object.entries(tokens)) {
+    for (const id of ['wrapped', 'colored']) {
+      expect(resolve(id, `var(${token})`), `${id} ${token}`).toBe(
+        resolve(id, `var(${orange})`)
+      );
+    }
+  }
+
+  for (const id of ['plain', 'gray', 'white']) {
+    expect(resolve(id, 'var(--c-text-default)'), id).toBe(
+      resolve('outside', 'var(--c-text-default)')
+    );
+  }
+});
