@@ -83,6 +83,7 @@
 - Color selects’ swatches now match the headers of cards in their colors.
 - Slide pickers, such as field layout designers’ width pickers, now have lighter segments, and the dividers between selected segments are no longer dark.
 - Resizable modals, such as the Customize Sources modal, now have grips along their right and bottom edges, plus a smaller one in their corner, which show on hover. Only the corner grip takes keyboard focus.
+- Element selection modals can now be resized.
 - Fixed a bug where Language and Formatting Locale options’ hints were shown in the current language, rather than in each option’s own language.
 - Fixed a bug where control panel pages without a title had extra space above their content.
 - Fixed a bug where edit pages for elements without a title, such as nested entries whose entry type has no Title field, had a blank page title. They’re now titled “Untitled {type}”.
@@ -217,6 +218,7 @@
 - Added support for hiding editable table rows while preserving their inputs and submitted values, using `CraftCms\Cms\Ui\Controls\Table::hiddenRows()` or legacy `_hidden` row values. ([#19939](https://github.com/craftcms/cms/pull/19939))
 - Added the `<craft-input-search>` web component. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `<craft-resize-grips>` web component.
+- Added the `resizable` property to `<craft-dialog>`.
 - Added the `inline-suffix` attribute to `<craft-input>`, and `CraftCms\Cms\Cp\Components\Input::inlineSuffix()`, which draw suffix buttons within the input’s border. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `suffix` slot to `<craft-tab>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `--c-callout-icon-padding-inline` and `--c-callout-text-padding-inline` CSS custom properties to `<craft-callout>`. ([#20001](https://github.com/craftcms/cms/pull/20001))

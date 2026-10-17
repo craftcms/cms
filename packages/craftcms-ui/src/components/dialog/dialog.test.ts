@@ -413,3 +413,45 @@ describe('craft-dialog before-hide', () => {
     expect(asked).toBe(false);
   });
 });
+
+describe('craft-dialog resizable', () => {
+  const grips = (dialog: CraftDialog) =>
+    dialog.shadowRoot!.querySelector('craft-resize-grips');
+  const surface = (dialog: CraftDialog) =>
+    dialog.shadowRoot!.querySelector<HTMLElement>('.surface')!;
+
+  it('has no grips unless it opts in', async () => {
+    const dialog = await createDialog();
+
+    expect(grips(dialog)).toBeNull();
+  });
+
+  it('sizes its surface by its grips, and back to its own size on reset', async () => {
+    const dialog = await createDialog((d) => (d.resizable = true));
+    const resize = async (width: number | null, height: number | null) => {
+      grips(dialog)!.dispatchEvent(
+        new CustomEvent('craft-resize', {detail: {width, height}})
+      );
+      await dialog.updateComplete;
+    };
+
+    expect(grips(dialog)!.target).toBe(surface(dialog));
+
+    await resize(500, 400);
+    expect(surface(dialog).style.getPropertyValue('inline-size')).toBe('500px');
+    expect(surface(dialog).style.getPropertyValue('block-size')).toBe('400px');
+
+    await resize(null, null);
+    expect(surface(dialog).style.getPropertyValue('inline-size')).toBe('');
+    expect(surface(dialog).style.getPropertyValue('block-size')).toBe('');
+  });
+
+  it('offers no grips while fullscreen', async () => {
+    const dialog = await createDialog((d) => {
+      d.resizable = true;
+      d.fullscreen = true;
+    });
+
+    expect(grips(dialog)).toBeNull();
+  });
+});

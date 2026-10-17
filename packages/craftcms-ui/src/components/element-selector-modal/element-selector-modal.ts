@@ -113,6 +113,12 @@ export default class CraftElementSelectorModal extends CraftDialog {
     this.#windowResizeTimer = setTimeout(() => this.#queueSizeLock(), 200);
   };
 
+  constructor() {
+    super();
+    // An index needs room, and how much depends on its columns and the screen.
+    this.resizable = true;
+  }
+
   override connectedCallback(): void {
     super.connectedCallback();
     window.addEventListener('resize', this.#onWindowResize);
