@@ -113,6 +113,14 @@ class Settings
             'label' => t('Plugins'),
         ];
 
+        $label = t('AI');
+
+        $settings[$label]['connections'] = [
+            'url' => route('craft.cp.settings.ai.index'),
+            'iconName' => 'light/sparkles',
+            'label' => t('Connections'),
+        ];
+
         $label = t('Content');
 
         $settings[$label]['sections'] = [
