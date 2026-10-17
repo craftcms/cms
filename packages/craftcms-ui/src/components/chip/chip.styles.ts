@@ -164,6 +164,12 @@ export default css`
     gap: var(--_chip-gap);
   }
 
+  /* Clicking a selectable chip selects it, so its label doesn't get a text
+     cursor, as if it were text to select. Links within it keep theirs. */
+  .cp-chip--selectable {
+    cursor: default;
+  }
+
   /* The gap spaces the checkbox, so the browser's default margins would
      double up with it. */
   .cp-chip__select {

@@ -793,6 +793,24 @@ it('gives an uncolored chip or card no fill of its own, taking a colored card’
   expect(surface('card', '.card').color).toBe(outer.color);
 });
 
+it('gives a selectable chip’s label the default cursor, rather than a text one', async () => {
+  document.body.innerHTML = `
+    <craft-chip selectable select-label="Select"><span id="label">Work</span></craft-chip>
+    <craft-chip><span id="plain-label">Work</span></craft-chip>`;
+  for (const chip of document.querySelectorAll<
+    HTMLElement & {updateComplete: Promise<unknown>}
+  >('craft-chip')) {
+    await chip.updateComplete;
+  }
+
+  expect(getComputedStyle(document.getElementById('label')!).cursor).toBe(
+    'default'
+  );
+  expect(getComputedStyle(document.getElementById('plain-label')!).cursor).toBe(
+    'auto'
+  );
+});
+
 it('sizes the selection checkbox at 14px, with 24px of clear space around it', async () => {
   await import('../../styles/cp.css');
   document.body.innerHTML = `
