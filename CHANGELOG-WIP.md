@@ -53,6 +53,8 @@
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
 
 ### Fields & Field Layouts
+- Added sidebar field layout tabs, whose fields are shown in element edit forms’ details sidebar. ([#20005](https://github.com/craftcms/cms/pull/20005))
+- Field layout tabs can now have icons. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Added a new core Markdown field type. ([#18960](https://github.com/craftcms/cms/pull/18960))
 - Added a “Selectable {Type} Condition” setting to Link and Markdown fields’ Entry and Asset link types. ([#19622](https://github.com/craftcms/cms/pull/19622))
 - Added a “Default Row Values” setting to Table fields. ([#3621](https://github.com/craftcms/cms/issues/3621))
