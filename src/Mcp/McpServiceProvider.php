@@ -101,8 +101,8 @@ class McpServiceProvider extends ServiceProvider
             'url' => route('craft.cp.settings.mcp.index'),
             'iconName' => 'light/robot',
         ];
-        $cpSettings->registerSetting('System', 'mcp', $settings);
-        $cpSettings->registerReadOnlySetting('System', 'mcp', $settings);
+        $cpSettings->registerSetting('AI', 'mcp', $settings);
+        $cpSettings->registerReadOnlySetting('AI', 'mcp', $settings);
 
         if (! $this->app->routesAreCached()) {
             $this->registerRoutes($router, $routes, $metadata);

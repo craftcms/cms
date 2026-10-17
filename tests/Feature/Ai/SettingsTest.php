@@ -22,10 +22,10 @@ beforeEach(function (): void {
     actingAs(User::find()->one());
 });
 
-it('lists the AI settings screen under System settings', function (): void {
+it('lists the AI connections screen under the AI settings', function (): void {
     get(action(SettingsIndexController::class))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('settings.System.ai.url', route('craft.cp.settings.ai.index')))
+            ->where('settings.AI.connections.url', route('craft.cp.settings.ai.index')))
         ->assertOk();
 });
 

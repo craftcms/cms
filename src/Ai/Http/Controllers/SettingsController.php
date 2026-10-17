@@ -63,10 +63,10 @@ readonly class SettingsController
             : ControlMode::ReadOnly;
 
         return new CpScreenResponse()
-            ->title(t('AI Settings'))
+            ->title(t('AI Connections'))
             ->crumbs([
                 new ActionItem()->label(t('Settings'))->href(route('craft.cp.settings.index')),
-                new ActionItem()->label(t('AI')),
+                new ActionItem()->label(t('AI Connections')),
             ])
             ->redirectUrl('settings')
             ->ui($this->settingsUi->make($settings), new UiContext(
