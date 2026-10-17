@@ -399,11 +399,15 @@
   }
 
   // `data-color="white"` hands its static white palette to inheriting
-  // controls, like the action menu's button, whose hover tints from it. As
-  // white cards do, point it at the tile's own surface and text instead.
+  // controls, like the action menu's button, whose hover and pressed states
+  // tint from it. As white cards do, point it at the tile's own surface, border
+  // and text instead.
   .element {
     --c-color-fill-quiet: var(--c-surface-raised);
+    --c-color-fill-loud: var(--c-surface-raised);
+    --c-color-border-loud: var(--c-border-raised-selected);
     --c-color-on-quiet: var(--c-text-default);
+    --c-color-on-loud: var(--c-text-default);
     background-color: var(--c-color-fill-quiet);
     border-color: var(--c-border-raised);
     color: var(--c-text-default);
