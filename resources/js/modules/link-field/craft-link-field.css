@@ -53,3 +53,13 @@
   justify-content: flex-end;
   gap: var(--c-spacing-sm);
 }
+
+.craft-link-popover::part(popup) {
+  width: min(20rem, calc(100vw - var(--c-spacing-xl)));
+}
+
+/* The buttons' 44px hit-area sizers hang past the padding, which would make
+   the pane scroll by a few pixels. */
+.craft-link-popover > [slot='content'] {
+  overflow: clip;
+}

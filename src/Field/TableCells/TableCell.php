@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Field\TableCells;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Field\Contracts\TableCellInterface;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Control as UiControl;
 use CraftCms\Cms\Ui\Controls\Text;
@@ -40,7 +41,8 @@ abstract class TableCell extends Component implements TableCellInterface
         return $this->serializeValue($value);
     }
 
-    public function serializeValue(mixed $value, bool $forDb = false): bool|float|int|string|null
+    /** @return array<array-key, mixed>|bool|float|int|string|null */
+    public function serializeValue(mixed $value, bool $forDb = false): array|bool|float|int|string|null
     {
         if ($value !== null && ! is_scalar($value)) {
             throw new InvalidArgumentException('Table cells must serialize to a scalar value or null.');
@@ -56,7 +58,9 @@ abstract class TableCell extends Component implements TableCellInterface
 
     public function searchKeywords(mixed $value): string
     {
-        return (string) $this->serializeValue($value);
+        $value = $this->serializeValue($value);
+
+        return is_array($value) ? implode(' ', Arr::flatten($value)) : (string) $value;
     }
 
     public function gqlType(): Type
