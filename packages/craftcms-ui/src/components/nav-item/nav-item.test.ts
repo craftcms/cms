@@ -824,7 +824,7 @@ describe('craft-nav-item as a button', () => {
 
     button.click();
     expect(clicks).toHaveLength(1);
-    expect(clicks[0].defaultPrevented).toBe(false);
+    expect(clicks[0]!.defaultPrevented).toBe(false);
   });
 
   it('is a named button with a tooltip when collapsed', async () => {

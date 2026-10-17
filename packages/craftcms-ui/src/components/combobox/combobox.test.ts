@@ -490,7 +490,7 @@ describe('craft-combobox', () => {
       optionEls(combobox).map((option) => option.textContent?.trim())
     ).toEqual(['Local']);
 
-    optionEls(combobox)[0].click();
+    optionEls(combobox)[0]!.click();
     await vi.waitFor(() => expect(combobox.opened).toBe(false));
     await combobox.updateComplete;
 

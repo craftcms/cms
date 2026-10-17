@@ -221,9 +221,6 @@
     viewMode,
     selectable,
     readOnly: () => !props.editable,
-    // Chips behave like a file list: a plain click collapses the selection to the
-    // one clicked, and ctrl/cmd adds to it.
-    click: 'replace',
   });
 
   const {
@@ -747,7 +744,13 @@
               <ActionMenu
                 v-if="menuActions(element.id, index).length"
                 :actions="menuActions(element.id, index)"
-                :flush="list.isList.value ? 'inline-start' : undefined"
+                :flush="
+                  list.isList.value
+                    ? 'inline-start'
+                    : list.isThumbs.value
+                      ? false
+                      : undefined
+                "
               />
             </template>
           </ElementList>

@@ -34,6 +34,11 @@ export default css`
     --_dialog-min-block-size: var(--c-dialog-min-block-size, 100dvh);
   }
 
+  /* Held at the height it opened at (see #queueSizeLock), within the max. */
+  :host([size-locked]:not([fullscreen])) .surface {
+    block-size: min(var(--_locked-block-size), var(--_dialog-max-block-size));
+  }
+
   /* The index supplies its own padding, and its sidebar runs edge to edge. */
   .body {
     padding: 0;

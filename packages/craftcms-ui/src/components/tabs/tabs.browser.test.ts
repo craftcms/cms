@@ -94,7 +94,7 @@ async function strip({
   };
 }
 
-it.each([
+it.each<{disabled: number[]; attrs: Record<string, string>; expected: number}>([
   {disabled: [], attrs: {}, expected: 0},
   {disabled: [0], attrs: {}, expected: 1},
   {disabled: [], attrs: {'selected-index': '-1'}, expected: 0},
@@ -118,7 +118,7 @@ it.each([
 
 it('moves focus with the selection', async () => {
   const {element, tabs} = await strip();
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
 
   tabs[0]!.focus();
 
@@ -138,7 +138,7 @@ it('moves focus with the selection', async () => {
 
 it('tabs from the selected tab into its panel and back', async () => {
   const {element, tabs, slottedPanels} = await strip();
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
 
   element.selectedIndex = 1;
   await element.updateComplete;
@@ -194,7 +194,7 @@ it('scrolls its panels from the keyboard, leaving the strip in place', async () 
   expect(panel.tabIndex).toBe(0);
 
   panel.focus();
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   await userEvent.keyboard('{PageDown}');
 
   // The browser's own key scrolling is smooth, so it lands a frame or two on.
@@ -217,7 +217,7 @@ it('keeps a focused panel’s ring inside the scrolling panel region', async () 
   const tabs = await fixture('display: block; block-size: 300px;');
   const region = panels(tabs);
   const panel = tabs.querySelector<HTMLElement>('[slot="panel"]')!;
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
 
   await expect.poll(() => panel.getAttribute('role')).toBe('tabpanel');
   tabs.querySelector<HTMLElement>('craft-tab')!.focus();
@@ -242,7 +242,7 @@ describe.each(themes)('in the %s theme', (theme) => {
   it('rings a keyboard-focused tab at 3:1 against the surface', async () => {
     const wrapper = surface(theme);
     const {tabs} = await strip({parent: wrapper});
-    const {userEvent} = await import('@vitest/browser/context');
+    const {userEvent} = await import('vite-plus/test/browser');
 
     await userEvent.keyboard('{Tab}');
 
