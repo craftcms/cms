@@ -408,6 +408,10 @@ describe('NestedElementBlocksControl', () => {
     // `data-color` is all it takes — the CP's colorable rules turn it into the
     // whole `--c-color-*` set the card paints from.
     expect(block.getAttribute('data-color')).toBe('red');
+    // On the card too, so it's styled as a card in that color.
+    expect(
+      block.querySelector(':scope > craft-card')?.getAttribute('data-color')
+    ).toBe('red');
   });
 
   it('disables a block, folds it away, and flags it', async () => {
