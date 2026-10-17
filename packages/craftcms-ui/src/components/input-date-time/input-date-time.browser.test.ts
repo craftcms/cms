@@ -160,3 +160,27 @@ it('draws the clear button at its own size inside the border, without a divider'
   expect(buttonBounds.bottom).toBeLessThan(fieldBounds.bottom - 1);
   expect(buttonBounds.right).toBeLessThan(fieldBounds.right - 1);
 });
+
+it('rings a lone date or time input around the whole field, standing off its border', async () => {
+  await import('../../styles/cp.css');
+  const {field, button} = await render(null);
+  const ring = () => {
+    const style = getComputedStyle(field);
+    return [style.outlineStyle, style.outlineOffset];
+  };
+  const part = () => field.querySelector<HTMLElement>('[data-date-time-part]')!;
+
+  part().focus();
+  expect(ring()[0]).toBe('none');
+
+  field.showTime = false;
+  await field.updateComplete;
+  part().focus();
+  expect(ring()).toEqual(['solid', '2px']);
+  expect(
+    getComputedStyle(part()).getPropertyValue('--c-focus-outline-width')
+  ).toBe('0px');
+
+  button.focus();
+  expect(ring()[0]).toBe('none');
+});

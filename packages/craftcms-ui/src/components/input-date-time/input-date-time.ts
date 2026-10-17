@@ -270,6 +270,21 @@ export default class CraftInputDateTime extends LitElement {
     :host([width='full']) .inputs {
       flex: 1 1 auto;
     }
+
+    /*
+      A lone date or time input reads as an ordinary input: the whole field,
+      clear button included, takes the usual focus ring, standing off its
+      border, rather than one inset around the input.
+    */
+    :host([single]) slot[name='inputs']::slotted([data-date-time-part]) {
+      --c-focus-outline-width: 0px;
+    }
+
+    :host([single][input-focused]) {
+      outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+        var(--c-color-focus-outline);
+      outline-offset: var(--c-focus-outline-offset);
+    }
   `;
 
   override render() {
@@ -287,12 +302,16 @@ export default class CraftInputDateTime extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
     this.addEventListener('model-value-changed', this.#onModelValueChanged);
+    this.addEventListener('focusin', this.#syncInputFocus);
+    this.addEventListener('focusout', this.#syncInputFocus);
     this.#resizeObserver ??= new ResizeObserver(() => this.#queueStackedSync());
     this.#resizeObserver.observe(this);
   }
 
   override disconnectedCallback() {
     this.removeEventListener('model-value-changed', this.#onModelValueChanged);
+    this.removeEventListener('focusin', this.#syncInputFocus);
+    this.removeEventListener('focusout', this.#syncInputFocus);
     this.#resizeObserver?.disconnect();
     if (this.#stackedFrame !== undefined) {
       cancelAnimationFrame(this.#stackedFrame);
@@ -307,6 +326,22 @@ export default class CraftInputDateTime extends LitElement {
    * frame, because toggling the attribute resizes the host, which a resize
    * observer can't take within the same notification.
    */
+  /**
+   * Marks the host `input-focused` while one of its inputs (rather than, say,
+   * a slotted clear button) has focus, which a shadow stylesheet can't
+   * observe on light-DOM children.
+   */
+  #syncInputFocus = (event: FocusEvent) => {
+    const focused =
+      event.type === 'focusin' ? event.target : event.relatedTarget;
+    this.toggleAttribute(
+      'input-focused',
+      focused instanceof Element &&
+        this.contains(focused) &&
+        focused.closest('[data-date-time-part]') !== null
+    );
+  };
+
   /** Measures the room slotted content takes up beside the inputs. */
   #syncBesideSize() {
     const inputs = this.shadowRoot?.querySelector<HTMLElement>('.inputs');
@@ -361,6 +396,11 @@ export default class CraftInputDateTime extends LitElement {
     this.#syncTimezoneInput();
     this.#syncHiddenInput('locale', this.locale, true);
     this.#syncHiddenInput('timezone', this.timezone, !this.showTimezone);
+    this.toggleAttribute(
+      'single',
+      [this.showDate, this.showTime, this.showTimezone].filter(Boolean)
+        .length === 1
+    );
     this.#queueStackedSync();
   }
 
