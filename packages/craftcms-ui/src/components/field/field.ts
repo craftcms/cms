@@ -104,9 +104,10 @@ export default class CraftField extends FormControlMixin(LitElement) {
   /**
    * Overrides the inferred width behavior. By default, the field spans its
    * column, unless the slotted control declares a `maxlength` (reflected
-   * onto the host as `has-maxlength`) — which shrinks the field to the
-   * control's width. `full` spans the column despite a `maxlength`; `auto`
-   * shrinks without one.
+   * onto the host as `has-maxlength`) — which shrinks the input to the
+   * control's width, while the heading and feedback still span the column.
+   * `full` spans the column despite a `maxlength`; `auto` shrinks without
+   * one.
    */
   @property({type: String, reflect: true}) width?: 'full' | 'auto';
 

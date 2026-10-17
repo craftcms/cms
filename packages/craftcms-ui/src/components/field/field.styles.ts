@@ -7,12 +7,14 @@ export default css`
   }
 
   /* A slotted control with a maxlength (reflected as has-maxlength) shrinks
-     the field to the control's width instead of spanning the column.
-     width="full" spans despite a maxlength; width="auto" shrinks without
-     one. */
-  :host([has-maxlength]:not([width='full'])),
-  :host([width='auto']) {
+     to its own width instead of spanning the column. width="full" spans
+     despite a maxlength; width="auto" shrinks without one. Only the input
+     shrinks: the heading (and its actions) and feedback still span the
+     column, in line with other fields'. */
+  :host([has-maxlength]:not([width='full'])) .input-group__container,
+  :host([width='auto']) .input-group__container {
     width: fit-content;
+    max-width: 100%;
   }
 
   /* Stop the input chrome from flexing back out to the available space. */
