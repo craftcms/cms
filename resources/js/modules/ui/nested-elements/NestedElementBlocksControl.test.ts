@@ -414,6 +414,23 @@ describe('NestedElementBlocksControl', () => {
     ).toBe('red');
   });
 
+  it('gives a block without a color a card without one', async () => {
+    mount(
+      {
+        entries: {'block-a': {type: 'newType', enabled: true}},
+        sortOrder: ['block-a'],
+      },
+      {blocks: {'block-a': {icon: null, color: null}}}
+    );
+    await nextTick();
+
+    const block = container!.querySelector('[data-matrix-block]')!;
+    expect(block.hasAttribute('data-color')).toBe(false);
+    expect(
+      block.querySelector(':scope > craft-card')?.hasAttribute('data-color')
+    ).toBe(false);
+  });
+
   it('disables a block, folds it away, and flags it', async () => {
     mount({
       entries: {'block-a': {type: 'newType', enabled: true}},

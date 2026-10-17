@@ -85,7 +85,7 @@ it('gives a white card a lighter shadow than other cards', async () => {
     <span class="xs" style="box-shadow: var(--c-shadow-xs)"></span>
     <span class="sm" style="box-shadow: var(--c-shadow-sm)"></span>
     <craft-card data-color="white">White</craft-card>
-    <craft-card>Plain</craft-card>`;
+    <craft-card data-color="red">Red</craft-card>`;
   const [white, plain] = Array.from(
     document.querySelectorAll<CraftCard>('craft-card')
   );

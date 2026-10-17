@@ -202,19 +202,20 @@ export default css`
     cursor: not-allowed;
   }
 
-  :host([data-color='white']) .cp-chip__select {
+  :host(:is([data-color='white'], :not([data-color]))) .cp-chip__select {
     border-color: var(--c-form-control-border-color);
     background-color: var(--c-input-fill);
   }
 
-  :host([data-color='white']) .cp-chip__select:checked {
+  :host(:is([data-color='white'], :not([data-color])))
+    .cp-chip__select:checked {
     border-color: transparent;
     background-color: var(--c-color-accent-fill-loud);
   }
 
   @media (forced-colors: active) {
     .cp-chip__select,
-    :host([data-color='white']) .cp-chip__select {
+    :host(:is([data-color='white'], :not([data-color]))) .cp-chip__select {
       appearance: auto;
       mask: none;
       border: revert;
@@ -369,12 +370,24 @@ export default css`
   }
 
   /*
-   * Without an author-chosen color the chip stamps data-color="white", whose
-   * fill, border, and text are all static colors — they stay light in dark
-   * mode. A default chip takes the theme-aware raised surface, its border,
-   * and the default text color instead, so the three move together. Scoped to the two filled tiers so outline and plain
-   * stay transparent, and to the stamped color so a variant still fills with
-   * its own.
+   * Without a color, a chip has no fill of its own: its border and text come
+   * from the colors around it, so in a colored card it takes the card's
+   * color, and elsewhere the neutral ones.
+   */
+  :host(:not([data-color]):not([selected])[appearance~='fill']) .cp-chip,
+  :host(:not([data-color]):not([selected])[appearance~='outline-fill'])
+    .cp-chip,
+  :host(:not([data-color]):not([selected])[appearance~='outline']) .cp-chip {
+    background-color: transparent;
+    border-color: var(--c-color-border-quiet);
+    color: var(--c-chip-text, var(--c-text-default));
+  }
+
+  /*
+   * White chips take the theme-aware raised surface, its border, and the
+   * default text color, rather than white's static colors, which stay light in
+   * dark mode. Scoped to the two filled tiers so outline and plain stay
+   * transparent.
    *
    * The palette is repointed too, for controls that inherit it, like the
    * action menu's button, whose hover tints from --c-color-fill-quiet.

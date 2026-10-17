@@ -116,8 +116,8 @@ export class CardViewDesigner extends Base {
 
   /**
    * Gives the preview card the owner's color, and its icon and name in the
-   * header, as the cards of its elements get them, falling back to a white
-   * card with an empty header.
+   * header, as the cards of its elements get them, falling back to a card
+   * with no color of its own and an empty header.
    */
   syncPreviewAppearance(): void {
     const card = this.$previewContainer?.querySelector('craft-card');
@@ -134,14 +134,20 @@ export class CardViewDesigner extends Base {
     }
 
     const name = value('name');
-    const color = value('color');
+    // "No color" is the color select's `__blank__` option: no color of the
+    // card's own, as the cards of elements without a color have.
+    const color = value('color').replace(/^__blank__$/, '');
     const icon = value('icon');
-    card.setAttribute('data-color', color || 'white');
     // The sample chip takes the color too, but not the icon: chips show a
     // thumbnail or status instead.
-    this.$previewContainer
-      ?.querySelector('craft-chip.cvd-chip')
-      ?.setAttribute('data-color', color || 'white');
+    const chip = this.$previewContainer?.querySelector('craft-chip.cvd-chip');
+    for (const element of [card, chip]) {
+      if (color) {
+        element?.setAttribute('data-color', color);
+      } else {
+        element?.removeAttribute('data-color');
+      }
+    }
 
     const header = card.querySelector(':scope > [slot="header"]');
     if (!header) {

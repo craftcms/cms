@@ -227,10 +227,16 @@ it('gives the card preview the owner’s name, color, and icon', () => {
   control('icon').modelValue = '';
   designer.syncPreviewAppearance();
 
-  expect(card.getAttribute('data-color')).toBe('white');
-  expect(chip.getAttribute('data-color')).toBe('white');
+  expect(card.hasAttribute('data-color')).toBe(false);
+  expect(chip.hasAttribute('data-color')).toBe(false);
   expect(header.querySelector('craft-icon')).toBeNull();
   expect(header.textContent).toBe('Article');
+
+  control('color').modelValue = '__blank__';
+  designer.syncPreviewAppearance();
+
+  expect(card.hasAttribute('data-color')).toBe(false);
+  expect(chip.hasAttribute('data-color')).toBe(false);
 
   document.body.innerHTML = '';
 });

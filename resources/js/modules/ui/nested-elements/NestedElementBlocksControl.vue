@@ -954,12 +954,13 @@
    * Collapsing is the card's own state, so it can fold away body and footer.
    * The color goes on the card too, so it's styled as a card in that color —
    * its borders, and white's darker surface in the dark theme — not only
-   * painted from the wrapper's palette.
+   * painted from the wrapper's palette. Without a color, the card has none
+   * of its own either, taking the colors around it.
    */
   function blockCardAttrs(uid: string): Record<string, unknown> {
     return {
       collapsed: isCollapsed(uid),
-      'data-color': block(uid)?.color ?? undefined,
+      'data-color': block(uid)?.color || undefined,
     };
   }
 

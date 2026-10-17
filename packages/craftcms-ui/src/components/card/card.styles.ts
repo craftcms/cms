@@ -87,8 +87,17 @@ export default css`
     overflow: clip;
   }
 
+  /* Without a color, a card has no fill of its own: its border and text come
+     from the colors around it, so in a colored card or block it takes that
+     color, as what's in it does, and elsewhere the neutral ones. */
   :host(:not([data-color]):not([active])) .card {
-    --c-color-border-quiet: var(--c-border-raised);
+    color: var(--c-text-default);
+    background-color: transparent;
+  }
+
+  :host(:not([data-color]):not([active])) .card__header,
+  :host(:not([data-color]):not([active])) .card__footer {
+    background-color: transparent;
   }
 
   :host(:not([data-color])[active]) .card {
