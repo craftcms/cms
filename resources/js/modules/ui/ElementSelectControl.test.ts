@@ -666,6 +666,25 @@ describe('ElementSelectControl', () => {
       ).toEqual([true, false]);
     });
 
+    /**
+     * A thumbnail's menu sits in its corner, padded like a chip's, so a flush
+     * button would bleed its hover to the tile's edge.
+     */
+    it('keeps a thumbnail’s action menu within its padding', async () => {
+      const root = await mount({
+        props: {viewMode: 'thumbs', limit: 3},
+        value: [5, 6],
+      });
+      const invokers = [
+        ...root.querySelectorAll('.thumb-actions craft-button[slot="invoker"]'),
+      ];
+
+      expect(invokers).toHaveLength(2);
+      expect(invokers.some((invoker) => invoker.hasAttribute('flush'))).toBe(
+        false
+      );
+    });
+
     it('selects a card through its checkbox too', async () => {
       const root = await mount({
         props: {viewMode: 'cards', limit: 3},

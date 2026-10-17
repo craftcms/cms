@@ -454,11 +454,13 @@
     height: 1lh;
   }
 
+  // Padded like a chip, so its checkbox and buttons sit as far from the
+  // tile's edges as a chip's do from its own.
   .element__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--c-spacing-sm);
-    padding-inline-start: var(--c-spacing-md);
+    padding-block: calc(3rem / 16);
+    padding-inline: var(--c-spacing-md) calc(3.5rem / 16);
   }
 </style>
