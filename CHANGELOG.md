@@ -86,6 +86,7 @@
 - Fixed a bug where control panel pages without a title had extra space above their content.
 - Fixed a bug where edit pages for elements without a title, such as nested entries whose entry type has no Title field, had a blank page title. They’re now titled “Untitled {type}”.
 - Fixed a bug where element indexes kept the page count of the listing they first loaded, after switching sources or filtering.
+- Fixed a bug where submit buttons created by `Craft.ui.createSubmitButton()` and `createSubmitButton()` from `@craftcms/ui` weren’t styled as primary buttons.
 
 ### Content Management
 
