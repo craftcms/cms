@@ -72,7 +72,7 @@ class EntryTypeEditViewModel extends ViewModel
                 ->required(),
             Field::make(t('Description'), MarkdownControl::make('description')->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)->rows(1)),
             // Shown above the card designer, in the field layout designer’s
-            // Display tab, since they appear on cards too.
+            // Appearance tab, since they appear on cards too.
             Group::make('display-settings', [
                 Field::make(t('Color'), ColorSelect::make('color')
                     ->allowTransparent()

@@ -10,7 +10,7 @@ const html = `
     <craft-tabs>
       <craft-tab slot="tab" data-fld-tab="content">Content</craft-tab>
       <div slot="panel"></div>
-      <craft-tab slot="tab" data-fld-tab="display">Display</craft-tab>
+      <craft-tab slot="tab" data-fld-tab="display">Appearance</craft-tab>
       <div slot="panel"><div data-ui-outlet="field-layout-designer.display"></div></div>
     </craft-tabs>
   </div>`;
@@ -98,7 +98,7 @@ it('flags the designer tabs that have errors', async () => {
   expect(icon('display')).toBeNull();
 });
 
-it('provides the Display tab’s outlet while mounted', async () => {
+it('provides the Appearance tab’s outlet while mounted', async () => {
   vi.spyOn(actionClient, 'post').mockResolvedValue({data: {html}} as never);
   const container = document.createElement('div');
   document.body.append(container);

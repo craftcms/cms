@@ -135,7 +135,7 @@ class Group extends Container
 
     /**
      * Renders the group in a named outlet elsewhere in the form, when one is
-     * present, such as the field layout designer's Display tab
+     * present, such as the field layout designer's Appearance tab
      * (`field-layout-designer.display`). Without one, it renders in place.
      *
      * Outlets are only filled when the form is rendered by Vue; server-rendered

@@ -213,7 +213,7 @@ it('offers the palette colors for the entry type color', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes', function ($nodes): bool {
                 // It's in the display settings group, which renders in the
-                // field layout designer's Display tab.
+                // field layout designer's Appearance tab.
                 $group = collect($nodes)->firstWhere('uid', 'display-settings');
                 $color = collect($group['children'] ?? [])->first(
                     fn (array $node): bool => ($node['control']['path'] ?? null) === ['color'],

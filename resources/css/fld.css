@@ -44,10 +44,10 @@
 /* The panes sit right on the page, without a surface or border of their own,
    over a grid of pixel dots where a workspace's grid lines would cross (so
    tabs still land on the grid). The first row of dots falls just under the
-   Content/Display tabs' bottom border. They don't clip, so the outer rings of
+   Content/Appearance tabs' bottom border. They don't clip, so the outer rings of
    tabs along their edges show. */
 /* A hairline along their bottom edge (which is snapped to the grid) covers
-   the last row of dots, as the Content/Display tabs' border does the first.
+   the last row of dots, as the Content/Appearance tabs' border does the first.
    Bands of the tabs' ring color run inside the top and bottom edges, keeping
    the dots clear of both. */
 .fld-pane.cp-workspace {
@@ -799,19 +799,19 @@ body:not(.dragging) .fld-element {
 /* Card view designer styles now live in cvd.css */
 
 /* craft-tabs insets the focus rings of everything in its panels (so the
-   panel's own ring isn't clipped). Everything within the Content and Display
+   panel's own ring isn't clipped). Everything within the Content and Appearance
    panels gets the usual separated ring instead, standing off its control. */
 .fld-view-tabs > [slot='panel'] > * {
   --c-focus-outline-offset: 2px;
 }
 
-/* The Content and Display panels sit right under their tabs, so the hairline
+/* The Content and Appearance panels sit right under their tabs, so the hairline
    between the field layout designer's panes runs right up to the tabs. */
 .fld-view-tabs {
   --c-tabs-gap: 0;
 }
 
-/* The Content and Display panels grow with the page, rather than scrolling
+/* The Content and Appearance panels grow with the page, rather than scrolling
    within the tabs as panels in a fixed-height region do. */
 .fld-view-tabs::part(panels) {
   overflow-y: visible;
@@ -823,7 +823,7 @@ body:not(.dragging) .fld-element {
   --gap: initial;
 }
 
-/* Flags a Content or Display tab whose panel has errors. */
+/* Flags a Content or Appearance tab whose panel has errors. */
 [data-fld-tab-error] {
   color: var(--c-color-danger-on-quiet);
 }

@@ -36,7 +36,7 @@
 .cvd-library {
   --gap: initial;
   align-content: start;
-  /* A grid cell of space below the Content/Display tabs (which it sits right
+  /* A grid cell of space below the Content/Appearance tabs (which it sits right
      under) and above its bottom edge, like the preview's padding. */
   padding-block: var(--c-spacing-lg);
 }
