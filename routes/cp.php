@@ -313,6 +313,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('settings/ai', [AiSettingsController::class, 'store'])
             ->middleware(RequireAdminChanges::class)
             ->name('settings.ai.store');
+        Route::post('settings/ai/render-ui', [AiSettingsController::class, 'renderUi'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.ai.render-ui');
 
         Route::get('settings/mcp', [McpSettingsController::class, 'index'])
             ->name('settings.mcp.index');

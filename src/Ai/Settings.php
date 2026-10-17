@@ -53,11 +53,11 @@ class Settings extends Component
 
         // Only validate providers the form shows, so stale mappings can’t block saving.
         foreach ($this->modalitiesInUse() as $modality) {
-            $rules["defaults.{$modality->value}.provider"] = $this->providerRules();
+            $rules["defaults.{$modality->value}.provider"] = $this->providerRules($modality);
         }
 
-        foreach (array_keys(app(AiTasks::class)->tasksByHandle()->all()) as $handle) {
-            $rules["tasks.{$handle}.provider"] = $this->providerRules();
+        foreach (app(AiTasks::class)->tasksByHandle()->all() as $handle => $task) {
+            $rules["tasks.{$handle}.provider"] = $this->providerRules($task::modality());
         }
 
         return $rules;
@@ -111,12 +111,12 @@ class Settings extends Component
     }
 
     /** @return list<mixed> */
-    private function providerRules(): array
+    private function providerRules(Modality $modality): array
     {
         return [new EnvValueRule([
             'nullable',
             'string',
-            Rule::in(array_keys(config('ai.providers', []))),
+            Rule::in(app(Ai::class)->providers($modality)),
         ], showParsedValueInErrors: true)];
     }
 

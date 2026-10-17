@@ -46,6 +46,8 @@ ai:
 - **Defaults** set a provider and model for each modality that a registered task uses. A modality without a default provider is off.
 - **Tasks** can be disabled, or given their own provider and model. A task without its own provider uses the default for its modality.
 - A `null` model means the provider’s default model.
+- The settings screen suggests the models that `laravel/ai` names for the chosen provider, such as its default, cheapest, and smartest text models. Any other model name works too.
+- Only providers that support a modality can be chosen for it, such as providers that implement `Laravel\Ai\Contracts\Providers\ImageProvider` for image tasks. `Ai::providers(Modality::Image)` returns them.
 
 Provider, model, and enabled values can reference environment variables, such as `$AI_TEXT_PROVIDER`, so environments can use different providers. You can also vary a provider’s driver, URL, and default model in `config/ai.php`.
 
@@ -60,7 +62,6 @@ To turn a task off quickly in an environment where admin changes are disallowed,
 A task is a class that extends `CraftCms\Cms\Ai\Task`:
 
 ```php
-use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Task;
 
 use function CraftCms\Cms\t;
@@ -77,14 +78,9 @@ class DescribeImage extends Task
         return t('Describe image', category: 'alt-text');
     }
 
-    public static function capabilities(): array
-    {
-        return [Capability::Vision];
-    }
-
     public static function description(): ?string
     {
-        return t('Writes alt text for an image.', category: 'alt-text');
+        return t('Writes alt text for an image. Needs a model with vision.', category: 'alt-text');
     }
 }
 ```
@@ -105,8 +101,7 @@ public function boot(AiTasks $tasks): void
 | `handle()`     | Required. Globally unique. Prefix it with your plugin handle. Registering another class with the same handle throws an `InvalidArgumentException`. |
 | `label()`      | Required. Shown to administrators. It’s called when the settings screen renders, so translations use the current user’s language. |
 | `modality()`   | `Modality::Text` by default. Also `Image`, `Audio`, `Transcription`, `Embeddings`, `Reranking`, or `Classification`. It decides which default provider applies. |
-| `capabilities()` | What the model needs, such as `Capability::Vision`. Shown to administrators, never validated. |
-| `description()` | Optional. Shown to administrators. |
+| `description()` | Optional. Shown to administrators. Mention what the model needs, such as vision, because Craft can’t check models for it. |
 
 The settings screen shows the name of the plugin that owns the task class. New tasks are enabled and use the default provider for their modality.
 

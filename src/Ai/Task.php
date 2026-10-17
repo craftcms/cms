@@ -23,9 +23,9 @@ use CraftCms\Cms\Ai\Enums\Modality;
  *         return t('Describe image', category: 'alt-text');
  *     }
  *
- *     public static function capabilities(): array
+ *     public static function description(): ?string
  *     {
- *         return [Capability::Vision];
+ *         return t('Writes alt text for an image. Needs a model with vision.', category: 'alt-text');
  *     }
  * }
  * ```
@@ -37,11 +37,6 @@ abstract class Task implements TaskInterface
     public static function modality(): Modality
     {
         return Modality::Text;
-    }
-
-    public static function capabilities(): array
-    {
-        return [];
     }
 
     public static function description(): ?string

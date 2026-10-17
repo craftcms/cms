@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ai;
 
+use BackedEnum;
 use CraftCms\Cms\Ai\Contracts\TaskInterface;
-use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Enums\Modality;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Controls\BooleanMenu;
 use CraftCms\Cms\Ui\Controls\Combobox;
@@ -20,6 +21,15 @@ use CraftCms\Cms\Ui\Nodes\Heading;
 use CraftCms\Cms\Ui\Nodes\Scope;
 use CraftCms\Cms\Ui\Nodes\Separator;
 use CraftCms\Cms\Ui\Ui;
+use Laravel\Ai\AiManager;
+use Laravel\Ai\Contracts\Providers\AudioProvider;
+use Laravel\Ai\Contracts\Providers\ClassificationProvider;
+use Laravel\Ai\Contracts\Providers\EmbeddingProvider;
+use Laravel\Ai\Contracts\Providers\ImageProvider;
+use Laravel\Ai\Contracts\Providers\RerankingProvider;
+use Laravel\Ai\Contracts\Providers\TextProvider;
+use Laravel\Ai\Contracts\Providers\TranscriptionProvider;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -31,11 +41,19 @@ readonly class SettingsUi
     public function __construct(
         private AiTasks $tasks,
         private Plugins $plugins,
+        private AiManager $aiManager,
+        private Ai $ai,
     ) {}
 
-    public function make(Settings $settings): Ui
+    /**
+     * Builds the settings Ui. Model options follow the providers in the form values, so the Ui refreshes when a provider changes.
+     *
+     * @param  array<string, mixed>|null  $values  The current form values, or `null` for the stored settings.
+     */
+    public function make(Settings $settings, ?array $values = null): Ui
     {
         $tasks = $this->tasks->tasksByHandle()->all();
+        $values ??= $this->values($settings);
 
         if ($tasks === []) {
             return Ui::make([
@@ -56,13 +74,26 @@ readonly class SettingsUi
                 ->variant('warning');
         }
 
+        $defaultProviders = [];
+
         foreach ($modalities as $modality) {
+            $defaultProviders[$modality->value] = self::stringValue($values, ['defaults', $modality->value, 'provider']);
             $nodes[] = Scope::make(['defaults', $modality->value], [
-                Field::make(t('{modality} Provider', ['modality' => $modality->label()]), $this->providerControl())
+                Field::make(t('{modality} Provider', ['modality' => $modality->label()]), $this->providerControl($modality)->reactive())
                     ->width(FieldWidth::Half),
-                Field::make(t('{modality} Model', ['modality' => $modality->label()]), $this->modelControl())
+                Field::make(t('{modality} Model', ['modality' => $modality->label()]), $this->modelControl($defaultProviders[$modality->value], $modality))
                     ->width(FieldWidth::Half),
             ], "ai-defaults-{$modality->value}");
+        }
+
+        $cellOptions = [];
+
+        foreach ($tasks as $handle => $task) {
+            $provider = self::stringValue($values, ['tasks', $handle, 'provider']) ?? $defaultProviders[$task::modality()->value] ?? null;
+            $cellOptions[$handle] = [
+                'provider' => ['control' => $this->providerControl($task::modality())->placeholder(t('Use default'))],
+                'model' => ['control' => $this->modelControl($provider, $task::modality())],
+            ];
         }
 
         $nodes[] = Separator::make('ai-tasks-separator');
@@ -78,9 +109,11 @@ readonly class SettingsUi
                     ->yesLabel(t('Enabled'))
                     ->noLabel(t('Disabled'))
                     ->includeEnvVars()],
-                'provider' => ['heading' => t('Provider'), 'width' => '20%', 'control' => $this->providerControl()->placeholder(t('Use default'))],
-                'model' => ['heading' => t('Model'), 'width' => '20%', 'control' => $this->modelControl()],
-            ]))
+                'provider' => ['heading' => t('Provider'), 'width' => '20%', 'control' => $this->providerControl(Modality::Text)->placeholder(t('Use default'))],
+                'model' => ['heading' => t('Model'), 'width' => '20%', 'control' => $this->modelControl(null, Modality::Text)],
+            ])
+            ->cellOptions($cellOptions)
+            ->reactive())
             ->labelSrOnly();
 
         return Ui::make($nodes);
@@ -112,12 +145,18 @@ readonly class SettingsUi
         ];
     }
 
-    private function providerControl(): Combobox
+    private function providerControl(Modality $modality): Combobox
     {
-        $providers = array_map(static fn (int|string $handle): array => [
-            'label' => (string) $handle,
-            'value' => (string) $handle,
-        ], array_keys(config('ai.providers', [])));
+        $providers = array_map(static function (string $handle): array {
+            $driver = config("ai.providers.{$handle}.driver");
+            $driver = $driver instanceof BackedEnum ? (string) $driver->value : $driver;
+
+            return [
+                'label' => $handle,
+                'value' => $handle,
+                ...(is_string($driver) && $driver !== $handle ? ['data' => ['hint' => $driver]] : []),
+            ];
+        }, $this->ai->providers($modality));
 
         return Combobox::make('provider')
             ->options([
@@ -128,13 +167,78 @@ readonly class SettingsUi
             ->clearable();
     }
 
-    private function modelControl(): Combobox
+    private function modelControl(?string $provider, Modality $modality): Combobox
     {
+        $models = $provider === null ? [] : $this->modelOptions($provider, $modality);
+
         return Combobox::make('model')
-            ->options(SelectOptions::getEnvSuggestions())
+            ->options([
+                ...($models === [] ? [] : [['type' => 'optgroup', 'label' => $provider, 'options' => $models]]),
+                ...SelectOptions::getEnvSuggestions(),
+            ])
             ->placeholder(t('Provider default'))
             ->showAllOnEmpty()
             ->clearable();
+    }
+
+    /**
+     * Returns the models that `laravel/ai` names for a provider and modality, such as its default, cheapest, and smartest text models.
+     *
+     * @return list<array{label: string, value: string, data: array{hint: string}}>
+     */
+    private function modelOptions(string $provider, Modality $modality): array
+    {
+        $provider = Env::parse($provider);
+
+        if (! is_string($provider) || ! array_key_exists($provider, config('ai.providers', []))) {
+            return [];
+        }
+
+        try {
+            $instance = $this->aiManager->instance($provider);
+
+            $models = match (true) {
+                $modality === Modality::Text && $instance instanceof TextProvider => [
+                    t('Default') => $instance->defaultTextModel(),
+                    t('Cheapest') => $instance->cheapestTextModel(),
+                    t('Smartest') => $instance->smartestTextModel(),
+                ],
+                $modality === Modality::Image && $instance instanceof ImageProvider => [t('Default') => $instance->defaultImageModel()],
+                $modality === Modality::Audio && $instance instanceof AudioProvider => [t('Default') => $instance->defaultAudioModel()],
+                $modality === Modality::Transcription && $instance instanceof TranscriptionProvider => [t('Default') => $instance->defaultTranscriptionModel()],
+                $modality === Modality::Embeddings && $instance instanceof EmbeddingProvider => [t('Default') => $instance->defaultEmbeddingsModel()],
+                $modality === Modality::Reranking && $instance instanceof RerankingProvider => [t('Default') => $instance->defaultRerankingModel()],
+                $modality === Modality::Classification && $instance instanceof ClassificationProvider => [t('Default') => $instance->defaultClassificationModel()],
+                default => [],
+            };
+        } catch (Throwable) {
+            // Custom drivers may fail to build without their credentials. Admins can still enter a model.
+            return [];
+        }
+
+        // Providers may use one model for several roles, such as Ollama.
+        $roles = [];
+
+        foreach ($models as $role => $model) {
+            $roles[$model][] = $role;
+        }
+
+        return array_map(static fn (int|string $model, array $modelRoles): array => [
+            'label' => (string) $model,
+            'value' => (string) $model,
+            'data' => ['hint' => implode(', ', $modelRoles)],
+        ], array_keys($roles), array_values($roles));
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     * @param  list<string>  $path
+     */
+    private static function stringValue(array $values, array $path): ?string
+    {
+        $value = data_get($values, $path);
+
+        return is_string($value) && $value !== '' ? $value : null;
     }
 
     /**
@@ -146,7 +250,6 @@ readonly class SettingsUi
 
         $description = $task::description();
         $pluginHandle = $this->plugins->getPluginHandleByClass($task);
-        $capabilities = $task::capabilities();
 
         if ($description !== null) {
             $parts[] = $description;
@@ -154,15 +257,6 @@ readonly class SettingsUi
 
         if ($pluginHandle !== null) {
             $parts[] = $this->plugins->getPlugin($pluginHandle)->name ?? $pluginHandle;
-        }
-
-        if ($capabilities !== []) {
-            $parts[] = t('Needs: {capabilities}', [
-                'capabilities' => implode(', ', array_map(
-                    static fn (Capability $capability): string => $capability->label(),
-                    $capabilities,
-                )),
-            ]);
         }
 
         return $parts === [] ? null : implode(' · ', $parts);

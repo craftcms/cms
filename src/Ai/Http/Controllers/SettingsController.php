@@ -14,6 +14,8 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -30,11 +32,32 @@ readonly class SettingsController
         private GeneralConfig $generalConfig,
         private ProjectConfig $projectConfig,
         private SettingsUi $settingsUi,
+        private UiResolver $uiResolver,
     ) {}
 
     public function index(Settings $settings): CpScreenResponse
     {
         return $this->screen($settings);
+    }
+
+    /**
+     * Rebuilds the settings Ui for the submitted form values, so model options follow the chosen providers.
+     */
+    public function renderUi(Request $request, Settings $settings): JsonResponse
+    {
+        $request->validate([
+            'values' => ['required', 'array'],
+            'scope' => ['present', 'array', 'size:0'],
+        ]);
+
+        $values = $request->array('values');
+
+        return new JsonResponse([
+            'ui' => $this->uiResolver->resolve($this->settingsUi->make($settings, $values), new UiContext(
+                values: $values,
+                refreshable: true,
+            )),
+        ]);
     }
 
     public function store(Request $request, Settings $settings): Response|CpScreenResponse
@@ -73,8 +96,10 @@ readonly class SettingsController
                 values: $this->settingsUi->values($settings),
                 errors: $settings->errors()->getMessages(),
                 mode: $mode,
+                refreshable: $this->generalConfig->allowAdminChanges,
             ), props: [
                 'readOnly' => ! $this->generalConfig->allowAdminChanges,
+                'refreshUrl' => $this->generalConfig->allowAdminChanges ? route('craft.cp.settings.ai.render-ui') : null,
                 'submit' => [
                     'method' => 'post',
                     'url' => route('craft.cp.settings.ai.store'),

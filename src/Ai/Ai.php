@@ -6,9 +6,12 @@ namespace CraftCms\Cms\Ai;
 
 use CraftCms\Cms\Ai\Data\ResolvedProvider;
 use CraftCms\Cms\Ai\Enums\AiUnavailableReason;
+use CraftCms\Cms\Ai\Enums\Modality;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Container\Attributes\Singleton;
+use Laravel\Ai\AiManager;
+use Throwable;
 
 /**
  * Resolves AI tasks to the providers and models that admins choose.
@@ -33,6 +36,30 @@ class Ai
     public function __construct(
         private readonly AiTasks $tasks,
     ) {}
+
+    /**
+     * Returns the handles of the `ai.providers` entries that support a modality.
+     *
+     * Providers whose driver can’t be built, such as custom drivers that need credentials, are included,
+     * because Craft can’t tell what they support.
+     *
+     * @return list<string>
+     */
+    public function providers(Modality $modality): array
+    {
+        $contract = $modality->providerContract();
+
+        return array_values(array_filter(
+            array_map(strval(...), array_keys(config('ai.providers', []))),
+            static function (string $handle) use ($contract): bool {
+                try {
+                    return app(AiManager::class)->instance($handle) instanceof $contract;
+                } catch (Throwable) {
+                    return true;
+                }
+            },
+        ));
+    }
 
     /**
      * Returns whether a task resolves to a provider. Use it to hide AI features that can’t run.

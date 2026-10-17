@@ -13,6 +13,7 @@ use Inertia\Testing\AssertableInertia;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
+use function Pest\Laravel\postJson;
 
 beforeEach(function (): void {
     config(['ai.providers' => [
@@ -68,6 +69,14 @@ it('rejects providers that are not in the ai.providers config', function (): voi
     expect(app(ProjectConfig::class)->get('ai'))->toBeNull();
 });
 
+it('rejects providers that do not support the task modality', function (): void {
+    config(['ai.providers.voice' => ['driver' => 'eleven', 'key' => 'sk-test']]);
+
+    post(route('craft.cp.settings.ai.store'), [
+        'tasks' => ['test:summarize' => ['provider' => 'voice']],
+    ])->assertSessionHasErrors('tasks.test:summarize.provider');
+});
+
 it('accepts providers referenced through environment variables', function (): void {
     putenv('AI_TEST_PROVIDER=anthropic');
 
@@ -92,3 +101,16 @@ it('warns about re-indexing only when a task uses embeddings', function (bool $h
             ->where('ui.nodes', fn ($nodes): bool => collect($nodes)->contains('uid', 'ai-embeddings-warning') === $hasEmbeddingsTask))
         ->assertOk();
 })->with(['embeddings task' => true, 'no embeddings task' => false]);
+
+it('lists the models laravel/ai names for the provider a task uses', function (array $values): void {
+    $response = postJson(route('craft.cp.settings.ai.render-ui'), ['values' => $values, 'scope' => []])->assertOk();
+
+    $row = collect($response->json('ui.nodes'))->first(fn (array $node): bool => data_get($node, 'control.path') === ['tasks'])['control']['uis'][0];
+    $models = collect($row['nodes'])->first(fn (array $node): bool => $node['control']['path'] === ['tasks', 'test:summarize', 'model'])['control']['props']['options'][0];
+
+    expect($models['label'])->toBe('anthropic')
+        ->and($models['options'])->toContain(['label' => 'claude-haiku-5-5', 'value' => 'claude-haiku-5-5', 'data' => ['hint' => 'Cheapest']]);
+})->with([
+    'own provider' => [['tasks' => ['test:summarize' => ['provider' => 'anthropic']]]],
+    'default provider' => [['defaults' => ['text' => ['provider' => 'anthropic']], 'tasks' => ['test:summarize' => ['provider' => '']]]],
+]);

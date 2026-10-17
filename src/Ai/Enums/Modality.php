@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ai\Enums;
 
+use Laravel\Ai\Contracts\Providers\AudioProvider;
+use Laravel\Ai\Contracts\Providers\ClassificationProvider;
+use Laravel\Ai\Contracts\Providers\EmbeddingProvider;
+use Laravel\Ai\Contracts\Providers\ImageProvider;
+use Laravel\Ai\Contracts\Providers\RerankingProvider;
+use Laravel\Ai\Contracts\Providers\TextProvider;
+use Laravel\Ai\Contracts\Providers\TranscriptionProvider;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -31,6 +39,24 @@ enum Modality: string
             self::Embeddings => t('Embeddings'),
             self::Reranking => t('Reranking'),
             self::Classification => t('Classification'),
+        };
+    }
+
+    /**
+     * Returns the `laravel/ai` provider contract that supports this modality.
+     *
+     * @return class-string
+     */
+    public function providerContract(): string
+    {
+        return match ($this) {
+            self::Text => TextProvider::class,
+            self::Image => ImageProvider::class,
+            self::Audio => AudioProvider::class,
+            self::Transcription => TranscriptionProvider::class,
+            self::Embeddings => EmbeddingProvider::class,
+            self::Reranking => RerankingProvider::class,
+            self::Classification => ClassificationProvider::class,
         };
     }
 }

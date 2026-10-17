@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ai\Contracts;
 
-use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Enums\Modality;
 use CraftCms\Cms\Ai\Task;
 
@@ -36,14 +35,7 @@ interface TaskInterface
     public static function modality(): Modality;
 
     /**
-     * Returns the model capabilities the task needs. They’re shown to admins and never validated.
-     *
-     * @return list<Capability>
-     */
-    public static function capabilities(): array;
-
-    /**
-     * Returns a description of the task, shown to admins.
+     * Returns a description of the task, shown to admins. Mention what the model needs, such as vision.
      */
     public static function description(): ?string;
 }
