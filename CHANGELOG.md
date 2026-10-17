@@ -87,6 +87,7 @@
 - Controls, hairlines, and UI text within colored cards and Matrix blocks now take the card’s color rather than gray, except for white, gray, slate, and black, which also keep the default link styling in cards, chips, and badges.
 - Matrix blocks are now styled like cards in their color, including their borders, white blocks’ darker surface in the dark theme, and black blocks’ dark-themed contents.
 - Chips, cards, and Matrix blocks without a color no longer have a fill of their own, and take on the color of the card or Matrix block they’re within, including the UI within them.
+- Dashboard widgets are now gray cards.
 - Fixed a bug where Language and Formatting Locale options’ hints were shown in the current language, rather than in each option’s own language.
 - Fixed a bug where control panel pages without a title had extra space above their content.
 - Fixed a bug where edit pages for elements without a title, such as nested entries whose entry type has no Title field, had a blank page title. They’re now titled “Untitled {type}”.
