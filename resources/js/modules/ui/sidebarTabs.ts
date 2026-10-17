@@ -21,3 +21,51 @@ export function isSidebarTab(node: UiNodePayload): node is SidebarTabNode {
     node.props?.sidebar === true
   );
 }
+
+/**
+ * A sidebar tab as it renders in the sidebar: its fields and other layout
+ * elements span the sidebar's full width, whatever widths their layout
+ * config gives them, and date and time inputs fill it, as entries' Post Date
+ * does.
+ */
+export function forSidebar(tab: SidebarTabNode): SidebarTabNode {
+  const children = tab.children as UiNodePayload[] | undefined;
+  const sidebarChildren = children?.map(forSidebarElement);
+
+  if (
+    !children ||
+    !sidebarChildren ||
+    sidebarChildren.every((child, index) => child === children[index])
+  ) {
+    return tab;
+  }
+
+  return {
+    ...tab,
+    children: sidebarChildren as SidebarTabNode['children'],
+  };
+}
+
+function forSidebarElement(node: UiNodePayload): UiNodePayload {
+  let result = node;
+
+  if (node.props?.width != null) {
+    const {width: _width, ...props} = node.props;
+    result = {...result, props};
+  }
+
+  if (
+    node.control?.component === 'craft:date-time' &&
+    !node.control.props?.fullWidth
+  ) {
+    result = {
+      ...result,
+      control: {
+        ...node.control,
+        props: {...node.control.props, fullWidth: true},
+      },
+    };
+  }
+
+  return result;
+}

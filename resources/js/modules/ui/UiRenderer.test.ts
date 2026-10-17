@@ -1485,7 +1485,7 @@ describe('UiRenderer', () => {
         {
           type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
           component: 'craft:field',
-          props: {label},
+          props: {label, width: 50},
           control: {
             type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
             component: 'craft:text',
@@ -1493,6 +1493,25 @@ describe('UiRenderer', () => {
             path: [path],
             mode: 'editable',
             deltaGroup: [path],
+          },
+        },
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: `${label} Date`},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\DateTime',
+            component: 'craft:date-time',
+            props: {
+              showDate: true,
+              showTime: false,
+              showTimeZone: false,
+              locale: 'en-US',
+              minuteIncrement: 30,
+            },
+            path: [`${path}Date`],
+            mode: 'editable',
+            deltaGroup: [`${path}Date`],
           },
         },
       ],
@@ -1505,7 +1524,12 @@ describe('UiRenderer', () => {
         tab('tab-content', 'Content', 'title'),
         tab('tab-meta', 'Meta', 'slug', true),
       ],
-      values: {title: 'Hello', slug: 'hello'},
+      values: {
+        title: 'Hello',
+        slug: 'hello',
+        titleDate: {date: '2026-01-01'},
+        slugDate: {date: '2026-01-01'},
+      },
       errors: [],
       globalErrors: [],
     } as unknown as UiPayload;
@@ -1531,6 +1555,16 @@ describe('UiRenderer', () => {
     expect(
       outlet.querySelector('[data-ui-tab="tab-meta"]')?.closest('[hidden]')
     ).toBeNull();
+    // Fields span the sidebar, whatever their configured widths, and date
+    // inputs fill it.
+    expect(outlet.querySelector('.width-50')).toBeNull();
+    expect(container.querySelector('.width-50')).not.toBeNull();
+    expect(
+      outlet.querySelector('craft-input-date-time')?.getAttribute('width')
+    ).toBe('full');
+    expect(
+      container.querySelector('craft-input-date-time')?.getAttribute('width')
+    ).toBe('auto');
     outlet.remove();
   });
 
@@ -1543,6 +1577,7 @@ describe('UiRenderer', () => {
         tab.textContent?.trim()
       )
     ).toEqual(['Content', 'Meta']);
+    expect(container.querySelectorAll('.width-50')).toHaveLength(2);
   });
 
   it('renders FieldLayout tabs and semantic content', async () => {

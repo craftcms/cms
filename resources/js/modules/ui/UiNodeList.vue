@@ -7,7 +7,12 @@
   import {useIsSlideout} from '@/common/composables/screen';
   import UiNode from './UiNode.vue';
   import {uiTabPanelId, pathsMatch} from './runtime';
-  import {isSidebarTab, type SidebarTabOutlets} from './sidebarTabs';
+  import {
+    isSidebarTab,
+    forSidebar,
+    type SidebarTabNode,
+    type SidebarTabOutlets,
+  } from './sidebarTabs';
   import type {UiChange, UiNodePayload, UiPayload} from './types';
 
   const props = defineProps<{
@@ -40,7 +45,7 @@
     )
   );
 
-  function inSidebar(node: UiNodePayload): boolean {
+  function inSidebar(node: UiNodePayload): node is SidebarTabNode {
     return Boolean(props.sidebarTabOutlets) && isSidebarTab(node);
   }
 
@@ -148,7 +153,7 @@
     >
       <div :hidden="!sidebarOutlet(node)">
         <UiNode
-          :node="node"
+          :node="forSidebar(node)"
           :values="values"
           :errors="errors"
           :touched-paths="touchedPaths"
