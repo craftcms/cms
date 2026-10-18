@@ -37,6 +37,24 @@ The list is a shortcut, not a constraint — any value can still be typed.
 
 <Canvas of={InputColorStories.Disabled} sourceState="shown" />
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Controls\Color` renders a color input:
+
+```php
+use CraftCms\Cms\Ui\Controls\Color;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Accent Color', Color::make('accentColor')
+        ->presets(['#e5422b', '#0d78f2', '#10b981'])),
+]);
+```
+
+`presets()` sets the colors suggested alongside the picker.
+
 ## Accessibility
 
 Color is the one thing this control cannot convey on its own.

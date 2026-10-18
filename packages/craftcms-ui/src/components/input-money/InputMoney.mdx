@@ -43,6 +43,26 @@ A boolean binding cannot express that — `?show-currency="${false}"` removes th
 
 <Canvas of={InputMoneyStories.Disabled} sourceState="shown" />
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Controls\Money` renders a money input:
+
+```php
+use CraftCms\Cms\Ui\Controls\Money;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Ticket Price', Money::make('ticketPrice')
+        ->currency('USD')
+        ->min(0)),
+]);
+```
+
+`currency()` takes an ISO 4217 code, and `locale()` sets how amounts are formatted.
+`showCurrency()` shows the currency next to the input.
+
 ## Accessibility
 
 The mask changes what a person sees as they type.
