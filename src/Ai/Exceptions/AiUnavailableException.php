@@ -17,7 +17,7 @@ class AiUnavailableException extends RuntimeException
     public function __construct(
         public readonly string $task,
         public readonly AiUnavailableReason $reason,
-        ?string $provider = null,
+        public readonly ?string $provider = null,
     ) {
         parent::__construct(match ($reason) {
             AiUnavailableReason::UnknownTask => "No AI task with the handle [{$task}] is registered.",

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ai;
 
+use BackedEnum;
 use CraftCms\Cms\Ai\Data\ResolvedProvider;
 use CraftCms\Cms\Ai\Enums\AiUnavailableReason;
 use CraftCms\Cms\Ai\Enums\Modality;
@@ -12,6 +13,8 @@ use CraftCms\Cms\Support\Env;
 use Illuminate\Container\Attributes\Singleton;
 use Laravel\Ai\AiManager;
 use Throwable;
+
+use function CraftCms\Cms\t;
 
 /**
  * Resolves AI tasks to the providers and models that admins choose.
@@ -33,6 +36,12 @@ use Throwable;
 #[Singleton]
 class Ai
 {
+    /**
+     * `laravel/ai` drivers that can work without an API key, such as Ollama, Bedrock with AWS credentials,
+     * and local OpenAI-compatible servers.
+     */
+    private const array KEYLESS_DRIVERS = ['bedrock', 'ollama', 'openai-compatible'];
+
     public function __construct(
         private readonly AiTasks $tasks,
     ) {}
@@ -59,6 +68,76 @@ class Ai
                 }
             },
         ));
+    }
+
+    /**
+     * Returns whether a provider is missing its API key: its config has an empty `key`, and its driver needs one.
+     *
+     * This is a hint for admins, not a guarantee. Craft can’t tell whether a custom driver needs a key,
+     * so it’s only reported missing when the provider’s config has an empty `key`.
+     */
+    public function missingKey(string $provider): bool
+    {
+        $config = config("ai.providers.{$provider}");
+
+        if (! is_array($config) || ! array_key_exists('key', $config)) {
+            return false;
+        }
+
+        $driver = $config['driver'] ?? null;
+        $driver = $driver instanceof BackedEnum ? $driver->value : $driver;
+
+        if (in_array($driver, self::KEYLESS_DRIVERS, true)) {
+            return false;
+        }
+
+        return $config['key'] === null || $config['key'] === '';
+    }
+
+    /**
+     * Returns why enabled tasks can’t run, indexed by task handle, for admins to fix.
+     *
+     * Tasks whose provider is missing its API key are included, because their requests will fail.
+     *
+     * @return array<string, string>
+     */
+    public function problems(): array
+    {
+        $problems = [];
+
+        foreach ($this->tasks->tasksByHandle()->all() as $handle => $task) {
+            try {
+                $resolved = $this->resolve($handle);
+            } catch (AiUnavailableException $e) {
+                $problem = match ($e->reason) {
+                    AiUnavailableReason::NoDefault => t('{task} doesn’t have a provider, and there’s no default {modality} provider.', [
+                        'task' => $task::label(),
+                        'modality' => mb_strtolower($task::modality()->label()),
+                    ]),
+                    AiUnavailableReason::UnknownProvider => t('{task} uses the {provider} provider, which isn’t defined in {file}.', [
+                        'task' => $task::label(),
+                        'provider' => $e->provider,
+                        'file' => 'config/ai.php',
+                    ]),
+                    default => null,
+                };
+
+                if ($problem !== null) {
+                    $problems[$handle] = $problem;
+                }
+
+                continue;
+            }
+
+            if ($this->missingKey($resolved->provider)) {
+                $problems[$handle] = t('{task} uses the {provider} provider, which doesn’t have an API key.', [
+                    'task' => $task::label(),
+                    'provider' => $resolved->provider,
+                ]);
+            }
+        }
+
+        return $problems;
     }
 
     /**

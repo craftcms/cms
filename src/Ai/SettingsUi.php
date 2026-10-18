@@ -62,7 +62,21 @@ readonly class SettingsUi
             ]);
         }
 
+        $nodes = [];
+        $problems = $this->ai->problems();
+
+        if ($problems !== []) {
+            $nodes[] = Callout::make('ai-problems-warning', implode("\n", [
+                t('{count, plural, =1{This AI task can’t run until it’s set up or disabled:} other{These AI tasks can’t run until they’re set up or disabled:}}', [
+                    'count' => count($problems),
+                ]),
+                '',
+                ...array_map(static fn (string $problem): string => "- {$problem}", array_values($problems)),
+            ]))->variant('warning');
+        }
+
         $nodes = [
+            ...$nodes,
             Heading::make('ai-defaults-heading', t('Defaults'))
                 ->description(t('Providers come from config/ai.php. Tasks without their own provider use the default for their modality. A modality without a default provider is off.')),
         ];
@@ -104,7 +118,7 @@ readonly class SettingsUi
             ->keyed()
             ->columns([
                 'label' => ['type' => 'heading', 'heading' => t('Task'), 'width' => '15%'],
-                'details' => ['type' => 'html', 'heading' => t('Details')],
+                'details' => ['type' => 'html', 'heading' => t('Details'), 'class' => 'wrap'],
                 'enabled' => ['heading' => t('Status'), 'width' => '15%', 'control' => BooleanMenu::make('enabled')
                     ->yesLabel(t('Enabled'))
                     ->noLabel(t('Disabled'))
@@ -132,7 +146,7 @@ readonly class SettingsUi
             $mapping = $settings->tasks[$handle] ?? [];
             $tasks[$handle] = [
                 'label' => $task::label(),
-                'details' => Html::encode($this->taskDescription($task) ?? ''),
+                'details' => $this->taskDetails($task),
                 'enabled' => BooleanMenu::optionValue($mapping['enabled'] ?? true),
                 'provider' => $mapping['provider'] ?? null,
                 'model' => $mapping['model'] ?? null,
@@ -147,14 +161,18 @@ readonly class SettingsUi
 
     private function providerControl(Modality $modality): Combobox
     {
-        $providers = array_map(static function (string $handle): array {
+        $providers = array_map(function (string $handle): array {
             $driver = config("ai.providers.{$handle}.driver");
             $driver = $driver instanceof BackedEnum ? (string) $driver->value : $driver;
+            $hints = [
+                ...(is_string($driver) && $driver !== $handle ? [$driver] : []),
+                ...($this->ai->missingKey($handle) ? [t('No API key')] : []),
+            ];
 
             return [
                 'label' => $handle,
                 'value' => $handle,
-                ...(is_string($driver) && $driver !== $handle ? ['data' => ['hint' => $driver]] : []),
+                ...($hints !== [] ? ['data' => ['hint' => implode(' · ', $hints)]] : []),
             ];
         }, $this->ai->providers($modality));
 
@@ -242,23 +260,25 @@ readonly class SettingsUi
     }
 
     /**
+     * Returns the task’s description, and the name of the plugin that registered it on its own line, as HTML.
+     *
      * @param  class-string<TaskInterface>  $task
      */
-    private function taskDescription(string $task): ?string
+    private function taskDetails(string $task): string
     {
-        $parts = [];
+        $html = '';
 
         $description = $task::description();
         $pluginHandle = $this->plugins->getPluginHandleByClass($task);
 
         if ($description !== null) {
-            $parts[] = $description;
+            $html .= Html::tag('div', Html::encode($description));
         }
 
         if ($pluginHandle !== null) {
-            $parts[] = $this->plugins->getPlugin($pluginHandle)->name ?? $pluginHandle;
+            $html .= Html::tag('div', Html::encode($this->plugins->getPlugin($pluginHandle)->name ?? $pluginHandle));
         }
 
-        return $parts === [] ? null : implode(' · ', $parts);
+        return $html;
     }
 }

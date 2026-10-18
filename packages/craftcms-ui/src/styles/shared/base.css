@@ -440,6 +440,7 @@ Modify with `cp-table--compact` to reduce the vertical cell padding
 Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
 Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-container-padding`, for tables that span their container's padding
+Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
  */
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
@@ -616,6 +617,10 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
   :is(th, td).thin {
     white-space: nowrap;
     width: 0.01%;
+  }
+
+  :is(th, td).wrap {
+    white-space: normal;
   }
 
   /* Size thin selects to their widest option so the selected label isn't truncated */

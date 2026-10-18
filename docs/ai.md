@@ -51,6 +51,10 @@ ai:
 
 Provider, model, and enabled values can reference environment variables, such as `$AI_TEXT_PROVIDER`, so environments can use different providers. You can also vary a provider’s driver, URL, and default model in `config/ai.php`.
 
+When an enabled task can’t run, admins see a control panel alert, and the settings screen lists each task with the reason. A task can’t run when it has no provider and its modality has no default, or when its provider isn’t in `config/ai.php`. It’s also listed when its provider’s `key` is empty and its driver needs one, because its requests would fail. `Ai::problems()` returns the reasons, indexed by task handle. Disable a task to stop the alert without setting it up.
+
+Don’t choose a provider for your task when your plugin is installed. Admins are told when it needs one, and choosing a provider is theirs to do.
+
 When a plugin is uninstalled, its task mappings stay in project config and are ignored.
 
 When a task with the `Embeddings` modality is registered, the settings screen warns that changing its provider or model breaks existing embeddings. Embeddings from different models can’t be compared, so if your plugin stores them, store the model that created them too (`Ai::task($handle)->resolve()->model`, or the provider’s default model when it’s `null`), and re-index when it changes.
