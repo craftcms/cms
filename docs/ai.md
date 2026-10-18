@@ -1,6 +1,6 @@
 # AI connections
 
-Craft gives plugins one shared way to reach AI providers. Administrators choose the providers and models under **Settings → AI → Connections**, and plugins ask for them by *task*. Plugins don’t need their own API key settings.
+Craft gives plugins one shared way to reach AI providers. Administrators choose the providers and models under **Settings → Extend → Connections**, and plugins ask for them by *task*. Plugins don’t need their own API key settings.
 
 Craft builds on [`laravel/ai`](https://laravel.com/docs/13.x/ai-sdk). Agents, tools, structured output, streaming, attachments, and test fakes all work as that package documents them. Craft adds three things:
 

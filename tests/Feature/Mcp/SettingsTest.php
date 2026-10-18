@@ -30,7 +30,7 @@ it('exposes the authenticated MCP connection settings', function () {
 
     get(action(SettingsIndexController::class))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('settings.AI.mcp', [
+            ->where('settings.Extend.mcp', [
                 'label' => 'MCP',
                 'url' => route('craft.cp.settings.mcp.index'),
                 'iconName' => 'light/robot',

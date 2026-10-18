@@ -108,19 +108,6 @@ class Settings
             ];
         }
 
-        $settings[$label]['plugins'] = [
-            'iconName' => 'light/plug',
-            'label' => t('Plugins'),
-        ];
-
-        $label = t('AI');
-
-        $settings[$label]['connections'] = [
-            'url' => route('craft.cp.settings.ai.index'),
-            'iconName' => 'light/sparkles',
-            'label' => t('Connections'),
-        ];
-
         $label = t('Content');
 
         $settings[$label]['sections'] = [
@@ -160,6 +147,19 @@ class Settings
                 ];
             }
         }
+
+        $label = t('Extend');
+
+        $settings[$label]['plugins'] = [
+            'iconName' => 'light/plug',
+            'label' => t('Plugins'),
+        ];
+
+        $settings[$label]['connections'] = [
+            'url' => route('craft.cp.settings.ai.index'),
+            'iconName' => 'light/sparkles',
+            'label' => t('Connections'),
+        ];
 
         return $this->apply($settings, $readOnly);
     }
