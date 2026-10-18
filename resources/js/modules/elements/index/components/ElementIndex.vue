@@ -345,6 +345,7 @@
         ref="body"
         :class="{
           'element-index__grid': mode === 'cards' || mode === 'thumbs',
+          'element-index__loading': loading,
         }"
         @mousedown.capture="
           isInlineEditing
@@ -533,5 +534,19 @@
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
     min-height: var(--cp-footer-height);
     background-color: var(--c-surface-default);
+  }
+
+  // While loading, the view's spinner sits in the middle of the body rather
+  // than at its top: the body and the view fill its height.
+  .element-index__body[aria-busy='true'] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .element-index__loading {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    padding-block: 0;
   }
 </style>

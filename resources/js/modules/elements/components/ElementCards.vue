@@ -161,7 +161,7 @@
 </script>
 
 <template>
-  <div class="grid place-items-center min-h-50" v-if="loading">
+  <div class="grid flex-1 place-items-center min-h-50" v-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">
@@ -279,26 +279,6 @@
   }
 
   .card-grid :deep(> li > craft-card) {
-    height: 100%;
-  }
-
-  // Non-image thumbs (folder / file-kind SVGs) render at a fixed small size.
-  // Center them in a box as big as the largest image thumbnail, at the size
-  // they get in the thumbnail view.
-  .card-thumb:has(> .thumb) {
-    display: grid;
-    place-items: center;
-    width: 120px;
-    height: 120px;
-  }
-
-  .card-thumb > :deep(.thumb) {
-    width: 72px;
-    height: 72px;
-  }
-
-  .card-thumb > :deep(.thumb svg) {
-    width: 100%;
     height: 100%;
   }
 </style>

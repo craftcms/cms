@@ -22,13 +22,12 @@ function fills(picker: CraftSlidePicker): string[] {
 }
 
 it('fills only the segments up to the hovered one', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const picker = await render();
   const segments = picker.shadowRoot!.querySelectorAll<HTMLElement>(
     '.slide-picker__segment'
   );
   const selected = fills(picker)[0];
-  const selectedDivider = getComputedStyle(segments[0]!).borderInlineEndColor;
 
   await userEvent.hover(segments[1]!);
   const [first, second, third, fourth] = fills(picker);
@@ -38,10 +37,6 @@ it('fills only the segments up to the hovered one', async () => {
   expect(first).not.toBe(selected);
   expect(third).toBe('rgba(0, 0, 0, 0)');
   expect(fourth).toBe('rgba(0, 0, 0, 0)');
-  // The dividers between selected segments revert to the normal border.
-  expect(getComputedStyle(segments[0]!).borderInlineEndColor).not.toBe(
-    selectedDivider
-  );
 });
 
 it('draws every segment at one height, with the selected ones filled darker', async () => {
@@ -59,13 +54,17 @@ it('draws every segment at one height, with the selected ones filled darker', as
   expect(new Set(heights).size).toBe(1);
   expect(second).toBe(first);
   expect(third).not.toBe(first);
-  // The divider between selected segments matches their dark outline.
+  // The divider between selected segments is as light as unselected
+  // segments' borders, not their dark outline.
   const firstStyle = getComputedStyle(segments[0]!);
-  expect(firstStyle.borderInlineEndColor).toBe(firstStyle.borderTopColor);
+  expect(firstStyle.borderInlineEndColor).not.toBe(firstStyle.borderTopColor);
+  expect(firstStyle.borderInlineEndColor).toBe(
+    getComputedStyle(segments[2]!).borderTopColor
+  );
 });
 
 it('leaves a read-only picker’s fills alone while hovered', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const picker = await render('readonly');
   const before = fills(picker);
 
@@ -78,19 +77,19 @@ it('leaves a read-only picker’s fills alone while hovered', async () => {
   expect(fills(picker)).toEqual(before);
 });
 
-it('keeps the selected look while the current value is hovered', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+it('previews the current value like any other', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
   const picker = await render('', 50);
   const segments = picker.shadowRoot!.querySelectorAll<HTMLElement>(
     '.slide-picker__segment'
   );
-  const before = fills(picker);
-  const divider = getComputedStyle(segments[0]!).borderInlineEndColor;
+  const selected = fills(picker)[0];
 
   await userEvent.hover(segments[1]!);
+  const [first, second, third] = fills(picker);
 
-  expect(fills(picker)).toEqual(before);
-  expect(getComputedStyle(segments[0]!).borderInlineEndColor).toBe(divider);
-  expect(getComputedStyle(segments[1]!).cursor).toBe('default');
-  expect(getComputedStyle(segments[2]!).cursor).toBe('pointer');
+  expect(first).not.toBe(selected);
+  expect(second).toBe(first);
+  expect(third).toBe('rgba(0, 0, 0, 0)');
+  expect(getComputedStyle(segments[1]!).cursor).toBe('pointer');
 });

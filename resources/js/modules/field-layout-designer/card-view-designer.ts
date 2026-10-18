@@ -64,28 +64,17 @@ export class CardViewDesigner extends Base {
       this.showThumbAlignment();
     }
 
-    // The thumb-alignment buttons are a plain <craft-button-group> with no
-    // `name`, so it doesn't track a selection itself; mark the clicked button
-    // pressed here and apply its value.
+    // The thumb-alignment options are radios, so whichever way the selection
+    // changes (clicks or arrow keys), the checked one's value is applied.
     const $thumbAlignmentGroup = this.$thumbManagementContainer.querySelector(
-      'craft-button-group[id$="thumb-alignment"]'
+      '[id$="thumb-alignment"].radio-group'
     );
     if ($thumbAlignmentGroup) {
-      this.addListener($thumbAlignmentGroup, 'click', (ev: any) => {
-        const $button = (ev.target as Element).closest?.(
-          'craft-button[data-value]'
-        );
-        if (!$button || $button.hasAttribute('disabled')) {
-          return;
+      this.addListener($thumbAlignmentGroup, 'change', (ev: any) => {
+        const $radio = ev.target;
+        if ($radio instanceof HTMLInputElement && $radio.checked) {
+          this.manageThumbnailAlignment($radio.value);
         }
-        for (const $option of $thumbAlignmentGroup.querySelectorAll(
-          'craft-button[data-value]'
-        )) {
-          const pressed = $option === $button;
-          $option.toggleAttribute('active', pressed);
-          $option.setAttribute('aria-pressed', pressed ? 'true' : 'false');
-        }
-        this.manageThumbnailAlignment($button);
       });
     }
 
@@ -127,8 +116,8 @@ export class CardViewDesigner extends Base {
 
   /**
    * Gives the preview card the owner's color, and its icon and name in the
-   * header, as the cards of its elements get them, falling back to a white
-   * card with an empty header.
+   * header, as the cards of its elements get them, falling back to a card
+   * with no color of its own and an empty header.
    */
   syncPreviewAppearance(): void {
     const card = this.$previewContainer?.querySelector('craft-card');
@@ -145,9 +134,20 @@ export class CardViewDesigner extends Base {
     }
 
     const name = value('name');
-    const color = value('color');
+    // "No color" is the color select's `__blank__` option: no color of the
+    // card's own, as the cards of elements without a color have.
+    const color = value('color').replace(/^__blank__$/, '');
     const icon = value('icon');
-    card.setAttribute('data-color', color || 'white');
+    // The sample chip takes the color too, but not the icon: chips show a
+    // thumbnail or status instead.
+    const chip = this.$previewContainer?.querySelector('craft-chip.cvd-chip');
+    for (const element of [card, chip]) {
+      if (color) {
+        element?.setAttribute('data-color', color);
+      } else {
+        element?.removeAttribute('data-color');
+      }
+    }
 
     const header = card.querySelector(':scope > [slot="header"]');
     if (!header) {
@@ -328,9 +328,7 @@ export class CardViewDesigner extends Base {
   }
 
   /** THUMBNAILS **/
-  manageThumbnailAlignment(target: any): void {
-    const alignment = target.dataset.value;
-
+  manageThumbnailAlignment(alignment: string): void {
     if (alignment !== this.designer.config.cardThumbAlignment) {
       this.designer.updateConfig((config: any) => {
         config.cardThumbAlignment = alignment;

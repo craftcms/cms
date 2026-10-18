@@ -151,7 +151,7 @@ export const inputStyles = css`
     display: grid;
     place-items: center;
     border: var(--c-input-border-width) var(--c-input-border-style)
-      var(--c-input-border-color);
+      var(--c-input-border-color, var(--c-form-control-border-color));
     border-radius: var(--c-input-radius, var(--c-radius-sm));
   }
 

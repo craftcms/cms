@@ -34,6 +34,7 @@
     visitControls,
   } from './runtime';
   import {useUiValueGroup} from './uiValueGroup';
+  import type {SidebarTabOutlets} from './sidebarTabs';
   import type {
     UiChange,
     UiChangeKind,
@@ -55,6 +56,8 @@
     errors?: UiPayload['errors'];
     /** Delta groups the server reports as modified, as dotted paths. */
     modified?: string[];
+    /** Where sidebar tabs render. Without it, they're shown as ordinary tabs. */
+    sidebarTabOutlets?: SidebarTabOutlets;
   }>();
   const emit = defineEmits<{
     (
@@ -690,6 +693,7 @@
       :touched-paths="touchedPaths"
       :scope="payload.scope"
       :refreshable="payload.refreshable"
+      :sidebar-tab-outlets="sidebarTabOutlets"
       @change="onControlChange"
     />
   </template>

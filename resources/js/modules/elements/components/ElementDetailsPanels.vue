@@ -17,6 +17,7 @@
     ElementEditPayloadUpdater,
     ElementFormActionSubmitter,
   } from '@/modules/elements/composables/useElementEditor';
+  import type {SidebarTabNode} from '@/modules/ui/sidebarTabs';
 
   type ElementDetailsPanel = DetailsPanel &
     Pick<
@@ -30,7 +31,26 @@
     updatePayload: ElementEditPayloadUpdater;
     submitAction: ElementFormActionSubmitter;
     syncLocationHash?: boolean;
+    /** Field layout tabs shown as panels, after Info. */
+    sidebarTabs?: SidebarTabNode[];
   }>();
+
+  function sidebarTabPanelId(tab: SidebarTabNode): string {
+    return `layout-tab-${tab.uid}`;
+  }
+
+  const sidebarTabPanels = computed<ElementDetailsPanel[]>(() =>
+    (props.sidebarTabs ?? []).map((tab, index) => ({
+      id: sidebarTabPanelId(tab),
+      label: tab.props.label,
+      icon: tab.props.icon ?? 'sidebar-flip',
+      // Without an icon of its own, the tab shows its name's first letter.
+      initialIcon: !tab.props.icon,
+      // Between Info (0) and Activity (10), in layout order.
+      order: 1 + index / 100,
+      slot: sidebarTabPanelId(tab),
+    }))
+  );
 
   const corePanels: ElementDetailsPanel[] = [
     {
@@ -69,6 +89,7 @@
     (
       [
         ...corePanels,
+        ...sidebarTabPanels.value,
         ...elementDetailsPanelRegistry.panels,
       ] as ElementDetailsPanel[]
     )
@@ -115,6 +136,13 @@
   >
     <template #info>
       <slot name="info" />
+    </template>
+    <template
+      v-for="tab in sidebarTabs ?? []"
+      :key="tab.uid"
+      #[sidebarTabPanelId(tab)]
+    >
+      <slot name="sidebar-tab" :tab="tab" />
     </template>
   </DetailsPanels>
 </template>

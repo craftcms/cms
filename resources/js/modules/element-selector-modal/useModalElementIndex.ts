@@ -251,6 +251,17 @@ export function useModalElementIndex(options: Options) {
 
   const hasSelection = computed(() => selectedElements.value.length > 0);
 
+  /**
+   * The source being switched to, as soon as it's chosen, rather than once its
+   * listing has loaded, so the sidebar responds to the click right away. A
+   * failed load puts the query back, and this with it.
+   */
+  const activeSourceKey = computed(() => {
+    const key = index.visitor.query.value.source;
+
+    return typeof key === 'string' ? key : index.view.elementIndex.source?.key;
+  });
+
   return {
     ...index,
     changeSource,
@@ -259,5 +270,6 @@ export function useModalElementIndex(options: Options) {
     itemBehavior,
     selectedElements,
     hasSelection,
+    activeSourceKey,
   };
 }

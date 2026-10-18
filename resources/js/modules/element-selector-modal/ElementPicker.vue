@@ -112,7 +112,7 @@
     >
       <ElementSources
         :sources="elementIndex.sources"
-        :active-source="elementIndex.source?.key"
+        :active-source="index.activeSourceKey.value"
         @select="index.changeSource"
       />
     </nav>

@@ -4,6 +4,7 @@ import './card.js';
 import '../chip/chip.js';
 import '../button/button.js';
 import '../checkbox/checkbox.js';
+import '../badge/badge.js';
 import {contrast} from '../../../test/contrast';
 import type CraftCard from './card.js';
 
@@ -35,7 +36,7 @@ it('gives a white card a body as white as its header', async () => {
 });
 
 it('gives a colored card’s links its text color and an underline', async () => {
-  document.body.innerHTML = ['red', 'white', 'gray', 'slate']
+  document.body.innerHTML = ['red', 'white', 'gray', 'slate', 'black']
     .map(
       (color) =>
         `<craft-card data-color="${color}">Body with <a href="#">a link</a></craft-card>`
@@ -52,10 +53,30 @@ it('gives a colored card’s links its text color and an underline', async () =>
   expect(link(red!).color).toBe(text(red!));
   expect(link(red!).textDecorationLine).toBe('underline');
 
-  // The neutral colors keep the default link styling.
+  // The neutral colors and black keep the default link styling.
   for (const card of neutral) {
     expect(link(card).color).not.toBe(text(card));
     expect(link(card).textDecorationLine).toBe('none');
+  }
+});
+
+it('gives a black card’s links a blue that holds up against its fill, in either theme', async () => {
+  for (const theme of ['light', 'dark']) {
+    document.body.innerHTML = `
+      <div data-theme="${theme}">
+        <craft-card data-color="black">Body with <a href="#">a link</a></craft-card>
+      </div>`;
+    const card = document.querySelector<CraftCard>('craft-card')!;
+    await card.updateComplete;
+
+    expect(
+      contrast(
+        getComputedStyle(card.querySelector('a')!).color,
+        getComputedStyle(card.shadowRoot!.querySelector('.card')!)
+          .backgroundColor
+      ),
+      theme
+    ).toBeGreaterThanOrEqual(4.5);
   }
 });
 
@@ -64,7 +85,7 @@ it('gives a white card a lighter shadow than other cards', async () => {
     <span class="xs" style="box-shadow: var(--c-shadow-xs)"></span>
     <span class="sm" style="box-shadow: var(--c-shadow-sm)"></span>
     <craft-card data-color="white">White</craft-card>
-    <craft-card>Plain</craft-card>`;
+    <craft-card data-color="red">Red</craft-card>`;
   const [white, plain] = Array.from(
     document.querySelectorAll<CraftCard>('craft-card')
   );
@@ -445,4 +466,77 @@ it('gives neutral buttons in a colored card’s body the card’s color', async 
       '--c-color-neutral-fill-quiet'
     )
   );
+});
+
+it('styles the buttons and badges in a black card as in the dark theme', async () => {
+  const content = `<craft-button>Button</craft-button><craft-badge>Badge</craft-badge>`;
+  document.body.innerHTML = `
+    <div id="black"><craft-card data-color="black">${content}</craft-card></div>
+    <div id="dark" data-theme="dark">${content}</div>
+    <div id="light">${content}</div>`;
+  for (const element of document.querySelectorAll<
+    HTMLElement & {updateComplete: Promise<unknown>}
+  >('craft-card, craft-button, craft-badge')) {
+    await element.updateComplete;
+  }
+  const looks = (id: string) =>
+    [...document.querySelectorAll(`#${id} :is(craft-button, craft-badge)`)].map(
+      (element) => {
+        // A button draws its surface on its host; a badge, inside.
+        const inner = element.shadowRoot!.firstElementChild!;
+        const style = getComputedStyle(
+          element.localName === 'craft-button'
+            ? element
+            : inner instanceof HTMLStyleElement
+              ? inner.nextElementSibling!
+              : inner
+        );
+
+        // Text color is left out: it's inherited, and a card sets its own.
+        return [
+          getComputedStyle(element).colorScheme,
+          style.backgroundColor,
+          style.borderTopColor,
+        ];
+      }
+    );
+
+  expect(looks('black')).toEqual(looks('dark'));
+  expect(looks('black')).not.toEqual(looks('light'));
+});
+
+it('gives what’s in a tinted card the card’s color, but not in a neutral one', async () => {
+  document.body.innerHTML = `
+    <craft-card data-color="orange"><span id="colored"></span></craft-card>
+    <craft-card><span id="plain"></span></craft-card>
+    <craft-card data-color="gray"><span id="gray"></span></craft-card>
+    <craft-card data-color="slate"><span id="slate"></span></craft-card>
+    <craft-card data-color="white"><span id="white"></span></craft-card>
+    <span id="outside"></span>`;
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+  const resolve = (id: string, value: string) => {
+    const element = document.getElementById(id)!;
+    element.style.color = value;
+    return getComputedStyle(element).color;
+  };
+  const tokens = {
+    '--c-text-default': '--c-color-orange-on-quiet',
+    '--c-form-control-border-color': '--c-color-orange-border-normal',
+    '--c-tab-border-active': '--c-color-orange-on-quiet',
+    '--c-color-neutral-border-quiet': '--c-color-orange-border-quiet',
+    '--c-color-neutral-fill-normal': '--c-color-orange-fill-normal',
+  };
+
+  for (const [token, orange] of Object.entries(tokens)) {
+    expect(resolve('colored', `var(${token})`), token).toBe(
+      resolve('colored', `var(${orange})`)
+    );
+  }
+
+  for (const id of ['plain', 'gray', 'slate', 'white']) {
+    expect(resolve(id, 'var(--c-text-default)'), id).toBe(
+      resolve('outside', 'var(--c-text-default)')
+    );
+  }
 });

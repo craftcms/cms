@@ -60,6 +60,48 @@ it('waits for the jQuery seam before initializing', async () => {
   expect(designer.$fieldSearch).toBe(search);
 });
 
+it.each([
+  [285.5, '288px'],
+  [288.004, '288px'],
+  [288.5, '304px'],
+])(
+  'snaps a %spx sidebar tab to a whole number of grid cells tall',
+  (height, expected) => {
+    let resized: ResizeObserverCallback | undefined;
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          resized = callback;
+        }
+        observe() {}
+        disconnect() {}
+      }
+    );
+    const designer = Object.create(
+      FieldLayoutDesigner.prototype
+    ) as FieldLayoutDesigner;
+    designer.snapSidebarTabHeights(16);
+
+    const tab = document.createElement('div');
+    tab.className = 'fld-tab fld-tab--sidebar';
+    const content = document.createElement('div');
+    content.className = 'fld-tabcontent';
+    tab.append(content);
+    document.body.append(tab);
+    vi.spyOn(tab, 'getBoundingClientRect').mockReturnValue({
+      height,
+    } as DOMRect);
+
+    resized!([{target: content} as unknown as ResizeObserverEntry], {} as any);
+
+    expect(tab.style.blockSize).toBe(expected);
+
+    tab.remove();
+    vi.unstubAllGlobals();
+  }
+);
+
 it('announces config changes so wrappers can read the new layout', () => {
   const designer = Object.create(
     FieldLayoutDesigner.prototype
@@ -187,6 +229,7 @@ it('gives the card preview the owner’s name, color, and icon', () => {
       <craft-input data-ui-control-path='["icon"]'></craft-input>
       <div class="cvd">
         <div class="cvd-preview">
+          <craft-chip class="cvd-chip"><div>Title</div></craft-chip>
           <craft-card><div slot="header"></div></craft-card>
         </div>
       </div>
@@ -216,14 +259,26 @@ it('gives the card preview the owner’s name, color, and icon', () => {
   expect(header.querySelector('.card-titlebar-label')?.textContent).toBe(
     'Article'
   );
+  // The sample chip takes the color, but not the icon or name.
+  const chip = document.querySelector('craft-chip')!;
+  expect(chip.getAttribute('data-color')).toBe('rose');
+  expect(chip.querySelector('craft-icon')).toBeNull();
+  expect(chip.textContent).toBe('Title');
 
   control('color').modelValue = '';
   control('icon').modelValue = '';
   designer.syncPreviewAppearance();
 
-  expect(card.getAttribute('data-color')).toBe('white');
+  expect(card.hasAttribute('data-color')).toBe(false);
+  expect(chip.hasAttribute('data-color')).toBe(false);
   expect(header.querySelector('craft-icon')).toBeNull();
   expect(header.textContent).toBe('Article');
+
+  control('color').modelValue = '__blank__';
+  designer.syncPreviewAppearance();
+
+  expect(card.hasAttribute('data-color')).toBe(false);
+  expect(chip.hasAttribute('data-color')).toBe(false);
 
   document.body.innerHTML = '';
 });

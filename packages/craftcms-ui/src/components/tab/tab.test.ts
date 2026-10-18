@@ -98,3 +98,25 @@ describe('craft-tab suffix', () => {
     ).toBeTruthy();
   });
 });
+
+describe('craft-tab prefix', () => {
+  it('slots prefix content before the label', async () => {
+    document.body.innerHTML = `
+      <craft-tab><craft-icon slot="prefix" name="newspaper"></craft-icon>Content</craft-tab>`;
+    const tab = document.querySelector<CraftTab>('craft-tab')!;
+    await tab.updateComplete;
+
+    const prefix = tab.shadowRoot!.querySelector<HTMLSlotElement>(
+      'slot[name="prefix"]'
+    )!;
+
+    expect(prefix.assignedElements()).toEqual([
+      tab.querySelector('craft-icon'),
+    ]);
+    expect(
+      prefix.compareDocumentPosition(
+        tab.shadowRoot!.querySelector('.tab__label')!
+      ) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+});
