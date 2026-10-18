@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Http\Controllers\SettingsController as AiSettingsController;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
@@ -306,6 +307,15 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         // Index page
         Route::get('settings', SettingsIndexController::class)
             ->name('settings.index');
+
+        Route::get('settings/ai', [AiSettingsController::class, 'index'])
+            ->name('settings.ai.index');
+        Route::post('settings/ai', [AiSettingsController::class, 'store'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.ai.store');
+        Route::post('settings/ai/render-ui', [AiSettingsController::class, 'renderUi'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.ai.render-ui');
 
         Route::get('settings/mcp', [McpSettingsController::class, 'index'])
             ->name('settings.mcp.index');

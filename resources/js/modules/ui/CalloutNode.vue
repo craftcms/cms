@@ -45,7 +45,7 @@
     :icon="node.props.icon"
     :data-dismissible="node.props.dismissible || undefined"
   >
-    <span v-html="node.props.html"></span>
+    <div class="prose" v-html="node.props.html"></div>
 
     <craft-button
       v-if="node.props.dismissible"
