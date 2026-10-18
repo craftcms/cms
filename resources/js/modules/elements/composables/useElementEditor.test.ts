@@ -874,6 +874,17 @@ describe('useElementEditor', () => {
     await nextTick();
   }
 
+  /** Types into the Slug field the way a user would. */
+  async function typeSlug(value: string): Promise<void> {
+    await nextTick();
+    const slugInput =
+      container!.querySelector<HTMLInputElement>('input[name="slug"]')!;
+    slugInput.value = value;
+    slugInput.dispatchEvent(new Event('input', {bubbles: true}));
+    slugInput.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+  }
+
   it('does not write a pending draft after the editor is removed', async () => {
     vi.useFakeTimers();
     onTestFinished(() => {
@@ -983,6 +994,55 @@ describe('useElementEditor', () => {
     expect(slugInput.value).toBe('first-article');
 
     vi.useRealTimers();
+  });
+
+  it('autosaves a value edited back to what the page loaded with', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    let saved = {title: 'Van Gogh', slug: 'van-gogh'};
+    postSpy.mockImplementation(
+      async (_url: string, data: {title?: string; slug?: string}) => {
+        saved = {
+          title: data.title ?? saved.title,
+          slug: data.slug ?? saved.slug,
+        };
+
+        return {
+          data: {
+            draftId: 7,
+            ui: fieldLayout(saved.title),
+            screen: {sidebarUi: sidebarUi(saved.slug, false)},
+          },
+        };
+      }
+    );
+    mount(
+      payload({
+        canAutosave: true,
+        ui: fieldLayout('Van Gogh'),
+        sidebarUi: sidebarUi('van-gogh', false),
+      })
+    );
+    const lastSent = () => postSpy.mock.calls.at(-1)![1];
+
+    await typeSlug('van-gogh-test');
+    await vi.advanceTimersByTimeAsync(1000);
+    await typeSlug('van-gogh');
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(postSpy).toHaveBeenCalledTimes(2);
+    expect(lastSent()).toMatchObject({slug: 'van-gogh'});
+
+    await typeTitle('Van Gogh!');
+    await vi.advanceTimersByTimeAsync(1000);
+    await typeTitle('Van Gogh');
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(postSpy).toHaveBeenCalledTimes(4);
+    expect(lastSent()).toMatchObject({title: 'Van Gogh'});
+    expect(saved).toEqual({title: 'Van Gogh', slug: 'van-gogh'});
   });
 
   it('refreshes the field layout without autosaving and preserves unsaved values', async () => {
