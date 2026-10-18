@@ -36,7 +36,7 @@
 .cvd-library {
   --gap: initial;
   align-content: start;
-  /* A grid cell of space below the Content/Display tabs (which it sits right
+  /* A grid cell of space below the Content/Appearance tabs (which it sits right
      under) and above its bottom edge, like the preview's padding. */
   padding-block: var(--c-spacing-lg);
 }
@@ -197,15 +197,19 @@
   font-size: 0.75em;
 }
 
-/* A card's body is translucent, so give it the surface it normally sits on,
-   rather than the workspace grid. */
 /* Both previews get a ring just darker than the page outside their outlines
    (beneath their shadows), like the field layout designer's tabs, to keep the grid's
    dots clear of them. */
 .cvd-preview craft-card {
   --c-card-shadow: var(--c-shadow-sm), 0 0 0 2px var(--fld-halo);
-  background-color: var(--c-surface-raised);
   border-radius: var(--c-card-radius, var(--c-radius-md));
+}
+
+/* A colored card's body is translucent, so give it the surface it normally
+   sits on, rather than the workspace grid. A card without a color has no
+   surface of its own, so it shows the grid. */
+.cvd-preview craft-card[data-color] {
+  background-color: var(--c-surface-raised);
 }
 
 /* A colored chip's fill and outline are translucent too, so it gets the same
@@ -235,6 +239,13 @@
   border: 1px solid var(--c-color-border-quiet);
   background-color: var(--c-color-fill-quiet);
   border-radius: var(--c-radius-md);
+}
+
+/* White's quiet fill is the card's own white, so a white card's thumbnail
+   takes the neutral tint instead, as it has without a color. */
+craft-card[data-color='white'] .cvd-thumbnail {
+  border-color: var(--c-color-neutral-border-quiet);
+  background-color: var(--c-color-neutral-fill-quiet);
 }
 
 .card-placeholder {

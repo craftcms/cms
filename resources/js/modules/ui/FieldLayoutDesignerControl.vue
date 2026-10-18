@@ -62,7 +62,7 @@
     update: (value) => emit('update:value', value, 'discrete'),
     afterRender(root) {
       syncTabErrors(root);
-      // The Display tab's outlet, for the owner's own display settings.
+      // The Appearance tab's outlet, for the owner's own display settings.
       releaseOutlets?.();
       releaseOutlets = registerOutlets(root);
     },
@@ -76,10 +76,10 @@
    */
   const tabErrorKeys: Record<string, string[]> = {
     content: ['customFields', 'tabs', 'generatedFields'],
-    display: ['cardView', 'thumbFieldKey'],
+    appearance: ['cardView', 'thumbFieldKey'],
   };
 
-  /** Flags the designer's Content and Display tabs that have errors. */
+  /** Flags the designer's Content and Appearance tabs that have errors. */
   function syncTabErrors(root: HTMLElement): void {
     const base = props.control.path;
     // The designer owns every error raised within it, so where each one

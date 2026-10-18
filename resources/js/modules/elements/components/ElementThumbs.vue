@@ -196,7 +196,7 @@
 </script>
 
 <template>
-  <div class="grid place-items-center min-h-50" v-if="loading">
+  <div class="grid flex-1 place-items-center min-h-50" v-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">
@@ -225,6 +225,7 @@
         data-color="white"
         :class="{
           element: true,
+          'element--selectable': selectable,
           'element--selected': selection.isSelected(element.id),
           'element--dragging': getDragState(element.id).type === 'is-dragging',
           'element--hidden':
@@ -399,14 +400,24 @@
   }
 
   // `data-color="white"` hands its static white palette to inheriting
-  // controls, like the action menu's button, whose hover tints from it. As
-  // white cards do, point it at the tile's own surface and text instead.
+  // controls, like the action menu's button, whose hover and pressed states
+  // tint from it. As white cards do, point it at the tile's own surface, border
+  // and text instead.
   .element {
     --c-color-fill-quiet: var(--c-surface-raised);
+    --c-color-fill-loud: var(--c-surface-raised);
+    --c-color-border-loud: var(--c-border-raised-selected);
     --c-color-on-quiet: var(--c-text-default);
+    --c-color-on-loud: var(--c-text-default);
     background-color: var(--c-color-fill-quiet);
     border-color: var(--c-border-raised);
     color: var(--c-text-default);
+  }
+
+  // Clicking a selectable tile selects it, so its label doesn't get a text
+  // cursor, as if it were text to select. Links within it keep theirs.
+  .element--selectable {
+    cursor: default;
   }
 
   .element--selected {
@@ -454,11 +465,13 @@
     height: 1lh;
   }
 
+  // Padded like a chip, so its checkbox and buttons sit as far from the
+  // tile's edges as a chip's do from its own.
   .element__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--c-spacing-sm);
-    padding-inline-start: var(--c-spacing-md);
+    padding-block: calc(3rem / 16);
+    padding-inline: var(--c-spacing-md) calc(3.5rem / 16);
   }
 </style>

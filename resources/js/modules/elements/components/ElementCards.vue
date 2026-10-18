@@ -161,7 +161,7 @@
 </script>
 
 <template>
-  <div class="grid place-items-center min-h-50" v-if="loading">
+  <div class="grid flex-1 place-items-center min-h-50" v-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">

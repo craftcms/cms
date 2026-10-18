@@ -94,9 +94,9 @@ it('drops collapsible in field appearance', function () {
 });
 
 it('passes its outlet to the client, and renders in place in server-rendered HTML', function () {
-    $group = locationGroup()->outlet('field-layout-designer.display');
+    $group = locationGroup()->outlet('field-layout-designer.appearance');
 
-    expect($group->props())->toMatchArray(['outlet' => 'field-layout-designer.display'])
+    expect($group->props())->toMatchArray(['outlet' => 'field-layout-designer.appearance'])
         ->and(locationGroup()->props())->not->toHaveKey('outlet')
         ->and(renderGroup($group)->filter('[data-ui-node="asset-location"]')->count())->toBe(1);
 });

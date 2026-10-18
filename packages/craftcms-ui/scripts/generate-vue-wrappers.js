@@ -943,6 +943,11 @@ const ALL_COMPONENTS = [
     importPath: '../components/disclosure/disclosure',
   },
   {
+    tagName: 'craft-resize-grips',
+    className: 'CraftResizeGrips',
+    importPath: '../components/resize-grips/resize-grips',
+  },
+  {
     tagName: 'craft-indicator',
     className: 'CraftIndicator',
     importPath: '../components/indicator/indicator',

@@ -85,7 +85,7 @@ it('gives a white card a lighter shadow than other cards', async () => {
     <span class="xs" style="box-shadow: var(--c-shadow-xs)"></span>
     <span class="sm" style="box-shadow: var(--c-shadow-sm)"></span>
     <craft-card data-color="white">White</craft-card>
-    <craft-card>Plain</craft-card>`;
+    <craft-card data-color="red">Red</craft-card>`;
   const [white, plain] = Array.from(
     document.querySelectorAll<CraftCard>('craft-card')
   );
@@ -503,4 +503,40 @@ it('styles the buttons and badges in a black card as in the dark theme', async (
 
   expect(looks('black')).toEqual(looks('dark'));
   expect(looks('black')).not.toEqual(looks('light'));
+});
+
+it('gives what’s in a tinted card the card’s color, but not in a neutral one', async () => {
+  document.body.innerHTML = `
+    <craft-card data-color="orange"><span id="colored"></span></craft-card>
+    <craft-card><span id="plain"></span></craft-card>
+    <craft-card data-color="gray"><span id="gray"></span></craft-card>
+    <craft-card data-color="slate"><span id="slate"></span></craft-card>
+    <craft-card data-color="white"><span id="white"></span></craft-card>
+    <span id="outside"></span>`;
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+  const resolve = (id: string, value: string) => {
+    const element = document.getElementById(id)!;
+    element.style.color = value;
+    return getComputedStyle(element).color;
+  };
+  const tokens = {
+    '--c-text-default': '--c-color-orange-on-quiet',
+    '--c-form-control-border-color': '--c-color-orange-border-normal',
+    '--c-tab-border-active': '--c-color-orange-on-quiet',
+    '--c-color-neutral-border-quiet': '--c-color-orange-border-quiet',
+    '--c-color-neutral-fill-normal': '--c-color-orange-fill-normal',
+  };
+
+  for (const [token, orange] of Object.entries(tokens)) {
+    expect(resolve('colored', `var(${token})`), token).toBe(
+      resolve('colored', `var(${orange})`)
+    );
+  }
+
+  for (const id of ['plain', 'gray', 'slate', 'white']) {
+    expect(resolve(id, 'var(--c-text-default)'), id).toBe(
+      resolve('outside', 'var(--c-text-default)')
+    );
+  }
 });

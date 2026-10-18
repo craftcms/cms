@@ -10,8 +10,8 @@ const html = `
     <craft-tabs>
       <craft-tab slot="tab" data-fld-tab="content">Content</craft-tab>
       <div slot="panel"></div>
-      <craft-tab slot="tab" data-fld-tab="display">Display</craft-tab>
-      <div slot="panel"><div data-ui-outlet="field-layout-designer.display"></div></div>
+      <craft-tab slot="tab" data-fld-tab="appearance">Appearance</craft-tab>
+      <div slot="panel"><div data-ui-outlet="field-layout-designer.appearance"></div></div>
     </craft-tabs>
   </div>`;
 
@@ -70,7 +70,7 @@ it('flags the designer tabs that have errors', async () => {
 
   expect(icon('content')?.getAttribute('name')).toBe('circle-exclamation');
   expect(icon('content')?.getAttribute('slot')).toBe('suffix');
-  expect(icon('display')).toBeNull();
+  expect(icon('appearance')).toBeNull();
 
   errors.value = [
     {
@@ -82,7 +82,7 @@ it('flags the designer tabs that have errors', async () => {
   await flush();
 
   expect(icon('content')).toBeNull();
-  expect(icon('display')).not.toBeNull();
+  expect(icon('appearance')).not.toBeNull();
 
   errors.value = [
     {
@@ -95,14 +95,14 @@ it('flags the designer tabs that have errors', async () => {
 
   // Generated fields are in the Content tab.
   expect(icon('content')).not.toBeNull();
-  expect(icon('display')).toBeNull();
+  expect(icon('appearance')).toBeNull();
 });
 
-it('provides the Display tab’s outlet while mounted', async () => {
+it('provides the Appearance tab’s outlet while mounted', async () => {
   vi.spyOn(actionClient, 'post').mockResolvedValue({data: {html}} as never);
   const container = document.createElement('div');
   document.body.append(container);
-  const outlet = useOutlet(() => 'field-layout-designer.display');
+  const outlet = useOutlet(() => 'field-layout-designer.appearance');
 
   app = createApp({
     render: () =>
@@ -124,7 +124,9 @@ it('provides the Display tab’s outlet while mounted', async () => {
   await flush();
 
   expect(outlet.value).toBe(
-    container.querySelector('[data-ui-outlet="field-layout-designer.display"]')
+    container.querySelector(
+      '[data-ui-outlet="field-layout-designer.appearance"]'
+    )
   );
 
   app.unmount();

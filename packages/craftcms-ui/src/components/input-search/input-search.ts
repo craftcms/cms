@@ -180,7 +180,7 @@ export default class CraftInputSearch extends CraftInput {
   /**
    * Empties the field, moves focus to it, and fires `clear`.
    */
-  clear() {
+  override clear() {
     if (this.disabled || this.readOnly) {
       return;
     }

@@ -22,7 +22,7 @@ function fills(picker: CraftSlidePicker): string[] {
 }
 
 it('fills only the segments up to the hovered one', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const picker = await render();
   const segments = picker.shadowRoot!.querySelectorAll<HTMLElement>(
     '.slide-picker__segment'
@@ -64,7 +64,7 @@ it('draws every segment at one height, with the selected ones filled darker', as
 });
 
 it('leaves a read-only picker’s fills alone while hovered', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const picker = await render('readonly');
   const before = fills(picker);
 
@@ -78,7 +78,7 @@ it('leaves a read-only picker’s fills alone while hovered', async () => {
 });
 
 it('previews the current value like any other', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const picker = await render('', 50);
   const segments = picker.shadowRoot!.querySelectorAll<HTMLElement>(
     '.slide-picker__segment'
