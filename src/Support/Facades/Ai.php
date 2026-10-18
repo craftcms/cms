@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
+ * @method static array providers(\CraftCms\Cms\Ai\Enums\Modality $modality)
+ * @method static bool missingKey(string $provider)
+ * @method static array problems()
  * @method static bool available(string $handle)
  * @method static \CraftCms\Cms\Ai\Data\ResolvedProvider resolve(string $handle)
  * @method static \CraftCms\Cms\Ai\TaskClient task(string $handle)
