@@ -1,3 +1,4 @@
+import {existsSync, readFileSync, writeFileSync} from 'fs';
 import {globby} from 'globby';
 import {dirname} from 'path';
 import {fileURLToPath} from 'node:url';
@@ -5,6 +6,18 @@ import {fileURLToPath} from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const getRootDir = () => process.env.ROOT_DIR || dirname(__dirname);
 export const getDistDir = () => process.env.DIST_DIR || `${getRootDir()}/dist`;
+
+/**
+ * Writes a file only if its contents changed, and returns whether it did.
+ */
+export function writeFileIfChanged(path, content) {
+  if (existsSync(path) && readFileSync(path, 'utf8') === content) {
+    return false;
+  }
+
+  writeFileSync(path, content);
+  return true;
+}
 
 export async function resolveFrom(pattern) {
   const files = await globby(pattern);
