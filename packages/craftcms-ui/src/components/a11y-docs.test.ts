@@ -22,6 +22,7 @@ const components = readdirSync(COMPONENTS, {withFileTypes: true})
     (entry) =>
       entry.isDirectory() &&
       !entry.name.startsWith('.') &&
+      !entry.name.startsWith('__') &&
       entry.name !== 'node_modules'
   )
   .map((entry) => ({
