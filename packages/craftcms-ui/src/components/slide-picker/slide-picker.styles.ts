@@ -8,7 +8,7 @@ export default css`
   .slide-picker {
     --_segment-height: 1rem;
     --_segment-width: calc(8rem / 16);
-    --_segment-border: var(--c-color-neutral-border-normal);
+    --_segment-border: var(--c-color-neutral-border-quiet);
     --_segment-active-border: var(--c-color-neutral-border-loud);
     --_segment-fill: var(
       --c-slide-picker-segment-fill,
@@ -21,7 +21,7 @@ export default css`
       color-mix(
         in oklab,
         var(--c-color-neutral-fill-loud),
-        var(--c-color-neutral-fill-normal) 25%
+        var(--c-color-neutral-fill-normal) 70%
       )
     );
     --_segment-hover-fill: var(
@@ -61,27 +61,22 @@ export default css`
     border-color: var(--_segment-active-border);
   }
 
+  /* Selected segments are outlined as one; the dividers between them stay
+     light. */
+  .slide-picker__segment.is-active:not(.is-last-active) {
+    border-inline-end-color: var(--_segment-border);
+  }
+
   /* Hovering previews a value: the segments up to and including the hovered
-     one fill in, and the rest clear. Hovering the current value previews
-     nothing new, so it keeps the selected look. */
+     one fill in, and the rest clear. */
   :host(:not([readonly]):not([disabled]))
-    .slide-picker:has(.slide-picker__segment:hover):not(
-      :has(.slide-picker__segment.is-last-active:hover)
-    )
+    .slide-picker:has(.slide-picker__segment:hover)
     .slide-picker__segment {
     background-color: transparent;
   }
 
   :host(:not([readonly]):not([disabled]))
-    .slide-picker:has(.slide-picker__segment:hover):not(
-      :has(.slide-picker__segment.is-last-active:hover)
-    )
-    .slide-picker__segment.is-active:not(.is-last-active) {
-    border-inline-end-color: var(--_segment-border);
-  }
-
-  :host(:not([readonly]):not([disabled]))
-    .slide-picker:not(:has(.slide-picker__segment.is-last-active:hover))
+    .slide-picker:has(.slide-picker__segment:hover)
     .slide-picker__segment:is(:hover, :has(~ .slide-picker__segment:hover)) {
     background-color: var(--_segment-hover-fill);
   }
@@ -91,11 +86,6 @@ export default css`
     outline-offset: var(--c-focus-outline-offset);
     position: relative;
     z-index: 1;
-  }
-
-  /* Clicking the current value changes nothing. */
-  .slide-picker__segment.is-last-active {
-    cursor: default;
   }
 
   :host([readonly]) .slide-picker__segment {

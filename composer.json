@@ -49,6 +49,7 @@
     "guzzlehttp/guzzle": "^7.2.0",
     "inertiajs/inertia-laravel": "^3.0",
     "intervention/image": "^4.2",
+    "laravel/ai": "^1.2",
     "laravel/framework": "^13.17",
     "laravel/passport": "^13.0",
     "laravel/wayfinder": "^0.1.12",
@@ -193,6 +194,7 @@
       "aliases": {
         "Activities": "CraftCms\\Cms\\Support\\Facades\\Activities",
         "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
+        "Ai": "CraftCms\\Cms\\Support\\Facades\\Ai",
         "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
         "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",
         "AuthMethods": "CraftCms\\Cms\\Support\\Facades\\AuthMethods",

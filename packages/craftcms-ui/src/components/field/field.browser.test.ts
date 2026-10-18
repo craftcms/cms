@@ -118,3 +118,28 @@ it('exposes translation help on keyboard focus and dismisses it with Escape', as
   await userEvent.tab();
   expect(document.activeElement).toBe(field.querySelector('input'));
 });
+
+it.each([
+  ['width="auto"', '<craft-field label="Date" width="auto">'],
+  ['a maxlength', '<craft-field label="Code">'],
+])(
+  'shrinks only the input of a field with %s, keeping its heading spanning the column',
+  async (_case, open) => {
+    const input = open.includes('auto')
+      ? '<input slot="input" size="8">'
+      : '<input slot="input" size="8" maxlength="8">';
+    document.body.innerHTML = `<div style="width: 400px">${open}${input}<button slot="actions">Actions</button></craft-field></div>`;
+    const field = document.querySelector<CraftField>('craft-field')!;
+    await field.updateComplete;
+    const width = (element: Element) => element.getBoundingClientRect().width;
+    const container = field.shadowRoot!.querySelector(
+      '.input-group__container'
+    )!;
+
+    expect(width(field)).toBe(400);
+    expect(width(field.shadowRoot!.querySelector('.form-field__label')!)).toBe(
+      400
+    );
+    expect(width(container)).toBeLessThan(400);
+  }
+);

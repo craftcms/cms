@@ -692,7 +692,7 @@ class FieldsController
         }
 
         return new JsonResponse([
-            'config' => $tab->toArray(),
+            'config' => $tab->getConfig(),
             'labelHtml' => $tab->labelHtml(),
         ]);
     }

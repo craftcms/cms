@@ -3,9 +3,15 @@
 /*
   Also on [data-theme]: these tokens are built from the palette with var(),
   which is substituted where it's declared, so a themed subtree re-resolves them.
+  Likewise what's in a black card, chip, or badge (see utils.js).
 */
 :root,
-[data-theme] {
+[data-theme],
+:where(
+  craft-card[data-color='black'] > *,
+  craft-chip[data-color='black']:not([appearance~='plain']) > *,
+  craft-badge[fill='black'] > *
+) {
   /* red */
   --c-color-red-fill-quiet: var(--color-red-50);
   --c-color-red-fill-normal: var(--color-red-100);

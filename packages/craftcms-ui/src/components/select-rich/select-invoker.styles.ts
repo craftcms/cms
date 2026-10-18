@@ -15,6 +15,16 @@ export default css`
     overflow: clip;
   }
 
+  /* The usual focus ring, standing off the control, in place of LionButton's
+     hard-coded one (flush against its edge). As specific as LionButton's
+     :focus:not([disabled]) rule, so it wins on order. Contexts that inset
+     rings, such as table cells, do so through the same properties. */
+  :host(:focus-visible:not([disabled])) {
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
   /* Replace LionButton's hard-coded hover, press, and disabled fills */
   :host(:hover) {
     background-color: color-mix(
@@ -44,7 +54,10 @@ export default css`
     position: relative;
     pointer-events: none;
     flex: 1 1 auto;
-    overflow: hidden;
+    /* Clipped for the ellipsis, but with room for the ring and shadow of
+       content at its edges, such as a selected color's swatch. */
+    overflow: clip;
+    overflow-clip-margin: 2px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }

@@ -77,6 +77,10 @@ export {
   type ReorderOrientation,
   type ReorderMove,
 } from './components/reorder-button/reorder-button.js';
+export {
+  default as CraftResizeGrips,
+  type ResizeGripsSize,
+} from './components/resize-grips/resize-grips.js';
 export {default as CraftSelectColor} from './components/select-color/select-color.js';
 export {default as CraftSelectRich} from './components/select-rich/select-rich.js';
 export {default as CraftSelectedFileList} from './components/input-file/selected-file-list.js';

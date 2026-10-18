@@ -95,7 +95,9 @@ it('renders grouped inputs’ sub-labels smaller, lighter, and semibold', async 
     </craft-field>
   `;
   const outer = document.querySelector('craft-field')!;
-  const inner = outer.querySelector('craft-field-group craft-field')!;
+  const inner = outer.querySelector<typeof outer>(
+    'craft-field-group craft-field'
+  )!;
   await outer.updateComplete;
   await inner.updateComplete;
 

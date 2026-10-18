@@ -34,6 +34,7 @@
     visitControls,
   } from './runtime';
   import {useUiValueGroup} from './uiValueGroup';
+  import type {SidebarTabOutlets} from './sidebarTabs';
   import type {
     UiChange,
     UiChangeKind,
@@ -55,6 +56,8 @@
     errors?: UiPayload['errors'];
     /** Delta groups the server reports as modified, as dotted paths. */
     modified?: string[];
+    /** Where sidebar tabs render. Without it, they're shown as ordinary tabs. */
+    sidebarTabOutlets?: SidebarTabOutlets;
   }>();
   const emit = defineEmits<{
     (
@@ -459,6 +462,25 @@
   function advanceBaseline(): void {
     baseline = submittedValues ?? cloneRaw(values);
     submittedValues = undefined;
+    baselineMoved();
+  }
+
+  /**
+   * Takes `source` as the values the server now holds, leaving the values the
+   * client is holding as they are.
+   *
+   * For a save that didn't go through a submission — an autosave — whose
+   * response is the only record of what it wrote. A value edited back to what
+   * it was before that save then still differs from the baseline and goes out
+   * with the next one, and edits made while it was in flight stay unsaved.
+   */
+  function rebase(source: UiPayload['values']): void {
+    baseline = cloneRaw(source);
+    baselineMoved();
+  }
+
+  /** Drops the changed paths the new baseline settles, and reports the new mutation. */
+  function baselineMoved(): void {
     changedPaths.value = new Set(
       [...changedPaths.value].filter((path) => {
         const segments = path.split('.');
@@ -510,6 +532,7 @@
 
   defineExpose({
     advanceBaseline,
+    rebase,
     setSubmitting,
     currentValues,
     mutation,
@@ -690,6 +713,7 @@
       :touched-paths="touchedPaths"
       :scope="payload.scope"
       :refreshable="payload.refreshable"
+      :sidebar-tab-outlets="sidebarTabOutlets"
       @change="onControlChange"
     />
   </template>

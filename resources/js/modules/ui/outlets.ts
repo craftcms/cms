@@ -2,7 +2,7 @@ import {computed, reactive, type ComputedRef} from 'vue';
 
 /**
  * Named places where UI nodes can render from elsewhere in the form, such as
- * the field layout designer's Display tab. A control that renders its own
+ * the field layout designer's Appearance tab. A control that renders its own
  * markup registers each `[data-ui-outlet]` element it contains, and a group
  * with a matching `outlet` teleports into it, falling back to its own place
  * while there's no outlet.

@@ -10,6 +10,8 @@
 - Sortable checkbox selects, such as “Card Attributes”, “Table Columns”, and “Default Table Columns”, now list only the selected options, with an “Add item” menu for the rest. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Slideouts can now be resized horizontally, and remember their width. ([#19978](https://github.com/craftcms/cms/pull/19978))
 - Slideouts’ details panes that were folded away for lack of room now reopen once the slideout is wide enough again. ([#19978](https://github.com/craftcms/cms/pull/19978))
+- Content within black cards, chips, and badges, such as buttons, badges, and links, is now styled as in the dark theme.
+- Card view designers now preview users with a sample user’s name, default avatar, and active status.
 
 ### Workflows
 - Added publishing workflows, which control when drafts may be applied to entries. Workflows are configured from Settings → Workflows and assigned to sections. (Craft Pro and Enterprise only.) ([#19667](https://github.com/craftcms/cms/pull/19667))
@@ -53,13 +55,15 @@
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
 
 ### Fields & Field Layouts
+- Added sidebar field layout tabs, whose fields are shown in element edit forms’ details sidebar. ([#20005](https://github.com/craftcms/cms/pull/20005))
+- Field layout tabs can now have icons. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Added a new core Markdown field type. ([#18960](https://github.com/craftcms/cms/pull/18960))
 - Added a “Selectable {Type} Condition” setting to Link and Markdown fields’ Entry and Asset link types. ([#19622](https://github.com/craftcms/cms/pull/19622))
 - Added a “Default Row Values” setting to Table fields. ([#3621](https://github.com/craftcms/cms/issues/3621))
 - Table field columns are now configured with cell settings forms rather than JSON option inputs.
 - Added support for configuring field layout field instruction positions.
-- Field layouts with a card view designer now show it and the content tab designer in “Content” and “Display” tabs. ([#20001](https://github.com/craftcms/cms/pull/20001))
-- Entry types’ Icon and Color settings are now in their field layout designer’s Display tab, above Card Attributes. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Field layouts with a card view designer now show it and the content tab designer in “Content” and “Appearance” tabs, with Generated Fields in the Content tab. ([#20001](https://github.com/craftcms/cms/pull/20001)), ([#20003](https://github.com/craftcms/cms/pull/20003))
+- Entry types’ Icon and Color settings are now in their field layout designer’s Appearance tab, above Card Attributes. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Card view designers’ previews now reflect the owner’s color, icon, and name, such as an entry type’s, as they’re edited. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Entry type and user group descriptions, fields’ default instructions, tips, and warnings, and field layout elements’ instructions, tips, and warnings now have Markdown inputs. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Removed the “Show unpermitted entries” setting from Entries, Link, and Markdown fields, in favor of the “Viewable” condition rule in the “Selectable Entries Condition” setting. ([#19611](https://github.com/craftcms/cms/pull/19611), [#19622](https://github.com/craftcms/cms/pull/19622))
@@ -73,6 +77,9 @@
 - Added a “Skip to messages” link, and errors are now announced to screen readers immediately.
 
 ### Administration
+
+#### AI
+- Added Settings → Extend → Connections, where administrators choose the providers and models that plugins’ AI features use. Providers come from the `ai.providers` config, with keys set through environment variables. AI features stay off until a provider is chosen. ([#20006](https://github.com/craftcms/cms/pull/20006))
 
 #### MCP
 - Added authenticated and configurable public Model Context Protocol (MCP) servers for inspecting and managing Craft sites, content, assets, users, plugins, and project config. ([#19846](https://github.com/craftcms/cms/pull/19846))
@@ -440,6 +447,11 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 #### Addresses
 - Added `CraftCms\Cms\Support\Facades\Addresses`.
+
+#### AI
+- Added `CraftCms\Cms\Ai\Task` and `CraftCms\Cms\Ai\AiTasks`, for registering AI tasks. ([#20006](https://github.com/craftcms/cms/pull/20006))
+- Added `CraftCms\Cms\Support\Facades\Ai`, which plugins use to run `laravel/ai` agents and requests with the provider and model administrators choose for each task. ([#20006](https://github.com/craftcms/cms/pull/20006))
+- Added `CraftCms\Cms\Ai\Events\TaskRunning`, `TaskCompleted`, and `TaskFailed`, which plugins can use to track AI usage and failures, and cancel requests. ([#20006](https://github.com/craftcms/cms/pull/20006))
 
 #### Assets
 - Added `CraftCms\Cms\Asset\AssetsHelper`.

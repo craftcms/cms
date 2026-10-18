@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {tintedHost} from '@src/styles/tinted.styles';
 
 export default css`
   /*
@@ -17,13 +18,13 @@ export default css`
   /*
    * On a colored chip a blue link would clash with the fill, so links take the
    * chip's text color, and are underlined so they still stand apart from it.
-   * Only a white chip keeps the default link styling: blue falls short of
-   * contrast against even the gray and slate fills. A plain chip has no fill
-   * to clash with, so it keeps the default link styling too. Set on the host,
-   * so the truncate properties above resolve to them too.
+   * Neutral chips keep the default link styling (a black chip's contents take
+   * the dark theme's). A plain chip has no fill to clash with, so it keeps the
+   * default link styling too. Set on the host, so the truncate properties
+   * above resolve to them too.
    */
   :host([variant]:not([appearance~='plain'])),
-  :host([data-color]:not([data-color='white']):not([appearance~='plain'])) {
+  ${tintedHost(":not([appearance~='plain'])")} {
     --c-text-link: currentColor;
     --c-link-decoration: underline;
     --c-link-decoration-hover: none;
@@ -57,6 +58,11 @@ export default css`
     padding-block: 0;
     padding-inline: var(--_chip-gap) var(--_chip-spacing);
     display: inline-flex;
+    /* Centered on the line, rather than sitting on its baseline: an inline
+       flex box's baseline comes from its first item, which for a thumbnail
+       is the image's bottom edge, lifting the chip above the text's
+       descenders. */
+    vertical-align: middle;
     gap: var(--_chip-gap);
     border-radius: var(--_radius);
     align-items: center;
@@ -158,6 +164,12 @@ export default css`
     gap: var(--_chip-gap);
   }
 
+  /* Clicking a selectable chip selects it, so its label doesn't get a text
+     cursor, as if it were text to select. Links within it keep theirs. */
+  .cp-chip--selectable {
+    cursor: default;
+  }
+
   /* The gap spaces the checkbox, so the browser's default margins would
      double up with it. */
   .cp-chip__select {
@@ -196,19 +208,20 @@ export default css`
     cursor: not-allowed;
   }
 
-  :host([data-color='white']) .cp-chip__select {
+  :host(:is([data-color='white'], :not([data-color]))) .cp-chip__select {
     border-color: var(--c-form-control-border-color);
     background-color: var(--c-input-fill);
   }
 
-  :host([data-color='white']) .cp-chip__select:checked {
+  :host(:is([data-color='white'], :not([data-color])))
+    .cp-chip__select:checked {
     border-color: transparent;
     background-color: var(--c-color-accent-fill-loud);
   }
 
   @media (forced-colors: active) {
     .cp-chip__select,
-    :host([data-color='white']) .cp-chip__select {
+    :host(:is([data-color='white'], :not([data-color]))) .cp-chip__select {
       appearance: auto;
       mask: none;
       border: revert;
@@ -349,19 +362,38 @@ export default css`
     color: var(--c-color-on-quiet);
   }
 
+  /* A plain chip has no fill or border for its color to show on, so its
+     label takes the default text color. Only its icon takes the chip's color
+     (a status, such as the draft icon, isn't the chip's own; see above). */
   :host([appearance~='plain']) .cp-chip {
     background-color: transparent;
     border-color: transparent;
+    color: var(--c-chip-text, var(--c-text-default));
+  }
+
+  :host([appearance~='plain']) .cp-chip__icon {
     color: var(--c-color-on-quiet);
   }
 
   /*
-   * Without an author-chosen color the chip stamps data-color="white", whose
-   * fill, border, and text are all static colors — they stay light in dark
-   * mode. A default chip takes the theme-aware raised surface, its border,
-   * and the default text color instead, so the three move together. Scoped to the two filled tiers so outline and plain
-   * stay transparent, and to the stamped color so a variant still fills with
-   * its own.
+   * Without a color, a chip has no fill of its own: its border and text come
+   * from the colors around it, so in a colored card it takes the card's
+   * color, and elsewhere the neutral ones.
+   */
+  :host(:not([data-color]):not([selected])[appearance~='fill']) .cp-chip,
+  :host(:not([data-color]):not([selected])[appearance~='outline-fill'])
+    .cp-chip,
+  :host(:not([data-color]):not([selected])[appearance~='outline']) .cp-chip {
+    background-color: transparent;
+    border-color: var(--c-color-border-quiet);
+    color: var(--c-chip-text, var(--c-text-default));
+  }
+
+  /*
+   * White chips take the theme-aware raised surface, its border, and the
+   * default text color, rather than white's static colors, which stay light in
+   * dark mode. Scoped to the two filled tiers so outline and plain stay
+   * transparent.
    *
    * The palette is repointed too, for controls that inherit it, like the
    * action menu's button, whose hover tints from --c-color-fill-quiet.

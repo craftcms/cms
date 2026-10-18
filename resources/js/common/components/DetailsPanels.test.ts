@@ -29,6 +29,7 @@ afterEach(() => {
   app = undefined;
   document.body.innerHTML = '';
   window.history.replaceState(null, '', '/');
+  localStorage.clear();
 });
 
 const panels = [
@@ -162,6 +163,66 @@ it('starts folded to the rail in a slideout', async () => {
 
   expect(panel('info').hidden).toBe(true);
   expect(trigger('info').getAttribute('aria-expanded')).toBe('false');
+});
+
+describe('in slideouts', () => {
+  async function reopenSlideout(): Promise<void> {
+    app?.unmount();
+    await mount('#rail', {screenMode: 'slideout'});
+  }
+
+  it('opens the next slideout on the panel the person left open', async () => {
+    await mount('#rail', {screenMode: 'slideout'});
+    trigger('history').click();
+    await settle();
+
+    await reopenSlideout();
+
+    expect(panel('history').hidden).toBe(false);
+    expect(trigger('history').getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('keeps the next slideout folded once the person folds the column', async () => {
+    await mount('#rail', {screenMode: 'slideout'});
+    trigger('history').click();
+    await settle();
+    trigger('history').click();
+    await settle();
+
+    await reopenSlideout();
+
+    expect(panel('history').hidden).toBe(true);
+    expect(panel('info').hidden).toBe(true);
+  });
+
+  it('falls back to the first panel when the remembered one is missing', async () => {
+    localStorage.setItem('Slideout.detailsPanel', JSON.stringify('missing'));
+
+    await mount('#rail', {screenMode: 'slideout'});
+
+    expect(panel('info').hidden).toBe(false);
+  });
+
+  it('doesn’t remember a panel the shell folded for lack of room', async () => {
+    await mount('#rail', {screenMode: 'slideout'});
+    trigger('history').click();
+    await settle();
+
+    overlay.value = true;
+    await settle();
+
+    await reopenSlideout();
+
+    expect(panel('history').hidden).toBe(false);
+  });
+
+  it('leaves pages to the URL hash', async () => {
+    localStorage.setItem('Slideout.detailsPanel', JSON.stringify(null));
+
+    await mount('#rail');
+
+    expect(panel('info').hidden).toBe(false);
+  });
 });
 
 it('starts open on a page with room beside the content', async () => {

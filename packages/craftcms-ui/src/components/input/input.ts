@@ -33,6 +33,13 @@ import {HasLabel} from '@src/mixins/HasLabel';
  * @slot after - Content outside the control, after it.
  */
 export default class CraftInput extends HasLabel(LionInput) {
+  /**
+   * Visually hides the label, keeping it available to screen readers.
+   * `FormControlMixin` declares this property (`label-sr-only`), but its
+   * types leave it out.
+   */
+  declare labelSrOnly: boolean;
+
   static override get styles() {
     return [...super.styles, inputStyles, styles];
   }
