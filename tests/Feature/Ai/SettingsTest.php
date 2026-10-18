@@ -102,6 +102,19 @@ it('warns about re-indexing only when a task uses embeddings', function (bool $h
         ->assertOk();
 })->with(['embeddings task' => true, 'no embeddings task' => false]);
 
+it('lists the tasks that can’t run, and marks providers without an API key', function (): void {
+    config(['ai.providers.keyless' => ['driver' => 'anthropic', 'key' => null]]);
+
+    $response = get(route('craft.cp.settings.ai.index'))->assertOk();
+
+    $nodes = collect($response->inertiaProps('ui.nodes'));
+    $providers = collect($nodes->firstWhere('uid', 'ai-defaults-text')['children'][0]['control']['props']['options'][0]['options']);
+
+    expect($nodes->firstWhere('uid', 'ai-problems-warning')['props']['html'])->toContain('Summarize doesn’t have a provider, and there’s no default text provider.')
+        ->and($providers->firstWhere('value', 'keyless')['data']['hint'])->toBe('anthropic · No API key')
+        ->and($providers->firstWhere('value', 'anthropic'))->not->toHaveKey('data');
+});
+
 it('lists the models laravel/ai names for the provider a task uses', function (array $values): void {
     $response = postJson(route('craft.cp.settings.ai.render-ui'), ['values' => $values, 'scope' => []])->assertOk();
 
