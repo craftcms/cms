@@ -108,6 +108,27 @@ That is part of the pill treatment rather than of the box, and `padding` does no
 
 <Canvas of={CalloutStories.KitchenSink} sourceState="shown" />
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Nodes\Callout` renders a callout, and its content is Markdown:
+
+```php
+use CraftCms\Cms\Ui\Nodes\Callout;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Callout::make('import-warning', 'Importing replaces entries that have the same **slug**.')
+        ->variant('warning'),
+    Callout::make('field-layout-tip', 'Drag fields between tabs to reorder them.')
+        ->icon('lightbulb')
+        ->dismissible(),
+]);
+```
+
+`variant()`, `appearance()`, `icon()`, and `padding()` set the attributes of the same names.
+`dismissible()` adds a dismiss button. A dismissed callout stays dismissed on later page loads, keyed by its UID, so give each one a UID that's stable and unique.
+
 ## Accessibility
 
 A callout is a container, not a live region.

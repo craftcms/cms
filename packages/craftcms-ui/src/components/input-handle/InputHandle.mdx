@@ -37,6 +37,26 @@ The rest comes from [Input](?path=/docs/form-controls-text-controls-input--docs)
 
 <Canvas of={InputHandleStories.Disabled} sourceState="shown" />
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Controls\Handle` renders a handle input. `source()` names the control it generates its value from:
+
+```php
+use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Name', Text::make('name'))->required(),
+    Field::make('Handle', Handle::make('handle')->source('name'))->required(),
+]);
+```
+
+The source path is relative to the handle's own scope, so `source('name')` reads a sibling control. Use dots to reach further in, such as `settings.name`.
+The handle follows the source until someone edits the handle itself.
+
 ## Accessibility
 
 Nothing here changes how the control is announced; see [Input](?path=/docs/form-controls-text-controls-input--docs).
