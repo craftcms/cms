@@ -672,6 +672,37 @@ abstract class BaseImporter
     }
 
     /**
+     * Prepares the importer's settings for an import run.
+     *
+     * Mapping trees can use uids instead of handles (see `resolveMappingKeys()`), and the import needs
+     * handles. Call this right before importing, but not when the settings will be shown or saved again.
+     */
+    public function prepareForImport(): void
+    {
+        $this->map = $this->resolveMappingKeys($this->map);
+
+        if ($this->matchCriteria !== null) {
+            $this->matchCriteria = $this->resolveMappingKeys($this->matchCriteria);
+        }
+
+        if ($this->clearableItems !== null) {
+            $this->clearableItems = $this->resolveMappingKeys($this->clearableItems);
+        }
+    }
+
+    /**
+     * Replaces any uid keys in a mapping tree with the current handles.
+     * By default, the tree is returned unchanged.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    public function resolveMappingKeys(array $tree): array
+    {
+        return $tree;
+    }
+
+    /**
      * Returns the columns/properties/fields that we're importing into.
      *
      * @return list<MappingColumn|CompoundMappingColumn>

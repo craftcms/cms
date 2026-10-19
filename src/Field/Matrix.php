@@ -2260,7 +2260,44 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             return $newPrefix;
         }
 
-        return $newPrefix."[$provider->handle]";
+        // use the entry type’s uid, because its handle can be overridden in each Matrix field
+        return $newPrefix."[$provider->uid]";
+    }
+
+    /**
+     * In a Matrix field’s mapping, each entry type is keyed by its uid. This replaces each uid with the
+     * entry type’s handle in this field, then does the same for the custom fields in that entry type.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    #[Override]
+    public function resolveMappingKeys(array $tree): array
+    {
+        $entryTypes = [];
+        foreach ($this->getEntryTypes() as $entryType) {
+            $entryTypes[$entryType->uid] = $entryType;
+        }
+
+        $resolved = [];
+
+        foreach ($tree as $key => $value) {
+            $entryType = $entryTypes[$key] ?? null;
+
+            if (! $entryType || ! is_array($value)) {
+                $resolved[$key] = $value;
+
+                continue;
+            }
+
+            if (is_array($value['fields'] ?? null)) {
+                $value['fields'] = ImportHelper::resolveMappingKeys($value['fields'], $entryType->getFieldLayout());
+            }
+
+            $resolved[$entryType->handle] = $value;
+        }
+
+        return $resolved;
     }
 
     #[Override]
@@ -2274,11 +2311,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         // validate that the provider types are allowed
         $providers = $field->getFieldLayoutProviders();
-        $providerHandles = array_map(fn ($provider) => $provider->getHandle(), $providers);
+        $providerUids = array_map(fn ($provider) => $provider->uid, $providers);
 
         $typesFromMap = array_unique(array_keys($value));
 
-        if (array_diff($typesFromMap, $providerHandles)) {
+        if (array_diff($typesFromMap, $providerUids)) {
             $fail($attribute, t('The map contains mapping for entry types that aren’t allowed for this field.'));
 
             return false;

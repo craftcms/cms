@@ -294,6 +294,50 @@ class ImportHelper
     }
 
     /**
+     * Replaces each layout element uid key in one level of a mapping tree with that field’s current handle,
+     * and does the same inside container fields.
+     *
+     * Mappings use layout element uids so they keep working after a handle override changes.
+     * Keys that aren’t layout element uids are left unchanged.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    public static function resolveMappingKeys(array $tree, ?FieldLayout $fieldLayout): array
+    {
+        if (! $fieldLayout) {
+            return $tree;
+        }
+
+        $layoutElements = [];
+        foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+            if ($layoutElement->uid !== null) {
+                $layoutElements[$layoutElement->uid] = $layoutElement;
+            }
+        }
+
+        $resolved = [];
+
+        foreach ($tree as $key => $value) {
+            $layoutElement = $layoutElements[$key] ?? null;
+
+            if (! $layoutElement) {
+                $resolved[$key] = $value;
+
+                continue;
+            }
+
+            $field = $layoutElement->getField();
+
+            $resolved[$layoutElement->attribute()] = $field instanceof ImportableElementContainerFieldInterface && is_array($value)
+                ? $field->resolveMappingKeys($value)
+                : $value;
+        }
+
+        return $resolved;
+    }
+
+    /**
      * Rebuilds raw import data into the shape described by the map.
      *
      * @param  array<mixed>  $map
@@ -720,9 +764,10 @@ class ImportHelper
      * @param  list<MappingColumn|CompoundMappingColumn>  $destinationCols
      * @param  list<SourceColumn>  $sourceDataCols
      * @param  array<mixed>  $map  The current (possibly partially saved) map tree.
+     * @param  BaseImporter|null  $importer  The importer used to convert uids in the mapping paths to handles before matching.
      * @return array<mixed>
      */
-    public static function suggestMapValues(array $destinationCols, array $sourceDataCols, array $map): array
+    public static function suggestMapValues(array $destinationCols, array $sourceDataCols, array $map, ?BaseImporter $importer = null): array
     {
         $incomingCols = [];
         foreach ($sourceDataCols as $sourceCol) {
@@ -742,10 +787,41 @@ class ImportHelper
         $leaves = [];
         self::collectMappableLeaves($destinationCols, $map, $leaves);
 
+        if ($importer) {
+            $leaves = self::matchLeavesOnHandles($leaves, $importer);
+        }
+
         $suggestions = [];
         self::assignSuggestions($leaves, array_values($incomingCols), $suggestions);
 
         return $suggestions;
+    }
+
+    /**
+     * Updates each leaf so it’s matched on handles instead of uids, because the incoming data uses
+     * field and entry type handles.
+     *
+     * @param  list<MappableLeaf>  $leaves
+     * @return list<MappableLeaf>
+     */
+    private static function matchLeavesOnHandles(array $leaves, BaseImporter $importer): array
+    {
+        $tree = [];
+        foreach ($leaves as $leaf) {
+            Arr::set($tree, $leaf['path'], $leaf['path']);
+        }
+
+        $resolvedPaths = array_flip(Arr::dot($importer->resolveMappingKeys($tree)));
+
+        foreach ($leaves as $i => $leaf) {
+            $resolvedPath = $resolvedPaths[$leaf['path']] ?? null;
+
+            if (is_string($resolvedPath)) {
+                $leaves[$i]['segments'] = self::matchSegments($resolvedPath);
+            }
+        }
+
+        return $leaves;
     }
 
     /**

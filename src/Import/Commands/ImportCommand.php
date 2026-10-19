@@ -143,6 +143,9 @@ abstract class ImportCommand extends Command implements PromptsForMissingInput
             $this->fail('Import configuration is invalid.');
         }
 
+        // the mapping uses uids for custom fields and entry types, so replace them with handles before importing
+        $importer->prepareForImport();
+
         $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer);
 
         try {

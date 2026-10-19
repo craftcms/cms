@@ -249,7 +249,7 @@ class ImportPlansController
             destinationCols: $destinationCols,
             sourceDataCols: $sourceDataCols,
             values: MappingValues::fromImporter($importer),
-            suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map),
+            suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map, $importer),
         )->jsonSerialize());
     }
 
@@ -326,6 +326,7 @@ class ImportPlansController
             array_merge($importer->getDestinationCols(), $allDestinationCols),
             $sourceDataCols,
             $importer->map,
+            $importer,
         );
         $rootPath = implode('.', Arr::bracketsToArray((string) $fieldHandle));
 

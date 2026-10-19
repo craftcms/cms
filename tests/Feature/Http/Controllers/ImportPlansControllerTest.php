@@ -202,8 +202,11 @@ it('returns a container field’s destination columns for an unsaved step', func
     expect($response->json('fieldName'))->toBe('Outer Matrix');
     expect($response->json('groups.0.providerName'))->toBe('Outer ET');
 
+    $outerEntryType = EntryTypes::getEntryTypeByHandle('outerEt');
+    $innerMatrixUid = $outerEntryType->getFieldLayout()->getCustomFieldElements()[0]->uid;
+
     $handles = array_column($response->json('groups.0.destinationCols'), 'prefixedHandle');
-    expect($handles)->toContain('outerMatrix[outerEt][fields][innerMatrix]');
+    expect($handles)->toContain("outerMatrix[$outerEntryType->uid][fields][$innerMatrixUid]");
 });
 
 it('rejects nested mapping columns for a step whose importer can’t be built', function () {

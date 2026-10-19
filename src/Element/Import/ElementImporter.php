@@ -47,7 +47,7 @@ abstract class ElementImporter extends BaseImporter
     /**
      * @var array<string, mixed>|null
      *
-     * array => a tree keyed by field handle, mirroring $matchCriteria's shape (including a
+     * array => a tree keyed like $map (field handles, or layout element uids until prepareForImport()), mirroring $matchCriteria's shape (including a
      *  `fields` segment and provider/entry-type handle for each level of nesting). Since a
      *  container field (Matrix, Addresses) is the only kind of node in this tree that both
      *  has its own decision *and* may contain further nested container fields, each
@@ -291,6 +291,44 @@ abstract class ElementImporter extends BaseImporter
     }
 
     #[Override]
+    public function prepareForImport(): void
+    {
+        parent::prepareForImport();
+
+        if ($this->keepMissingNestedElements !== null) {
+            $this->keepMissingNestedElements = $this->resolveMappingKeys($this->keepMissingNestedElements);
+        }
+
+        if ($this->fieldSettings !== null) {
+            $this->fieldSettings = $this->resolveMappingKeys($this->fieldSettings);
+        }
+    }
+
+    #[Override]
+    public function resolveMappingKeys(array $tree): array
+    {
+        $tree = ImportHelper::resolveMappingKeys($tree, self::normalizeFieldLayout($this->fieldLayout));
+
+        // a container property (e.g. a user's addresses) has its own field layout, so its keys are resolved against that
+        $targetClass = static::targetClass();
+
+        if (! is_subclass_of($targetClass, ImportableContainerPropertiesInterface::class)) {
+            return $tree;
+        }
+
+        foreach (ImportHelper::getImportableContainerProperties($this) as $prop) {
+            if (is_array($tree[$prop['name']] ?? null)) {
+                $tree[$prop['name']] = ImportHelper::resolveMappingKeys(
+                    $tree[$prop['name']],
+                    $targetClass::getFieldLayoutForProperty($prop['name']),
+                );
+            }
+        }
+
+        return $tree;
+    }
+
+    #[Override]
     public function getDestinationCols(): array
     {
         $propertyCols = [];
@@ -519,7 +557,9 @@ abstract class ElementImporter extends BaseImporter
      */
     private function enableKeepMissingNestedElements(ElementInterface $element): array
     {
-        return $this->collectAndEnableKeepFields($element->getFieldLayout(), null, null, null);
+        $fieldLayout = $element->getFieldLayout();
+
+        return $this->collectAndEnableKeepFields($fieldLayout, $fieldLayout, null, null, null);
     }
 
     /**
@@ -534,18 +574,21 @@ abstract class ElementImporter extends BaseImporter
      * @return ImportableElementContainerFieldInterface[]
      */
     private function collectAndEnableKeepFields(
+        ?FieldLayout $rootFieldLayout,
         ?FieldLayout $fieldLayout,
         ?FieldInterface $ownerField,
         mixed $provider,
         ?string $prefix,
     ): array {
-        if (! $fieldLayout) {
+        if (! $fieldLayout || empty($this->keepMissingNestedElements)) {
             return [];
         }
 
         $restoreKeepFlagFields = [];
 
-        foreach ($fieldLayout->getCustomFields() as $field) {
+        foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+            $field = $layoutElement->getField();
+
             if (! $field instanceof ImportableElementContainerFieldInterface) {
                 continue;
             }
@@ -553,20 +596,26 @@ abstract class ElementImporter extends BaseImporter
             // The keep tree is keyed by the names the mapping screen generates, so ask the same
             // helper the UI does rather than assuming a [handle][providerHandle][fields] shape -
             // a content block is its own layout provider, which that assumption would spell twice.
+            // Those names use uids, but prepareForImport() has already replaced them with handles.
             $prefixedHandle = ImportHelper::prefixedHandleForMapping(
-                $field->handle,
+                $layoutElement->uid ?? $layoutElement->attribute(),
                 $ownerField,
                 $field,
                 $fieldLayout,
                 $provider,
                 $prefix,
             );
-            $prefixedHandleAsArray = Arr::bracketsToArray($prefixedHandle);
+            $path = self::resolveMappingPath(Arr::bracketsToArray($prefixedHandle), $rootFieldLayout);
+
+            // nothing below this field is kept, so there's no need to look any deeper
+            if (! Arr::has($this->keepMissingNestedElements, $path)) {
+                continue;
+            }
 
             if ($field->canKeepMissingNestedElements()) {
                 // loose cast: a real checkbox submission survives as int 1/0 (or even the
                 // string "1"/"0") after json_decode(), not strictly bool true/false
-                $shouldKeep = (bool) Arr::get($this->keepMissingNestedElements, implode('.', [...$prefixedHandleAsArray, '__keep__']));
+                $shouldKeep = (bool) Arr::get($this->keepMissingNestedElements, "$path.__keep__");
 
                 if ($shouldKeep) {
                     $field->setKeepMissingNestedElements(true);
@@ -577,12 +626,25 @@ abstract class ElementImporter extends BaseImporter
             foreach ($field->getFieldLayoutProviders() as $nestedProvider) {
                 $restoreKeepFlagFields = [
                     ...$restoreKeepFlagFields,
-                    ...$this->collectAndEnableKeepFields($nestedProvider->getFieldLayout(), $field, $nestedProvider, $prefixedHandle),
+                    ...$this->collectAndEnableKeepFields($rootFieldLayout, $nestedProvider->getFieldLayout(), $field, $nestedProvider, $prefixedHandle),
                 ];
             }
         }
 
         return $restoreKeepFlagFields;
+    }
+
+    /**
+     * Converts a mapping path from the mapping screen (which uses uids) into the dot-notation path the import uses (which uses handles).
+     *
+     * @param  list<string>  $path
+     */
+    private static function resolveMappingPath(array $path, ?FieldLayout $fieldLayout): string
+    {
+        $tree = [];
+        Arr::set($tree, implode('.', $path), true);
+
+        return (string) array_key_first(Arr::dot(ImportHelper::resolveMappingKeys($tree, $fieldLayout)));
     }
 
     /**

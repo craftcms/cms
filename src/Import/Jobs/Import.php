@@ -142,6 +142,9 @@ class Import extends Job
         // count how many items we have left to process
         $dataCount = max(0, $totalCount - $this->start);
 
+        // the mapping uses uids for custom fields and entry types, so replace them with handles before importing
+        $step->prepareForImport();
+
         // normalizing the UI/config-based matchCriteria only depends on the importer, so it
         // could be done once per step's chunk rather than for each root item that is being imported
         $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($step);
