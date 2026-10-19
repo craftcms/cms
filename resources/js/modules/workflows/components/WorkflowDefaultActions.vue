@@ -76,18 +76,20 @@
     if (
       event.key !== 'Enter' ||
       (!event.metaKey && !event.ctrlKey) ||
-      event.isComposing ||
-      processing.value ||
-      overage.value > 0
+      event.isComposing
     ) {
       return;
     }
 
+    // Claimed even when it can't act, so it doesn't submit the page's form.
+    event.preventDefault();
+    if (processing.value || overage.value > 0) {
+      return;
+    }
+
     if (props.review.canComment && !noteIsEmpty.value) {
-      event.preventDefault();
       void addComment();
     } else if (props.review.canSubmit) {
-      event.preventDefault();
       void submitForReview();
     }
   }
