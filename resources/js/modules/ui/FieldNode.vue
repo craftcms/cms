@@ -16,6 +16,14 @@
   } from 'vue';
   import CopyElementValuesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CopyElementValuesController';
   import CrossSiteCopyModal from './CrossSiteCopyModal.vue';
+  import {
+    AskAiFormKey,
+    applyAskAiProposal,
+    askAiContainer,
+    openAskAi,
+    type ApplyAskAiProposalDetail,
+    type AskAiParams,
+  } from '@/modules/ai/ask-ai';
   import UiNodeList from './UiNodeList.vue';
   import {
     FieldActionItems,
@@ -29,6 +37,8 @@
     pathsMatch,
     setValue as setPathValue,
     controlValueAt,
+    isRecord,
+    valueAt,
   } from './runtime';
   import type {
     UiChange,
@@ -265,6 +275,64 @@
     copySites.value = Craft.sites.filter((site) =>
       detail.siteIds.includes(site.id)
     );
+  });
+
+  const editorForm = inject(AskAiFormKey, null);
+
+  useEventListener(window, 'craft:ask-ai', (event: Event) => {
+    const detail = (
+      event as CustomEvent<
+        AskAiParams & {trigger?: unknown; sourceEvent?: unknown}
+      >
+    ).detail;
+
+    if (
+      !detail ||
+      !field.value ||
+      !(detail.trigger instanceof HTMLElement) ||
+      detail.trigger.closest('craft-field') !== field.value
+    ) {
+      return;
+    }
+
+    const {trigger: _trigger, sourceEvent: _sourceEvent, ...params} = detail;
+    const container = askAiContainer(field.value);
+
+    void openAskAi({
+      params,
+      namespace: props.scope.join('.') || null,
+      values: () => {
+        if (editorForm && pathsMatch(editorForm.scope(), props.scope)) {
+          return editorForm.values();
+        }
+
+        const scoped = valueAt(props.values, props.scope);
+
+        return isRecord(scoped) ? scoped : {};
+      },
+      onApply: (proposals) =>
+        proposals.forEach((proposal) =>
+          applyAskAiProposal(proposal, container)
+        ),
+    });
+  });
+
+  useEventListener(window, 'craft:apply-ask-ai-proposal', (event: Event) => {
+    const {proposal, container} = (
+      event as CustomEvent<ApplyAskAiProposalDetail>
+    ).detail;
+
+    if (
+      !field.value ||
+      !proposal.node.control ||
+      askAiContainer(field.value) !== container ||
+      !pathsMatch(proposal.node.control.path, control.value.path)
+    ) {
+      return;
+    }
+
+    resolvedNode.value = proposal.node as typeof resolvedNode.value;
+    setValue(proposal.value);
   });
 
   async function copyValue(fromSiteId: number): Promise<void> {

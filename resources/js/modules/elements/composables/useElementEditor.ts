@@ -621,6 +621,14 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   }
 
   /**
+   * The form's current values, including the sidebar's, as a save would post
+   * them.
+   */
+  function formValues(): UiValues {
+    return {...saveData?.(), ...requestValues(form.data())};
+  }
+
+  /**
    * Re-renders the field layout from the server, keeping unsaved values.
    *
    * Resolves with the server's response once it's been applied, or nothing
@@ -1192,6 +1200,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     nestedOwnerEditor,
     refreshUi,
     refreshLayout,
+    formValues,
     save,
     sidebarErrors,
     sidebarPayload,

@@ -1,11 +1,12 @@
 import {router} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
-import {computed, type ComputedRef} from 'vue';
+import {computed, inject, type ComputedRef} from 'vue';
 import {openSlideout, type SlideoutController} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
 import {ElementDeletionManager} from '@/modules/element-deletion-manager';
 import type {UiProperties, UiValues} from '@/modules/ui/types';
 import {openUiModal} from '@/modules/ui/open-ui-modal';
+import {AskAiKey, type AskAiParams} from '@/modules/ai/ask-ai';
 import {submitNativeForm} from '@/common/utils/forms';
 import {replaceAssetFile} from '@/modules/assets/replaceAssetFile';
 import {
@@ -79,7 +80,9 @@ export type ElementActionBehavior =
       actionUrl: string;
       params?: UiValues;
       prompt: string;
-    };
+    }
+  /** Opens “Ask AI” for the editor showing the element. */
+  | {type: 'askAi'; params: AskAiParams};
 
 export interface ElementActionMenuButton {
   type?: 'button';
@@ -111,6 +114,8 @@ interface Options {
    * behind it may have unsaved changes of its own.
    */
   slideout?: SlideoutController | null;
+  /** Opens “Ask AI” in the editor showing the element, which applies the values. */
+  askAi?: ((params: AskAiParams) => void) | null;
 }
 
 /**
@@ -120,6 +125,7 @@ interface Options {
 export function createElementActionDispatcher({
   currentEntryTypeId,
   slideout = null,
+  askAi = null,
 }: Options = {}) {
   function dispatch(
     behavior: ElementActionBehavior,
@@ -247,6 +253,11 @@ export function createElementActionDispatcher({
 
         return;
 
+      case 'askAi':
+        askAi?.(behavior.params);
+
+        return;
+
       case 'editImage':
         void openImageEditorDialog(behavior.settings, (result) => {
           if (!result.newAssetId) {
@@ -348,7 +359,10 @@ export function useElementActionMenu(
   items: () => Array<ElementActionMenuItem>,
   options: Options = {}
 ): ComputedRef<Array<ActionItem>> {
-  const toActionItems = createElementActionMenu(options);
+  const toActionItems = createElementActionMenu({
+    askAi: inject(AskAiKey, null),
+    ...options,
+  });
 
   return computed(() => toActionItems(items()));
 }

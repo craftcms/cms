@@ -39,6 +39,12 @@
   import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
+  import {
+    AskAiFormKey,
+    AskAiKey,
+    openAskAi,
+    type AskAiParams,
+  } from '@/modules/ai/ask-ai';
   import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
   import ReleasePicker from '@/modules/releases/components/ReleasePicker.vue';
   import {provideReleaseEditorActions} from '@/modules/releases/releaseEditor';
@@ -103,6 +109,28 @@
   } = editor;
 
   provide(NestedOwnerEditorKey, editor.nestedOwnerEditor);
+  provide(AskAiKey, askAi);
+  provide(AskAiFormKey, {
+    scope: () => uiPayload.value?.scope ?? [],
+    values: editor.formValues,
+  });
+
+  /** Opens “Ask AI” for the element, and writes the accepted values into the form. */
+  function askAi(params: AskAiParams): void {
+    void openAskAi({
+      params,
+      namespace: uiPayload.value?.scope.join('.') || null,
+      values: editor.formValues,
+      onApply: (proposals) =>
+        renderer.value?.setValues(
+          proposals.flatMap(({node: {control}, value}) =>
+            control
+              ? [{path: control.path, value, refreshable: control.reactive}]
+              : []
+          )
+        ),
+    });
+  }
 
   /**
    * Fields outside of a tab — in a field layout whose tab was never saved,
@@ -179,6 +207,7 @@
   const dispatchBehavior = createElementActionDispatcher({
     currentEntryTypeId: () => form.typeId ?? null,
     slideout,
+    askAi,
   });
 
   const saveButtons = computed(() =>
