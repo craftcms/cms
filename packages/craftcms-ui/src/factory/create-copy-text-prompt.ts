@@ -26,7 +26,8 @@ export interface CopyTextPromptConfig {
  * `<craft-copy-button>` (which copies via `navigator.clipboard` and shows its
  * own feedback, replacing the legacy `execCommand('copy')` + `displayNotice`).
  * The dialog is appended to `<body>` and shown immediately; it closes once the
- * value is copied. Returns the dialog element (callers use it fire-and-forget).
+ * value is copied, and removes itself from the document once it has closed.
+ * Returns the dialog element (callers use it fire-and-forget).
  */
 export function createCopyTextPrompt(
   config: CopyTextPromptConfig
@@ -52,6 +53,14 @@ export function createCopyTextPrompt(
   // Legacy hid the modal once the value was copied.
   dialog.addEventListener('craft-copy', () => {
     dialog.opened = false;
+  });
+
+  // Nothing reopens it, so it goes once it has closed. The target check skips
+  // the same event bubbling up from an overlay inside it.
+  dialog.addEventListener('craft-after-hide', (event) => {
+    if (event.target === dialog) {
+      dialog.remove();
+    }
   });
 
   dialog.setAttribute('open', '');
