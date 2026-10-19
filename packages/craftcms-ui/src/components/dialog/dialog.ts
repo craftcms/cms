@@ -147,9 +147,11 @@ export default class CraftDialog extends LitElement {
   /**
    * Decides where focus goes once the dialog closes.
    *
-   * Called with whatever had focus when the dialog opened. If it returns an
-   * element that can take focus, that element gets it; otherwise the browser's
-   * own return applies, which goes back to that opener. Set it when the opener
+   * Called with whatever had focus when the dialog opened, and only when focus
+   * is in the dialog as it closes, the same rule the browser's own return
+   * follows. If it returns an element that can take focus, that element gets
+   * it; otherwise the browser's own return applies, which goes back to that
+   * opener. Set it when the opener
    * may not be there to take focus — an item in a menu that has since closed,
    * or content that re-renders while the dialog is open — and look the target
    * up when it's called rather than holding on to an element. For menu
@@ -340,22 +342,36 @@ export default class CraftDialog extends LitElement {
 
   #hideDialog(): void {
     const dialog = this.dialogElement;
+    const opener = this.#opener;
+    this.#opener = null;
+    let focusWasInside: boolean;
 
     if (dialog?.open) {
+      focusWasInside = this.matches(':focus-within');
       dialog.close();
+    } else {
+      // The native dialog closed itself first, and the browser has already
+      // returned focus from it: to the opener, or to `<body>` when it couldn't.
+      focusWasInside =
+        document.activeElement === document.body ||
+        document.activeElement === opener;
     }
 
     this.#releaseFocusTrap?.();
     this.#releaseFocusTrap = null;
 
     this.#releaseScrollLock();
-    this.#returnFocusToTarget();
+
+    if (focusWasInside) {
+      this.#returnFocusToTarget(opener);
+    }
   }
 
-  /** Runs after the browser's own return, which `close()` does synchronously. */
-  #returnFocusToTarget(): void {
-    const opener = this.#opener;
-    this.#opener = null;
+  /**
+   * Runs after the browser's own return, which `close()` does synchronously,
+   * and only when focus was in the dialog — as the browser's own return is.
+   */
+  #returnFocusToTarget(opener: HTMLElement | null): void {
     const target = this.returnFocus?.(opener);
 
     if (isFocusable(target)) {

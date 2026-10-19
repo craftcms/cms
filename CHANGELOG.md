@@ -73,7 +73,7 @@
 - Added `CraftCms\Cms\Cp\Components\CopyAttribute` for rendering inline copyable values in PHP and templates. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Added the `returnFocus` property to `<craft-dialog>`, and the `returnFocus` option to `Craft.openSlideout()`, for deciding where focus goes when they close.
 - Added `focusReturnFor()` to `@craftcms/ui/utilities/focus-return`. `event` actions now include a `returnFocus` resolver in their event’s `detail`, which finds the action menu’s button again after the menu closes or re-renders when it has a `data-focus-key` attribute.
-- Fixed an accessibility issue where keyboard focus was lost after closing a modal or slideout opened from a field’s action menu, such as “Copy attribute name” or “Field settings”. Focus now returns to the action menu’s button.
+- Fixed an accessibility issue where keyboard focus was lost after closing a modal or slideout opened from a field’s or element editor’s action menu, such as “Copy attribute name”, “Field settings”, or “Entry type settings”. Focus now returns to the action menu’s button, except on control panel pages that still use legacy slideouts.
 - Fixed a bug where thumbnails in relational fields linked to their elements. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes had no visible focus ring. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes’ combobox element had no accessible name in Chromium. ([#19942](https://github.com/craftcms/cms/pull/19942))

@@ -160,6 +160,45 @@ it('focuses the element returnFocus returns on close', async () => {
   expect(document.activeElement).toBe(target);
 });
 
+it('leaves focus alone when it is outside the dialog at close', async () => {
+  const invoker = button('Open');
+  const outside = button('Outside');
+  const target = button('Target');
+  document.body.append(invoker, outside, target);
+  invoker.focus();
+  const dialog = await openDialog((dialog) => {
+    dialog.nonModal = true;
+    dialog.returnFocus = () => target;
+  });
+
+  outside.focus();
+  dialog.opened = false;
+  await dialog.updateComplete;
+
+  expect(document.activeElement).toBe(outside);
+});
+
+it('uses returnFocus when the native dialog closes itself', async () => {
+  const invoker = button('Open');
+  const target = button('Target');
+  document.body.append(invoker, target);
+  invoker.focus();
+  const dialog = await openDialog((dialog) => {
+    dialog.returnFocus = () => target;
+  });
+
+  const native = shadow<HTMLDialogElement>(dialog, 'dialog');
+  const closed = new Promise((resolve) =>
+    native.addEventListener('close', resolve, {once: true})
+  );
+  native.close();
+  await closed;
+  await dialog.updateComplete;
+
+  expect(dialog.opened).toBe(false);
+  expect(document.activeElement).toBe(target);
+});
+
 it('keeps the native return target when returnFocus returns nothing', async () => {
   const {userEvent} = await import('@vitest/browser/context');
   const invoker = button('Open');
