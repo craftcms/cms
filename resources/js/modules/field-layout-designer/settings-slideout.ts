@@ -1,7 +1,6 @@
 import type {UiPayload, UiValues} from '@/modules/ui/types';
 import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
-export {canUseVueSlideout} from '@/common/slideouts';
 
 export interface OpenLayoutSettingsOptions {
   title: string;

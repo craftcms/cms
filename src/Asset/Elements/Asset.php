@@ -1020,6 +1020,42 @@ class Asset extends Element
     }
 
     #[Override]
+    public static function supportsSourceBadgeCounts(): bool
+    {
+        return true;
+    }
+
+    #[Override]
+    public static function sourceSupportsBadgeCount(array $source): bool
+    {
+        if (! parent::sourceSupportsBadgeCount($source)) {
+            return false;
+        }
+
+        return ($source['type'] ?? null) === ElementSources::TYPE_CUSTOM
+            || str_starts_with((string) $source['key'], 'volume:');
+    }
+
+    /**
+     * A volume's count covers every asset in it the current user can view, not just those in its root folder.
+     */
+    #[Override]
+    public static function sourceBadgeCount(array $source, ?int $siteId): int
+    {
+        if (($source['type'] ?? null) === ElementSources::TYPE_CUSTOM) {
+            return parent::sourceBadgeCount($source, $siteId);
+        }
+
+        $volume = Volumes::getVolumeByUid(Str::after((string) $source['key'], 'volume:'));
+
+        if ($volume === null) {
+            return 0;
+        }
+
+        return parent::sourceBadgeCount(['criteria' => ['volumeId' => $volume->id, 'editable' => true]], $siteId);
+    }
+
+    #[Override]
     public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
     {
         $count = 0;
@@ -1678,7 +1714,6 @@ $('#' + $id).on('activate', () => {
     allowDegreeFractions: Craft.isImagick,
     onSave: (data) => {
       if (data.newAssetId) {
-        {$this->_replaceSlideoutAssetJs("$('#' + $id)")}
         return;
       }
 
@@ -1699,26 +1734,15 @@ JS, [
         ) {
             $items[] = ['type' => MenuItemType::HR];
 
-            // Volume settings
-            $volumeEditId = sprintf('edit-volume-%s', mt_rand());
             $items[] = [
-                'id' => $volumeEditId,
                 'icon' => 'gear',
                 'label' => t('Volume settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:open-slideout',
+                    'detail' => ['url' => Url::cpUrl("settings/assets/volumes/$this->volumeId")],
+                ],
             ];
-
-            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-(() => {
-  $('#' + $id).on('activate', function() {
-    const params = $params;
-    new Craft.CpScreenSlideout('volumes/edit-volume', {params});
-  });
-})();
-JS, [
-                InputNamespace::namespaceId($volumeEditId),
-                ['volumeId' => $this->volumeId],
-            ]);
-
         }
 
         return $items;
@@ -2905,26 +2929,6 @@ CSS,
         ];
     }
 
-    /**
-     * Returns JavaScript that will replace this asset with `data.newAssetId`, if the given element is within an
-     * Assets field’s editor slideout.
-     *
-     * @param  string  $elementJs  JavaScript expression for a jQuery object within the slideout
-     */
-    private function _replaceSlideoutAssetJs(string $elementJs): string
-    {
-        return <<<JS
-// If this is within an Assets field’s editor slideout, replace the selected asset and close the slideout,
-// since it's still editing the old asset
-const slideout = $elementJs?.closest('[data-slideout]').data('slideout');
-if (slideout && slideout.settings.elementSelectInput) {
-    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
-        .then(() => slideout.closeMeMaybe())
-        .catch(() => {});
-}
-JS;
-    }
-
     private function _updatePreviewThumbJs(): string
     {
         $thumbContainerId = InputNamespace::namespaceId('thumb-container');
@@ -3142,6 +3146,20 @@ JS;
             } elseif (isset($this->newFilename)) {
                 $this->filename = $this->newFilename;
                 $this->newFilename = null;
+            }
+        }
+
+        // A rename without an extension keeps the current one (#19950)
+        if (
+            isset($this->newFilename, $this->_filename) &&
+            $this->newFilename !== '' &&
+            ! isset($this->tempFilePath) &&
+            pathinfo($this->newFilename, PATHINFO_EXTENSION) === ''
+        ) {
+            $extension = pathinfo($this->_filename, PATHINFO_EXTENSION);
+
+            if ($extension !== '') {
+                $this->newFilename = rtrim($this->newFilename, '.').".$extension";
             }
         }
 

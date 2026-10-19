@@ -67,6 +67,19 @@ describe('craft-badge-indicator', () => {
     );
   });
 
+  /** A tally, like a source's element count, is shown in full. */
+  it('shows the whole count, formatted, when uncapped', async () => {
+    const element = await createBadgeIndicator({'badge-count': '50000'});
+    element.max = Infinity;
+    await element.updateComplete;
+
+    expect(number(element)).toBe(
+      new Intl.NumberFormat(document.documentElement.lang || undefined).format(
+        50000
+      )
+    );
+  });
+
   it('carries a modifier class for each variant', async () => {
     for (const variant of ['secondary', 'inverse']) {
       const element = await createBadgeIndicator({variant});

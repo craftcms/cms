@@ -100,7 +100,7 @@
           <craft-button type="button" icon size="small" slot="invoker">
             <craft-icon
               name="gear"
-              :label="t('Site group Actions')"
+              :label="t('Site group actions')"
             ></craft-icon>
           </craft-button>
 
@@ -176,7 +176,11 @@
                 class="p-0"
                 icon="lightbulb"
               >
-                {{ t('Type `$` to choose an environment variable.') }}
+                <span
+                  v-html="
+                    t('Type <kbd>$</kbd> to choose an environment variable.')
+                  "
+                ></span>
                 <a
                   href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
                   >{{ t('Learn more') }}</a
@@ -202,7 +206,9 @@
             class="p-0"
             icon="lightbulb"
           >
-            {{ t('Type `$` to choose an environment variable.') }}
+            <span
+              v-html="t('Type <kbd>$</kbd> to choose an environment variable.')"
+            ></span>
             <a
               href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
               >{{ t('Learn more') }}</a

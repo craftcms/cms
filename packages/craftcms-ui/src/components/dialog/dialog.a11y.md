@@ -49,6 +49,7 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 
 - [x] At a 320px viewport and at 200% zoom, the dialog fits the viewport without horizontal scrolling, and long content scrolls inside the body while the header and footer stay reachable. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). The default sizes are capped at `90vw` and `85dvh`. Verified at 320px by `fits a 320px viewport without horizontal scroll` in `dialog.browser.test.ts`. That's the CSS width of a 1280px viewport at 400% zoom, so it covers 200%.
 - [x] A `fullscreen` dialog fills the viewport in both dimensions. Verified by the `Fullscreen` story.
+- [x] A `resizable` dialog is resized by `craft-resize-grips`, whose own requirements cover the grips' keyboard and pointer behavior, and its surface takes the size they report, back to its own size on reset. No grips are offered while `fullscreen`. Per WCAG 1.4.10 (Reflow). Verified by `sizes its surface by its grips, and back to its own size on reset` and `offers no grips while fullscreen` in `dialog.test.ts`.
 
 ### Motion
 

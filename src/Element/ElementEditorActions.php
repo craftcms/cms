@@ -200,7 +200,7 @@ class ElementEditorActions
                     'draftId' => $element->draftId,
                 ],
                 'redirect' => Crypt::encrypt('{cpEditUrl}'),
-                'variant' => 'secondary',
+                'variant' => 'solid',
             ];
         }
 

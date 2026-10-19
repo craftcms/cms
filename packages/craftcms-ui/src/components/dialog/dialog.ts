@@ -1,12 +1,15 @@
 import type {PropertyValues, TemplateResult} from 'lit';
 import {html, LitElement, nothing} from 'lit';
-import {property} from 'lit/decorators.js';
+import {property, state} from 'lit/decorators.js';
+import {styleMap} from 'lit/directives/style-map.js';
 import hostStyles from '@src/styles/host.styles.js';
 import {t} from '@src/utilities/translate.js';
 import {trapFocus} from '@src/utilities/focus-trap.js';
 import {isFocusable} from '@src/utilities/focus-return.js';
 import styles from './dialog.styles.js';
 import '../icon/icon.js';
+import '../resize-grips/resize-grips.js';
+import type {ResizeGripsSize} from '../resize-grips/resize-grips.js';
 
 let nextId = 0;
 
@@ -162,6 +165,16 @@ export default class CraftDialog extends LitElement {
 
   #opener: HTMLElement | null = null;
 
+  /**
+   * Adds grips along the surface's inline-end and block-end edges, and in
+   * their corner, for resizing it. It stays centered as it's resized. Not
+   * offered while `fullscreen`.
+   */
+  @property({type: Boolean, reflect: true}) resizable = false;
+
+  /** The size the grips last reported, or `null`s for the surface's own. */
+  @state() private resizedSize: ResizeGripsSize = {width: null, height: null};
+
   protected readonly titleId = `craft-dialog-title-${++nextId}`;
 
   /**
@@ -237,13 +250,40 @@ export default class CraftDialog extends LitElement {
         @close=${this.#onNativeClose}
         @click=${this.#onDialogClick}
       >
-        <div class="surface" part="surface">
-          ${this.hasHeader ? this.renderHeader() : this.renderHiddenTitle()}
-          ${this.renderBody()} ${this.renderFooter()}
-        </div>
+        ${this.resizable && !this.fullscreen
+          ? html`<div class="frame">
+              ${this.#renderSurface()}
+              <craft-resize-grips
+                @craft-resize=${this.#onResize}
+              ></craft-resize-grips>
+            </div>`
+          : this.#renderSurface()}
       </dialog>
     `;
   }
+
+  #renderSurface(): TemplateResult {
+    const {width, height} = this.resizedSize;
+    const resizing = this.resizable && !this.fullscreen;
+
+    return html`<div
+      class="surface"
+      part="surface"
+      style=${styleMap({
+        'inline-size': resizing && width !== null ? `${width}px` : undefined,
+        'block-size': resizing && height !== null ? `${height}px` : undefined,
+      })}
+    >
+      ${this.hasHeader ? this.renderHeader() : this.renderHiddenTitle()}
+      ${this.renderBody()}
+      ${this.renderFooter()}
+    </div>`;
+  }
+
+  #onResize = (event: CustomEvent<ResizeGripsSize>): void => {
+    event.stopPropagation();
+    this.resizedSize = event.detail;
+  };
 
   /**
    * Whether to render the header at all.
@@ -307,6 +347,13 @@ export default class CraftDialog extends LitElement {
 
   protected override updated(changed: PropertyValues): void {
     super.updated(changed);
+
+    // The grips measure the surface, not the frame around it, for its max size.
+    const grips = this.shadowRoot?.querySelector('craft-resize-grips');
+    const surface = this.shadowRoot?.querySelector<HTMLElement>('.surface');
+    if (grips && surface && grips.target !== surface) {
+      grips.target = surface;
+    }
 
     if (this.opened === this.#lastOpened) {
       return;

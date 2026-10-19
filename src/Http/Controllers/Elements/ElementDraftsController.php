@@ -22,6 +22,7 @@ use CraftCms\Cms\Http\Controllers\Elements\Concerns\UpdatesFieldLayout;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\ElementResponse;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -59,6 +60,7 @@ class ElementDraftsController
         private readonly Elements $elements,
         private readonly ElementActivity $elementActivity,
         private readonly Workflows $workflows,
+        private readonly Releases $releases,
     ) {}
 
     public function store(): Response
@@ -331,6 +333,26 @@ class ElementDraftsController
             abort(400, 'No draft was identified by the request.');
         }
 
+        $release = $this->releases->releaseForDraft($element);
+        if ($release !== null) {
+            $actor = $this->request->craftUser();
+            if ($actor === null) {
+                abort(403, 'You must be signed in to publish this draft.');
+            }
+
+            return $this->releases->publishAheadOfRelease(
+                releaseId: $release->id,
+                draft: $element,
+                actor: $actor,
+                apply: fn (ElementInterface $draft): Response => $this->applyDraftRequest($draft),
+            );
+        }
+
+        return $this->applyDraftRequest($element);
+    }
+
+    private function applyDraftRequest(ElementInterface $element): Response
+    {
         $paramsApplied = false;
         if (
             $element instanceof WorkflowableInterface &&

@@ -104,9 +104,31 @@ Wrapping in `craft-field` is what supplies the label, help text, and error handl
 
 `craft-field` sets `described-by` for you, which the component applies to each input it owns.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Controls\DateTime` renders a date and time input:
+
+```php
+use CraftCms\Cms\Ui\Controls\DateTime;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Post Date', DateTime::make('postDate')
+        ->minuteIncrement(15)
+        ->showTimeZone()),
+    Field::make('Opening Day', DateTime::make('openingDay')
+        ->showTime(false)),
+]);
+```
+
+`showDate()`, `showTime()`, and `showTimeZone()` choose which parts are shown.
+`min()`, `max()`, and `minuteIncrement()` limit the values that can be chosen.
+
 ## Accessibility
 
-Each input the component owns carries its own accessible name — "Date", "Time", "Time zone" — because a wrapping `craft-field` names the pair rather than the parts.
+Each input the component owns carries its own accessible name — "Date", "Time", "Time Zone" — because a wrapping `craft-field` names the pair rather than the parts.
 Without them a screen reader reached two controls announced only as edit fields inside a labeled group, with nothing to say which half was which.
 
 The names are translated, so keep the field's own label describing what the value _is_ ("Post Date") rather than repeating what the parts are.

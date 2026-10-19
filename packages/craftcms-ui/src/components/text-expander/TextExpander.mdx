@@ -28,6 +28,35 @@ Each trigger can have its own source, so one field can reference several kinds o
 
 Suggestions can carry markup — an avatar, a status, a hint — which is what makes two similarly named entries distinguishable at a glance.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`Text` and `Textarea` controls take text expander triggers with `textExpanderTriggers()`:
+
+```php
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Title Format', Text::make('titleFormat')
+        ->textExpanderTriggers([
+            [
+                'trigger' => '{',
+                'boundary' => 'anywhere',
+                'label' => 'Variables',
+                'options' => [
+                    ['label' => 'Title', 'value' => '{title}'],
+                    ['label' => 'Post Date', 'value' => '{postDate|date}'],
+                ],
+            ],
+        ])),
+]);
+```
+
+Each trigger has the `trigger` character, its `boundary`, and either its `options` or a `source`, a controller action that suggestions are fetched from as the person types.
+For object template variables, `CraftCms\Cms\Cp\SelectOptions::getObjectTemplateTextExpanderTriggers()` builds the triggers for you.
+
 ## Accessibility
 
 This is a combobox pattern layered onto a free-text field, and the announcement is the part that carries it.

@@ -50,4 +50,40 @@ describe('Select', () => {
     expect(root.querySelector('select')?.value).toBe('sortOrder');
     expect(updates).toEqual([]);
   });
+
+  it('shows the model again when the parent declines a change', async () => {
+    const updates: string[] = [];
+    root = document.createElement('div');
+    document.body.append(root);
+    app = createApp({
+      render: () =>
+        h(Select, {
+          modelValue: 'en-US',
+          options: [
+            {label: 'English', value: 'en-US'},
+            {label: 'Dutch', value: 'nl'},
+          ],
+          'onUpdate:modelValue': (value: string | number) => {
+            updates.push(String(value));
+          },
+        }),
+    });
+    app.mount(root);
+    await nextTick();
+
+    const control = root.querySelector('craft-select') as HTMLElement & {
+      modelValue: string;
+    };
+    const native = root.querySelector('select')!;
+    native.value = 'nl';
+    control.modelValue = 'nl';
+    control.dispatchEvent(
+      new CustomEvent('model-value-changed', {bubbles: true})
+    );
+    await nextTick();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(updates).toEqual(['nl']);
+    expect(native.value).toBe('en-US');
+  });
 });

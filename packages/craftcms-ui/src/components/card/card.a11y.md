@@ -14,7 +14,8 @@
 
 ### Visual
 
-- [ ] The text in the header, body, and footer reaches 4.5:1 against its fill in the default and `active` states, in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Not yet verified.
+- [x] A checkbox in a colored card's header matches the header's other controls: unchecked, its border takes the header's text color, and checked, it's filled with that color and its mark is cut out in the header's fill, reaching 3:1 against it, whether or not the card is active. White cards keep the accent color. Per WCAG 1.4.11 (Non-text Contrast). Verified by `colors a header checkbox like the header’s other controls in the %s theme` and `keeps the accent color for a white card’s checked checkbox` in `card.browser.test.ts`.
+- [ ] The text in the header, body, and footer reaches 4.5:1 against its fill in the default and `active` states, in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Not yet verified for every color. A black card's body, whose quiet fill is dark, is covered by `keeps a black card’s body text readable on a light page, selected or not` in `card.browser.test.ts`.
 - [ ] The `active` state stays distinguishable in forced colors mode. Known gap: it's drawn with fill and border colors only, which forced colors mode replaces, so an active card looks the same as any other.
 
 ### Scrolling and reflow

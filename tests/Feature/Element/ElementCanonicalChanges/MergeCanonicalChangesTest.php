@@ -219,7 +219,7 @@ it('merges and saves localized derivatives before the requested site', function 
             return true;
         });
 
-    $service = new ElementCanonicalChanges(app(BulkOps::class), $writes, Mockery::mock(ElementDuplicates::class));
+    $service = app(ElementCanonicalChanges::class, ['bulkOps' => app(BulkOps::class), 'elementWrites' => $writes, 'elementDuplicates' => Mockery::mock(ElementDuplicates::class)]);
 
     $originalDuplicate = new Entry;
     $draft->duplicateOf = $originalDuplicate;
@@ -284,7 +284,7 @@ it('merges localized elements, sets dateLastMerged, and resets the merging flag'
         ->twice()
         ->andReturnUsing(fn () => true);
 
-    $service = new ElementCanonicalChanges(app(BulkOps::class), $writes, Mockery::mock(ElementDuplicates::class));
+    $service = app(ElementCanonicalChanges::class, ['bulkOps' => app(BulkOps::class), 'elementWrites' => $writes, 'elementDuplicates' => Mockery::mock(ElementDuplicates::class)]);
 
     $service->mergeCanonicalChanges($currentSiteElement);
 

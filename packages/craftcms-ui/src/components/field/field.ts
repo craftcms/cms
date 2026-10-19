@@ -103,10 +103,12 @@ export default class CraftField extends FormControlMixin(LitElement) {
 
   /**
    * Overrides the inferred width behavior. By default, the field spans its
-   * column, unless the slotted control declares a `maxlength` (reflected
-   * onto the host as `has-maxlength`) — which shrinks the field to the
-   * control's width. `full` spans the column despite a `maxlength`; `auto`
-   * shrinks without one.
+   * column, unless the slotted single-line control declares a `maxlength`
+   * (reflected onto the host as `has-maxlength`) — which shrinks the input
+   * to the control's width, while the heading and feedback still span the
+   * column.
+   * `full` spans the column despite a `maxlength`; `auto` shrinks without
+   * one.
    */
   @property({type: String, reflect: true}) width?: 'full' | 'auto';
 
@@ -147,14 +149,17 @@ export default class CraftField extends FormControlMixin(LitElement) {
   /**
    * Reflects whether the slotted control declares a `maxlength` onto the
    * host, where the stylesheet can react to it — a shadow stylesheet can't
-   * observe light-DOM children via `:host(:has(…))`.
+   * observe light-DOM children via `:host(:has(…))`. Multi-line controls
+   * are left out: a character limit says nothing about how wide they are.
    */
   private __syncHasMaxlength(): void {
+    const control = this.querySelector(':scope > [slot="input"]');
     this.toggleAttribute(
       'has-maxlength',
-      this.querySelector(':scope > [slot="input"]')?.hasAttribute(
-        'maxlength'
-      ) ?? false
+      Boolean(
+        control?.hasAttribute('maxlength') &&
+        !control.matches('textarea, craft-textarea')
+      )
     );
   }
 

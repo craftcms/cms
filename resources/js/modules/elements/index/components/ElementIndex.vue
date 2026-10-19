@@ -22,6 +22,7 @@
   interface ElementIndexQuickEdit {
     longPress?: boolean;
     onDblClick(event: MouseEvent): void;
+    openEditor?(url: string, opener?: HTMLElement | null): void;
     deferChipClick?(event: MouseEvent): boolean;
     onPrimaryLink?(event: MouseEvent): void;
     suppressPrimaryLinkVisit?(event: MouseEvent): void;
@@ -131,7 +132,7 @@
   const itemBehavior = computed<ElementIndexItemBehavior>(() => ({
     ...props.itemBehavior,
     ...(isInlineEditing.value
-      ? {onClick: undefined, onKeydown: undefined}
+      ? {onClick: undefined, onDblClick: undefined, onKeydown: undefined}
       : {}),
     attrs: (row) => ({
       ...props.itemBehavior?.attrs?.(row),
@@ -213,7 +214,8 @@
   }
 
   function onBodyDblClick(event: MouseEvent): void {
-    if (isInlineEditing.value) {
+    // Handled already, by an item behavior such as opening an asset folder.
+    if (isInlineEditing.value || event.defaultPrevented) {
       return;
     }
 
@@ -222,6 +224,35 @@
     } else {
       emit('dblclick', event);
     }
+  }
+
+  /**
+   * Thumbs carry none of the chip metadata quick edit reads off a row or card,
+   * so they report the double-clicked element themselves, and it's opened from
+   * the row's own edit URL.
+   */
+  function onThumbEdit(element: {id: string | number}): void {
+    if (
+      isInlineEditing.value ||
+      !props.quickEdit?.openEditor ||
+      elementIndex.trashed
+    ) {
+      return;
+    }
+
+    const row = data.value.find((candidate) => candidate.id === element.id);
+
+    if (!row?.cpEditUrl) {
+      return;
+    }
+
+    window.getSelection()?.removeAllRanges();
+    props.quickEdit.openEditor(
+      row.cpEditUrl,
+      body.value?.querySelector<HTMLElement>(
+        `[data-index-id="${CSS.escape(String(row.id))}"]`
+      ) ?? null
+    );
   }
 
   function onBodyKeydown(event: KeyboardEvent): void {
@@ -314,6 +345,7 @@
         ref="body"
         :class="{
           'element-index__grid': mode === 'cards' || mode === 'thumbs',
+          'element-index__loading': loading,
         }"
         @mousedown.capture="
           isInlineEditing
@@ -353,6 +385,7 @@
           :loading="loading"
           :item-behavior="itemBehavior"
           :interactions-disabled="processing"
+          @edit="onThumbEdit"
         />
         <ElementTable
           v-else
@@ -501,5 +534,19 @@
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
     min-height: var(--cp-footer-height);
     background-color: var(--c-surface-default);
+  }
+
+  // While loading, the view's spinner sits in the middle of the body rather
+  // than at its top: the body and the view fill its height.
+  .element-index__body[aria-busy='true'] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .element-index__loading {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    padding-block: 0;
   }
 </style>

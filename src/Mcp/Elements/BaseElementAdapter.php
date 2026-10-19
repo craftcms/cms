@@ -161,16 +161,12 @@ abstract class BaseElementAdapter implements ElementAdapter
 
     public function create(array $attributes, array $fields, CraftUser $actor): array
     {
-        if ($this->createAttributesSchema() === null) {
-            throw new ToolCallException(sprintf('Creating %s is not supported.', static::elementType()::pluralLowerDisplayName()));
-        }
+        return $this->save($this->prepareCreate($attributes, $fields, $actor), $actor);
+    }
 
-        $element = $this->newElement([], $actor);
-
-        $this->populate($element, $attributes, $fields, $actor);
-        $this->authorizeSave($actor, $element);
-
-        return $this->save($element, $actor);
+    public function createUnpublishedDraft(array $attributes, array $fields, CraftUser $actor, ?string $draftName = null, ?string $draftNotes = null): array
+    {
+        throw new ToolCallException(sprintf('Creating %s as unpublished drafts is not supported.', static::elementType()::pluralLowerDisplayName()));
     }
 
     public function update(ElementInterface $element, array $attributes, array $fields, CraftUser $actor): array
@@ -192,6 +188,26 @@ abstract class BaseElementAdapter implements ElementAdapter
     public function duplicate(ElementInterface $element, ?string $mode): ElementInterface
     {
         throw new ToolCallException(sprintf('Duplicating %s is not supported.', static::elementType()::pluralLowerDisplayName()));
+    }
+
+    /**
+     * Returns a new element populated with the given values, after authorizing the actor to save it.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $fields
+     */
+    protected function prepareCreate(array $attributes, array $fields, CraftUser $actor): ElementInterface
+    {
+        if ($this->createAttributesSchema() === null) {
+            throw new ToolCallException(sprintf('Creating %s is not supported.', static::elementType()::pluralLowerDisplayName()));
+        }
+
+        $element = $this->newElement([], $actor);
+
+        $this->populate($element, $attributes, $fields, $actor);
+        $this->authorizeSave($actor, $element);
+
+        return $element;
     }
 
     /**
@@ -262,11 +278,16 @@ abstract class BaseElementAdapter implements ElementAdapter
         }
 
         if (! $result->successful) {
-            throw new ToolCallException(
-                implode("\n", $result->element->errors()->all()) ?: sprintf('%s could not be saved.', $element::displayName()),
-            );
+            throw $this->saveFailed($result->element);
         }
 
         return $result->element;
+    }
+
+    protected function saveFailed(ElementInterface $element): ToolCallException
+    {
+        return new ToolCallException(
+            implode("\n", $element->errors()->all()) ?: sprintf('%s could not be saved.', $element::displayName()),
+        );
     }
 }

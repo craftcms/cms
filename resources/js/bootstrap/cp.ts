@@ -16,6 +16,7 @@ import {
 } from './element-details-panels.js';
 import type {ScreenPageProps} from '@/common/composables/screen';
 import {setUpInertiaMessages} from '@/modules/messages/inertia';
+import {registerSubmitShortcut} from '@/common/utils/submitShortcut';
 
 type TranslationStore = Record<string, Record<string, string>>;
 
@@ -147,6 +148,7 @@ const Cp = {
     handleNonInertiaRequests();
     handleAccessibleRouting();
     registerSlideoutGlobals();
+    registerSubmitShortcut();
 
     bootedCallbacks.forEach((callback) => callback(this));
     bootedCallbacks = [];

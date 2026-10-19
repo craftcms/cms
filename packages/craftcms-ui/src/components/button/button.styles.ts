@@ -220,10 +220,10 @@ export default css`
   :host([action-state='loading']) {
     position: relative;
 
-    .prefix,
-    .label,
-    .suffix {
-      visibility: hidden;
+    /* Hidden with opacity, not visibility, so the label stays in the button's
+       accessible name. The live region adds "Loading" to it. */
+    .button-content {
+      opacity: 0;
     }
 
     craft-spinner {
@@ -489,6 +489,15 @@ export default css`
     color: inherit;
   }
 
+  /* A selected button keeps its selected look while hovered. After the
+     variants' hover rules, which would otherwise paint over it. */
+  :host([variant][active]:not(:disabled):not(.loading):hover),
+  :host([variant].is-active:not(:disabled):not(.loading):hover) {
+    background-color: var(--c-color-fill-loud);
+    color: var(--c-color-on-loud);
+    border-color: var(--c-color-border-loud);
+  }
+
   /* After the variants, whose colors would otherwise paint over Lion's own
      disabled rule and leave a disabled button looking enabled. */
   :host([disabled]) {
@@ -596,8 +605,10 @@ export default css`
     padding-inline: var(--c-spacing-lg);
   }
 
+  /* Only an icon-only link sits flush in its square; one with a label keeps
+     its padding. */
   :host([href][size~='zero']:not([disabled])) .link,
-  :host([href][icon]:not([disabled])) .link {
+  :host([href][icon]:empty:not([disabled])) .link {
     padding-inline: 0;
   }
 

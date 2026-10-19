@@ -317,7 +317,10 @@ export const Appearances: Story = {
 
 /**
  * A chip inherits the palette of any `data-color` ancestor, so chips can be
- * tinted per row without overriding tokens.
+ * tinted per row without overriding tokens. On a colored chip, links take the
+ * chip's text color and are underlined, losing the underline on hover. Plain
+ * chips have no fill, so they keep the default link styling. Plain
+ * chips have no fill, so they keep the default link styling.
  */
 export const Colors: Story = {
   parameters: {controls: {disable: true}},
@@ -328,7 +331,7 @@ export const Colors: Story = {
       ${Object.entries(Color).map(
         ([name, value]) =>
           html`<craft-chip data-color="${value}">
-            ${name}
+            <a href="#">${name}</a>
             <craft-button size="small" slot="suffix" inherit variant="plain"
               >Button</craft-button
             >

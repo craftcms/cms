@@ -24,6 +24,7 @@ use RuntimeException;
  * @extends Collection<TKey,TElement>
  *
  * @method TElement one(callable|null $callback, mixed $default)
+ * @method HtmlString render(array<string,mixed> $variables = [])
  *
  * @since 6.0.0
  */
@@ -374,19 +375,6 @@ class ElementCollection extends Collection
         $elements = array_filter($this->items, fn (ElementInterface $element) => ! isset($keys[$element->id]));
 
         return self::make(array_values($elements));
-    }
-
-    /**
-     * Renders the elements using their partial templates.
-     *
-     * If no partial template exists for an element, its string representation will be output instead.
-     *
-     * @see ElementHelper::renderElements()
-     */
-    /** @param array<string,mixed> $variables */
-    public function render(array $variables = []): HtmlString
-    {
-        return ElementHelper::renderElements($this->items, $variables);
     }
 
     // The following methods are intercepted to always return base collections.

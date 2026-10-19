@@ -182,13 +182,15 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
       ...withDropdownConfig(),
       zIndex: popoverLayer(),
       handlesAccessibility: !this.withoutInvokerAria,
-      inheritsReferenceWidth: this.matchInvokerWidth ? 'min' : 'none',
+      inheritsReferenceWidth: this.matchInvokerWidth
+        ? ('min' as const)
+        : ('none' as const),
       popperConfig: {
         // Position relative to the viewport so the overlay escapes any
         // overflow-clipping / scrolling ancestor (e.g. a popover whose pane has
         // `overflow: auto`). Without this, a popover nested inside another
         // popover's scroll container gets clipped.
-        strategy: 'fixed',
+        strategy: 'fixed' as const,
         placement: this.placement,
         modifiers: [
           {

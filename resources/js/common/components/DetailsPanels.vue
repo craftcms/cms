@@ -11,19 +11,23 @@
    */
   import '@craftcms/ui/components/disclosure/disclosure';
   import {t} from '@craftcms/ui';
-  import {useEventListener} from '@vueuse/core';
+  import {useEventListener, useLocalStorage} from '@vueuse/core';
   import {computed, nextTick, shallowRef, watch} from 'vue';
   import type {Component} from 'vue';
   import {
+    useIsSlideout,
     useScreenDetailsOverlay,
     useScreenDetailsRail,
   } from '@/common/composables/screen';
   import DetailsPanelContent from './DetailsPanelContent.vue';
+  import {initialOf} from '@/common/utils/initialIcon';
 
   export interface DetailsPanel {
     id: string;
     label: string;
     icon: string;
+    /** Show the label's first letter instead of the icon. */
+    initialIcon?: boolean;
     order?: number;
     /** A slot to render as the panel. */
     slot?: string;
@@ -85,11 +89,36 @@
     props.syncLocationHash && window.location.hash
       ? window.location.hash.slice(1)
       : null;
-  const openPanelId = shallowRef<string | null>(
-    initialHash && isVisible(initialHash)
+  /**
+   * Slideouts don't mirror the open panel in the URL hash, so they remember
+   * the panel the person last left open, or that they folded the column,
+   * and open the next slideout the same way. A remembered panel this element
+   * doesn't have falls back to the first.
+   */
+  const isSlideout = useIsSlideout();
+  const slideoutPanelId = isSlideout
+    ? useLocalStorage<string | null>('Slideout.detailsPanel', null)
+    : null;
+
+  function initialPanelId(): string | null {
+    if (slideoutPanelId) {
+      const remembered = slideoutPanelId.value;
+
+      if (remembered === null) {
+        return null;
+      }
+
+      return isVisible(remembered)
+        ? remembered
+        : (visiblePanels.value[0]?.id ?? null);
+    }
+
+    return initialHash && isVisible(initialHash)
       ? initialHash
-      : (visiblePanels.value[0]?.id ?? null)
-  );
+      : (visiblePanels.value[0]?.id ?? null);
+  }
+
+  const openPanelId = shallowRef<string | null>(initialPanelId());
 
   // An open panel that goes away falls back to the first.
   watch(visiblePanels, (panels) => {
@@ -104,28 +133,35 @@
   /**
    * The column folds to its rail once the shell overlays it. The width that
    * happens at is the shell's call, so this follows the flag rather than
-   * measuring, and only reopens a panel the shell closed itself.
+   * measuring.
+   *
+   * A panel the shell closed for lack of room comes back once there's room
+   * again; one the person closed stays closed. So this remembers which panel
+   * the shell closed, and forgets it as soon as the person opens or closes a
+   * panel themselves.
    */
   const overlaid = useScreenDetailsOverlay();
-  let closedByShell = false;
+  let panelClosedByShell: string | null = null;
 
   watch(
     () => overlaid?.value ?? false,
     (isOverlaid) => {
       if (isOverlaid) {
         if (openPanelId.value !== null) {
+          panelClosedByShell = openPanelId.value;
           openPanelId.value = null;
-          closedByShell = true;
         }
 
         return;
       }
 
-      if (closedByShell && openPanelId.value === null) {
-        openPanelId.value = visiblePanels.value[0]?.id ?? null;
+      if (panelClosedByShell !== null && openPanelId.value === null) {
+        openPanelId.value = isVisible(panelClosedByShell)
+          ? panelClosedByShell
+          : (visiblePanels.value[0]?.id ?? null);
       }
 
-      closedByShell = false;
+      panelClosedByShell = null;
     },
     {immediate: true}
   );
@@ -137,8 +173,12 @@
 
   function open(panelId: string, withFocus: boolean): void {
     openPanelId.value = panelId;
-    closedByShell = false;
+    panelClosedByShell = null;
     updateLocationHash();
+
+    if (slideoutPanelId) {
+      slideoutPanelId.value = panelId;
+    }
 
     if (withFocus) {
       focusAfterRender(headingId(panelId));
@@ -151,6 +191,11 @@
     }
 
     openPanelId.value = null;
+    panelClosedByShell = null;
+
+    if (slideoutPanelId) {
+      slideoutPanelId.value = null;
+    }
 
     if (returnFocus) {
       focusAfterRender(triggerId(panelId));
@@ -260,7 +305,13 @@
             class="details-panels__trigger"
             :aria-controls="panelElementId(panel.id)"
           >
-            <craft-icon :name="panel.icon" :label="panel.label" />
+            <template v-if="panel.initialIcon">
+              <span class="initial-icon" aria-hidden="true">{{
+                initialOf(panel.label)
+              }}</span>
+              <span class="sr-only">{{ panel.label }}</span>
+            </template>
+            <craft-icon v-else :name="panel.icon" :label="panel.label" />
           </button>
         </craft-disclosure>
       </div>
@@ -286,8 +337,6 @@
   .details-panels__content {
     flex: 1;
     min-inline-size: 0;
-    block-size: 100%;
-    overflow-y: auto;
 
     > section {
       display: flex;

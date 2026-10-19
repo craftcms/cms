@@ -103,7 +103,7 @@ class SectionEditViewModel extends ViewModel
                     ->allowOverrides()
                     ->create(! $this->readOnly)),
             Separator::make('site-settings-separator'),
-            Field::make(t('Site settings'))
+            Field::make(t('Site Settings'))
                 ->instructions(t('Choose which sites this section should be available in, and configure the site-specific settings.'))
                 ->control($this->siteSettingsControl($type)),
         ]);
@@ -148,7 +148,7 @@ class SectionEditViewModel extends ViewModel
                         'urlFormat' => [
                             'heading' => t('URL Format'),
                             'type' => 'singleline',
-                            'info' => t('Type `$` for an environment variable, `@` for an alias, or `{` for an object template variable.'),
+                            'info' => t('Type <kbd>$</kbd> for an environment variable, <kbd>@</kbd> for an alias, or <kbd>{</kbd> for an object template variable.'),
                             'textExpanderTriggers' => [
                                 ...SelectOptions::getEnvTextExpanderTriggers(true),
                                 ...$objectTemplateTriggers,

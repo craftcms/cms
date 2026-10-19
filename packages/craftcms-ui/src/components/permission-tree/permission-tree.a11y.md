@@ -26,6 +26,7 @@ No documented pattern fits. It's nested lists of `craft-checkbox` controls, grou
 
 ### Visual
 
+- [x] Its checkboxes are drawn like every other `craft-checkbox`, with the same size, border and checked fill, rather than as native checkboxes, so they share the checkbox's contrast and focus treatment. Per WCAG 1.4.11 (Non-text Contrast). Verified by `draws its checkboxes like other checkboxes` in `permission-tree.browser.test.ts`.
 - [ ] Disabled permissions are distinguishable from enabled ones by more than color. Per WCAG 1.4.1 (Use of Color). Not yet verified.
 
 ### Reflow and zoom

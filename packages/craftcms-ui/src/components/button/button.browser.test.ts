@@ -1,6 +1,19 @@
+/// <reference types="vite-plus/test/browser/providers/playwright" />
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {cdp} from 'vite-plus/test/browser';
 import type CraftButton from './button.js';
 import './button.js';
+
+interface FrameTree {
+  frame: {id: string};
+  childFrames?: FrameTree[];
+}
+
+interface AXNode {
+  ignored: boolean;
+  role?: {value: string};
+  name?: {value: unknown};
+}
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -450,6 +463,59 @@ describe('[disabled]', () => {
   });
 });
 
+describe('[loading]', () => {
+  /**
+   * The text Chromium exposes in the accessibility tree, across every frame.
+   * Screen readers such as JAWS read a button's content from here, so text
+   * that's missing from it is unreadable even if the button keeps its name.
+   */
+  async function accessibleTexts(): Promise<string[]> {
+    const session = cdp();
+    const {frameTree} = (await session.send('Page.getFrameTree')) as {
+      frameTree: FrameTree;
+    };
+    const frameIds: string[] = [];
+    const collect = (tree: FrameTree) => {
+      frameIds.push(tree.frame.id);
+      tree.childFrames?.forEach(collect);
+    };
+    collect(frameTree);
+
+    const texts: string[] = [];
+    for (const frameId of frameIds) {
+      const {nodes} = (await session.send('Accessibility.getFullAXTree', {
+        frameId,
+      })) as {nodes: AXNode[]};
+      for (const node of nodes) {
+        if (!node.ignored && node.role?.value === 'StaticText') {
+          texts.push(String(node.name?.value ?? ''));
+        }
+      }
+    }
+
+    return texts;
+  }
+
+  it('keeps the label in the accessibility tree while loading', async () => {
+    const button = document.createElement('craft-button') as CraftButton;
+    button.textContent = 'Reset password';
+    document.body.append(button);
+    await button.updateComplete;
+
+    button.loading = true;
+    await button.updateComplete;
+
+    // Reading the whole tree is slow when the suite runs in parallel.
+    await vi.waitFor(
+      async () =>
+        expect(await accessibleTexts()).toEqual(
+          expect.arrayContaining(['Reset password', 'Loading'])
+        ),
+      {timeout: 5000}
+    );
+  });
+});
+
 describe('craft-button link click area', () => {
   async function linkArea(markup: string): Promise<string> {
     document.body.innerHTML = markup;
@@ -485,9 +551,39 @@ describe('craft-button link click area', () => {
   });
 });
 
+describe('craft-button link padding', () => {
+  async function linkPadding(markup: string): Promise<string> {
+    document.body.innerHTML = `<div style="--c-button-spacing-inline: 12px">${markup}</div>`;
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+
+    return getComputedStyle(button.shadowRoot!.querySelector('.link')!)
+      .paddingInlineStart;
+  }
+
+  it('pads a link with an icon and a label like one without an icon', async () => {
+    const plain = await linkPadding('<craft-button href="/">Go</craft-button>');
+
+    expect(plain).toBe('12px');
+    expect(
+      await linkPadding(
+        '<craft-button href="/" icon="arrow-right" icon-position="suffix">Go</craft-button>'
+      )
+    ).toBe(plain);
+  });
+
+  it('leaves an icon-only link unpadded', async () => {
+    expect(
+      await linkPadding(
+        '<craft-button href="/" icon="arrow-right" aria-label="Go"></craft-button>'
+      )
+    ).toBe('0px');
+  });
+});
+
 describe('craft-button link keyboard focus', () => {
   it('is a single tab stop on its anchor', async () => {
-    const {userEvent} = await import('@vitest/browser/context');
+    const {userEvent} = await import('vite-plus/test/browser');
     document.body.innerHTML =
       '<button>Before</button><craft-button href="/">Go</craft-button><button>After</button>';
     const [before, after] = document.querySelectorAll('button');
@@ -576,4 +672,23 @@ describe('small icon buttons', () => {
       getComputedStyle(labeled!).fontSize
     );
   });
+});
+
+describe('craft-button selected state', () => {
+  it.each(['outline', 'fill', 'plain'])(
+    'keeps a selected %s button’s look while hovered',
+    async (variant) => {
+      const {userEvent} = await import('vite-plus/test/browser');
+      await import('../../styles/cp.css');
+      document.body.innerHTML = `<craft-button variant="${variant}" active>Selected</craft-button>`;
+      const button = document.querySelector('craft-button')!;
+      await button.updateComplete;
+      const before = getComputedStyle(button).backgroundColor;
+
+      await userEvent.hover(button);
+
+      expect(button.matches(':hover')).toBe(true);
+      expect(getComputedStyle(button).backgroundColor).toBe(before);
+    }
+  );
 });

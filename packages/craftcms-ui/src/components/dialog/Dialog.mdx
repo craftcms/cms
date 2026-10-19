@@ -30,6 +30,10 @@ Any descendant carrying `data-dialog="close"` closes the dialog when clicked, so
 
 Default-slot children are the body; `slot="footer"` children are right-aligned below it, which is where actions go.
 
+## Resizing
+
+Set `resizable` to let people resize the dialog from its right and bottom edges, or both at once from their corner, which also takes the keyboard. The dialog stays centered as it's resized, within its maximum size. See [Resize Grips](?path=/docs/components-resize-grips--docs).
+
 ## Accessibility
 
 The dialog renders inside a native `<dialog>`, so the browser supplies the modal behavior — the focus trap, the inert background, Escape to dismiss, and returning focus to whatever opened the dialog when it closes.

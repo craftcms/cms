@@ -25,11 +25,15 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+
+use function CraftCms\Cms\t;
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->entryTypes = app(EntryTypes::class);
@@ -46,6 +50,21 @@ it('can get entry types by section id', function () {
 
     expect($this->entryTypes->getEntryTypesBySectionId($section->id))->toHaveCount(1);
     expect($this->entryTypes->getEntryTypesBySectionId($section->id)->first()->id)->toBe($entryType->id);
+});
+
+it('lists its usages as plain, hyperlinked chips', function () {
+    actingAs(User::factory()->admin()->create());
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    Sections::refreshSections();
+    $this->entryTypes->refreshEntryTypes();
+
+    $html = (string) $this->entryTypes->getEntryTypeById($entryType->id)->getMetadata()[t('Used by')]();
+
+    expect($html)
+        ->toContain('<craft-chip')
+        ->toContain('appearance="plain"')
+        ->toContain(sprintf('href="%s"', Sections::getSectionById($section->id)->getCpEditUrl()));
 });
 
 it('can get all entry types', function () {

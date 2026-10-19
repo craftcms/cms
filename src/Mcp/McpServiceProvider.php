@@ -13,6 +13,7 @@ use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Mcp\Commands\ServeCommand;
+use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
 use CraftCms\Cms\Mcp\Http\Controllers\OAuthAuthorizationController;
 use CraftCms\Cms\Mcp\Http\Controllers\OAuthMetadataController;
@@ -101,8 +102,8 @@ class McpServiceProvider extends ServiceProvider
             'url' => route('craft.cp.settings.mcp.index'),
             'iconName' => 'light/robot',
         ];
-        $cpSettings->registerSetting('System', 'mcp', $settings);
-        $cpSettings->registerReadOnlySetting('System', 'mcp', $settings);
+        $cpSettings->registerSetting('Extend', 'mcp', $settings);
+        $cpSettings->registerReadOnlySetting('Extend', 'mcp', $settings);
 
         if (! $this->app->routesAreCached()) {
             $this->registerRoutes($router, $routes, $metadata);
@@ -162,6 +163,10 @@ class McpServiceProvider extends ServiceProvider
                         });
                     });
                 });
+
+                $router->get($config->endpoint, [EndpointPageController::class, 'admin'])
+                    ->middleware(['web', 'craft', HandleInertiaRequests::class])
+                    ->name('mcp.page');
 
                 $router->options($config->endpoint, [McpController::class, 'preflight'])
                     ->middleware($middleware);

@@ -103,6 +103,12 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     /** @var string|null The field’s instructions */
     public ?string $instructions = null;
 
+    /** @var string|null The field’s default tip text */
+    public ?string $tip = null;
+
+    /** @var string|null The field’s default warning text */
+    public ?string $warning = null;
+
     /** @var bool Whether the field's values should be registered as search keywords on the elements. */
     public bool $searchable = false;
 
@@ -566,6 +572,37 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     public function getTranslationKey(ElementInterface $element): string
     {
         return $this->_translationMethod->elementKey($element, $this->translationKeyFormat);
+    }
+
+    /**
+     * Returns whether the element’s value is being copied from another site that the field translates separately,
+     * so site-specific references in the value should be pointed at the element’s site.
+     */
+    protected function isPropagatingAcrossTranslations(?ElementInterface $element): bool
+    {
+        if (! $element) {
+            return false;
+        }
+
+        // if this was set due to propagateAll for a fresh element (as opposed to the translation method)
+        if (
+            $element->propagating &&
+            ($element->propagateAll || ($element->isNewForSite && ! isset($element->duplicateOf))) &&
+            isset($element->propagatingFrom)
+        ) {
+            return $this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom);
+        }
+
+        // as above but specifically for nested entries when the field uses the "none" propagation method
+        if (
+            ! $element->propagating &&
+            isset($element->duplicateOf) &&
+            ($element->propagateAll || $element->isNewForSite)
+        ) {
+            return $this->getTranslationKey($element) !== $this->getTranslationKey($element->duplicateOf);
+        }
+
+        return false;
     }
 
     public function showStatus(): bool

@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Field\Icon;
+use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
@@ -23,8 +24,8 @@ use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Checkbox;
 use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Markdown as MarkdownControl;
 use CraftCms\Cms\Ui\Controls\Text;
-use CraftCms\Cms\Ui\Controls\Textarea;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Action;
 use CraftCms\Cms\Ui\Nodes\ActionMenu;
@@ -392,10 +393,12 @@ abstract class BaseField extends FieldLayoutElement
     protected function instructionsSettingsNodes(UiContext $context): array
     {
         return [
-            Field::make(t('Instructions'), Textarea::make('instructions')
+            Field::make(t('Instructions'), MarkdownControl::make('instructions')
+                ->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)
+                ->rows(1)
                 ->value($this->instructions)
                 ->placeholder($this->defaultInstructions())),
-            Field::make(t('Instructions position'), Choice::make('instructionsPosition')
+            Field::make(t('Instructions Position'), Choice::make('instructionsPosition')
                 ->options([
                     ['label' => t('Before the input'), 'value' => 'before'],
                     ['label' => t('After the input'), 'value' => 'after'],
@@ -408,8 +411,16 @@ abstract class BaseField extends FieldLayoutElement
     protected function noticeSettingsNodes(UiContext $context): array
     {
         return [
-            Field::make(t('Tip'), Textarea::make('tip')->rows(1)->value($this->tip)),
-            Field::make(t('Warning'), Textarea::make('warning')->rows(1)->value($this->warning)),
+            Field::make(t('Tip'), MarkdownControl::make('tip')
+                ->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)
+                ->rows(1)
+                ->value($this->tip)
+                ->placeholder($this->defaultTip())),
+            Field::make(t('Warning'), MarkdownControl::make('warning')
+                ->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)
+                ->rows(1)
+                ->value($this->warning)
+                ->placeholder($this->defaultWarning())),
         ];
     }
 
@@ -955,7 +966,18 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function tipText(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->tip ? t($this->tip, category: 'site') : null;
+        return $this->tip ? t($this->tip, category: 'site') : $this->defaultTip($element, $static);
+    }
+
+    /**
+     * Returns the field’s default tip text, which will be used if [[tip]] is null.
+     *
+     * @param  ElementInterface|null  $element  The element the form is being rendered for
+     * @param  bool  $static  Whether the form should be static (non-interactive)
+     */
+    protected function defaultTip(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return null;
     }
 
     /**
@@ -966,7 +988,18 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function warningText(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->warning ? t($this->warning, category: 'site') : null;
+        return $this->warning ? t($this->warning, category: 'site') : $this->defaultWarning($element, $static);
+    }
+
+    /**
+     * Returns the field’s default warning text, which will be used if [[warning]] is null.
+     *
+     * @param  ElementInterface|null  $element  The element the form is being rendered for
+     * @param  bool  $static  Whether the form should be static (non-interactive)
+     */
+    protected function defaultWarning(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return null;
     }
 
     /**

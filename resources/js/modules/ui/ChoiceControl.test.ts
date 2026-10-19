@@ -73,19 +73,6 @@ describe('ChoiceControl', () => {
     await nextTick();
   }
 
-  // `handleValueChange` reads the group's `modelValue`; happy-dom won't
-  // register Lion's children far enough to compute it, so state it directly.
-  function reportChecked(values: string[]): void {
-    const group = container!.querySelector('craft-checkbox-group')!;
-    Object.defineProperty(group, 'modelValue', {
-      value: values,
-      configurable: true,
-    });
-    group.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
-  }
-
   function checkboxes(): HTMLElement[] {
     return [...container!.querySelectorAll<HTMLElement>('craft-checkbox')];
   }
@@ -252,12 +239,55 @@ describe('ChoiceControl', () => {
     expect(emitted).toEqual([[]]);
   });
 
-  it('emits the selection in display order', async () => {
-    await mount({sortable: true}, []);
+  it('lists only the selected options, offering the rest to add', async () => {
+    await mount({sortable: true}, ['two']);
 
-    reportChecked(['three', 'one']);
+    const labels = [
+      ...container!.querySelectorAll('.selected-option-list__label'),
+    ].map((label) => label.textContent?.trim());
+    const addable = [
+      ...container!.querySelectorAll('craft-action-menu craft-action-item'),
+    ].map((item) => item.textContent?.trim());
 
-    expect(emitted).toEqual([['one', 'three']]);
+    expect(labels).toEqual(['Two']);
+    expect(addable).toEqual(['One', 'Three']);
+    expect(
+      [
+        ...container!.querySelectorAll<HTMLInputElement>('input[type=hidden]'),
+      ].map((input) => [input.name, input.value])
+    ).toEqual([['settings[sites][]', 'two']]);
+  });
+
+  it('appends an added option to the end of the selection', async () => {
+    await mount({sortable: true}, ['two']);
+
+    const one = [
+      ...container!.querySelectorAll<HTMLElement>(
+        'craft-action-menu craft-action-item'
+      ),
+    ].find((item) => item.textContent?.trim() === 'One')!;
+    one.click();
+
+    expect(emitted.at(-1)).toEqual(['two', 'one']);
+  });
+
+  it('removes an option from the selection', async () => {
+    await mount({sortable: true}, ['one', 'two']);
+
+    container!
+      .querySelector<HTMLElement>('[data-remove-option="one"]')!
+      .click();
+
+    expect(emitted.at(-1)).toEqual(['two']);
+  });
+
+  it('hides the add menu once everything is selected', async () => {
+    await mount({sortable: true}, ['one', 'two', 'three']);
+
+    expect(
+      container!.querySelectorAll('.selected-option-list__label')
+    ).toHaveLength(3);
+    expect(container!.querySelector('craft-action-menu')).toBeNull();
   });
 
   it('re-emits the value in the new order after a reorder', async () => {

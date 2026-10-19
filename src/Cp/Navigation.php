@@ -35,6 +35,13 @@ use function CraftCms\Cms\t;
  */
 readonly class Navigation
 {
+    /**
+     * The element types whose sources the nav lists, and counts.
+     *
+     * @var list<class-string<ElementInterface>>
+     */
+    private const array SOURCE_ELEMENT_TYPES = [Entry::class, Asset::class, User::class];
+
     public function __construct(
         private Request $request,
         private Plugins $plugins,
@@ -111,18 +118,125 @@ readonly class Navigation
     }
 
     /**
+     * Each utility with a badge count gets its own, so it's clear which ones
+     * the Utilities item's total comes from.
+     *
      * @return array<string, int>
      */
     public function getBadgeCounts(): array
     {
         $counts = [];
-        $utilities = $this->utilities->getUtilitiesBadgeCount();
+        $total = 0;
 
-        if ($utilities > 0) {
-            $counts[$this->itemId('utilities')] = $utilities;
+        /** @var class-string<Utility> $class */
+        foreach ($this->utilities->getAuthorizedUtilityTypes() as $class) {
+            $count = $class::badgeCount();
+
+            if ($count > 0) {
+                $counts[$this->itemId('utilities/'.$class::id())] = $count;
+                $total += $count;
+            }
+        }
+
+        if ($total > 0) {
+            $counts[$this->itemId('utilities')] = $total;
         }
 
         return $counts;
+    }
+
+    /**
+     * Counts for the element index sources that show one, keyed by nav item id.
+     *
+     * Kept apart from {@see getBadgeCounts()} so the control panel can load
+     * them after the page, rather than holding every response up on a count
+     * query per source.
+     *
+     * @return array<string, int>
+     */
+    public function getSourceBadgeCounts(): array
+    {
+        $siteId = $this->navSiteId();
+
+        return array_map(
+            fn (array $badge): int => $badge['elementType']::sourceBadgeCount($badge['source'], $siteId),
+            $this->sourceBadges(),
+        );
+    }
+
+    /**
+     * Whether an admin has turned on a count for any source the nav lists.
+     */
+    public function hasSourceBadges(): bool
+    {
+        return $this->elementSources->hasBadgeCountsEnabled(self::SOURCE_ELEMENT_TYPES);
+    }
+
+    /**
+     * Whether the nav counts an element type's sources itself, leaving its
+     * index page's secondary nav to show those counts without working them out.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     *
+     * @internal
+     */
+    public static function countsSources(string $elementType): bool
+    {
+        return in_array($elementType, self::SOURCE_ELEMENT_TYPES, true);
+    }
+
+    /**
+     * The sources in the nav that show a count, keyed by nav item id.
+     *
+     * A source that sets its own `badgeCount` keeps it, along with its
+     * `badgeLabel`, so it's left out rather than counted again.
+     *
+     * @return array<string, array{elementType: class-string<ElementInterface>, source: array<string, mixed>}>
+     */
+    private function sourceBadges(): array
+    {
+        $badges = [];
+
+        foreach (self::SOURCE_ELEMENT_TYPES as $elementType) {
+            if (! $this->listsSources($elementType)) {
+                continue;
+            }
+
+            foreach ($this->sourceIndexes($elementType) as [$indexUri, $page]) {
+                $sources = $this->elementSources->getSources(
+                    $elementType,
+                    context: ElementSources::CONTEXT_NAVIGATION,
+                    page: $page,
+                    siteId: $this->navSiteId(),
+                );
+
+                foreach ($sources as $source) {
+                    if (! isset($source['badgeCount']) && $this->elementSources->showsBadgeCount($elementType, $source)) {
+                        $badges[$this->sourceItemId($indexUri, (string) $source['key'])] = [
+                            'elementType' => $elementType,
+                            'source' => $source,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $badges;
+    }
+
+    /**
+     * Whether the nav lists an element type's sources for the current user.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    private function listsSources(string $elementType): bool
+    {
+        return match ($elementType) {
+            Entry::class => Sections::getTotalEditableSections() > 0,
+            Asset::class => Volumes::getTotalViewableVolumes() > 0,
+            User::class => Edition::get() !== Edition::Solo && Gate::check('viewUsers'),
+            default => false,
+        };
     }
 
     /** @return NavItem[] */
@@ -141,7 +255,7 @@ readonly class Navigation
         $contentGroup = new NavItem()->label(t('Content'))->group(true);
         $contentItems = collect();
 
-        if (Sections::getTotalEditableSections()) {
+        if ($this->listsSources(Entry::class)) {
             $entryPages = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION);
 
             if ($entryPages->isNotEmpty()) {
@@ -172,12 +286,19 @@ readonly class Navigation
             }
         }
 
-        if (Volumes::getTotalViewableVolumes()) {
+        if ($this->listsSources(Asset::class)) {
             $contentItems->add(new NavItem()
                 ->label(t('Assets'))
                 ->href('assets')
                 ->icon('image')
                 ->subnav($this->sourceSubnav(Asset::class, 'assets')));
+        }
+
+        if (Edition::get()->supportsReleases() && (Sections::getTotalEditableSections() || Gate::check('manageReleases'))) {
+            $contentItems->add(new NavItem()
+                ->label(t('Releases'))
+                ->href(route('craft.cp.releases.index'))
+                ->icon('calendar'));
         }
 
         // Add any Plugin nav items
@@ -223,7 +344,7 @@ readonly class Navigation
         $administrationGroup = new NavItem()->label(t('Administration'))->group(true);
         $administrationItems = [];
 
-        if (Edition::get() !== Edition::Solo && Gate::check('viewUsers')) {
+        if ($this->listsSources(User::class)) {
             $administrationItems[] =
                 new NavItem()
                     ->label(t('Users'))
@@ -362,10 +483,19 @@ readonly class Navigation
             }
 
             $item = new NavItem()
+                ->id($this->sourceItemId($indexUri, $key))
                 ->label((string) ($source['label'] ?? ''))
                 ->href(
                     $this->sourceUri($elementType, $indexUri, $source, $page),
                 );
+
+            if (isset($source['badgeCount'])) {
+                $item->badgeCount((int) $source['badgeCount']);
+            }
+
+            if (isset($source['badgeLabel'])) {
+                $item->badgeLabel((string) $source['badgeLabel']);
+            }
 
             if ($group !== null) {
                 $group->subnav = [...$group->subnav, $item];
@@ -472,6 +602,24 @@ readonly class Navigation
     }
 
     /**
+     * A source's nav item id. Not derived from its URL like other items, since
+     * the “all elements” source shares its URL with the index it hangs off.
+     *
+     * The key is escaped rather than stripped, so `foo:bar` and `foobar` keep
+     * apart: `_` and anything else an id can't hold become `_` and its hex.
+     */
+    private function sourceItemId(string $indexUri, string $key): string
+    {
+        $escapedKey = preg_replace_callback(
+            '/[^A-Za-z0-9\-]/',
+            fn (array $match): string => '_'.bin2hex($match[0]),
+            $key,
+        );
+
+        return $this->itemId(sprintf('%s/source-%s', $indexUri, $escapedKey));
+    }
+
+    /**
      * The index URL with the source named in the query.
      *
      * The “all elements” source is what the bare index already shows, so it's
@@ -488,7 +636,7 @@ readonly class Navigation
      * The utilities, as children of the Utilities item.
      *
      * Badge counts are left off — they're request-scoped, and `getBadgeCounts()`
-     * fills them in.
+     * fills them in, for each utility as well as the Utilities item.
      *
      * @param  Collection<int, class-string<Utility>>  $utilities
      * @return NavItem[]

@@ -101,19 +101,12 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
     public const array DEFAULT_TOOLBAR_BUTTONS = [
         self::TOOLBAR_BOLD,
         self::TOOLBAR_ITALIC,
-        self::TOOLBAR_STRIKETHROUGH,
         self::TOOLBAR_CODE,
-        self::TOOLBAR_HEADING_1,
-        self::TOOLBAR_HEADING_2,
-        self::TOOLBAR_HEADING_3,
-        self::TOOLBAR_QUOTE,
         self::TOOLBAR_UNORDERED_LIST,
         self::TOOLBAR_ORDERED_LIST,
-        self::TOOLBAR_CHECK_LIST,
         self::TOOLBAR_LINK,
         self::TOOLBAR_ASSET,
         self::TOOLBAR_PREVIEW,
-        self::TOOLBAR_GUIDE,
     ];
 
     public const array DEFAULT_LINK_TYPES = [
@@ -546,6 +539,15 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
             ],
             'showUnpermittedVolumes' => ['boolean'],
         ], $this->linkSettingsRules());
+    }
+
+    #[Override]
+    public function attributeLabels(): array
+    {
+        return [
+            ...parent::attributeLabels(),
+            ...$this->linkSettingsAttributeLabels(),
+        ];
     }
 
     protected function linkSettingsNamespace(): ?string

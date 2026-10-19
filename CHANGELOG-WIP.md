@@ -1,10 +1,17 @@
 # Release Notes for Craft CMS 6.0 (WIP)
 
 ### Control Panel
-- Added a “Theme” user preference, with “Light”, “Dark”, and “System” options. “System” is the default. Pages shown to logged-out users, such as the login page, use the theme of whoever last used the control panel in the same browser, or “System”. ([#19966](https://github.com/craftcms/cms/pull/19966))
+- Added a “Theme” user preference, with “Light”, “Dark”, and “System” options. “System” is the default. Pages shown to logged-out users, such as the login page, always follow the system’s light or dark setting. ([#19966](https://github.com/craftcms/cms/pull/19966))
 - Added a control panel notification center.
 - Added flyout menus to the global control panel nav, for accessing sub-pages of non-selected sections. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Control panel success, notice, and error messages now stack, newest first, and can be swiped away. Errors and messages with actions stay until dismissed.
+- Admin table links and create actions can now open in a slideout with a custom width, via the `slideoutWidth` link option and new `slideout` and `slideoutWidth` arguments on `CraftCms\Cms\Ui\Nodes\Table::createAction()`.
+- Double-clicking an admin table row now opens its link's slideout, if it has one.
+- Sortable checkbox selects, such as “Card Attributes”, “Table Columns”, and “Default Table Columns”, now list only the selected options, with an “Add item” menu for the rest. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Slideouts can now be resized horizontally, and remember their width. ([#19978](https://github.com/craftcms/cms/pull/19978))
+- Slideouts’ details panes that were folded away for lack of room now reopen once the slideout is wide enough again. ([#19978](https://github.com/craftcms/cms/pull/19978))
+- Content within black cards, chips, and badges, such as buttons, badges, and links, is now styled as in the dark theme.
+- Card view designers now preview users with a sample user’s name, default avatar, and active status.
 
 ### Workflows
 - Added publishing workflows, which control when drafts may be applied to entries. Workflows are configured from Settings → Workflows and assigned to sections. (Craft Pro and Enterprise only.) ([#19667](https://github.com/craftcms/cms/pull/19667))
@@ -16,6 +23,7 @@
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
 - Element index searches now update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Clicking anywhere on an element index table row or card (other than an interactive control) now selects it. ([#19351](https://github.com/craftcms/cms/pull/19351))
+- Element index sources can now show a count of their elements in the control panel nav, via a new “Show count” setting in the “Customize sources” modal. Entries, assets, and users support it.
 
 #### Entries
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
@@ -47,11 +55,21 @@
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
 
 ### Fields & Field Layouts
+- Added sidebar field layout tabs, whose fields are shown in element edit forms’ details sidebar. ([#20005](https://github.com/craftcms/cms/pull/20005))
+- Field layout tabs can now have icons. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Added a new core Markdown field type. ([#18960](https://github.com/craftcms/cms/pull/18960))
 - Added a “Selectable {Type} Condition” setting to Link and Markdown fields’ Entry and Asset link types. ([#19622](https://github.com/craftcms/cms/pull/19622))
 - Added a “Default Row Values” setting to Table fields. ([#3621](https://github.com/craftcms/cms/issues/3621))
 - Table field columns are now configured with cell settings forms rather than JSON option inputs.
+- Table fields now have a “Link” column type, with the same settings as Link fields. Link cells return `CraftCms\Cms\Field\Data\LinkData` objects, and Table fields now track the elements they link to. ([#16009](https://github.com/craftcms/cms/discussions/16009), [#19998](https://github.com/craftcms/cms/pull/19998))
+- Table field column settings now open in a slideout. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Table cell validation errors now name the column. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Table columns with invalid settings are now flagged in the Table field’s settings, and link setting validation errors in Link, Markdown, and Table fields now name the setting. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Added support for configuring field layout field instruction positions.
+- Field layouts with a card view designer now show it and the content tab designer in “Content” and “Appearance” tabs, with Generated Fields in the Content tab. ([#20001](https://github.com/craftcms/cms/pull/20001)), ([#20003](https://github.com/craftcms/cms/pull/20003))
+- Entry types’ Icon and Color settings are now in their field layout designer’s Appearance tab, above Card Attributes. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Card view designers’ previews now reflect the owner’s color, icon, and name, such as an entry type’s, as they’re edited. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Entry type and user group descriptions, fields’ default instructions, tips, and warnings, and field layout elements’ instructions, tips, and warnings now have Markdown inputs. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Removed the “Show unpermitted entries” setting from Entries, Link, and Markdown fields, in favor of the “Viewable” condition rule in the “Selectable Entries Condition” setting. ([#19611](https://github.com/craftcms/cms/pull/19611), [#19622](https://github.com/craftcms/cms/pull/19622))
 - Removed the “Show unpermitted files” and “Allowed File Types” settings from Assets, Link, and Markdown fields, in favor of “Viewable” and “File Type” condition rules in the “Selectable Assets Condition” setting. ([#19611](https://github.com/craftcms/cms/pull/19611), [#19622](https://github.com/craftcms/cms/pull/19622))
 
@@ -63,6 +81,9 @@
 - Added a “Skip to messages” link, and errors are now announced to screen readers immediately.
 
 ### Administration
+
+#### AI
+- Added Settings → Extend → Connections, where administrators choose the providers and models that plugins’ AI features use. Providers come from the `ai.providers` config, with keys set through environment variables. AI features stay off until a provider is chosen. ([#20006](https://github.com/craftcms/cms/pull/20006))
 
 #### MCP
 - Added authenticated and configurable public Model Context Protocol (MCP) servers for inspecting and managing Craft sites, content, assets, users, plugins, and project config. ([#19846](https://github.com/craftcms/cms/pull/19846))
@@ -77,6 +98,7 @@
 - Added the `compiledTemplatesPath` config setting. ([#18861](https://github.com/craftcms/cms/pull/18861))
 - Environment variable and alias settings fields now show suggestions after typing `$` or `@`.
 - The “Assets” settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
+- The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Removed the `isSystemLive` config setting and the `craft:on` and `craft:off` commands. Laravel maintenance mode should be used instead.
 
 ### Development
@@ -131,6 +153,9 @@
 - Added support for defining standard plugin settings pages with the control panel UI system, via `CraftCms\Cms\Plugin\Plugin::settingsUi()`. ([#19439](https://github.com/craftcms/cms/pull/19439))
 - Added support for plugins to register Laravel scheduled tasks that run via `php artisan schedule:run`.
 - Added support for custom publishing workflow stage types. ([#19667](https://github.com/craftcms/cms/pull/19667))
+- Added `CraftCms\Cms\Element\Contracts\ElementInterface::supportsSourceBadgeCounts()`, `sourceSupportsBadgeCount()`, and `sourceBadgeCount()`, and the `defaultBadgeCount` source key, for element types whose sources can show a count of their elements.
+- Added `CraftCms\Cms\Cp\Data\ActionItem::$badgeLabel`. Element sources’ `badgeLabel` keys are now passed to screen readers in the control panel nav.
+- `<craft-badge-indicator>` now has a `max` property, which sets the largest count shown before it’s shortened to “99+”. Set it to `Infinity` to show the whole count. Counts are now formatted for the page’s language.
 - Plugins can now make their element types available through the `elements.*` MCP tools.
 - Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are only shown in the Inertia element editor and element chips if they define a `url` or `action`. ([#19783](https://github.com/craftcms/cms/pull/19783))
 - Plugins can no longer register custom Craft filesystem types. Filesystem types registered through `craft\base\Fs` remain supported for legacy plugins via the Yii adapter. ([#19650](https://github.com/craftcms/cms/pull/19650))
@@ -426,6 +451,11 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 #### Addresses
 - Added `CraftCms\Cms\Support\Facades\Addresses`.
+
+#### AI
+- Added `CraftCms\Cms\Ai\Task` and `CraftCms\Cms\Ai\AiTasks`, for registering AI tasks. ([#20006](https://github.com/craftcms/cms/pull/20006))
+- Added `CraftCms\Cms\Support\Facades\Ai`, which plugins use to run `laravel/ai` agents and requests with the provider and model administrators choose for each task. ([#20006](https://github.com/craftcms/cms/pull/20006))
+- Added `CraftCms\Cms\Ai\Events\TaskRunning`, `TaskCompleted`, and `TaskFailed`, which plugins can use to track AI usage and failures, and cancel requests. ([#20006](https://github.com/craftcms/cms/pull/20006))
 
 #### Assets
 - Added `CraftCms\Cms\Asset\AssetsHelper`.
@@ -1022,6 +1052,7 @@ Moved the following controllers:
 - Deprecated `craft\services\SystemMessages`. `CraftCms\Cms\SystemMessage\SystemMessages` should be used instead.
 - Deprecated `craft\models\SystemMessage` and `craft\records\SystemMessage`. `CraftCms\Cms\SystemMessage\Models\SystemMessage` should be used instead.
 - Replaced `craft\controllers\SystemMessagesController` with `CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController`
+- System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
 
 #### Tokens
 - Deprecated `craft\services\Tokens`. `CraftCms\Cms\RouteToken\RouteTokens` should be used instead.

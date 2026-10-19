@@ -506,5 +506,24 @@ describe('useElementActionMenu', () => {
       expect(slideout.reload).toHaveBeenCalledOnce();
       expect(reload).not.toHaveBeenCalled();
     });
+
+    it('hands an image saved as a new asset to the opener, then closes', () => {
+      const slideout = slideoutController();
+
+      activateIn(slideout, {
+        label: 'Open in Image Editor',
+        behavior: {
+          type: 'editImage',
+          assetId: 7,
+          settings: {} as ImageEditorSettings,
+        },
+      });
+      vi.mocked(openImageEditorDialog).mock.lastCall![1]!({newAssetId: 8});
+
+      expect(slideout.saved).toHaveBeenCalledWith({
+        data: {replacedAssetId: 7, newAssetId: 8},
+      });
+      expect(slideout.close).toHaveBeenCalledWith({force: true});
+    });
   });
 });

@@ -165,6 +165,7 @@ readonly class FormFields
         $field = Field::make()
             ->id($config['fieldId'] ?? "$id-field")
             ->label($label !== null ? (string) $label : null)
+            ->labelSrOnly((bool) ($config['labelSrOnly'] ?? false))
             ->required((bool) ($config['required'] ?? false))
             ->translatable($translatable, $config['translationDescription'] ?? null)
             ->fieldset((bool) ($config['fieldset'] ?? false))
@@ -1121,7 +1122,7 @@ readonly class FormFields
         $component = Combobox::make()
             ->id($config['id'] ?? null)
             ->name(($config['name'] ?? false) ?: null)
-            ->value($config['value'] ?? null)
+            ->value(self::selectizeValue($config['value'] ?? null))
             ->options(self::normalizeSelectizeOptions($config['options'] ?? []))
             ->disabled((bool) ($config['disabled'] ?? false))
             ->required((bool) ($config['required'] ?? false))
@@ -1139,6 +1140,40 @@ readonly class FormFields
         }
 
         return $component;
+    }
+
+    /**
+     * Legacy configs pass whatever the setting holds — a bool from a config
+     * file, an int from a database column — where the combobox only takes an
+     * option value. The old markup cast the same input on its way into the
+     * `value` attribute, so mirror that rather than rejecting it.
+     *
+     * @return string|list<string>|null
+     */
+    private static function selectizeValue(mixed $value): string|array|null
+    {
+        if (! is_array($value)) {
+            return self::selectizeOptionValue($value);
+        }
+
+        $values = array_map(self::selectizeOptionValue(...), $value);
+
+        return array_values(array_filter($values, fn (?string $item): bool => $item !== null));
+    }
+
+    private static function selectizeOptionValue(mixed $value): ?string
+    {
+        if ($value === null || is_string($value)) {
+            return $value;
+        }
+
+        // `(string) false` is an empty string, which matches no option at all;
+        // the boolean options these configs carry are `'1'` and `'0'`.
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+
+        return is_scalar($value) ? (string) $value : null;
     }
 
     /**

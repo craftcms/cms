@@ -42,6 +42,7 @@ use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -167,6 +168,23 @@ it('returns element HTML and action metadata for get-elements', function (string
 })->with([
     'standalone index' => ['index'],
     'legacy embedded index' => ['embedded-index'],
+]);
+
+it('validates the returnUrl param for get-elements', function (Closure $returnUrl, int $status) {
+    EntryModel::factory()->create();
+
+    ($this->postIndexAction)('get-elements', [
+        'source' => '*',
+        'returnUrl' => $returnUrl(),
+    ])->assertStatus($status);
+})->with([
+    'plain URL' => [fn () => 'https://example.com/admin/entries?site=default', 200],
+    'encrypted Twig' => [fn () => Crypt::encrypt('{url}'), 200],
+    // An edit page can carry its own encrypted return URL, and the index sends
+    // the page URL as its own (https://github.com/craftcms/cms/issues/19983).
+    'nested encrypted returnUrl' => [fn () => 'https://example.com/admin/entries/1?returnUrl='.Crypt::encrypt('{url}').'{url}', 200],
+    'unencrypted Twig' => [fn () => 'https://example.com/admin/{url}', 400],
+    'unencrypted Twig beside a nested returnUrl' => [fn () => 'https://example.com/admin/{url}?returnUrl={url}', 400],
 ]);
 
 it('renders element table rows with strict Twig variables', function () {

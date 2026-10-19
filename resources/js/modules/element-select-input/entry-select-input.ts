@@ -48,30 +48,33 @@ export class EntrySelectInput extends BaseElementSelectInput {
     return entry.id;
   }
 
+  /** Resolves once the new entry is saved; rejects if it's closed unsaved. */
   showElementEditor(entry: any): Promise<void> {
     return new Promise((resolve, reject) => {
-      const slideout = Craft.createElementEditor(
-        'CraftCms\\Cms\\Entry\\Elements\\Entry',
-        {
+      let saved = false;
+
+      void Craft.openSlideout(
+        Craft.getActionUrl('elements/edit', {
+          elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
           siteId: this.settings.criteria.siteId,
           elementId: entry.id,
           draftId: entry.draftId,
-          params: {fresh: 1},
+          fresh: 1,
+        }),
+        {
+          onSaved: ({draft}: {draft?: boolean}) => {
+            if (!draft) {
+              saved = true;
+              resolve();
+            }
+          },
+          onClosed: () => {
+            if (!saved) {
+              reject();
+            }
+          },
         }
       );
-
-      let submitted = false;
-
-      slideout.on('submit', () => {
-        submitted = true;
-        resolve();
-      });
-
-      slideout.on('close', () => {
-        if (!submitted) {
-          reject();
-        }
-      });
     });
   }
 }

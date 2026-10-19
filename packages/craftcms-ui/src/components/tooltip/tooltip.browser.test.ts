@@ -28,7 +28,7 @@ async function render(): Promise<{
 const after = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 it('hides once the pointer leaves an invoker it was clicked on', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const {invoker, elsewhere, tooltip} = await render();
 
   await userEvent.click(invoker);
@@ -44,7 +44,7 @@ it('hides once the pointer leaves an invoker it was clicked on', async () => {
 });
 
 it('stays open while the invoker has keyboard focus', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const {elsewhere, tooltip} = await render();
 
   await userEvent.hover(elsewhere);

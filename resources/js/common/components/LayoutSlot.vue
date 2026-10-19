@@ -58,7 +58,7 @@
   // against a target that isn't there. An explicit `scope` reaches another
   // shell's registry, which this one can't see into.
   const hasTarget = computed(
-    () => props.scope !== undefined || registry.targetRevision(props.name) > 0
+    () => props.scope !== undefined || registry.hasTarget(props.name)
   );
 
   onMounted(() => registry.register(props.name));

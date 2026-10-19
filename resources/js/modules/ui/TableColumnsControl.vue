@@ -1,12 +1,12 @@
 <script setup lang="ts">
-  import '@craftcms/ui/components/dialog/dialog';
   import '@craftcms/ui/components/button/button';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, inject, nextTick, ref, watch} from 'vue';
+  import {computed, inject, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
   import UiNodeList from './UiNodeList.vue';
   import TableControl from './TableControl.vue';
-  import {UiErrors, inputName, pathsMatch, valueAt} from './runtime';
+  import {UiErrors, canonical, inputName, pathsMatch, valueAt} from './runtime';
   import {rowFields} from './table/rowUis';
+  import {openColumnSettings} from './table/columnSettingsSlideout';
   import type {TableControlProps, TableValue} from './table/types';
   import type {
     UiChangeKind,
@@ -40,11 +40,14 @@
   const metadataProperties = ['heading', 'handle', 'width', 'type'];
   const columns = computed(() => props.value ?? {});
   const activeColumn = ref<string>();
+  const settingsTarget = shallowRef<HTMLElement | null>(null);
   const uiErrors = inject(UiErrors, undefined);
   const errorsCleared = computed(
     () => uiErrors?.childrenCleared(props.control.path) ?? false
   );
-  let opener: HTMLElement | undefined;
+  let slideoutId: string | undefined;
+  /** The column as it was when its settings opened, restored unless they're applied. */
+  let snapshot: Column | undefined;
   const tableControl = computed<UiControlPayload<TableControlProps>>(() => ({
     ...props.control,
     props: {
@@ -125,42 +128,45 @@
           .map((ui) => ui.scope.at(-1))
       )
   );
-  const renderedSettingPaths = computed(() =>
-    rowFields(settingsNodes.value).flatMap((node) =>
-      node.control ? [inputName(node.control.path)] : []
-    )
-  );
+  // The settings render in a slideout, outside the form, so the form gets every
+  // setting from here.
   const serializedSettings = computed(() =>
-    Object.entries(columns.value)
-      .flatMap(([key, column]) =>
-        Object.entries(column)
-          .filter(([property]) => !metadataProperties.includes(property))
-          .flatMap(([property, value]) =>
-            hiddenInputs(
-              inputName([...props.control.path, key, property]),
-              value
-            )
-          )
-      )
-      .filter(
-        (input) =>
-          !renderedSettingPaths.value.some(
-            (name) => input.name === name || input.name.startsWith(`${name}[`)
-          )
-      )
+    Object.entries(columns.value).flatMap(([key, column]) =>
+      Object.entries(column)
+        .filter(([property]) => !metadataProperties.includes(property))
+        .flatMap(([property, value]) =>
+          hiddenInputs(inputName([...props.control.path, key, property]), value)
+        )
+    )
   );
   const heading = computed(() =>
     activeColumn.value ? columns.value[activeColumn.value]?.heading : ''
   );
 
+  const columnErrors = computed(() =>
+    errorsCleared.value ? {} : (props.control.props.errors ?? {})
+  );
+  /** Columns whose settings, rather than their table cells, are invalid. */
+  const invalidSettingsColumns = computed(
+    () =>
+      new Set(
+        Object.entries(columnErrors.value)
+          .filter(([, errors]) =>
+            Object.keys(errors).some(
+              (property) => !metadataProperties.includes(property)
+            )
+          )
+          .map(([key]) => key)
+      )
+  );
+
   const cellErrors = computed(() => [
     ...props.errors,
-    ...Object.entries(
-      errorsCleared.value ? {} : (props.control.props.errors ?? {})
-    ).flatMap(([key, errors]) =>
+    ...Object.entries(columnErrors.value).flatMap(([key, errors]) =>
       Object.keys(errors)
         .filter(
           (property) =>
+            ['handle', 'type'].includes(property) &&
             !props.errors.some((error) =>
               pathsMatch(error.path, [...props.control.path, key, property])
             )
@@ -177,7 +183,18 @@
   ]);
 
   watch(columns, () => {
-    if (activeColumn.value && !columns.value[activeColumn.value]) close();
+    if (activeColumn.value && !columns.value[activeColumn.value]) {
+      snapshot = undefined;
+      closeSettings();
+    }
+  });
+
+  let unmounted = false;
+
+  onBeforeUnmount(() => {
+    unmounted = true;
+    snapshot = undefined;
+    closeSettings();
   });
 
   function update(value: TableValue, kind: UiChangeKind): void {
@@ -186,14 +203,59 @@
     emit('update:value', value as Columns, kind);
   }
 
-  function configure(key: string, event: Event): void {
-    opener = event.currentTarget as HTMLElement;
+  async function configure(key: string, event: Event): Promise<void> {
+    const column = columns.value[key];
+    // One column at a time, including while its slideout is still loading.
+    if (!column || activeColumn.value) return;
+
     activeColumn.value = key;
+    snapshot = JSON.parse(JSON.stringify(column)) as Column;
+
+    const panel = await openColumnSettings({
+      title: () =>
+        t('Configure column: {heading}', {
+          heading: heading.value || t('Column'),
+        }),
+      settings: () => canonical(columns.value[key] ?? {}),
+      mount: (target) => (settingsTarget.value = target),
+      apply: () => (snapshot = undefined),
+      opener: event.currentTarget as HTMLElement,
+      onClosed: closed,
+    });
+
+    if (!panel) {
+      closed();
+
+      return;
+    }
+
+    slideoutId = panel.id;
+
+    // Unmounted while the slideout was loading.
+    if (unmounted) closeSettings();
   }
 
-  function close(): void {
+  function closeSettings(): void {
+    const id = slideoutId;
+    if (!id) return;
+
+    void import('@/common/slideouts').then(({closeSlideout}) =>
+      closeSlideout(id, {force: true})
+    );
+  }
+
+  function closed(): void {
+    const key = activeColumn.value;
+    const column = key ? columns.value[key] : undefined;
+
+    if (snapshot && column && canonical(column) !== canonical(snapshot)) {
+      emit('update:value', {...columns.value, [key!]: snapshot}, 'discrete');
+    }
+
+    snapshot = undefined;
+    slideoutId = undefined;
+    settingsTarget.value = null;
     activeColumn.value = undefined;
-    void nextTick(() => opener?.focus());
   }
 
   function changed(): void {
@@ -207,6 +269,10 @@
     name: string,
     value: UiValue
   ): Array<{name: string; value: string}> {
+    // The same empty sentinel a rendered multi-select control posts.
+    if (Array.isArray(value) && !value.length) {
+      return [{name, value: ''}];
+    }
     if (Array.isArray(value) || (value !== null && typeof value === 'object')) {
       return Object.entries(value).flatMap(([key, child]) =>
         hiddenInputs(`${name}[${key}]`, child)
@@ -247,26 +313,33 @@
         <craft-button
           v-if="configurableColumns.has(rowKey)"
           type="button"
-          icon="gear"
+          :icon="
+            invalidSettingsColumns.has(rowKey) ? 'triangle-exclamation' : 'gear'
+          "
           size="small"
           variant="plain"
-          :title="t('Configure')"
+          :class="{
+            'column-settings--invalid': invalidSettingsColumns.has(rowKey),
+          }"
+          :title="
+            invalidSettingsColumns.has(rowKey)
+              ? t('Configure (contains errors)')
+              : t('Configure')
+          "
           :aria-label="
-            t('Configure column {column}', {
-              column: row.value.heading || index + 1,
-            })
+            invalidSettingsColumns.has(rowKey)
+              ? t('Configure column {column} (contains errors)', {
+                  column: row.value.heading || index + 1,
+                })
+              : t('Configure column {column}', {
+                  column: row.value.heading || index + 1,
+                })
           "
           @click="configure(rowKey, $event)"
         />
       </template>
     </TableControl>
-    <craft-dialog
-      .opened="Boolean(activeColumn)"
-      :label="
-        t('Configure column: {heading}', {heading: heading || t('Column')})
-      "
-      @craft-hide="close"
-    >
+    <Teleport v-if="settingsTarget" :to="settingsTarget">
       <UiNodeList
         v-if="settingsNodes.length && settingsUi"
         :nodes="settingsNodes"
@@ -278,14 +351,15 @@
         @change="changed"
       />
       <p v-else>{{ t('This column type has no settings.') }}</p>
-      <craft-button slot="footer" type="button" @click="close">{{
-        t('Done')
-      }}</craft-button>
-    </craft-dialog>
+    </Teleport>
   </div>
 </template>
 
 <style scoped>
+  .column-settings--invalid {
+    color: var(--c-color-danger-on-quiet);
+  }
+
   :deep([data-column='width']) {
     min-width: 5rem;
   }

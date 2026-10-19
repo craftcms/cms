@@ -58,6 +58,19 @@ describe('ElementThumbs', () => {
     expect(labels).toEqual(['Select Homepage', 'Select Untitled entry']);
   });
 
+  /** Selectable tiles get the default cursor rather than a text one. */
+  it.each([true, false])(
+    'marks a tile selectable only while it is (%s)',
+    async (selectable) => {
+      const {root} = mount({selectable});
+      await nextTick();
+
+      for (const tile of root.querySelectorAll('li.element')) {
+        expect(tile.classList.contains('element--selectable')).toBe(selectable);
+      }
+    }
+  );
+
   it('links just the label, whether to the element or a label URL', async () => {
     const {root} = mount({
       data: [
@@ -148,5 +161,23 @@ describe('ElementThumbs', () => {
 
     first!.dispatchEvent(new MouseEvent('dblclick', {bubbles: true}));
     expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({id: 5}));
+  });
+
+  // An asset folder opens on double-click rather than being edited.
+  it('leaves a double-click its item behavior handled alone', async () => {
+    const onEdit = vi.fn();
+    const onDblClick = vi.fn(() => true);
+    const {root} = mount({onEdit, itemBehavior: {onDblClick}});
+    await nextTick();
+
+    const event = new MouseEvent('dblclick', {bubbles: true, cancelable: true});
+    root.querySelector('li')!.dispatchEvent(event);
+
+    expect(onDblClick).toHaveBeenCalledWith(
+      expect.objectContaining({id: 5}),
+      event
+    );
+    expect(event.defaultPrevented).toBe(true);
+    expect(onEdit).not.toHaveBeenCalled();
   });
 });

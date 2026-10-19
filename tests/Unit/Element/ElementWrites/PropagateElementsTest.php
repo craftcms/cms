@@ -118,15 +118,15 @@ beforeEach(function () {
     $this->elementCaches = Mockery::mock(ElementCaches::class);
     $this->elements = Mockery::mock(Elements::class);
 
-    $this->action = new TestPropagateElementsWrites(
-        $this->elements,
-        Mockery::mock(Drafts::class),
-        Mockery::mock(ElementUris::class),
-        $this->elementCaches,
-        Mockery::mock(Search::class),
-        app(SitesService::class),
-        Mockery::mock(Workflows::class),
-    );
+    $this->action = app(TestPropagateElementsWrites::class, [
+        'elements' => $this->elements,
+        'drafts' => Mockery::mock(Drafts::class),
+        'elementUris' => Mockery::mock(ElementUris::class),
+        'elementCaches' => $this->elementCaches,
+        'search' => Mockery::mock(Search::class),
+        'sites' => app(SitesService::class),
+        'workflows' => Mockery::mock(Workflows::class),
+    ]);
     $this->writes = $this->action;
 });
 
