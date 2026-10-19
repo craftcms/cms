@@ -25,6 +25,30 @@ That is the trade this component makes: you get the platform's dropdown, and in 
 
 Reach for the plainest one that fits. Each step up trades platform behavior for presentation.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Controls\Choice` renders a select by default:
+
+```php
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Site', Choice::make('siteId')
+        ->options([
+            ['label' => 'English', 'value' => 1],
+            ['label' => 'Deutsch', 'value' => 2],
+        ])
+        ->placeholder('Choose a site')),
+]);
+```
+
+`placeholder()` adds an empty first option.
+An option can also have `disabled` and `group` keys. Options with the same `group` are listed together under it.
+The same control renders as [radio buttons](?path=/docs/form-controls-choice-controls-radio-group--docs), [checkboxes](?path=/docs/form-controls-choice-controls-checkbox-group--docs), or a [button group](?path=/docs/components-button-group--docs) with `presentation()`.
+
 ## Accessibility
 
 The native select brings its own semantics, keyboard handling, and mobile affordances, and Lion wires the label and validation feedback around it.

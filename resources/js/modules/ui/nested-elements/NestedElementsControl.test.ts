@@ -652,6 +652,25 @@ describe('NestedElementsControl', () => {
     expect(root.querySelector('[data-edit-element]')).not.toBeNull();
   });
 
+  it('gives the edit button the card’s color, like its action menu button', async () => {
+    mount({
+      cards: [
+        nestedElement({
+          id: 18,
+          siteId: 1,
+          ownerId: 31,
+          editUrl: '/admin/actions/elements/edit?elementId=18',
+          cardAttributes: {data: {editable: true}},
+        }),
+      ],
+    });
+    await nextTick();
+
+    expect(
+      root.querySelector('[data-edit-element]')!.hasAttribute('inherit')
+    ).toBe(true);
+  });
+
   it('marks invalid cards without requesting index data', async () => {
     mount();
     const control = root.querySelector('.nested-elements')!;

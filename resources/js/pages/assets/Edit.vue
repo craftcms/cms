@@ -95,6 +95,10 @@
    * server-scaled) image's natural size instead, matching how the plain
    * <img> this preview used before craft-thumbnail was sized.
    */
+  .asset-preview :deep(.preview-thumb craft-thumbnail) {
+    --c-thumbnail-size: 190px;
+  }
+
   .asset-preview :deep(.preview-thumb craft-thumbnail::part(thumbnail)) {
     width: fit-content;
     height: auto;

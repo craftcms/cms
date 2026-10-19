@@ -223,7 +223,7 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
                 // Outside `currentUser`, so logged-out pages (login, the
                 // updater) follow the system theme too.
-                'theme' => Theme::current($currentUser)->value,
+                'theme' => Theme::forUser($currentUser)->value,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'maintenanceMode' => app()->isDownForMaintenance(),
                 'devMode' => app()->hasDebugModeEnabled(),

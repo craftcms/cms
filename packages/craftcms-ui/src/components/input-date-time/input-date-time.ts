@@ -155,7 +155,13 @@ export default class CraftInputDateTime extends LitElement {
         --c-input-border-color,
         var(--c-form-control-border-color)
       );
+      --_divider-color: var(--c-color-neutral-border-quiet);
       --_height: var(--c-input-height, var(--c-size-control-md));
+      --_row-height: calc(var(--_height) - var(--_border-width) * 2);
+      --_button-inset: calc(
+        (var(--_height) - var(--_border-width) * 2 - var(--c-size-control-sm)) /
+          2
+      );
       display: inline-flex;
       align-items: stretch;
       max-width: 100%;
@@ -167,7 +173,6 @@ export default class CraftInputDateTime extends LitElement {
       border-radius: var(--c-input-radius, var(--c-radius-md));
       background-color: var(--c-input-fill);
       box-shadow: var(--c-input-shadow);
-      /* Keeps a slotted button's fill inside the rounded corners. */
       overflow: clip;
     }
 
@@ -192,7 +197,7 @@ export default class CraftInputDateTime extends LitElement {
       --c-input-radius: 0px;
       --c-input-shadow: none;
       --c-input-fill: transparent;
-      --c-input-height: calc(var(--_height) - var(--_border-width) * 2);
+      --c-input-height: var(--_row-height);
       --c-focus-outline-offset: -2px;
     }
 
@@ -203,55 +208,82 @@ export default class CraftInputDateTime extends LitElement {
     }
 
     slot[name='inputs']::slotted([data-date-time-part]:not(:first-child)) {
-      border-inline-start: var(--_border-width) solid var(--_border-color);
+      border-inline-start: var(--_border-width) solid var(--_divider-color);
     }
 
     /*
-      Stacked, the divider runs above the input instead. The side border stays
-      as wide, just transparent, so the inputs need the same room either way
-      and don't flip back and forth at the threshold.
+      Stacked, the divider runs above the input instead, across the whole
+      field, beside slotted content too, so the host draws it between rows.
+      The input's borders stay as wide, just transparent, so the inputs need
+      the same room either way and don't flip back and forth at the
+      threshold.
     */
     :host([stacked])
       slot[name='inputs']::slotted([data-date-time-part]:not(:first-child)) {
       border-inline-start-color: transparent;
-      border-block-start: var(--_border-width) solid var(--_border-color);
+      border-block-start: var(--_border-width) solid transparent;
+    }
+
+    :host([stacked]) {
+      --_focus-outline-width: var(--c-focus-outline-width);
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0 var(--_row-height),
+        var(--_divider-color) 0 calc(var(--_row-height) + var(--_border-width))
+      );
     }
 
     /*
-      Slotted controls, such as a clear button, sit inside the border too. A
-      button fills a segment behind a divider, as wide as an input's suffix.
+      Stacked, a part that ends its row reaches across any slotted content
+      beside the inputs, and draws the focus ring in place of its input, so the
+      ring spans the whole field. The padding matches the margin, so the part
+      takes up the same room and the inputs wrap the same way.
+    */
+    :host([stacked])
+      slot[name='inputs']::slotted([data-date-time-part][data-row-end]) {
+      --c-focus-outline-width: 0px;
+      margin-inline-end: calc(var(--_beside-size, 0px) * -1);
+      padding-inline-end: var(--_beside-size, 0px);
+    }
+
+    :host([stacked])
+      slot[name='inputs']::slotted([data-date-time-part][data-row-end]:focus-within) {
+      outline: var(--_focus-outline-width) solid var(--c-color-focus-outline);
+      outline-offset: -2px;
+    }
+
+    /*
+      Slotted controls, such as a clear button, sit inside the border too, at
+      their own size, with no divider before them.
     */
     slot:not([name])::slotted(*) {
-      --c-focus-outline-offset: -2px;
-      align-self: center;
-    }
-
-    slot:not([name])::slotted(craft-button) {
       flex: none;
-      align-self: stretch;
-      box-sizing: border-box;
-      width: calc(
-        var(--c-input-spacing-inline) * 2 + var(--c-size-control-sm) +
-          var(--_border-width)
-      );
-      height: auto;
-      min-height: 0;
-      margin: 0;
-      border-inline-start: var(--_border-width) solid var(--_border-color);
-      border-radius: 0;
+      align-self: center;
+      margin-inline-end: var(--_button-inset);
     }
 
-    /*
-      A disabled button fades with opacity, which would fade its divider too.
-      Fade just its icon instead, so the divider matches the outer border.
-    */
-    slot:not([name])::slotted(craft-button[disabled]) {
-      opacity: 1;
-      color: color-mix(in srgb, currentColor 50%, transparent);
+    :host([stacked]) slot:not([name])::slotted(*) {
+      align-self: end;
+      margin-block-end: var(--_button-inset);
     }
 
     :host([width='full']) .inputs {
       flex: 1 1 auto;
+    }
+
+    /*
+      A lone date or time input reads as an ordinary input: the whole field,
+      clear button included, takes the usual focus ring, standing off its
+      border, rather than one inset around the input.
+    */
+    :host([single]) slot[name='inputs']::slotted([data-date-time-part]) {
+      --c-focus-outline-width: 0px;
+    }
+
+    :host([single][input-focused]) {
+      outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+        var(--c-color-focus-outline);
+      outline-offset: var(--c-focus-outline-offset);
     }
   `;
 
@@ -259,7 +291,7 @@ export default class CraftInputDateTime extends LitElement {
     return html`<div class="inputs" part="inputs">
         <slot name="inputs"></slot>
       </div>
-      <slot></slot>`;
+      <slot @slotchange=${() => this.#queueStackedSync()}></slot>`;
   }
 
   /** Watches for the inputs wrapping onto rows of their own. */
@@ -270,12 +302,16 @@ export default class CraftInputDateTime extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
     this.addEventListener('model-value-changed', this.#onModelValueChanged);
+    this.addEventListener('focusin', this.#syncInputFocus);
+    this.addEventListener('focusout', this.#syncInputFocus);
     this.#resizeObserver ??= new ResizeObserver(() => this.#queueStackedSync());
     this.#resizeObserver.observe(this);
   }
 
   override disconnectedCallback() {
     this.removeEventListener('model-value-changed', this.#onModelValueChanged);
+    this.removeEventListener('focusin', this.#syncInputFocus);
+    this.removeEventListener('focusout', this.#syncInputFocus);
     this.#resizeObserver?.disconnect();
     if (this.#stackedFrame !== undefined) {
       cancelAnimationFrame(this.#stackedFrame);
@@ -290,6 +326,39 @@ export default class CraftInputDateTime extends LitElement {
    * frame, because toggling the attribute resizes the host, which a resize
    * observer can't take within the same notification.
    */
+  /**
+   * Marks the host `input-focused` while one of its inputs (rather than, say,
+   * a slotted clear button) has focus, which a shadow stylesheet can't
+   * observe on light-DOM children.
+   */
+  #syncInputFocus = (event: FocusEvent) => {
+    const focused =
+      event.type === 'focusin' ? event.target : event.relatedTarget;
+    this.toggleAttribute(
+      'input-focused',
+      focused instanceof Element &&
+        this.contains(focused) &&
+        focused.closest('[data-date-time-part]') !== null
+    );
+  };
+
+  /** Measures the room slotted content takes up beside the inputs. */
+  #syncBesideSize() {
+    const inputs = this.shadowRoot?.querySelector<HTMLElement>('.inputs');
+    if (!inputs) {
+      return;
+    }
+
+    const host = this.getBoundingClientRect();
+    const box = inputs.getBoundingClientRect();
+    const style = getComputedStyle(this);
+    const size =
+      style.direction === 'rtl'
+        ? box.left - host.left - parseFloat(style.borderLeftWidth)
+        : host.right - parseFloat(style.borderRightWidth) - box.right;
+    inputs.style.setProperty('--_beside-size', `${Math.max(0, size)}px`);
+  }
+
   #queueStackedSync() {
     if (this.#stackedFrame !== undefined) {
       return;
@@ -297,13 +366,25 @@ export default class CraftInputDateTime extends LitElement {
 
     this.#stackedFrame = requestAnimationFrame(() => {
       this.#stackedFrame = undefined;
-      const tops = [
+      const parts = [
         ...this.querySelectorAll<HTMLElement>(':scope > [data-date-time-part]'),
-      ].map((part) => part.getBoundingClientRect().top);
+      ];
+      const tops = parts.map((part) => part.getBoundingClientRect().top);
       this.toggleAttribute(
         'stacked',
         tops.some((top) => top > (tops[0] ?? top) + 1)
       );
+
+      // A part that ends its row reaches across any slotted content beside
+      // the inputs, so its divider and focus ring span the whole field.
+      parts.forEach((part, i) => {
+        const next = tops[i + 1];
+        part.toggleAttribute(
+          'data-row-end',
+          next === undefined || next > tops[i]! + 1
+        );
+      });
+      this.#syncBesideSize();
     });
   }
 
@@ -315,6 +396,11 @@ export default class CraftInputDateTime extends LitElement {
     this.#syncTimezoneInput();
     this.#syncHiddenInput('locale', this.locale, true);
     this.#syncHiddenInput('timezone', this.timezone, !this.showTimezone);
+    this.toggleAttribute(
+      'single',
+      [this.showDate, this.showTime, this.showTimezone].filter(Boolean)
+        .length === 1
+    );
     this.#queueStackedSync();
   }
 
@@ -414,7 +500,9 @@ export default class CraftInputDateTime extends LitElement {
 
     input.disabled = this.disabled;
     input.readOnly = this.readonly;
-    input.required = required;
+    // Known gap (see input-date-time.a11y.md): neither craft-input nor Lion
+    // defines `required`, so this reaches no native input.
+    (input as CraftInput & {required?: boolean}).required = required;
 
     if (input.modelValue !== value) {
       input.modelValue = value;

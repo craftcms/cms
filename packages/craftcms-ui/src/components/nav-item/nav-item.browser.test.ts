@@ -24,9 +24,9 @@ it('aligns group headings when a nested plugin has a slotted icon', async () => 
     </craft-nav-list>
   `;
 
-  const [system, plugins] = document.querySelectorAll<CraftNavItem>(
-    'craft-nav-item[group]'
-  );
+  const [system, plugins] = [
+    ...document.querySelectorAll<CraftNavItem>('craft-nav-item[group]'),
+  ] as [CraftNavItem, CraftNavItem];
   await Promise.all([system.updateComplete, plugins.updateComplete]);
 
   const labelX = (item: CraftNavItem) =>
@@ -224,7 +224,7 @@ async function lentActionFixture() {
 }
 
 it("keeps a lent control's pointer press from reaching the row", async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const {gear, reachedRow, opened} = await lentActionFixture();
 
   await userEvent.click(gear);
@@ -235,7 +235,7 @@ it("keeps a lent control's pointer press from reaching the row", async () => {
 });
 
 it("keeps a lent control's keyboard activation from reaching the row", async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const {gear, reachedRow, opened} = await lentActionFixture();
 
   gear.focus();
@@ -250,7 +250,7 @@ it("keeps a lent control's keyboard activation from reaching the row", async () 
 // CpLink puts Inertia's Link handlers on the host, which visit on Enter's
 // keyup — so the chevron has to keep its own presses from reaching them.
 it('opens the flyout from its chevron instead of following the link', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const item = await railFixture();
   const toggle = item.shadowRoot!.querySelector<HTMLElement>(
     '.rail-toggle craft-button'
@@ -499,7 +499,7 @@ it('keeps a flyout open when the pointer reaches it from across another group', 
     graceDelay: 10_000,
   };
 
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const trigger = await groupedFixture();
 
   // Real pointer moves, so the browser orders the enter and leave events.

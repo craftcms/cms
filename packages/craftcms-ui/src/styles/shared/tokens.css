@@ -1,10 +1,16 @@
 /*
   [data-theme] re-resolves these var()-based tokens against a themed subtree's
-  palette; a var() is substituted where it's declared.
+  palette; a var() is substituted where it's declared. What's in a black card,
+  chip, or badge is themed dark too (see scripts/utils.js).
 */
 :root,
 :host,
-[data-theme] {
+[data-theme],
+:where(
+  craft-card[data-color='black'] > *,
+  craft-chip[data-color='black']:not([appearance~='plain']) > *,
+  craft-badge[fill='black'] > *
+) {
   --c-text-lg: calc(16rem / 16);
   --c-text-base: calc(14rem / 16);
   --c-text-sm: calc(12rem / 16);
@@ -94,7 +100,7 @@
   --c-spacing-xl: calc(var(--c-spacing) * 8);
   --c-spacing-2xl: calc(var(--c-spacing) * 16);
 
-  --c-size-touch-target: calc(34rem / 16);
+  --c-size-touch-target: calc(32rem / 16);
   --c-size-touch-target-sm: calc(24rem / 16);
 
   --c-size-icon-xs: calc(10rem / 16);
@@ -106,7 +112,7 @@
   --c-size-control-2xs: calc(14rem / 16);
   --c-size-control-xs: calc(16rem / 16);
   --c-size-control-sm: calc(24rem / 16);
-  --c-size-control-md: calc(34rem / 16);
+  --c-size-control-md: calc(32rem / 16);
   --c-size-control-lg: calc(44rem / 16);
 
   /*
@@ -229,7 +235,6 @@
   /* Inputs take on their container's background */
   --c-input-fill: transparent;
   --c-input-text: var(--c-form-control-text);
-  --c-input-border-color: var(--c-form-control-border-color);
   --c-input-border-width: var(--c-form-control-border-width);
   --c-input-border-style: var(--c-form-control-border-style);
   --c-input-radius: var(--c-form-control-radius);
@@ -246,13 +251,11 @@
   --c-slide-rule-height: var(--c-size-touch-target);
   --c-slide-rule-graduation-width: 10px;
   --c-slide-rule-graduation-height: 6px;
-  --c-slide-rule-graduation-color: var(--c-color-neutral-border-loud);
   --c-slide-rule-accent-color: var(--c-color-accent-border-loud);
 
   /** Appearances **/
   /* Generic Panes */
   --c-pane-fill: var(--c-surface-overlay);
-  --c-pane-text: var(--c-text-default);
   --c-pane-padding: var(--c-spacing-lg);
   --c-pane-border-width: 1px;
   --c-pane-border-style: solid;
@@ -291,7 +294,7 @@
 
   /* Modals */
   --c-modal-fill: var(--c-pane-fill);
-  --c-modal-text: var(--c-pane-text);
+  --c-modal-text: var(--c-text-default);
   --c-modal-radius: var(--c-radius-lg);
   /* A hairline, on top of the shadow, so modals keep an edge in either theme. */
   --c-modal-border-width: 1px;
@@ -305,12 +308,26 @@
     var(--c-shadow-2xl);
 }
 
+/* The light theme is the default, with no `data-theme` on <html>, so it sets
+   its color scheme explicitly too. Otherwise native UI and theme-aware SVG
+   images (which follow their embedding element's color scheme) would follow
+   the OS instead, coming out dark on a dark OS. */
+:root,
 [data-theme='light'] {
   color-scheme: light;
 }
 
-[data-theme='dark'] {
+[data-theme='dark'],
+:where(
+  craft-card[data-color='black'] > *,
+  craft-chip[data-color='black']:not([appearance~='plain']) > *,
+  craft-badge[fill='black'] > *
+) {
   color-scheme: dark;
+  /* Like other hairlines here, so the no-color swatch keeps an edge. */
+  --c-select-color-swatch-edge: var(--c-color-neutral-border-quiet);
+  /* Color swatches get a faint ring only here, to stand off the dark surface. */
+  --c-select-color-swatch-ring: rgb(0 0 0 / 15%);
   --c-surface-default: color-mix(
     in oklab,
     color-mix(in oklab, var(--color-base-100), var(--color-base-50) 30%),

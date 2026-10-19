@@ -7,9 +7,11 @@ import {
   fldElementData,
   fldTabData,
   hudData,
+  isSidebarTab,
 } from './support';
 import {type ActionMenuItem} from '@craftcms/ui';
 import type {UiValues} from '@/modules/ui/types';
+import {createInitialIcon} from '@/common/utils/initialIcon';
 
 declare const Craft: any;
 declare const $: any;
@@ -44,6 +46,7 @@ export class Tab extends Base {
         name:
           this.$container.querySelector('.tabs .tab .fld-tab__name')
             ?.textContent ?? '',
+        type: this.isSidebar ? 'sidebar' : 'content',
         elements: [],
       };
     }
@@ -51,6 +54,8 @@ export class Tab extends Base {
     if (this.designer.settings!.customizableTabs) {
       this.createMenu();
     }
+
+    this.syncTypeUi();
 
     // initialize the elements
     const $tabContent = this.$container.querySelector(
@@ -84,7 +89,10 @@ export class Tab extends Base {
     hud.on('show', () => {
       hud.$main!.appendChild(this.designer.$libraryContainer);
       this.designer.libraryPicker?.select(0);
-      this.designer.$fieldSearch.focus();
+      // Garnish emits `show` before it moves the HUD into place, so focusing
+      // normally would scroll the page to wherever the HUD was last (the top,
+      // for a new tab's).
+      this.designer.$fieldSearch.focus({preventScroll: true});
       this.designer.clearSearch();
       this.designer.$fieldLibrary.scrollTop = 0;
     });
@@ -132,10 +140,8 @@ export class Tab extends Base {
         {type: 'hr'},
       ];
 
-      const prev = this.$container.previousElementSibling;
-      const next = this.$container.nextElementSibling;
-      const hasPrev = !!(prev && prev.matches('.fld-tab'));
-      const hasNext = !!(next && next.matches('.fld-tab'));
+      const hasPrev = !!this.prevSibling;
+      const hasNext = !!this.nextSibling;
 
       if (hasPrev) {
         items.push({
@@ -164,6 +170,21 @@ export class Tab extends Base {
       }
 
       items.push(
+        this.isSidebar
+          ? {
+              label: Craft.t('app', 'Move to content'),
+              icon: 'browser',
+              onClick: () => {
+                this.setType('content');
+              },
+            }
+          : {
+              label: Craft.t('app', 'Move to the sidebar'),
+              icon: 'sidebar-flip',
+              onClick: () => {
+                this.setType('sidebar');
+              },
+            },
         {type: 'hr'},
         {
           label: Craft.t('app', 'Remove'),
@@ -179,6 +200,13 @@ export class Tab extends Base {
     };
 
     $tab.appendChild(menu);
+
+    // Line the generated invoker's icon up with the tab's inline-end padding.
+    void menu.updateComplete.then(() => {
+      menu
+        .querySelector(':scope > craft-button[slot="invoker"]')
+        ?.setAttribute('flush', 'inline-end');
+    });
   }
 
   private settingsRequestData() {
@@ -258,22 +286,122 @@ export class Tab extends Base {
     if ($menu) {
       $label.appendChild($menu);
     }
+    this.syncTypeUi();
+  }
+
+  get isSidebar(): boolean {
+    return isSidebarTab(this.$container);
+  }
+
+  /** The previous tab, if it's the same type as this one. */
+  get prevSibling(): HTMLElement | null {
+    const $prev = this.$container.previousElementSibling;
+    return $prev?.matches('.fld-tab') && isSidebarTab($prev) === this.isSidebar
+      ? $prev
+      : null;
+  }
+
+  /** The next tab, if it's the same type as this one. */
+  get nextSibling(): HTMLElement | null {
+    const $next = this.$container.nextElementSibling;
+    return $next?.matches('.fld-tab') && isSidebarTab($next) === this.isSidebar
+      ? $next
+      : null;
   }
 
   moveLeft(): void {
-    const $prev = this.$container.previousElementSibling;
-    if ($prev && $prev.matches('.fld-tab')) {
+    const $prev = this.prevSibling;
+    if ($prev) {
       $prev.before(this.$container);
       this.updatePositionInConfig();
     }
   }
 
   moveRight(): void {
-    const $next = this.$container.nextElementSibling;
-    if ($next && $next.matches('.fld-tab')) {
+    const $next = this.nextSibling;
+    if ($next) {
       $next.after(this.$container);
       this.updatePositionInConfig();
     }
+  }
+
+  /**
+   * Switches the tab between a content tab and a sidebar tab, moving it to
+   * the end of the content tabs or the sidebar tabs.
+   */
+  setType(type: 'content' | 'sidebar'): void {
+    if ((type === 'sidebar') === this.isSidebar) {
+      return;
+    }
+
+    // The grid only lays out the content column.
+    if (type === 'sidebar') {
+      this.designer.tabGrid.removeItems($(this.$container));
+      this.designer.$sidebarTabContainer.appendChild(this.$container);
+    } else {
+      this.designer.$contentTabContainer.appendChild(this.$container);
+      this.designer.tabGrid.addItems($(this.$container));
+    }
+
+    this.syncTypeWithColumn();
+    this.updatePositionInConfig();
+    this.designer.tabGrid.refreshCols(true);
+    this.$actionBtn?.querySelector(':scope > [slot="invoker"]')?.focus();
+  }
+
+  /**
+   * Makes the tab's type match the column it's in, after it's been moved (or
+   * dragged) from one to the other.
+   */
+  syncTypeWithColumn(): void {
+    const type =
+      this.$container.parentElement === this.designer.$sidebarTabContainer
+        ? 'sidebar'
+        : 'content';
+
+    if ((type === 'sidebar') === this.isSidebar) {
+      return;
+    }
+
+    this.updateConfig((config) => ({...config, type}));
+    this.$container.classList.toggle('fld-tab--sidebar', type === 'sidebar');
+    // The grid's row height only applies in the content column.
+    this.$container.style.removeProperty('height');
+    this.syncTypeUi();
+  }
+
+  /**
+   * Sidebar tabs only show an icon, with the name in a tooltip. A tab without
+   * its own icon gets its name's first letter.
+   */
+  syncTypeUi(): void {
+    const $label = this.$container.querySelector('.tabs .tab');
+    if (!$label) {
+      return;
+    }
+
+    $label.querySelector(':scope > .fld-tab__default-icon')?.remove();
+    $label.querySelector(':scope > craft-tooltip')?.remove();
+
+    if (!this.isSidebar) {
+      return;
+    }
+
+    let $icon = $label.querySelector(':scope > .fld-tab__icon');
+    if (!$icon) {
+      $icon = document.createElement('span');
+      $icon.className = 'fld-tab__icon fld-tab__default-icon';
+      $icon.append(createInitialIcon(this.config.name ?? ''));
+      $label.prepend($icon);
+    }
+
+    // On the icon rather than the whole tab, so it stays out of the way of
+    // the action menu below it.
+    $icon.id ||= `fld-tab-icon-${this.uid}`;
+    const $tooltip = document.createElement('craft-tooltip');
+    $tooltip.setAttribute('for', $icon.id);
+    $tooltip.textContent = this.config.name ?? '';
+    $label.appendChild($tooltip);
   }
 
   initElement($element: any): FldElement {
@@ -310,6 +438,18 @@ export class Tab extends Base {
       if ($name) {
         $name.textContent = config.name;
       }
+      const $tooltip = this.$container.querySelector(
+        '.tabs .tab > craft-tooltip'
+      );
+      if ($tooltip) {
+        $tooltip.textContent = config.name;
+      }
+      const $defaultIcon = this.$container.querySelector(
+        '.tabs .tab > .fld-tab__default-icon'
+      );
+      if ($defaultIcon) {
+        $defaultIcon.replaceChildren(createInitialIcon(config.name));
+      }
     }
 
     const designerConfig = this.designer.config;
@@ -317,10 +457,7 @@ export class Tab extends Base {
     if (index !== -1) {
       designerConfig.tabs[index] = config;
     } else {
-      const siblings = Array.from(
-        this.$container.parentElement.querySelectorAll(':scope > .fld-tab')
-      );
-      const newIndex = siblings.indexOf(this.$container);
+      const newIndex = this.designer.tabElements().indexOf(this.$container);
       designerConfig.tabs.splice(newIndex, 0, config);
     }
     this.designer.config = designerConfig;
@@ -345,10 +482,7 @@ export class Tab extends Base {
     this.designer.updateConfig((config) => {
       const tabConfig = this.config;
       const oldIndex = this.index;
-      const siblings = Array.from(
-        this.$container.parentElement.querySelectorAll(':scope > .fld-tab')
-      );
-      const newIndex = siblings.indexOf(this.$container);
+      const newIndex = this.designer.tabElements().indexOf(this.$container);
       if (oldIndex !== -1) {
         config.tabs.splice(oldIndex, 1);
       }
@@ -399,6 +533,8 @@ export class Tab extends Base {
     const $focusElement = firstFocusableInSiblings(this.$container);
     if ($focusElement) {
       $focusElement.focus();
+    } else if (this.isSidebar) {
+      this.designer.$newSidebarTabBtn?.focus();
     } else {
       this.designer.$newTabBtn.focus();
     }

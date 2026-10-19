@@ -3981,6 +3981,11 @@ table.editable {
     }
   }
 
+  // With no body rows, the table's own border closes off the header
+  thead:not(:has(~ :is(tbody, tfoot) > tr)) tr:last-child th {
+    border-block-end: 0;
+  }
+
   thead {
     tr {
       th {

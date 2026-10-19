@@ -15,6 +15,7 @@ import {
   fldTabData,
   htmlToElement,
   hudData,
+  isSidebarTab,
   type FieldLayoutHud,
 } from './support';
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
@@ -47,7 +48,12 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   $innerContainer: any = null;
   $configInput: any = null;
   $tabContainer: any = null;
+  /** Holds the content tabs, which wrap across the workspace. */
+  $contentTabContainer: any = null;
+  /** Holds the sidebar tabs, in a column along the workspace's inline end. */
+  $sidebarTabContainer: any = null;
   $newTabBtn: any = null;
+  $newSidebarTabBtn: any = null;
   $libraryContainer: any = null;
   $selectedLibrary: any = null;
   $fieldLibrary: any = null;
@@ -61,6 +67,9 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
   libraryPicker: Listbox | null = null;
   tabGrid: any = null;
+  /** Keeps the workspace a whole number of grid cells tall. */
+  workspaceHeightObserver: ResizeObserver | null = null;
+  sidebarTabHeightObserver: ResizeObserver | null = null;
   elementDrag: ElementDrag | null = null;
   tabDrag: TabDrag | null = null;
 
@@ -98,7 +107,14 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       ':scope > .fld-workspace'
     );
     this.$tabContainer = $workspace.querySelector(':scope > .fld-tabs');
+    this.$contentTabContainer =
+      this.$tabContainer.querySelector('.fld-tabs__content');
+    this.$sidebarTabContainer =
+      this.$tabContainer.querySelector('.fld-tabs__sidebar');
     this.$newTabBtn = $workspace.querySelector('[command="--add-tab"]');
+    this.$newSidebarTabBtn = $workspace.querySelector(
+      '[command="--add-sidebar-tab"]'
+    );
     this.$libraryContainer = this.$innerContainer.querySelector(
       ':scope > .fld-library'
     );
@@ -126,10 +142,10 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       () =>
         !!Craft?.Grid &&
         typeof $ === 'function' &&
-        !!this.$fieldLibrary.querySelector('input[type="search"]')
+        !!this.$fieldLibrary.querySelector('craft-input-search input')
     ).then(() => {
       this.$fieldSearch = this.$fieldLibrary.querySelector(
-        'input[type="search"]'
+        'craft-input-search input'
       );
       this.deferredInit();
     });
@@ -137,18 +153,26 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
   deferredInit(): void {
     // Set up the layout grids — Craft.Grid is a jQuery seam.
-    this.tabGrid = new Craft.Grid($(this.$tabContainer), {
+    // Tabs are 18 cells of the workspace's background grid wide, and each row
+    // of them is snapped to a whole number of cells tall, so later rows and
+    // the New Tab button land on the grid too.
+    const gridSize =
+      parseFloat(
+        getComputedStyle(this.$contentTabContainer.parentElement).backgroundSize
+      ) || 16;
+    // Only content tabs wrap into rows; sidebar tabs stack in their column.
+    this.tabGrid = new Craft.Grid($(this.$contentTabContainer), {
       itemSelector: '.fld-tab',
-      minColWidth: 24 * 13,
+      minColWidth: gridSize * 18,
       fillMode: 'grid',
-      snapToGrid: 24,
+      snapToGrid: gridSize,
     });
 
-    const $tabs = Array.from(this.$tabContainer.children);
-    for (const tab of $tabs) {
-      if (tab instanceof HTMLElement) {
-        this.initTab(tab);
-      }
+    this.snapWorkspaceHeight(gridSize);
+    this.snapSidebarTabHeights(gridSize);
+
+    for (const tab of this.tabElements()) {
+      this.initTab(tab);
     }
 
     this.elementDrag = new ElementDrag(this);
@@ -161,7 +185,12 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     if (this.settings!.customizableTabs) {
       this.tabDrag = new TabDrag(this);
 
-      this.addListener(this.$newTabBtn, 'activate', 'addTab');
+      this.addListener(this.$newTabBtn, 'activate', () => {
+        this.addTab('content');
+      });
+      this.addListener(this.$newSidebarTabBtn, 'activate', () => {
+        this.addTab('sidebar');
+      });
     }
 
     // Set up the library
@@ -354,6 +383,13 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   }
 
   initTab($tab: any): Tab {
+    const content = isSidebarTab($tab)
+      ? $tab.querySelector(':scope > .fld-tabcontent')
+      : null;
+    if (content) {
+      this.sidebarTabHeightObserver?.observe(content);
+    }
+
     return new Tab(this, $tab);
   }
 
@@ -365,6 +401,10 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
    * listeners and their WeakMaps are released by `super.destroy()` / GC.
    */
   override destroy(): void {
+    this.workspaceHeightObserver?.disconnect();
+    this.workspaceHeightObserver = null;
+    this.sidebarTabHeightObserver?.disconnect();
+    this.sidebarTabHeightObserver = null;
     this.cvd?.destroy();
     this.cvd = null;
 
@@ -381,9 +421,9 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     // Each tab's HUD lives in <body>, so it won't be GC'd with the detached
     // subtree — dispose every tab.
-    this.$tabContainer
-      ?.querySelectorAll(':scope > .fld-tab')
-      .forEach((tabEl: HTMLElement) => fldTabData.get(tabEl)?.dispose());
+    if (this.$tabContainer) {
+      this.tabElements().forEach((tabEl) => fldTabData.get(tabEl)?.dispose());
+    }
 
     super.destroy();
   }
@@ -398,13 +438,13 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     }
   }
 
-  addTab(): void {
+  addTab(type: 'content' | 'sidebar' = 'content'): void {
     if (!this.settings!.customizableTabs) {
       return;
     }
 
     let defaultValue = '';
-    if (this.tabGrid.$items.length === 0) {
+    if (this.tabElements().length === 0) {
       defaultValue = Craft.t('app', 'Content');
     }
     const name = Craft.escapeHtml(
@@ -416,39 +456,94 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     }
 
     const $tab = htmlToElement(`
-<div class="fld-tab">
+<div class="fld-tab${type === 'sidebar' ? ' fld-tab--sidebar' : ''}">
   <div class="tabs">
     <div class="tab sel draggable">
       <h3 class="fld-tab__name">${name}</h3>
     </div>
   </div>
   <div class="fld-tabcontent">
-    <craft-button 
-      type="button" 
-      class="w-full fld-add-btn" 
+    <craft-button
+      type="button"
+      class="w-full fld-add-btn mt-2"
       command="--add-field"
       variant="outline"
       size="small"
     >
+      <craft-icon name="plus" slot="prefix"></craft-icon>
       ${t('Add')}
     </craft-button>
   </div>
 </div>
 `);
-    // keep it before the resize object
-    const $tabs = this.$tabContainer.querySelectorAll(':scope > .fld-tab');
-    const $lastTab = $tabs[$tabs.length - 1];
-    if ($lastTab) {
-      $lastTab.after($tab);
+    if (type === 'sidebar') {
+      this.$sidebarTabContainer.appendChild($tab);
     } else {
-      this.$tabContainer.prepend($tab);
+      // Only content tabs wrap into the grid's rows.
+      this.$contentTabContainer.appendChild($tab);
+      this.tabGrid.addItems($($tab));
     }
-
-    this.tabGrid.addItems($($tab));
     this.tabDrag!.addItems($tab);
 
     const tab = this.initTab($tab);
     tab.updatePositionInConfig();
+  }
+
+  /**
+   * Keeps the workspace (and so its panes, which stretch to fill it) a whole
+   * number of grid cells tall, so its bottom edge lands on the grid too. Its
+   * height comes from its content, which CSS can't round, so whenever either
+   * column of tabs resizes, this measures the workspace's natural height and
+   * rounds its minimum height up to the next grid cell.
+   */
+  snapWorkspaceHeight(gridSize: number): void {
+    const $workspace: HTMLElement = this.$tabContainer.parentElement;
+
+    const snap = () => {
+      $workspace.style.removeProperty('min-block-size');
+      const height = $workspace.getBoundingClientRect().height;
+      // A sliver of tolerance, so fractional pixels don't add a whole cell.
+      const cells = Math.ceil(height / gridSize - 0.01);
+      $workspace.style.minBlockSize = `${cells * gridSize}px`;
+    };
+
+    this.workspaceHeightObserver = new ResizeObserver(snap);
+    this.workspaceHeightObserver.observe(this.$contentTabContainer);
+    this.workspaceHeightObserver.observe(this.$sidebarTabContainer);
+  }
+
+  /**
+   * Sidebar tabs stack in their column rather than wrapping into the grid's
+   * rows, so the grid doesn't snap them. Each is snapped to a whole number of
+   * grid cells tall here instead, as the grid does for content tabs' rows, so
+   * the next tab and the New Tab button below them land on the grid too.
+   * `initTab()` observes each sidebar tab's content, which stays its natural
+   * height however tall the tab is.
+   */
+  snapSidebarTabHeights(gridSize: number): void {
+    this.sidebarTabHeightObserver = new ResizeObserver((entries) => {
+      for (const {target} of entries) {
+        const tab = target.parentElement;
+        if (!tab?.isConnected) {
+          continue;
+        }
+
+        tab.style.removeProperty('block-size');
+        const height = tab.getBoundingClientRect().height;
+        // A sliver of tolerance, so fractional pixels don't add a whole cell.
+        const cells = Math.ceil(height / gridSize - 0.01);
+        tab.style.blockSize = `${cells * gridSize}px`;
+      }
+    });
+  }
+
+  /** Every tab, in layout order: the content tabs, then the sidebar tabs. */
+  tabElements(): HTMLElement[] {
+    return Array.from(
+      this.$tabContainer.querySelectorAll(
+        '.fld-tabs__content > .fld-tab, .fld-tabs__sidebar > .fld-tab'
+      )
+    );
   }
 
   get config(): FieldLayoutConfig {

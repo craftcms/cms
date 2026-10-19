@@ -155,6 +155,14 @@
       regions.has('content-toolbar-meta') ||
       regions.has('content-toolbar-actions')
   );
+  // Hidden while it has nothing to show, such as an untitled nested entry's
+  // edit page, so its padding doesn't leave a gap above the content.
+  const hasHeader = computed(
+    () =>
+      Boolean(pageTitle.value) ||
+      regions.has('title') ||
+      regions.has('content-actions')
+  );
   const hasDetails = computed(() => regions.has('content-details'));
   const hasTabs = computed(() => regions.has('content-tabs'));
   // Decided here rather than inside `ContentFooter`, so the sticky wrapper
@@ -399,7 +407,11 @@
                             </slot>
 
                             <slot name="content-header">
-                              <div id="cp-content-header" class="pt-lg pb-md">
+                              <div
+                                v-show="hasHeader"
+                                id="cp-content-header"
+                                class="pt-lg pb-md"
+                              >
                                 <CpContainer>
                                   <div
                                     class="flex flex-wrap gap-md items-center justify-between"

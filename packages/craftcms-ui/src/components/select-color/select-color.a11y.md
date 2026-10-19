@@ -19,7 +19,7 @@ Built on `craft-select-rich`, which supplies the invoker button, the listbox, it
 
 ### Visual
 
-- [ ] The transparent option's checkerboard, and the swatches, keep a visible edge against the surface. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified. The edge is a `rgb(0 0 0 / 15%)` inset shadow, below 3:1 for pale swatches; the name carries the meaning, so the swatch edge isn't required.
+- [ ] The transparent option's checkerboard, and the swatches, keep a visible edge against the surface. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified. Each swatch's edge is its card header's border color (the transparent option's lightens in the dark theme), below 3:1 for pale swatches; the name carries the meaning, so the swatch edge isn't required.
 - [ ] In forced colors mode the swatches lose their fill and edge, and every option and the invoker still show the color name. Not yet verified.
 
 ### Reflow and zoom

@@ -58,6 +58,19 @@ describe('ElementThumbs', () => {
     expect(labels).toEqual(['Select Homepage', 'Select Untitled entry']);
   });
 
+  /** Selectable tiles get the default cursor rather than a text one. */
+  it.each([true, false])(
+    'marks a tile selectable only while it is (%s)',
+    async (selectable) => {
+      const {root} = mount({selectable});
+      await nextTick();
+
+      for (const tile of root.querySelectorAll('li.element')) {
+        expect(tile.classList.contains('element--selectable')).toBe(selectable);
+      }
+    }
+  );
+
   it('links just the label, whether to the element or a label URL', async () => {
     const {root} = mount({
       data: [

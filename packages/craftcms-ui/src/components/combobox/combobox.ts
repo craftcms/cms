@@ -522,7 +522,37 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       }
     }
 
-    return entries;
+    return q === '' ? entries : this.#exactMatchesFirst(q, entries);
+  }
+
+  /**
+   * Moves options whose label or value is exactly the query to the front of
+   * their group, so the first match, which becomes active, is the one typed.
+   * Other options keep their order, and groups stay together.
+   */
+  #exactMatchesFirst(
+    loweredQuery: string,
+    entries: VisibleEntry[]
+  ): VisibleEntry[] {
+    const isExact = ({option}: VisibleEntry) =>
+      option.label.toLowerCase() === loweredQuery ||
+      String(option.value).toLowerCase() === loweredQuery;
+    const sorted: VisibleEntry[] = [];
+
+    for (let start = 0; start < entries.length;) {
+      let end = start;
+      while (
+        end < entries.length &&
+        entries[end]!.groupLabel === entries[start]!.groupLabel
+      ) {
+        end++;
+      }
+      const run = entries.slice(start, end);
+      sorted.push(...run.filter(isExact), ...run.filter((e) => !isExact(e)));
+      start = end;
+    }
+
+    return sorted;
   }
 
   #isGroup(item: ComboboxItem): item is ComboboxOptGroup {

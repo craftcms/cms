@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {Appearance, t} from '@craftcms/ui';
   import CraftSelectRich from '@craftcms/ui/vue/CraftSelectRich.vue';
-  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
   import IndexViewSettings from '@/modules/elements/index/components/IndexViewSettings.vue';
   import type {CheckboxOption} from '@/common/types';
@@ -81,18 +81,6 @@
     (props.sites ?? []).map((site) => ({label: site.name, value: site.handle}))
   );
 
-  /**
-   * Clears the search and returns focus to the input, since the clear button
-   * unmounts once the search is empty. This applies on mobile too, so screen
-   * reader users there aren't left without focus.
-   */
-  function clearSearch(): void {
-    search.value = '';
-    filterAnchor.value
-      ?.querySelector<HTMLElement>('craft-input[name="search"]')
-      ?.focus();
-  }
-
   function onSearchEnter(event: KeyboardEvent): void {
     if (props.asForm !== false) {
       return;
@@ -166,46 +154,24 @@
       </div>
 
       <div ref="filterAnchor" class="element-toolbar__filter">
-        <CraftInput
+        <CraftInputSearch
           name="search"
-          :label="t('Search')"
-          :placeholder="t('Search')"
           v-model="search"
-          label-sr-only
           @keydown.enter="onSearchEnter"
         >
-          <craft-icon name="search" slot="prefix"></craft-icon>
-          <div slot="suffix" class="flex">
-            <craft-button
-              type="button"
-              icon
-              size="small"
-              variant="plain"
-              v-if="search"
-              .disabled="processing"
-              @click="clearSearch"
-            >
-              <craft-icon
-                name="xmark-large"
-                :label="t('Clear search')"
-              ></craft-icon>
-            </craft-button>
-            <craft-button
-              type="button"
-              icon
-              size="small"
-              variant="plain"
-              .disabled="processing"
-              @click="filterActive = true"
-              :class="{'is-active': !!conditions}"
-            >
-              <craft-icon
-                name="filter"
-                :label="t('Filter results')"
-              ></craft-icon>
-            </craft-button>
-          </div>
-        </CraftInput>
+          <craft-button
+            slot="suffix"
+            type="button"
+            icon
+            size="small"
+            variant="plain"
+            .disabled="processing"
+            @click="filterActive = true"
+            :class="{'is-active': !!conditions}"
+          >
+            <craft-icon name="filter" :label="t('Filter results')"></craft-icon>
+          </craft-button>
+        </CraftInputSearch>
 
         <FilterHud
           v-if="filterActive"

@@ -151,68 +151,87 @@
   background-color: var(--color-gray-50);
 }
 
+/* A dark ring vanishes against the dark theme's surfaces, so HUDs get a light
+   one there, like other hairline borders. */
+[data-theme='dark'] .hud {
+  --hud-ring-color: var(--c-color-neutral-border-quiet);
+  box-shadow:
+    0 0 0 1px var(--hud-ring-color),
+    var(--modal-shadow, var(--c-shadow-overlay)) !important;
+}
+
+/* Drawn in the HUD's own colors (rather than as images), so the tips follow
+   the theme. The tip is filled with the ring's color, and its ::before, in
+   the HUD's color, sits a pixel in from it toward the HUD, leaving the ring
+   along the tip's outer edges. */
 .hud .tip {
   position: absolute;
   z-index: 101;
-  background: no-repeat 0 0;
+  background-color: var(
+    --hud-ring-color,
+    var(--modal-bg, var(--c-surface-overlay))
+  );
+}
+
+.hud .tip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--modal-bg, var(--c-surface-overlay));
+  clip-path: inherit;
+}
+
+.hud .tip-left::before {
+  translate: 1px 0;
+}
+
+.hud .tip-top::before {
+  translate: 0 1px;
+}
+
+.hud .tip-right::before {
+  translate: -1px 0;
+}
+
+.hud .tip-bottom::before {
+  translate: 0 -1px;
 }
 
 .hud .tip-left {
   inset-inline-start: -15px;
   width: 15px;
   height: 30px;
-  background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_left.png');
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
 }
 
 .hud .tip-top {
   inset-block-start: -15px;
   width: 30px;
   height: 15px;
-  background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_top.png');
+  clip-path: polygon(0 100%, 50% 0, 100% 100%);
 }
 
 .hud .tip-right {
   inset-inline-end: -15px;
   width: 15px;
   height: 30px;
-  background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_right.png');
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
 
 .hud .tip-bottom {
   inset-block-end: -15px;
   width: 30px;
   height: 15px;
-  background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_bottom.png');
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 
+/* Points out of the footer, so it takes the footer's color. */
 .hud.has-footer .tip-bottom {
-  background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_bottom_gray.png');
+  background-color: var(--hud-ring-color, var(--color-gray-100));
 }
 
-@media only screen and (resolution >= 1.5dppx) {
-  .hud .tip-left {
-    background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_left_2x.png');
-    background-size: 15px 30px;
-  }
-
-  .hud .tip-top {
-    background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_top_2x.png');
-    background-size: 30px 15px;
-  }
-
-  .hud .tip-right {
-    background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_right_2x.png');
-    background-size: 15px 30px;
-  }
-
-  .hud .tip-bottom {
-    background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_bottom_2x.png');
-    background-size: 30px 15px;
-  }
-
-  .hud.has-footer .tip-bottom {
-    background-image: url('../../../../packages/craftcms-legacy/cp/src/images/hudtip_bottom_gray_2x.png');
-  }
+.hud.has-footer .tip-bottom::before {
+  background-color: var(--color-gray-100);
 }
 
 /* The legacy stylesheet defines this too (as `overflow: hidden !important`);

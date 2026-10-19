@@ -17,6 +17,25 @@ For a value you have in script, [Copy Button](?path=/docs/components-copy-button
 
 Like the copy button, it emits `craft-copy` on success and `craft-error` on failure — clipboard writes can be refused, and the interface should say so rather than appear to have worked.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Nodes\CopyAttribute` renders a copy attribute. It usually goes in a field's actions, next to its label:
+
+```php
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Nodes\CopyAttribute;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Summary', Textarea::make('summary'))
+        ->actions(CopyAttribute::make('summary-handle', 'summary')),
+]);
+```
+
+The first argument is the node's UID, and the second is the value that's shown and copied.
+
 ## Accessibility
 
 The chip's visible text is its `value`, and that text, followed by a hidden "Copy to clipboard", is its accessible name. It can't be given another name, so use it where the value says what it is, such as a field handle.

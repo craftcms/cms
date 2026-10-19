@@ -23,6 +23,7 @@ Used inside `craft-action-menu`; see `action-menu.a11y.md` for the pattern. This
 
 ### Visual
 
+- [x] An `icon-color` icon reaches 3:1 against the surface in the light and dark themes, for every Craft color, so its tint can be told apart from an uncolored icon. Black and white, which don't change with the theme, take the default text color. Per WCAG 1.4.11 (Non-text Contrast). Verified by `sets a colored icon in the color’s loud tone, or black and white in the text color, at 3:1 against the surface in the %s theme` in `action-item.browser.test.ts`.
 - [ ] An `active` item is marked by a border as well as a background color. Per WCAG 1.4.1 (Use of Color) and 1.4.11 (Non-text Contrast). Not yet verified. The `Active` story has no `play()` assertion.
 - [ ] A `danger` item's text meets 4.5:1 against the menu surface, at rest and on hover. Per WCAG 1.4.3 (Contrast (Minimum)). Not yet verified.
 - [ ] Every item is at least 24×24 CSS px. Per WCAG 2.5.8 (Target Size (Minimum)). Not yet verified.

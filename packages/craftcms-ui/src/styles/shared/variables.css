@@ -136,7 +136,12 @@
 /* On [data-theme] too: a var() resolves where it's declared, so :root alone
    would inherit the root palette's value into a themed subtree. */
 :root,
-[data-theme] {
+[data-theme],
+:where(
+  craft-card[data-color='black'] > *,
+  craft-chip[data-color='black']:not([appearance~='plain']) > *,
+  craft-badge[fill='black'] > *
+) {
   --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
   --c-color-fill-normal: var(--c-color-neutral-fill-normal);
   --c-color-fill-loud: var(--c-color-neutral-fill-loud);

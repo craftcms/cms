@@ -13,7 +13,7 @@
 
 ### Visual
 
-- [ ] The initials reach 4.5:1 against the disc in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Known gap: the disc is always `white` with the gradient at 25% opacity on top, while the initials take the inherited text color, so in the dark theme light initials sit on a near-white disc. `--c-avatar-color-text` is declared but nothing reads it.
+- [x] The initials reach 4.5:1 against the disc in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Verified by `draws its initials at 4.5:1 against both ends of the disc in the %s theme` in `avatar.browser.test.ts`.
 - [ ] In forced colors mode, the disc keeps a visible edge and the initials stay visible. Not yet verified.
 - [ ] Initials for a label of many words stay inside the disc. Not yet verified: one letter is drawn per word, at a fixed size, so a long name can overflow the circle and be clipped.
 

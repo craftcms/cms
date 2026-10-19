@@ -38,21 +38,19 @@ CP Styles
   --cp-content-max-width: calc(960rem / 16);
 
   /* Workspace */
-  --workspace-bg-color: var(--c-color-neutral-fill-quiet);
-  --workspace-bg-size: calc(24rem / 16) calc(24rem / 16);
+  --workspace-bg-color: var(--c-surface-sunken);
+  --workspace-bg-size: var(--c-spacing-lg) var(--c-spacing-lg);
   --workspace-bg-image:
     linear-gradient(
       to right,
-      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
-      transparent 0
+      color-mix(var(--c-color-neutral-border-normal), transparent 92%) 1px,
+      transparent 1px
     ),
     linear-gradient(
       to bottom,
-      color-mix(var(--c-color-neutral-border-normal), transparent 85%) 1px,
+      color-mix(var(--c-color-neutral-border-normal), transparent 92%) 1px,
       transparent 1px
     );
-  --workspace-bg: var(--workspace-bg-color) var(--workspace-bg-size)
-    var(--workspace-bg-image);
 }
 
 /* Laravel Debugbar pins its header row to the bottom of the viewport. This is
@@ -64,6 +62,16 @@ CP Styles
 /* Above all persistent page chrome; see the layer tokens. */
 .skip-link--global {
   z-index: var(--c-layer-skip-link);
+}
+
+/* A label's first letter standing in for an icon. Its box is trimmed to the
+   letter's cap height, so whatever centers it centers the letter itself
+   rather than a line box with room for descenders. */
+.initial-icon {
+  display: inline-block;
+  font-weight: var(--font-weight-semibold, 600);
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
 }
 
 .visually-hidden {
@@ -94,7 +102,7 @@ body.no-scroll {
 Temporary holding for cp-pane styles until craft-pane is a thing
  */
 .cp-workspace {
-  padding: var(--c-spacing-xl);
+  padding: var(--c-spacing-lg);
   border-radius: var(--c-radius-sm);
   background-color: var(--workspace-bg-color);
   background-image: var(--workspace-bg-image);
@@ -241,6 +249,45 @@ Remove once we have a stable way to create a `<craft-checkbox/>` via twig
   z-index: 1;
 }
 
+/* An outlet nothing has rendered into, as in server-rendered forms, takes no
+   room (or gap) in its container. */
+[data-ui-outlet]:empty {
+  display: none;
+}
+
+/* Sortable selects list only the checked items, with each checkbox replaced by
+   its label and a Remove button. The checkbox stays as the source of truth. */
+.cp-checkbox-select--selected-only {
+  justify-items: start;
+}
+
+.cp-checkbox-select--selected-only > .cp-checkbox-select__item {
+  justify-self: stretch;
+}
+
+/* Item-level, so drag helpers (clones appended to the body) match too. */
+.cp-checkbox-select__item--selected-only {
+  gap: var(--c-spacing-sm);
+}
+
+.cp-checkbox-select--selected-only > .cp-checkbox-select__item[hidden],
+.cp-checkbox-select--selected-only > .cp-checkbox-select__add[hidden] {
+  display: none;
+}
+
+.cp-checkbox-select__item--selected-only
+  > :not(
+    craft-reorder-button,
+    .cp-checkbox-select__label,
+    .cp-checkbox-select__remove
+  ) {
+  display: none;
+}
+
+.cp-checkbox-select__label {
+  min-width: 0;
+}
+
 /**
 Component select chips, spaced like relational fields' chips
  */
@@ -267,9 +314,10 @@ Form controls
   font: inherit;
   color: var(--c-input-text, var(--c-text-default));
   position: relative;
-  min-height: calc(
-    var(--c-input-height, var(--c-size-control-md)) - 2 * var(--_border-width)
-  );
+  /* Border-box, so selects (which the UA already sizes that way) come out as
+     tall as inputs. */
+  box-sizing: border-box;
+  min-height: var(--c-input-height, var(--c-size-control-md));
   border-width: var(--_border-width);
   border-style: var(--c-input-border-style, var(--c-form-control-border-style));
   border-color: var(--c-input-border-color, var(--c-form-control-border-color));
@@ -280,6 +328,39 @@ Form controls
   background-color: var(--c-input-fill, var(--c-form-control-fill));
   box-shadow: var(--c-input-shadow);
   overflow: clip;
+}
+
+/* Native selects draw the same chevron as craft-select, rather than the
+   browser's own, which sits flush against the border. */
+.cp-select:has(> .cp-form-control--select:not([multiple])) {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: var(--c-input-spacing-inline);
+    inline-size: 0.8em;
+    block-size: 0.8em;
+    translate: 0 -50%;
+    background-color: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+    pointer-events: none;
+  }
+
+  @media (forced-colors: active) {
+    &::after {
+      forced-color-adjust: none;
+      background-color: CanvasText;
+    }
+  }
+}
+
+.cp-form-control--select:not([multiple]) {
+  appearance: none;
+  padding-inline: var(--c-input-spacing-inline)
+    calc(var(--c-input-spacing-inline) * 2 + 0.8em);
 }
 
 .selectize-dropdown.cp-form-control {
@@ -362,4 +443,25 @@ craft-field[data-highlighted] {
 
 .cp-container > * {
   grid-column: 2;
+}
+
+/* Non-image card thumbnails (user avatars, folder and file-kind icons) render
+   at a fixed small size. Center them in a box as big as the largest image
+   thumbnail, at the size they get in the thumbnail view. Unlayered, so it
+   beats the 24px utility classes thumbnails render with. */
+.card-thumb:has(> .thumb) {
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+}
+
+.card-thumb > .thumb {
+  width: 72px;
+  height: 72px;
+}
+
+.card-thumb > .thumb svg {
+  width: 100%;
+  height: 100%;
 }

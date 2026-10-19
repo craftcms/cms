@@ -583,7 +583,7 @@ describe('craft-button link padding', () => {
 
 describe('craft-button link keyboard focus', () => {
   it('is a single tab stop on its anchor', async () => {
-    const {userEvent} = await import('@vitest/browser/context');
+    const {userEvent} = await import('vite-plus/test/browser');
     document.body.innerHTML =
       '<button>Before</button><craft-button href="/">Go</craft-button><button>After</button>';
     const [before, after] = document.querySelectorAll('button');
@@ -672,4 +672,23 @@ describe('small icon buttons', () => {
       getComputedStyle(labeled!).fontSize
     );
   });
+});
+
+describe('craft-button selected state', () => {
+  it.each(['outline', 'fill', 'plain'])(
+    'keeps a selected %s button’s look while hovered',
+    async (variant) => {
+      const {userEvent} = await import('vite-plus/test/browser');
+      await import('../../styles/cp.css');
+      document.body.innerHTML = `<craft-button variant="${variant}" active>Selected</craft-button>`;
+      const button = document.querySelector('craft-button')!;
+      await button.updateComplete;
+      const before = getComputedStyle(button).backgroundColor;
+
+      await userEvent.hover(button);
+
+      expect(button.matches(':hover')).toBe(true);
+      expect(getComputedStyle(button).backgroundColor).toBe(before);
+    }
+  );
 });

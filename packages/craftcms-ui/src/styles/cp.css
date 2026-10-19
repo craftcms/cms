@@ -5,6 +5,7 @@
 @import './shared/tokens.css' layer(theme);
 @import './shared/colorable.css' layer(theme);
 @import './shared/base.css' layer(base);
+@import './shared/choice-inputs.css' layer(base);
 
 .resizable-container {
   border: 2px solid;

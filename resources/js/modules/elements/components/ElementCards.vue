@@ -161,7 +161,7 @@
 </script>
 
 <template>
-  <div class="grid place-items-center min-h-50" v-if="loading">
+  <div class="grid flex-1 place-items-center min-h-50" v-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">
@@ -279,33 +279,6 @@
   }
 
   .card-grid :deep(> li > craft-card) {
-    height: 100%;
-  }
-
-  // craft-thumbnail defaults its own size via :host, so the card thumbnail
-  // renders at the tiny default instead of filling its 120px column. Match the
-  // thumbnail view (and Craft 5's 120px card thumb column).
-  .card-grid :deep(craft-thumbnail) {
-    --c-thumbnail-size: 120px;
-  }
-
-  // Non-image thumbs (folder / file-kind SVGs) render at a fixed small size.
-  // Center them in the same 120px box an image thumbnail fills, at the size
-  // they get in the thumbnail view.
-  .card-thumb:has(> .thumb) {
-    display: grid;
-    place-items: center;
-    width: 120px;
-    height: 120px;
-  }
-
-  .card-thumb > :deep(.thumb) {
-    width: 72px;
-    height: 72px;
-  }
-
-  .card-thumb > :deep(.thumb svg) {
-    width: 100%;
     height: 100%;
   }
 </style>

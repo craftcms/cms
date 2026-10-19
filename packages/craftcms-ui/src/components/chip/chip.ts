@@ -34,11 +34,10 @@ type FilledParts = Record<
  * doesn't displace them. The status sits with the label instead, closer to
  * it than the other parts are to each other, since it describes the label.
  *
- * On connect the chip stamps `data-color="white"` on itself so it reads as a
- * raised surface by default, filled with `--c-surface-raised` so it follows
- * the theme. Set `data-color` yourself to override it. Because the attribute
- * lands on the chip, an ancestor's `data-color` no longer reaches it — color
- * the chip directly instead.
+ * Without a `data-color` the chip has no fill of its own: it takes its
+ * border and text from the colors around it, so in a colored card it takes
+ * the card's color, and elsewhere the neutral ones. Set `data-color` for a
+ * chip in a color of its own, such as `white` for a raised surface.
  *
  * Any `<craft-button>` placed in the chip is given `inherit`, so its neutral
  * variants pick up the chip's color. This includes buttons added after the
@@ -194,14 +193,6 @@ export default class CraftChip extends LitElement {
       if (button.closest('craft-chip') === this) {
         button.toggleAttribute('inherit', true);
       }
-    }
-  }
-
-  override connectedCallback(): void {
-    super.connectedCallback();
-
-    if (!this.getAttribute('data-color')) {
-      this.setAttribute('data-color', 'white');
     }
   }
 

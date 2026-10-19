@@ -45,3 +45,43 @@ it('doesn’t light up the hovered invoker', async () => {
     'rgb(244, 246, 247)'
   );
 });
+
+it.each([
+  {width: '100%', expected: 'in a full-width container'},
+  {width: '200px', expected: 'in a narrow container'},
+])(
+  'stays within its container and the viewport when an option is long, $expected',
+  async ({width}) => {
+    const {page} = await import('vite-plus/test/browser');
+    await page.viewport(320, 640);
+    document.body.innerHTML = `
+      <div style="padding-inline: 16px">
+        <div class="container" style="inline-size: ${width}">
+          <craft-select-rich label="Status">
+            <craft-option .choiceValue="short">Short</craft-option>
+            <craft-option .choiceValue="long" hint="${'x '.repeat(200)}">${'y'.repeat(300)}</craft-option>
+          </craft-select-rich>
+        </div>
+      </div>`;
+    const container = document.querySelector<HTMLElement>('.container')!;
+    const select =
+      document.querySelector<CraftSelectRich>('craft-select-rich')!;
+    await select.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    select.opened = true;
+    const listbox = select.querySelector<HTMLElement>('[slot="input"]')!;
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const invoker = select
+      .querySelector<HTMLElement>('lion-select-invoker')!
+      .getBoundingClientRect();
+    const list = listbox.getBoundingClientRect();
+
+    expect(invoker.right).toBeLessThanOrEqual(
+      container.getBoundingClientRect().right + 1
+    );
+    expect(list.left).toBeGreaterThanOrEqual(0);
+    expect(list.right).toBeLessThanOrEqual(window.innerWidth);
+  }
+);

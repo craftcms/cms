@@ -212,11 +212,16 @@ it('offers the palette colors for the entry type color', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes', function ($nodes): bool {
-                $color = collect($nodes)->first(
+                // It's in the display settings group, which renders in the
+                // field layout designer's Appearance tab.
+                $group = collect($nodes)->firstWhere('uid', 'display-settings');
+                $color = collect($group['children'] ?? [])->first(
                     fn (array $node): bool => ($node['control']['path'] ?? null) === ['color'],
                 );
 
-                return data_get($color, 'control.component') === 'craft:color-select'
+                return data_get($group, 'props.outlet') === 'field-layout-designer.appearance'
+
+                    && data_get($color, 'control.component') === 'craft:color-select'
                     && data_get($color, 'control.props.allowTransparent') === true
                     && data_get($color, 'control.props.blankLabel') === t('No color')
                     && data_get($color, 'control.props.colors') === array_column(Color::cases(), 'value');
