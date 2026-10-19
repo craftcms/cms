@@ -108,6 +108,7 @@
 - Fixed a bug where control panel pages and details panes shifted sideways when a scrollbar appeared. ([#20030](https://github.com/craftcms/cms/pull/20030))
 - Fixed a bug where every source page listed all enabled sources when the first source, such as “All entries”, was disabled. ([#20016](https://github.com/craftcms/cms/issues/20016))
 - Fixed a bug where thumbnails for animated image formats, such as WebP and GIF, were shown as a 1×1 dot. ([#20019](https://github.com/craftcms/cms/issues/20019))
+- Fixed a bug where Plain Text fields with a character limit weren’t full width when line breaks were allowed. ([#20017](https://github.com/craftcms/cms/issues/20017))
 
 ### Content Management
 
