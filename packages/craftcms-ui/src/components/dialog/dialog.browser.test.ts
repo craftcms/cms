@@ -1,4 +1,4 @@
-import {beforeEach, expect, it} from 'vite-plus/test';
+import {beforeEach, expect, it, vi} from 'vite-plus/test';
 import type CraftDialog from './dialog.js';
 import '../../styles/cp.css';
 import './dialog.js';
@@ -178,13 +178,14 @@ it('leaves focus alone when it is outside the dialog at close', async () => {
   expect(document.activeElement).toBe(outside);
 });
 
-it('uses returnFocus when the native dialog closes itself', async () => {
+it('leaves the native return alone when the native dialog is closed directly', async () => {
   const invoker = button('Open');
   const target = button('Target');
   document.body.append(invoker, target);
   invoker.focus();
+  const returnFocus = vi.fn(() => target);
   const dialog = await openDialog((dialog) => {
-    dialog.returnFocus = () => target;
+    dialog.returnFocus = returnFocus;
   });
 
   const native = shadow<HTMLDialogElement>(dialog, 'dialog');
@@ -196,7 +197,8 @@ it('uses returnFocus when the native dialog closes itself', async () => {
   await dialog.updateComplete;
 
   expect(dialog.opened).toBe(false);
-  expect(document.activeElement).toBe(target);
+  expect(returnFocus).not.toHaveBeenCalled();
+  expect(document.activeElement).toBe(invoker);
 });
 
 it('keeps the native return target when returnFocus returns nothing', async () => {

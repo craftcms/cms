@@ -154,11 +154,11 @@ export default class CraftDialog extends LitElement {
    * is in the dialog as it closes, the same rule the browser's own return
    * follows. If it returns an element that can take focus, that element gets
    * it; otherwise the browser's own return applies, which goes back to that
-   * opener. Set it when the opener
-   * may not be there to take focus — an item in a menu that has since closed,
-   * or content that re-renders while the dialog is open — and look the target
-   * up when it's called rather than holding on to an element. For menu
-   * actions, `focusReturnFor()` from `utilities/focus-return` does this.
+   * opener. Set it when the opener may not be there to take focus — an item
+   * in a menu that has since closed, or content that re-renders while the
+   * dialog is open — and look the target up when it's called rather than
+   * holding on to an element. For menu actions, `focusReturnFor()` from
+   * `utilities/focus-return` does this.
    */
   @property({attribute: false})
   returnFocus?: (opener: HTMLElement | null) => HTMLElement | null | undefined;
@@ -391,17 +391,13 @@ export default class CraftDialog extends LitElement {
     const dialog = this.dialogElement;
     const opener = this.#opener;
     this.#opener = null;
-    let focusWasInside: boolean;
+    // Only known while the native dialog is still open. When it was closed
+    // directly instead, the browser's own return has already run and stands.
+    let focusWasInside = false;
 
     if (dialog?.open) {
       focusWasInside = this.matches(':focus-within');
       dialog.close();
-    } else {
-      // The native dialog closed itself first, and the browser has already
-      // returned focus from it: to the opener, or to `<body>` when it couldn't.
-      focusWasInside =
-        document.activeElement === document.body ||
-        document.activeElement === opener;
     }
 
     this.#releaseFocusTrap?.();
