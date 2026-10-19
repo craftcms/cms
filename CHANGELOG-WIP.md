@@ -61,6 +61,10 @@
 - Added a “Selectable {Type} Condition” setting to Link and Markdown fields’ Entry and Asset link types. ([#19622](https://github.com/craftcms/cms/pull/19622))
 - Added a “Default Row Values” setting to Table fields. ([#3621](https://github.com/craftcms/cms/issues/3621))
 - Table field columns are now configured with cell settings forms rather than JSON option inputs.
+- Table fields now have a “Link” column type, with the same settings as Link fields. Link cells return `CraftCms\Cms\Field\Data\LinkData` objects, and Table fields now track the elements they link to. ([#16009](https://github.com/craftcms/cms/discussions/16009), [#19998](https://github.com/craftcms/cms/pull/19998))
+- Table field column settings now open in a slideout. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Table cell validation errors now name the column. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Table columns with invalid settings are now flagged in the Table field’s settings, and link setting validation errors in Link, Markdown, and Table fields now name the setting. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Added support for configuring field layout field instruction positions.
 - Field layouts with a card view designer now show it and the content tab designer in “Content” and “Appearance” tabs, with Generated Fields in the Content tab. ([#20001](https://github.com/craftcms/cms/pull/20001)), ([#20003](https://github.com/craftcms/cms/pull/20003))
 - Entry types’ Icon and Color settings are now in their field layout designer’s Appearance tab, above Card Attributes. ([#20001](https://github.com/craftcms/cms/pull/20001))

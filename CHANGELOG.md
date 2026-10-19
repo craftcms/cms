@@ -104,6 +104,7 @@
 - Fixed a bug where rich selects’ menus could extend off-screen when an option had a long label or hint, and a long option could stretch the select itself past its container.
 - Fixed a bug where permission trees, such as user group permissions and the public MCP settings, used the browser’s native checkboxes instead of the control panel’s checkbox styling.
 - Fixed a bug where logging in from the control panel’s login page could redirect to the front end instead of the control panel, when a front-end login path was also configured.
+- Fixed a bug where control panel pages and details panes shifted sideways when a scrollbar appeared. ([#20030](https://github.com/craftcms/cms/pull/20030))
 
 ### Content Management
 
@@ -123,9 +124,15 @@
 - Comments can now be submitted with <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in the Activity and Workflow details panels. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - Comment fields in the Activity and Workflow details panels now start one line high, keep the Comment button inside the field, and show how many characters a comment is over the limit. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))
+- Table fields now have a “Link” column type, with the same settings as Link fields. Link cells return `CraftCms\Cms\Field\Data\LinkData` objects, and Table fields now track the elements they link to. ([#16009](https://github.com/craftcms/cms/discussions/16009), [#19998](https://github.com/craftcms/cms/pull/19998))
+- Table field column settings now open in a slideout. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Table cell validation errors now name the column. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Table columns with invalid settings are now flagged in the Table field’s settings, and link setting validation errors in Link, Markdown, and Table fields now name the setting. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Link cells in Table fields now truncate long URLs, so columns keep their configured widths.
 - Double-clicking an admin table row now opens its link’s slideout, if it has one. ([#19957](https://github.com/craftcms/cms/pull/19957))
 - Fixed a bug where typing in a newly added nested entry’s fields could replace the edit form with a “UI array path … must be a row index” error once the entry autosaved.
 - Fixed a bug where changing a field back to the value it had when the edit page loaded wasn’t autosaved, so field layout elements shown or hidden by conditions based on it didn’t update.
+- Fixed a bug where Table fields’ Date and Time cells, and their default row values, shifted by the site’s UTC offset each time they were saved from the control panel.
 
 ### Accessibility
 
@@ -237,6 +244,11 @@
 - Renamed `CraftCms\Cms\Form` to `CraftCms\Cms\Ui`, along with its `Form` classes and methods, and the JavaScript `forms` module and its definition APIs to `ui`, including payload fields and refresh endpoints. ([#19882](https://github.com/craftcms/cms/pull/19882))
 - Moved the shared control panel table code (`useCraftTable`, `createCraftColumnHelper`, `useServerPagination`, `useServerSort`, and `useEditableTable`) from `modules/admin-table` to `common/table`. ([#19897](https://github.com/craftcms/cms/pull/19897))
 - Added `CraftCms\Cms\Ui\Nodes\Scope` for embedding component settings under a path prefix, with optional shared delta tracking. ([#19914](https://github.com/craftcms/cms/pull/19914))
+- `CraftCms\Cms\Field\Contracts\TableCellInterface::serializeValue()` can now return arrays. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Added `CraftCms\Cms\Field\Contracts\ElementAwareTableCellInterface`, for Table cell types that reference elements. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Added `CraftCms\Cms\Field\LinkResolver`, which normalizes, validates, and localizes link values for a set of link settings. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Added `CraftCms\Cms\Ui\Controls\Link::compact()`, which shows a link summary with a button that edits the link in a popover. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Added `CraftCms\Cms\Ui\Controls\Link::registeredTypes()`, which locks links whose type is no longer available. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Added support for hiding editable table rows while preserving their inputs and submitted values, using `CraftCms\Cms\Ui\Controls\Table::hiddenRows()` or legacy `_hidden` row values. ([#19939](https://github.com/craftcms/cms/pull/19939))
 - Added the `<craft-input-search>` web component. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `<craft-resize-grips>` web component. ([#20008](https://github.com/craftcms/cms/pull/20008))
@@ -285,6 +297,7 @@
 - Fixed a bug where new nested elements, such as Commerce product variants or entries in Matrix fields set to the element index view mode, could be deleted by the owner element’s autosave before they were saved. ([#19943](https://github.com/craftcms/cms/pull/19943))
 - Fixed a bug where nested element indexes with a single “New” option showed it as a menu containing that one item, rather than a button, when there wasn’t room for their create buttons. ([#19944](https://github.com/craftcms/cms/pull/19944))
 - Fixed a bug where sorting the Sections, Fields, or Entry Types settings tables from a later page showed the first page’s rows with the later page’s pagination. ([#19912](https://github.com/craftcms/cms/issues/19912))
+- Fixed a bug where replacing references in Link fields could replace links to other elements, and discarded the links’ labels and attributes. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Fixed an error that could occur after upgrading to Craft 6 when Laravel queue or other supporting database tables were missing. ([#19889](https://github.com/craftcms/cms/pull/19889))
 - Fixed a bug where failed queue jobs weren’t removed when releasing all jobs. ([#19969](https://github.com/craftcms/cms/pull/19969))
 - Fixed a bug where new control panel assets weren’t getting published when updating via the control panel or `craft:update` command.

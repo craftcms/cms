@@ -91,6 +91,10 @@ body {
   height: 100%;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 /* Held by overlays — modals and slideouts — while any of them is open. The
    legacy stylesheet and panel-stack.css each define this too; repeated here so
    the lock still works on a CP page that loads neither. */

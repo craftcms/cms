@@ -9,7 +9,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
 use CraftCms\Cms\Field\Conditions\LinkFieldConditionRule;
@@ -21,26 +20,21 @@ use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
-use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\LinkDataType;
+use CraftCms\Cms\Gql\Types\Input\LinkData as LinkDataInput;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Choice;
-use CraftCms\Cms\Ui\Controls\Link as LinkControl;
 use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
-use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Validation\Validator;
-use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -112,11 +106,9 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public array $advancedFields = [];
 
     /**
-     * @var array<string,BaseLinkType>
-     *
-     * @see getLinkTypes()
+     * @see linkResolver()
      */
-    private array $_linkTypes;
+    private LinkResolver $_linkResolver;
 
     /**
      * @var string[] Allowed link types
@@ -172,12 +164,22 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
+    public function attributeLabels(): array
+    {
+        return [
+            ...parent::attributeLabels(),
+            ...$this->linkSettingsAttributeLabels(),
+            'maxLength' => t('Max Length'),
+        ];
+    }
+
+    #[Override]
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
         return Ui::make($this->linkSettingsNodes())->add(
             UiField::make(t('Max Length'))
                 ->instructions(t('The maximum length (in bytes) the field can hold.'))
-                ->control(Number::make('maxLength')->min(10)->step(10)->value($this->maxLength)),
+                ->control(Number::make('maxLength')->min(10)->value($this->maxLength)),
         )->when(
             Cms::config()->enableGql,
             fn (Ui $ui): Ui => $ui->add(
@@ -197,69 +199,24 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
      */
     public function getLinkTypes(): array
     {
-        if (! isset($this->_linkTypes)) {
-            $this->_linkTypes = [];
-            $types = self::types();
+        return $this->linkResolver()->linkTypes();
+    }
 
-            foreach ($this->types as $typeId) {
-                if (isset($types[$typeId])) {
-                    $this->_linkTypes[$typeId] = ComponentHelper::createComponent([
-                        'type' => $types[$typeId],
-                        'settings' => $this->typeSettings[$typeId] ?? [],
-                    ], BaseLinkType::class);
-                }
-            }
-        }
-
-        return $this->_linkTypes;
+    private function linkResolver(): LinkResolver
+    {
+        return $this->_linkResolver ??= new LinkResolver(
+            types: $this->types,
+            typeSettings: $this->typeSettings,
+            showLabelField: $this->showLabelField,
+            advancedFields: $this->advancedFields,
+            maxLength: $this->maxLength,
+        );
     }
 
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
-        $value = $context->value instanceof LinkData
-            ? [...$context->value->serialize(), 'defaultLabel' => $context->value->getLabel(false)]
-            : $context->value;
-
-        $types = array_values(array_map(
-            fn (BaseLinkType $type): array => $type->pickerConfig(),
-            $this->getLinkTypes(),
-        ));
-
-        return LinkControl::make($context->path)
-            ->types($types)
-            ->showLabelField($this->showLabelField)
-            ->advancedFields(array_values($this->advancedFields))
-            ->value($value);
-    }
-
-    private function resolveType(string $value): string
-    {
-        $linkTypes = $this->getLinkTypes();
-
-        // check URL last, if it's selected
-        $urlType = Arr::pull($linkTypes, UrlType::id());
-        if ($urlType) {
-            $linkTypes[UrlType::id()] = $urlType;
-        }
-
-        foreach ($linkTypes as $id => $linkType) {
-            if ($linkType->supports($value)) {
-                return $id;
-            }
-        }
-
-        // See if any unselected types support it
-        foreach (self::types() as $typeId => $type) {
-            if (! isset($linkTypes[$typeId]) && $type !== UrlType::class) {
-                $linkType = ComponentHelper::createComponent($type, BaseLinkType::class);
-                if ($linkType->supports($value)) {
-                    return $linkType::id();
-                }
-            }
-        }
-
-        return UrlType::id();
+        return $this->linkResolver()->control($context->path, $context->value);
     }
 
     /**
@@ -290,124 +247,13 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): ?LinkData
     {
-        // if this was set due to propagateAll for a fresh element (as opposed to the translation method),
-        // and an element is selected, swap it with the same element in the current site (if it exists);
-        // this flow will kick in for all cases apart from nested entries when field uses "none" propagation method
-        if (
-            $value instanceof LinkData &&
-            $element?->propagating &&
-            ($element->propagateAll || ($element->isNewForSite && ! isset($element->duplicateOf))) &&
-            isset($element->propagatingFrom) &&
-            $this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)
-        ) {
-            $value = $this->localizeLinkValue($value, $element);
+        $resolver = $this->linkResolver();
+
+        if ($value instanceof LinkData && $element && $this->isPropagatingAcrossTranslations($element)) {
+            return $resolver->localize($value, $element);
         }
 
-        // as above but specifically for nested entries when field uses "none" propagation method
-        if (
-            $value instanceof LinkData &&
-            ! $element?->propagating &&
-            isset($element->duplicateOf) &&
-            ($element->propagateAll || $element->isNewForSite)
-        ) {
-            if ($this->getTranslationKey($element) !== $this->getTranslationKey($element->duplicateOf)) {
-                $value = $this->localizeLinkValue($value, $element);
-            }
-        }
-
-        if ($value instanceof LinkData) {
-            return $value;
-        }
-
-        $linkTypes = $this->getLinkTypes();
-        if (! is_array($value)) {
-            if (! $value) {
-                return null;
-            }
-
-            $typeId = $this->resolveType($value);
-            $linkType = $linkTypes[$typeId] ?? ComponentHelper::createComponent(self::types()[$typeId], BaseLinkType::class);
-
-            return new LinkData($value, $linkType);
-        }
-
-        $typeId = $value['type'] ?? UrlType::id();
-        $destination = $value['value'] ?? $value[$typeId]['value'] ?? '';
-        if (is_string($destination)) {
-            $destination = trim($destination);
-        }
-
-        if (! $destination) {
-            return null;
-        }
-
-        if (isset($linkTypes[$typeId])) {
-            $linkType = $linkTypes[$typeId];
-        } else {
-            $type = self::types()[$typeId] ?? null;
-            if (! $type) {
-                throw new InvalidArgumentException("Invalid link type: $typeId");
-            }
-            $linkType = ComponentHelper::createComponent($type, BaseLinkType::class);
-        }
-
-        $link = new LinkData($linkType->normalizeValue($destination), $linkType);
-        if (! empty($value['label']) && $this->showLabelField) {
-            $link->setLabel($value['label']);
-        }
-
-        foreach (['urlSuffix', 'target', 'title', 'ariaLabel'] as $attribute) {
-            if (! empty($value[$attribute]) && in_array($attribute, $this->advancedFields)) {
-                $link->$attribute = $value[$attribute];
-            }
-        }
-
-        if ($link->urlSuffix !== null && ! str_starts_with($link->urlSuffix, '#')) {
-            $link->urlSuffix = Str::start($link->urlSuffix, '?');
-        }
-
-        foreach (['class', 'rel'] as $attribute) {
-            if (! empty($value[$attribute]) && in_array($attribute, $this->advancedFields)) {
-                $link->$attribute = implode(' ', array_map(Html::id(...), explode(' ', (string) $value[$attribute])));
-            }
-        }
-
-        if (! empty($value['id']) && in_array('id', $this->advancedFields)) {
-            $link->id = Html::id($value['id']);
-        }
-
-        if (in_array('download', $this->advancedFields)) {
-            $link->download = ! empty($value['download']);
-            if (! empty($value['filename'])) {
-                $link->setFilename($value['filename']);
-            }
-        }
-
-        return $link;
-    }
-
-    /**
-     * Localize the value of the link field when linking to an element.
-     *
-     * @return LinkData|array<string, mixed>
-     */
-    private function localizeLinkValue(LinkData $value, ElementInterface $element): LinkData|array
-    {
-        $linkedElement = $value->getElement();
-        if ($linkedElement && $linkedElement::isLocalized()) {
-            $localizedQuery = $linkedElement->getLocalized();
-            if (
-                $localizedQuery instanceof ElementQueryInterface &&
-                $localizedQuery->siteId($element->siteId)->exists()
-            ) {
-                return [
-                    ...$value->serialize(),
-                    'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $linkedElement->id, $element->siteId),
-                ];
-            }
-        }
-
-        return $value;
+        return $resolver->normalize($value);
     }
 
     #[Override]
@@ -635,36 +481,11 @@ JS;
     public function getElementRules(ElementInterface $element): array
     {
         return [
-            function (string $attribute, LinkData $value, Closure $fail, Validator $validator) {
-                $linkTypes = $this->getLinkTypes();
+            function (string $attribute, LinkData $value, Closure $fail) {
+                $error = $this->linkResolver()->validate($value, $this->getUiLabel());
 
-                if (! isset($linkTypes[$value->getType()])) {
-                    $type = self::types()[$value->getType()] ?? null;
-                    $fail(t('{attribute} no longer allows {type} links.', [
-                        'attribute' => $this->getUiLabel(),
-                        'type' => is_subclass_of($type, BaseLinkType::class) ? $type::displayName() : $type,
-                    ]));
-
-                    return;
-                }
-
-                $linkType = $linkTypes[$value->getType()];
-                $value = $value->serialize()['value'];
-                $error = null;
-                if (! $linkType->validateValue($value, $error)) {
-                    /** @var string|null $error */
-                    $fail($error ?? t('{attribute} is invalid.', [
-                        'attribute' => $this->getUiLabel(),
-                    ]));
-
-                    return;
-                }
-
-                if (! $validator->validateMax($attribute, $value, [$this->maxLength])) {
-                    $fail(t('{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
-                        'attribute' => $this->getUiLabel(),
-                        'max' => $this->maxLength,
-                    ]));
+                if ($error !== null) {
+                    $fail($error);
                 }
             },
         ];
@@ -679,11 +500,8 @@ JS;
 
         /** @var LinkData $value */
         $value = $element->getFieldValue($this->handle);
-        $linkTypes = $this->getLinkTypes();
-        $linkType = $linkTypes[$value->getType()] ?? $linkTypes[UrlType::id()] ?? new UrlType;
-        $value = $value->serialize()['value'];
 
-        return $linkType->isValueEmpty($value);
+        return $this->linkResolver()->isEmpty($value);
     }
 
     public function getElementConditionRuleType(): string
@@ -727,46 +545,28 @@ JS;
             return parent::getContentGqlMutationArgumentType();
         }
 
-        $typeName = 'LinkDataInput';
-
-        return GqlEntityRegistry::getOrCreate($typeName, fn () => new InputObjectType([
-            'name' => $typeName,
-            'fields' => [
-                'type' => Type::string(),
-                'value' => Type::string(),
-                'label' => Type::string(),
-                'urlSuffix' => Type::string(),
-            ],
-        ]));
+        return LinkDataInput::getType();
     }
 
     public function getReferenceTargetIds(ElementInterface $element): array
     {
-        $targetIds = [];
         /** @var LinkData|null $value */
         $value = $element->getFieldValue($this->handle);
-        $element = $value?->getElement();
-        if ($element) {
-            $targetIds[] = $element->id;
-        }
 
-        return $targetIds;
+        return $this->linkResolver()->referenceTargetIds($value);
     }
 
     public function replaceReferences(ElementInterface $element, array $oldTargetIds, int $newTargetId): bool
     {
         /** @var LinkData|null $value */
         $value = $element->getFieldValue($this->handle);
-        $linkedElement = $value?->getElement();
+        $newValue = $this->linkResolver()->replaceReference($value, $oldTargetIds, $newTargetId);
 
-        if (in_array(! $linkedElement?->id, $oldTargetIds)) {
+        if ($newValue === null) {
             return false;
         }
 
-        $element->setFieldvalue($this->handle, [
-            'type' => $value->getType(),
-            'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $newTargetId, $linkedElement->siteId),
-        ]);
+        $element->setFieldValue($this->handle, $newValue);
 
         return true;
     }
