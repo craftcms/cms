@@ -275,8 +275,7 @@ export default class CraftDialog extends LitElement {
       })}
     >
       ${this.hasHeader ? this.renderHeader() : this.renderHiddenTitle()}
-      ${this.renderBody()}
-      ${this.renderFooter()}
+      ${this.renderBody()} ${this.renderFooter()}
     </div>`;
   }
 

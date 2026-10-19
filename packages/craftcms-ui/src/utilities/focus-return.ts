@@ -29,7 +29,7 @@ export function isFocusable(el: Element | null | undefined): el is HTMLElement {
   }
 
   return typeof el.checkVisibility === 'function'
-    ? el.checkVisibility()
+    ? el.checkVisibility({visibilityProperty: true})
     : !el.closest('[hidden]');
 }
 

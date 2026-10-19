@@ -64,6 +64,17 @@ describe('isFocusable', () => {
     expect(isFocusable(null)).toBe(false);
   });
 
+  it('rejects an element hidden with the visibility property', () => {
+    const button = document.createElement('button');
+    button.style.visibility = 'hidden';
+    document.body.append(button);
+    // happy-dom has no checkVisibility(); this one answers as Chromium does,
+    // reporting visibility: hidden only when asked to check the property.
+    button.checkVisibility = (options) => !options?.visibilityProperty;
+
+    expect(isFocusable(button)).toBe(false);
+  });
+
   it('rejects an element in a shadow root whose host is inside an inert element', () => {
     const inert = document.createElement('div');
     inert.inert = true;
