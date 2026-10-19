@@ -529,15 +529,15 @@ Event::listen(ElementSerializing::class, function (ElementSerializing $event): v
 
 ### Describing a custom field's input
 
-Tools such as `elements.create` and `elements.field-schema` describe custom fields with JSON Schema. Craft infers a schema for most field types. Implement `ProvidesInputSchema` on a field type to supply its own:
+Tools such as `elements.create` and `elements.field-schema` describe custom fields with JSON Schema. Craft infers a schema for most field types. Implement `InputSchemaFieldInterface` on a field type to supply its own:
 
 ```php
 use CraftCms\Cms\Field\Field;
-use CraftCms\Cms\Mcp\Contracts\ProvidesInputSchema;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 
-class Rating extends Field implements ProvidesInputSchema
+class Rating extends Field implements InputSchemaFieldInterface
 {
-    public function getMcpInputSchema(): array
+    public function getInputSchema(): array
     {
         return ['type' => 'integer', 'minimum' => 1, 'maximum' => 5];
     }

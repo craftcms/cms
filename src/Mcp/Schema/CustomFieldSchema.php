@@ -7,12 +7,12 @@ namespace CraftCms\Cms\Mcp\Schema;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\BaseOptionsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Email;
 use CraftCms\Cms\Field\Json;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\GqlInputSchema;
-use CraftCms\Cms\Mcp\Contracts\ProvidesInputSchema;
 use CraftCms\Cms\Support\Arr;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
@@ -183,7 +183,7 @@ readonly class CustomFieldSchema
     private function fieldSchema(FieldInterface $field, bool $required): array
     {
         $schema = match (true) {
-            $field instanceof ProvidesInputSchema => $field->getMcpInputSchema(),
+            $field instanceof InputSchemaFieldInterface => $field->getInputSchema(),
             $field instanceof Json => [],
             $field instanceof BaseOptionsField => $this->optionsSchema($field),
             $field instanceof Email => ['type' => 'string', 'format' => 'email'],
@@ -202,7 +202,7 @@ readonly class CustomFieldSchema
 
     private function usesInferredSchema(FieldInterface $field): bool
     {
-        return ! $field instanceof ProvidesInputSchema
+        return ! $field instanceof InputSchemaFieldInterface
             && ! $field instanceof Json
             && ! $field instanceof BaseOptionsField
             && ! $field instanceof Email;
