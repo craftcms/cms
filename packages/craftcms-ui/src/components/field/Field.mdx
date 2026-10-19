@@ -63,6 +63,40 @@ The `actions` slot holds field-level controls: a hide-label toggle, a copy-value
 
 `label-extra` does something similar and is **deprecated** — use `actions`.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Nodes\Field` renders a field around a control:
+
+```php
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Enums\FieldWidth;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Title', Text::make('title'))
+        ->required()
+        ->instructions('What this entry will be called in the control panel.')
+        ->tip('Titles appear in search results.')
+        ->width(FieldWidth::Half),
+    Field::make('Status', Choice::make('status')
+        ->presentation(ChoicePresentation::Radios)
+        ->options([
+            ['label' => 'Live', 'value' => 'live'],
+            ['label' => 'Disabled', 'value' => 'disabled'],
+        ]))
+        ->fieldset(),
+]);
+```
+
+The control's path names its input, and validation errors for that path are shown on the field.
+`instructions()`, `tip()`, `warning()`, `required()`, and `translatable()` set the parts of the same names.
+Call `fieldset()` when the control is a group of inputs, such as radio buttons, so the label becomes the group's legend.
+`actions()` adds nodes next to the label, such as a [Copy Attribute](?path=/docs/components-copy-attribute--docs) or an [Action Menu](?path=/docs/components-action-menu--docs).
+
 ## Accessibility
 
 The field is where a control's accessible name and description come from, which makes it the single most load-bearing component in a form.

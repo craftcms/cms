@@ -36,6 +36,26 @@ It is only meaningful while the switch is off, and is cleared as soon as the swi
 
 `value` is what the hidden input posts when the switch is on, defaulting to `1`. It is named `checkedValue` on the element itself, because Lion already defines a `value` accessor that proxies the input node.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Controls\Lightswitch` renders a switch:
+
+```php
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Show the Post Date field', Lightswitch::make('showPostDate')
+        ->onLabel('Show')
+        ->offLabel('Hide')),
+]);
+```
+
+`onLabel()` and `offLabel()` set the state labels.
+`checkedValue()` sets the value that's submitted when it's on, and `indeterminate()` allows the mixed state.
+
 ## Accessibility
 
 The control is exposed as a switch that's on or off.

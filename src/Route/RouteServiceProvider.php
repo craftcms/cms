@@ -21,7 +21,6 @@ use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
-use CraftCms\Cms\Http\Middleware\RememberTheme;
 use CraftCms\Cms\Http\Middleware\RenderBridgedScreen;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
@@ -200,7 +199,6 @@ class RouteServiceProvider extends ServiceProvider
         collect([
             RequireCpRequest::class,
             AuthenticateCraftSession::class,
-            RememberTheme::class,
             CheckRequirements::class,
             HandleInertiaRequests::class,
             EnforceLicenses::class,
