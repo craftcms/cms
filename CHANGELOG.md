@@ -103,6 +103,7 @@
 - Fixed a bug where typing an option’s exact label or value into a combobox that accepts free text could make two options look selected. Exact matches are now listed first.
 - Fixed a bug where rich selects’ menus could extend off-screen when an option had a long label or hint, and a long option could stretch the select itself past its container.
 - Fixed a bug where permission trees, such as user group permissions and the public MCP settings, used the browser’s native checkboxes instead of the control panel’s checkbox styling.
+- Fixed a bug where logging in from the control panel’s login page could redirect to the front end instead of the control panel, when a front-end login path was also configured.
 
 ### Content Management
 
