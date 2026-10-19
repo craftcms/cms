@@ -126,6 +126,7 @@
 - Table field column settings now open in a slideout. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Table cell validation errors now name the column. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Table columns with invalid settings are now flagged in the Table field’s settings, and link setting validation errors in Link, Markdown, and Table fields now name the setting. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Link cells in Table fields now truncate long URLs, so columns keep their configured widths.
 - Double-clicking an admin table row now opens its link’s slideout, if it has one. ([#19957](https://github.com/craftcms/cms/pull/19957))
 - Fixed a bug where typing in a newly added nested entry’s fields could replace the edit form with a “UI array path … must be a row index” error once the entry autosaved.
 - Fixed a bug where changing a field back to the value it had when the edit page loaded wasn’t autosaved, so field layout elements shown or hidden by conditions based on it didn’t update.

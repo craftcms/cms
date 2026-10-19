@@ -268,7 +268,9 @@
   .link-control__summary {
     display: flex;
     flex-direction: column;
-    max-width: 100%;
+    align-self: stretch;
+    /* Keeps long URLs from widening table columns past their width settings */
+    contain: inline-size;
     margin: 0;
   }
 
