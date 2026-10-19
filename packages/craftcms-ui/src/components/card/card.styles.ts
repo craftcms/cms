@@ -49,6 +49,11 @@ export default css`
       border-color: var(--c-color-border-loud);
       color: var(--c-color-on-loud);
       --c-checkbox-border-color: var(--c-color-on-loud);
+      /* Plain controls here hover over the quiet fill, which would be a light
+         patch under the header's light text. */
+      --c-color-fill-quiet: var(--c-color-fill-loud);
+      --c-color-border-quiet: var(--c-color-border-loud);
+      --c-color-on-quiet: var(--c-color-on-loud);
     }
   }
 
