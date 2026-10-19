@@ -1296,12 +1296,12 @@ export class Row extends Base {
 
   handleKeypress(ev: any): void {
     const keyCode = ev.keyCode ? ev.keyCode : ev.charCode;
-    const ctrl = Garnish.isCtrlKeyPressed(ev);
 
-    // Going to the next/previous row?
+    // Going to the next/previous row? (Ctrl/Command + Return submits the form.)
     if (
       keyCode === Garnish.RETURN_KEY &&
-      (ev.data.type !== 'multiline' || ctrl)
+      ev.data.type !== 'multiline' &&
+      !Garnish.isCtrlKeyPressed(ev)
     ) {
       ev.preventDefault();
       ev.stopPropagation();
