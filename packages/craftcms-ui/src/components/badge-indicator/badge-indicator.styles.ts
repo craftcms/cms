@@ -13,7 +13,9 @@ export default css`
     background-color: var(--_badge-color);
     color: var(--_text-color);
     border-radius: var(--c-radius-full);
-    border: 2px solid var(--badge-border-color, var(--c-surface-default));
+    /* No ring unless asked for, as where a marker overlaps something else. */
+    border: var(--badge-border-width, 0) solid
+      var(--badge-border-color, var(--c-surface-default));
   }
 
   .badge-indicator--secondary {
