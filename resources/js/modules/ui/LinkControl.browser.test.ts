@@ -1,5 +1,9 @@
 import {createApp, h, nextTick, type App} from 'vue';
 import {afterEach, expect, it} from 'vite-plus/test';
+import type {
+  LinkAdvancedField,
+  LinkTypeConfig,
+} from '../link-field/craft-link-field';
 import LinkControl from './LinkControl.vue';
 import type {UiControlPayload} from './types';
 
@@ -12,7 +16,13 @@ afterEach(() => {
 });
 
 it('lets table columns keep their widths when a compact link has a long URL', async () => {
-  const control: UiControlPayload = {
+  const control: UiControlPayload<{
+    types: LinkTypeConfig[];
+    showLabelField: boolean;
+    advancedFields: LinkAdvancedField[];
+    compact: boolean;
+    registeredTypes: string[] | null;
+  }> = {
     type: 'CraftCms\\Cms\\Ui\\Controls\\Link',
     component: 'craft:link',
     props: {
