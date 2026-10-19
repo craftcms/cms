@@ -78,8 +78,15 @@
     const value = (event.target as HTMLElement & {modelValue?: unknown})
       .modelValue;
 
-    setAt(context!.values.map, path.value, value == null ? '' : String(value));
+    const next = value == null ? '' : String(value);
+
+    setAt(context!.values.map, path.value, next);
     setAt(context!.suggestedMap, path.value, false);
+
+    // only a mapped column can be matched on, so unmapping it drops its match criterion too
+    if (next === '' && matchCriteriaChecked.value) {
+      setAt(context!.values.matchCriteria, path.value, '');
+    }
   }
 
   // `craft-checkbox` announces its starting state too, which would write to the
@@ -228,7 +235,7 @@
         v-if="canMatch"
         label-sr-only
         .checked="matchCriteriaChecked"
-        .disabled="!context.editable"
+        .disabled="!context.editable || mapValue === ''"
         @model-value-changed="onMatchCriteriaChanged"
       >
         <label slot="label">{{

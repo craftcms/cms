@@ -198,13 +198,51 @@ it('writes a chosen source column to the destination column’s path', async () 
   expect(apply().map).toEqual({title: 'name'});
 });
 
-it('keeps the Match and Clear columns on their own trees', () => {
+it('keeps the Match and Clear columns on their own trees', async () => {
   mount([body]);
 
+  chooseSource('name');
+  await nextTick();
   toggleCheckbox('match');
   toggleCheckbox('clear');
 
   expect(apply().matchCriteria).toEqual({body: '1'});
+  expect(apply().clearableItems).toEqual({body: '1'});
+});
+
+function checkbox(
+  column: 'match' | 'clear'
+): HTMLElement & {disabled: boolean} {
+  return cells()[column === 'match' ? 1 : 2]!.querySelector(
+    'craft-checkbox'
+  ) as unknown as HTMLElement & {disabled: boolean};
+}
+
+it('only lets a mapped row be matched on, while Clear works either way', async () => {
+  mount([body]);
+
+  expect(checkbox('match').disabled).toBe(true);
+  expect(checkbox('clear').disabled).toBe(false);
+
+  chooseSource('name');
+  await nextTick();
+
+  expect(checkbox('match').disabled).toBe(false);
+  expect(checkbox('clear').disabled).toBe(false);
+});
+
+it('drops a row’s match criterion when it’s unmapped, but keeps Clear', async () => {
+  mount([body]);
+
+  chooseSource('name');
+  await nextTick();
+  toggleCheckbox('match');
+  toggleCheckbox('clear');
+  chooseSource('');
+  await nextTick();
+
+  expect(checkbox('match').disabled).toBe(true);
+  expect(apply().matchCriteria).toEqual({body: ''});
   expect(apply().clearableItems).toEqual({body: '1'});
 });
 

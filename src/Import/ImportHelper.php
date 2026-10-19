@@ -78,13 +78,18 @@ class ImportHelper
         // ones coming from the UI will have a value of 1
         // ones coming from a registered import plan should be strings that point to the original data keys
 
-        // for the ones coming from the UI - we need to resolve those to the mapped column names
+        // for the ones coming from the UI - we need to resolve those to the mapped column names;
+        // a field that isn't mapped has nothing to match on, so its criterion is dropped
         $dottedMap = Arr::dot($map);
         $dottedMatchCriteria = Arr::dot($matchCriteria);
 
         foreach ($dottedMatchCriteria as $key => $value) {
             if (is_numeric($value) && $value == 1) {
-                $dottedMatchCriteria[$key] = $dottedMap[$key];
+                if (in_array($dottedMap[$key] ?? null, [null, ''], true)) {
+                    unset($dottedMatchCriteria[$key]);
+                } else {
+                    $dottedMatchCriteria[$key] = $dottedMap[$key];
+                }
             }
         }
 
@@ -366,6 +371,8 @@ class ImportHelper
     ): array {
         $result = [];
         $consumedKeys = [];
+        // keys explicitly left unmapped, so an incoming key of the same name isn't passed through to them either
+        $skippedKeys = [];
 
         foreach ($map as $targetKey => $rule) {
             // The rule is itself a nested map, so work out what part of the data it should read from.
@@ -406,6 +413,7 @@ class ImportHelper
 
             if ($rule === null) {
                 // A null rule means: don't set this field at all.
+                $skippedKeys[] = $targetKey;
 
                 continue;
             }
@@ -427,7 +435,7 @@ class ImportHelper
 
         if ($keepUnused && is_array($currentData)) {
             foreach ($currentData as $key => $value) {
-                if (! in_array($key, $consumedKeys, true) && ! array_key_exists($key, $result)) {
+                if (! in_array($key, $consumedKeys, true) && ! in_array($key, $skippedKeys, true) && ! array_key_exists($key, $result)) {
                     $result[$key] = $value;
                 }
             }

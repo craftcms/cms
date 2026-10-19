@@ -120,3 +120,30 @@ describe('required-value validation, skipping enabled entries and allowing disab
         ($scenario['assertMapped'])($this, $entry);
     })->with('requiredValueScenarios');
 });
+
+it('doesn’t import an unmapped field, even when it’s match criteria and the incoming key matches its handle', function () {
+    ImportFixtures::plainTextField('optionalText', 'Optional Text');
+    Fields::refreshFields();
+
+    $entryType = ImportFixtures::entryTypeWithTitle(
+        [CustomField::make('optionalText')],
+        ['name' => 'With Optional Text', 'handle' => 'withOptionalText'],
+    );
+    $section = Section::factory()->withEntryTypes($entryType)->create(['minAuthors' => 0]);
+
+    $importer = $this->importer
+        ->section($section->uid)
+        ->entryType($entryType->uid)
+        ->map(['title' => 'title', 'optionalText' => null])
+        ->matchCriteria(['optionalText' => 1]);
+
+    ImportFixtures::importWithConfigCriteria($this->import, $importer, [
+        'title' => 'imported entry',
+        'optionalText' => 'should not be imported',
+    ]);
+
+    $entry = EntryElement::find()->title('imported entry')->status(null)->one();
+
+    expect($entry)->not->toBeNull()
+        ->and($entry->getFieldValue('optionalText'))->toBeNull();
+});

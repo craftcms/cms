@@ -6,6 +6,7 @@ use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\ImportHelper;
+use CraftCms\Cms\Tests\Support\Import\TestImporter;
 
 /** @param list<string> $path */
 function importMappingColumn(array $path, bool $isContainer = false): MappingColumn
@@ -69,6 +70,30 @@ it('doesn’t set a key when the rule is null', function () {
 
     expect(array_keys($result))->not()->toContain('b');
     expect($result['a'])->toBe(1);
+});
+
+it('doesn’t pass through an incoming key of the same name when the rule is null', function () {
+    $result = ImportHelper::remapData(['b' => null], ['b' => 1, 'c' => 2]);
+
+    expect($result)->toBe(['c' => 2]);
+});
+
+it('doesn’t pass through a nested incoming key of the same name when the rule is null', function () {
+    $data = ['address' => ['street' => '123 Main St', 'city' => 'Boston', 'zip' => '02101']];
+    $map = ['address' => ['street' => 'address.street', 'zip' => null]];
+
+    $result = ImportHelper::remapData($map, $data);
+
+    expect($result['address'])->toBe(['street' => '123 Main St', 'city' => 'Boston']);
+});
+
+it('still passes through a root key when a nested rule of the same name is null', function () {
+    $data = ['title' => 'Root', 'address' => ['street' => '123 Main St']];
+    $map = ['location' => ['street' => 'address.street', 'title' => null]];
+
+    $result = ImportHelper::remapData($map, $data);
+
+    expect($result['title'])->toBe('Root');
 });
 
 it('sets a key to an empty string when the rule is the sentinel \'""\'', function () {
@@ -507,4 +532,18 @@ it('falls back to root data when the rule path does not start with the current b
     $result = ImportHelper::remapData($map, $data);
 
     expect($result['items'][0]['source'])->toBe('Craft');
+});
+
+it('drops match criteria checked on fields that aren’t mapped', function () {
+    $importer = new TestImporter()
+        ->map(['title' => 'name', 'slug' => '', 'body' => null, 'nested' => ['text' => '']])
+        ->matchCriteria(['title' => '1', 'slug' => '1', 'body' => 1, 'missing' => '1', 'nested' => ['text' => '1']]);
+
+    expect(ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer))->toBe(['title' => 'name']);
+});
+
+it('keeps match criteria pointing at incoming data keys without a map', function () {
+    $importer = new TestImporter()->matchCriteria(['title' => 'name']);
+
+    expect(ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer))->toBe(['title' => 'name']);
 });
