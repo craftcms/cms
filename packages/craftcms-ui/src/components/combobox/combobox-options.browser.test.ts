@@ -1,4 +1,4 @@
-import {beforeEach, expect, it} from 'vite-plus/test';
+import {beforeEach, expect, it, vi} from 'vite-plus/test';
 import type CraftCombobox from './combobox.js';
 import './combobox.js';
 
@@ -87,3 +87,40 @@ it('shows the selected option’s indicator while closed', async () => {
   expect(indicator.getAttribute('fill')).toBe('danger');
   expect(control.hasAttribute('has-prefix-icon')).toBe(true);
 });
+
+it.each([
+  {width: 200, expected: 'capped at 360px'},
+  {width: 380, expected: 'as wide as a wider field'},
+])(
+  'keeps the list within the viewport when an option is long, $expected',
+  async ({width}) => {
+    await import('../../styles/cp.css');
+    const {userEvent} = await import('vite-plus/test/browser');
+    const container = document.createElement('div');
+    container.style.inlineSize = `${width}px`;
+    const control = document.createElement('craft-combobox') as CraftCombobox;
+    control.showAllOnEmpty = true;
+    control.options = [
+      {label: 'short', value: 'short'},
+      {label: 'long', value: 'long', data: {hint: 'x '.repeat(200)}},
+    ];
+    container.append(control);
+    document.body.append(container);
+    await control.updateComplete;
+
+    await userEvent.click(control.querySelector('input')!);
+    const listbox = control.querySelector<HTMLElement>('[slot="listbox"]')!;
+    await vi.waitFor(() =>
+      expect(listbox.querySelectorAll('craft-option')).toHaveLength(2)
+    );
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const field = control.getBoundingClientRect();
+    const list = listbox.getBoundingClientRect();
+
+    expect(list.left).toBeGreaterThanOrEqual(0);
+    expect(list.right).toBeLessThanOrEqual(window.innerWidth);
+    expect(list.width).toBeLessThanOrEqual(Math.max(360, field.width) + 1);
+    expect(list.width).toBeGreaterThanOrEqual(field.width - 1);
+  }
+);

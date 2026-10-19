@@ -49,9 +49,10 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 
 ### Reflow and zoom
 
-- [ ] The invoker never grows past its container at a 320px viewport. Per WCAG 1.4.10 (Reflow). Known gap: `_alignInvokerWidth` sets the invoker's `min-width` to the widest option's width in pixels, so a long option pushes the control past a narrow container.
+- [x] The invoker never grows past its container at a 320px viewport, even when an option is long. Per WCAG 1.4.10 (Reflow). Verified by `stays within its container and the viewport when an option is long, $expected` in `select-rich.browser.test.ts`.
 - [ ] The full selected value stays readable at a 320px viewport and at 200% zoom. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Known gap: the invoker's content is kept to one line and truncated with an ellipsis.
-- [ ] The listbox opens below the invoker, scrolls its own options within a maximum height, and stays within the viewport at 320px. Per WCAG 1.4.10 (Reflow). Not yet verified.
+- [x] The listbox stays within the viewport at 320px: it's at least as wide as the invoker, and no wider than 22.5rem unless the invoker is, so long labels and hints truncate. Per WCAG 1.4.10 (Reflow). Verified by `stays within its container and the viewport when an option is long, $expected` in `select-rich.browser.test.ts`.
+- [ ] The listbox opens below the invoker and scrolls its own options within a maximum height. Per WCAG 1.4.10 (Reflow). Not yet verified.
 
 ## Depends on usage
 
