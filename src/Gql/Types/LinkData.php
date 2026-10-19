@@ -16,7 +16,11 @@ class LinkData extends ObjectType
     #[Override]
     protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
-        /** @var FieldLinkData $source */
+        // Values of link types that are no longer installed are kept as raw arrays.
+        if (! $source instanceof FieldLinkData) {
+            return null;
+        }
+
         $fieldName = $resolveInfo->fieldName;
 
         return match ($fieldName) {
