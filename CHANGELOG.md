@@ -100,6 +100,7 @@
 - Fixed a bug where selectable chips and thumbnails had a text cursor. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where thumbnails’ action menu buttons had light-mode styling while pressed in the dark theme. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where comboboxes’ menus could grow as wide as the window and extend off-screen when an option had a long label or hint, such as an environment variable suggestion.
+- Fixed a bug where rich selects’ menus could extend off-screen when an option had a long label or hint, and a long option could stretch the select itself past its container.
 
 ### Content Management
 
