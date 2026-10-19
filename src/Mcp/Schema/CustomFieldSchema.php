@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Schema;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Field\BaseOptionsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
-use CraftCms\Cms\Field\Email;
 use CraftCms\Cms\Field\Json;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -182,13 +180,16 @@ readonly class CustomFieldSchema
     /** @return array<string, mixed> */
     private function fieldSchema(FieldInterface $field, bool $required): array
     {
-        $schema = match (true) {
-            $field instanceof InputSchemaFieldInterface => $field->getInputSchema(),
-            $field instanceof Json => [],
-            $field instanceof BaseOptionsField => $this->optionsSchema($field),
-            $field instanceof Email => ['type' => 'string', 'format' => 'email'],
-            default => $this->inferredSchema($field),
-        };
+        // A field whose schema can’t be built accepts anything, rather than breaking the element’s schema.
+        try {
+            $schema = match (true) {
+                $field instanceof InputSchemaFieldInterface => $field->getInputSchema(),
+                $field instanceof Json => [],
+                default => GqlInputSchema::fromType($field->getContentGqlMutationArgumentType()),
+            };
+        } catch (Throwable) {
+            $schema = [];
+        }
 
         $schema = $required ? GqlInputSchema::withoutNull($schema) : GqlInputSchema::withNull($schema);
         $schema['title'] = $field->name;
@@ -202,38 +203,7 @@ readonly class CustomFieldSchema
 
     private function usesInferredSchema(FieldInterface $field): bool
     {
-        return ! $field instanceof InputSchemaFieldInterface
-            && ! $field instanceof Json
-            && ! $field instanceof BaseOptionsField
-            && ! $field instanceof Email;
-    }
-
-    /** @return array<string, mixed> */
-    private function optionsSchema(BaseOptionsField $field): array
-    {
-        $values = array_values(array_map(
-            static fn (array $option): string => (string) $option['value'],
-            array_filter($field->options, static fn (array $option): bool => isset($option['value'])),
-        ));
-        $itemSchema = ['type' => 'string'];
-
-        if (! $field->customOptions && $values !== []) {
-            $itemSchema['enum'] = $values;
-        }
-
-        return $field->getIsMultiOptionsField()
-            ? ['type' => 'array', 'items' => $itemSchema]
-            : $itemSchema;
-    }
-
-    /** @return array<string, mixed> */
-    private function inferredSchema(FieldInterface $field): array
-    {
-        try {
-            return GqlInputSchema::fromType($field->getContentGqlMutationArgumentType());
-        } catch (Throwable) {
-            return [];
-        }
+        return ! $field instanceof InputSchemaFieldInterface && ! $field instanceof Json;
     }
 
     /**

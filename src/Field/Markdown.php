@@ -17,6 +17,7 @@ use CraftCms\Cms\Field\Concerns\TracksReferences;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
@@ -57,7 +58,7 @@ use function CraftCms\Cms\template;
 /**
  * @since 6.0.0
  */
-class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface, TracksReferencesFieldInterface
+class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface, TracksReferencesFieldInterface
 {
     use ProvidesLinkField;
     use TracksReferences;
@@ -860,5 +861,11 @@ class Markdown extends Field implements CrossSiteCopyableFieldInterface, InlineE
         }
 
         return (string) $value;
+    }
+
+    /** @return array<string, mixed> */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'string'];
     }
 }
