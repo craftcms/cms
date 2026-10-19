@@ -170,6 +170,21 @@ test('attemptLogin succeeds with valid credentials', function () {
     expect(Auth::id())->toBe($user->id);
 });
 
+test('control panel logins post to the control panel and redirect to the post-CP-login redirect', function () {
+    // A front-end login path is another route to the same action, so URLs generated from the action could point there.
+    Route::post('logmein', [LoginController::class, 'attemptLogin']);
+    Route::getRoutes()->refreshActionLookups();
+    Cms::config()->postCpLoginRedirect = 'entries';
+
+    get(cp_url(CpAuthPath::Login->value))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('action', cp_url(CpAuthPath::Login->value)));
+
+    post(cp_url(CpAuthPath::Login->value), [
+        'loginName' => User::findOne()->email,
+        'password' => 'craftcms2018!!',
+    ])->assertRedirect(cp_url('entries'));
+});
+
 test('modal login requires refreshing the token before resubmitting a form', function (bool $authenticated) {
     // Laravel skips CSRF verification in the testing environment.
     $this->app->instance('env', 'local');

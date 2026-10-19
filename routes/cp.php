@@ -109,7 +109,7 @@ Route::allowDuringMaintenance()->prefix('updates')->name('updates.')->group(func
 
 Route::allowDuringMaintenance()->middleware(RunQueue::class)->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
-    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME);
+    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME)->name('login.attempt');
     Route::match(['get', 'post'], CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
     Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm'])->middleware(EnsureTwoFactorChallengeIsRecent::class);
     Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
