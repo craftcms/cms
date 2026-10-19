@@ -24,7 +24,7 @@ export function isFocusable(el: Element | null | undefined): el is HTMLElement {
     return false;
   }
 
-  if (el.closest('[inert]') || el.matches(':disabled')) {
+  if (closestComposed(el, '[inert]') || el.matches(':disabled')) {
     return false;
   }
 

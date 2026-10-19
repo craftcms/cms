@@ -63,6 +63,18 @@ describe('isFocusable', () => {
     expect(isFocusable(disabled)).toBe(false);
     expect(isFocusable(null)).toBe(false);
   });
+
+  it('rejects an element in a shadow root whose host is inside an inert element', () => {
+    const inert = document.createElement('div');
+    inert.inert = true;
+    const host = document.createElement('div');
+    const button = document.createElement('button');
+    host.attachShadow({mode: 'open'}).append(button);
+    inert.append(host);
+    document.body.append(inert);
+
+    expect(isFocusable(button)).toBe(false);
+  });
 });
 
 describe('focusReturnFor', () => {
