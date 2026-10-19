@@ -14,12 +14,14 @@ use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
 use CraftCms\Cms\Field\Conditions\LinkFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
+use CraftCms\Cms\Gql\GqlInputSchema;
 use CraftCms\Cms\Gql\Types\Generators\LinkDataType;
 use CraftCms\Cms\Gql\Types\Input\LinkData as LinkDataInput;
 use CraftCms\Cms\Support\Arr;
@@ -44,7 +46,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, TracksReferencesFieldInterface
+class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, TracksReferencesFieldInterface
 {
     use ProvidesLinkField;
 
@@ -569,5 +571,11 @@ JS;
         $element->setFieldValue($this->handle, $newValue);
 
         return true;
+    }
+
+    /** @return array<string, mixed> */
+    public function getInputSchema(): array
+    {
+        return GqlInputSchema::fromType($this->getContentGqlMutationArgumentType());
     }
 }
