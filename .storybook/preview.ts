@@ -6,6 +6,7 @@ import '../resources/css/cp.css';
 import './preview.css';
 import {installInertiaMock, setPageProps} from './inertia-mock';
 import {ThemedDocsContainer} from '../packages/craftcms-ui/.storybook/themed-docs-container';
+import '../packages/craftcms-ui/.storybook/syntax-highlighting';
 
 // The slice of the CP's `window.Craft` config that components read directly.
 window.Craft ??= {pageTrigger: 'page'};

@@ -575,6 +575,37 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return $this->_translationMethod->elementKey($element, $this->translationKeyFormat);
     }
 
+    /**
+     * Returns whether the element’s value is being copied from another site that the field translates separately,
+     * so site-specific references in the value should be pointed at the element’s site.
+     */
+    protected function isPropagatingAcrossTranslations(?ElementInterface $element): bool
+    {
+        if (! $element) {
+            return false;
+        }
+
+        // if this was set due to propagateAll for a fresh element (as opposed to the translation method)
+        if (
+            $element->propagating &&
+            ($element->propagateAll || ($element->isNewForSite && ! isset($element->duplicateOf))) &&
+            isset($element->propagatingFrom)
+        ) {
+            return $this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom);
+        }
+
+        // as above but specifically for nested entries when the field uses the "none" propagation method
+        if (
+            ! $element->propagating &&
+            isset($element->duplicateOf) &&
+            ($element->propagateAll || $element->isNewForSite)
+        ) {
+            return $this->getTranslationKey($element) !== $this->getTranslationKey($element->duplicateOf);
+        }
+
+        return false;
+    }
+
     public function showStatus(): bool
     {
         return true;

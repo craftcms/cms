@@ -54,6 +54,38 @@ combobox.addEventListener('change', () => save(combobox.modelValue));
 
 The control also emits `model-value-changed`. That is Lion's internal protocol name, carried because Lion's form system depends on it; prefer the native events.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Controls\Combobox` renders a combobox, and `BooleanMenu` renders one with yes and no options:
+
+```php
+use CraftCms\Cms\Ui\Controls\BooleanMenu;
+use CraftCms\Cms\Ui\Controls\Combobox;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Provider', Combobox::make('provider')
+        ->options([
+            ['label' => 'anthropic', 'value' => 'anthropic'],
+            ['label' => 'openai', 'value' => 'openai'],
+        ])
+        ->placeholder('Use default')
+        ->showAllOnEmpty()
+        ->clearable()),
+    Field::make('Status', BooleanMenu::make('enabled')
+        ->yesLabel('Enabled')
+        ->noLabel('Disabled')
+        ->includeEnvVars()),
+]);
+```
+
+An option can have `data.hint` text, which is shown after its label.
+An `optgroup` option, with its own `options`, groups the ones it holds.
+`requireOptionMatch()` only accepts values from the list, `multiple()` accepts several, and `limit()` caps how many are listed.
+`includeEnvVars()` also suggests environment variables.
+
 ## Accessibility
 
 Lion supplies the combobox pattern — the ARIA roles, the active-descendant handling, and the keyboard model. The requirements, and the gaps still open, are in `combobox.a11y.md`.

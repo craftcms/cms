@@ -26,6 +26,39 @@ Permissions nest: granting a child implies its parents, and revoking a parent re
 
 Locked permissions render as fixed — granted by something other than this screen, such as an admin flag — so the interface shows them without pretending they can be changed here.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Controls\PermissionTree` renders a permission tree from permission groups:
+
+```php
+use CraftCms\Cms\Ui\Controls\PermissionTree;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\User\Data\Permission;
+use CraftCms\Cms\User\Data\PermissionGroup;
+
+Ui::make([
+    Field::make(null, PermissionTree::make('permissions')
+        ->ariaLabel('Permissions')
+        ->groups([
+            new PermissionGroup(
+                handle: 'exhibits',
+                heading: 'Exhibits',
+                permissions: collect([
+                    new Permission('viewExhibits', 'View exhibits', nested: collect([
+                        new Permission('editExhibits', 'Edit exhibits'),
+                    ])),
+                ]),
+            ),
+        ])),
+]);
+```
+
+Granting a nested permission grants its parents too, and revoking a parent revokes the permissions it contains.
+`lockedPermissions()` shows permissions as granted without letting them be changed.
+For every registered permission, pass the result of `CraftCms\Cms\User\UserPermissions::getAllPermissions()` to `groups()`.
+
 ## Accessibility
 
 The nesting is structural, so the relationship between a permission and the ones it contains is available rather than being conveyed by indentation alone. Each permission is an ordinary checkbox, reached with Tab and toggled with Space. There's no expanding or collapsing.
