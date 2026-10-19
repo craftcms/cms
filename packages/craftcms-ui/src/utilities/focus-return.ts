@@ -87,14 +87,11 @@ function scopeKeyOf(el: Element): string | null {
 }
 
 function findMenuByKey(key: string, scopeKey: string | null): HTMLElement[] {
-  const selector = (tag: string) =>
-    `${tag}[${FOCUS_KEY_ATTRIBUTE}="${CSS.escape(key)}"]`;
-
-  return [
-    ...document.querySelectorAll<HTMLElement>(
-      MENU_SELECTOR.split(', ').map(selector).join(', ')
-    ),
-  ].filter((menu) => scopeKeyOf(menu) === scopeKey);
+  return [...document.querySelectorAll<HTMLElement>(MENU_SELECTOR)].filter(
+    (menu) =>
+      menu.getAttribute(FOCUS_KEY_ATTRIBUTE) === key &&
+      scopeKeyOf(menu) === scopeKey
+  );
 }
 
 /**
