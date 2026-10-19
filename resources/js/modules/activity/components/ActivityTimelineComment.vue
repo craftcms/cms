@@ -136,15 +136,16 @@
     if (
       event.key !== 'Enter' ||
       (!event.metaKey && !event.ctrlKey) ||
-      event.isComposing ||
-      mutating.value ||
-      overage.value > 0
+      event.isComposing
     ) {
       return;
     }
 
+    // Claimed even when it can't post, so it doesn't submit the page's form.
     event.preventDefault();
-    void saveComment();
+    if (!mutating.value && overage.value <= 0) {
+      void saveComment();
+    }
   }
 
   async function deleteComment(): Promise<void> {
