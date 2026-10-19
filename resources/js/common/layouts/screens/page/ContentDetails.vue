@@ -46,6 +46,5 @@
     gap: var(--c-spacing-md);
     height: 100%;
     overflow-y: auto;
-    scrollbar-gutter: stable;
   }
 </style>

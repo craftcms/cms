@@ -54,6 +54,17 @@ export const Widths: Story = {
   `,
 };
 
+/** `separated` widens the gap between columns and draws a hairline in it. */
+export const Separated: Story = {
+  render: () => html`
+    <craft-field-group separated>
+      ${field('Title', 'width-50')} ${field('Slug', 'width-50')}
+      ${field('Author', 'width-33')} ${field('Post Date', 'width-33')}
+      ${field('Expiry Date', 'width-33')}
+    </craft-field-group>
+  `,
+};
+
 /**
  * The breakpoints are container queries, so the same group stacks inside a
  * narrow container even on a wide screen.

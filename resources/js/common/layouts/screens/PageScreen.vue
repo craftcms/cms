@@ -562,6 +562,7 @@ Shell
   .cp {
     flex: 1;
     display: grid;
+    padding-inline-end: var(--cp-scrollbar-width, 0px);
     /* The floating sidebar's row stays empty, so the main row takes the room. */
     grid-template-rows: auto 1fr;
     background-color: var(--c-surface-sunken);

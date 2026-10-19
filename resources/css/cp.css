@@ -91,8 +91,18 @@ body {
   height: 100%;
 }
 
-html {
+/* The page scrollbar overlays the layout rather than narrowing it, so it can't
+   shift anything; the shell keeps clear of it with --cp-scrollbar-width. */
+body {
+  width: 100vw;
+}
+
+.cp-inner-scroller {
+  overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-color-neutral-border-normal) transparent;
 }
 
 /* Held by overlays — modals and slideouts — while any of them is open. The
