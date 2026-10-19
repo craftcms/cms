@@ -106,6 +106,7 @@
 - Fixed a bug where logging in from the control panel’s login page could redirect to the front end instead of the control panel, when a front-end login path was also configured.
 - Fixed a bug where element edit pages could have a few pixels of vertical scroll after the window was resized, even though their content fit within it. ([#20028](https://github.com/craftcms/cms/pull/20028))
 - Fixed a bug where control panel pages and details panes shifted sideways when a scrollbar appeared. ([#20030](https://github.com/craftcms/cms/pull/20030))
+- Fixed a bug where every source page listed all enabled sources when the first source, such as “All entries”, was disabled. ([#20016](https://github.com/craftcms/cms/issues/20016))
 
 ### Content Management
 

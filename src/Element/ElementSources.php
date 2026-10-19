@@ -172,7 +172,7 @@ class ElementSources
             ->sources($elementType, $context)
             ->unless(
                 $withDisabled,
-                fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false)),
+                fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false))->values(),
             );
 
         if (
