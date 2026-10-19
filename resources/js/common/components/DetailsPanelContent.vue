@@ -52,7 +52,7 @@
       ></craft-button>
     </div>
   </div>
-  <div class="grow basis-0 min-h-0 overflow-y-auto">
+  <div class="grow basis-0 min-h-0 overflow-y-auto [scrollbar-gutter:stable]">
     <slot>
       <component
         v-if="panel.component"

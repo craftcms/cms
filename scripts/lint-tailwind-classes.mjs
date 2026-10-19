@@ -134,7 +134,9 @@ function spacingSteps(value) {
 
 function check(raw) {
   const candidate = designSystem.parseCandidate(raw)[0];
-  if (!candidate || !isValid(raw)) return null;
+  if (!candidate || candidate.kind === 'arbitrary' || !isValid(raw)) {
+    return null;
+  }
 
   const negative = candidate.root.startsWith('-') ? '-' : '';
   const root = candidate.root.slice(negative.length);

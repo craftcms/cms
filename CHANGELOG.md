@@ -103,6 +103,7 @@
 - Fixed a bug where typing an option’s exact label or value into a combobox that accepts free text could make two options look selected. Exact matches are now listed first.
 - Fixed a bug where rich selects’ menus could extend off-screen when an option had a long label or hint, and a long option could stretch the select itself past its container.
 - Fixed a bug where permission trees, such as user group permissions and the public MCP settings, used the browser’s native checkboxes instead of the control panel’s checkbox styling.
+- Fixed a bug where control panel pages and details panes shifted sideways when a scrollbar appeared. ([#20030](https://github.com/craftcms/cms/pull/20030))
 
 ### Content Management
 
