@@ -28,7 +28,7 @@ it('alerts admins to AI tasks that can’t run, except on the AI settings screen
 
     $contents = array_map(fn (string|array $alert) => is_array($alert) ? $alert['content'] : $alert, app(Alerts::class)->get(path: $path));
 
-    expect(str_contains(implode(' ', $contents), 'An AI task can’t run yet.'))->toBe($alerted);
+    expect(str_contains(implode(' ', $contents), 'can’t run yet.'))->toBe($alerted);
 })->with([
     'another screen' => ['dashboard', true],
     'the AI settings screen' => ['settings/ai', false],
