@@ -1,4 +1,5 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
+import {userEvent} from 'vite-plus/test/browser';
 import '../../styles/cp.css';
 import './card.js';
 import '../chip/chip.js';
@@ -413,6 +414,36 @@ it.each(['light', 'dark'])(
     expect(box().backgroundColor).toBe(control());
     expect(mark()).toBe(header().backgroundColor);
     expect(contrast(mark(), box().backgroundColor)).toBeGreaterThanOrEqual(3);
+  }
+);
+
+it.each([
+  ['light', ''],
+  ['light', 'data-color="indigo"'],
+  ['light', 'data-color="white"'],
+  ['dark', ''],
+])(
+  'keeps a hovered header control readable on a selected card in the %s theme (%s)',
+  async (theme, color) => {
+    document.body.innerHTML = `
+      <div data-theme="${theme}">
+        <craft-card ${color} active>
+          <div slot="header">
+            <craft-button variant="plain" inherit icon="ellipsis" aria-label="Actions"></craft-button>
+          </div>
+        </craft-card>
+      </div>`;
+    const card = document.querySelector<CraftCard>('craft-card')!;
+    await card.updateComplete;
+    const button = card.querySelector('craft-button')!;
+
+    await userEvent.hover(button);
+    const style = getComputedStyle(button);
+
+    expect(contrast(style.color, style.backgroundColor)).toBeGreaterThanOrEqual(
+      3
+    );
+    await userEvent.unhover(button);
   }
 );
 
