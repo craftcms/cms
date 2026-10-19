@@ -99,6 +99,7 @@
 - Fixed a bug where pending progress bars’ stripes were oversized and had a seam. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where selectable chips and thumbnails had a text cursor. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where thumbnails’ action menu buttons had light-mode styling while pressed in the dark theme. ([#20008](https://github.com/craftcms/cms/pull/20008))
+- Fixed a bug where comboboxes’ menus could grow as wide as the window and extend off-screen when an option had a long label or hint, such as an environment variable suggestion.
 
 ### Content Management
 

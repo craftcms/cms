@@ -55,6 +55,10 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 - [ ] Known gap: how many options match, and that none match, aren't announced. There is no live region; the only count is the `aria-setsize` read out with the active option. Per WCAG 4.1.3 (Status Messages).
 - [ ] Known gap: the "Showing {shown} of {total}" footer shown when matches exceed `limit` is `aria-hidden="true"`, so screen reader users aren't told the list is incomplete. Per WCAG 1.3.1 (Info and Relationships) and 4.1.3 (Status Messages).
 
+### Zoom and reflow
+
+- [x] The open list stays within the viewport: it's at least as wide as the field, and no wider than 22.5rem unless the field is, so long labels and hints truncate rather than push it off-screen. Per WCAG 1.4.10 (Reflow). Verified by `keeps the list within the viewport when an option is long, $expected` in `combobox-options.browser.test.ts`.
+
 ### Pointer
 
 - [ ] The clear button is at least 24×24 CSS px. Per WCAG 2.5.8 (Target Size (Minimum)). Not yet verified.
