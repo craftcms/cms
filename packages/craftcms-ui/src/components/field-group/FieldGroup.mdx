@@ -19,6 +19,14 @@ A `width-*` class on a child gives it a fraction of the row:
 
 The available fractions are `width-25`, `width-33`, `width-50`, `width-66`, and `width-75` — quarters, thirds, and halves of the twelve columns.
 
+## Separated Columns
+
+`separated` widens the gap between columns and draws a hairline down the middle of it, between fields that share a row. Element edit forms use it, so side-by-side fields read as separate columns:
+
+<Canvas of={FieldGroupStories.Separated} sourceState="shown" />
+
+The hairlines follow the layout: when a row wraps as the group narrows, or a field is hidden, the fields that no longer share a row lose theirs. Set `--c-field-group-separator-spacing` to change the space on each side of a hairline, for example to match the padding of the pane around the group.
+
 ## Container Queries, Not Media Queries
 
 The breakpoints respond to the width of the group itself, not the viewport.

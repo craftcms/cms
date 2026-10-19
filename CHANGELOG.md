@@ -112,6 +112,7 @@
 - Fixed a bug where thumbnails for animated image formats, such as WebP and GIF, were shown as a 1×1 dot. ([#20019](https://github.com/craftcms/cms/issues/20019))
 - Fixed a bug where Plain Text fields with a character limit weren’t full width when line breaks were allowed. ([#20017](https://github.com/craftcms/cms/issues/20017))
 - Fixed a bug where element index tables with only a title column split the rest of the row between the checkbox and reorder columns. ([#20021](https://github.com/craftcms/cms/issues/20021))
+- Fixed a bug where fields that share a row in element edit forms had no gap between them. They’re now separated by a hairline, as in Craft 4 and 5. ([#20022](https://github.com/craftcms/cms/issues/20022))
 
 ### Content Management
 
@@ -212,6 +213,7 @@
 - Added the `cp-table--flush` class, which pads the outer edges of each table row by `--cp-container-padding`. ([#19906](https://github.com/craftcms/cms/pull/19906), [#19936](https://github.com/craftcms/cms/pull/19936))
 - Added the `appearance` prop to the `AdminTable` Vue component, and `CraftCms\Cms\Ui\Nodes\Table::appearance()`, which set how a table meets its container: `plain`, `flush`, or `raised`. The values are available as `TableAppearance` from `@craftcms/cp` and `CraftCms\Cms\Cp\Enums\TableAppearance`. ([#19936](https://github.com/craftcms/cms/pull/19936))
 - Added the `max-height` attribute to `<craft-markdown-field>`, which sets how tall the editor grows before it scrolls. ([#19923](https://github.com/craftcms/cms/pull/19923))
+- Added the `separated` attribute to `<craft-field-group>`, which widens the gap between columns and draws a hairline between fields that share a row. ([#20022](https://github.com/craftcms/cms/issues/20022))
 - Added the `outline-fill` appearance to `<craft-pane>`, and `CraftCms\Cms\Cp\Enums\PaneAppearance::OutlineFill`. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `appearance` and `size` properties to `<craft-disclosure>`. `appearance="plain"` drops the content’s hairline and indent, and `size` sizes the default toggle. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `hyperlinkUrl`, `hyperlinkTag`, and `hyperlinkAttributes` config options to `CraftCms\Cms\Cp\Html\ElementHtml::elementChipHtml()`, and the `bare` prop to the `CpLink` Vue component. ([#19932](https://github.com/craftcms/cms/pull/19932))
