@@ -1085,6 +1085,14 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       // set would send the next save at it, and `draftIsProvisional` reads it to
       // decide whether the screen is showing provisional changes.
       autosave.setDraftId(null);
+      // Autosave baselined the poller on the draft's `dateUpdated`, but polls
+      // now describe the canonical element. Stop comparing the element stamp
+      // until the reload below hands over the canonical one, or the next poll
+      // reports the discard as someone else's change.
+      activity.rebase({
+        element: null,
+        canonical: props.updatedTimestamps.canonical,
+      });
 
       // Revert against the payload the page already holds, so the fields go
       // back the moment the draft is deleted rather than a round trip later —
@@ -1100,10 +1108,16 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       if (slideout) {
         await slideout.reload();
         await revertToLoadedPayload();
+        activity.rebase(props.updatedTimestamps);
       } else {
         // Not awaited: `router.reload()` doesn't resolve, and the visit's own
         // callbacks are the only way to know the payload has landed.
-        router.reload({onFinish: () => void revertToLoadedPayload()});
+        router.reload({
+          onFinish: () => {
+            void revertToLoadedPayload();
+            activity.rebase(props.updatedTimestamps);
+          },
+        });
       }
     } finally {
       reverting--;

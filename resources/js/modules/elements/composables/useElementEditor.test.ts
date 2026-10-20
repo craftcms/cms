@@ -1117,6 +1117,44 @@ describe('useElementEditor', () => {
     expect(editor.activity.isStale.value).toBe(true);
   });
 
+  it('doesn’t report a discarded draft as someone else’s edit', async () => {
+    // The provisional draft and the canonical element have different
+    // `dateUpdated`s, and polls report whichever one they're asked about.
+    postSpy.mockImplementation(async (_url: string, data: any) => ({
+      data: {
+        activity: [],
+        updatedTimestamp: data?.draftId ? 2 : 1,
+        canonicalUpdatedTimestamp: 1,
+      },
+    }));
+    const screen = payload({
+      activityUrl: '/actions/elements/recent-activity',
+      draftId: 9,
+      isProvisionalDraft: true,
+      updatedTimestamps: {element: 2, canonical: 1},
+    });
+    const {editor, page} = mount(screen);
+    // The reload lands on the canonical element.
+    const reload = vi
+      .spyOn(router, 'reload')
+      .mockImplementation((options?: any) => {
+        page.props = {
+          ...screen,
+          draftId: null,
+          isProvisionalDraft: false,
+          updatedTimestamps: {element: 1, canonical: 1},
+        };
+        options?.onFinish?.();
+      });
+    await editor.activity.poll();
+
+    await editor.discardDraft();
+    await editor.activity.poll();
+
+    expect(editor.activity.isStale.value).toBe(false);
+    reload.mockRestore();
+  });
+
   it('omits presentation-only null controls when refreshing an untouched UI', async () => {
     const ui = cardsLayout();
     const {editor} = mount(payload({canAutosave: false, ui}));
