@@ -29,12 +29,7 @@ it('centers a modal dialog in the viewport', async () => {
 });
 
 describe('closing with a held key', () => {
-  /**
-   * A `craft-button` that opens a dialog, focused when the dialog opens so the
-   * platform hands focus back to it on close. The button clicks on any Enter
-   * or Space keyup, so a keyup left over from the press that closed the dialog
-   * would open it again.
-   */
+  /** A `craft-button` opener, focused so the dialog hands focus back to it on close. */
   async function fixture(): Promise<{
     opener: CraftButton;
     dialog: CraftDialog;
