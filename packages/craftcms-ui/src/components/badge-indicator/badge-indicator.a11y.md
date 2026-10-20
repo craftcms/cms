@@ -30,8 +30,8 @@ A static marker, with an optional count, that sits beside or inside the thing it
 
 - [ ] The count reaches 4.5:1 against the marker's fill for every `variant`, in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Not yet verified. By the token values, `primary` and `secondary` sit just above 4.5:1 and `inverse` well above. `secondary` keeps the `info` text color on the `warning` fill.
 - [ ] The marker's fill reaches 3:1 against the default surface, for `primary` and `secondary`. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified. `inverse` (`--c-color-neutral-fill-normal`) is meant for a dark surface and falls well below 3:1 on the default one.
-- [ ] The marker's 2px ring, in `--c-surface-default` (or `--badge-border-color`), separates it from what it overlaps. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified on a non-default surface.
-- [ ] In forced-colors mode, the marker stays visible. Its fill is replaced by a system color, so a bare dot may show only as its ring. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified.
+- [ ] Where a marker overlaps something, its ring (`--badge-border-width`, in `--c-surface-default` or `--badge-border-color`) separates it from what it overlaps. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified on a non-default surface.
+- [ ] In forced-colors mode, the marker stays visible. Its fill is replaced by a system color, so a bare dot without a ring may not show at all. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified.
 
 ### Reflow and zoom
 

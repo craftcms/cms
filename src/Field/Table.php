@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementAwareTableCellInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\TableCellInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Field\Models\Field as FieldModel;
 use CraftCms\Cms\Field\TableCells\MissingTableCell;
 use CraftCms\Cms\Field\TableCells\TableCellContext;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Gql\GqlInputSchema;
 use CraftCms\Cms\Gql\Types\Generators\TableRowType;
 use CraftCms\Cms\Gql\Types\TableRow;
 use CraftCms\Cms\Support\Arr;
@@ -62,7 +64,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, TracksReferencesFieldInterface
+class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InputSchemaFieldInterface, TracksReferencesFieldInterface
 {
     /** @var array<string, array<string, true>> */
     private array $columnErrors = [];
@@ -325,18 +327,18 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         // handle some default cell values
         if (! empty($config['columns'])) {
             foreach ($config['columns'] as $colId => $col) {
-                // Convert default date cell values to ISO8601 strings
+                // Convert default date cell values to ISO8601 strings, assuming submitted ones are local to the site
                 if (in_array($col['type'], ['date', 'time'], true)) {
                     if (isset($config['defaults'])) {
                         foreach ($config['defaults'] as &$row) {
                             if (isset($row[$colId])) {
-                                $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
+                                $row[$colId] = DateTimeHelper::toIso8601(DateTimeHelper::toDateTime($row[$colId], true)) ?: null;
                             }
                         }
                         unset($row);
                     }
                     if (isset($config['defaultRowValues'][$colId])) {
-                        $config['defaultRowValues'][$colId] = DateTimeHelper::toIso8601($config['defaultRowValues'][$colId]) ?: null;
+                        $config['defaultRowValues'][$colId] = DateTimeHelper::toIso8601(DateTimeHelper::toDateTime($config['defaultRowValues'][$colId], true)) ?: null;
                     }
                 }
             }
@@ -917,5 +919,11 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             ['value' => $rules],
             attributes: ['value' => ($column['heading'] ?? '') !== '' ? $column['heading'] : t('Value')],
         )->errors()->get('value');
+    }
+
+    /** @return array<string, mixed> */
+    public function getInputSchema(): array
+    {
+        return GqlInputSchema::fromType($this->getContentGqlMutationArgumentType());
     }
 }

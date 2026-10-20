@@ -562,6 +562,7 @@ Shell
   .cp {
     flex: 1;
     display: grid;
+    padding-inline-end: var(--cp-scrollbar-width, 0px);
     /* The floating sidebar's row stays empty, so the main row takes the room. */
     grid-template-rows: auto 1fr;
     background-color: var(--c-surface-sunken);
@@ -746,7 +747,10 @@ Content: the secondary nav, content, and details panes
     background-color: var(--c-surface-default);
     /* A dragged width outlives the layout it was dragged in, so cap it here. */
     max-inline-size: var(--cp-content-details-max, 90cqi);
-    container: content-details / inline-size;
+    /* Contained in both axes, so the row sets its height rather than the pane:
+       the pane is sized from where this ends, and taking its height from the
+       pane would let a stale gap hold the page a few pixels too tall. */
+    container: content-details / size;
     /* No width of its own while it has a column: stretching to the track is what
        lets the track's range shrink it, and it survives the containment above. */
     justify-self: stretch;

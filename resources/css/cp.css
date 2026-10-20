@@ -91,6 +91,20 @@ body {
   height: 100%;
 }
 
+/* The page scrollbar overlays the layout rather than narrowing it, so it can't
+   shift anything; the shell keeps clear of it with --cp-scrollbar-width. */
+body {
+  width: 100vw;
+}
+
+.cp-inner-scroller {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-color-neutral-border-normal) transparent;
+}
+
 /* Held by overlays — modals and slideouts — while any of them is open. The
    legacy stylesheet and panel-stack.css each define this too; repeated here so
    the lock still works on a CP page that loads neither. */

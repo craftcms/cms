@@ -359,6 +359,25 @@ it('round-trips link cells through request values, storage, and editor values', 
         ->and($field->getSearchKeywords($normalized, new Entry))->toContain('https://example.com?page=2');
 });
 
+it('keeps submitted dates and times in the site timezone through storage and the editor', function () {
+    $field = new Table([
+        'handle' => 'events',
+        'columns' => [
+            'col1' => ['heading' => 'Date', 'handle' => 'date', 'type' => 'date'],
+            'col2' => ['heading' => 'Time', 'handle' => 'time', 'type' => 'time'],
+        ],
+        'defaultRowValues' => [['col1' => '2026-10-24', 'col2' => '17:00']],
+    ]);
+
+    $normalized = $field->normalizeValueFromRequest([['col1' => '2026-10-24', 'col2' => '17:00']], null);
+    $stored = $field->serializeValueForDb($normalized, new Entry);
+    $control = $field->uiControl(new FieldContext('events', value: $field->normalizeValue($stored, null)));
+    $payload = app(UiResolver::class)->resolve(Ui::make([UiField::make('Events', $control)]), new UiContext);
+
+    expect($payload->values['events'][0])->toMatchArray(['col1' => '2026-10-24', 'col2' => '17:00'])
+        ->and($control->props()['defaultValues'])->toMatchArray(['col1' => '2026-10-24', 'col2' => '17:00']);
+});
+
 it('validates link cells against their column settings', function (array $value, ?string $expected) {
     $field = new Table([
         'handle' => 'links',
