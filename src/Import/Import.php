@@ -26,9 +26,6 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use League\Fractal\Manager;
-use League\Fractal\Resource\Item;
-use League\Fractal\Serializer\DataArraySerializer;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -590,7 +587,7 @@ class Import
     }
 
     /**
-     * Runs a Fractal transformer over the raw item data (with config/element as meta) and returns the transformed array.
+     * Runs the importer’s transformer over the raw item data and returns the transformed array.
      *
      * @param  BaseImporter  $importer  The importer config providing the transformer.
      * @param  array<string, mixed>  $data  The raw item data to transform.
@@ -599,23 +596,10 @@ class Import
      */
     final public function processData(BaseImporter $importer, array $data, mixed $element): array
     {
-        // turn the data from the json/csv/xml file into a fractal collection
-        $resource = new Item($data, $importer->transformer);
-        $resource->setMeta(['config' => $importer, 'element' => $element]);
-
-        // Load Fractal
-        $fractalManager = new Manager;
-        $fractalManager->setSerializer(new DataArraySerializer);
-
-        $fractalData = $fractalManager->createData($resource);
-
-        // note: ->toArray() freaks out if the transformer is null; not sure if that's expected or not
-        if ($fractalData->getResource()->getTransformer() === null) {
-            return $fractalData->getResource()->getData();
+        if (! $importer->transformer instanceof BaseTransformer) {
+            return $data;
         }
 
-        $data = $fractalData->toArray();
-
-        return $data['data'];
+        return $importer->transformer->transform($data, $importer, $element);
     }
 }

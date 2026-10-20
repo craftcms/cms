@@ -55,7 +55,6 @@
     "laravel/wayfinder": "^0.1.12",
     "league/commonmark": "^2.8",
     "league/flysystem-path-prefixing": "^3.31",
-    "league/fractal": "^0.21.0",
     "league/uri": "^7.0",
     "mcp/sdk": "0.8.1",
     "moneyphp/money": "^4.0",

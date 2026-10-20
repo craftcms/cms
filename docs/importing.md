@@ -258,7 +258,7 @@ is accepted and expanded). Behavior:
    (`$query->one() ?? $element`).
 2. `markAsImporting()` — for existing and new elements alike.
 3. Transformer runs *after* the element is resolved, so it can see the existing element
-   via Fractal meta.
+   via its `$element` argument.
 4. Split the result into native attributes, custom fields, and container properties. The
    reserved keys (`matchCriteria`, `clearableItems`, `keepMissingNestedElements`) are never
    treated as fields. Attributes are applied via
