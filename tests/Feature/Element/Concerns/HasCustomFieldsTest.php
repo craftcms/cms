@@ -152,6 +152,18 @@ describe('dirty fields', function () {
         expect($entry->getDirtyFields())->toBe([]);
     });
 
+    test('a posted value only marks its field dirty when it changes the value', function () {
+        $this->entry->setFieldValue('testField', 'Stored');
+        Elements::saveElement($this->entry);
+        $entry = entryQuery()->id($this->entry->id)->one();
+
+        $entry->setFieldValueFromRequest('testField', 'Stored');
+        expect($entry->isFieldDirty('testField'))->toBeFalse();
+
+        $entry->setFieldValueFromRequest('testField', 'Changed');
+        expect($entry->isFieldDirty('testField'))->toBeTrue();
+    });
+
     test('setDirtyFields with empty array clears dirty fields', function () {
         $this->entry->setDirtyFields(['testField']);
         $this->entry->setDirtyFields([], false);

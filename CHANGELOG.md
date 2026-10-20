@@ -117,6 +117,7 @@
 - Fixed a bug where text in form inputs could be clipped at the bottom with some fonts, such as Segoe UI on Windows. ([#19928](https://github.com/craftcms/cms/issues/19928))
 - Fixed a bug where the “This entry has been updated” notice appeared after discarding changes, and its Reload button didn’t dismiss it. ([#20038](https://github.com/craftcms/cms/issues/20038))
 - Fixed a bug where saving an entry, such as with an empty required field, marked every custom field as modified in the draft it created. ([#20039](https://github.com/craftcms/cms/issues/20039))
+- Fixed a bug where editing one field in a Matrix block marked every field in the Matrix field as modified. ([#20040](https://github.com/craftcms/cms/issues/20040))
 
 ### Content Management
 
