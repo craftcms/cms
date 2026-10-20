@@ -141,9 +141,14 @@ export default class CraftFieldGroup extends LitElement {
           min-width: 0;
         }
 
+        /* Capped so the eleven gaps never crowd out the columns in a narrow
+           group, such as a details panel, where fields don't share rows. */
         craft-field-group[separated] {
-          --_column-gap: calc(
-            var(--c-field-group-separator-spacing, var(--c-spacing-lg)) * 2
+          --_column-gap: min(
+            calc(
+              var(--c-field-group-separator-spacing, var(--c-spacing-lg)) * 2
+            ),
+            100% / 12
           );
           column-gap: var(--_column-gap);
         }

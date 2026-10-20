@@ -163,3 +163,16 @@ it('draws a hairline between separated fields that share a row, and only there',
   await frames();
   expect(follows()).toEqual([false, false, false]);
 });
+
+it('keeps separated fields within a group too narrow for its full column gap', async () => {
+  const fieldGroup = document.createElement('craft-field-group');
+  fieldGroup.separated = true;
+  fieldGroup.style.width = '300px';
+  fieldGroup.style.setProperty('--c-field-group-separator-spacing', '16px');
+  fieldGroup.innerHTML = '<div>Gallery Location</div>';
+  document.body.append(fieldGroup);
+  await fieldGroup.updateComplete;
+
+  const field = fieldGroup.querySelector('div')!;
+  expect(field.getBoundingClientRect().width).toBe(300);
+});
