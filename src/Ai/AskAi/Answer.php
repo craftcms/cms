@@ -14,9 +14,9 @@ namespace CraftCms\Cms\Ai\AskAi;
 readonly class Answer
 {
     /**
-     * @param  array<string, mixed>  $values  The values the model changed, indexed by field key.
+     * @param  array<string, mixed>  $values  The values the model changed, indexed by the fields’ keys in prompts and responses, as {@see Target::id()} returns them.
      * @param  string|null  $summary  What the model changed, or its review when it changed nothing.
-     * @param  list<array{field: string|null, quote: string|null, issue: string}>  $findings  Specific problems, each with the key of the field it concerns (or `null` for the whole element), and the passage it’s in, if that passage is in the field.
+     * @param  list<array{field: string|null, quote: string|null, issue: string}>  $findings  Specific problems, each with the key of the field it concerns (or `null` for the content as a whole), and the passage it’s in, if that passage is in the field.
      */
     public function __construct(
         public array $values,

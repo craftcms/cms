@@ -12,6 +12,7 @@
   import ElementActivityTimelineActions from '@/modules/elements/components/ElementActivityTimelineActions.vue';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import ElementRevisionsActions from '@/modules/elements/components/ElementRevisionsActions.vue';
+  import AskAiDetailsPanel from '@/modules/ai/AskAiDetailsPanel.vue';
   import type {
     ElementEditPayload,
     ElementEditPayloadUpdater,
@@ -59,6 +60,16 @@
       icon: 'circle-info',
       order: 0,
       slot: 'info',
+    },
+    {
+      id: 'ask-ai',
+      label: t('Ask AI'),
+      icon: 'sparkles',
+      component: AskAiDetailsPanel,
+      // After the layout's sidebar tabs and Workflow (5).
+      order: 6,
+      visible: (payload) => payload.askAi !== null,
+      props: ({payload, active}) => ({params: payload.askAi, active}),
     },
     {
       id: 'activity',

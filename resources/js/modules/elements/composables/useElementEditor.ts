@@ -33,6 +33,7 @@ import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {attach} from '@actions/ReleasesController';
+import type {AskAiParams} from '@/modules/ai/ask-ai';
 
 export interface ElementEditFormData {
   typeId?: string | number | null;
@@ -151,6 +152,8 @@ export interface ElementEditPayload {
   previewTargets: Array<ElementPreviewTarget>;
   elementDisplayName: string;
   activityUrl: string | null;
+  /** Identifies the element to the “Ask AI” panel, when the user can ask about it. */
+  askAi: AskAiParams | null;
   activityTimelineUrl: string | null;
   activityPageUrl: string | null;
   updatedTimestamps: {element: number | null; canonical: number | null};

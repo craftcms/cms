@@ -71,6 +71,7 @@ function payload(): ElementEditPayload {
     elementDisplayName: 'Entry',
     activityUrl: null,
     activityTimelineUrl: null,
+    askAi: null,
     activityPageUrl: null,
     updatedTimestamps: {element: null, canonical: null},
     contextMenu: null,

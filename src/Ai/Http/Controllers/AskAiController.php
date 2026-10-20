@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ai\Http\Controllers;
 
 use CraftCms\Cms\Ai\AskAi\Assistant;
+use CraftCms\Cms\Ai\AskAi\Subject;
+use CraftCms\Cms\Ai\AskAi\Target;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
 use CraftCms\Cms\Ai\Exceptions\InvalidAiResponseException;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -12,7 +14,6 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\LayoutElements\Assets\AltField;
-use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use CraftCms\Cms\Http\Requests\ElementRequest;
@@ -38,6 +39,11 @@ use function CraftCms\Cms\t;
  */
 readonly class AskAiController
 {
+    /**
+     * The `context` value that sends every field.
+     */
+    public const string ALL_CONTEXT = '*';
+
     public function __construct(
         private ElementRequest $request,
         private Assistant $assistant,
@@ -45,17 +51,12 @@ readonly class AskAiController
     ) {}
 
     /**
-     * Returns the prompt form.
+     * Returns the prompt form, and the fields that can be chosen as its context.
      */
     public function form(UiResolver $uiResolver): JsonResponse
     {
-        $this->request->validate([
-            'layoutElementUid' => ['nullable', 'string'],
-        ]);
-
         $element = $this->element();
-        $this->applyFormValues($element);
-        $target = $this->target($element);
+        $targets = $this->targets($element);
 
         $ui = Ui::make([
             Field::make(t('Prompt'), Markdown::make('prompt')
@@ -71,14 +72,10 @@ readonly class AskAiController
                     'trigger' => '{',
                     'boundary' => 'anywhere',
                     'label' => t('Fields'),
-                    'options' => $this->placeholderOptions($element),
+                    'options' => $this->placeholderOptions($targets),
                 ]]))
                 ->instructions(t('Describe what to write or change, or ask for a review. Type “{” to insert a field’s current value.'))
                 ->required(),
-            Field::make(null, Checkbox::make('includeElement')
-                ->label(t('Include the whole {type}', ['type' => $element::lowerDisplayName()])))
-                ->instructions(t('Sends all of its content with the prompt, not only the fields being written.'))
-                ->instructionsPosition('after'),
         ]);
 
         if ($this->assistant->hasImage($element)) {
@@ -90,12 +87,12 @@ readonly class AskAiController
         return new JsonResponse([
             'ui' => $uiResolver->resolve($ui, new UiContext(values: [
                 'prompt' => '',
-                'includeElement' => $target === null,
                 'includeImage' => true,
             ])),
-            'title' => $target === null
-                ? t('Ask AI')
-                : t('Ask AI about “{field}”', ['field' => $target->label() ?? $target->attribute()]),
+            'contextOptions' => array_values(array_map(static fn (Target $target): array => [
+                'value' => $target->path(),
+                'label' => $target->label(),
+            ], $targets)),
             'submitLabel' => t('Ask'),
         ]);
     }
@@ -107,41 +104,39 @@ readonly class AskAiController
     {
         $this->request->validate([
             'prompt' => ['required', 'string', 'max:10000'],
-            'includeElement' => ['nullable', 'boolean'],
+            'context' => ['nullable', 'array'],
+            'context.*' => ['string'],
             'includeImage' => ['nullable', 'boolean'],
             'namespace' => ['nullable', 'string', 'regex:/^[^.]+(\.[^.]+)*$/'],
-            'layoutElementUid' => ['nullable', 'string'],
         ]);
 
         $element = $this->element();
-        $this->applyFormValues($element);
-        $target = $this->target($element);
-        $fields = $this->assistant->fields($element);
+        $targets = $this->targets($element);
+        $context = $this->request->input('context');
 
-        if ($target !== null) {
-            $fields = array_filter($fields, static fn (BaseField $field): bool => $field->uid === $target->uid);
+        if (is_array($context) && ! in_array(self::ALL_CONTEXT, $context, true)) {
+            $targets = array_filter($targets, static fn (Target $target): bool => in_array($target->path(), $context, true));
         }
 
-        if ($fields === []) {
-            abort(400, 'There are no fields to generate.');
+        if ($targets === []) {
+            abort(400, 'There are no fields to ask about.');
         }
 
-        $current = $this->compiler->compile($element->getFieldLayout(), $element, new UiContext(
-            namespace: 'askAiCurrent',
-            mode: ControlMode::ReadOnly,
-        ));
+        $copies = [];
 
         try {
             $answer = $this->assistant->ask(
                 $element,
-                $fields,
+                $targets,
                 $this->request->string('prompt')->toString(),
-                $this->request->boolean('includeElement'),
                 $this->request->boolean('includeImage'),
             );
 
-            $proposedElement = clone $element;
-            $this->assistant->apply($proposedElement, $fields, $answer->values);
+            foreach ($answer->values as $id => $value) {
+                $target = $targets[$id];
+                $copy = $copies[spl_object_id($target->subject)] ??= clone $target->subject->element;
+                $this->assistant->apply($copy, $target, $value);
+            }
         } catch (AiUnavailableException|InvalidAiResponseException $exception) {
             return new JsonResponse(['message' => $exception->getMessage()], 422);
         } catch (Throwable $exception) {
@@ -150,19 +145,31 @@ readonly class AskAiController
             return new JsonResponse(['message' => t('The content couldn’t be generated. Try again, or ask an admin to check the AI connection.')], 502);
         }
 
-        $editable = $this->compiler->compile($element->getFieldLayout(), $proposedElement, new UiContext(
-            namespace: $this->request->input('namespace') ?? [],
-        ));
-        $proposed = $this->compiler->compile($element->getFieldLayout(), $proposedElement, new UiContext(
-            namespace: 'askAiProposed',
-            mode: ControlMode::ReadOnly,
-        ));
-        $currentContext = $this->assistant->context($element);
-        $proposedContext = $this->assistant->context($proposedElement);
+        $namespace = $this->request->input('namespace');
+        $namespace = is_string($namespace) ? explode('.', $namespace) : [];
+        $compiled = [];
         $proposals = [];
 
-        foreach (array_keys($answer->values) as $key) {
-            $uid = $fields[$key]->uid;
+        foreach (array_keys($answer->values) as $id) {
+            $target = $targets[$id];
+            $subject = $target->subject;
+            $copy = $copies[spl_object_id($subject)];
+            $layout = $subject->element->getFieldLayout();
+            ['editable' => $editable, 'current' => $current, 'proposed' => $proposed, 'proposedContext' => $proposedContext] = $compiled[spl_object_id($subject)] ??= [
+                'editable' => $this->compiler->compile($layout, $copy, new UiContext(
+                    namespace: [...$namespace, ...$subject->path],
+                )),
+                'current' => $this->compiler->compile($layout, $subject->element, new UiContext(
+                    namespace: 'askAiCurrent',
+                    mode: ControlMode::ReadOnly,
+                )),
+                'proposed' => $this->compiler->compile($layout, $copy, new UiContext(
+                    namespace: 'askAiProposed',
+                    mode: ControlMode::ReadOnly,
+                )),
+                'proposedContext' => $this->assistant->context($copy),
+            ];
+            $uid = $target->field->uid;
             $node = $this->findNode($editable->nodes, $uid);
             $currentNode = $this->findNode($current->nodes, $uid);
             $proposedNode = $this->findNode($proposed->nodes, $uid);
@@ -178,13 +185,13 @@ readonly class AskAiController
                 continue;
             }
 
-            $currentText = Assistant::text($currentContext[$key] ?? null);
-            $proposedText = Assistant::text($proposedContext[$key] ?? null);
+            $currentText = Assistant::text($target->value);
+            $proposedText = Assistant::text($proposedContext[$target->key] ?? null);
             $isText = $currentText !== null && $proposedText !== null;
 
             $proposals[] = [
-                'layoutElementUid' => $uid,
-                'label' => $fields[$key]->label() ?? $key,
+                'key' => $id,
+                'label' => $target->label(),
                 'node' => $node,
                 'value' => $value,
                 // Text values are shown as a diff; anything else as the field’s own read-only control.
@@ -196,14 +203,12 @@ readonly class AskAiController
             ];
         }
 
-        $allFields = $this->assistant->allFields($element);
-
         return new JsonResponse([
             'proposals' => $proposals,
             'summary' => $answer->summary,
             'findings' => array_map(static fn (array $finding): array => [
-                'layoutElementUid' => $finding['field'] !== null ? $allFields[$finding['field']]->uid : null,
-                'label' => $finding['field'] !== null ? ($allFields[$finding['field']]->label() ?? $finding['field']) : null,
+                'key' => $finding['field'],
+                'label' => $finding['field'] !== null ? $targets[$finding['field']]->label() : null,
                 'quote' => $finding['quote'],
                 'issue' => $finding['issue'],
             ], $answer->findings),
@@ -224,16 +229,36 @@ readonly class AskAiController
     }
 
     /**
-     * Sets the form’s current values on the element, so the model works on changes that haven’t been saved yet.
+     * Returns the fields of the element, and of the elements nested in it, that the model can see, with the form’s
+     * current values set on them.
+     *
+     * @return array<string, Target>
+     */
+    private function targets(ElementInterface $element): array
+    {
+        $values = $this->request->all();
+
+        return $this->assistant->targets($this->assistant->subjects($element, function (Subject $subject) use ($values): void {
+            $data = $subject->path === [] ? $values : data_get($values, $subject->path);
+
+            if (is_array($data)) {
+                $this->applyFormValues($subject->element, $data);
+            }
+        }));
+    }
+
+    /**
+     * Sets the form’s current values on an element, so the model works on changes that haven’t been saved yet.
      *
      * Only the values the model sees are set: the title, alternative text, and custom fields that the user can see and
      * edit. Fields that hold nested elements are left out, as setting their values can create drafts of the nested
      * elements. Fields that a value reveals get their own values on the next pass.
+     *
+     * @param  array<mixed>  $data  The element’s values in the form.
      */
-    private function applyFormValues(ElementInterface $element): void
+    private function applyFormValues(ElementInterface $element, array $data): void
     {
-        $values = $this->request->input('fields');
-        $values = is_array($values) ? $values : [];
+        $values = is_array($data['fields'] ?? null) ? $data['fields'] : [];
         $applied = [];
 
         do {
@@ -250,8 +275,8 @@ readonly class AskAiController
                     if (! $layoutField->getField() instanceof ElementContainerFieldInterface && array_key_exists($key, $values)) {
                         $element->setFieldValueFromRequest($key, $values[$key]);
                     }
-                } elseif (($layoutField instanceof TitleField || $layoutField instanceof AltField) && $this->request->has($key)) {
-                    $value = $this->request->input($key);
+                } elseif (($layoutField instanceof TitleField || $layoutField instanceof AltField) && array_key_exists($key, $data)) {
+                    $value = $data[$key];
                     $element->{$key} = is_string($value) ? $value : null;
                 }
             }
@@ -259,36 +284,18 @@ readonly class AskAiController
     }
 
     /**
-     * Returns the field a field-level request targets, or `null` for an element-level request.
-     */
-    private function target(ElementInterface $element): ?BaseField
-    {
-        $uid = $this->request->input('layoutElementUid');
-
-        if ($uid === null) {
-            return null;
-        }
-
-        return array_find(
-            $this->assistant->fields($element),
-            static fn (BaseField $field): bool => $field->uid === $uid,
-        ) ?? abort(400, "Invalid layout element UUID: $uid");
-    }
-
-    /**
-     * Returns the visible fields whose values the prompt can reference.
+     * Returns the element’s own fields, whose values the prompt can reference.
      *
+     * @param  array<string, Target>  $targets
      * @return list<array{label: string, value: string, keywords: list<string>}>
      */
-    private function placeholderOptions(ElementInterface $element): array
+    private function placeholderOptions(array $targets): array
     {
-        $fields = array_intersect_key($this->assistant->allFields($element), $this->assistant->context($element));
-
-        return array_map(static fn (string $key, BaseField $field): array => [
-            'label' => $field->label() ?? $key,
-            'value' => "{{$key}}",
-            'keywords' => [$key],
-        ], array_keys($fields), array_values($fields));
+        return array_values(array_map(static fn (Target $target): array => [
+            'label' => $target->label(),
+            'value' => "{{$target->key}}",
+            'keywords' => [$target->key],
+        ], array_filter($targets, static fn (Target $target): bool => ! $target->subject->isNested())));
     }
 
     /**

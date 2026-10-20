@@ -48,9 +48,11 @@ class AssistantAgent implements Agent, HasStructuredOutput
             'findings' => $schema->array()
                 ->description('Specific problems you noticed, one per item.')
                 ->items($schema->object([
-                    'field' => $schema->string()
-                        ->enum([...$this->findingFields, null])
-                        ->nullable()
+                    // `anyOf` rather than a nullable enum, which providers such as Anthropic reject.
+                    'field' => JsonSchemaFactory::fromArray(SchemaNormalizer::normalize(['anyOf' => [
+                        ['type' => 'string', 'enum' => $this->findingFields],
+                        ['type' => 'null'],
+                    ]]))
                         ->description('The field the problem concerns, or null for the content as a whole.')
                         ->required(),
                     'quote' => $schema->string()

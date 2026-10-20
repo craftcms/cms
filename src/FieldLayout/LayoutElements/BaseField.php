@@ -570,10 +570,7 @@ abstract class BaseField extends FieldLayoutElement
             'action' => [
                 'type' => 'event',
                 'name' => 'craft:ask-ai',
-                'detail' => [
-                    ...Assistant::elementParams($element),
-                    'layoutElementUid' => $this->uid,
-                ],
+                'detail' => ['layoutElementUid' => $this->uid],
             ],
         ];
     }

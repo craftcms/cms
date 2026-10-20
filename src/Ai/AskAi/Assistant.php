@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ai\AskAi;
 
+use Closure;
 use CraftCms\Cms\Ai\Ai;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
 use CraftCms\Cms\Ai\Exceptions\InvalidAiResponseException;
@@ -13,8 +14,11 @@ use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
+use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\LayoutElements\Assets\AltField;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -117,16 +121,113 @@ readonly class Assistant
     }
 
     /**
-     * Returns the layout fields whose values can be generated: the visible, editable fields of a supported type.
+     * Returns the element, followed by the elements nested in it whose fields are edited inline, at any depth: Matrix
+     * blocks, and Content Blocks.
      *
-     * @return array<string, BaseField> Indexed by the key the field has in prompts and responses.
+     * @param  (Closure(Subject): void)|null  $prepare  Called with each element before the elements nested in it are
+     *                                                  found, such as to set the form’s values on it.
+     * @return list<Subject>
      */
-    public function fields(ElementInterface $element): array
+    public function subjects(ElementInterface $element, ?Closure $prepare = null): array
     {
-        return array_filter(
-            $this->allFields($element),
-            fn (BaseField $layoutField): bool => $this->canWrite($layoutField, $element),
-        );
+        $subjects = [];
+        $this->collectSubjects(new Subject($element), $prepare, $subjects);
+
+        return $subjects;
+    }
+
+    /**
+     * Returns the fields of each element that the model can see, indexed by their keys in prompts and responses.
+     *
+     * @param  list<Subject>  $subjects
+     * @return array<string, Target>
+     */
+    public function targets(array $subjects): array
+    {
+        $targets = [];
+
+        foreach ($subjects as $subject) {
+            $context = $this->context($subject->element);
+
+            foreach ($this->allFields($subject->element) as $key => $layoutField) {
+                if (! array_key_exists($key, $context)) {
+                    continue;
+                }
+
+                $target = new Target(
+                    subject: $subject,
+                    field: $layoutField,
+                    key: $key,
+                    value: $context[$key],
+                    writable: $subject->editable && $this->canWrite($layoutField, $subject->element),
+                );
+                $targets[$target->id()] = $target;
+            }
+        }
+
+        return $targets;
+    }
+
+    /**
+     * @param  (Closure(Subject): void)|null  $prepare
+     * @param  list<Subject>  $subjects
+     */
+    private function collectSubjects(Subject $subject, ?Closure $prepare, array &$subjects): void
+    {
+        if ($prepare) {
+            $prepare($subject);
+        }
+
+        $subjects[] = $subject;
+        $element = $subject->element;
+
+        foreach ($element->getFieldLayout()?->getVisibleCustomFieldElements($element) ?? [] as $layoutField) {
+            $field = $layoutField->getField();
+
+            if (! $field instanceof Matrix && ! $field instanceof ContentBlock) {
+                continue;
+            }
+
+            $fieldLabel = $layoutField->label() ?? $field->name;
+            $path = [...$subject->path, 'fields', $field->handle];
+            $keyPrefix = "{$subject->keyPrefix}{$field->handle}";
+            $label = $subject->label !== null ? "{$subject->label} › $fieldLabel" : $fieldLabel;
+            $editable = $subject->editable && $layoutField->uiMode($element) === ControlMode::Editable;
+
+            if ($field instanceof ContentBlock) {
+                $block = $element->getFieldValue($field->handle);
+
+                if ($block instanceof ContentBlockElement) {
+                    $this->collectSubjects(new Subject(
+                        element: $block,
+                        path: $path,
+                        keyPrefix: "$keyPrefix.",
+                        label: $label,
+                        description: sprintf('"%s" is the content of the “%s” field.', $keyPrefix, $fieldLabel),
+                        editable: $editable,
+                    ), $prepare, $subjects);
+                }
+
+                continue;
+            }
+
+            $position = 0;
+
+            foreach ($field->inlineEntries($element) ?? [] as $identity => $entry) {
+                $position++;
+                $typeName = t($entry->getType()->name, category: 'site');
+                $entryLabel = $entry->getUiLabel();
+
+                $this->collectSubjects(new Subject(
+                    element: $entry,
+                    path: [...$path, 'entries', (string) $identity],
+                    keyPrefix: "$keyPrefix.$position.",
+                    label: sprintf('%s › %d. %s', $label, $position, $entryLabel !== '' ? $entryLabel : $typeName),
+                    description: sprintf('"%s.%d" is item %d of the “%s” field, a “%s” %s.', $keyPrefix, $position, $position, $fieldLabel, $typeName, $entry::lowerDisplayName()),
+                    editable: $editable,
+                ), $prepare, $subjects);
+            }
+        }
     }
 
     /**
@@ -166,31 +267,37 @@ readonly class Assistant
     }
 
     /**
-     * Prompts the model for new values for the given fields.
+     * Prompts the model about the given fields, and for new values for those it may change.
      *
-     * @param  array<string, BaseField>  $fields  The fields the model may change, as returned by {@see fields()}.
+     * @param  ElementInterface  $element  The element being edited, which the fields belong to or are nested in.
+     * @param  array<string, Target>  $targets  The fields to send, as returned by {@see targets()}.
      * @param  bool  $includeImage  Whether to attach the element’s image, if {@see hasImage()} is true.
      *
      * @throws AiUnavailableException
      */
-    public function ask(ElementInterface $element, array $fields, string $prompt, bool $includeElement, bool $includeImage = false): Answer
+    public function ask(ElementInterface $element, array $targets, string $prompt, bool $includeImage = false): Answer
     {
         $includeImage = $includeImage && $this->hasImage($element);
-        $allFields = $this->allFields($element);
-        $context = $this->context($element);
-        $customFieldSchemas = $this->customFieldSchema->forElement($element)['properties'] ?? [];
+        $customFieldSchemas = [];
         $properties = [];
 
-        foreach ($fields as $key => $layoutField) {
-            $properties[$key] = $this->propertySchema($layoutField, $customFieldSchemas[$key] ?? []);
+        foreach ($targets as $id => $target) {
+            if (! $target->writable) {
+                continue;
+            }
+
+            $subjectElement = $target->subject->element;
+            $schemas = $customFieldSchemas[spl_object_id($subjectElement)] ??= $this->customFieldSchema->forElement($subjectElement)['properties'] ?? [];
+            $properties[$id] = $this->propertySchema($target->field, $schemas[$target->key] ?? []);
         }
 
         $image = $includeImage && $element instanceof Asset ? $this->scaledImage($element) : null;
+        $isNested = array_any($targets, static fn (Target $target): bool => $target->subject->isNested());
 
         try {
             $response = $this->ai->task(AskAi::handle())->prompt(
-                agent: new AssistantAgent($this->instructions($element, $includeImage), $properties, array_keys($allFields)),
-                prompt: $this->prompt($element, $context, array_keys($fields), $prompt, $includeElement),
+                agent: new AssistantAgent($this->instructions($element, $includeImage, $isNested), $properties, array_keys($targets)),
+                prompt: $this->prompt($element, $targets, $prompt),
                 attachments: $image ? [ImageFile::fromPath($image)] : [],
             );
         } finally {
@@ -205,45 +312,41 @@ readonly class Assistant
 
         return new Answer(
             values: array_filter(
-                array_intersect_key($values, $fields),
+                array_intersect_key($values, $properties),
                 static fn (mixed $value): bool => $value !== null,
             ),
             summary: $summary !== '' ? $summary : null,
-            findings: $this->findings(is_array($data['findings'] ?? null) ? $data['findings'] : [], $allFields, $context),
+            findings: $this->findings(is_array($data['findings'] ?? null) ? $data['findings'] : [], $targets),
         );
     }
 
     /**
-     * Sets generated values on the element.
+     * Sets a generated value on the element, which is the target’s element or a copy of it.
      *
-     * @param  array<string, BaseField>  $fields
-     * @param  array<string, mixed>  $values  Indexed by field key.
-     *
-     * @throws InvalidAiResponseException if a value doesn’t match its field’s schema.
+     * @throws InvalidAiResponseException if the value doesn’t match its field’s schema.
      */
-    public function apply(ElementInterface $element, array $fields, array $values): void
+    public function apply(ElementInterface $element, Target $target, mixed $value): void
     {
-        foreach ($values as $key => $value) {
-            $layoutField = $fields[$key];
+        $layoutField = $target->field;
+        $key = $target->key;
 
-            if (! $layoutField instanceof CustomField) {
-                if (! is_string($value)) {
-                    throw new InvalidAiResponseException(t('The generated value for “{field}” isn’t valid.', ['field' => $layoutField->label() ?? $key]));
-                }
-
-                $element->{$layoutField->attribute()} = $value;
-
-                continue;
+        if (! $layoutField instanceof CustomField) {
+            if (! is_string($value)) {
+                throw new InvalidAiResponseException(t('The generated value for “{field}” isn’t valid.', ['field' => $target->label()]));
             }
 
-            try {
-                $prepared = $this->customFieldSchema->prepareValues($element, [$key => $value]);
-            } catch (ToolCallException $exception) {
-                throw new InvalidAiResponseException(t('The generated value for “{field}” isn’t valid.', ['field' => $layoutField->label() ?? $key]), previous: $exception);
-            }
+            $element->{$layoutField->attribute()} = $value;
 
-            $element->setFieldValue($key, $prepared[$key]);
+            return;
         }
+
+        try {
+            $prepared = $this->customFieldSchema->prepareValues($element, [$key => $value]);
+        } catch (ToolCallException $exception) {
+            throw new InvalidAiResponseException(t('The generated value for “{field}” isn’t valid.', ['field' => $target->label()]), previous: $exception);
+        }
+
+        $element->setFieldValue($key, $prepared[$key]);
     }
 
     /**
@@ -296,15 +399,14 @@ readonly class Assistant
     }
 
     /**
-     * Keeps the findings that name a problem, with fields the element doesn’t have, and quotes that aren’t in their
-     * field, dropped.
+     * Keeps the findings that name a problem, with fields that weren’t sent, and quotes that aren’t in their field,
+     * dropped.
      *
      * @param  array<mixed>  $findings
-     * @param  array<string, BaseField>  $allFields
-     * @param  array<string, mixed>  $context
+     * @param  array<string, Target>  $targets
      * @return list<array{field: string|null, quote: string|null, issue: string}>
      */
-    private function findings(array $findings, array $allFields, array $context): array
+    private function findings(array $findings, array $targets): array
     {
         $kept = [];
 
@@ -316,9 +418,9 @@ readonly class Assistant
             }
 
             $field = $finding['field'] ?? null;
-            $field = is_string($field) && isset($allFields[$field]) ? $field : null;
+            $field = is_string($field) && isset($targets[$field]) ? $field : null;
             $quote = $finding['quote'] ?? null;
-            $text = $field !== null ? self::text($context[$field] ?? null) : null;
+            $text = $field !== null ? self::text($targets[$field]->value) : null;
 
             $kept[] = [
                 'field' => $field,
@@ -356,17 +458,12 @@ readonly class Assistant
 
         $type = $customFieldSchema['type'] ?? null;
 
-        if (! is_string($type) && ! is_array($type)) {
+        // Providers such as Anthropic reject `null` in an enum, so options are allowed `null` alongside them instead.
+        if ((! is_string($type) && ! is_array($type)) || isset($customFieldSchema['enum'])) {
             return ['anyOf' => [$customFieldSchema, ['type' => 'null']]];
         }
 
-        $schema = [...$customFieldSchema, 'type' => array_values(array_unique([...(array) $type, 'null']))];
-
-        if (isset($schema['enum']) && ! in_array(null, $schema['enum'], true)) {
-            $schema['enum'][] = null;
-        }
-
-        return $schema;
+        return [...$customFieldSchema, 'type' => array_values(array_unique([...(array) $type, 'null']))];
     }
 
     /**
@@ -389,13 +486,14 @@ readonly class Assistant
         return $scaled;
     }
 
-    private function instructions(ElementInterface $element, bool $includeImage): string
+    private function instructions(ElementInterface $element, bool $includeImage, bool $isNested): string
     {
         $language = $element->getSite()->getLanguage();
 
         return implode("\n", [
             'You write, edit, and review content in Craft CMS, following the user’s instructions.',
             sprintf('The content belongs to a %s and is written in %s (%s), unless the instructions say otherwise.', $element::lowerDisplayName(), Locale::getDisplayName($language, 'en'), $language),
+            ...($isNested ? ['Some fields belong to content nested in a field. Their keys start with that field’s handle: "body.2.heading" is the "heading" field of the second item in the "body" field, and "intro.heading" is the "heading" field of the content in the "intro" field.'] : []),
             'In "findings", list specific problems you noticed, one per item, with the field each concerns, including fields you can’t change, or null for the content as a whole. When a problem is in a specific passage, quote that passage exactly as it appears in the field’s current content. Return an empty list when there are none.',
             'In "summary", briefly explain what you changed. When the user asks for a review or feedback, give it there.',
             'In "values", return each changed field’s new content, and null for every field you don’t change. A value replaces the field’s content exactly as written, so it must contain only that content: never add notes, comments, review remarks, or explanations about your work to a value. Put those in "summary" and "findings".',
@@ -407,20 +505,31 @@ readonly class Assistant
     }
 
     /**
-     * @param  array<string, mixed>  $context
-     * @param  list<string>  $keys
+     * @param  array<string, Target>  $targets
      */
-    private function prompt(ElementInterface $element, array $context, array $keys, string $prompt, bool $includeElement): string
+    private function prompt(ElementInterface $element, array $targets, string $prompt): string
     {
-        $sections = [
-            "Instructions:\n".$this->resolvePlaceholders($element, $context, $prompt),
-            "Current values of the fields you may change:\n".Json::encode(
-                array_combine($keys, array_map(static fn (string $key): mixed => $context[$key] ?? null, $keys)),
-            ),
-        ];
+        $values = static fn (bool $writable): array => array_map(
+            static fn (Target $target): mixed => $target->value,
+            array_filter($targets, static fn (Target $target): bool => $target->writable === $writable),
+        );
+        $sections = ["Instructions:\n".$this->resolvePlaceholders($element, $this->context($element), $prompt)];
 
-        if ($includeElement) {
-            $sections[] = "The whole {$element::lowerDisplayName()}:\n".Json::encode($context);
+        if ($writable = $values(true)) {
+            $sections[] = "Current values of the fields you may change:\n".Json::encode($writable);
+        }
+
+        if ($readOnly = $values(false)) {
+            $sections[] = "Current values of other fields, which you can’t change:\n".Json::encode($readOnly);
+        }
+
+        $descriptions = array_unique(array_filter(array_map(
+            static fn (Target $target): ?string => $target->subject->description,
+            array_values($targets),
+        )));
+
+        if ($descriptions !== []) {
+            $sections[] = "Nested content:\n".implode("\n", array_map(static fn (string $description): string => "- $description", $descriptions));
         }
 
         return implode("\n\n", $sections);

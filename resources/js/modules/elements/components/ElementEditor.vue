@@ -11,6 +11,7 @@
     nextTick,
     provide,
     shallowReactive,
+    shallowRef,
     useTemplateRef,
     type Component,
   } from 'vue';
@@ -40,10 +41,10 @@
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
   import {
-    AskAiFormKey,
-    AskAiKey,
-    openAskAi,
-    type AskAiParams,
+    AskAiEditorKey,
+    applyAskAiProposal,
+    askAiContainer,
+    type AskAiRequest,
   } from '@/modules/ai/ask-ai';
   import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
   import ReleasePicker from '@/modules/releases/components/ReleasePicker.vue';
@@ -109,28 +110,26 @@
   } = editor;
 
   provide(NestedOwnerEditorKey, editor.nestedOwnerEditor);
-  provide(AskAiKey, askAi);
-  provide(AskAiFormKey, {
+
+  const askAiRequest = shallowRef<AskAiRequest | null>(null);
+
+  provide(AskAiEditorKey, {
     scope: () => uiPayload.value?.scope ?? [],
     values: editor.formValues,
+    request: askAiRequest,
+    ask: (request) => {
+      askAiRequest.value = request;
+      detailsPanels.value?.select('ask-ai');
+    },
+    // Through the fields that render each control path, so nested fields save
+    // their elements.
+    apply: (proposals) => {
+      const container = contentEl.value
+        ? askAiContainer(contentEl.value)
+        : null;
+      proposals.forEach((proposal) => applyAskAiProposal(proposal, container));
+    },
   });
-
-  /** Opens “Ask AI” for the element, and writes the accepted values into the form. */
-  function askAi(params: AskAiParams): void {
-    void openAskAi({
-      params,
-      namespace: uiPayload.value?.scope.join('.') || null,
-      values: editor.formValues,
-      onApply: (proposals) =>
-        renderer.value?.setValues(
-          proposals.flatMap(({node: {control}, value}) =>
-            control
-              ? [{path: control.path, value, refreshable: control.reactive}]
-              : []
-          )
-        ),
-    });
-  }
 
   /**
    * Fields outside of a tab — in a field layout whose tab was never saved,
@@ -178,6 +177,7 @@
       Boolean(sidebarPayload.value) ||
       Boolean(payload.metadataHtml) ||
       Boolean(payload.activityTimelineUrl) ||
+      Boolean(payload.askAi) ||
       elementDetailsPanelRegistry.hasVisible(payload)
   );
   const detailsPanels = useTemplateRef<{select: (panelId: string) => void}>(
@@ -207,7 +207,6 @@
   const dispatchBehavior = createElementActionDispatcher({
     currentEntryTypeId: () => form.typeId ?? null,
     slideout,
-    askAi,
   });
 
   const saveButtons = computed(() =>

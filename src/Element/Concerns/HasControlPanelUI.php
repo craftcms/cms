@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use CraftCms\Cms\Ai\AskAi\Assistant;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\FormFields;
@@ -382,17 +381,6 @@ JS, [
                         'revisionId' => $this->revisionId,
                         'siteId' => $this->siteId,
                     ]],
-                ],
-            ];
-        }
-
-        if ($context->isEditor() && $this->id && ($assistant = app(Assistant::class))->canGenerate($this) && $assistant->fields($this) !== []) {
-            $items[] = [
-                'label' => t('Ask AI'),
-                'icon' => 'sparkles',
-                'behavior' => [
-                    'type' => 'askAi',
-                    'params' => Assistant::elementParams($this),
                 ],
             ];
         }

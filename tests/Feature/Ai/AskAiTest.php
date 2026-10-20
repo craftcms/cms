@@ -12,7 +12,6 @@ use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
-use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -85,29 +84,25 @@ function askAi(Entry $entry, array $params = []): TestResponse
     ]);
 }
 
-function summaryUid(Entry $entry): string
-{
-    return $entry->getFieldLayout()->getCustomFieldElements()[0]->uid;
-}
-
 it('proposes the changed fields without saving them', function () {
     AssistantAgent::fake([['values' => ['title' => 'Lighthouses', 'summary' => 'New summary'], 'summary' => null, 'findings' => []]]);
 
     askAi($this->entry)
         ->assertOk()
         ->assertJsonCount(1, 'proposals')
-        ->assertJsonPath('proposals.0.layoutElementUid', summaryUid($this->entry))
+        ->assertJsonPath('proposals.0.key', 'summary')
         ->assertJsonPath('proposals.0.value', 'New summary');
 
     expect(Entry::find()->id($this->entry->id)->one()->getFieldValue('summary'))->toBe('Old summary');
 });
 
-it('only writes the target field of a field-level request', function () {
+it('only sends and writes the fields chosen as context', function () {
     AssistantAgent::fake([['values' => ['summary' => 'New summary'], 'summary' => null, 'findings' => []]]);
 
-    askAi($this->entry, ['layoutElementUid' => summaryUid($this->entry)])->assertOk();
+    askAi($this->entry, ['context' => ['fields.summary']])->assertOk();
 
-    AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => array_keys($prompt->agent->schema(new JsonSchemaTypeFactory)['values']->toArray()['properties']) === ['summary']);
+    AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => array_keys($prompt->agent->schema(new JsonSchemaTypeFactory)['values']->toArray()['properties']) === ['summary']
+        && ! str_contains($prompt->prompt, 'Lighthouses'));
 });
 
 it('resolves field references in the prompt', function () {
@@ -132,8 +127,8 @@ it('returns a review with findings when nothing was changed', function () {
         ->assertOk()
         ->assertJsonCount(0, 'proposals')
         ->assertJsonPath('summary', 'Reads well overall.')
-        ->assertJsonPath('findings.0', ['layoutElementUid' => summaryUid($this->entry), 'label' => 'Summary', 'quote' => null, 'issue' => 'Repeats the title.'])
-        ->assertJsonPath('findings.1', ['layoutElementUid' => null, 'label' => null, 'quote' => null, 'issue' => 'Add a call to action.']);
+        ->assertJsonPath('findings.0', ['key' => 'summary', 'label' => 'Summary', 'quote' => null, 'issue' => 'Repeats the title.'])
+        ->assertJsonPath('findings.1', ['key' => null, 'label' => null, 'quote' => null, 'issue' => 'Add a call to action.']);
 });
 
 it('maps findings to fields that cannot be written', function () {
@@ -156,7 +151,7 @@ it('maps findings to fields that cannot be written', function () {
     askAi($entry, ['prompt' => 'Review this'])
         ->assertOk()
         ->assertJsonPath('findings.0.label', 'Related')
-        ->assertJsonPath('findings.0.layoutElementUid', $entry->getFieldLayout()->getCustomFieldElements()[1]->uid);
+        ->assertJsonPath('findings.0.key', 'related');
 });
 
 it('shows changed text as a diff', function (?string $current, string $currentText) {
@@ -215,12 +210,12 @@ it('keeps its own params out of same-named fields', function () {
     Elements::saveElement($entry);
     AssistantAgent::fake([['values' => ['summary' => null], 'summary' => null, 'findings' => []]]);
 
-    askAi($entry, ['prompt' => 'Review this', 'includeElement' => true])->assertOk();
+    askAi($entry, ['prompt' => 'Review this'])->assertOk();
 
     AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => str_contains($prompt->prompt, '"prompt":"Stored prompt"'));
 });
 
-it('opens for a field that an unsaved change revealed', function () {
+it('offers a field that an unsaved change revealed as context', function () {
     $featured = Field::factory()->create(['name' => 'Featured', 'handle' => 'featured', 'type' => Lightswitch::class]);
     $teaser = Field::factory()->create(['name' => 'Teaser', 'handle' => 'teaser', 'type' => PlainText::class]);
     $featuredUid = Str::uuid()->toString();
@@ -254,11 +249,10 @@ it('opens for a field that an unsaved change revealed', function () {
         'elementType' => Entry::class,
         'elementId' => $entry->id,
         'siteId' => $entry->siteId,
-        'layoutElementUid' => $teaserUid,
         'fields' => ['featured' => true],
     ])
         ->assertOk()
-        ->assertJsonPath('title', 'Ask AI about “Teaser”');
+        ->assertJsonFragment(['value' => 'fields.teaser', 'label' => 'Teaser']);
 });
 
 it('leaves fields the user can’t see out of the prompt', function () {
@@ -287,13 +281,13 @@ it('leaves fields the user can’t see out of the prompt', function () {
         ->createElement());
     AssistantAgent::fake([['values' => ['summary' => null], 'summary' => null, 'findings' => []]]);
 
-    askAi($entry, ['prompt' => 'Use “{secret}” and “{title}”.', 'includeElement' => true])->assertOk();
+    askAi($entry, ['prompt' => 'Use “{secret}” and “{title}”.'])->assertOk();
 
     AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => ! str_contains($prompt->prompt, 'keeper')
         && ! str_contains($prompt->prompt, 'Lighthouses'));
 });
 
-it('lets option fields stay unchanged', function () {
+it('lets option fields and findings be null without a null enum value', function () {
     $color = Field::factory()->create([
         'name' => 'Color',
         'handle' => 'color',
@@ -308,12 +302,26 @@ it('lets option fields stay unchanged', function () {
     $entry = EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement(['title' => 'Lighthouses']);
     AssistantAgent::fake([['values' => ['color' => null], 'summary' => null, 'findings' => []]]);
 
-    askAi($entry, ['layoutElementUid' => $entry->getFieldLayout()->getCustomFieldElements()[0]->uid])->assertOk();
+    askAi($entry, ['context' => ['fields.color']])->assertOk();
 
-    AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => in_array(null, $prompt->agent->schema(new JsonSchemaTypeFactory)['values']->toArray()['properties']['color']['enum'], true));
+    // Providers such as Anthropic reject `null` among an enum’s values, so it’s allowed by the type instead.
+    AssistantAgent::assertPrompted(function (AgentPrompt $prompt): bool {
+        $schema = $prompt->agent->schema(new JsonSchemaTypeFactory);
+        $color = $schema['values']->toArray()['properties']['color'];
+        $findingField = $schema['findings']->toArray()['items']['properties']['field'];
+
+        return in_array('null', $color['type'], true) && ! in_array(null, $color['enum'], true)
+            && in_array('null', $findingField['type'], true) && ! in_array(null, $findingField['enum'], true);
+    });
 });
 
-it('proposes values for an inline nested entry’s fields', function () {
+/**
+ * Creates an entry with a Matrix field that shows one block inline.
+ *
+ * @return array{Entry, string} The owner, and its block’s UID.
+ */
+function ownerWithBlock(): array
+{
     $innerText = Field::factory()->create(['name' => 'Inner Text', 'handle' => 'innerText', 'type' => PlainText::class]);
     $blockType = EntryType::factory()->withField($innerText)->create(['handle' => 'block']);
     $matrix = Field::factory()->create([
@@ -322,7 +330,7 @@ it('proposes values for an inline nested entry’s fields', function () {
         'type' => Matrix::class,
         'settings' => ['entryTypes' => [$blockType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
     ]);
-    $layout = FieldLayoutModel::factory()->withContentTab([new CustomField(config: ['fieldUid' => $matrix->uid])]);
+    $layout = FieldLayoutModel::factory()->withContentTab([new EntryTitleField, new CustomField(config: ['fieldUid' => $matrix->uid])]);
     $entryType = EntryType::factory()->withFieldLayout($layout)->create();
     $section = Section::factory()->withEntryTypes($entryType)->create();
     Fields::refreshFields();
@@ -334,19 +342,38 @@ it('proposes values for an inline nested entry’s fields', function () {
         'sortOrder' => [$blockUid],
     ]);
     Elements::saveElement($owner);
-    /** @var Entry $block */
-    $block = $owner->getFieldValue('blocks')->one();
-    AssistantAgent::fake([['values' => ['innerText' => 'New text'], 'summary' => null, 'findings' => []]]);
 
-    askAi($block, [
-        'layoutElementUid' => $block->getFieldLayout()->getCustomFieldElements()[0]->uid,
-        'namespace' => "fields.blocks.entries.$blockUid",
-        'fields' => ['innerText' => 'Unsaved text'],
+    return [$owner, $blockUid];
+}
+
+it('offers an inline nested entry’s fields as context', function () {
+    [$owner, $blockUid] = ownerWithBlock();
+
+    postJson(action([AskAiController::class, 'form']), [
+        'elementType' => Entry::class,
+        'elementId' => $owner->id,
+        'siteId' => $owner->siteId,
     ])
         ->assertOk()
+        ->assertJsonFragment(['value' => "fields.blocks.entries.$blockUid.fields.innerText", 'label' => 'Blocks › 1. Block › Inner Text']);
+});
+
+it('proposes values for an inline nested entry’s fields in the same request as the owner’s', function () {
+    [$owner, $blockUid] = ownerWithBlock();
+    AssistantAgent::fake([['values' => ['title' => null, 'blocks.1.innerText' => 'New text'], 'summary' => null, 'findings' => []]]);
+
+    askAi($owner, [
+        'context' => ['title', "fields.blocks.entries.$blockUid.fields.innerText"],
+        'fields' => ['blocks' => ['entries' => [$blockUid => ['fields' => ['innerText' => 'Unsaved text']]]]],
+    ])
+        ->assertOk()
+        ->assertJsonPath('proposals.0.key', 'blocks.1.innerText')
         ->assertJsonPath('proposals.0.node.control.path', ['fields', 'blocks', 'entries', $blockUid, 'fields', 'innerText'])
         ->assertJsonPath('proposals.0.value', 'New text')
         ->assertJsonPath('proposals.0.diff.current', 'Unsaved text');
+
+    AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => array_keys($prompt->agent->schema(new JsonSchemaTypeFactory)['values']->toArray()['properties']) === ['title', 'blocks.1.innerText']
+        && str_contains($prompt->prompt, '"blocks.1" is item 1 of the “Blocks” field'));
 });
 
 it('keeps only quotes that are in the field', function () {
@@ -393,18 +420,16 @@ it('requires the Ask AI permission and permission to save the element', function
     'with both' => [true, true, 200],
 ]);
 
-it('offers the actions only while the task is available', function (bool $hasDefault) {
+it('offers the field action only while the task is available', function (bool $hasDefault) {
     app()->instance(Settings::class, new Settings($hasDefault ? ['defaults' => ['text' => ['provider' => 'anthropic']]] : []));
 
-    $elementLabels = collect($this->entry->actionMenuDescriptors(ElementActionContext::Editor))->pluck('label');
     $fieldNode = $this->entry->getFieldLayout()->getCustomFieldElements()[0]->uiNode(new FieldLayoutElementContext($this->entry, new UiContext));
     $fieldLabels = collect($fieldNode->children())
         ->filter(fn ($node) => $node instanceof ActionMenu)
         ->flatMap(fn (ActionMenu $node) => $node->props()['items'])
         ->pluck('label');
 
-    expect($elementLabels->contains('Ask AI'))->toBe($hasDefault)
-        ->and($fieldLabels->contains('Ask AI'))->toBe($hasDefault);
+    expect($fieldLabels->contains('Ask AI'))->toBe($hasDefault);
 })->with(['with a default provider' => true, 'without a default provider' => false]);
 
 it('attaches the image of an image asset when asked to', function (bool $includeImage, int $attachments) {

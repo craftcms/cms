@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Ai\AskAi\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
@@ -460,6 +461,19 @@ class ElementEditViewModel extends ViewModel
     {
         return $this->element->id && ! $this->element->getIsRevision()
             ? Url::actionUrl('elements/recent-activity', ['dontExtendSession' => 1])
+            : null;
+    }
+
+    /**
+     * The request parameters that identify the element to the “Ask AI” details panel, or `null` when the current user
+     * can't generate content for it.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function askAi(): ?array
+    {
+        return $this->element->id && app(Assistant::class)->canGenerate($this->element)
+            ? Assistant::elementParams($this->element)
             : null;
     }
 

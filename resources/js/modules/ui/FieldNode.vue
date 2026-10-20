@@ -17,12 +17,9 @@
   import CopyElementValuesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CopyElementValuesController';
   import CrossSiteCopyModal from './CrossSiteCopyModal.vue';
   import {
-    AskAiFormKey,
-    applyAskAiProposal,
+    AskAiEditorKey,
     askAiContainer,
-    openAskAi,
     type ApplyAskAiProposalDetail,
-    type AskAiParams,
   } from '@/modules/ai/ask-ai';
   import UiNodeList from './UiNodeList.vue';
   import {
@@ -37,8 +34,6 @@
     pathsMatch,
     setValue as setPathValue,
     controlValueAt,
-    isRecord,
-    valueAt,
   } from './runtime';
   import type {
     UiChange,
@@ -277,44 +272,29 @@
     );
   });
 
-  const editorForm = inject(AskAiFormKey, null);
+  const askAiEditor = inject(AskAiEditorKey, null);
 
+  // Opens the editor's “Ask AI” panel, about this field alone.
   useEventListener(window, 'craft:ask-ai', (event: Event) => {
-    const detail = (
-      event as CustomEvent<
-        AskAiParams & {trigger?: unknown; sourceEvent?: unknown}
-      >
-    ).detail;
+    const detail = (event as CustomEvent<{trigger?: unknown}>).detail;
 
     if (
-      !detail ||
+      !askAiEditor ||
       !field.value ||
-      !(detail.trigger instanceof HTMLElement) ||
+      !(detail?.trigger instanceof HTMLElement) ||
       detail.trigger.closest('craft-field') !== field.value
     ) {
       return;
     }
 
-    const {trigger: _trigger, sourceEvent: _sourceEvent, ...params} = detail;
-    const container = askAiContainer(field.value);
+    const editorScope = askAiEditor.scope();
+    const path = control.value.path;
 
-    void openAskAi({
-      params,
-      namespace: props.scope.join('.') || null,
-      values: () => {
-        if (editorForm && pathsMatch(editorForm.scope(), props.scope)) {
-          return editorForm.values();
-        }
+    if (!pathsMatch(path.slice(0, editorScope.length), editorScope)) {
+      return;
+    }
 
-        const scoped = valueAt(props.values, props.scope);
-
-        return isRecord(scoped) ? scoped : {};
-      },
-      onApply: (proposals) =>
-        proposals.forEach((proposal) =>
-          applyAskAiProposal(proposal, container)
-        ),
-    });
+    askAiEditor.ask({context: [path.slice(editorScope.length).join('.')]});
   });
 
   useEventListener(window, 'craft:apply-ask-ai-proposal', (event: Event) => {
