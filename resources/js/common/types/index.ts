@@ -16,6 +16,8 @@ export interface BaseOption {
   value: string;
 }
 export interface CheckboxOption extends BaseOption {
+  /** Trusted HTML shown in place of `label`. */
+  labelHtml?: string;
   info?: string;
   checked?: boolean;
   disabled?: boolean;

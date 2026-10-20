@@ -1,11 +1,16 @@
 <script setup lang="ts">
+  import '@craftcms/ui/components/checkbox-select/checkbox-select';
+  import type CraftCheckboxSelect from '@craftcms/ui/components/checkbox-select/checkbox-select';
+  import type {CheckboxSelectOption} from '@craftcms/ui/components/checkbox-select/checkbox-select';
   import {computed} from 'vue';
   import {t} from '@craftcms/ui';
   import type {CheckboxOption} from '@/common/types';
-  import CheckboxGroupItem from '@/common/form/CheckboxGroupItem.vue';
-  import SelectedOptionList from '@/common/form/SelectedOptionList.vue';
-  import {ignoreModelValueInitialization} from '@/modules/ui/runtime';
 
+  /**
+   * A `<craft-checkbox-select>` bound to `v-model` and `options`. A sortable
+   * one lists only what's selected, with the rest in an “Add item” menu, and
+   * reports its new order through `update:options`.
+   */
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<string>): void;
     (e: 'update:options', value: Array<CheckboxOption>): void;
@@ -13,6 +18,7 @@
 
   const props = withDefaults(
     defineProps<{
+      /** The options' input name, with or without a trailing `[]`. */
       name?: string;
       label?: string;
       disabled?: boolean;
@@ -24,92 +30,77 @@
     {allowSelectAll: false, sortable: false}
   );
 
-  // The checkbox group derives each checkbox's checked state from its
-  // modelValue, which would otherwise override a per-option `checked` flag. Fold
-  // any forced-checked options (e.g. a disabled, always-on column) into the
-  // value the group receives so they render checked.
-  const groupModelValue = computed(() => {
-    const forced = props.options
-      .filter((option) => option.checked)
-      .map((option) => option.value);
-    return [...new Set([...props.modelValue, ...forced])];
-  });
+  // Forced-checked options (e.g. a disabled, always-on column) count as
+  // selected whatever the model value says.
+  const value = computed(() => [
+    ...new Set([
+      ...props.modelValue,
+      ...props.options
+        .filter((option) => option.checked)
+        .map((option) => option.value),
+    ]),
+  ]);
 
-  // Lion announces a model value as its children register, before the group
-  // has applied ours. Treating that as a change would emit an empty selection
-  // over whatever the caller passed in.
-  const handleValueChange = ignoreModelValueInitialization((event) => {
-    const target = event.target;
-    if (
+  const elementOptions = computed<CheckboxSelectOption[]>(() =>
+    props.options.map((option) => ({
+      value: option.value,
+      label: option.label,
+      ...(option.labelHtml !== undefined ? {labelHtml: option.labelHtml} : {}),
+      ...(option.info !== undefined ? {info: option.info} : {}),
+      disabled: !!option.disabled,
+      ...(option.checked ? {checked: true} : {}),
+    }))
+  );
+
+  const baseName = computed(() => props.name?.replace(/\[\]$/, ''));
+
+  /** The element, for its own events — not its checkboxes', which bubble. */
+  function element(event: Event): CraftCheckboxSelect | null {
+    const target = event.currentTarget;
+    return event.target === target &&
       target instanceof HTMLElement &&
-      'modelValue' in target &&
-      Array.isArray(target.modelValue)
-    ) {
-      emit('update:modelValue', target.modelValue.map(String));
+      target.localName === 'craft-checkbox-select'
+      ? // SAFETY: Checked by tag name above.
+        (target as CraftCheckboxSelect)
+      : null;
+  }
+
+  /** Adding an option or moving one changes the order too. */
+  function emitOrder(select: CraftCheckboxSelect): void {
+    const byValue = new Map(
+      props.options.map((option) => [option.value, option])
+    );
+    const order = select.options
+      .map((option) => byValue.get(option.value))
+      .filter((option): option is CheckboxOption => option !== undefined);
+
+    if (order.some((option, index) => option !== props.options[index])) {
+      emit('update:options', order);
     }
-  });
+  }
+
+  function onValueChanged(event: Event): void {
+    const select = element(event);
+    if (!select) {
+      return;
+    }
+
+    emitOrder(select);
+    emit('update:modelValue', select.modelValue);
+  }
 </script>
 
 <template>
-  <!-- Sortable selections list only what's selected, with the rest in an
-       "Add item" menu. -->
-  <SelectedOptionList
-    v-if="sortable"
-    :name="name"
+  <craft-checkbox-select
+    :name="baseName"
     :label="label"
     :disabled="disabled"
-    :model-value="modelValue"
-    :options="options"
-    @update:model-value="(value) => emit('update:modelValue', value)"
-    @update:options="(value) => emit('update:options', value)"
-  >
-    <template #label="{option}">
-      <slot name="label" :option="option">{{ option.label }}</slot>
-    </template>
-  </SelectedOptionList>
-
-  <craft-checkbox-group
-    v-else
-    :name="name"
-    :label="label"
-    .modelValue="groupModelValue"
-    @model-value-changed="handleValueChange"
-    :disabled="disabled"
-  >
-    <craft-checkbox-indeterminate v-if="allowSelectAll" :label="t('All')">
-      <div class="checkbox-group__items">
-        <CheckboxGroupItem
-          v-for="option in options"
-          :key="option.value"
-          :option="option"
-        >
-          <template #label="{option: slotOption}">
-            <slot name="label" :option="slotOption">{{
-              slotOption.label
-            }}</slot>
-          </template>
-        </CheckboxGroupItem>
-      </div>
-    </craft-checkbox-indeterminate>
-
-    <div v-else class="checkbox-group__items">
-      <CheckboxGroupItem
-        v-for="option in options"
-        :key="option.value"
-        :option="option"
-      >
-        <template #label="{option: slotOption}">
-          <slot name="label" :option="slotOption">{{ slotOption.label }}</slot>
-        </template>
-      </CheckboxGroupItem>
-    </div>
-  </craft-checkbox-group>
+    :sortable="sortable"
+    :presentation="sortable ? 'add-menu' : 'checkboxes'"
+    :all-label="allowSelectAll ? t('All') : null"
+    all-mode="each-value"
+    .options="elementOptions"
+    .modelValue="value"
+    @model-value-changed="onValueChanged"
+  />
 </template>
-
-<style scoped lang="scss">
-  .checkbox-group__items {
-    display: flex;
-    flex-direction: column;
-    gap: var(--c-checkbox-group-spacing);
-  }
-</style>
