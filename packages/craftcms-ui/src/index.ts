@@ -22,6 +22,13 @@ export {default as CraftCallout} from './components/callout/callout.js';
 export {default as CraftCard} from './components/card/card.js';
 export {default as CraftCheckboxGroup} from './components/checkbox-group/checkbox-group.js';
 export {default as CraftCheckboxIndeterminate} from './components/checkbox-indeterminate/checkbox-indeterminate.js';
+export {
+  default as CraftCheckboxSelect,
+  type CheckboxSelectAllMode,
+  type CheckboxSelectOption,
+  type CheckboxSelectOrderChangeDetail,
+  type CheckboxSelectPresentation,
+} from './components/checkbox-select/checkbox-select.js';
 export {default as CraftCheckbox} from './components/checkbox/checkbox.js';
 export {default as CraftChip} from './components/chip/chip.js';
 export {default as CraftCombobox} from './components/combobox/combobox.js';
