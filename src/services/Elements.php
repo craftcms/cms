@@ -1701,11 +1701,13 @@ class Elements extends Component
                             $label = $element->getUiLabel();
                             $label = $label !== '' ? "$label ($element->id)" : sprintf('%s %s', $element::lowerDisplayName(), $element->id);
                             try {
-                                if (ElementHelper::isRevision($element)) {
-                                    throw new InvalidElementException($element, "Skipped resaving $label because it's a revision.");
-                                }
+                                $isRevision = ElementHelper::isRevision($element);
                             } catch (Throwable $rootException) {
                                 throw new InvalidElementException($element, "Skipped resaving $label due to an error obtaining its root element: " . $rootException->getMessage());
+                            }
+
+                            if ($isRevision) {
+                                throw new InvalidElementException($element, "Skipped resaving $label because it's a revision.");
                             }
                         }
 
