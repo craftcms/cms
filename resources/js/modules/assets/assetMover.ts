@@ -11,8 +11,14 @@ export interface AssetMoveConflict {
 }
 
 export interface MoveAssetsResult {
-  moved: number;
-  cancelled: number;
+  movedCount: number;
+  cancelledCount: number;
+  /** Clashes settled by keeping both or replacing, which can't be undone. */
+  conflictedCount: number;
+}
+
+export interface MovedAssetsResult extends MoveAssetsResult {
+  movedAssetIds: number[];
 }
 
 export type FolderConflictResolution = 'replace' | 'merge' | 'cancel';
@@ -20,12 +26,31 @@ export type FolderConflictResolution = 'replace' | 'merge' | 'cancel';
 interface MoveFolderResponse {
   conflict?: string;
   transferList?: Array<Record<string, unknown>>;
+  newFolderId?: number | string;
   newFolderUrl?: string;
 }
 
+export interface MovedFolder {
+  folderId: number;
+  /** The folder's ID at its new location; moving a folder recreates it. */
+  newFolderId: number;
+}
+
 export interface MoveFoldersResult extends MoveAssetsResult {
+  movedFolders: MovedFolder[];
   movedFolderUrls: string[];
 }
+
+export interface MoveInfo {
+  count: number;
+  totalSize: number;
+}
+
+/** The number of items that can be moved before the move needs confirming. */
+export const MOVE_COUNT_LIMIT = 50;
+
+/** The total size of assets (50MB) that can be moved before the move needs confirming. */
+export const MOVE_SIZE_LIMIT = 50000000;
 
 interface MoveAssetParams {
   assetId: number;
@@ -49,6 +74,29 @@ async function moveOne(params: MoveAssetParams): Promise<MoveAssetResponse> {
 }
 
 /**
+ * Counts the assets a move would touch, including those inside the moved
+ * folders, and their total size.
+ */
+export async function getMoveInfo(
+  folderIds: number[],
+  assetIds: number[]
+): Promise<MoveInfo> {
+  const {data} = await actionClient.post<MoveInfo>(
+    getActionUrl('assets/move-info'),
+    {folderIds, assetIds}
+  );
+  return data;
+}
+
+/**
+ * Whether a move is large enough that it needs confirming first, and can't be
+ * undone afterwards.
+ */
+export function isLargeMove(info: MoveInfo): boolean {
+  return info.count > MOVE_COUNT_LIMIT || info.totalSize > MOVE_SIZE_LIMIT;
+}
+
+/**
  * Moves assets into a target folder — one `assets/move-asset` request per asset,
  * matching Craft 5's `Craft.AssetMover`.
  *
@@ -62,9 +110,11 @@ export async function moveAssets(
   assetIds: Array<number>,
   targetFolderId: number,
   resolveConflict: (conflict: AssetMoveConflict) => Promise<ConflictResolution>
-): Promise<MoveAssetsResult> {
-  let moved = 0;
-  let cancelled = 0;
+): Promise<MovedAssetsResult> {
+  let movedCount = 0;
+  let cancelledCount = 0;
+  let conflictedCount = 0;
+  const movedAssetIds: number[] = [];
 
   for (const assetId of assetIds) {
     const params: MoveAssetParams = {assetId, folderId: targetFolderId};
@@ -81,7 +131,7 @@ export async function moveAssets(
       });
 
       if (choice === 'cancel') {
-        cancelled++;
+        cancelledCount++;
         continue;
       }
 
@@ -94,15 +144,18 @@ export async function moveAssets(
       // A forced/renamed move shouldn't clash again; if it somehow does, count
       // it as canceled rather than looping.
       if (data.conflict) {
-        cancelled++;
+        cancelledCount++;
         continue;
       }
+
+      conflictedCount++;
     }
 
-    moved++;
+    movedCount++;
+    movedAssetIds.push(assetId);
   }
 
-  return {moved, cancelled};
+  return {movedCount, cancelledCount, conflictedCount, movedAssetIds};
 }
 
 export async function moveFolders(
@@ -110,8 +163,10 @@ export async function moveFolders(
   targetFolderId: number,
   resolveConflict: (message: string) => Promise<FolderConflictResolution>
 ): Promise<MoveFoldersResult> {
-  let moved = 0;
-  let cancelled = 0;
+  let movedCount = 0;
+  let cancelledCount = 0;
+  let conflictedCount = 0;
+  const movedFolders: MovedFolder[] = [];
   const movedFolderUrls: string[] = [];
 
   for (const folderId of folderIds) {
@@ -128,7 +183,7 @@ export async function moveFolders(
       const choice = await resolveConflict(data.conflict);
 
       if (choice === 'cancel') {
-        cancelled++;
+        cancelledCount++;
         continue;
       }
 
@@ -137,6 +192,7 @@ export async function moveFolders(
         getActionUrl('assets/move-folder'),
         params
       ));
+      conflictedCount++;
     }
 
     if (!Array.isArray(data.transferList) || !data.newFolderUrl) {
@@ -157,9 +213,19 @@ export async function moveFolders(
     }
 
     await actionClient.post(getActionUrl('assets/delete-folder'), {folderId});
+    const newFolderId = Number(data.newFolderId);
+    if (Number.isFinite(newFolderId)) {
+      movedFolders.push({folderId, newFolderId});
+    }
     movedFolderUrls.push(data.newFolderUrl);
-    moved++;
+    movedCount++;
   }
 
-  return {moved, cancelled, movedFolderUrls};
+  return {
+    movedCount,
+    cancelledCount,
+    conflictedCount,
+    movedFolders,
+    movedFolderUrls,
+  };
 }

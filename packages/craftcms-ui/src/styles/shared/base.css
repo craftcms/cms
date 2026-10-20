@@ -40,130 +40,6 @@ body {
 }
 
 /*
-  Checkboxes and radio buttons are drawn here rather than natively, so they look
-  the same in every browser and their border radius is real (native ones always
-  compute a zero radius, which squares off their focus ring). This lives in the
-  light DOM because the components' ::slotted() styles can't override the base
-  reset.
-*/
-:is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'],
-craft-radio > input[type='radio'] {
-  appearance: none;
-  display: inline-grid;
-  place-items: center;
-  flex-shrink: 0;
-  /* Center the box on the first line of its label */
-  line-height: inherit;
-  margin-block: calc((1lh - var(--c-checkbox-size)) / 2);
-  margin-inline: 0;
-  width: var(--c-checkbox-size);
-  height: var(--c-checkbox-size);
-  border: var(--c-form-control-border-width) var(--c-form-control-border-style)
-    var(--c-form-control-border-color);
-  border-radius: var(--c-checkbox-radius);
-  background-color: var(--c-input-fill);
-  color: var(--c-color-accent-on-loud);
-  cursor: pointer;
-
-  &::before {
-    content: '';
-    width: 65%;
-    aspect-ratio: 1;
-    background-color: currentColor;
-    visibility: hidden;
-  }
-
-  &:checked {
-    border-color: transparent;
-    background-color: var(--c-color-accent-fill-loud);
-
-    &::before {
-      visibility: visible;
-    }
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  @media (forced-colors: active) {
-    &:checked {
-      border-color: Highlight;
-    }
-
-    &::before {
-      forced-color-adjust: none;
-      background-color: Highlight;
-    }
-  }
-}
-
-:is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'] {
-  &::before {
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' viewBox='0 0 255.8 234.9'%3E%3Cpath d='M245.9,4.6c-10.7-7.8-25.7-5.4-33.5,5.3l-119.4,164.2-52.1-52.1c-9.4-9.4-24.6-9.4-33.9,0-9.3,9.4-9.4,24.6,0,33.9l72,72c5,5,11.8,7.5,18.8,7s13.4-4.1,17.5-9.8L251.2,38.1c7.8-10.7,5.4-25.7-5.3-33.5Z'/%3E%3C/svg%3E");
-    mask-repeat: no-repeat;
-    mask-position: center;
-    mask-size: contain;
-  }
-
-  &:indeterminate {
-    border-color: transparent;
-    background-color: var(--c-color-accent-fill-loud);
-
-    &::before {
-      visibility: visible;
-      mask-image: none;
-      aspect-ratio: auto;
-      width: 55%;
-      height: 2px;
-      border-radius: 1px;
-    }
-
-    @media (forced-colors: active) {
-      border-color: Highlight;
-    }
-  }
-}
-
-craft-radio > input[type='radio'] {
-  border-radius: 50%;
-
-  &::before {
-    width: 40%;
-    border-radius: 50%;
-  }
-}
-
-craft-radio[data-button] > input[type='radio'] {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  border: 0;
-  border-radius: inherit;
-
-  &,
-  &:checked {
-    background-color: transparent;
-  }
-
-  /* Picking the selected option again does nothing. */
-  &:checked {
-    cursor: default;
-  }
-
-  &::before {
-    display: none;
-  }
-
-  &:disabled {
-    opacity: 1;
-  }
-}
-
-/*
   Date and time inputs lead with their picker icon, as inputs with a prefix
   icon do. The icon is the browser's own picker button, in the native input's
   light DOM, so it's styled here rather than in the components.
@@ -251,6 +127,48 @@ fieldset {
     var(--c-color-fill-loud)
   );
   border-radius: var(--c-radius-sm);
+}
+
+kbd {
+  font-family: var(--c-font-mono);
+  font-size: 0.85em;
+  padding-inline: 0.4em;
+  border: 1px solid var(--c-color-neutral-border-quiet);
+  border-block-end-width: 2px;
+  border-radius: var(--c-radius-sm);
+  box-shadow: var(--c-shadow-xs);
+  white-space: nowrap;
+}
+
+/* Captures a colored element's palette where it's set, so descendants that
+   swap in another palette (as neutral buttons do) can still reach it. */
+[data-color] {
+  --_colorable-fill-quiet: var(--c-color-fill-quiet);
+  --_colorable-fill-normal: var(--c-color-fill-normal);
+  --_colorable-fill-loud: var(--c-color-fill-loud);
+  --_colorable-border-quiet: var(--c-color-border-quiet);
+  --_colorable-border-normal: var(--c-color-border-normal);
+  --_colorable-border-loud: var(--c-color-border-loud);
+  --_colorable-on-quiet: var(--c-color-on-quiet);
+  --_colorable-on-normal: var(--c-color-on-normal);
+  --_colorable-on-loud: var(--c-color-on-loud);
+}
+
+/* A card's attribute previews are capped at two lines, unless they opt out
+   with `no-truncate` (generated fields, chips, addresses). */
+.card-attribute-preview:not(:has(> .no-truncate)) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  max-block-size: 2lh;
+  overflow: hidden;
+  text-wrap: pretty;
+}
+
+/* The status badges after a card's attributes */
+.card-attribute-preview + ul {
+  margin-block-start: var(--c-spacing-sm);
 }
 
 craft-chip .cp-code {
@@ -367,11 +285,12 @@ Modify with `cp-table--compact` to reduce the vertical cell padding
 Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
 Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-container-padding`, for tables that span their container's padding
+Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
  */
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
   --_cell-spacing-block: var(--c-spacing-sm);
-  --_row-height: calc(34rem / 16);
+  --_row-height: var(--c-size-control-md);
   text-align: start;
   width: 100%;
   border-spacing: 0;
@@ -472,6 +391,7 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
   table-layout: auto;
   border: 1px solid var(--c-color-border-quiet);
   border-radius: var(--c-radius-sm);
+  overflow: clip;
   margin-block-end: var(--c-spacing-md);
 
   thead,
@@ -485,6 +405,12 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
 
   thead th {
     font-weight: var(--font-weight-semibold);
+  }
+
+  thead:not(:last-child):not(:has(~ :is(tbody, tfoot) > tr))
+    tr:last-child
+    > :is(th, td) {
+    border-block-end: 0;
   }
 
   /* Keep the header's background inside the table's rounded corners */
@@ -536,6 +462,10 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
   :is(th, td).thin {
     white-space: nowrap;
     width: 0.01%;
+  }
+
+  :is(th, td).wrap {
+    white-space: normal;
   }
 
   /* Size thin selects to their widest option so the selected label isn't truncated */

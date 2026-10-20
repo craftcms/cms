@@ -57,7 +57,7 @@ class Cp extends Component
      */
     public function getTheme(): string
     {
-        return Theme::current(currentUserElement())->value;
+        return Theme::forUser(currentUserElement())->value;
     }
 
     /**

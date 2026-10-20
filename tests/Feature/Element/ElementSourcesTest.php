@@ -69,6 +69,17 @@ it('can find nested source configs by key path', function () {
     ]);
 });
 
+it('limits sources to their page when the first source is disabled', function () {
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'News', 'disabled' => true],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:news', 'label' => 'News', 'page' => 'News'],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:events', 'label' => 'Events', 'page' => 'Events'],
+    ]);
+
+    expect($this->elementSources->getSources(Entry::class, page: 'Events')->pluck('key')->all())->toBe(['custom:events'])
+        ->and($this->elementSources->getSources(Entry::class, page: 'News')->pluck('key')->all())->toBe(['custom:news']);
+});
+
 it('can get source sort options', function () {
     TestElementSourceSortOptionsElement::$requestedSources = [];
     $expressionA = new stdClass;

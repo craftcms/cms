@@ -12,9 +12,10 @@
  * Lion UI's modelValue/checked property + model-value-changed event pattern.
  */
 
-import {mkdirSync, writeFileSync} from 'fs';
+import {mkdirSync} from 'fs';
 import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'url';
+import {writeFileIfChanged} from './utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -50,6 +51,23 @@ const VALUE_COMPONENTS = [
     fileName: 'CraftInputColor',
     modelType: 'string',
     importPath: '../components/input-color/input-color',
+    slots: [
+      'label',
+      'help-text',
+      'input',
+      'feedback',
+      'prefix',
+      'suffix',
+      'before',
+      'after',
+    ],
+  },
+  {
+    tagName: 'craft-input-search',
+    className: 'CraftInputSearch',
+    fileName: 'CraftInputSearch',
+    modelType: 'string',
+    importPath: '../components/input-search/input-search',
     slots: [
       'label',
       'help-text',
@@ -926,6 +944,11 @@ const ALL_COMPONENTS = [
     importPath: '../components/disclosure/disclosure',
   },
   {
+    tagName: 'craft-resize-grips',
+    className: 'CraftResizeGrips',
+    importPath: '../components/resize-grips/resize-grips',
+  },
+  {
     tagName: 'craft-indicator',
     className: 'CraftIndicator',
     importPath: '../components/indicator/indicator',
@@ -1032,94 +1055,97 @@ export default function main() {
   // Ensure output directory exists
   mkdirSync(VUE_DIR, {recursive: true});
 
-  let count = 0;
+  // Collect every file before writing any, so a wrapper that replaces an
+  // earlier one (select-rich, combobox) doesn't write the file twice
+  const wrappers = new Map();
+  const addWrapper = (component, content, declContent) => {
+    wrappers.set(component.fileName, {content, declContent});
+  };
 
   // Generate value-based wrappers
   for (const component of VALUE_COMPONENTS) {
-    const content =
+    addWrapper(
+      component,
       component.tagName === 'craft-input'
         ? generateInputWrapper(component)
-        : generateValueWrapper(component);
-    const filePath = resolve(VUE_DIR, `${component.fileName}.vue`);
-    writeFileSync(filePath, content);
-    const declContent = generateValueDeclaration(component);
-    const declPath = resolve(VUE_DIR, `${component.fileName}.vue.d.ts`);
-    writeFileSync(declPath, declContent);
-    console.log(`  Generated: ${VUE_DIR}/${component.fileName}.vue`);
-    count++;
+        : generateValueWrapper(component),
+      generateValueDeclaration(component)
+    );
   }
 
   // Generate checked-based wrappers
   for (const component of CHECKED_COMPONENTS) {
-    const content = generateCheckedWrapper(component);
-    const filePath = resolve(VUE_DIR, `${component.fileName}.vue`);
-    writeFileSync(filePath, content);
-    const declContent = generateCheckedDeclaration(component);
-    const declPath = resolve(VUE_DIR, `${component.fileName}.vue.d.ts`);
-    writeFileSync(declPath, declContent);
-    console.log(`  Generated: ${VUE_DIR}/${component.fileName}.vue`);
-    count++;
+    addWrapper(
+      component,
+      generateCheckedWrapper(component),
+      generateCheckedDeclaration(component)
+    );
   }
 
   // Generate group wrappers
   for (const component of GROUP_COMPONENTS) {
-    const content = generateGroupWrapper(component);
-    const filePath = resolve(VUE_DIR, `${component.fileName}.vue`);
-    writeFileSync(filePath, content);
-    const declContent = generateGroupDeclaration(component);
-    const declPath = resolve(VUE_DIR, `${component.fileName}.vue.d.ts`);
-    writeFileSync(declPath, declContent);
-    console.log(`  Generated: ${VUE_DIR}/${component.fileName}.vue`);
-    count++;
+    addWrapper(
+      component,
+      generateGroupWrapper(component),
+      generateGroupDeclaration(component)
+    );
   }
 
   // Generate chrome-only wrappers
   for (const component of CHROME_COMPONENTS) {
-    const content = generateChromeWrapper(component);
-    const filePath = resolve(VUE_DIR, `${component.fileName}.vue`);
-    writeFileSync(filePath, content);
-    const declContent = generateChromeDeclaration(component);
-    const declPath = resolve(VUE_DIR, `${component.fileName}.vue.d.ts`);
-    writeFileSync(declPath, declContent);
-    console.log(`  Generated: ${VUE_DIR}/${component.fileName}.vue`);
-    count++;
+    addWrapper(
+      component,
+      generateChromeWrapper(component),
+      generateChromeDeclaration(component)
+    );
   }
 
-  // Generate select-rich wrapper
-  {
-    const component = SELECT_RICH_COMPONENT;
-    const content = generateSelectRichWrapper(component);
-    const filePath = resolve(VUE_DIR, `${component.fileName}.vue`);
-    writeFileSync(filePath, content);
-    const declContent = generateValueDeclaration(component);
-    const declPath = resolve(VUE_DIR, `${component.fileName}.vue.d.ts`);
-    writeFileSync(declPath, declContent);
-    console.log(`  Generated: ${VUE_DIR}/${component.fileName}.vue`);
-    count++;
+  // Generate select-rich wrapper (replaces its value wrapper)
+  addWrapper(
+    SELECT_RICH_COMPONENT,
+    generateSelectRichWrapper(SELECT_RICH_COMPONENT),
+    generateValueDeclaration(SELECT_RICH_COMPONENT)
+  );
+
+  // Generate combobox wrapper (replaces its value wrapper)
+  addWrapper(
+    COMBOBOX_COMPONENT,
+    generateComboboxWrapper(COMBOBOX_COMPONENT),
+    generateValueDeclaration(COMBOBOX_COMPONENT)
+  );
+
+  // Only write files whose contents changed. A running Vite dev server
+  // hot-updates every file that's written, and a page loading mid-update can
+  // end up with two copies of a module.
+  for (const [fileName, {content, declContent}] of wrappers) {
+    const changed = writeFileIfChanged(
+      resolve(VUE_DIR, `${fileName}.vue`),
+      content
+    );
+    writeFileIfChanged(resolve(VUE_DIR, `${fileName}.vue.d.ts`), declContent);
+
+    if (changed) {
+      console.log(`  Generated: ${VUE_DIR}/${fileName}.vue`);
+    }
   }
 
-  // Generate combobox wrapper (overwrites the value wrapper written above)
-  {
-    const component = COMBOBOX_COMPONENT;
-    const content = generateComboboxWrapper(component);
-    const filePath = resolve(VUE_DIR, `${component.fileName}.vue`);
-    writeFileSync(filePath, content);
-    const declContent = generateValueDeclaration(component);
-    const declPath = resolve(VUE_DIR, `${component.fileName}.vue.d.ts`);
-    writeFileSync(declPath, declContent);
-    console.log(`  Generated: ${VUE_DIR}/${component.fileName}.vue`);
-    count++;
-  }
-
-  console.log(`\n  ${count} Vue wrappers generated in ${VUE_DIR}/`);
+  console.log(`\n  ${wrappers.size} Vue wrappers generated in ${VUE_DIR}/`);
 
   // Generate type augmentations
-  const types = generateTypeAugmentations();
-  const typesPath = resolve(VUE_DIR, 'craft-elements.d.ts');
-  writeFileSync(typesPath, types);
-  console.log(`  Generated: ${VUE_DIR}/craft-elements.d.ts`);
+  if (
+    writeFileIfChanged(
+      resolve(VUE_DIR, 'craft-elements.d.ts'),
+      generateTypeAugmentations()
+    )
+  ) {
+    console.log(`  Generated: ${VUE_DIR}/craft-elements.d.ts`);
+  }
 
   console.log('\nDone!');
 }
 
-main();
+// Run when invoked directly (node scripts/generate-vue-wrappers.js), but not
+// when imported by build.js (which calls the default export instead).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}

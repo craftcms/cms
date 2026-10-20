@@ -558,6 +558,12 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     #[Override]
+    public static function supportsSourceBadgeCounts(): bool
+    {
+        return true;
+    }
+
+    #[Override]
     protected static function defineSources(string $context): array
     {
         $sources = [

@@ -24,6 +24,8 @@
      */
     status?: {fill: string; label: string; draft: boolean} | null;
     thumbHtml?: string;
+    /** A Craft color name, such as an entry's type color. */
+    color?: string | null;
   }
 
   const props = withDefaults(
@@ -159,6 +161,7 @@
         size="small"
         :data-id="String(element.id)"
         :data-site-id="element.siteId ?? undefined"
+        :data-color="element.color ?? undefined"
         :selectable="canSelect || undefined"
         :selected="selection.isSelected(element.id) || undefined"
         :select-label="t('Select {label}', {label: labelFor(element)})"

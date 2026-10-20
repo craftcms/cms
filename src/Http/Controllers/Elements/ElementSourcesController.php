@@ -172,6 +172,10 @@ readonly class ElementSourcesController
                     $sourceConfig['defaultViewMode'] = $postedSettings['defaultViewMode'];
                 }
 
+                if (isset($postedSettings['showBadgeCount'])) {
+                    $sourceConfig['showBadgeCount'] = filter_var($postedSettings['showBadgeCount'], FILTER_VALIDATE_BOOLEAN);
+                }
+
                 if ($isCustom) {
                     $sourceConfig += [
                         'label' => $postedSettings['label'],

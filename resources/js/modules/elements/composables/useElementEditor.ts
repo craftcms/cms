@@ -304,6 +304,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     advanceBaseline,
     errors,
     onMutation: onLayoutMutation,
+    rebase,
     renderer,
     resetValues,
     values,
@@ -313,6 +314,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     advanceBaseline: advanceSidebarBaseline,
     errors: sidebarErrors,
     onMutation: onSidebarFormMutation,
+    rebase: rebaseSidebar,
     renderer: sidebarRenderer,
     resetValues: resetSidebarValues,
   } = useInertiaUiRenderer(form, sidebarPayload);
@@ -473,14 +475,22 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       invalidateUiRefreshes();
       applyingSavedPayload = true;
 
+      // The renderers measure the form against the values the save wrote, not
+      // the ones the page loaded with — otherwise a value edited back to what
+      // it was on load would look unchanged, and never be saved.
       if (form) {
         savedUi.value = form;
+        rebase(form.values);
       }
 
       if (screen) {
         const payload: Partial<ElementEditPayload> = {};
         Object.assign(payload, screen);
         savedScreen.value = payload;
+
+        if (payload.sidebarUi) {
+          rebaseSidebar(payload.sidebarUi.values);
+        }
       }
 
       // Released after the flush, so the renderers' pre-flush reconcile — and

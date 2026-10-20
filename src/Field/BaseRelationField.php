@@ -1058,7 +1058,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $value = collect($value)->filter()->values()->all();
             $query->whereIn('elements.id', $value);
             if (! empty($value)) {
-                $query->orderBy(new FixedOrderExpression('elements.id', $value));
+                // Use the related order by default, but let explicit orders replace it
+                $query->reorder()->orderBy(new OrderByPlaceholderExpression(new FixedOrderExpression('elements.id', $value)));
             }
         } elseif ($value === null && $element?->id && $this->fetchRelationsFromDbTable($element)) {
             // If $value is null, the element + field haven’t been saved since updating to Craft 5.3+,

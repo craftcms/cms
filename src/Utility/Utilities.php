@@ -82,15 +82,4 @@ readonly class Utilities
             /** @var class-string<Utility> $class */
             ->first(fn (string $class) => $class::id() === $id);
     }
-
-    /**
-     * Retrieves the total badge count for all utilities
-     * the current user is authorized to access.
-     */
-    public function getUtilitiesBadgeCount(): int
-    {
-        return $this->getAuthorizedUtilityTypes()
-            /** @var class-string<Utility> $class */
-            ->sum(fn (string $class) => $class::badgeCount());
-    }
 }

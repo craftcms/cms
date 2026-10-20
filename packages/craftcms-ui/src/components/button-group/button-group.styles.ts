@@ -15,7 +15,8 @@ export default css`
 
   ::slotted(:not([data-button-group-start])) {
     --c-button-group-border-start-color: var(--c-color-neutral-border-quiet);
-    margin-inline-start: calc(var(--c-button-border-width, 1px) * -1);
+    --c-button-group-overlap: calc(var(--c-button-border-width, 1px) * -1);
+    margin-inline-start: var(--c-button-group-overlap);
   }
 
   ::slotted(:not([data-button-group-end])) {

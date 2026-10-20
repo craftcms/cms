@@ -46,11 +46,12 @@ it('waits for the jQuery seam before initializing', async () => {
 
   expect(deferredInit).not.toHaveBeenCalled();
 
+  const field = document.createElement('craft-input-search');
   const search = document.createElement('input');
-  search.type = 'search';
+  field.append(search);
   const library = container.querySelector('.fld-field-library');
   if (!library) throw new Error('Expected the field library fixture.');
-  library.prepend(search);
+  library.prepend(field);
 
   window.$ = $;
   await vi.advanceTimersByTimeAsync(100);
@@ -58,6 +59,48 @@ it('waits for the jQuery seam before initializing', async () => {
   expect(deferredInit).toHaveBeenCalledOnce();
   expect(designer.$fieldSearch).toBe(search);
 });
+
+it.each([
+  [285.5, '288px'],
+  [288.004, '288px'],
+  [288.5, '304px'],
+])(
+  'snaps a %spx sidebar tab to a whole number of grid cells tall',
+  (height, expected) => {
+    let resized: ResizeObserverCallback | undefined;
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          resized = callback;
+        }
+        observe() {}
+        disconnect() {}
+      }
+    );
+    const designer = Object.create(
+      FieldLayoutDesigner.prototype
+    ) as FieldLayoutDesigner;
+    designer.snapSidebarTabHeights(16);
+
+    const tab = document.createElement('div');
+    tab.className = 'fld-tab fld-tab--sidebar';
+    const content = document.createElement('div');
+    content.className = 'fld-tabcontent';
+    tab.append(content);
+    document.body.append(tab);
+    vi.spyOn(tab, 'getBoundingClientRect').mockReturnValue({
+      height,
+    } as DOMRect);
+
+    resized!([{target: content} as unknown as ResizeObserverEntry], {} as any);
+
+    expect(tab.style.blockSize).toBe(expected);
+
+    tab.remove();
+    vi.unstubAllGlobals();
+  }
+);
 
 it('announces config changes so wrappers can read the new layout', () => {
   const designer = Object.create(
@@ -176,4 +219,66 @@ it('leaves sortable checkbox teardown to its custom element', () => {
 
   expect(() => designer.destroy()).not.toThrow();
   expect(baseDestroy).toHaveBeenCalledOnce();
+});
+
+it('gives the card preview the owner’s name, color, and icon', () => {
+  document.body.innerHTML = `
+    <form>
+      <craft-input data-ui-control-path='["name"]'></craft-input>
+      <craft-select-color data-ui-control-path='["color"]'></craft-select-color>
+      <craft-input data-ui-control-path='["icon"]'></craft-input>
+      <div class="cvd">
+        <div class="cvd-preview">
+          <craft-chip class="cvd-chip"><div>Title</div></craft-chip>
+          <craft-card><div slot="header"></div></craft-card>
+        </div>
+      </div>
+    </form>`;
+  const control = (key: string) =>
+    document.querySelector<HTMLElement & {modelValue: string}>(
+      `[data-ui-control-path='["${key}"]']`
+    )!;
+  control('name').modelValue = 'Article';
+  control('color').modelValue = 'rose';
+  control('icon').modelValue = 'newspaper';
+
+  // SAFETY: This test deliberately creates a CardViewDesigner without running its DOM-heavy constructor.
+  const designer = Object.create(
+    CardViewDesigner.prototype
+  ) as CardViewDesigner;
+  designer.$container = document.querySelector('.cvd')!;
+  designer.$previewContainer = document.querySelector('.cvd-preview');
+  designer.syncPreviewAppearance();
+
+  const card = document.querySelector('craft-card')!;
+  const header = card.querySelector('[slot="header"]')!;
+  expect(card.getAttribute('data-color')).toBe('rose');
+  expect(header.querySelector('craft-icon')?.getAttribute('name')).toBe(
+    'newspaper'
+  );
+  expect(header.querySelector('.card-titlebar-label')?.textContent).toBe(
+    'Article'
+  );
+  // The sample chip takes the color, but not the icon or name.
+  const chip = document.querySelector('craft-chip')!;
+  expect(chip.getAttribute('data-color')).toBe('rose');
+  expect(chip.querySelector('craft-icon')).toBeNull();
+  expect(chip.textContent).toBe('Title');
+
+  control('color').modelValue = '';
+  control('icon').modelValue = '';
+  designer.syncPreviewAppearance();
+
+  expect(card.hasAttribute('data-color')).toBe(false);
+  expect(chip.hasAttribute('data-color')).toBe(false);
+  expect(header.querySelector('craft-icon')).toBeNull();
+  expect(header.textContent).toBe('Article');
+
+  control('color').modelValue = '__blank__';
+  designer.syncPreviewAppearance();
+
+  expect(card.hasAttribute('data-color')).toBe(false);
+  expect(chip.hasAttribute('data-color')).toBe(false);
+
+  document.body.innerHTML = '';
 });

@@ -12,7 +12,7 @@ canonical implementations live in `@craftcms/ui`
 root):
 
 - `createButton(config)` → `<craft-button>`
-- `createSubmitButton(config)` → accent submit `<craft-button>`
+- `createSubmitButton(config)` → primary submit `<craft-button>`
 - `createPasteButton(config)` → "Paste elements" `<craft-button>`
 
 Each returns the **element** (not jQuery) and accepts the legacy config keys

@@ -3,7 +3,7 @@
 
   import {t} from '@craftcms/ui';
   import Modal from '@/common/components/Modal.vue';
-  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
   import {computed, nextTick, ref, watch} from 'vue';
   import {watchDebounced} from '@vueuse/core';
   import {useHttp} from '@inertiajs/vue3';
@@ -177,16 +177,15 @@
           slot="header"
           role="search"
           @submit.prevent="loadIcons()"
-          class="sticky top-0 pt-lg px-lg pb-md bg-white"
+          class="sticky top-0 pt-lg px-lg pb-md bg-(--c-surface-raised)"
         >
-          <CraftInput :label="t('Search')" v-model="query">
-            <div slot="suffix" class="flex self-center w-[1em] h-[1em]">
-              <craft-spinner
-                style="--size: 1em"
-                :visible="http.processing && icons !== null"
-              ></craft-spinner>
-            </div>
-          </CraftInput>
+          <CraftInputSearch v-model="query">
+            <craft-spinner
+              slot="after"
+              style="--size: 1em"
+              .visible="http.processing && icons !== null"
+            ></craft-spinner>
+          </CraftInputSearch>
         </form>
         <div>
           <!-- This only shows on the initial load -->
@@ -225,7 +224,7 @@
 <style scoped lang="scss">
   .icon-preview {
     aspect-ratio: 1;
-    width: var(--c-input-height, calc(34rem / 16));
+    width: var(--c-input-height, var(--c-size-control-md));
     background-color: var(--c-color-fill-quiet);
     border: 1px solid var(--c-color-border-quiet);
     color: var(--c-color-on-quiet);
@@ -252,7 +251,10 @@
 
   .icon-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(var(--c-size-control-md), 1fr)
+    );
     gap: var(--c-spacing-sm);
   }
 
@@ -281,5 +283,6 @@
   :deep(svg) {
     width: calc(20rem / 16);
     height: calc(20rem / 16);
+    fill: currentColor;
   }
 </style>

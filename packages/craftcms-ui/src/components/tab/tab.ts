@@ -18,6 +18,9 @@ import styles from './tab.styles.js';
  *
  * @slot - The tab's label. Any inline content; keep it short enough to sit in
  *   a strip.
+ * @slot prefix - Content before the label, such as an icon.
+ * @slot suffix - Content after the label, such as an icon flagging errors in
+ *   the tab's panel. Give an icon a `label` so its meaning is announced.
  *
  * @cssproperty --c-tab-spacing-inline - Inline padding. Defaults to `0`, so
  *   the labels line up with the content around the strip; the strip's gap
@@ -74,11 +77,10 @@ export default class CraftTab extends LitElement {
   private _lightDom = new LightDomController(this, {characterData: true});
 
   override render() {
-    return html`<span
-      class="tab__label"
-      data-text="${this.textContent?.trim() ?? ''}"
-      ><span class="tab__text"><slot></slot></span
-    ></span>`;
+    return html`<slot name="prefix" class="tab__prefix"></slot
+      ><span class="tab__label" data-text="${this.textContent?.trim() ?? ''}"
+        ><span class="tab__text"><slot></slot></span></span
+      ><slot name="suffix" class="tab__suffix"></slot>`;
   }
 }
 

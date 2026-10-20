@@ -3,6 +3,7 @@ import {userEvent} from 'vite-plus/test/browser';
 import '../../styles/cp.css';
 import '../truncate/truncate.js';
 import './chip.js';
+import {contrast} from '../../../test/contrast';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -62,23 +63,25 @@ it('underlines a chip inside a link as a link', async () => {
   document.body.classList.remove('underline-links');
 });
 
-it('gives a non-white chip’s links its text color and an underline until hovered', async () => {
+it('gives a colored, non-plain chip’s links its text color and an underline until hovered', async () => {
   document.body.innerHTML = `
     <craft-chip id="color" data-color="red">
       <craft-truncate><a href="#">Nested</a></craft-truncate>
     </craft-chip>
     <craft-chip id="variant" variant="danger"><a href="#">Direct</a></craft-chip>
     <craft-chip id="gray" data-color="gray"><a href="#">Gray</a></craft-chip>
+    <craft-chip id="slate" data-color="slate"><a href="#">Slate</a></craft-chip>
+    <craft-chip id="black" data-color="black"><a href="#">Black</a></craft-chip>
     <craft-chip id="neutral" variant="neutral"><a href="#">Neutral</a></craft-chip>
-    <craft-chip id="default"><a href="#">Default</a></craft-chip>`;
+    <craft-chip id="default"><a href="#">Default</a></craft-chip>
+    <craft-chip id="plain-color" data-color="red" appearance="plain"><a href="#">Plain</a></craft-chip>
+    <craft-chip id="plain-variant" variant="danger" appearance="plain"><a href="#">Plain</a></craft-chip>`;
   for (const chip of document.querySelectorAll('craft-chip')) {
     await (chip as HTMLElement & {updateComplete: Promise<unknown>})
       .updateComplete;
   }
 
-  // Blue falls short of contrast against the gray and slate fills, so only a
-  // white chip keeps it.
-  for (const id of ['color', 'variant', 'gray', 'neutral']) {
+  for (const id of ['color', 'variant', 'neutral']) {
     const chip = document.getElementById(id)!;
     const link = chip.querySelector('a')!;
     const body = chip.shadowRoot!.querySelector('.cp-chip')!;
@@ -91,7 +94,28 @@ it('gives a non-white chip’s links its text color and an underline until hover
     await userEvent.unhover(link);
   }
 
-  const plain = document.querySelector<HTMLElement>('#default a')!;
-  expect(getComputedStyle(plain).color).toBe(linkColor());
-  expect(getComputedStyle(plain).textDecorationLine).toBe('none');
+  // A plain chip has no fill to clash with, and a gray chip's is light enough
+  // for blue (as a gray card's is), so they keep the link styling.
+  for (const id of [
+    'default',
+    'gray',
+    'slate',
+    'plain-color',
+    'plain-variant',
+  ]) {
+    const link = document.querySelector<HTMLElement>(`#${id} a`)!;
+    expect(getComputedStyle(link).color).toBe(linkColor());
+    expect(getComputedStyle(link).textDecorationLine).toBe('none');
+  }
+
+  const black = document.getElementById('black')!;
+  const blackLink = getComputedStyle(black.querySelector('a')!);
+  expect(blackLink.textDecorationLine).toBe('none');
+  expect(
+    contrast(
+      blackLink.color,
+      getComputedStyle(black.shadowRoot!.querySelector('.cp-chip')!)
+        .backgroundColor
+    )
+  ).toBeGreaterThanOrEqual(4.5);
 });

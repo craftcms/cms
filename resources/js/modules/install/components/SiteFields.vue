@@ -60,11 +60,13 @@
       class="p-0"
       icon="lightbulb"
     >
-      {{
-        t(
-          'Type `$` to choose an environment variable, or `@` to choose an alias.'
-        )
-      }}
+      <span
+        v-html="
+          t(
+            'Type <kbd>$</kbd> to choose an environment variable, or <kbd>@</kbd> to choose an alias.'
+          )
+        "
+      ></span>
       <a
         href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
         >{{ t('Learn more') }}</a

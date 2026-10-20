@@ -155,6 +155,14 @@
       regions.has('content-toolbar-meta') ||
       regions.has('content-toolbar-actions')
   );
+  // Hidden while it has nothing to show, such as an untitled nested entry's
+  // edit page, so its padding doesn't leave a gap above the content.
+  const hasHeader = computed(
+    () =>
+      Boolean(pageTitle.value) ||
+      regions.has('title') ||
+      regions.has('content-actions')
+  );
   const hasDetails = computed(() => regions.has('content-details'));
   const hasTabs = computed(() => regions.has('content-tabs'));
   // Decided here rather than inside `ContentFooter`, so the sticky wrapper
@@ -323,7 +331,7 @@
                               <!-- The subnav-actions outlet lives inside this fallback, so a page can
                               teleport `content-sidebar` or `subnav-actions`, never both. -->
                               <SecondaryNav
-                                :items="navItemActions(subnav)"
+                                :items="navItemActions(subnav, true)"
                                 :actions="subnavActions"
                               >
                                 <template
@@ -399,7 +407,11 @@
                             </slot>
 
                             <slot name="content-header">
-                              <div id="cp-content-header" class="pt-lg pb-md">
+                              <div
+                                v-show="hasHeader"
+                                id="cp-content-header"
+                                class="pt-lg pb-md"
+                              >
                                 <CpContainer>
                                   <div
                                     class="flex flex-wrap gap-md items-center justify-between"
@@ -550,6 +562,7 @@ Shell
   .cp {
     flex: 1;
     display: grid;
+    padding-inline-end: var(--cp-scrollbar-width, 0px);
     /* The floating sidebar's row stays empty, so the main row takes the room. */
     grid-template-rows: auto 1fr;
     background-color: var(--c-surface-sunken);
@@ -734,7 +747,10 @@ Content: the secondary nav, content, and details panes
     background-color: var(--c-surface-default);
     /* A dragged width outlives the layout it was dragged in, so cap it here. */
     max-inline-size: var(--cp-content-details-max, 90cqi);
-    container: content-details / inline-size;
+    /* Contained in both axes, so the row sets its height rather than the pane:
+       the pane is sized from where this ends, and taking its height from the
+       pane would let a stale gap hold the page a few pixels too tall. */
+    container: content-details / size;
     /* No width of its own while it has a column: stretching to the track is what
        lets the track's range shrink it, and it survives the containment above. */
     justify-self: stretch;

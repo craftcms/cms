@@ -11,7 +11,7 @@
    */
   import '@craftcms/ui/components/disclosure/disclosure';
   import {t} from '@craftcms/ui';
-  import {useEventListener} from '@vueuse/core';
+  import {useEventListener, useLocalStorage} from '@vueuse/core';
   import {computed, nextTick, shallowRef, watch} from 'vue';
   import type {Component} from 'vue';
   import {
@@ -20,11 +20,14 @@
     useScreenDetailsRail,
   } from '@/common/composables/screen';
   import DetailsPanelContent from './DetailsPanelContent.vue';
+  import {initialOf} from '@/common/utils/initialIcon';
 
   export interface DetailsPanel {
     id: string;
     label: string;
     icon: string;
+    /** Show the label's first letter instead of the icon. */
+    initialIcon?: boolean;
     order?: number;
     /** A slot to render as the panel. */
     slot?: string;
@@ -86,14 +89,36 @@
     props.syncLocationHash && window.location.hash
       ? window.location.hash.slice(1)
       : null;
-  // A slideout opens on its content; the column starts folded to the rail.
-  const openPanelId = shallowRef<string | null>(
-    useIsSlideout()
-      ? null
-      : initialHash && isVisible(initialHash)
-        ? initialHash
-        : (visiblePanels.value[0]?.id ?? null)
-  );
+  /**
+   * Slideouts don't mirror the open panel in the URL hash, so they remember
+   * the panel the person last left open, or that they folded the column,
+   * and open the next slideout the same way. A remembered panel this element
+   * doesn't have falls back to the first.
+   */
+  const isSlideout = useIsSlideout();
+  const slideoutPanelId = isSlideout
+    ? useLocalStorage<string | null>('Slideout.detailsPanel', null)
+    : null;
+
+  function initialPanelId(): string | null {
+    if (slideoutPanelId) {
+      const remembered = slideoutPanelId.value;
+
+      if (remembered === null) {
+        return null;
+      }
+
+      return isVisible(remembered)
+        ? remembered
+        : (visiblePanels.value[0]?.id ?? null);
+    }
+
+    return initialHash && isVisible(initialHash)
+      ? initialHash
+      : (visiblePanels.value[0]?.id ?? null);
+  }
+
+  const openPanelId = shallowRef<string | null>(initialPanelId());
 
   // An open panel that goes away falls back to the first.
   watch(visiblePanels, (panels) => {
@@ -151,6 +176,10 @@
     panelClosedByShell = null;
     updateLocationHash();
 
+    if (slideoutPanelId) {
+      slideoutPanelId.value = panelId;
+    }
+
     if (withFocus) {
       focusAfterRender(headingId(panelId));
     }
@@ -163,6 +192,10 @@
 
     openPanelId.value = null;
     panelClosedByShell = null;
+
+    if (slideoutPanelId) {
+      slideoutPanelId.value = null;
+    }
 
     if (returnFocus) {
       focusAfterRender(triggerId(panelId));
@@ -272,7 +305,13 @@
             class="details-panels__trigger"
             :aria-controls="panelElementId(panel.id)"
           >
-            <craft-icon :name="panel.icon" :label="panel.label" />
+            <template v-if="panel.initialIcon">
+              <span class="initial-icon" aria-hidden="true">{{
+                initialOf(panel.label)
+              }}</span>
+              <span class="sr-only">{{ panel.label }}</span>
+            </template>
+            <craft-icon v-else :name="panel.icon" :label="panel.label" />
           </button>
         </craft-disclosure>
       </div>

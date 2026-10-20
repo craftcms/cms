@@ -3,6 +3,7 @@ import type CraftInput from './input.js';
 import {contrast} from '../../../test/contrast';
 import type CraftInputDateTime from '../input-date-time/input-date-time.js';
 import './input.js';
+import '../button/button.js';
 import '../input-date-time/input-date-time.js';
 
 beforeEach(() => {
@@ -111,9 +112,95 @@ describe('craft-input placeholder', () => {
       ).backgroundColor;
 
       expect(placeholder.opacity).toBe('1');
-      expect(
-        contrast(placeholder.color, surface)
-      ).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(placeholder.color, surface)).toBeGreaterThanOrEqual(4.5);
     }
   );
+});
+
+describe('craft-input suffix buttons', () => {
+  it.each([
+    ['medium', 30],
+    ['small', 24],
+  ])(
+    'fills the suffix with a square button at the %s size, no narrower than 24px',
+    async (size, expectedWidth) => {
+      await import('../../styles/cp.css');
+      document.body.innerHTML = `
+        <craft-input aria-label="Slug" size="${size}">
+          <craft-button slot="suffix" size="small" variant="plain" icon="arrows-rotate" aria-label="Refresh"></craft-button>
+        </craft-input>`;
+      const element = document.querySelector<CraftInput>('craft-input')!;
+      await element.updateComplete;
+
+      const button = element
+        .querySelector('craft-button')!
+        .getBoundingClientRect();
+      const suffix = element
+        .shadowRoot!.querySelector('.input-group__suffix')!
+        .getBoundingClientRect();
+
+      expect(button.width).toBeCloseTo(expectedWidth, 0);
+      expect(button.width).toBeGreaterThanOrEqual(button.height);
+      expect(button.right).toBeCloseTo(suffix.right - 1, 0);
+    }
+  );
+
+  it('draws an inline suffix inside the input’s border, at its own size, without a divider', async () => {
+    await import('../../styles/cp.css');
+    document.body.innerHTML = `
+      <craft-input aria-label="Slug" inline-suffix>
+        <craft-button slot="suffix" size="small" variant="plain" icon="arrows-rotate" aria-label="Refresh"></craft-button>
+      </craft-input>`;
+    const element = document.querySelector<CraftInput>('craft-input')!;
+    await element.updateComplete;
+
+    const input = element.querySelector('input')!;
+    const button = element.querySelector('craft-button')!;
+    const buttonBox = button.getBoundingClientRect();
+    const suffixBox = element
+      .shadowRoot!.querySelector('.input-group__suffix')!
+      .getBoundingClientRect();
+
+    expect(getComputedStyle(input).borderInlineEndWidth).toBe('0px');
+    expect(getComputedStyle(input).boxShadow).toBe('none');
+    expect(getComputedStyle(button).borderTopLeftRadius).not.toBe('0px');
+    expect(buttonBox.top).toBeGreaterThan(suffixBox.top + 1);
+    expect(buttonBox.right).toBeLessThan(suffixBox.right - 1);
+    // Leaves room for the button's focus ring, which sits outside it.
+    expect(
+      getComputedStyle(
+        element.shadowRoot!.querySelector('.input-group__suffix')!
+      ).overflow
+    ).toBe('visible');
+  });
+
+  it('draws an outer focus ring around the input and an inline suffix together', async () => {
+    await import('../../styles/cp.css');
+    document.body.innerHTML = `
+      <craft-input aria-label="Slug" inline-suffix>
+        <craft-button slot="suffix" size="small" variant="plain" icon="arrows-rotate" aria-label="Refresh"></craft-button>
+      </craft-input>`;
+    const element = document.querySelector<CraftInput>('craft-input')!;
+    await element.updateComplete;
+    const input = element.querySelector('input')!;
+    input.focus();
+    await element.updateComplete;
+
+    const container = getComputedStyle(
+      element.shadowRoot!.querySelector('.input-group__container')!
+    );
+
+    expect(getComputedStyle(input).outlineWidth).toBe('0px');
+    expect(container.outlineStyle).toBe('solid');
+    expect(parseFloat(container.outlineOffset)).toBeGreaterThan(0);
+
+    element.querySelector<HTMLElement>('craft-button')!.focus();
+    await element.updateComplete;
+
+    expect(
+      getComputedStyle(
+        element.shadowRoot!.querySelector('.input-group__container')!
+      ).outlineStyle
+    ).toBe('none');
+  });
 });

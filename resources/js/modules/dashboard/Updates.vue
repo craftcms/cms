@@ -37,7 +37,7 @@
 </script>
 
 <template>
-  <craft-card>
+  <craft-card data-color="gray">
     <slot name="header" />
     <div class="body text-center space-y-3" aria-live="polite">
       <craft-callout v-if="error" variant="danger" role="alert">{{

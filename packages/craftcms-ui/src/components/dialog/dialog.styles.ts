@@ -64,6 +64,15 @@ export default css`
     z-index: var(--c-layer-overlay, 100);
   }
 
+  .frame {
+    position: relative;
+    display: grid;
+  }
+
+  .frame > .surface {
+    isolation: isolate;
+  }
+
   .surface {
     display: grid;
     /*

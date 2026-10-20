@@ -165,6 +165,7 @@ readonly class FormFields
         $field = Field::make()
             ->id($config['fieldId'] ?? "$id-field")
             ->label($label !== null ? (string) $label : null)
+            ->labelSrOnly((bool) ($config['labelSrOnly'] ?? false))
             ->required((bool) ($config['required'] ?? false))
             ->translatable($translatable, $config['translationDescription'] ?? null)
             ->fieldset((bool) ($config['fieldset'] ?? false))

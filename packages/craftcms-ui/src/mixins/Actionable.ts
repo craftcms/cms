@@ -59,6 +59,9 @@ export const Actionable = <T extends Constructor<LitElement>>(Base: T) => {
 
     @state() feedbackMessage: string | null = null;
 
+    /** Returns the element to idle once an action's feedback has shown. */
+    #idleTimeout: ReturnType<typeof setTimeout> | null = null;
+
     override connectedCallback() {
       super.connectedCallback();
       this.addEventListener('click', this.#handleActionClick);
@@ -66,7 +69,17 @@ export const Actionable = <T extends Constructor<LitElement>>(Base: T) => {
 
     override disconnectedCallback() {
       this.removeEventListener('click', this.#handleActionClick);
+      // A removed element has no feedback to clear, and its timer could
+      // otherwise fire after its document is gone.
+      this.#clearIdleTimeout();
       super.disconnectedCallback();
+    }
+
+    #clearIdleTimeout() {
+      if (this.#idleTimeout !== null) {
+        clearTimeout(this.#idleTimeout);
+        this.#idleTimeout = null;
+      }
     }
 
     #handleActionClick = (event: Event) => {
@@ -112,6 +125,10 @@ export const Actionable = <T extends Constructor<LitElement>>(Base: T) => {
         return;
       }
 
+      // A new run's feedback replaces the last one's, so its pending reset to
+      // idle mustn't cut the new feedback short.
+      this.#clearIdleTimeout();
+
       // Loading state is only meaningful while a network request is in flight;
       // clipboard/event actions resolve synchronously.
       if (action.type === 'http') {
@@ -129,7 +146,9 @@ export const Actionable = <T extends Constructor<LitElement>>(Base: T) => {
           ...(this.feedback?.error ?? {}),
         });
       } finally {
-        setTimeout(() => {
+        this.#clearIdleTimeout();
+        this.#idleTimeout = setTimeout(() => {
+          this.#idleTimeout = null;
           this.setActionState(AsyncStates.Idle);
         }, this.feedbackDuration);
       }

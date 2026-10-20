@@ -210,7 +210,7 @@ class SelectOptions
 
     public static function getObjectTemplateTip(): string
     {
-        return t('Type `{` to choose an object template variable.');
+        return t('Type <kbd>{</kbd> to choose an object template variable.');
     }
 
     /**
@@ -362,8 +362,6 @@ class SelectOptions
     ): array {
         $options = [];
 
-        $languageId = I18N::getLocale()->getLanguageID();
-
         if ($appLocales) {
             $allLocales = I18N::getAppLocales();
         } else {
@@ -373,9 +371,11 @@ class SelectOptions
         $allLocales = $allLocales->sortBy(fn (Locale $locale) => $locale->getDisplayName(app()->getLocale()));
 
         foreach ($allLocales as $locale) {
-            $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName(app()->getLocale()) : '';
+            $label = $locale->getDisplayName(app()->getLocale());
+            // The locale's name in its own language, whatever language the CP is in
+            $name = $locale->getDisplayName();
             $option = [
-                'label' => $locale->getDisplayName(app()->getLocale()),
+                'label' => $label,
                 'value' => $locale->id,
                 'data' => [
                     'keywords' => $name,
@@ -386,7 +386,7 @@ class SelectOptions
             if ($showLocaleIds) {
                 $hints[] = $locale->id;
             }
-            if ($showLocalizedNames) {
+            if ($showLocalizedNames && $name !== $label) {
                 $hints[] = $name;
                 $option['data']['hintLang'] = $locale->id;
             }

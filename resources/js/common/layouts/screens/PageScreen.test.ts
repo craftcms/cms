@@ -125,6 +125,40 @@ describe('PageScreen', () => {
     }
   );
 
+  it('hides the content header while it has nothing to show', async () => {
+    stubViewport(true);
+
+    const withActions = ref(false);
+    const container = document.createElement('div');
+    document.body.append(container);
+
+    const app = createApp({
+      render: () =>
+        h(PageScreen, {title: ''} as never, {
+          default: () =>
+            withActions.value
+              ? h(LayoutSlot, {name: 'content-actions'}, () =>
+                  h('button', {type: 'button'}, 'Action')
+                )
+              : null,
+        }),
+    });
+    app.mount(container);
+    teardown = () => {
+      app.unmount();
+      container.remove();
+    };
+    await nextTick();
+
+    const header = () =>
+      container.querySelector<HTMLElement>('#cp-content-header')!;
+    expect(header().style.display).toBe('none');
+
+    withActions.value = true;
+
+    await vi.waitFor(() => expect(header().style.display).toBe(''));
+  });
+
   it('hides the footer for a page that asks it to, even with a form', async () => {
     stubViewport(true);
 

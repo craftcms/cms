@@ -10,6 +10,7 @@
     computed,
     nextTick,
     provide,
+    shallowReactive,
     useTemplateRef,
     type Component,
   } from 'vue';
@@ -28,6 +29,7 @@
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import {useElementEditor} from '@/modules/elements/composables/useElementEditor';
   import type {UiValues} from '@/modules/ui/types';
+  import {isSidebarTab, type SidebarTabOutlets} from '@/modules/ui/sidebarTabs';
   import ElementDetailsPanels from '@/modules/elements/components/ElementDetailsPanels.vue';
   import {elementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
   import type {FormSaveOptions} from '@/common/types';
@@ -112,9 +114,39 @@
       false
   );
 
+  /** Field layout tabs that render as details panels, rather than tabs. */
+  const sidebarTabs = computed(
+    () => uiPayload.value?.nodes.filter(isSidebarTab) ?? []
+  );
+  const sidebarTabOutlets: SidebarTabOutlets = shallowReactive(new Map());
+  const sidebarTabOutletRefs = new Map<string, (el: unknown) => void>();
+
+  /**
+   * A stable ref callback per tab, so Vue only calls it as the tab's panel
+   * mounts and unmounts. A panel can remount (when the details region moves),
+   * and the new one may register before the old one lets go.
+   */
+  function sidebarTabOutletRef(uid: string): (el: unknown) => void {
+    let ref = sidebarTabOutletRefs.get(uid);
+
+    if (!ref) {
+      ref = (el: unknown) => {
+        if (el instanceof HTMLElement) {
+          sidebarTabOutlets.set(uid, el);
+        } else if (!sidebarTabOutlets.get(uid)?.isConnected) {
+          sidebarTabOutlets.delete(uid);
+        }
+      };
+      sidebarTabOutletRefs.set(uid, ref);
+    }
+
+    return ref;
+  }
+
   const hasDetails = computed(
     () =>
       Boolean(props.showDetails) ||
+      sidebarTabs.value.length > 0 ||
       Boolean(sidebarPayload.value) ||
       Boolean(payload.metadataHtml) ||
       Boolean(payload.activityTimelineUrl) ||
@@ -479,6 +511,7 @@
             :refresh="uiPayload.refreshable ? refreshLayout : undefined"
             :modified="autosave.modified.value"
             :disabled="editorLocked"
+            :sidebar-tab-outlets="sidebarTabOutlets"
             @update:mutation="onMutation"
           />
         </component>
@@ -499,7 +532,14 @@
       :update-payload="updatePayload"
       :submit-action="submitAction"
       :sync-location-hash="!isSlideout"
+      :sidebar-tabs="sidebarTabs"
     >
+      <template #sidebar-tab="{tab}">
+        <div
+          :ref="sidebarTabOutletRef(tab.uid)"
+          class="py-lg px-(--cp-container-padding)"
+        ></div>
+      </template>
       <template #info>
         <!-- Anything the element type shows above its meta fields, e.g. an
         asset's file preview. -->

@@ -77,11 +77,22 @@ export default class CraftActionItem extends LitElement {
   @property() icon: string | null = null;
 
   /**
-   * Optional Craft color name used to tint the item's icon. The icon renders
-   * with `currentColor`, so we set the icon element's `color` to a matching
-   * `--c-color-*` token.
+   * Optional Craft color name used to tint the item's icon, in the color's
+   * loud tone. Black and white icons take the default text color, so they
+   * stay visible in both themes.
    */
   @property({attribute: 'icon-color'}) iconColor: string | null = null;
+
+  /**
+   * The icon's color: the color's loud tone, which stays vibrant in both
+   * themes. Black and white are the same in both themes, so one of them would
+   * vanish against the surface; they take the default text color instead.
+   */
+  #iconColorValue(color: string): string {
+    return color === 'black' || color === 'white'
+      ? 'var(--c-text-default)'
+      : `var(--c-color-${color}-fill-loud, currentColor)`;
+  }
 
   /** Renders the item as a link to this URL instead of as a button. */
   @property() href: string | null = null;
@@ -302,7 +313,7 @@ export default class CraftActionItem extends LitElement {
               ? html`<craft-icon
                   name="${this.icon}"
                   style="${this.iconColor
-                    ? `color: var(--c-color-${this.iconColor}-on-normal, currentColor)`
+                    ? `color: ${this.#iconColorValue(this.iconColor)}`
                     : nothing}"
                 ></craft-icon>`
               : nothing}

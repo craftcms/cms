@@ -11,7 +11,7 @@ import {
   hitTest,
   prefersReducedMotion,
 } from '@craftcms/garnish';
-import {fldElementData, fldTabData} from './support';
+import {fldElementData, fldTabData, isSidebarTab} from './support';
 import type {FieldLayoutDesigner} from './field-layout-designer';
 
 // jQuery (`$`) survives only at the Craft.Grid seam (`tabGrid.addItems/removeItems`
@@ -53,16 +53,6 @@ function union(a: Element[], b: any): Element[] {
 function without(a: Element[], b: any): Element[] {
   const remove = new Set<Element>(toEls(b));
   return a.filter((el) => !remove.has(el));
-}
-
-/** jQuery `.height()` — content-box height (excludes padding/border). */
-function getContentHeight(el: HTMLElement): number {
-  const cs = getComputedStyle(el);
-  return (
-    el.clientHeight -
-    parseFloat(cs.paddingTop || '0') -
-    parseFloat(cs.paddingBottom || '0')
-  );
 }
 
 interface Midpoint {
@@ -210,7 +200,7 @@ export class BaseDrag extends Drag {
     }
 
     // we only want to do it all if there's at least one tab in the layout
-    if (this.designer.tabGrid.$items.length > 0) {
+    if (this.designer.tabElements().length > 0) {
       this.$items = union(this.$items, this.$insertion);
       this.showingInsertion = true;
       this.setMidpoints();
@@ -313,9 +303,20 @@ export class TabDrag extends BaseDrag {
   }
 
   override findItems(): any {
-    return Array.from(
-      this.designer.$tabContainer.querySelectorAll(':scope > div.fld-tab')
-    );
+    return this.designer.tabElements();
+  }
+
+  /** Whether a sidebar tab is being dragged. */
+  get draggingSidebarTab(): boolean {
+    return isSidebarTab(this.$draggee[0]!);
+  }
+
+  /**
+   * Whether an element sits in the content tabs' column, which is the only
+   * one the grid lays out.
+   */
+  inContentColumn(el: Element | null): boolean {
+    return el?.parentElement === this.designer.$contentTabContainer;
   }
 
   /**
@@ -328,15 +329,48 @@ export class TabDrag extends BaseDrag {
   }
 
   override swapDraggeeWithInsertion(): void {
+    const inContentColumn = this.inContentColumn(this.$draggee[0]!);
     super.swapDraggeeWithInsertion();
-    this.designer.tabGrid.removeItems($(this.$draggee));
-    this.designer.tabGrid.addItems($(this.$insertion));
+    if (inContentColumn) {
+      this.designer.tabGrid.removeItems($(this.$draggee));
+      this.designer.tabGrid.addItems($(this.$insertion));
+    }
   }
 
   override swapInsertionWithDraggee(): void {
+    const inContentColumn = this.inContentColumn(this.$insertion);
+    if (inContentColumn) {
+      this.designer.tabGrid.removeItems($(this.$insertion));
+    }
     super.swapInsertionWithDraggee();
-    this.designer.tabGrid.removeItems($(this.$insertion));
-    this.designer.tabGrid.addItems($(this.$draggee));
+    if (inContentColumn) {
+      this.designer.tabGrid.addItems($(this.$draggee));
+    }
+  }
+
+  /**
+   * Tabs can be dragged between the columns (which switches their type on
+   * drop), so the insertion takes on the look, and grid membership, of
+   * whichever column it moves into.
+   */
+  override checkForNewClosestItem(): void {
+    const wasInContentColumn = this.inContentColumn(this.$insertion);
+    super.checkForNewClosestItem();
+    const isInContentColumn = this.inContentColumn(this.$insertion);
+
+    if (!this.$insertion || wasInContentColumn === isInContentColumn) {
+      return;
+    }
+
+    if (isInContentColumn) {
+      this.designer.tabGrid.addItems($(this.$insertion));
+    } else {
+      this.designer.tabGrid.removeItems($(this.$insertion));
+      this.$insertion.style.removeProperty('height');
+    }
+
+    this.$insertion.classList.toggle('fld-tab--sidebar', !isInContentColumn);
+    this.setMidpoints();
   }
 
   /**
@@ -359,26 +393,37 @@ export class TabDrag extends BaseDrag {
       el.style.visibility = 'hidden';
     }
 
-    fldTabData.get(this.$draggee[0]!)?.updatePositionInConfig();
+    const tab = fldTabData.get(this.$draggee[0]!);
+    tab?.syncTypeWithColumn();
+    tab?.updatePositionInConfig();
   }
 
   /**
-   * Creates the caboose
+   * Creates a caboose at the end of each column, so a tab can be dropped
+   * after the last tab in either one (or into an empty sidebar column).
    */
   override createCaboose(): HTMLElement[] {
-    const $caboose = document.createElement('div');
-    $caboose.className = 'fld-tab fld-tab-caboose';
-    this.designer.$tabContainer.appendChild($caboose);
-    this.designer.tabGrid.addItems($($caboose));
-    return [$caboose];
+    const createCaboose = ($column: HTMLElement): HTMLElement => {
+      const $caboose = document.createElement('div');
+      $caboose.className = 'fld-tab fld-tab-caboose';
+      $column.appendChild($caboose);
+      return $caboose;
+    };
+
+    const $contentCaboose = createCaboose(this.designer.$contentTabContainer);
+    this.designer.tabGrid.addItems($($contentCaboose));
+
+    return [$contentCaboose, createCaboose(this.designer.$sidebarTabContainer)];
   }
 
   /**
    * Removes the caboose
    */
   override removeCaboose(): void {
+    this.designer.tabGrid.removeItems(
+      $(this.$caboose.filter(($caboose) => this.inContentColumn($caboose)))
+    );
     super.removeCaboose();
-    this.designer.tabGrid.removeItems($(this.$caboose));
   }
 
   /**
@@ -392,23 +437,47 @@ export class TabDrag extends BaseDrag {
       throw new Error('The dragged field layout tab is incomplete.');
     }
 
+    // The same shape as the dragged tab, box for box.
+    const size = (el: HTMLElement) => el.getBoundingClientRect();
     const template = document.createElement('template');
     template.innerHTML = `
-<div class="fld-tab fld-insertion" style="height: ${getContentHeight(
-      $draggee
-    )}px;">
-  <div class="tabs"><div class="tab sel draggable" style="width: ${getOuterWidth(
-    $tab
-  )}px; height: ${getOuterHeight($tab) + 2}px;"></div></div>
-  <div class="fld-tabcontent" style="height: ${
-    getContentHeight($tabContent) - 2
-  }px;"></div>
+<div class="fld-tab fld-insertion${
+      this.draggingSidebarTab ? ' fld-tab--sidebar' : ''
+    }" style="height: ${size($draggee).height}px;">
+  <div class="tabs"><div class="tab sel draggable"></div></div>
+  <div class="fld-tabcontent" style="height: ${size($tabContent).height}px;"></div>
 </div>
 `.trim();
     const insertion = template.content.firstElementChild;
     if (!(insertion instanceof HTMLElement)) {
       throw new Error('The field layout insertion template is invalid.');
     }
+
+    // The tab is sized by an invisible copy of the dragged tab's label, so it
+    // takes the right shape in either column (a full label among content
+    // tabs, the icon-only one among sidebar tabs) as the insertion moves.
+    const $label = insertion.querySelector<HTMLElement>('.tab')!;
+    for (let $child of Array.from($tab.children)) {
+      if ($child.matches('craft-tooltip')) {
+        continue;
+      }
+      // Just the menu's button, rather than a second live menu.
+      if ($child.matches('craft-action-menu')) {
+        const $invoker = $child.querySelector(':scope > [slot="invoker"]');
+        if (!$invoker) {
+          continue;
+        }
+        $child = $invoker;
+      }
+      const $copy = $child.cloneNode(true) as HTMLElement;
+      $copy.removeAttribute('id');
+      $copy
+        .querySelectorAll('[id]')
+        .forEach(($el) => $el.removeAttribute('id'));
+      $label.appendChild($copy);
+    }
+    $label.inert = true;
+
     return insertion;
   }
 }
@@ -480,15 +549,9 @@ export class ElementDrag extends BaseDrag {
   }
 
   isHoveringOverTab(): boolean {
-    for (let i = 0; i < this.designer.tabGrid.$items.length; i++) {
-      if (
-        hitTest(this.mouseX!, this.mouseY!, this.designer.tabGrid.$items.get(i))
-      ) {
-        return true;
-      }
-    }
-
-    return false;
+    return this.designer
+      .tabElements()
+      .some(($tab) => hitTest(this.mouseX!, this.mouseY!, $tab));
   }
 
   override findItems(): any {
@@ -504,7 +567,7 @@ export class ElementDrag extends BaseDrag {
   override createCaboose(): HTMLElement[] {
     const $caboose: HTMLElement[] = [];
     const $fieldContainers = this.designer.$tabContainer.querySelectorAll(
-      ':scope > .fld-tab > .fld-tabcontent'
+      ':is(.fld-tabs__content, .fld-tabs__sidebar) > .fld-tab > .fld-tabcontent'
     );
 
     for (const $fieldContainer of $fieldContainers) {

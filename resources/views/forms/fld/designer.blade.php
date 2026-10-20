@@ -37,22 +37,51 @@
     >
 
     <div class="fld-container">
-        <div class="fld-workspace cp-workspace">
+        <div class="fld-workspace">
             <div class="fld-tabs">
-                @foreach ($tabs as $tab)
-                    {!! $designer->fldTabHtml($tab, $customizableTabs, $disabled) !!}
-                @endforeach
-            </div>
+                <div class="fld-pane fld-pane--content cp-workspace">
+                    <h2 class="fld-pane-heading">{{ \CraftCms\Cms\t('Content Tabs') }}</h2>
+                    <div class="fld-tabs__content">
+                        @foreach ($tabs as $tab)
+                            @if ($tab->type !== \CraftCms\Cms\FieldLayout\Enums\TabType::Sidebar)
+                                {!! $designer->fldTabHtml($tab, $customizableTabs, $disabled) !!}
+                            @endif
+                        @endforeach
+                    </div>
 
-            @if ($customizableTabs)
-                <craft-button
-                    type="button"
-                    command="--add-tab"
-                    @disabled($disabled)
-                >
-                    <craft-icon name="plus" slot="prefix"></craft-icon>
-                    {{ \CraftCms\Cms\t('New Tab') }}</craft-button>
-            @endif
+                    @if ($customizableTabs)
+                        <craft-button
+                            type="button"
+                            class="fld-new-tab-btn"
+                            command="--add-tab"
+                            @disabled($disabled)
+                        >
+                            <craft-icon name="plus" slot="prefix"></craft-icon>
+                            {{ \CraftCms\Cms\t('New Tab') }}</craft-button>
+                    @endif
+                </div>
+                <div class="fld-pane fld-pane--sidebar cp-workspace">
+                    <h2 class="fld-pane-heading">{{ \CraftCms\Cms\t('Sidebar Tabs') }}</h2>
+                    <div class="fld-tabs__sidebar">
+                        @foreach ($tabs as $tab)
+                            @if ($tab->type === \CraftCms\Cms\FieldLayout\Enums\TabType::Sidebar)
+                                {!! $designer->fldTabHtml($tab, $customizableTabs, $disabled) !!}
+                            @endif
+                        @endforeach
+                    </div>
+
+                    @if ($customizableTabs)
+                        <craft-button
+                            type="button"
+                            class="fld-new-tab-btn"
+                            command="--add-sidebar-tab"
+                            @disabled($disabled)
+                        >
+                            <craft-icon name="plus" slot="prefix"></craft-icon>
+                            {{ \CraftCms\Cms\t('New Tab') }}</craft-button>
+                    @endif
+                </div>
+            </div>
         </div>
 
         <div class="fld-library">
@@ -85,15 +114,9 @@
 
             <div class="fld-field-library">
                 <div class="search">
-                    <craft-input
-                        label="{{ \CraftCms\Cms\t('Search') }}"
-                        placeholder="{{ \CraftCms\Cms\t('Search') }}"
-                        label-sr-only
-                        type="search"
-                        inputmode="search"
+                    <craft-input-search
                         @disabled($disabled)
-                    >
-                    </craft-input>
+                    ></craft-input-search>
                 </div>
 
                 {!! $designer->fldFieldSelectorsHtml(\CraftCms\Cms\t('Native Fields'), $availableNativeFields, $fieldLayout) !!}
