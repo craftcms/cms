@@ -125,6 +125,10 @@
 - Fixed a bug where text inputs with a long character limit, such as Title fields, could stretch past their column after a failed save.
 - Fixed a bug where white, gray, and slate nested entry blocks took some of their colors from a colored block they were nested in. ([#20041](https://github.com/craftcms/cms/issues/20041))
 - Fixed a bug where outline, dashed, plain, and link buttons with a white or black color, such as Matrix fields’ “Add {type}” buttons for white or black entry types, could have unreadable text.
+- Fixed a bug where control panel forms that failed validation didn’t show an error notification, such as “Couldn’t save entry.” ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where element editors still said “Saved at …” after a failed save, and after discarding changes. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where element editors said the element had been updated after a failed save. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where element editors kept a failed save’s errors after discarding changes. ([#20044](https://github.com/craftcms/cms/issues/20044))
 
 ### Content Management
 
@@ -158,6 +162,7 @@
 
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Opening a slideout no longer focuses its resize handle. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Error summaries now receive focus when a form fails validation, and each error links to its field, switching tabs if needed. ([#20044](https://github.com/craftcms/cms/issues/20044))
 - The card view designer’s “Alignment” setting is now a radio group, which can be changed with the arrow keys.
 - Controls in field layout designers, and rich selects such as color selects, now have the standard focus ring, rather than an inset or flush one.
 - Pressing <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in a text input or textarea now submits its form, including in editable table cells, where it previously moved focus to the next row. ([#20025](https://github.com/craftcms/cms/pull/20025))
