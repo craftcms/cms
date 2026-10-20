@@ -12,6 +12,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Address;
 use craft\helpers\Db;
+use yii\db\Expression;
 
 /**
  * AddressQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
@@ -315,6 +316,26 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * @since 5.0.0
      */
     public ?string $lastName = null;
+
+    /**
+     * @var null|array Narrows the query results based on the distance to a set of coordinates.
+     *                 ---
+     *                 ```php
+     *                 // Fetch addresses by distance to the given coordinates
+     *                 $addresses = \craft\elements\Address::find()
+     *                 ->distanceTo(['latitude' => 44.0473,'longitude' => -121.3338])
+     *                 ->all();
+     *                 ```
+     *                 ```twig
+     *                 {# Fetch addresses by distance to the given coordinates #}
+     *                 {% set addresses = craft.addresses()
+     *                 .distanceTo({ latitude: 44.0473, longitude: -121.3338 })
+     *                 .all() %}
+     *                 ```
+     *
+     * @used-by distanceTo()
+     */
+    public ?array $distanceTo = null;
 
     /**
      * Narrows the query results based on the country the addresses belong to.
@@ -864,6 +885,31 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
     }
 
     /**
+     * Calculate the distance of the address to a given set of coordinates, and
+     * optionally narrows the query results by minimum or maximum distance.
+     * Excludes addresses without valid coordinates.
+     *
+     * The coordinates should be provided as an associative array with the following keys:
+     *
+     * | Key | Value
+     * | - | -
+     * | `latitude` | Required, the latitude of the point to measure distance to.
+     * | `longitude` | Required, the longitude of the point to measure distance to.
+     * | `min` | Minimum distance in meters to narrow results by.
+     * | `max` | Maximum distance in meters to narrow results by.
+     *
+     * @return static self reference
+     *
+     * @uses $distanceTo
+     */
+    public function distanceTo(array $coordinates): static
+    {
+        $this->distanceTo = $coordinates;
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     protected function beforePrepare(): bool
@@ -963,6 +1009,36 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
 
         if ($this->fullName) {
             $this->subQuery->andWhere(Db::parseParam('addresses.fullName', $this->fullName));
+        }
+
+        if ($this->distanceTo) {
+            $latitude = $this->distanceTo['latitude'];
+            $longitude = $this->distanceTo['longitude'];
+            $min = $this->distanceTo['min'] ?? null;
+            $max = $this->distanceTo['max'] ?? null;
+
+            $distance = new Expression(
+                'ST_Distance_Sphere(
+                    POINT([[addresses.longitude]], [[addresses.latitude]]),
+                    POINT(:lng, :lat)
+                )',
+                [':lng' => $longitude, ':lat' => $latitude]
+            );
+            $this->subQuery->addSelect(['distance' => $distance]);
+            $this->query->addSelect(['distance' => $distance]);
+
+            $this->subQuery->andWhere(['not', ['[[addresses.latitude]]' => null]]);
+            $this->subQuery->andWhere(['not', ['[[addresses.longitude]]' => null]]);
+
+            if ($min) {
+                $this->query->andWhere(['>=', $distance, $min]);
+                $this->subQuery->andWhere(['>=', $distance, $min]);
+            }
+
+            if ($max) {
+                $this->query->andWhere(['<=', $distance, $max]);
+                $this->subQuery->andWhere(['<=', $distance, $max]);
+            }
         }
 
         return true;
