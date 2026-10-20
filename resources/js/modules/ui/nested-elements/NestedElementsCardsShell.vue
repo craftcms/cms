@@ -24,8 +24,23 @@
   const container = ref<HTMLElement>();
   const invalidElementIds = ref<number[]>([]);
   const manager = computed(() => props.control.manager);
+  /** A reorder being saved, shown until the owner re-renders with it. */
+  const previewedOrder = shallowRef<number[] | null>(null);
+  const orderedCards = computed(() => {
+    if (!previewedOrder.value) {
+      return props.control.cards;
+    }
+
+    const byId = new Map(props.control.cards.map((card) => [card.id, card]));
+
+    return previewedOrder.value.flatMap((id) => byId.get(id) ?? []);
+  });
   const cards = computed(() =>
-    markInvalidElements(props.control.cards, invalidElementIds.value)
+    markInvalidElements(orderedCards.value, invalidElementIds.value)
+  );
+  watch(
+    () => props.control.cards,
+    () => (previewedOrder.value = null)
   );
   const editable = computed(() => props.editable);
   const offset = shallowRef(0);
@@ -41,6 +56,7 @@
   });
   operations = useNestedElementOperations({
     elements: cards,
+    previewOrder: (ids) => (previewedOrder.value = ids),
     offset,
     canReorder,
     selection,

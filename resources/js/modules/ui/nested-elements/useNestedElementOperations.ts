@@ -21,6 +21,7 @@ import {
   isPasteable,
   nestedElementsErrorMessage,
   nestedElementReorderOffset,
+  nestedElementReorderedIds,
   nestedOwnerParams,
   nestedPasteLabel,
   type NestedElementsManager,
@@ -38,6 +39,12 @@ export interface NestedElementQuickEdit {
 
 export interface UseNestedElementOperationsOptions {
   elements: Readonly<Ref<NestedElement[]>>;
+  /**
+   * Shows the order a reorder is saving while it's saved, as element IDs, and
+   * `null` once it fails. For lists that otherwise only change once the owner
+   * has re-rendered, which leaves a dropped element where it was until then.
+   */
+  previewOrder?: (ids: number[] | null) => void;
   offset: Readonly<Ref<number>>;
   canReorder: Readonly<Ref<boolean>>;
   selection: Selectable<number>;
@@ -517,6 +524,15 @@ export function useNestedElementOperations(
     }
 
     let reordered = false;
+    if (!busy.value) {
+      options.previewOrder?.(
+        nestedElementReorderedIds(
+          options.elements.value,
+          ids,
+          offset - options.offset.value
+        )
+      );
+    }
     await mutate(async (preparedOwnerId) => {
       const manager = options.manager.value!;
       const {data} = await actionClient.post(
@@ -541,6 +557,10 @@ export function useNestedElementOperations(
         elementIds: ids,
       });
     });
+
+    if (!reordered) {
+      options.previewOrder?.(null);
+    }
 
     return reordered;
   }

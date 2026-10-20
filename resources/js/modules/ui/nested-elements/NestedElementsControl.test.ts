@@ -52,11 +52,21 @@ vi.mock('@/modules/elements/components/ElementCards.vue', () => ({
           attrs: (card: {id: number}) => Record<string, unknown>;
         };
       },
-      {slots}: {slots: Record<string, (data: unknown) => unknown>}
+      {
+        slots,
+        emit,
+      }: {
+        slots: Record<string, (data: unknown) => unknown>;
+        emit: (event: 'reorder', from: number, to: number) => void;
+      }
     ) {
       return () =>
         h(
           'ul',
+          {
+            onCraftReorder: (event: CustomEvent<{from: number; to: number}>) =>
+              emit('reorder', event.detail.from, event.detail.to),
+          },
           props.data.map((card) =>
             h(
               'li',
@@ -313,6 +323,36 @@ describe('NestedElementsControl', () => {
         String(url).includes('element-indexes/get-elements')
       )
     ).toBe(false);
+  });
+
+  it('shows a dropped card in its new place while the reorder saves, and puts it back if it fails', async () => {
+    let rejectReorder!: (error: Error) => void;
+    request.post.mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectReorder = reject;
+        })
+    );
+    mount({
+      cards: [14, 15, 16].map((id) => nestedElement({id, siteId: 1})),
+    });
+    const order = (): string[] =>
+      [...root.querySelectorAll<HTMLElement>('li')].map(
+        (card) => card.dataset.nestedId!
+      );
+
+    root
+      .querySelector('ul')!
+      .dispatchEvent(
+        new CustomEvent('craft-reorder', {detail: {from: 0, to: 2}})
+      );
+    await nextTick();
+
+    expect(order()).toEqual(['15', '16', '14']);
+
+    await vi.waitFor(() => expect(request.post).toHaveBeenCalled());
+    rejectReorder(new Error('Nope'));
+    await vi.waitFor(() => expect(order()).toEqual(['14', '15', '16']));
   });
 
   it('preserves server actions without rebuilding actions from capability flags', async () => {

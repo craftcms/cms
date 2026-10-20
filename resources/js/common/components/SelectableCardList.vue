@@ -236,6 +236,7 @@
     >
       <DragShadow
         v-if="overDropState(id)?.closestEdge === 'top'"
+        class="mb-md"
         :height="overDropState(id)?.draggingRect?.height"
       />
 
@@ -302,6 +303,7 @@
 
       <DragShadow
         v-if="overDropState(id)?.closestEdge === 'bottom'"
+        class="mt-md"
         :height="overDropState(id)?.draggingRect?.height"
       />
     </component>
