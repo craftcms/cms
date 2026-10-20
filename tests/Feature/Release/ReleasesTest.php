@@ -336,7 +336,8 @@ it('rejects an unpublished member with a conflicting URI during publication with
         ->and($savedConflict->getEnabledForSite())->toBeTrue();
 });
 
-it('refuses to publish a draft whose other site misses a required value it leaves unchanged', function () {
+// Like applying a draft, publishing only validates what the draft changes on other sites, as in Craft 5.
+it('publishes a draft whose other site misses a required value it leaves unchanged', function () {
     $secondSite = Site::factory()->create();
     Sites::refreshSites();
     $field = Field::factory()->create([
@@ -363,10 +364,10 @@ it('refuses to publish a draft whose other site misses a required value it leave
     $release = $this->releases->create('Translated release', null, $this->actor);
     $this->releases->attach($release, $draft, $this->actor);
 
-    expect($this->releases->checkReadiness($release, $this->actor)->ready)->toBeFalse()
-        ->and(fn () => $this->releases->publish($release, $this->actor))->toThrow(ReleaseException::class)
-        ->and(EntryElement::find()->id($canonical->id)->status(null)->one()->title)->toBe('Live title')
-        ->and($release->fresh()->lastError)->toBe("Validation errors for site: “{$secondSite->name}“");
+    $this->releases->publish($release, $this->actor);
+
+    expect(EntryElement::find()->id($canonical->id)->status(null)->one()->title)->toBe('Released title')
+        ->and(EntryElement::find()->id($canonical->id)->siteId($secondSite->id)->status(null)->one()->getFieldValue('releaseSummary'))->toBeNull();
 });
 
 it('publishes only due scheduled releases after the scheduling user loses every permission', function () {
