@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Query;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use League\Fractal\Manager;
@@ -38,6 +39,11 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class Import
 {
+    /**
+     * The number of seconds after which a running import plan's lock expires, in case its run never finishes.
+     */
+    private const int RUN_LOCK_TTL = 86400;
+
     public function __construct(
         private readonly DataTypes $dataTypes,
         private readonly ImporterTypes $importerTypes,
@@ -104,11 +110,88 @@ class Import
      * Resolves each of the import plan's enabled steps into a queued Import job, fires
      * dispatching/dispatched events, and dispatches an ImportPipeline job chain.
      *
+     * Returns false without dispatching anything if the import plan is already running.
+     *
      * @param  ImportPlanData  $importPlan  The import plan to dispatch.
+     * @param  string|null  $connection  The queue connection to run the import on, e.g. `sync` to run it in the current process.
      */
-    public function dispatchImport(ImportPlanData $importPlan): bool
+    public function dispatchImport(ImportPlanData $importPlan, ?string $connection = null): bool
     {
         $runId = (string) Str::uuid();
+
+        if (! Cache::lock(self::runLockKey($importPlan), self::RUN_LOCK_TTL, $runId)->get()) {
+            ImportLog::info("Import plan \"{$importPlan->name}\" wasn’t started because it’s already running.");
+
+            return false;
+        }
+
+        try {
+            $dispatched = $this->dispatchPipeline($importPlan, $runId, $connection);
+        } catch (Throwable $e) {
+            self::releaseRunLock($importPlan, $runId);
+
+            throw $e;
+        }
+
+        if (! $dispatched) {
+            self::releaseRunLock($importPlan, $runId);
+        }
+
+        return $dispatched;
+    }
+
+    /**
+     * Returns whether the import plan is currently running.
+     *
+     * @param  ImportPlanData  $importPlan  The import plan to check.
+     */
+    public function isRunning(ImportPlanData $importPlan): bool
+    {
+        $lock = Cache::lock(self::runLockKey($importPlan), self::RUN_LOCK_TTL);
+
+        if (! $lock->get()) {
+            return true;
+        }
+
+        $lock->release();
+
+        return false;
+    }
+
+    /**
+     * Releases the lock that marks the import plan as running, whichever run holds it.
+     *
+     * @param  ImportPlanData  $importPlan  The import plan to unlock.
+     */
+    public function unlock(ImportPlanData $importPlan): void
+    {
+        Cache::lock(self::runLockKey($importPlan))->forceRelease();
+    }
+
+    /**
+     * Releases the lock that marks the import plan as running, if the given run holds it.
+     *
+     * @param  ImportPlanData  $importPlan  The import plan that was run.
+     * @param  string  $runId  The unique ID of the import run that took the lock.
+     */
+    public static function releaseRunLock(ImportPlanData $importPlan, string $runId): void
+    {
+        Cache::restoreLock(self::runLockKey($importPlan), $runId)->release();
+    }
+
+    /**
+     * Returns the cache key of the lock that marks an import plan as running.
+     */
+    private static function runLockKey(ImportPlanData $importPlan): string
+    {
+        return 'import-plan:'.($importPlan->uid ?? $importPlan->handle).':running';
+    }
+
+    /**
+     * Fires the dispatching event and dispatches the ImportPipeline job for the import plan's enabled steps.
+     */
+    private function dispatchPipeline(ImportPlanData $importPlan, string $runId, ?string $connection): bool
+    {
         $steps = [];
 
         // for each enabled step in the $importPlan
@@ -131,7 +214,13 @@ class Import
         // see https://laravel.com/framework/docs/12.x/queues#pruning-batches
 
         // we need to go through a single job because we want to name our chain
-        dispatch(new ImportPipeline($event->steps, $event->importPlan, $runId));
+        $pipeline = new ImportPipeline($event->steps, $event->importPlan, $runId);
+
+        if ($connection !== null) {
+            $pipeline->onConnection($connection);
+        }
+
+        dispatch($pipeline);
 
         event(new ImportDispatched($event->steps, $event->importPlan));
 

@@ -16,6 +16,7 @@ use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportPlanSaved;
 use CraftCms\Cms\Import\ImportPlans;
+use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -25,6 +26,7 @@ use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Import\UserImporter;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -456,6 +458,17 @@ it('lists a registered import plan alongside the saved ones, keyed by its regist
     expect($imports->getEditableImportPlans()->keys()->all())->toBe(['savedImport'])
         ->and($imports->getNonEditableImportPlans()->keys()->all())->toBe(['registeredImport'])
         ->and($imports->getImportPlanByHandle('registeredImport')?->isEditable())->toBeFalse();
+});
+
+it('refuses to run an import plan that is already running', function () {
+    Bus::fake();
+    ($this->createImportPlan)('Fixture Import', 'fixtureImport');
+
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertOk();
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertBadRequest()
+        ->assertJsonPath('message', 'This import plan is already running.');
+
+    Bus::assertDispatchedTimes(ImportPipeline::class, 1);
 });
 
 it('saves the order the editable import plans are put in', function () {

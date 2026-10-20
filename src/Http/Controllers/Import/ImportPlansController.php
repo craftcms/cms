@@ -488,6 +488,10 @@ class ImportPlansController
 
         abort_if(is_null($importPlan), 404, 'Import plan not found.');
 
+        if ($this->importService->isRunning($importPlan)) {
+            return $this->asFailure(t('This import plan is already running.'));
+        }
+
         try {
             $dispatched = $this->importService->dispatchImport($importPlan);
         } catch (Throwable $e) {

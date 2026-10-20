@@ -2016,6 +2016,7 @@ return [
     'This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.' => 'This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.',
     'This filesystem reference is invalid.' => 'This filesystem reference is invalid.',
     'This global set doesn’t have any fields assigned to it in its field layout.' => 'This global set doesn’t have any fields assigned to it in its field layout.',
+    'This import plan is already running.' => 'This import plan is already running.',
     'This is a new {type}.' => 'This is a new {type}.',
     'This license has expired.' => 'This license has expired.',
     'This license is for the {name} edition.' => 'This license is for the {name} edition.',

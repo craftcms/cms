@@ -268,6 +268,20 @@ class ImportPlans
     }
 
     /**
+     * Looks up an import plan by UID if the given value is one, otherwise by handle.
+     *
+     * @param  string  $handleOrUid  The handle or UID of the import plan to look up.
+     */
+    public function getImportPlanByHandleOrUid(string $handleOrUid): ?ImportPlanData
+    {
+        if (Str::isUuid($handleOrUid)) {
+            return $this->getImportPlanByUid($handleOrUid);
+        }
+
+        return $this->getImportPlanByHandle($handleOrUid);
+    }
+
+    /**
      * Fires a saving event, validates the import plan, persists it to the import plans table inside a
      * transaction, invalidates the import plans cache, then fires a saved event.
      *
