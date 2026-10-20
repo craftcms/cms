@@ -74,7 +74,7 @@ readonly class AskAiController
                     'label' => t('Fields'),
                     'options' => $this->placeholderOptions($targets),
                 ]]))
-                ->instructions(t('Describe what to write or change, or ask for a review. Type “{” to insert a field’s current value.'))
+                ->instructions(t('Describe what to write or change, or ask for a review. Type <kbd>{</kbd> to insert a field’s current value.'))
                 ->required(),
         ]);
 
