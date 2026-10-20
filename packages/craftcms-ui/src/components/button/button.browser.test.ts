@@ -3,6 +3,7 @@ import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {cdp} from 'vite-plus/test/browser';
 import type CraftButton from './button.js';
 import './button.js';
+import {contrast, loadTokens} from '../../../test/contrast';
 
 interface FrameTree {
   frame: {id: string};
@@ -336,6 +337,35 @@ describe('outline and dashed borders', () => {
       expect(getComputedStyle(button).borderTopColor).not.toBe(
         'rgb(0, 128, 0)'
       );
+    }
+  );
+});
+
+// A transparent button's text sits on the page, not on its color's fill, and
+// white's and black's fills are never the page's color (they swap with it).
+describe.each(['light', 'dark'])('white and black on a %s page', (theme) => {
+  it.each(
+    ['outline', 'dashed', 'plain'].flatMap((variant) =>
+      ['white', 'black'].map((color) => [variant, color])
+    )
+  )(
+    'keeps the text of a %s button in %s readable against the page',
+    async (variant, color) => {
+      await import('../../styles/cp.css');
+      await loadTokens();
+      document.body.innerHTML = `
+        <div data-theme="${theme}" style="background-color: var(--c-surface-default)">
+          <craft-button variant="${variant}" data-color="${color}">Add</craft-button>
+        </div>`;
+      const button = document.querySelector('craft-button') as CraftButton;
+      await button.updateComplete;
+
+      expect(
+        contrast(
+          getComputedStyle(button).color,
+          getComputedStyle(button.parentElement!).backgroundColor
+        )
+      ).toBeGreaterThanOrEqual(4.5);
     }
   );
 });
