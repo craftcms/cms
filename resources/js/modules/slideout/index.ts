@@ -1,13 +1,5 @@
 import {compatify} from '@craftcms/garnish/compat';
 import {Slideout, type SlideoutSettings} from './slideout';
-import {
-  CpScreenSlideout,
-  type CpScreenSlideoutSettings,
-} from './cp-screen-slideout';
-import {
-  ElementEditorSlideout,
-  type ElementEditorSlideoutSettings,
-} from './element-editor-slideout';
 import {containerSlideouts} from './support';
 import {registerCraftGlobals} from '@/common/craft-global';
 
@@ -41,38 +33,8 @@ Object.assign(CompatSlideout, {
 
 registerCraftGlobals({Slideout: CompatSlideout});
 
-// Same reasoning one level down: plugins subclass CP screen slideouts via
-// the legacy `.extend()` API.
-const CompatCpScreenSlideout = compatify(CpScreenSlideout);
-
-// `Craft.ElementEditorSlideout.defaults` is a separate object built by that
-// file's own `.extend()` call; only this one needs mirroring here.
-Object.assign(CompatCpScreenSlideout, {
-  defaults: CpScreenSlideout.defaults,
-});
-
-registerCraftGlobals({CpScreenSlideout: CompatCpScreenSlideout});
-
-// And once more for element editors — nothing in core `.extend()`s this
-// anymore, but it stays compatified so plugin subclasses keep working.
-const CompatElementEditorSlideout = compatify(ElementEditorSlideout);
-
-Object.assign(CompatElementEditorSlideout, {
-  defaults: ElementEditorSlideout.defaults,
-});
-
-registerCraftGlobals({ElementEditorSlideout: CompatElementEditorSlideout});
-
 // Repositioning open HUDs when a slideout opens or closes used to be hooked
 // up here, via `Garnish.on(Slideout, 'open close')`. It now lives in the
 // shared panel stack, so Vue slideouts trigger it too.
 
-export {
-  Slideout,
-  type SlideoutSettings,
-  CpScreenSlideout,
-  type CpScreenSlideoutSettings,
-  ElementEditorSlideout,
-  type ElementEditorSlideoutSettings,
-  containerSlideouts,
-};
+export {Slideout, type SlideoutSettings, containerSlideouts};

@@ -223,10 +223,15 @@ interface CraftStatic {
     ): SlideoutInstance;
     new (settings: SlideoutSettings): SlideoutInstance;
   };
-  CpScreenSlideout: {
+  /** Craft 5's slideout API, registered by the yii2-adapter. */
+  CpScreenSlideout?: {
     new (url: string, settings?: LegacyWidgetSettings): SlideoutInstance;
   };
-  createElementEditor(elementType: string, settings?: object): SlideoutInstance;
+  /** Registered by the yii2-adapter. */
+  createElementEditor?(
+    elementType: string,
+    settings?: object
+  ): SlideoutInstance;
   FieldLayoutDesigner: {
     new (
       container: HTMLElement | JQuery,

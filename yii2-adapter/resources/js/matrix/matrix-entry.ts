@@ -673,10 +673,10 @@ export class MatrixEntry extends Base {
       }
 
       case 'editEntryType': {
-        new Craft.CpScreenSlideout(
-          Craft.getCpUrl(
-            `settings/entry-types/${this.container.dataset.typeId}`
-          )
+        window.dispatchEvent(
+          new CustomEvent('craft:edit-entry-type', {
+            detail: {entryTypeId: this.container.dataset.typeId},
+          })
         );
         break;
       }

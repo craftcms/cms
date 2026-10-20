@@ -2073,30 +2073,6 @@ $.extend(Craft, {
   },
 
   /**
-   * Creates a new element editor slideout for a given element type.
-   *
-   * @param {string} elementType
-   * @param {(jQuery|HTMLElement|string)} element
-   * @param {Object} settings
-   */
-  createElementEditor: function (elementType, element, settings) {
-    // Param mapping
-    if (typeof settings === 'undefined' && $.isPlainObject(element)) {
-      // (settings)
-      settings = element;
-      element = null;
-    } else if (typeof settings !== 'object') {
-      settings = {};
-    }
-
-    if (!settings.elementType) {
-      settings.elementType = elementType;
-    }
-
-    return new Craft.ElementEditorSlideout(element, settings);
-  },
-
-  /**
    * Retrieves a value from localStorage if it exists.
    *
    * @param {string} key
