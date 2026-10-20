@@ -101,7 +101,7 @@ class Import
     }
 
     /**
-     * Resolves each of the import plan's steps into a queued Import job, fires
+     * Resolves each of the import plan's enabled steps into a queued Import job, fires
      * dispatching/dispatched events, and dispatches an ImportPipeline job chain.
      *
      * @param  ImportPlanData  $importPlan  The import plan to dispatch.
@@ -111,8 +111,8 @@ class Import
         $runId = (string) Str::uuid();
         $steps = [];
 
-        // for each step in the $importPlan
-        foreach ($importPlan->steps ?? [] as $key => $step) {
+        // for each enabled step in the $importPlan
+        foreach ($importPlan->enabledSteps() as $key => $step) {
             $filePath = BaseImporter::resolvedSourcePath($step->source);
 
             // name for this batch of jobs

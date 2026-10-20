@@ -79,6 +79,7 @@ const step: ImportStep = {
   source: 'people.csv',
   transformer: null,
   batchSize: null,
+  enabled: true,
   settings: {},
 };
 

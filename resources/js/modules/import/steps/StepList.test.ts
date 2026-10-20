@@ -24,6 +24,7 @@ function step(overrides: Partial<ImportStep> = {}): ImportStep {
     source: 'people.csv',
     transformer: null,
     batchSize: null,
+    enabled: true,
     settings: {},
     ...overrides,
   };
@@ -66,6 +67,10 @@ function addButton(): HTMLElement {
 
 function isLoading(button: HTMLElement): boolean {
   return (button as HTMLElement & {loading: boolean}).loading;
+}
+
+function isDisabled(button: HTMLElement): boolean {
+  return (button as HTMLElement & {disabled: boolean}).disabled;
 }
 
 function deferred<T>() {
@@ -124,9 +129,44 @@ it('summarizes a step by its importer type and source', () => {
 it('names each row’s buttons after its step', () => {
   mount([step(), step({uid: 'step-2', source: 'people.csv'})]);
 
+  const [edit, , remove] = rowButtons(1);
+
   expect(
-    rowButtons(1).map((button) => button.getAttribute('aria-label'))
+    [edit, remove].map((button) => button!.getAttribute('aria-label'))
   ).toEqual(['Edit 2. Entries — people.csv', 'Delete 2. Entries — people.csv']);
+});
+
+it('names a row’s toggle button after its label and its step', () => {
+  mount([step(), step({uid: 'step-2'})]);
+
+  const ids = rowButtons(1)[1]!.getAttribute('aria-labelledby')!.split(' ');
+
+  expect(
+    ids.map((id) => document.getElementById(id)!.textContent!.trim())
+  ).toEqual(['Disable step', '2. Entries — people.csv']);
+});
+
+it('disables a step and enables it again', async () => {
+  mount([step(), step({uid: 'step-2'})]);
+
+  rowButtons(0)[1]!.dispatchEvent(new Event('click'));
+  await nextTick();
+
+  expect(steps.value!.map((s) => s.enabled)).toEqual([false, true]);
+  expect(container.querySelector('li')!.textContent).toContain('(Disabled)');
+  expect(rowButtons(0)[1]!.textContent!.trim()).toBe('Enable step');
+
+  rowButtons(0)[1]!.dispatchEvent(new Event('click'));
+  await nextTick();
+
+  expect(steps.value!.map((s) => s.enabled)).toEqual([true, true]);
+});
+
+it('only lets a step be disabled while another stays enabled', () => {
+  mount([step(), step({uid: 'step-2', enabled: false})]);
+
+  expect(isDisabled(rowButtons(0)[1]!)).toBe(true);
+  expect(isDisabled(rowButtons(1)[1]!)).toBe(false);
 });
 
 it('names a read-only row’s button for viewing', () => {
@@ -170,7 +210,7 @@ it('replaces the edited step in place, keeping its uid', async () => {
 it('removes a step once the deletion is confirmed', async () => {
   mount([step(), step({uid: 'step-2'})]);
 
-  rowButtons(0)[1]!.dispatchEvent(new Event('click'));
+  rowButtons(0)[2]!.dispatchEvent(new Event('click'));
   await nextTick();
 
   expect(steps.value!.map((s) => s.uid)).toEqual(['step-2']);
@@ -180,7 +220,7 @@ it('keeps a step the user declines to delete', async () => {
   vi.stubGlobal('confirm', vi.fn().mockReturnValue(false));
   mount([step(), step({uid: 'step-2'})]);
 
-  rowButtons(0)[1]!.dispatchEvent(new Event('click'));
+  rowButtons(0)[2]!.dispatchEvent(new Event('click'));
   await nextTick();
 
   expect(steps.value!.map((s) => s.uid)).toEqual(['step-1', 'step-2']);

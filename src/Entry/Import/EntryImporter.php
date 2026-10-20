@@ -181,7 +181,7 @@ class EntryImporter extends ElementImporter
             $section = null;
             $entryType = null;
 
-            // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
+            // if it's an element import where the fieldLayout was chosen in the config,
             // we need to ensure the sectionId and typeId are both set
             if ($this->section) {
                 $section = Sections::getSectionByUid($this->section);

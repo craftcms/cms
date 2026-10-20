@@ -555,7 +555,7 @@ class ImportPlansController
                                 'url' => action([self::class, 'run']),
                                 'body' => [
                                     'uid' => $importPlan->uid,
-                                    'redirect' => Crypt::encrypt(action([self::class, 'index'])),
+                                    'redirect' => Crypt::encrypt(route('craft.cp.import.edit', ['handle' => $importPlan->handle])),
                                 ],
                                 'confirm' => t('Are you sure you want to run “{name}”?', [
                                     'name' => $importPlan->name,

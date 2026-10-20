@@ -198,7 +198,7 @@ class Import extends Job
                 ImportLog::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), [
                     'step' => $stepLabel,
                     'data' => $data[$i],
-                    'exception' => $e,
+                    // 'exception' => $e,
                 ]);
                 Cache::put(FinishImport::hasFailuresCacheKey($this->runId), true, now()->addDay());
                 Cache::put(FinishImport::stepHasFailuresCacheKey($this->runId, $this->stepUid), true, now()->addDay());

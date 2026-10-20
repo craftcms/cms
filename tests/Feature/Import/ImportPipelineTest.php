@@ -152,6 +152,14 @@ it('gives the pipeline and every step job the same run ID when dispatching an im
     });
 });
 
+it('leaves disabled steps out when dispatching an import', function () {
+    $this->importPlan->steps[0]->enabled(false);
+
+    app(Import::class)->dispatchImport($this->importPlan);
+
+    Bus::assertDispatched(fn (ImportPipeline $pipeline) => array_column($pipeline->steps, 'uid') === ['step-2']);
+});
+
 it('passes the run ID to the item importing and imported events', function () {
     Event::fake([ItemImporting::class, ItemImported::class]);
 

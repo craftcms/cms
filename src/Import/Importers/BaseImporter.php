@@ -51,6 +51,11 @@ abstract class BaseImporter
     public protected(set) ?int $batchSize = null;
 
     /**
+     * Whether the step runs when its import plan does. Disabled steps stay in the plan but are skipped.
+     */
+    public protected(set) bool $enabled = true;
+
+    /**
      * @var array<mixed> The mapping configuration, keyed by what to import into.
      */
     public protected(set) array $map = [];
@@ -104,6 +109,7 @@ abstract class BaseImporter
         $this->source($config['source'] ?? null);
         $this->transformer($config['transformer'] ?? null);
         $this->batchSize($config['batchSize'] ?? null);
+        $this->enabled((bool) ($config['enabled'] ?? true));
 
         $settings = $config['settings'] ?? [];
         if (is_string($settings)) {
@@ -185,6 +191,16 @@ abstract class BaseImporter
     public function batchSize(?int $batchSize): self
     {
         $this->batchSize = $batchSize;
+
+        return $this;
+    }
+
+    /**
+     * Sets whether the step runs when its import plan does.
+     */
+    public function enabled(bool $enabled): self
+    {
+        $this->enabled = $enabled;
 
         return $this;
     }
@@ -327,6 +343,7 @@ abstract class BaseImporter
             source: $data['source'],
             transformer: $data['transformer'],
             batchSize: $data['batchSize'],
+            enabled: $data['enabled'],
             settings: $data['settings'],
         );
     }
@@ -334,7 +351,7 @@ abstract class BaseImporter
     /**
      * Builds the step data array validated by `getRules()`/`getSettingsRules()`, from the importer's current state.
      *
-     * @return array{uid: string|null, type: class-string<static>, source: string|null, transformer: string|null, batchSize: int|null, settings: array<string, mixed>}
+     * @return array{uid: string|null, type: class-string<static>, source: string|null, transformer: string|null, batchSize: int|null, enabled: bool, settings: array<string, mixed>}
      */
     public function toArrayData(): array
     {
@@ -344,6 +361,7 @@ abstract class BaseImporter
             'source' => $this->source,
             'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
             'batchSize' => $this->batchSize,
+            'enabled' => $this->enabled,
             'settings' => [
                 'map' => $this->map,
                 'matchCriteria' => $this->matchCriteria,

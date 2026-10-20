@@ -161,6 +161,25 @@ it('rejects an import with no steps', function () {
     expect(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
 });
 
+it('saves whether each step is enabled', function () {
+    ($this->saveImportPlan)([
+        ($this->entryStep)(),
+        ($this->entryStep)(overrides: ['enabled' => false]),
+    ])->assertOk();
+
+    $saved = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport');
+
+    expect(array_map(fn ($step) => $step->enabled, $saved->steps))->toBe([true, false]);
+});
+
+it('rejects an import whose steps are all disabled', function () {
+    ($this->saveImportPlan)([($this->entryStep)(overrides: ['enabled' => false])])
+        ->assertStatus(400)
+        ->assertJsonPath('errors.steps.0', 'An import plan needs at least one enabled step.');
+
+    expect(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
+});
+
 it('reports a step’s own validation errors against that step', function () {
     $step = ($this->entryStep)([], ['source' => 'tests/Fixtures/Import/does-not-exist.json']);
 
