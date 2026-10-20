@@ -119,6 +119,7 @@
 - Fixed a bug where every custom field was marked as modified when saving an entry with unsaved changes failed validation. ([#20039](https://github.com/craftcms/cms/issues/20039))
 - Fixed a bug where editing one field in a Matrix block marked every field in the Matrix field as modified. ([#20040](https://github.com/craftcms/cms/issues/20040))
 - Fixed a bug where element edit pages titled their validation error summary “Could not save settings”.
+- Fixed a bug where text inputs with a long character limit, such as Title fields, could stretch past their column after a failed save.
 
 ### Content Management
 
