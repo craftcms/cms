@@ -115,6 +115,7 @@
 - Fixed a bug where fields that share a row in element edit forms had no gap between them. They’re now separated by a hairline, as in Craft 4 and 5. ([#20022](https://github.com/craftcms/cms/issues/20022))
 - Fixed a bug where checking the “All” option in server-rendered checkbox selects didn't check the other options. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Fixed a bug where changes to which missing folders and files to delete were ignored when finishing an asset indexing session, and their names were shown escaped. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Fixed a bug where the login page’s “Stay signed in” checkbox wasn’t styled.
 
 ### Content Management
 
