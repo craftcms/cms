@@ -83,16 +83,10 @@ export default class CraftGeneratedFieldsTable extends HTMLElement {
       }
       for (const [value, name] of labels) {
         if (this.#labels.get(value) === name) continue;
-        if (cvd.findCheckboxByValue(value)) {
+        if (cvd.hasCheckbox(value)) {
           cvd.updateCheckboxLabel(value, name);
         } else {
-          const label = document.createElement('span');
-          label.textContent = name;
-          cvd.addCheckbox({
-            value,
-            labelHtml: label.innerHTML,
-            data: {'field-label': name},
-          });
+          cvd.addCheckbox({value, label: name});
         }
       }
     }
