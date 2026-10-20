@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import CraftComboboxControl from '@craftcms/ui/vue/CraftCombobox.vue';
+  import InputCallout from '@/common/components/InputCallout.vue';
   import type {SelectItem} from '@/common/types';
 
   const modelValue = defineModel<string>();
@@ -37,19 +38,11 @@
   >
     <div slot="after" data-description>
       <slot name="after">
-        <craft-callout
+        <InputCallout
           v-if="callouts?.includes('envVars')"
-          variant="info"
-          appearance="plain"
-          class="p-0"
-          icon="lightbulb"
-        >
-          {{ t('This can begin with an environment variable.') }}
-          <a
-            href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-            >{{ t('Learn more') }}</a
-          >
-        </craft-callout>
+          :message="t('This can begin with an environment variable.')"
+          href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+        />
       </slot>
     </div>
   </CraftComboboxControl>

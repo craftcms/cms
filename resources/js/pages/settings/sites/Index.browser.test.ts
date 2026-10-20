@@ -269,6 +269,6 @@ it('describes the group name field with its environment variable hint', async ()
   await expect
     .element(page.getByRole('textbox', {name: 'Group Name'}))
     .toHaveAccessibleDescription(
-      /^What this group will be called in the control panel\.\s+Type \$ to choose an environment variable\.\s*Learn more$/
+      /^What this group will be called in the control panel\.\s+Type \$ to choose an environment variable\.\s+Learn more$/
     );
 });

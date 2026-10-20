@@ -29,6 +29,6 @@ it('describes the base URL field with its environment variable and alias hint', 
   await expect
     .element(page.getByRole('textbox', {name: 'Base URL'}))
     .toHaveAccessibleDescription(
-      /^The base URL for the site\.\s+Type \$ to choose an environment variable, or @ to choose an alias\.\s*Learn more$/
+      /^The base URL for the site\.\s+Type \$ to choose an environment variable, or @ to choose an alias\.\s+Learn more$/
     );
 });
