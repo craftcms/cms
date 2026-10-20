@@ -5,7 +5,8 @@ import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'url';
 import {transformSync} from 'esbuild';
 import {
-  BLACK_CONTENTS_SELECTOR,
+  DARK_SURFACE_CONTENTS_SELECTOR,
+  LIGHT_SURFACE_CONTENTS_SELECTOR,
   NEUTRAL_CARD_SELECTOR,
   writeFileIfChanged,
 } from './utils.js';
@@ -58,6 +59,15 @@ function quietBorder(color) {
   return `color-mix(in srgb, ${color}, transparent var(--c-color-border-quiet-transparency))`;
 }
 
+/**
+ * White and black look the same whichever theme they're in, so their quiet
+ * borders take the light theme's transparency rather than the variable, which
+ * the dark theme lowers.
+ */
+function staticQuietBorder(color) {
+  return `color-mix(in srgb, ${color}, transparent 60%)`;
+}
+
 function colorScale(color) {
   switch (color) {
     case 'white':
@@ -65,24 +75,29 @@ function colorScale(color) {
         fillQuiet: 'var(--color-white)',
         fillNormal: 'var(--color-white)',
         fillLoud: 'var(--color-white)',
-        borderQuiet: quietBorder('var(--color-static-gray-200)'),
+        borderQuiet: staticQuietBorder('var(--color-static-gray-200)'),
         borderNormal: 'var(--color-static-gray-200)',
         borderLoud: 'var(--color-static-gray-200)',
         onQuiet: 'var(--color-static-gray-800)',
         onNormal: 'var(--color-static-gray-800)',
         onLoud: 'var(--color-static-gray-800)',
+        // The hairline around a white surface, and between its parts.
+        edge: staticQuietBorder('var(--color-static-gray-200)'),
       };
     case 'black':
       return {
         fillQuiet: 'var(--color-static-gray-900)',
         fillNormal: 'var(--color-static-gray-900)',
         fillLoud: 'var(--color-static-gray-900)',
-        borderQuiet: quietBorder('var(--color-static-gray-800)'),
+        borderQuiet: staticQuietBorder('var(--color-static-gray-800)'),
         borderNormal: 'var(--color-static-gray-800)',
         borderLoud: 'var(--color-static-gray-800)',
         onQuiet: 'var(--color-static-gray-100)',
         onNormal: 'var(--color-static-gray-100)',
         onLoud: 'var(--color-static-gray-100)',
+        // Black's quiet border is barely lighter than its fill, so a black
+        // surface is edged in its light text color instead.
+        edge: 'color-mix(in srgb, var(--color-static-gray-100), transparent 80%)',
       };
     default:
       const {fill, border, foreground} = colorIncrements;
@@ -100,10 +115,13 @@ function colorScale(color) {
   }
 }
 
-function buildColorableTokens(paletteColors) {
+/** White and black, whose colors are static rather than taken from the theme's palette. */
+const staticColors = ['white', 'black'];
+
+function buildColorableTokens(paletteColors, scaleFor = colorScale) {
   return paletteColors
     .map((color) => {
-      const s = colorScale(color);
+      const s = scaleFor(color);
       return [
         `  /* ${color} */`,
         `  --c-color-${color}-fill-quiet: ${s.fillQuiet};`,
@@ -115,9 +133,15 @@ function buildColorableTokens(paletteColors) {
         `  --c-color-${color}-on-quiet: ${s.onQuiet};`,
         `  --c-color-${color}-on-normal: ${s.onNormal};`,
         `  --c-color-${color}-on-loud: ${s.onLoud};`,
+        ...(s.edge ? [`  --c-color-${color}-edge: ${s.edge};`] : []),
       ].join('\n');
     })
     .join('\n\n');
+}
+
+/** White's colors are black's, and black's white's. */
+function swappedScale(color) {
+  return colorScale(color === 'white' ? 'black' : 'white');
 }
 
 function buildSemanticTokens(semanticColors) {
@@ -164,15 +188,30 @@ function generateStyles(paletteColors, semanticColors) {
 /*
   Also on [data-theme]: these tokens are built from the palette with var(),
   which is substituted where it's declared, so a themed subtree re-resolves them.
-  Likewise what's in a black card, chip, or badge, and a neutral card, so it
-  doesn't take a tinted card's colors (see utils.js).
+  Likewise what's in a light or dark surface, and a neutral card, so it doesn't
+  take a tinted card's colors (see utils.js).
 */
 :root,
 [data-theme],
-${BLACK_CONTENTS_SELECTOR},
+${DARK_SURFACE_CONTENTS_SELECTOR},
+${LIGHT_SURFACE_CONTENTS_SELECTOR},
 ${NEUTRAL_CARD_SELECTOR} {
-${buildColorableTokens(paletteColors)}
+${buildColorableTokens(paletteColors.filter((color) => !staticColors.includes(color)))}
 ${buildSemanticTokens(semanticColors)}
+}
+
+/*
+  White and black don't come from the palette, and swap in the dark theme, so
+  a white surface looks black there and a black one white. They follow the
+  page's theme alone, so they're left out of the themed surfaces above.
+*/
+:root,
+[data-theme='light'] {
+${buildColorableTokens(staticColors)}
+}
+
+[data-theme='dark'] {
+${buildColorableTokens(staticColors, swappedScale)}
 }
 
 ${[...paletteColors, ...Object.keys(semanticColors)]

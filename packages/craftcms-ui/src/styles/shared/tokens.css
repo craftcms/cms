@@ -1,15 +1,37 @@
 /*
   [data-theme] re-resolves these var()-based tokens against a themed subtree's
-  palette; a var() is substituted where it's declared. What's in a black card,
-  chip, or badge is themed dark too (see scripts/utils.js).
+  palette; a var() is substituted where it's declared. What's in a light or dark
+  surface (a white or black card, chip, or badge) is themed too
+  (see scripts/utils.js).
 */
 :root,
 :host,
 [data-theme],
 :where(
-  craft-card[data-color='black'] > *,
-  craft-chip[data-color='black']:not([appearance~='plain']) > *,
-  craft-badge[fill='black'] > *
+  craft-card[data-color='black']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='black']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='black']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='white'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='white']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='white'] > *
+),
+:where(
+  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='white']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='black'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='black']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='black'] > *
 ) {
   --c-text-lg: calc(16rem / 16);
   --c-text-base: calc(14rem / 16);
@@ -326,15 +348,56 @@
    images (which follow their embedding element's color scheme) would follow
    the OS instead, coming out dark on a dark OS. */
 :root,
-[data-theme='light'] {
+[data-theme='light'],
+:where(
+  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='white']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='black'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='black']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='black'] > *
+) {
   color-scheme: light;
+}
+
+/* What's in a light surface on a dark page undoes the dark theme's own values
+   below, which it would otherwise inherit. */
+:where(
+  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='white']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='black'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='black']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='black'] > *
+) {
+  --c-color-border-quiet-transparency: 60%;
+  --c-select-color-swatch-edge: initial;
+  --c-select-color-swatch-ring: initial;
 }
 
 [data-theme='dark'],
 :where(
-  craft-card[data-color='black'] > *,
-  craft-chip[data-color='black']:not([appearance~='plain']) > *,
-  craft-badge[fill='black'] > *
+  craft-card[data-color='black']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='black']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='black']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='white'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='white']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='white'] > *
 ) {
   color-scheme: dark;
   /* Like other hairlines here, so the no-color swatch keeps an edge. */

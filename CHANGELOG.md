@@ -79,6 +79,7 @@
 - Entry types’ and fields’ “Used by” metadata now lists usages as chips. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - The global header is now lighter in the light theme. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Content within black cards, chips, and badges, such as buttons and badges, is now styled as in the dark theme.
+- White cards, chips, badges, and Matrix blocks now always look white in the light theme and black in the dark theme, and black ones the reverse, including when they’re nested in another card or block. Their contents are styled to match. ([#20041](https://github.com/craftcms/cms/issues/20041))
 - Links in gray chips, and in black chips, cards, and badges, now have the default link styling, rather than an underline in the chip’s or card’s text color.
 - Card view designers now preview entries as live, and users with a sample user’s name, default avatar, and active status.
 - Color selects’ swatches now match the headers of cards in their colors.

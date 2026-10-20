@@ -3,15 +3,36 @@
 /*
   Also on [data-theme]: these tokens are built from the palette with var(),
   which is substituted where it's declared, so a themed subtree re-resolves them.
-  Likewise what's in a black card, chip, or badge, and a neutral card, so it
-  doesn't take a tinted card's colors (see utils.js).
+  Likewise what's in a light or dark surface, and a neutral card, so it doesn't
+  take a tinted card's colors (see utils.js).
 */
 :root,
 [data-theme],
 :where(
-  craft-card[data-color='black'] > *,
-  craft-chip[data-color='black']:not([appearance~='plain']) > *,
-  craft-badge[fill='black'] > *
+  craft-card[data-color='black']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='black']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='black']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='white'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='white']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='white'] > *
+),
+:where(
+  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='white']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='black'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='black']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='black'] > *
 ),
 :where(
   craft-card:is([data-color='white'], [data-color='gray'], [data-color='slate'])
@@ -271,21 +292,6 @@
   --c-color-rose-on-normal: var(--color-rose-950);
   --c-color-rose-on-loud: var(--color-rose-50);
 
-  /* white */
-  --c-color-white-fill-quiet: var(--color-white);
-  --c-color-white-fill-normal: var(--color-white);
-  --c-color-white-fill-loud: var(--color-white);
-  --c-color-white-border-quiet: color-mix(
-    in srgb,
-    var(--color-static-gray-200),
-    transparent var(--c-color-border-quiet-transparency)
-  );
-  --c-color-white-border-normal: var(--color-static-gray-200);
-  --c-color-white-border-loud: var(--color-static-gray-200);
-  --c-color-white-on-quiet: var(--color-static-gray-800);
-  --c-color-white-on-normal: var(--color-static-gray-800);
-  --c-color-white-on-loud: var(--color-static-gray-800);
-
   /* gray */
   --c-color-gray-fill-quiet: var(--color-gray-50);
   --c-color-gray-fill-normal: var(--color-gray-100);
@@ -300,21 +306,6 @@
   --c-color-gray-on-quiet: var(--color-gray-800);
   --c-color-gray-on-normal: var(--color-gray-950);
   --c-color-gray-on-loud: var(--color-gray-50);
-
-  /* black */
-  --c-color-black-fill-quiet: var(--color-static-gray-900);
-  --c-color-black-fill-normal: var(--color-static-gray-900);
-  --c-color-black-fill-loud: var(--color-static-gray-900);
-  --c-color-black-border-quiet: color-mix(
-    in srgb,
-    var(--color-static-gray-800),
-    transparent var(--c-color-border-quiet-transparency)
-  );
-  --c-color-black-border-normal: var(--color-static-gray-800);
-  --c-color-black-border-loud: var(--color-static-gray-800);
-  --c-color-black-on-quiet: var(--color-static-gray-100);
-  --c-color-black-on-normal: var(--color-static-gray-100);
-  --c-color-black-on-loud: var(--color-static-gray-100);
 
   /* slate */
   --c-color-slate-fill-quiet: var(--color-slate-50);
@@ -419,6 +410,96 @@
   --c-color-danger-on-quiet: var(--color-red-800);
   --c-color-danger-on-normal: var(--color-red-950);
   --c-color-danger-on-loud: var(--color-red-50);
+}
+
+/*
+  White and black don't come from the palette, and swap in the dark theme, so
+  a white surface looks black there and a black one white. They follow the
+  page's theme alone, so they're left out of the themed surfaces above.
+*/
+:root,
+[data-theme='light'] {
+  /* white */
+  --c-color-white-fill-quiet: var(--color-white);
+  --c-color-white-fill-normal: var(--color-white);
+  --c-color-white-fill-loud: var(--color-white);
+  --c-color-white-border-quiet: color-mix(
+    in srgb,
+    var(--color-static-gray-200),
+    transparent 60%
+  );
+  --c-color-white-border-normal: var(--color-static-gray-200);
+  --c-color-white-border-loud: var(--color-static-gray-200);
+  --c-color-white-on-quiet: var(--color-static-gray-800);
+  --c-color-white-on-normal: var(--color-static-gray-800);
+  --c-color-white-on-loud: var(--color-static-gray-800);
+  --c-color-white-edge: color-mix(
+    in srgb,
+    var(--color-static-gray-200),
+    transparent 60%
+  );
+
+  /* black */
+  --c-color-black-fill-quiet: var(--color-static-gray-900);
+  --c-color-black-fill-normal: var(--color-static-gray-900);
+  --c-color-black-fill-loud: var(--color-static-gray-900);
+  --c-color-black-border-quiet: color-mix(
+    in srgb,
+    var(--color-static-gray-800),
+    transparent 60%
+  );
+  --c-color-black-border-normal: var(--color-static-gray-800);
+  --c-color-black-border-loud: var(--color-static-gray-800);
+  --c-color-black-on-quiet: var(--color-static-gray-100);
+  --c-color-black-on-normal: var(--color-static-gray-100);
+  --c-color-black-on-loud: var(--color-static-gray-100);
+  --c-color-black-edge: color-mix(
+    in srgb,
+    var(--color-static-gray-100),
+    transparent 80%
+  );
+}
+
+[data-theme='dark'] {
+  /* white */
+  --c-color-white-fill-quiet: var(--color-static-gray-900);
+  --c-color-white-fill-normal: var(--color-static-gray-900);
+  --c-color-white-fill-loud: var(--color-static-gray-900);
+  --c-color-white-border-quiet: color-mix(
+    in srgb,
+    var(--color-static-gray-800),
+    transparent 60%
+  );
+  --c-color-white-border-normal: var(--color-static-gray-800);
+  --c-color-white-border-loud: var(--color-static-gray-800);
+  --c-color-white-on-quiet: var(--color-static-gray-100);
+  --c-color-white-on-normal: var(--color-static-gray-100);
+  --c-color-white-on-loud: var(--color-static-gray-100);
+  --c-color-white-edge: color-mix(
+    in srgb,
+    var(--color-static-gray-100),
+    transparent 80%
+  );
+
+  /* black */
+  --c-color-black-fill-quiet: var(--color-white);
+  --c-color-black-fill-normal: var(--color-white);
+  --c-color-black-fill-loud: var(--color-white);
+  --c-color-black-border-quiet: color-mix(
+    in srgb,
+    var(--color-static-gray-200),
+    transparent 60%
+  );
+  --c-color-black-border-normal: var(--color-static-gray-200);
+  --c-color-black-border-loud: var(--color-static-gray-200);
+  --c-color-black-on-quiet: var(--color-static-gray-800);
+  --c-color-black-on-normal: var(--color-static-gray-800);
+  --c-color-black-on-loud: var(--color-static-gray-800);
+  --c-color-black-edge: color-mix(
+    in srgb,
+    var(--color-static-gray-200),
+    transparent 60%
+  );
 }
 
 .cp-color-red,

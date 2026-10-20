@@ -138,9 +138,30 @@
 :root,
 [data-theme],
 :where(
-  craft-card[data-color='black'] > *,
-  craft-chip[data-color='black']:not([appearance~='plain']) > *,
-  craft-badge[fill='black'] > *
+  craft-card[data-color='black']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='black']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='black']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='white'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='white']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='white'] > *
+),
+:where(
+  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='white']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='black'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='black']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='black'] > *
 ) {
   --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
   --c-color-fill-normal: var(--c-color-neutral-fill-normal);
