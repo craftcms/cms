@@ -156,6 +156,20 @@ it('posts only the “All” value while “All” is checked in single-value mo
   expect(element.modelValue).toEqual(['title', 'postDate']);
 });
 
+it('takes the “All” value as its model value before its first render', async () => {
+  const element = document.createElement('craft-checkbox-select');
+  element.setAttribute('all-label', 'All');
+  element.options = options;
+  element.modelValue = ['*'];
+  document.body.append(element);
+  await settle(element);
+
+  expect(element.querySelector<HTMLInputElement>('.all input')!.checked).toBe(
+    true
+  );
+  expect(element.modelValue).toEqual(['*']);
+});
+
 it('checks every option from “All” in each-value mode, posting their values', async () => {
   const {element, form} = await create({
     name: 'caches',

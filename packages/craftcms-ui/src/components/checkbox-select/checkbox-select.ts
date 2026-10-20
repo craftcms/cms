@@ -173,6 +173,12 @@ export default class CraftCheckboxSelect extends LitElement {
   }
 
   set modelValue(value: string[]) {
+    // Set before the first render, the “All” item isn't there to check yet.
+    if (this.allLabel && !this.#allItem()) {
+      this.#ensureEmptyInput();
+      this.#ensureAllItem();
+    }
+
     const values = new Set((value ?? []).map(String));
     const all = this.#allIsSingleValue() && values.has(this.allValue);
 
