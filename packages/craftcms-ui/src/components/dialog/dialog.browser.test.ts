@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
 import type CraftDialog from './dialog.js';
 import '../button/button.js';
@@ -33,7 +34,7 @@ describe('closing with a held key', () => {
   async function fixture(): Promise<{
     opener: CraftButton;
     dialog: CraftDialog;
-    opens: () => number;
+    openCount: () => number;
   }> {
     const opener = document.createElement('craft-button') as CraftButton;
     opener.textContent = 'Open';
@@ -53,7 +54,7 @@ describe('closing with a held key', () => {
     dialog.opened = true;
     await dialog.updateComplete;
 
-    return {opener, dialog, opens: () => count};
+    return {opener, dialog, openCount: () => count};
   }
 
   function closeButton(dialog: CraftDialog): HTMLButtonElement {
@@ -61,8 +62,7 @@ describe('closing with a held key', () => {
   }
 
   it('closes on Enter without reopening from the leftover keyup', async () => {
-    const {userEvent} = await import('vite-plus/test/browser');
-    const {opener, dialog, opens} = await fixture();
+    const {opener, dialog, openCount} = await fixture();
 
     closeButton(dialog).focus();
     await userEvent.keyboard('{Enter}');
@@ -70,12 +70,11 @@ describe('closing with a held key', () => {
 
     expect(dialog.opened).toBe(false);
     expect(document.activeElement).toBe(opener);
-    expect(opens()).toBe(0);
+    expect(openCount()).toBe(0);
   });
 
   it('swallows the leftover keyup when other code closes the dialog', async () => {
-    const {userEvent} = await import('vite-plus/test/browser');
-    const {dialog, opens} = await fixture();
+    const {dialog, openCount} = await fixture();
     const pick = dialog.querySelector<HTMLButtonElement>('.pick')!;
     pick.addEventListener('click', () => {
       dialog.opened = false;
@@ -86,12 +85,11 @@ describe('closing with a held key', () => {
     await dialog.updateComplete;
 
     expect(dialog.opened).toBe(false);
-    expect(opens()).toBe(0);
+    expect(openCount()).toBe(0);
   });
 
   it('lets the next Enter press through', async () => {
-    const {userEvent} = await import('vite-plus/test/browser');
-    const {dialog, opens} = await fixture();
+    const {dialog, openCount} = await fixture();
 
     closeButton(dialog).focus();
     await userEvent.keyboard('{Enter}');
@@ -99,13 +97,12 @@ describe('closing with a held key', () => {
     await userEvent.keyboard('{Enter}');
     await dialog.updateComplete;
 
-    expect(opens()).toBe(1);
+    expect(openCount()).toBe(1);
     expect(dialog.opened).toBe(true);
   });
 
   it('gives up waiting for the keyup once the window loses focus', async () => {
-    const {userEvent} = await import('vite-plus/test/browser');
-    const {dialog, opens} = await fixture();
+    const {dialog, openCount} = await fixture();
 
     closeButton(dialog).focus();
     await userEvent.keyboard('{Enter>}');
@@ -113,12 +110,11 @@ describe('closing with a held key', () => {
     window.dispatchEvent(new Event('blur'));
     await userEvent.keyboard('{/Enter}');
 
-    expect(opens()).toBe(1);
+    expect(openCount()).toBe(1);
   });
 
   it('gives up waiting for the keyup once the same key is pressed again', async () => {
-    const {userEvent} = await import('vite-plus/test/browser');
-    const {dialog, opens} = await fixture();
+    const {dialog, openCount} = await fixture();
 
     closeButton(dialog).focus();
     await userEvent.keyboard('{Enter>}');
@@ -126,6 +122,6 @@ describe('closing with a held key', () => {
     window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
     await userEvent.keyboard('{/Enter}');
 
-    expect(opens()).toBe(1);
+    expect(openCount()).toBe(1);
   });
 });
