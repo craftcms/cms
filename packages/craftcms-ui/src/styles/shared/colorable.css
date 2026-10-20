@@ -3,7 +3,8 @@
 /*
   Also on [data-theme]: these tokens are built from the palette with var(),
   which is substituted where it's declared, so a themed subtree re-resolves them.
-  Likewise what's in a black card, chip, or badge (see utils.js).
+  Likewise what's in a black card, chip, or badge, and a neutral card, so it
+  doesn't take a tinted card's colors (see utils.js).
 */
 :root,
 [data-theme],
@@ -11,6 +12,9 @@
   craft-card[data-color='black'] > *,
   craft-chip[data-color='black']:not([appearance~='plain']) > *,
   craft-badge[fill='black'] > *
+),
+:where(
+  craft-card:is([data-color='white'], [data-color='gray'], [data-color='slate'])
 ) {
   /* red */
   --c-color-red-fill-quiet: var(--color-red-50);

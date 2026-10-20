@@ -308,6 +308,19 @@
     var(--c-shadow-2xl);
 }
 
+/* A tinted card recolors these (and the neutral color tokens, which
+   colorable.css re-resolves) for what's in it, and they're inherited, so a
+   neutral card nested in a tinted one re-resolves them to take the page's
+   colors again (see scripts/utils.js). Keep them in step with the values above;
+   the dark theme leaves them be. */
+:where(
+  craft-card:is([data-color='white'], [data-color='gray'], [data-color='slate'])
+) {
+  --c-text-default: var(--color-slate-900);
+  --c-text-quiet: var(--color-slate-600);
+  --c-form-control-border-color: var(--color-slate-400);
+}
+
 /* The light theme is the default, with no `data-theme` on <html>, so it sets
    its color scheme explicitly too. Otherwise native UI and theme-aware SVG
    images (which follow their embedding element's color scheme) would follow

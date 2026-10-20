@@ -120,6 +120,7 @@
 - Fixed a bug where editing one field in a Matrix block marked every field in the Matrix field as modified. ([#20040](https://github.com/craftcms/cms/issues/20040))
 - Fixed a bug where element edit pages titled their validation error summary “Could not save settings”.
 - Fixed a bug where text inputs with a long character limit, such as Title fields, could stretch past their column after a failed save.
+- Fixed a bug where white, gray, and slate nested entry blocks took some of their colors from a colored block they were nested in. ([#20041](https://github.com/craftcms/cms/issues/20041))
 
 ### Content Management
 

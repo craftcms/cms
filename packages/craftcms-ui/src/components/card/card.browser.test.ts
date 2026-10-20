@@ -571,3 +571,50 @@ it('gives what’s in a tinted card the card’s color, but not in a neutral one
     );
   }
 });
+
+it('keeps a neutral card nested in a tinted one, and what’s in it, neutral', async () => {
+  document.body.innerHTML = `
+    <craft-card data-color="orange">
+      <div>
+        <craft-card data-color="white" id="white"><span id="in-white"></span></craft-card>
+        <craft-card data-color="gray" id="gray"><span id="in-gray"></span></craft-card>
+        <craft-card data-color="slate" id="slate"><span id="in-slate"></span></craft-card>
+      </div>
+    </craft-card>
+    <craft-card data-color="white" id="top-white"><span id="in-top-white"></span></craft-card>
+    <span id="outside"></span>`;
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+  const resolve = (id: string, value: string) => {
+    const element = document.getElementById(id)!;
+    element.style.color = value;
+    return getComputedStyle(element).color;
+  };
+  const tokens = [
+    '--c-text-default',
+    '--c-text-quiet',
+    '--c-form-control-border-color',
+    '--c-color-neutral-border-quiet',
+    '--c-color-neutral-fill-normal',
+  ];
+
+  for (const id of ['in-white', 'in-gray', 'in-slate']) {
+    for (const token of tokens) {
+      expect(resolve(id, `var(${token})`), `${id} ${token}`).toBe(
+        resolve('outside', `var(${token})`)
+      );
+    }
+    expect(resolve(id, 'var(--c-tab-border-active, red)'), id).toBe(
+      resolve('outside', 'var(--c-tab-border-active, red)')
+    );
+  }
+
+  // The white card's own text and border match a white card's outside.
+  const look = (id: string) => {
+    const style = getComputedStyle(
+      document.getElementById(id)!.shadowRoot!.querySelector('.card')!
+    );
+    return [style.color, style.borderTopColor];
+  };
+  expect(look('white')).toEqual(look('top-white'));
+});

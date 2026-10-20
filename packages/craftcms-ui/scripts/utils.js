@@ -45,3 +45,14 @@ export const BLACK_CONTENTS_SELECTOR = `:where(
   craft-chip[data-color='black']:not([appearance~='plain']) > *,
   craft-badge[fill='black'] > *
 )`;
+
+/**
+ * A white, gray, or slate card, which takes the page's colors rather than a
+ * tint. Tinted cards recolor what's in them through inherited custom
+ * properties, so these re-resolve the tokens on themselves, or a neutral card
+ * nested in a tinted one would take the tint. Zero specificity, like the
+ * selector above. tokens.css re-resolves its text tokens for the same cards.
+ */
+export const NEUTRAL_CARD_SELECTOR = `:where(
+  craft-card:is([data-color='white'], [data-color='gray'], [data-color='slate'])
+)`;

@@ -38,6 +38,13 @@ export default css`
     );
   }
 
+  /* A neutral card re-resolves the tokens a tinted card recolors (see
+     tokens.css). The selected tab's indicator has no token of its own to go
+     back to, so it's cleared, leaving tabs their default. */
+  :host(:is([data-color='white'], [data-color='gray'], [data-color='slate'])) {
+    --c-tab-border-active: initial;
+  }
+
   :host([active]) .card {
     color: var(--c-color-on-quiet);
     background-color: color-mix(var(--c-color-fill-quiet), transparent 40%);
