@@ -113,6 +113,7 @@
 - Fixed a bug where Plain Text fields with a character limit weren’t full width when line breaks were allowed. ([#20017](https://github.com/craftcms/cms/issues/20017))
 - Fixed a bug where element index tables with only a title column split the rest of the row between the checkbox and reorder columns. ([#20021](https://github.com/craftcms/cms/issues/20021))
 - Fixed a bug where fields that share a row in element edit forms had no gap between them. They’re now separated by a hairline, as in Craft 4 and 5. ([#20022](https://github.com/craftcms/cms/issues/20022))
+- Fixed a bug where the login page’s “Stay signed in” checkbox wasn’t styled.
 
 ### Content Management
 
