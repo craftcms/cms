@@ -1,0 +1,85 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as CheckboxSelectStories from './checkbox-select.stories';
+
+<Meta of={CheckboxSelectStories} name="Docs" />
+
+# Checkbox Select
+
+`<craft-checkbox-select>` is a list of options to check any number of. It can also put them in order, offer an “All” option, or list only what's chosen, with the rest in an “Add item” menu.
+
+<Canvas of={CheckboxSelectStories.Default} sourceState="shown" />
+
+Each option is a [Checkbox](?path=/docs/form-controls-choice-controls-checkbox--docs) inside a `div.cp-checkbox-select__item`, kept in the light DOM. The items post `name[]` in display order, so the order is part of the value, and a hidden input posts an empty value while nothing is checked.
+
+Use a [Checkbox Group](?path=/docs/form-controls-choice-controls-checkbox-group--docs) for plain checkboxes, and a [Radio Group](?path=/docs/form-controls-choice-controls-radio-group--docs) when exactly one option may be chosen.
+
+## “All” Option
+
+`all-label` adds an “All” option above the others.
+
+<Canvas of={CheckboxSelectStories.AllOption} sourceState="shown" />
+
+In `single-value` mode, the default, checking it posts `name` with the `all-value` (`*`) alone, so a stored setting stays “all of them” as options come and go. The other options show as checked, but stop posting. In `each-value` mode it's a plain select-all, and every option posts its own value.
+
+## Sortable
+
+`sortable` gives each option a reorder button. Drag it to move the option, or open it to move the option up or down.
+
+<Canvas of={CheckboxSelectStories.Sortable} sourceState="shown" />
+
+Moves fire `craft-order-change`. Sortable options can have an “All” option too:
+
+<Canvas of={CheckboxSelectStories.SortableWithAll} sourceState="shown" />
+
+## “Add Item” Menu
+
+`presentation="add-menu"` lists only the checked options, each with a Remove button, and offers the rest in an “Add item” menu, which goes away once everything is checked.
+
+<Canvas of={CheckboxSelectStories.AddMenu} sourceState="shown" />
+
+## Changing Options at Runtime
+
+Set `options` to replace the options, keeping what's already checked, or call `addOption()`, `updateOption()`, and `removeOption()`:
+
+```js
+const select = document.querySelector('craft-checkbox-select');
+select.addOption({value: 'slug', label: 'Slug', checked: true});
+select.updateOption('slug', {label: 'URL Slug'});
+select.removeOption('slug');
+```
+
+<Canvas of={CheckboxSelectStories.RuntimeOptions} sourceState="shown" />
+
+Items rendered by the server are adopted as they are, and items added to the markup directly are picked up too.
+
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, a multiple `CraftCms\Cms\Ui\Controls\Choice` control renders a checkbox select when it's sortable, has an “All” option, or uses the `AddMenu` presentation:
+
+```php
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Columns', Choice::make('columns')
+        ->options([
+            ['label' => 'Title', 'value' => 'title'],
+            ['label' => 'Author', 'value' => 'author'],
+        ])
+        ->sortable()
+        ->presentation(ChoicePresentation::AddMenu))
+        ->fieldset(),
+]);
+```
+
+Outside of a UI, render it with `CraftCms\Cms\Cp\Components\CheckboxSelect`.
+
+## Accessibility
+
+Name the group, with `label` or an enclosing field with `fieldset`, so the checkboxes are announced as answers to one question.
+
+## Properties
+
+<ArgTypes of={CheckboxSelectStories} />

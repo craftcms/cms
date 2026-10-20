@@ -1,5 +1,6 @@
 import {createApp, h, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import type CraftCheckboxSelect from '@craftcms/ui/components/checkbox-select/checkbox-select';
 import ChoiceControl from './ChoiceControl.vue';
 import type {UiControlPayload, UiValue} from './types';
 
@@ -71,10 +72,6 @@ describe('ChoiceControl', () => {
     });
     app.mount(container);
     await nextTick();
-  }
-
-  function checkboxes(): HTMLElement[] {
-    return [...container!.querySelectorAll<HTMLElement>('craft-checkbox')];
   }
 
   const previewModes = [
@@ -191,106 +188,65 @@ describe('ChoiceControl', () => {
 
   const allOption = {allLabel: 'All', allValue: '*', allMode: 'singleValue'};
 
-  function allInput(): HTMLInputElement {
-    return container!.querySelector<HTMLInputElement>(
-      'craft-checkbox-indeterminate > input[slot="input"]'
+  async function checkboxSelect(): Promise<CraftCheckboxSelect> {
+    const element = container!.querySelector('craft-checkbox-select')!;
+    await element.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+    return element;
+  }
+
+  function allInput(element: CraftCheckboxSelect): HTMLInputElement {
+    return element.querySelector<HTMLInputElement>(
+      '.all input[type=checkbox]'
     )!;
   }
 
-  it('nests the options inside the All checkbox that governs them', async () => {
+  it('renders “All” in a checkbox select, with the options and value', async () => {
     await mount(allOption, ['two']);
+    const element = await checkboxSelect();
 
-    const all = container!.querySelector('craft-checkbox-indeterminate')!;
-
-    // Nesting is how the component finds the boxes it governs.
-    expect(all.querySelectorAll('craft-checkbox')).toHaveLength(3);
-    expect(allInput().value).toBe('*');
-    expect(allInput().checked).toBe(false);
-  });
-
-  it('renders the governed options checked while All is on', async () => {
-    await mount(allOption, ['*']);
-
-    expect(allInput().checked).toBe(true);
-
-    // Checked, so the group still reads as fully selected. Not disabled: Lion
-    // skips disabled children when All propagates, which would leave it unable
-    // to clear them again — `craft-checkbox-indeterminate` parks their `name`
-    // instead, which ChoiceAllOptionTest covers on the rendered markup.
-    const items = checkboxes();
-
-    expect(items.every((item) => (item as any).checked === true)).toBe(true);
-    expect(items.every((item) => (item as any).disabled === false)).toBe(true);
+    expect(element.name).toBe('settings[sites]');
+    expect(element.allLabel).toBe('All');
+    expect(element.allMode).toBe('single-value');
+    expect(element.options.map((option) => option.value)).toEqual([
+      'one',
+      'two',
+      'three',
+    ]);
+    expect(element.modelValue).toEqual(['two']);
+    expect(allInput(element).value).toBe('*');
   });
 
   it('emits the All token when All is checked, and nothing when unchecked', async () => {
     await mount(allOption, ['two']);
+    let element = await checkboxSelect();
 
-    allInput().checked = true;
-    allInput().dispatchEvent(new Event('change', {bubbles: true}));
+    allInput(element).checked = true;
+    allInput(element).dispatchEvent(new Event('change', {bubbles: true}));
 
     expect(emitted).toEqual([['*']]);
 
     await mount(allOption, ['*']);
+    element = await checkboxSelect();
 
-    allInput().checked = false;
-    allInput().dispatchEvent(new Event('change', {bubbles: true}));
+    allInput(element).checked = false;
+    allInput(element).dispatchEvent(new Event('change', {bubbles: true}));
 
     expect(emitted).toEqual([[]]);
   });
 
-  it('lists only the selected options, offering the rest to add', async () => {
+  it('renders sortable options and the add-menu presentation as asked', async () => {
     await mount({sortable: true}, ['two']);
+    expect((await checkboxSelect()).sortable).toBe(true);
+    expect((await checkboxSelect()).presentation).toBe('checkboxes');
 
-    const labels = [
-      ...container!.querySelectorAll('.selected-option-list__label'),
-    ].map((label) => label.textContent?.trim());
-    const addable = [
-      ...container!.querySelectorAll('craft-action-menu craft-action-item'),
-    ].map((item) => item.textContent?.trim());
-
-    expect(labels).toEqual(['Two']);
-    expect(addable).toEqual(['One', 'Three']);
-    expect(
-      [
-        ...container!.querySelectorAll<HTMLInputElement>('input[type=hidden]'),
-      ].map((input) => [input.name, input.value])
-    ).toEqual([['settings[sites][]', 'two']]);
+    await mount({presentation: 'add-menu'}, ['two']);
+    expect((await checkboxSelect()).sortable).toBe(false);
+    expect((await checkboxSelect()).presentation).toBe('add-menu');
   });
 
-  it('appends an added option to the end of the selection', async () => {
-    await mount({sortable: true}, ['two']);
-
-    const one = [
-      ...container!.querySelectorAll<HTMLElement>(
-        'craft-action-menu craft-action-item'
-      ),
-    ].find((item) => item.textContent?.trim() === 'One')!;
-    one.click();
-
-    expect(emitted.at(-1)).toEqual(['two', 'one']);
-  });
-
-  it('removes an option from the selection', async () => {
-    await mount({sortable: true}, ['one', 'two']);
-
-    container!
-      .querySelector<HTMLElement>('[data-remove-option="one"]')!
-      .click();
-
-    expect(emitted.at(-1)).toEqual(['two']);
-  });
-
-  it('hides the add menu once everything is selected', async () => {
-    await mount({sortable: true}, ['one', 'two', 'three']);
-
-    expect(
-      container!.querySelectorAll('.selected-option-list__label')
-    ).toHaveLength(3);
-    expect(container!.querySelector('craft-action-menu')).toBeNull();
-  });
-
-  it('re-emits the value in the new order after a reorder', async () => {
+  it('re-emits the value in the new order after a reorder, and keeps it', async () => {
     // The server sends the selected options first, in their stored order.
     await mount(
       {
@@ -303,14 +259,22 @@ describe('ChoiceControl', () => {
       },
       ['one', 'three']
     );
+    const element = await checkboxSelect();
 
-    const handle = container!.querySelector('craft-reorder-button')!;
-    handle.dispatchEvent(
-      new CustomEvent('craft-reorder', {detail: {direction: 'down'}})
-    );
+    element
+      .shadowRoot!.querySelector('craft-reorder-button')!
+      .dispatchEvent(
+        new CustomEvent('craft-reorder', {detail: {direction: 'down'}})
+      );
     await nextTick();
+    await element.updateComplete;
 
     // 'one' moved below 'three'; the selection is unchanged but its order is.
-    expect(emitted[0]).toEqual(['three', 'one']);
+    expect(emitted.at(-1)).toEqual(['three', 'one']);
+    expect(element.options.map((option) => option.value)).toEqual([
+      'three',
+      'one',
+      'two',
+    ]);
   });
 });
