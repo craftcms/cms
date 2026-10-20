@@ -35,6 +35,48 @@ function releasePageScroll(): void {
   }
 }
 
+/** The keys a control can activate on when they come back up. */
+const ACTIVATION_KEYS = new Set(['Enter', ' ']);
+
+/**
+ * Swallows the keyup of a key that closed a dialog while it was held down.
+ *
+ * By the time that key comes back up, focus has gone back to whatever opened
+ * the dialog. A control that activates on keyup — a `craft-button` clicks on
+ * any Enter or Space keyup, wherever the keydown landed — would take it as a
+ * press of its own and, usually, open the dialog straight back up.
+ *
+ * Caught on the window in the capture phase so nothing further down sees it.
+ * Lasts for one press: the matching keyup ends it, and so does a fresh keydown
+ * of the same key or the window losing focus, either of which means that keyup
+ * isn't coming.
+ */
+function swallowKeyup(key: string): void {
+  const release = (): void => {
+    window.removeEventListener('keyup', onKeyup, true);
+    window.removeEventListener('keydown', onKeydown, true);
+    window.removeEventListener('blur', release);
+  };
+
+  const onKeyup = (event: KeyboardEvent): void => {
+    if (event.key === key) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      release();
+    }
+  };
+
+  const onKeydown = (event: KeyboardEvent): void => {
+    if (event.key === key && !event.repeat) {
+      release();
+    }
+  };
+
+  window.addEventListener('keyup', onKeyup, true);
+  window.addEventListener('keydown', onKeydown, true);
+  window.addEventListener('blur', release);
+}
+
 /**
  * @summary A modal dialog over a native `<dialog>`.
  *
@@ -156,6 +198,9 @@ export default class CraftDialog extends LitElement {
 
   #holdsScrollLock = false;
 
+  /** Activation keys pressed inside the dialog and not yet released. */
+  #heldKeys = new Set<string>();
+
   /**
    * Watches light-DOM children so an empty footer collapses.
    *
@@ -170,6 +215,8 @@ export default class CraftDialog extends LitElement {
 
     this.addEventListener('click', this.#onHostClick);
     this.addEventListener('keydown', this.#onHostKeydown);
+    this.addEventListener('keydown', this.#onKeyPress, true);
+    this.addEventListener('keyup', this.#onKeyRelease, true);
 
     this.#childObserver = new MutationObserver(() => this.requestUpdate());
     this.#childObserver.observe(this, {childList: true});
@@ -180,6 +227,8 @@ export default class CraftDialog extends LitElement {
 
     this.removeEventListener('click', this.#onHostClick);
     this.removeEventListener('keydown', this.#onHostKeydown);
+    this.removeEventListener('keydown', this.#onKeyPress, true);
+    this.removeEventListener('keyup', this.#onKeyRelease, true);
 
     this.#childObserver?.disconnect();
     this.#childObserver = null;
@@ -190,6 +239,7 @@ export default class CraftDialog extends LitElement {
     // Removed while still open — an unmounting Vue view, say — must not leave
     // the page stuck.
     this.#releaseScrollLock();
+    this.#swallowHeldKeyups();
   }
 
   /** The native element, once rendered. */
@@ -354,6 +404,16 @@ export default class CraftDialog extends LitElement {
     this.#releaseFocusTrap = null;
 
     this.#releaseScrollLock();
+    this.#swallowHeldKeyups();
+  }
+
+  /**
+   * A dialog closed by a keydown — Enter on a native button, say — hands focus
+   * back while the key is still down, so its keyup lands on the opener.
+   */
+  #swallowHeldKeyups(): void {
+    this.#heldKeys.forEach(swallowKeyup);
+    this.#heldKeys.clear();
   }
 
   /** Idempotent, so teardown can't release a lock this dialog never took. */
@@ -434,6 +494,20 @@ export default class CraftDialog extends LitElement {
       event.preventDefault();
       this.requestClose();
     }
+  };
+
+  /**
+   * Captured, so a control inside that stops its key events from bubbling
+   * can't hide a press from the dialog.
+   */
+  #onKeyPress = (event: KeyboardEvent): void => {
+    if (this.opened && ACTIVATION_KEYS.has(event.key)) {
+      this.#heldKeys.add(event.key);
+    }
+  };
+
+  #onKeyRelease = (event: KeyboardEvent): void => {
+    this.#heldKeys.delete(event.key);
   };
 
   /**
