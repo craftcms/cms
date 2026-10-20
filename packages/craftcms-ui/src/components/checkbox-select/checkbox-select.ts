@@ -95,7 +95,7 @@ export default class CraftCheckboxSelect extends LitElement {
   /**
    * `checkboxes` lists every option with its checkbox. `add-menu` lists only
    * the checked ones, each with a Remove button, and offers the rest in an
-   * “Add item” menu.
+   * “Add item” menu. While “All” is checked, it lists none of them.
    */
   @property({reflect: true})
   presentation: CheckboxSelectPresentation = 'checkboxes';
@@ -454,12 +454,19 @@ export default class CraftCheckboxSelect extends LitElement {
     return index <= 0 ? 'first' : index === count - 1 ? 'last' : 'middle';
   }
 
-  /** Items with a row: all of them, or only the checked ones in add-menu. */
+  /**
+   * Items with a row: all of them, or only the checked ones in add-menu. While
+   * “All” is checked, add-menu lists none of them, as there's nothing to pick.
+   */
   #rowItems(): HTMLElement[] {
     const items = this.#items();
-    return this.presentation === 'add-menu'
-      ? items.filter((item) => this.#inputOf(item)?.checked)
-      : items;
+    if (this.presentation !== 'add-menu') {
+      return items;
+    }
+
+    return this.#allInput()?.checked
+      ? []
+      : items.filter((item) => this.#inputOf(item)?.checked);
   }
 
   /** Rows that can be moved: enabled ones with a row. */
@@ -472,6 +479,10 @@ export default class CraftCheckboxSelect extends LitElement {
   }
 
   #addableItems(): HTMLElement[] {
+    if (this.#allInput()?.checked) {
+      return [];
+    }
+
     return this.#items().filter((item) => {
       const input = this.#inputOf(item);
       return input && !input.checked && !input.disabled;

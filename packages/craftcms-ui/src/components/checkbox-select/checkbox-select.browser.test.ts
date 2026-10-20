@@ -293,6 +293,27 @@ it('lists only checked options in add-menu, offering the rest to add', async () 
   );
 });
 
+it('lists no options in add-menu while “All” is checked', async () => {
+  const {element, form} = await create({
+    name: 'sources',
+    presentation: 'add-menu',
+    'all-label': 'All',
+  });
+  const all = element.querySelector<HTMLInputElement>('.all input')!;
+
+  await userEvent.click(all);
+  await settle(element);
+
+  expect(posted(form, 'sources[]')).toEqual(['*']);
+  expect(shadow(element).querySelectorAll('.row')).toHaveLength(0);
+  expect(shadow(element).querySelector('craft-action-menu')).toBeNull();
+
+  await userEvent.click(all);
+  await settle(element);
+
+  expect(shadow(element).querySelector('craft-action-menu')).not.toBeNull();
+});
+
 it('removes an option in add-menu, moving focus to the next one', async () => {
   const {element, form} = await create({
     name: 'columns',
