@@ -372,3 +372,15 @@ it('keeps focus on an option’s reorder button after moving it', async () => {
     rows[1]!.querySelector('craft-reorder-button')
   );
 });
+
+it('fires model-value-changed for its own value, not its checkboxes’', async () => {
+  const {element} = await create();
+  const onValue = vi.fn((event: Event) => event.target);
+  element.addEventListener('model-value-changed', onValue);
+
+  await userEvent.click(input(element, 'author'));
+  await settle(element);
+
+  expect(onValue.mock.results.map((result) => result.value)).toEqual([element]);
+  expect(element.modelValue).toEqual(['author']);
+});

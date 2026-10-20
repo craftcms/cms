@@ -234,6 +234,8 @@ export default class CraftCheckboxSelect extends LitElement {
 
   constructor() {
     super();
+    // Added here so it runs ahead of any listener added to the element later.
+    this.addEventListener('model-value-changed', this.#onModelValueChanged);
     // Re-apply values set on the element before it was upgraded, which
     // would otherwise shadow the accessors.
     for (const property of ['options', 'modelValue'] as const) {
@@ -251,7 +253,6 @@ export default class CraftCheckboxSelect extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     this.addEventListener('change', this.#onChange);
-    this.addEventListener('model-value-changed', this.#onModelValueChanged);
     this.#observer = new MutationObserver(() => this.#revisionChanged());
     this.#observer.observe(this, {
       childList: true,
@@ -263,7 +264,6 @@ export default class CraftCheckboxSelect extends LitElement {
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.removeEventListener('change', this.#onChange);
-    this.removeEventListener('model-value-changed', this.#onModelValueChanged);
     this.#observer?.disconnect();
     this.#observer = null;
   }
@@ -569,10 +569,13 @@ export default class CraftCheckboxSelect extends LitElement {
     this.#emitModelValue();
   };
 
-  /** The checkboxes' own value events would pass for the group's. */
+  /**
+   * The checkboxes' own value events would pass for the element's, so they
+   * stop here, while still reaching the checkboxes themselves.
+   */
   #onModelValueChanged = (event: Event): void => {
     if (event.target !== this) {
-      event.stopPropagation();
+      event.stopImmediatePropagation();
     }
   };
 
