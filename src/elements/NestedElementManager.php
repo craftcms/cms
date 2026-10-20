@@ -1418,19 +1418,26 @@ JS, [
      */
     public function deleteNestedElements(ElementInterface $owner, bool $hardDelete = false): void
     {
-        foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-            $elementsService = Craft::$app->getElements();
+        $elementsService = Craft::$app->getElements();
+        $allSiteIds = Craft::$app->getSites()->getAllSiteIds();
+        $siteOwners = [];
 
-            // The query factory may scope the query to the owner's site, so load the owner in this site
-            $siteOwner = $owner->siteId === $siteId ? $owner : $owner::find()
+        if (count($allSiteIds) > 1) {
+            $siteOwners = $owner::find()
                 ->id($owner->id)
-                ->siteId($siteId)
+                ->siteId(['not', $owner->siteId])
                 ->drafts(null)
                 ->provisionalDrafts(null)
                 ->revisions(null)
                 ->trashed(null)
                 ->status(null)
-                ->one();
+                ->indexBy('siteId')
+                ->all();
+        }
+
+        foreach ($allSiteIds as $siteId) {
+            // The query factory may scope the query to the owner's site, so load the owner in this site
+            $siteOwner = $siteId === $owner->siteId ? $owner : ($siteOwners[$siteId] ?? null);
             if (!$siteOwner) {
                 continue;
             }
