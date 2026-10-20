@@ -8,6 +8,8 @@
 namespace crafttests\unit\elements;
 
 use Craft;
+use craft\base\ElementInterface;
+use craft\behaviors\RevisionBehavior;
 use craft\db\Table;
 use craft\elements\Address;
 use craft\elements\Entry;
@@ -498,6 +500,7 @@ class NestedElementManagerTest extends TestCase
             ->all();
         self::assertCount(2, $revisions);
 
+        /** @var RevisionBehavior|ElementInterface $revision */
         foreach ($revisions as $revision) {
             $nested = $revision->getFieldValue('nemMatrix')->status(null)->all();
             self::assertCount(1, $nested, "Revision $revision->revisionNum lost the other site's nested elements");
