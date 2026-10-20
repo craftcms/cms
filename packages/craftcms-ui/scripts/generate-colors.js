@@ -217,6 +217,28 @@ ${buildColorableTokens(staticColors, swappedScale)}
 ${[...paletteColors, ...Object.keys(semanticColors)]
   .map((c) => buildStyleBlock(c))
   .join('\n')}
+
+/*
+  A transparent button's text sits on the page rather than on its color's
+  fill. White's and black's colors don't follow the page's palette, so their
+  text can match the page; those buttons take the neutral colors instead.
+*/
+craft-button:is(${staticColors.map((c) => `[data-color='${c}']`).join(', ')}):is(
+    [variant~='outline'],
+    [variant~='dashed'],
+    [variant~='plain'],
+    [variant~='link']
+  ) {
+  --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
+  --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+  --c-color-on-quiet: var(--c-color-neutral-on-quiet);
+  --c-color-fill-normal: var(--c-color-neutral-fill-normal);
+  --c-color-border-normal: var(--c-color-neutral-border-normal);
+  --c-color-on-normal: var(--c-color-neutral-on-normal);
+  --c-color-fill-loud: var(--c-color-neutral-fill-loud);
+  --c-color-border-loud: var(--c-color-neutral-border-loud);
+  --c-color-on-loud: var(--c-color-neutral-on-loud);
+}
 `;
 }
 

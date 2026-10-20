@@ -122,6 +122,7 @@
 - Fixed a bug where element edit pages titled their validation error summary “Could not save settings”.
 - Fixed a bug where text inputs with a long character limit, such as Title fields, could stretch past their column after a failed save.
 - Fixed a bug where white, gray, and slate nested entry blocks took some of their colors from a colored block they were nested in. ([#20041](https://github.com/craftcms/cms/issues/20041))
+- Fixed a bug where outline, dashed, plain, and link buttons with a white or black color, such as Matrix fields’ “Add {type}” buttons for white or black entry types, could have unreadable text.
 
 ### Content Management
 
