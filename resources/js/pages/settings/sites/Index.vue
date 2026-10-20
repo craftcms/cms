@@ -169,7 +169,7 @@
               t('What this group will be called in the control panel.')
             "
           >
-            <div slot="after">
+            <div slot="after" data-description>
               <craft-callout
                 variant="info"
                 appearance="plain"
@@ -201,6 +201,7 @@
         >
           <craft-callout
             slot="after"
+            data-description
             variant="info"
             appearance="plain"
             class="p-0"

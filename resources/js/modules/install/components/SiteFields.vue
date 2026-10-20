@@ -55,6 +55,7 @@
   >
     <craft-callout
       slot="after"
+      data-description
       variant="info"
       appearance="plain"
       class="p-0"

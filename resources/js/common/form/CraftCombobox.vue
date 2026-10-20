@@ -35,7 +35,7 @@
     :limit="limit"
     :error="error"
   >
-    <div slot="after">
+    <div slot="after" data-description>
       <slot name="after">
         <craft-callout
           v-if="callouts?.includes('envVars')"
