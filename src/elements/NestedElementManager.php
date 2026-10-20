@@ -1420,7 +1420,22 @@ JS, [
     {
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
             $elementsService = Craft::$app->getElements();
-            $query = $this->nestedElementQuery($owner)
+
+            // The query factory may scope the query to the owner's site, so load the owner in this site
+            $siteOwner = $owner->siteId === $siteId ? $owner : $owner::find()
+                ->id($owner->id)
+                ->siteId($siteId)
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->revisions(null)
+                ->trashed(null)
+                ->status(null)
+                ->one();
+            if (!$siteOwner) {
+                continue;
+            }
+
+            $query = $this->nestedElementQuery($siteOwner)
                 ->status(null)
                 ->siteId($siteId);
             if ($hardDelete) {

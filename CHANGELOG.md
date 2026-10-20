@@ -14,6 +14,7 @@
 - Fixed a bug where `orderBy`, `offset`, and `limit` params weren’t getting applied to element queries executed via `eagerly()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
 - Fixed a bug where eager-loaded elements were getting reversed twice when both `orderBy` and `inReverse` criteria were set. ([#19994](https://github.com/craftcms/cms/pull/19994))
 - Fixed a bug where skipped revisions were getting reported as root element lookup errors when resaving elements. ([#20026](https://github.com/craftcms/cms/pull/20026))
+- Fixed a bug where pruning revisions could delete nested element revisions in other sites that newer revisions still referenced. ([#20042](https://github.com/craftcms/cms/issues/20042))
 
 ## 5.11.5.1 - 2026-10-08
 
