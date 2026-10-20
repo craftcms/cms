@@ -23,6 +23,10 @@ export default css`
     gap: var(--c-checkbox-group-spacing, var(--c-spacing-sm));
   }
 
+  ::slotted(.all) {
+    font-weight: bold;
+  }
+
   .items {
     display: grid;
     gap: var(--c-checkbox-group-spacing, var(--c-spacing-sm));
