@@ -129,6 +129,7 @@
 - Fixed a bug where element editors still said “Saved at …” after a failed save, and after discarding changes. ([#20044](https://github.com/craftcms/cms/issues/20044))
 - Fixed a bug where element editors said the element had been updated after a failed save. ([#20044](https://github.com/craftcms/cms/issues/20044))
 - Fixed a bug where element editors kept a failed save’s errors after discarding changes. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where double-clicking a Matrix block’s header to expand or collapse it could also select text. ([#20045](https://github.com/craftcms/cms/issues/20045))
 
 ### Content Management
 
