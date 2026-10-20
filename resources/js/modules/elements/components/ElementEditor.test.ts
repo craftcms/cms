@@ -19,6 +19,7 @@ import {
 import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
 import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
 import ContentFooter from '@/common/layouts/screens/page/ContentFooter.vue';
+import ErrorSummary from '@/common/form/ErrorSummary.vue';
 import ElementEditor from './ElementEditor.vue';
 
 const state = vi.hoisted(() => ({
@@ -135,6 +136,12 @@ function mount(mode: ScreenMode): void {
 
       return () =>
         h('div', [
+          // Falls back to the shell's own summary, as PageScreen does.
+          h(LayoutSlotOutlet, {name: 'error-summary'}, () =>
+            state.editor.form.hasErrors
+              ? h(ErrorSummary, {errors: state.editor.form.errors})
+              : null
+          ),
           h(LayoutSlotOutlet, {name: 'content-notices'}),
           h(ElementEditor),
           h(ContentFooter, {
@@ -232,4 +239,19 @@ it('re-baselines the stale notice once Reload brings in the latest version', asy
     canonical: 5,
   });
   reload.mockRestore();
+});
+
+it('titles its error summary for the element rather than for settings', async () => {
+  Object.assign(state.editor.form, {
+    hasErrors: true,
+    errors: {title: 'The title field is required.'},
+  });
+
+  mount('page');
+  await nextTick();
+
+  const summary = container.querySelector('craft-callout[variant="danger"]');
+  expect(summary?.textContent).toContain('Couldn’t save changes');
+  expect(summary?.textContent).toContain('The title field is required.');
+  expect(summary?.textContent).not.toContain('settings');
 });
