@@ -134,6 +134,10 @@
           :for="subjectId"
           .triggers="message.textExpanderTriggers"
         />
+        <span
+          slot="tip"
+          v-html="t('Type <kbd>{{</kbd> to insert a message variable.')"
+        ></span>
         <ul v-if="form.errors.subject" slot="feedback" class="error-list">
           <li>{{ form.errors.subject }}</li>
         </ul>
@@ -164,6 +168,10 @@
           :for="bodyId"
           .triggers="message.textExpanderTriggers"
         />
+        <span
+          slot="tip"
+          v-html="t('Type <kbd>{{</kbd> to insert a message variable.')"
+        ></span>
         <ul v-if="form.errors.body" slot="feedback" class="error-list">
           <li>{{ form.errors.body }}</li>
         </ul>
