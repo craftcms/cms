@@ -206,11 +206,16 @@
 
   // In a panel, the panel's own screen is what's out of date — not the page
   // behind it.
+  /** Shows the latest version, which is what the stale notice asks for. */
   function reload(): void {
     if (slideout) {
-      void slideout.reload();
+      void slideout
+        .reload()
+        .then(() => activity.rebase(payload.updatedTimestamps));
     } else {
-      router.reload();
+      router.reload({
+        onSuccess: () => activity.rebase(payload.updatedTimestamps),
+      });
     }
   }
 

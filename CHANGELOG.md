@@ -115,6 +115,7 @@
 - Fixed a bug where fields that share a row in element edit forms had no gap between them. They’re now separated by a hairline, as in Craft 4 and 5. ([#20022](https://github.com/craftcms/cms/issues/20022))
 - Fixed a bug where the login page’s “Stay signed in” checkbox wasn’t styled.
 - Fixed a bug where text in form inputs could be clipped at the bottom with some fonts, such as Segoe UI on Windows. ([#19928](https://github.com/craftcms/cms/issues/19928))
+- Fixed a bug where the “This entry has been updated” notice appeared after discarding changes, and its Reload button didn’t dismiss it. ([#20038](https://github.com/craftcms/cms/issues/20038))
 
 ### Content Management
 

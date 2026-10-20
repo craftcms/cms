@@ -9,6 +9,7 @@ import {
   shallowRef,
 } from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import {router} from '@inertiajs/vue3';
 import {
   createScreenPropsStore,
   ScreenContextKey,
@@ -46,6 +47,7 @@ beforeEach(() => {
       activity: shallowRef([]),
       isStale: shallowRef(false),
       staleType: shallowRef(null),
+      rebase: vi.fn(),
     },
     activityTimelineVersion: shallowRef(0),
     autosave: {
@@ -212,3 +214,22 @@ it.each([null, 'draft'] as const)(
     );
   }
 );
+
+it('re-baselines the stale notice once Reload brings in the latest version', async () => {
+  state.editor.activity.isStale.value = true;
+  state.editor.props.updatedTimestamps = {element: 5, canonical: 5};
+  const reload = vi
+    .spyOn(router, 'reload')
+    .mockImplementation((options?: any) => options?.onSuccess?.());
+
+  mount('page');
+  await nextTick();
+  findButton('Reload')!.click();
+
+  expect(reload).toHaveBeenCalledOnce();
+  expect(state.editor.activity.rebase).toHaveBeenCalledWith({
+    element: 5,
+    canonical: 5,
+  });
+  reload.mockRestore();
+});
