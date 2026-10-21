@@ -8,16 +8,17 @@
 namespace crafttests\unit\elements;
 
 use Craft;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\enums\PropagationMethod;
-use craft\helpers\Db;
+use craft\models\Site;
 use craft\models\Volume;
 use craft\queue\jobs\PropagateElements;
+use craft\queue\QueueInterface;
 use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\SitesFixture;
-use ReflectionMethod;
 use UnitTester;
 
 /**
@@ -125,32 +126,55 @@ class AssetPropagationTest extends TestCase
     public function testNewSitePropagation(): void
     {
         $this->customVolume->propagationMethod = PropagationMethod::Custom;
-        $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
-        $newSiteId = 1002;
+        $sitesService = Craft::$app->getSites();
+        $primarySiteId = $sitesService->getPrimarySite()->id;
 
         $allAsset = $this->createAsset($primarySiteId);
         $customAsset = $this->createAsset($primarySiteId, $this->customVolume);
-
-        // Pretend the site was just added by removing the assets from it
-        Db::delete(Table::ELEMENTS_SITES, ['elementId' => [$allAsset->id, $customAsset->id], 'siteId' => $newSiteId]);
-        self::assertNotContains($newSiteId, $this->siteIdsForAsset($allAsset));
         self::assertSame([$primarySiteId], $this->siteIdsForAsset($customAsset));
 
-        // Process the assets with the same job Sites::saveSite() queues for new sites
-        $job = new PropagateElements([
-            'elementType' => Asset::class,
-            'siteId' => $newSiteId,
-            'isNewSite' => true,
+        $site = new Site([
+            'groupId' => $sitesService->getPrimarySite()->groupId,
+            'name' => 'New site',
+            'handle' => 'newSite',
+            'language' => 'en-US',
         ]);
-        $processItem = new ReflectionMethod($job, 'processItem');
-        $assets = Asset::find()->id([$allAsset->id, $customAsset->id])->siteId($primarySiteId)->all();
-        self::assertCount(2, $assets);
-        foreach ($assets as $asset) {
-            $processItem->invoke($job, $asset);
+        self::assertTrue($sitesService->saveSite($site), json_encode($site->getErrors()));
+
+        // Only assets in volumes that propagate to all sites should be queried by the propagation job
+        $job = $this->propagateElementsJob(Asset::class, $site->id);
+        self::assertNotNull($job);
+        $query = Asset::find();
+        Craft::configure($query, $job->criteria);
+        $assetIds = $query->ids();
+        self::assertContains($allAsset->id, $assetIds);
+        self::assertNotContains($customAsset->id, $assetIds);
+
+        $queue = Craft::$app->getQueue();
+        if (!$queue instanceof QueueInterface) {
+            self::fail('The queue doesn’t implement ' . QueueInterface::class);
+        }
+        $queue->run();
+
+        self::assertContains($site->id, $this->siteIdsForAsset($allAsset));
+        self::assertSame([$primarySiteId], $this->siteIdsForAsset($customAsset));
+    }
+
+    private function propagateElementsJob(string $elementType, int $siteId): ?PropagateElements
+    {
+        $jobs = (new Query())
+            ->select(['job'])
+            ->from(Table::QUEUE)
+            ->column();
+
+        foreach ($jobs as $job) {
+            $job = Craft::$app->getQueue()->serializer->unserialize(is_resource($job) ? stream_get_contents($job) : $job);
+            if ($job instanceof PropagateElements && $job->elementType === $elementType && $job->siteId === [$siteId]) {
+                return $job;
+            }
         }
 
-        self::assertContains($newSiteId, $this->siteIdsForAsset($allAsset));
-        self::assertSame([$primarySiteId], $this->siteIdsForAsset($customAsset));
+        return null;
     }
 
     private function createAsset(int $siteId, ?Volume $volume = null): Asset
