@@ -25,6 +25,7 @@ use CraftCms\Cms\Site\Events\SitesReordering;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
@@ -35,7 +36,6 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -877,8 +877,8 @@ class Sites
         }
 
         foreach ($results as $result) {
-            $result->dateCreated = Date::parse($result->dateCreated);
-            $result->dateUpdated = Date::parse($result->dateUpdated);
+            $result->dateCreated = DateTimeHelper::toDateTime($result->dateCreated);
+            $result->dateUpdated = DateTimeHelper::toDateTime($result->dateUpdated);
 
             $site = new Site($result);
             $this->allSitesById[$site->id] = $site;

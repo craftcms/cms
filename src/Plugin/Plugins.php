@@ -31,6 +31,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
@@ -42,7 +43,6 @@ use Illuminate\Foundation\PackageManifest;
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -194,7 +194,7 @@ class Plugins
                 $row['settings'] = $configData['settings'] ?? [];
                 $row['licenseKey'] = $configData['licenseKey'] ?? null;
                 $row['enabled'] = ! empty($configData['enabled']);
-                $row['installDate'] = Date::parse($row['installDate']);
+                $row['installDate'] = DateTimeHelper::toDateTime($row['installDate']);
 
                 return $row;
             })

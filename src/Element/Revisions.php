@@ -15,11 +15,11 @@ use CraftCms\Cms\Element\Events\RevisionCreating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\PruneRevisions;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Throwable;
@@ -84,7 +84,7 @@ readonly class Revisions
                 if (
                     ! $force &&
                     $lastRevisionInfo &&
-                    Date::parse($lastRevisionInfo->dateCreated)->getTimestamp() === $canonical->dateUpdated->getTimestamp() &&
+                    DateTimeHelper::toDateTime($lastRevisionInfo->dateCreated)->getTimestamp() === $canonical->dateUpdated->getTimestamp() &&
                     // Make sure all its data is in-tact
                     $canonical::find()->id($lastRevisionInfo->id)->revisions()->status(null)->siteId($canonical->siteId)->exists()
                 ) {
