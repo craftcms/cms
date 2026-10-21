@@ -5,6 +5,9 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19882](https://github.com/craftcms/cms/pull/19882) for details.
 
+> [!WARNING]
+> Plugins should pass dates they write or compare with the query builder through `CraftCms\Cms\Support\Query::prepareDateForDb()`, so they’re stored in UTC like Craft’s own. Laravel stores a bound date in the system time zone. Eloquent models that extend `CraftCms\Cms\Shared\BaseModel` are converted automatically. See [#20053](https://github.com/craftcms/cms/pull/20053) for details.
+
 ### Control Panel UI
 
 - HUD tips now match their HUD’s colors, and HUDs have a light outline in dark mode. ([#20005](https://github.com/craftcms/cms/pull/20005))
@@ -211,7 +214,8 @@
 
 ### Extensibility
 
-- Eloquent models that extend `CraftCms\Cms\Shared\BaseModel` now store and read dates in UTC, including their timestamps and soft-delete dates. Dates bound to other queries should be passed through `CraftCms\Cms\Support\Query::prepareDateForDb()`, as Craft does; Laravel stores a bound date in the system time zone. ([#20053](https://github.com/craftcms/cms/pull/20053))
+- Added `CraftCms\Cms\Support\Query::prepareDateForDb()`, which converts a date to the UTC string Craft stores dates as, for writing or comparing it with the query builder. ([#20053](https://github.com/craftcms/cms/pull/20053))
+- Eloquent models that extend `CraftCms\Cms\Shared\BaseModel` now store and read dates in UTC, including their timestamps and soft-delete dates. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Added `CraftCms\Cms\Ai\Task` and `CraftCms\Cms\Ai\AiTasks`, for registering AI tasks. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - Added `CraftCms\Cms\Support\Facades\Ai`, which plugins use to run `laravel/ai` agents and requests with the provider and model administrators choose for each task. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - Added `CraftCms\Cms\Ai\Events\TaskRunning`, `TaskCompleted`, and `TaskFailed`, which plugins can use to track AI usage and failures, and cancel requests. ([#20006](https://github.com/craftcms/cms/pull/20006))
