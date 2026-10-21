@@ -10,6 +10,7 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Element;
 use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
 use CraftCms\Cms\Gql\Types\Generators\UserType;
+use CraftCms\Cms\Gql\Types\UserGroup;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use GraphQL\Type\Definition\FieldDefinition;
@@ -131,19 +132,27 @@ class User extends Element
     /** @return array<string, FieldDefinitionConfig> */
     protected static function getConditionalFields(): array
     {
+        $fields = [];
         $volumeUid = ProjectConfig::get('users.photoVolumeUid');
 
         if (GqlHelper::isSchemaAwareOf('volumes.'.$volumeUid)) {
-            return [
-                'photo' => [
-                    'name' => 'photo',
-                    'type' => Asset::getType(),
-                    'description' => 'The user’s photo.',
-                    'complexity' => GqlHelper::eagerLoadComplexity(),
-                ],
+            $fields['photo'] = [
+                'name' => 'photo',
+                'type' => Asset::getType(),
+                'description' => 'The user’s photo.',
+                'complexity' => GqlHelper::eagerLoadComplexity(),
             ];
         }
 
-        return [];
+        if (GqlHelper::canSchema('settings.usergroups')) {
+            $fields['groups'] = [
+                'name' => 'groups',
+                'type' => Type::nonNull(Type::listOf(Type::nonNull(UserGroup::getType()))),
+                'description' => 'The user groups the user belongs to.',
+                'complexity' => GqlHelper::nPlus1Complexity(),
+            ];
+        }
+
+        return $fields;
     }
 }

@@ -40,6 +40,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -81,7 +82,7 @@ use function CraftCms\Cms\t;
  * @phpstan-import-type ArgumentConfig from Argument
  * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
  *
- * @phpstan-type SchemaComponents array<string, array{label: string, nested?: array<string, array{label: string}>}>
+ * @phpstan-type SchemaComponents array<string, array{label: string, info?: string, nested?: array<string, array{label: string}>}>
  *
  * @since 6.0.0
  */
@@ -1154,7 +1155,16 @@ class Gql
     private function siteSchemaComponents(): array
     {
         $sites = Sites::getAllSites(true);
-        $queryComponents = [];
+        $queryComponents = [
+            'settings.sites:read' => [
+                'label' => t('Query for sites'),
+                'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to elements.', [
+                    'plural' => 'sites',
+                    'singular' => 'site',
+                    'field' => 'site',
+                ]),
+            ],
+        ];
 
         foreach ($sites as $site) {
             $queryComponents["sites.{$site->uid}:read"] = [
@@ -1190,6 +1200,28 @@ class Gql
     {
         $queryComponents = [];
         $mutationComponents = [];
+
+        if (Sections::getAllSections()->isNotEmpty()) {
+            $queryComponents['settings.sections:read'] = [
+                'label' => t('Query for sections'),
+                'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to entries.', [
+                    'plural' => 'sections',
+                    'singular' => 'section',
+                    'field' => 'section',
+                ]),
+            ];
+        }
+
+        if (EntryTypes::getAllEntryTypes()->isNotEmpty()) {
+            $queryComponents['settings.entrytypes:read'] = [
+                'label' => t('Query for entry types'),
+                'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to entries.', [
+                    'plural' => 'entryTypes',
+                    'singular' => 'entryType',
+                    'field' => 'type',
+                ]),
+            ];
+        }
 
         $singles = Sections::getSectionsByType(SectionType::Single);
 
@@ -1296,6 +1328,15 @@ class Gql
         $volumes = app(Volumes::class)->getAllVolumes();
 
         if ($volumes->isNotEmpty()) {
+            $queryComponents['settings.volumes:read'] = [
+                'label' => t('Query for volumes'),
+                'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to assets.', [
+                    'plural' => 'volumes',
+                    'singular' => 'volume',
+                    'field' => 'volume',
+                ]),
+            ];
+
             foreach ($volumes as $volume) {
                 $name = t($volume->name, category: 'site');
                 $prefix = "volumes.$volume->uid";
@@ -1333,6 +1374,17 @@ class Gql
             ];
         } else {
             $userGroups = UserGroups::getAllGroups();
+
+            if ($userGroups->isNotEmpty()) {
+                $queryComponents['settings.usergroups:read'] = [
+                    'label' => t('Query for user groups'),
+                    'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to users.', [
+                        'plural' => 'userGroups',
+                        'singular' => 'userGroup',
+                        'field' => 'groups',
+                    ]),
+                ];
+            }
 
             $queryComponents['usergroups.everyone:read'] = [
                 'label' => t('Query for users'),
