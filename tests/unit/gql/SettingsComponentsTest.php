@@ -225,7 +225,7 @@ GQL, debugMode: true);
 
         $result = $gql->executeQuery($schema, <<<GQL
 {
-  sites { handle }
+  sites { handle enabled }
   site(handle: "testSite1") { handle }
   sections(handle: "test1") { handle }
   section(handle: "missing") { handle }
@@ -241,6 +241,7 @@ GQL, debugMode: true);
         self::assertArrayNotHasKey('errors', $result, json_encode($result['errors'] ?? null));
         $data = $result['data'];
         self::assertContains('testSite1', array_column($data['sites'], 'handle'));
+        self::assertContainsOnly('bool', array_column($data['sites'], 'enabled'));
         self::assertSame(['handle' => 'testSite1'], $data['site']);
         self::assertSame([['handle' => 'test1']], $data['sections']);
         self::assertNull($data['section']);
@@ -250,6 +251,25 @@ GQL, debugMode: true);
         self::assertSame(['handle' => 'group1'], $data['userGroup']);
         self::assertSame([], $data['categoryGroups']);
         self::assertSame([], $data['tagGroups']);
+    }
+
+    /**
+     * Test that disabled sites are only returned by the `sites` query if the schema can query elements in them.
+     */
+    public function testDisabledSitesRequireSiteComponent(): void
+    {
+        $enabledSite = new Site(['uid' => 'enabled-site-uid', 'handle' => 'enabledSite', 'enabled' => true]);
+        $disabledSite = new Site(['uid' => 'disabled-site-uid', 'handle' => 'disabledSite', 'enabled' => false]);
+        $this->tester->mockMethods(Craft::$app, 'sites', [
+            'getAllSites' => [$enabledSite, $disabledSite],
+        ]);
+        $gql = Craft::$app->getGql();
+
+        $gql->setActiveSchema(new GqlSchema(['scope' => ['settings.sites:read']]));
+        self::assertSame([$enabledSite], SettingsQuery::getQueries()['sites']['resolve'](null, []));
+
+        $gql->setActiveSchema(new GqlSchema(['scope' => ['settings.sites:read', 'sites.disabled-site-uid:read']]));
+        self::assertSame([$enabledSite, $disabledSite], SettingsQuery::getQueries()['sites']['resolve'](null, []));
     }
 
     /**
@@ -311,6 +331,7 @@ GQL, debugMode: true);
             [SectionGqlType::class, fn() => $section, 'handle', fn() => 'news'],
             [EntryTypeGqlType::class, fn() => $entryType, 'color', fn() => 'red'],
             [SiteGqlType::class, fn() => $site, 'baseUrl', fn() => 'https://example.test/'],
+            [SiteGqlType::class, fn() => $site, 'enabled', fn() => true],
         ];
     }
 }

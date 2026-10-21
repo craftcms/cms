@@ -19,6 +19,7 @@ use craft\gql\types\UserGroup;
 use craft\gql\types\Volume;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Gql as GqlHelper;
+use craft\models\Site as SiteModel;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -72,7 +73,7 @@ class Settings extends Query
     private static function definitions(): array
     {
         return [
-            'sites' => ['sites', 'site', Site::getType(), 'sites', fn() => Craft::$app->getSites()->getAllSites()],
+            'sites' => ['sites', 'site', Site::getType(), 'sites', fn() => self::sites()],
             'sections' => ['sections', 'section', Section::getType(), 'sections', fn() => Craft::$app->getEntries()->getAllSections()],
             'entrytypes' => ['entryTypes', 'entryType', EntryType::getType(), 'entry types', fn() => Craft::$app->getEntries()->getAllEntryTypes()],
             'volumes' => ['volumes', 'volume', Volume::getType(), 'volumes', fn() => Craft::$app->getVolumes()->getAllVolumes()],
@@ -80,6 +81,21 @@ class Settings extends Query
             'categorygroups' => ['categoryGroups', 'categoryGroup', CategoryGroup::getType(), 'category groups', fn() => Craft::$app->getCategories()->getAllGroups()],
             'taggroups' => ['tagGroups', 'tagGroup', TagGroup::getType(), 'tag groups', fn() => Craft::$app->getTags()->getAllTagGroups()],
         ];
+    }
+
+    /**
+     * Returns the sites that can be queried.
+     *
+     * Disabled sites are only included if the schema can query elements in them.
+     *
+     * @return SiteModel[]
+     */
+    private static function sites(): array
+    {
+        return array_values(array_filter(
+            Craft::$app->getSites()->getAllSites(true),
+            fn(SiteModel $site) => $site->getEnabled() || GqlHelper::canSchema("sites.$site->uid"),
+        ));
     }
 
     /**

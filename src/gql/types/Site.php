@@ -81,6 +81,11 @@ class Site extends ObjectType implements SingularTypeInterface
                 'type' => Type::nonNull(Type::boolean()),
                 'description' => 'Whether this is the primary site.',
             ],
+            'enabled' => [
+                'name' => 'enabled',
+                'type' => Type::nonNull(Type::boolean()),
+                'description' => 'Whether the site is enabled.',
+            ],
             'hasUrls' => [
                 'name' => 'hasUrls',
                 'type' => Type::nonNull(Type::boolean()),
@@ -103,6 +108,7 @@ class Site extends ObjectType implements SingularTypeInterface
     {
         /** @var SiteModel $source */
         return match ($resolveInfo->fieldName) {
+            'enabled' => $source->getEnabled(),
             'baseUrl' => $source->getBaseUrl(),
             default => parent::resolve($source, $arguments, $context, $resolveInfo),
         };
