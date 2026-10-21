@@ -53,6 +53,11 @@ class SettingsComponentsTest extends TestCase
      */
     protected UnitTester $tester;
 
+    /**
+     * @var array<string,object> The original app components that have been mocked, indexed by component ID
+     */
+    private array $originalComponents = [];
+
     public function _fixtures(): array
     {
         return [
@@ -73,7 +78,19 @@ class SettingsComponentsTest extends TestCase
 
     protected function _after(): void
     {
+        // Restore the mocked components before the fixtures are unloaded, as that runs garbage collection
+        foreach ($this->originalComponents as $id => $component) {
+            Craft::$app->set($id, $component);
+        }
+        $this->originalComponents = [];
+
         Craft::$app->getGql()->flushCaches();
+    }
+
+    private function mockComponent(string $id, array $params): void
+    {
+        $this->originalComponents[$id] ??= Craft::$app->get($id);
+        $this->tester->mockMethods(Craft::$app, $id, $params);
     }
 
     /**
@@ -81,21 +98,21 @@ class SettingsComponentsTest extends TestCase
      */
     public function testSchemaComponents(): void
     {
-        $this->tester->mockMethods(Craft::$app, 'entries', [
+        $this->mockComponent('entries', [
             'getAllSections' => [new Section(['uid' => 'section-uid', 'name' => 'Section', 'type' => Section::TYPE_CHANNEL])],
             'getSectionsByType' => [],
             'getAllEntryTypes' => [new EntryType(['uid' => 'entrytype-uid', 'name' => 'Entry Type'])],
         ]);
-        $this->tester->mockMethods(Craft::$app, 'volumes', [
+        $this->mockComponent('volumes', [
             'getAllVolumes' => [new Volume(['uid' => 'volume-uid', 'name' => 'Volume'])],
         ]);
-        $this->tester->mockMethods(Craft::$app, 'userGroups', [
+        $this->mockComponent('userGroups', [
             'getAllGroups' => [new UserGroup(['uid' => 'usergroup-uid', 'name' => 'User Group'])],
         ]);
-        $this->tester->mockMethods(Craft::$app, 'categories', [
+        $this->mockComponent('categories', [
             'getAllGroups' => [new CategoryGroup(['uid' => 'categorygroup-uid', 'name' => 'Category Group'])],
         ]);
-        $this->tester->mockMethods(Craft::$app, 'tags', [
+        $this->mockComponent('tags', [
             'getAllTagGroups' => [new TagGroup(['uid' => 'taggroup-uid', 'name' => 'Tag Group'])],
         ]);
 
@@ -260,7 +277,7 @@ GQL, debugMode: true);
     {
         $enabledSite = new Site(['uid' => 'enabled-site-uid', 'handle' => 'enabledSite', 'enabled' => true]);
         $disabledSite = new Site(['uid' => 'disabled-site-uid', 'handle' => 'disabledSite', 'enabled' => false]);
-        $this->tester->mockMethods(Craft::$app, 'sites', [
+        $this->mockComponent('sites', [
             'getAllSites' => [$enabledSite, $disabledSite],
         ]);
         $gql = Craft::$app->getGql();
