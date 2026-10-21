@@ -121,6 +121,9 @@ Forms
 /**
 1. Change the font styles in all browsers.
 2. Remove the margin in Firefox and Safari.
+3. Text controls clip their value to their own line box, so they inherit the
+   page's line height. At 1.15, fonts with tall metrics, such as Segoe UI,
+   lose their descenders.
 */
 
 button,
@@ -132,6 +135,13 @@ textarea {
   font-size: 100%; /* 1 */
   line-height: 1.15; /* 1 */
   margin: 0; /* 2 */
+}
+
+input,
+optgroup,
+select,
+textarea {
+  line-height: inherit; /* 3 */
 }
 
 /**

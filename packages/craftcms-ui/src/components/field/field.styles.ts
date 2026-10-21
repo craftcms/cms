@@ -17,10 +17,13 @@ export default css`
     max-width: 100%;
   }
 
-  /* Stop the input chrome from flexing back out to the available space. */
+  /* Stop the input chrome from flexing back out to the available space, while
+     still letting it shrink to the column: a long maxlength, such as a
+     Title's 255 characters, sizes the input far wider than the column. */
   :host([has-maxlength]:not([width='full'])) .input-group__input,
   :host([width='auto']) .input-group__input {
-    flex: 0 0 auto;
+    flex: 0 1 auto;
+    min-width: 0;
   }
 
   :host([hidden]) {

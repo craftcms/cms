@@ -290,6 +290,18 @@ export function useElementAutosave<T extends object>(
     saved.value = {ui: null, screen: null, modified: []};
   }
 
+  /**
+   * Forgets how the last draft save went, so its status stops showing. For
+   * when what it reported no longer describes the screen: a submission has
+   * taken over, or the draft has been discarded.
+   */
+  function resetStatus(): void {
+    status.value = 'idle';
+    savedAt.value = null;
+    error.value = null;
+    httpStatus.value = null;
+  }
+
   function acknowledgeChanges(): void {
     acknowledgedGeneration.value = changeGeneration.value;
   }
@@ -327,6 +339,7 @@ export function useElementAutosave<T extends object>(
     suspend,
     setDraftId,
     clearSaved,
+    resetStatus,
     acknowledgeChanges,
   };
 }

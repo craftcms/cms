@@ -23,6 +23,7 @@
   import ElementActivityAvatars from '@/modules/elements/components/ElementActivityAvatars.vue';
   import ElementViewButtons from '@/modules/elements/components/ElementViewButtons.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useIsSlideout} from '@/common/composables/screen';
   import {useSlideout} from '@/common/slideouts/useSlideout';
@@ -206,11 +207,16 @@
 
   // In a panel, the panel's own screen is what's out of date — not the page
   // behind it.
+  /** Shows the latest version, which is what the stale notice asks for. */
   function reload(): void {
     if (slideout) {
-      void slideout.reload();
+      void slideout
+        .reload()
+        .then(() => activity.rebase(payload.updatedTimestamps));
     } else {
-      router.reload();
+      router.reload({
+        onSuccess: () => activity.rebase(payload.updatedTimestamps),
+      });
     }
   }
 
@@ -288,6 +294,11 @@
 </script>
 
 <template>
+  <!-- The shell's own summary is worded for settings screens. -->
+  <LayoutSlot v-if="form.hasErrors" name="error-summary">
+    <ErrorSummary :errors="form.errors" :title="t('Couldn’t save changes')" />
+  </LayoutSlot>
+
   <LayoutSlot
     v-if="payload.isProvisionalDraft || payload.statusLabelHtml"
     name="content-toolbar-meta"

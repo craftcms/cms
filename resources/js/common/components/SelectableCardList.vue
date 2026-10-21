@@ -78,6 +78,7 @@
     (event: 'item-click', id: Id, mouseEvent: MouseEvent): void;
     (event: 'item-dblclick', id: Id, mouseEvent: MouseEvent): void;
     (event: 'header-dblclick', id: Id, mouseEvent: MouseEvent): void;
+    (event: 'header-mousedown', id: Id, mouseEvent: MouseEvent): void;
     (
       event: 'item-keydown',
       id: Id,
@@ -235,6 +236,7 @@
     >
       <DragShadow
         v-if="overDropState(id)?.closestEdge === 'top'"
+        class="mb-md"
         :height="overDropState(id)?.draggingRect?.height"
       />
 
@@ -249,6 +251,7 @@
         <div
           slot="header"
           class="flex gap-2 items-center justify-between w-full"
+          @mousedown="emit('header-mousedown', id, $event)"
           @dblclick="emit('header-dblclick', id, $event)"
         >
           <div class="flex gap-2 items-center">
@@ -300,6 +303,7 @@
 
       <DragShadow
         v-if="overDropState(id)?.closestEdge === 'bottom'"
+        class="mt-md"
         :height="overDropState(id)?.draggingRect?.height"
       />
     </component>

@@ -79,6 +79,7 @@
 - Entry types’ and fields’ “Used by” metadata now lists usages as chips. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - The global header is now lighter in the light theme. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Content within black cards, chips, and badges, such as buttons and badges, is now styled as in the dark theme.
+- White cards, chips, badges, and Matrix blocks now always look white in the light theme and black in the dark theme, and black ones the reverse, including when they’re nested in another card or block. Their contents are styled to match. ([#20041](https://github.com/craftcms/cms/issues/20041))
 - Links in gray chips, and in black chips, cards, and badges, now have the default link styling, rather than an underline in the chip’s or card’s text color.
 - Card view designers now preview entries as live, and users with a sample user’s name, default avatar, and active status.
 - Color selects’ swatches now match the headers of cards in their colors.
@@ -113,7 +114,24 @@
 - Fixed a bug where Plain Text fields with a character limit weren’t full width when line breaks were allowed. ([#20017](https://github.com/craftcms/cms/issues/20017))
 - Fixed a bug where element index tables with only a title column split the rest of the row between the checkbox and reorder columns. ([#20021](https://github.com/craftcms/cms/issues/20021))
 - Fixed a bug where fields that share a row in element edit forms had no gap between them. They’re now separated by a hairline, as in Craft 4 and 5. ([#20022](https://github.com/craftcms/cms/issues/20022))
+- Fixed a bug where checking the “All” option in server-rendered checkbox selects didn't check the other options. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Fixed a bug where changes to which missing folders and files to delete were ignored when finishing an asset indexing session, and their names were shown escaped. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Fixed a bug where the login page’s “Stay signed in” checkbox wasn’t styled.
+- Fixed a bug where text in form inputs could be clipped at the bottom with some fonts, such as Segoe UI on Windows. ([#19928](https://github.com/craftcms/cms/issues/19928))
+- Fixed a bug where the “This entry has been updated” notice appeared after discarding changes, and its Reload button didn’t dismiss it. ([#20038](https://github.com/craftcms/cms/issues/20038))
+- Fixed a bug where every custom field was marked as modified when saving an entry with unsaved changes failed validation. ([#20039](https://github.com/craftcms/cms/issues/20039))
+- Fixed a bug where editing one field in a Matrix block marked every field in the Matrix field as modified. ([#20040](https://github.com/craftcms/cms/issues/20040))
+- Fixed a bug where element edit pages titled their validation error summary “Could not save settings”.
+- Fixed a bug where text inputs with a long character limit, such as Title fields, could stretch past their column after a failed save.
+- Fixed a bug where white, gray, and slate nested entry blocks took some of their colors from a colored block they were nested in. ([#20041](https://github.com/craftcms/cms/issues/20041))
+- Fixed a bug where outline, dashed, plain, and link buttons with a white or black color, such as Matrix fields’ “Add {type}” buttons for white or black entry types, could have unreadable text.
+- Fixed a bug where control panel forms that failed validation didn’t show an error notification, such as “Couldn’t save entry.” ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where element editors still said “Saved at …” after a failed save, and after discarding changes. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where element editors said the element had been updated after a failed save. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where element editors kept a failed save’s errors after discarding changes. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where element editors’ error summaries could disappear right after a failed save. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where double-clicking a Matrix block’s header to expand or collapse it could also select text. ([#20045](https://github.com/craftcms/cms/issues/20045))
+- Fixed a bug where Matrix fields in cards view didn’t show a dropped entry in its new position until the reorder had saved, and drop placeholders had no gap next to the neighboring card. ([#20046](https://github.com/craftcms/cms/issues/20046))
 
 ### Content Management
 
@@ -147,11 +165,13 @@
 
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Opening a slideout no longer focuses its resize handle. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Error summaries now receive focus when a form fails validation, and each error links to its field, switching tabs if needed. ([#20044](https://github.com/craftcms/cms/issues/20044))
 - The card view designer’s “Alignment” setting is now a radio group, which can be changed with the arrow keys.
 - Controls in field layout designers, and rich selects such as color selects, now have the standard focus ring, rather than an inset or flush one.
 - Pressing <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in a text input or textarea now submits its form, including in editable table cells, where it previously moved focus to the next row. ([#20025](https://github.com/craftcms/cms/pull/20025))
 - Pressing <kbd>Shift</kbd> + <kbd>Return</kbd> in an editable table’s first row now adds a row above it, if the table allows new rows. ([#20025](https://github.com/craftcms/cms/pull/20025))
 - Fixed an accessibility issue where buttons were still announced as “Loading” after they finished loading, and lost their accessible name if loading took more than five seconds. ([#19975](https://github.com/craftcms/cms/pull/19975))
+- Fixed an accessibility issue where pressing <kbd>Return</kbd> on a dialog’s close button could reopen the dialog, such as the “Check your email” dialog on the Reset Password screen. ([#20049](https://github.com/craftcms/cms/pull/20049))
 - Fixed a bug where single-select comboboxes had no visible focus ring. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes’ combobox element had no accessible name in Chromium. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed an accessibility issue where fields’ translation indicators and their help text were hidden. ([#19915](https://github.com/craftcms/cms/pull/19915))
@@ -217,7 +237,7 @@
 - Added the `cp-table--flush` class, which pads the outer edges of each table row by `--cp-container-padding`. ([#19906](https://github.com/craftcms/cms/pull/19906), [#19936](https://github.com/craftcms/cms/pull/19936))
 - Added the `appearance` prop to the `AdminTable` Vue component, and `CraftCms\Cms\Ui\Nodes\Table::appearance()`, which set how a table meets its container: `plain`, `flush`, or `raised`. The values are available as `TableAppearance` from `@craftcms/cp` and `CraftCms\Cms\Cp\Enums\TableAppearance`. ([#19936](https://github.com/craftcms/cms/pull/19936))
 - Added the `max-height` attribute to `<craft-markdown-field>`, which sets how tall the editor grows before it scrolls. ([#19923](https://github.com/craftcms/cms/pull/19923))
-- Added the `separated` attribute to `<craft-field-group>`, which widens the gap between columns and draws a hairline between fields that share a row. ([#20022](https://github.com/craftcms/cms/issues/20022))
+- Added the `separated` attribute to `<craft-field-group>`, and `CraftCms\Cms\Cp\Components\FieldGroup::separated()`, which widen the gap between columns and draw a hairline between fields that share a row. ([#20022](https://github.com/craftcms/cms/issues/20022), [#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `outline-fill` appearance to `<craft-pane>`, and `CraftCms\Cms\Cp\Enums\PaneAppearance::OutlineFill`. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `appearance` and `size` properties to `<craft-disclosure>`. `appearance="plain"` drops the content’s hairline and indent, and `size` sizes the default toggle. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `hyperlinkUrl`, `hyperlinkTag`, and `hyperlinkAttributes` config options to `CraftCms\Cms\Cp\Html\ElementHtml::elementChipHtml()`, and the `bare` prop to the `CpLink` Vue component. ([#19932](https://github.com/craftcms/cms/pull/19932))
@@ -268,6 +288,16 @@
 - Added `CraftCms\Cms\Ui\Controls\Link::registeredTypes()`, which locks links whose type is no longer available. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Added support for hiding editable table rows while preserving their inputs and submitted values, using `CraftCms\Cms\Ui\Controls\Table::hiddenRows()` or legacy `_hidden` row values. ([#19939](https://github.com/craftcms/cms/pull/19939))
 - Added the `<craft-input-search>` web component. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Added the `<craft-checkbox-select>` web component, which combines checkbox selects and sortable checkbox selects. It has an “All” option, independent `sortable` and `presentation="add-menu"` options (the latter lists only the checked options, with the rest in an “Add item” menu), and an `options` property along with `addOption()`, `updateOption()`, and `removeOption()` methods for changing its options at runtime. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Added `CraftCms\Cms\Cp\Components\CheckboxSelect::allOption()`, `label()`, and `presentation()`, and `CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation`. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Added `CraftCms\Cms\Ui\Enums\ChoicePresentation::AddMenu`. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Added the `presentation` config option to the `forms.checkboxSelect` and `forms.checkboxSelectField` macros, `CraftCms\Cms\Cp\FormFields::checkboxSelectFromConfig()`, and `Craft.ui.createCheckboxSelect()`. Sortable checkbox selects still list only the checked options with an “Add item” menu, unless it's set to `checkboxes`. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- `CraftCms\Cms\Cp\Components\CheckboxSelect` now renders a `<craft-checkbox-select>`. While its “All” option is checked, the other options are left checked but unnamed, rather than disabled. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- `CraftCms\Cms\Ui\Controls\Choice::sortable()` no longer implies the “Add item” menu, and can now be combined with `allOption()`. `presentation(ChoicePresentation::AddMenu)` should be used for the menu. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Deprecated `CraftCms\Cms\Cp\Components\CheckboxSelect::storageKey()`, which now does nothing. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Deprecated `Craft.SortableCheckboxSelect`. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Removed `CraftCms\Cms\Cp\Components\CheckboxSelect::allCheckbox()`. `allOption()` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Removed the `<craft-sortable-checkbox-select>` web component. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `<craft-resize-grips>` web component. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Added the `resizable` property to `<craft-dialog>`. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Added the `inline-suffix` attribute to `<craft-input>`, and `CraftCms\Cms\Cp\Components\Input::inlineSuffix()`, which draw suffix buttons within the input’s border. ([#20001](https://github.com/craftcms/cms/pull/20001))

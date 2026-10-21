@@ -453,44 +453,53 @@ Craft.ui = {
   },
 
   createCheckboxSelect: function (config) {
-    const $container = $('<div class="cp-checkbox-select"/>');
+    const element = document.createElement('craft-checkbox-select');
+    const $element = $(element).addClass('cp-checkbox-select');
 
     if (config.class) {
-      $container.addClass(config.class);
+      $element.addClass(config.class);
+    }
+
+    if (config.name) {
+      element.setAttribute('name', config.name.replace(/\[\]$/, ''));
     }
 
     let values = config.values || [];
-    let allChecked = false;
+    let options = (config.options || []).slice();
 
     if (config.showAllOption) {
       const allValue = config.allValue || '*';
+      const allChecked = values === allValue;
 
-      if (values === allValue) {
-        values = config.options.map((o) => o.value);
-        allChecked = true;
+      if (allChecked) {
+        values = options.map((o) => o.value);
       }
 
-      // Create the "All" checkbox
-      $('<div/>')
-        .appendTo($container)
+      // omit the “all” value from the options
+      options = options.filter((o) => o.value !== allValue);
+
+      // Rendered here, rather than by the element, so it keeps posting under
+      // the plain name.
+      $('<div/>', {class: 'cp-checkbox-select__item all'})
         .append(
           this.createCheckbox({
             id: config.id,
-            class: 'all',
-            labelHtml:
-              '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
+            label: config.allLabel || Craft.t('app', 'All'),
             name: config.name,
             value: allValue,
             checked: allChecked,
             autofocus: config.autofocus,
             disabled: config.disabled,
           })
-        );
-
-      // omit the “all” value from the options
-      config.options = config.options.filter((o) => o.value !== allValue);
-    } else {
-      allChecked = false;
+        )
+        .appendTo($element);
+      element.setAttribute(
+        'all-label',
+        config.allLabel || Craft.t('app', 'All')
+      );
+      if (allValue !== '*') {
+        element.setAttribute('all-value', allValue);
+      }
     }
 
     if (!Array.isArray(values)) {
@@ -499,7 +508,7 @@ Craft.ui = {
 
     if (config.sortable) {
       // Make sure the selected options are listed first
-      config.options.sort((a, b) => {
+      options.sort((a, b) => {
         let aPos = values.indexOf(a.value);
         let bPos = values.indexOf(b.value);
         if (aPos === -1) {
@@ -510,52 +519,28 @@ Craft.ui = {
         }
         return aPos - bPos;
       });
+      element.setAttribute('sortable', '');
     }
 
-    // Create the actual options
-    for (let i = 0; i < config.options.length; i++) {
-      const option = config.options[i];
-
-      const $option = $('<div/>', {
-        class: 'cp-checkbox-select__item',
-      }).appendTo($container);
-
-      if (config.sortable) {
-        $('<div/>', {class: 'icon move draggable-handle'}).appendTo($option);
-      }
-
-      this.createCheckbox({
-        label: Craft.escapeHtml(option.label),
-        name: config.name ? Craft.ensureEndsWith(config.name, '[]') : null,
-        value: option.value,
-        checked: allChecked || values.includes(option.value),
-        disabled: allChecked || config.disabled,
-      }).appendTo($option);
+    // Sortable selects made with `includeSortActions` list only the checked
+    // options, with the rest in an “Add item” menu.
+    const presentation =
+      config.presentation || (config.includeSortActions ? 'add-menu' : null);
+    if (presentation) {
+      element.setAttribute('presentation', presentation);
     }
 
-    // todo: just check config.sortable when BC isn't a concern
-    if (config.includeSortActions) {
-      new Craft.SortableCheckboxSelect($container);
-    } else {
-      // Guarded: superseded by the CheckboxSelect component where the
-      // modernized Garnish owns the namespace.
-      if (Garnish.CheckboxSelect) {
-        new Garnish.CheckboxSelect($container);
-      }
-
-      if (config.sortable) {
-        const dragSort = new Garnish.DragSort(
-          $container.children(':not(.all)'),
-          {
-            handle: '.move',
-            axis: 'y',
-          }
-        );
-        $container.data('dragSort', dragSort);
-      }
+    if (config.disabled) {
+      element.setAttribute('disabled', '');
     }
 
-    return $container;
+    element.options = options.map((option) => ({
+      value: String(option.value),
+      label: option.label,
+      checked: values.includes(option.value),
+    }));
+
+    return $element;
   },
 
   createCheckboxSelectField: function (config) {

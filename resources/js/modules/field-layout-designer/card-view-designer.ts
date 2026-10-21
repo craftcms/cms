@@ -1,4 +1,5 @@
 import {isCancel} from '@craftcms/ui/utilities/api/http';
+import type CraftCheckboxSelect from '@craftcms/ui/components/checkbox-select/checkbox-select';
 import {Base} from '@craftcms/garnish';
 import {cvdData} from './support';
 import type {FieldLayoutDesigner} from './field-layout-designer';
@@ -9,16 +10,14 @@ declare const Craft: any;
 /**
  * The card view designer (preview + thumbnail/attribute management). Native DOM
  * port of the legacy `Craft.FieldLayoutDesigner.CardViewDesigner`. jQuery
- * survives only at the `Craft.ui` seam; the sortable checkbox library is owned by
- * the `<craft-sortable-checkbox-select>` element, whose DOM events the CVD
- * consumes — it no longer references the `SortableCheckboxSelect` class.
+ * survives only at the `Craft.ui` seam. The attribute library is a
+ * `<craft-checkbox-select>`, changed through its options API.
  */
 export class CardViewDesigner extends Base {
   designer: FieldLayoutDesigner;
   $container: HTMLElement;
   $previewContainer: any = null;
-  $libraryContainer: HTMLElement;
-  sortableCheckboxSelect: any = null;
+  $libraryContainer: CraftCheckboxSelect;
   $thumbManagementContainer: any = null;
   alwaysShowThumbAlignmentBtns = false;
   abortController: AbortController | null = null;
@@ -31,21 +30,13 @@ export class CardViewDesigner extends Base {
     cvdData.set(this.$container, this);
 
     this.$previewContainer = this.$container.querySelector('.cvd-preview');
-    const libraryContainer = this.$container.querySelector(
-      '.cvd-library .cp-checkbox-select'
+    const libraryContainer = this.$container.querySelector<CraftCheckboxSelect>(
+      '.cvd-library craft-checkbox-select'
     );
-    if (!(libraryContainer instanceof HTMLElement)) {
+    if (!libraryContainer) {
       throw new Error('Card view designer requires a checkbox library.');
     }
     this.$libraryContainer = libraryContainer;
-
-    // The <craft-sortable-checkbox-select> custom element boots the sortable list
-    // itself; the CVD only consumes the DOM events it emits (see
-    // listenToCheckboxEvents) and no longer references the SortableCheckboxSelect
-    // class or its WeakMap.
-    this.sortableCheckboxSelect = this.$container.querySelector(
-      'craft-sortable-checkbox-select'
-    );
 
     this.$thumbManagementContainer =
       this.$container.querySelector('.thumb-management');
@@ -186,9 +177,7 @@ export class CardViewDesigner extends Base {
         this.updatePreview();
       }
     });
-    // `sortChange` is the native DOM event the <craft-sortable-checkbox-select>
-    // element re-emits from its garnish sorter when items are reordered.
-    this.sortableCheckboxSelect.addEventListener('sortChange', () => {
+    this.addListener(this.$libraryContainer, 'craft-order-change', () => {
       this.updateCardViewConfig();
       this.updatePreview();
     });
@@ -196,14 +185,7 @@ export class CardViewDesigner extends Base {
 
   updateCardViewConfig(): void {
     this.designer.updateConfig((config: any) => {
-      // can't rely on :checked
-      config.cardView = Array.from(
-        this.$libraryContainer.querySelectorAll<HTMLInputElement>(
-          'input[type=checkbox]'
-        )
-      )
-        .filter((el) => el.checked)
-        .map((el) => el.value);
+      config.cardView = this.$libraryContainer.modelValue;
       return config;
     });
   }
@@ -272,59 +254,31 @@ export class CardViewDesigner extends Base {
       });
   }
 
-  addCheckbox(config: any = {}): void {
-    if (!this.$libraryContainer) {
-      return;
-    }
+  addCheckbox(config: {value: string; label: string; checked?: boolean}): void {
+    this.$libraryContainer.addOption({checked: false, ...config});
+  }
 
-    const $draggable = document.createElement('div');
-    $draggable.className = 'cp-checkbox-select__item';
-
-    Craft.ui.createCheckbox({checked: false, ...config}).appendTo($draggable);
-
-    // The <craft-sortable-checkbox-select> observes its items, so appending here
-    // is enough — it gives this item its drag handle and sorter membership
-    // automatically (see SortableCheckboxSelect.observeItems).
-    this.$libraryContainer.appendChild($draggable);
+  hasCheckbox(value: string): boolean {
+    return this.$libraryContainer.options.some(
+      (option) => option.value === value
+    );
   }
 
   updateCheckboxLabel(value: string, label: string): void {
-    const $draggable = this.findCheckboxByValue(value);
-    if ($draggable) {
-      const $label = $draggable.querySelector('label');
-      if ($label) {
-        $label.textContent = label;
-      }
-    }
+    this.$libraryContainer.updateOption(value, {label});
   }
 
   removeCheckbox(value: string): void {
-    const $draggable = this.findCheckboxByValue(value);
+    const checked = this.$libraryContainer.options.find(
+      (option) => option.value === value
+    )?.checked;
+    this.$libraryContainer.removeOption(value);
 
-    if ($draggable) {
-      const updateConfig = $draggable.querySelector<HTMLInputElement>(
-        'input[type="checkbox"]'
-      )?.checked;
-      $draggable.remove();
-
-      // and now make a call to update the card preview
-      if (updateConfig) {
-        this.updateCardViewConfig();
-        this.updatePreview();
-      }
+    // and now make a call to update the card preview
+    if (checked) {
+      this.updateCardViewConfig();
+      this.updatePreview();
     }
-  }
-
-  findCheckboxByValue(value: string): HTMLElement | null {
-    if (!this.$libraryContainer) {
-      return null;
-    }
-
-    return (
-      this.$libraryContainer
-        .querySelector(`input[value="${value}"]`)
-        ?.closest('.cp-checkbox-select__item') ?? null
-    );
   }
 
   /** THUMBNAILS **/
@@ -437,11 +391,10 @@ export class CardViewDesigner extends Base {
   /**
    * Tear down the CVD so the FLD can be re-booted (host innerHTML swap): cancel any
    * in-flight preview, clear the `cvdData` back-reference, then run the base
-   * teardown. The sortable checkbox custom element owns its controller teardown.
+   * teardown.
    */
   override destroy(): void {
     this.abortController?.abort();
-    this.sortableCheckboxSelect = null;
     document.removeEventListener(
       'model-value-changed',
       this.onAppearanceChange

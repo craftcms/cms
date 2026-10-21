@@ -4520,35 +4520,21 @@ const ViewMenu = Garnish.Base.extend({
       return;
     }
 
+    // The selected columns lead, in their saved order.
+    const select = this.$tableColumnsContainer[0];
     const attributes = this.elementIndex.getSelectedTableColumns();
-    let $lastContainer, lastIndex;
+    const options = select.options;
+    const byValue = new Map(options.map((option) => [option.value, option]));
 
-    attributes.forEach((attribute) => {
-      const $checkbox = this.$tableColumnsContainer.find(
-        `input[value="${attribute}"]`
-      );
-      if (!$checkbox.prop('checked')) {
-        $checkbox.prop('checked', true).trigger('change');
-      }
-      const $container = $checkbox.parent();
-
-      // Do we need to move it up?
-      if ($lastContainer && $container.index() < lastIndex) {
-        $container.insertAfter($lastContainer);
-      }
-
-      $lastContainer = $container;
-      lastIndex = $container.index();
-    });
-
-    // See if we need to uncheck any checkboxes
-    const $checkboxes = this._getTableColumnCheckboxes();
-    for (let i = 0; i < $checkboxes.length; i++) {
-      const $checkbox = $checkboxes.eq(i);
-      if ($checkbox.prop('checked') && !attributes.includes($checkbox.val())) {
-        $checkbox.prop('checked', false);
-      }
-    }
+    select.options = [
+      ...attributes.filter((attribute) => byValue.has(attribute)),
+      ...options
+        .map((option) => option.value)
+        .filter((value) => !attributes.includes(value)),
+    ].map((value) => ({
+      ...byValue.get(value),
+      checked: attributes.includes(value),
+    }));
   },
 
   tidyTableColumnField: function () {
@@ -4563,22 +4549,16 @@ const ViewMenu = Garnish.Base.extend({
         return {...obj, [attr]: index};
       }, {});
 
-    this.$tableColumnsContainer
-      .children()
-      .sort((a, b) => {
-        const checkboxA = $(a).children('input[type="checkbox"]')[0];
-        const checkboxB = $(b).children('input[type="checkbox"]')[0];
-        if (checkboxA.checked && checkboxB.checked) {
-          return 0;
-        }
-        if (checkboxA.checked || checkboxB.checked) {
-          return checkboxA.checked ? -1 : 1;
-        }
-        return defaultOrder[checkboxA.value] < defaultOrder[checkboxB.value]
-          ? -1
-          : 1;
-      })
-      .appendTo(this.$tableColumnsContainer);
+    // Checked columns first, in their current order; then the rest, in their
+    // default order.
+    const select = this.$tableColumnsContainer[0];
+    const options = select.options;
+    select.options = [
+      ...options.filter((option) => option.checked),
+      ...options
+        .filter((option) => !option.checked)
+        .sort((a, b) => defaultOrder[a.value] - defaultOrder[b.value]),
+    ];
   },
 
   revert: function () {
@@ -4789,13 +4769,7 @@ const ViewMenu = Garnish.Base.extend({
     this.updateTableColumnField();
     this.tidyTableColumnField();
 
-    this.$tableColumnsContainer
-      .data('sortableCheckboxSelect')
-      .on('sortChange', () => {
-        this._onTableColumnChange();
-      });
-
-    this._getTableColumnCheckboxes().on('change', (ev) => {
+    this.$tableColumnsContainer.on('change craft-order-change', () => {
       this._onTableColumnChange();
     });
 
