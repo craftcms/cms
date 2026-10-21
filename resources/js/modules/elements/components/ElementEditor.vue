@@ -557,7 +557,12 @@
         <slot name="details-header" :payload="payload" />
 
         <MetadataDetailsContent :html="payload.metadataHtml">
-          <template v-if="sidebarPayload || formWrapper" #default>
+          <!-- Only when there's something to show above the metadata: a form
+          wrapper has nothing of its own unless it says so through showDetails. -->
+          <template
+            v-if="sidebarPayload || (formWrapper && showDetails)"
+            #default
+          >
             <component
               :is="formWrapper ?? 'div'"
               v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
