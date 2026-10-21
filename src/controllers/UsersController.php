@@ -194,12 +194,14 @@ class UsersController extends Controller
                 'class' => RateLimiter::class,
                 'only' => ['send-password-reset-email'],
                 'enableRateLimitHeaders' => false,
-                'user' => fn() => new IpRateLimitIdentity([
-                    'limit' => 1,
-                    'window' => 1,
-                    'keyPrefix' => 'reset-password',
-                    'ip' => Craft::$app->getRequest()->getUserIP() ?? 'unknown',
-                ]),
+                'user' => fn() => IpRateLimitIdentity::createDefault('reset-password'),
+            ],
+            'loginRateLimiter' => [
+                'class' => RateLimiter::class,
+                'only' => ['login'],
+                'enableRateLimitHeaders' => false,
+                // only count login attempts, not login page requests
+                'user' => fn() => $this->request->getIsPost() ? IpRateLimitIdentity::createDefault('login') : null,
             ],
         ];
     }
