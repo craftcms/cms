@@ -16,6 +16,13 @@
 - Added the `project-config/check` command, which checks project config schema compatibility without applying changes.
 - Added the `{% render %}` Twig tag. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, user groups, category groups, and tag groups.
+- Added the `sites`, `site`, `sections`, `section`, `entryTypes`, `entryType`, `volumes`, `volume`, `userGroups`, `userGroup`, `categoryGroups`, `categoryGroup`, `tagGroups`, and `tagGroup` GraphQL queries, which are available when the schema includes the corresponding components.
+- Elements now have `site` fields in GraphQL, when the schema includes the “View sites” component.
+- Entries now have `section` and `type` fields in GraphQL, when the schema includes the “View sections” and “View entry types” components.
+- Assets now have `volume` fields in GraphQL, when the schema includes the “View volumes” component.
+- Users now have `groups` fields in GraphQL, when the schema includes the “View user groups” component.
+- Categories and tags now have `group` fields in GraphQL, when the schema includes the “View category groups” and “View tag groups” components.
 
 ### Extensibility
 
@@ -29,6 +36,14 @@
 - Added `craft\elements\db\NestedElementQueryTrait::mustHaveOwner()`.
 - Added `craft\fieldlayoutelements\BaseField::defaultTip()`.
 - Added `craft\fieldlayoutelements\BaseField::defaultWarning()`.
+- Added `craft\gql\queries\Settings`.
+- Added `craft\gql\types\CategoryGroup`.
+- Added `craft\gql\types\EntryType`.
+- Added `craft\gql\types\Section`.
+- Added `craft\gql\types\Site`.
+- Added `craft\gql\types\TagGroup`.
+- Added `craft\gql\types\UserGroup`.
+- Added `craft\gql\types\Volume`.
 - Added `craft\helpers\Template::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - Added `craft\i18n\Locale::languageId()`.
 - Added `craft\services\Images::getSupportsBmp()`.
