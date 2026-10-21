@@ -14,6 +14,7 @@ use craft\elements\actions\DeleteForSite;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
+use craft\helpers\ElementHelper;
 use craft\models\Site;
 use craft\models\Volume;
 use craft\queue\jobs\PropagateElements;
@@ -188,9 +189,18 @@ class AssetPropagationTest extends TestCase
         self::assertSame([1000], $this->siteIdsForAsset($asset));
         self::assertFalse((new Query())->from(Table::ASSETS_SITES)->where(['assetId' => $asset->id, 'siteId' => 1001])->exists());
 
-        // Assets can't be deleted for the only site they exist in
+        // The UI shouldn't offer to delete assets for the only site they exist in
         $site1Asset = Craft::$app->getAssets()->getAssetById($asset->id, 1000);
-        self::assertFalse($elementsService->canDeleteForSite($site1Asset, $admin));
+        self::assertFalse(ElementHelper::isMultiSite($site1Asset));
+
+        // ...but if it happens anyway, they should be soft-deleted, like a normal asset deletion
+        self::assertTrue($elementsService->canDeleteForSite($site1Asset, $admin));
+        self::assertFalse($elementsService->canDeleteForSite($site1Asset, new User()));
+        $elementsService->deleteElementForSite($site1Asset);
+        self::assertSame([], $this->siteIdsForAsset($asset));
+        $trashedAsset = Asset::find()->id($asset->id)->siteId(1000)->trashed()->one();
+        self::assertNotNull($trashedAsset);
+        self::assertNotNull($trashedAsset->dateDeleted);
 
         // Assets in volumes that propagate to all sites can't be deleted for a site
         $this->volume->propagationMethod = PropagationMethod::All;

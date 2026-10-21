@@ -2791,9 +2791,10 @@ class Elements extends Component
         }
 
         // Fully delete any single-site elements
+        // (except assets, which get soft-deleted, the same as when they're deleted normally)
         if (!empty($singleSiteElements)) {
             foreach ($singleSiteElements as $element) {
-                $this->deleteElement($element, true);
+                $this->deleteElement($element, !$element instanceof Asset);
             }
         }
     }

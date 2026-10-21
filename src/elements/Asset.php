@@ -1542,9 +1542,9 @@ class Asset extends Element
             return parent::canDeleteForSite($user);
         }
 
-        // Don't allow assets to be deleted for the only site they exist in, as that would delete their files
+        // Assets that only exist in this site will be deleted normally, so require normal delete permissions
         if (!ElementHelper::isMultiSite($this)) {
-            return false;
+            return $this->canDelete($user);
         }
 
         return parent::canDeleteForSite($user) || $this->canDelete($user);
