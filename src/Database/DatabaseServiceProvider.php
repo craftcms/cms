@@ -14,10 +14,6 @@ use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\Database\Commands\MigrateMigrationTableCommand;
 use CraftCms\Cms\Database\Commands\RepairCommand;
 use CraftCms\Cms\Database\Commands\RestoreCommand;
-use CraftCms\Cms\Database\Connections\MariaDbConnection;
-use CraftCms\Cms\Database\Connections\MySqlConnection;
-use CraftCms\Cms\Database\Connections\PostgresConnection;
-use CraftCms\Cms\Database\Connections\SQLiteConnection;
 use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Support\Query;
@@ -46,12 +42,6 @@ class DatabaseServiceProvider extends ServiceProvider
     public function register(): void
     {
         ConnectionConfig::normalizeConfiguredConnections($this->app->make(Repository::class));
-
-        // Connections that bind dates in UTC, as they're stored
-        Connection::resolverFor('mysql', fn ($pdo, $database, $prefix, $config) => new MySqlConnection($pdo, $database, $prefix, $config));
-        Connection::resolverFor('mariadb', fn ($pdo, $database, $prefix, $config) => new MariaDbConnection($pdo, $database, $prefix, $config));
-        Connection::resolverFor('pgsql', fn ($pdo, $database, $prefix, $config) => new PostgresConnection($pdo, $database, $prefix, $config));
-        Connection::resolverFor('sqlite', fn ($pdo, $database, $prefix, $config) => new SQLiteConnection($pdo, $database, $prefix, $config));
 
         $this->app
             ->when(Migrator::class)
@@ -200,7 +190,7 @@ class DatabaseServiceProvider extends ServiceProvider
                 $this->where($this->from.'.id', '=', $id);
             }
 
-            return $this->update(['dateDeleted' => now()]);
+            return $this->update(['dateDeleted' => Query::prepareDateForDb(now())]);
         });
 
         Builder::macro('restore', function (?int $id = null): int {

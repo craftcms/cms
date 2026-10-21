@@ -14,13 +14,12 @@ beforeEach(function () {
     Date::setTestNow('2026-08-25 12:00:00');
 });
 
-it('binds dates in UTC', function () {
+it('leaves dates that code outside Craft binds to Laravel', function () {
     $site = Site::factory()->create();
 
     DB::table(Table::SITES)->where('id', $site->id)->update(['dateUpdated' => now()]);
 
-    expect(DB::table(Table::SITES)->where('id', $site->id)->value('dateUpdated'))->toBe('2026-08-25 19:00:00')
-        ->and(DB::table(Table::SITES)->where('id', $site->id)->where('dateUpdated', now())->exists())->toBeTrue();
+    expect(DB::table(Table::SITES)->where('id', $site->id)->value('dateUpdated'))->toBe('2026-08-25 12:00:00');
 });
 
 it('stores model timestamps in UTC and reads them back as the same moment', function () {

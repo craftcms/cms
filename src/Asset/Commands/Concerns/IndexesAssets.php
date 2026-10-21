@@ -16,6 +16,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -279,7 +280,7 @@ trait IndexesAssets
                         ->update([
                             'volumeId' => $e->volume->id,
                             'folderId' => $e->folder->id,
-                            'dateUpdated' => now(),
+                            'dateUpdated' => Query::prepareDateForDb(now()),
                         ]);
 
                     AssetIndexer::indexFileByEntry($e->indexEntry, $this->cacheRemoteImages, false);

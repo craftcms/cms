@@ -17,6 +17,7 @@ use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Structures;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\BulkOps;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Exception;
@@ -355,7 +356,7 @@ readonly class ElementDuplicates
                     'elementId' => $to->id,
                     'siteId' => $to->siteId,
                     'attribute' => $attribute,
-                    'dateUpdated' => $to->dateUpdated,
+                    'dateUpdated' => Query::prepareDateForDb($to->dateUpdated),
                     'propagated' => false,
                     'userId' => $userId,
                 ];
@@ -376,7 +377,7 @@ readonly class ElementDuplicates
                         'siteId' => $to->siteId,
                         'fieldId' => $field->id,
                         'layoutElementUid' => $field->layoutElement->uid,
-                        'dateUpdated' => $to->dateUpdated,
+                        'dateUpdated' => Query::prepareDateForDb($to->dateUpdated),
                         'propagated' => false,
                         'userId' => $userId,
                     ];

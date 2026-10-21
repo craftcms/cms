@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\BulkOp\Events\BulkOpCompleted;
 use CraftCms\Cms\Element\BulkOp\Events\BulkOpStarting;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\ConnectionInterface;
@@ -82,7 +83,7 @@ class BulkOps
             return;
         }
 
-        $timestamp = now();
+        $timestamp = Query::prepareDateForDb(now());
 
         foreach ($this->activeKeys() as $key) {
             $this->connection

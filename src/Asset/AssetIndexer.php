@@ -213,7 +213,7 @@ class AssetIndexer
         return DB::transaction(function () use ($indexList, $sessionId, $volume): int {
             $values = [];
             $inserted = 0;
-            $now = now();
+            $now = Query::prepareDateForDb(now());
 
             /** @var FsListing $volumeListing */
             foreach ($indexList as $volumeListing) {
@@ -221,7 +221,7 @@ class AssetIndexer
                     $timestamp = null;
                 } else {
                     $dateModified = $volumeListing->getDateModified();
-                    $timestamp = $dateModified !== null ? Date::createFromTimestampUTC($dateModified) : $now;
+                    $timestamp = $dateModified !== null ? Query::prepareDateForDb(Date::createFromTimestampUTC($dateModified)) : $now;
                 }
 
                 $values[] = [
@@ -353,7 +353,7 @@ class AssetIndexer
             'files' => [],
         ];
 
-        $cutoff = $session->dateCreated;
+        $cutoff = Query::prepareDateForDb($session->dateCreated);
 
         $volumeList = Json::decodeIfJson($session->indexedVolumes);
         if (! $volumeList || ! is_array($volumeList)) {
@@ -452,7 +452,7 @@ class AssetIndexer
             ->leftJoin(new Alias(Table::ASSETINDEXDATA, 'countedIndexData'), fn (JoinClause $join) => $join
                 ->whereColumn('countedAssets.id', 'countedIndexData.recordId')
                 ->where('countedIndexData.isDir', false))
-            ->where('countedAssets.dateCreated', '<', $session->dateCreated)
+            ->where('countedAssets.dateCreated', '<', Query::prepareDateForDb($session->dateCreated))
             ->whereNull('countedElements.dateDeleted')
             ->whereNull('countedIndexData.id');
     }

@@ -11,6 +11,7 @@ use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Query;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -167,7 +168,7 @@ class ActivityEvent extends BaseModel
     #[Scope]
     protected function occurredFrom(Builder $query, DateTimeInterface $date): Builder
     {
-        return $query->where('occurredAt', '>=', $date);
+        return $query->where('occurredAt', '>=', Query::prepareDateForDb($date));
     }
 
     /**
@@ -177,7 +178,7 @@ class ActivityEvent extends BaseModel
     #[Scope]
     protected function occurredUntil(Builder $query, DateTimeInterface $date): Builder
     {
-        return $query->where('occurredAt', '<=', $date);
+        return $query->where('occurredAt', '<=', Query::prepareDateForDb($date));
     }
 
     /**

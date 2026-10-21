@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\ElementActivity as ElementActivityData;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -33,7 +34,7 @@ readonly class ElementActivity
         $results = DB::table(Table::ELEMENTACTIVITY)
             ->select(['userId', 'siteId', 'draftId', 'type', 'timestamp'])
             ->where('elementId', $element->getCanonicalId())
-            ->where('timestamp', '>', now()->subMinute())
+            ->where('timestamp', '>', Query::prepareDateForDb(now()->subMinute()))
             ->latest('timestamp')
             ->when(
                 $excludeUserId,
@@ -141,7 +142,7 @@ readonly class ElementActivity
             'siteId' => $element->siteId,
             'draftId' => $isCanonical ? null : $element->draftId,
             'type' => $type->value,
-            'timestamp' => now(),
+            'timestamp' => Query::prepareDateForDb(now()),
         ], ['elementId', 'userId', 'type']);
     }
 }

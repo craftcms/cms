@@ -34,6 +34,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
@@ -247,7 +248,7 @@ class Plugins
                     ->where('id', $row['id'])
                     ->update([
                         'version' => $plugin->version,
-                        'dateUpdated' => now(),
+                        'dateUpdated' => Query::prepareDateForDb(now()),
                     ]);
 
                 $anyVersionsChanged = true;
@@ -516,7 +517,7 @@ class Plugins
                     'handle' => $handle,
                     'version' => $plugin->version,
                     'schemaVersion' => $plugin->schemaVersion,
-                    'installDate' => $now = now(),
+                    'installDate' => $now = Query::prepareDateForDb(now()),
                     'dateCreated' => $now,
                     'dateUpdated' => $now,
                     'uid' => Str::uuid(),
@@ -844,7 +845,7 @@ class Plugins
             ->update([
                 'version' => $plugin->version,
                 'schemaVersion' => $plugin->schemaVersion,
-                'dateUpdated' => now(),
+                'dateUpdated' => Query::prepareDateForDb(now()),
             ]);
 
         // Update our cache of the versions

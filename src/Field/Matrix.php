@@ -53,6 +53,7 @@ use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Choice;
@@ -1710,7 +1711,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ->where('fieldId', $outgoingField->id)
             ->update([
                 'fieldId' => $this->id,
-                'dateUpdated' => now(),
+                'dateUpdated' => Query::prepareDateForDb(now()),
             ]);
 
         parent::afterMergeFrom($outgoingField);

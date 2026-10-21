@@ -6,6 +6,7 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Console\Concerns\InteractsWithIO;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Console\View\Components\Factory;
@@ -57,7 +58,7 @@ abstract class GarbageCollectionAction
                 fn (Builder $query) => $query->where(
                     "{$tableAlias}dateDeleted",
                     '<',
-                    now()->subSeconds($this->generalConfig->softDeleteDuration),
+                    Query::prepareDateForDb(now()->subSeconds($this->generalConfig->softDeleteDuration)),
                 ),
             );
     }
