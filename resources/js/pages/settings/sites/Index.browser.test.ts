@@ -259,3 +259,18 @@ it('retains group rename and creation dialogs while hiding mutations in read-onl
   expect(layout.subnavActions).toEqual([]);
   expect(readOnlyHost.querySelector('craft-action-menu')).toBeNull();
 });
+
+it('describes the group name field with its environment variable hint', async () => {
+  mount();
+  const create = layout.subnavActions?.[0];
+  if (!create || !('onClick' in create))
+    throw new Error('Missing group creation action');
+  create.onClick?.(new MouseEvent('click'));
+  const name = page.getByRole('textbox', {name: 'Group Name'});
+  await expect.element(name).not.toHaveAttribute('readonly');
+  await expect
+    .element(name)
+    .toHaveAccessibleDescription(
+      /^What this group will be called in the control panel\.\s+Type \$ to choose an environment variable\.\s+Learn more$/
+    );
+});
