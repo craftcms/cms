@@ -18,9 +18,15 @@ export const FOCUS_SCOPE_ATTRIBUTE = 'data-focus-scope';
 /** Resolves where focus should go, or `null` to leave it to the caller. */
 export type FocusReturnResolver = () => HTMLElement | null;
 
-/** Whether `el` can take focus right now. */
+/**
+ * Whether `el` can take focus right now.
+ *
+ * Unlike `isVisible()` in `utilities/dom`, a transparent element still counts,
+ * since it can still be focused; and unlike the focus trap's tabbable check, so
+ * does one with `tabindex="-1"`, such as a panel focused programmatically.
+ */
 export function isFocusable(el: Element | null | undefined): el is HTMLElement {
-  if (!(el instanceof HTMLElement) || !el.isConnected) {
+  if (!(el instanceof HTMLElement) || !el.isConnected || el === document.body) {
     return false;
   }
 
@@ -30,7 +36,7 @@ export function isFocusable(el: Element | null | undefined): el is HTMLElement {
 
   return typeof el.checkVisibility === 'function'
     ? el.checkVisibility({visibilityProperty: true})
-    : !el.closest('[hidden]');
+    : !closestComposed(el, '[hidden]');
 }
 
 /** `closest()` that carries on past shadow roots to their hosts. */
@@ -87,7 +93,11 @@ function scopeKeyOf(el: Element): string | null {
 }
 
 function findMenuByKey(key: string, scopeKey: string | null): HTMLElement[] {
-  return [...document.querySelectorAll<HTMLElement>(MENU_SELECTOR)].filter(
+  const keyed = MENU_SELECTOR.split(', ')
+    .map((menu) => `${menu}[${FOCUS_KEY_ATTRIBUTE}]`)
+    .join(', ');
+
+  return [...document.querySelectorAll<HTMLElement>(keyed)].filter(
     (menu) =>
       menu.getAttribute(FOCUS_KEY_ATTRIBUTE) === key &&
       scopeKeyOf(menu) === scopeKey

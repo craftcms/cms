@@ -20,7 +20,7 @@ import {matrixField} from '@/modules/matrix/selection-menu';
 // selector (see `FieldLayoutDesigner.refreshField()`).
 // SAFETY: craft:edit-field is a registered CustomEvent with a {fieldId} payload.
 window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
-  const {fieldId, trigger, returnFocus} = ev.detail ?? {};
+  const {fieldId, trigger} = ev.detail ?? {};
 
   if (!fieldId) {
     return;
@@ -37,7 +37,6 @@ window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
 
   void openSlideout(url, {
     opener: trigger instanceof HTMLElement ? trigger : null,
-    returnFocus,
     onSaved: ({data, draft}: SlideoutSaveResult) => {
       // An autosaved draft isn't a finished save; don't refresh on it.
       if (!draft) {
@@ -52,7 +51,7 @@ window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
 // Admin-only; the server only emits the item when admin changes are allowed.
 // SAFETY: craft:edit-entry-type is a registered CustomEvent with an {entryTypeId} payload.
 window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
-  const {entryTypeId, trigger, returnFocus} = ev.detail ?? {};
+  const {entryTypeId, trigger} = ev.detail ?? {};
 
   if (!entryTypeId) {
     return;
@@ -62,7 +61,6 @@ window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
 
   void openSlideout(url, {
     opener: trigger instanceof HTMLElement ? trigger : null,
-    returnFocus,
   });
 }) as EventListener);
 
@@ -71,13 +69,13 @@ window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
 // the legacy `Craft.ui.createCopyTextPrompt` handler did.
 // SAFETY: craft:copy-text-prompt is a registered CustomEvent with a {label, value} payload.
 window.addEventListener('craft:copy-text-prompt', ((ev: CustomEvent) => {
-  const {label, value, returnFocus} = ev.detail ?? {};
+  const {label, value} = ev.detail ?? {};
 
   if (typeof value !== 'string') {
     return;
   }
 
-  createCopyTextPrompt({label, value, returnFocus});
+  createCopyTextPrompt({label, value});
 }) as EventListener);
 
 /**

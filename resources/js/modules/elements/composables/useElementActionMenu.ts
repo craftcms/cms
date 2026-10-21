@@ -1,6 +1,5 @@
 import {router} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
-import {focusReturnFor} from '@craftcms/ui/utilities/focus-return';
 import {computed, type ComputedRef} from 'vue';
 import {openSlideout, type SlideoutController} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
@@ -127,6 +126,9 @@ export function createElementActionDispatcher({
     destructive = false,
     event?: Event
   ): void {
+    const trigger =
+      event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+
     switch (behavior.type) {
       case 'link':
         window.open(
@@ -196,18 +198,8 @@ export function createElementActionDispatcher({
           behavior.entryTypeFromField && entryTypeId
             ? Craft.getCpUrl(`settings/entry-types/${entryTypeId}`)
             : behavior.url;
-        // The menu item, which is hidden once the menu closes, so focus is
-        // sent back to the menu's button instead.
-        const trigger = event?.currentTarget;
-
-        if (trigger instanceof HTMLElement) {
-          void openSlideout(url, {
-            opener: trigger,
-            returnFocus: focusReturnFor(trigger),
-          });
-        } else {
-          void openSlideout(url);
-        }
+        // The store sends focus to the menu's button once the item is hidden.
+        void openSlideout(url, trigger ? {opener: trigger} : {});
 
         return;
       }

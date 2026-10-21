@@ -107,7 +107,7 @@ Set `label` to say whose actions these are, such as "Actions for Blog post", whe
 
 In slot-based mode, build the items from `craft-action-item`. Arrow-key navigation only moves between `craft-action-item` elements, so plain buttons or links in the content are reachable by Tab alone.
 
-When an item opens a dialog or slideout, send focus back to the menu's button once it closes, because the item itself is hidden by then. An `event` action's `detail.returnFocus` does this: pass it to the dialog's `returnFocus`. If the menu can re-render while the dialog is open, give it a `data-focus-key` that stays the same across renders, and a `data-focus-scope` on the region it lives in when the same key can appear in more than one place, such as a slideout panel.
+When an item opens a `craft-dialog` or a control panel slideout, focus goes back to the menu's button once it closes, because the item itself is hidden by then. Both do this on their own. For another kind of overlay, pass an `event` action's `detail.returnFocus` to it, and call it on close to get the button. If the menu can re-render while the overlay is open, give it a `data-focus-key` that stays the same across renders, and a `data-focus-scope` on the region it lives in when the same key can appear in more than one place, such as a slideout panel.
 
 ## Properties
 

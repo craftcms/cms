@@ -5,7 +5,11 @@ import {styleMap} from 'lit/directives/style-map.js';
 import hostStyles from '@src/styles/host.styles.js';
 import {t} from '@src/utilities/translate.js';
 import {trapFocus} from '@src/utilities/focus-trap.js';
-import {isFocusable} from '@src/utilities/focus-return.js';
+import {
+  focusReturnFor,
+  isFocusable,
+  type FocusReturnResolver,
+} from '@src/utilities/focus-return.js';
 import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import styles from './dialog.styles.js';
 import '../icon/icon.js';
@@ -151,20 +155,24 @@ export default class CraftDialog extends LitElement {
   /**
    * Decides where focus goes once the dialog closes.
    *
-   * Called with whatever had focus when the dialog opened, and only when focus
-   * is in the dialog as it closes, the same rule the browser's own return
-   * follows. If it returns an element that can take focus, that element gets
-   * it; otherwise the browser's own return applies, which goes back to that
-   * opener. Set it when the opener may not be there to take focus — an item
-   * in a menu that has since closed, or content that re-renders while the
-   * dialog is open — and look the target up when it's called rather than
-   * holding on to an element. For menu actions, `focusReturnFor()` from
-   * `utilities/focus-return` does this.
+   * Called with whatever had focus when the dialog opened, when the dialog was
+   * modal, held focus as it closed, or left focus on the page body. If it
+   * returns an element that can take focus, that element gets it.
+   *
+   * Without it, or when it returns nothing that can take focus, focus goes
+   * back to the opener. When the opener can't take it by then, such as an item
+   * in a menu that has since closed, focus goes to that menu's button instead,
+   * as `focusReturnFor()` from `utilities/focus-return` finds it. Set this for
+   * any other target, and look it up when it's called rather than holding on
+   * to an element.
    */
   @property({attribute: false})
   returnFocus?: (opener: HTMLElement | null) => HTMLElement | null | undefined;
 
   #opener: HTMLElement | null = null;
+
+  /** {@link focusReturnFor} the opener, captured while its menus are intact. */
+  #defaultReturn: FocusReturnResolver | null = null;
 
   /**
    * Adds grips along the surface's inline-end and block-end edges, and in
@@ -220,6 +228,7 @@ export default class CraftDialog extends LitElement {
     this.#releaseFocusTrap = null;
 
     this.#opener = null;
+    this.#defaultReturn = null;
 
     // Removed while still open — an unmounting Vue view, say — must not leave
     // the page stuck.
@@ -369,6 +378,7 @@ export default class CraftDialog extends LitElement {
     const dialog = this.dialogElement;
     const focused = document.activeElement;
     this.#opener = focused instanceof HTMLElement ? focused : null;
+    this.#defaultReturn = focusReturnFor(this.#opener);
 
     if (dialog && !dialog.open) {
       // `showModal()` throws if the dialog is already open, hence the guard.
@@ -391,9 +401,11 @@ export default class CraftDialog extends LitElement {
   #hideDialog(): void {
     const dialog = this.dialogElement;
     const opener = this.#opener;
+    const defaultReturn = this.#defaultReturn;
     this.#opener = null;
-    // Only known while the native dialog is still open. When it was closed
-    // directly instead, the browser's own return has already run and stands.
+    this.#defaultReturn = null;
+    // Only known while the native dialog is still open. When the platform
+    // closed it by itself, its own return has already run.
     let focusWasInside = false;
 
     if (dialog?.open) {
@@ -407,20 +419,33 @@ export default class CraftDialog extends LitElement {
     this.#releaseScrollLock();
     swallowHeldEnterKeyup();
 
-    if (focusWasInside) {
-      this.#returnFocusToTarget(opener);
+    const active = document.activeElement;
+    const focusIsLost = !isFocusable(active) || this.contains(active);
+
+    if (!this.nonModal || focusWasInside || focusIsLost) {
+      this.#returnFocusToTarget(opener, defaultReturn, focusIsLost);
     }
   }
 
   /**
-   * Runs after the browser's own return, which `close()` does synchronously,
-   * and only when focus was in the dialog — as the browser's own return is.
+   * Runs after the browser's own return, which `close()` does synchronously.
+   * That return fails when the opener can't take focus, leaving focus on the
+   * page body, and the default target steps in.
    */
-  #returnFocusToTarget(opener: HTMLElement | null): void {
+  #returnFocusToTarget(
+    opener: HTMLElement | null,
+    defaultReturn: FocusReturnResolver | null,
+    focusIsLost: boolean
+  ): void {
     const target = this.returnFocus?.(opener);
 
     if (isFocusable(target)) {
       target.focus();
+      return;
+    }
+
+    if (focusIsLost) {
+      defaultReturn?.()?.focus();
     }
   }
 

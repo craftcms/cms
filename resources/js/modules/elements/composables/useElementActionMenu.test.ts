@@ -105,10 +105,10 @@ describe('useElementActionMenu', () => {
       ])
     );
 
-    expect(openSlideout).toHaveBeenCalledWith('/admin/settings/sections/1');
+    expect(openSlideout).toHaveBeenCalledWith('/admin/settings/sections/1', {});
   });
 
-  it('sends focus back to the menu button when its slideout closes', () => {
+  it('opens its slideout with the menu item as the opener', () => {
     container = document.createElement('div');
     container.innerHTML = `
       <craft-action-menu>
@@ -117,7 +117,6 @@ describe('useElementActionMenu', () => {
       </craft-action-menu>
     `;
     document.body.append(container);
-    const invoker = container.querySelector('[slot="invoker"]');
     const element = container.querySelector('craft-action-item')!;
     const [item] = createElementActionMenu()([
       {
@@ -134,8 +133,7 @@ describe('useElementActionMenu', () => {
 
     const [url, options] = vi.mocked(openSlideout).mock.lastCall!;
     expect(url).toBe('/admin/settings/entry-types/3');
-    expect(options?.opener).toBe(element);
-    expect(options?.returnFocus?.(element)).toBe(invoker);
+    expect(options).toEqual({opener: element});
   });
 
   it("opens the sidebar's entry type rather than the saved one", () => {
@@ -159,7 +157,10 @@ describe('useElementActionMenu', () => {
     }
     item.onClick?.(new MouseEvent('click'));
 
-    expect(openSlideout).toHaveBeenCalledWith('/admin/settings/entry-types/7');
+    expect(openSlideout).toHaveBeenCalledWith(
+      '/admin/settings/entry-types/7',
+      {}
+    );
   });
 
   it('posts a submit behavior with its params and redirect', () => {

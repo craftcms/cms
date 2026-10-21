@@ -75,6 +75,23 @@ describe('isFocusable', () => {
     expect(isFocusable(button)).toBe(false);
   });
 
+  it('rejects an element in a shadow root whose host is hidden, without checkVisibility()', () => {
+    const hidden = document.createElement('div');
+    hidden.hidden = true;
+    const host = document.createElement('div');
+    const button = document.createElement('button');
+    Object.defineProperty(button, 'checkVisibility', {value: undefined});
+    host.attachShadow({mode: 'open'}).append(button);
+    hidden.append(host);
+    document.body.append(hidden);
+
+    expect(isFocusable(button)).toBe(false);
+  });
+
+  it('rejects the page body', () => {
+    expect(isFocusable(document.body)).toBe(false);
+  });
+
   it('rejects an element in a shadow root whose host is inside an inert element', () => {
     const inert = document.createElement('div');
     inert.inert = true;
@@ -137,6 +154,18 @@ describe('focusReturnFor', () => {
     const resolve = focusReturnFor(original.item);
 
     const replacement = menu('field:menu');
+    original.host.replaceWith(replacement.host);
+
+    expect(resolve()).toBe(replacement.invoker);
+  });
+
+  it('finds a re-rendered menu whose key has selector characters in it', () => {
+    const key = 'field:"title"]';
+    const original = menu(key);
+    document.body.append(original.host);
+    const resolve = focusReturnFor(original.item);
+
+    const replacement = menu(key);
     original.host.replaceWith(replacement.host);
 
     expect(resolve()).toBe(replacement.invoker);

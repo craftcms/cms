@@ -181,14 +181,13 @@ it('leaves focus alone when it is outside the dialog at close', async () => {
   expect(document.activeElement).toBe(outside);
 });
 
-it('leaves the native return alone when the native dialog is closed directly', async () => {
+it('applies returnFocus when the native dialog is closed directly', async () => {
   const invoker = button('Open');
   const target = button('Target');
   document.body.append(invoker, target);
   invoker.focus();
-  const returnFocus = vi.fn(() => target);
   const dialog = await openDialog((dialog) => {
-    dialog.returnFocus = returnFocus;
+    dialog.returnFocus = () => target;
   });
 
   const native = shadow<HTMLDialogElement>(dialog, 'dialog');
@@ -200,8 +199,7 @@ it('leaves the native return alone when the native dialog is closed directly', a
   await dialog.updateComplete;
 
   expect(dialog.opened).toBe(false);
-  expect(returnFocus).not.toHaveBeenCalled();
-  expect(document.activeElement).toBe(invoker);
+  expect(document.activeElement).toBe(target);
 });
 
 it('keeps the native return target when returnFocus returns nothing', async () => {
@@ -222,7 +220,10 @@ it('keeps the native return target when returnFocus returns nothing', async () =
   expect(document.activeElement).toBe(invoker);
 });
 
-it('returns focus to the action menu invoker after a menu item opens it', async () => {
+async function openFromMenuItem(): Promise<{
+  dialog: CraftDialog;
+  menuInvoker: HTMLButtonElement;
+}> {
   const {userEvent} = await import('@vitest/browser/context');
   await import('../action-menu/action-menu.js');
   const template = document.createElement('template');
@@ -233,6 +234,7 @@ it('returns focus to the action menu invoker after a menu item opens it', async 
         <craft-action-item>Copy attribute name</craft-action-item>
       </div>
     </craft-action-menu>
+    <craft-dialog label="Copy attribute name"><p>Text</p></craft-dialog>
   `;
   document.body.append(template.content);
   const menu = document.querySelector('craft-action-menu') as HTMLElement & {
@@ -243,35 +245,59 @@ it('returns focus to the action menu invoker after a menu item opens it', async 
   const item = menu.querySelector('craft-action-item') as HTMLElement & {
     action: unknown;
   };
+  const dialog = document.querySelector('craft-dialog') as CraftDialog;
   item.action = {type: 'event', name: 'test:open-dialog'};
+  window.addEventListener('test:open-dialog', () => (dialog.opened = true), {
+    once: true,
+  });
   await menu.updateComplete;
 
-  const dialog = document.createElement('craft-dialog') as CraftDialog;
-  dialog.label = 'Copy attribute name';
-  document.body.append(dialog);
-  const onOpen = (event: Event) => {
-    dialog.returnFocus = (event as CustomEvent).detail.returnFocus;
-    dialog.opened = true;
-  };
-  window.addEventListener('test:open-dialog', onOpen);
+  menuInvoker.focus();
+  await userEvent.keyboard('{Enter}');
+  await menu.updateComplete;
+  item.focus();
+  await userEvent.keyboard('{Enter}');
+  await dialog.updateComplete;
+  expect(dialog.opened).toBe(true);
 
-  try {
-    menuInvoker.focus();
-    await userEvent.keyboard('{Enter}');
-    await menu.updateComplete;
-    item.focus();
-    await userEvent.keyboard('{Enter}');
-    await dialog.updateComplete;
-    expect(dialog.opened).toBe(true);
+  return {dialog, menuInvoker};
+}
 
-    await userEvent.keyboard('{Escape}');
-    await dialog.updateComplete;
+it('returns focus to the action menu invoker after a menu item opens it', async () => {
+  const {userEvent} = await import('@vitest/browser/context');
+  const {dialog, menuInvoker} = await openFromMenuItem();
 
-    expect(dialog.opened).toBe(false);
-    expect(document.activeElement).toBe(menuInvoker);
-  } finally {
-    window.removeEventListener('test:open-dialog', onOpen);
-  }
+  await userEvent.keyboard('{Escape}');
+  await dialog.updateComplete;
+
+  expect(dialog.opened).toBe(false);
+  expect(document.activeElement).toBe(menuInvoker);
+});
+
+it('returns focus to the action menu invoker when focus left the dialog before it closed', async () => {
+  const {dialog, menuInvoker} = await openFromMenuItem();
+
+  (deepActiveElement() as HTMLElement).blur();
+  expect(dialog.matches(':focus-within')).toBe(false);
+  dialog.opened = false;
+  await dialog.updateComplete;
+
+  expect(document.activeElement).toBe(menuInvoker);
+});
+
+it('returns focus to the action menu invoker when the native dialog closes by itself', async () => {
+  const {dialog, menuInvoker} = await openFromMenuItem();
+
+  const native = shadow<HTMLDialogElement>(dialog, 'dialog');
+  const closed = new Promise((resolve) =>
+    native.addEventListener('close', resolve, {once: true})
+  );
+  native.close();
+  await closed;
+  await dialog.updateComplete;
+
+  expect(dialog.opened).toBe(false);
+  expect(document.activeElement).toBe(menuInvoker);
 });
 
 it('closes on Escape through craft-before-hide', async () => {

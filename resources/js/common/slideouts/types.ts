@@ -55,10 +55,10 @@ export interface OpenSlideoutOptions {
   /**
    * Decides where focus goes when the panel closes, called with the opener.
    *
-   * For an opener that may not be there to take focus by then — an item in a
-   * menu that has closed, or content that re-renders. Menu actions get one as
-   * `detail.returnFocus`. When it returns nothing that can take focus, the
-   * opener gets focus.
+   * Only needed for a target other than the opener. When it's unset or returns
+   * nothing that can take focus, focus goes to the opener, then to the button
+   * of the menu the opener sat in once that has closed, then to the panel the
+   * opener was in.
    */
   returnFocus?: SlideoutReturnFocus;
   /**

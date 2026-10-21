@@ -1,6 +1,9 @@
 import type {VariantKey} from '@src/constants/variants';
 import {actionClient} from '@src/utilities/api/actionClient';
-import {focusReturnFor} from '@src/utilities/focus-return';
+import {
+  focusReturnFor,
+  type FocusReturnResolver,
+} from '@src/utilities/focus-return';
 
 export type BaseAction =
   | {type: 'clipboard'; value: string}
@@ -110,6 +113,32 @@ export function normalizeAction(
   }
 }
 
+/**
+ * The detail for an `event` action. `returnFocus` is worked out on first read,
+ * while the listener is still handling the event, so dispatching doesn't walk
+ * the trigger's menus for listeners that never use it.
+ */
+function eventDetail(
+  detail: Record<string, unknown> | undefined,
+  {trigger, sourceEvent}: RunActionOptions
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {
+    ...(detail ?? {}),
+    ...(sourceEvent ? {sourceEvent} : {}),
+  };
+
+  if (trigger) {
+    result.trigger = trigger;
+    let returnFocus: FocusReturnResolver | undefined;
+    Object.defineProperty(result, 'returnFocus', {
+      enumerable: true,
+      get: () => (returnFocus ??= focusReturnFor(trigger)),
+    });
+  }
+
+  return result;
+}
+
 export async function runAction(
   action: BaseAction,
   options: RunActionOptions = {}
@@ -168,16 +197,7 @@ export async function runAction(
 
       window.dispatchEvent(
         new CustomEvent(action.name, {
-          detail: {
-            ...(action.detail ?? {}),
-            ...(options.trigger
-              ? {
-                  trigger: options.trigger,
-                  returnFocus: focusReturnFor(options.trigger),
-                }
-              : {}),
-            ...(options.sourceEvent ? {sourceEvent: options.sourceEvent} : {}),
-          },
+          detail: eventDetail(action.detail, options),
         })
       );
       break;
