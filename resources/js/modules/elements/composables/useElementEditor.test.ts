@@ -1691,7 +1691,10 @@ describe('useElementEditor', () => {
         options.onFinish?.({});
         await nextTick();
       },
-      /** A response that failed validation, landing in Inertia's order. */
+      /**
+       * A response that failed validation, landing in Inertia's order: the
+       * errors are set straight after the page, before Vue flushes.
+       */
       async fail(
         page: {props: Record<string, unknown>},
         props: any,
@@ -1699,8 +1702,8 @@ describe('useElementEditor', () => {
       ) {
         const {options} = this.last();
         page.props = props;
-        await nextTick();
         await options.onError(errors);
+        await nextTick();
         options.onFinish?.({});
         await nextTick();
       },

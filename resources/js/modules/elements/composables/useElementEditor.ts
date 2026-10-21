@@ -513,9 +513,6 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       savedUi.value = null;
       savedScreen.value = null;
       autosave.clearSaved();
-      autosave.resetStatus();
-      // The errors were the discarded changes' own.
-      form.clearErrors();
     }
   );
 
@@ -1093,6 +1090,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       savedUi.value = null;
       savedScreen.value = null;
       autosave.clearSaved();
+      autosave.resetStatus();
+      // The errors were the discarded changes' own.
+      form.clearErrors();
       // The draft the autosave pointer names has just been deleted; leaving it
       // set would send the next save at it, and `draftIsProvisional` reads it to
       // decide whether the screen is showing provisional changes.
