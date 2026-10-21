@@ -202,6 +202,31 @@ it('applies returnFocus when the native dialog is closed directly', async () => 
   expect(document.activeElement).toBe(target);
 });
 
+it('leaves focus on the opener when a non-modal dialog closes natively with focus already outside it', async () => {
+  const opener = button('Open');
+  const target = button('Target');
+  document.body.append(opener, target);
+  opener.focus();
+  const returnFocus = vi.fn(() => target);
+  const dialog = await openDialog((dialog) => {
+    dialog.nonModal = true;
+    dialog.returnFocus = returnFocus;
+  });
+
+  opener.focus();
+  const native = shadow<HTMLDialogElement>(dialog, 'dialog');
+  const closed = new Promise((resolve) =>
+    native.addEventListener('close', resolve, {once: true})
+  );
+  native.close();
+  await closed;
+  await dialog.updateComplete;
+
+  expect(dialog.opened).toBe(false);
+  expect(returnFocus).not.toHaveBeenCalled();
+  expect(document.activeElement).toBe(opener);
+});
+
 it('keeps the native return target when returnFocus returns nothing', async () => {
   const {userEvent} = await import('@vitest/browser/context');
   const invoker = button('Open');
