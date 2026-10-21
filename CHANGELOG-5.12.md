@@ -9,6 +9,7 @@
 - Element edit pages’ sidebar pane headings now line up with the labels within the panes. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Assets are now initially saved to the site they were uploaded from. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Assets in volumes set to let each asset choose which sites it should be saved to can now be deleted for individual sites, as long as they exist in another site. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Deleting an element for the only site it exists in now soft-deletes it, unless it’s a draft or nested element. ([#20060](https://github.com/craftcms/cms/pull/20060))
 
 ### Administration
 
@@ -79,5 +80,6 @@
 - Updated Twig to 3.30.
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 - Fixed a bug where entry and address indexes weren’t showing any results if they had a “Field” condition rule set to “is empty”.
+- Fixed a bug where `craft\services\Elements::deleteElementsForSite()` would remove elements’ site rows without deleting the elements, on single-site installs. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Fixed a bug where saving a deeply-nested element on its own wouldn’t update its owners’ `dateUpdated` timestamps, which could cause new revisions to reuse stale nested content. ([#19594](https://github.com/craftcms/cms/issues/19594))
 - Fixed a bug where deleting an element for a site while editing a provisional draft would delete the provisional draft for all sites. ([#20061](https://github.com/craftcms/cms/pull/20061))

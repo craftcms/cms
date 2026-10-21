@@ -11,6 +11,8 @@ declare(strict_types=1);
 namespace crafttests\unit\services;
 
 use Craft;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
@@ -421,6 +423,39 @@ class ElementsTest extends TestCase
         } finally {
             Craft::$app->getEntries()->deleteSection($section);
         }
+    }
+
+    public function testDeleteForSiteSoftDeletesSingleSiteElements(): void
+    {
+        $owner = $this->_createOwnerEntry();
+        $this->elements->deleteElementForSite($owner);
+
+        $row = (new Query())->from(Table::ELEMENTS)->where(['id' => $owner->id])->one();
+        self::assertNotNull($row['dateDeleted'] ?? null, 'Top-level elements should be soft-deleted when deleted for their only site.');
+        self::assertTrue((new Query())->from(Table::ELEMENTS_SITES)->where(['elementId' => $owner->id])->exists(), 'Soft-deleted elements should keep their site rows.');
+        self::assertNotNull(Entry::find()->id($owner->id)->status(null)->trashed()->one());
+    }
+
+    public function testDeleteForSiteHardDeletesSingleSiteNestedElements(): void
+    {
+        $owner = $this->_createOwnerEntry();
+        $nested = Entry::find()->ownerId($owner->id)->status(null)->one();
+        self::assertNotNull($nested);
+
+        $this->elements->deleteElementForSite($nested);
+
+        self::assertFalse((new Query())->from(Table::ELEMENTS)->where(['id' => $nested->id])->exists(), 'Nested elements should be hard-deleted when deleted for their only site.');
+    }
+
+    public function testDeleteForSiteHardDeletesSingleSiteDrafts(): void
+    {
+        $owner = $this->_createOwnerEntry();
+        $draft = Craft::$app->getDrafts()->createDraft($owner);
+
+        $this->elements->deleteElementForSite($draft);
+
+        self::assertFalse((new Query())->from(Table::ELEMENTS)->where(['id' => $draft->id])->exists(), 'Drafts should be hard-deleted when deleted for their only site.');
+        self::assertNotNull(Entry::find()->id($owner->id)->status(null)->one(), 'The canonical entry should be unaffected.');
     }
 
     private function _createOwnerEntry(): Entry

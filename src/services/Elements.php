@@ -2700,6 +2700,9 @@ class Elements extends Component
     /**
      * Deletes elements in the site they are currently loaded in.
      *
+     * Any elements that only exist in that site will be deleted entirely. They will be soft-deleted,
+     * unless they are drafts or nested elements, in which case they will be hard-deleted.
+     *
      * @param ElementInterface[] $elements
      * @throws InvalidArgumentException if all elements don’t have the same type and site ID.
      * @since 4.4.0
@@ -2721,15 +2724,20 @@ class Elements extends Component
         }
 
         // Separate the multi-site elements from the single-site elements
-        $multiSiteElementIds = $firstElement::find()
-            ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
-            ->status(null)
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->siteId(['not', $firstElement->siteId])
-            ->unique()
-            ->select(['elements.id'])
-            ->column();
+        // (element queries ignore the siteId param when there's only one site, so check that first)
+        if (Craft::$app->getIsMultiSite(false, true)) {
+            $multiSiteElementIds = $firstElement::find()
+                ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
+                ->status(null)
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->siteId(['not', $firstElement->siteId])
+                ->unique()
+                ->select(['elements.id'])
+                ->column();
+        } else {
+            $multiSiteElementIds = [];
+        }
 
         $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
         $multiSiteElements = [];
@@ -2790,11 +2798,16 @@ class Elements extends Component
             }
         }
 
-        // Fully delete any single-site elements
-        // (except assets, which get soft-deleted, the same as when they're deleted normally)
+        // Delete any single-site elements the same way they'd be deleted normally (soft-deleted),
+        // except for drafts, which are always hard-deleted, and nested elements, which get deleted for a site
+        // along with their owners and couldn't be restored on their own
         if (!empty($singleSiteElements)) {
             foreach ($singleSiteElements as $element) {
-                $this->deleteElement($element, !$element instanceof Asset);
+                $hardDelete = (
+                    $element->getIsDraft() ||
+                    ($element instanceof NestedElementInterface && $element->getPrimaryOwnerId() !== null)
+                );
+                $this->deleteElement($element, $hardDelete);
             }
         }
     }
