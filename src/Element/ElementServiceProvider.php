@@ -26,6 +26,14 @@ use Illuminate\Support\ServiceProvider;
  */
 class ElementServiceProvider extends ServiceProvider
 {
+    #[\Override]
+    public function register(): void
+    {
+        // From register(), so Eloquent element types' routes come before the Yii adapter's
+        // control panel catch-all, which it also adds once the app has booted
+        $this->app->booted(fn () => $this->app->make(EloquentElements::class)->registerRoutes());
+    }
+
     public function boot(): void
     {
         Event::subscribe(DraftActivity::class);
@@ -33,8 +41,6 @@ class ElementServiceProvider extends ServiceProvider
         Event::listen(BulkOpCompleted::class, fn (BulkOpCompleted $event) => app(BulkOpDeferrals::class)->replay($event->key));
 
         app()->terminating(fn () => app(BulkOpDeferrals::class)->persistPending());
-
-        $this->app->booted(fn () => $this->app->make(EloquentElements::class)->registerRoutes());
 
         if (! $this->app->runningInConsole()) {
             return;
