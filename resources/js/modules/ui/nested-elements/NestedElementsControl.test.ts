@@ -325,7 +325,7 @@ describe('NestedElementsControl', () => {
     ).toBe(false);
   });
 
-  it('shows a dropped card in its new place while the reorder saves, and puts it back if it fails', async () => {
+  it('keeps a dropped card in its new place while the reorder saves, and puts it back if it fails', async () => {
     let rejectReorder!: (error: Error) => void;
     request.post.mockImplementation(
       () =>
@@ -333,9 +333,9 @@ describe('NestedElementsControl', () => {
           rejectReorder = reject;
         })
     );
-    mount({
-      cards: [14, 15, 16].map((id) => nestedElement({id, siteId: 1})),
-    });
+    const cards = (): NestedElement[] =>
+      [14, 15, 16].map((id) => nestedElement({id, siteId: 1}));
+    const {control} = mount({cards: cards()});
     const order = (): string[] =>
       [...root.querySelectorAll<HTMLElement>('li')].map(
         (card) => card.dataset.nestedId!
@@ -346,6 +346,13 @@ describe('NestedElementsControl', () => {
       .dispatchEvent(
         new CustomEvent('craft-reorder', {detail: {from: 0, to: 2}})
       );
+    await nextTick();
+
+    expect(order()).toEqual(['15', '16', '14']);
+
+    // Preparing the owner saves its draft, which re-renders the field as it
+    // stood before the reorder.
+    control.props.cards = cards();
     await nextTick();
 
     expect(order()).toEqual(['15', '16', '14']);
