@@ -82,7 +82,7 @@ use function CraftCms\Cms\t;
  * @phpstan-import-type ArgumentConfig from Argument
  * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
  *
- * @phpstan-type SchemaComponents array<string, array{label: string, info?: string, nested?: array<string, array{label: string}>}>
+ * @phpstan-type SchemaComponents array<string, array{label: string, info?: string, nested?: array<string, array{label: string, info?: string}>}>
  *
  * @since 6.0.0
  */
@@ -1183,6 +1183,18 @@ class Gql
         $queryComponents = [
             'elements.drafts:read' => [
                 'label' => t('Query for element drafts'),
+                ...Edition::get()->supportsReleases() ? [
+                    'nested' => [
+                        'elements.releases:read' => [
+                            'label' => t('Query for releases'),
+                            'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to drafts.', [
+                                'plural' => 'releases',
+                                'singular' => 'release',
+                                'field' => 'release',
+                            ]),
+                        ],
+                    ],
+                ] : [],
             ],
             'elements.revisions:read' => [
                 'label' => t('Query for element revisions'),

@@ -12,6 +12,7 @@ use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\Interfaces\Element as ElementInterface;
 use CraftCms\Cms\Gql\Resolvers\ElementResolver;
 use CraftCms\Cms\Gql\Types\ObjectType;
+use CraftCms\Cms\Release\Releases;
 use GraphQL\Type\Definition\ResolveInfo;
 use Override;
 
@@ -74,6 +75,10 @@ class Element extends ObjectType
 
         if ($fieldName === 'site') {
             return $source->getSite();
+        }
+
+        if ($fieldName === 'release') {
+            return $source->draftId ? app(Releases::class)->releaseForDraft($source->draftId) : null;
         }
 
         if ($fieldName === 'siteHandle') {

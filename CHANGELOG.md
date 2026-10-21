@@ -199,6 +199,8 @@
 - The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - The MCP server’s `elements.update` tool can now set and clear assets’ focal points via a `focalPoint` attribute. ([#19933](https://github.com/craftcms/cms/pull/19933))
 - The MCP server now validates custom field values against the `elements.field-schema` schema, and returns an error that identifies each invalid value. ([#19965](https://github.com/craftcms/cms/pull/19965))
+- Added the “Query for releases” GraphQL schema permission, nested under “Query for element drafts”, which adds `releases` and `release` queries, and a `release` field to drafts.
+- Added the `hasUrls` field to volumes in GraphQL queries.
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - Entry type and user group descriptions, fields’ default instructions, tips, and warnings, and field layout elements’ instructions, tips, warnings, and Markdown content now have Markdown inputs. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - The Markdown field’s default toolbar now only includes bold, italic, code, list, link, and preview buttons. ([#20001](https://github.com/craftcms/cms/pull/20001))
@@ -393,6 +395,7 @@
 - Fixed a bug where link buttons with an icon and a label had no inline padding.
 - Fixed a bug where the Deprecation Warnings utility listed warnings caused by Craft’s own Yii adapter code, rather than by project or plugin code. ([#19995](https://github.com/craftcms/cms/pull/19995))
 - Fixed a bug where the GraphQL `orderBy` argument’s sort direction was ignored. ([#19996](https://github.com/craftcms/cms/pull/19996))
+- Fixed an error that occurred when executing GraphQL queries with schemas that could query categories, tags, or global sets.
 - Fixed a bug where custom `orderBy` params on relational field values, such as `entry.myEntriesField.orderBy('title')`, didn’t take precedence over the field’s related order. ([#19997](https://github.com/craftcms/cms/pull/19997))
 - Fixed a bug where action menu items could overflow their menu, such as user groups’ descriptions in the user permissions “Choose” menu. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Fixed a bug where tables without body rows had a double border below their header, and header cells’ backgrounds extended past the table’s rounded corners. ([#20001](https://github.com/craftcms/cms/pull/20001))

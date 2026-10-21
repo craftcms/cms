@@ -10,6 +10,7 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Generators\ElementType;
 use CraftCms\Cms\Gql\Types\InterfaceType;
+use CraftCms\Cms\Gql\Types\Release;
 use CraftCms\Cms\Gql\Types\Site;
 use CraftCms\Cms\Support\Facades\Gql;
 use GraphQL\Type\Definition\FieldDefinition;
@@ -147,7 +148,7 @@ class Element extends InterfaceType implements SingularTypeInterface
     /** @return array<string, FieldDefinitionConfig> */
     public static function getDraftFieldDefinitions(): array
     {
-        return [
+        return array_merge([
             'isDraft' => [
                 'name' => 'isDraft',
                 'type' => Type::boolean(),
@@ -188,7 +189,14 @@ class Element extends InterfaceType implements SingularTypeInterface
                 'type' => Type::string(),
                 'description' => 'The notes for the draft.',
             ],
-        ];
+        ], GqlHelper::canQueryReleases() ? [
+            'release' => [
+                'name' => 'release',
+                'type' => Release::getType(),
+                'description' => 'The unpublished release the draft is attached to.',
+                'complexity' => GqlHelper::nPlus1Complexity(),
+            ],
+        ] : []);
     }
 
     public static function getName(): string

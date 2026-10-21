@@ -55,6 +55,11 @@ class Volume extends ObjectType implements SingularTypeInterface
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'The handle of the volume.',
             ],
+            'hasUrls' => [
+                'name' => 'hasUrls',
+                'type' => Type::nonNull(Type::boolean()),
+                'description' => 'Whether assets in the volume have public URLs.',
+            ],
         ];
 
         return Gql::prepareFieldDefinitions($fields, self::getName());
