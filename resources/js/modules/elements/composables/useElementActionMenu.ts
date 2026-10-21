@@ -123,8 +123,12 @@ export function createElementActionDispatcher({
 }: Options = {}) {
   function dispatch(
     behavior: ElementActionBehavior,
-    destructive = false
+    destructive = false,
+    event?: Event
   ): void {
+    const trigger =
+      event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+
     switch (behavior.type) {
       case 'link':
         window.open(
@@ -190,12 +194,12 @@ export function createElementActionDispatcher({
 
       case 'slideout': {
         const entryTypeId = currentEntryTypeId?.();
-
-        void openSlideout(
+        const url =
           behavior.entryTypeFromField && entryTypeId
             ? Craft.getCpUrl(`settings/entry-types/${entryTypeId}`)
-            : behavior.url
-        );
+            : behavior.url;
+        // The store sends focus to the menu's button once the item is hidden.
+        void openSlideout(url, trigger ? {opener: trigger} : {});
 
         return;
       }
@@ -338,7 +342,8 @@ export function createElementActionMenu(options: Options = {}) {
               icon: item.icon,
               iconColor: item.color,
               variant: item.destructive ? 'danger' : undefined,
-              onClick: () => dispatch(item.behavior, item.destructive),
+              onClick: (event: Event) =>
+                dispatch(item.behavior, item.destructive, event),
             }
     );
 }

@@ -1,4 +1,9 @@
 import {markRaw, reactive, shallowReadonly} from 'vue';
+import {
+  focusReturnFor,
+  isFocusable,
+  type FocusReturnResolver,
+} from '@craftcms/ui/utilities/focus-return';
 import {t} from '@craftcms/ui/utilities/translate';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {stackedPanels} from './panel-stack';
@@ -125,6 +130,7 @@ export async function openSlideout(
     loading: true,
     error: null,
     opener,
+    returnFocus: options.returnFocus,
     onSaved: options.onSaved ?? null,
     onClosed: options.onClosed ?? null,
     nestedOwnerId: options.nestedOwnerId,
@@ -133,6 +139,7 @@ export async function openSlideout(
   });
 
   panels.push(panel);
+  rememberFocusReturn(panel);
 
   await loadInto(panel);
 
@@ -179,6 +186,7 @@ export function openSlideoutWith(
     loading: false,
     error: null,
     opener,
+    returnFocus: options.returnFocus,
     onSaved: options.onSaved ?? null,
     onClosed: options.onClosed ?? null,
     nestedOwnerId: options.nestedOwnerId,
@@ -186,6 +194,7 @@ export function openSlideoutWith(
   });
 
   panels.push(panel);
+  rememberFocusReturn(panel);
 
   return panel;
 }
@@ -324,10 +333,61 @@ function removePanel(id: string, {restoreFocus = true} = {}): void {
   dirtyChecks.delete(id);
   panel?.onClosed?.();
 
-  if (restoreFocus) {
+  if (restoreFocus && panel) {
     // Focus has to go somewhere deliberate — the panel that owned it is gone.
-    panel?.opener?.focus?.();
+    returnFocusFrom(panel)?.focus?.();
   }
+
+  focusFallbacks.delete(id);
+}
+
+/**
+ * Fallbacks for where focus goes when a panel closes, captured as it opens,
+ * while the opener's menus and the panel it was opened from are still intact.
+ */
+const focusFallbacks = new Map<
+  string,
+  {opener: FocusReturnResolver; originPanelId: string | null}
+>();
+
+function rememberFocusReturn(panel: SlideoutInstance): void {
+  focusFallbacks.set(panel.id, {
+    opener: focusReturnFor(panel.opener),
+    originPanelId: originPanel(panel.opener),
+  });
+}
+
+/**
+ * Where focus goes when `panel` closes, trying in order:
+ *
+ * 1. What its `returnFocus` says.
+ * 2. The opener, or the button of the menu it sat in once that has closed.
+ * 3. The panel it was opened from.
+ *
+ * Each has to be able to take focus, so a hidden opener is never "focused".
+ */
+function returnFocusFrom(panel: SlideoutInstance): HTMLElement | null {
+  const fallbacks = focusFallbacks.get(panel.id);
+
+  const target = panel.returnFocus?.(panel.opener);
+
+  if (isFocusable(target)) {
+    return target;
+  }
+
+  const opener = fallbacks?.opener() ?? null;
+
+  if (opener) {
+    return opener;
+  }
+
+  const origin = fallbacks?.originPanelId
+    ? document.querySelector<HTMLElement>(
+        `[data-slideout-id="${CSS.escape(fallbacks.originPanelId)}"]`
+      )
+    : null;
+
+  return isFocusable(origin) ? origin : null;
 }
 
 /**

@@ -5,6 +5,11 @@ import {styleMap} from 'lit/directives/style-map.js';
 import hostStyles from '@src/styles/host.styles.js';
 import {t} from '@src/utilities/translate.js';
 import {trapFocus} from '@src/utilities/focus-trap.js';
+import {
+  focusReturnFor,
+  isFocusable,
+  type FocusReturnResolver,
+} from '@src/utilities/focus-return.js';
 import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import styles from './dialog.styles.js';
 import '../icon/icon.js';
@@ -60,7 +65,8 @@ function releasePageScroll(): void {
  * The header renders when there is something to put in it — a `label`, a close
  * button, or both. Set `no-close` on a dialog that dismisses itself some other
  * way; with no label either, the header is dropped rather than left as an empty
- * band of padding.
+ * band of padding. Set `no-header` to drop it outright when the content draws
+ * its own title; the `label` still names the dialog.
  *
  * @slot - The dialog body.
  * @slot footer - Footer content, typically buttons.
@@ -136,6 +142,39 @@ export default class CraftDialog extends LitElement {
   noClose = false;
 
   /**
+   * Drop the header row, close button included.
+   *
+   * For content that draws its own title. The `label` still names the dialog
+   * through a hidden heading, so keep it matching that title, and give the
+   * dialog a visible way out — a Cancel button in the footer, say — since the
+   * close button goes too.
+   */
+  @property({type: Boolean, attribute: 'no-header', reflect: true})
+  noHeader = false;
+
+  /**
+   * Decides where focus goes once the dialog closes.
+   *
+   * Called with whatever had focus when the dialog opened, when the dialog was
+   * modal, held focus as it closed, or left focus on the page body. If it
+   * returns an element that can take focus, that element gets it.
+   *
+   * Without it, or when it returns nothing that can take focus, focus goes
+   * back to the opener. When the opener can't take it by then, such as an item
+   * in a menu that has since closed, focus goes to that menu's button instead,
+   * as `focusReturnFor()` from `utilities/focus-return` finds it. Set this for
+   * any other target, and look it up when it's called rather than holding on
+   * to an element.
+   */
+  @property({attribute: false})
+  returnFocus?: (opener: HTMLElement | null) => HTMLElement | null | undefined;
+
+  #opener: HTMLElement | null = null;
+
+  /** {@link focusReturnFor} the opener, captured while its menus are intact. */
+  #defaultReturn: FocusReturnResolver | null = null;
+
+  /**
    * Adds grips along the surface's inline-end and block-end edges, and in
    * their corner, for resizing it. It stays centered as it's resized. Not
    * offered while `fullscreen`.
@@ -188,6 +227,9 @@ export default class CraftDialog extends LitElement {
     this.#releaseFocusTrap?.();
     this.#releaseFocusTrap = null;
 
+    this.#opener = null;
+    this.#defaultReturn = null;
+
     // Removed while still open — an unmounting Vue view, say — must not leave
     // the page stuck.
     this.#releaseScrollLock();
@@ -214,9 +256,7 @@ export default class CraftDialog extends LitElement {
         : nothing}
       <dialog
         part="dialog"
-        aria-labelledby=${this.hasHeader && this.label !== ''
-          ? this.titleId
-          : nothing}
+        aria-labelledby=${this.label !== '' ? this.titleId : nothing}
         @cancel=${this.#onNativeCancel}
         @close=${this.#onNativeClose}
         @click=${this.#onDialogClick}
@@ -233,17 +273,6 @@ export default class CraftDialog extends LitElement {
     `;
   }
 
-  /**
-   * Whether to render the header at all.
-   *
-   * It goes when there is nothing to put in it — no label *and* no close
-   * button — because the row is otherwise just a band of padding above the
-   * body. A close button on its own is reason enough to keep it; it needs
-   * somewhere to live.
-   *
-   * Also governs `aria-labelledby`, which must not point at a heading that
-   * isn't rendered.
-   */
   #renderSurface(): TemplateResult {
     const {width, height} = this.resizedSize;
     const resizing = this.resizable && !this.fullscreen;
@@ -256,8 +285,8 @@ export default class CraftDialog extends LitElement {
         'block-size': resizing && height !== null ? `${height}px` : undefined,
       })}
     >
-      ${this.hasHeader ? this.renderHeader() : nothing} ${this.renderBody()}
-      ${this.renderFooter()}
+      ${this.hasHeader ? this.renderHeader() : this.renderHiddenTitle()}
+      ${this.renderBody()} ${this.renderFooter()}
     </div>`;
   }
 
@@ -266,8 +295,29 @@ export default class CraftDialog extends LitElement {
     this.resizedSize = event.detail;
   };
 
+  /**
+   * Whether to render the header at all.
+   *
+   * It goes under `no-header`, and when there is nothing to put in it — no
+   * label *and* no close button — because the row is otherwise just a band of
+   * padding above the body. A close button on its own is reason enough to keep
+   * it; it needs somewhere to live.
+   */
   protected get hasHeader(): boolean {
-    return this.label !== '' || !this.noClose;
+    return !this.noHeader && (this.label !== '' || !this.noClose);
+  }
+
+  /**
+   * The heading `aria-labelledby` points at when there is no header row.
+   *
+   * `hidden` rather than visually hidden: the content draws its own title, so
+   * a second heading would only repeat it in a screen reader's heading list.
+   * A hidden element still supplies the name it is referenced for.
+   */
+  protected renderHiddenTitle(): TemplateResult | typeof nothing {
+    return this.label === ''
+      ? nothing
+      : html`<h2 part="title" id=${this.titleId} hidden>${this.label}</h2>`;
   }
 
   protected renderHeader(): TemplateResult {
@@ -326,6 +376,9 @@ export default class CraftDialog extends LitElement {
 
   #showDialog(): void {
     const dialog = this.dialogElement;
+    const focused = document.activeElement;
+    this.#opener = focused instanceof HTMLElement ? focused : null;
+    this.#defaultReturn = focusReturnFor(this.#opener);
 
     if (dialog && !dialog.open) {
       // `showModal()` throws if the dialog is already open, hence the guard.
@@ -347,8 +400,16 @@ export default class CraftDialog extends LitElement {
 
   #hideDialog(): void {
     const dialog = this.dialogElement;
+    const opener = this.#opener;
+    const defaultReturn = this.#defaultReturn;
+    this.#opener = null;
+    this.#defaultReturn = null;
+    // Only known while the native dialog is still open. When the platform
+    // closed it by itself, its own return has already run.
+    let focusWasInside = false;
 
     if (dialog?.open) {
+      focusWasInside = this.matches(':focus-within');
       dialog.close();
     }
 
@@ -357,6 +418,35 @@ export default class CraftDialog extends LitElement {
 
     this.#releaseScrollLock();
     swallowHeldEnterKeyup();
+
+    const active = document.activeElement;
+    const focusIsLost = !isFocusable(active) || this.contains(active);
+
+    if (!this.nonModal || focusWasInside || focusIsLost) {
+      this.#returnFocusToTarget(opener, defaultReturn, focusIsLost);
+    }
+  }
+
+  /**
+   * Runs after the browser's own return, which `close()` does synchronously.
+   * That return fails when the opener can't take focus, leaving focus on the
+   * page body, and the default target steps in.
+   */
+  #returnFocusToTarget(
+    opener: HTMLElement | null,
+    defaultReturn: FocusReturnResolver | null,
+    focusIsLost: boolean
+  ): void {
+    const target = this.returnFocus?.(opener);
+
+    if (isFocusable(target)) {
+      target.focus();
+      return;
+    }
+
+    if (focusIsLost) {
+      defaultReturn?.()?.focus();
+    }
   }
 
   /** Idempotent, so teardown can't release a lock this dialog never took. */
