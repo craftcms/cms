@@ -83,7 +83,7 @@ Request input is assigned to model attributes only when the model allows them to
 
 A column named like one of the element's own properties, such as `title`, `enabled`, `slug` or `uri`, isn't exposed, because the element's property would always win. Read it from the model: `$customer->getModel()->title`. A `title` column can still be the label, and is still searchable.
 
-Attributes in the model's `$hidden` property are left out when the element is serialized or looped over, as they are from the model itself.
+Attributes in the model's `$hidden` property are left out when the element is serialized or looped over, as they are from the model itself. They aren't offered as index columns or sort options, and aren't added to the search index.
 
 ### Validation
 

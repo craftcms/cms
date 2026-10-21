@@ -140,6 +140,18 @@ it('finds elements by their model attributes through search', function () {
         ->toBe(['grace@example.com']);
 });
 
+it('keeps hidden model attributes out of the index and search', function () {
+    app(EloquentElements::class)->register(TestKeptCustomerElement::class);
+
+    TestKeptCustomer::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com', 'company' => 'Analytical Engines']);
+
+    expect(TestKeptCustomerElement::find()->search('Analytical')->count())->toBe(0)
+        ->and(TestKeptCustomerElement::find()->search('Lovelace')->count())->toBe(1)
+        ->and(TestKeptCustomerElement::tableAttributes())->not->toHaveKey('company')
+        ->and(TestKeptCustomerElement::defaultTableAttributes('*'))->not->toContain('company')
+        ->and(array_column(TestKeptCustomerElement::sortOptions(), 'attribute'))->not->toContain('company');
+});
+
 it('edits an element beneath its index, with a crumb back to it', function () {
     $element = CustomerElement::findForModel(Customer::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']));
 

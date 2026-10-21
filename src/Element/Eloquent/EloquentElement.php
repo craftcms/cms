@@ -265,6 +265,17 @@ abstract class EloquentElement extends Element
     }
 
     /**
+     * The model attributes the element exposes ({@see modelAttributes()}), less any in the model's
+     * `$hidden` property, which are kept out of its index columns, sort options and search keywords.
+     *
+     * @return list<string>
+     */
+    public static function listedModelAttributes(): array
+    {
+        return array_values(array_diff(static::modelAttributes(), static::newModel()->getHidden()));
+    }
+
+    /**
      * Every column of the model's table.
      *
      * @return list<string>
@@ -919,7 +930,7 @@ abstract class EloquentElement extends Element
     {
         $attributes = [];
 
-        foreach (static::modelAttributes() as $attribute) {
+        foreach (static::listedModelAttributes() as $attribute) {
             $attributes[$attribute] = ['label' => Str::headline($attribute)];
         }
 
@@ -929,7 +940,7 @@ abstract class EloquentElement extends Element
     #[Override]
     protected static function defineDefaultTableAttributes(string $source): array
     {
-        return [...static::modelAttributes(), 'dateCreated'];
+        return [...static::listedModelAttributes(), 'dateCreated'];
     }
 
     #[Override]
@@ -938,7 +949,7 @@ abstract class EloquentElement extends Element
         $table = static::newModel()->getTable();
         $options = [];
 
-        foreach (static::modelAttributes() as $attribute) {
+        foreach (static::listedModelAttributes() as $attribute) {
             $options[] = [
                 'label' => Str::headline($attribute),
                 'orderBy' => "$table.$attribute",
@@ -950,12 +961,12 @@ abstract class EloquentElement extends Element
     }
 
     /**
-     * The model attributes, and the label column even when it isn't one (a `title` column, say).
+     * The listed model attributes, and the label column even when it isn't one (a `title` column, say).
      */
     #[Override]
     protected static function defineSearchableAttributes(): array
     {
-        return array_values(array_unique(array_filter([...static::modelAttributes(), static::labelAttribute()])));
+        return array_values(array_unique(array_filter([...static::listedModelAttributes(), static::labelAttribute()])));
     }
 
     /**
