@@ -1,3 +1,4 @@
+import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {useMessages} from '@/modules/messages/useMessages';
 import {provideHtmlWidgets} from './htmlWidgets';
 import {jq} from '@/common/utils/jquery';
@@ -27,6 +28,7 @@ export function useDashboard(props: {
   widgetTypes: Record<string, WidgetType>;
 }) {
   const messages = useMessages();
+  const {announce} = useAnnouncer();
 
   provideHtmlWidgets();
 
@@ -230,6 +232,14 @@ export function useDashboard(props: {
         ...order,
         ...widgets.value.filter((widget) => widget.id < 0),
       ];
+
+      const moved = order[to]!;
+      announce(
+        t('Moved {name} to position {position}', {
+          name: moved.title || moved.name,
+          position: to + 1,
+        })
+      );
     } catch {
       messages.error(t('Couldn’t reorder widgets.'));
     } finally {

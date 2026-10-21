@@ -114,6 +114,9 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   /** Lion's controller while it's wired up to the top layer. */
   #layeredCtrl: EventTarget | null = null;
 
+  /** Whether focus was in the content when the popover began to close. */
+  #closingWithFocusInContent = false;
+
   constructor() {
     super();
     wireOverlayLifecycleEvents(this);
@@ -125,7 +128,10 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     this.#layeredCtrl = this._overlayCtrl as unknown as EventTarget;
     this.#layeredCtrl.addEventListener('before-show', this.#raise);
     this.#layeredCtrl.addEventListener('before-hide', swallowHeldEnterKeyup);
+    this.#layeredCtrl.addEventListener('before-hide', this.#noteFocus);
     this.#layeredCtrl.addEventListener('hide', this.#lower);
+    this.#layeredCtrl.addEventListener('hide', this.#returnFocus);
+    this.#layeredCtrl.addEventListener('hide', this.#passOnEscape);
   }
 
   override _teardownOverlayCtrl() {
@@ -135,11 +141,69 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
       'before-hide',
       swallowHeldEnterKeyup
     );
+    this.#layeredCtrl?.removeEventListener('before-hide', this.#noteFocus);
     this.#layeredCtrl?.removeEventListener('hide', this.#lower);
+    this.#layeredCtrl?.removeEventListener('hide', this.#returnFocus);
+    this.#layeredCtrl?.removeEventListener('hide', this.#passOnEscape);
     this.#layeredCtrl = null;
 
     super._teardownOverlayCtrl();
   }
+
+  /**
+   * Whether focus is in the popover's content, slotted or not. Lion only
+   * checks its own content node, in the shadow root, so it misses slotted
+   * content and leaves focus on a hidden element when the popover closes.
+   */
+  #hasFocusInContent(): boolean {
+    const active = (this.getRootNode() as Document | ShadowRoot).activeElement;
+    if (!active) {
+      return false;
+    }
+
+    const invoker = this._overlayInvokerNode;
+    if (invoker && (invoker === active || invoker.contains(active))) {
+      return false;
+    }
+
+    return active === this || this.contains(active);
+  }
+
+  #noteFocus = (): void => {
+    this.#closingWithFocusInContent = this.#hasFocusInContent();
+  };
+
+  /**
+   * Returns focus to the invoker once the popover has closed, if focus was in
+   * the content and hasn't since gone anywhere else.
+   */
+  #returnFocus = (): void => {
+    if (!this.#closingWithFocusInContent) {
+      return;
+    }
+
+    this.#closingWithFocusInContent = false;
+    const focused = document.activeElement;
+    if (focused && focused !== document.body && !this.#hasFocusInContent()) {
+      return;
+    }
+
+    (
+      this._overlayCtrl as unknown as {elementToFocusAfterHide?: HTMLElement}
+    ).elementToFocusAfterHide?.focus();
+  };
+
+  /**
+   * Lets Escape on the invoker of a closed popover reach the popover around
+   * it. Lion only skips a closed overlay's Escape handler once Escape itself
+   * closed it; closed any other way, the handler claims the next Escape, so
+   * the outer popover needs a second press.
+   */
+  #passOnEscape = (): void => {
+    (
+      this._overlayCtrl as unknown as {__escKeyHandlerCalled: boolean}
+    ).__escKeyHandlerCalled = true;
+  };
 
   /** The `<dialog>` Lion wraps the content in. */
   get #dialog(): HTMLElement | null {

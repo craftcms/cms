@@ -84,3 +84,24 @@ it.each([
     );
   }
 );
+
+it('names each widget’s reorder button, column picker and delete button after the widget', async () => {
+  await mountManager();
+  const row = [...document.querySelectorAll('li')].find((li) =>
+    li.textContent?.includes('Updates')
+  )!;
+  const reorder = row.querySelector('craft-reorder-button')!;
+  const picker = row.querySelector('craft-slide-picker')!;
+  await reorder.updateComplete;
+  await picker.updateComplete;
+
+  expect(reorder.label).toBe('Reorder Updates');
+  expect(
+    picker
+      .shadowRoot!.querySelector('[role="slider"]')!
+      .getAttribute('aria-label')
+  ).toBe('Number of columns, Updates');
+  expect(row.querySelector('craft-button')!.getAttribute('aria-label')).toBe(
+    'Delete Updates'
+  );
+});

@@ -23,6 +23,10 @@
       enabled: () => !props.busy,
       onReorder: (from, to) => emit('reorder', from, to),
     });
+
+  function widgetName(widget: DashboardWidget): string {
+    return widget.title || widget.name;
+  }
 </script>
 
 <template>
@@ -63,6 +67,7 @@
               (el: Parameters<typeof setHandleRef>[0]) =>
                 setHandleRef(el, widget.id)
             "
+            :label="`${t('Reorder')} ${widgetName(widget)}`"
             :position="getRowPosition(index)"
             @craft-reorder="
               emit(
@@ -72,17 +77,14 @@
               )
             "
           ></craft-reorder-button>
-          <span :id="`widget-label-${widget.id}`" class="flex-1">{{
-            widget.title || widget.name
-          }}</span>
+          <span class="flex-1">{{ widgetName(widget) }}</span>
           <craft-slide-picker
             :min="1"
             :max="Math.min(columns, widget.maxColspan)"
             :step="1"
             :value="Math.min(widget.colspan, columns)"
             :disabled="busy"
-            :label="t('Number of Columns')"
-            :described-by="`widget-label-${widget.id}`"
+            :label="`${t('Number of columns')}, ${widgetName(widget)}`"
             @value-change="emit('resize', widget, $event.detail.value)"
           ></craft-slide-picker>
           <craft-button
@@ -90,8 +92,7 @@
             icon="trash"
             size="small"
             variant="danger-plain"
-            :aria-label="t('Delete')"
-            :aria-describedby="`widget-label-${widget.id}`"
+            :aria-label="`${t('Delete')} ${widgetName(widget)}`"
             :disabled="busy"
             @click="emit('remove', widget)"
           ></craft-button>

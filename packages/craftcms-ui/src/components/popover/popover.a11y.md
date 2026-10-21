@@ -29,7 +29,7 @@ Its open and close behavior comes from APG's [Disclosure Navigation Menu](https:
 ### Keyboard and focus
 
 - [x] Activating the invoker toggles the popover: the first click opens it, the second closes it. Per WCAG 2.1.1 (Keyboard). Verified by `toggles on invoker click` in `popover.test.ts`, which uses `button.click()`. No test presses Enter or Space on the invoker.
-- [ ] Escape closes an open popover while focus is on the invoker or inside the panel, and focus moves to the invoker. Per WCAG 2.1.1 (Keyboard), 2.4.3 (Focus Order) and 1.4.13 (Content on Hover or Focus). Not yet verified.
+- [x] Escape closes an open popover while focus is on the invoker or inside the panel, and focus moves to the invoker. Per WCAG 2.1.1 (Keyboard), 2.4.3 (Focus Order) and 1.4.13 (Content on Hover or Focus). Verified by `closes and keeps focus on the invoker when Escape is pressed there` and `returns focus to the invoker when Escape closes it from its slotted content` in `popover.browser.test.ts`.
 - [ ] Moving focus out of the invoker and panel closes the popover, as in the Disclosure Navigation Menu example. Per WCAG 2.4.3 (Focus Order) and 2.4.11 (Focus Not Obscured (Minimum)). Known gap: Lion only dismisses on Escape or an outside click, not on focus out, so the panel stays open behind the next focused control.
 - [x] When `hide()` closes the popover while focus is inside it, focus returns to the invoker. Per WCAG 2.4.3 (Focus Order). Verified by `returns focus to the invoker, and stays closed, when Enter inside it calls hide()` in `popover.browser.test.ts`.
 - [ ] Tab and Shift+Tab are the way through the panel's contents. Per WCAG 2.1.1 (Keyboard). Not yet verified. Arrow-key navigation between items isn't the popover's job: `craft-action-menu` adds it.
