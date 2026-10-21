@@ -63,9 +63,8 @@
               (el: Parameters<typeof setHandleRef>[0]) =>
                 setHandleRef(el, widget.id)
             "
-            :disabled="busy || widgets.length < 2"
             :position="getRowPosition(index)"
-            @reorder="
+            @craft-reorder="
               emit(
                 'reorder',
                 index,

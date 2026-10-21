@@ -21,6 +21,8 @@ Built on `craft-action-menu`; see `action-menu.a11y.md` for the menu pattern, it
 ### Keyboard and focus
 
 - [ ] The invoker is in the Tab order and opens the menu with Enter or Space, unless `disabled`. Per WCAG 2.1.1 (Keyboard). Not yet verified.
+- [x] Choosing a move, or pressing Escape, closes the menu and leaves focus on the invoker, even when the list disables the chosen move in response. Per WCAG 2.4.3 (Focus Order). Verified by `keeps focus on the invoker after a move is chosen with Enter`, `keeps focus on the invoker when its list disables the chosen move` and `returns focus to the invoker when Escape closes the menu` in `reorder-button.browser.test.ts`.
+- [x] When the list moves the button to a new place in the page while it has focus, focus stays on the invoker. Per WCAG 2.4.3 (Focus Order). Verified by `keeps focus on the invoker when its list moves it` and `leaves focus alone when it is removed and added back later` in `reorder-button.browser.test.ts`.
 - [ ] A keyboard-focused invoker shows a visible ring at 3:1 against the surface, in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Not yet verified.
 
 ### Visual
@@ -33,5 +35,5 @@ Built on `craft-action-menu`; see `action-menu.a11y.md` for the menu pattern, it
 
 - 2.4.6 (Headings and Labels): set `label` to name the item, such as "Reorder Blog post". See [Accessibility](./ReorderButton.mdx#accessibility).
 - 4.1.3 (Status Messages): announce the item's new position after a move. See [Accessibility](./ReorderButton.mdx#accessibility).
-- 2.4.3 (Focus Order): keep focus on the moved item's reorder button after the list re-renders. See [Accessibility](./ReorderButton.mdx#accessibility).
+- 2.4.3 (Focus Order): if the list replaces the moved item's reorder button with a new one, focus the new one. See [Accessibility](./ReorderButton.mdx#accessibility).
 - 4.1.2 (Name, Role, Value): keep `position` in step with the item's place in the list. See [Accessibility](./ReorderButton.mdx#accessibility).

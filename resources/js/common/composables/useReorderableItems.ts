@@ -41,7 +41,7 @@ export interface UseReorderableItemsReturn {
   /** See `useDragAndDrop()`'s `getDropIntoId`. */
   getDropIntoId: () => string | number | null;
   refreshRegistrations: () => void;
-  getRowPosition: (index: number) => 'first' | 'middle' | 'last';
+  getRowPosition: (index: number) => 'only' | 'first' | 'middle' | 'last';
 }
 
 export function useReorderableItems(
@@ -196,6 +196,10 @@ export function useReorderableItems(
   });
 
   function getRowPosition(index: number) {
+    if (itemRefs.value.size === 1) {
+      return 'only';
+    }
+
     if (index === 0) {
       return 'first';
     }

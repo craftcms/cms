@@ -5,6 +5,7 @@ import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
 // constructor by package specifier instead of a pnpm store path (TS2883).
 import type {} from '@open-wc/dedupe-mixin';
 import type {VirtualElement} from '@popperjs/core';
+import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
 import hostStyles from '@src/styles/host.styles';
@@ -123,12 +124,17 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
 
     this.#layeredCtrl = this._overlayCtrl as unknown as EventTarget;
     this.#layeredCtrl.addEventListener('before-show', this.#raise);
+    this.#layeredCtrl.addEventListener('before-hide', swallowHeldEnterKeyup);
     this.#layeredCtrl.addEventListener('hide', this.#lower);
   }
 
   override _teardownOverlayCtrl() {
     this.#lower();
     this.#layeredCtrl?.removeEventListener('before-show', this.#raise);
+    this.#layeredCtrl?.removeEventListener(
+      'before-hide',
+      swallowHeldEnterKeyup
+    );
     this.#layeredCtrl?.removeEventListener('hide', this.#lower);
     this.#layeredCtrl = null;
 
