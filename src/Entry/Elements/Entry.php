@@ -30,6 +30,7 @@ use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\ElementSources as ElementSourcesService;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -82,7 +83,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Ui\Contracts\Node;
@@ -409,7 +409,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         return sprintf(
             'content/%s/%s',
-            is_string($page) && $page !== '' ? Str::slug($page) : 'entries',
+            is_string($page) && $page !== '' ? ElementSourcesService::pageSlug($page) : 'entries',
             $handle,
         );
     }
@@ -1304,7 +1304,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $crumbs = [
             new ActionItem()
                 ->label($page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'))
-                ->href(Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries'))),
+                ->href(Url::cpUrl(sprintf('content/%s', $page ? ElementSourcesService::pageSlug($page) : 'entries'))),
         ];
 
         // Is the section’s source enabled?
@@ -1952,7 +1952,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     {
         $page = $this->getSection()?->getPage();
 
-        return Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries'));
+        return Url::cpUrl(sprintf('content/%s', $page ? ElementSourcesService::pageSlug($page) : 'entries'));
     }
 
     protected function cpRevisionsUrl(): string
