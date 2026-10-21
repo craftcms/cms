@@ -24,10 +24,6 @@ export default css`
     border: 1px solid transparent;
     /* The display: contents host cannot take a grid span, so its rendered box does. */
     grid-column: 1 / -1;
-    /* Every appearance gives links the callout's text color, so they're
-       underlined to still stand apart from it. */
-    --c-link-decoration: underline;
-    --c-link-decoration-hover: none;
   }
 
   .callout--title {
@@ -55,6 +51,8 @@ export default css`
   .callout__title,
   .callout__description {
     padding-inline: var(--c-callout-text-padding-inline, var(--c-spacing-sm));
+    --c-link-decoration: underline;
+    --c-link-decoration-hover: none;
   }
 
   .callout__title {

@@ -37,3 +37,13 @@ it('gives links its text color and an underline until hovered, in every appearan
     await userEvent.unhover(link);
   }
 });
+
+it('leaves links in the action slot to their own styling', async () => {
+  document.body.innerHTML = `<craft-callout variant="info">Text <a slot="action" href="#">Upgrade</a></craft-callout>`;
+  const callout = document.querySelector<CraftCallout>('craft-callout')!;
+  await callout.updateComplete;
+
+  expect(getComputedStyle(callout.querySelector('a')!).textDecorationLine).toBe(
+    'none'
+  );
+});

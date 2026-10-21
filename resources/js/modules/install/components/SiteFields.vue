@@ -4,6 +4,7 @@
   import {computed} from 'vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import InputCallout from '@/common/components/InputCallout.vue';
+  import {envVarsDocsUrl} from '@/common/utils/docsUrls';
   import Select from '@/common/form/Select.vue';
   import {usePage} from '@inertiajs/vue3';
   import type {BaseOption, SelectItem} from '@/common/types';
@@ -61,7 +62,8 @@
           'Type <kbd>$</kbd> to choose an environment variable, or <kbd>@</kbd> to choose an alias.'
         )
       "
-      href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+      :href="envVarsDocsUrl"
+      html
     />
   </CraftInput>
 

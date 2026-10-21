@@ -266,8 +266,10 @@ it('describes the group name field with its environment variable hint', async ()
   if (!create || !('onClick' in create))
     throw new Error('Missing group creation action');
   create.onClick?.(new MouseEvent('click'));
+  const name = page.getByRole('textbox', {name: 'Group Name'});
+  await expect.element(name).not.toHaveAttribute('readonly');
   await expect
-    .element(page.getByRole('textbox', {name: 'Group Name'}))
+    .element(name)
     .toHaveAccessibleDescription(
       /^What this group will be called in the control panel\.\s+Type \$ to choose an environment variable\.\s+Learn more$/
     );

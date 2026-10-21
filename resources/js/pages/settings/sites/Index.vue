@@ -3,6 +3,7 @@
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import InputCallout from '@/common/components/InputCallout.vue';
+  import {envVarsDocsUrl} from '@/common/utils/docsUrls';
   import AdminTableNode from '@/modules/ui/AdminTableNode.vue';
   import type {TableNodePayload} from '@/modules/ui/table-types';
   import type {UiPayload} from '@/modules/ui/types';
@@ -175,7 +176,8 @@
               :message="
                 t('Type <kbd>$</kbd> to choose an environment variable.')
               "
-              href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+              html
+              :href="envVarsDocsUrl"
             />
           </craft-input>
         </template>
@@ -192,7 +194,8 @@
           <InputCallout
             slot="after"
             :message="t('Type <kbd>$</kbd> to choose an environment variable.')"
-            href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+            html
+            :href="envVarsDocsUrl"
           />
         </CraftInput>
       </Deferred>
