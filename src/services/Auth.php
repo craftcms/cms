@@ -30,7 +30,6 @@ use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\CredentialRecord;
-use Webauthn\Exception\InvalidUserHandleException;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
@@ -640,18 +639,22 @@ class Auth extends Component
             return false;
         }
 
+        // Passkeys registered under webauthn-lib v4 were given the user's raw UID as their user handle, rather than
+        // the base64url-encoded UID that passkeyUserEntity() returns. The credential record and the authenticator
+        // both hold the raw UID for those, and the validator compares each against the expected handle, so the
+        // expected handle has to be the raw UID too.
+        $userHandle = $credentialRecord->userHandle === $user->uid ? $user->uid : $userEntity->id;
+
         try {
             $updatedCredentialRecord = $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $credentialRecord,
                 $authenticatorAssertionResponse,
                 $publicKeyCredentialRequestOptions,
                 Craft::$app->getRequest()->getHostName(),
-                $userEntity->id,
+                $userHandle,
             );
 
             $this->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedCredentialRecord);
-        } catch (InvalidUserHandleException $e) {
-            throw $e;
         } catch (Throwable $e) {
             Craft::warning('Authenticator Assertion Response Validation failed: ' . $e->getMessage());
             return false;
