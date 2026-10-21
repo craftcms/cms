@@ -8,12 +8,16 @@
 namespace crafttests\unit\elements;
 
 use Craft;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\enums\PropagationMethod;
+use craft\helpers\Db;
 use craft\models\Volume;
+use craft\queue\jobs\PropagateElements;
 use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\SitesFixture;
+use ReflectionMethod;
 use UnitTester;
 
 /**
@@ -31,6 +35,8 @@ class AssetPropagationTest extends TestCase
 
     private Volume $volume;
 
+    private Volume $customVolume;
+
     public function _fixtures(): array
     {
         return [
@@ -47,11 +53,13 @@ class AssetPropagationTest extends TestCase
     {
         parent::_before();
         $this->volume = Craft::$app->getVolumes()->getVolumeByHandle('testVolume1');
+        $this->customVolume = Craft::$app->getVolumes()->getVolumeByHandle('testVolume4');
     }
 
     protected function _after(): void
     {
         $this->volume->propagationMethod = PropagationMethod::All;
+        $this->customVolume->propagationMethod = PropagationMethod::All;
         parent::_after();
     }
 
@@ -114,16 +122,48 @@ class AssetPropagationTest extends TestCase
         self::assertEqualsCanonicalizing(Craft::$app->getSites()->getAllSiteIds(), $this->siteIdsForAsset($asset));
     }
 
-    private function createAsset(int $siteId): Asset
+    public function testNewSitePropagation(): void
     {
+        $this->customVolume->propagationMethod = PropagationMethod::Custom;
+        $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
+        $newSiteId = 1002;
+
+        $allAsset = $this->createAsset($primarySiteId);
+        $customAsset = $this->createAsset($primarySiteId, $this->customVolume);
+
+        // Pretend the site was just added by removing the assets from it
+        Db::delete(Table::ELEMENTS_SITES, ['elementId' => [$allAsset->id, $customAsset->id], 'siteId' => $newSiteId]);
+        self::assertNotContains($newSiteId, $this->siteIdsForAsset($allAsset));
+        self::assertSame([$primarySiteId], $this->siteIdsForAsset($customAsset));
+
+        // Process the assets with the same job Sites::saveSite() queues for new sites
+        $job = new PropagateElements([
+            'elementType' => Asset::class,
+            'siteId' => $newSiteId,
+            'isNewSite' => true,
+        ]);
+        $processItem = new ReflectionMethod($job, 'processItem');
+        $assets = Asset::find()->id([$allAsset->id, $customAsset->id])->siteId($primarySiteId)->all();
+        self::assertCount(2, $assets);
+        foreach ($assets as $asset) {
+            $processItem->invoke($job, $asset);
+        }
+
+        self::assertContains($newSiteId, $this->siteIdsForAsset($allAsset));
+        self::assertSame([$primarySiteId], $this->siteIdsForAsset($customAsset));
+    }
+
+    private function createAsset(int $siteId, ?Volume $volume = null): Asset
+    {
+        $volume ??= $this->volume;
         $tempPath = Craft::$app->getPath()->getTempPath() . '/' . uniqid('asset-propagation-') . '.png';
         copy(Craft::$app->getPath()->getTestsPath() . '/_craft/assets/shinybrad.png', $tempPath);
 
         $asset = new Asset();
         $asset->tempFilePath = $tempPath;
         $asset->setFilename(basename($tempPath));
-        $asset->newFolderId = Craft::$app->getAssets()->getRootFolderByVolumeId($this->volume->id)->id;
-        $asset->setVolumeId($this->volume->id);
+        $asset->newFolderId = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id)->id;
+        $asset->setVolumeId($volume->id);
         $asset->siteId = $siteId;
         $asset->avoidFilenameConflicts = true;
         $asset->setScenario(Asset::SCENARIO_CREATE);
