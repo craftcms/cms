@@ -835,6 +835,61 @@ class GeneralConfig extends BaseConfig
     public int $defaultImageQuality = 82;
 
     /**
+     * @var int|false The number of requests Craft will allow from a single IP address within <config5:defaultRateLimitDuration>,
+     * for actions that are rate-limited by default, before responding with a 429 error.
+     *
+     * This applies to the following actions, each of which is tracked separately:
+     *
+     * - `auth/verify-recovery-code`
+     * - `auth/verify-totp`
+     * - `users/login` (POST requests only)
+     * - `users/send-password-reset-email`
+     *
+     * This can be set to `false` to disable the default rate limits.
+     *
+     * ::: tip
+     * If Craft is running behind a load balancer or reverse proxy, make sure [[\yii\web\Request::$trustedHosts]] and
+     * <config5:ipHeaders> are configured correctly, so rate limits are applied to each visitor’s IP rather than the
+     * proxy’s.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * ->defaultRateLimit(20)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEFAULT_RATE_LIMIT=20
+     * ```
+     * :::
+     *
+     * @group Security
+     * @since 5.12.0
+     */
+    public int|false $defaultRateLimit = 10;
+
+    /**
+     * @var mixed The amount of time that <config5:defaultRateLimit> applies to.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     *
+     * ::: code
+     * ```php Static Config
+     * // 5 minutes
+     * ->defaultRateLimitDuration(300)
+     * ```
+     * ```shell Environment Override
+     * # 5 minutes
+     * CRAFT_DEFAULT_RATE_LIMIT_DURATION=300
+     * ```
+     * :::
+     *
+     * @group Security
+     * @defaultAlt 1 minute
+     * @since 5.12.0
+     */
+    public mixed $defaultRateLimitDuration = 60;
+
+    /**
      * @var array The default options that should be applied to each search term.
      *
      * Options include:
@@ -3490,6 +3545,7 @@ class GeneralConfig extends BaseConfig
             // durations
             ->cacheDuration($this->cacheDuration)
             ->cooldownDuration($this->cooldownDuration)
+            ->defaultRateLimitDuration($this->defaultRateLimitDuration)
             ->defaultTokenDuration($this->defaultTokenDuration)
             ->elevatedSessionDuration($this->elevatedSessionDuration)
             ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
@@ -4288,6 +4344,51 @@ class GeneralConfig extends BaseConfig
     public function defaultImageQuality(int $value): self
     {
         $this->defaultImageQuality = $value;
+        return $this;
+    }
+
+    /**
+     * The number of requests Craft will allow from a single IP address within <config5:defaultRateLimitDuration>,
+     * for actions that are rate-limited by default, before responding with a 429 error.
+     *
+     * This can be set to `false` to disable the default rate limits.
+     *
+     * ```php
+     * ->defaultRateLimit(20)
+     * ```
+     *
+     * @group Security
+     * @param int|false $value
+     * @return self
+     * @see $defaultRateLimit
+     * @since 5.12.0
+     */
+    public function defaultRateLimit(int|false $value): self
+    {
+        $this->defaultRateLimit = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time that <config5:defaultRateLimit> applies to.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     *
+     * ```php
+     * // 5 minutes
+     * ->defaultRateLimitDuration(300)
+     * ```
+     *
+     * @group Security
+     * @defaultAlt 1 minute
+     * @param mixed $value
+     * @return self
+     * @see $defaultRateLimitDuration
+     * @since 5.12.0
+     */
+    public function defaultRateLimitDuration(mixed $value): self
+    {
+        $this->defaultRateLimitDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
