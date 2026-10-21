@@ -38,6 +38,7 @@ use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\CmsEdition;
 use craft\enums\MenuItemType;
+use craft\enums\PropagationMethod;
 use craft\errors\AssetException;
 use craft\errors\FileException;
 use craft\errors\FsException;
@@ -1520,6 +1521,43 @@ class Asset extends Element
         }
 
         return $user->can("deleteAssets:$volume->uid");
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getSupportedSites(): array
+    {
+        $siteIds = parent::getSupportedSites();
+
+        if ($this->getVolume()->propagationMethod !== PropagationMethod::Custom) {
+            return $siteIds;
+        }
+
+        // Figure out which sites the asset is currently saved in
+        $currentSites = [];
+        $sourceIds = array_filter([$this->id, $this->duplicateOf->id ?? null]);
+
+        if (!empty($sourceIds)) {
+            $currentSites = array_flip(self::find()
+                ->status(null)
+                ->id($sourceIds)
+                ->site('*')
+                ->select('elements_sites.siteId')
+                ->column());
+        }
+
+        return array_map(fn(int $siteId) => [
+            'siteId' => $siteId,
+            // Only actually propagate to this site if it's the current site, or the asset has been assigned
+            // a status for this site, or the asset already exists for this site
+            'propagate' => (
+                $siteId === $this->siteId ||
+                $this->getEnabledForSite($siteId) !== null ||
+                isset($currentSites[$siteId])
+            ),
+        ], $siteIds);
     }
 
     /**

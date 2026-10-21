@@ -837,6 +837,7 @@ class Install extends Migration
             'titleTranslationKeyFormat' => $this->text(),
             'altTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'altTranslationKeyFormat' => $this->text(),
+            'propagationMethod' => $this->string()->defaultValue(PropagationMethod::All->value)->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
