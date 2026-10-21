@@ -18,11 +18,11 @@
 - `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, user groups, category groups, and tag groups. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added the `sites`, `site`, `sections`, `section`, `entryTypes`, `entryType`, `volumes`, `volume`, `userGroups`, `userGroup`, `categoryGroups`, `categoryGroup`, `tagGroups`, and `tagGroup` GraphQL queries, which are available when the schema includes the corresponding components. ([#20055](https://github.com/craftcms/cms/pull/20055))
-- Elements now have `site` fields in GraphQL, when the schema includes the “View sites” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
-- Entries now have `section` and `type` fields in GraphQL, when the schema includes the “View sections” and “View entry types” components. ([#20055](https://github.com/craftcms/cms/pull/20055))
-- Assets now have `volume` fields in GraphQL, when the schema includes the “View volumes” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
-- Users now have `groups` fields in GraphQL, when the schema includes the “View user groups” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
-- Categories and tags now have `group` fields in GraphQL, when the schema includes the “View category groups” and “View tag groups” components. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Elements now have `site` fields in GraphQL, when the schema includes the “Query for sites” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Entries now have `section` and `type` fields in GraphQL, when the schema includes the “Query for sections” and “Query for entry types” components. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Assets now have `volume` fields in GraphQL, when the schema includes the “Query for volumes” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Users now have `groups` fields in GraphQL, when the schema includes the “Query for user groups” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Categories and tags now have `group` fields in GraphQL, when the schema includes the “Query for category groups” and “Query for tag groups” components. ([#20055](https://github.com/craftcms/cms/pull/20055))
 
 ### Extensibility
 

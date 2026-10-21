@@ -1643,7 +1643,7 @@ class Gql extends Component
         $sites = Craft::$app->getSites()->getAllSites(true);
         $queryComponents = [
             'settings.sites:read' => [
-                'label' => Craft::t('app', 'View sites'),
+                'label' => Craft::t('app', 'Query for sites'),
                 'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to elements.', [
                     'plural' => 'sites',
                     'singular' => 'site',
@@ -1699,7 +1699,7 @@ class Gql extends Component
 
         if (!empty($entriesService->getAllSections())) {
             $queryComponents['settings.sections:read'] = [
-                'label' => Craft::t('app', 'View sections'),
+                'label' => Craft::t('app', 'Query for sections'),
                 'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to entries.', [
                     'plural' => 'sections',
                     'singular' => 'section',
@@ -1710,7 +1710,7 @@ class Gql extends Component
 
         if (!empty($entriesService->getAllEntryTypes())) {
             $queryComponents['settings.entrytypes:read'] = [
-                'label' => Craft::t('app', 'View entry types'),
+                'label' => Craft::t('app', 'Query for entry types'),
                 'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to entries.', [
                     'plural' => 'entryTypes',
                     'singular' => 'entryType',
@@ -1827,7 +1827,7 @@ class Gql extends Component
 
         if (!empty($volumes)) {
             $queryComponents['settings.volumes:read'] = [
-                'label' => Craft::t('app', 'View volumes'),
+                'label' => Craft::t('app', 'Query for volumes'),
                 'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to assets.', [
                     'plural' => 'volumes',
                     'singular' => 'volume',
@@ -1907,7 +1907,7 @@ class Gql extends Component
 
             if (!empty($userGroups)) {
                 $queryComponents['settings.usergroups:read'] = [
-                    'label' => Craft::t('app', 'View user groups'),
+                    'label' => Craft::t('app', 'Query for user groups'),
                     'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to users.', [
                         'plural' => 'userGroups',
                         'singular' => 'userGroup',
@@ -1946,7 +1946,7 @@ class Gql extends Component
 
         if (!empty($categoryGroups)) {
             $queryComponents['settings.categorygroups:read'] = [
-                'label' => Craft::t('app', 'View category groups'),
+                'label' => Craft::t('app', 'Query for category groups'),
                 'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to categories.', [
                     'plural' => 'categoryGroups',
                     'singular' => 'categoryGroup',
@@ -1991,7 +1991,7 @@ class Gql extends Component
 
         if (!empty($tagGroups)) {
             $queryComponents['settings.taggroups:read'] = [
-                'label' => Craft::t('app', 'View tag groups'),
+                'label' => Craft::t('app', 'Query for tag groups'),
                 'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to tags.', [
                     'plural' => 'tagGroups',
                     'singular' => 'tagGroup',
