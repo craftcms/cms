@@ -478,6 +478,21 @@ class ElementSources
     }
 
     /**
+     * Returns the URL segment for a given page name, as in `content/{slug}`.
+     *
+     * Pages are looked up by {@see pageNameId()}, so the slug keeps every letter, number and mark of the name, in
+     * any script, and has the same ID as the name. Whitespace, dashes and underscores become single dashes, and
+     * other characters are dropped.
+     */
+    public static function pageSlug(string $page): string
+    {
+        $slug = (string) preg_replace('/[\s_-]+/u', '-', mb_strtolower($page));
+        $slug = (string) preg_replace('/[^\p{L}\p{N}\p{M}-]+/u', '', $slug);
+
+        return trim((string) preg_replace('/-+/', '-', $slug), '-');
+    }
+
+    /**
      * Returns whether the given custom source should be available for the current user.
      */
     /** @param SourceConfig $source */

@@ -385,6 +385,39 @@ it('sends a page that names no source to the source it shows', function () {
     get("/{$this->cpTrigger}/content/first")->assertOk();
 });
 
+it('sends a page to the source it shows, whatever its name', function (string $name) {
+    $section = Section::factory()->create(['type' => SectionType::Channel]);
+
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_ELEMENT_SOURCES.'.'.EntryElement::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$section->uid", 'page' => $name],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Other'],
+    ]);
+
+    $pageUrl = get("/{$this->cpTrigger}/content")->assertRedirect()->headers->get('Location');
+
+    get(encodeUrl($pageUrl))->assertRedirectContains("/{$section->handle}");
+})->with([
+    'non-Latin' => ['Αναρτήσεις'],
+    'accented' => ['Événements'],
+    'at sign' => ['Q @ A'],
+]);
+
+it('shows a non-Latin page whose first source shares its URL', function () {
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_ELEMENT_SOURCES.'.'.EntryElement::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Αναρτήσεις'],
+    ]);
+
+    get(encodeUrl("/{$this->cpTrigger}/content/αναρτήσεις"))->assertOk();
+});
+
+/**
+ * Percent-encodes a URL's non-ASCII characters, as browsers do before requesting it.
+ */
+function encodeUrl(string $url): string
+{
+    return (string) preg_replace_callback('/[^\x21-\x7e]+/', fn (array $match) => rawurlencode($match[0]), $url);
+}
+
 it('scopes the Singles source to single sections only', function () {
     $single = Section::factory()->create(['type' => SectionType::Single]);
     $channel = Section::factory()->create(['type' => SectionType::Channel]);

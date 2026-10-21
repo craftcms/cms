@@ -269,11 +269,11 @@ readonly class Navigation
                             fn (NavItem $item) => $item->label(t('Entries')),
                             fn (NavItem $item) => $item->label(t($page, category: 'site')),
                         )
-                        ->href(sprintf('content/%s', Str::slug($page)))
+                        ->href(sprintf('content/%s', ElementSources::pageSlug($page)))
                         ->icon($entryPageSettings[$page]['icon'] ?? 'newspaper')
                         ->subnav($this->sourceSubnav(
                             Entry::class,
-                            sprintf('content/%s', Str::slug($page)),
+                            sprintf('content/%s', ElementSources::pageSlug($page)),
                             $page,
                         ))
                     )
@@ -573,7 +573,7 @@ readonly class Navigation
                 : $pages
                     ->map(
                         fn (string $page) => [
-                            sprintf('content/%s', Str::slug($page)),
+                            sprintf('content/%s', ElementSources::pageSlug($page)),
                             $page,
                         ],
                     )

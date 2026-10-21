@@ -400,6 +400,7 @@
 - Fixed a bug where link buttons with an icon and a label had no inline padding.
 - Fixed a bug where the Deprecation Warnings utility listed warnings caused by Craft’s own Yii adapter code, rather than by project or plugin code. ([#19995](https://github.com/craftcms/cms/pull/19995))
 - Fixed a bug where the GraphQL `orderBy` argument’s sort direction was ignored. ([#19996](https://github.com/craftcms/cms/pull/19996))
+- Fixed a bug where entry index pages whose names weren’t written in plain Latin letters, such as “Αναρτήσεις” or “Événements”, opened an empty index rather than their first source. ([#20058](https://github.com/craftcms/cms/issues/20058))
 - Fixed an error that occurred when executing GraphQL queries with schemas that could query categories, tags, or global sets.
 - Fixed a bug where custom `orderBy` params on relational field values, such as `entry.myEntriesField.orderBy('title')`, didn’t take precedence over the field’s related order. ([#19997](https://github.com/craftcms/cms/pull/19997))
 - Fixed a bug where action menu items could overflow their menu, such as user groups’ descriptions in the user permissions “Choose” menu. ([#20001](https://github.com/craftcms/cms/pull/20001))
