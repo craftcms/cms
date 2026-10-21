@@ -14,9 +14,17 @@ class TwoFactorRateLimiter
 {
     public const string NAME = 'two-factor';
 
-    public function limit(Request $request): Limit
+    /**
+     * Five verifications a minute for each user from an IP address, and the default rate limit for the IP address.
+     *
+     * @return list<Limit>
+     */
+    public function limit(Request $request): array
     {
-        return Limit::perMinute(5)->by($this->key($request));
+        return array_values(array_filter([
+            Limit::perMinute(5)->by($this->key($request)),
+            DefaultRateLimit::for($request),
+        ]));
     }
 
     private function key(Request $request): string

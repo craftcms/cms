@@ -135,6 +135,31 @@ test('attemptLogin limits full-page login failures', function () {
     ])->assertTooManyRequests();
 });
 
+test('attemptLogin limits each IP address across accounts to the default rate limit', function () {
+    foreach (range(1, 10) as $attempt) {
+        postJson(action([LoginController::class, 'attemptLogin']), [
+            'loginName' => "user$attempt@example.com",
+            'password' => 'wrongpassword',
+        ])->assertBadRequest();
+    }
+
+    postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => 'user11@example.com',
+        'password' => 'wrongpassword',
+    ])->assertTooManyRequests();
+});
+
+test('attemptLogin only limits attempts per account when defaultRateLimit is disabled', function () {
+    Cms::config()->defaultRateLimit = false;
+
+    foreach (range(1, 11) as $attempt) {
+        postJson(action([LoginController::class, 'attemptLogin']), [
+            'loginName' => "user$attempt@example.com",
+            'password' => 'wrongpassword',
+        ])->assertBadRequest();
+    }
+});
+
 test('attemptLogin clears failed attempts after valid credentials', function () {
     $user = User::findOne();
 
