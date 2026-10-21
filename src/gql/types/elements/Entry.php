@@ -47,6 +47,8 @@ class Entry extends Element
             'ownerId' => $source->ownerId,
             'sortOrder' => $source->sortOrder,
             'typeId' => $source->getTypeId(),
+            'section' => $source->getSection(),
+            'type' => $source->getType(),
             'sectionHandle' => $source->getSection()?->handle,
             'fieldHandle' => $source->getField()?->handle,
             'typeHandle' => $source->getType()->handle,

@@ -16,6 +16,13 @@
 - Added the `project-config/check` command, which checks project config schema compatibility without applying changes.
 - Added the `{% render %}` Twig tag. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, user groups, category groups, and tag groups. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added the `sites`, `site`, `sections`, `section`, `entryTypes`, `entryType`, `volumes`, `volume`, `userGroups`, `userGroup`, `categoryGroups`, `categoryGroup`, `tagGroups`, and `tagGroup` GraphQL queries, which are available when the schema includes the corresponding components. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Elements now have `site` fields in GraphQL, when the schema includes the “View sites” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Entries now have `section` and `type` fields in GraphQL, when the schema includes the “View sections” and “View entry types” components. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Assets now have `volume` fields in GraphQL, when the schema includes the “View volumes” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Users now have `groups` fields in GraphQL, when the schema includes the “View user groups” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Categories and tags now have `group` fields in GraphQL, when the schema includes the “View category groups” and “View tag groups” components. ([#20055](https://github.com/craftcms/cms/pull/20055))
 
 ### Extensibility
 
@@ -29,6 +36,14 @@
 - Added `craft\elements\db\NestedElementQueryTrait::mustHaveOwner()`.
 - Added `craft\fieldlayoutelements\BaseField::defaultTip()`.
 - Added `craft\fieldlayoutelements\BaseField::defaultWarning()`.
+- Added `craft\gql\queries\Settings`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `craft\gql\types\CategoryGroup`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `craft\gql\types\EntryType`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `craft\gql\types\Section`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `craft\gql\types\Site`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `craft\gql\types\TagGroup`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `craft\gql\types\UserGroup`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `craft\gql\types\Volume`. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added `craft\helpers\Template::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - Added `craft\i18n\Locale::languageId()`.
 - Added `craft\services\Images::getSupportsBmp()`.
