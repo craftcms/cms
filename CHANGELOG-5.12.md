@@ -8,6 +8,7 @@
 - Sites that are added to elements within the “Sites” pane can now be removed again. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Element edit pages’ sidebar pane headings now line up with the labels within the panes. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Assets are now initially saved to the site they were uploaded from. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Assets in volumes set to let each asset choose which sites it should be saved to can now be deleted for individual sites, as long as they exist in another site. ([#20060](https://github.com/craftcms/cms/pull/20060))
 
 ### Administration
 

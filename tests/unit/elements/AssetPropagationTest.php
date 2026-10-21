@@ -10,7 +10,9 @@ namespace crafttests\unit\elements;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\actions\DeleteForSite;
 use craft\elements\Asset;
+use craft\elements\User;
 use craft\enums\PropagationMethod;
 use craft\models\Site;
 use craft\models\Volume;
@@ -158,6 +160,58 @@ class AssetPropagationTest extends TestCase
 
         self::assertContains($site->id, $this->siteIdsForAsset($allAsset));
         self::assertSame([$primarySiteId], $this->siteIdsForAsset($customAsset));
+    }
+
+    public function testDeleteForSite(): void
+    {
+        $this->volume->propagationMethod = PropagationMethod::Custom;
+        $elementsService = Craft::$app->getElements();
+        $admin = User::findOne(1);
+        self::assertNotNull($admin);
+
+        $asset = $this->createAsset(1000);
+        $asset = Craft::$app->getAssets()->getAssetById($asset->id, 1000);
+        $asset->setEnabledForSite([1000 => true, 1001 => true]);
+        self::assertTrue($elementsService->saveElement($asset), json_encode($asset->getErrors()));
+        self::assertEqualsCanonicalizing([1000, 1001], $this->siteIdsForAsset($asset));
+
+        $site2Asset = Craft::$app->getAssets()->getAssetById($asset->id, 1001);
+        $site2Asset->alt = 'Site 2 alt text';
+        self::assertTrue($elementsService->saveElement($site2Asset), json_encode($site2Asset->getErrors()));
+        self::assertTrue((new Query())->from(Table::ASSETS_SITES)->where(['assetId' => $asset->id, 'siteId' => 1001])->exists());
+
+        // Users need to be able to delete the asset
+        self::assertTrue($elementsService->canDeleteForSite($site2Asset, $admin));
+        self::assertFalse($elementsService->canDeleteForSite($site2Asset, new User()));
+
+        $elementsService->deleteElementForSite($site2Asset);
+        self::assertSame([1000], $this->siteIdsForAsset($asset));
+        self::assertFalse((new Query())->from(Table::ASSETS_SITES)->where(['assetId' => $asset->id, 'siteId' => 1001])->exists());
+
+        // Assets can't be deleted for the only site they exist in
+        $site1Asset = Craft::$app->getAssets()->getAssetById($asset->id, 1000);
+        self::assertFalse($elementsService->canDeleteForSite($site1Asset, $admin));
+
+        // Assets in volumes that propagate to all sites can't be deleted for a site
+        $this->volume->propagationMethod = PropagationMethod::All;
+        $allAsset = $this->createAsset(1000);
+        self::assertFalse($elementsService->canDeleteForSite($allAsset, $admin));
+    }
+
+    public function testDeleteForSiteAction(): void
+    {
+        Craft::$app->getUser()->setIdentity(User::findOne(1));
+        $source = "volume:{$this->volume->uid}";
+
+        self::assertNotContains(DeleteForSite::class, $this->actionTypes($source));
+
+        $this->volume->propagationMethod = PropagationMethod::Custom;
+        self::assertContains(DeleteForSite::class, $this->actionTypes($source));
+    }
+
+    private function actionTypes(string $source): array
+    {
+        return array_map(fn($action) => is_array($action) ? $action['type'] : (is_string($action) ? $action : get_class($action)), Asset::actions($source));
     }
 
     private function propagateElementsJob(string $elementType, int $siteId): ?PropagateElements

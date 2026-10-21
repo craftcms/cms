@@ -23,6 +23,7 @@ use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\CopyUrl;
 use craft\elements\actions\DeleteAssets;
+use craft\elements\actions\DeleteForSite;
 use craft\elements\actions\DownloadAssetFile;
 use craft\elements\actions\EditImage;
 use craft\elements\actions\MoveAssets;
@@ -543,6 +544,15 @@ class Asset extends Element
             // Delete
             if ($userSession->checkPermission("deletePeerAssets:$volume->uid")) {
                 $actions[] = DeleteAssets::class;
+            }
+
+            // Delete for site
+            if (
+                $volume->propagationMethod === PropagationMethod::Custom &&
+                Craft::$app->getIsMultiSite() &&
+                $userSession->checkPermission("deleteAssets:$volume->uid")
+            ) {
+                $actions[] = DeleteForSite::class;
             }
         }
 
@@ -1521,6 +1531,23 @@ class Asset extends Element
         }
 
         return $user->can("deleteAssets:$volume->uid");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDeleteForSite(User $user): bool
+    {
+        if ($this->isFolder || $this->getVolume()->propagationMethod !== PropagationMethod::Custom) {
+            return parent::canDeleteForSite($user);
+        }
+
+        // Don't allow assets to be deleted for the only site they exist in, as that would delete their files
+        if (!ElementHelper::isMultiSite($this)) {
+            return false;
+        }
+
+        return parent::canDeleteForSite($user) || $this->canDelete($user);
     }
 
     /**
@@ -3533,6 +3560,20 @@ JS;
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);
         parent::afterDelete();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDeleteForSite(): void
+    {
+        // Delete the site-specific asset data
+        Db::delete(Table::ASSETS_SITES, [
+            'assetId' => $this->id,
+            'siteId' => $this->siteId,
+        ]);
+
+        parent::afterDeleteForSite();
     }
 
     /**
