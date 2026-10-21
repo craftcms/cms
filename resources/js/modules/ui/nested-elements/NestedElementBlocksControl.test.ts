@@ -578,6 +578,26 @@ describe('NestedElementBlocksControl', () => {
     ).toBe(false);
   });
 
+  it('keeps a titlebar double-click from selecting text, but not on its controls', async () => {
+    mount({
+      entries: {'block-a': {type: 'newType', enabled: true}},
+      sortOrder: ['block-a'],
+    });
+    await nextTick();
+
+    const header = container!.querySelector(
+      '[data-matrix-block] [slot="header"]'
+    )!;
+    const press = (target: Element, detail: number): boolean =>
+      target.dispatchEvent(
+        new MouseEvent('mousedown', {bubbles: true, cancelable: true, detail})
+      );
+
+    expect(press(header, 1)).toBe(true);
+    expect(press(header, 2)).toBe(false);
+    expect(press(header.querySelector('craft-checkbox')!, 2)).toBe(true);
+  });
+
   it('keeps Craft 5 class names off its blocks', async () => {
     mount({
       entries: {'block-a': {type: 'newType', enabled: false}},

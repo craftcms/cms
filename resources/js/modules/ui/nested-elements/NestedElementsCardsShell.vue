@@ -24,8 +24,30 @@
   const container = ref<HTMLElement>();
   const invalidElementIds = ref<number[]>([]);
   const manager = computed(() => props.control.manager);
+  /**
+   * A reorder being saved, shown until it's done. Payloads that arrive in the
+   * meantime are put in its order too, as preparing the owner re-renders it
+   * before the reorder is saved; any card it doesn't name goes last.
+   */
+  const previewedOrder = shallowRef<number[] | null>(null);
+  const orderedCards = computed(() => {
+    const order = previewedOrder.value;
+
+    if (!order) {
+      return props.control.cards;
+    }
+
+    const position = (id: number): number => {
+      const index = order.indexOf(id);
+      return index < 0 ? order.length : index;
+    };
+
+    return [...props.control.cards].sort(
+      (a, b) => position(a.id) - position(b.id)
+    );
+  });
   const cards = computed(() =>
-    markInvalidElements(props.control.cards, invalidElementIds.value)
+    markInvalidElements(orderedCards.value, invalidElementIds.value)
   );
   const editable = computed(() => props.editable);
   const offset = shallowRef(0);
@@ -41,6 +63,7 @@
   });
   operations = useNestedElementOperations({
     elements: cards,
+    previewOrder: (ids) => (previewedOrder.value = ids),
     offset,
     canReorder,
     selection,

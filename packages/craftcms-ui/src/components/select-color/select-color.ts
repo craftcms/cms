@@ -141,11 +141,7 @@ export default class CraftSelectColor extends LitElement {
       'background-position:0 0, 0 0.25rem, 0.25rem -0.25rem, -0.25rem 0;' +
       'background-size:0.5rem 0.5rem;';
 
-    // White cards take the raised surface rather than white's own fill.
-    const fill =
-      color === 'white'
-        ? 'var(--c-surface-raised)'
-        : `var(--c-color-${color}-fill-quiet)`;
+    const fill = `var(--c-color-${color}-fill-quiet)`;
 
     const style = isTransparent
       ? base + transparent
@@ -167,9 +163,8 @@ export default class CraftSelectColor extends LitElement {
       case '__blank__':
         return 'var(--c-select-color-swatch-edge, rgb(0 0 0 / 15%))';
       case 'black':
-        return 'color-mix(in srgb, var(--c-color-black-on-quiet), transparent 80%)';
       case 'white':
-        return 'var(--c-table-border-color)';
+        return `var(--c-color-${color}-edge)`;
       default:
         return `var(--c-color-${color}-border-quiet)`;
     }

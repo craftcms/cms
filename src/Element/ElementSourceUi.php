@@ -266,7 +266,10 @@ readonly class ElementSourceUi
 
         return Field::make(
             t('Default Table Columns'),
-            Choice::make('tableAttributes')->options($options)->sortable(),
+            Choice::make('tableAttributes')
+                ->options($options)
+                ->sortable()
+                ->presentation(ChoicePresentation::AddMenu),
         )->instructions(t('Choose which table columns should be visible for this source by default.'));
     }
 

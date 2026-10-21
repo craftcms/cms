@@ -203,24 +203,6 @@ it('opens the field editor from the library HUD trigger and closes the HUD', () 
   panel.remove();
 });
 
-it('leaves sortable checkbox teardown to its custom element', () => {
-  const baseDestroy = vi
-    .spyOn(Base.prototype, 'destroy')
-    .mockImplementation(() => {});
-  // SAFETY: This test deliberately creates a CardViewDesigner without running its DOM-heavy constructor.
-  const designer = Object.create(
-    CardViewDesigner.prototype
-  ) as CardViewDesigner;
-  designer.abortController = null;
-  designer.sortableCheckboxSelect = document.createElement(
-    'craft-sortable-checkbox-select'
-  );
-  designer.$container = document.createElement('div');
-
-  expect(() => designer.destroy()).not.toThrow();
-  expect(baseDestroy).toHaveBeenCalledOnce();
-});
-
 it('gives the card preview the owner’s name, color, and icon', () => {
   document.body.innerHTML = `
     <form>

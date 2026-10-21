@@ -814,11 +814,20 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
             })
           );
         }
+
+        if (!slideout) {
+          // A failed save still writes the draft, so the user's changes aren't
+          // lost, which moves its `dateUpdated`; without this the next poll
+          // would report our own write as someone else's change.
+          activity.rebase(props.updatedTimestamps);
+        }
       },
-      // A submission supersedes any in-flight draft write.
+      // A submission supersedes any in-flight draft write, and what the last
+      // one reported.
       onBeforeSave: () => {
         invalidateUiRefreshes();
         autosave.cancel();
+        autosave.resetStatus();
       },
       onSuccess: (data) => {
         draftElementIds.clear();
@@ -1081,10 +1090,21 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       savedUi.value = null;
       savedScreen.value = null;
       autosave.clearSaved();
+      autosave.resetStatus();
+      // The errors were the discarded changes' own.
+      form.clearErrors();
       // The draft the autosave pointer names has just been deleted; leaving it
       // set would send the next save at it, and `draftIsProvisional` reads it to
       // decide whether the screen is showing provisional changes.
       autosave.setDraftId(null);
+      // Autosave baselined the poller on the draft's `dateUpdated`, but polls
+      // now describe the canonical element. Stop comparing the element stamp
+      // until the reload below hands over the canonical one, or the next poll
+      // reports the discard as someone else's change.
+      activity.rebase({
+        element: null,
+        canonical: props.updatedTimestamps.canonical,
+      });
 
       // Revert against the payload the page already holds, so the fields go
       // back the moment the draft is deleted rather than a round trip later —
@@ -1100,10 +1120,16 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       if (slideout) {
         await slideout.reload();
         await revertToLoadedPayload();
+        activity.rebase(props.updatedTimestamps);
       } else {
         // Not awaited: `router.reload()` doesn't resolve, and the visit's own
         // callbacks are the only way to know the payload has landed.
-        router.reload({onFinish: () => void revertToLoadedPayload()});
+        router.reload({
+          onFinish: () => {
+            void revertToLoadedPayload();
+            activity.rebase(props.updatedTimestamps);
+          },
+        });
       }
     } finally {
       reverting--;

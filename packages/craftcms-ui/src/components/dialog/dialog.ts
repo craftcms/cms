@@ -6,6 +6,7 @@ import hostStyles from '@src/styles/host.styles.js';
 import {t} from '@src/utilities/translate.js';
 import {trapFocus} from '@src/utilities/focus-trap.js';
 import {isFocusable} from '@src/utilities/focus-return.js';
+import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import styles from './dialog.styles.js';
 import '../icon/icon.js';
 import '../resize-grips/resize-grips.js';
@@ -223,6 +224,7 @@ export default class CraftDialog extends LitElement {
     // Removed while still open — an unmounting Vue view, say — must not leave
     // the page stuck.
     this.#releaseScrollLock();
+    swallowHeldEnterKeyup();
   }
 
   /** The native element, once rendered. */
@@ -403,6 +405,7 @@ export default class CraftDialog extends LitElement {
     this.#releaseFocusTrap = null;
 
     this.#releaseScrollLock();
+    swallowHeldEnterKeyup();
 
     if (focusWasInside) {
       this.#returnFocusToTarget(opener);

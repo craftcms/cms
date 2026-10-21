@@ -117,3 +117,62 @@ it('renders grouped inputs’ sub-labels smaller, lighter, and semibold', async 
     getComputedStyle(subLabel!).fontSize
   );
 });
+
+it('draws a hairline between separated fields that share a row, and only there', async () => {
+  const fieldGroup = document.createElement('craft-field-group');
+  fieldGroup.separated = true;
+  fieldGroup.style.width = '900px';
+  fieldGroup.style.setProperty('--c-field-group-separator-spacing', '16px');
+  fieldGroup.innerHTML = `
+    <div class="width-50">Start</div>
+    <div class="width-50">End</div>
+    <div>Below</div>
+  `;
+  document.body.append(fieldGroup);
+  await fieldGroup.updateComplete;
+  const [start, end, below] = fieldGroup.querySelectorAll<HTMLElement>('div');
+  const frames = () =>
+    new Promise((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolve))
+    );
+  const follows = () =>
+    [start, end, below].map((child) =>
+      child!.hasAttribute('data-follows-column')
+    );
+  await frames();
+
+  expect(follows()).toEqual([false, true, false]);
+  expect(
+    end!.getBoundingClientRect().left - start!.getBoundingClientRect().right
+  ).toBe(32);
+  const hairline = getComputedStyle(end!, '::before');
+  expect(hairline.borderInlineStartWidth).toBe('1px');
+  const gapMiddle =
+    (start!.getBoundingClientRect().right + end!.getBoundingClientRect().left) /
+    2;
+  expect(
+    end!.getBoundingClientRect().left + parseFloat(hairline.left)
+  ).toBeCloseTo(gapMiddle, 0);
+
+  fieldGroup.style.width = '390px';
+  await frames();
+  expect(follows()).toEqual([false, false, false]);
+
+  fieldGroup.style.width = '900px';
+  start!.hidden = true;
+  await frames();
+  expect(follows()).toEqual([false, false, false]);
+});
+
+it('keeps separated fields within a group too narrow for its full column gap', async () => {
+  const fieldGroup = document.createElement('craft-field-group');
+  fieldGroup.separated = true;
+  fieldGroup.style.width = '300px';
+  fieldGroup.style.setProperty('--c-field-group-separator-spacing', '16px');
+  fieldGroup.innerHTML = '<div>Gallery Location</div>';
+  document.body.append(fieldGroup);
+  await fieldGroup.updateComplete;
+
+  const field = fieldGroup.querySelector('div')!;
+  expect(field.getBoundingClientRect().width).toBe(300);
+});

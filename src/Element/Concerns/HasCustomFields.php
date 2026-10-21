@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
@@ -158,8 +159,35 @@ trait HasCustomFields
         }
 
         $value = $field->normalizeValueFromRequest($value, $this);
+        $unchanged = $this->isUnchangedRequestValue($field, $value);
         $this->setFieldValue($field->handle, $value);
         $this->_normalizedFieldValues[$field->handle] = true;
+
+        if ($unchanged) {
+            unset($this->_dirtyFields[$field->handle]);
+        }
+    }
+
+    /**
+     * Returns whether a value posted for a field leaves the field as it is.
+     *
+     * Forms post whole groups of values, such as every field of every block in a Matrix field when one of them
+     * changes, so a posted value isn't necessarily a changed one. Marking it dirty anyway would record it as modified
+     * in a draft. Fields that hold nested elements stay dirty when they're posted, since their nested elements are only
+     * saved when they are.
+     */
+    private function isUnchangedRequestValue(FieldInterface $field, mixed $value): bool
+    {
+        if (
+            ! $this->_trackDirtyFields ||
+            ! $this->id ||
+            isset($this->_dirtyFields[$field->handle]) ||
+            $field instanceof ElementContainerFieldInterface
+        ) {
+            return false;
+        }
+
+        return $field->serializeValue($value, $this) === $field->serializeValue($this->getFieldValue($field->handle), $this);
     }
 
     public function getOutdatedFields(): array

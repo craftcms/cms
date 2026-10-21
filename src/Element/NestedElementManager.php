@@ -1481,8 +1481,30 @@ class NestedElementManager extends Component
 
     public function deleteNestedElements(ElementInterface $owner, bool $hardDelete = false): void
     {
-        foreach (Sites::getAllSiteIds() as $siteId) {
-            $query = $this->nestedElementQuery($owner)
+        $allSiteIds = Sites::getAllSiteIds();
+        $siteOwners = [];
+
+        if (count($allSiteIds) > 1) {
+            $siteOwners = $owner::find()
+                ->id($owner->id)
+                ->siteId(['not', $owner->siteId])
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->revisions(null)
+                ->trashed(null)
+                ->status(null)
+                ->indexBy('siteId')
+                ->all();
+        }
+
+        foreach ($allSiteIds as $siteId) {
+            // The query factory may scope the query to the owner's site, so load the owner in this site
+            $siteOwner = $siteId === $owner->siteId ? $owner : ($siteOwners[$siteId] ?? null);
+            if (! $siteOwner) {
+                continue;
+            }
+
+            $query = $this->nestedElementQuery($siteOwner)
                 ->status(null)
                 ->siteId($siteId);
             if ($hardDelete) {

@@ -38,6 +38,13 @@ export default css`
     );
   }
 
+  /* A neutral card re-resolves the tokens a tinted card recolors (see
+     tokens.css). The selected tab's indicator has no token of its own to go
+     back to, so it's cleared, leaving tabs their default. */
+  :host(:is([data-color='white'], [data-color='gray'], [data-color='slate'])) {
+    --c-tab-border-active: initial;
+  }
+
   :host([active]) .card {
     color: var(--c-color-on-quiet);
     background-color: color-mix(var(--c-color-fill-quiet), transparent 40%);
@@ -49,6 +56,11 @@ export default css`
       border-color: var(--c-color-border-loud);
       color: var(--c-color-on-loud);
       --c-checkbox-border-color: var(--c-color-on-loud);
+      /* Plain controls here hover over the quiet fill, which would be a light
+         patch under the header's light text. */
+      --c-color-fill-quiet: var(--c-color-fill-loud);
+      --c-color-border-quiet: var(--c-color-border-loud);
+      --c-color-on-quiet: var(--c-color-on-loud);
     }
   }
 
@@ -106,13 +118,13 @@ export default css`
     --c-color-on-loud: var(--c-card-text-selected);
   }
 
+  /* White and black take their own colors, which swap in the dark theme, so a
+     white card looks white in the light theme and black in the dark one, and a
+     black card the reverse, wherever it's nested. Each is edged in its own
+     hairline color, as black's quiet border is barely lighter than its fill. */
   :host([data-color='white']) .card {
-    --c-color-fill-quiet: var(--c-surface-raised);
-    --c-color-fill-loud: var(--c-surface-raised);
-    --c-color-border-quiet: var(--c-border-raised);
+    --c-color-border-quiet: var(--c-color-white-edge);
     --c-color-border-loud: var(--c-border-raised-selected);
-    --c-color-on-quiet: var(--c-text-default);
-    --c-color-on-loud: var(--c-text-default);
     box-shadow: var(--c-card-shadow, var(--c-shadow-xs));
   }
 
@@ -120,13 +132,7 @@ export default css`
      let a light page through and wash the text out. It fills the whole card
      instead, selected or not. */
   :host([data-color='black']) .card {
-    /* Light lines against the dark fill, in either theme. Black's own quiet
-       border is barely lighter than the fill, so it all but disappears. */
-    --c-color-border-quiet: color-mix(
-      in srgb,
-      var(--c-color-black-on-quiet),
-      transparent 80%
-    );
+    --c-color-border-quiet: var(--c-color-black-edge);
     background-color: var(--c-color-fill-quiet);
   }
 
@@ -148,7 +154,7 @@ export default css`
 
   :host([data-color='white']) .card .card__header,
   :host([data-color='white']) .card .card__footer {
-    border-color: var(--c-table-border-color);
+    border-color: var(--c-color-white-edge);
   }
 
   :host([data-color='white'][active]) .card {

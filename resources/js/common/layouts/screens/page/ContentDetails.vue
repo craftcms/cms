@@ -41,11 +41,12 @@
 <style scoped lang="css">
   .cp-details {
     display: grid;
+    /* Panels fit the column, rather than widening it past the pane. */
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
     align-items: start;
     gap: var(--c-spacing-md);
     height: 100%;
     overflow-y: auto;
-    scrollbar-gutter: stable;
   }
 </style>

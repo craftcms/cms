@@ -1,4 +1,5 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
+import {userEvent} from 'vite-plus/test/browser';
 import '../../styles/cp.css';
 import './card.js';
 import '../chip/chip.js';
@@ -136,9 +137,9 @@ it('fits its border inside a stretched grid cell', async () => {
   expect(inner.bottom).toBe(host.bottom);
 });
 
-it('divides a white card’s header and footer with the table border color', async () => {
+it('divides a white card’s header and footer in its edge color', async () => {
   document.body.innerHTML = `
-    <span class="probe" style="border: 1px solid var(--c-table-border-color)"></span>
+    <span class="probe" style="border: 1px solid var(--c-color-white-edge)"></span>
     <craft-card data-color="white">
       <span slot="label">Header</span>
       Body
@@ -155,7 +156,6 @@ it('divides a white card’s header and footer with the table border color', asy
 
   expect(part('.card__header').borderBottomColor).toBe(expected);
   expect(part('.card__footer').borderTopColor).toBe(expected);
-  expect(part('.card').borderTopColor).not.toBe(expected);
 });
 
 it('styles a selected white card like a selected chip', async () => {
@@ -187,28 +187,85 @@ it('styles a selected white card like a selected chip', async () => {
   expect(part('.card__footer').borderTopColor).toBe(divider);
 });
 
-it('gives a white card the raised surface and text of the dark theme', async () => {
-  document.body.innerHTML = `
-    <div data-theme="dark">
-      <span class="probe" style="background-color: var(--c-surface-raised); color: var(--c-text-default)"></span>
-      <craft-card data-color="white">
-        <span slot="label">Header</span>
-        Body
+const surfaces = [
+  ['card', 'data-color', ['.card']],
+  ['chip', 'data-color', ['.cp-chip']],
+  ['badge', 'fill', ['.badge']],
+] as const;
+
+/** How a white or black surface looks: its parts' colors, and its contents'. */
+async function looksOf(
+  element: HTMLElement & {updateComplete: Promise<unknown>},
+  parts: readonly string[]
+): Promise<string[]> {
+  await element.updateComplete;
+
+  return [
+    ...parts.flatMap((selector) => {
+      const style = getComputedStyle(
+        element.shadowRoot!.querySelector(selector)!
+      );
+      return [style.backgroundColor, style.color, style.borderTopColor];
+    }),
+    getComputedStyle(element.querySelector('.content')!).colorScheme,
+  ];
+}
+
+it.each(surfaces)(
+  'keeps a white %s white and a black one black on a light page, however they’re nested',
+  async (name, attribute, parts) => {
+    const tag = `craft-${name}`;
+    document.body.innerHTML = `
+      <${tag} ${attribute}="white"><span class="content">White</span></${tag}>
+      <${tag} ${attribute}="black"><span class="content">Black</span></${tag}>
+      <craft-card data-color="black">
+        <${tag} ${attribute}="white"><span class="content">White in black</span></${tag}>
       </craft-card>
-    </div>`;
-  const card = document.querySelector<CraftCard>('craft-card')!;
-  await card.updateComplete;
+      <craft-card data-color="white">
+        <${tag} ${attribute}="black"><span class="content">Black in white</span></${tag}>
+      </craft-card>`;
+    await Promise.all(
+      [...document.querySelectorAll<CraftCard>('craft-card')].map(
+        (card) => card.updateComplete
+      )
+    );
+    const [white, black, whiteInBlack, blackInWhite] = await Promise.all(
+      [...document.querySelectorAll<CraftCard>(`.content`)].map((content) =>
+        looksOf(content.parentElement as CraftCard, parts)
+      )
+    );
 
-  const probe = getComputedStyle(document.querySelector('.probe')!);
-  const root = getComputedStyle(card.shadowRoot!.querySelector('.card')!);
-  const header = getComputedStyle(
-    card.shadowRoot!.querySelector('.card__header')!
-  );
+    expect(white![0]).toBe('rgb(255, 255, 255)');
+    expect(white!.at(-1)).toBe('light');
+    expect(black!.at(-1)).toBe('dark');
+    expect(whiteInBlack).toEqual(white);
+    expect(blackInWhite).toEqual(black);
+  }
+);
 
-  expect(root.backgroundColor).toBe(probe.backgroundColor);
-  expect(root.color).toBe(probe.color);
-  expect(header.color).toBe(probe.color);
-});
+it.each(surfaces)(
+  'swaps how white and black %ss look on a dark page',
+  async (name, attribute, parts) => {
+    const tag = `craft-${name}`;
+    const pair = `
+      <${tag} ${attribute}="white"><span class="content">White</span></${tag}>
+      <${tag} ${attribute}="black"><span class="content">Black</span></${tag}>`;
+    document.body.innerHTML = `
+      <div id="light">${pair}</div>
+      <div id="dark" data-theme="dark">${pair}</div>`;
+    const looks = (id: string) =>
+      Promise.all(
+        [...document.querySelectorAll<CraftCard>(`#${id} ${tag}`)].map(
+          (element) => looksOf(element, parts)
+        )
+      );
+    const [lightWhite, lightBlack] = await looks('light');
+    const [darkWhite, darkBlack] = await looks('dark');
+
+    expect(darkWhite).toEqual(lightBlack);
+    expect(darkBlack).toEqual(lightWhite);
+  }
+);
 
 function channels(color: string): {rgb: number[]; alpha: number} {
   const values = color.match(/[\d.]+/g)!.map(Number);
@@ -416,6 +473,36 @@ it.each(['light', 'dark'])(
   }
 );
 
+it.each([
+  ['light', ''],
+  ['light', 'data-color="indigo"'],
+  ['light', 'data-color="white"'],
+  ['dark', ''],
+])(
+  'keeps a hovered header control readable on a selected card in the %s theme (%s)',
+  async (theme, color) => {
+    document.body.innerHTML = `
+      <div data-theme="${theme}">
+        <craft-card ${color} active>
+          <div slot="header">
+            <craft-button variant="plain" inherit icon="ellipsis" aria-label="Actions"></craft-button>
+          </div>
+        </craft-card>
+      </div>`;
+    const card = document.querySelector<CraftCard>('craft-card')!;
+    await card.updateComplete;
+    const button = card.querySelector('craft-button')!;
+
+    await userEvent.hover(button);
+    const style = getComputedStyle(button);
+
+    expect(contrast(style.color, style.backgroundColor)).toBeGreaterThanOrEqual(
+      3
+    );
+    await userEvent.unhover(button);
+  }
+);
+
 it('keeps the accent color for a white card’s checked checkbox', async () => {
   document.body.innerHTML = `
     <craft-card data-color="white">
@@ -539,4 +626,51 @@ it('gives what’s in a tinted card the card’s color, but not in a neutral one
       resolve('outside', 'var(--c-text-default)')
     );
   }
+});
+
+it('keeps a neutral card nested in a tinted one, and what’s in it, neutral', async () => {
+  document.body.innerHTML = `
+    <craft-card data-color="orange">
+      <div>
+        <craft-card data-color="white" id="white"><span id="in-white"></span></craft-card>
+        <craft-card data-color="gray" id="gray"><span id="in-gray"></span></craft-card>
+        <craft-card data-color="slate" id="slate"><span id="in-slate"></span></craft-card>
+      </div>
+    </craft-card>
+    <craft-card data-color="white" id="top-white"><span id="in-top-white"></span></craft-card>
+    <span id="outside"></span>`;
+  const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
+  await Promise.all(cards.map((card) => card.updateComplete));
+  const resolve = (id: string, value: string) => {
+    const element = document.getElementById(id)!;
+    element.style.color = value;
+    return getComputedStyle(element).color;
+  };
+  const tokens = [
+    '--c-text-default',
+    '--c-text-quiet',
+    '--c-form-control-border-color',
+    '--c-color-neutral-border-quiet',
+    '--c-color-neutral-fill-normal',
+  ];
+
+  for (const id of ['in-white', 'in-gray', 'in-slate']) {
+    for (const token of tokens) {
+      expect(resolve(id, `var(${token})`), `${id} ${token}`).toBe(
+        resolve('outside', `var(${token})`)
+      );
+    }
+    expect(resolve(id, 'var(--c-tab-border-active, red)'), id).toBe(
+      resolve('outside', 'var(--c-tab-border-active, red)')
+    );
+  }
+
+  // The white card's own text and border match a white card's outside.
+  const look = (id: string) => {
+    const style = getComputedStyle(
+      document.getElementById(id)!.shadowRoot!.querySelector('.card')!
+    );
+    return [style.color, style.borderTopColor];
+  };
+  expect(look('white')).toEqual(look('top-white'));
 });
