@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Override;
@@ -38,7 +39,7 @@ class LocalizeRelations extends Job
             ->reject(fn (int $siteId) => $siteId === $primarySiteId)
             ->all();
 
-        $now = now();
+        $now = Query::prepareDateForDb(now());
 
         foreach ($relations->lazyById() as $i => $relation) {
             $this->setProgress((int) (($i / max($totalRelations, 1)) * 100));

@@ -2919,7 +2919,7 @@ JS;
             ->update([
                 'deletedWithEntryType' => null,
                 'deletedWithSection' => null,
-                'dateUpdated' => now(),
+                'dateUpdated' => Query::prepareDateForDb(now()),
             ]);
 
         $section = $this->getSection();

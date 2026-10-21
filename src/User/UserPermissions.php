@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
@@ -324,7 +325,7 @@ class UserPermissions
                 $userPermissionVals[] = [
                     'permissionId' => $permissionModel->id,
                     'userId' => $userId,
-                    'dateCreated' => $now = now(),
+                    'dateCreated' => $now = Query::prepareDateForDb(now()),
                     'dateUpdated' => $now,
                     'uid' => Str::uuid(),
                 ];
@@ -371,7 +372,7 @@ class UserPermissions
 
         if ($permissions) {
             $permissions = $this->canonicalPermissionNames($permissions);
-            $now = now();
+            $now = Query::prepareDateForDb(now());
 
             foreach ($permissions as $permissionName) {
                 $permissionModel = $this->getPermissionModelByName($permissionName);

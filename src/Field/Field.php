@@ -842,7 +842,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
                 ->where('fieldId', $outgoingField->id)
                 ->update([
                     'fieldId' => $this->id,
-                    'dateUpdated' => now(),
+                    'dateUpdated' => Query::prepareDateForDb(now()),
                 ]);
         }
 

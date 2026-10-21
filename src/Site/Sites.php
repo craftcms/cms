@@ -25,9 +25,11 @@ use CraftCms\Cms\Site\Events\SitesReordering;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Update\Updates;
 use Exception;
@@ -35,7 +37,6 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -683,7 +684,7 @@ class Sites
                     ->whereIn('sectionId', $soloSectionIds)
                     ->update([
                         'siteId' => $transferContentTo,
-                        'dateUpdated' => now(),
+                        'dateUpdated' => Query::prepareDateForDb(now()),
                     ]);
 
                 // Update the project config too
@@ -715,7 +716,7 @@ class Sites
                         ->whereIn('elementId', $entryIds)
                         ->update([
                             'siteId' => $transferContentTo,
-                            'dateUpdated' => now(),
+                            'dateUpdated' => Query::prepareDateForDb(now()),
                         ]);
 
                     DB::table(Table::RELATIONS)
@@ -723,7 +724,7 @@ class Sites
                         ->whereNotNull('sourceSiteId')
                         ->update([
                             'sourceSiteId' => $transferContentTo,
-                            'dateUpdated' => now(),
+                            'dateUpdated' => Query::prepareDateForDb(now()),
                         ]);
 
                     // Nested entries
@@ -742,7 +743,7 @@ class Sites
                             ->where('siteId', $site->id)
                             ->update([
                                 'siteId' => $transferContentTo,
-                                'dateUpdated' => now(),
+                                'dateUpdated' => Query::prepareDateForDb(now()),
                             ]);
 
                         DB::table(Table::RELATIONS)
@@ -750,7 +751,7 @@ class Sites
                             ->whereNotNull('sourceSiteId')
                             ->update([
                                 'sourceSiteId' => $transferContentTo,
-                                'dateUpdated' => now(),
+                                'dateUpdated' => Query::prepareDateForDb(now()),
                             ]);
                     }
                 }
@@ -877,8 +878,8 @@ class Sites
         }
 
         foreach ($results as $result) {
-            $result->dateCreated = Date::parse($result->dateCreated);
-            $result->dateUpdated = Date::parse($result->dateUpdated);
+            $result->dateCreated = DateTimeHelper::toDateTime($result->dateCreated);
+            $result->dateUpdated = DateTimeHelper::toDateTime($result->dateUpdated);
 
             $site = new Site($result);
             $this->allSitesById[$site->id] = $site;
@@ -941,14 +942,14 @@ class Sites
                 ->where('id', $oldPrimarySiteId)
                 ->update([
                     'primary' => false,
-                    'dateUpdated' => now(),
+                    'dateUpdated' => Query::prepareDateForDb(now()),
                 ]);
 
             DB::table(Table::SITES)
                 ->where('id', $newPrimarySiteId)
                 ->update([
                     'primary' => true,
-                    'dateUpdated' => now(),
+                    'dateUpdated' => Query::prepareDateForDb(now()),
                 ]);
 
             // Update all of the non-localized elements

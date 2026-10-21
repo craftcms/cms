@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Query;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -180,7 +181,7 @@ readonly class ElementCanonicalChanges
                         'elementId' => $canonical->id,
                         'siteId' => $attribute->siteId,
                         'attribute' => $attribute->attribute,
-                        'dateUpdated' => $updatedCanonical->dateUpdated,
+                        'dateUpdated' => Query::prepareDateForDb($updatedCanonical->dateUpdated),
                         'propagated' => $attribute->propagated,
                         'userId' => $attribute->userId,
                     ], ['elementId', 'siteId', 'attribute']);
@@ -193,7 +194,7 @@ readonly class ElementCanonicalChanges
                         'siteId' => $field->siteId,
                         'fieldId' => $field->fieldId,
                         'layoutElementUid' => $field->layoutElementUid,
-                        'dateUpdated' => $updatedCanonical->dateUpdated,
+                        'dateUpdated' => Query::prepareDateForDb($updatedCanonical->dateUpdated),
                         'propagated' => $field->propagated,
                         'userId' => $field->userId,
                     ], ['elementId', 'siteId', 'fieldId', 'layoutElementUid']);
