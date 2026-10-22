@@ -62,7 +62,9 @@
         }
 
         const $entries = this.$entriesContainer.children('.matrixblock');
-        const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
+        const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds(
+          this.settings.siteId
+        );
 
         // only initialise drag-sort if the device has mouse events
         if (Craft.hasMousePointerEvents()) {
@@ -469,6 +471,22 @@
         this.callOnSelectedEntries('enable');
       },
 
+      disableSelectedEntriesForSite: function () {
+        this.callOnSelectedEntries('disableForSite');
+      },
+
+      enableSelectedEntriesForSite: function () {
+        this.callOnSelectedEntries('enableForSite');
+      },
+
+      disableSelectedEntriesGlobally: function () {
+        this.callOnSelectedEntries('disableGlobally');
+      },
+
+      enableSelectedEntriesGlobally: function () {
+        this.callOnSelectedEntries('enableGlobally');
+      },
+
       deleteSelectedEntries: function () {
         this.callOnSelectedEntries('selfDestruct');
       },
@@ -522,43 +540,46 @@
       collapsedEntryStorageKey:
         'Craft-' + Craft.systemUid + '.MatrixInput.collapsedEntries',
 
-      getCollapsedEntryIds: function () {
-        if (
-          typeof localStorage[Craft.MatrixInput.collapsedEntryStorageKey] ===
-          'string'
-        ) {
-          return Craft.filterArray(
-            localStorage[Craft.MatrixInput.collapsedEntryStorageKey].split(',')
-          );
+      getCollapsedEntryStorageKey: function (siteId = null) {
+        const key = Craft.MatrixInput.collapsedEntryStorageKey;
+        return siteId === null ? key : `${key}.${siteId}`;
+      },
+
+      getCollapsedEntryIds: function (siteId = null) {
+        const key = Craft.MatrixInput.getCollapsedEntryStorageKey(siteId);
+        if (typeof localStorage[key] === 'string') {
+          return Craft.filterArray(localStorage[key].split(','));
         } else {
           return [];
         }
       },
 
-      setCollapsedEntryIds: function (ids) {
-        localStorage[Craft.MatrixInput.collapsedEntryStorageKey] =
-          ids.join(',');
+      setCollapsedEntryIds: function (ids, siteId = null) {
+        const key = Craft.MatrixInput.getCollapsedEntryStorageKey(siteId);
+        localStorage[key] = ids.join(',');
       },
 
-      rememberCollapsedEntryId: function (id) {
+      rememberCollapsedEntryId: function (id, siteId = null) {
         if (typeof Storage !== 'undefined') {
-          const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
+          const collapsedEntries =
+            Craft.MatrixInput.getCollapsedEntryIds(siteId);
 
           if ($.inArray('' + id, collapsedEntries) === -1) {
             collapsedEntries.push(id);
-            Craft.MatrixInput.setCollapsedEntryIds(collapsedEntries);
+            Craft.MatrixInput.setCollapsedEntryIds(collapsedEntries, siteId);
           }
         }
       },
 
-      forgetCollapsedEntryId: function (id) {
+      forgetCollapsedEntryId: function (id, siteId = null) {
         if (typeof Storage !== 'undefined') {
-          const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
+          const collapsedEntries =
+            Craft.MatrixInput.getCollapsedEntryIds(siteId);
           const collapsedEntriesIndex = $.inArray('' + id, collapsedEntries);
 
           if (collapsedEntriesIndex !== -1) {
             collapsedEntries.splice(collapsedEntriesIndex, 1);
-            Craft.MatrixInput.setCollapsedEntryIds(collapsedEntries);
+            Craft.MatrixInput.setCollapsedEntryIds(collapsedEntries, siteId);
           }
         }
       },
@@ -673,10 +694,30 @@
           hideActions.push('expand');
         }
 
-        if (this.$container.hasClass('disabled-entry')) {
-          hideActions.push('disable');
-        } else {
-          hideActions.push('enable');
+        const $targets = this.bulkActionMode()
+          ? this.matrix.entrySelect.$selectedItems
+          : this.$container;
+        const every = (attribute) =>
+          $targets.toArray().every((target) => target.hasAttribute(attribute));
+        const anyGloballyDisabled = $targets
+          .toArray()
+          .some((target) => target.hasAttribute('data-disabled-global'));
+
+        hideActions.push(
+          $targets
+            .toArray()
+            .every((target) => target.classList.contains('disabled-entry'))
+            ? 'disable'
+            : 'enable'
+        );
+        hideActions.push(
+          every('data-disabled-global') ? 'disableGlobally' : 'enableGlobally'
+        );
+        hideActions.push(
+          every('data-disabled-site') ? 'disableForSite' : 'enableForSite'
+        );
+        if (anyGloballyDisabled) {
+          hideActions.push('disableForSite', 'enableForSite');
         }
 
         if (!this.$container.prev('.matrixblock').length) {
@@ -707,6 +748,39 @@
         });
 
         const bulk = this.bulkActionMode();
+        const site = this.$container.attr('data-site-name') ?? '';
+        for (const [action, label, bulkLabel] of [
+          [
+            'disableForSite',
+            'Disable for {site}',
+            'Disable selected {type} for {site}',
+          ],
+          [
+            'enableForSite',
+            'Enable for {site}',
+            'Enable selected {type} for {site}',
+          ],
+          [
+            'disableGlobally',
+            'Disable globally',
+            'Disable selected {type} globally',
+          ],
+          [
+            'enableGlobally',
+            'Enable globally',
+            'Enable selected {type} globally',
+          ],
+        ]) {
+          $buttons
+            .filter(`[data-action="${action}"]`)
+            .children('.menu-item-label')
+            .text(
+              Craft.t('app', bulk ? bulkLabel : label, {
+                type: Craft.t('app', 'blocks'),
+                site,
+              })
+            );
+        }
         $buttons
           .filter('[data-action="collapse"]')
           .children('.menu-item-label')
@@ -867,7 +941,10 @@
 
       // Remember that?
       if (!this.isNew) {
-        Craft.MatrixInput.rememberCollapsedEntryId(this.id);
+        Craft.MatrixInput.rememberCollapsedEntryId(
+          this.id,
+          this.matrix.settings.siteId
+        );
       } else {
         if (!this.$collapsedInput) {
           this.$collapsedInput = $(
@@ -1005,18 +1082,11 @@
       );
 
       // Remember that?
-      if (!this.isNew && typeof Storage !== 'undefined') {
-        const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
-        const collapsedEntriesIndex = $.inArray('' + this.id, collapsedEntries);
-
-        if (collapsedEntriesIndex !== -1) {
-          collapsedEntries.splice(collapsedEntriesIndex, 1);
-          Craft.MatrixInput.setCollapsedEntryIds(collapsedEntries);
-        }
-      }
-
       if (!this.isNew) {
-        Craft.MatrixInput.forgetCollapsedEntryId(this.id);
+        Craft.MatrixInput.forgetCollapsedEntryId(
+          this.id,
+          this.matrix.settings.siteId
+        );
       } else if (this.$collapsedInput) {
         this.$collapsedInput.val('');
       }
@@ -1025,14 +1095,74 @@
     },
 
     disable: function () {
-      this.$container.children('input[name$="[enabled]"]:first').val('');
-      this.$container.addClass('disabled-entry');
-      this.collapse(true);
+      this.setStatus('enabled', false);
     },
 
     enable: function () {
-      this.$container.children('input[name$="[enabled]"]:first').val('1');
-      this.$container.removeClass('disabled-entry');
+      this.setStatus('enabled', true);
+    },
+
+    disableForSite: function () {
+      this.setStatus('enabledForSite', false);
+    },
+
+    enableForSite: function () {
+      this.setStatus('enabledForSite', true);
+    },
+
+    disableGlobally: function () {
+      this.setStatus('enabled', false);
+    },
+
+    enableGlobally: function () {
+      this.setStatus('enabled', true);
+    },
+
+    setStatus: function (attribute, enabled) {
+      if (
+        attribute === 'enabledForSite' &&
+        Garnish.hasAttr(this.$container, 'data-disabled-global')
+      ) {
+        return;
+      }
+
+      this.$container
+        .children(`input[name$="[${attribute}]"]:first`)
+        .val(enabled ? '1' : '');
+      const disabledAttribute =
+        attribute === 'enabled' ? 'data-disabled-global' : 'data-disabled-site';
+      if (enabled) {
+        this.$container.removeAttr(disabledAttribute);
+      } else {
+        this.$container.attr(disabledAttribute, '');
+      }
+
+      const globallyDisabled = Garnish.hasAttr(
+        this.$container,
+        'data-disabled-global'
+      );
+      const disabledForSite = Garnish.hasAttr(
+        this.$container,
+        'data-disabled-site'
+      );
+      const disabled = globallyDisabled || disabledForSite;
+      this.$container.toggleClass('disabled-entry', disabled);
+
+      const site = this.$container.attr('data-site-name');
+      const label =
+        site && globallyDisabled
+          ? Craft.t('app', 'Disabled globally')
+          : site && disabledForSite
+            ? Craft.t('app', 'Disabled for {site}', {site})
+            : Craft.t('app', 'Disabled');
+      const $status = this.$container.children('.actions').children('.status');
+      $status.attr('title', label).children('.visually-hidden').text(label);
+
+      if (disabled) {
+        this.collapse(true);
+      } else {
+        this.expand();
+      }
     },
 
     moveUp: function () {
@@ -1122,7 +1252,46 @@
             this.matrix.enableSelectedEntries();
           } else {
             this.enable();
-            this.expand();
+          }
+
+          break;
+        }
+
+        case 'disableForSite': {
+          if (this.bulkActionMode()) {
+            this.matrix.disableSelectedEntriesForSite();
+          } else {
+            this.disableForSite();
+          }
+
+          break;
+        }
+
+        case 'enableForSite': {
+          if (this.bulkActionMode()) {
+            this.matrix.enableSelectedEntriesForSite();
+          } else {
+            this.enableForSite();
+          }
+
+          break;
+        }
+
+        case 'disableGlobally': {
+          if (this.bulkActionMode()) {
+            this.matrix.disableSelectedEntriesGlobally();
+          } else {
+            this.disableGlobally();
+          }
+
+          break;
+        }
+
+        case 'enableGlobally': {
+          if (this.bulkActionMode()) {
+            this.matrix.enableSelectedEntriesGlobally();
+          } else {
+            this.enableGlobally();
           }
 
           break;
