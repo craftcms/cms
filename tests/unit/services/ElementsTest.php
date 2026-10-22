@@ -12,6 +12,7 @@ namespace crafttests\unit\services;
 
 use Craft;
 use craft\elements\Entry;
+use craft\elements\User;
 use craft\enums\PropagationMethod;
 use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
@@ -31,6 +32,7 @@ use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\settings\GeneralConfigSettingFixture;
 use crafttests\fixtures\SitesFixture;
 use crafttests\fixtures\UserFixture;
+use ReflectionMethod;
 use RuntimeException;
 
 /**
@@ -270,5 +272,78 @@ class ElementsTest extends TestCase
             ->orderBy(['elements_owners.sortOrder' => SORT_ASC])
             ->all();
         self::assertSame(['Third', 'First', 'Second'], array_map(fn(Entry $e) => $e->getFieldValue('blockText'), $reordered));
+    }
+
+    public function testEntrySidebarSitesPane(): void
+    {
+        Craft::$app->getUser()->setIdentity(User::findOne(1));
+        // Make sure the sites fixture is accounted for
+        Craft::$app->getIsMultiSite(true);
+        Craft::$app->getIsMultiSite(true, true);
+        $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
+
+        // A section that saves entries to two sites
+        $section = new Section([
+            'name' => 'Sites Pane Test Section',
+            'handle' => 'sitesPaneTestSection',
+            'type' => Section::TYPE_CHANNEL,
+            'enableVersioning' => false,
+            'propagationMethod' => PropagationMethod::All,
+        ]);
+        $section->setEntryTypes([$this->ownerEntryType]);
+        $section->setSiteSettings(array_map(fn(int $siteId) => new Section_SiteSettings([
+            'siteId' => $siteId,
+            'enabledByDefault' => true,
+            'hasUrls' => false,
+        ]), [$primarySiteId, 1000]));
+        if (!Craft::$app->getEntries()->saveSection($section)) {
+            throw new RuntimeException('Could not save section.');
+        }
+
+        try {
+            $entry = new Entry();
+            $entry->sectionId = $section->id;
+            $entry->typeId = $this->ownerEntryType->id;
+            $entry->title = 'Sites Pane Test Entry';
+            if (!$this->elements->saveElement($entry)) {
+                throw new RuntimeException('Could not save entry: ' . implode(', ', $entry->getFirstErrors()));
+            }
+
+            // Multi-site entries should get a Sites pane with status toggles, in place of the Status pane
+            $html = $entry->getSidebarHtml(false);
+            self::assertStringContainsString('element-sites-pane', $html);
+            self::assertStringContainsString('data-statuses', $html);
+            self::assertStringContainsString("enabledForSite[$primarySiteId]", $html);
+            self::assertStringContainsString('enabledForSite[1000]', $html);
+            self::assertStringNotContainsString('expand-status-btn', $html);
+
+            // The Status pane should still be available
+            $statusFieldHtml = new ReflectionMethod(Entry::class, 'statusFieldHtml');
+            self::assertStringContainsString('expand-status-btn', $statusFieldHtml->invoke($entry));
+        } finally {
+            Craft::$app->getEntries()->deleteSection($section);
+        }
+
+        // Single-site entries should still get the Status pane
+        $html = $this->_createOwnerEntry()->getSidebarHtml(false);
+        self::assertStringNotContainsString('element-sites-pane', $html);
+        self::assertStringContainsString('name="enabled"', $html);
+    }
+
+    private function _createOwnerEntry(): Entry
+    {
+        $owner = new Entry();
+        $owner->sectionId = $this->section->id;
+        $owner->typeId = $this->ownerEntryType->id;
+        $owner->title = 'Delete For Site Owner Entry';
+        $owner->setFieldValue('reorderTestMatrix', [
+            'new1' => ['type' => 'reorderTestBlock', 'fields' => ['blockText' => 'Nested']],
+        ]);
+
+        if (!$this->elements->saveElement($owner)) {
+            throw new RuntimeException('Could not save owner entry: ' . implode(', ', $owner->getFirstErrors()));
+        }
+
+        return $owner;
     }
 }
