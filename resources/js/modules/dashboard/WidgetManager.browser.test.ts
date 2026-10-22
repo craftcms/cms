@@ -5,7 +5,7 @@ import '@craftcms/ui/components/reorder-button/reorder-button';
 import '@craftcms/ui/components/slide-picker/slide-picker';
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, expect, it} from 'vite-plus/test';
-import {userEvent} from 'vite-plus/test/browser/context';
+import {page, userEvent} from 'vite-plus/test/browser/context';
 import type {DashboardWidget} from './types';
 import WidgetManager from './WidgetManager.vue';
 
@@ -101,7 +101,7 @@ it('names each widget’s reorder button, column picker and delete button after 
       .shadowRoot!.querySelector('[role="slider"]')!
       .getAttribute('aria-label')
   ).toBe('Number of columns, Updates');
-  expect(row.querySelector('craft-button')!.getAttribute('aria-label')).toBe(
-    'Delete Updates'
-  );
+  await expect
+    .element(page.getByRole('button', {name: 'Delete Updates', exact: true}))
+    .toBeInTheDocument();
 });

@@ -77,7 +77,9 @@
               )
             "
           ></craft-reorder-button>
-          <span class="flex-1">{{ widgetName(widget) }}</span>
+          <span :id="`widget-label-${widget.id}`" class="flex-1">{{
+            widgetName(widget)
+          }}</span>
           <craft-slide-picker
             :min="1"
             :max="Math.min(columns, widget.maxColspan)"
@@ -88,14 +90,17 @@
             @value-change="emit('resize', widget, $event.detail.value)"
           ></craft-slide-picker>
           <craft-button
+            :id="`widget-delete-${widget.id}`"
             type="button"
-            icon="trash"
             size="small"
             variant="danger-plain"
-            :aria-label="`${t('Delete')} ${widgetName(widget)}`"
+            icon
+            :aria-labelledby="`widget-delete-${widget.id} widget-label-${widget.id}`"
             :disabled="busy"
             @click="emit('remove', widget)"
-          ></craft-button>
+          >
+            <craft-icon name="trash" :label="t('Delete')"></craft-icon>
+          </craft-button>
         </li>
       </ul>
     </div>
