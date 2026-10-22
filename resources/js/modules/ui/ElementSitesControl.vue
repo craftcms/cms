@@ -169,7 +169,8 @@
       slideout.instance.href = site.url;
       void slideout.reload();
     } else {
-      router.visit(site.url);
+      // Keep the same details panel open (the page mirrors it in the URL hash)
+      router.visit(site.url + window.location.hash);
     }
   }
 
