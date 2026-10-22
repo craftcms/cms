@@ -18,6 +18,7 @@ use Override;
  * @method static string|null getFirstPage(string $elementType, string $context = 'index', bool $withDisabled = false)
  * @method static bool pageExists(string $elementType, string $page, string $context = 'index', bool $withDisabled = false)
  * @method static string pageNameId(string $page)
+ * @method static string pageSlug(string $page)
  * @method static bool showsBadgeCount(string $elementType, mixed $source)
  * @method static bool hasBadgeCountsEnabled(array $elementTypes)
  * @method static void saveSources(string $elementType, mixed[] $sources)

@@ -650,7 +650,7 @@ class AssetIndexer
         $isLocalFs = $volume->sourceDisk() instanceof LocalFilesystemAdapter;
 
         /** @var Asset|null $asset */
-        $asset = Asset::find()
+        $asset = app(Assets::class)->findAcrossSites()
             ->filename(Query::escapeParam($filename))
             ->folderId($folder->id)
             ->one();

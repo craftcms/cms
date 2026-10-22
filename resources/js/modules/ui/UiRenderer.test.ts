@@ -405,6 +405,9 @@ describe('UiRenderer', () => {
     currentValues: () => UiPayload['values'];
     resetValues: (payload?: UiPayload) => void;
     setValue: (path: string[], value: UiValue, kind?: UiChange['kind']) => void;
+    setValues: (
+      changes: {path: string[]; value: UiValue; refreshable?: boolean}[]
+    ) => void;
   };
 
   beforeEach(async () => {
@@ -2116,6 +2119,26 @@ describe('UiRenderer', () => {
     await vi.advanceTimersByTimeAsync(1000);
     expect(refresh).toHaveBeenCalledOnce();
     vi.useRealTimers();
+  });
+
+  it('refreshes once after setting several refreshable values', async () => {
+    const refresh = vi.fn(() => new Promise<UiPayload>(() => {}));
+    app.unmount();
+    const refreshable = clonePayload();
+    Object.assign(refreshable, {refreshable: true});
+    await mount(refreshable, {refresh});
+
+    renderer.setValues([
+      {path: ['settings', 'placeholder'], value: 'First', refreshable: true},
+      {path: ['settings', 'summary'], value: 'Second', refreshable: true},
+    ]);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(refresh).toHaveBeenCalledWith(
+      expect.objectContaining({placeholder: 'First', summary: 'Second'}),
+      expect.anything()
+    );
   });
 
   it('refreshes immediately when a reactive combobox option is selected', async () => {

@@ -121,7 +121,19 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   constructor() {
     super();
     wireOverlayLifecycleEvents(this);
+    this.addEventListener('keydown', this.#claimEscape);
   }
+
+  /**
+   * Lion closes the popover on Escape's keyup, so its keydown would otherwise
+   * reach an ancestor's own Escape handling, such as a panel that closes on it.
+   * Marking it handled leaves the key to the popover alone.
+   */
+  #claimEscape = (event: KeyboardEvent): void => {
+    if (event.key === 'Escape' && this.opened) {
+      event.preventDefault();
+    }
+  };
 
   override _setupOverlayCtrl() {
     super._setupOverlayCtrl();

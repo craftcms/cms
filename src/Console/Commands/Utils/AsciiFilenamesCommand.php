@@ -45,7 +45,7 @@ class AsciiFilenamesCommand extends Command
         }
 
         // Find assets with non-ASCII characters
-        $query = Asset::find();
+        $query = Asset::find()->site('*')->unique();
 
         match (DB::connection()->getDriverName()) {
             // h/t https://stackoverflow.com/a/11741314/1688568

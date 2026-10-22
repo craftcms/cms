@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -39,6 +40,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -543,19 +545,32 @@ class Sites
         }
 
         if ($isNewSite && $oldPrimarySiteId) {
-            // Re-save most localizable element types
+            // Re-save assets for the new site
             // (skip entries because they only support specific sites)
-            // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
-            $elementTypes = [
-                Asset::class,
+            // (skip assets in volumes with custom propagation, as they only get saved to the sites they're assigned to)
+            // (volumes are queried directly so the volumes service's cache isn't primed with a partially-applied config)
+            $volumeIds = Schema::hasColumn(Table::VOLUMES, 'propagationMethod')
+                ? DB::table(Table::VOLUMES)
+                    ->whereNull('dateDeleted')
+                    ->pluck('propagationMethod', 'id')
+                : collect();
+            $propagatingVolumeIds = $volumeIds
+                ->reject(fn (string $propagationMethod) => $propagationMethod === PropagationMethod::Custom->value)
+                ->keys()
+                ->all();
+
+            $criteria = [
+                'siteId' => $oldPrimarySiteId,
             ];
 
-            foreach ($elementTypes as $elementType) {
+            if (count($propagatingVolumeIds) !== $volumeIds->count()) {
+                $criteria['volumeId'] = $propagatingVolumeIds;
+            }
+
+            if (! isset($criteria['volumeId']) || $criteria['volumeId'] !== []) {
                 dispatch(new PropagateElements(
-                    elementType: $elementType,
-                    criteria: [
-                        'siteId' => $oldPrimarySiteId,
-                    ],
+                    elementType: Asset::class,
+                    criteria: $criteria,
                     siteId: $site->id,
                     isNewSite: true,
                 ));
