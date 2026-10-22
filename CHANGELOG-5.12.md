@@ -3,6 +3,10 @@
 ### Content Management
 
 - Addresses within Addresses fields can now be edited from drafts of their owner elements, by users who can save the drafts but not the canonical owner elements. ([#19881](https://github.com/craftcms/cms/issues/19881))
+- Multi-site entries’ edit pages now have a “Sites” pane in their sidebars, in place of the “Status” pane, which lists the sites the entry is saved to, with status toggles and links to the entry in each site, and lets authors add the entry to other sites. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Site names within element edit pages’ “Status” panes now link to the element in those sites. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Sites that are added to elements that don’t support drafts can now be removed again before the element is saved. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Element edit pages’ sidebar pane headings now line up with the labels within the panes. ([#20061](https://github.com/craftcms/cms/pull/20061))
 
 ### Administration
 
@@ -28,6 +32,9 @@
 
 - Addresses now support drafts.
 - Element fixtures no longer create revisions by default. Set their `createRevisions` property to `true` to retain the previous behavior. ([#19626](https://github.com/craftcms/cms/pull/19626))
+- Added `craft\base\Element::hasCustomPropagation()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Added `craft\base\Element::showSitesField()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Added `craft\base\Element::sitesFieldHtml()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Added `craft\base\FieldTrait::$tip`.
 - Added `craft\base\FieldTrait::$warning`.
 - Added `craft\base\NestedElementTrait::$touchOwnersOnSave`.
