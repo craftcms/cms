@@ -3,6 +3,10 @@
 ### Content Management
 
 - Addresses within Addresses fields can now be edited from drafts of their owner elements, by users who can save the drafts but not the canonical owner elements. ([#19881](https://github.com/craftcms/cms/issues/19881))
+- Element edit pages now have a “Sites” pane in their sidebars on multi-site installs, in place of the “Status” pane, which lists the sites the element is saved to (that the user can edit), with status toggles and links to the element in each site, and lets authors add the element to other sites. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Element editor slideouts can now be switched to other sites, by clicking on a site name within the “Sites” pane. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Sites that are added to elements within the “Sites” pane can now be removed again. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Element edit pages’ sidebar pane headings now line up with the labels within the panes. ([#20061](https://github.com/craftcms/cms/pull/20061))
 
 ### Administration
 
@@ -28,6 +32,9 @@
 
 - Addresses now support drafts.
 - Element fixtures no longer create revisions by default. Set their `createRevisions` property to `true` to retain the previous behavior. ([#19626](https://github.com/craftcms/cms/pull/19626))
+- Added `craft\base\Element::hasCustomPropagation()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Added `craft\base\Element::showSitesField()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Added `craft\base\Element::sitesFieldHtml()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Added `craft\base\FieldTrait::$tip`.
 - Added `craft\base\FieldTrait::$warning`.
 - Added `craft\base\NestedElementTrait::$touchOwnersOnSave`.
@@ -52,6 +59,7 @@
 - `Illuminate\Support\Collection` now has a `render()` macro, which replaces `craft\elements\ElementCollection::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - `craft\helpers\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `craft\helpers\StringHelper::toLowerCase()`, `::toTitleCase()`, and `::toUpperCase()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- `elements/save-draft` action responses now include a `canDeleteForSite` key. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Deprecated `craft\helpers\ElementHelper::renderElements()`. `craft\helpers\Template::render()` should be used instead. ([#19988](https://github.com/craftcms/cms/pull/19988))
 
 ### System
@@ -67,3 +75,4 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 - Fixed a bug where entry and address indexes weren’t showing any results if they had a “Field” condition rule set to “is empty”.
 - Fixed a bug where saving a deeply-nested element on its own wouldn’t update its owners’ `dateUpdated` timestamps, which could cause new revisions to reuse stale nested content. ([#19594](https://github.com/craftcms/cms/issues/19594))
+- Fixed a bug where deleting an element for a site while editing a provisional draft would delete the provisional draft for all sites. ([#20061](https://github.com/craftcms/cms/pull/20061))

@@ -12,6 +12,7 @@ namespace crafttests\unit\services;
 
 use Craft;
 use craft\elements\Entry;
+use craft\elements\User;
 use craft\enums\PropagationMethod;
 use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
@@ -31,6 +32,7 @@ use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\settings\GeneralConfigSettingFixture;
 use crafttests\fixtures\SitesFixture;
 use crafttests\fixtures\UserFixture;
+use ReflectionMethod;
 use RuntimeException;
 
 /**
@@ -270,5 +272,171 @@ class ElementsTest extends TestCase
             ->orderBy(['elements_owners.sortOrder' => SORT_ASC])
             ->all();
         self::assertSame(['Third', 'First', 'Second'], array_map(fn(Entry $e) => $e->getFieldValue('blockText'), $reordered));
+    }
+
+    public function testEntrySidebarSitesPane(): void
+    {
+        Craft::$app->getUser()->setIdentity(User::findOne(1));
+        // Make sure the sites fixture is accounted for
+        Craft::$app->getIsMultiSite(true);
+        Craft::$app->getIsMultiSite(true, true);
+        $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
+
+        // A section that saves entries to two sites
+        $section = new Section([
+            'name' => 'Sites Pane Test Section',
+            'handle' => 'sitesPaneTestSection',
+            'type' => Section::TYPE_CHANNEL,
+            'enableVersioning' => false,
+            'propagationMethod' => PropagationMethod::All,
+        ]);
+        $section->setEntryTypes([$this->ownerEntryType]);
+        $section->setSiteSettings(array_map(fn(int $siteId) => new Section_SiteSettings([
+            'siteId' => $siteId,
+            'enabledByDefault' => true,
+            'hasUrls' => false,
+        ]), [$primarySiteId, 1000]));
+        if (!Craft::$app->getEntries()->saveSection($section)) {
+            throw new RuntimeException('Could not save section.');
+        }
+
+        try {
+            $entry = new Entry();
+            $entry->sectionId = $section->id;
+            $entry->typeId = $this->ownerEntryType->id;
+            $entry->title = 'Sites Pane Test Entry';
+            if (!$this->elements->saveElement($entry)) {
+                throw new RuntimeException('Could not save entry: ' . implode(', ', $entry->getFirstErrors()));
+            }
+
+            // Multi-site entries should get a Sites pane with status toggles, in place of the Status pane
+            $html = $entry->getSidebarHtml(false);
+            self::assertStringContainsString('element-sites-pane', $html);
+            self::assertStringContainsString('data-statuses', $html);
+            self::assertStringContainsString("enabledForSite[$primarySiteId]", $html);
+            self::assertStringContainsString('enabledForSite[1000]', $html);
+            self::assertStringNotContainsString('expand-status-btn', $html);
+
+            // The Status pane should still be available
+            $statusFieldHtml = new ReflectionMethod(Entry::class, 'statusFieldHtml');
+            self::assertStringContainsString('expand-status-btn', $statusFieldHtml->invoke($entry));
+
+            // Element types that customize the Status pane should keep it
+            $customEntry = new class() extends Entry {
+                protected function statusFieldHtml(): string
+                {
+                    return 'custom status pane';
+                }
+            };
+            $customEntry->id = $entry->id;
+            $customEntry->siteId = $entry->siteId;
+            $customEntry->sectionId = $entry->sectionId;
+            $customEntry->typeId = $entry->typeId;
+            self::assertFalse((new ReflectionMethod($customEntry, 'showSitesField'))->invoke($customEntry));
+            self::assertTrue((new ReflectionMethod($entry, 'showSitesField'))->invoke($entry));
+
+            // Only sites the user can edit should be listed
+            $user = User::find()->admin(false)->status(null)->one();
+            self::assertNotNull($user);
+            Craft::$app->getUserPermissions()->saveUserPermissions($user->id, [
+                sprintf('editsite:%s', Craft::$app->getSites()->getPrimarySite()->uid),
+            ]);
+            Craft::$app->getUser()->setIdentity($user);
+            Craft::$app->getSites()->refreshSites();
+            $html = $entry->getSidebarHtml(false);
+            self::assertStringContainsString('element-sites-pane', $html);
+            self::assertStringContainsString("enabledForSite[$primarySiteId]", $html);
+            self::assertStringNotContainsString('enabledForSite[1000]', $html);
+            self::assertStringNotContainsString('site-1000-field', $html);
+        } finally {
+            Craft::$app->getEntries()->deleteSection($section);
+        }
+
+        // Single-site entries should still get the Status pane
+        $html = $this->_createOwnerEntry()->getSidebarHtml(false);
+        self::assertStringNotContainsString('element-sites-pane', $html);
+        self::assertStringContainsString('name="enabled"', $html);
+    }
+
+    public function testDeleteDraftForNewSite(): void
+    {
+        $admin = User::findOne(1);
+        Craft::$app->getUser()->setIdentity($admin);
+        Craft::$app->getIsMultiSite(true);
+        Craft::$app->getIsMultiSite(true, true);
+        $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
+
+        // A section that lets each entry choose which sites it should be saved to
+        $section = new Section([
+            'name' => 'New Site Draft Test Section',
+            'handle' => 'newSiteDraftTestSection',
+            'type' => Section::TYPE_CHANNEL,
+            'enableVersioning' => false,
+            'propagationMethod' => PropagationMethod::Custom,
+        ]);
+        $section->setEntryTypes([$this->ownerEntryType]);
+        $section->setSiteSettings(array_map(fn(int $siteId) => new Section_SiteSettings([
+            'siteId' => $siteId,
+            'enabledByDefault' => true,
+            'hasUrls' => false,
+        ]), [$primarySiteId, 1000]));
+        if (!Craft::$app->getEntries()->saveSection($section)) {
+            throw new RuntimeException('Could not save section.');
+        }
+
+        try {
+            $entry = new Entry();
+            $entry->sectionId = $section->id;
+            $entry->typeId = $this->ownerEntryType->id;
+            $entry->title = 'New Site Draft Test Entry';
+            if (!$this->elements->saveElement($entry)) {
+                throw new RuntimeException('Could not save entry: ' . implode(', ', $entry->getFirstErrors()));
+            }
+            $siteIds = fn(int $id, bool $drafts) => Entry::find()
+                ->id($id)
+                ->drafts($drafts ? true : null)
+                ->provisionalDrafts($drafts ? true : null)
+                ->site('*')
+                ->status(null)
+                ->select('elements_sites.siteId')
+                ->column();
+            self::assertSame([$primarySiteId], $siteIds($entry->id, false));
+
+            // Add the entry to another site via a provisional draft, like the element editor's autosave does
+            $draft = Craft::$app->getDrafts()->createDraft($entry, $admin->id, provisional: true);
+            $draft->setEnabledForSite([$primarySiteId => true, 1000 => true]);
+            if (!$this->elements->saveElement($draft)) {
+                throw new RuntimeException('Could not save draft: ' . implode(', ', $draft->getFirstErrors()));
+            }
+            self::assertEqualsCanonicalizing([$primarySiteId, 1000], $siteIds($draft->id, true));
+
+            // The draft's creator can remove it from the new site again, without affecting the canonical entry
+            $newSiteDraft = Entry::find()->id($draft->id)->drafts()->provisionalDrafts()->siteId(1000)->status(null)->one();
+            self::assertNotNull($newSiteDraft);
+            self::assertTrue($this->elements->canDeleteForSite($newSiteDraft, $admin));
+            self::assertSame($newSiteDraft->id, $newSiteDraft->getCanonical()->id, 'The canonical entry shouldn’t exist in the new site.');
+            $this->elements->deleteElementForSite($newSiteDraft);
+            self::assertSame([$primarySiteId], $siteIds($draft->id, true));
+            self::assertSame([$primarySiteId], $siteIds($entry->id, false));
+        } finally {
+            Craft::$app->getEntries()->deleteSection($section);
+        }
+    }
+
+    private function _createOwnerEntry(): Entry
+    {
+        $owner = new Entry();
+        $owner->sectionId = $this->section->id;
+        $owner->typeId = $this->ownerEntryType->id;
+        $owner->title = 'Delete For Site Owner Entry';
+        $owner->setFieldValue('reorderTestMatrix', [
+            'new1' => ['type' => 'reorderTestBlock', 'fields' => ['blockText' => 'Nested']],
+        ]);
+
+        if (!$this->elements->saveElement($owner)) {
+            throw new RuntimeException('Could not save owner entry: ' . implode(', ', $owner->getFirstErrors()));
+        }
+
+        return $owner;
     }
 }
