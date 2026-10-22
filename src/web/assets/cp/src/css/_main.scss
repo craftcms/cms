@@ -6117,6 +6117,12 @@ table.data tbody tr:not(.disabled).active-drop-target {
     margin-inline: 0;
   }
 
+  // Line pane headings up with the labels within the panes
+  & > fieldset > legend,
+  & > .field > .heading > label.h6 {
+    margin-inline-start: calc(var(--m) - var(--padding));
+  }
+
   & > .field > .heading > label,
   & > fieldset > legend {
     font-weight: normal;
@@ -6174,6 +6180,9 @@ $min2ColWidth: 400px;
 
   --heading-width: 150px;
 
+  // Space between the checkmark/plus icons and the site names in the element editor’s Sites pane
+  --site-checkmark-gap: var(--s);
+
   #details & {
     --heading-width: 132px;
   }
@@ -6218,6 +6227,28 @@ $min2ColWidth: 400px;
         .input {
           width: 100%;
         }
+
+        // Line the “Add a site” select up with the site names in the element editor’s Sites pane,
+        // with the plus icon in the same column as the current site’s checkmark
+        &.add-site-field {
+          padding-inline-start: calc(
+            var(--m) + 14rem / 16 + var(--site-checkmark-gap) - var(--s)
+          );
+
+          &::before {
+            inset-inline-start: var(--m);
+            width: calc(14rem / 16);
+            text-align: start;
+          }
+
+          @media screen and (width < $min2ColWidth) {
+            padding-inline-start: calc(14rem / 16 + var(--site-checkmark-gap));
+
+            &::before {
+              inset-inline-start: 10px;
+            }
+          }
+        }
       }
 
       & > .heading {
@@ -6229,9 +6260,48 @@ $min2ColWidth: 400px;
         }
       }
 
+      // Sites in the element editor’s Sites pane, with a checkmark beside the current site
+      // (like the site menu in the breadcrumbs)
+      &.element-site-field {
+        padding-inline-start: 0;
+
+        @media screen and (min-width: $min2ColWidth) {
+          & > .heading {
+            padding-inline-start: var(--m);
+          }
+        }
+
+        & > .heading > label {
+          position: relative;
+          padding-inline-start: calc(14rem / 16 + var(--site-checkmark-gap));
+        }
+      }
+
+      &.element-site-field.sel > .heading > label::before {
+        @include mixins.icon;
+        position: absolute;
+        inset-block-start: 50%;
+        inset-inline-start: 0;
+        transform: translateY(-50%);
+        font-size: calc(14rem / 16);
+        content: 'check' / '';
+      }
+
+      // Undo buttons for newly-added sites in the element editor’s Sites pane
+      & > .heading:has(> .remove-site-btn) {
+        display: flex;
+        align-items: center;
+        gap: var(--s);
+
+        & > .remove-site-btn {
+          margin-inline-start: auto;
+        }
+      }
+
       #details &,
       .so-sidebar.details & {
-        &.lightswitch-field > .heading {
+        &.lightswitch-field > .heading,
+        &.element-site-field > .heading {
           flex: 1;
           border-inline-end: none;
         }
@@ -6449,6 +6519,63 @@ $min2ColWidth: 400px;
     hr {
       margin-block: 0;
       margin-inline: -24px;
+    }
+  }
+}
+
+// The element editor’s Sites pane lists its sites without hairlines or padding between them
+// (the “Add a site” field keeps its hairline)
+.meta.element-sites-pane > .element-site-field {
+  min-height: auto;
+  border-block-start: none;
+
+  & > .heading {
+    padding-block: var(--xs);
+  }
+
+  &:first-child > .heading {
+    padding-block-start: 12px;
+  }
+
+  &:not(:has(+ .element-site-field:not(.hidden))) > .heading {
+    padding-block-end: 12px;
+  }
+
+  // Status toggles
+  & > .input {
+    padding-block: var(--xs);
+  }
+
+  &:first-child > .input {
+    padding-block-start: 12px;
+  }
+
+  &:not(:has(+ .element-site-field:not(.hidden))) > .input {
+    padding-block-end: 12px;
+  }
+
+  // Keep undo buttons close to the status toggles beside them
+  &.lightswitch-field:has(> .heading > .remove-site-btn) {
+    & > .heading {
+      padding-inline-end: 0;
+    }
+
+    & > .input {
+      padding-inline-start: var(--xs);
+    }
+  }
+
+  // Disclosure toggle for elements that are saved to multiple sites
+  // (with the chevron in the same column as the current site’s checkmark)
+  & > .heading > .element-sites-toggle {
+    position: relative;
+    padding-inline-start: calc(14rem / 16 + var(--site-checkmark-gap));
+    cursor: pointer;
+
+    &::before {
+      position: absolute;
+      inset-block-start: calc(50% - 5px);
+      inset-inline-start: 3px;
     }
   }
 }

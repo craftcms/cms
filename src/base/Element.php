@@ -103,6 +103,7 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ReflectionClass;
+use ReflectionMethod;
 use Traversable;
 use Twig\Markup;
 use Twig\Sandbox\SecurityChecker;
@@ -6454,9 +6455,13 @@ JS,
                 Html::tag('h2', Craft::t('app', 'Metadata'), ['class' => 'visually-hidden']);
         }
 
-        if (!$static && static::hasStatuses() && $this->showStatusField()) {
-            // Is this a multi-site element?
-            $components[] = $this->statusFieldHtml();
+        if (!$static) {
+            $sitesFieldHtml = $this->showSitesField() ? $this->sitesFieldHtml() : '';
+            if ($sitesFieldHtml !== '') {
+                $components[] = $sitesFieldHtml;
+            } elseif (static::hasStatuses() && $this->showStatusField()) {
+                $components[] = $this->statusFieldHtml();
+            }
         }
 
         if ($this->hasRevisions() && !$this->getIsRevision()) {
@@ -6585,6 +6590,172 @@ JS,
         return Html::beginTag('fieldset') .
             Html::tag('legend', Craft::t('app', 'Status'), ['class' => 'h6']) .
             Html::tag('div', $statusField, ['class' => 'meta']) .
+            Html::endTag('fieldset');
+    }
+
+    /**
+     * Returns whether the sidebar should include a Sites pane, rather than a Status pane.
+     *
+     * The Sites pane lists the sites the element is saved in, lets authors add the element to other sites,
+     * and includes status toggles for each site, if the element type has per-site statuses.
+     *
+     * By default, it’s shown for localized elements that support multiple sites, unless the element type has
+     * statuses and provides its own [[statusFieldHtml()]] implementation.
+     *
+     * If this returns `true` but [[sitesFieldHtml()]] doesn’t return anything, the Status pane will be shown
+     * instead, if the element type has statuses.
+     *
+     * @return bool
+     * @since 5.12.0
+     */
+    protected function showSitesField(): bool
+    {
+        // Element types that customize the Status pane should keep it
+        if (
+            static::hasStatuses() &&
+            (new ReflectionMethod($this, 'statusFieldHtml'))->getDeclaringClass()->getName() !== self::class
+        ) {
+            return false;
+        }
+
+        return static::isLocalized() && count(ElementHelper::supportedSitesForElement($this, true)) > 1;
+    }
+
+    /**
+     * Returns whether the element gets to choose which sites it should be saved to.
+     *
+     * If this returns `true`, the sidebar will list the sites the element is saved in for element types that
+     * don’t have statuses, even if the element is already saved to all of the sites it supports.
+     *
+     * @return bool
+     * @since 5.12.0
+     */
+    protected function hasCustomPropagation(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns the sites field HTML for the sidebar, for element types that don’t have statuses.
+     *
+     * It lists the sites the element is saved in, and lets authors add the element to other sites
+     * that it supports but hasn’t been propagated to.
+     *
+     * @return string
+     * @since 5.12.0
+     */
+    protected function sitesFieldHtml(): string
+    {
+        if (!$this->id || $this->getIsRevision() || !Craft::$app->getIsMultiSite()) {
+            return '';
+        }
+
+        $supportedSites = Collection::make(ElementHelper::supportedSitesForElement($this, true));
+        $allEditableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        // Only list the sites the user can edit
+        $propSites = $supportedSites->filter(fn(array $site) => (
+            $site['propagate'] &&
+            in_array($site['siteId'], $allEditableSiteIds)
+        ));
+        $hasAddlEditableSites = $supportedSites
+            ->contains(fn(array $site) => !$site['propagate'] && in_array($site['siteId'], $allEditableSiteIds));
+
+        // For element types without statuses, only show it if the element can be added to more sites,
+        // or if it chose which sites to be saved to
+        if (
+            !static::hasStatuses() &&
+            !$hasAddlEditableSites &&
+            (!$this->hasCustomPropagation() || $propSites->count() <= 1)
+        ) {
+            return '';
+        }
+
+        // Include status toggles for each site, if the element type has per-site statuses
+        $withStatuses = static::hasStatuses() && $this->showStatusField();
+        $siteStatuses = $withStatuses ? ElementHelper::siteStatusesForElement($this, true) : [];
+
+        $sitesService = Craft::$app->getSites();
+        $cpEditUrl = $this->getCpEditUrl();
+        $sites = $propSites
+            ->map(fn(array $site) => $sitesService->getSiteById($site['siteId'], true))
+            ->filter();
+        [$currentSites, $otherSites] = $sites->partition(fn(Site $site) => $site->id === $this->siteId);
+
+        // If the element is saved to 2+ other sites, list them within a disclosure
+        $idPrefix = sprintf('element-sites-%s', StringHelper::randomString(10));
+        $collapsible = $otherSites->count() > 1;
+
+        $siteField = fn(Site $site) => Html::tag('div', implode('', [
+            Html::tag('div', Html::tag('label', implode('', [
+                Html::tag('span', (
+                    // Link to the element in the other sites
+                    $cpEditUrl && $site->id !== $this->siteId
+                        ? Html::a(Html::encode(Craft::t('site', $site->getName())), UrlHelper::urlWithParams($cpEditUrl, [
+                            'site' => $site->handle,
+                        ]), [
+                            'data' => ['site-id' => $site->id],
+                        ])
+                        : Html::encode(Craft::t('site', $site->getName()))
+                ), [
+                    'id' => "$idPrefix-$site->id-name",
+                ]),
+                $site->id === $this->siteId
+                    ? Html::tag('span', ', selected', ['class' => 'visually-hidden'])
+                    : '',
+            ])), [
+                'class' => 'heading',
+            ]),
+            $withStatuses
+                ? Html::tag('div', Cp::lightswitchHtml([
+                    'id' => "$idPrefix-$site->id-status",
+                    'name' => "enabledForSite[$site->id]",
+                    'on' => $site->id === $this->siteId
+                        ? $this->enabled && $this->getEnabledForSite()
+                        : ($siteStatuses[$site->id] ?? false),
+                    'labelledBy' => "$idPrefix-$site->id-name",
+                    'small' => true,
+                ]), [
+                    'class' => 'input',
+                ])
+                : '',
+        ]), [
+            'id' => "$idPrefix-$site->id",
+            'class' => array_filter([
+                'field',
+                'element-site-field',
+                "site-$site->id-field",
+                $site->id === $this->siteId ? 'sel' : null,
+                $withStatuses ? 'lightswitch-field' : null,
+                $collapsible && $site->id !== $this->siteId ? 'hidden' : null,
+            ]),
+        ]);
+
+        $siteFields = $currentSites->map($siteField)->implode('');
+
+        if ($collapsible) {
+            $siteFields .= Html::tag('div', Html::tag('div', Html::button(Craft::t('app', '{num, number} other {num, plural, =1{site} other{sites}}', [
+                'num' => $otherSites->count(),
+            ]), [
+                'class' => ['toggle', 'element-sites-toggle'],
+                'aria' => [
+                    'expanded' => 'false',
+                    'controls' => $otherSites->map(fn(Site $site) => "$idPrefix-$site->id")->implode(' '),
+                ],
+            ]), [
+                'class' => 'heading',
+            ]), [
+                'class' => ['field', 'element-site-field', 'element-sites-toggle-field'],
+            ]);
+        }
+
+        $siteFields .= $otherSites->map($siteField)->implode('');
+
+        return Html::beginTag('fieldset') .
+            Html::tag('legend', Craft::t('app', 'Sites'), ['class' => 'h6']) .
+            Html::tag('div', $siteFields, [
+                'class' => ['meta', 'element-sites-pane'],
+                'data' => ['statuses' => $withStatuses],
+            ]) .
             Html::endTag('fieldset');
     }
 
