@@ -148,6 +148,7 @@
     "@simplewebauthn/browser": "catalog:",
     "@vitest/browser-playwright": "4.1.10",
     "autosize": "^6.0.1",
+    "diff": "^9.0.0",
     "dom-input-range": "^2.0.1",
     "inputmask": "catalog:"
   },

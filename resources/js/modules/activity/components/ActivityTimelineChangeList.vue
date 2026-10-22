@@ -1,11 +1,27 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import '@craftcms/ui/components/text-diff/text-diff';
   import ActivityTimelineChangeValue from './ActivityTimelineChangeValue.vue';
   import type {ActivityChange} from '@/modules/activity/composables/useActivityTimeline';
 
   defineProps<{
     changes: ActivityChange[];
   }>();
+
+  /**
+   * Whether a change is from one text to another, shown as a word diff. Any
+   * other change shows its values before and after.
+   */
+  function isTextChange(
+    change: ActivityChange
+  ): change is ActivityChange & {old: string; new: string} {
+    return (
+      typeof change.old === 'string' &&
+      typeof change.new === 'string' &&
+      change.old !== '' &&
+      change.new !== ''
+    );
+  }
 </script>
 
 <template>
@@ -18,7 +34,13 @@
       <strong class="activity-timeline__change-label">
         {{ change.label }}
       </strong>
-      <dl class="activity-timeline__change-comparison">
+      <craft-text-diff
+        v-if="isTextChange(change)"
+        :current="change.old"
+        :proposed="change.new"
+        class="activity-timeline__change-diff"
+      ></craft-text-diff>
+      <dl v-else class="activity-timeline__change-comparison">
         <div>
           <dt>{{ t('Before') }}</dt>
           <dd><ActivityTimelineChangeValue :value="change.old" /></dd>
@@ -54,6 +76,10 @@
     overflow-wrap: anywhere;
   }
 
+  .activity-timeline__change-diff {
+    margin-block-start: var(--c-spacing-xs);
+  }
+
   .activity-timeline__change-label {
     font-weight: var(--font-weight-semibold);
   }
@@ -87,7 +113,8 @@
       gap: var(--c-spacing-md);
     }
 
-    .activity-timeline__change-comparison {
+    .activity-timeline__change-comparison,
+    .activity-timeline__change-diff {
       margin-block-start: 0;
     }
   }
