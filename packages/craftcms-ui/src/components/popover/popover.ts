@@ -6,6 +6,7 @@ import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
 import type {} from '@open-wc/dedupe-mixin';
 import type {VirtualElement} from '@popperjs/core';
 import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
+import {isFocusable} from '@src/utilities/focus-return.js';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
 import hostStyles from '@src/styles/host.styles';
@@ -135,6 +136,13 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   }
 
   override _teardownOverlayCtrl() {
+    // Removed while open, it never reaches `before-hide`, where the guard
+    // usually goes, so the Enter that chose an item can still click whatever
+    // takes focus next.
+    if (this._overlayCtrl?.isShown) {
+      swallowHeldEnterKeyup();
+    }
+
     this.#lower();
     this.#layeredCtrl?.removeEventListener('before-show', this.#raise);
     this.#layeredCtrl?.removeEventListener(
@@ -175,7 +183,8 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
 
   /**
    * Returns focus to the invoker once the popover has closed, if focus was in
-   * the content and hasn't since gone anywhere else.
+   * the content and hasn't since gone somewhere that can hold it. Judged the
+   * same way as `craft-dialog`'s return, with `isFocusable()`.
    */
   #returnFocus = (): void => {
     if (!this.#closingWithFocusInContent) {
@@ -183,8 +192,7 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     }
 
     this.#closingWithFocusInContent = false;
-    const focused = document.activeElement;
-    if (focused && focused !== document.body && !this.#hasFocusInContent()) {
+    if (isFocusable(document.activeElement) && !this.#hasFocusInContent()) {
       return;
     }
 
