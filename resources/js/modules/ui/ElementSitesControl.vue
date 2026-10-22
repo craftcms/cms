@@ -317,6 +317,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-xs, 0.25rem);
+    padding-inline-end: var(--c-spacing-xs, 0.25rem);
   }
 
   .element-sites__site {
