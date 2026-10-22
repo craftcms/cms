@@ -206,12 +206,14 @@ it('offers the Delete for Site action for volumes with custom propagation', func
     'all' => [PropagationMethod::All, false],
 ]);
 
-it('shows a Sites pane for assets in volumes with custom propagation', function () {
+it('shows a Sites pane for assets on multi-site installs', function () {
     $sitesFieldHtml = new ReflectionMethod(Asset::class, 'sitesFieldHtml');
     $sitesNodes = new ReflectionMethod(Asset::class, 'sitesNodes');
 
     $allAsset = assetPropagationAsset(assetPropagationVolume(PropagationMethod::All));
-    expect((string) $sitesFieldHtml->invoke($allAsset))->toBe('');
+    expect((string) $sitesFieldHtml->invoke($allAsset))->toContain('element-sites-pane')
+        ->toContain("site-{$this->secondSite->id}-field")
+        ->not->toContain('craft-switch');
 
     $asset = assetPropagationAsset(assetPropagationVolume(PropagationMethod::Custom));
     $html = (string) $sitesFieldHtml->invoke($asset);

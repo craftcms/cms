@@ -3439,12 +3439,6 @@ JS;
     }
 
     #[Override]
-    protected function hasCustomPropagation(): bool
-    {
-        return ! $this->isFolder && $this->getVolume()->propagationMethod === PropagationMethod::Custom;
-    }
-
-    #[Override]
     public function beforeRestore(): bool
     {
         // Only allow the asset to be restored if the file was kept on delete

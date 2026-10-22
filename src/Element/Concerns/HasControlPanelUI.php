@@ -1148,17 +1148,6 @@ JS,
     }
 
     /**
-     * Returns whether the element gets to choose which sites it should be saved to.
-     *
-     * If this returns `true`, the sidebar will list the sites the element is saved in for element types that
-     * don't have statuses, even if the element is already saved to all of the sites it supports.
-     */
-    protected function hasCustomPropagation(): bool
-    {
-        return false;
-    }
-
-    /**
      * Returns the Sites pane HTML for the sidebar.
      *
      * It lists the sites the element is saved in, and lets authors add the element to other sites
@@ -1355,16 +1344,6 @@ JS,
             ->filter(fn (array $site) => ! $site['propagate'] && in_array($site['siteId'], $allEditableSiteIds))
             ->values()
             ->all();
-
-        // For element types without statuses, only show it if the element can be added to more sites,
-        // or if it chose which sites to be saved to
-        if (
-            ! static::hasStatuses() &&
-            empty($additionalSites) &&
-            (! $this->hasCustomPropagation() || $propSites->count() <= 1)
-        ) {
-            return null;
-        }
 
         // Include status toggles for each site, if the element type has per-site statuses
         $withStatuses = static::hasStatuses() && $this->showStatusField();
