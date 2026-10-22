@@ -23,10 +23,14 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use craft\queue\jobs\ApplyNewPropagationMethod;
+use craft\services\Entries;
+use craft\services\Fields;
 use craft\test\TestCase;
 use craft\web\View;
 use crafttests\fixtures\SitesFixture;
 use Symfony\Component\DomCrawler\Crawler;
+use yii\queue\sync\Queue;
 
 /**
  * Regression coverage for the Craft 5 backport of craftcms/cms#19686.
@@ -311,15 +315,73 @@ class MatrixSiteStatusTest extends TestCase
         self::assertCount(0, $html->filter('button[data-action="disableForSite"]'));
     }
 
-    public function testSingleSiteBlockDisabledForSiteCanBeEnabled(): void
+    /**
+     * @dataProvider singleSitePropagationTransitions
+     */
+    public function testPropagationTransitionNormalizesSingleSiteStatus(PropagationMethod $method, bool $disableOtherSite): void
     {
-        $this->matrixField->propagationMethod = PropagationMethod::None;
+        $owner = $this->createOwner();
+        $disabledSiteId = $disableOtherSite ? $this->otherSiteId : $this->primarySiteId;
+        $disabledOwner = $this->reload($owner, $disabledSiteId);
+        $this->postBlock($disabledOwner, ['enabledForSite' => '']);
+        self::assertTrue(Craft::$app->getElements()->saveElement($disabledOwner));
+        $block = $this->block($this->reload($owner, $disabledSiteId));
+        self::assertCount(2, $block->getSupportedSites());
+        self::assertTrue($block->enabled);
+        self::assertFalse($block->getEnabledForSite());
+
+        $this->matrixField->propagationMethod = $method;
         self::assertTrue(Craft::$app->getFields()->saveField($this->matrixField));
-        $block = $this->block($this->createOwner());
-        $block->setEnabledForSite(false);
-        $html = new Crawler($this->renderBlock($block));
+
+        // Reload persisted field settings and layouts, as a new queue worker would.
+        Craft::$app->set('fields', new Fields());
+        Craft::$app->set('entries', new Entries());
+        $block = $this->block($this->reload($owner, $disabledSiteId));
+        self::assertSame($method, $block->getField()->propagationMethod);
+        self::assertCount(1, $block->getSupportedSites());
+
+        $job = new ApplyNewPropagationMethod([
+            'elementType' => Entry::class,
+            'criteria' => ['fieldId' => $this->matrixField->id],
+        ]);
+        $job->execute(new Queue());
+
+        $blockIds = [];
+        foreach ([$this->primarySiteId, $this->otherSiteId] as $siteId) {
+            $block = $this->block($this->reload($owner, $siteId));
+            $blockIds[] = $block->id;
+            self::assertCount(1, $block->getSupportedSites());
+            self::assertSame($siteId !== $disabledSiteId, $block->enabled);
+            self::assertTrue($block->getEnabledForSite());
+        }
+        self::assertNotSame($blockIds[0], $blockIds[1]);
+
+        $disabledOwner = $this->reload($owner, $disabledSiteId);
+        $html = new Crawler($this->renderBlock($this->block($disabledOwner)));
         self::assertContains('Enable', $this->visibleActions($html));
         self::assertNotContains('Disable', $this->visibleActions($html));
+        self::assertSame('1', $html->filter('input[name$="[enabledForSite]"]')->attr('value'));
+
+        // The ordinary Enable action only needs to change the global flag.
+        $this->postBlock($disabledOwner, ['enabled' => '1']);
+        self::assertTrue(Craft::$app->getElements()->saveElement($disabledOwner));
+        $block = $this->block($this->reload($owner, $disabledSiteId));
+        self::assertTrue($block->enabled);
+        self::assertTrue($block->getEnabledForSite());
+        $otherSiteId = $disableOtherSite ? $this->primarySiteId : $this->otherSiteId;
+        $otherBlock = $this->block($this->reload($owner, $otherSiteId));
+        self::assertTrue($otherBlock->enabled);
+        self::assertTrue($otherBlock->getEnabledForSite());
+    }
+
+    public static function singleSitePropagationTransitions(): array
+    {
+        return [
+            'all to none, primary disabled' => [PropagationMethod::None, false],
+            'all to none, secondary disabled' => [PropagationMethod::None, true],
+            'all to language, primary disabled' => [PropagationMethod::Language, false],
+            'all to language, secondary disabled' => [PropagationMethod::Language, true],
+        ];
     }
 
     /**

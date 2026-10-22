@@ -65,13 +65,13 @@
         icon: 'circle-dashed',
         label: 'Disable'|t('app'),
         attributes: {data: {action: 'disable'}},
-        liAttributes: {class: {hidden: not entry.enabled or not entry.enabledForSite}|filter|keys},
+        liAttributes: {class: {hidden: not entry.enabled}|filter|keys},
       },
       {
         icon: 'circle',
         label: 'Enable'|t('app'),
         attributes: {data: {action: 'enable'}},
-        liAttributes: {class: {hidden: entry.enabled and entry.enabledForSite}|filter|keys},
+        liAttributes: {class: {hidden: entry.enabled}|filter|keys},
       },
     ]) %}
   {% endif %}

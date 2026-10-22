@@ -1100,10 +1100,6 @@
 
     enable: function () {
       this.setStatus('enabled', true);
-      if (!this.$container.attr('data-site-name')) {
-        // A single-site block's simple Enable action must restore both flags.
-        this.setStatus('enabledForSite', true);
-      }
     },
 
     disableForSite: function () {

@@ -303,25 +303,9 @@ test('single-site actions continue to change the global flag', async ({
     '1'
   );
   await choose(page, 'enable');
+  await expect(page.locator('input[name$="[enabled]"]')).toHaveValue('1');
+  await expect(page.locator('input[name$="[enabledForSite]"]')).toHaveValue(
+    '1'
+  );
   await expect(page.locator('.disabled-entry')).toHaveCount(0);
 });
-
-for (const enabled of [true, false]) {
-  test(`single-site Enable restores a site-disabled block when globally ${enabled ? 'enabled' : 'disabled'}`, async ({
-    page,
-  }) => {
-    await loadMatrix(page, [{site: null, enabled, enabledForSite: false}]);
-    await choose(page, 'enable');
-
-    const block = page.locator('.matrixblock');
-    await expect(block.locator('input[name$="[enabled]"]')).toHaveValue('1');
-    await expect(block.locator('input[name$="[enabledForSite]"]')).toHaveValue(
-      '1'
-    );
-    await expect(block).not.toHaveClass(/disabled-entry/);
-    await expect(block).not.toHaveClass(/collapsed/);
-    const menu = await openMenu(page);
-    await expect(menu.locator('[data-action="disable"]')).toBeVisible();
-    await expect(menu.locator('[data-action="enable"]')).toBeHidden();
-  });
-}
