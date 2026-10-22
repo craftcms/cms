@@ -6180,7 +6180,7 @@ $min2ColWidth: 400px;
 
   --heading-width: 150px;
 
-  // Space between the checkmark/plus icons and the site names in the element editor’s Status/Sites panes
+  // Space between the checkmark/plus icons and the site names in the element editor’s Sites pane
   --site-checkmark-gap: var(--s);
 
   #details & {
@@ -6228,7 +6228,7 @@ $min2ColWidth: 400px;
           width: 100%;
         }
 
-        // Line the “Add a site” select up with the site names in the element editor’s Status/Sites panes,
+        // Line the “Add a site” select up with the site names in the element editor’s Sites pane,
         // with the plus icon in the same column as the current site’s checkmark
         &.add-site-field {
           padding-inline-start: calc(
@@ -6260,7 +6260,7 @@ $min2ColWidth: 400px;
         }
       }
 
-      // Sites in the element editor’s Status/Sites panes, with a checkmark beside the current site
+      // Sites in the element editor’s Sites pane, with a checkmark beside the current site
       // (like the site menu in the breadcrumbs)
       &.element-site-field {
         padding-inline-start: 0;
@@ -6287,7 +6287,7 @@ $min2ColWidth: 400px;
         content: 'check' / '';
       }
 
-      // Undo buttons for newly-added sites in the element editor’s Status/Sites panes
+      // Undo buttons for newly-added sites in the element editor’s Sites pane
       & > .heading:has(> .remove-site-btn) {
         display: flex;
         align-items: center;

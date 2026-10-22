@@ -557,9 +557,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         this.$expandSiteStatusesBtn.remove();
       });
 
-      const $enabledForSiteField = this.$container
-        .find(`.enabled-for-site-${this.settings.siteId}-field`)
-        .addClass('element-site-field sel');
+      const $enabledForSiteField = this.$container.find(
+        `.enabled-for-site-${this.settings.siteId}-field`
+      );
       this.$siteStatusPane = $enabledForSiteField.parent();
 
       // If this is a revision, just show the site statuses statically and be done
@@ -809,9 +809,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
     },
 
-    _createSiteStatusField: function (site, status, isNew = false) {
+    _createSiteStatusField: function (site, status) {
       const $field = Craft.ui.createLightswitchField({
-        fieldClass: `enabled-for-site-${site.id}-field element-site-field`,
+        fieldClass: `enabled-for-site-${site.id}-field`,
         label: site.name,
         name: this.namespaceInputName(`enabledForSite[${site.id}]`),
         on:
@@ -835,12 +835,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           .find('.lightswitch')
           .on('change', this._updateGlobalStatus.bind(this));
         this.$siteLightswitches = this.$siteLightswitches.add($lightswitch);
-      }
-
-      if (!isNew) {
-        this._linkSiteName($field, site);
-      } else if (!this._autosavesDrafts()) {
-        this._createRemoveSiteBtn($field, site);
       }
 
       this._showField($field);
@@ -959,15 +953,6 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       }
 
-      if (this.$siteLightswitches) {
-        this.$siteLightswitches = this.$siteLightswitches.not(
-          $field.find('.lightswitch')
-        );
-        if (this.$globalLightswitch) {
-          this._updateGlobalStatus();
-        }
-      }
-
       // Recreate the “Add a site…” field, so the site can be selected again
       if (this.$additionalSiteField) {
         this.$additionalSiteField.remove();
@@ -1010,8 +995,12 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.$additionalSiteField = Craft.ui
         .createField($addlSiteSelectContainer, {})
-        .addClass('nested add add-site-field')
+        .addClass('nested add')
         .appendTo(this.$siteStatusPane);
+
+      if (this.sitesPaneOnly) {
+        this.$additionalSiteField.addClass('add-site-field');
+      }
 
       $addlSiteSelectLabel.prependTo(this.$additionalSiteField);
 
@@ -1031,11 +1020,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           const addlSiteInfo = this.settings.additionalSites.find(
             (s) => s.siteId == site.id
           );
-          this._createSiteStatusField(
-            site,
-            addlSiteInfo.enabledByDefault,
-            true
-          );
+          this._createSiteStatusField(site, addlSiteInfo.enabledByDefault);
           this._updateGlobalStatus();
         }
 
@@ -1051,7 +1036,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         // Was that the last site?
         if ($addlSiteSelect.find('option').length === 1) {
           this._removeField(this.$additionalSiteField);
-          this.$additionalSiteField = null;
+          if (this.sitesPaneOnly) {
+            this.$additionalSiteField = null;
+          }
         }
       });
 
@@ -1843,9 +1830,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 
           // Now that the element exists in the site, link to it
           const site = Craft.sites.find((s) => s.id == siteId);
-          const $field = this.$siteStatusPane?.children(
-            `.enabled-for-site-${siteId}-field, .site-${siteId}-field`
-          );
+          const $field = this.sitesPaneOnly
+            ? this.$siteStatusPane.children(`.site-${siteId}-field`)
+            : null;
           if (site && $field?.length) {
             this._linkSiteName($field, site);
           }
