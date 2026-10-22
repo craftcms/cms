@@ -22,6 +22,7 @@ import {
   updateColspan,
 } from '@actions/Dashboard/WidgetsController';
 import type {DashboardWidget, WidgetType} from './types';
+import {widgetName} from './widgetName';
 
 export function useDashboard(props: {
   widgets: DashboardWidget[];
@@ -236,7 +237,7 @@ export function useDashboard(props: {
       const moved = order[to]!;
       announce(
         t('Moved {name} to position {position}', {
-          name: moved.title || moved.name,
+          name: widgetName(moved),
           position: to + 1,
         })
       );

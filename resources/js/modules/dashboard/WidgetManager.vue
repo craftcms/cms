@@ -2,6 +2,7 @@
   import {t} from '@craftcms/ui';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import type {DashboardWidget} from './types';
+  import {widgetName} from './widgetName';
 
   const props = defineProps<{
     widgets: DashboardWidget[];
@@ -23,10 +24,6 @@
       enabled: () => !props.busy,
       onReorder: (from, to) => emit('reorder', from, to),
     });
-
-  function widgetName(widget: DashboardWidget): string {
-    return widget.title || widget.name;
-  }
 </script>
 
 <template>

@@ -126,7 +126,7 @@ export default class CraftReorderButton extends LitElement {
     this._movedWhileFocused = false;
     const active = document.activeElement;
     if (!active || active === document.body) {
-      this.shadowRoot?.querySelector<HTMLElement>('craft-button')?.focus();
+      this._focusInvoker();
     }
   }
 
@@ -157,6 +157,10 @@ export default class CraftReorderButton extends LitElement {
     }
   }
 
+  private _focusInvoker(): void {
+    this.shadowRoot?.querySelector<HTMLElement>('craft-button')?.focus();
+  }
+
   private _canMove(direction: NestedReorderDirection): boolean {
     switch (direction) {
       case 'up':
@@ -178,7 +182,7 @@ export default class CraftReorderButton extends LitElement {
     // Before the list hears about the move: it can disable or hide the item
     // that was chosen, which would take focus with it.
     if (this.matches(':focus-within')) {
-      this.shadowRoot?.querySelector<HTMLElement>('craft-button')?.focus();
+      this._focusInvoker();
     }
 
     this.dispatchEvent(
