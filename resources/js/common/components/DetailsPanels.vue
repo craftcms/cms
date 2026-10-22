@@ -12,7 +12,7 @@
   import '@craftcms/ui/components/disclosure/disclosure';
   import {t} from '@craftcms/ui';
   import {useEventListener, useLocalStorage} from '@vueuse/core';
-  import {computed, nextTick, shallowRef, watch} from 'vue';
+  import {computed, nextTick, onBeforeUnmount, shallowRef, watch} from 'vue';
   import type {Component} from 'vue';
   import {
     useIsSlideout,
@@ -213,12 +213,27 @@
     clickedPanelId = panelId;
   }
 
+  /**
+   * Set once the panels start going away, such as when an Inertia visit
+   * replaces the page. Every disclosure then disconnects at once.
+   */
+  let unmounting = false;
+
+  onBeforeUnmount(() => {
+    unmounting = true;
+  });
+
   function onShow(panelId: string): void {
     const withFocus = clickedPanelId === panelId;
     clickedPanelId = null;
 
     // `craft-disclosure` reopens its target as it disconnects, so a removed
-    // panel announces itself one last time.
+    // panel announces itself one last time. When all of them disconnect, the
+    // last one would otherwise win the URL hash the next page opens.
+    if (unmounting) {
+      return;
+    }
+
     if (openPanelId.value !== panelId && isVisible(panelId)) {
       open(panelId, withFocus);
     }

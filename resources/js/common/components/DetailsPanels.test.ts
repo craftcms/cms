@@ -225,6 +225,17 @@ describe('in slideouts', () => {
   });
 });
 
+it('leaves the URL hash alone as the panels unmount', async () => {
+  window.history.replaceState(null, '', '/#info');
+  await mount('#rail', {syncLocationHash: true});
+
+  app!.unmount();
+  app = undefined;
+  await settle();
+
+  expect(window.location.hash).toBe('#info');
+});
+
 it('starts open on a page with room beside the content', async () => {
   await mount('#rail');
 
