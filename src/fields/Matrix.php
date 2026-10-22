@@ -822,6 +822,7 @@ class Matrix extends Field implements
                 'slug' => $entry->slug,
                 'type' => $entry->getType()->handle,
                 'enabled' => $entry->enabled,
+                'enabledForSite' => $entry->getEnabledForSite(),
                 'collapsed' => $entry->collapsed,
                 'fields' => $entry->getSerializedFieldValues(),
             ];
@@ -847,6 +848,7 @@ class Matrix extends Field implements
                 'slug' => $entry->slug,
                 'type' => $entry->getType()->handle,
                 'enabled' => $entry->enabled,
+                'enabledForSite' => $entry->getEnabledForSite(),
                 'collapsed' => $entry->collapsed,
                 'fields' => $entry->getSerializedFieldValuesForDb(),
             ];
@@ -1355,7 +1357,7 @@ JS,
                 /** @var Entry $entry */
                 $entry->setOwner($element);
 
-                if (!$entry->enabled) {
+                if (!$entry->enabled || !$entry->getEnabledForSite()) {
                     $entry->setScenario(Element::SCENARIO_ESSENTIALS);
                 } else {
                     $entry->setScenario($scenario);
@@ -1639,18 +1641,16 @@ JS,
             !Craft::$app->getResponse()->isSent
         ) {
             // Tell the browser to collapse any new entry IDs
-            $collapsedIds = Collection::make($event->elements)
+            $collapsedEntries = Collection::make($event->elements)
                 /** @phpstan-ignore-next-line */
                 ->filter(fn(Entry $entry) => $entry->collapsed)
-                /** @phpstan-ignore-next-line */
-                ->map(fn(Entry $entry) => $entry->id)
                 ->all();
 
-            if (!empty($collapsedIds)) {
+            if (!empty($collapsedEntries)) {
                 Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
 
-                foreach ($collapsedIds as $id) {
-                    Craft::$app->getSession()->addJsFlash("Craft.MatrixInput.rememberCollapsedEntryId($id);", View::POS_END);
+                foreach ($collapsedEntries as $entry) {
+                    Craft::$app->getSession()->addJsFlash("Craft.MatrixInput.rememberCollapsedEntryId($entry->id, $entry->siteId);", View::POS_END);
                 }
             }
         }
@@ -1873,6 +1873,10 @@ JS,
                 $entry->enabled = (bool)$entryData['enabled'];
             }
 
+            if (isset($entryData['enabledForSite'])) {
+                $entry->setEnabledForSite((bool)$entryData['enabledForSite']);
+            }
+
             if (isset($entryData['fresh'])) {
                 $entry->setIsFresh();
                 $entry->propagateAll = true;
@@ -1892,7 +1896,7 @@ JS,
             }
 
             // Skip disabled entries on Live Preview requests
-            if ($hideDisabledEntries && !$entry->enabled) {
+            if ($hideDisabledEntries && (!$entry->enabled || !$entry->getEnabledForSite())) {
                 continue;
             }
 

@@ -6,6 +6,7 @@
 {% set baseInputName = "#{name}[entries][uid:#{entry.uid}]" %}
 {% set static = static ?? false %}
 {% set staticEntries = staticEntries ?? false %}
+{% set siteName = entry.getSupportedSites()|length > 1 ? entry.site.name|t('site') : null %}
 
 {% set actionBtnLabel = "#{entryTypeName} #{'Actions'|t('app')}" %}
 {% set actionMenuId = "matrixblock-action-menu--#{entry.uid}" %}
@@ -31,31 +32,51 @@
 ] %}
 
 {% if not static %}
+  {% if siteName %}
+    {% set actionMenuItems = actionMenuItems|merge([
+      {
+        icon: 'circle-dashed',
+        label: 'Disable for {site}'|t('app', {site: siteName}),
+        attributes: {data: {action: 'disableForSite'}},
+        liAttributes: {class: {hidden: not entry.enabled or not entry.enabledForSite}|filter|keys},
+      },
+      {
+        icon: 'circle',
+        label: 'Enable for {site}'|t('app', {site: siteName}),
+        attributes: {data: {action: 'enableForSite'}},
+        liAttributes: {class: {hidden: not entry.enabled or entry.enabledForSite}|filter|keys},
+      },
+      {
+        icon: 'circle-dashed',
+        label: 'Disable globally'|t('app'),
+        attributes: {data: {action: 'disableGlobally'}},
+        liAttributes: {class: {hidden: not entry.enabled}|filter|keys},
+      },
+      {
+        icon: 'circle',
+        label: 'Enable globally'|t('app'),
+        attributes: {data: {action: 'enableGlobally'}},
+        liAttributes: {class: {hidden: entry.enabled}|filter|keys},
+      },
+    ]) %}
+  {% else %}
+    {% set actionMenuItems = actionMenuItems|merge([
+      {
+        icon: 'circle-dashed',
+        label: 'Disable'|t('app'),
+        attributes: {data: {action: 'disable'}},
+        liAttributes: {class: {hidden: not entry.enabled or not entry.enabledForSite}|filter|keys},
+      },
+      {
+        icon: 'circle',
+        label: 'Enable'|t('app'),
+        attributes: {data: {action: 'enable'}},
+        liAttributes: {class: {hidden: entry.enabled and entry.enabledForSite}|filter|keys},
+      },
+    ]) %}
+  {% endif %}
+
   {% set actionMenuItems = actionMenuItems|merge([
-    {
-      icon: 'circle-dashed',
-      label: 'Disable'|t('app'),
-      attributes: {
-        data: {action: 'disable'},
-      },
-      liAttributes: {
-        class: {
-          hidden: not entry.enabled,
-        }|filter|keys,
-      },
-    },
-    {
-      icon: 'circle',
-      label: 'Enable'|t('app'),
-      attributes: {
-        data: {action: 'enable'},
-      },
-      liAttributes: {
-        class: {
-          hidden: entry.enabled,
-        }|filter|keys,
-      },
-    },
     {
       icon: 'arrow-up',
       label: 'Move up'|t('app'),
@@ -169,7 +190,7 @@
   class: [
     'matrixblock',
     'js-deletable',
-    not entry.enabled ? 'disabled-entry',
+    (not entry.enabled or not entry.enabledForSite) ? 'disabled-entry',
     static ? 'static',
   ]|filter,
   style: {
@@ -179,6 +200,9 @@
     '--custom-border-color': entryType.color.cssVar(200) ?? null,
   }|filter,
   data: {
+    'disabled-global': not entry.enabled,
+    'disabled-site': not entry.enabledForSite,
+    'site-name': siteName,
     id: entry.id,
     'draft-id': entry.isProvisionalDraft ? null : entry.draftId,
     'revision-id': entry.revisionId,
@@ -205,6 +229,7 @@
     {% endif %}
     {{ hiddenInput("#{baseInputName}[type]", entryType.handle) }}
     {{ hiddenInput("#{baseInputName}[enabled]", entry.enabled ? '1' : '') }}
+    {{ hiddenInput("#{baseInputName}[enabledForSite]", entry.enabledForSite ? '1' : '') }}
     {% if isFresh ?? false %}
       {{ hiddenInput("#{baseInputName}[fresh]", '1') }}
     {% endif %}
@@ -247,10 +272,15 @@
   {% endtag %}{# /.titlebar #}
 
   <div class="actions">
-    <div class="status off" title="{{ 'Disabled'|t('app') }}">
+    {% set disabledLabel = not entry.enabled and siteName
+      ? 'Disabled globally'|t('app')
+      : (not entry.enabledForSite and siteName
+        ? 'Disabled for {site}'|t('app', {site: siteName})
+        : 'Disabled'|t('app')) %}
+    <div class="status off" title="{{ disabledLabel }}">
       {{ tag('span', {
         class: 'visually-hidden',
-        html: 'Disabled'|t('app'),
+        text: disabledLabel,
       }) }}
     </div>
 
