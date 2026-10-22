@@ -521,6 +521,7 @@ describe('store', function () {
             'modifiedAttributes',
             'draftElementIds',
             'draftElementUids',
+            'canDeleteForSite',
             'deltaNames',
             'initialDeltaValues',
             'ui',

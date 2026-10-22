@@ -144,6 +144,8 @@ readonly class FolderController
             $allSourceFolderIds[] = $request->folderBeingMovedId();
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
+                ->site('*')
+                ->unique()
                 ->all();
             $fileTransferList = AssetsHelper::fileTransferList($foundAssets, $folderIdChanges);
         } else {
@@ -176,6 +178,8 @@ readonly class FolderController
             $allSourceFolderIds[] = $request->folderBeingMovedId();
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
+                ->site('*')
+                ->unique()
                 ->all();
             $fileTransferList = AssetsHelper::fileTransferList($foundAssets, $folderIdChanges);
         }

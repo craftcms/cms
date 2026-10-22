@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image\Jobs;
 
-use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -37,8 +37,7 @@ class GenerateImageTransform extends Job implements ShouldBeUnique
             return;
         }
 
-        /** @var Asset|null $asset */
-        $asset = Asset::find()->id($index->assetId)->one();
+        $asset = app(Assets::class)->getAssetById($index->assetId);
 
         if (! $asset) {
             return;

@@ -29,6 +29,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     siteIds: null,
     newSiteIds: null,
+    sitesPaneOnly: false,
 
     enableAutosave: null,
     lastSerializedValue: null,
@@ -142,6 +143,40 @@ Craft.ElementEditor = Garnish.Base.extend(
       }).appendTo($spinnerContainer);
 
       this.$expandSiteStatusesBtn = this.$container.find('.expand-status-btn');
+
+      // Elements may have a Sites pane in place of the Status pane, which lists their sites,
+      // lets authors add them to other sites, and may include status toggles for each site
+      const $sitesPane = this.$container.find('.element-sites-pane');
+
+      // If the element is saved to multiple sites, they'll be within a disclosure
+      const $sitesToggle = $sitesPane.find('.element-sites-toggle');
+      if ($sitesToggle.length) {
+        this.addListener($sitesToggle, 'click', () => {
+          const expanded = $sitesToggle.attr('aria-expanded') === 'true';
+          $sitesToggle.attr('aria-expanded', expanded ? 'false' : 'true');
+          $sitesToggle
+            .attr('aria-controls')
+            .split(' ')
+            .forEach((id) => {
+              $(document.getElementById(id)).toggleClass('hidden', expanded);
+            });
+        });
+      }
+      if ($sitesPane.length && this.settings.additionalSites?.length) {
+        this.$siteStatusPane = $sitesPane;
+        this.sitesPaneOnly = true;
+        this._createAddlSiteField();
+      }
+
+      // Within slideouts, switch the slideout to the clicked site
+      if ($sitesPane.length && this.slideout) {
+        $sitesPane.on('click', 'a[data-site-id]', (ev) => {
+          ev.preventDefault();
+          this.slideout.switchSite(
+            parseInt($(ev.currentTarget).data('site-id'))
+          );
+        });
+      }
 
       if (this.settings.canEditMultipleSites) {
         this.addListener(
@@ -816,6 +851,158 @@ Craft.ElementEditor = Garnish.Base.extend(
       return $field;
     },
 
+    _createSiteField: function (site) {
+      const nameId = `site-name-${Math.floor(Math.random() * 1000000000)}`;
+      const $field = $('<div/>', {
+        class: `field element-site-field site-${site.id}-field`,
+      }).append(
+        $('<div/>', {class: 'heading'}).append(
+          $('<label/>').append($('<span/>', {id: nameId, text: site.name}))
+        )
+      );
+
+      const name = this.namespaceInputName(`enabledForSite[${site.id}]`);
+
+      // Include a status toggle if the pane has them, and the element will be autosaved to the new site
+      if (
+        Garnish.hasAttr(this.$siteStatusPane, 'data-statuses') &&
+        this._autosavesDrafts()
+      ) {
+        const addlSiteInfo = this.settings.additionalSites.find(
+          (s) => s.siteId == site.id
+        );
+        $('<div/>', {class: 'input'})
+          .append(
+            Craft.ui.createLightswitch({
+              name,
+              on: addlSiteInfo?.enabledByDefault ?? true,
+              labelId: nameId,
+              small: true,
+            })
+          )
+          .appendTo($field);
+        $field.addClass('lightswitch-field');
+      } else {
+        $('<input/>', {type: 'hidden', name, value: '1'}).appendTo($field);
+      }
+
+      if (this.$additionalSiteField) {
+        $field.insertBefore(this.$additionalSiteField);
+      } else {
+        $field.appendTo(this.$siteStatusPane);
+      }
+
+      if (!this._autosavesDrafts()) {
+        this._createRemoveSiteBtn($field, site);
+      }
+
+      this._showField($field);
+
+      return $field;
+    },
+
+    _autosavesDrafts: function () {
+      return !!(this.settings.canCreateDrafts && this.enableAutosave);
+    },
+
+    _siteEditUrl: function (site) {
+      if (!this.settings.cpEditUrl) {
+        return null;
+      }
+
+      const url = new URL(this.settings.cpEditUrl, window.location.href);
+      url.searchParams.set('site', site.handle);
+      return url.toString();
+    },
+
+    _linkSiteName: function ($field, site) {
+      const url = this._siteEditUrl(site);
+      if (!url || site.id == this.settings.siteId) {
+        return;
+      }
+
+      const $label = $field.children('.heading').children('label').first();
+      const $nameContainer = $label.children('span[id]').first();
+      const $name = ($nameContainer.length ? $nameContainer : $label)
+        .contents()
+        .filter(
+          (i, node) =>
+            node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== ''
+        )
+        .first();
+
+      if ($name.length) {
+        $name.replaceWith(
+          $('<a/>', {href: url, text: site.name, 'data-site-id': site.id})
+        );
+      }
+    },
+
+    _createRemoveSiteBtn: function ($field, site, saved = false) {
+      const $btn = $('<button/>', {
+        type: 'button',
+        class: 'clear-btn remove-site-btn',
+        title: Craft.t('app', 'Remove'),
+        'aria-label': Craft.t('app', 'Remove {label}', {label: site.name}),
+      }).appendTo($field.children('.heading'));
+
+      this.addListener($btn, 'click', () => {
+        if (saved) {
+          this._deleteNewSite($field, site, $btn);
+        } else {
+          this._removeNewSite($field, site);
+        }
+      });
+    },
+
+    _deleteNewSite: async function ($field, site, $btn) {
+      $btn.prop('disabled', true);
+
+      try {
+        // Make sure any pending changes have been saved first
+        await this.checkForm();
+
+        const data = {
+          elementId: this.settings.canonicalId,
+          siteId: site.id,
+        };
+        if (this.settings.draftId && !this.settings.isProvisionalDraft) {
+          data.draftId = this.settings.draftId;
+        }
+        await Craft.sendActionRequest('POST', 'elements/delete-for-site', {
+          data,
+        });
+      } catch (e) {
+        $btn.prop('disabled', false);
+        Craft.cp.displayError(e?.response?.data?.message);
+        return;
+      }
+
+      Craft.cp.hideSiteCrumbMenuItem(site.id);
+      this._removeNewSite($field, site);
+    },
+
+    _removeNewSite: function ($field, site) {
+      // Remove the inputs right away so the form is no longer considered modified
+      $field.find('input').remove();
+      this._removeField($field);
+
+      this.siteIds = this.siteIds.filter((id) => id != site.id);
+      if (this.newSiteIds) {
+        this.newSiteIds = this.newSiteIds.filter((id) => id != site.id);
+        if (!this.newSiteIds.length) {
+          this.newSiteIds = null;
+        }
+      }
+
+      // Recreate the “Add a site…” field, so the site can be selected again
+      if (this.$additionalSiteField) {
+        this.$additionalSiteField.remove();
+        this.$additionalSiteField = null;
+      }
+      this._createAddlSiteField();
+    },
+
     _createAddlSiteField: function () {
       const additionalSites = Craft.sites.filter((site) => {
         return (
@@ -853,6 +1040,10 @@ Craft.ElementEditor = Garnish.Base.extend(
         .addClass('nested add')
         .appendTo(this.$siteStatusPane);
 
+      if (this.sitesPaneOnly) {
+        this.$additionalSiteField.addClass('add-site-field');
+      }
+
       $addlSiteSelectLabel.prependTo(this.$additionalSiteField);
 
       const $addlSiteSelect = $addlSiteSelectContainer.find('select');
@@ -865,11 +1056,15 @@ Craft.ElementEditor = Garnish.Base.extend(
           return;
         }
 
-        const addlSiteInfo = this.settings.additionalSites.find(
-          (s) => s.siteId == site.id
-        );
-        this._createSiteStatusField(site, addlSiteInfo.enabledByDefault);
-        this._updateGlobalStatus();
+        if (this.sitesPaneOnly) {
+          this._createSiteField(site);
+        } else {
+          const addlSiteInfo = this.settings.additionalSites.find(
+            (s) => s.siteId == site.id
+          );
+          this._createSiteStatusField(site, addlSiteInfo.enabledByDefault);
+          this._updateGlobalStatus();
+        }
 
         $addlSiteSelect.val('').find(`option[value="${siteId}"]`).remove();
 
@@ -883,6 +1078,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         // Was that the last site?
         if ($addlSiteSelect.find('option').length === 1) {
           this._removeField(this.$additionalSiteField);
+          if (this.sitesPaneOnly) {
+            this.$additionalSiteField = null;
+          }
         }
       });
 
@@ -1660,6 +1858,23 @@ Craft.ElementEditor = Garnish.Base.extend(
             siteId,
             enabled ? 'enabled' : 'disabled'
           );
+
+          // Now that the element exists in the site, link to it
+          const site = Craft.sites.find((s) => s.id == siteId);
+          const $field = this.sitesPaneOnly
+            ? this.$siteStatusPane.children(`.site-${siteId}-field`)
+            : null;
+          if (site && $field?.length) {
+            this._linkSiteName($field, site);
+
+            // Let the user remove the element from the site again
+            if (
+              response.data.canDeleteForSite &&
+              !$field.find('.remove-site-btn').length
+            ) {
+              this._createRemoveSiteBtn($field, site, true);
+            }
+          }
         });
         this.newSiteIds = null;
       }

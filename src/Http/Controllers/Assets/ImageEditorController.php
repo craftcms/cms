@@ -68,7 +68,7 @@ readonly class ImageEditorController
         $assetId = $request->integer('assetId');
         $size = $request->integer('size');
 
-        $asset = Asset::findOne($assetId);
+        $asset = $this->assets->getAssetById($assetId);
 
         abort_if(! $asset, 400, "Invalid asset ID: $asset");
 
@@ -275,7 +275,7 @@ readonly class ImageEditorController
         }
 
         /** @var Asset|null $asset */
-        $asset = Asset::find()->uid($assetUid)->one();
+        $asset = $this->assets->findAcrossSites()->uid($assetUid)->one();
 
         abort_if(! $asset, 400, "Invalid asset UID: $assetUid");
 

@@ -1008,6 +1008,7 @@ class Install extends Migration
             $table->text('titleTranslationKeyFormat')->nullable();
             $table->string('altTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('altTranslationKeyFormat')->nullable();
+            $table->string('propagationMethod')->default(PropagationMethod::Custom->value);
             $table->unsignedSmallInteger('sortOrder')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
