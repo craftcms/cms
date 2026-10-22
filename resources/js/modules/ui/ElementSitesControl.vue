@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/icon/icon';
+  import '@craftcms/ui/components/pane/pane';
   import '@craftcms/ui/components/select/select';
   import CraftSwitch from '@craftcms/ui/components/switch/switch';
   import {actionClient} from '@craftcms/ui';
@@ -197,113 +198,121 @@
 </script>
 
 <template>
-  <div class="element-sites" :aria-invalid="invalid ? 'true' : undefined">
-    <template v-for="site in orderedSites" :key="site.id">
-      <button
-        v-if="collapsible && site.id === otherSites[0]?.id"
-        type="button"
-        class="element-sites__toggle"
-        :aria-expanded="expanded ? 'true' : 'false'"
-        :aria-controls="otherSites.map(rowId).join(' ')"
-        @click="expanded = !expanded"
-      >
-        <craft-icon
-          :name="expanded ? 'chevron-down' : 'chevron-right'"
-        ></craft-icon>
-        {{ toggleLabel }}
-      </button>
+  <craft-pane class="element-sites-pane" appearance="outline" padding="sm">
+    <div class="element-sites" :aria-invalid="invalid ? 'true' : undefined">
+      <template v-for="site in orderedSites" :key="site.id">
+        <button
+          v-if="collapsible && site.id === otherSites[0]?.id"
+          type="button"
+          class="element-sites__toggle"
+          :aria-expanded="expanded ? 'true' : 'false'"
+          :aria-controls="otherSites.map(rowId).join(' ')"
+          @click="expanded = !expanded"
+        >
+          <craft-icon
+            :name="expanded ? 'chevron-down' : 'chevron-right'"
+          ></craft-icon>
+          {{ toggleLabel }}
+        </button>
+        <div
+          v-show="site.current || !collapsible || expanded"
+          :id="rowId(site)"
+          class="element-sites__site"
+        >
+          <span class="element-sites__name">
+            <craft-icon
+              v-if="site.current"
+              name="check"
+              class="element-sites__check"
+            ></craft-icon>
+            <span :id="nameId(site)">
+              <a
+                v-if="site.url"
+                :href="site.url"
+                @click="switchSite($event, site)"
+                >{{ site.name }}</a
+              >
+              <template v-else>{{ site.name }}</template>
+            </span>
+            <span v-if="site.current" class="sr-only"
+              >, {{ t('selected') }}</span
+            >
+          </span>
+          <craft-button
+            v-if="editable && site.removable"
+            type="button"
+            icon="xmark-large"
+            variant="plain"
+            size="small"
+            :aria-label="t('Remove {name}', {name: site.name})"
+            .loading="deleting === site.id"
+            @click="deleteSite(site)"
+          ></craft-button>
+          <craft-switch
+            v-if="control.props.withStatuses"
+            :name="editable ? `${name}[${site.id}]` : ''"
+            .checked="Boolean(statuses[site.id])"
+            size="small"
+            :labelled-by="nameId(site)"
+            .disabled="!editable"
+            @model-value-changed="onStatusChanged(site.id, $event)"
+          ></craft-switch>
+        </div>
+      </template>
+
       <div
-        v-show="site.current || !collapsible || expanded"
+        v-for="site in addedSites"
         :id="rowId(site)"
+        :key="site.id"
         class="element-sites__site"
       >
         <span class="element-sites__name">
-          <craft-icon
-            v-if="site.current"
-            name="check"
-            class="element-sites__check"
-          ></craft-icon>
-          <span :id="nameId(site)">
-            <a
-              v-if="site.url"
-              :href="site.url"
-              @click="switchSite($event, site)"
-              >{{ site.name }}</a
-            >
-            <template v-else>{{ site.name }}</template>
-          </span>
-          <span v-if="site.current" class="sr-only">, {{ t('selected') }}</span>
+          <span :id="nameId(site)">{{ site.name }}</span>
         </span>
         <craft-button
-          v-if="editable && site.removable"
           type="button"
           icon="xmark-large"
           variant="plain"
           size="small"
           :aria-label="t('Remove {name}', {name: site.name})"
-          .loading="deleting === site.id"
-          @click="deleteSite(site)"
+          @click="removeStatus(site.id)"
         ></craft-button>
         <craft-switch
           v-if="control.props.withStatuses"
-          :name="editable ? `${name}[${site.id}]` : ''"
+          :name="`${name}[${site.id}]`"
           .checked="Boolean(statuses[site.id])"
           size="small"
           :labelled-by="nameId(site)"
-          .disabled="!editable"
           @model-value-changed="onStatusChanged(site.id, $event)"
         ></craft-switch>
       </div>
-    </template>
 
-    <div
-      v-for="site in addedSites"
-      :id="rowId(site)"
-      :key="site.id"
-      class="element-sites__site"
-    >
-      <span class="element-sites__name">
-        <span :id="nameId(site)">{{ site.name }}</span>
-      </span>
-      <craft-button
-        type="button"
-        icon="xmark-large"
-        variant="plain"
-        size="small"
-        :aria-label="t('Remove {name}', {name: site.name})"
-        @click="removeStatus(site.id)"
-      ></craft-button>
-      <craft-switch
-        v-if="control.props.withStatuses"
-        :name="`${name}[${site.id}]`"
-        .checked="Boolean(statuses[site.id])"
-        size="small"
-        :labelled-by="nameId(site)"
-        @model-value-changed="onStatusChanged(site.id, $event)"
-      ></craft-switch>
+      <craft-select
+        v-if="editable && addableSites.length"
+        class="element-sites__add"
+        label-sr-only
+      >
+        <span slot="label">{{ t('Add a site…') }}</span>
+        <select slot="input" @change="addSite">
+          <option value="">{{ t('Add a site…') }}</option>
+          <option
+            v-for="site in addableSites"
+            :key="site.id"
+            :value="String(site.id)"
+          >
+            {{ site.name }}
+          </option>
+        </select>
+      </craft-select>
     </div>
-
-    <craft-select
-      v-if="editable && addableSites.length"
-      class="element-sites__add"
-      label-sr-only
-    >
-      <span slot="label">{{ t('Add a site…') }}</span>
-      <select slot="input" @change="addSite">
-        <option value="">{{ t('Add a site…') }}</option>
-        <option
-          v-for="site in addableSites"
-          :key="site.id"
-          :value="String(site.id)"
-        >
-          {{ site.name }}
-        </option>
-      </select>
-    </craft-select>
-  </div>
+  </craft-pane>
 </template>
 
 <style scoped>
+  .element-sites-pane {
+    --c-pane-background: transparent;
+  }
+
   .element-sites {
     display: flex;
     flex-direction: column;
