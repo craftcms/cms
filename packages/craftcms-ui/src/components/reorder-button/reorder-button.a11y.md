@@ -21,8 +21,8 @@ Built on `craft-action-menu`; see `action-menu.a11y.md` for the menu pattern, it
 ### Keyboard and focus
 
 - [x] The invoker is in the Tab order and opens the menu with Enter or Space, unless `disabled`. Per WCAG 2.1.1 (Keyboard). Verified by `is reached with Tab and opens with $key` and `is skipped by Tab when disabled` in `reorder-button.browser.test.ts`.
-- [x] Choosing a move, or pressing Escape, closes the menu and leaves focus on the invoker, even when the list disables the chosen move in response. Per WCAG 2.4.3 (Focus Order). Verified by `keeps focus on the invoker after a move is chosen with Enter`, `keeps focus on the invoker when its list disables the chosen move` and `returns focus to the invoker when Escape closes the menu` in `reorder-button.browser.test.ts`.
-- [x] When the list moves the button to a new place in the page while it has focus, focus stays on the invoker. Per WCAG 2.4.3 (Focus Order). Verified by `keeps focus on the invoker when its list moves it` and `leaves focus alone when it is removed and added back later` in `reorder-button.browser.test.ts`.
+- [x] Choosing a move, or pressing Escape, closes the menu and leaves focus on the invoker. Per WCAG 2.4.3 (Focus Order). Verified by `keeps focus on the invoker after a move is chosen with Enter`, `keeps focus on the invoker when its list disables the chosen move` and `returns focus to the invoker when Escape closes the menu` in `reorder-button.browser.test.ts`.
+- [x] When the list moves the button to a new place in the page while it has focus, focus stays on the invoker. Per WCAG 2.4.3 (Focus Order). Verified by `keeps focus on the invoker when its list moves it` in `reorder-button.browser.test.ts`.
 - [x] A keyboard-focused invoker shows a visible ring at 3:1 against the surface, in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Verified by `rings a keyboard-focused invoker at 3:1 against the surface` in `reorder-button.browser.test.ts`.
 
 ### Visual

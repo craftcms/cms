@@ -60,6 +60,12 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+function renderedTemplates(): string[] {
+  return [...document.querySelectorAll('.route__template span')].map(
+    (template) => template.textContent!.trim()
+  );
+}
+
 function reorderButton(template: string) {
   return [...document.querySelectorAll<HTMLElement>('.route')]
     .find((row) => row.textContent?.includes(template))!
@@ -89,12 +95,18 @@ it.each([
 
     button.shadowRoot!.querySelector<HTMLElement>('craft-button')!.focus();
     await userEvent.keyboard('{Enter}');
-    await nextTick();
+    await vi.waitFor(() =>
+      expect(
+        button.shadowRoot!.querySelector('craft-action-menu')!.opened
+      ).toBe(true)
+    );
     button
       .shadowRoot!.querySelector<HTMLElement>(`[data-action="${action}"]`)!
       .focus();
     await userEvent.keyboard('{Enter}');
-    await nextTick();
+    await vi.waitFor(() =>
+      expect(renderedTemplates()).toEqual(['news/_entry', 'blog/_entry'])
+    );
 
     expect(inertia.page.props.routes.map(({uid}) => uid)).toEqual([
       'news',

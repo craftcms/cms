@@ -4,7 +4,7 @@ import '@craftcms/ui/components/popover/popover';
 import '@craftcms/ui/components/reorder-button/reorder-button';
 import '@craftcms/ui/components/slide-picker/slide-picker';
 import {createApp, h, nextTick, ref} from 'vue';
-import {afterEach, expect, it} from 'vite-plus/test';
+import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
 import type {DashboardWidget} from './types';
 import WidgetManager from './WidgetManager.vue';
@@ -23,6 +23,7 @@ function widget(id: number, title: string): DashboardWidget {
 async function mountManager() {
   const widgets = ref([widget(1, 'Feed'), widget(2, 'Updates')]);
   const busy = ref(false);
+  const opened = ref(true);
   let finishSave: (() => void) | undefined;
 
   const container = document.createElement('div');
@@ -33,7 +34,8 @@ async function mountManager() {
         widgets: widgets.value,
         columns: 2,
         busy: busy.value,
-        opened: true,
+        opened: opened.value,
+        'onUpdate:opened': (value: boolean) => (opened.value = value),
         async onReorder(from: number, to: number) {
           busy.value = true;
           await new Promise<void>((resolve) => (finishSave = resolve));
@@ -55,6 +57,16 @@ async function mountManager() {
   return {widgets, reorderButton, finishSave: () => finishSave?.()};
 }
 
+function renderedTitles(): string[] {
+  return [...document.querySelectorAll('[id^="widget-label-"]')].map((label) =>
+    label.textContent!.trim()
+  );
+}
+
+function menuOf(button: HTMLElement) {
+  return button.shadowRoot!.querySelector('craft-action-menu')!;
+}
+
 it.each([
   ['moveDown', 'Feed'],
   ['moveUp', 'Updates'],
@@ -67,14 +79,15 @@ it.each([
 
     button.shadowRoot!.querySelector<HTMLElement>('craft-button')!.focus();
     await userEvent.keyboard('{Enter}');
-    await nextTick();
+    await vi.waitFor(() => expect(menuOf(button).opened).toBe(true));
     button
       .shadowRoot!.querySelector<HTMLElement>(`[data-action="${action}"]`)!
       .focus();
     await userEvent.keyboard('{Enter}');
     finishSave();
-    await nextTick();
-    await nextTick();
+    await vi.waitFor(() =>
+      expect(renderedTitles()).toEqual(['Updates', 'Feed'])
+    );
 
     expect(widgets.value.map(({title}) => title)).toEqual(['Updates', 'Feed']);
     const moved = reorderButton(title);
@@ -104,4 +117,26 @@ it('names each widget’s reorder button, column picker and delete button after 
   await expect
     .element(page.getByRole('button', {name: 'Delete Updates', exact: true}))
     .toBeInTheDocument();
+});
+
+it('closes with one Escape after a widget is moved', async () => {
+  const {reorderButton, finishSave} = await mountManager();
+  const popover = document.querySelector('craft-popover')!;
+  const gear = popover.querySelector<HTMLElement>('[slot="invoker"]')!;
+  const feed = reorderButton('Feed');
+  await feed.updateComplete;
+
+  feed.shadowRoot!.querySelector<HTMLElement>('craft-button')!.focus();
+  await userEvent.keyboard('{Enter}');
+  await vi.waitFor(() => expect(menuOf(feed).opened).toBe(true));
+  feed
+    .shadowRoot!.querySelector<HTMLElement>('[data-action="moveDown"]')!
+    .focus();
+  await userEvent.keyboard('{Enter}');
+  finishSave();
+  await vi.waitFor(() => expect(renderedTitles()).toEqual(['Updates', 'Feed']));
+  await userEvent.keyboard('{Escape}');
+
+  await vi.waitFor(() => expect(popover.opened).toBe(false));
+  expect(document.activeElement).toBe(gear);
 });
