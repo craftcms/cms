@@ -32,6 +32,7 @@ use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\db\Expression;
 
 /**
  * Volumes service.
@@ -201,6 +202,7 @@ class Volumes extends Component
     {
         $volume = new Volume([
             'name' => Craft::t('app', 'Temporary Uploads'),
+            'propagationMethod' => PropagationMethod::All,
         ]);
 
         $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
@@ -348,6 +350,7 @@ class Volumes extends Component
             $volumeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $volumeRecord->altTranslationMethod = $data['altTranslationMethod'] ?? Field::TRANSLATION_METHOD_NONE;
             $volumeRecord->altTranslationKeyFormat = $data['altTranslationKeyFormat'] ?? null;
+            // (volumes saved before the setting existed should keep propagating to all sites)
             $volumeRecord->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
             $volumeRecord->uid = $volumeUid;
 
@@ -642,6 +645,9 @@ class Volumes extends Component
         }
         if ($db->columnExists(Table::VOLUMES, 'propagationMethod')) {
             $query->addSelect(['propagationMethod']);
+        } else {
+            // Volumes propagated to all sites before the setting existed
+            $query->addSelect(['propagationMethod' => new Expression(sprintf("'%s'", PropagationMethod::All->value))]);
         }
 
         return $query;

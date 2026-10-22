@@ -101,9 +101,12 @@ class Volume extends Model implements
      *  - [[PropagationMethod::All]] – Save assets to all sites
      *  - [[PropagationMethod::Custom]] – Let each asset choose which sites it should be saved to
      *
+     * New volumes use [[PropagationMethod::Custom]] by default. Volumes that existed on multi-site installs before
+     * this setting was introduced use [[PropagationMethod::All]].
+     *
      * @since 5.12.0
      */
-    public PropagationMethod $propagationMethod = PropagationMethod::All;
+    public PropagationMethod $propagationMethod = PropagationMethod::Custom;
 
     /**
      * @var int|null Sort order

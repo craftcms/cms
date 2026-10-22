@@ -199,7 +199,7 @@ class VolumesController extends Controller
             'altTranslationMethod' => $this->request->getBodyParam('altTranslationMethod', Field::TRANSLATION_METHOD_NONE),
             'altTranslationKeyFormat' => $this->request->getBodyParam('altTranslationKeyFormat'),
             'propagationMethod' => PropagationMethod::tryFrom($this->request->getBodyParam('propagationMethod') ?? '')
-                ?? $oldVolume->propagationMethod ?? PropagationMethod::All,
+                ?? $oldVolume->propagationMethod ?? PropagationMethod::Custom,
         ]);
 
         // Set the field layout

@@ -8,13 +8,14 @@
 - Sites that are added to elements within the “Sites” pane can now be removed again. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Element edit pages’ sidebar pane headings now line up with the labels within the panes. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Assets are now initially saved to the site they were uploaded from. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Assets in volumes set to let each asset choose which sites it should be saved to now have a “Sites” pane in their edit pages’ sidebars. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Assets in volumes set to let each asset choose which sites it should be saved to can now be deleted for individual sites, as long as they exist in another site. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Deleting an element for the only site it exists in now soft-deletes it, unless it’s a draft or nested element. ([#20060](https://github.com/craftcms/cms/pull/20060))
 
 ### Administration
 
 - Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
-- Volumes now have a “Propagation Method” setting, which can be set to “Let each asset choose which sites it should be saved to”. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Volumes now have a “Propagation Method” setting, which can be set to “Let each asset choose which sites it should be saved to”. New volumes default to this, as do existing volumes on single-site installs. Existing volumes on multi-site installs continue to save assets to all sites. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - A rate limit is now enforced for `users/login`, `auth/verify-totp`, and `auth/verify-recovery-code` requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
 - Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for `users/login`, `users/send-password-reset-email`, `auth/verify-totp`, and `auth/verify-recovery-code` requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
 

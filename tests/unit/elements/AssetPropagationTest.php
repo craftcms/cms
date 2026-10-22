@@ -22,6 +22,7 @@ use craft\queue\QueueInterface;
 use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\SitesFixture;
+use ReflectionMethod;
 use UnitTester;
 
 /**
@@ -70,6 +71,10 @@ class AssetPropagationTest extends TestCase
     public function testVolumeConfig(): void
     {
         self::assertSame('all', $this->volume->getConfig()['propagationMethod']);
+
+        // New volumes should default to custom propagation, but the temporary volume should save to all sites
+        self::assertSame(PropagationMethod::Custom, (new Volume())->propagationMethod);
+        self::assertSame(PropagationMethod::All, Craft::$app->getVolumes()->getTemporaryVolume()->propagationMethod);
 
         $volume = new Volume(['propagationMethod' => 'custom']);
         self::assertSame(PropagationMethod::Custom, $volume->propagationMethod);
@@ -206,6 +211,54 @@ class AssetPropagationTest extends TestCase
         $this->volume->propagationMethod = PropagationMethod::All;
         $allAsset = $this->createAsset(1000);
         self::assertFalse($elementsService->canDeleteForSite($allAsset, $admin));
+    }
+
+    public function testSitesField(): void
+    {
+        $sitesFieldHtml = new ReflectionMethod(Asset::class, 'sitesFieldHtml');
+        Craft::$app->getUser()->setIdentity(User::findOne(1));
+
+        // Assets in volumes that propagate to all sites don't need it
+        $allAsset = $this->createAsset(1000);
+        self::assertSame('', $sitesFieldHtml->invoke($allAsset));
+
+        // Assets that can be added to other sites should list the sites they're saved in
+        $this->volume->propagationMethod = PropagationMethod::Custom;
+        $asset = Craft::$app->getAssets()->getAssetById($this->createAsset(1000)->id, 1000);
+        $html = $sitesFieldHtml->invoke($asset);
+        self::assertStringContainsString('element-sites-pane', $html);
+        self::assertStringContainsString('site-1000-field', $html);
+        self::assertStringNotContainsString('site-1001-field', $html);
+        self::assertStringContainsString('site-1000-field sel', $html);
+        self::assertStringNotContainsString('element-sites-toggle', $html);
+        self::assertStringNotContainsString('class="status', $html);
+
+        // Sites other than the current one should link to the asset in that site
+        $asset->setEnabledForSite([1000 => true, 1001 => true]);
+        self::assertTrue(Craft::$app->getElements()->saveElement($asset), json_encode($asset->getErrors()));
+        $html = $sitesFieldHtml->invoke(Craft::$app->getAssets()->getAssetById($asset->id, 1000));
+        self::assertStringContainsString('site-1001-field', $html);
+        self::assertStringContainsString('site=testSite2', $html);
+        self::assertStringNotContainsString('site=testSite1', $html);
+
+        // A single other site shouldn't be within a disclosure
+        self::assertStringNotContainsString('element-sites-toggle', $html);
+        self::assertStringNotContainsString('field hidden"', $html);
+
+        // The pane should still be shown once the asset has been saved to all sites
+        $asset = Craft::$app->getAssets()->getAssetById($asset->id, 1000);
+        $asset->setEnabledForSite(array_fill_keys(Craft::$app->getSites()->getAllSiteIds(), true));
+        self::assertTrue(Craft::$app->getElements()->saveElement($asset), json_encode($asset->getErrors()));
+        self::assertEqualsCanonicalizing(Craft::$app->getSites()->getAllSiteIds(), $this->siteIdsForAsset($asset));
+        $html = $sitesFieldHtml->invoke(Craft::$app->getAssets()->getAssetById($asset->id, 1000));
+        self::assertStringContainsString('element-sites-pane', $html);
+        self::assertStringContainsString('site=testSite3', $html);
+
+        // 2+ other sites should be listed within a disclosure, after the current site
+        self::assertStringContainsString('>3 other sites</button>', $html);
+        self::assertStringContainsString('site-1001-field hidden', $html);
+        self::assertStringNotContainsString('site-1000-field sel hidden', $html);
+        self::assertLessThan(strpos($html, 'element-sites-toggle'), strpos($html, 'site-1000-field sel'));
     }
 
     public function testDeleteForSiteAction(): void

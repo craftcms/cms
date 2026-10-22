@@ -1552,6 +1552,14 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     */
+    protected function hasCustomPropagation(): bool
+    {
+        return !$this->isFolder && $this->getVolume()->propagationMethod === PropagationMethod::Custom;
+    }
+
+    /**
+     * @inheritdoc
      * @since 5.12.0
      */
     public function getSupportedSites(): array
