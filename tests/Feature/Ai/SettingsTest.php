@@ -104,6 +104,7 @@ it('warns about re-indexing only when a task uses embeddings', function (bool $h
 
 it('lists the tasks that can’t run, and marks providers without an API key', function (): void {
     config(['ai.providers.keyless' => ['driver' => 'anthropic', 'key' => null]]);
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_AI, ['tasks' => ['craft:askAi' => ['provider' => 'anthropic']]]);
 
     $response = get(route('craft.cp.settings.ai.index'))->assertOk();
 
