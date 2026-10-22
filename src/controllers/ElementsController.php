@@ -2083,6 +2083,7 @@ JS, [
             'modifiedAttributes' => $element->getModifiedAttributes(),
             'draftElementIds' => $draftElementIds,
             'draftElementUids' => $draftElementUids,
+            'canDeleteForSite' => $elementsService->canDeleteForSite($element, $user),
         ];
 
         if ($this->request->getIsCpRequest()) {

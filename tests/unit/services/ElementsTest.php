@@ -358,6 +358,71 @@ class ElementsTest extends TestCase
         self::assertStringContainsString('name="enabled"', $html);
     }
 
+    public function testDeleteDraftForNewSite(): void
+    {
+        $admin = User::findOne(1);
+        Craft::$app->getUser()->setIdentity($admin);
+        Craft::$app->getIsMultiSite(true);
+        Craft::$app->getIsMultiSite(true, true);
+        $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
+
+        // A section that lets each entry choose which sites it should be saved to
+        $section = new Section([
+            'name' => 'New Site Draft Test Section',
+            'handle' => 'newSiteDraftTestSection',
+            'type' => Section::TYPE_CHANNEL,
+            'enableVersioning' => false,
+            'propagationMethod' => PropagationMethod::Custom,
+        ]);
+        $section->setEntryTypes([$this->ownerEntryType]);
+        $section->setSiteSettings(array_map(fn(int $siteId) => new Section_SiteSettings([
+            'siteId' => $siteId,
+            'enabledByDefault' => true,
+            'hasUrls' => false,
+        ]), [$primarySiteId, 1000]));
+        if (!Craft::$app->getEntries()->saveSection($section)) {
+            throw new RuntimeException('Could not save section.');
+        }
+
+        try {
+            $entry = new Entry();
+            $entry->sectionId = $section->id;
+            $entry->typeId = $this->ownerEntryType->id;
+            $entry->title = 'New Site Draft Test Entry';
+            if (!$this->elements->saveElement($entry)) {
+                throw new RuntimeException('Could not save entry: ' . implode(', ', $entry->getFirstErrors()));
+            }
+            $siteIds = fn(int $id, bool $drafts) => Entry::find()
+                ->id($id)
+                ->drafts($drafts ? true : null)
+                ->provisionalDrafts($drafts ? true : null)
+                ->site('*')
+                ->status(null)
+                ->select('elements_sites.siteId')
+                ->column();
+            self::assertSame([$primarySiteId], $siteIds($entry->id, false));
+
+            // Add the entry to another site via a provisional draft, like the element editor's autosave does
+            $draft = Craft::$app->getDrafts()->createDraft($entry, $admin->id, provisional: true);
+            $draft->setEnabledForSite([$primarySiteId => true, 1000 => true]);
+            if (!$this->elements->saveElement($draft)) {
+                throw new RuntimeException('Could not save draft: ' . implode(', ', $draft->getFirstErrors()));
+            }
+            self::assertEqualsCanonicalizing([$primarySiteId, 1000], $siteIds($draft->id, true));
+
+            // The draft's creator can remove it from the new site again, without affecting the canonical entry
+            $newSiteDraft = Entry::find()->id($draft->id)->drafts()->provisionalDrafts()->siteId(1000)->status(null)->one();
+            self::assertNotNull($newSiteDraft);
+            self::assertTrue($this->elements->canDeleteForSite($newSiteDraft, $admin));
+            self::assertSame($newSiteDraft->id, $newSiteDraft->getCanonical()->id, 'The canonical entry shouldn’t exist in the new site.');
+            $this->elements->deleteElementForSite($newSiteDraft);
+            self::assertSame([$primarySiteId], $siteIds($draft->id, true));
+            self::assertSame([$primarySiteId], $siteIds($entry->id, false));
+        } finally {
+            Craft::$app->getEntries()->deleteSection($section);
+        }
+    }
+
     private function _createOwnerEntry(): Entry
     {
         $owner = new Entry();

@@ -6597,7 +6597,7 @@ JS,
      * Returns whether the sidebar should include a Sites pane, rather than a Status pane.
      *
      * The Sites pane lists the sites the element is saved in, lets authors add the element to other sites,
-     * and includes status toggles for each site, if the element type has statuses.
+     * and includes status toggles for each site, if the element type has per-site statuses.
      *
      * By default, it’s shown for localized elements that support multiple sites, unless the element type has
      * statuses and provides its own [[statusFieldHtml()]] implementation.
@@ -6670,7 +6670,7 @@ JS,
             return '';
         }
 
-        // Include status toggles for each site the user can edit, if the element type has statuses
+        // Include status toggles for each site, if the element type has per-site statuses
         $withStatuses = static::hasStatuses() && $this->showStatusField();
         $siteStatuses = $withStatuses ? ElementHelper::siteStatusesForElement($this, true) : [];
 

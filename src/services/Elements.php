@@ -2725,6 +2725,7 @@ class Elements extends Component
             ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
             ->status(null)
             ->drafts(null)
+            ->provisionalDrafts(null)
             ->siteId(['not', $firstElement->siteId])
             ->unique()
             ->select(['elements.id'])
@@ -2768,6 +2769,7 @@ class Elements extends Component
                     ->id($multiSiteElementIds)
                     ->status(null)
                     ->drafts(null)
+                    ->provisionalDrafts(null)
                     ->site('*')
                     ->unique(),
                 true,

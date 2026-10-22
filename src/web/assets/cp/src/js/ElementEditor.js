@@ -939,7 +939,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
     },
 
-    _createRemoveSiteBtn: function ($field, site) {
+    _createRemoveSiteBtn: function ($field, site, saved = false) {
       const $btn = $('<button/>', {
         type: 'button',
         class: 'clear-btn remove-site-btn',
@@ -948,8 +948,39 @@ Craft.ElementEditor = Garnish.Base.extend(
       }).appendTo($field.children('.heading'));
 
       this.addListener($btn, 'click', () => {
-        this._removeNewSite($field, site);
+        if (saved) {
+          this._deleteNewSite($field, site, $btn);
+        } else {
+          this._removeNewSite($field, site);
+        }
       });
+    },
+
+    _deleteNewSite: async function ($field, site, $btn) {
+      $btn.prop('disabled', true);
+
+      try {
+        // Make sure any pending changes have been saved first
+        await this.checkForm();
+
+        const data = {
+          elementId: this.settings.canonicalId,
+          siteId: site.id,
+        };
+        if (this.settings.draftId && !this.settings.isProvisionalDraft) {
+          data.draftId = this.settings.draftId;
+        }
+        await Craft.sendActionRequest('POST', 'elements/delete-for-site', {
+          data,
+        });
+      } catch (e) {
+        $btn.prop('disabled', false);
+        Craft.cp.displayError(e?.response?.data?.message);
+        return;
+      }
+
+      Craft.cp.hideSiteCrumbMenuItem(site.id);
+      this._removeNewSite($field, site);
     },
 
     _removeNewSite: function ($field, site) {
@@ -1847,6 +1878,14 @@ Craft.ElementEditor = Garnish.Base.extend(
             : null;
           if (site && $field?.length) {
             this._linkSiteName($field, site);
+
+            // Let the user remove the element from the site again
+            if (
+              response.data.canDeleteForSite &&
+              !$field.find('.remove-site-btn').length
+            ) {
+              this._createRemoveSiteBtn($field, site, true);
+            }
           }
         });
         this.newSiteIds = null;
