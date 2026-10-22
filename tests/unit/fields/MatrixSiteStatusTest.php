@@ -337,7 +337,9 @@ class MatrixSiteStatusTest extends TestCase
         Craft::$app->set('fields', new Fields());
         Craft::$app->set('entries', new Entries());
         $block = $this->block($this->reload($owner, $disabledSiteId));
-        self::assertSame($method, $block->getField()->propagationMethod);
+        $field = $block->getField();
+        self::assertInstanceOf(Matrix::class, $field);
+        self::assertSame($method, $field->propagationMethod);
         self::assertCount(1, $block->getSupportedSites());
 
         $job = new ApplyNewPropagationMethod([
