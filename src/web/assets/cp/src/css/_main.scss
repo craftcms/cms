@@ -6554,6 +6554,17 @@ $min2ColWidth: 400px;
     padding-block-end: 12px;
   }
 
+  // Keep undo buttons close to the status toggles beside them
+  &.lightswitch-field:has(> .heading > .remove-site-btn) {
+    & > .heading {
+      padding-inline-end: 0;
+    }
+
+    & > .input {
+      padding-inline-start: var(--xs);
+    }
+  }
+
   // Disclosure toggle for elements that are saved to multiple sites
   // (with the chevron in the same column as the current site’s checkmark)
   & > .heading > .element-sites-toggle {
