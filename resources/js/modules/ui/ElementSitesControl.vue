@@ -7,7 +7,7 @@
   import {actionClient} from '@craftcms/ui';
   import {t} from '@craftcms/ui/utilities/translate';
   import {router} from '@inertiajs/vue3';
-  import {computed, ref, useId} from 'vue';
+  import {computed, ref, useId, useTemplateRef} from 'vue';
   import {destroyForSite} from '@/actions/CraftCms/Cms/Http/Controllers/Elements/DeleteElementController';
   import {useSlideout} from '@/common/slideouts/useSlideout';
   import type {UiControlPayload} from './types';
@@ -51,6 +51,7 @@
   const slideout = useSlideout();
   const idPrefix = `element-sites-${useId()}`;
   const expanded = ref(false);
+  const root = useTemplateRef<HTMLElement>('root');
   const deleting = ref<number | null>(null);
 
   const statuses = computed<Statuses>(() =>
@@ -76,6 +77,16 @@
 
   // If the element is saved to 2+ other sites, list them within a disclosure
   const collapsible = computed(() => otherSites.value.length > 1);
+  // Like craft-disclosure's invoker: down while open, toward the end of the line while closed
+  const toggleIcon = computed(() => {
+    if (expanded.value) {
+      return 'chevron-down';
+    }
+
+    return root.value && getComputedStyle(root.value).direction === 'rtl'
+      ? 'chevron-left'
+      : 'chevron-right';
+  });
   const toggleLabel = computed(() =>
     t('{num, number} other {num, plural, =1{site} other{sites}}', {
       num: otherSites.value.length,
@@ -199,21 +210,29 @@
 
 <template>
   <craft-pane class="element-sites-pane" appearance="outline" padding="sm">
-    <div class="element-sites" :aria-invalid="invalid ? 'true' : undefined">
+    <div
+      ref="root"
+      class="element-sites"
+      :aria-invalid="invalid ? 'true' : undefined"
+    >
       <template v-for="site in orderedSites" :key="site.id">
-        <button
+        <div
           v-if="collapsible && site.id === otherSites[0]?.id"
-          type="button"
           class="element-sites__toggle"
-          :aria-expanded="expanded ? 'true' : 'false'"
-          :aria-controls="otherSites.map(rowId).join(' ')"
-          @click="expanded = !expanded"
         >
-          <craft-icon
-            :name="expanded ? 'chevron-down' : 'chevron-right'"
-          ></craft-icon>
-          {{ toggleLabel }}
-        </button>
+          <craft-button
+            type="button"
+            variant="plain"
+            size="small"
+            flush="inline"
+            :icon="toggleIcon"
+            icon-position="suffix"
+            :aria-expanded="expanded ? 'true' : 'false'"
+            :aria-controls="otherSites.map(rowId).join(' ')"
+            @click="expanded = !expanded"
+            >{{ toggleLabel }}</craft-button
+          >
+        </div>
         <div
           v-show="site.current || !collapsible || expanded"
           :id="rowId(site)"
@@ -314,10 +333,11 @@
   }
 
   .element-sites {
+    --element-sites-indent: 1.25rem;
+
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-xs, 0.25rem);
-    padding-inline-end: var(--c-spacing-xs, 0.25rem);
   }
 
   .element-sites__site {
@@ -325,12 +345,13 @@
     align-items: center;
     gap: var(--c-spacing-xs, 0.25rem);
     min-block-size: 1.75rem;
+    padding-inline-end: var(--c-spacing-xs, 0.25rem);
   }
 
   .element-sites__name {
     position: relative;
     flex-grow: 1;
-    padding-inline-start: 1.25rem;
+    padding-inline-start: var(--element-sites-indent);
   }
 
   .element-sites__check {
@@ -343,24 +364,31 @@
 
   .element-sites__toggle {
     display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    min-block-size: 1.75rem;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-    text-align: start;
-  }
-
-  .element-sites__toggle craft-icon {
-    inline-size: 1rem;
-    font-size: 0.625rem;
+    padding-inline-start: var(--element-sites-indent);
   }
 
   .element-sites__add {
+    --c-input-fill: transparent;
+    --c-input-border-color: transparent;
+    --c-input-shadow: none;
+    --c-focus-outline-offset: calc(var(--c-focus-outline-width) * -1);
+
     margin-block-start: var(--c-spacing-xs, 0.25rem);
+  }
+
+  .element-sites__add select {
+    padding-inline-start: calc(
+      var(--element-sites-indent) - var(--c-input-border-width, 1px)
+    );
+  }
+
+  @media (hover: hover) {
+    .element-sites__add:hover {
+      --c-input-fill: color-mix(
+        in oklab,
+        var(--c-color-neutral-fill-quiet),
+        var(--c-color-mix-hover)
+      );
+    }
   }
 </style>
