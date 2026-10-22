@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Assets;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
 use CraftCms\Cms\Asset\PreviewHandlers\Image as ImagePreview;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -38,7 +37,7 @@ readonly class PreviewController
             'height' => ['required', 'integer'],
         ]);
 
-        $asset = Asset::findOne($request->integer('assetId'));
+        $asset = app(Assets::class)->getAssetById($request->integer('assetId'));
 
         abort_if(! $asset, 400, 'Invalid asset ID: '.$request->integer('assetId'));
 
@@ -59,8 +58,7 @@ readonly class PreviewController
         $assetId = $request->input('assetId');
         $requestId = $request->input('requestId');
 
-        /** @var Asset|null $asset */
-        $asset = Asset::find()->id($assetId)->one();
+        $asset = app(Assets::class)->getAssetById((int) $assetId);
 
         if (! $asset) {
             return $this->asFailure(t('Asset not found with that id'));

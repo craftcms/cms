@@ -136,6 +136,7 @@
 - Fixed a bug where double-clicking a Matrix block’s header to expand or collapse it could also select text. ([#20045](https://github.com/craftcms/cms/issues/20045))
 - Fixed a bug where Matrix fields in cards view didn’t show a dropped entry in its new position until the reorder had saved, and drop placeholders had no gap next to the neighboring card. ([#20046](https://github.com/craftcms/cms/issues/20046))
 - Fixed a bug where typing a negative amount over a selected negative amount in a money input dropped the minus sign. ([#20064](https://github.com/craftcms/cms/pull/20064))
+- Fixed a bug where Markdown inputs without a toolbar had less padding above and below their text than beside it.
 
 ### Content Management
 
@@ -161,9 +162,16 @@
 - Table columns with invalid settings are now flagged in the Table field’s settings, and link setting validation errors in Link, Markdown, and Table fields now name the setting. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Link cells in Table fields now truncate long URLs, so columns keep their configured widths.
 - Double-clicking an admin table row now opens its link’s slideout, if it has one. ([#19957](https://github.com/craftcms/cms/pull/19957))
+- Element edit pages now have a “Sites” pane in their details sidebars on multi-site installs, in place of the “Status” pane. It lists the sites the element is saved to (that the user can edit), with status toggles and links to the element in each site, and lets authors add the element to other sites. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Element editor slideouts can now be switched to other sites, by clicking on a site name within the “Sites” pane. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Sites that are added to elements within the “Sites” pane can now be removed again. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Assets are now initially saved to the site they were uploaded from. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Assets in volumes set to let each asset choose which sites it should be saved to can now be deleted for individual sites, as long as they exist in another site. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Deleting an element for the only site it exists in now soft-deletes it, unless it’s a draft or nested element. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Fixed a bug where typing in a newly added nested entry’s fields could replace the edit form with a “UI array path … must be a row index” error once the entry autosaved.
 - Fixed a bug where changing a field back to the value it had when the edit page loaded wasn’t autosaved, so field layout elements shown or hidden by conditions based on it didn’t update.
 - Fixed a bug where Table fields’ Date and Time cells, and their default row values, shifted by the site’s UTC offset each time they were saved from the control panel.
+- Fixed a bug where going from one element edit page to another, such as switching sites, opened the next page’s “Revisions” details panel rather than the one that was open.
 
 ### Accessibility
 
@@ -179,6 +187,10 @@
 - Pressing <kbd>Shift</kbd> + <kbd>Return</kbd> in an editable table’s first row now adds a row above it, if the table allows new rows. ([#20025](https://github.com/craftcms/cms/pull/20025))
 - Fixed an accessibility issue where buttons were still announced as “Loading” after they finished loading, and lost their accessible name if loading took more than five seconds. ([#19975](https://github.com/craftcms/cms/pull/19975))
 - Fixed an accessibility issue where pressing <kbd>Return</kbd> on a dialog’s close button could reopen the dialog, such as the “Check your email” dialog on the Reset Password screen. ([#20049](https://github.com/craftcms/cms/pull/20049))
+- `craft-spinner` now has a `label` property, which describes what is loading to screen readers. Slotted text still replaces it.
+- `craft-field` now has an `instructions-sr-only` attribute, and UI fields and the `Field` view component have `instructionsSrOnly()`, which visually hide instructions while keeping them in the input’s accessible description.
+- Fixed an accessibility issue where spinners in Content Block and Matrix inline-block fields weren’t announced as loading.
+- Fixed an accessibility issue where pressing Escape in a popover inside an element details panel also closed the panel.
 - Fixed a bug where single-select comboboxes had no visible focus ring. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes’ combobox element had no accessible name in Chromium. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed an accessibility issue where the environment variable and alias hints below the site group name and installer Base URL inputs weren’t announced by screen readers. ([#20050](https://github.com/craftcms/cms/pull/20050))
@@ -218,6 +230,15 @@
 - Card view designers’ previews now include a sample chip above the card, which reflects the owner’s color and whether its cards have thumbnails. ([#20003](https://github.com/craftcms/cms/pull/20003))
 - Field layouts’ Generated Fields setting is now in the field layout designer’s Content tab. ([#20003](https://github.com/craftcms/cms/pull/20003))
 - Field layout element and dashboard widget width pickers now preview the new width on hover. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
+- Volumes now have a “Propagation Method” setting, which can be set to “Let each asset choose which sites it should be saved to”. New volumes default to this, as do existing volumes on single-site installs. Existing volumes on multi-site installs continue to save assets to all sites. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for login, password reset, and two-step verification requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
+- GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, and user groups. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added the `sites`, `site`, `sections`, `section`, `entryTypes`, `entryType`, `volumes`, `volume`, `userGroups`, and `userGroup` GraphQL queries, which are available when the schema includes the corresponding components. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Elements now have `site` fields in GraphQL, when the schema includes the “Query for sites” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Entries now have `section` and `type` fields in GraphQL, when the schema includes the “Query for sections” and “Query for entry types” components. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Assets now have `volume` fields in GraphQL, when the schema includes the “Query for volumes” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Users now have `groups` fields in GraphQL, when the schema includes the “Query for user groups” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Fixed a bug where impersonation URLs, including those generated by `craft:users:impersonate`, redirected to the login page rather than signing in as the user.
 
 ### Extensibility
@@ -250,6 +271,8 @@
 - Added the `cp-table--flush` class, which pads the outer edges of each table row by `--cp-container-padding`. ([#19906](https://github.com/craftcms/cms/pull/19906), [#19936](https://github.com/craftcms/cms/pull/19936))
 - Added the `appearance` prop to the `AdminTable` Vue component, and `CraftCms\Cms\Ui\Nodes\Table::appearance()`, which set how a table meets its container: `plain`, `flush`, or `raised`. The values are available as `TableAppearance` from `@craftcms/cp` and `CraftCms\Cms\Cp\Enums\TableAppearance`. ([#19936](https://github.com/craftcms/cms/pull/19936))
 - Added the `max-height` attribute to `<craft-markdown-field>`, which sets how tall the editor grows before it scrolls. ([#19923](https://github.com/craftcms/cms/pull/19923))
+- Added the `--markdown-field-font-size` CSS custom property, which sets the size of `<craft-markdown-field>`’s text.
+- `<craft-markdown-field>` now reflects its `show-toolbar` property to the attribute.
 - Added the `separated` attribute to `<craft-field-group>`, and `CraftCms\Cms\Cp\Components\FieldGroup::separated()`, which widen the gap between columns and draw a hairline between fields that share a row. ([#20022](https://github.com/craftcms/cms/issues/20022), [#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `outline-fill` appearance to `<craft-pane>`, and `CraftCms\Cms\Cp\Enums\PaneAppearance::OutlineFill`. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `appearance` and `size` properties to `<craft-disclosure>`. `appearance="plain"` drops the content’s hairline and indent, and `size` sizes the default toggle. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -330,9 +353,39 @@
 - Added `CraftCms\Cms\Ui\Nodes\Tab::icon()` and `sidebar()`, and `$icon` and `$sidebar` arguments to `CraftCms\Cms\Ui\Ui::addTab()`. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Added `CraftCms\Cms\Cp\Components\Tab::icon()`. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Added a `prefix` slot to `<craft-tab>`. ([#20005](https://github.com/craftcms/cms/pull/20005))
+- The `capitalize`, `lower`, `title`, and `upper` Twig filters now have `language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- Added the `craft:project-config:check` command, which checks project config schema compatibility without applying changes.
+- Added the `{% render %}` Twig tag. `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- Added `CraftCms\Cms\Component\Contracts\Renderable`. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- Added `CraftCms\Cms\Support\Template::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- `Illuminate\Support\Collection` now has a `render()` macro. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- Addresses now support drafts.
+- Element fixtures no longer create revisions by default. Set their `createRevisions` property to `true` to retain the previous behavior. ([#19626](https://github.com/craftcms/cms/pull/19626))
+- Added `CraftCms\Cms\Element\Element::showSitesField()`, `sitesFieldHtml()`, and `sitesNodes()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Added `CraftCms\Cms\Ui\Controls\ElementSites`. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Added `CraftCms\Cms\Field\Field::$tip` and `$warning`.
+- Added `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::defaultTip()` and `defaultWarning()`.
+- Nested elements now have a `$touchOwnersOnSave` property.
+- Added `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::mustHaveField()` and `mustHaveOwner()`.
+- Added `CraftCms\Cms\Gql\Queries\Settings`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `CraftCms\Cms\Gql\Types\EntryType`, `Section`, `Site`, `UserGroup`, and `Volume`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `CraftCms\Cms\Translation\Locale::languageId()`.
+- Added `CraftCms\Cms\Asset\Data\Volume::$propagationMethod`. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Added `CraftCms\Cms\Asset\Assets::findAcrossSites()`. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- `CraftCms\Cms\Asset\Assets::getAssetById()` now returns the asset in another site if it doesn’t exist in the requested site, when no site ID is passed. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- `CraftCms\Cms\Element\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- `CraftCms\Cms\Support\Str::lower()`, `::title()`, and `::upper()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- `elements/save-draft` action responses now include a `canDeleteForSite` key. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
 
 ### System
 
+- MySQL database backups and restores now carry over SSL/TLS settings from the system’s MySQL option files (e.g. `ssl-ca` or `disable-ssl-verify-server-cert`), if the database connection doesn’t have any `PDO::MYSQL_ATTR_SSL_*` attributes set. ([#19366](https://github.com/craftcms/cms/pull/19366))
+- MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
+- Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
+- Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
+- Updated Twig to 3.30.
+- Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 - Fixed a bug where element query date params, such as `postDate`, `before`, `after`, `dateCreated`, and Date field params, as well as date condition rules, were off by the system time zone’s UTC offset. ([#19963](https://github.com/craftcms/cms/pull/19963))
 - Fixed a bug where many dates Craft stores, such as elements’ soft-delete dates and sites’, plugins’, relations’, and activity events’ dates, were stored in the system time zone rather than UTC. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Fixed a bug where revisions were created for elements that hadn’t changed since their last revision, including nested entries that hadn’t changed between their owner’s revisions, if the system time zone wasn’t UTC. ([#20053](https://github.com/craftcms/cms/pull/20053))

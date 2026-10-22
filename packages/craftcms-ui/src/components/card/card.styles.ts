@@ -235,6 +235,7 @@ export default css`
 
   .card__header__suffix {
     display: flex;
+    align-items: center;
     gap: var(--c-spacing-md);
   }
 

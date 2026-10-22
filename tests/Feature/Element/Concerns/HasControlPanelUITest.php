@@ -13,6 +13,10 @@ use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
@@ -299,6 +303,40 @@ describe('getSidebarHtml', function () {
 
         expect($eventTriggered)->toBeTrue();
         expect((string) $html)->toBe($customHtml);
+    });
+
+    test('shows a Status pane on single-site installs', function () {
+        $html = (string) $this->entry->getSidebarHtml(false);
+
+        expect($html)->not->toContain('element-sites-pane')
+            ->toContain('name="enabled"');
+    });
+
+    test('shows a Sites pane with per-site statuses for multi-site entries', function () {
+        $section = $this->entry->getSection();
+        $sites = Site::factory()->count(2)->create();
+        Sites::refreshSites();
+
+        foreach ($sites as $site) {
+            SectionSiteSettings::factory()->create([
+                'sectionId' => $section->id,
+                'siteId' => $site->id,
+                'hasUrls' => true,
+            ]);
+        }
+        Sections::refreshSections();
+
+        $entry = entryQuery()->id($this->entry->id)->one();
+        $html = (string) $entry->getSidebarHtml(false);
+
+        expect($html)->toContain('element-sites-pane')
+            ->toContain("site-{$entry->siteId}-field sel")
+            ->toContain("name=\"enabledForSite[{$entry->siteId}]\"")
+            ->toContain("name=\"enabledForSite[{$sites[1]->id}]\"")
+            ->toContain('>2 other sites</button>')
+            ->toContain("site-{$sites[0]->id}-field lightswitch-field hidden")
+            ->toContain("site={$sites[0]->handle}")
+            ->toContain('<span class="sr-only">, selected</span>');
     });
 
     test('event can append to existing html', function () {

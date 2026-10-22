@@ -10,7 +10,6 @@ namespace craft\queue\jobs;
 use Craft;
 use craft\imagetransforms\ImageTransformer;
 use craft\queue\BaseJob;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Facades\I18N;
 use Throwable;
 
@@ -46,7 +45,7 @@ class GeneratePendingTransforms extends BaseJob
             if ($index && !$index->fileExists && !$index->inProgress) {
                 // Don't let an exception stop us from processing the rest
                 try {
-                    $asset = Asset::findOne(['id' => $index->assetId]);
+                    $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
                     if ($asset) {
                         $transformer->getTransformUrl($asset, $index->getTransform(), true);
                     }

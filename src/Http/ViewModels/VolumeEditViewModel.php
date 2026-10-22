@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -101,6 +102,13 @@ class VolumeEditViewModel extends ViewModel
             $ui->add(
                 Separator::make('translation-separator'),
                 Field::make(
+                    t('Propagation Method'),
+                    Choice::make('propagationMethod')->options([
+                        ['label' => t('Save assets to all sites'), 'value' => PropagationMethod::All->value],
+                        ['label' => t('Let each asset choose which sites it should be saved to'), 'value' => PropagationMethod::Custom->value],
+                    ]),
+                )->instructions(t('Which sites should assets in this volume be saved to?')),
+                Field::make(
                     t('{name} Translation Method', ['name' => t('Title')]),
                     Choice::make('titleTranslationMethod')->options(TranslationMethod::asOptions())->reactive(),
                 )->instructions(t('How should {name} values be translated?', ['name' => t('Title')])),
@@ -191,6 +199,7 @@ class VolumeEditViewModel extends ViewModel
             'titleTranslationKeyFormat' => $this->volume->titleTranslationKeyFormat ?? '',
             'altTranslationMethod' => $this->volume->altTranslationMethod->value,
             'altTranslationKeyFormat' => $this->volume->altTranslationKeyFormat ?? '',
+            'propagationMethod' => $this->volume->propagationMethod->value,
             'fieldLayout' => [
                 'id' => $fieldLayout->id,
                 'uid' => $fieldLayout->uid,

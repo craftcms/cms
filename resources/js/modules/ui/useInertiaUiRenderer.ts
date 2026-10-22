@@ -18,6 +18,9 @@ export interface UiRendererInstance {
   mutation(includeGroups?: string[][]): UiPayload['values'];
   resetValues(): void;
   setValue(path: string[], value: UiValue, kind?: UiChangeKind): void;
+  setValues(
+    changes: {path: string[]; value: UiValue; refreshable?: boolean}[]
+  ): void;
 }
 
 interface Options<T extends object, Key extends Extract<keyof T, string>> {

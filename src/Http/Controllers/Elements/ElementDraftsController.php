@@ -205,6 +205,7 @@ class ElementDraftsController
             'modifiedAttributes' => $element->getModifiedAttributes(),
             'draftElementIds' => $draftElementIds,
             'draftElementUids' => $draftElementUids,
+            'canDeleteForSite' => Gate::check('deleteForSite', $element),
         ];
 
         if ($this->request->isCpRequest()) {

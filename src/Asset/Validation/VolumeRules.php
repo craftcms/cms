@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -62,6 +63,10 @@ class VolumeRules extends Ruleset
                 Rule::requiredIf(fn () => $this->subpathRequired()),
                 fn (string $attribute, mixed $value, Closure $fail) => $this->validateUniqueSubpath($attribute, $fail),
             ])],
+            'propagationMethod' => [
+                'required',
+                Rule::enum(PropagationMethod::class)->only([PropagationMethod::All, PropagationMethod::Custom]),
+            ],
         ];
 
         $tempAssetUploadTarget = Cms::config()->getTempAssetUploadDisk();

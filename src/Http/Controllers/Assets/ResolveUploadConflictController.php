@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetUploadHandler;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Query;
@@ -48,7 +47,7 @@ readonly class ResolveUploadConflictController
             abort_if(str_contains($targetFilename, '/') || str_contains($targetFilename, '\\'), 422, 'Invalid filename.');
             abort_unless(pathinfo($targetFilename, PATHINFO_EXTENSION) === $sourceAsset->getExtension(), 422, 'The filename must retain the original file extension.');
 
-            $assetToReplace = Asset::find()
+            $assetToReplace = $this->assets->findAcrossSites()
                 ->folderId($sourceAsset->folderId)
                 ->filename(Query::escapeParam($targetFilename))
                 ->one();

@@ -165,6 +165,7 @@
         <AssetUploadButton
           variant="primary"
           v-bind="uploadSource"
+          :site-id="page.props.siteId"
           :destination="uploadDestination"
           :drop-zone="dropZone"
         />

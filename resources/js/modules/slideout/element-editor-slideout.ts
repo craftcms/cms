@@ -259,6 +259,45 @@ export class ElementEditorSlideout extends CpScreenSlideout {
     super.reload();
   }
 
+  /**
+   * Reloads the slideout for the element in a different site.
+   */
+  async switchSite(siteId: number): Promise<void> {
+    if (siteId == this.settings!.siteId) {
+      return;
+    }
+
+    if (this.elementEditor) {
+      if (
+        this.elementEditor.settings.canCreateDrafts &&
+        this.elementEditor.enableAutosave
+      ) {
+        // Make sure any pending changes have been saved to the draft
+        await this.elementEditor.checkForm();
+      } else if (
+        this.isDirty() &&
+        !confirm(
+          Craft.t(
+            'app',
+            'Are you sure you want to switch sites? Any changes will be lost.'
+          )
+        )
+      ) {
+        return;
+      }
+    }
+
+    // Keep the sidebar open, so the site change is visible
+    if (this.showingSidebar) {
+      this.once('load', () => {
+        this.showSidebar(false);
+      });
+    }
+
+    this.settings!.siteId = siteId;
+    this.reload();
+  }
+
   override async handleSubmit(ev: any): Promise<void> {
     if (ev.type !== 'submit' && this.elementEditor.settings.canCreateDrafts) {
       // Save the draft before fully saving; otherwise the tab error

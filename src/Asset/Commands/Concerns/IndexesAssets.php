@@ -106,7 +106,7 @@ trait IndexesAssets
             $this->components->task(
                 'Deleting the'.($totalMissingFiles > 1 ? ' '.$totalMissingFiles : '').' missing asset record'.Str::plural('record', $totalMissingFiles),
                 function () use ($assetIds) {
-                    $assets = Asset::find()->id($assetIds)->get();
+                    $assets = Asset::find()->id($assetIds)->site('*')->unique()->get();
 
                     foreach ($assets as $asset) {
                         app(AssetTransformers::class)->invalidate($asset);
