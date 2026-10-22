@@ -2822,16 +2822,6 @@ JS;
 
     /**
      * @inheritdoc
-     * @since 5.12.0
-     */
-    protected function showSitesField(): bool
-    {
-        // Use the Sites pane for multi-site entries
-        return count(ElementHelper::supportedSitesForElement($this, true)) > 1;
-    }
-
-    /**
-     * @inheritdoc
      */
     public function showStatusField(): bool
     {

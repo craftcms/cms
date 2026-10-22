@@ -183,6 +183,7 @@ return [
     'Are you sure you want to remove {name} verification?' => 'Are you sure you want to remove {name} verification?',
     'Are you sure you want to remove {plugin}?' => 'Are you sure you want to remove {plugin}?',
     'Are you sure you want to restart the job “{description}”? Any progress could be lost.' => 'Are you sure you want to restart the job “{description}”? Any progress could be lost.',
+    'Are you sure you want to switch sites? Any changes will be lost.' => 'Are you sure you want to switch sites? Any changes will be lost.',
     'Are you sure you want to transfer your license to this domain?' => 'Are you sure you want to transfer your license to this domain?',
     'Are you sure you want to undo the move?' => 'Are you sure you want to undo the move?',
     'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.' => 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.',

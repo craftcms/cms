@@ -320,6 +320,34 @@ class ElementsTest extends TestCase
             // The Status pane should still be available
             $statusFieldHtml = new ReflectionMethod(Entry::class, 'statusFieldHtml');
             self::assertStringContainsString('expand-status-btn', $statusFieldHtml->invoke($entry));
+
+            // Element types that customize the Status pane should keep it
+            $customEntry = new class() extends Entry {
+                protected function statusFieldHtml(): string
+                {
+                    return 'custom status pane';
+                }
+            };
+            $customEntry->id = $entry->id;
+            $customEntry->siteId = $entry->siteId;
+            $customEntry->sectionId = $entry->sectionId;
+            $customEntry->typeId = $entry->typeId;
+            self::assertFalse((new ReflectionMethod($customEntry, 'showSitesField'))->invoke($customEntry));
+            self::assertTrue((new ReflectionMethod($entry, 'showSitesField'))->invoke($entry));
+
+            // Only sites the user can edit should be listed
+            $user = User::find()->admin(false)->status(null)->one();
+            self::assertNotNull($user);
+            Craft::$app->getUserPermissions()->saveUserPermissions($user->id, [
+                sprintf('editsite:%s', Craft::$app->getSites()->getPrimarySite()->uid),
+            ]);
+            Craft::$app->getUser()->setIdentity($user);
+            Craft::$app->getSites()->refreshSites();
+            $html = $entry->getSidebarHtml(false);
+            self::assertStringContainsString('element-sites-pane', $html);
+            self::assertStringContainsString("enabledForSite[$primarySiteId]", $html);
+            self::assertStringNotContainsString('enabledForSite[1000]', $html);
+            self::assertStringNotContainsString('site-1000-field', $html);
         } finally {
             Craft::$app->getEntries()->deleteSection($section);
         }

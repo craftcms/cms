@@ -169,6 +169,16 @@ Craft.ElementEditor = Garnish.Base.extend(
         this._createAddlSiteField();
       }
 
+      // Within slideouts, switch the slideout to the clicked site
+      if ($sitesPane.length && this.slideout) {
+        $sitesPane.on('click', 'a[data-site-id]', (ev) => {
+          ev.preventDefault();
+          this.slideout.switchSite(
+            parseInt($(ev.currentTarget).data('site-id'))
+          );
+        });
+      }
+
       if (this.settings.canEditMultipleSites) {
         this.addListener(
           this.$expandSiteStatusesBtn,
@@ -923,7 +933,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         .first();
 
       if ($name.length) {
-        $name.replaceWith($('<a/>', {href: url, text: site.name}));
+        $name.replaceWith(
+          $('<a/>', {href: url, text: site.name, 'data-site-id': site.id})
+        );
       }
     },
 

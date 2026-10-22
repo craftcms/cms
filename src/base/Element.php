@@ -103,6 +103,7 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ReflectionClass;
+use ReflectionMethod;
 use Traversable;
 use Twig\Markup;
 use Twig\Sandbox\SecurityChecker;
@@ -6598,6 +6599,9 @@ JS,
      * The Sites pane lists the sites the element is saved in, lets authors add the element to other sites,
      * and includes status toggles for each site, if the element type has statuses.
      *
+     * By default, it’s shown for localized elements that support multiple sites, unless the element type has
+     * statuses and provides its own [[statusFieldHtml()]] implementation.
+     *
      * If this returns `true` but [[sitesFieldHtml()]] doesn’t return anything, the Status pane will be shown
      * instead, if the element type has statuses.
      *
@@ -6606,7 +6610,15 @@ JS,
      */
     protected function showSitesField(): bool
     {
-        return !static::hasStatuses();
+        // Element types that customize the Status pane should keep it
+        if (
+            static::hasStatuses() &&
+            (new ReflectionMethod($this, 'statusFieldHtml'))->getDeclaringClass()->getName() !== self::class
+        ) {
+            return false;
+        }
+
+        return static::isLocalized() && count(ElementHelper::supportedSitesForElement($this, true)) > 1;
     }
 
     /**
@@ -6639,8 +6651,12 @@ JS,
         }
 
         $supportedSites = Collection::make(ElementHelper::supportedSitesForElement($this, true));
-        $propSites = $supportedSites->filter(fn(array $site) => $site['propagate']);
         $allEditableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        // Only list the sites the user can edit
+        $propSites = $supportedSites->filter(fn(array $site) => (
+            $site['propagate'] &&
+            in_array($site['siteId'], $allEditableSiteIds)
+        ));
         $hasAddlEditableSites = $supportedSites
             ->contains(fn(array $site) => !$site['propagate'] && in_array($site['siteId'], $allEditableSiteIds));
 
@@ -6672,11 +6688,13 @@ JS,
         $siteField = fn(Site $site) => Html::tag('div', implode('', [
             Html::tag('div', Html::tag('label', implode('', [
                 Html::tag('span', (
-                    // Link to the element in the other sites the user can edit
-                    $cpEditUrl && $site->id !== $this->siteId && in_array($site->id, $allEditableSiteIds)
+                    // Link to the element in the other sites
+                    $cpEditUrl && $site->id !== $this->siteId
                         ? Html::a(Html::encode(Craft::t('site', $site->getName())), UrlHelper::urlWithParams($cpEditUrl, [
                             'site' => $site->handle,
-                        ]))
+                        ]), [
+                            'data' => ['site-id' => $site->id],
+                        ])
                         : Html::encode(Craft::t('site', $site->getName()))
                 ), [
                     'id' => "$idPrefix-$site->id-name",
@@ -6687,7 +6705,7 @@ JS,
             ])), [
                 'class' => 'heading',
             ]),
-            $withStatuses && in_array($site->id, $allEditableSiteIds)
+            $withStatuses
                 ? Html::tag('div', Cp::lightswitchHtml([
                     'id' => "$idPrefix-$site->id-status",
                     'name' => "enabledForSite[$site->id]",
@@ -6707,7 +6725,7 @@ JS,
                 'element-site-field',
                 "site-$site->id-field",
                 $site->id === $this->siteId ? 'sel' : null,
-                $withStatuses && in_array($site->id, $allEditableSiteIds) ? 'lightswitch-field' : null,
+                $withStatuses ? 'lightswitch-field' : null,
                 $collapsible && $site->id !== $this->siteId ? 'hidden' : null,
             ]),
         ]);
