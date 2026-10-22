@@ -135,7 +135,7 @@
 - Fixed a bug where element editors’ error summaries could disappear right after a failed save. ([#20044](https://github.com/craftcms/cms/issues/20044))
 - Fixed a bug where double-clicking a Matrix block’s header to expand or collapse it could also select text. ([#20045](https://github.com/craftcms/cms/issues/20045))
 - Fixed a bug where Matrix fields in cards view didn’t show a dropped entry in its new position until the reorder had saved, and drop placeholders had no gap next to the neighboring card. ([#20046](https://github.com/craftcms/cms/issues/20046))
-- Fixed a bug where typing a negative amount over a selected negative amount in a money input dropped the minus sign.
+- Fixed a bug where typing a negative amount over a selected negative amount in a money input dropped the minus sign. ([#20064](https://github.com/craftcms/cms/pull/20064))
 
 ### Content Management
 
