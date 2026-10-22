@@ -499,6 +499,8 @@
         variant="warning"
         icon="triangle-exclamation"
         class="mb-4"
+        rounded="none"
+        appearance="fill"
       >
         {{ payload.mergeNotice }}
       </craft-callout>
