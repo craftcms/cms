@@ -3,7 +3,8 @@
 ### Content Management
 
 - Addresses within Addresses fields can now be edited from drafts of their owner elements, by users who can save the drafts but not the canonical owner elements. ([#19881](https://github.com/craftcms/cms/issues/19881))
-- Multi-site entries’ edit pages now have a “Sites” pane in their sidebars, in place of the “Status” pane, which lists the sites the entry is saved to, with status toggles and links to the entry in each site, and lets authors add the entry to other sites. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Element edit pages now have a “Sites” pane in their sidebars on multi-site installs, in place of the “Status” pane, which lists the sites the element is saved to (that the user can edit), with status toggles and links to the element in each site, and lets authors add the element to other sites. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Element editor slideouts can now be switched to other sites, by clicking on a site name within the “Sites” pane. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Sites that are added to elements within the “Sites” pane can now be removed again before the element is saved, for elements that don’t support drafts. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Element edit pages’ sidebar pane headings now line up with the labels within the panes. ([#20061](https://github.com/craftcms/cms/pull/20061))
 
