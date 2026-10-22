@@ -111,13 +111,26 @@ class Assets extends Component
     /**
      * Returns a file by its ID.
      *
+     * If no site ID is passed, the asset will be returned in the current site if it exists there,
+     * or in another site it exists in otherwise (e.g. for volumes with custom propagation).
+     *
      * @param int $assetId
      * @param int|null $siteId
      * @return Asset|null
      */
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
     {
-        return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
+        if ($siteId !== null) {
+            return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
+        }
+
+        /** @var Asset|null */
+        return Asset::find()
+            ->id($assetId)
+            ->site('*')
+            ->preferSites([Craft::$app->getSites()->getCurrentSite()->id])
+            ->unique()
+            ->one();
     }
 
     /**
@@ -335,7 +348,7 @@ class Assets extends Component
         }
 
         // Delete the elements
-        $assetQuery = Asset::find()->folderId($allFolderIds);
+        $assetQuery = Asset::find()->folderId($allFolderIds)->site('*')->unique();
         $elementService = Craft::$app->getElements();
 
         foreach (Db::each($assetQuery) as $asset) {
