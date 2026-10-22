@@ -2,6 +2,17 @@ import type {Meta, StoryObj} from '@storybook/vue3-vite';
 
 import './markdown-field';
 
+/** The default toolbar of Markdown fields, without assets, which need Craft's asset modal. */
+const toolbarButtons = [
+  'bold',
+  'italic',
+  'code',
+  'unordered-list',
+  'ordered-list',
+  'link',
+  'preview',
+];
+
 const text =
   'The first lighthouse on the coast was built in 1790, after a series of **shipwrecks**.';
 
@@ -20,12 +31,13 @@ type Story = StoryObj;
 /** The editor with its toolbar, as Markdown fields show it by default. */
 export const Default: Story = {
   render: () => ({
-    setup: () => ({text}),
+    setup: () => ({text, toolbarButtons}),
     template: `
       <craft-markdown-field
         label="Body"
         rows="4"
         show-toolbar
+        :toolbar-buttons="toolbarButtons"
       >{{ text }}</craft-markdown-field>
     `,
   }),
