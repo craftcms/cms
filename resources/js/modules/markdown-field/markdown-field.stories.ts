@@ -2,8 +2,11 @@ import type {Meta, StoryObj} from '@storybook/vue3-vite';
 
 import './markdown-field';
 
-/** The default toolbar of Markdown fields, without assets, which need Craft's asset modal. */
-const toolbarButtons = [
+/**
+ * The default toolbar of Markdown fields, without assets, which need Craft's
+ * asset modal. As JSON, since Vue sets it as the `toolbar-buttons` attribute.
+ */
+const toolbarButtons = JSON.stringify([
   'bold',
   'italic',
   'code',
@@ -11,7 +14,7 @@ const toolbarButtons = [
   'ordered-list',
   'link',
   'preview',
-];
+]);
 
 const text =
   'The first lighthouse on the coast was built in 1790, after a series of **shipwrecks**.';
