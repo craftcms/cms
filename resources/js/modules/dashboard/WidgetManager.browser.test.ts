@@ -113,7 +113,7 @@ it('names each widget’s reorder button, column picker and delete button after 
     picker
       .shadowRoot!.querySelector('[role="slider"]')!
       .getAttribute('aria-label')
-  ).toBe('Number of columns, Updates');
+  ).toBe('Number of columns Updates');
   await expect
     .element(page.getByRole('button', {name: 'Delete Updates', exact: true}))
     .toBeInTheDocument();
