@@ -180,6 +180,8 @@ export default class CraftInputMoney extends CraftInput {
 
     if (
       event.key !== '-' ||
+      input.readOnly ||
+      input.disabled ||
       event.ctrlKey ||
       event.metaKey ||
       event.altKey ||
