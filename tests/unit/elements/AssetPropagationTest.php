@@ -218,9 +218,12 @@ class AssetPropagationTest extends TestCase
         $sitesFieldHtml = new ReflectionMethod(Asset::class, 'sitesFieldHtml');
         Craft::$app->getUser()->setIdentity(User::findOne(1));
 
-        // Assets in volumes that propagate to all sites don't need it
-        $allAsset = $this->createAsset(1000);
-        self::assertSame('', $sitesFieldHtml->invoke($allAsset));
+        // Assets in volumes that propagate to all sites should list all of the sites
+        $allAsset = Craft::$app->getAssets()->getAssetById($this->createAsset(1000)->id, 1000);
+        $html = $sitesFieldHtml->invoke($allAsset);
+        self::assertStringContainsString('element-sites-pane', $html);
+        self::assertStringContainsString('site-1001-field', $html);
+        self::assertStringNotContainsString('lightswitch', $html);
 
         // Assets that can be added to other sites should list the sites they're saved in
         $this->volume->propagationMethod = PropagationMethod::Custom;

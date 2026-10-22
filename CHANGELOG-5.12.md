@@ -37,7 +37,6 @@
 
 - Addresses now support drafts.
 - Element fixtures no longer create revisions by default. Set their `createRevisions` property to `true` to retain the previous behavior. ([#19626](https://github.com/craftcms/cms/pull/19626))
-- Added `craft\base\Element::hasCustomPropagation()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Added `craft\base\Element::showSitesField()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Added `craft\base\Element::sitesFieldHtml()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Added `craft\base\FieldTrait::$tip`.
