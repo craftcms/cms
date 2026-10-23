@@ -533,6 +533,31 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     --c-input-height: var(--c-size-control-sm);
   }
 
+  /*
+    Color cells act as their text field, except for the swatch: the field loses
+    its border and padding so its value follows the swatch, and the cell draws
+    the field's focus ring. The swatch keeps its own pointer and focus ring.
+  */
+  td:has(craft-input-color) {
+    cursor: text;
+
+    craft-input-color {
+      --c-input-border-width: 0px;
+      --c-input-radius: 0px;
+      --c-input-shadow: none;
+      --c-input-spacing-inline: var(--c-spacing-xs);
+    }
+
+    craft-input-color > input[slot='input'] {
+      --c-focus-outline-style: none;
+    }
+
+    &:has(craft-input-color > input[slot='input']:focus-visible) {
+      outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+      outline-offset: calc(var(--c-focus-outline-width) * -1);
+    }
+  }
+
   td.select-cell {
     padding-inline: var(--_input-padding-inline);
   }
