@@ -100,6 +100,7 @@
 - Side-by-side fields now have a wider gap between them. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Combobox clear buttons no longer have a background color until they’re hovered. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Long tooltips now wrap at a readable width. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Large thumbnails in relational fields, such as Assets fields with the “Large Thumbnails” view mode, now have rounded corners, matching card thumbnails.
 - Fixed a bug where Language and Formatting Locale options’ hints were shown in the current language, rather than in each option’s own language.
 - Fixed a bug where control panel pages without a title had extra space above their content. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where edit pages for elements without a title, such as nested entries whose entry type has no Title field, had a blank page title. They’re now titled “Untitled {type}”. ([#20008](https://github.com/craftcms/cms/pull/20008))

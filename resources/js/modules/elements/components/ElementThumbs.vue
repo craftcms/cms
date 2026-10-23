@@ -437,6 +437,7 @@
   // 120px matches the cards view (and Craft 5's thumbnail size).
   .thumb-img :deep(craft-thumbnail) {
     --c-thumbnail-size: 120px;
+    --c-thumbnail-image-radius: var(--c-radius-md);
   }
 
   // Non-image thumbs (folder/file-kind SVGs) render at a fixed small size; scale
