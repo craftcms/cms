@@ -1,7 +1,15 @@
-import {Base, Modal, Select} from '@craftcms/garnish';
+import {Base, Modal} from '@craftcms/garnish';
 
 /** A `craft-button`, whose `disabled` and `loading` states are properties. */
 type SelectButton = HTMLElement & {disabled: boolean; loading: boolean};
+
+/** A `craft-radio-group`; its `modelValue` is the chosen section's ID. */
+type SectionGroup = HTMLElement & {modelValue: string | undefined};
+
+interface MoveTargetSection {
+  id: number;
+  label: string;
+}
 
 declare const Craft: any;
 
@@ -37,9 +45,8 @@ export class EntryMover extends Base {
   elementIndex: LegacyElementIndex | null = null;
 
   #abortController: AbortController | null = null;
-  #sectionsList: HTMLElement | null = null;
+  #sectionsList: SectionGroup | null = null;
   #selectBtn: SelectButton | null = null;
-  #sectionSelect: Select | null = null;
 
   constructor(
     entryIds?: Array<number | string>,
@@ -95,9 +102,15 @@ export class EntryMover extends Base {
     listContainer.className = 'entry-mover-modal--list';
     body.append(listContainer);
 
-    this.#sectionsList = document.createElement('fieldset');
-    this.#sectionsList.className = 'chips';
-    this.#sectionsList.setAttribute('aria-labelledby', headingId);
+    // A radio group, since exactly one section is chosen. Its label repeats
+    // the modal's heading for screen readers; the group manages its own
+    // `aria-labelledby`, so it can't point at the heading.
+    this.#sectionsList = document.createElement(
+      'craft-radio-group'
+    ) as SectionGroup;
+    this.#sectionsList.setAttribute('label', Craft.t('app', 'Move to'));
+    this.#sectionsList.setAttribute('label-sr-only', '');
+    this.#sectionsList.setAttribute('name', 'sectionId');
     listContainer.append(this.#sectionsList);
 
     const secondaryButtons = document.createElement('div');
@@ -145,37 +158,39 @@ export class EntryMover extends Base {
       },
       signal: this.#abortController.signal,
     })
-      .then(({data}: {data?: {listHtml?: string}}) => {
-        const listHtml = data?.listHtml;
-        if (!listHtml || !this.#sectionsList) {
+      .then(({data}: {data?: {sections?: MoveTargetSection[]}}) => {
+        const list = this.#sectionsList;
+        if (!list) {
           return;
         }
 
-        this.#sectionsList.innerHTML = listHtml;
+        const sections = data?.sections ?? [];
 
-        for (const cb of Array.from(
-          this.#sectionsList.querySelectorAll('.checkbox')
-        )) {
-          cb.setAttribute('role', 'radio');
+        if (!sections.length) {
+          const message = document.createElement('p');
+          message.className = 'zilch';
+          message.textContent = Craft.t(
+            'app',
+            'Couldn’t find any sections that all selected elements could be moved to.'
+          );
+          list.replaceWith(message);
+          return;
         }
 
-        const chips = Array.from(
-          this.#sectionsList.querySelectorAll<HTMLElement>('.chip')
-        );
+        for (const section of sections) {
+          const radio = document.createElement('craft-radio') as HTMLElement & {
+            label: string;
+            choiceValue: string;
+          };
+          radio.label = section.label;
+          radio.choiceValue = String(section.id);
+          list.append(radio);
+        }
 
-        this.#sectionSelect = new Select(this.#sectionsList, chips, {
-          vertical: true,
-          filter: (target: EventTarget | null) =>
-            !(target instanceof Element
-              ? target.closest('a[href],.toggle,.btn,[role=button]')
-              : null),
-          checkboxMode: true,
-          onSelectionChange: () => {
-            if (this.#selectBtn) {
-              this.#selectBtn.disabled =
-                !this.#sectionSelect?.$selectedItems.length;
-            }
-          },
+        this.addListener(list, 'model-value-changed', () => {
+          if (this.#selectBtn) {
+            this.#selectBtn.disabled = !list.modelValue;
+          }
         });
       })
       .catch(({response}: {response?: {data?: {message?: string}}}) => {
@@ -199,7 +214,7 @@ export class EntryMover extends Base {
     Craft.cp.announce(Craft.t('app', 'Loading'));
 
     const data = {
-      sectionId: this.#sectionSelect?.$selectedItems[0]?.dataset.id,
+      sectionId: this.#sectionsList?.modelValue,
       entryIds: this.entryIds,
     };
 

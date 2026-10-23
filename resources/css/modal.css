@@ -137,16 +137,18 @@ toggles its `display` inline.
   gap: var(--c-spacing-sm);
 }
 
-.prompt-modal > .body .options {
+.prompt-modal > .body {
   display: flex;
   flex-direction: column;
-  gap: var(--c-spacing-xs);
-  margin-block: var(--c-spacing-md);
+  gap: var(--c-spacing-md);
+}
+
+.prompt-modal .prompt-msg {
+  font-weight: var(--font-weight-semibold);
 }
 
 .prompt-modal > .body .buttons {
   justify-content: flex-end;
-  margin-block-start: var(--c-spacing-md);
 }
 
 .entry-mover-modal {
@@ -163,17 +165,16 @@ toggles its `display` inline.
   height: calc(100% - 120px);
 }
 
-.entry-mover-modal--list,
-.entry-mover-modal--list fieldset {
+.entry-mover-modal--list {
   box-sizing: border-box;
   height: 100%;
+  overflow: auto;
 }
 
-.entry-mover-modal--list fieldset {
-  overflow: auto;
+.entry-mover-modal .zilch {
   margin: 0;
-  padding: 0;
-  border: 0;
+  color: var(--c-text-quiet);
+  text-align: center;
 }
 
 .entry-mover-modal > .footer {

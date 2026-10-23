@@ -101,6 +101,7 @@
 - Combobox clear buttons no longer have a background color until they’re hovered. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Long tooltips now wrap at a readable width. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Large thumbnails in relational fields, such as Assets fields with the “Large Thumbnails” view mode, now have rounded corners, matching card thumbnails.
+- Details for the issues that block an element’s deletion now list the related elements as chips, rather than an embedded element index.
 - Fixed a bug where Language and Formatting Locale options’ hints were shown in the current language, rather than in each option’s own language.
 - Fixed a bug where control panel pages without a title had extra space above their content. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where edit pages for elements without a title, such as nested entries whose entry type has no Title field, had a blank page title. They’re now titled “Untitled {type}”. ([#20008](https://github.com/craftcms/cms/pull/20008))
@@ -149,6 +150,9 @@
 - Fixed a bug where the hairline between fields that share a row sat off-center before narrow fields, such as quarter-width ones.
 - Fixed a bug where the dialog listing what to resolve before deleting an element wasn’t shown as a dialog on most control panel pages, and its content was added to the bottom of the page unstyled.
 - Fixed a bug where modals built on Garnish’s `Modal`, such as the “Replace relations” and “Move to” modals and asset upload conflict prompts, weren’t shown as modals, and their buttons were unstyled.
+- Fixed a bug where element selects’ “Choose” buttons in server-rendered forms, such as the “Replace relations” modal, were unstyled.
+- Fixed a bug where sections couldn’t be chosen in the “Move to” modal. Sections are now listed as radio buttons.
+- Fixed a bug where asset upload conflict prompts used unstyled radio buttons and checkboxes.
 
 ### Content Management
 
@@ -356,6 +360,7 @@
 - `CraftCms\Cms\Ui\Controls\Choice::sortable()` no longer implies the “Add item” menu, and can now be combined with `allOption()`. `presentation(ChoicePresentation::AddMenu)` should be used for the menu. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Deprecated `CraftCms\Cms\Cp\Components\CheckboxSelect::storageKey()`, which now does nothing. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Deprecated `Craft.SortableCheckboxSelect`. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Deprecated `CraftCms\Cms\Element\DeletionBlockers\RelationDeletionBlocker::$elementIndexSettings`, which no longer has any effect.
 - Removed `CraftCms\Cms\Cp\Components\CheckboxSelect::allCheckbox()`. `allOption()` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Removed the `<craft-sortable-checkbox-select>` web component. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `<craft-resize-grips>` web component. ([#20008](https://github.com/craftcms/cms/pull/20008))
