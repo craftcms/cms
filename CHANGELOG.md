@@ -235,6 +235,7 @@
 - The MCP server’s `elements.update` tool can now set and clear assets’ focal points via a `focalPoint` attribute. ([#19933](https://github.com/craftcms/cms/pull/19933))
 - The MCP server now validates custom field values against the `elements.field-schema` schema, and returns an error that identifies each invalid value. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - The MCP server now accepts any date or time that Date and Time fields can parse, such as “2:30 PM” or a date with a UTC offset, rather than requiring ISO 8601. A value they can’t parse is rejected, rather than clearing the field, and a field’s instructions no longer replace the description of its format.
+- The MCP server’s `mcp:use` OAuth scope has been replaced with `mcp:read`, `mcp:write`, and `mcp:admin`. Users now choose an access level when they authorize an MCP client, defaulting to read only, and only administrators are offered full access. Clients that authorize again keep the earlier level without another prompt.
 - Added the “Query for releases” GraphQL schema permission, nested under “Query for element drafts”, which adds `releases` and `release` queries, and a `release` field to drafts.
 - Added the `hasUrls` field to volumes in GraphQL queries.
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
@@ -267,6 +268,7 @@
 - Added `CraftCms\Cms\Support\Facades\Ai`, which plugins use to run `laravel/ai` agents and requests with the provider and model administrators choose for each task. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - Added `CraftCms\Cms\Ai\Events\TaskRunning`, `TaskCompleted`, and `TaskFailed`, which plugins can use to track AI usage and failures, and cancel requests. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - `CraftCms\Cms\Mcp\Contracts\ProvidesInputSchema` has been renamed to `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`, and its `getMcpInputSchema()` method to `getInputSchema()`.
+- MCP tools without `readOnlyHint: true` now require the `mcp:write` scope, and capabilities with `#[RequiresAdmin]` or `#[RequiresAdminChanges]` require `mcp:admin`.
 - Plain Text, Markdown, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`.
 - Added `CraftCms\Cms\Gql\GqlInputSchema`, which describes the values GraphQL input types accept as JSON schemas.
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.

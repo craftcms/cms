@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\OAuth;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Mcp\Enums\McpScope;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Uri;
 
 /** @since 6.0.0 */
 readonly class Metadata
 {
-    public const string SCOPE = 'mcp:use';
-
     public function baseUrl(): string
     {
         return Env::parse(Cms::config()->baseCpUrl) ?? config('app.url');
@@ -40,7 +39,7 @@ readonly class Metadata
         return [
             'resource' => $this->resource(),
             'authorization_servers' => [$this->issuer()],
-            'scopes_supported' => [self::SCOPE],
+            'scopes_supported' => McpScope::values(),
             'bearer_methods_supported' => ['header'],
         ];
     }
@@ -56,7 +55,7 @@ readonly class Metadata
             'token_endpoint_auth_methods_supported' => ['none', 'client_secret_basic', 'client_secret_post'],
             'response_types_supported' => ['code'],
             'grant_types_supported' => ['authorization_code', 'refresh_token'],
-            'scopes_supported' => [self::SCOPE],
+            'scopes_supported' => McpScope::values(),
             'code_challenge_methods_supported' => ['S256'],
         ];
     }
