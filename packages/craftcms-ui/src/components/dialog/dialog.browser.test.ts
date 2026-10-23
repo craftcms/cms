@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {userEvent} from 'vite-plus/test/browser';
+import {page, userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
 import type CraftDialog from './dialog.js';
 import '../../styles/cp.css';
@@ -99,7 +99,6 @@ it('focuses an autofocus element on open', async () => {
 });
 
 it('keeps Tab and Shift+Tab inside a modal dialog', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   document.body.append(button('Before'));
   const inside = button('Inside');
   const footer = button('Footer', 'footer');
@@ -125,7 +124,6 @@ it('keeps Tab and Shift+Tab inside a modal dialog', async () => {
 });
 
 it('returns focus to the invoker on close', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const invoker = button('Open');
   document.body.append(invoker);
   const dialog = document.createElement('craft-dialog') as CraftDialog;
@@ -143,7 +141,6 @@ it('returns focus to the invoker on close', async () => {
 });
 
 it('focuses the element returnFocus returns on close', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const invoker = button('Open');
   const target = button('Target');
   document.body.append(invoker, target);
@@ -228,7 +225,6 @@ it('leaves focus on the opener when a non-modal dialog closes natively with focu
 });
 
 it('keeps the native return target when returnFocus returns nothing', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const invoker = button('Open');
   document.body.append(invoker);
   const dialog = document.createElement('craft-dialog') as CraftDialog;
@@ -249,7 +245,6 @@ async function openFromMenuItem(): Promise<{
   dialog: CraftDialog;
   menuInvoker: HTMLButtonElement;
 }> {
-  const {userEvent} = await import('@vitest/browser/context');
   await import('../action-menu/action-menu.js');
   const template = document.createElement('template');
   template.innerHTML = `
@@ -289,7 +284,6 @@ async function openFromMenuItem(): Promise<{
 }
 
 it('returns focus to the action menu invoker after a menu item opens it', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const {dialog, menuInvoker} = await openFromMenuItem();
 
   await userEvent.keyboard('{Escape}');
@@ -326,7 +320,6 @@ it('returns focus to the action menu invoker when the native dialog closes by it
 });
 
 it('closes on Escape through craft-before-hide', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const dialog = await openDialog();
   let asked = 0;
   dialog.addEventListener('craft-before-hide', () => asked++);
@@ -339,7 +332,6 @@ it('closes on Escape through craft-before-hide', async () => {
 });
 
 it('stays open on Escape when craft-before-hide is canceled', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const invoker = button('Open');
   document.body.append(invoker);
   const dialog = document.createElement('craft-dialog') as CraftDialog;
@@ -360,7 +352,6 @@ it('stays open on Escape when craft-before-hide is canceled', async () => {
 });
 
 it('lets the keyboard reach a scrolling body with nothing focusable', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const dialog = await openDialog((dialog) => {
     dialog.noClose = true;
     dialog.textContent = longText();
@@ -374,7 +365,6 @@ it('lets the keyboard reach a scrolling body with nothing focusable', async () =
 });
 
 it('contains Tab in a non-modal dialog and releases it on close', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const after = button('After');
   const inside = button('Inside');
   const dialog = await openDialog((dialog) => {
@@ -396,7 +386,6 @@ it('contains Tab in a non-modal dialog and releases it on close', async () => {
 });
 
 it('scrolls a focused control clear of the footer', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const first = button('First');
   const last = button('Last');
   const dialog = await openDialog((dialog) => {
@@ -417,7 +406,6 @@ it('scrolls a focused control clear of the footer', async () => {
 });
 
 it('scrolls a focused control clear of the header', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const first = button('First');
   const last = button('Last');
   const dialog = await openDialog((dialog) => {
@@ -470,7 +458,6 @@ it('outlines the surface when it overlays the page', async () => {
 });
 
 it('fits a 320px viewport without horizontal scroll', async () => {
-  const {page} = await import('@vitest/browser/context');
   await page.viewport(320, 640);
   try {
     const dialog = await openDialog((dialog) => {

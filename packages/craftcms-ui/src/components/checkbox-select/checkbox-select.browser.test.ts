@@ -372,13 +372,40 @@ it('keeps disabled options checked and in place', async () => {
     {value: 'title', label: 'Title', checked: true, disabled: true},
     ...options.slice(1),
   ]);
-  element.modelValue = ['title', 'author', 'postDate'];
+  element.modelValue = ['author', 'postDate'];
   await settle(element);
 
   expect(element.modelValue).toEqual(['title', 'author', 'postDate']);
+
   const rows = shadow(element).querySelectorAll('.row');
   expect(rows[0]!.querySelector('.remove')).toBeNull();
   expect(rows[0]!.querySelector('craft-reorder-button')!.disabled).toBe(true);
+
+  rows[1]!
+    .querySelector('craft-reorder-button')!
+    .dispatchEvent(
+      new CustomEvent('craft-reorder', {detail: {direction: 'up'}})
+    );
+  await settle(element);
+
+  expect(element.modelValue).toEqual(['title', 'author', 'postDate']);
+});
+
+it('follows a renamed option in its label and its Remove button', async () => {
+  const {element} = await create({presentation: 'add-menu'});
+  element.modelValue = ['postDate'];
+  await settle(element);
+
+  element.updateOption('postDate', {label: 'Published'});
+  await settle(element);
+
+  const row = shadow(element).querySelector('.row')!;
+  expect(row.querySelector('.row__label')!.textContent!.trim()).toBe(
+    'Published'
+  );
+  expect(row.querySelector('.remove')!.getAttribute('aria-label')).toBe(
+    'Remove Published'
+  );
 });
 
 it('names its group with its label', async () => {

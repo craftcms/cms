@@ -278,6 +278,16 @@ export default defineConfig(({mode}) => {
       dedupe: ['@awesome.me/webawesome', 'lit'],
     },
 
+    // Otherwise the dev server watches the Composer dependencies' tens of
+    // thousands of files, and its memory grows until it runs out. Storybook
+    // replaces this `server` block with its own, so .storybook/main.ts sets
+    // the same.
+    server: {
+      watch: {
+        ignored: ['**/vendor/**', '**/cms-assets/**'],
+      },
+    },
+
     // Vitest picks up this config's resolve/aliases. The unit tests colocated
     // under resources/js (e.g. modules/auth/elevated-session) need a DOM
     // environment; the craftcms-ui package has its own vitest projects.
