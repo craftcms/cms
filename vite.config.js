@@ -230,6 +230,9 @@ export default defineConfig(({mode}) => {
         'stylelint --allow-empty-input',
       '!(yii2-adapter)/**/*.{html,json,css,scss}': 'vp fmt --write',
       '{resources,yii2-adapter/resources}/js/**/*.{ts,vue}': 'vp check --fix',
+      // Scripts outside those, such as @craftcms/ui's, still need formatting.
+      '!(resources|yii2-adapter)/**/*.{ts,mts,cts,js,mjs,cjs,vue}':
+        'vp fmt --write',
       // Blocks on physical Tailwind classes. Spacing-scale warnings are
       // printed by .vite-hooks/pre-commit, since this hides passing output.
       '{resources,workbench/resources}/**/*.{vue,ts,js,twig,php,html}':
