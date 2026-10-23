@@ -4047,18 +4047,6 @@ table.editable {
         &.textual {
           padding: 0;
 
-          .editable-table-preview {
-            text-align: start;
-            white-space: pre-wrap;
-
-            & + textarea {
-              opacity: 0;
-              height: 0;
-              min-height: 0;
-              padding-block: 0;
-            }
-          }
-
           textarea {
             resize: none;
           }
@@ -4135,8 +4123,7 @@ table.editable {
     textarea,
     textarea.text,
     input.text,
-    pre,
-    .editable-table-preview {
+    pre {
       display: block;
       width: 100%;
       border: none;

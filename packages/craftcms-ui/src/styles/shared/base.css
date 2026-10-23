@@ -536,24 +536,10 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     padding-inline: var(--_input-padding-inline);
   }
 
-  /* Compat */
-  .editable-table-preview {
-    text-align: start;
-    white-space: pre-wrap;
-  }
-
-  .editable-table-preview + textarea {
-    height: 0;
-    min-height: 0;
-    opacity: 0;
-    padding-block: 0;
-  }
-
   textarea,
   textarea.text,
   input.text,
-  pre,
-  .editable-table-preview {
+  pre {
     display: block;
     width: 100%;
     border: none;
