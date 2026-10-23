@@ -92,7 +92,7 @@ export default css`
     border-style: var(--c-modal-border-style, solid);
     border-color: var(--c-modal-border-color, var(--c-color-border-quiet));
     border-radius: var(--c-radius-lg);
-    box-shadow: var(--c-shadow-overlay);
+    box-shadow: var(--c-shadow-lg), var(--c-shadow-sm);
     overflow: hidden;
   }
 

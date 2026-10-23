@@ -27,7 +27,7 @@ toggles its `display` inline.
     var(--c-modal-border-color);
   border-radius: var(--c-modal-radius);
   background-color: var(--c-modal-fill);
-  box-shadow: var(--c-shadow-overlay);
+  box-shadow: var(--c-shadow-lg), var(--c-shadow-sm);
   color: var(--c-modal-text, var(--c-text-default));
 }
 
