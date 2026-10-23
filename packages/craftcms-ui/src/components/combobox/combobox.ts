@@ -734,7 +734,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
             ? html`<craft-button
                 class="clear"
                 type="button"
-                appearance="plain"
+                variant="plain"
                 size="small"
                 icon
                 aria-label=${t('Clear')}
