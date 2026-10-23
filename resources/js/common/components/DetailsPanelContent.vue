@@ -32,7 +32,7 @@
           :status="panel.statusData.indicator"
           :label="panel.statusData.label"
         ></craft-status>
-        <span class="text-xs/4 text-neutral-text-quiet">
+        <span class="text-xs/4">
           {{ panel.statusData.label }}
         </span>
       </span>
