@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Settings as CpSettings;
 use CraftCms\Cms\Http\Controllers\UploadSessionController;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
+use CraftCms\Cms\Http\Middleware\ForgetTriggerParameters;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\UseWriteConnection;
@@ -118,6 +119,7 @@ class McpServiceProvider extends ServiceProvider
     {
         $config = Cms::config()->mcp;
         $middleware = [
+            ForgetTriggerParameters::class,
             EnsureInstalled::class,
             AddLogContext::class,
             ResolveSite::class,

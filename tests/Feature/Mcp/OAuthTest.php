@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
@@ -327,11 +328,17 @@ it('rejects calls to tools outside the token scope', function (): void {
 });
 
 it('requires write access for upload sessions', function (array $scopes, int $status): void {
-    Passport::actingAs(User::query()->firstOrFail(), $scopes, 'craft-mcp');
+    $user = User::query()->firstOrFail();
+    Passport::actingAs($user, ['mcp:write'], 'craft-mcp');
+    $upload = McpRequest::send($this, 'tools/call', [
+        'name' => 'assets.upload.prepare',
+        'arguments' => ['filename' => 'notes.txt', 'size' => 3, 'volumeId' => Volume::factory()->create()->id],
+    ])->assertJsonPath('result.isError', false)->json('result.structuredContent.upload');
 
-    $this->getJson(route('craft.cp.mcp.uploads.status', ['upload' => '00000000-0000-4000-8000-000000000000']))
-        ->assertStatus($status);
+    Passport::actingAs($user, $scopes, 'craft-mcp');
+
+    $this->getJson($upload['urls']['status'])->assertStatus($status);
 })->with([
     'read' => [['mcp:read'], 403],
-    'write' => [['mcp:write'], 404],
+    'write' => [['mcp:write'], 200],
 ]);
