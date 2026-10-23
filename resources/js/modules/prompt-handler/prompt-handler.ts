@@ -192,16 +192,18 @@ export class PromptHandler extends Base {
     // legacy `.html()`).
     this.#promptMessage.innerHTML = message;
 
-    const cancelBtn = document.createElement('button');
-    cancelBtn.type = 'button';
-    cancelBtn.className = 'btn';
+    const cancelBtn = document.createElement('craft-button');
+    cancelBtn.setAttribute('type', 'button');
     cancelBtn.textContent = Craft.t('app', 'Cancel');
     this.#promptButtons.append(cancelBtn);
 
-    const submitBtn = document.createElement('button');
-    submitBtn.type = 'submit';
-    submitBtn.className = 'btn submit disabled';
+    const submitBtn = document.createElement('craft-button') as HTMLElement & {
+      disabled: boolean;
+    };
+    submitBtn.setAttribute('type', 'button');
+    submitBtn.setAttribute('variant', 'primary');
     submitBtn.textContent = Craft.t('app', 'OK');
+    submitBtn.disabled = true;
     this.#promptButtons.append(submitBtn);
 
     for (const choice of choices) {
@@ -216,11 +218,11 @@ export class PromptHandler extends Base {
       this.#promptChoices.append(wrapper);
 
       this.addListener(input, 'click', () => {
-        submitBtn.classList.remove('disabled');
+        submitBtn.disabled = false;
       });
     }
 
-    this.addListener(submitBtn, 'activate', () => {
+    this.addListener(submitBtn, 'click', () => {
       const checked = this.#modalContainer?.querySelector<HTMLInputElement>(
         'input[name=promptAction]:checked'
       );
@@ -230,7 +232,7 @@ export class PromptHandler extends Base {
       this._selectPromptChoice(choice, applyToRemaining);
     });
 
-    this.addListener(cancelBtn, 'activate', () => {
+    this.addListener(cancelBtn, 'click', () => {
       const applyToRemaining = !!this.#applyToRemainingCheckbox?.checked;
       this._selectPromptChoice('cancel', applyToRemaining);
     });

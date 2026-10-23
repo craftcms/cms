@@ -1,5 +1,8 @@
 import {Base, Modal, Select} from '@craftcms/garnish';
 
+/** A `craft-button`, whose `disabled` and `loading` states are properties. */
+type SelectButton = HTMLElement & {disabled: boolean; loading: boolean};
+
 declare const Craft: any;
 
 /**
@@ -35,7 +38,7 @@ export class EntryMover extends Base {
 
   #abortController: AbortController | null = null;
   #sectionsList: HTMLElement | null = null;
-  #selectBtn: HTMLElement | null = null;
+  #selectBtn: SelectButton | null = null;
   #sectionSelect: Select | null = null;
 
   constructor(
@@ -105,25 +108,20 @@ export class EntryMover extends Base {
     primaryButtons.className = 'buttons right';
     footer.append(primaryButtons);
 
-    const cancelBtn = document.createElement('button');
-    cancelBtn.type = 'button';
-    cancelBtn.className = 'btn';
+    const cancelBtn = document.createElement('craft-button');
+    cancelBtn.setAttribute('type', 'button');
     cancelBtn.textContent = Craft.t('app', 'Cancel');
     primaryButtons.append(cancelBtn);
 
-    // `Craft.ui.createSubmitButton` is still a legacy jQuery factory (not yet in
-    // @craftcms/ui/factory); take its DOM element.
-    // SAFETY: The legacy button factory returns a jQuery collection whose first item is the created button.
-    this.#selectBtn = Craft.ui.createSubmitButton({
-      class: 'disabled',
-      label: Craft.t('app', 'Move'),
-      spinner: true,
-    })[0] as HTMLElement;
-    this.#selectBtn.setAttribute('aria-disabled', 'true');
+    this.#selectBtn = document.createElement('craft-button') as SelectButton;
+    this.#selectBtn.setAttribute('type', 'button');
+    this.#selectBtn.setAttribute('variant', 'primary');
+    this.#selectBtn.textContent = Craft.t('app', 'Move');
+    this.#selectBtn.disabled = true;
     primaryButtons.append(this.#selectBtn);
 
-    this.addListener(cancelBtn, 'activate', 'cancel');
-    this.addListener(this.#selectBtn, 'activate', 'selectSection');
+    this.addListener(cancelBtn, 'click', 'cancel');
+    this.addListener(this.#selectBtn, 'click', 'selectSection');
 
     this.modal = new Modal(container);
     this.getCompatibleSections();
@@ -134,7 +132,9 @@ export class EntryMover extends Base {
       this.#abortController.abort();
     }
 
-    this.#selectBtn?.classList.add('loading');
+    if (this.#selectBtn) {
+      this.#selectBtn.loading = true;
+    }
     this.#abortController = new AbortController();
 
     Craft.sendActionRequest('POST', 'entries/move-to-section-modal-data', {
@@ -171,10 +171,9 @@ export class EntryMover extends Base {
               : null),
           checkboxMode: true,
           onSelectionChange: () => {
-            if (this.#sectionSelect?.$selectedItems.length) {
-              this.#selectBtn?.classList.remove('disabled');
-            } else {
-              this.#selectBtn?.classList.add('disabled');
+            if (this.#selectBtn) {
+              this.#selectBtn.disabled =
+                !this.#sectionSelect?.$selectedItems.length;
             }
           },
         });
@@ -184,17 +183,19 @@ export class EntryMover extends Base {
         this.modal?.hide();
       })
       .finally(() => {
-        this.#selectBtn?.classList.remove('loading');
+        if (this.#selectBtn) {
+          this.#selectBtn.loading = false;
+        }
         this.#abortController = null;
       });
   }
 
   selectSection(): void {
-    if (this.#selectBtn?.classList.contains('loading')) {
+    if (!this.#selectBtn || this.#selectBtn.loading) {
       return;
     }
 
-    this.#selectBtn?.classList.add('loading');
+    this.#selectBtn.loading = true;
     Craft.cp.announce(Craft.t('app', 'Loading'));
 
     const data = {
@@ -216,7 +217,9 @@ export class EntryMover extends Base {
         Craft.cp.announce(e?.response?.data?.message);
       })
       .finally(() => {
-        this.#selectBtn?.classList.remove('loading');
+        if (this.#selectBtn) {
+          this.#selectBtn.loading = false;
+        }
       });
   }
 
