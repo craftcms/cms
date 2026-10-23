@@ -59,10 +59,12 @@ it('is a Craft Pro feature', function () {
         ->and(app(UserPermissions::class)->getAllPermissions()->pluck('handle'))->not->toContain('releases');
 });
 
-it('stores a release with its target time in the submitted timezone', function () {
+it('stores a release with its target time in the user’s time zone', function () {
+    Cms::config()->timezone = 'Asia/Tokyo';
+
     postJson(route('craft.cp.releases.store'), [
         'name' => '  October launch  ',
-        'targetDate' => ['date' => '2026-10-16', 'time' => '06:30', 'timezone' => 'Asia/Tokyo'],
+        'targetDate' => ['date' => '2026-10-16', 'time' => '06:30', 'timezone' => 'America/New_York'],
     ])->assertOk();
 
     $release = Release::query()->where('name', 'October launch')->sole();
@@ -105,7 +107,8 @@ it('returns to the releases index after saving, unless continuing to edit', func
     ])->assertJsonPath('redirect', route('craft.cp.releases.show', $release));
 });
 
-it('schedules a release at the submitted local time and requires a time', function () {
+it('schedules a release at the submitted time in the user’s time zone and requires a time', function () {
+    Cms::config()->timezone = 'America/New_York';
     Date::setTestNow('2026-10-01 12:00:00');
 
     $release = $this->releases->create('Scheduled launch', Date::parse('2026-10-02 08:00:00', Cms::timezone()), $this->actor);
@@ -130,7 +133,7 @@ it('schedules a release at the submitted local time and requires a time', functi
     ])->assertJsonValidationErrors(['publishAt.date' => 'The scheduled publication time must be in the future.']);
 
     $publishAt['time'] = '09:00';
-    $publishAt['timezone'] = 'America/New_York';
+    $publishAt['timezone'] = 'Asia/Tokyo';
     postJson(route('craft.cp.releases.schedule', $release), ['publishAt' => $publishAt])->assertOk();
 
     $release->refresh();
