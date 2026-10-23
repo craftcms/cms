@@ -49,6 +49,12 @@
   }
 }
 
+/* A block's own focus ring follows its corners: the outline grows the block's
+   radius by its offset and width, which keeps it concentric with the card. */
+[data-matrix-block]:focus-visible {
+  border-radius: var(--c-card-radius, var(--c-radius-md));
+}
+
 /**
  * A block that has just appeared gets one pass of a highlight, so it's obvious
  * which one is new when it lands among others — and which one the page just
