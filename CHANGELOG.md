@@ -99,6 +99,7 @@
 - Color inputs’ `#` is now shown as the start of their value, and color cells in editable tables now act as a single text field, apart from their swatch. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Side-by-side fields now have a wider gap between them. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Combobox clear buttons no longer have a background color until they’re hovered. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Long tooltips now wrap at a readable width. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Fixed a bug where Language and Formatting Locale options’ hints were shown in the current language, rather than in each option’s own language.
 - Fixed a bug where control panel pages without a title had extra space above their content. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where edit pages for elements without a title, such as nested entries whose entry type has no Title field, had a blank page title. They’re now titled “Untitled {type}”. ([#20008](https://github.com/craftcms/cms/pull/20008))
@@ -142,6 +143,8 @@
 - Fixed a bug where Matrix fields in cards view didn’t show a dropped entry in its new position until the reorder had saved, and drop placeholders had no gap next to the neighboring card. ([#20046](https://github.com/craftcms/cms/issues/20046))
 - Fixed a bug where Markdown inputs without a toolbar had less padding above and below their text than beside it.
 - Fixed a bug where pressing <kbd>Return</kbd> on a control within an editable table’s HTML column moved focus to the next row. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Fixed a bug where clicking a combobox’s chevron didn’t focus it or open its options. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Fixed a bug where clicking a combobox cell in an editable table could focus its clear button rather than its text input. ([#20074](https://github.com/craftcms/cms/pull/20074))
 
 ### Content Management
 
