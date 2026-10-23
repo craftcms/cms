@@ -287,7 +287,7 @@ readonly class SettingsUi
                 : '';
 
             $html .= Html::tag('div', $icon.Html::encode($this->plugins->getPlugin($pluginHandle)->name ?? $pluginHandle), [
-                'class' => ['flex', 'items-center', 'gap-1', 'text-xs', 'font-normal', 'text-quiet'],
+                'class' => ['flex', 'items-center', 'gap-1', 'my-xs', 'text-xs', 'font-normal', 'text-quiet'],
             ]);
         }
 
