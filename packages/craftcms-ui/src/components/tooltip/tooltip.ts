@@ -11,6 +11,10 @@ import {viewportEscapingModifiers} from '../../utilities/overlay-position.js';
  *
  * @example <craft-tooltip for="my-button" placement="right-start">Help text</craft-tooltip>
  *
+ * @cssproperty [--c-tooltip-max-width=min(45ch, 100vw - 2rem)] - Widest the
+ *   tooltip gets before its text wraps. The default keeps lines short enough
+ *   to read easily, and within narrow viewports.
+ *
  * @fires craft-show - The overlay is opening. Fires as the state flips.
  * @fires craft-after-show - The overlay has opened and its update has settled.
  * @fires craft-hide - The overlay is closing. Fires as the state flips.
@@ -61,6 +65,11 @@ export default class CraftTooltip extends LionTooltip {
           border-radius: var(--c-radius-sm);
           box-shadow: var(--c-shadow-md);
           width: max-content;
+          max-inline-size: var(
+            --c-tooltip-max-width,
+            min(45ch, 100vw - 2rem)
+          );
+          overflow-wrap: break-word;
         }
       `,
     ];

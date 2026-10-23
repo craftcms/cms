@@ -58,3 +58,26 @@ it('stays open while the invoker has keyboard focus', async () => {
 
   expect(tooltip.opened).toBe(true);
 });
+
+it('wraps long content at a readable width', async () => {
+  document.body.innerHTML = `
+    <button id="invoker" type="button">Info</button>
+    <craft-tooltip for="invoker">${'Words that go on and on. '.repeat(20)}</craft-tooltip>
+    <craft-tooltip for="invoker">Short</craft-tooltip>`;
+  const [long, short] = document.querySelectorAll('craft-tooltip');
+  await long!.updateComplete;
+  await short!.updateComplete;
+  long!.opened = true;
+  short!.opened = true;
+  await after(100);
+
+  const longContent = long!.querySelector<HTMLElement>('[slot="content"]')!;
+  const shortContent = short!.querySelector<HTMLElement>('[slot="content"]')!;
+  const ch = parseFloat(getComputedStyle(longContent).fontSize) * 0.6;
+
+  expect(longContent.getBoundingClientRect().width).toBeLessThan(ch * 60);
+  expect(longContent.getBoundingClientRect().height).toBeGreaterThan(
+    parseFloat(getComputedStyle(longContent).lineHeight) * 2
+  );
+  expect(shortContent.getBoundingClientRect().width).toBeLessThan(80);
+});

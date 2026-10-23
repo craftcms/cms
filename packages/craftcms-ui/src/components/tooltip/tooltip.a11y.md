@@ -34,7 +34,7 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 - [ ] The content text reaches 4.5:1 against its background, in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Not yet verified.
 - [ ] The tooltip's edge reaches 3:1 against the page surface it sits on, in the light and dark themes. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified.
 - [ ] The tooltip keeps a visible edge in forced colors mode. Its 1px border should be forced to a system color while the shadow drops out. Not yet verified.
-- [ ] The tooltip stays within the viewport, and isn't clipped by a scrolling or transformed ancestor such as the slideout, at 320 CSS px wide and 400% zoom. Per WCAG 1.4.10 (Reflow). `viewportEscapingModifiers()` handles the ancestors; not yet verified by a test. Long content sizes to `max-content` with no maximum width.
+- [ ] The tooltip stays within the viewport, and isn't clipped by a scrolling or transformed ancestor such as the slideout, at 320 CSS px wide and 400% zoom. Per WCAG 1.4.10 (Reflow). `viewportEscapingModifiers()` handles the ancestors; not yet verified by a test. Long content wraps at `--c-tooltip-max-width`, which defaults to `min(45ch, 100vw - 2rem)`.
 - [ ] The tooltip doesn't cover the focused invoker. Per WCAG 2.4.11 (Focus Not Obscured (Minimum)). Popper places it beside the invoker; not yet verified when it flips at a viewport edge.
 
 ### Motion
