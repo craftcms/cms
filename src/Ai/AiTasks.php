@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ai;
 
 use CraftCms\Cms\Ai\Contracts\TaskInterface;
+use CraftCms\Cms\Ai\Tasks\AskAi;
 use CraftCms\Cms\Component\TypeRegistry;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
@@ -28,6 +29,8 @@ use InvalidArgumentException;
 class AiTasks extends TypeRegistry
 {
     protected const string CONTRACT = TaskInterface::class;
+
+    protected const array DEFAULT_TYPES = [AskAi::class];
 
     /**
      * @return Collection<string, class-string<TaskInterface>>

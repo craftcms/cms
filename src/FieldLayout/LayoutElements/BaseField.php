@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use CraftCms\Cms\Ai\AskAi\Assistant;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
@@ -526,15 +527,51 @@ abstract class BaseField extends FieldLayoutElement
             mode: $context->mode,
         ));
 
-        $copyAction = $this->crossSiteCopyAction($context);
-        if ($copyAction === null) {
+        $coreActions = array_values(array_filter([
+            $this->crossSiteCopyAction($context),
+            $this->askAiAction($context),
+        ]));
+
+        if ($coreActions === []) {
             return $event->items;
         }
 
         return [
-            $copyAction,
+            ...$coreActions,
             ...($event->items === [] ? [] : [['type' => 'hr']]),
             ...$event->items,
+        ];
+    }
+
+    /**
+     * Returns an “Ask AI” action for fields that it can write.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function askAiAction(FieldLayoutElementContext $context): ?array
+    {
+        $element = $context->element;
+        $assistant = app(Assistant::class);
+
+        if (
+            ! $this->uid ||
+            ! $element?->id ||
+            $context->mode !== ControlMode::Editable ||
+            $context->ui->mode !== ControlMode::Editable ||
+            ! $assistant->canWrite($this, $element) ||
+            ! $assistant->canGenerate($element)
+        ) {
+            return null;
+        }
+
+        return [
+            'icon' => 'sparkles',
+            'label' => t('Ask AI'),
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:ask-ai',
+                'detail' => ['layoutElementUid' => $this->uid],
+            ],
         ];
     }
 

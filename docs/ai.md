@@ -4,7 +4,7 @@ Craft gives plugins one shared way to reach AI providers. Administrators choose 
 
 Craft builds on [`laravel/ai`](https://laravel.com/docs/13.x/ai-sdk). Agents, tools, structured output, streaming, attachments, and test fakes all work as that package documents them. Craft adds three things:
 
-- **Tasks**: things plugins do with AI, such as “Describe image”, that administrators map to a provider and model, or disable.
+- **Tasks**: things Craft and plugins do with AI, such as “Ask AI” or “Describe image”, that administrators map to a provider and model, or disable.
 - **Resolution**: turning a task into a provider and model, with environment variable support.
 - **Availability**: AI is off until an administrator chooses a provider, so features can hide themselves.
 
@@ -215,6 +215,20 @@ $response = Ai::task('altText:describe')->prompt(agent: new AltTextAgent, prompt
 
 AltTextAgent::assertPrompted(fn ($prompt) => $prompt->provider->name() === 'anthropic');
 ```
+
+## Ask AI
+
+Craft registers a core task, “Ask AI” (`craft:askAi`). It powers the “Ask AI” element details panel and fields’ “Ask AI” actions, for users with the “Ask AI” permission. The panel is a conversation: editors write a prompt, review the proposed values in the reply, apply the ones they want to the form, and follow up to refine them (“keep it shorter”). Nothing is saved until they save the element.
+
+Prompts can ask for new content, changes to existing content (“shorten this”, “fix the grammar”), or a review (“check this against our style guide”). Along with the values it changes, the model returns a summary of what it did, and findings: specific problems, each tied to a field or to the content as a whole. A review can come back with feedback and nothing to apply, and editors can ask the model to fix a finding.
+
+Craft doesn’t store conversations on the server. The panel keeps them in the browser tab’s session storage, for the signed-in user only, and sends the earlier turns with each follow-up. The model sees them before the current values.
+
+Replies stream: the model writes its summary first, which appears as it’s written, then submits its changes and findings through a tool call. The endpoint responds with newline-delimited JSON events, so a proxy or compression layer that buffers responses holds the summary back until the reply is complete. Craft sends `X-Accel-Buffering: no` for nginx; other proxies may need buffering turned off for Craft’s action URLs.
+
+For image assets, the panel can also send the image, scaled down to fit 1024×1024, so a model with vision can describe it. Editors can uncheck “Include the image” to keep the file from the provider.
+
+It can write the Title and Alternative Text fields, and custom fields that implement `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`, which returns the JSON schema of the values the field accepts. In Craft, those are Plain Text, Markdown, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and the option fields. Implement it to support your own field type. The same schema describes the field to Craft’s MCP server. If your field’s GraphQL mutation argument is an input type, `CraftCms\Cms\Gql\GqlInputSchema::fromType()` turns it into a JSON schema.
 
 ## Permissions
 
