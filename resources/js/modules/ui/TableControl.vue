@@ -324,6 +324,10 @@
     feature: 'tsvPaste' | 'enterNavigation'
   ): boolean {
     const column = props.control.props.columns[key];
+    if (column?.html) {
+      return false;
+    }
+
     return (
       column?.[feature] === true ||
       (column?.[feature] === undefined &&
