@@ -3034,6 +3034,7 @@ JS;
     {
         return [
             Field::make(t('Filename'))
+                ->icon('file')
                 ->required()
                 ->control(
                     Text::make('newFilename')

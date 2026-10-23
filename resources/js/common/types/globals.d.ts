@@ -155,6 +155,13 @@ interface CraftStatic {
   openCustomizeSourcesModal(
     options: import('@/modules/customize-sources').CustomizeSourcesModalOptions
   ): Promise<void>;
+  commandPalette: Pick<
+    typeof import('@/modules/command-palette/registry'),
+    'registerProvider' | 'registerActions' | 'registerView'
+  > & {
+    open: typeof import('@/modules/command-palette/registry').openCommandPalette;
+    close: typeof import('@/modules/command-palette/registry').closeCommandPalette;
+  };
   expandPostArray(arr: FormData | URLSearchParams): LegacyWidgetSettings;
   escapeHtml(str: string);
   sites: Site[];

@@ -13,6 +13,7 @@ use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
+use CraftCms\Cms\Http\Controllers\CommandPaletteController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\ContentIndexController;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
@@ -126,6 +127,11 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('notifications/mark-read', [NotificationsController::class, 'markRead']);
+
+    Route::prefix('command-palette')->name('command-palette.')->group(function () {
+        Route::get('/', [CommandPaletteController::class, 'index'])->name('index');
+        Route::get('search/{provider}', [CommandPaletteController::class, 'search'])->name('search');
+    });
 
     Route::middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
         Route::resource('releases', ReleasesController::class)
@@ -370,6 +376,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::allowDuringMaintenance()
             ->post('settings/general', [GeneralSettingsController::class, 'store'])
             ->name('settings.general.store');
+        Route::allowDuringMaintenance()
+            ->post('settings/general/maintenance-mode', [GeneralSettingsController::class, 'maintenanceMode'])
+            ->name('settings.general.maintenance-mode');
 
         // Email
         Route::get('settings/email', [EmailSettingsController::class, 'index'])
@@ -418,6 +427,9 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::get('/', [PluginsController::class, 'index']);
 
             Route::middleware(RequireAdminChanges::class)->group(function () {
+                // Registered before `{handle}`, which would otherwise take them for plugin handles.
+                Route::post('enable-all', [PluginsController::class, 'enableAll'])->name('settings.plugins.enable-all');
+                Route::post('disable-all', [PluginsController::class, 'disableAll'])->name('settings.plugins.disable-all');
                 Route::post('{handle}/install', [PluginsController::class, 'install']);
                 Route::post('{handle}/uninstall', [PluginsController::class, 'uninstall']);
                 Route::post('{handle}/enable', [PluginsController::class, 'enable']);

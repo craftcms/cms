@@ -143,4 +143,10 @@ JS, [
 
         return $items;
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'circle-user';
+    }
 }

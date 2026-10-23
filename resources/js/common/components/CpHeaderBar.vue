@@ -15,6 +15,7 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+  import {openCommandPalette} from '@/modules/command-palette/registry';
 
   // Passed in rather than read here: `crumbs` is a page prop, but whether there's
   // a context menu depends on the shell's own slots, which a child can't see.
@@ -24,6 +25,11 @@
   }>();
 
   const isLarge = cpBreakpoints.greaterOrEqual('lg');
+
+  /** The palette opens with Cmd+K on Apple platforms and Ctrl+K elsewhere. */
+  const commandPaletteShortcut = /Mac|iPhone|iPad/.test(navigator.platform)
+    ? {aria: 'Meta+K', keys: ['⌘', 'K']}
+    : {aria: 'Control+K', keys: [t('Ctrl'), 'K']};
 
   type TopBarSection = 'start' | 'indicators' | 'end' | 'breadcrumbs';
 
@@ -123,13 +129,28 @@
       <div class="cp-header-bar__end" v-else-if="section === 'end'">
         <div class="flex gap-md items-center">
           <craft-button
+            id="command-palette-button"
             icon
             :variant="ButtonVariant.Plain"
             type="button"
             size="small"
+            aria-haspopup="dialog"
+            :aria-keyshortcuts="commandPaletteShortcut.aria"
+            @click="openCommandPalette"
           >
-            <craft-icon name="search" :label="t('Search')"></craft-icon>
+            <craft-icon name="search"></craft-icon>
           </craft-button>
+          <!-- Labels the icon-only button rather than describing it, so the
+            name isn't announced twice. The keys are left out of the name;
+            `aria-keyshortcuts` announces them. -->
+          <craft-tooltip for="command-palette-button" invoker-relation="label">
+            {{ t('Search') }}
+            <span class="cp-header-bar__shortcut" aria-hidden="true">
+              <kbd v-for="key in commandPaletteShortcut.keys" :key="key">{{
+                key
+              }}</kbd>
+            </span>
+          </craft-tooltip>
           <cp-notification-center
             :notifications.prop="notifications"
           ></cp-notification-center>
@@ -151,7 +172,11 @@
               >/</span
             >
             <Breadcrumbs v-if="crumbs" :items="crumbs" class="gap-md" />
-            <div v-show="hasContextMenu" class="context-menu-container">
+            <div
+              v-show="hasContextMenu"
+              class="context-menu-container"
+              data-command-palette-actions
+            >
               <LayoutSlotOutlet name="context-menu">
                 <slot name="context-menu"></slot>
               </LayoutSlotOutlet>
@@ -217,6 +242,12 @@
 
   .cp-header-bar__end {
     grid-area: end;
+  }
+
+  .cp-header-bar__shortcut {
+    display: inline-flex;
+    gap: var(--c-spacing-xs);
+    margin-inline-start: var(--c-spacing-sm);
   }
 
   .cp-header-bar__indicators {
