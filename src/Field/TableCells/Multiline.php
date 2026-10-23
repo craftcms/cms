@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\TableCells;
 
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Controls\Control;
 use CraftCms\Cms\Ui\Controls\Textarea;
 
@@ -22,5 +23,10 @@ class Multiline extends Singleline
     protected function createControl(TableCellContext $context): Control
     {
         return Textarea::make($context->path)->rows(1);
+    }
+
+    protected function normalizeLineBreaks(string $value): string
+    {
+        return Str::convertLineBreaks($value);
     }
 }
