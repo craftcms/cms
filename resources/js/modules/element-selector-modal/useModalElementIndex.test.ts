@@ -396,3 +396,35 @@ describe('picking folders', () => {
     expect(lastQuery()).toMatchObject({folderId: 7});
   });
 });
+
+describe('searching subfolders', () => {
+  const searching = {
+    search: 'cat',
+    canSearchSubfolders: true,
+  } as Partial<ContentIndexData>;
+
+  it('is only offered while searching a folder that has subfolders', () => {
+    expect(mountIndex().canSearchSubfolders.value).toBe(false);
+    scope.stop();
+    expect(
+      mountIndex(assetsData({search: 'cat'})).canSearchSubfolders.value
+    ).toBe(false);
+    scope.stop();
+    expect(mountIndex(assetsData(searching)).canSearchSubfolders.value).toBe(
+      true
+    );
+  });
+
+  it('asks for subfolders’ assets, and stops asking once it’s turned off', async () => {
+    const index = mountIndex(assetsData(searching));
+
+    index.setIncludeSubfolders(true);
+    await vi.waitFor(() =>
+      expect(lastQuery()).toMatchObject({search: 'cat', includeSubfolders: 1})
+    );
+
+    index.setIncludeSubfolders(false);
+    await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(2));
+    expect(lastQuery()).not.toHaveProperty('includeSubfolders');
+  });
+});
