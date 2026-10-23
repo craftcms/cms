@@ -146,3 +146,20 @@ it('opens and closes its options from the chevron, focusing the textbox', async 
 
   expect(control.opened).toBe(false);
 });
+
+it('gives the whole end of the field beside the clear button to the chevron, with a text cursor', async () => {
+  const control = await fixture([{label: 'Anthropic', value: 'anthropic'}]);
+  control.style.width = '300px';
+  await control.updateComplete;
+  const field = control
+    .querySelector('input')!
+    .closest('.form-control')!
+    .getBoundingClientRect();
+  const chevron = control.shadowRoot!.querySelector<HTMLElement>('.indicator')!;
+  const box = chevron.getBoundingClientRect();
+
+  expect(box.right).toBeCloseTo(field.right, 0);
+  expect(box.top).toBeLessThanOrEqual(field.top + 1);
+  expect(box.bottom).toBeGreaterThanOrEqual(field.bottom - 1);
+  expect(getComputedStyle(chevron).cursor).toBe('text');
+});
