@@ -408,8 +408,8 @@ test('handleInvalidLogin', function () {
     $user = UserModel::findOrFail($user->id);
 
     expect($user->invalidLoginCount)->toBe(1);
-    expect($user->invalidLoginWindowStart->format('Y-m-d H:i:s'))->toBe(now('UTC')->startOfSecond()->format('Y-m-d H:i:s'));
-    expect($user->lastInvalidLoginDate->format('Y-m-d H:i:s'))->toBe(now('UTC')->startOfSecond()->format('Y-m-d H:i:s'));
+    expect($user->invalidLoginWindowStart->getTimestamp())->toBe(now()->startOfSecond()->getTimestamp());
+    expect($user->lastInvalidLoginDate->getTimestamp())->toBe(now()->startOfSecond()->getTimestamp());
     expect($user->lastLoginAttemptIp)->toBeNull();
 });
 
@@ -457,7 +457,7 @@ test('handleInvalidLogin with max outside window', function () {
 
     expect($user->invalidLoginCount)->toBe(1);
     expect($user->locked)->toBeFalse();
-    expect($user->invalidLoginWindowStart->format('Y-m-d H:i:s'))->toBe(now('UTC')->startOfSecond()->format('Y-m-d H:i:s'));
+    expect($user->invalidLoginWindowStart->getTimestamp())->toBe(now()->startOfSecond()->getTimestamp());
     expect($user->lockoutDate)->toBeNull();
 });
 
@@ -493,7 +493,7 @@ test('handleInvalidLogin inside window', function () {
     expect($user->locked)->toBeTrue();
     expect($user->invalidLoginCount)->toBeNull();
     expect($user->invalidLoginWindowStart)->toBeNull();
-    expect($user->lockoutDate->format('Y-m-d H:i:s'))->toBe(now('UTC')->startOfSecond()->format('Y-m-d H:i:s'));
+    expect($user->lockoutDate->getTimestamp())->toBe(now()->startOfSecond()->getTimestamp());
 });
 
 test('handleValidLogin', function () {

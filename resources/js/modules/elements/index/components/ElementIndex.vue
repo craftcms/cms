@@ -22,6 +22,7 @@
   interface ElementIndexQuickEdit {
     longPress?: boolean;
     onDblClick(event: MouseEvent): void;
+    openEditor?(url: string, opener?: HTMLElement | null): void;
     deferChipClick?(event: MouseEvent): boolean;
     onPrimaryLink?(event: MouseEvent): void;
     suppressPrimaryLinkVisit?(event: MouseEvent): void;
@@ -116,6 +117,10 @@
       editableRows.value.length > 0
   );
   const selectable = computed(() => !isInlineEditing.value);
+  /** Single-select lists get no select-all checkbox. */
+  const multiSelect = computed(
+    () => props.view.table.options.enableMultiRowSelection !== false
+  );
   const showFooter = computed(
     () =>
       props.footerActive ||
@@ -127,7 +132,7 @@
   const itemBehavior = computed<ElementIndexItemBehavior>(() => ({
     ...props.itemBehavior,
     ...(isInlineEditing.value
-      ? {onClick: undefined, onKeydown: undefined}
+      ? {onClick: undefined, onDblClick: undefined, onKeydown: undefined}
       : {}),
     attrs: (row) => ({
       ...props.itemBehavior?.attrs?.(row),
@@ -209,7 +214,8 @@
   }
 
   function onBodyDblClick(event: MouseEvent): void {
-    if (isInlineEditing.value) {
+    // Handled already, by an item behavior such as opening an asset folder.
+    if (isInlineEditing.value || event.defaultPrevented) {
       return;
     }
 
@@ -218,6 +224,35 @@
     } else {
       emit('dblclick', event);
     }
+  }
+
+  /**
+   * Thumbs carry none of the chip metadata quick edit reads off a row or card,
+   * so they report the double-clicked element themselves, and it's opened from
+   * the row's own edit URL.
+   */
+  function onThumbEdit(element: {id: string | number}): void {
+    if (
+      isInlineEditing.value ||
+      !props.quickEdit?.openEditor ||
+      elementIndex.trashed
+    ) {
+      return;
+    }
+
+    const row = data.value.find((candidate) => candidate.id === element.id);
+
+    if (!row?.cpEditUrl) {
+      return;
+    }
+
+    window.getSelection()?.removeAllRanges();
+    props.quickEdit.openEditor(
+      row.cpEditUrl,
+      body.value?.querySelector<HTMLElement>(
+        `[data-index-id="${CSS.escape(String(row.id))}"]`
+      ) ?? null
+    );
   }
 
   function onBodyKeydown(event: KeyboardEvent): void {
@@ -249,7 +284,15 @@
         @reorder="reorder"
         @site-change="emit('site-change', $event)"
       >
-        <template #actions>
+        <template
+          v-if="
+            canEditInline ||
+            exportElements ||
+            $slots['toolbar-actions'] ||
+            $slots['toolbar-actions-after']
+          "
+          #actions
+        >
           <div class="flex flex-wrap gap-md">
             <craft-button
               v-if="canEditInline"
@@ -300,6 +343,10 @@
     >
       <div
         ref="body"
+        :class="{
+          'element-index__grid': mode === 'cards' || mode === 'thumbs',
+          'element-index__loading': loading,
+        }"
         @mousedown.capture="
           isInlineEditing
             ? undefined
@@ -316,6 +363,7 @@
           :read-only="selection.readOnly.value"
           :data="data"
           :selectable="selectable"
+          :select-all="multiSelect"
           :loading="loading"
           :item-behavior="itemBehavior"
           :sortable="rowReorder?.enabled.value ?? false"
@@ -333,9 +381,11 @@
           :read-only="selection.readOnly.value"
           :data="data"
           :selectable="selectable"
+          :select-all="multiSelect"
           :loading="loading"
           :item-behavior="itemBehavior"
           :interactions-disabled="processing"
+          @edit="onThumbEdit"
         />
         <ElementTable
           v-else
@@ -452,6 +502,25 @@
     margin-block-end: var(--c-spacing-md);
   }
 
+  // Card and thumb grids leave their own spacing to where they're placed. A
+  // grid's select-all header sits flush at the top, with the grid below it.
+  .element-index__grid {
+    padding-block-end: var(--c-spacing-lg);
+
+    > :deep(:is(.card-grid, .thumbsview)) {
+      margin-block-start: var(--c-spacing-lg);
+    }
+
+    // Like a flush table, the select-all header spans the container's padding
+    // and pads its content back in by the same amount.
+    > :deep(:is(.card-grid-header, .thumbsview-header)) {
+      margin-inline: calc(var(--cp-container-padding) * -1);
+      margin-block-end: 0;
+      padding-block-start: var(--c-spacing-sm);
+      padding-inline: var(--cp-container-padding);
+    }
+  }
+
   .element-index__body {
     overflow-x: auto;
   }
@@ -465,5 +534,19 @@
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
     min-height: var(--cp-footer-height);
     background-color: var(--c-surface-default);
+  }
+
+  // While loading, the view's spinner sits in the middle of the body rather
+  // than at its top: the body and the view fill its height.
+  .element-index__body[aria-busy='true'] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .element-index__loading {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    padding-block: 0;
   }
 </style>

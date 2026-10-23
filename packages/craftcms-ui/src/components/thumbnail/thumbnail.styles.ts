@@ -4,6 +4,7 @@ export default css`
   /* Defaults are fallbacks rather than :host declarations, so ancestors' values inherit. */
   :host {
     --_size: var(--c-thumbnail-size, calc(30rem / 16));
+    --_box-height: var(--c-thumbnail-height, var(--_size));
     --_checker-size: var(--c-thumbnail-checker-size, 8px);
     --_checker-color: var(--c-thumbnail-checker-color, hsl(211 13% 65% / 0.25));
     --_checker-half: calc(var(--_checker-size) / 2);
@@ -18,20 +19,41 @@ export default css`
     align-items: center;
     justify-content: center;
     width: var(--_size);
-    height: var(--_size);
+    height: var(--_box-height);
     overflow: clip;
     max-width: 100%;
     max-height: 100%;
   }
 
+  /* Height capped at the box size rather than 100%, which doesn't resolve
+     when the box's height is \`auto\` (see --c-thumbnail-height). */
   .thumbnail__image,
   ::slotted(img),
   ::slotted(svg) {
     display: block;
     flex-shrink: 0;
     max-width: 100%;
-    max-height: 100%;
+    max-height: var(--_size);
     object-fit: contain;
+  }
+
+  /*
+   * A fit image with known dimensions: its box is sized up front, no larger
+   * than those dimensions or the thumbnail box, so it's the same before and
+   * after it loads. The other axis follows from the inline aspect-ratio.
+   */
+  .thumbnail__image--landscape {
+    width: min(100%, var(--_width));
+    height: auto;
+  }
+
+  .thumbnail__image--portrait {
+    width: auto;
+    height: min(var(--_size), var(--_height));
+  }
+
+  .thumbnail__image--placeholder {
+    background: var(--_placeholder) center / 100% 100% no-repeat;
   }
 
   .thumbnail--crop .thumbnail__image,

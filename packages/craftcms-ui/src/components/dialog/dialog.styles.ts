@@ -64,9 +64,22 @@ export default css`
     z-index: var(--c-layer-overlay, 100);
   }
 
+  .frame {
+    position: relative;
+    display: grid;
+  }
+
+  .frame > .surface {
+    isolation: isolate;
+  }
+
   .surface {
     display: grid;
-    /* header / body / footer — the body is the only row that flexes. */
+    /*
+      header / body / footer — the body is the only row that flexes. Each part
+      is pinned to its row, so a dialog without a header leaves the first row
+      empty rather than sliding the body into it and stretching the footer.
+    */
     grid-template-rows: auto 1fr auto;
     inline-size: var(--_dialog-inline-size);
     min-inline-size: var(--_dialog-min-inline-size);
@@ -74,16 +87,22 @@ export default css`
     block-size: var(--_dialog-block-size);
     max-block-size: var(--_dialog-max-block-size);
     background-color: var(--c-surface-raised);
+    box-sizing: border-box;
+    border-width: var(--c-modal-border-width, 1px);
+    border-style: var(--c-modal-border-style, solid);
+    border-color: var(--c-modal-border-color, var(--c-color-border-quiet));
     border-radius: var(--c-radius-lg);
-    box-shadow: var(--c-shadow-lg);
+    box-shadow: var(--c-shadow-overlay);
     overflow: hidden;
   }
 
   :host([fullscreen]) .surface {
+    border-width: 0;
     border-radius: 0;
   }
 
   .header {
+    grid-row: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -110,6 +129,7 @@ export default css`
   }
 
   .body {
+    grid-row: 2;
     /*
       Pairs with \`1fr\` above: without an explicit \`min-block-size: 0\` a grid
       item floors at its content height, so a long slotted index would grow the
@@ -121,6 +141,7 @@ export default css`
   }
 
   .footer {
+    grid-row: 3;
     display: flex;
     justify-content: flex-end;
     gap: var(--c-spacing-sm);

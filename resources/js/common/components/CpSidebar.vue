@@ -96,7 +96,7 @@
       >
       </craft-button>
     </div>
-    <div ref="body" class="cp-sidebar__body">
+    <div ref="body" class="cp-sidebar__body cp-inner-scroller">
       <!-- Floating, the sidebar overlays the page and there's nowhere for a
         flyout to go, so every branch expands in place instead. -->
       <MainNav
@@ -187,8 +187,6 @@
     padding-inline: var(--c-spacing-md);
     flex: 1 1 auto;
     min-height: 0;
-    overflow-y: auto;
-    scrollbar-gutter: stable;
   }
 
   /* Floating, there's no rail beside it to level with. */

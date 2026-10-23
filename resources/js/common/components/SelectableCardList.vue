@@ -76,7 +76,9 @@
   const emit = defineEmits<{
     (event: 'reorder', startIndex: number, finishIndex: number): void;
     (event: 'item-click', id: Id, mouseEvent: MouseEvent): void;
+    (event: 'item-dblclick', id: Id, mouseEvent: MouseEvent): void;
     (event: 'header-dblclick', id: Id, mouseEvent: MouseEvent): void;
+    (event: 'header-mousedown', id: Id, mouseEvent: MouseEvent): void;
     (
       event: 'item-keydown',
       id: Id,
@@ -229,10 +231,12 @@
       :data-selected="selection.isSelected(id) ? '' : undefined"
       :tabindex="selectable ? 0 : undefined"
       @click="emit('item-click', id, $event)"
+      @dblclick="emit('item-dblclick', id, $event)"
       @keydown="onItemKeydown(id, index, $event)"
     >
       <DragShadow
         v-if="overDropState(id)?.closestEdge === 'top'"
+        class="mb-md"
         :height="overDropState(id)?.draggingRect?.height"
       />
 
@@ -247,6 +251,7 @@
         <div
           slot="header"
           class="flex gap-2 items-center justify-between w-full"
+          @mousedown="emit('header-mousedown', id, $event)"
           @dblclick="emit('header-dblclick', id, $event)"
         >
           <div class="flex gap-2 items-center">
@@ -298,6 +303,7 @@
 
       <DragShadow
         v-if="overDropState(id)?.closestEdge === 'bottom'"
+        class="mt-md"
         :height="overDropState(id)?.draggingRect?.height"
       />
     </component>

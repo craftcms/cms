@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Concerns;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -135,8 +136,8 @@ trait TracksChanges
             ->where('siteId', $this->siteId)
             ->when(
                 value: $this->dateLastMerged,
-                callback: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateLastMerged),
-                default: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated),
+                callback: fn (Builder $query) => $query->where('dateUpdated', '>=', Query::prepareDateForDb($this->dateLastMerged)),
+                default: fn (Builder $query) => $query->where('dateUpdated', '>=', Query::prepareDateForDb($this->dateCreated)),
             )
             ->pluck('attribute')
             ->flip()

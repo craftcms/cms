@@ -8,7 +8,7 @@ import {
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
 import type {CraftActionMenu, ReorderDirection} from '@craftcms/ui';
-import type {SlideoutSaveResult} from '@/common/slideouts';
+import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
 import {componentSelectData} from './support';
 
 // `Craft` and `$` (jQuery) remain page globals. The Choose menu and the
@@ -581,45 +581,30 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   };
 
   /**
-   * Create button activation: open a CP screen slideout for `create-action`,
-   * add the newly-created component on submit (plus a Choose-menu option for
-   * it), and hand focus back to the Create button when the slideout closes
-   * (legacy `ComponentSelectInput.init`).
+   * Create button activation: open a CP screen slideout for `create-action`
+   * (a URL, or a controller action path), add the newly-created component on
+   * save (plus a Choose-menu option for it), and hand focus back to the Create
+   * button when the slideout closes (legacy `ComponentSelectInput.init`).
    */
   #handleCreateActivate = (): void => {
     const action = this.settings.createAction ?? '';
+    const url = /^((https?:)?\/\/|\/)/.test(action)
+      ? action
+      : Craft.getActionUrl(action);
 
-    // Action paths still need the legacy slideout, which resolves them itself.
-    if (
-      Craft.openSlideout instanceof Function &&
-      /^(https?:)?\/\//.test(action)
-    ) {
-      void Craft.openSlideout(action, {
-        opener: this.#createBtn,
-        onSaved: ({data, draft}: SlideoutSaveResult) => {
-          const {modelClass, modelId} = data ?? {};
-          if (
-            draft ||
-            typeof modelClass !== 'string' ||
-            (typeof modelId !== 'string' && typeof modelId !== 'number')
-          ) {
-            return;
-          }
-          void this.addComponent(modelClass, modelId, true);
-        },
-      });
-      return;
-    }
-
-    const slideout = new Craft.CpScreenSlideout(action);
-
-    slideout.on('submit', (ev: any) => {
-      const data = ev.response.data;
-      this.addComponent(data.modelClass, data.modelId, true);
-    });
-
-    slideout.on('close', () => {
-      this.#createBtn?.focus();
+    void openSlideout(url, {
+      opener: this.#createBtn,
+      onSaved: ({data, draft}: SlideoutSaveResult) => {
+        const {modelClass, modelId} = data ?? {};
+        if (
+          draft ||
+          typeof modelClass !== 'string' ||
+          (typeof modelId !== 'string' && typeof modelId !== 'number')
+        ) {
+          return;
+        }
+        void this.addComponent(modelClass, modelId, true);
+      },
     });
   };
 
@@ -1047,7 +1032,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
   /**
    * Set each reorder button's `position` (`first`/`middle`/`last`) so Move up
-   * is disabled on the first chip and Move down on the last, and disable the
+   * is disabled on the first chip and Move down on the last, and hide the
    * buttons entirely when there's nothing to reorder against.
    */
   #updateReorderPositions(): void {
@@ -1069,6 +1054,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       }
 
       btn.toggleAttribute('disabled', lis.length < 2);
+      btn.hidden = lis.length < 2;
       btn.setAttribute(
         'position',
         index === 0 ? 'first' : index === lis.length - 1 ? 'last' : 'middle'

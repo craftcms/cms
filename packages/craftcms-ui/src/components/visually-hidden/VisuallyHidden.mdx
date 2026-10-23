@@ -9,7 +9,7 @@ import * as VisuallyHiddenStories from './visually-hidden.stories';
 
 <Canvas of={VisuallyHiddenStories.Default} sourceState="shown" />
 
-There is text in that example. It is in the document, in the accessibility tree, and in the tab order — it just is not painted.
+There is text in that example. It is in the document and in the accessibility tree — it just is not painted.
 
 ## When to Use It
 
@@ -34,6 +34,10 @@ For text that names something the design conveys another way:
 Hidden text is text nobody proofreads. It goes stale, it gets missed in translation passes, and it is invisible in a design review.
 
 Prefer a visible label where one fits. Reach for this when the design genuinely cannot carry one — not as a way to satisfy an accessibility check while leaving the interface unlabeled.
+
+## Accessibility
+
+Write the hidden text as a screen reader user should hear it: a short name or description that matches what the design shows, not a duplicate of nearby visible text.
 
 ## Properties
 

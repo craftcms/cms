@@ -319,13 +319,15 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       'aria-labelledby',
       this._inputNode.getAttribute('aria-labelledby') ?? ''
     );
+    // In Chromium, Lion puts the combobox role on the textbox's wrapper (the
+    // ARIA 1.1 pattern), which needs the same name as the textbox.
+    this._comboboxNode?.setAttribute(
+      'aria-labelledby',
+      this._inputNode.getAttribute('aria-labelledby') ?? ''
+    );
     if (this.multipleChoice) {
       this.syncInputs();
       this._inputNode.removeAttribute('name');
-      this._comboboxNode.setAttribute(
-        'aria-labelledby',
-        this._inputNode.getAttribute('aria-labelledby') ?? ''
-      );
       this._inputNode.disabled = this.disabled || this.fieldsetDisabled;
       const missing =
         this.required && !this.inactive && this.selectedValues.length === 0;
@@ -357,7 +359,8 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       // the input only gets its leading padding while an icon is showing.
       this.toggleAttribute(
         'has-prefix-icon',
-        this.#selectedOption()?.data?.icon != null
+        this.#selectedOption()?.data?.icon != null ||
+          this.#selectedOption()?.data?.indicator != null
       );
     }
   }
@@ -519,7 +522,37 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       }
     }
 
-    return entries;
+    return q === '' ? entries : this.#exactMatchesFirst(q, entries);
+  }
+
+  /**
+   * Moves options whose label or value is exactly the query to the front of
+   * their group, so the first match, which becomes active, is the one typed.
+   * Other options keep their order, and groups stay together.
+   */
+  #exactMatchesFirst(
+    loweredQuery: string,
+    entries: VisibleEntry[]
+  ): VisibleEntry[] {
+    const isExact = ({option}: VisibleEntry) =>
+      option.label.toLowerCase() === loweredQuery ||
+      String(option.value).toLowerCase() === loweredQuery;
+    const sorted: VisibleEntry[] = [];
+
+    for (let start = 0; start < entries.length;) {
+      let end = start;
+      while (
+        end < entries.length &&
+        entries[end]!.groupLabel === entries[start]!.groupLabel
+      ) {
+        end++;
+      }
+      const run = entries.slice(start, end);
+      sorted.push(...run.filter(isExact), ...run.filter((e) => !isExact(e)));
+      start = end;
+    }
+
+    return sorted;
   }
 
   #isGroup(item: ComboboxItem): item is ComboboxOptGroup {
@@ -654,7 +687,9 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   };
 
   override _inputGroupInputTemplate() {
-    const icon = this.#selectedOption()?.data?.icon;
+    const selectedData = this.#selectedOption()?.data;
+    const icon = selectedData?.icon;
+    const indicator = selectedData?.indicator;
 
     return html`
       <div class="input-group__input">
@@ -686,7 +721,14 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
         <div class="combobox__textbox">
           ${icon
             ? html`<craft-icon class="prefix" name=${icon}></craft-icon>`
-            : nothing}
+            : indicator
+              ? html`<span class="prefix prefix--indicator">
+                  <craft-indicator
+                    fill=${indicator.fill ?? nothing}
+                    appearance=${indicator.appearance ?? nothing}
+                  ></craft-indicator>
+                </span>`
+              : nothing}
           <slot name="input"></slot>
           ${this.clearable && this.#hasValue() && !this.inactive
             ? html`<craft-button

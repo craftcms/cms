@@ -190,7 +190,7 @@ class EntrifyController extends Controller
         if ($categoryGroup->dateDeleted) {
             $categoryQuery
                 ->trashed()
-                ->andWhere(['categories.deletedWithGroup' => true]);
+                ->where('categories.deletedWithGroup', true);
         }
 
         $entriesByLevel = [];
@@ -418,13 +418,7 @@ class EntrifyController extends Controller
         if ($tagGroup->dateDeleted) {
             $tagQuery
                 ->trashed()
-                ->andWhere(['tags.deletedWithGroup' => true]);
-        }
-
-        if ($tagGroup->dateDeleted) {
-            $tagQuery
-                ->trashed()
-                ->andWhere(['tags.deletedWithGroup' => true]);
+                ->where('tags.deletedWithGroup', true);
         }
 
         $tagQuery->chunk(100, function(Collection $tags) use ($section, $entryType, $author) {

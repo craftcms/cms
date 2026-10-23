@@ -22,6 +22,7 @@
    * inside its own `content` slot.
    */
   import {computed, type Component} from 'vue';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {attrs as serverAttributes} from '@craftcms/ui/utilities/attrs';
   import CpLink from '@/common/components/CpLink.vue';
   import {useNavItemActions} from '@/common/composables/useNavItemActions';
@@ -227,9 +228,13 @@
   /**
    * Whether this is the page you're on rather than an ancestor of it.
    * Selection marks the whole trail, so the page is the selected item with
-   * nothing selected beneath it.
+   * nothing selected beneath it, unless the item says it's only on the trail.
    */
   function isCurrent(action: NavItem): boolean {
+    if (action.type !== 'group' && action.current === false) {
+      return false;
+    }
+
     return (
       isSelected(action) &&
       !childrenOf(action).some(
@@ -298,6 +303,23 @@
   /** A status dot, filling the same slot an icon would. */
   function statusOf(action: NavItem): string | undefined {
     return action.type === 'group' ? undefined : action.status;
+  }
+
+  function countOf(action: NavItem): number | undefined {
+    return action.type === 'group' ? undefined : action.count;
+  }
+
+  function countLabelOf(action: NavItem): string {
+    if (action.type === 'group') {
+      return '';
+    }
+
+    return (
+      action.countLabel ??
+      t('{num, number} {num, plural, =1{item} other{items}}', {
+        num: action.count,
+      })
+    );
   }
 
   const actionsLentTo = useNavItemActions();
@@ -419,6 +441,15 @@
 
       {{ labelOf(action) }}
 
+      <craft-badge-indicator
+        v-if="countOf(action)"
+        slot="actions"
+        variant="inverse"
+        :badge-count="countOf(action)"
+        :max.prop="Infinity"
+        :alt-text="countLabelOf(action)"
+      ></craft-badge-indicator>
+
       <craft-button
         v-for="lent in lentActions(action)"
         :key="lent.label"
@@ -514,10 +545,13 @@
 
 <style scoped lang="css">
   /* `craft-action-menu` styles the separators it generates itself inline, and
-     its shadow `::slotted()` rule only zeroes the margin — so a slotted rule
-     has to bring its own line to match. */
+     its shadow `::slotted()` rule can't reach inside the slotted content — so
+     a slotted rule has to bring its own margin and line to match. With the
+     menu's gap between items, the space around it matches the menu's
+     padding. */
   .action-list__separator {
-    margin: 0;
+    margin-block: calc(var(--c-spacing-sm) - var(--c-spacing-xs));
+    margin-inline: 0;
     border: 0;
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
   }

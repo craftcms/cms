@@ -119,6 +119,25 @@ describe('craft-dialog', () => {
     );
   });
 
+  it('drops the header under no-header', async () => {
+    const dialog = await createDialog((dialog) => (dialog.noHeader = true));
+
+    expect(shadow(dialog, '.header')).toBeNull();
+    expect(shadow(dialog, '.close')).toBeNull();
+  });
+
+  it('still labels the dialog under no-header', async () => {
+    const dialog = await createDialog((dialog) => (dialog.noHeader = true));
+    const labelledBy = shadow(dialog, 'dialog')!.getAttribute(
+      'aria-labelledby'
+    );
+    const heading = dialog.shadowRoot!.getElementById(labelledBy ?? '');
+
+    expect(heading?.localName).toBe('h2');
+    expect(heading?.hidden).toBe(true);
+    expect(heading?.textContent?.trim()).toBe('Test Dialog');
+  });
+
   it('brings the header back when a label is set later', async () => {
     const dialog = document.createElement('craft-dialog') as CraftDialog;
     // No close button either, so the header really is absent to begin with.
@@ -146,6 +165,12 @@ describe('craft-dialog', () => {
     await dialog.updateComplete;
 
     expect(dialog.opened).toBe(false);
+  });
+
+  it('names the close button "Close"', async () => {
+    const dialog = await createDialog();
+
+    expect(shadow(dialog, '.close')!.getAttribute('aria-label')).toBe('Close');
   });
 
   it('opens when the open attribute is set before connecting', async () => {
@@ -363,7 +388,7 @@ describe('craft-dialog', () => {
 
 describe('craft-dialog before-hide', () => {
   it('stays open when a listener cancels the dismissal', async () => {
-    const dialog = document.createElement('craft-dialog');
+    const dialog = document.createElement('craft-dialog') as CraftDialog;
     dialog.opened = true;
     document.body.append(dialog);
     await dialog.updateComplete;
@@ -379,7 +404,7 @@ describe('craft-dialog before-hide', () => {
   });
 
   it('closes when nothing objects', async () => {
-    const dialog = document.createElement('craft-dialog');
+    const dialog = document.createElement('craft-dialog') as CraftDialog;
     dialog.opened = true;
     document.body.append(dialog);
     await dialog.updateComplete;
@@ -397,7 +422,7 @@ describe('craft-dialog before-hide', () => {
   });
 
   it('does not ask when opened is set to false directly', async () => {
-    const dialog = document.createElement('craft-dialog');
+    const dialog = document.createElement('craft-dialog') as CraftDialog;
     dialog.opened = true;
     document.body.append(dialog);
     await dialog.updateComplete;
@@ -411,5 +436,47 @@ describe('craft-dialog before-hide', () => {
     await dialog.updateComplete;
 
     expect(asked).toBe(false);
+  });
+});
+
+describe('craft-dialog resizable', () => {
+  const grips = (dialog: CraftDialog) =>
+    dialog.shadowRoot!.querySelector('craft-resize-grips');
+  const surface = (dialog: CraftDialog) =>
+    dialog.shadowRoot!.querySelector<HTMLElement>('.surface')!;
+
+  it('has no grips unless it opts in', async () => {
+    const dialog = await createDialog();
+
+    expect(grips(dialog)).toBeNull();
+  });
+
+  it('sizes its surface by its grips, and back to its own size on reset', async () => {
+    const dialog = await createDialog((d) => (d.resizable = true));
+    const resize = async (width: number | null, height: number | null) => {
+      grips(dialog)!.dispatchEvent(
+        new CustomEvent('craft-resize', {detail: {width, height}})
+      );
+      await dialog.updateComplete;
+    };
+
+    expect(grips(dialog)!.target).toBe(surface(dialog));
+
+    await resize(500, 400);
+    expect(surface(dialog).style.getPropertyValue('inline-size')).toBe('500px');
+    expect(surface(dialog).style.getPropertyValue('block-size')).toBe('400px');
+
+    await resize(null, null);
+    expect(surface(dialog).style.getPropertyValue('inline-size')).toBe('');
+    expect(surface(dialog).style.getPropertyValue('block-size')).toBe('');
+  });
+
+  it('offers no grips while fullscreen', async () => {
+    const dialog = await createDialog((d) => {
+      d.resizable = true;
+      d.fullscreen = true;
+    });
+
+    expect(grips(dialog)).toBeNull();
   });
 });

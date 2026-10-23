@@ -1,8 +1,48 @@
 import {css} from 'lit';
+import {tintedHost} from '@src/styles/tinted.styles';
 
 export default css`
   :host {
     display: block;
+  }
+
+  /* On a tinted card links take the card's text color, and are underlined so
+     they still stand apart from it. Neutral cards keep the default link
+     styling (black's contents take the dark theme's). */
+  ${tintedHost()} {
+    --c-text-link: currentColor;
+    --c-link-decoration: underline;
+    --c-link-decoration-hover: none;
+  }
+
+  /* What's in a tinted card takes the card's color rather than gray, as its
+     body does: neutral controls and hairlines, the selected tab's indicator,
+     form control and checkbox borders, and UI text. */
+  ${tintedHost()} ::slotted(*) {
+    --c-color-neutral-fill-quiet: var(--_colorable-fill-quiet);
+    --c-color-neutral-fill-normal: var(--_colorable-fill-normal);
+    --c-color-neutral-fill-loud: var(--_colorable-fill-loud);
+    --c-color-neutral-border-quiet: var(--_colorable-border-quiet);
+    --c-color-neutral-border-normal: var(--_colorable-border-normal);
+    --c-color-neutral-border-loud: var(--_colorable-border-loud);
+    --c-color-neutral-on-quiet: var(--_colorable-on-quiet);
+    --c-color-neutral-on-normal: var(--_colorable-on-normal);
+    --c-color-neutral-on-loud: var(--_colorable-on-loud);
+    --c-tab-border-active: var(--_colorable-on-quiet);
+    --c-form-control-border-color: var(--_colorable-border-normal);
+    --c-text-default: var(--_colorable-on-quiet);
+    --c-text-quiet: color-mix(
+      in oklab,
+      var(--_colorable-on-quiet) 75%,
+      var(--_colorable-fill-quiet)
+    );
+  }
+
+  /* A neutral card re-resolves the tokens a tinted card recolors (see
+     tokens.css). The selected tab's indicator has no token of its own to go
+     back to, so it's cleared, leaving tabs their default. */
+  :host(:is([data-color='white'], [data-color='gray'], [data-color='slate'])) {
+    --c-tab-border-active: initial;
   }
 
   :host([active]) .card {
@@ -15,6 +55,31 @@ export default css`
       background-color: var(--c-color-fill-loud);
       border-color: var(--c-color-border-loud);
       color: var(--c-color-on-loud);
+      --c-checkbox-border-color: var(--c-color-on-loud);
+      /* Plain controls here hover over the quiet fill, which would be a light
+         patch under the header's light text. */
+      --c-color-fill-quiet: var(--c-color-fill-loud);
+      --c-color-border-quiet: var(--c-color-border-loud);
+      --c-color-on-quiet: var(--c-color-on-loud);
+    }
+  }
+
+  /* A checked header checkbox is filled with the header's text color, with
+     the mark cut out in its fill, rather than the accent color, which can
+     clash with the card's color or blend into it. */
+  :host([data-color]:not([data-color='white'])) .card {
+    .card__header,
+    .card__footer {
+      --c-checkbox-checked-fill: var(--c-color-on-quiet);
+      --c-checkbox-checked-mark: var(--c-color-fill-quiet);
+    }
+  }
+
+  :host([data-color]:not([data-color='white'])[active]) .card {
+    .card__header,
+    .card__footer {
+      --c-checkbox-checked-fill: var(--c-color-on-loud);
+      --c-checkbox-checked-mark: var(--c-color-fill-loud);
     }
   }
 
@@ -29,7 +94,87 @@ export default css`
     border-radius: var(--c-card-radius, var(--c-radius-md));
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
     position: relative;
+    box-sizing: border-box;
     height: 100%;
+    overflow: clip;
+  }
+
+  /* Without a color, a card has no fill of its own: its border and text come
+     from the colors around it, so in a colored card or block it takes that
+     color, as what's in it does, and elsewhere the neutral ones. */
+  :host(:not([data-color]):not([active])) .card {
+    color: var(--c-text-default);
+    background-color: transparent;
+  }
+
+  :host(:not([data-color]):not([active])) .card__header,
+  :host(:not([data-color]):not([active])) .card__footer {
+    background-color: transparent;
+  }
+
+  :host(:not([data-color])[active]) .card {
+    --c-color-fill-loud: var(--c-card-fill-selected);
+    --c-color-border-loud: var(--c-card-border-selected);
+    --c-color-on-loud: var(--c-card-text-selected);
+  }
+
+  /* White and black take their own colors, which swap in the dark theme, so a
+     white card looks white in the light theme and black in the dark one, and a
+     black card the reverse, wherever it's nested. Each is edged in its own
+     hairline color, as black's quiet border is barely lighter than its fill. */
+  :host([data-color='white']) .card {
+    --c-color-border-quiet: var(--c-color-white-edge);
+    --c-color-border-loud: var(--c-border-raised-selected);
+    box-shadow: var(--c-card-shadow, var(--c-shadow-xs));
+  }
+
+  /* Black's quiet fill is dark under light text, so the translucent body would
+     let a light page through and wash the text out. It fills the whole card
+     instead, selected or not. */
+  :host([data-color='black']) .card {
+    --c-color-border-quiet: var(--c-color-black-edge);
+    background-color: var(--c-color-fill-quiet);
+  }
+
+  /* Black's loud fill is the same as its quiet one, so with the body filled
+     too, selection shows in the border, as a white card's does. */
+  :host([data-color='black'][active]) .card {
+    border-color: var(--c-color-accent-border-normal);
+  }
+
+  /* White fills the whole card, not just the header over a translucent body. */
+  :host([data-color='white']:not([active])) .card {
+    background-color: var(--c-color-fill-quiet);
+  }
+
+  :host([data-color='white']:not([active])) .card__header,
+  :host([data-color='white']:not([active])) .card__footer {
+    background-color: transparent;
+  }
+
+  :host([data-color='white']) .card .card__header,
+  :host([data-color='white']) .card .card__footer {
+    border-color: var(--c-color-white-edge);
+  }
+
+  :host([data-color='white'][active]) .card {
+    background-color: var(--c-color-accent-fill-quiet);
+    border-color: var(--c-color-accent-border-normal);
+  }
+
+  :host([data-color='white'][active]) .card .card__header,
+  :host([data-color='white'][active]) .card .card__footer {
+    background-color: transparent;
+    border-color: var(--c-color-accent-border-quiet);
+  }
+
+  /* Checkboxes match the header's other controls, which take its text color. */
+  .card__header,
+  .card__footer {
+    --c-checkbox-border-color: var(
+      --c-color-on-quiet,
+      var(--c-color-neutral-on-quiet)
+    );
   }
 
   .card__header,
@@ -56,16 +201,26 @@ export default css`
     display: none;
   }
 
+  /* With the card's own top and bottom borders, a header bar's height. */
   :host([collapsed]) .card__header {
+    min-height: var(
+      --c-card-header-min-height,
+      calc(var(--c-size-header) - var(--c-card-border-width, 1px) * 2)
+    );
     border-block-end-width: 0;
-    border-end-start-radius: var(--c-card-radius, var(--c-radius-md));
-    border-end-end-radius: var(--c-card-radius, var(--c-radius-md));
   }
 
   .card__header {
-    min-height: var(--c-card-header-min-height, 1lh);
-    border-start-start-radius: var(--c-card-radius, var(--c-radius-md));
-    border-start-end-radius: var(--c-card-radius, var(--c-radius-md));
+    /* Room for a small button, like other header bars, so a header is the
+       same height with or without actions. With the card's top border and the
+       header's own bottom border, it's a header bar's height. */
+    --_header-height: calc(
+      var(--c-size-header) - var(--c-card-border-width, 1px)
+    );
+    min-height: var(--c-card-header-min-height, var(--_header-height));
+    padding-block: calc(
+      (var(--_header-height) - 1px - var(--c-size-control-sm)) / 2
+    );
     border-block-end-width: 1px;
     display: flex;
     justify-content: space-between;
@@ -80,6 +235,7 @@ export default css`
 
   .card__header__suffix {
     display: flex;
+    align-items: center;
     gap: var(--c-spacing-md);
   }
 
@@ -88,10 +244,20 @@ export default css`
     gap: var(--c-spacing-sm);
   }
 
+  /* The body matches the CP's container padding, and falls back to the same
+     value outside the CP, where nothing defines it. */
   .card-body {
+    --_body-padding-inline: var(
+      --c-card-padding-inline,
+      var(--cp-container-padding, var(--c-spacing-lg))
+    );
+    --_body-padding-block: var(
+      --c-card-padding-block,
+      var(--cp-container-padding, var(--c-spacing-lg))
+    );
     gap: var(--c-spacing-md);
-    padding-inline: var(--c-card-padding-inline, var(--cp-container-padding));
-    padding-block: var(--c-card-padding-block, var(--cp-container-padding));
+    padding-inline: var(--_body-padding-inline);
+    padding-block: var(--_body-padding-block);
   }
 
   .card-body--thumb-start {
@@ -106,11 +272,35 @@ export default css`
     grid-template-columns: minmax(0, 1fr) calc(120rem / 16);
   }
 
-  .card-body__main {
-    grid-area: main;
+  /* The thumbnail sits closer to the card's edges than the text does. It's
+     shifted rather than given inline margins, so it keeps its column's width. */
+  .card-body__thumb {
+    --_thumb-inset: var(--c-spacing-md);
+    --_thumb-shift: calc(var(--_body-padding-inline) - var(--_thumb-inset));
+    /* Fit within the thumbnail column, at the image's own proportions. */
+    --c-thumbnail-size: calc(120rem / 16);
+    --c-thumbnail-height: auto;
+    --c-thumbnail-image-radius: var(--c-radius-md);
+    position: relative;
+    margin-block: calc(var(--_thumb-inset) - var(--_body-padding-block));
   }
 
-  .card-body__thumbnail {
-    grid-area: thumbnail;
+  .card-body--thumb-start .card-body__thumb {
+    inset-inline-start: calc(var(--_thumb-shift) * -1);
+  }
+
+  .card-body--thumb-end .card-body__thumb {
+    inset-inline-start: var(--_thumb-shift);
+  }
+
+  /* Capped, as a transformed image can round a pixel past the column. */
+  slot[name='thumbnail']::slotted(*) {
+    max-block-size: calc(120rem / 16);
+    border-radius: var(--c-radius-md);
+    overflow: clip;
+  }
+
+  .card-body__main {
+    grid-area: main;
   }
 `;

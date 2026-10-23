@@ -17,6 +17,7 @@ use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\Icon;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
@@ -58,6 +59,9 @@ readonly class ElementHtml
 
     public const string CHIP_SIZE_LARGE = 'large';
 
+    /** The thumbnail size for small chips, other than plain ones. */
+    public const int CHIP_THUMB_SIZE = 26;
+
     public function __construct(
         private StatusHtml $statusHtml,
         private ContentHtml $contentHtml,
@@ -97,14 +101,14 @@ readonly class ElementHtml
         $config['showDescription'] = $config['showDescription'] && $component instanceof Describable;
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
-        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size']) : null;
+        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size'], $config['appearance'] ?? null) : null;
         $icon = $config['showThumb'] ? $this->chipIcon($component) : null;
 
         $attributes = Arr::merge([
             'id' => $config['id'],
             'size' => $config['size'],
             'class' => [
-                'cp-color-'.($color->value ?? 'white'),
+                ...($color ? ["cp-color-$color->value"] : []),
                 $config['size'],
                 ...Html::explodeClass($config['class']),
             ],
@@ -120,7 +124,7 @@ readonly class ElementHtml
                 'label' => $component->getUiLabel(),
                 'description' => $component instanceof Describable ? $component->getDescription() : null,
                 'handle' => $component instanceof Grippable ? $component->getHandle() : null,
-                'color' => $color->value ?? 'white',
+                'color' => $color?->value,
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
                     'id' => InputNamespace::namespaceId($config['id']),
@@ -217,17 +221,7 @@ readonly class ElementHtml
                 $html .= $this->componentActionMenu($component);
             }
             if ($config['sortable']) {
-                $html .= Button::make()
-                    ->icon('move')
-                    ->attributes([
-                        'class' => ['chromeless', 'small', 'move-btn'],
-                        'title' => t('Reorder'),
-                        'aria' => [
-                            'label' => t('Reorder'),
-                        ],
-                        'role' => 'none',
-                        'tabindex' => '-1',
-                    ]);
+                $html .= Html::tag('craft-reorder-button', '', ['class' => 'move-btn']);
             }
             $html .= Html::endTag('div'); // slot=suffix
         }
@@ -243,13 +237,19 @@ readonly class ElementHtml
     /**
      * Returns a chip’s thumbnail HTML, or `null` if the component doesn’t have one.
      */
-    private function chipThumbHtml(Chippable $component, string $size): ?string
+    private function chipThumbHtml(Chippable $component, string $size, ?string $appearance = null): ?string
     {
         if (! $component instanceof Thumbable) {
             return null;
         }
 
-        $thumbSize = $size === self::CHIP_SIZE_SMALL ? 30 : 120;
+        // A small chip's thumbnail fits within its 32px height, inside its
+        // border and padding, unless the chip is plain, without either.
+        $thumbSize = match (true) {
+            $size !== self::CHIP_SIZE_SMALL => 120,
+            $appearance === Appearance::Plain->value => 30,
+            default => self::CHIP_THUMB_SIZE,
+        };
 
         return $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?: null;
     }
@@ -636,17 +636,7 @@ readonly class ElementHtml
                 ],
             ]) : '').
             ($config['showActionMenu'] ? $this->componentActionMenu($element, ! $showEditButton, $this->nestedCardActionItems($element, $config)) : '').
-            ($config['sortable'] ? Button::make()
-                ->icon('move')
-                ->attributes([
-                    'class' => ['chromeless', 'small', 'move-btn'],
-                    'title' => t('Reorder'),
-                    'aria' => [
-                        'label' => t('Reorder'),
-                    ],
-                    'role' => 'none',
-                    'tabindex' => '-1',
-                ]) : '');
+            ($config['sortable'] ? Html::tag('craft-reorder-button', '', ['class' => 'move-btn']) : '');
     }
 
     /**
@@ -709,7 +699,7 @@ readonly class ElementHtml
      */
     public function elementCardThumbHtml(ElementInterface $element): string
     {
-        return $element->getThumbHtml(120, ImageTransformMode::Crop) ?? '';
+        return $element->getThumbHtml(120, ImageTransformMode::Fit) ?? '';
     }
 
     /**
@@ -970,7 +960,7 @@ readonly class ElementHtml
             $classes[] = 'error';
         }
 
-        $thumb = $element->getThumbHtml(120, ImageTransformMode::Crop);
+        $thumb = $element->getThumbHtml(120, ImageTransformMode::Fit);
         $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
 
         if ($thumb) {
@@ -992,7 +982,7 @@ readonly class ElementHtml
                     '--custom-sel-bg-color' => $color?->cssVar(800),
                 ]),
                 'data' => array_filter([
-                    'color' => $color->value ?? 'white',
+                    'color' => $color?->value,
                     'settings' => $config['autoReload'] ? [
                         'hyperlink' => $config['hyperlink'],
                         'returnUrl' => $config['returnUrl'],

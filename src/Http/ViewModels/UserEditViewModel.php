@@ -73,6 +73,7 @@ class UserEditViewModel extends ElementEditViewModel
      * Encrypted, because the save controllers decrypt whatever `redirect` a
      * request posts rather than trusting it.
      */
+    #[Override]
     public function redirectUrl(): string
     {
         $screens = app(EditUserScreens::class);

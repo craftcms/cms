@@ -209,6 +209,100 @@ describe('slideout store', () => {
     opener.remove();
   });
 
+  it('focuses what returnFocus returns on close', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+    const hidden = document.createElement('div');
+    hidden.hidden = true;
+    const opener = document.createElement('button');
+    hidden.appendChild(opener);
+    const target = document.createElement('button');
+    document.body.append(hidden, target);
+    const returnFocus = vi.fn(() => target);
+
+    const panel = (await openSlideout('/a', {opener, returnFocus}))!;
+    closeSlideout(panel.id);
+
+    expect(returnFocus).toHaveBeenCalledWith(opener);
+    expect(document.activeElement).toBe(target);
+  });
+
+  it('falls back to the opener when returnFocus finds nothing', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+
+    const panel = (await openSlideout('/a', {
+      opener,
+      returnFocus: () => null,
+    }))!;
+    closeSlideout(panel.id);
+
+    expect(document.activeElement).toBe(opener);
+  });
+
+  it('sends focus to the menu’s button when the item that opened it is hidden', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+    const container = document.createElement('div');
+    container.innerHTML = `
+      <craft-action-menu>
+        <button slot="invoker">Actions</button>
+        <div slot="content"><button>Entry type settings</button></div>
+      </craft-action-menu>
+    `;
+    document.body.append(container);
+    const invoker = container.querySelector<HTMLElement>('[slot="invoker"]');
+    const item = container.querySelector<HTMLElement>(
+      '[slot="content"] button'
+    )!;
+
+    const panel = (await openSlideout('/a', {opener: item}))!;
+    container.querySelector<HTMLElement>('[slot="content"]')!.hidden = true;
+    closeSlideout(panel.id);
+
+    expect(document.activeElement).toBe(invoker);
+    container.remove();
+  });
+
+  it('sends focus to the panel it was opened from once the opener’s menu is gone', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+    const outer = (await openSlideout('/outer'))!;
+    const origin = document.createElement('div');
+    origin.tabIndex = -1;
+    origin.dataset.slideoutId = outer.id;
+    origin.innerHTML = `
+      <craft-action-menu>
+        <button slot="invoker">Actions</button>
+        <div slot="content"><button>Entry type settings</button></div>
+      </craft-action-menu>
+    `;
+    document.body.append(origin);
+    const item = origin.querySelector<HTMLElement>('[slot="content"] button')!;
+
+    const panel = (await openSlideout('/a', {opener: item}))!;
+    origin.querySelector('craft-action-menu')!.remove();
+    closeSlideout(panel.id);
+
+    expect(document.activeElement).toBe(origin);
+    origin.remove();
+    closeSlideout(outer.id, {force: true});
+  });
+
   it('surfaces a load failure on the panel instead of throwing', async () => {
     fetchSlideoutPage.mockRejectedValue(new Error('boom'));
 
@@ -331,6 +425,37 @@ describe('reporting a save to the opener', () => {
 
     expect(notifySlideoutSaved(panel.id)).toBe(false);
     expect(onSaved).not.toHaveBeenCalled();
+  });
+});
+
+describe('telling the opener the panel closed', () => {
+  beforeEach(() => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+  });
+
+  it('calls the handler when the panel closes', async () => {
+    const onClosed = vi.fn();
+    const panel = (await openSlideout('/a', {onClosed}))!;
+
+    expect(onClosed).not.toHaveBeenCalled();
+
+    closeSlideout(panel.id, {force: true});
+
+    expect(onClosed).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls it for nested panels closed along with their parent', async () => {
+    const onClosed = vi.fn();
+    const first = (await openSlideout('/a'))!;
+    await openSlideout('/b', {opener: openerInPanel(first.id), onClosed});
+
+    closeSlideout(first.id, {force: true});
+
+    expect(onClosed).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -671,8 +796,50 @@ describe('SlideoutPanel', () => {
     // Derived from the width rather than Craft 5's hard-coded `45vw`, so
     // changing `--slideout-width` keeps the stack geometry correct.
     expect(panel.getAttribute('style')).toContain(
-      'calc((100vw - var(--slideout-panel-width)) * 1)'
+      'calc(100vw - var(--slideout-panel-width))'
     );
+  });
+
+  // Resized narrow, an even spread across the room beside the newest panel
+  // would leave gaps between them. Each step stops at half a panel instead.
+  it('keeps outer panels overlapping the ones above them', async () => {
+    const {root} = await mountPanel(defineComponent({render: () => h('div')}));
+    const panel = root.querySelector<HTMLElement>('.slideout-panel')!;
+    const above = {
+      element: document.createElement('div'),
+      position: () => {},
+      handleShadeClick: () => {},
+    };
+
+    registerPanel(above);
+    await nextTick();
+
+    expect(panel.getAttribute('style')).toContain(
+      'min((100vw - var(--slideout-panel-width)) / 2, var(--slideout-panel-width) / 2)'
+    );
+
+    unregisterPanel(above);
+  });
+
+  it('resizes from its inner edge, as the details column does', async () => {
+    const {root} = await mountPanel(defineComponent({render: () => h('div')}));
+    const panel = root.querySelector<HTMLElement>('.slideout-panel')!;
+    const handle = panel.querySelector<HTMLElement>('[role="separator"]')!;
+
+    expect(handle.getAttribute('aria-label')).toBe('Resize slideout');
+
+    // End jumps to the widest the panel may be, which lands on the variable
+    // the stack offset reads too.
+    handle.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'End', bubbles: true})
+    );
+    await nextTick();
+
+    expect(panel.style.getPropertyValue('--slideout-width')).toBe(
+      `${handle.getAttribute('aria-valuemax')}px`
+    );
+
+    localStorage.clear();
   });
 
   /**

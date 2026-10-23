@@ -44,7 +44,8 @@ export default class CraftSelectRich extends HasLabel(LionSelectRich) {
 
   /**
    * Override Lion's default which sets a fixed pixel width on the invoker.
-   * Use min-width instead so the invoker can grow with its content.
+   * Use min-width instead so the invoker can grow with its content, up to
+   * the width of its container.
    */
   override async _alignInvokerWidth() {
     await this.updateComplete;
@@ -64,7 +65,7 @@ export default class CraftSelectRich extends HasLabel(LionSelectRich) {
       this._overlayCtrl.contentWrapperNode.getBoundingClientRect().width;
 
     if (contentWidth > 0) {
-      this._invokerNode.style.minWidth = `${contentWidth}px`;
+      this._invokerNode.style.minWidth = `min(${contentWidth}px, 100%)`;
       this._invokerNode.style.width = '';
     }
 

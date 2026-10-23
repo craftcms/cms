@@ -8,6 +8,7 @@
 namespace craft\filters;
 
 use Craft;
+use CraftCms\Cms\Cms;
 use yii\base\Action;
 use yii\base\BaseObject;
 use yii\filters\RateLimitInterface;
@@ -26,11 +27,15 @@ class IpRateLimitIdentity extends BaseObject implements RateLimitInterface
 {
     /**
      * @var int Maximum number of requests allowed within the window
+     *
+     * If not set, the <config5:defaultRateLimit> config setting will be used.
      */
     public int $limit;
 
     /**
      * @var int Time window in seconds
+     *
+     * If not set, the <config5:defaultRateLimitDuration> config setting will be used.
      */
     public int $window;
 
@@ -41,8 +46,43 @@ class IpRateLimitIdentity extends BaseObject implements RateLimitInterface
 
     /**
      * @var string The IP address to rate limit
+     *
+     * If not set, the request’s user IP will be used.
      */
     public string $ip;
+
+    /**
+     * Returns a new identity configured with the default rate limit settings, or `null` if
+     * <config5:defaultRateLimit> is disabled.
+     *
+     * @param string $keyPrefix The cache key prefix for storing allowance data
+     * @return self|null
+     * @since 5.12.0
+     */
+    public static function createDefault(string $keyPrefix): ?self
+    {
+        if (Cms::config()->defaultRateLimit === false) {
+            return null;
+        }
+
+        return new self(['keyPrefix' => $keyPrefix]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if (!isset($this->limit) || !isset($this->window)) {
+            $generalConfig = Cms::config();
+            $this->limit ??= (int)$generalConfig->defaultRateLimit;
+            $this->window ??= (int)$generalConfig->defaultRateLimitDuration;
+        }
+
+        $this->ip ??= Craft::$app->getRequest()->getUserIP() ?? 'unknown';
+    }
 
     /**
      * @inheritdoc

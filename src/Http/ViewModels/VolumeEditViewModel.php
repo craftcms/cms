@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -88,7 +89,7 @@ class VolumeEditViewModel extends ViewModel
                 Text::make('subpath')->textExpanderTriggers($envTextExpanderTriggers),
             )
                 ->instructions(t('Where assets should be stored on the filesystem.'))
-                ->tip(t('Type `$` to choose an environment variable.')),
+                ->tip(t('Type <kbd>$</kbd> to choose an environment variable.')),
             Field::make(
                 t('Asset Transformer'),
                 Combobox::make('assetTransformer')
@@ -100,6 +101,13 @@ class VolumeEditViewModel extends ViewModel
         if (Sites::isMultiSite()) {
             $ui->add(
                 Separator::make('translation-separator'),
+                Field::make(
+                    t('Propagation Method'),
+                    Choice::make('propagationMethod')->options([
+                        ['label' => t('Save assets to all sites'), 'value' => PropagationMethod::All->value],
+                        ['label' => t('Let each asset choose which sites it should be saved to'), 'value' => PropagationMethod::Custom->value],
+                    ]),
+                )->instructions(t('Which sites should assets in this volume be saved to?')),
                 Field::make(
                     t('{name} Translation Method', ['name' => t('Title')]),
                     Choice::make('titleTranslationMethod')->options(TranslationMethod::asOptions())->reactive(),
@@ -191,6 +199,7 @@ class VolumeEditViewModel extends ViewModel
             'titleTranslationKeyFormat' => $this->volume->titleTranslationKeyFormat ?? '',
             'altTranslationMethod' => $this->volume->altTranslationMethod->value,
             'altTranslationKeyFormat' => $this->volume->altTranslationKeyFormat ?? '',
+            'propagationMethod' => $this->volume->propagationMethod->value,
             'fieldLayout' => [
                 'id' => $fieldLayout->id,
                 'uid' => $fieldLayout->uid,

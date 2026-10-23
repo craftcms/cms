@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ui\Controls;
 
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Contracts\Control as ControlContract;
@@ -176,11 +177,6 @@ class Table extends Control
         foreach ($this->columns as $key => $column) {
             $control = $column['control'] ?? null;
             $defaults[$key] ??= $column['value'] ?? ($control instanceof ControlContract ? $control->getValue() : null);
-
-            if (isset($column['prefixSelect'])) {
-                $prefix = $column['prefixSelect'];
-                $defaults[$prefix['key']] ??= $prefix['options'][0]['value'] ?? '';
-            }
         }
 
         return $defaults;
@@ -196,7 +192,7 @@ class Table extends Control
 
         foreach ($this->columns as $key => $column) {
             $column = array_replace($column, $cellOptions[$key] ?? []);
-            if (($column['type'] ?? null) === 'html' || ($column['html'] ?? false)) {
+            if (in_array($column['type'] ?? null, ['heading', 'html'], true) || ($column['html'] ?? false)) {
                 continue;
             }
 
@@ -205,14 +201,6 @@ class Table extends Control
                 $control->value($row[$key] ?? $this->rowDefaults()[$key] ?? null);
             }
             $ui->add(Field::make($column['heading'] ?? null, $control)->labelSrOnly()->required($column['required'] ?? false));
-
-            if (isset($column['prefixSelect'])) {
-                $prefix = $column['prefixSelect'];
-                $ui->add(Field::make($prefix['label'], Choice::make([$prefix['key']])
-                    ->options(TableColumn::options($prefix['options']))
-                    ->withoutPlaceholder()
-                    ->value($row[$prefix['key']] ?? $this->rowDefaults()[$prefix['key']] ?? null))->labelSrOnly());
-            }
         }
 
         return $ui;
@@ -288,11 +276,24 @@ class Table extends Control
         ];
     }
 
+    /**
+     * @param  array<string, mixed>  $column
+     * @return array<string, mixed>
+     */
+    private function columnProps(array $column): array
+    {
+        if (isset($column['info']) && ! isset($column['infoHtml'])) {
+            $column['infoHtml'] = Markdown::parseParagraph((string) $column['info']);
+        }
+
+        return array_diff_key($column, ['control' => true, 'info' => true]);
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
         return Arr::whereNotNull([
-            'columns' => array_map(fn (array $column): array => array_diff_key($column, ['control' => true]), $this->columns),
+            'columns' => array_map($this->columnProps(...), $this->columns),
             'allowAdd' => $this->allowAdd,
             'allowDelete' => $this->allowDelete,
             'allowReorder' => $this->allowReorder,

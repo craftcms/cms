@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Workflow;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
@@ -23,7 +24,7 @@ use WeakMap;
 #[Singleton]
 readonly class WorkflowContentChanges
 {
-    /** @var WeakMap<ElementInterface, array{draftIds: list<int>, mergingCanonicalChanges: bool}> */
+    /** @var WeakMap<ElementInterface, list<int>> */
     private WeakMap $writes;
 
     /** @var WeakMap<ElementInterface, list<int>> */
@@ -39,7 +40,9 @@ readonly class WorkflowContentChanges
 
     public function handleElementSaving(ElementSaving $event): void
     {
-        $draftIds = $this->drafts->getDraftIdsForElement($event->element);
+        $draftIds = $event->element->mergingCanonicalChanges
+            ? []
+            : $this->drafts->getDraftIdsForElement($event->element);
 
         if ($draftIds === []) {
             unset($this->writes[$event->element]);
@@ -47,39 +50,69 @@ readonly class WorkflowContentChanges
             return;
         }
 
-        $this->writes[$event->element] = [
-            'draftIds' => $draftIds,
-            'mergingCanonicalChanges' => $event->element->mergingCanonicalChanges,
-        ];
+        $this->writes[$event->element] = $draftIds;
     }
 
     public function handleElementPersisted(ElementPersisted $event): void
     {
-        $write = $this->writes[$event->element] ?? null;
+        $draftIds = $this->writes[$event->element] ?? [];
         unset($this->writes[$event->element]);
 
         if (
-            $write === null ||
-            (! $write['mergingCanonicalChanges'] &&
-                $event->element->getDirtyAttributes() === [] &&
-                $event->element->getDirtyFields() === [])
+            $draftIds === [] ||
+            ($event->element->getDirtyAttributes() === [] && $event->element->getDirtyFields() === [])
         ) {
             return;
         }
 
-        if (($event->element->applyingDraft || $event->element->propagatingFrom?->applyingDraft) && WorkflowRun::query()
-            ->whereIn('draftId', $write['draftIds'])
+        if ($this->isApplyingDraft($event->element) && WorkflowRun::query()
+            ->whereIn('draftId', $draftIds)
             ->where('status', WorkflowStatus::Approved)
             ->exists()) {
             return;
         }
 
-        $this->workflows->contentChangedByDraftIds($write['draftIds']);
+        $this->workflows->contentChangedByDraftIds($draftIds);
+    }
+
+    /**
+     * Whether a save is part of applying an approved draft: the draft itself,
+     * or anything saved along with it — copies propagating to other sites and
+     * nested elements, in any combination.
+     */
+    private function isApplyingDraft(ElementInterface $element): bool
+    {
+        $queue = [$element];
+        $visited = [];
+
+        while (($element = array_shift($queue)) !== null) {
+            if (isset($visited[spl_object_id($element)])) {
+                continue;
+            }
+
+            $visited[spl_object_id($element)] = true;
+
+            if ($element->applyingDraft) {
+                return true;
+            }
+
+            if ($element->propagatingFrom !== null) {
+                $queue[] = $element->propagatingFrom;
+            }
+
+            if ($element instanceof NestedElementInterface && ($owner = $element->getOwner()) !== null) {
+                $queue[] = $owner;
+            }
+        }
+
+        return false;
     }
 
     public function handleElementLifecycleDeleting(ElementLifecycleDeleting $event): void
     {
-        $this->deletions[$event->element] = $this->drafts->getDraftIdsForElement($event->element);
+        $this->deletions[$event->element] = $event->element->mergingCanonicalChanges
+            ? []
+            : $this->drafts->getDraftIdsForElement($event->element);
     }
 
     public function handleElementLifecycleDeleted(ElementLifecycleDeleted $event): void
@@ -87,7 +120,9 @@ readonly class WorkflowContentChanges
         $draftIds = $this->deletions[$event->element] ?? [];
         unset($this->deletions[$event->element]);
 
-        $this->workflows->contentChangedByDraftIds($draftIds);
+        if ($draftIds !== []) {
+            $this->workflows->contentChangedByDraftIds($draftIds);
+        }
     }
 
     /** @return array<class-string, string> */

@@ -234,6 +234,11 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::int(),
                 'description' => 'The ID of the draft to return (from the `drafts` table)',
             ],
+            'releaseId' => [
+                'name' => 'releaseId',
+                'type' => Type::int(),
+                'description' => 'Narrows the query results to drafts attached to the release with this ID.',
+            ],
             'draftCreator' => [
                 'name' => 'draftCreator',
                 'type' => Type::int(),

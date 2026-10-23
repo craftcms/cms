@@ -17,10 +17,12 @@ use CraftCms\Cms\Element\Events\DraftCreating;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Workflows;
@@ -50,6 +52,7 @@ readonly class Drafts
         private Elements $elements,
         private DraftActivity $activity,
         private Workflows $workflows,
+        private Releases $releases,
     ) {}
 
     /**
@@ -237,6 +240,8 @@ readonly class Drafts
         DB::beginTransaction();
 
         try {
+            $this->releases->lockElements($element);
+
             $draftId = $this->insertDraftRow($name, $notes, $creatorId);
 
             $element->draftId = $draftId;
@@ -431,7 +436,7 @@ readonly class Drafts
             ));
 
             return true;
-        });
+        }, 3);
     }
 
     /**
@@ -488,7 +493,7 @@ readonly class Drafts
             ->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', '=', 'elements.draftId')
             ->where('drafts.saved', false)
             ->whereNull('drafts.canonicalId')
-            ->where('elements.dateUpdated', '<', now()->subSeconds(Cms::config()->purgeUnsavedDraftsDuration))
+            ->where('elements.dateUpdated', '<', Query::prepareDateForDb(now()->subSeconds(Cms::config()->purgeUnsavedDraftsDuration)))
             ->get();
 
         foreach ($drafts as $draftInfo) {

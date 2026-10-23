@@ -101,6 +101,13 @@ beforeEach(() => {
 });
 
 describe('chrome', () => {
+  it('is resizable by default', async () => {
+    const modal = await createModal();
+
+    expect(modal.resizable).toBe(true);
+    expect(shadow(modal, 'craft-resize-grips')).not.toBeNull();
+  });
+
   it('renders a heading, a body slot and a footer', async () => {
     const modal = await createModal((m) => {
       m.label = 'Choose';
@@ -135,39 +142,24 @@ describe('chrome', () => {
     expect(slot.assignedNodes({flatten: true})).toContain(index);
   });
 
-  it('has a close button that dismisses it', async () => {
-    const modal = await createModal((m) => m.setAttribute('open', ''));
-    const seen = vi.fn();
-    modal.addEventListener('craft-cancel', seen);
-
-    shadow<HTMLButtonElement>(modal, '[part="close"]')!.click();
-    await modal.updateComplete;
-
-    expect(seen).toHaveBeenCalledTimes(1);
-    expect(modal.opened).toBe(false);
-  });
-
-  it('keeps the close button when the title is hidden', async () => {
-    // The heading goes out of flow, but the button still needs to be reachable.
-    const modal = await createModal();
+  it('has no header or close button when the title is hidden', async () => {
+    // Cancel, Escape and the backdrop dismiss it; the heading still names it.
+    const modal = await createModal((m) => (m.label = 'Choose'));
 
     expect(modal.showTitle).toBe(false);
-    expect(shadow(modal, '[part="close"]')).not.toBeNull();
+    expect(shadow(modal, '.header')).toBeNull();
+    expect(shadow(modal, '[part="close"]')).toBeNull();
+    expect(shadow(modal, 'h1.title--hidden')).not.toBeNull();
   });
 
-  it('refuses a close click while busy', async () => {
+  it('shows the title, without a close button, when asked to', async () => {
     const modal = await createModal((m) => {
-      m.setAttribute('open', '');
-      m.busy = true;
+      m.label = 'Choose';
+      m.showTitle = true;
     });
-    const seen = vi.fn();
-    modal.addEventListener('craft-cancel', seen);
 
-    shadow<HTMLButtonElement>(modal, '[part="close"]')!.click();
-    await modal.updateComplete;
-
-    expect(seen).not.toHaveBeenCalled();
-    expect(modal.opened).toBe(true);
+    expect(shadow(modal, '.header h1')?.className).toBe('title');
+    expect(shadow(modal, '[part="close"]')).toBeNull();
   });
 
   it('exposes the footer slots', async () => {

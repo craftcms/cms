@@ -16,13 +16,24 @@
   const filled = computed(() => registry.has(props.name));
   const debug = layoutSlotDebugEnabled();
 
-  // Tell slots when the target they teleport into is a new element.
+  // Tell slots when the target they teleport into is a new element, or gone.
   const target = useTemplateRef<HTMLElement>('target');
+  let hasTarget = false;
   watch(
     target,
     (element, previous) => {
-      if (element && element !== previous) {
+      if (element === previous) {
+        return;
+      }
+
+      if (hasTarget) {
+        registry.targetUnmounted(props.name);
+        hasTarget = false;
+      }
+
+      if (element) {
         registry.targetMounted(props.name);
+        hasTarget = true;
       }
     },
     {flush: 'sync'}
@@ -37,7 +48,14 @@
     }
   });
 
-  onBeforeUnmount(() => untrack?.());
+  onBeforeUnmount(() => {
+    untrack?.();
+
+    if (hasTarget) {
+      registry.targetUnmounted(props.name);
+      hasTarget = false;
+    }
+  });
 </script>
 
 <template>

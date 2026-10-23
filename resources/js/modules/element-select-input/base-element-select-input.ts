@@ -262,6 +262,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
     this.initElementSelect();
     this.initElementSort();
+    this.initReorderButtons();
     this.initSearch();
     this.resetElements();
 
@@ -311,6 +312,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     }
 
     this.$addElementBtn?.off('.elementSelectInput');
+    this.$elementsContainer?.off('.elementSelectInput');
     if (this.#handleShowElementEditor) {
       this.$elements?.off('taphold', this.#handleShowElementEditor);
       this.#handleShowElementEditor = null;
@@ -386,13 +388,29 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     };
   }
 
-  initElementSort(): void {
-    if (!Craft.hasMousePointerEvents()) {
-      $(
-        '.element > .chip-content > .chip-actions > .move-btn, .element > .card-titlebar > .card-actions-container > .card-actions > .move-btn'
-      ).hide();
-    }
+  /**
+   * Moves elements when their `<craft-reorder-button>`'s Move up/down menu
+   * items are chosen, whether the server or `createNewElement()` added it.
+   */
+  initReorderButtons(): void {
+    this.$elementsContainer.on(
+      'craft-reorder.elementSelectInput',
+      'craft-reorder-button',
+      (event: JQuery.TriggeredEvent) => {
+        const {direction} = (
+          event.originalEvent as CustomEvent<{direction: 'up' | 'down'}>
+        ).detail;
+        const $button = $(event.currentTarget);
+        if (direction === 'up') {
+          this.moveElementForward($button);
+        } else {
+          this.moveElementBackward($button);
+        }
+      }
+    );
+  }
 
+  initElementSort(): void {
     if (this.settings.sortable && Craft.hasMousePointerEvents()) {
       this.elementSort = new DragSort({
         container: this.$elementsContainer,
@@ -642,7 +660,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         }
       }
 
-      // Route the Edit actions through createElementEditor(), so the slideout knows about this input
+      // Route the Edit actions through createElementEditor()
       $element
         .find('[id*="action-edit"]')
         .each((_: number, btn: HTMLElement) => {
@@ -667,22 +685,18 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
           });
         });
 
-      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
-        Craft.ui
-          .createButton({
-            class: 'chromeless small move-btn',
-            icon: 'move',
-          })
-          .attr({
-            title: Craft.t('app', 'Reorder'),
-            'aria-label': Craft.t('app', 'Reorder'),
-            'aria-describedby': $element.find('.label').attr('id'),
-          })
-          .appendTo(
-            $element.find(
-              '> .chip-content > .chip-actions, > .card-titlebar > .card-actions-container > .card-actions'
-            )
-          );
+      if (this.settings.sortable) {
+        // Its menu reorders without a mouse, so it's shown on touch devices too.
+        const reorderButton = document.createElement('craft-reorder-button');
+        reorderButton.classList.add('move-btn');
+        if (this.getElementSortAxis() !== 'y') {
+          reorderButton.setAttribute('orientation', 'horizontal');
+        }
+        $(reorderButton).appendTo(
+          $element.find(
+            '> .chip-content > .chip-actions, > .card-titlebar > .card-actions-container > .card-actions'
+          )
+        );
       }
     }
 
@@ -849,19 +863,28 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     }
   }
 
-  createElementEditor($element: any, settings?: any): any {
-    settings = Object.assign(
-      {
-        elementSelectInput: this,
-        prevalidate: this.settings.prevalidate,
+  /** Opens an element's editor slideout. */
+  createElementEditor($element: any, settings?: Record<string, unknown>): void {
+    const params = Object.fromEntries(
+      Object.entries({
+        elementType: this.settings.elementType,
+        elementId: $element.data('id'),
+        draftId: $element.data('draft-id'),
+        siteId: $element.data('site-id'),
+        prevalidate: this.settings.prevalidate ? 1 : null,
+        ...settings,
+      }).filter(([, value]) => value !== null && value !== undefined)
+    );
+
+    void Craft.openSlideout(Craft.getActionUrl('elements/edit', params), {
+      opener: $element[0],
+      onSaved: ({data}: {data?: Record<string, any>}) => {
+        // An image saved as a new asset takes the edited asset's place.
+        if (data?.replacedAssetId && data.newAssetId) {
+          void this.replaceElement(data.replacedAssetId, data.newAssetId);
+        }
       },
-      settings
-    );
-    return Craft.createElementEditor(
-      this.settings.elementType,
-      $element,
-      settings
-    );
+    });
   }
 
   replaceElement(elementId: number, replacementId: number): Promise<void> {

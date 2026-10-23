@@ -408,6 +408,27 @@ describe('NestedElementBlocksControl', () => {
     // `data-color` is all it takes — the CP's colorable rules turn it into the
     // whole `--c-color-*` set the card paints from.
     expect(block.getAttribute('data-color')).toBe('red');
+    // On the card too, so it's styled as a card in that color.
+    expect(
+      block.querySelector(':scope > craft-card')?.getAttribute('data-color')
+    ).toBe('red');
+  });
+
+  it('gives a block without a color a card without one', async () => {
+    mount(
+      {
+        entries: {'block-a': {type: 'newType', enabled: true}},
+        sortOrder: ['block-a'],
+      },
+      {blocks: {'block-a': {icon: null, color: null}}}
+    );
+    await nextTick();
+
+    const block = container!.querySelector('[data-matrix-block]')!;
+    expect(block.hasAttribute('data-color')).toBe(false);
+    expect(
+      block.querySelector(':scope > craft-card')?.hasAttribute('data-color')
+    ).toBe(false);
   });
 
   it('disables a block, folds it away, and flags it', async () => {
@@ -555,6 +576,26 @@ describe('NestedElementBlocksControl', () => {
         .querySelector('[data-matrix-block]')!
         .hasAttribute('data-collapsed')
     ).toBe(false);
+  });
+
+  it('keeps a titlebar double-click from selecting text, but not on its controls', async () => {
+    mount({
+      entries: {'block-a': {type: 'newType', enabled: true}},
+      sortOrder: ['block-a'],
+    });
+    await nextTick();
+
+    const header = container!.querySelector(
+      '[data-matrix-block] [slot="header"]'
+    )!;
+    const press = (target: Element, detail: number): boolean =>
+      target.dispatchEvent(
+        new MouseEvent('mousedown', {bubbles: true, cancelable: true, detail})
+      );
+
+    expect(press(header, 1)).toBe(true);
+    expect(press(header, 2)).toBe(false);
+    expect(press(header.querySelector('craft-checkbox')!, 2)).toBe(true);
   });
 
   it('keeps Craft 5 class names off its blocks', async () => {
@@ -1600,6 +1641,21 @@ describe('NestedElementBlocksControl', () => {
     ).toBe(true);
   });
 
+  // A block is a form, so clicking around in it to edit shouldn't select it.
+  it('selects a block only from its checkbox, not by clicking the block', async () => {
+    mount({
+      entries: {'block-a': {type: 'newType', enabled: true}},
+      sortOrder: ['block-a'],
+    });
+    await nextTick();
+
+    const block = container!.querySelector('[data-matrix-block]')!;
+    block.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    await nextTick();
+
+    expect(block.hasAttribute('data-selected')).toBe(false);
+  });
+
   it('disables a mixed selection globally from any selected block’s menu', async () => {
     mount(
       {
@@ -1627,10 +1683,19 @@ describe('NestedElementBlocksControl', () => {
     await nextTick();
 
     const blocks = [...container!.querySelectorAll('[data-matrix-block]')];
-    blocks[0]!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-    blocks[1]!.dispatchEvent(
-      new MouseEvent('click', {bubbles: true, shiftKey: true})
-    );
+    // Blocks are selected from their checkboxes; `craft-checkbox` reports its
+    // change from the host, after the click that carries the Shift key.
+    const check = (block: Element, shiftKey = false): void => {
+      const box = block.querySelector('craft-checkbox')!;
+      Object.assign(box, {checked: true});
+      box.dispatchEvent(new MouseEvent('click', {bubbles: true, shiftKey}));
+      box.dispatchEvent(
+        new CustomEvent('model-value-changed', {bubbles: true})
+      );
+    };
+    check(blocks[0]!);
+    await nextTick();
+    check(blocks[1]!, true);
     await nextTick();
 
     expect(blocks[0]!.hasAttribute('data-selected')).toBe(true);

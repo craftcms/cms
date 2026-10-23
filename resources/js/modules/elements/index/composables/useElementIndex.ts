@@ -65,6 +65,8 @@ interface UseElementIndexOptions {
     move(from: number, to: number): void | Promise<void>;
   };
   enableRowSelection?: (row: ElementIndexRow) => boolean;
+  /** Whether more than one row can be selected at a time. Defaults to true. */
+  multiSelect?: boolean;
   data?: (
     rows: ElementIndexRow[],
     mode: ViewMode['mode'],
@@ -136,7 +138,9 @@ export function useElementIndex(options: UseElementIndexOptions) {
   );
   const {mode: savedMode, restore: restoreViewMode} = useElementIndexViewMode(
     viewState,
-    visitor
+    visitor,
+    () => elementIndex.viewState?.mode,
+    () => visibleViewModes.value.map(({mode}) => mode)
   );
   const visibleViewModes = computed(() =>
     elementIndex.viewModes.filter(
@@ -218,6 +222,8 @@ export function useElementIndex(options: UseElementIndexOptions) {
     getRowId: (row) => String(row.id),
     enableRowSelection: (row) =>
       options.enableRowSelection?.(row.original) ?? true,
+    // Off, selecting a row deselects the others.
+    enableMultiRowSelection: options.multiSelect ?? true,
     onRowSelectionChange: (updater) => {
       const next =
         typeof updater === 'function' ? updater(rowSelection.value) : updater;
@@ -228,6 +234,12 @@ export function useElementIndex(options: UseElementIndexOptions) {
     },
     ...sortingConfig,
     ...paginationConfig,
+    // A getter, after the spread: the spread copies the total the index was
+    // created with, which every later source or filter would keep showing as
+    // its page count.
+    get rowCount() {
+      return elementIndex.pagination.total;
+    },
     enableMultiSort: false,
   });
 

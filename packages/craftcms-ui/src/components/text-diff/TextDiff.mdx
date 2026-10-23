@@ -1,0 +1,34 @@
+import {Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as TextDiffStories from './text-diff.stories';
+
+<Meta of={TextDiffStories} name="Docs" />
+
+# Text Diff
+
+`<craft-text-diff>` shows two versions of a text, `current` and `proposed`, as one word-level diff: deleted text struck through, and inserted text underlined.
+
+<Canvas of={TextDiffStories.Default} sourceState="shown" />
+
+Each rewritten phrase shows as one deletion followed by one insertion, rather than word by word:
+
+<Canvas of={TextDiffStories.RewrittenPhrase} sourceState="shown" />
+
+With no text before the changes, such as for a field that was empty, the text shows as it is:
+
+<Canvas of={TextDiffStories.NewText} sourceState="shown" />
+
+## Collapsing
+
+`collapse` collapses long unchanged stretches to the text around each change, with a button that shows all of the text, and only the changes again. The button only shows when collapsing hides text.
+
+<Canvas of={TextDiffStories.Collapse} sourceState="shown" />
+
+## Highlighting
+
+`highlights` marks passages of the `current` text, such as ones a comment is about. Each passage marks its first occurrence, and must match the text exactly. Collapsing keeps the text around them.
+
+<Canvas of={TextDiffStories.Highlights} sourceState="shown" />
+
+## Accessibility
+
+**Set `label` when a page shows several collapsible diffs**, such as one per field. It ends the button's accessible name, as in "Show full text Body", so each button can be told apart.

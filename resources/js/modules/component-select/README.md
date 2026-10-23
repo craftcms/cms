@@ -109,7 +109,7 @@ escape hatch keeps booting plugin subclasses. See that file and `CpCompatAsset`.
 `Craft.t`, `Craft.ui.icon`, `Craft.addActionsToChip` (with its jQuery
 `disclosureMenu()` fallback for old/plugin-rendered chip markup),
 `Craft.sendActionRequest`, `Craft.appendHeadHtml`/`appendBodyHtml`,
-`Craft.initUiElements`, `Craft.CpScreenSlideout`, and `Craft.hasMousePointerEvents`
+`Craft.initUiElements`, `Craft.getActionUrl`, and `Craft.hasMousePointerEvents`
 — accessed via the page globals (`declare const Craft/$`). The chip
 dblclick/taphold-to-edit shortcut and the create-button `activate` binding
 stay jQuery event wiring (`$(chip).on(...)`, `$createBtn.on('activate', ...)`).

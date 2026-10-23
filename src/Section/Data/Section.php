@@ -9,6 +9,7 @@ use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementSources as ElementSourcesService;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -235,7 +236,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
 
         return sprintf(
             'content/%s/%s',
-            $page ? Str::slug($page) : 'entries',
+            $page ? ElementSourcesService::pageSlug($page) : 'entries',
             $this->type === SectionType::Single ? 'singles' : $this->handle,
         );
     }

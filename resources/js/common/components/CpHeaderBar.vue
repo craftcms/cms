@@ -111,12 +111,12 @@
         </template>
 
         <template v-if="maintenanceMode">
-          <CpLink :href="maintenanceModeUrl">
-            <craft-badge fill="warning">
-              <craft-icon name="person-digging" slot="prefix"></craft-icon>
-              {{ t('Maintenance mode') }}
-            </craft-badge>
-          </CpLink>
+          <craft-badge fill="warning">
+            <craft-icon name="person-digging" slot="prefix"></craft-icon>
+            <CpLink :href="maintenanceModeUrl">{{
+              t('Maintenance mode')
+            }}</CpLink>
+          </craft-badge>
         </template>
       </div>
 
@@ -164,11 +164,23 @@
 </template>
 
 <style scoped>
+  html:not([data-theme='dark']) .cp-header-bar {
+    --c-surface-sunken: color-mix(
+      in oklab,
+      var(--color-base-50),
+      var(--color-black) 10%
+    );
+  }
+
   .cp-header-bar {
     --badge-border-color: var(--c-surface-sunken);
+    background-color: var(--c-surface-sunken);
     padding-block-start: calc(var(--c-spacing-sm) - 1px);
     padding-block-end: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-sm);
+    padding-inline-end: calc(
+      var(--c-spacing-sm) + var(--cp-scrollbar-width, 0px)
+    );
     min-height: calc(42rem / 16);
     display: grid;
     gap: var(--spacing);
@@ -180,12 +192,15 @@
     align-items: center;
     border-block-start: 1px solid rgba(0 0 0 / 0.25);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-    box-shadow: var(--shadow-xs), var(--shadow-lg);
+    box-shadow: var(--c-shadow-xs), var(--c-shadow-lg);
     position: relative;
     z-index: var(--c-layer-header);
 
     @media (width >= var(--breakpoint-lg)) {
       padding-inline: var(--c-spacing-md);
+      padding-inline-end: calc(
+        var(--c-spacing-md) + var(--cp-scrollbar-width, 0px)
+      );
       gap: calc(var(--spacing) * 3);
       grid-template-areas: 'breadcrumbs indicators end';
       grid-template-rows: auto;

@@ -105,7 +105,35 @@ describe('useElementActionMenu', () => {
       ])
     );
 
-    expect(openSlideout).toHaveBeenCalledWith('/admin/settings/sections/1');
+    expect(openSlideout).toHaveBeenCalledWith('/admin/settings/sections/1', {});
+  });
+
+  it('opens its slideout with the menu item as the opener', () => {
+    container = document.createElement('div');
+    container.innerHTML = `
+      <craft-action-menu>
+        <button slot="invoker">Actions</button>
+        <div slot="content" hidden><craft-action-item></craft-action-item></div>
+      </craft-action-menu>
+    `;
+    document.body.append(container);
+    const element = container.querySelector('craft-action-item')!;
+    const [item] = createElementActionMenu()([
+      {
+        label: 'Entry type settings',
+        behavior: {type: 'slideout', url: '/admin/settings/entry-types/3'},
+      },
+    ]);
+    if (!item || !('onClick' in item) || !item.onClick) {
+      throw new Error('Expected a button action.');
+    }
+    element.addEventListener('click', item.onClick);
+
+    (element as HTMLElement).click();
+
+    const [url, options] = vi.mocked(openSlideout).mock.lastCall!;
+    expect(url).toBe('/admin/settings/entry-types/3');
+    expect(options).toEqual({opener: element});
   });
 
   it("opens the sidebar's entry type rather than the saved one", () => {
@@ -129,7 +157,10 @@ describe('useElementActionMenu', () => {
     }
     item.onClick?.(new MouseEvent('click'));
 
-    expect(openSlideout).toHaveBeenCalledWith('/admin/settings/entry-types/7');
+    expect(openSlideout).toHaveBeenCalledWith(
+      '/admin/settings/entry-types/7',
+      {}
+    );
   });
 
   it('posts a submit behavior with its params and redirect', () => {
@@ -475,6 +506,25 @@ describe('useElementActionMenu', () => {
 
       expect(slideout.reload).toHaveBeenCalledOnce();
       expect(reload).not.toHaveBeenCalled();
+    });
+
+    it('hands an image saved as a new asset to the opener, then closes', () => {
+      const slideout = slideoutController();
+
+      activateIn(slideout, {
+        label: 'Open in Image Editor',
+        behavior: {
+          type: 'editImage',
+          assetId: 7,
+          settings: {} as ImageEditorSettings,
+        },
+      });
+      vi.mocked(openImageEditorDialog).mock.lastCall![1]!({newAssetId: 8});
+
+      expect(slideout.saved).toHaveBeenCalledWith({
+        data: {replacedAssetId: 7, newAssetId: 8},
+      });
+      expect(slideout.close).toHaveBeenCalledWith({force: true});
     });
   });
 });

@@ -4,10 +4,12 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\View\TemplateHooks;
+use CraftCms\Cms\View\TemplateMode;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\currentUser;
+use function CraftCms\Cms\renderString;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -196,6 +198,7 @@ test('update validates preference values', function () {
         'notificationDuration' => 1234,
         'notificationPosition' => 'top-right',
         'slideoutPosition' => 'left',
+        'theme' => 'sepia',
     ])->assertJsonValidationErrors([
         'preferredLanguage',
         'weekStartDay',
@@ -203,6 +206,7 @@ test('update validates preference values', function () {
         'notificationDuration',
         'notificationPosition',
         'slideoutPosition',
+        'theme',
     ]);
 });
 
@@ -225,3 +229,62 @@ test('the underline links preference is shared with every screen', function () {
     get(cp_url('dashboard'))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.currentUser.underlineLinks', true));
 });
+
+test('update saves the theme', function () {
+    /** @var User $user */
+    $user = currentUser();
+
+    patchJson(cp_url('myaccount/preferences'), ['theme' => 'dark'])->assertOk();
+
+    expect($user->getPreference('theme'))->toBe('dark');
+
+    get(cp_url('myaccount/preferences'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('preferences.theme', 'dark'));
+});
+
+test('the theme is applied to the control panel root, following the system by default', function () {
+    get(cp_url('dashboard'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.theme', 'system'))
+        ->assertDontSee('data-theme="dark">', false)
+        ->assertSee("matchMedia('(prefers-color-scheme: dark)')", false);
+
+    patchJson(cp_url('myaccount/preferences'), ['theme' => 'dark'])->assertOk();
+
+    get(cp_url('dashboard'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.theme', 'dark'))
+        ->assertSee('<html', false)
+        ->assertSee('data-theme="dark">', false);
+
+    patchJson(cp_url('myaccount/preferences'), ['theme' => 'light'])->assertOk();
+
+    get(cp_url('dashboard'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.theme', 'light'))
+        ->assertDontSee('data-theme="dark"', false)
+        ->assertDontSee('prefers-color-scheme', false);
+});
+
+test('logged-out pages follow the system theme, even with a theme cookie from an earlier version', function () {
+    auth()->logout();
+
+    $this->withCookie(config('session.cookie').'_theme', 'dark')
+        ->get(cp_url('login'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.theme', 'system'))
+        ->assertSee("matchMedia('(prefers-color-scheme: dark)')", false);
+});
+
+test('the theme is applied to legacy control panel pages', function (?string $theme, bool $darkAttribute, bool $systemScript) {
+    if ($theme !== null) {
+        patchJson(cp_url('myaccount/preferences'), ['theme' => $theme])->assertOk();
+    }
+
+    $html = renderString("{% extends '_layouts/base' %}", ['title' => 'Test'], TemplateMode::Cp);
+
+    expect(str_contains($html, 'data-theme="dark">'))->toBe($darkAttribute)
+        ->and(str_contains($html, 'prefers-color-scheme'))->toBe($systemScript);
+})->with([
+    'unset' => [null, false, true],
+    'light' => ['light', false, false],
+    'dark' => ['dark', true, false],
+    'system' => ['system', false, true],
+]);

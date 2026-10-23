@@ -8,6 +8,7 @@
   import {
     isModifiedClick,
     useModalElementIndex,
+    type FolderCrumb,
     type SelectedElement,
   } from './useModalElementIndex';
 
@@ -17,6 +18,9 @@
     initial: ContentIndexData;
     params: Record<string, unknown>;
     disabledElementIds?: number[];
+    /** Picks folders rather than elements; see `useModalElementIndex`. */
+    selectFolders?: boolean;
+    disabledFolderIds?: number[];
   }>();
 
   const emit = defineEmits<{
@@ -24,6 +28,8 @@
     (event: 'choose', elements: SelectedElement[]): void;
     /** The source being viewed, so the chrome can act on the current folder. */
     (event: 'source-change', source: SourceItem | null): void;
+    /** The trail from the volume root to the folder on screen. */
+    (event: 'folder-path-change', path: FolderCrumb[]): void;
   }>();
 
   const index = useModalElementIndex({
@@ -31,6 +37,8 @@
     initial: props.initial,
     params: props.params,
     disabledElementIds: () => props.disabledElementIds ?? [],
+    selectFolders: props.selectFolders,
+    disabledFolderIds: () => props.disabledFolderIds ?? [],
   });
 
   const {selectedElements, hasSelection, clearSelection, folderBreadcrumbs} =
@@ -52,16 +60,9 @@
     index.openFolder(folderId);
   }
 
-  // A folder's first click has already opened it, so a double-click on one
-  // isn't a choice.
-  function onDblClick(event: MouseEvent) {
-    if (
-      event.target instanceof Element &&
-      event.target.closest('[data-is-folder]')
-    ) {
-      return;
-    }
-
+  // Reached only by a double-click the item behavior let through, after it
+  // selected the double-clicked item; folders open instead.
+  function onDblClick() {
     emit('choose', selectedElements.value);
   }
 
@@ -81,6 +82,10 @@
     {immediate: true}
   );
 
+  watch(folderBreadcrumbs, (path) => emit('folder-path-change', path), {
+    immediate: true,
+  });
+
   defineExpose({
     selectedElements,
     hasSelection,
@@ -97,6 +102,7 @@
     :class="{
       'modal-element-index': true,
       'modal-element-index--sidebar': showSidebar,
+      'modal-element-index--folders': selectFolders,
     }"
   >
     <nav
@@ -106,7 +112,7 @@
     >
       <ElementSources
         :sources="elementIndex.sources"
-        :active-source="elementIndex.source?.key"
+        :active-source="index.activeSourceKey.value"
         @select="index.changeSource"
       />
     </nav>
@@ -116,12 +122,14 @@
         :view="index.view"
         :item-behavior="index.itemBehavior"
         contained
-        :show-sites="true"
+        :show-sites="!selectFolders"
         @site-change="index.changeSite"
         @dblclick="onDblClick"
       >
         <template v-if="showFolderBreadcrumbs" #navbar>
-          <div class="border-b border-b-quiet py-sm">
+          <div
+            class="folder-breadcrumbs -mx-(--cp-container-padding) px-(--cp-container-padding) py-sm border-b border-b-(--c-color-neutral-border-quiet)"
+          >
             <craft-breadcrumbs :label="t('Breadcrumbs')" class="text-xs">
               <craft-breadcrumb-item
                 v-for="(crumb, idx) in folderBreadcrumbs"
@@ -155,6 +163,11 @@
     grid-template-columns: clamp(12rem, 15%, 14rem) 1fr;
   }
 
+  // Only beside the sidebar: without one, the pane meets the modal's own edge.
+  .modal-element-index--sidebar .modal-element-index__main {
+    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
   .modal-element-index__sidebar {
     padding-block: var(--c-spacing-lg);
     padding-inline: var(--c-spacing-sm);
@@ -164,8 +177,10 @@
   }
 
   .modal-element-index__main {
+    // The index lays itself out by `cp-content-view` container queries, as it
+    // would on a page; without this, it falls back to its narrowest layout.
+    container: cp-content-view / inline-size;
     background: var(--c-surface-overlay);
-    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
 
     // Grid items don't shrink below their content by default, so a wide table
     // widens the column and a long one grows the row — pushing the pane out of
@@ -178,5 +193,24 @@
     // the pane aren't clipped.
     display: grid;
     overflow: hidden;
+  }
+
+  // Even on both sides of each separator, matching the header's breadcrumbs:
+  // the crumb's own gap already sits before it, so the end margin makes up for
+  // it.
+  .folder-breadcrumbs :deep(craft-breadcrumb-item > [slot='separator']) {
+    margin-inline: var(--c-spacing-sm) var(--c-spacing-md);
+  }
+
+  // A folder listing has no columns besides the folder's own, so it takes the
+  // width the title column would otherwise leave to the checkbox column.
+  .modal-element-index--folders :deep(.cp-table-cell--title) {
+    width: 100%;
+  }
+
+  // The modal has no header above the index, so the toolbar gets the same
+  // breathing room as the sidebar beside it.
+  .modal-element-index__main :deep(.element-index__header) {
+    padding-block-start: var(--c-spacing-lg);
   }
 </style>

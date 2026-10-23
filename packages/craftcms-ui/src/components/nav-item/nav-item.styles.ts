@@ -4,9 +4,16 @@ import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 export default css`
   :host {
     --_padding-inline: var(--c-spacing-md);
-    --_padding-block: var(--c-spacing-sm);
     /* The icon column of a row with a prefix. */
     --_prefix-size: calc(24rem / 16);
+    /* Enough to center the icon column in a touch target, border included. */
+    --_padding-block: calc(
+      (var(--c-size-touch-target) - var(--_prefix-size) - var(--_rail-border) *
+          2) /
+        2
+    );
+    /* The space between the icon column and the label (tighter than the row's gap). */
+    --_prefix-gap: var(--c-spacing-sm);
     /* The rule down the side of an inline subnav. */
     --_subnav-rule: 2px;
     /* The square a collapsed row occupies, border included. The row draws a
@@ -81,6 +88,7 @@ export default css`
   }
 
   craft-badge-indicator {
+    --badge-border-width: 2px;
     position: absolute;
     inset-inline-end: 0;
     inset-block-end: 0;
@@ -99,6 +107,11 @@ export default css`
   .nav-item--prefixed {
     padding-inline: var(--c-spacing-sm);
     grid-template-columns: var(--_prefix-size) 1fr auto;
+
+    /* Pull the label back across the row's gap, to the tighter prefix gap. */
+    > .nav-item__action-item {
+      margin-inline-start: calc(var(--_prefix-gap) - var(--c-spacing-md));
+    }
   }
 
   .nav-item--flush {
@@ -149,16 +162,16 @@ export default css`
     background-color: transparent;
     border-color: transparent;
 
+    /* Starts at the row's outer edge, in line with its hover background. */
     &:before {
       content: '';
       position: absolute;
-      inset-inline-start: 0;
+      inset-inline-start: calc(var(--_rail-border) * -1);
       inset-block-start: 12%;
       width: calc(3rem / 16);
       height: 76%;
       border-radius: calc(2rem / 16);
       background-color: var(--c-color-accent-fill-loud);
-      transform: translateX(-150%);
     }
   }
 
@@ -169,6 +182,12 @@ export default css`
     background-color: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-normal);
     color: var(--c-color-accent-on-quiet);
+  }
+
+  /* A badge on the current row takes the row's tint. */
+  :host([current]) ::slotted(craft-badge-indicator) {
+    --c-color-neutral-fill-normal: var(--c-color-accent-fill-normal);
+    --c-color-neutral-on-normal: var(--c-color-accent-on-normal);
   }
 
   /* Not on the page you're on: its selected fill is the state to show. */
@@ -218,14 +237,32 @@ export default css`
    * cancels out.
    */
   :host(:not([group])) .subnav {
-    margin-block-start: var(--c-spacing-sm);
-    margin-inline-start: calc(
-      var(--c-spacing-sm) + var(--_prefix-size) + var(--c-spacing-md) -
+    --_subnav-indent: calc(
+      var(--c-spacing-sm) + var(--_prefix-size) + var(--_prefix-gap) -
         var(--_subnav-rule) - var(--c-spacing-sm) - var(--_padding-inline)
     );
+    position: relative;
+    margin-block-start: var(--c-spacing-sm);
+    margin-inline-start: var(--_subnav-indent);
     padding-inline: var(--c-spacing-sm);
     border-inline-start: var(--_subnav-rule) solid transparent;
-    /*border-left: 2px solid color-mix(in srgb, currentColor, transparent 90%);*/
+  }
+
+  /*
+   * A hairline down the subnav, centered on the selected parent's indicator:
+   * back across the indent and rule to the parent row's inner edge (past its
+   * border). The indicator's center is half a pixel past that edge, as is the
+   * hairline's.
+   */
+  :host(:not([group]):not([icon-only])) .subnav::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(
+      var(--_rail-border) - var(--_subnav-indent) - var(--_subnav-rule)
+    );
+    width: 1px;
+    background-color: var(--c-color-neutral-border-quiet);
   }
 
   /*

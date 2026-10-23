@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {Appearance, t} from '@craftcms/ui';
   import CraftSelectRich from '@craftcms/ui/vue/CraftSelectRich.vue';
-  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
   import IndexViewSettings from '@/modules/elements/index/components/IndexViewSettings.vue';
   import type {CheckboxOption} from '@/common/types';
@@ -9,7 +9,8 @@
   import FilterHud from './FilterHud.vue';
   import type {ConditionConfig} from '@/modules/conditions/types';
   import type {IndexSite} from '@/modules/elements/types/sites';
-  import {computed, ref} from 'vue';
+  import {computed, ref, useId} from 'vue';
+  import '@craftcms/ui/components/tooltip/tooltip';
 
   const props = withDefaults(
     defineProps<{
@@ -80,18 +81,6 @@
     (props.sites ?? []).map((site) => ({label: site.name, value: site.handle}))
   );
 
-  /**
-   * Clears the search and returns focus to the input, since the clear button
-   * unmounts once the search is empty. This applies on mobile too, so screen
-   * reader users there aren't left without focus.
-   */
-  function clearSearch(): void {
-    search.value = '';
-    filterAnchor.value
-      ?.querySelector<HTMLElement>('craft-input[name="search"]')
-      ?.focus();
-  }
-
   function onSearchEnter(event: KeyboardEvent): void {
     if (props.asForm !== false) {
       return;
@@ -101,6 +90,10 @@
     event.stopPropagation();
     emit('submit');
   }
+
+  // Unique per toolbar, since an index can share the page with another (e.g.
+  // an element selection modal).
+  const viewModeIdPrefix = `element-view-mode-${useId()}`;
 </script>
 
 <template>
@@ -109,7 +102,12 @@
     class="w-full"
     @submit.prevent="emit('submit')"
   >
-    <div class="element-toolbar">
+    <div
+      :class="{
+        'element-toolbar': true,
+        'element-toolbar--actions': !!$slots.actions,
+      }"
+    >
       <div
         v-if="showSiteMenu || statusOptions?.length"
         class="element-toolbar__status"
@@ -156,45 +154,24 @@
       </div>
 
       <div ref="filterAnchor" class="element-toolbar__filter">
-        <CraftInput
+        <CraftInputSearch
           name="search"
-          :label="t('Search')"
           v-model="search"
-          label-sr-only
           @keydown.enter="onSearchEnter"
         >
-          <craft-icon name="search" slot="prefix"></craft-icon>
-          <div slot="suffix" class="flex">
-            <craft-button
-              type="button"
-              icon
-              size="small"
-              variant="plain"
-              v-if="search"
-              .disabled="processing"
-              @click="clearSearch"
-            >
-              <craft-icon
-                name="xmark-large"
-                :label="t('Clear search')"
-              ></craft-icon>
-            </craft-button>
-            <craft-button
-              type="button"
-              icon
-              size="small"
-              variant="plain"
-              .disabled="processing"
-              @click="filterActive = true"
-              :class="{'is-active': !!conditions}"
-            >
-              <craft-icon
-                name="filter"
-                :label="t('Filter results')"
-              ></craft-icon>
-            </craft-button>
-          </div>
-        </CraftInput>
+          <craft-button
+            slot="suffix"
+            type="button"
+            icon
+            size="small"
+            variant="plain"
+            .disabled="processing"
+            @click="filterActive = true"
+            :class="{'is-active': !!conditions}"
+          >
+            <craft-icon name="filter" :label="t('Filter results')"></craft-icon>
+          </craft-button>
+        </CraftInputSearch>
 
         <FilterHud
           v-if="filterActive"
@@ -211,11 +188,13 @@
         <div class="flex gap-md justify-end">
           <craft-button-group
             name="viewState[mode]"
+            :aria-label="t('View Mode')"
             .value="mode"
             @change="(event: CustomEvent) => (mode = event.detail.value)"
           >
             <template v-for="viewMode in viewModes" :key="viewMode.mode">
               <craft-button
+                :id="`${viewModeIdPrefix}-${viewMode.mode}`"
                 type="button"
                 :variant="Appearance.Fill"
                 :icon="viewMode.icon"
@@ -225,6 +204,17 @@
               ></craft-button>
             </template>
           </craft-button-group>
+          <!-- Icon-only buttons, so their names show on hover and focus too.
+            They label the buttons rather than describing them, so the name
+            isn't announced twice. -->
+          <craft-tooltip
+            v-for="viewMode in viewModes"
+            :key="viewMode.mode"
+            :for="`${viewModeIdPrefix}-${viewMode.mode}`"
+            invoker-relation="label"
+          >
+            {{ viewMode.title }}
+          </craft-tooltip>
 
           <IndexViewSettings
             :options="columnOptions"
@@ -242,7 +232,7 @@
       <!-- The index's own actions: the entries index puts its New Entry button
         here. Search still submits on Enter — the field is the form's only text
         input, so the browser submits it implicitly. -->
-      <div class="element-toolbar__actions">
+      <div v-if="$slots.actions" class="element-toolbar__actions">
         <slot name="actions"></slot>
       </div>
     </div>
@@ -255,16 +245,25 @@
     gap: var(--c-spacing-md);
     justify-content: space-between;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: 'status' 'filter' 'state' 'actions';
+    grid-template-areas: 'status' 'filter' 'state';
 
     @container cp-content-view (width >= 480px) {
       gap: var(--c-spacing-md);
       grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas: 'status filter state';
+    }
+  }
+
+  /* Only reserve room for actions when there are some. An empty track would
+     still take a gap, leaving a hole at the end of the row. */
+  .element-toolbar--actions {
+    grid-template-areas: 'status' 'filter' 'state' 'actions';
+
+    @container cp-content-view (width >= 480px) {
       grid-template-areas: 'status filter state' 'actions actions actions';
     }
 
     @container cp-content-view (width >= var(--breakpoint-sm)) {
-      gap: var(--c-spacing-md);
       grid-template-columns: auto minmax(0, 1fr) auto auto;
       grid-template-areas: 'status filter state actions';
     }

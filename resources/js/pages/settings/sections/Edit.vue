@@ -44,8 +44,7 @@
             ...row,
             singleUri: uri,
             uriFormat: uri ? `${uri}/{slug}` : '',
-            routeType: 'template',
-            route: uri ? `${uri}/_entry.twig` : '',
+            destination: uri ? `${uri}/_entry.twig` : '',
           },
         ];
       })

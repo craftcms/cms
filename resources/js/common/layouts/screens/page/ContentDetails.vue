@@ -29,7 +29,7 @@
       :label="t('Resize details')"
       :controls="detailsId"
     />
-    <div :id="detailsId" class="cp-details sticky top-0">
+    <div :id="detailsId" class="cp-details">
       <h2 class="sr-only">{{ t('Details') }}</h2>
       <LayoutSlotOutlet name="content-details">
         <slot name="content-details"></slot>
@@ -41,9 +41,12 @@
 <style scoped lang="css">
   .cp-details {
     display: grid;
+    /* Panels fit the column, rather than widening it past the pane. */
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
     align-items: start;
     gap: var(--c-spacing-md);
     height: 100%;
-    min-block-size: 0;
+    overflow-y: auto;
   }
 </style>

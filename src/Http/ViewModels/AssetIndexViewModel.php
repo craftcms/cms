@@ -4,10 +4,20 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
+use CraftCms\Cms\Asset\Actions\CopyUrl;
+use CraftCms\Cms\Asset\Actions\DownloadAssetFile;
+use CraftCms\Cms\Asset\Actions\EditImage;
+use CraftCms\Cms\Asset\Actions\MoveAssets;
+use CraftCms\Cms\Asset\Actions\RenameFile;
+use CraftCms\Cms\Asset\Actions\ReplaceFile;
+use CraftCms\Cms\Asset\Actions\ShowInFolder;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Support\Arr;
@@ -47,6 +57,25 @@ class AssetIndexViewModel extends ContentIndexViewModel
     public const MOVE_FOLDERS_EVENT = 'assets:move-folders';
 
     public const DELETE_FOLDERS_EVENT = 'assets:delete-folders';
+
+    /**
+     * Asset actions that only did anything through their legacy JavaScript
+     * triggers, which the index doesn't run. Each becomes a client event the
+     * page handles, keyed by action class, with the row capability every
+     * selected asset needs for it, if any.
+     *
+     * @var array<class-string, array{0: string, 1: string|null}>
+     */
+    private const array FILE_EVENT_ACTIONS = [
+        DownloadAssetFile::class => ['assets:download-file', null],
+        RenameFile::class => ['assets:rename-file', 'movable'],
+        ReplaceFile::class => ['assets:replace-file', 'replaceable'],
+        CopyUrl::class => ['assets:copy-url', 'hasUrl'],
+        CopyReferenceTag::class => ['assets:copy-reference-tag', null],
+        ShowInFolder::class => ['assets:show-in-folder', null],
+        EditImage::class => ['assets:edit-image', 'imageEditable'],
+        MoveAssets::class => ['assets:move-assets', 'movable'],
+    ];
 
     /** @var array{0: Volume|null, 1: string[]}|null */
     private ?array $resolvedDefaultSource = null;
@@ -90,10 +119,10 @@ class AssetIndexViewModel extends ContentIndexViewModel
     #[Override]
     public function actions(): ?array
     {
-        $actions = array_map(
-            fn (array $action): array => [...$action, 'appliesTo' => 'elements'],
+        $actions = array_values(array_filter(array_map(
+            fn (array $action): ?array => $this->fileAction([...$action, 'appliesTo' => 'elements']),
             parent::actions() ?? [],
-        );
+        )));
         $folder = $this->rootFolder();
 
         if ($folder === null) {
@@ -109,13 +138,12 @@ class AssetIndexViewModel extends ContentIndexViewModel
             );
         }
 
-        if (Gate::check('moveFolderFrom', $folder) && $this->moveTargetSourceKeys() !== []) {
-            $currentFolder = $this->subfolder() ?? $folder;
+        if (Gate::check('moveFolderFrom', $folder) && ($moveDetail = $this->moveDetail()) !== null) {
             $actions[] = $this->folderBulkAction(
                 'move-folder',
                 t('Move folder'),
                 self::MOVE_FOLDERS_EVENT,
-                detail: ['disabledFolderIds' => [$currentFolder->id]],
+                detail: $moveDetail,
             );
         }
 
@@ -129,6 +157,66 @@ class AssetIndexViewModel extends ContentIndexViewModel
         }
 
         return $actions ?: null;
+    }
+
+    /**
+     * Points an asset action with no server-side behavior at the page's client
+     * event for it, or leaves it out when it has nowhere to go.
+     *
+     * @param  array<string, mixed>  $action
+     * @return array<string, mixed>|null
+     */
+    private function fileAction(array $action): ?array
+    {
+        $key = $action['key'] ?? null;
+
+        if (! isset(self::FILE_EVENT_ACTIONS[$key])) {
+            return $action;
+        }
+
+        [$event, $capability] = self::FILE_EVENT_ACTIONS[$key];
+        $detail = match ($key) {
+            MoveAssets::class => $this->moveDetail(),
+            EditImage::class => Asset::sharedImageEditorSettings(),
+            default => [],
+        };
+
+        if ($detail === null) {
+            return null;
+        }
+
+        return [
+            ...$action,
+            ...($capability !== null ? ['selectionAttribute' => $capability] : []),
+            'action' => [
+                'type' => 'event',
+                'name' => $event,
+                ...($detail !== [] ? ['detail' => $detail] : []),
+            ],
+        ];
+    }
+
+    /**
+     * What the folder picker needs to move assets or folders out of the
+     * current folder, or `null` when there's no folder to move them to.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function moveDetail(): ?array
+    {
+        $sources = $this->moveTargetSourceKeys();
+        $currentFolder = $this->subfolder() ?? $this->rootFolder();
+
+        if ($sources === [] || $currentFolder === null) {
+            return null;
+        }
+
+        return [
+            'sources' => $sources,
+            'defaultSource' => $this->sourceState()[0],
+            'defaultSourcePath' => $this->folderPath($currentFolder),
+            'disabledFolderIds' => [$currentFolder->id],
+        ];
     }
 
     /**
@@ -384,6 +472,44 @@ class AssetIndexViewModel extends ContentIndexViewModel
         return $this->labelLinkedChipHtml($element, $folderUrl, attributes: ['data-folder-link' => true]);
     }
 
+    /**
+     * Folder card labels link to the folder, like their chips in the table view.
+     *
+     * @return array<string, mixed>
+     */
+    #[Override]
+    protected function cardConfig(ElementInterface $element): array
+    {
+        $folderUrl = $this->folderLinkUrl($element);
+
+        return $folderUrl === null ? [] : [
+            'hyperlink' => true,
+            'hyperlinkUrl' => $folderUrl,
+            'hyperlinkAttributes' => ['data-folder-link' => true],
+        ];
+    }
+
+    /**
+     * Folder thumb labels link to the folder, like their chips in the table view.
+     *
+     * @return array{labelUrl?: string, labelLinkAttributes?: array<string, mixed>}
+     */
+    #[Override]
+    protected function extraThumbData(ElementInterface $element): array
+    {
+        $folderUrl = $this->folderLinkUrl($element);
+
+        return $folderUrl === null ? [] : [
+            'labelUrl' => $folderUrl,
+            'labelLinkAttributes' => ['data-folder-link' => ''],
+        ];
+    }
+
+    private function folderLinkUrl(ElementInterface $element): ?string
+    {
+        return $element instanceof Asset && $element->isFolder ? $this->folderUrl($element) : null;
+    }
+
     private function folderUrl(Asset $folder): ?string
     {
         $uri = array_last($folder->sourcePath ?? [])['uri'] ?? null;
@@ -395,7 +521,9 @@ class AssetIndexViewModel extends ContentIndexViewModel
      * Marks folder rows so the client can (a) navigate into the folder on click
      * — the folder chip has no edit URL, so `folderUrl` (the last step of its
      * resolved source path) is provided — and (b) treat the row as a drag-and-
-     * drop move target (`folderId` + `canMoveTo`).
+     * drop move target (`folderId` + `canMoveTo`). Asset and folder rows also
+     * carry the folder they sit in (`folderId` / `parentFolderId`), so a move can
+     * be undone.
      *
      * @return array<string, mixed>
      */
@@ -407,7 +535,19 @@ class AssetIndexViewModel extends ContentIndexViewModel
         }
 
         if (! $element->isFolder) {
-            return ['previewable' => true];
+            return [
+                'previewable' => true,
+                'folderId' => $element->folderId,
+                // Not `filename`, which the table's Filename column claims.
+                'assetFilename' => $element->getFilename(),
+                // What the image editor opens with, besides the settings every
+                // asset shares, which come with the Edit Image action.
+                ...($element->kind === FileKind::Image->value ? [
+                    'focalPoint' => $element->getHasFocalPoint() ? $element->getFocalPoint() : null,
+                    'imageWidth' => $element->getWidth(),
+                    'imageHeight' => $element->getHeight(),
+                ] : []),
+            ];
         }
 
         $folder = Folders::getFolderById($element->folderId);
@@ -415,9 +555,33 @@ class AssetIndexViewModel extends ContentIndexViewModel
         return [
             'isFolder' => true,
             'folderId' => $element->folderId,
+            'parentFolderId' => $folder?->parentId,
             'folderName' => $folder?->name,
             'folderUrl' => $this->folderUrl($element),
             'canMoveTo' => $folder !== null && Gate::check('moveIntoFolder', $folder),
+        ];
+    }
+
+    /**
+     * The file permissions the asset actions check, as the asset's own chip
+     * attributes work them out.
+     *
+     * @return array<string, bool>
+     */
+    #[Override]
+    protected function extraCapabilities(ElementInterface $element): array
+    {
+        if (! $element instanceof Asset || $element->isFolder) {
+            return [];
+        }
+
+        $data = $element->getHtmlAttributes(ElementSources::CONTEXT_INDEX)['data'] ?? [];
+
+        return [
+            'movable' => ! empty($data['movable']),
+            'replaceable' => ! empty($data['replaceable']),
+            'imageEditable' => ! empty($data['editable-image']),
+            'hasUrl' => $element->getUrl() !== null,
         ];
     }
 

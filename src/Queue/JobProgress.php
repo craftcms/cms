@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Queue;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Queue\ClearableQueue;
@@ -217,8 +218,18 @@ readonly class JobProgress
                 JobStatus::Pending->value,
                 JobStatus::Reserved->value,
                 JobStatus::Delayed->value,
+                JobStatus::Failed->value,
             ])
             ->update(['status' => JobStatus::Cancelled->value]);
+
+        $queueNames = array_unique([Cms::config()->queueName, Cms::config()->lowPriorityQueueName]);
+        $failer = app('queue.failer');
+
+        foreach ($queueNames as $queueName) {
+            foreach ($failer->ids($queueName) as $id) {
+                $failer->forget($id);
+            }
+        }
 
         $queue = Queue::connection();
 
@@ -226,10 +237,8 @@ readonly class JobProgress
             return;
         }
 
-        $queue->clear(Cms::config()->queueName);
-
-        if (Cms::config()->queueName !== Cms::config()->lowPriorityQueueName) {
-            $queue->clear(Cms::config()->lowPriorityQueueName);
+        foreach ($queueNames as $queueName) {
+            $queue->clear($queueName);
         }
     }
 
@@ -254,7 +263,7 @@ readonly class JobProgress
             ->where('status', '!=', JobStatus::Cancelled->value)
             ->update([
                 'status' => $status->value,
-                'dateUpdated' => now(),
+                'dateUpdated' => Query::prepareDateForDb(now()),
             ]);
     }
 

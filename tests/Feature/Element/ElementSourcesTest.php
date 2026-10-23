@@ -69,6 +69,17 @@ it('can find nested source configs by key path', function () {
     ]);
 });
 
+it('limits sources to their page when the first source is disabled', function () {
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'News', 'disabled' => true],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:news', 'label' => 'News', 'page' => 'News'],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:events', 'label' => 'Events', 'page' => 'Events'],
+    ]);
+
+    expect($this->elementSources->getSources(Entry::class, page: 'Events')->pluck('key')->all())->toBe(['custom:events'])
+        ->and($this->elementSources->getSources(Entry::class, page: 'News')->pluck('key')->all())->toBe(['custom:news']);
+});
+
 it('can get source sort options', function () {
     TestElementSourceSortOptionsElement::$requestedSources = [];
     $expressionA = new stdClass;
@@ -153,6 +164,19 @@ it('can generate a page name id', function () {
     expect($this->elementSources->pageNameId('foo'))->toBe('foo');
     expect($this->elementSources->pageNameId('Another page'))->toBe('anotherpage');
 });
+
+it('generates a page slug with the same name id as the page name', function (string $name, string $slug) {
+    expect($this->elementSources->pageSlug($name))->toBe($slug)
+        ->and($this->elementSources->pageNameId($slug))->toBe($this->elementSources->pageNameId($name));
+})->with([
+    'plain' => ['Blog', 'blog'],
+    'spaces and punctuation' => ['News & Events', 'news-events'],
+    'apostrophe' => ['Don’t Miss', 'dont-miss'],
+    'non-Latin' => ['Αναρτήσεις', 'αναρτήσεις'],
+    'accented' => ['Événements', 'événements'],
+    'combining mark' => ["Cafe\u{0301}s", "cafe\u{0301}s"],
+    'at sign' => ['Q @ A', 'q-a'],
+]);
 
 class TestElementSourceSortOptionsElement extends Element
 {

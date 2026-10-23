@@ -18,6 +18,8 @@ use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
+use function CraftCms\Cms\t;
+
 /**
  * Manages system messages and registers additional lazily resolved messages.
  *
@@ -28,7 +30,8 @@ use Tpetry\QueryExpressions\Value\Value;
  *         'key' => 'order_shipped',
  *         'heading' => 'Order shipped',
  *         'subject' => 'Your order has shipped',
- *         'body' => 'Your order is on its way.',
+ *         'body' => 'Your order {{ orderNumber }} is on its way.',
+ *         'variables' => ['orderNumber' => 'Order number'],
  *     ]));
  * }
  * ```
@@ -82,6 +85,30 @@ class SystemMessages
     public function getDefaultMessage(string $key): ?SystemMessage
     {
         return $this->getAllDefaultMessages()->firstWhere('key', $key);
+    }
+
+    /**
+     * Returns the Twig variables a message can use, as name => label pairs.
+     *
+     * The message's own `variables` (whatever its mailer passes) come first,
+     * followed by the ones every message gets: the recipient, the sender, and
+     * the system and site names.
+     *
+     * @return array<string, string>
+     */
+    public function getTemplateVariables(SystemMessage $message): array
+    {
+        return ($message->variables ?? []) + [
+            'user.friendlyName' => t('Recipient name'),
+            'user.name' => t('Recipient full name'),
+            'user.email' => t('Recipient email'),
+            'user.username' => t('Recipient username'),
+            'fromName' => t('Sender name'),
+            'fromEmail' => t('Sender email'),
+            'systemName' => t('System name'),
+            'siteName' => t('Site name'),
+            'siteUrl' => t('Site URL'),
+        ];
     }
 
     /**

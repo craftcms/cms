@@ -52,3 +52,135 @@ it('sizes the inputs to their content by default', async () => {
 
   expect(nativeWidth(date!) + nativeWidth(time!)).toBeLessThan(600);
 });
+
+async function renderIn(width: number) {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `
+    <div style="width: ${width}px">
+      <craft-input-date-time width="full">
+        <craft-button size="small" variant="plain" icon="xmark-large" aria-label="Clear"></craft-button>
+      </craft-input-date-time>
+    </div>`;
+  const field = document.querySelector('craft-input-date-time')!;
+  await field.updateComplete;
+  // The stacked state follows a frame after layout.
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const [date, time] = Array.from(
+    field.querySelectorAll<HTMLElement>('[data-date-time-part]')
+  ).map((part) => part.getBoundingClientRect());
+
+  return {
+    field,
+    date: date!,
+    time: time!,
+    button: field.querySelector('craft-button')!,
+  };
+}
+
+it('keeps the inputs on one row when they fit', async () => {
+  const {field, date, time} = await renderIn(800);
+
+  // Same row: the time input starts before the date input ends.
+  expect(time.top).toBeLessThan(date.bottom);
+  expect(field.hasAttribute('stacked')).toBe(false);
+});
+
+it('stacks the inputs, with the clear button beside the last one, when they don’t fit', async () => {
+  const {field, date, time, button} = await renderIn(200);
+  const buttonBounds = button.getBoundingClientRect();
+
+  expect(time.top).toBeGreaterThanOrEqual(date.bottom);
+  expect(field.hasAttribute('stacked')).toBe(true);
+  expect(buttonBounds.left).toBeGreaterThanOrEqual(
+    field.shadowRoot!.querySelector('.inputs')!.getBoundingClientRect().right
+  );
+  expect(
+    Math.abs(
+      buttonBounds.top + buttonBounds.height / 2 - (time.top + time.bottom) / 2
+    )
+  ).toBeLessThanOrEqual(1);
+});
+
+it('runs the stacked divider and focus ring across the whole field, beside the clear button', async () => {
+  const {field, button} = await renderIn(200);
+  const parts = field.querySelectorAll<HTMLElement>('[data-date-time-part]');
+  const last = parts[parts.length - 1]!;
+  last.querySelector('input')!.focus();
+  const fieldBounds = field.getBoundingClientRect();
+  const fieldStyle = getComputedStyle(field);
+  const lastBounds = last.getBoundingClientRect();
+
+  expect(fieldStyle.backgroundImage).toContain('linear-gradient');
+  expect(getComputedStyle(last).borderTopColor).toBe('rgba(0, 0, 0, 0)');
+  expect(lastBounds.right).toBeCloseTo(
+    fieldBounds.right - parseFloat(fieldStyle.borderRightWidth),
+    0
+  );
+  expect(lastBounds.right).toBeGreaterThan(
+    button.getBoundingClientRect().right
+  );
+  expect(getComputedStyle(last).outlineStyle).toBe('solid');
+  expect(getComputedStyle(last.querySelector('input')!).outlineWidth).toBe(
+    '0px'
+  );
+});
+
+it('draws a softer divider between the inputs than the outer border', async () => {
+  const {field} = await renderIn(800);
+  const time = field.querySelectorAll<HTMLElement>('[data-date-time-part]')[1]!;
+
+  expect(getComputedStyle(time).borderInlineStartColor).not.toBe(
+    getComputedStyle(field).borderTopColor
+  );
+});
+
+it('draws the clear button at its own size inside the border, without a divider', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `
+    <craft-input-date-time>
+      <craft-button size="small" variant="plain" icon="xmark-large" aria-label="Clear"></craft-button>
+    </craft-input-date-time>`;
+  const field = document.querySelector<CraftInputDateTime>(
+    'craft-input-date-time'
+  )!;
+  await field.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  const button = field.querySelector('craft-button')!;
+  const buttonBounds = button.getBoundingClientRect();
+  const fieldBounds = field.getBoundingClientRect();
+  const buttonStyle = getComputedStyle(button);
+
+  expect(buttonStyle.borderInlineStartColor).not.toBe(
+    getComputedStyle(field).borderTopColor
+  );
+  expect(buttonStyle.borderTopLeftRadius).not.toBe('0px');
+  expect(buttonBounds.top).toBeGreaterThan(fieldBounds.top + 1);
+  expect(buttonBounds.bottom).toBeLessThan(fieldBounds.bottom - 1);
+  expect(buttonBounds.right).toBeLessThan(fieldBounds.right - 1);
+});
+
+it('rings a lone date or time input around the whole field, standing off its border', async () => {
+  await import('../../styles/cp.css');
+  const {field, button} = await render(null);
+  const ring = () => {
+    const style = getComputedStyle(field);
+    return [style.outlineStyle, style.outlineOffset];
+  };
+  const part = () => field.querySelector<HTMLElement>('[data-date-time-part]')!;
+
+  part().focus();
+  expect(ring()[0]).toBe('none');
+
+  field.showTime = false;
+  await field.updateComplete;
+  part().focus();
+  expect(ring()).toEqual(['solid', '2px']);
+  expect(
+    getComputedStyle(part()).getPropertyValue('--c-focus-outline-width')
+  ).toBe('0px');
+
+  button.focus();
+  expect(ring()[0]).toBe('none');
+});

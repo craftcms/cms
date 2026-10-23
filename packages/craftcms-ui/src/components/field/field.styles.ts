@@ -7,20 +7,23 @@ export default css`
   }
 
   /* A slotted control with a maxlength (reflected as has-maxlength) shrinks
-     the field to the control's width instead of spanning the column.
-     width="full" spans despite a maxlength; width="auto" shrinks without
-     one. */
-  :host([has-maxlength]:not([width='full'])),
-  :host([width='auto']) {
+     to its own width instead of spanning the column. width="full" spans
+     despite a maxlength; width="auto" shrinks without one. Only the input
+     shrinks: the heading (and its actions) and feedback still span the
+     column, in line with other fields'. */
+  :host([has-maxlength]:not([width='full'])) .input-group__container,
+  :host([width='auto']) .input-group__container {
     width: fit-content;
     max-width: 100%;
   }
 
-  /* Stop the input chrome from flexing back out to the available space. */
+  /* Stop the input chrome from flexing back out to the available space, while
+     still letting it shrink to the column: a long maxlength, such as a
+     Title's 255 characters, sizes the input far wider than the column. */
   :host([has-maxlength]:not([width='full'])) .input-group__input,
   :host([width='auto']) .input-group__input {
-    flex: 0 0 auto;
-    max-width: 100%;
+    flex: 0 1 auto;
+    min-width: 0;
   }
 
   :host([hidden]) {
@@ -55,14 +58,16 @@ export default css`
     flex-wrap: wrap;
     gap: 5px;
     align-items: center;
-    font-weight: bold;
+    font-size: var(--c-field-label-font-size, inherit);
+    font-weight: var(--c-field-label-font-weight, bold);
+    color: var(--c-field-label-color, inherit);
     margin-block-end: var(
       --c-field-label-margin-block-end,
-      var(--c-spacing-md)
+      var(--c-spacing-sm)
     );
 
     &:has(+ .form-field__help-text) {
-      margin-block-end: var(--c-spacing-xs);
+      margin-block-end: 0;
     }
   }
 
@@ -87,6 +92,7 @@ export default css`
     flex-wrap: wrap;
     gap: var(--c-spacing-xs);
     align-items: center;
+    line-height: var(--c-field-label-line-height, inherit);
   }
 
   .read-only-badge {
@@ -104,7 +110,7 @@ export default css`
   /* Instructions (.field > .instructions in the CP) */
   .form-field__help-text {
     display: block;
-    margin-block-end: var(--c-spacing-md);
+    margin-block-end: var(--c-spacing-sm);
   }
 
   .form-field__group-two .form-field__help-text {
@@ -155,6 +161,8 @@ export default css`
 
   /* Tip/warning notices (field-notice.blade.php renders these with p-0 mt-1) */
   .field-notice {
+    --c-callout-icon-padding-inline: 0;
+    --c-callout-text-padding-inline: var(--c-spacing-sm) 0;
     padding: 0;
     margin-block-start: var(--c-spacing-xs, 0.25rem);
   }

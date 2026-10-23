@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import CraftComboboxControl from '@craftcms/ui/vue/CraftCombobox.vue';
+  import InputCallout from '@/common/components/InputCallout.vue';
+  import {envVarsDocsUrl} from '@/common/utils/docsUrls';
   import type {SelectItem} from '@/common/types';
 
   const modelValue = defineModel<string>();
@@ -17,6 +19,13 @@
     showAllOnEmpty?: boolean;
     placeholder?: string;
     limit?: number;
+  }>();
+  defineSlots<{
+    /**
+     * Replaces the callouts below the input. Give the slotted element
+     * `slot="after"`, plus `data-description` if it describes the input.
+     */
+    after?: () => unknown;
   }>();
 </script>
 
@@ -35,23 +44,14 @@
     :limit="limit"
     :error="error"
   >
-    <div slot="after">
-      <slot name="after">
-        <craft-callout
-          v-if="callouts?.includes('envVars')"
-          variant="info"
-          appearance="plain"
-          class="p-0"
-          icon="lightbulb"
-        >
-          {{ t('This can begin with an environment variable.') }}
-          <a
-            href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-            >{{ t('Learn more') }}</a
-          >
-        </craft-callout>
-      </slot>
-    </div>
+    <slot name="after">
+      <InputCallout
+        v-if="callouts?.includes('envVars')"
+        slot="after"
+        :message="t('This can begin with an environment variable.')"
+        :href="envVarsDocsUrl"
+      />
+    </slot>
   </CraftComboboxControl>
 </template>
 

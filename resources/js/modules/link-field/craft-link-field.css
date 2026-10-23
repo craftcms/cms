@@ -1,0 +1,65 @@
+/* Just the outline, so the field sits on the form's own surface. */
+.craft-link-field__pane {
+  --c-pane-background: transparent;
+}
+
+.craft-link-field {
+  display: grid;
+  gap: var(--c-spacing-md);
+  min-width: 0;
+}
+
+/* The link type and its destination read as one input, like a grouped UI field (“Field Limit”). */
+.craft-link-field__destination {
+  --c-field-label-margin-block-end: var(--c-spacing-xs);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: var(--c-spacing-sm) var(--c-spacing-md);
+
+  > :has(craft-select) {
+    flex: none;
+    max-width: 100%;
+
+    craft-select {
+      width: max-content;
+      max-width: 100%;
+    }
+  }
+
+  > :not(:has(craft-select)) {
+    flex: 1 1 calc(240rem / 16);
+    min-width: 0;
+  }
+}
+
+.craft-link-field__element {
+  display: flex;
+  align-items: center;
+  gap: var(--c-spacing-sm);
+  min-width: 0;
+}
+
+.craft-link-selected-label {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--c-text-quiet);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.craft-link-field .buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--c-spacing-sm);
+}
+
+.craft-link-popover::part(popup) {
+  width: min(20rem, calc(100vw - var(--c-spacing-xl)));
+}
+
+/* The buttons' 44px hit-area sizers hang past the padding, which would make
+   the pane scroll by a few pixels. */
+.craft-link-popover > [slot='content'] {
+  overflow: clip;
+}

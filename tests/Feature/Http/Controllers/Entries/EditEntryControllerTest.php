@@ -13,6 +13,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
@@ -28,6 +29,7 @@ use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
 use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
 use Inertia\Testing\AssertableInertia;
 use Workbench\App\Workflow\AutomaticApprovalStage;
 
@@ -108,6 +110,26 @@ it('points the form at the entry save action', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('saveUrl', fn (string $url) => str_contains($url, 'entries/save-entry'))
+            ->etc()
+        );
+});
+
+it('sends Save back to the entries index', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('redirectUrl', fn (string $url) => Crypt::decrypt($url) === cp_url('content/entries'))
+            ->etc()
+        );
+});
+
+it('keeps Save on a named draft', function () {
+    $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
+
+    get(cp_url(sprintf('entries/news/%d-%s?draftId=%d', $this->entry->id, $this->entry->slug, $draft->draftId)))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('redirectUrl', fn (string $url) => Crypt::decrypt($url) === '{cpEditUrl}')
             ->etc()
         );
 });
@@ -297,7 +319,7 @@ it('ends the breadcrumbs with a revision switcher instead of naming the draft in
 it('caps the context menu at five revisions, listing every draft', function () {
     foreach (range(1, 7) as $i) {
         app(Drafts::class)->createDraft($this->entry, auth()->id(), name: "Draft $i");
-        app(Revisions::class)->createRevision($this->entry, auth()->id(), "Revision $i");
+        app(Revisions::class)->createRevision($this->entry, auth()->id(), "Revision $i", force: true);
     }
 
     get($this->entry->getCpEditUrl())
@@ -518,6 +540,41 @@ it('offers review instead of canonical save actions for an unpublished workflow 
 
                 return $apply !== null && $apply['disabled'] === false;
             })
+            ->etc()
+        );
+});
+
+it('saves a released draft that can be submitted for review instead of opening the workflow panel', function () {
+    $workflow = Workflow::query()->create([
+        'name' => 'Editorial workflow',
+        'uid' => Str::uuid7()->toString(),
+        'stages' => [[
+            'uid' => Str::uuid7()->toString(),
+            'name' => 'Automatic Approval',
+            'type' => AutomaticApprovalStage::class,
+            'settings' => [],
+        ]],
+    ]);
+    $this->section->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+    $draft = app(Entry::class);
+    $draft->siteId = $this->entry->siteId;
+    $draft->sectionId = $this->section->id;
+    $draft->typeId = $this->entryType->id;
+    $draft->title = 'Released draft';
+    $draft->slug = 'released-draft';
+    $draft->setAuthorIds([auth()->id()]);
+    app(Drafts::class)->saveElementAsDraft($draft, auth()->id());
+    $release = app(Releases::class)->create('Launch', null, auth()->user());
+    $release->items()->create(['draftId' => $draft->draftId, 'canonicalId' => $draft->getCanonicalId()]);
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('release.id', $release->id)
+            ->where('workflow.current.canSubmit', true)
+            ->where('editorActions.primary.label', 'Save draft')
+            ->where('editorActions.primary.panelId', null)
             ->etc()
         );
 });

@@ -53,7 +53,7 @@ readonly class Elements
 
     private const array FieldValuesSchema = [
         'type' => 'object',
-        'description' => 'Custom field values keyed by field handle. Call elements.field-schema for the applicable schema.',
+        'description' => 'Custom field values keyed by field handle. Values must match the schema from elements.field-schema.',
         'additionalProperties' => true,
     ];
 
@@ -132,7 +132,7 @@ readonly class Elements
      */
     #[McpTool(
         name: 'elements.get',
-        description: 'Gets an element by ID or UID.',
+        description: 'Gets an element by ID or UID. For entries, a saved draft’s own ID or UID loads that draft.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function get(
@@ -166,7 +166,7 @@ readonly class Elements
      */
     #[McpTool(
         name: 'elements.field-schema',
-        description: 'Gets the writable custom-field JSON Schema for an existing element, or for a new element described by context.',
+        description: 'Gets the writable custom-field JSON Schema for an existing element or entry draft, or for a new element described by context.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function fieldSchema(
@@ -203,11 +203,14 @@ readonly class Elements
     /**
      * @param  array<string, mixed>  $attributes
      * @param  array<string, mixed>  $fields
+     * @param  bool  $asUnpublishedDraft  Whether to save the new element as an unpublished draft instead of live content. Supported for entries.
+     * @param  string|null  $draftName  Name of the unpublished draft. Requires asUnpublishedDraft.
+     * @param  string|null  $draftNotes  Notes for the unpublished draft. Requires asUnpublishedDraft.
      * @return array<string, mixed>
      */
     #[McpTool(
         name: 'elements.create',
-        description: 'Creates an element. Call elements.field-schema to discover custom fields. For assets, use assets.create instead.',
+        description: 'Creates an element. Call elements.field-schema to discover custom fields. For entries, set asUnpublishedDraft to create an unpublished draft that is not live until it is applied with drafts.apply. For assets, use assets.create instead.',
     )]
     public function create(
         #[Schema(definition: self::TypeSchema)]
@@ -216,6 +219,9 @@ readonly class Elements
         array $attributes = [],
         #[Schema(definition: self::FieldValuesSchema)]
         array $fields = [],
+        bool $asUnpublishedDraft = false,
+        ?string $draftName = null,
+        ?string $draftNotes = null,
     ): array {
         $actor = $this->actor->user();
         $adapter = $this->adapter($type);
@@ -223,6 +229,14 @@ readonly class Elements
 
         if ($attributesSchema !== null) {
             $this->assertValid($attributes, $attributesSchema, 'attributes', $type);
+        }
+
+        if ($asUnpublishedDraft) {
+            return $adapter->createUnpublishedDraft($attributes, $fields, $actor, $draftName, $draftNotes);
+        }
+
+        if ($draftName !== null || $draftNotes !== null) {
+            throw new ToolCallException('draftName and draftNotes require asUnpublishedDraft.');
         }
 
         return $adapter->create($attributes, $fields, $actor);
@@ -236,7 +250,7 @@ readonly class Elements
      */
     #[McpTool(
         name: 'elements.update',
-        description: 'Updates an element. Call elements.field-schema to discover custom fields.',
+        description: 'Updates an element. Call elements.field-schema to discover custom fields. For entries, a saved draft’s own ID or UID updates only that draft and leaves its canonical entry unchanged.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function update(
@@ -283,6 +297,10 @@ readonly class Elements
 
         if (! $element || ! $adapter->canDelete($this->actor->user(), $element)) {
             throw $this->notFound($adapter);
+        }
+
+        if ($element->getIsDraft()) {
+            throw new ToolCallException('Use drafts.delete to delete a draft.');
         }
 
         if (! $this->elements->deleteElement($element, $hardDelete)) {
@@ -411,7 +429,11 @@ readonly class Elements
         $adapter = $this->adapters->find($type);
 
         if ($adapter === null) {
-            throw new ResourceReadException("Unsupported element type [$type].");
+            throw new ResourceReadException(sprintf(
+                'Unsupported element type [%s]. Supported types: %s.',
+                $type,
+                implode(', ', $this->adapters->handles()),
+            ));
         }
 
         return $adapter->schema();

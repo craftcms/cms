@@ -3,7 +3,7 @@
   import {type FormComponentProps} from '@inertiajs/core';
   import {Form} from '@inertiajs/vue3';
   import {useDebounceFn} from '@vueuse/core';
-  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
 
   const searchTerm = defineModel<string>();
   defineProps<FormComponentProps & {}>();
@@ -26,13 +26,12 @@
     }"
   >
     <div class="flex gap-2 items-start">
-      <CraftInput
+      <CraftInputSearch
         class="flex-1"
         name="search"
-        :label="t('Search term')"
+        :label="t('Search Term')"
         v-model="searchTerm"
         @input="autoSearch(submit)"
-        label-sr-only
       />
       <craft-button type="submit" :loading="processing" slot="suffix">{{
         t('Search')

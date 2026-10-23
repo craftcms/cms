@@ -190,7 +190,7 @@ class DatabaseServiceProvider extends ServiceProvider
                 $this->where($this->from.'.id', '=', $id);
             }
 
-            return $this->update(['dateDeleted' => now()]);
+            return $this->update(['dateDeleted' => Query::prepareDateForDb(now())]);
         });
 
         Builder::macro('restore', function (?int $id = null): int {

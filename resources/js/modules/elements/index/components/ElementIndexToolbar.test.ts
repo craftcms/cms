@@ -16,12 +16,12 @@ vi.mock('@craftcms/ui', () => ({
   ButtonVariant: {Fill: 'fill'},
 }));
 
-vi.mock('@craftcms/ui/vue/CraftInput.vue', () => ({
+vi.mock('@craftcms/ui/vue/CraftInputSearch.vue', () => ({
   default: {
-    name: 'CraftInput',
+    name: 'CraftInputSearch',
     inheritAttrs: false,
     setup(_props: unknown, {attrs, slots}: SetupContext) {
-      return () => h('craft-input', attrs, slots.default?.());
+      return () => h('craft-input-search', attrs, slots.default?.());
     },
   },
 }));
@@ -80,7 +80,10 @@ function site(id: number, handle: string, name: string): IndexSite {
   return {id, handle, name, group: 'Group'};
 }
 
-function mount(props: Record<string, unknown>) {
+function mount(
+  props: Record<string, unknown>,
+  slots?: Record<string, () => unknown>
+) {
   container = document.createElement('div');
   document.body.append(container);
 
@@ -105,16 +108,20 @@ function mount(props: Record<string, unknown>) {
 
   app = createApp({
     render: () =>
-      h(ElementIndexToolbar as Component, {
-        ...toolbarProps,
-        sortDirection: state.sortDirection,
-        onSiteChange,
-        'onUpdate:search': onSearchUpdate,
-        'onUpdate:sortDirection': (value: 'asc' | 'desc') => {
-          state.sortDirection = value;
-          onSortDirectionUpdate(value);
+      h(
+        ElementIndexToolbar as Component,
+        {
+          ...toolbarProps,
+          sortDirection: state.sortDirection,
+          onSiteChange,
+          'onUpdate:search': onSearchUpdate,
+          'onUpdate:sortDirection': (value: 'asc' | 'desc') => {
+            state.sortDirection = value;
+            onSortDirectionUpdate(value);
+          },
         },
-      }),
+        slots
+      ),
   });
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
   app.mount(container);
@@ -209,6 +216,56 @@ it('omits the shared cell when there is no site menu and no statuses', () => {
   expect(container!.querySelector('.element-toolbar__status')).toBeNull();
 });
 
+it('reserves no actions cell when the index has no actions', () => {
+  mount({});
+
+  // An empty track would still take its gap, leaving a hole after View.
+  const toolbar = container!.querySelector('.element-toolbar')!;
+  expect(toolbar.querySelector('.element-toolbar__actions')).toBeNull();
+  expect(toolbar.classList.contains('element-toolbar--actions')).toBe(false);
+});
+
+it('gives the index’s actions their own cell', () => {
+  mount({}, {actions: () => h('button', 'New entry')});
+
+  const toolbar = container!.querySelector('.element-toolbar')!;
+  expect(toolbar.querySelector('.element-toolbar__actions')?.textContent).toBe(
+    'New entry'
+  );
+  expect(toolbar.classList.contains('element-toolbar--actions')).toBe(true);
+});
+
+// The buttons are icon-only, so each gets its name as a tooltip — as the
+// label it already has, rather than a description repeating it.
+it('gives each view mode button its name as a tooltip', () => {
+  mount({
+    viewModes: [
+      {mode: 'table', title: 'Display in a table', icon: 'list'},
+      {mode: 'thumbs', title: 'Display as thumbnails', icon: 'grid'},
+    ],
+  });
+
+  const tooltips = [
+    ...container!.querySelectorAll<HTMLElement & {for?: string}>(
+      'craft-tooltip'
+    ),
+  ];
+
+  expect(tooltips.map((tooltip) => tooltip.textContent?.trim())).toEqual([
+    'Display in a table',
+    'Display as thumbnails',
+  ]);
+  tooltips.forEach((tooltip) => {
+    expect(tooltip.getAttribute('invoker-relation')).toBe('label');
+    // Vue sets `for` as a property; the attribute only follows on update.
+    const button = document.getElementById(tooltip.for!);
+    expect(button?.localName).toBe('craft-button');
+    expect(button?.getAttribute('aria-label')).toBe(
+      tooltip.textContent?.trim()
+    );
+  });
+});
+
 it('puts the site menu and the status menu in one cell', () => {
   mount({
     sites: [site(1, 'default', 'Default'), site(2, 'fr', 'French')],
@@ -266,6 +323,27 @@ it('removes score without a search and locks custom ordering', () => {
   expect(descending.disabled).toBe(true);
 });
 
+it('names the view mode and sort direction button groups', () => {
+  mount({
+    viewModes: [
+      {mode: 'table', title: 'Display in a table', icon: 'list'},
+      {mode: 'thumbs', title: 'Display as thumbnails', icon: 'grid'},
+    ],
+    sortOptions: [{label: 'Title', value: 'title', defaultDir: 'asc'}],
+  });
+
+  const viewModes = container!.querySelector(
+    'craft-button-group[name="viewState[mode]"]'
+  )!;
+  const sortDirection = container!
+    .querySelector('craft-button[aria-label="Sort ascending"]')!
+    .closest('craft-button-group')!;
+
+  expect(viewModes.getAttribute('aria-label')).toBe('View Mode');
+  expect(sortDirection.getAttribute('role')).toBe('group');
+  expect(sortDirection.getAttribute('aria-label')).toBe('Sort Direction');
+});
+
 it('changes sort direction when its actual direction button is clicked', async () => {
   const {onSortDirectionUpdate, state} = mount({
     sortOptions: [{label: 'Title', value: 'title', defaultDir: 'asc'}],
@@ -293,28 +371,12 @@ it('changes sort direction when its actual direction button is clicked', async (
   expect(descending.getAttribute('aria-pressed')).toBe('true');
 });
 
-it('returns focus to the search input when the search is cleared', () => {
-  const {onSearchUpdate} = mount({search: 'needle'});
-  const input = container!.querySelector<HTMLElement>(
-    'craft-input[name="search"]'
-  )!;
-  const focus = vi.spyOn(input, 'focus');
-
-  container!
-    .querySelector('craft-icon[label="Clear search"]')!
-    .closest<HTMLElement>('craft-button')!
-    .click();
-
-  expect(onSearchUpdate).toHaveBeenCalledWith('');
-  expect(focus).toHaveBeenCalled();
-});
-
 it('keeps the search input enabled while results load', () => {
   mount({processing: true});
 
   expect(
     container!
-      .querySelector('craft-input[name="search"]')!
+      .querySelector('craft-input-search[name="search"]')!
       .hasAttribute('disabled')
   ).toBe(false);
 });

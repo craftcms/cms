@@ -42,7 +42,22 @@ function folderIds(action: FolderActionDetail): number[] {
     .map(Number);
 }
 
-export function useAssetFolderActions(index: ElementIndexOperations) {
+/**
+ * The folder actions the asset index handles itself: new subfolder, rename,
+ * move and delete.
+ *
+ * `performMove` is the drag-and-drop move. Moving selected folders goes
+ * through it, so the move can be undone, as dropping them can. Moving the
+ * current folder from its breadcrumb returns to the parent folder instead.
+ */
+export function useAssetFolderActions(
+  index: ElementIndexOperations,
+  performMove?: (
+    targetFolderId: number,
+    assetIds: number[],
+    folderIds: number[]
+  ) => Promise<unknown>
+) {
   function onActionPerformed(): void {
     index.clearSelection();
     void index.refresh();
@@ -237,16 +252,24 @@ export function useAssetFolderActions(index: ElementIndexOperations) {
         // own focus trap cannot compete if the move needs a decision.
         modal.hide();
 
+        if (performMove && !action.redirectUrl) {
+          // It reports its own failures.
+          await performMove(Number(targetFolder.folderId), [], ids).catch(
+            () => {}
+          );
+          return;
+        }
+
         try {
           const result = await moveFolders(
             ids,
             Number(targetFolder.folderId),
             resolveConflict
           );
-          if (result.moved > 0) {
+          if (result.movedCount > 0) {
             Craft.cp?.displayNotice?.(
               t('{num, plural, =1{Item} other{Items}} moved.', {
-                num: result.moved,
+                num: result.movedCount,
               })
             );
             if (action.redirectUrl) {

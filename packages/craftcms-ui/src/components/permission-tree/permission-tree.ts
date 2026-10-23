@@ -1,8 +1,16 @@
-import {css, html, LitElement, nothing, type PropertyValues} from 'lit';
+import {
+  css,
+  html,
+  LitElement,
+  nothing,
+  unsafeCSS,
+  type PropertyValues,
+} from 'lit';
 import {property} from 'lit/decorators.js';
 import {repeat} from 'lit/directives/repeat.js';
 import {emitChange, emitInput} from '@src/utilities/form-events.js';
 import {t} from '@src/utilities/translate.js';
+import choiceInputStyles from '@src/styles/shared/choice-inputs.css?inline';
 import type CraftCheckbox from '../checkbox/checkbox.js';
 import '../button/button.js';
 import '../callout/callout.js';
@@ -42,53 +50,56 @@ let nextTreeId = 0;
  * supports, and they carry the component as `event.target`.
  */
 export default class CraftPermissionTree extends LitElement {
-  static override styles = css`
-    :host {
-      display: block;
-    }
+  static override styles = [
+    unsafeCSS(choiceInputStyles),
+    css`
+      :host {
+        display: block;
+      }
 
-    :host([hidden]) {
-      display: none;
-    }
+      :host([hidden]) {
+        display: none;
+      }
 
-    .group + .group {
-      margin-block-start: var(--c-spacing-lg);
-    }
+      .group + .group {
+        margin-block-start: var(--c-spacing-lg);
+      }
 
-    .heading {
-      display: flex;
-      align-items: center;
-      gap: var(--c-spacing-sm);
-    }
+      .heading {
+        display: flex;
+        align-items: center;
+        gap: var(--c-spacing-sm);
+      }
 
-    h3 {
-      margin: 0;
-      font-size: var(--c-font-size-lg);
-    }
+      h3 {
+        margin: 0;
+        font-size: var(--c-font-size-lg);
+      }
 
-    ul {
-      margin-block: var(--c-spacing-sm);
-      padding: 0;
-      list-style: none;
-    }
+      ul {
+        margin-block: var(--c-spacing-sm);
+        padding: 0;
+        list-style: none;
+      }
 
-    craft-checkbox.indented {
-      position: relative;
-      --gap-x: calc((var(--permission-level) * 1lh) + var(--c-spacing-md));
-    }
+      craft-checkbox.indented {
+        position: relative;
+        --gap-x: calc((var(--permission-level) * 1lh) + var(--c-spacing-md));
+      }
 
-    craft-checkbox.indented::before {
-      content: '';
-      position: absolute;
-      inset-block-start: calc(1lh / 2);
-      inset-inline-start: calc(
-        var(--c-size-control-2xs) + (var(--c-spacing) * 2)
-      );
-      width: calc(var(--gap-x) - (var(--c-spacing) * 3.5));
-      height: 1px;
-      background-color: var(--c-color-neutral-border-quiet);
-    }
-  `;
+      craft-checkbox.indented::before {
+        content: '';
+        position: absolute;
+        inset-block-start: calc(1lh / 2);
+        inset-inline-start: calc(
+          var(--c-size-control-2xs) + (var(--c-spacing) * 2)
+        );
+        width: calc(var(--gap-x) - (var(--c-spacing) * 3.5));
+        height: 1px;
+        background-color: var(--c-color-neutral-border-quiet);
+      }
+    `,
+  ];
 
   /** Permission groups. */
   @property({type: Array}) groups: PermissionTreeGroup[] = [];

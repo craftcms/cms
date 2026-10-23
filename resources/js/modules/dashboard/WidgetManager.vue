@@ -82,7 +82,7 @@
             :step="1"
             :value="Math.min(widget.colspan, columns)"
             :disabled="busy"
-            :label="t('Number of columns')"
+            :label="t('Number of Columns')"
             :described-by="`widget-label-${widget.id}`"
             @value-change="emit('resize', widget, $event.detail.value)"
           ></craft-slide-picker>

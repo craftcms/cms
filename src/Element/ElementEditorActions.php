@@ -189,6 +189,7 @@ class ElementEditorActions
         if (
             $element->getIsDraft() &&
             ! $element->isProvisionalDraft &&
+            $element::hasDrafts() &&
             $canSave &&
             Gate::check('saveCanonical', $element)
         ) {
@@ -200,7 +201,7 @@ class ElementEditorActions
                     'draftId' => $element->draftId,
                 ],
                 'redirect' => Crypt::encrypt('{cpEditUrl}'),
-                'variant' => 'secondary',
+                'variant' => 'solid',
             ];
         }
 

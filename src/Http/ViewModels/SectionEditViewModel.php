@@ -103,7 +103,7 @@ class SectionEditViewModel extends ViewModel
                     ->allowOverrides()
                     ->create(! $this->readOnly)),
             Separator::make('site-settings-separator'),
-            Field::make(t('Site settings'))
+            Field::make(t('Site Settings'))
                 ->instructions(t('Choose which sites this section should be available in, and configure the site-specific settings.'))
                 ->control($this->siteSettingsControl($type)),
         ]);
@@ -148,13 +148,13 @@ class SectionEditViewModel extends ViewModel
                         'urlFormat' => [
                             'heading' => t('URL Format'),
                             'type' => 'singleline',
-                            'info' => t('Type `$` for an environment variable, `@` for an alias, or `{` for an object template variable.'),
+                            'info' => t('Type <kbd>$</kbd> for an environment variable, <kbd>@</kbd> for an alias, or <kbd>{</kbd> for an object template variable.'),
                             'textExpanderTriggers' => [
                                 ...SelectOptions::getEnvTextExpanderTriggers(true),
                                 ...$objectTemplateTriggers,
                             ],
                         ],
-                        'refresh' => ['heading' => t('Auto-Refresh'), 'type' => 'lightswitch'],
+                        'refresh' => ['heading' => t('Auto-Refresh'), 'type' => 'lightswitch', 'class' => 'thin centered'],
                     ])
                     ->defaultValues(['refresh' => true])
                     ->addRowLabel(t('Add a target'))
@@ -253,19 +253,23 @@ class SectionEditViewModel extends ViewModel
         $urlPlaceholder = $single
             ? t('Leave blank if the entry doesn’t have a URL')
             : t('Leave blank if entries don’t have URLs');
+        // The URI and Route columns share the remaining width equally
+        $uriWidth = $this->headlessMode ? [] : ['width' => 50];
 
         return Table::make('sites')
             ->keyed()
             ->columns([
-                'name' => ['heading' => t('Site'), 'type' => 'heading'],
+                'name' => ['heading' => t('Site'), 'type' => 'heading', 'class' => 'thin'],
                 'enabled' => $show($this->isMultiSite(), [
                     'heading' => t('Enabled'),
                     'type' => 'lightswitch',
-                    'toggle' => ['singleHomepage', 'singleUri', 'uriFormat', 'routeType', 'route', 'enabledByDefault'],
+                    'class' => 'thin centered',
+                    'toggle' => ['singleHomepage', 'singleUri', 'uriFormat', 'destination', 'enabledByDefault'],
                 ]),
                 'singleHomepage' => $show($single, [
                     'heading' => t('Homepage'),
                     'type' => 'checkbox',
+                    'class' => 'thin centered',
                     'toggle' => ['!singleUri'],
                 ]),
                 'singleUri' => $show($single, [
@@ -274,6 +278,7 @@ class SectionEditViewModel extends ViewModel
                     'code' => true,
                     'placeholder' => $urlPlaceholder,
                     'info' => t('What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.'),
+                    ...$uriWidth,
                 ]),
                 'uriFormat' => $show(! $single, [
                     'heading' => t('Entry URI Format'),
@@ -282,13 +287,13 @@ class SectionEditViewModel extends ViewModel
                     'placeholder' => $urlPlaceholder,
                     'info' => SelectOptions::getObjectTemplateTip(),
                     'textExpanderTriggers' => $this->objectTemplateTriggers(),
+                    ...$uriWidth,
                 ]),
-                'route' => $show(! $this->headlessMode, [
-                    ...ElementSiteSettings::routeColumn(),
-                    'type' => 'template',
-                    'options' => SelectOptions::getTemplateSuggestions(),
+                'destination' => $show(! $this->headlessMode, [
+                    ...ElementSiteSettings::destinationColumn(EntryElement::class),
+                    'width' => 50,
                 ]),
-                'enabledByDefault' => $show(! $single, ['heading' => t('Default Status'), 'type' => 'lightswitch']),
+                'enabledByDefault' => $show(! $single, ['heading' => t('Default Status'), 'type' => 'lightswitch', 'class' => 'thin centered']),
             ]);
     }
 

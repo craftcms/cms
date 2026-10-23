@@ -77,6 +77,7 @@
   const HEADER_SLOTS = ['title'] as const;
   const FOOTER_SLOTS = [
     'content-footer',
+    'footer-meta',
     'additional-buttons',
     'primary-action',
   ] as const;
@@ -106,6 +107,7 @@
   const page = usePage<{
     title: string;
     readOnly?: boolean;
+    showReadOnlyNotice?: boolean;
     primaryAction?: string | null;
     crumbs?: Array<BreadcrumbItem> | null;
     subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
@@ -153,6 +155,14 @@
       regions.has('content-toolbar-meta') ||
       regions.has('content-toolbar-actions')
   );
+  // Hidden while it has nothing to show, such as an untitled nested entry's
+  // edit page, so its padding doesn't leave a gap above the content.
+  const hasHeader = computed(
+    () =>
+      Boolean(pageTitle.value) ||
+      regions.has('title') ||
+      regions.has('content-actions')
+  );
   const hasDetails = computed(() => regions.has('content-details'));
   const hasTabs = computed(() => regions.has('content-tabs'));
   // Decided here rather than inside `ContentFooter`, so the sticky wrapper
@@ -160,10 +170,12 @@
   // standing empty.
   const hasFooter = computed(
     () =>
-      Boolean(props.form) ||
-      Boolean(props.fullPageForm) ||
-      regions.has('content-footer') ||
-      regions.has('additional-buttons')
+      !props.hideFooter &&
+      (Boolean(props.form) ||
+        Boolean(props.fullPageForm) ||
+        regions.has('content-footer') ||
+        regions.has('footer-meta') ||
+        regions.has('additional-buttons'))
   );
   const contentConstrained = computed(() => Boolean(props.contentMaxWidth));
   const contentMainStyle = computed(() =>
@@ -319,10 +331,13 @@
                               <!-- The subnav-actions outlet lives inside this fallback, so a page can
                               teleport `content-sidebar` or `subnav-actions`, never both. -->
                               <SecondaryNav
-                                :items="navItemActions(subnav)"
+                                :items="navItemActions(subnav, true)"
                                 :actions="subnavActions"
                               >
-                                <template #actions>
+                                <template
+                                  v-if="regions.has('subnav-actions')"
+                                  #actions
+                                >
                                   <LayoutSlotOutlet name="subnav-actions">
                                     <slot name="subnav-actions"></slot>
                                   </LayoutSlotOutlet>
@@ -345,7 +360,12 @@
                               />
                             </slot>
                           </LayoutSlotOutlet>
-                          <CalloutReadOnly v-if="readOnly" />
+                          <CalloutReadOnly
+                            v-if="
+                              readOnly &&
+                              page.props.showReadOnlyNotice !== false
+                            "
+                          />
                           <div
                             :class="{
                               'cp-content-view': true,
@@ -387,7 +407,11 @@
                             </slot>
 
                             <slot name="content-header">
-                              <div id="cp-content-header" class="pt-lg pb-md">
+                              <div
+                                v-show="hasHeader"
+                                id="cp-content-header"
+                                class="pt-lg pb-md"
+                              >
                                 <CpContainer>
                                   <div
                                     class="flex flex-wrap gap-md items-center justify-between"
@@ -538,6 +562,7 @@ Shell
   .cp {
     flex: 1;
     display: grid;
+    padding-inline-end: var(--cp-scrollbar-width, 0px);
     /* The floating sidebar's row stays empty, so the main row takes the room. */
     grid-template-rows: auto 1fr;
     background-color: var(--c-surface-sunken);
@@ -597,7 +622,7 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     border: var(--cp-body-border-width) solid
       var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-xl);
-    box-shadow: var(--shadow-xs), var(--shadow-lg);
+    box-shadow: var(--c-shadow-xs), var(--c-shadow-lg);
     overflow: clip;
   }
 
@@ -701,8 +726,13 @@ Content: the secondary nav, content, and details panes
 
   .cp-content--sidebar .cp-content__sidebar {
     min-width: calc(250rem / 16);
-    border-block-end: 1px solid var(--c-color-border-quiet);
     padding: var(--c-spacing-md);
+
+    /* Only stacked above the content; beside it, the panel's own border
+       already closes it off. */
+    @media (width < var(--breakpoint-lg)) {
+      border-block-end: 1px solid var(--c-color-border-quiet);
+    }
   }
 
   .cp-content__main {
@@ -717,7 +747,10 @@ Content: the secondary nav, content, and details panes
     background-color: var(--c-surface-default);
     /* A dragged width outlives the layout it was dragged in, so cap it here. */
     max-inline-size: var(--cp-content-details-max, 90cqi);
-    container: content-details / inline-size;
+    /* Contained in both axes, so the row sets its height rather than the pane:
+       the pane is sized from where this ends, and taking its height from the
+       pane would let a stale gap hold the page a few pixels too tall. */
+    container: content-details / size;
     /* No width of its own while it has a column: stretching to the track is what
        lets the track's range shrink it, and it survives the containment above. */
     justify-self: stretch;

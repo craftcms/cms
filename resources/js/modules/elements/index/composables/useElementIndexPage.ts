@@ -33,7 +33,13 @@ export function useElementIndexPage(
     return new Promise((resolve) => {
       let applied = false;
       router.reload({
-        only: ['data', 'pagination', 'badgeCounts'],
+        only: [
+          'data',
+          'pagination',
+          'navSourceBadges',
+          'sourceNavItems',
+          'subnav',
+        ],
         onSuccess: () => {
           applied = true;
         },

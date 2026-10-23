@@ -39,7 +39,7 @@ export function createSlidePicker(
   el.max = max;
   el.step = step;
   el.value = value || 0;
-  el.label = config.label || t('Number of columns');
+  el.label = config.label || t('Number of Columns');
   el.valueLabel = config.valueLabel || ((v) => `${v}`);
   if (config.describedBy) {
     el.setAttribute('described-by', config.describedBy);

@@ -20,7 +20,6 @@ const request = vi.hoisted(() => ({post: vi.fn()}));
 const actions = vi.hoisted(() => ({run: vi.fn(async () => {})}));
 const slideout = vi.hoisted(() => vi.fn().mockResolvedValue(null));
 vi.mock('@/common/slideouts', () => ({
-  canUseVueSlideout: () => window.Craft?.openSlideout instanceof Function,
   openSlideout: slideout,
 }));
 const copiedElements = vi.hoisted(() => ({
@@ -53,11 +52,21 @@ vi.mock('@/modules/elements/components/ElementCards.vue', () => ({
           attrs: (card: {id: number}) => Record<string, unknown>;
         };
       },
-      {slots}: {slots: Record<string, (data: unknown) => unknown>}
+      {
+        slots,
+        emit,
+      }: {
+        slots: Record<string, (data: unknown) => unknown>;
+        emit: (event: 'reorder', from: number, to: number) => void;
+      }
     ) {
       return () =>
         h(
           'ul',
+          {
+            onCraftReorder: (event: CustomEvent<{from: number; to: number}>) =>
+              emit('reorder', event.detail.from, event.detail.to),
+          },
           props.data.map((card) =>
             h(
               'li',
@@ -156,34 +165,12 @@ describe('NestedElementsControl', () => {
       prepare?: () => Promise<NestedOwnerContext | null>;
       refresh?: () => Promise<void>;
       editable?: boolean;
-      vueSlideout?: boolean;
       cards?: NestedElement[];
       manager?: Partial<NonNullable<NestedElementsProps['manager']>>;
     } = {}
   ) {
-    const legacyElementEditor = {
-      settings: {
-        canCreateDrafts: true,
-        draftId: 6,
-        saveParams: null as Record<string, unknown> | null,
-      },
-      saveDraft: vi.fn(async () => {}),
-    };
-    const legacySlideout = {
-      elementEditor: legacyElementEditor,
-      on: vi.fn(),
-    };
-    const createElementEditor = vi.fn(
-      (
-        _elementType: string,
-        _settings: Record<string, unknown> & {
-          onBeforeSubmit: () => Promise<void>;
-        }
-      ) => legacySlideout
-    );
     vi.stubGlobal('Craft', {
-      openSlideout: options.vueSlideout === false ? undefined : vi.fn(),
-      createElementEditor,
+      openSlideout: vi.fn(),
       cp: {displayNotice: vi.fn()},
       elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
       Preview: {refresh: vi.fn()},
@@ -252,9 +239,6 @@ describe('NestedElementsControl', () => {
       control,
       prepare,
       refresh,
-      createElementEditor,
-      legacyElementEditor,
-      legacySlideout,
     };
   }
 
@@ -339,6 +323,43 @@ describe('NestedElementsControl', () => {
         String(url).includes('element-indexes/get-elements')
       )
     ).toBe(false);
+  });
+
+  it('keeps a dropped card in its new place while the reorder saves, and puts it back if it fails', async () => {
+    let rejectReorder!: (error: Error) => void;
+    request.post.mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectReorder = reject;
+        })
+    );
+    const cards = (): NestedElement[] =>
+      [14, 15, 16].map((id) => nestedElement({id, siteId: 1}));
+    const {control} = mount({cards: cards()});
+    const order = (): string[] =>
+      [...root.querySelectorAll<HTMLElement>('li')].map(
+        (card) => card.dataset.nestedId!
+      );
+
+    root
+      .querySelector('ul')!
+      .dispatchEvent(
+        new CustomEvent('craft-reorder', {detail: {from: 0, to: 2}})
+      );
+    await nextTick();
+
+    expect(order()).toEqual(['15', '16', '14']);
+
+    // Preparing the owner saves its draft, which re-renders the field as it
+    // stood before the reorder.
+    control.props.cards = cards();
+    await nextTick();
+
+    expect(order()).toEqual(['15', '16', '14']);
+
+    await vi.waitFor(() => expect(request.post).toHaveBeenCalled());
+    rejectReorder(new Error('Nope'));
+    await vi.waitFor(() => expect(order()).toEqual(['14', '15', '16']));
   });
 
   it('preserves server actions without rebuilding actions from capability flags', async () => {
@@ -440,34 +461,6 @@ describe('NestedElementsControl', () => {
     }
   );
 
-  it('opens newly created entries in the legacy editor when the Vue host is unavailable', async () => {
-    request.post.mockResolvedValue({
-      data: {element: {id: 92, siteId: 1, draftId: 44}},
-    });
-    const {createElementEditor} = mount({
-      vueSlideout: false,
-      manager: {
-        canCreate: true,
-        createAttributes: [{label: 'Text', attributes: {typeId: 9}}],
-      },
-    });
-    await nextTick();
-
-    root.querySelector<HTMLElement>('[data-create-element]')!.click();
-    await vi.waitFor(() => expect(createElementEditor).toHaveBeenCalledOnce());
-
-    expect(slideout).not.toHaveBeenCalled();
-    expect(createElementEditor).toHaveBeenCalledWith('Entry', {
-      elementId: 92,
-      siteId: 1,
-      fieldId: 7,
-      ownerId: 73,
-      draftId: 44,
-      params: {fresh: 1},
-      onBeforeSubmit: expect.any(Function),
-    });
-  });
-
   it('restores focus by position when a saved child has a new identity', async () => {
     const refresh = vi.fn(async () => {
       control.props.cards = [
@@ -561,61 +554,6 @@ describe('NestedElementsControl', () => {
         window.location.origin
       ).searchParams.get('ownerId')
     ).toBe('31');
-  });
-
-  it('prepares derivative saves in the legacy editor when the Vue host is unavailable', async () => {
-    const {createElementEditor, legacyElementEditor} = mount({
-      vueSlideout: false,
-      cards: [
-        nestedElement({
-          id: 18,
-          siteId: 1,
-          ownerId: 31,
-          editUrl:
-            '/admin/actions/elements/edit?elementId=18&siteId=1&fieldId=7&ownerId=31&draftId=6',
-          cardAttributes: {data: {editable: true}},
-        }),
-      ],
-    });
-    await nextTick();
-
-    root.querySelector<HTMLAnchorElement>('a[href]')!.click();
-    await vi.waitFor(() => expect(createElementEditor).toHaveBeenCalledOnce());
-
-    expect(slideout).not.toHaveBeenCalled();
-    const settings = createElementEditor.mock.lastCall![1];
-    await settings.onBeforeSubmit();
-    expect(legacyElementEditor.settings.saveParams).toEqual({
-      action: 'elements/save-nested-element-for-derivative',
-      newOwnerId: 73,
-    });
-  });
-
-  it('saves draft-less elements in place in the legacy editor', async () => {
-    const {createElementEditor, legacyElementEditor} = mount({
-      vueSlideout: false,
-      cards: [
-        nestedElement({
-          id: 18,
-          siteId: 1,
-          ownerId: 31,
-          editUrl:
-            '/admin/actions/elements/edit?elementId=18&siteId=1&fieldId=7&ownerId=31',
-          cardAttributes: {data: {editable: true}},
-        }),
-      ],
-    });
-    legacyElementEditor.settings.canCreateDrafts = false;
-    legacyElementEditor.settings.draftId = null as unknown as number;
-    await nextTick();
-
-    root.querySelector<HTMLAnchorElement>('a[href]')!.click();
-    await vi.waitFor(() => expect(createElementEditor).toHaveBeenCalledOnce());
-
-    const settings = createElementEditor.mock.lastCall![1];
-    await expect(settings.onBeforeSubmit()).resolves.toBeUndefined();
-    expect(legacyElementEditor.saveDraft).not.toHaveBeenCalled();
-    expect(legacyElementEditor.settings.saveParams).toBeNull();
   });
 
   it('opens the entry’s own edit page in a new tab on a modified click', async () => {
@@ -759,6 +697,25 @@ describe('NestedElementsControl', () => {
     expect(action('Delete entry')).toBeUndefined();
     expect(action('Duplicate')).toBeUndefined();
     expect(root.querySelector('[data-edit-element]')).not.toBeNull();
+  });
+
+  it('gives the edit button the card’s color, like its action menu button', async () => {
+    mount({
+      cards: [
+        nestedElement({
+          id: 18,
+          siteId: 1,
+          ownerId: 31,
+          editUrl: '/admin/actions/elements/edit?elementId=18',
+          cardAttributes: {data: {editable: true}},
+        }),
+      ],
+    });
+    await nextTick();
+
+    expect(
+      root.querySelector('[data-edit-element]')!.hasAttribute('inherit')
+    ).toBe(true);
   });
 
   it('marks invalid cards without requesting index data', async () => {

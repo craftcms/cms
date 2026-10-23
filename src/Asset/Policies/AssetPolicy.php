@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Asset\Policies;
 
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\User\Contracts\CraftUser;
@@ -65,6 +66,16 @@ class AssetPolicy extends ElementPolicy
         }
 
         return $user->can("deleteAssets:$volume->uid");
+    }
+
+    public function deleteForSite(CraftUser $user, Asset $asset): bool
+    {
+        if ($asset->isFolder || $asset->getVolume()->propagationMethod !== PropagationMethod::Custom) {
+            return false;
+        }
+
+        // Assets that only exist in this site will be deleted normally, so normal delete permissions are required either way
+        return $this->delete($user, $asset);
     }
 
     public function copy(CraftUser $user, Asset $asset): bool

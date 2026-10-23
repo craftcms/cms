@@ -338,6 +338,19 @@ describe('getLanguageOptions', function () {
         expect($hasHintLang)->toBeTrue();
     });
 
+    it('hints each language’s name in that language, whatever the current language, unless it matches the label', function () {
+        app()->setLocale('de');
+
+        $options = collect(SelectOptions::getLanguageOptions(showLocalizedNames: true))->keyBy('value');
+
+        expect($options['en']['label'])->toBe('Englisch')
+            ->and($options['en']['data']['hint'])->toBe('English')
+            ->and($options['de']['label'])->toBe('Deutsch')
+            ->and($options['de']['data'])->not->toHaveKey('hint')
+            ->and($options['fr']['label'])->toBe('Französisch')
+            ->and($options['fr']['data']['hint'])->toBe('français');
+    });
+
     it('limits to app locales when appLocales is true', function () {
         $allOptions = SelectOptions::getLanguageOptions(appLocales: false);
         $appOptions = SelectOptions::getLanguageOptions(appLocales: true);

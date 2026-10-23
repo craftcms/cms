@@ -77,6 +77,20 @@ describe('ElementChips', () => {
     return event;
   }
 
+  it('colors each chip with its element’s color, leaving the rest to the chip’s default', async () => {
+    const {root} = mount({
+      data: [
+        {id: 5, label: 'Homepage', color: 'violet'},
+        {id: 6, label: 'About us', color: null},
+      ],
+    });
+    await nextTick();
+
+    const [colored, plain] = chips(root);
+    expect(colored!.getAttribute('data-color')).toBe('violet');
+    expect(plain!.getAttribute('data-color')).not.toBe('violet');
+  });
+
   it('draws a chip per element, labeled', async () => {
     const {root} = mount();
 

@@ -100,8 +100,6 @@ describe('ElementSelectControl', () => {
   let app: ReturnType<typeof createApp> | undefined;
   let container: HTMLElement | undefined;
 
-  const createElementEditor = vi.fn();
-
   beforeEach(() => {
     // The menu items' `<craft-icon>`s fetch their SVGs; left in flight they're
     // aborted at teardown and reported as unhandled errors.
@@ -109,9 +107,7 @@ describe('ElementSelectControl', () => {
       'fetch',
       vi.fn(async () => new Response('<svg></svg>'))
     );
-    // Double-click hands off to the global editor; only the hand-off matters here.
-    vi.stubGlobal('Craft', {createElementEditor});
-    createElementEditor.mockClear();
+    vi.stubGlobal('Craft', {});
   });
 
   afterEach(() => {
@@ -253,7 +249,7 @@ describe('ElementSelectControl', () => {
 
   it('appends what the selector returns', async () => {
     await mount({value: [5]});
-    const button = container!.querySelector('craft-button')!;
+    const button = container!.querySelector('[data-element-select-add]')!;
 
     (button as HTMLElement).click();
     await flushSelector();
@@ -371,6 +367,11 @@ describe('ElementSelectControl', () => {
     expect(root.querySelector('craft-card craft-button')).not.toBeNull();
   });
 
+  /** The toolbar's bulk menu — each chip carries a menu of its own too. */
+  function toolbarMenu(root: HTMLElement): HTMLElement | null {
+    return root.querySelector('.element-selections-header craft-action-menu');
+  }
+
   function addButton(root: HTMLElement): HTMLElement | null {
     return root.querySelector('[data-element-select-add]');
   }
@@ -395,6 +396,25 @@ describe('ElementSelectControl', () => {
     const root = await mount({props: {limit: 2}, value: [5, 6, 7]});
 
     expect(addButton(root)).toBeNull();
+  });
+
+  it('shows how much of the limit is used', async () => {
+    const root = await mount({props: {limit: 3}, value: [5, 6]});
+
+    expect(
+      root
+        .querySelector('.element-selections-header craft-badge')
+        ?.textContent?.trim()
+    ).toBe('2/3');
+  });
+
+  it('shows no count badge when the field has no limit', async () => {
+    const root = await mount({props: {limit: null}, value: [5, 6]});
+
+    expect(root.querySelector('.element-selections-header')).not.toBeNull();
+    expect(
+      root.querySelector('.element-selections-header craft-badge')
+    ).toBeNull();
   });
 
   it('keeps the add control when the field has no limit', async () => {
@@ -496,6 +516,17 @@ describe('ElementSelectControl', () => {
     expect(selectedChips(root)).toEqual([]);
   });
 
+  it('adds a clicked chip to the selection, as its checkbox does', async () => {
+    const root = await mount({props: {limit: 3}, value: [5, 6]});
+
+    for (const chip of chips(root)) {
+      chip.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+      await nextTick();
+    }
+
+    expect(selectedChips(root)).toHaveLength(2);
+  });
+
   it('selects through the chip’s own checkbox', async () => {
     const root = await mount({props: {limit: 3}, value: [5, 6]});
 
@@ -565,6 +596,27 @@ describe('ElementSelectControl', () => {
       expect(root.querySelectorAll('craft-chip')).toHaveLength(0);
     });
 
+    // Clicking a related element selects or edits it, so its tile mustn't
+    // navigate away, even though its URL still backs "View in a new tab".
+    it('doesn’t link thumbnails to the element’s URL', async () => {
+      const root = await mount({
+        props: {
+          viewMode: 'thumbs',
+          elements: [
+            {
+              id: 5,
+              label: 'Some entry',
+              url: 'https://example.test/some-entry',
+            },
+          ],
+        },
+        value: [5],
+      });
+
+      expect(root.querySelector('.thumb-tile')).not.toBeNull();
+      expect(root.querySelector('.thumb-tile a, a.thumb-tile')).toBeNull();
+    });
+
     /** The list item a card / thumb body draws per element. */
     function tiles(root: HTMLElement, selector: string): HTMLElement[] {
       return [...root.querySelectorAll<HTMLElement>(selector)];
@@ -583,7 +635,7 @@ describe('ElementSelectControl', () => {
       await nextTick();
 
       expect(
-        tiles(root, '.card-grid > li').map((li) => li.className.includes('sel'))
+        tiles(root, '.card-grid > li').map((li) => li.classList.contains('sel'))
       ).toEqual([true, false]);
     });
 
@@ -609,9 +661,28 @@ describe('ElementSelectControl', () => {
 
       expect(
         tiles(root, '.thumbsview > li').map((li) =>
-          li.className.includes('sel')
+          li.classList.contains('element--selected')
         )
       ).toEqual([true, false]);
+    });
+
+    /**
+     * A thumbnail's menu sits in its corner, padded like a chip's, so a flush
+     * button would bleed its hover to the tile's edge.
+     */
+    it('keeps a thumbnail’s action menu within its padding', async () => {
+      const root = await mount({
+        props: {viewMode: 'thumbs', limit: 3},
+        value: [5, 6],
+      });
+      const invokers = [
+        ...root.querySelectorAll('.thumb-actions craft-button[slot="invoker"]'),
+      ];
+
+      expect(invokers).toHaveLength(2);
+      expect(invokers.some((invoker) => invoker.hasAttribute('flush'))).toBe(
+        false
+      );
     });
 
     it('selects a card through its checkbox too', async () => {
@@ -628,7 +699,7 @@ describe('ElementSelectControl', () => {
       await nextTick();
 
       expect(
-        tiles(root, '.card-grid > li').map((li) => li.className.includes('sel'))
+        tiles(root, '.card-grid > li').map((li) => li.classList.contains('sel'))
       ).toEqual([true, false]);
     });
 
@@ -750,11 +821,11 @@ describe('ElementSelectControl', () => {
 
       doubleClick(chip(root));
 
-      expect(createElementEditor).toHaveBeenCalledTimes(1);
-      expect(createElementEditor).toHaveBeenCalledWith(
-        'CraftCms\\Cms\\Elements\\Entry',
-        expect.objectContaining({elementId: 5})
-      );
+      expect(stub.openSlideout).toHaveBeenCalledOnce();
+      const [href] = stub.openSlideout.mock.calls[0] as unknown as [string];
+      expect(
+        new URL(href, 'https://example.test').searchParams.get('elementId')
+      ).toBe('5');
     });
 
     it.each([
@@ -763,7 +834,6 @@ describe('ElementSelectControl', () => {
     ])(
       'opens %s in the generic editor when it has no edit URL',
       async (elementType) => {
-        vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
         const root = await mount({
           props: {
             elementType,
@@ -774,7 +844,6 @@ describe('ElementSelectControl', () => {
 
         doubleClick(chip(root));
 
-        expect(createElementEditor).not.toHaveBeenCalled();
         expect(stub.openSlideout).toHaveBeenCalledOnce();
         const [href] = stub.openSlideout.mock.calls[0] as unknown as [string];
         const url = new URL(href, 'https://example.test');
@@ -786,7 +855,6 @@ describe('ElementSelectControl', () => {
     );
 
     it('opens an element’s own edit screen in a Vue slideout', async () => {
-      vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
       const root = await mount({
         props: {
           elementType: 'CraftCms\\Cms\\Asset\\Elements\\Asset',
@@ -799,11 +867,23 @@ describe('ElementSelectControl', () => {
 
       doubleClick(chip(root));
 
-      expect(createElementEditor).not.toHaveBeenCalled();
       expect(stub.openSlideout).toHaveBeenCalledWith(
         '/admin/assets/edit/5',
         expect.objectContaining({onSaved: expect.any(Function)})
       );
+    });
+
+    it('swaps in an image saved as a new asset from the editor', async () => {
+      const root = await mount({value: [5, 6]});
+
+      doubleClick(chip(root));
+      const [, options] = stub.openSlideout.mock.calls[0] as unknown as [
+        string,
+        {onSaved: (result: {data?: Record<string, unknown>}) => void},
+      ];
+      options.onSaved({data: {replacedAssetId: 5, newAssetId: 9}});
+
+      expect(updates.at(-1)).toEqual([9, 6]);
     });
 
     it('stays put when the double-click lands on the chip’s checkbox', async () => {
@@ -815,7 +895,7 @@ describe('ElementSelectControl', () => {
 
       doubleClick(chip(root), checkbox);
 
-      expect(createElementEditor).not.toHaveBeenCalled();
+      expect(stub.openSlideout).not.toHaveBeenCalled();
     });
 
     it('stays put when the double-click lands on a button in the chip', async () => {
@@ -824,7 +904,7 @@ describe('ElementSelectControl', () => {
 
       doubleClick(chip(root), button);
 
-      expect(createElementEditor).not.toHaveBeenCalled();
+      expect(stub.openSlideout).not.toHaveBeenCalled();
     });
   });
   describe('selection toolbar', () => {
@@ -847,9 +927,7 @@ describe('ElementSelectControl', () => {
 
     /** The toolbar's own menu — each chip carries one too. */
     function actionsMenu(root: HTMLElement): HTMLElement | null {
-      const bar = selectAllBox(root)?.parentElement?.parentElement;
-
-      return bar?.querySelector(':scope > craft-action-menu') ?? null;
+      return toolbarMenu(root);
     }
 
     /** Reports a new checked state the way `craft-checkbox` does. */
@@ -874,7 +952,44 @@ describe('ElementSelectControl', () => {
     it('has no toolbar on a field that can’t be selected', async () => {
       const root = await mount({props: {limit: 1}, value: [5]});
 
-      expect(selectAllBox(root)).toBeNull();
+      expect(root.querySelector('.element-selections-header')).toBeNull();
+    });
+
+    it('shows the add control, but no toolbar, on an empty field', async () => {
+      const root = await mount({props: {limit: 1}, value: []});
+
+      expect(root.querySelector('.element-selections-header')).toBeNull();
+      expect(addButton(root)).not.toBeNull();
+    });
+
+    it('puts the add and upload controls below the selections', async () => {
+      const root = await mount({
+        props: {limit: 3, canUpload: true},
+        value: [5],
+      });
+      const stage = root.querySelector('.elements-stage')!;
+      const following = (element: Element) =>
+        stage.compareDocumentPosition(element) &
+        Node.DOCUMENT_POSITION_FOLLOWING;
+
+      expect(stage.contains(addButton(root))).toBe(false);
+      expect(following(addButton(root)!)).toBeTruthy();
+      expect(following(uploadButton(root)!)).toBeTruthy();
+      expect(
+        root.querySelector(
+          '.element-selections-header [data-element-select-add]'
+        )
+      ).toBeNull();
+    });
+
+    it('has no toolbar on a read-only field', async () => {
+      const root = await mount({
+        props: {limit: 3},
+        value: [5, 6],
+        editable: false,
+      });
+
+      expect(root.querySelector('.element-selections-header')).toBeNull();
     });
 
     it('shows no count, clear button or actions until something is selected', async () => {
@@ -987,9 +1102,7 @@ describe('ElementSelectControl', () => {
     }
 
     function bulkMenu(root: HTMLElement): any {
-      const bar = selectAllBox(root)?.parentElement?.parentElement;
-
-      return bar?.querySelector(':scope > craft-action-menu') ?? null;
+      return toolbarMenu(root);
     }
 
     function labels(root: HTMLElement): string[] {
@@ -1048,10 +1161,7 @@ describe('ElementSelectControl', () => {
 
     it('copies the selected elements through the clipboard', async () => {
       const copyElements = vi.fn();
-      vi.stubGlobal('Craft', {
-        createElementEditor: vi.fn(),
-        cp: {copyElements},
-      });
+      vi.stubGlobal('Craft', {cp: {copyElements}});
 
       const root = await mountSelected();
       menuItem(bulkMenu(root)!, 'Copy selected').click();
@@ -1319,10 +1429,7 @@ describe('ElementSelectControl', () => {
 
       pencil(root)!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
 
-      expect(createElementEditor).toHaveBeenCalledWith(
-        'CraftCms\\Cms\\Elements\\Entry',
-        expect.objectContaining({elementId: 5})
-      );
+      expect(stub.openSlideout).toHaveBeenCalledOnce();
     });
 
     it('offers no pencil for an element the user can’t edit', async () => {
@@ -1556,9 +1663,7 @@ describe('ElementSelectControl', () => {
       );
       await nextTick();
 
-      const bar =
-        root.querySelector('craft-checkbox')!.parentElement?.parentElement;
-      const menu = bar?.querySelector(':scope > craft-action-menu') as any;
+      const menu = toolbarMenu(root) as any;
 
       expect(variantOf(menu, 'Remove selected')).toBe('danger');
     });

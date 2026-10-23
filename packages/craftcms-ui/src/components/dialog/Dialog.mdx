@@ -17,7 +17,7 @@ For anything less, a [Popover](?path=/docs/components-popover--docs) or an inlin
 
 Set the `open` attribute to show it.
 
-There is **no `open` boolean property**: Lion's overlay system already defines `open()` as a _method_, so the property would collide. Use the attribute, or the `opened` property.
+The attribute is `open`, but the property is **`opened`**, not `open`. The two stay in sync in both directions.
 
 ```js
 dialog.setAttribute('open', ''); // shows it
@@ -30,14 +30,23 @@ Any descendant carrying `data-dialog="close"` closes the dialog when clicked, so
 
 Default-slot children are the body; `slot="footer"` children are right-aligned below it, which is where actions go.
 
+## Resizing
+
+Set `resizable` to let people resize the dialog from its right and bottom edges, or both at once from their corner, which also takes the keyboard. The dialog stays centered as it's resized, within its maximum size. See [Resize Grips](?path=/docs/components-resize-grips--docs).
+
 ## Accessibility
 
-The dialog renders inside a native `<dialog>`, so the browser supplies the modal behavior — the focus trap, the inert background, and Escape to dismiss.
+The dialog renders inside a native `<dialog>`, so the browser supplies the modal behavior — the focus trap, the inert background, Escape to dismiss, and returning focus to whatever opened the dialog when it closes.
 
-Two things stay with you:
+Four things stay with you:
 
-- **Name it.** A dialog with no accessible name is announced only as "dialog".
+- **Name it.** Set `label`. It renders as the header's heading and names the dialog, which is otherwise announced only as "dialog".
+
+  When the content draws its own title, set `no-header` and keep `label` matching that title. The dialog is still named by it. `no-header` removes the close button too, so give the dialog a visible way out, such as a footer Cancel button.
+
 - **Give it a way out that is not Escape.** Escape works, but a visible close or cancel control is what makes that discoverable.
+- **Keep other targets clear of the close button.** Don't place another button, link, or control within 24px of it, in the header or at the top of the body. The space around it is what keeps it easy to hit.
+- **Say where focus goes back when it isn't the opener.** Focus goes back to whatever opened the dialog, or to the button of the menu it sat in once that menu has closed, found again after a re-render when the menu has a `data-focus-key`. For any other target, set `returnFocus`, and look the target up when it's called rather than keeping an element from open time. Open the dialog while the opener still has focus. A dialog opened after an async step can't tell what opened it, so pass it a `returnFocus`.
 
 ## Properties
 

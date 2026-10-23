@@ -41,6 +41,7 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -50,6 +51,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
@@ -82,6 +84,7 @@ use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Search;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
@@ -462,6 +465,41 @@ class Asset extends Element
         return true;
     }
 
+    /** @return list<int|array{siteId: int, propagate: bool}> */
+    #[Override]
+    public function getSupportedSites(): array
+    {
+        $siteIds = parent::getSupportedSites();
+
+        if ($this->getVolume()->propagationMethod !== PropagationMethod::Custom) {
+            return $siteIds;
+        }
+
+        // Figure out which sites the asset is currently saved in
+        $currentSites = [];
+        $sourceIds = array_filter([$this->id, $this->duplicateOf->id ?? null]);
+
+        if (! empty($sourceIds)) {
+            $currentSites = array_flip(self::find()
+                ->status(null)
+                ->id($sourceIds)
+                ->site('*')
+                ->pluck('elements_sites.siteId')
+                ->all());
+        }
+
+        return array_map(fn (int $siteId) => [
+            'siteId' => $siteId,
+            // Only actually propagate to this site if it's the current site, or the asset has been assigned
+            // a status for this site, or the asset already exists for this site
+            'propagate' => (
+                $siteId === $this->siteId ||
+                $this->getEnabledForSite($siteId) !== null ||
+                isset($currentSites[$siteId])
+            ),
+        ], $siteIds);
+    }
+
     /**
      * @return AssetQuery The newly created [[AssetQuery]] instance.
      */
@@ -745,6 +783,15 @@ class Asset extends Element
             if (Gate::check("deletePeerAssets:$volume->uid")) {
                 $actions[] = DeleteAssets::class;
             }
+
+            // Delete for site
+            if (
+                $volume->propagationMethod === PropagationMethod::Custom &&
+                Sites::isMultiSite() &&
+                Gate::check("deleteAssets:$volume->uid")
+            ) {
+                $actions[] = DeleteForSite::class;
+            }
         }
 
         return $actions;
@@ -1017,6 +1064,42 @@ class Asset extends Element
 
         // otherwise merge in the resulting assets
         return array_merge($assets, $elementQuery->all());
+    }
+
+    #[Override]
+    public static function supportsSourceBadgeCounts(): bool
+    {
+        return true;
+    }
+
+    #[Override]
+    public static function sourceSupportsBadgeCount(array $source): bool
+    {
+        if (! parent::sourceSupportsBadgeCount($source)) {
+            return false;
+        }
+
+        return ($source['type'] ?? null) === ElementSources::TYPE_CUSTOM
+            || str_starts_with((string) $source['key'], 'volume:');
+    }
+
+    /**
+     * A volume's count covers every asset in it the current user can view, not just those in its root folder.
+     */
+    #[Override]
+    public static function sourceBadgeCount(array $source, ?int $siteId): int
+    {
+        if (($source['type'] ?? null) === ElementSources::TYPE_CUSTOM) {
+            return parent::sourceBadgeCount($source, $siteId);
+        }
+
+        $volume = Volumes::getVolumeByUid(Str::after((string) $source['key'], 'volume:'));
+
+        if ($volume === null) {
+            return 0;
+        }
+
+        return parent::sourceBadgeCount(['criteria' => ['volumeId' => $volume->id, 'editable' => true]], $siteId);
     }
 
     #[Override]
@@ -1678,7 +1761,6 @@ $('#' + $id).on('activate', () => {
     allowDegreeFractions: Craft.isImagick,
     onSave: (data) => {
       if (data.newAssetId) {
-        {$this->_replaceSlideoutAssetJs("$('#' + $id)")}
         return;
       }
 
@@ -1699,26 +1781,15 @@ JS, [
         ) {
             $items[] = ['type' => MenuItemType::HR];
 
-            // Volume settings
-            $volumeEditId = sprintf('edit-volume-%s', mt_rand());
             $items[] = [
-                'id' => $volumeEditId,
                 'icon' => 'gear',
                 'label' => t('Volume settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:open-slideout',
+                    'detail' => ['url' => Url::cpUrl("settings/assets/volumes/$this->volumeId")],
+                ],
             ];
-
-            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-(() => {
-  $('#' + $id).on('activate', function() {
-    const params = $params;
-    new Craft.CpScreenSlideout('volumes/edit-volume', {params});
-  });
-})();
-JS, [
-                InputNamespace::namespaceId($volumeEditId),
-                ['volumeId' => $this->volumeId],
-            ]);
-
         }
 
         return $items;
@@ -2186,6 +2257,22 @@ JS, [
         return $this->getPlaceholderDataUrl();
     }
 
+    /**
+     * A fit thumbnail is the image scaled to fit within `$size`×`$size`, the same as its transform.
+     */
+    #[Override]
+    protected function thumbDimensions(int $size, ImageTransformMode $mode): ?array
+    {
+        $width = (int) $this->getWidth();
+        $height = (int) $this->getHeight();
+
+        if ($this->isFolder || $mode !== ImageTransformMode::Fit || ! $width || ! $height) {
+            return null;
+        }
+
+        return AssetsHelper::scaledDimensions($width, $height, $size, $size);
+    }
+
     #[Override]
     protected function hasCheckeredThumb(): bool
     {
@@ -2603,6 +2690,20 @@ JS, [
             // `orientation` below, which is the locale's text direction.
             'imageWidth' => $this->getWidth(),
             'imageHeight' => $this->getHeight(),
+            ...static::sharedImageEditorSettings(),
+        ];
+    }
+
+    /**
+     * Returns the image editor settings that are the same for every asset.
+     *
+     * @return array<string, mixed>
+     *
+     * @internal
+     */
+    public static function sharedImageEditorSettings(): array
+    {
+        return [
             'imageEditorRatios' => Cms::config()->imageEditorRatios,
             // Only Imagick can rotate by a fraction of a degree; GD rounds.
             'allowDegreeFractions' => Images::getIsImagick(),
@@ -2822,6 +2923,8 @@ JS, [
      * edges show. Others get a gradient between the colors of the image's
      * left and right edges, so it bleeds out to the sides, with a black
      * overlay that darkens it by 25% at the top, fading to 5% at the bottom.
+     * The edge colors are 40% opaque over a transparent background, so the
+     * gradient takes on the color of whatever it sits on.
      *
      * @return array<string, array<string, string>>
      */
@@ -2867,30 +2970,10 @@ CSS,
                 'theme' => 'dark',
             ],
             'style' => [
-                'background-color' => '#000',
-                'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, $left, $right)",
+                'background-color' => 'transparent',
+                'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, color-mix(in srgb, $left 40%, transparent), color-mix(in srgb, $right 40%, transparent))",
             ],
         ];
-    }
-
-    /**
-     * Returns JavaScript that will replace this asset with `data.newAssetId`, if the given element is within an
-     * Assets field’s editor slideout.
-     *
-     * @param  string  $elementJs  JavaScript expression for a jQuery object within the slideout
-     */
-    private function _replaceSlideoutAssetJs(string $elementJs): string
-    {
-        return <<<JS
-// If this is within an Assets field’s editor slideout, replace the selected asset and close the slideout,
-// since it's still editing the old asset
-const slideout = $elementJs?.closest('[data-slideout]').data('slideout');
-if (slideout && slideout.settings.elementSelectInput) {
-    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
-        .then(() => slideout.closeMeMaybe())
-        .catch(() => {});
-}
-JS;
     }
 
     private function _updatePreviewThumbJs(): string
@@ -3113,6 +3196,20 @@ JS;
             }
         }
 
+        // A rename without an extension keeps the current one (#19950)
+        if (
+            isset($this->newFilename, $this->_filename) &&
+            $this->newFilename !== '' &&
+            ! isset($this->tempFilePath) &&
+            pathinfo($this->newFilename, PATHINFO_EXTENSION) === ''
+        ) {
+            $extension = pathinfo($this->_filename, PATHINFO_EXTENSION);
+
+            if ($extension !== '') {
+                $this->newFilename = rtrim($this->newFilename, '.').".$extension";
+            }
+        }
+
         if ($this->newFilename === '' || $this->newFilename === $this->getFilename()) {
             $this->newFilename = null;
         }
@@ -3327,6 +3424,18 @@ JS;
 
         $this->deleteTransformData();
         parent::afterDelete();
+    }
+
+    #[Override]
+    public function afterDeleteForSite(): void
+    {
+        // Delete the site-specific asset data
+        DB::table(Table::ASSETS_SITES)
+            ->where('assetId', $this->id)
+            ->where('siteId', $this->siteId)
+            ->delete();
+
+        parent::afterDeleteForSite();
     }
 
     #[Override]
