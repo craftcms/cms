@@ -11,6 +11,7 @@ use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Gql\Types\Number as NumberType;
@@ -46,7 +47,7 @@ use function CraftCms\Cms\template;
  *
  * @since 6.0.0
  */
-class Number extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Number extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     public const string FORMAT_DECIMAL = 'decimal';
 
@@ -386,7 +387,7 @@ JS;
         $formatted = match ($this->previewFormat) {
             self::FORMAT_DECIMAL => I18N::getFormatter()->asDecimal($value, $this->decimals),
             self::FORMAT_CURRENCY => I18N::getFormatter()->asCurrency($value, $this->previewCurrency, ! $this->decimals),
-            default => $value,
+            default => (string) $value,
         };
 
         if ($this->prefix) {
@@ -437,5 +438,11 @@ JS;
             'type' => NumberType::getType(),
             'description' => $this->instructions,
         ];
+    }
+
+    /** @return array<string, mixed> */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'number'];
     }
 }

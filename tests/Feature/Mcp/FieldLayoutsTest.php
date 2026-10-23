@@ -64,3 +64,19 @@ it('selects user custom fields while retaining the public account attribute allo
     expect($user['profileSummary'])->toBe('A public profile')
         ->and($user)->not->toHaveKeys(['admin', 'lastLoginDate', 'invalidLoginCount']);
 });
+
+it('sets field layout tabs’ icons', function () {
+    $layout = app(Users::class)->updateFieldLayout([
+        'tabs' => [
+            ['name' => 'Profile', 'icon' => 'user', 'elements' => []],
+            ['name' => 'Notes', 'elements' => []],
+        ],
+    ])['fieldLayout'];
+    $fetched = app(Users::class)->getFieldLayout()['fieldLayout'];
+    $stored = ProjectConfig::get(sprintf('%s.%s', ProjectConfigPaths::PATH_USER_FIELD_LAYOUTS, $layout['uid']));
+
+    expect($layout['config']['tabs'][0]['icon'])->toBe('user')
+        ->and($fetched['config']['tabs'][0]['icon'])->toBe('user')
+        ->and($fetched['config']['tabs'][1]['icon'] ?? null)->toBeNull()
+        ->and($stored['tabs'][0]['icon'])->toBe('user');
+});

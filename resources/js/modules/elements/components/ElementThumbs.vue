@@ -9,6 +9,7 @@
   } from '@/common/composables/useReorderableItems';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
+  import {isInteractiveClick} from '@/common/utils/dom';
   import {
     isInteractiveItemEvent,
     type ElementIndexItemBehavior,
@@ -64,6 +65,7 @@
 
   const emit = defineEmits<{
     (event: 'reorder', startIndex: number, finishIndex: number): void;
+    (event: 'edit', element: ThumbElement): void;
   }>();
 
   const ids = computed(() => props.data.map((element) => element.id));
@@ -108,6 +110,22 @@
 
     if (props.selectable && !readOnly.value && !props.interactionsDisabled) {
       props.selection.handleClick(element.id, event);
+    }
+  }
+
+  /**
+   * A double-click opens the element, except on the tile's own controls — the
+   * checkbox, an action menu, the reorder button, the label's link.
+   */
+  function onTileDblclick(element: ThumbElement, event: MouseEvent) {
+    if (props.itemBehavior?.onDblClick?.(element, event)) {
+      event.preventDefault();
+
+      return;
+    }
+
+    if (!isInteractiveClick(event, event.currentTarget)) {
+      emit('edit', element);
     }
   }
 
@@ -178,7 +196,7 @@
 </script>
 
 <template>
-  <div class="grid place-items-center min-h-50" v-if="loading">
+  <div class="grid flex-1 place-items-center min-h-50" v-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">
@@ -203,9 +221,11 @@
         :tabindex="selectable ? 0 : undefined"
         @keydown="onTileKeydown(element.id, thumbIdx, $event)"
         @click="onTileClick(element, $event)"
+        @dblclick="onTileDblclick(element, $event)"
         data-color="white"
         :class="{
           element: true,
+          'element--selectable': selectable,
           'element--selected': selection.isSelected(element.id),
           'element--dragging': getDragState(element.id).type === 'is-dragging',
           'element--hidden':
@@ -305,7 +325,8 @@
     margin-block-end: var(--c-spacing-md);
     display: flex;
     align-items: center;
-    min-height: calc(var(--c-size-control-sm) + var(--c-spacing-sm) + 1px);
+    // As tall as other header bars, such as a card's, plus its bottom border.
+    min-height: calc(var(--c-size-header) + 1px);
     padding-block: 0 var(--c-spacing-sm);
     padding-inline: 0;
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
@@ -379,14 +400,24 @@
   }
 
   // `data-color="white"` hands its static white palette to inheriting
-  // controls, like the action menu's button, whose hover tints from it. As
-  // white cards do, point it at the tile's own surface and text instead.
+  // controls, like the action menu's button, whose hover and pressed states
+  // tint from it. As white cards do, point it at the tile's own surface, border
+  // and text instead.
   .element {
     --c-color-fill-quiet: var(--c-surface-raised);
+    --c-color-fill-loud: var(--c-surface-raised);
+    --c-color-border-loud: var(--c-border-raised-selected);
     --c-color-on-quiet: var(--c-text-default);
+    --c-color-on-loud: var(--c-text-default);
     background-color: var(--c-color-fill-quiet);
     border-color: var(--c-border-raised);
     color: var(--c-text-default);
+  }
+
+  // Clicking a selectable tile selects it, so its label doesn't get a text
+  // cursor, as if it were text to select. Links within it keep theirs.
+  .element--selectable {
+    cursor: default;
   }
 
   .element--selected {
@@ -434,11 +465,13 @@
     height: 1lh;
   }
 
+  // Padded like a chip, so its checkbox and buttons sit as far from the
+  // tile's edges as a chip's do from its own.
   .element__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--c-spacing-sm);
-    padding-inline-start: var(--c-spacing-md);
+    padding-block: calc(3rem / 16);
+    padding-inline: var(--c-spacing-md) calc(3.5rem / 16);
   }
 </style>

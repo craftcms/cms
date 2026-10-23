@@ -46,6 +46,8 @@ trait HasFieldPresentation
 
     private string $instructionsPosition = 'before';
 
+    private bool $instructionsSrOnly = false;
+
     private ?string $tip = null;
 
     private ?string $warning = null;
@@ -169,6 +171,17 @@ trait HasFieldPresentation
         return $this;
     }
 
+    /**
+     * Visually hides the instructions, keeping them in the control’s accessible description, such as when the
+     * control’s placeholder repeats them.
+     */
+    public function instructionsSrOnly(bool $instructionsSrOnly = true): static
+    {
+        $this->instructionsSrOnly = $instructionsSrOnly;
+
+        return $this;
+    }
+
     public function tip(?string $tip): static
     {
         $this->tip = $tip;
@@ -202,6 +215,7 @@ trait HasFieldPresentation
      *     orientation: string|null,
      *     inputWidth: string|null,
      *     instructionsPosition: string|null,
+     *     instructionsSrOnly: true|null,
      *     instructionsHtml: string|null,
      *     tip: string|null,
      *     tipHtml: string|null,
@@ -225,6 +239,7 @@ trait HasFieldPresentation
             'orientation' => $this->orientation,
             'inputWidth' => $this->inputWidth,
             'instructionsPosition' => $this->instructionsPosition !== 'before' ? $this->instructionsPosition : null,
+            'instructionsSrOnly' => $this->instructionsSrOnly ?: null,
             'instructionsHtml' => $this->noticeHtml($this->instructions),
             'tip' => $this->tip,
             'tipHtml' => $this->noticeHtml($this->tip),
@@ -251,6 +266,7 @@ trait HasFieldPresentation
             ->width($props['inputWidth'] ?? null)
             ->instructions($props['instructions'] ?? null)
             ->instructionsPosition((string) ($props['instructionsPosition'] ?? 'before'))
+            ->instructionsSrOnly((bool) ($props['instructionsSrOnly'] ?? false))
             ->tip($props['tip'] ?? null)
             ->warning($props['warning'] ?? null)
             ->required((bool) ($props['required'] ?? false))

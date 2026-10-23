@@ -6,8 +6,11 @@ namespace CraftCms\Cms\Http\Controllers\Workflows;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementEditorActions;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Requests\ActivityCommentRequest;
 use CraftCms\Cms\Http\Requests\ElementRequest;
+use CraftCms\Cms\Http\ViewModels\EntryEditViewModel;
+use CraftCms\Cms\Release\Data\ReleaseSummaryData;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
 use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Http\JsonResponse;
@@ -105,7 +108,34 @@ class WorkflowTransitionsController
                 canSave: $this->request->craftUser()->can('save', $draft),
                 review: $review,
             ),
+            'release' => $this->releaseState($draft),
             ...($message !== null ? ['message' => $message] : []),
         ]);
+    }
+
+    /**
+     * @return array{
+     *     canAddToRelease: bool,
+     *     canCreateRelease: bool,
+     *     releaseOptions: list<ReleaseSummaryData>,
+     * }|null
+     */
+    private function releaseState(ElementInterface $draft): ?array
+    {
+        if (! $draft instanceof Entry) {
+            return null;
+        }
+
+        $viewModel = new EntryEditViewModel(
+            entry: $draft,
+            request: $this->request,
+            canSave: $this->request->craftUser()->can('save', $draft),
+        );
+
+        return [
+            'canAddToRelease' => $viewModel->canAddToRelease(),
+            'canCreateRelease' => $viewModel->canCreateRelease(),
+            'releaseOptions' => $viewModel->releaseOptions(),
+        ];
     }
 }

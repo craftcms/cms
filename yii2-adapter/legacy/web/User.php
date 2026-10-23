@@ -317,8 +317,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
 
         if ($success) {
             // Set the elevated session expiration date
-            $generalConfig = Cms::config();
-            if ($generalConfig->elevatedSessionDuration !== 0) {
+            if ((int)config('auth.password_timeout', 300) !== -1) {
                 \Illuminate\Support\Facades\Session::passwordConfirmed();
             }
         }

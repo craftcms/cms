@@ -25,6 +25,41 @@ A group rendered by the server adopts the name already present on its inputs.
 
 That is load-bearing rather than a convenience: Lion syncs every registered child's name to the group's, so a group that upgraded without a name would strip the server's names off the inputs and break native posting.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+A multiple `CraftCms\Cms\Ui\Controls\Choice` control with the `Checkboxes` presentation renders a checkbox group:
+
+```php
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Sites', Choice::make('siteIds')
+        ->multiple()
+        ->presentation(ChoicePresentation::Checkboxes)
+        ->options([
+            ['label' => 'English', 'value' => 1],
+            ['label' => 'Deutsch', 'value' => 2],
+        ])
+        ->allOption('All sites'))
+        ->fieldset(),
+]);
+```
+
+`allOption()` adds an “all” checkbox before the others.
+Call `fieldset()` on the field, so its label becomes the group's legend.
+
+## Accessibility
+
+The group is exposed as a group named by its label, so give it a visible label that names the question the checkboxes answer.
+
+When at least one option is required, say so in the label or help text.
+
+Show a message in `feedback` when the group is invalid, rather than relying on the color change, and write it so it says how to fix the choice.
+
 ## Properties
 
 <ArgTypes of={CheckboxGroupStories} />

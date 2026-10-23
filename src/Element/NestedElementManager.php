@@ -1083,7 +1083,7 @@ class NestedElementManager extends Component
         $query = $this->nestedElementQuery($owner)
             ->drafts(null)
             ->canonicalsOnly()
-            ->savedDraftsOnly(false)
+            ->savedDraftsOnly()
             ->status(null)
             ->siteId($owner->siteId);
 
@@ -1443,7 +1443,12 @@ class NestedElementManager extends Component
 
                     if ($canonicalElement->trashed) {
                         if ($derivativeElement->dateUpdated == $derivativeElement->dateCreated) {
-                            Elements::deleteElement($derivativeElement);
+                            $derivativeElement->mergingCanonicalChanges = true;
+                            try {
+                                Elements::deleteElement($derivativeElement);
+                            } finally {
+                                $derivativeElement->mergingCanonicalChanges = false;
+                            }
                         }
                     } elseif (
                         ! $derivativeElement->trashed &&
@@ -1476,8 +1481,30 @@ class NestedElementManager extends Component
 
     public function deleteNestedElements(ElementInterface $owner, bool $hardDelete = false): void
     {
-        foreach (Sites::getAllSiteIds() as $siteId) {
-            $query = $this->nestedElementQuery($owner)
+        $allSiteIds = Sites::getAllSiteIds();
+        $siteOwners = [];
+
+        if (count($allSiteIds) > 1) {
+            $siteOwners = $owner::find()
+                ->id($owner->id)
+                ->siteId(['not', $owner->siteId])
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->revisions(null)
+                ->trashed(null)
+                ->status(null)
+                ->indexBy('siteId')
+                ->all();
+        }
+
+        foreach ($allSiteIds as $siteId) {
+            // The query factory may scope the query to the owner's site, so load the owner in this site
+            $siteOwner = $siteId === $owner->siteId ? $owner : ($siteOwners[$siteId] ?? null);
+            if (! $siteOwner) {
+                continue;
+            }
+
+            $query = $this->nestedElementQuery($siteOwner)
                 ->status(null)
                 ->siteId($siteId);
             if ($hardDelete) {
@@ -1506,7 +1533,14 @@ class NestedElementManager extends Component
                 }
 
                 $element->deletedWithOwner = true;
-                Elements::deleteElement($element, $hardDelete);
+                $mergingCanonicalChanges = $element->mergingCanonicalChanges;
+                $element->mergingCanonicalChanges = $owner->mergingCanonicalChanges;
+
+                try {
+                    Elements::deleteElement($element, $hardDelete);
+                } finally {
+                    $element->mergingCanonicalChanges = $mergingCanonicalChanges;
+                }
             }
         }
     }

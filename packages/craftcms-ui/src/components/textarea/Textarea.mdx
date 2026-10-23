@@ -19,11 +19,34 @@ The size of a field is a promise about the length of the answer. A textarea for 
 
 `monospace` renders the value in a monospace font, for code or structured text where character alignment matters.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Controls\Textarea` renders a textarea:
+
+```php
+use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Description', Textarea::make('description')
+        ->rows(4)
+        ->maxLength(500)),
+]);
+```
+
+`rows()`, `maxLength()`, and `placeholder()` set the attributes of the same names, and `monospace()` sets the text in a monospaced font.
+
 ## Accessibility
 
 As with any control, the label is what matters — set it, slot it, or wrap the textarea in a [Field](?path=/docs/form-controls-field--docs).
 
 Do not remove the resize handle. It is one of the few pieces of interface a person can adjust to suit themselves, and taking it away helps nobody.
+
+The textarea shows no character count. If the value has a length limit, say so in the help text, where it stays visible while the person types.
+
+Everything under [Input's Accessibility section](?path=/docs/form-controls-text-controls-input--docs#accessibility) applies here too: keep a visible label rather than a placeholder, and write validation messages that explain the fix.
 
 ## Properties
 

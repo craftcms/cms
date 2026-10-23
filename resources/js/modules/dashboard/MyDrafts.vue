@@ -9,7 +9,7 @@
 </script>
 
 <template>
-  <craft-card>
+  <craft-card data-color="gray">
     <slot name="header" />
     <div class="body">
       <ul v-if="drafts.length" class="space-y-3" role="list">

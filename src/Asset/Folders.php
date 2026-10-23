@@ -339,6 +339,8 @@ class Folders
 
         Asset::find()
             ->folderId($allFolderIds)
+            ->site('*')
+            ->unique()
             ->cursor()
             ->each(function (Asset $asset) use ($deleteDir) {
                 $asset->keepFileOnDelete = ! $deleteDir;

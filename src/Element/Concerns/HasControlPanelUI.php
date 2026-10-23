@@ -11,13 +11,14 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
-use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
+use CraftCms\Cms\Element\Events\ElementAdditionalButtonDescriptorsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementHtmlAttributesResolving;
@@ -29,6 +30,7 @@ use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -36,9 +38,11 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\ElementSites;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Textarea;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -46,8 +50,11 @@ use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use ReflectionMethod;
 use Stringable;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -94,13 +101,6 @@ trait HasControlPanelUI
      * Performs any action after the element's editor is fully ready.
      */
     public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void {}
-
-    public function getAdditionalButtons(): string|Stringable
-    {
-        event($event = new ElementAdditionalButtonsResolving($this));
-
-        return $event->html;
-    }
 
     public function getAltActions(): array
     {
@@ -270,30 +270,28 @@ JS, [
 
         if (Gate::check('view', $this)) {
             // Edit
-            $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
-                'id' => $editId,
+                'id' => sprintf('action-edit-%s', mt_rand()),
                 'icon' => 'edit',
                 'label' => mb_ucfirst(t('Edit {type}', [
                     'type' => static::lowerDisplayName(),
                 ])),
-            ];
-
-            HtmlStack::jsWithVars(fn ($id, $elementType, $settings) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.createElementEditor($elementType, $settings)
-});
-JS, [
-                InputNamespace::namespaceId($editId),
-                static::class,
-                [
-                    'elementId' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
-                    'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
-                    'revisionId' => $this->revisionId,
-                    'siteId' => $this->siteId,
-                    'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-element',
+                    'detail' => [
+                        'elementType' => static::class,
+                        'settings' => [
+                            'elementId' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
+                            'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
+                            'revisionId' => $this->revisionId,
+                            'siteId' => $this->siteId,
+                            'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                        ],
+                        'cpEditUrl' => $this->getCpEditUrl(),
+                    ],
                 ],
-            ]);
+            ];
 
             // Copy
             if (! $this->getIsRevision() && Gate::check('copy', $this)) {
@@ -528,6 +526,32 @@ JS, [
     protected function extraActionMenuDescriptors(
         ElementActionContext $context = ElementActionContext::Editor,
     ): array {
+        return [];
+    }
+
+    /**
+     * Buttons shown at the end of the element editor's footer, as behavior
+     * descriptors (see {@see actionMenuDescriptors()}).
+     *
+     * Element types extend this via {@see defineAdditionalButtonDescriptors()};
+     * plugins listen for {@see ElementAdditionalButtonDescriptorsResolving}.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function additionalButtonDescriptors(): array
+    {
+        event($event = new ElementAdditionalButtonDescriptorsResolving($this, $this->defineAdditionalButtonDescriptors()));
+
+        return array_values($event->items);
+    }
+
+    /**
+     * Element-type additions to {@see additionalButtonDescriptors()}.
+     *
+     * @return list<array<string, mixed>>
+     */
+    protected function defineAdditionalButtonDescriptors(): array
+    {
         return [];
     }
 
@@ -791,8 +815,13 @@ JS,
                 .Html::tag('h2', t('Metadata'), ['class' => 'visually-hidden']);
         }
 
-        if (! $static && static::hasStatuses() && $this->showStatusField()) {
-            $components[] = $this->statusFieldHtml();
+        if (! $static) {
+            $sitesFieldHtml = $this->showSitesField() ? (string) $this->sitesFieldHtml() : '';
+            if ($sitesFieldHtml !== '') {
+                $components[] = $sitesFieldHtml;
+            } elseif (static::hasStatuses() && $this->showStatusField()) {
+                $components[] = $this->statusFieldHtml();
+            }
         }
 
         if ($this->hasRevisions() && ! $this->getIsRevision()) {
@@ -812,12 +841,17 @@ JS,
 
         $nodes = $this->metaFieldsNodes($static);
 
-        if (! $static && static::hasStatuses() && $this->showStatusField()) {
-            $nodes = [...$nodes, ...$this->statusNodes()];
+        if (! $static) {
+            $sitesNodes = $this->showSitesField() ? $this->sitesNodes() : [];
+            if ($sitesNodes !== []) {
+                $nodes = [...$nodes, ...$sitesNodes];
+            } elseif (static::hasStatuses() && $this->showStatusField()) {
+                $nodes = [...$nodes, ...$this->statusNodes()];
+            }
         }
 
         if ($this->hasRevisions() && ! $this->getIsRevision()) {
-            $nodes[] = Field::make(t('Notes about your changes'))
+            $nodes[] = Field::make(t('Notes About Your Changes'))
                 ->control(
                     Textarea::make('notes')
                         ->rows(1)
@@ -1089,13 +1123,250 @@ JS,
     }
 
     /**
+     * Returns whether the sidebar should include a Sites pane, rather than a Status pane.
+     *
+     * The Sites pane lists the sites the element is saved in, lets authors add the element to other sites,
+     * and includes status toggles for each site, if the element type has per-site statuses.
+     *
+     * By default, it's shown for localized elements that support multiple sites, unless the element type has
+     * statuses and provides its own {@see statusFieldHtml()} implementation.
+     *
+     * If this returns `true` but {@see sitesFieldHtml()} doesn't return anything, the Status pane will be shown
+     * instead, if the element type has statuses.
+     */
+    protected function showSitesField(): bool
+    {
+        // Element types that customize the Status pane should keep it
+        if (
+            static::hasStatuses() &&
+            new ReflectionMethod($this, 'statusFieldHtml')->getDeclaringClass()->getName() !== self::class
+        ) {
+            return false;
+        }
+
+        return static::isLocalized() && count(ElementHelper::supportedSitesForElement($this, true)) > 1;
+    }
+
+    /**
+     * Returns the Sites pane HTML for the sidebar.
+     *
+     * It lists the sites the element is saved in, and lets authors add the element to other sites
+     * that it supports but hasn't been propagated to. If the element type has per-site statuses,
+     * each site gets a status toggle.
+     */
+    protected function sitesFieldHtml(): string|Stringable
+    {
+        $sitesPane = $this->sitesPaneInfo();
+
+        if ($sitesPane === null) {
+            return '';
+        }
+
+        ['sites' => $sites, 'withStatuses' => $withStatuses, 'siteStatuses' => $siteStatuses] = $sitesPane;
+
+        $cpEditUrl = $this->getCpEditUrl();
+        [$currentSites, $otherSites] = $sites->partition(fn (Site $site) => $site->id === $this->siteId);
+
+        // If the element is saved to 2+ other sites, list them within a disclosure
+        $idPrefix = sprintf('element-sites-%s', Str::random(10));
+        $collapsible = $otherSites->count() > 1;
+
+        $siteField = fn (Site $site) => Html::tag('div', implode('', [
+            Html::tag('div', Html::tag('label', implode('', [
+                Html::tag('span', (
+                    // Link to the element in the other sites
+                    $cpEditUrl && $site->id !== $this->siteId
+                        ? Html::a(Html::encode(t($site->getName(), category: 'site')), Url::urlWithParams($cpEditUrl, [
+                            'site' => $site->handle,
+                        ]), [
+                            'data' => ['site-id' => $site->id],
+                        ])
+                        : Html::encode(t($site->getName(), category: 'site'))
+                ), [
+                    'id' => "$idPrefix-$site->id-name",
+                ]),
+                $site->id === $this->siteId
+                    ? Html::tag('span', ', selected', ['class' => 'sr-only'])
+                    : '',
+            ])), [
+                'class' => 'heading',
+            ]),
+            $withStatuses
+                ? Html::tag('div', FormFields::lightswitchFromConfig([
+                    'id' => "$idPrefix-$site->id-status",
+                    'name' => "enabledForSite[$site->id]",
+                    'on' => $site->id === $this->siteId
+                        ? $this->enabled && $this->getEnabledForSite()
+                        : ($siteStatuses[$site->id] ?? false),
+                    'labelledBy' => "$idPrefix-$site->id-name",
+                    'small' => true,
+                ])->toHtml(), [
+                    'class' => 'input',
+                ])
+                : '',
+        ]), [
+            'id' => "$idPrefix-$site->id",
+            'class' => array_filter([
+                'field',
+                'element-site-field',
+                "site-$site->id-field",
+                $site->id === $this->siteId ? 'sel' : null,
+                $withStatuses ? 'lightswitch-field' : null,
+                $collapsible && $site->id !== $this->siteId ? 'hidden' : null,
+            ]),
+        ]);
+
+        $siteFields = $currentSites->map($siteField)->implode('');
+
+        if ($collapsible) {
+            $siteFields .= Html::tag('div', Html::tag('div', Html::button(t('{num, number} other {num, plural, =1{site} other{sites}}', [
+                'num' => $otherSites->count(),
+            ]), [
+                'class' => ['toggle', 'element-sites-toggle'],
+                'aria' => [
+                    'expanded' => 'false',
+                    'controls' => $otherSites->map(fn (Site $site) => "$idPrefix-$site->id")->implode(' '),
+                ],
+            ]), [
+                'class' => 'heading',
+            ]), [
+                'class' => ['field', 'element-site-field', 'element-sites-toggle-field'],
+            ]);
+        }
+
+        $siteFields .= $otherSites->map($siteField)->implode('');
+
+        return Html::beginTag('fieldset')
+            .Html::tag('legend', t('Sites'), ['class' => 'h6'])
+            .Html::tag('div', $siteFields, [
+                'class' => ['meta', 'element-sites-pane'],
+                'data' => ['statuses' => $withStatuses],
+            ])
+            .Html::endTag('fieldset');
+    }
+
+    /**
+     * Returns the Sites pane Ui nodes for the sidebar.
+     *
+     * The Ui-system counterpart to {@see sitesFieldHtml()}.
+     *
+     * @return list<Node>
+     */
+    protected function sitesNodes(): array
+    {
+        $sitesPane = $this->sitesPaneInfo();
+
+        if ($sitesPane === null) {
+            return [];
+        }
+
+        ['sites' => $sites, 'additionalSites' => $additionalSites, 'withStatuses' => $withStatuses, 'siteStatuses' => $siteStatuses] = $sitesPane;
+
+        $cpEditUrl = $this->getCpEditUrl();
+        $isDraft = $this->getIsDraft();
+        $canonicalId = $this->getCanonicalId();
+
+        // Sites that were added to a draft can be deleted from it again
+        if ($isDraft && Gate::check('deleteForSite', $this)) {
+            $canonicalSiteIds = $this->getIsUnpublishedDraft()
+                ? []
+                : DB::table(Table::ELEMENTS_SITES)
+                    ->where('elementId', $canonicalId)
+                    ->pluck('siteId')
+                    ->all();
+            $newSiteIds = $sites
+                ->map(fn (Site $site) => $site->id)
+                ->reject(fn (int $siteId) => $siteId === $this->siteId || in_array($siteId, $canonicalSiteIds))
+                ->all();
+        } else {
+            $newSiteIds = [];
+        }
+
+        $sites = $sites->sortBy(fn (Site $site) => $site->id === $this->siteId ? 0 : 1)->values();
+
+        $value = [];
+        if ($withStatuses) {
+            foreach ($sites as $site) {
+                $value[$site->id] = $site->id === $this->siteId
+                    ? $this->enabled && $this->getEnabledForSite()
+                    : (bool) ($siteStatuses[$site->id] ?? false);
+            }
+        }
+
+        return [
+            Field::make(t('Sites'))
+                ->fieldset()
+                ->control(
+                    ElementSites::make('enabledForSite')
+                        ->value($value)
+                        ->withStatuses($withStatuses)
+                        ->sites($sites->map(fn (Site $site) => [
+                            'id' => $site->id,
+                            'name' => t($site->getName(), category: 'site'),
+                            'url' => $cpEditUrl && $site->id !== $this->siteId
+                                ? Url::urlWithParams($cpEditUrl, ['site' => $site->handle])
+                                : null,
+                            'current' => $site->id === $this->siteId,
+                            'removable' => in_array($site->id, $newSiteIds, true),
+                        ])->all())
+                        ->additionalSites(array_map(fn (array $site) => [
+                            'id' => $site['siteId'],
+                            'name' => t(Sites::getSiteById($site['siteId'], true)?->getName() ?? '', category: 'site'),
+                            'enabledByDefault' => (bool) ($site['enabledByDefault'] ?? true),
+                        ], $additionalSites))
+                        ->deleteParams($newSiteIds ? [
+                            'elementId' => $canonicalId,
+                            'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
+                        ] : null),
+                ),
+        ];
+    }
+
+    /**
+     * Returns info about the sites the Sites pane should list, or `null` if it shouldn't be shown.
+     *
+     * @return array{sites: Collection<int, Site>, additionalSites: list<array<string, mixed>>, withStatuses: bool, siteStatuses: array<int, bool>}|null
+     */
+    private function sitesPaneInfo(): ?array
+    {
+        if (! $this->id || $this->getIsRevision() || ! Sites::isMultiSite()) {
+            return null;
+        }
+
+        $supportedSites = collect(ElementHelper::supportedSitesForElement($this, true));
+        $allEditableSiteIds = Sites::getEditableSiteIds()->all();
+        // Only list the sites the user can edit
+        $propSites = $supportedSites->filter(fn (array $site) => (
+            $site['propagate'] &&
+            in_array($site['siteId'], $allEditableSiteIds)
+        ));
+        $additionalSites = $supportedSites
+            ->filter(fn (array $site) => ! $site['propagate'] && in_array($site['siteId'], $allEditableSiteIds))
+            ->values()
+            ->all();
+
+        // Include status toggles for each site, if the element type has per-site statuses
+        $withStatuses = static::hasStatuses() && $this->showStatusField();
+
+        return [
+            'sites' => $propSites
+                ->map(fn (array $site) => Sites::getSiteById($site['siteId'], true))
+                ->filter()
+                ->values(),
+            'additionalSites' => $additionalSites,
+            'withStatuses' => $withStatuses,
+            'siteStatuses' => $withStatuses ? ElementHelper::siteStatusesForElement($this, true) : [],
+        ];
+    }
+
+    /**
      * Returns the notes field HTML for the sidebar.
      */
     protected function notesFieldHtml(): string|Stringable
     {
         // todo: this should accept a $static arg
         return FormFields::textareaFieldHtml([
-            'label' => t('Notes about your changes'),
+            'label' => t('Notes About Your Changes'),
             'labelClass' => 'h6',
             'class' => ['nicetext', 'notes'],
             'name' => 'notes',
@@ -1103,7 +1374,7 @@ JS,
             'rows' => 1,
             'inputAttributes' => [
                 'aria' => [
-                    'label' => t('Notes about your changes'),
+                    'label' => t('Notes About Your Changes'),
                 ],
             ],
         ]);

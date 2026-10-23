@@ -26,7 +26,9 @@ readonly class EnforceLicenses
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! $request->craftUser()) {
+        // Only full page loads get the licensing screen. Action requests pass, so
+        // the screen itself can refresh the license info and set the shun cookie.
+        if (! $request->craftUser() || $request->isActionRequest()) {
             return $next($request);
         }
 

@@ -29,6 +29,7 @@ use CraftCms\Cms\Cp\Components\Radio;
 use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Cp\Components\Select;
 use CraftCms\Cms\Cp\Components\Textarea;
+use CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Support\Arr;
@@ -165,6 +166,7 @@ readonly class FormFields
         $field = Field::make()
             ->id($config['fieldId'] ?? "$id-field")
             ->label($label !== null ? (string) $label : null)
+            ->labelSrOnly((bool) ($config['labelSrOnly'] ?? false))
             ->required((bool) ($config['required'] ?? false))
             ->translatable($translatable, $config['translationDescription'] ?? null)
             ->fieldset((bool) ($config['fieldset'] ?? false))
@@ -436,8 +438,9 @@ readonly class FormFields
      * Maps the legacy checkboxSelect config surface onto the
      * {@see CheckboxSelect} component — the PHP twin of the
      * `_includes/forms/checkboxSelect` glue template. Legacy semantics
-     * preserved: sortable pre-orders options by the `values` order, and a
-     * checked "All" option checks and disables every item.
+     * preserved: sortable pre-orders options by the `values` order and, unless
+     * `presentation` says otherwise, lists only the checked options with an
+     * “Add item” menu; a checked “All” option posts its value alone.
      */
     /** @param array<string, mixed> $config */
     public static function checkboxSelectFromConfig(array $config): CheckboxSelect
@@ -447,6 +450,9 @@ readonly class FormFields
         $values = $config['values'] ?? [];
         $disabled = (bool) ($config['disabled'] ?? false);
         $sortable = (bool) ($config['sortable'] ?? false);
+        $presentation = isset($config['presentation'])
+            ? CheckboxSelectPresentation::from($config['presentation'])
+            : ($sortable ? CheckboxSelectPresentation::AddMenu : CheckboxSelectPresentation::Checkboxes);
 
         $rawOptions = $config['options'] ?? [];
         $rawOptions = is_iterable($rawOptions) ? $rawOptions : [$rawOptions];
@@ -469,49 +475,45 @@ readonly class FormFields
         }
 
         $showAllOption = (bool) ($config['showAllOption'] ?? false);
-        $allChecked = false;
-        $allCheckbox = null;
+        $allValue = $config['allValue'] ?? '*';
+        $allChecked = $showAllOption && $values == $allValue;
+        $itemName = $name !== null ? "{$name}[]" : null;
 
-        if ($showAllOption) {
-            $allLabel = $config['allLabel'] ?? t('All');
-            $allValue = $config['allValue'] ?? '*';
-            $allChecked = $values == $allValue;
-
-            $allCheckbox = self::checkboxFromConfig([
-                'describedBy' => $config['describedBy'] ?? null,
-                'class' => ['cp-checkbox-select__item', 'all'],
-                'label' => new HtmlString("<b>$allLabel</b>"),
-                'name' => $name,
-                'value' => $allValue,
-                'checked' => $allChecked,
-                'autofocus' => $config['autofocus'] ?? false,
-                'targetPrefix' => $config['targetPrefix'] ?? null,
-                'disabled' => $disabled,
-            ]);
-        }
-
+        // While “All” speaks for the options, they post nothing; the element
+        // restores their names once it's unchecked.
         $checkboxes = $options
             ->map(fn (array $option): Checkbox => self::checkboxFromConfig(array_merge([
-                'name' => $name !== null ? "{$name}[]" : null,
-                'checked' => ($showAllOption && $allChecked)
+                'name' => $allChecked ? null : $itemName,
+                'checked' => $allChecked
                     || (isset($option['value']) && is_array($values) && in_array($option['value'], $values)),
-                'disabled' => ($showAllOption && $allChecked) || $disabled,
+                'disabled' => $disabled,
                 'targetPrefix' => $config['targetPrefix'] ?? null,
+                'data' => $allChecked && $itemName !== null ? ['governed-name' => $itemName] : [],
             ], $option)))
             ->all();
 
-        return CheckboxSelect::make()
+        $select = CheckboxSelect::make()
             ->id($id)
-            ->name($showAllOption ? null : $name)
-            ->allCheckbox($allCheckbox)
+            ->name($name)
             ->options($checkboxes)
             ->sortable($sortable)
-            ->storageKey($config['storageKey'] ?? null)
+            ->presentation($presentation)
             ->disabled($disabled)
             ->attributes(Arr::merge(
                 ['class' => Html::explodeClass($config['class'] ?? [])],
                 $config['containerAttributes'] ?? [],
             ));
+
+        if ($showAllOption) {
+            $select->allOption(
+                $config['allLabel'] ?? t('All'),
+                $allValue,
+                checked: $allChecked,
+                name: $name,
+            );
+        }
+
+        return $select;
     }
 
     /** @param array<string, mixed> $config */
@@ -1121,7 +1123,7 @@ readonly class FormFields
         $component = Combobox::make()
             ->id($config['id'] ?? null)
             ->name(($config['name'] ?? false) ?: null)
-            ->value($config['value'] ?? null)
+            ->value(self::selectizeValue($config['value'] ?? null))
             ->options(self::normalizeSelectizeOptions($config['options'] ?? []))
             ->disabled((bool) ($config['disabled'] ?? false))
             ->required((bool) ($config['required'] ?? false))
@@ -1139,6 +1141,40 @@ readonly class FormFields
         }
 
         return $component;
+    }
+
+    /**
+     * Legacy configs pass whatever the setting holds — a bool from a config
+     * file, an int from a database column — where the combobox only takes an
+     * option value. The old markup cast the same input on its way into the
+     * `value` attribute, so mirror that rather than rejecting it.
+     *
+     * @return string|list<string>|null
+     */
+    private static function selectizeValue(mixed $value): string|array|null
+    {
+        if (! is_array($value)) {
+            return self::selectizeOptionValue($value);
+        }
+
+        $values = array_map(self::selectizeOptionValue(...), $value);
+
+        return array_values(array_filter($values, fn (?string $item): bool => $item !== null));
+    }
+
+    private static function selectizeOptionValue(mixed $value): ?string
+    {
+        if ($value === null || is_string($value)) {
+            return $value;
+        }
+
+        // `(string) false` is an empty string, which matches no option at all;
+        // the boolean options these configs carry are `'1'` and `'0'`.
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+
+        return is_scalar($value) ? (string) $value : null;
     }
 
     /**

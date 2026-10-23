@@ -65,11 +65,49 @@ The menu follows the WAI-ARIA menu-button pattern, adapted:
 
 That last one is deliberate: a filtered menu has two states to leave, and closing outright would discard the filter and the menu together.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Nodes\ActionMenu` renders an action menu from Craft menu item configs:
+
+```php
+use CraftCms\Cms\Ui\Nodes\ActionMenu;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    ActionMenu::make('section-actions', [
+        ['label' => 'Edit entry types', 'url' => 'settings/entry-types', 'icon' => 'pencil'],
+        [
+            'label' => 'Delete section',
+            'icon' => 'trash',
+            'action' => 'sections/delete-section',
+            'params' => ['sectionId' => 3],
+            'confirm' => 'Are you sure you want to delete this section?',
+            'destructive' => true,
+        ],
+    ])->label('Section actions'),
+]);
+```
+
+An item with a `url` becomes a link.
+An item with an `action` posts to that controller action, with its `params`, after the `confirm` message is accepted.
+`destructive` gives the item the `danger` variant.
+`label()` sets the menu button's accessible name.
+An action menu can also go in a field's `actions()`.
+
 ## Accessibility
 
-The `change` event carries the chosen item in `detail.item` — the descriptor in data-driven mode, the element in slot-based mode.
+The menu follows the [Disclosure Navigation Menu](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/) example, plus arrow-key navigation. It isn't an ARIA `menu`: the items stay ordinary buttons and links. The requirements it meets on its own, and its known gaps, are in `action-menu.a11y.md`.
 
-Give the invoker a real name. The generated one is labeled, but a custom invoker is yours to name, and an unnamed ellipsis button is announced as nothing at all.
+The `craft-select` event carries the chosen item in `detail.item` — the descriptor in data-driven mode, the element in slot-based mode.
+
+Give the invoker a real name. The generated one is labeled, but a custom invoker is yours to name, and an unnamed ellipsis button is announced as nothing at all. Slot a real button (`craft-button` or `<button>`), not a `div` or a link, so it's focusable and activates on Enter and Space.
+
+Set `label` to say whose actions these are, such as "Actions for Blog post", when a page has several menus. The default, "Actions", names both the generated invoker and the menu panel, and a list of identical names is hard to tell apart.
+
+In slot-based mode, build the items from `craft-action-item`. Arrow-key navigation only moves between `craft-action-item` elements, so plain buttons or links in the content are reachable by Tab alone.
+
+When an item opens a `craft-dialog` or a control panel slideout, focus goes back to the menu's button once it closes, because the item itself is hidden by then. Both do this on their own. For another kind of overlay, pass an `event` action's `detail.returnFocus` to it, and call it on close to get the button. If the menu can re-render while the overlay is open, give it a `data-focus-key` that stays the same across renders, and a `data-focus-scope` on the region it lives in when the same key can appear in more than one place, such as a slideout panel.
 
 ## Properties
 

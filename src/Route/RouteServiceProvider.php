@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Route;
 
+use CraftCms\Cms\Auth\DefaultRateLimit;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Cms;
@@ -21,7 +22,6 @@ use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
-use CraftCms\Cms\Http\Middleware\RememberTheme;
 use CraftCms\Cms\Http\Middleware\RenderBridgedScreen;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
@@ -146,7 +146,7 @@ class RouteServiceProvider extends ServiceProvider
             }
 
             // Throttle to prevent enumeration attacks
-            return Limit::perMinute(1)->by($request->ip());
+            return DefaultRateLimit::for($request) ?? Limit::none();
         });
 
         RateLimiter::for(
@@ -200,7 +200,6 @@ class RouteServiceProvider extends ServiceProvider
         collect([
             RequireCpRequest::class,
             AuthenticateCraftSession::class,
-            RememberTheme::class,
             CheckRequirements::class,
             HandleInertiaRequests::class,
             EnforceLicenses::class,

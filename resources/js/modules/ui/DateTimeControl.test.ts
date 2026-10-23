@@ -98,10 +98,11 @@ describe('DateTimeControl', () => {
     expect(input).not.toBeNull();
     expect(input!.dateValue).toBe('');
     expect(input!.timeValue).toBe('');
+    // Hidden, but still taking up its room.
     expect(
       container!
         .querySelector('craft-button[aria-label="Clear"]')!
-        .hasAttribute('disabled')
+        .classList.contains('invisible')
     ).toBe(true);
   });
 
@@ -119,7 +120,7 @@ describe('DateTimeControl', () => {
     expect(
       container!
         .querySelector('craft-button[aria-label="Clear"]')!
-        .hasAttribute('disabled')
+        .classList.contains('invisible')
     ).toBe(false);
   });
 
@@ -136,8 +137,10 @@ describe('DateTimeControl', () => {
     mount({});
     await nextTick();
 
+    // `auto` rather than unset, so the surrounding craft-field doesn't stretch
+    // the control across the column the way it would a text input.
     expect(
-      container!.querySelector('craft-input-date-time')!.hasAttribute('width')
-    ).toBe(false);
+      container!.querySelector('craft-input-date-time')!.getAttribute('width')
+    ).toBe('auto');
   });
 });

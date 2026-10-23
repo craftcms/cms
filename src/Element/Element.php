@@ -674,11 +674,14 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
 
             $rules = array_merge($rules, $field->getElementRules($this));
 
-            $value = $field->prepareForElementValidation(
-                $this->getFieldValue($field->handle),
-            );
+            $currentValue = $this->getFieldValue($field->handle);
+            $value = $field->prepareForElementValidation($currentValue);
 
-            $this->setFieldValue($field->handle, $value);
+            // Only written back when preparing it changed it, since setting a value marks the field as dirty, and a
+            // draft records its dirty fields as modified.
+            if ($value !== $currentValue) {
+                $this->setFieldValue($field->handle, $value);
+            }
 
             $validator = ValidatorFacade::make(
                 data: [$attribute => $value],

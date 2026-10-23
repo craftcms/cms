@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
@@ -72,7 +73,7 @@ it('forbids creating an element when the user cannot save it', function () {
 });
 
 it('returns a failure response when saving the draft fails', function () {
-    app()->instance(Drafts::class, new readonly class(app(Elements::class), app(DraftActivity::class), app(Workflows::class)) extends Drafts
+    app()->instance(Drafts::class, new readonly class(app(Elements::class), app(DraftActivity::class), app(Workflows::class), app(Releases::class)) extends Drafts
     {
         public function saveElementAsDraft(
             ElementInterface $element,

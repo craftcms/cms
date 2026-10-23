@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
@@ -113,7 +114,7 @@ trait Draftable
                 'provisional' => $this->isProvisionalDraft,
                 'name' => $this->draftName,
                 'notes' => $this->draftNotes,
-                'dateLastMerged' => $this->dateLastMerged,
+                'dateLastMerged' => Query::prepareDateForDb($this->dateLastMerged),
                 'saved' => $this->markDraftAsSaved,
             ]);
     }

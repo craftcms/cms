@@ -12,6 +12,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Components\CopyAttribute;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -116,6 +117,7 @@ class VolumesController extends BaseAssetSettingsController
             'values.titleTranslationKeyFormat' => ['nullable', 'string'],
             'values.altTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
             'values.altTranslationKeyFormat' => ['nullable', 'string'],
+            'values.propagationMethod' => ['nullable', Rule::enum(PropagationMethod::class)],
             'values.fieldLayout' => ['present', 'array'],
             'scope' => ['present', 'array', 'size:0'],
         ]);
@@ -161,6 +163,7 @@ class VolumesController extends BaseAssetSettingsController
         $volume->titleTranslationKeyFormat = $request->input('titleTranslationKeyFormat');
         $volume->altTranslationMethod = $request->enum('altTranslationMethod', TranslationMethod::class, TranslationMethod::None);
         $volume->altTranslationKeyFormat = $request->input('altTranslationKeyFormat');
+        $volume->propagationMethod = $request->enum('propagationMethod', PropagationMethod::class, $volume->propagationMethod);
 
         $fieldLayout = $fields->assembleLayoutFromPost();
         $fieldLayout->type = Asset::class;

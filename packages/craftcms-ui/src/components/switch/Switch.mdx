@@ -36,11 +36,36 @@ It is only meaningful while the switch is off, and is cleared as soon as the swi
 
 `value` is what the hidden input posts when the switch is on, defaulting to `1`. It is named `checkedValue` on the element itself, because Lion already defines a `value` accessor that proxies the input node.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Controls\Lightswitch` renders a switch:
+
+```php
+use CraftCms\Cms\Ui\Controls\Lightswitch;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Show the Post Date field', Lightswitch::make('showPostDate')
+        ->onLabel('Show')
+        ->offLabel('Hide')),
+]);
+```
+
+`onLabel()` and `offLabel()` set the state labels.
+`checkedValue()` sets the value that's submitted when it's on, and `indeterminate()` allows the mixed state.
+
 ## Accessibility
 
-The control is exposed as a switch with its checked state, and the mixed state as `aria-checked="mixed"`.
+The control is exposed as a switch that's on or off.
 
-Label it with the thing being switched, not with the states. "Enable comments" tells a person what the control governs; "On/Off" tells them only what a switch already looks like.
+Label it with the thing being switched, not with the states. "Enable comments" tells a person what the control governs; "On/Off" tells them only what a switch already looks like. If the label comes from elsewhere on the page through `aria-labelledby`, it must contain the text shown beside the switch, so voice control users can say what they see.
+
+A few more things the component can't do for you:
+
+- **Use it only for changes that apply straight away.** If the value waits for a Save button, use a checkbox. Toggling a switch shouldn't navigate, submit a form or move focus.
+- **Give small switches room.** `size="small"` is 16px tall. Keep other controls clear of a 24px circle centered on it, or give it a visible label, which can be clicked to toggle it.
 
 ## Properties
 

@@ -539,6 +539,26 @@ describe('craft-field empty label and instructions', () => {
   });
 });
 
+describe('craft-field instructions-sr-only', () => {
+  it('visually hides the instructions but keeps them in the description', async () => {
+    const element = await createField(
+      {label: 'My field', 'instructions-sr-only': ''},
+      '<input slot="input" type="text"><div slot="help-text">Type { to insert a value.</div>'
+    );
+    await element.updateComplete;
+
+    const input = element.querySelector('input')!;
+    const helpText = element.querySelector('[slot="help-text"]')!;
+
+    expect(
+      element.shadowRoot!.querySelector(
+        '.cp-visually-hidden slot[name="help-text"]'
+      )
+    ).not.toBeNull();
+    expect(input.getAttribute('aria-describedby')).toContain(helpText.id);
+  });
+});
+
 describe('craft-field label-sr-only', () => {
   it('visually hides the whole heading when the label is all it has', async () => {
     const element = await createField({

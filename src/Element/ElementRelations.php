@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -134,7 +135,7 @@ readonly class ElementRelations
 
             // Add the new ones
             if (! empty($relationData)) {
-                $now = now();
+                $now = Query::prepareDateForDb(now());
                 $values = [];
                 foreach ($relationData as $fieldId => $targetIds) {
                     foreach ($targetIds as $targetId => $sortOrder) {

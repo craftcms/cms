@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Data\Update as UpdateData;
 use CraftCms\Cms\Update\Data\UpdateRelease;
@@ -141,6 +142,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Collection::one() as an alias of first()
         Collection::macro('one', fn () => $this->first(...func_get_args()));
+
+        // Register Collection::render() for rendering collections of Renderable objects
+        Collection::macro('render', fn (array $variables = []) => Template::render($this, $variables));
 
         Collection::macro(
             'sentence',

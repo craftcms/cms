@@ -108,18 +108,42 @@ That is part of the pill treatment rather than of the box, and `padding` does no
 
 <Canvas of={CalloutStories.KitchenSink} sourceState="shown" />
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Nodes\Callout` renders a callout, and its content is Markdown:
+
+```php
+use CraftCms\Cms\Ui\Nodes\Callout;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Callout::make('import-warning', 'Importing replaces entries that have the same **slug**.')
+        ->variant('warning'),
+    Callout::make('field-layout-tip', 'Drag fields between tabs to reorder them.')
+        ->icon('lightbulb')
+        ->dismissible(),
+]);
+```
+
+`variant()`, `appearance()`, `icon()`, and `padding()` set the attributes of the same names.
+`dismissible()` adds a dismiss button. A dismissed callout stays dismissed on later page loads, keyed by its UID, so give each one a UID that's stable and unique.
+
 ## Accessibility
 
 A callout is a container, not a live region.
 It has no implicit role, and adding one to the page does not announce it.
 When a callout appears in response to something the person did — a failed save, a validation summary — the announcement is the responsibility of the code that inserts it.
+A callout that is on the page when it loads should stay silent; do not give it `role="alert"`.
 
-The icon is decorative.
-It repeats what the variant and the text already say, and carries no accessible name of its own, so nothing is lost when it is not announced.
+The variant's default icon is decorative.
+Say what the callout means in its text — "Couldn't save", not just a red box — so a `danger` callout still reads as a problem when the color and icon are not perceived.
 If you slot artwork that conveys something the text does not, give it its own label.
 
-Color is not the only signal a callout carries, but it is the fastest one.
-Keep the text meaningful on its own, so a `danger` callout still reads as a problem when the color is not perceived.
+The title is bold text, not a heading.
+When a callout starts a section a person would navigate to, slot a heading of the right level into `title` instead of using the attribute.
+
+A message the person must acknowledge before continuing belongs in a [Dialog](?path=/docs/components-dialog--docs), not a callout.
 
 ## Properties
 

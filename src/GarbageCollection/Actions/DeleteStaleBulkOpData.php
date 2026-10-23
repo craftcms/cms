@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -19,7 +20,7 @@ class DeleteStaleBulkOpData extends GarbageCollectionAction
             function () {
                 foreach ([Table::BULKOPEVENTS, Table::ELEMENTS_BULKOPS] as $table) {
                     DB::table($table)
-                        ->where('timestamp', '<', now()->subWeeks(2))
+                        ->where('timestamp', '<', Query::prepareDateForDb(now()->subWeeks(2)))
                         ->delete();
                 }
             },

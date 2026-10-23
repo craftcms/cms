@@ -30,6 +30,7 @@ use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\ElementSources as ElementSourcesService;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -77,13 +78,11 @@ use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Ui\Contracts\Node;
@@ -410,9 +409,15 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         return sprintf(
             'content/%s/%s',
-            is_string($page) && $page !== '' ? Str::slug($page) : 'entries',
+            is_string($page) && $page !== '' ? ElementSourcesService::pageSlug($page) : 'entries',
             $handle,
         );
+    }
+
+    #[Override]
+    public static function supportsSourceBadgeCounts(): bool
+    {
+        return true;
     }
 
     #[Override]
@@ -1299,7 +1304,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $crumbs = [
             new ActionItem()
                 ->label($page && $page !== 'Entries' ? t($page, category: 'site') : t('Entries'))
-                ->href(Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries'))),
+                ->href(Url::cpUrl(sprintf('content/%s', $page ? ElementSourcesService::pageSlug($page) : 'entries'))),
         ];
 
         // Is the section’s source enabled?
@@ -1947,7 +1952,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     {
         $page = $this->getSection()?->getPage();
 
-        return Url::cpUrl(sprintf('content/%s', $page ? Str::slug($page) : 'entries'));
+        return Url::cpUrl(sprintf('content/%s', $page ? ElementSourcesService::pageSlug($page) : 'entries'));
     }
 
     protected function cpRevisionsUrl(): string
@@ -2009,73 +2014,38 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             currentUser()?->isAdmin() &&
             Cms::config()->allowAdminChanges
         ) {
-            // Entry type settings
-            $entryTypeEditId = sprintf('edit-entry-type-%s', mt_rand());
             $actions[] = [
-                'id' => $entryTypeEditId,
                 'icon' => 'gear',
                 'label' => t('Entry type settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-entry-type',
+                    'detail' => ['entryTypeId' => $this->typeId],
+                ],
             ];
 
-            HtmlStack::jsWithVars(fn ($id, $params, $isNestedEntry) => <<<JS
-(() => {
-  $('#' + $id).on('activate', function() {
-    const params = $params;
-    if (!$isNestedEntry) {
-        const input = $(this).closest('.menu').data('disclosureMenu').\$trigger.closest('form').find('.entry-type-select').find('input');
-        if (input.length) {
-          params.entryTypeId = input.val();
-        }
-    }
-    new Craft.CpScreenSlideout(Craft.getCpUrl('settings/entry-types/' + params.entryTypeId));
-  });
-})();
-JS, [
-                InputNamespace::namespaceId($entryTypeEditId),
-                ['entryTypeId' => $this->typeId],
-                isset($this->fieldId),
-            ]);
-
-            // Section settings
             if (! empty($this->sectionId)) {
-                $sectionEditId = sprintf('edit-section-%s', mt_rand());
                 $actions[] = [
-                    'id' => $sectionEditId,
                     'icon' => 'gear',
                     'label' => t('Section settings'),
+                    'action' => [
+                        'type' => 'event',
+                        'name' => 'craft:open-slideout',
+                        'detail' => ['url' => Url::cpUrl("settings/sections/$this->sectionId")],
+                    ],
                 ];
-
-                HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-    (() => {
-      $('#' + $id).on('activate', function() {
-        new Craft.CpScreenSlideout('sections/edit-section', {params: $params})
-      });
-    })();
-    JS, [
-                    InputNamespace::namespaceId($sectionEditId),
-                    ['sectionId' => $this->sectionId],
-                ]);
             }
 
-            // Field settings
             if (! empty($this->fieldId)) {
-                $fieldEditId = sprintf('edit-field-%s', mt_rand());
                 $actions[] = [
-                    'id' => $fieldEditId,
                     'icon' => 'gear',
                     'label' => t('Field settings'),
+                    'action' => [
+                        'type' => 'event',
+                        'name' => 'craft:edit-field',
+                        'detail' => ['fieldId' => $this->fieldId],
+                    ],
                 ];
-
-                HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
-    (() => {
-      $('#' + $id).on('activate', function() {
-        new Craft.CpScreenSlideout(Craft.getCpUrl('settings/fields/edit'), {params: $params})
-      });
-    })();
-    JS, [
-                    InputNamespace::namespaceId($fieldEditId),
-                    ['fieldId' => $this->fieldId],
-                ]);
             }
         }
 
@@ -2949,7 +2919,7 @@ JS;
             ->update([
                 'deletedWithEntryType' => null,
                 'deletedWithSection' => null,
-                'dateUpdated' => now(),
+                'dateUpdated' => Query::prepareDateForDb(now()),
             ]);
 
         $section = $this->getSection();

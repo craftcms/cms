@@ -15,9 +15,12 @@
     duration: number;
   }>();
 
-  const trialHtml = t('or <a href="{url}">try before buying</a>', {
-    url: 'https://craftcms.com/knowledge-base/how-to-trial-craft-cms-and-plugin-editions',
-  });
+  const trialHtml = t(
+    'Not ready to buy? <a href="{url}">Try before buying</a>.',
+    {
+      url: 'https://craftcms.com/knowledge-base/how-to-trial-craft-cms-and-plugin-editions',
+    }
+  );
 
   // ICU messages close with `}}`, which a template interpolation can't hold.
   const intro = t(
@@ -74,41 +77,44 @@
 </script>
 
 <template>
-  <AuthBase :title="t('License purchase required.')">
-    <craft-pane>
-      <div class="grid gap-lg">
-        <h2>{{ t('License purchase required.') }}</h2>
-
+  <AuthBase :title="t('License purchase required.')" wide>
+    <craft-pane :label="t('License purchase required.')" :heading-level="2">
+      <div class="prose grid gap-md">
         <p>{{ intro }}</p>
 
-        <ul class="list-disc ps-lg">
+        <ul>
           <li v-for="issue in issues" :key="issue">{{ issue }}</li>
         </ul>
 
-        <div class="flex flex-wrap items-center justify-between gap-lg">
-          <div class="flex flex-wrap items-center gap-md">
-            <craft-button variant="primary" :href="cartUrl" target="_blank">
-              {{ t('Resolve now') }}
-            </craft-button>
-            <span v-html="trialHtml"></span>
-          </div>
-
-          <craft-button
-            icon="refresh"
-            variant="outline"
-            :loading="refreshing"
-            @click="refresh"
-          >
-            {{ t('Refresh') }}
-          </craft-button>
-        </div>
+        <p v-html="trialHtml"></p>
       </div>
+
+      <craft-button
+        slot="secondary-action"
+        type="button"
+        icon="arrows-rotate"
+        :loading="refreshing"
+        @click="refresh"
+      >
+        {{ t('Refresh') }}
+      </craft-button>
+      <craft-button
+        slot="primary-action"
+        variant="primary"
+        :href="cartUrl"
+        target="_blank"
+        icon="arrow-up-right-from-square"
+        icon-position="suffix"
+      >
+        {{ t('Resolve now') }}
+        <span class="sr-only">{{ t('Opens in a new window') }}</span>
+      </craft-button>
     </craft-pane>
 
-    <p v-if="canContinue" class="mt-md text-center" aria-live="polite">
+    <p v-if="canContinue" class="mt-lg text-center" aria-live="polite">
       <a :href="$page.url">{{ t('Continue to the control panel') }}</a>
     </p>
-    <p v-else class="mt-md text-center text-sm opacity-75" role="timer">
+    <p v-else class="mt-lg text-center text-quiet" role="timer">
       {{ countdown }}
     </p>
   </AuthBase>

@@ -47,7 +47,7 @@
 
     emit('update:value', value, 'discrete');
 
-    // Clearing disables the button that has focus, which would drop focus to
+    // Clearing removes the button that has focus, which would drop focus to
     // the page, so hand it to the first input instead.
     void nextTick(() =>
       root.value
@@ -93,21 +93,18 @@
     .min="control.props.min"
     .max="control.props.max"
     .minuteIncrement="control.props.minuteIncrement"
-    :width="control.props.fullWidth ? 'full' : undefined"
+    :width.attr="control.props.fullWidth ? 'full' : 'auto'"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
     @model-value-changed="update"
   >
-    <!--
-      `null` rather than `false`, so the attribute is removed: until
-      craft-button is defined, Vue writes `disabled="false"`, which still
-      disables it.
-    -->
+    <!-- Hidden rather than removed while there's nothing to clear, so it keeps
+      its room and the inputs are as wide with a value as without one. -->
     <craft-button
       v-if="editable"
+      :class="{invisible: !hasValue}"
       type="button"
-      :disabled="!hasValue || null"
       icon="xmark-large"
       :aria-label="t('Clear')"
       variant="plain"

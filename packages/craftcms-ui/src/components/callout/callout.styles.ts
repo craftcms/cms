@@ -50,7 +50,9 @@ export default css`
 
   .callout__title,
   .callout__description {
-    padding-inline: var(--c-spacing-sm);
+    padding-inline: var(--c-callout-text-padding-inline, var(--c-spacing-sm));
+    --c-link-decoration: underline;
+    --c-link-decoration-hover: none;
   }
 
   .callout__title {
@@ -62,7 +64,6 @@ export default css`
   .callout__description {
     grid-area: description;
     align-self: center;
-    padding-inline: var(--c-spacing-sm);
   }
 
   .callout__action {
@@ -78,7 +79,7 @@ export default css`
     justify-content: center;
     align-items: center;
     grid-area: icon;
-    padding-inline: var(--c-spacing-sm);
+    padding-inline: var(--c-callout-icon-padding-inline, var(--c-spacing-sm));
   }
 
   ::slotted(code) {

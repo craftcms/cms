@@ -13,6 +13,7 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Validation\EntryTypeRules;
@@ -26,8 +27,6 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
@@ -200,25 +199,18 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
             return [];
         }
 
-        $editId = sprintf('action-edit-%s', mt_rand());
-        $items = [
+        return [
             [
-                'id' => $editId,
+                'id' => sprintf('action-edit-%s', mt_rand()),
                 'icon' => 'gear',
                 'label' => t('Entry type settings'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:edit-entry-type',
+                    'detail' => ['entryTypeId' => $this->id],
+                ],
             ],
         ];
-
-        HtmlStack::jsWithVars(fn ($id, $url) => <<<JS
-$(document).on('click', '#' + $id, () => {
-new Craft.CpScreenSlideout($url)
-});
-JS, [
-            InputNamespace::namespaceId($editId),
-            Url::cpUrl("settings/entry-types/$this->id"),
-        ]);
-
-        return $items;
     }
 
     /** @return array<string, int|\Closure> */
@@ -232,21 +224,22 @@ JS, [
                     return Html::tag('i', t('No usages'));
                 }
 
+                $elementHtml = app(ElementHtml::class);
                 $labels = [];
-                $items = array_map(function (Section|ElementContainerFieldInterface $usage) use (&$labels) {
-                    $icon = $usage instanceof FieldInterface && ! $usage instanceof Iconic
-                        ? $usage::icon()
-                        : $usage->getIcon();
-                    $label = $labels[] = $usage->getUiLabel();
-                    $labelHtml = Html::beginTag('span', [
-                        'class' => ['flex', 'flex-nowrap', 'items-center', 'gap-1'],
-                    ]).
-                        Html::tag('craft-icon', '', Icons::resolveIconData($icon)).
-                        Html::tag('span', Html::encode($label)).
-                        Html::endTag('span');
+                $items = array_map(function (Section|ElementContainerFieldInterface $usage) use (&$labels, $elementHtml) {
+                    $labels[] = $usage->getUiLabel();
 
-                    return Html::a($labelHtml, $usage->getCpEditUrl());
-                }, $this->findUsages());
+                    return $elementHtml->chipHtml($usage, [
+                        'appearance' => 'plain',
+                        'autoReload' => false,
+                        'hyperlink' => true,
+                        'showStatus' => false,
+                        // Fields without their own icon show their type's.
+                        'attributes' => $usage instanceof FieldInterface && ! $usage instanceof Iconic
+                            ? ['icon' => Icons::resolveIconName($usage::icon())]
+                            : [],
+                    ]);
+                }, $usages);
 
                 // sort by label
                 array_multisort($labels, SORT_ASC, $items);

@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\ElementActivity as ElementActivityService;
 use CraftCms\Cms\Element\Enums\ElementActivityType;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Support\Facades\ElementActivity as ElementActivityFacade;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
@@ -161,6 +162,6 @@ function insertElementActivity(
         'siteId' => $element->siteId,
         'draftId' => $isCanonical ? null : $element->draftId,
         'type' => $type->value,
-        'timestamp' => $timestamp,
+        'timestamp' => Query::prepareDateForDb($timestamp),
     ]);
 }

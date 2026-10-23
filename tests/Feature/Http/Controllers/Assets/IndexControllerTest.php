@@ -278,6 +278,7 @@ it('includes a volume’s subfolders in the index results', function () {
             ->has('data', 1)
             // The folder row is flagged and carries the URL to navigate into it.
             ->where('data.0.isFolder', true)
+            ->where('data.0.parentFolderId', Folders::getRootFolderByVolumeId($volumeModel->id)->id)
             ->where('data.0.folderUrl', fn (string $url) => str_contains($url, "assets/{$volumeModel->handle}/a-subfolder"))
             // Only the chip's label is the link, not the whole chip.
             ->where('data.0.title', fn (string $html) => str_starts_with($html, '<craft-chip')
@@ -539,9 +540,10 @@ it('gives asset rows what their file actions need', function () {
         'fs' => 'test-disk',
         'handle' => 'testvolume',
     ]);
+    $rootFolderId = Folders::getRootFolderByVolumeId($volumeModel->id)->id;
     Asset::factory()->createElement([
         'volumeId' => $volumeModel->id,
-        'folderId' => Folders::getRootFolderByVolumeId($volumeModel->id)->id,
+        'folderId' => $rootFolderId,
         'filename' => 'photo.jpg',
         'kind' => 'image',
         'width' => 400,
@@ -552,6 +554,7 @@ it('gives asset rows what their file actions need', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('data.0.assetFilename', 'photo.jpg')
+            ->where('data.0.folderId', $rootFolderId)
             ->where('data.0.imageWidth', 400)
             ->where('data.0.imageHeight', 300)
             ->where('data.0.capabilities.movable', true)

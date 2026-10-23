@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Query;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -49,47 +50,49 @@ readonly class ElementCanonicalChanges
 
         event(new CanonicalChangesMerging($element));
 
-        $this->bulkOps->ensure(function () use ($element, $supportedSites) {
-            DB::transaction(function () use ($element, $supportedSites) {
-                $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
-                if (! empty($otherSiteIds)) {
-                    $siteElements = $element->getLocalizedQuery()
-                        ->siteId($otherSiteIds)
-                        ->status(null)
-                        ->all();
-                } else {
-                    $siteElements = [];
-                }
+        try {
+            $this->bulkOps->ensure(function () use ($element, $supportedSites) {
+                DB::transaction(function () use ($element, $supportedSites) {
+                    $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
+                    if (! empty($otherSiteIds)) {
+                        $siteElements = $element->getLocalizedQuery()
+                            ->siteId($otherSiteIds)
+                            ->status(null)
+                            ->all();
+                    } else {
+                        $siteElements = [];
+                    }
 
-                foreach ($siteElements as $siteElement) {
-                    $siteElement->mergeCanonicalChanges();
-                    $siteElement->mergingCanonicalChanges = true;
+                    foreach ($siteElements as $siteElement) {
+                        $siteElement->mergeCanonicalChanges();
+                        $siteElement->mergingCanonicalChanges = true;
+                        $this->elementWrites->save(
+                            element: $siteElement,
+                            runValidation: false,
+                            propagate: false,
+                            supportedSites: $supportedSites,
+                        );
+                    }
+
+                    $element->mergeCanonicalChanges();
+                    $duplicateOf = $element->duplicateOf;
+                    $element->duplicateOf = null;
+                    $element->dateLastMerged = now();
+                    $element->mergingCanonicalChanges = true;
                     $this->elementWrites->save(
-                        element: $siteElement,
+                        element: $element,
                         runValidation: false,
                         propagate: false,
                         supportedSites: $supportedSites,
                     );
-                }
+                    $element->duplicateOf = $duplicateOf;
 
-                $element->mergeCanonicalChanges();
-                $duplicateOf = $element->duplicateOf;
-                $element->duplicateOf = null;
-                $element->dateLastMerged = now();
-                $element->mergingCanonicalChanges = true;
-                $this->elementWrites->save(
-                    element: $element,
-                    runValidation: false,
-                    propagate: false,
-                    supportedSites: $supportedSites,
-                );
-                $element->duplicateOf = $duplicateOf;
-
-                $this->elementWrites->afterPropagate($element, false, [...$siteElements, $element]);
+                    $this->elementWrites->afterPropagate($element, false, [...$siteElements, $element]);
+                });
             });
-
+        } finally {
             $element->mergingCanonicalChanges = false;
-        });
+        }
 
         event(new CanonicalChangesMerged($element));
     }
@@ -178,7 +181,7 @@ readonly class ElementCanonicalChanges
                         'elementId' => $canonical->id,
                         'siteId' => $attribute->siteId,
                         'attribute' => $attribute->attribute,
-                        'dateUpdated' => $updatedCanonical->dateUpdated,
+                        'dateUpdated' => Query::prepareDateForDb($updatedCanonical->dateUpdated),
                         'propagated' => $attribute->propagated,
                         'userId' => $attribute->userId,
                     ], ['elementId', 'siteId', 'attribute']);
@@ -191,7 +194,7 @@ readonly class ElementCanonicalChanges
                         'siteId' => $field->siteId,
                         'fieldId' => $field->fieldId,
                         'layoutElementUid' => $field->layoutElementUid,
-                        'dateUpdated' => $updatedCanonical->dateUpdated,
+                        'dateUpdated' => Query::prepareDateForDb($updatedCanonical->dateUpdated),
                         'propagated' => $field->propagated,
                         'userId' => $field->userId,
                     ], ['elementId', 'siteId', 'fieldId', 'layoutElementUid']);

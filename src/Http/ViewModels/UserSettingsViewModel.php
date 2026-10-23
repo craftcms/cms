@@ -71,7 +71,7 @@ class UserSettingsViewModel extends ViewModel
                     ->dir('ltr')
                     ->textExpanderTriggers(SelectOptions::getObjectTemplateTextExpanderTriggers(User::class)),
             )
-                ->tip(t('Type `{` to choose a user property.'))
+                ->tip(t('Type <kbd>{</kbd> to choose a user property.'))
                 ->width(66),
         ]);
 

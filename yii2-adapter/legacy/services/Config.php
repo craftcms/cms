@@ -112,6 +112,26 @@ class Config extends Component
         return $this->_configSettings[$category];
     }
 
+    /**
+     * Converts a Laravel-side general config to the legacy class.
+     *
+     * A legacy config is already one, so it's just copied: restoring it from
+     * its state would set every property, and the deprecated ones log a
+     * deprecation when they're set, even to their defaults.
+     */
+    private function toLegacyGeneralConfig(mixed $config): mixed
+    {
+        if ($config instanceof LegacyGeneralConfig) {
+            return clone $config;
+        }
+
+        if ($config instanceof NewGeneralConfig) {
+            return LegacyGeneralConfig::__set_state($config->toArray());
+        }
+
+        return $config;
+    }
+
     private function _createConfigObj(string $category, string $filename, BaseConfig|\craft\config\BaseConfig|null $existingConfig): object
     {
         $config = ConfigFacade::get("craft.$filename", []);
@@ -124,9 +144,7 @@ class Config extends Component
             $configClass = LegacyGeneralConfig::class;
             $envPrefix = 'CRAFT_';
 
-            if ($config instanceof NewGeneralConfig) {
-                $config = LegacyGeneralConfig::__set_state($config->toArray());
-            }
+            $config = $this->toLegacyGeneralConfig($config);
         } else {
             switch ($category) {
                 case self::CATEGORY_CUSTOM:
@@ -144,9 +162,7 @@ class Config extends Component
             $config = $config($existingConfig ?? $configClass::create());
         }
 
-        if ($config instanceof NewGeneralConfig) {
-            $config = LegacyGeneralConfig::__set_state($config->toArray());
-        }
+        $config = $this->toLegacyGeneralConfig($config);
 
         // Get any environment value overrides
         $envConfig = Env::config($configClass, $envPrefix);

@@ -11,6 +11,7 @@ use Craft;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
 use craft\gql\types\generators\TagType;
+use craft\gql\types\TagGroup;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -66,7 +67,13 @@ class Tag extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), Gql::canSchema('settings.taggroups') ? [
+            'group' => [
+                'name' => 'group',
+                'type' => Type::nonNull(TagGroup::getType()),
+                'description' => 'The group that contains the tag.',
+            ],
+        ] : [], [
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::nonNull(Type::int()),

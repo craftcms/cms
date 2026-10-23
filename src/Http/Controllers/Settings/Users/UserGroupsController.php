@@ -11,12 +11,13 @@ use CraftCms\Cms\Cp\Components\CopyAttribute;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Ui\Controls\Handle;
+use CraftCms\Cms\Ui\Controls\Markdown as MarkdownControl;
 use CraftCms\Cms\Ui\Controls\PermissionTree;
 use CraftCms\Cms\Ui\Controls\Text;
-use CraftCms\Cms\Ui\Controls\Textarea;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Heading;
@@ -242,7 +243,7 @@ class UserGroupsController extends BaseUserSettingsController
             HiddenField::make('id'),
             Field::make(t('Name'), Text::make('name')->autofocus())->required(),
             Field::make(t('Handle'), $handle)->required(),
-            Field::make(t('Description'), Textarea::make('description')),
+            Field::make(t('Description'), MarkdownControl::make('description')->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)->rows(1)),
             Separator::make('permissions-separator'),
             Heading::make('permissions-heading', t('Permissions')),
             Field::make(null, PermissionTree::make('permissions')

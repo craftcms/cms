@@ -6,6 +6,7 @@ use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Events\VolumeSaving;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Url;
@@ -269,6 +270,39 @@ describe('store', function () {
         app()->forgetInstance(Volumes::class);
         $updated = app(Volumes::class)->getVolumeByHandle('testVolume');
         expect($updated->name)->toBe('Updated Volume');
+    });
+
+    test('store saves the propagation method', function () {
+        postJson(action([VolumesController::class, 'store']), [
+            'name' => 'New Volume',
+            'handle' => 'newVolume',
+            'fsHandle' => 'test-disk',
+            'propagationMethod' => 'all',
+        ])->assertOk();
+
+        app()->forgetInstance(Volumes::class);
+        expect(app(Volumes::class)->getVolumeByHandle('newVolume')->propagationMethod)->toBe(PropagationMethod::All);
+    });
+
+    test('store defaults new volumes to custom propagation', function () {
+        postJson(action([VolumesController::class, 'store']), [
+            'name' => 'New Volume',
+            'handle' => 'newVolume',
+            'fsHandle' => 'test-disk',
+        ])->assertOk();
+
+        app()->forgetInstance(Volumes::class);
+        expect(app(Volumes::class)->getVolumeByHandle('newVolume')->propagationMethod)->toBe(PropagationMethod::Custom);
+    });
+
+    test('store rejects unsupported propagation methods', function () {
+        postJson(action([VolumesController::class, 'store']), [
+            'name' => 'New Volume',
+            'handle' => 'newVolume',
+            'fsHandle' => 'test-disk',
+            'propagationMethod' => 'siteGroup',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('propagationMethod');
     });
 
     test('store returns validation errors for invalid data', function () {

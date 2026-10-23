@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\BulkOp;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplayed;
 use CraftCms\Cms\Support\Facades\BulkOps;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Arr;
@@ -70,7 +71,7 @@ class BulkOpDeferrals
             return;
         }
 
-        $timestamp = now();
+        $timestamp = Query::prepareDateForDb(now());
 
         foreach ($this->pending as $key => $events) {
             foreach ($events as $event => $watchKeys) {

@@ -35,6 +35,38 @@ For a form setting that picks one value from a set of options, use a [radio grou
 
 A segmented control of icons is compact and easy to misread. Each button still needs a name — see [Icon](?path=/docs/components-icon--docs) — because the group announces the choice, not what each option means.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+A `CraftCms\Cms\Ui\Controls\Choice` control with the `Buttons` presentation renders a button group, with one button pressed at a time:
+
+```php
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Alignment', Choice::make('alignment')
+        ->presentation(ChoicePresentation::Buttons)
+        ->options([
+            ['label' => 'Start', 'value' => 'start', 'icon' => 'align-left'],
+            ['label' => 'Center', 'value' => 'center', 'icon' => 'align-center'],
+            ['label' => 'End', 'value' => 'end', 'icon' => 'align-right'],
+        ]))
+        ->fieldset(),
+]);
+```
+
+An option can have an `icon`, which is shown on its button.
+Call `multiple()` to let several buttons be pressed at once.
+
+## Accessibility
+
+- Given a `name`, name the group too, with `aria-label` or `aria-labelledby` on `craft-button-group`. Its buttons are announced as pressed or not, and the group name says what they choose between.
+- Each button is its own Tab stop. Arrow keys don't move between them.
+- For a single choice that should be announced and operated as radio buttons, use `craft-radio-group`.
+
 ## Properties
 
 <ArgTypes of={ButtonGroupStories} />

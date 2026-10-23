@@ -37,15 +37,15 @@ beforeEach(function () {
 
     app(BulkOpsService::class)->resume('test-bulk-op');
 
-    $this->action = new TestResaveElementWrites(
-        Mockery::mock(Elements::class),
-        Mockery::mock(Drafts::class),
-        Mockery::mock(ElementUris::class),
-        Mockery::mock(ElementCaches::class),
-        Mockery::mock(Search::class),
-        Mockery::mock(Sites::class),
-        Mockery::mock(Workflows::class),
-    );
+    $this->action = app(TestResaveElementWrites::class, [
+        'elements' => Mockery::mock(Elements::class),
+        'drafts' => Mockery::mock(Drafts::class),
+        'elementUris' => Mockery::mock(ElementUris::class),
+        'elementCaches' => Mockery::mock(ElementCaches::class),
+        'search' => Mockery::mock(Search::class),
+        'sites' => Mockery::mock(Sites::class),
+        'workflows' => Mockery::mock(Workflows::class),
+    ]);
     $this->saveElementAction = $this->action;
 });
 

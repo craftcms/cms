@@ -28,6 +28,7 @@ readonly class FieldHtml
     public function __construct(
         private Fields $fields,
         private ContentHtml $contentHtml,
+        private ElementHtml $elementHtml,
     ) {}
 
     /**
@@ -81,6 +82,16 @@ readonly class FieldHtml
             /** @var FieldLayoutProviderInterface&Chippable $provider */
             $provider = $layout->provider;
             $label = $labels[] = $provider->getUiLabel();
+
+            if ($provider instanceof Chippable) {
+                return $this->elementHtml->chipHtml($provider, [
+                    'appearance' => 'plain',
+                    'autoReload' => false,
+                    'hyperlink' => true,
+                    'showStatus' => false,
+                ]);
+            }
+
             $url = $provider instanceof CpEditable ? $provider->getCpEditUrl() : null;
             $icon = $provider instanceof Iconic ? $provider->getIcon() : null;
 

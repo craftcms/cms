@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
@@ -114,6 +115,7 @@ class UserPermissions
         $this->userPermissions($permissions);
         $this->sitePermissions($permissions);
         $this->entryPermissions($permissions);
+        $this->releasePermissions($permissions);
         $this->volumePermissions($permissions);
         $this->utilityPermissions($permissions);
 
@@ -323,7 +325,7 @@ class UserPermissions
                 $userPermissionVals[] = [
                     'permissionId' => $permissionModel->id,
                     'userId' => $userId,
-                    'dateCreated' => $now = now(),
+                    'dateCreated' => $now = Query::prepareDateForDb(now()),
                     'dateUpdated' => $now,
                     'uid' => Str::uuid(),
                 ];
@@ -370,7 +372,7 @@ class UserPermissions
 
         if ($permissions) {
             $permissions = $this->canonicalPermissionNames($permissions);
-            $now = now();
+            $now = Query::prepareDateForDb(now());
 
             foreach ($permissions as $permissionName) {
                 $permissionModel = $this->getPermissionModelByName($permissionName);
@@ -555,6 +557,32 @@ class UserPermissions
         });
 
         $permissions->push(...$entryPermissions);
+    }
+
+    /** @param Collection<int, PermissionGroup> $permissions */
+    private function releasePermissions(Collection $permissions): void
+    {
+        if (! Edition::get()->supportsReleases()) {
+            return;
+        }
+
+        $permissions->add(new PermissionGroup(
+            handle: 'releases',
+            heading: t('Releases'),
+            permissions: collect([
+                new Permission(
+                    key: 'manageReleases',
+                    label: t('Manage releases'),
+                    nested: collect([
+                        new Permission(
+                            key: 'publishReleases',
+                            label: t('Publish releases'),
+                            info: t('Allows scheduling and publishing every draft in a release, regardless of content permissions.'),
+                        ),
+                    ]),
+                ),
+            ]),
+        ));
     }
 
     private function singleSectionPermission(Section $section): Permission

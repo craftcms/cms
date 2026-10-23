@@ -7,6 +7,10 @@ import {
   darkTheme,
   staticTheme,
 } from '../src/styles/color-definitions.js';
+import {
+  DARK_SURFACE_CONTENTS_SELECTOR,
+  LIGHT_SURFACE_CONTENTS_SELECTOR,
+} from './utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -47,13 +51,21 @@ function printStyles() {
   lines.push(comment());
   // `[data-theme='light']` alongside the root, so a light subtree inside a dark
   // one re-declares the palette. Without it only dark themes a subtree, and a
-  // light marker keeps inheriting whatever it sits in.
-  lines.push("\n:root,\n:host,\n[data-theme='light'] {");
+  // light marker keeps inheriting whatever it sits in. What's in a surface that
+  // looks light is themed light the same way.
+  lines.push(
+    `\n:root,\n:host,\n[data-theme='light'],\n${LIGHT_SURFACE_CONTENTS_SELECTOR} {`
+  );
   lines.push(lightColors);
   lines.push(`  /* Static colors */\n`);
   lines.push(staticColors);
   lines.push('}\n');
-  lines.push("[data-theme='dark'] {");
+  lines.push(
+    "/* What's in a surface that looks dark (a black card, (filled) chip, or badge,\n" +
+      '   or a white one in the dark theme) is themed dark, so it holds up against\n' +
+      '   the dark fill. (The element itself keeps its own colors.) */'
+  );
+  lines.push(`[data-theme='dark'],\n${DARK_SURFACE_CONTENTS_SELECTOR} {`);
   lines.push(darkColors);
   lines.push('}\n');
 

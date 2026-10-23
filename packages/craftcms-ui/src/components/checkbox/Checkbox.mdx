@@ -25,11 +25,37 @@ A checkbox that arrives from the server with its `<input>` already in place keep
 
 Without that, upgrading would reset the control to the component's own defaults and quietly discard state the server had set — so a page rendered checked would arrive unchecked.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Controls\Checkbox` renders a checkbox, with its own label:
+
+```php
+use CraftCms\Cms\Ui\Controls\Checkbox;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make(null, Checkbox::make('sendActivationEmail')
+        ->label('Send an activation email now')),
+]);
+```
+
+Pass `null` as the field's label when the checkbox's label says everything.
+`checkedValue()` sets the value that's submitted when it's checked.
+For several checkboxes, use a `Choice` control. See [Checkbox Group](?path=/docs/form-controls-choice-controls-checkbox-group--docs).
+
 ## Accessibility
 
 Lion wires the label and any validation feedback to the input, so a labeled checkbox is announced with its state and its name.
 
-Label every checkbox. An unlabeled one is announced only as "checkbox", which tells a person the shape of the control and nothing about what ticking it does.
+Label every checkbox. An unlabeled one is announced only as "checkbox", which tells a person the shape of the control and nothing about what ticking it does. The label should say what checking the box does, and clicking it toggles the box, which also gives pointer users a larger target.
+
+Use `label-sr-only` only when the surrounding content already names the box, such as a checkbox in a table row.
+
+`indeterminate` is announced as "mixed", so keep it in step with the items it stands for. If it summarizes a set of nested checkboxes, use [Checkbox Indeterminate](?path=/docs/form-controls-choice-controls-checkbox-indeterminate--docs), which keeps it in step for you.
+
+Write validation messages that say how to fix the choice, not just that it's wrong.
 
 ## Properties
 

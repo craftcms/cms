@@ -189,12 +189,12 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
             return [];
         });
 
-    $deletions = new ElementDeletions(
-        Mockery::mock(Elements::class),
-        Mockery::mock(ElementWrites::class),
-        $elementCaches,
-        $search,
-    );
+    $deletions = app(ElementDeletions::class, [
+        'elements' => Mockery::mock(Elements::class),
+        'elementWrites' => Mockery::mock(ElementWrites::class),
+        'elementCaches' => $elementCaches,
+        'search' => $search,
+    ]);
 
     $element = new TestRestoreElement(localizedQuery: $query, supportedSites: [
         ['siteId' => 1],
@@ -226,12 +226,12 @@ function restoreElementsService(): ElementDeletions
     $elementCaches = Mockery::mock(ElementCaches::class);
     $elementCaches->shouldReceive('invalidateForElement')->andReturn([]);
 
-    return new ElementDeletions(
-        Mockery::mock(Elements::class),
-        Mockery::mock(ElementWrites::class),
-        $elementCaches,
-        $search,
-    );
+    return app(ElementDeletions::class, [
+        'elements' => Mockery::mock(Elements::class),
+        'elementWrites' => Mockery::mock(ElementWrites::class),
+        'elementCaches' => $elementCaches,
+        'search' => $search,
+    ]);
 }
 
 class TestRestoreElement extends Element

@@ -12,7 +12,8 @@ craft-entry-type-manager {
     display: flex;
     flex-direction: column;
     border-radius: var(--c-pane-radius);
-    border: 1px solid var(--c-input-border-color);
+    border: 1px solid
+      var(--c-input-border-color, var(--c-form-control-border-color));
     margin: 0;
     padding: var(--c-spacing-md);
     background-color: var(--c-surface-raised);
