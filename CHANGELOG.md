@@ -185,12 +185,19 @@
 - Controls in field layout designers, and rich selects such as color selects, now have the standard focus ring, rather than an inset or flush one.
 - Pressing <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in a text input or textarea now submits its form, including in editable table cells, where it previously moved focus to the next row. ([#20025](https://github.com/craftcms/cms/pull/20025))
 - Pressing <kbd>Shift</kbd> + <kbd>Return</kbd> in an editable table’s first row now adds a row above it, if the table allows new rows. ([#20025](https://github.com/craftcms/cms/pull/20025))
+- The dashboard’s widget settings now include each widget’s name in its reorder button, column picker, and Delete button labels, and announce a widget’s new position to screen readers after it’s reordered. ([#20073](https://github.com/craftcms/cms/pull/20073))
+- Reorder buttons no longer offer a “Move down” option for the only item in a list. ([#20073](https://github.com/craftcms/cms/pull/20073))
 - Fixed an accessibility issue where buttons were still announced as “Loading” after they finished loading, and lost their accessible name if loading took more than five seconds. ([#19975](https://github.com/craftcms/cms/pull/19975))
 - Fixed an accessibility issue where pressing <kbd>Return</kbd> on a dialog’s close button could reopen the dialog, such as the “Check your email” dialog on the Reset Password screen. ([#20049](https://github.com/craftcms/cms/pull/20049))
 - `craft-spinner` now has a `label` property, which describes what is loading to screen readers. Slotted text still replaces it.
 - `craft-field` now has an `instructions-sr-only` attribute, and UI fields and the `Field` view component have `instructionsSrOnly()`, which visually hide instructions while keeping them in the input’s accessible description.
 - Fixed an accessibility issue where spinners in Content Block and Matrix inline-block fields weren’t announced as loading.
 - Fixed an accessibility issue where pressing Escape in a popover inside an element details panel also closed the panel.
+- Fixed an accessibility issue where keyboard focus was lost after moving an item with its reorder button’s “Move up” or “Move down” option. ([#20073](https://github.com/craftcms/cms/pull/20073))
+- Fixed a bug where the “Move up” and “Move down” options didn’t move anything on Settings → Routes or in the dashboard’s widget settings. ([#20073](https://github.com/craftcms/cms/pull/20073))
+- Fixed an accessibility issue where choosing an action menu item with <kbd>Return</kbd> could reopen the menu, or activate whatever received focus next, such as removing an option that had just been added to a checkbox select. ([#20073](https://github.com/craftcms/cms/pull/20073))
+- Fixed an accessibility issue where keyboard focus could be lost after closing a popover with <kbd>Esc</kbd>, such as the dashboard’s widget settings in Firefox. ([#20073](https://github.com/craftcms/cms/pull/20073))
+- Fixed an accessibility issue where <kbd>Esc</kbd> had to be pressed twice to close a popover after using a menu inside it, such as the dashboard’s widget settings after reordering a widget. ([#20073](https://github.com/craftcms/cms/pull/20073))
 - Fixed a bug where single-select comboboxes had no visible focus ring. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes’ combobox element had no accessible name in Chromium. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed an accessibility issue where the environment variable and alias hints below the site group name and installer Base URL inputs weren’t announced by screen readers. ([#20050](https://github.com/craftcms/cms/pull/20050))

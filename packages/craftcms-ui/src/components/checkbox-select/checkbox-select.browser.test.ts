@@ -349,6 +349,27 @@ it('moves focus to the new option once nothing is left to add', async () => {
   expect(shadow(element).activeElement).toBe(rows[2]!.querySelector('.remove'));
 });
 
+it('keeps the last option added with Enter, with focus on its Remove button', async () => {
+  const {element} = await create({presentation: 'add-menu'});
+  element.modelValue = ['title', 'author'];
+  await settle(element);
+  const menu = shadow(element).querySelector('craft-action-menu')!;
+  menu.querySelector<HTMLElement>('[slot="invoker"]')!.focus();
+  await userEvent.keyboard('{Enter}');
+  await vi.waitFor(() =>
+    expect(menu.querySelector('craft-action-item')).not.toBeNull()
+  );
+
+  menu.querySelector<HTMLElement>('craft-action-item')!.focus();
+  await userEvent.keyboard('{Enter}');
+  await settle(element);
+
+  expect(input(element, 'postDate').checked).toBe(true);
+  expect(shadow(element).activeElement).toBe(
+    shadow(element).querySelectorAll('.row')[2]!.querySelector('.remove')
+  );
+});
+
 it('drops the “Add item” menu once everything is checked, and when disabled', async () => {
   const {element} = await create({presentation: 'add-menu'});
   element.modelValue = ['title', 'author', 'postDate'];
