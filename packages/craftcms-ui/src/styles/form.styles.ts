@@ -117,6 +117,14 @@ export const baseFieldStyles = css`
 export const inputStyles = css`
   ${baseFieldStyles}
 
+  :host {
+    --_control-height: var(--c-input-height, var(--c-size-control-md));
+  }
+
+  :host([size~='small']) {
+    --_control-height: var(--c-input-height, var(--c-size-control-sm));
+  }
+
   :host([monospace]) .input-group__container {
     font-family: var(--c-font-mono);
     font-size: 0.9em;
@@ -143,7 +151,7 @@ export const inputStyles = css`
     display: grid;
     place-items: center;
     border: var(--c-input-border-width) var(--c-input-border-style)
-      var(--c-input-border-color);
+      var(--c-input-border-color, var(--c-form-control-border-color));
     border-radius: var(--c-input-radius, var(--c-radius-sm));
   }
 
@@ -157,6 +165,55 @@ export const inputStyles = css`
     border-inline-start: 0;
     border-start-start-radius: 0;
     border-end-start-radius: 0;
+  }
+
+  /*
+    A button suffix fills its segment, as craft-input-date-time's clear button
+    does, with its focus ring inside it. The segment clips the button's fill
+    to its rounded corners.
+  */
+  .input-group__suffix {
+    overflow: clip;
+  }
+
+  :host(:not([inline-suffix])) ::slotted(craft-button[slot='suffix']) {
+    --c-focus-outline-offset: -2px;
+    align-self: stretch;
+    box-sizing: border-box;
+    width: max(
+      var(--c-size-control-sm),
+      var(--_control-height) - var(--c-input-border-width) * 2
+    );
+    height: auto;
+    min-height: 0;
+    margin-inline: calc(var(--c-input-spacing-inline) * -1);
+    border-radius: 0;
+  }
+
+  :host([inline-suffix]) .input-group__suffix {
+    overflow: visible;
+    padding-inline: 0
+      calc((var(--_control-height) - var(--c-size-control-sm)) / 2);
+  }
+
+  :host([inline-suffix]) .input-group__container:has(.input-group__suffix) {
+    border-radius: var(--c-input-radius, var(--c-radius-sm));
+    box-shadow: var(--c-input-shadow);
+  }
+
+  :host([inline-suffix])
+    .input-group__input:has(+ .input-group__suffix)
+    ::slotted([slot='input']) {
+    --c-focus-outline-width: 0px;
+    border-inline-end: 0;
+    box-shadow: none;
+  }
+
+  :host([inline-suffix][focused-visible])
+    .input-group__container:has(.input-group__suffix) {
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
   }
 
   .input-group__prefix + .input-group__input ::slotted([slot='input']) {

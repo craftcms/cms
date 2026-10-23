@@ -1,8 +1,10 @@
 <script setup lang="ts">
   import {actionClient, t} from '@craftcms/ui';
-  import {onMounted, shallowRef, useTemplateRef} from 'vue';
+  import {nextTick, onMounted, shallowRef, useTemplateRef} from 'vue';
   import ModalForm from '@/common/components/ModalForm.vue';
+  import {firstFocusableWithin} from '@/common/utils/dom';
   import UiRenderer from './UiRenderer.vue';
+  import {visitControls} from './runtime';
   import type {UiPayload, UiValues} from './types';
 
   export interface UiModalResponse {
@@ -41,6 +43,7 @@
   const errors = shallowRef<UiPayload['errors']>([]);
   const loading = shallowRef(false);
   const renderer = useTemplateRef<InstanceType<typeof UiRenderer>>('renderer');
+  const body = useTemplateRef<HTMLElement>('body');
 
   onMounted(async () => {
     try {
@@ -86,13 +89,33 @@
     } catch (error: any) {
       const responseErrors: Record<string, string | string[]> =
         error?.response?.data?.errors ?? {};
-      errors.value = Object.entries(responseErrors).map(([path, messages]) => ({
-        path: path.split('.'),
-        messages: Array.isArray(messages) ? messages : [messages],
-      }));
+      const controlPaths: string[][] = [];
+      visitControls(modal.value?.ui.nodes ?? [], (control) =>
+        controlPaths.push(control.path)
+      );
+      controlPaths.sort((a, b) => b.length - a.length);
+      errors.value = Object.entries(responseErrors).map(([path, messages]) => {
+        const segments = path.split('.');
+
+        return {
+          path:
+            controlPaths.find((candidate) =>
+              candidate.every((part, index) => segments[index] === part)
+            ) ?? segments,
+          messages: Array.isArray(messages) ? messages : [messages],
+        };
+      });
       Craft.cp?.displayError?.(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
+
+      await nextTick();
+      const invalid = body.value?.querySelector<HTMLElement>(
+        '[aria-invalid="true"]'
+      );
+      if (invalid) {
+        firstFocusableWithin(invalid)?.focus();
+      }
     } finally {
       loading.value = false;
     }
@@ -109,7 +132,7 @@
     @close="emit('close')"
     @submit="submit"
   >
-    <craft-field-group v-if="modal">
+    <craft-field-group v-if="modal" ref="body">
       <UiRenderer ref="renderer" :payload="modal.ui" :errors="errors" />
     </craft-field-group>
   </ModalForm>

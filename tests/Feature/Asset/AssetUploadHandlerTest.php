@@ -10,14 +10,20 @@ use CraftCms\Cms\Asset\Enums\AssetIngestStatus;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
+use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     config()->set('filesystems.disks.asset-ingest-source', [
@@ -207,4 +213,30 @@ it('returns the existing asset when ingest resolves a filename conflict', functi
         ->and($second->asset->getFilename())->not->toBe('example.txt')
         ->and($second->conflictingAsset?->id)->toBe($first->asset->id)
         ->and(Asset::find()->folderId($this->folder->id)->count())->toBe(2);
+});
+
+it('saves uploaded assets in the site they were uploaded from', function () {
+    actingAs(UserElement::findOne());
+    $secondSite = SiteModel::factory()->create();
+    app(Sites::class)->refreshSites();
+
+    $result = app(AssetUploadHandler::class)->store(
+        ['folderId' => $this->folder->id, 'siteId' => $secondSite->id],
+        ($this->source)('uploads/site.txt', 'site contents'),
+    );
+
+    expect($result->assetId)->not->toBeNull()
+        ->and(DB::table(Table::ELEMENTS_SITES)->where('elementId', $result->assetId)->pluck('siteId')->all())->toBe([$secondSite->id]);
+});
+
+it('ignores upload site IDs the user can’t edit', function () {
+    actingAs(UserElement::findOne());
+
+    $result = app(AssetUploadHandler::class)->store(
+        ['folderId' => $this->folder->id, 'siteId' => 999],
+        ($this->source)('uploads/site.txt', 'site contents'),
+    );
+
+    expect(DB::table(Table::ELEMENTS_SITES)->where('elementId', $result->assetId)->pluck('siteId')->all())
+        ->toBe([app(Sites::class)->getPrimarySite()->id]);
 });

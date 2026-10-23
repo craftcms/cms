@@ -6,6 +6,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Gql\ArgumentManager;
 use CraftCms\Cms\Gql\Contracts\ArgumentHandlerInterface;
+use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\Handlers\RelatedAssets;
 use CraftCms\Cms\Gql\Handlers\RelatedEntries;
@@ -213,3 +214,19 @@ class ManagerLocalArgumentHandler implements ArgumentHandlerInterface
         $this->argumentManager = $argumentManager;
     }
 }
+
+it('parses safe orderBy arguments into column/direction pairs', function (string $orderBy, array $expected) {
+    expect(new ArgumentManager()->prepareArguments(['orderBy' => $orderBy])['orderBy'])->toBe($expected);
+})->with([
+    'column' => ['title', [['title', 'asc']]],
+    'direction' => ['title DESC', [['title', 'desc']]],
+    'extra whitespace' => ['title  desc, elements.id', [['title', 'desc'], ['elements.id', 'asc']]],
+    'random' => ['RAND()', [['RAND()', 'asc']]],
+]);
+
+it('rejects unsafe orderBy arguments', function (string $orderBy) {
+    new ArgumentManager()->prepareArguments(['orderBy' => $orderBy]);
+})->with([
+    'subquery' => ['title, (select 1)'],
+    'function' => ['lower(title)'],
+])->throws(GqlException::class);

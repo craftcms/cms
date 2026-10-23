@@ -21,6 +21,8 @@ use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
@@ -99,6 +101,14 @@ readonly class AssetUploadHandler
     ): UploadResult {
         [$folder, $selectionCondition] = $this->resolveTarget($parameters, $authorizedGuest);
 
+        // Save the asset in the site it was uploaded from
+        $asset = null;
+        $siteId = (int) ($parameters['siteId'] ?? 0) ?: null;
+        if ($siteId && ! $authorizedGuest && Sites::getEditableSiteIds()->contains($siteId)) {
+            $asset = new Asset;
+            $asset->siteId = $siteId;
+        }
+
         $result = $this->ingest(new AssetIngest(
             source: $file,
             filename: $file->filename,
@@ -109,6 +119,7 @@ readonly class AssetUploadHandler
             temporaryFolder: $selectionCondition ? $this->assets->getUserTemporaryUploadFolder() : null,
             colors: $colors,
             uploaderId: $uploaderId,
+            asset: $asset,
         ));
 
         return $this->uploadResult($result);
@@ -206,7 +217,10 @@ readonly class AssetUploadHandler
         }
 
         $conflictingAsset = $asset->conflictingFilename !== null
-            ? Asset::findOne(['folderId' => $asset->folderId, 'filename' => $asset->conflictingFilename])
+            ? $this->assets->findAcrossSites()
+                ->folderId($asset->folderId)
+                ->filename(Query::escapeParam($asset->conflictingFilename))
+                ->one()
             : null;
 
         return new AssetIngestResult(AssetIngestStatus::Saved, $asset, $conflictingAsset);

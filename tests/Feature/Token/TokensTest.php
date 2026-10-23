@@ -80,6 +80,25 @@ it('deletes the token when the usage limit is reached', function () {
     expect($model->fresh())->toBeNull();
 });
 
+it('resolves a single-use token to the same route when it is looked up twice in a request', function () {
+    $token = $this->tokens->createToken('do/stuff', 1);
+
+    $first = $this->tokens->getTokenRoute($token);
+
+    expect($first)->toBe(['do/stuff']);
+    expect($this->tokens->getTokenRoute($token))->toBe($first);
+    expect(RouteToken::where('token', $token)->exists())->toBeFalse();
+});
+
+it('counts a token use once per request', function () {
+    $token = $this->tokens->createToken('do/stuff', 10);
+
+    $this->tokens->getTokenRoute($token);
+    $this->tokens->getTokenRoute($token);
+
+    expect(RouteToken::where('token', $token)->firstOrFail()->usageCount)->toBe(1);
+});
+
 it('decodes if the route is json', function () {
     $token = $this->tokens->createToken(Json::encode([
         'route' => 'do/stuff',

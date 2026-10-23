@@ -34,7 +34,7 @@ it('resolves table cells at concrete paths while keeping row templates outside v
         ->and($table->props['hiddenRows'])->toBe(['0'])
         ->and($payload->errors)->toBe([
             ['path' => ['settings', 'rows', '0', 'name'], 'messages' => ['A real cell error.']],
-            ['path' => ['settings', 'rows'], 'messages' => ['An unbound row error.']],
+            ['path' => ['settings', 'rows'], 'messages' => ['An unbound row error.'], 'source' => ['settings', 'rows', '__template__', 'name']],
         ]);
 });
 

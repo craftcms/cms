@@ -83,3 +83,96 @@ it('sizes an intrinsic select for its longest option', async () => {
     minimum.getBoundingClientRect().top
   );
 });
+
+it('renders grouped inputs’ sub-labels smaller, lighter, and semibold', async () => {
+  await import('../../styles/cp.css');
+  await import('../field/field.js');
+  document.body.innerHTML = `
+    <craft-field fieldset label="Field Limit">
+      <craft-field-group slot="input" class="auto-widths">
+        <craft-field><span slot="label">Maximum</span><input slot="input"></craft-field>
+      </craft-field-group>
+    </craft-field>
+  `;
+  const outer = document.querySelector('craft-field')!;
+  const inner = outer.querySelector<typeof outer>(
+    'craft-field-group craft-field'
+  )!;
+  await outer.updateComplete;
+  await inner.updateComplete;
+
+  const label = (field: Element) =>
+    getComputedStyle(field.shadowRoot!.querySelector('.form-field__label')!);
+
+  expect(label(inner).fontWeight).toBe('600');
+  expect(parseFloat(label(inner).fontSize)).toBeLessThan(
+    parseFloat(label(outer).fontSize)
+  );
+  expect(label(inner).color).not.toBe(label(outer).color);
+  expect(label(outer).fontWeight).toBe('700');
+  // A <span> label sits as tightly as a <label> one.
+  const subLabel = inner.querySelector('[slot="label"]');
+  expect(subLabel).toBeInstanceOf(HTMLSpanElement);
+  expect(getComputedStyle(subLabel!).lineHeight).toBe(
+    getComputedStyle(subLabel!).fontSize
+  );
+});
+
+it('draws a hairline between separated fields that share a row, and only there', async () => {
+  const fieldGroup = document.createElement('craft-field-group');
+  fieldGroup.separated = true;
+  fieldGroup.style.width = '900px';
+  fieldGroup.style.setProperty('--c-field-group-separator-spacing', '16px');
+  fieldGroup.innerHTML = `
+    <div class="width-50">Start</div>
+    <div class="width-50">End</div>
+    <div>Below</div>
+  `;
+  document.body.append(fieldGroup);
+  await fieldGroup.updateComplete;
+  const [start, end, below] = fieldGroup.querySelectorAll<HTMLElement>('div');
+  const frames = () =>
+    new Promise((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolve))
+    );
+  const follows = () =>
+    [start, end, below].map((child) =>
+      child!.hasAttribute('data-follows-column')
+    );
+  await frames();
+
+  expect(follows()).toEqual([false, true, false]);
+  expect(
+    end!.getBoundingClientRect().left - start!.getBoundingClientRect().right
+  ).toBe(32);
+  const hairline = getComputedStyle(end!, '::before');
+  expect(hairline.borderInlineStartWidth).toBe('1px');
+  const gapMiddle =
+    (start!.getBoundingClientRect().right + end!.getBoundingClientRect().left) /
+    2;
+  expect(
+    end!.getBoundingClientRect().left + parseFloat(hairline.left)
+  ).toBeCloseTo(gapMiddle, 0);
+
+  fieldGroup.style.width = '390px';
+  await frames();
+  expect(follows()).toEqual([false, false, false]);
+
+  fieldGroup.style.width = '900px';
+  start!.hidden = true;
+  await frames();
+  expect(follows()).toEqual([false, false, false]);
+});
+
+it('keeps separated fields within a group too narrow for its full column gap', async () => {
+  const fieldGroup = document.createElement('craft-field-group');
+  fieldGroup.separated = true;
+  fieldGroup.style.width = '300px';
+  fieldGroup.style.setProperty('--c-field-group-separator-spacing', '16px');
+  fieldGroup.innerHTML = '<div>Gallery Location</div>';
+  document.body.append(fieldGroup);
+  await fieldGroup.updateComplete;
+
+  const field = fieldGroup.querySelector('div')!;
+  expect(field.getBoundingClientRect().width).toBe(300);
+});

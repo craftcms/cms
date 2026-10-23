@@ -15,6 +15,8 @@ export interface CpUser {
 }
 
 export interface CraftData {
+  /** The control panel theme: the user's preference, or `system`. */
+  theme: 'light' | 'dark' | 'system';
   csrfTokenValue: string | null;
   csrfTokenName: string | null;
   system: {

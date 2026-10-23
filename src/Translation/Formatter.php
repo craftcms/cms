@@ -469,7 +469,10 @@ class Formatter
                 : t('Yesterday', locale: $this->locale);
         }
 
-        if ($dateTime->clone()->addDays(7)->isNowOrFuture()) {
+        if (
+            $dateTime->clone()->addDays(7)->isNowOrFuture()
+            && $dateTime->isBefore(Date::now($this->timeZone)->addDays(6)->endOfDay())
+        ) {
             $day = (int) $dateTime->format('w');
             $dayName = new Locale($this->locale)->getWeekDayName($day);
 

@@ -717,16 +717,27 @@ class Fields extends Component
     /** @internal */
     public static function finalizeRegistrationEvents(): void
     {
-        TypeRegistryCompatibility::reconcile(app(FieldTypes::class), Craft::$app->getFields(), self::EVENT_REGISTER_FIELD_TYPES);
-        TypeRegistryCompatibility::reconcile(app(NestedEntryFieldTypes::class), Craft::$app->getFields(), self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES);
+        TypeRegistryCompatibility::reconcile(app(FieldTypes::class), self::component(), self::EVENT_REGISTER_FIELD_TYPES);
+        TypeRegistryCompatibility::reconcile(app(NestedEntryFieldTypes::class), self::component(), self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES);
+    }
+
+    /**
+     * The service's Yii component, which the legacy events are triggered on.
+     *
+     * Fetched directly, since `Craft::$app->getFields()` logs a deprecation.
+     */
+    private static function component(): self
+    {
+        /** @var self */
+        return Craft::$app->get('fields');
     }
 
     public static function registerEvents(): void
     {
         Event::listen(function(CompatibleFieldTypesResolving $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
+            if (self::component()->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
                 $yiiEvent = new DefineCompatibleFieldTypesEvent(['field' => $event->field, 'compatibleTypes' => $event->compatibleTypes->all()]);
-                Craft::$app->getFields()->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $yiiEvent);
+                self::component()->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $yiiEvent);
                 /** @var Collection<int, class-string<FieldInterface>> $compatibleTypes */
                 $compatibleTypes = new Collection(array_values($yiiEvent->compatibleTypes));
                 $event->compatibleTypes = $compatibleTypes;
@@ -734,74 +745,74 @@ class Fields extends Component
         });
 
         Event::listen(function(FieldSaving $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD)) {
+            if (self::component()->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD)) {
                 $yiiEvent = new FieldEvent(['field' => $event->field, 'isNew' => $event->isNew]);
-                Craft::$app->getFields()->trigger(self::EVENT_BEFORE_SAVE_FIELD, $yiiEvent);
+                self::component()->trigger(self::EVENT_BEFORE_SAVE_FIELD, $yiiEvent);
                 $event->field = $yiiEvent->field;
             }
         });
 
         Event::listen(function(FieldDeleting $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD)) {
+            if (self::component()->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD)) {
                 $yiiEvent = new FieldEvent(['field' => $event->field]);
-                Craft::$app->getFields()->trigger(self::EVENT_BEFORE_DELETE_FIELD, $yiiEvent);
+                self::component()->trigger(self::EVENT_BEFORE_DELETE_FIELD, $yiiEvent);
                 $event->field = $yiiEvent->field;
             }
         });
 
         Event::listen(function(FieldDeletionApplying $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_DELETE)) {
+            if (self::component()->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_DELETE)) {
                 $yiiEvent = new FieldEvent(['field' => $event->field]);
-                Craft::$app->getFields()->trigger(self::EVENT_BEFORE_APPLY_FIELD_DELETE, $yiiEvent);
+                self::component()->trigger(self::EVENT_BEFORE_APPLY_FIELD_DELETE, $yiiEvent);
                 $event->field = $yiiEvent->field;
             }
         });
 
         Event::listen(function(FieldDeleted $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
+            if (self::component()->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
                 $yiiEvent = new FieldEvent(['field' => $event->field]);
-                Craft::$app->getFields()->trigger(self::EVENT_AFTER_DELETE_FIELD, $yiiEvent);
+                self::component()->trigger(self::EVENT_AFTER_DELETE_FIELD, $yiiEvent);
             }
         });
 
         Event::listen(function(FieldSaved $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
+            if (self::component()->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
                 $yiiEvent = new FieldEvent(['field' => $event->field, 'isNew' => $event->isNew]);
-                Craft::$app->getFields()->trigger(self::EVENT_AFTER_SAVE_FIELD, $yiiEvent);
+                self::component()->trigger(self::EVENT_AFTER_SAVE_FIELD, $yiiEvent);
             }
         });
 
         Event::listen(function(FieldLayoutSaving $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT)) {
+            if (self::component()->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT)) {
                 $yiiEvent = new FieldEvent(['layout' => $event->layout, 'isNew' => $event->isNew]);
-                Craft::$app->getFields()->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, $yiiEvent);
+                self::component()->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, $yiiEvent);
             }
         });
 
         Event::listen(function(FieldLayoutSaved $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_LAYOUT)) {
+            if (self::component()->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_LAYOUT)) {
                 $yiiEvent = new FieldEvent(['layout' => $event->layout, 'isNew' => $event->isNew]);
-                Craft::$app->getFields()->trigger(self::EVENT_AFTER_SAVE_FIELD_LAYOUT, $yiiEvent);
+                self::component()->trigger(self::EVENT_AFTER_SAVE_FIELD_LAYOUT, $yiiEvent);
             }
         });
 
         Event::listen(function(FieldLayoutDeleting $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT)) {
+            if (self::component()->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT)) {
                 $yiiEvent = new FieldEvent(['layout' => $event->layout]);
-                Craft::$app->getFields()->trigger(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT, $yiiEvent);
+                self::component()->trigger(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT, $yiiEvent);
             }
         });
 
         Event::listen(function(FieldLayoutDeleted $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
+            if (self::component()->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
                 $yiiEvent = new FieldEvent(['layout' => $event->layout]);
-                Craft::$app->getFields()->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, $yiiEvent);
+                self::component()->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, $yiiEvent);
             }
         });
 
         Event::listen(function(FieldSaveApplying $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_SAVE)) {
-                Craft::$app->getFields()->trigger(self::EVENT_BEFORE_APPLY_FIELD_SAVE, new ApplyFieldSaveEvent([
+            if (self::component()->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_SAVE)) {
+                self::component()->trigger(self::EVENT_BEFORE_APPLY_FIELD_SAVE, new ApplyFieldSaveEvent([
                     'field' => $event->field,
                     'config' => $event->config,
                 ]));

@@ -8,7 +8,10 @@ export default css`
   .slide-rule {
     --_graduation-width: var(--c-slide-rule-graduation-width, 8px);
     --_graduation-height: var(--c-slide-rule-graduation-height, 10px);
-    --_graduation-color: var(--c-slide-rule-graduation-color, currentColor);
+    --_graduation-color: var(
+      --c-slide-rule-graduation-color,
+      var(--c-color-neutral-border-loud)
+    );
     --_accent-color: var(--c-slide-rule-accent-color, currentColor);
 
     --_graduation-main-height: calc(var(--_graduation-height) * 1.5);

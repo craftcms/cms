@@ -521,7 +521,9 @@ class AssetIndexViewModel extends ContentIndexViewModel
      * Marks folder rows so the client can (a) navigate into the folder on click
      * — the folder chip has no edit URL, so `folderUrl` (the last step of its
      * resolved source path) is provided — and (b) treat the row as a drag-and-
-     * drop move target (`folderId` + `canMoveTo`).
+     * drop move target (`folderId` + `canMoveTo`). Asset and folder rows also
+     * carry the folder they sit in (`folderId` / `parentFolderId`), so a move can
+     * be undone.
      *
      * @return array<string, mixed>
      */
@@ -535,6 +537,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
         if (! $element->isFolder) {
             return [
                 'previewable' => true,
+                'folderId' => $element->folderId,
                 // Not `filename`, which the table's Filename column claims.
                 'assetFilename' => $element->getFilename(),
                 // What the image editor opens with, besides the settings every
@@ -552,6 +555,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
         return [
             'isFolder' => true,
             'folderId' => $element->folderId,
+            'parentFolderId' => $folder?->parentId,
             'folderName' => $folder?->name,
             'folderUrl' => $this->folderUrl($element),
             'canMoveTo' => $folder !== null && Gate::check('moveIntoFolder', $folder),

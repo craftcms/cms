@@ -31,6 +31,14 @@ Moving an item changes the list, and that change is invisible to a screen reader
 
 Without that, a person can reorder a list and have no way of knowing whether it worked.
 
+The menu is also what makes a drag-and-drop list meet WCAG 2.5.7 (Dragging Movements): someone who can't drag, with a mouse or otherwise, can still move an item with single clicks. Keep the button next to every draggable item, even where dragging is the main way to reorder.
+
+A few more things the button can't do on its own:
+
+- Set `label` to name the item, such as "Reorder Blog post". The default "Reorder" is the same on every row, so a screen reader user can't tell the buttons apart.
+- After the list re-renders, return focus to the moved item's reorder button so the person can keep moving it.
+- Update `position` whenever the order changes, so the move that would go nowhere stays disabled.
+
 ## Properties
 
 <ArgTypes of={ReorderButtonStories} />

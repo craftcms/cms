@@ -35,6 +35,14 @@ The tab is padded in `em`, so it scales with whatever font size it inherits — 
 
 The selected indicator's geometry comes from custom properties the strip sets according to its `placement`. Override them to reposition the indicator; see the API table for the full set.
 
+## Accessibility
+
+The strip supplies the tab's role, selection state, and keyboard behavior; see the [Tabs](?path=/docs/components-tabs--docs) page.
+
+- **Name icon-only tabs.** A tab is named by its content. When that content is only an icon, give the icon a `label`, or the tab has no name.
+- **Keep labels short.** A long label pushes tabs into the strip's overflow menu.
+- **Don't set `selected` yourself.** Set `selectedIndex` on the strip, so the selection and `aria-selected` stay in sync.
+
 ## Properties
 
 <ArgTypes of="craft-tab" />

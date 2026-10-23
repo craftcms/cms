@@ -78,6 +78,26 @@ it('freezes an animated source instead of autoplaying, via the attribute or a .g
   }
 });
 
+it('keeps the frozen frame at the thumbnail’s size once the image is hidden', async () => {
+  document.body.innerHTML = `<craft-thumbnail src="${opaqueImage}" alt="Frozen" animated style="--c-thumbnail-size: 120px;"></craft-thumbnail>`;
+  const thumbnail = document.querySelector('craft-thumbnail')!;
+  await thumbnail.updateComplete;
+  const image = thumbnail.shadowRoot!.querySelector('img')!;
+  await image.decode();
+  await vi.waitFor(() =>
+    expect(image.classList.contains('cp-visually-hidden')).toBe(true)
+  );
+  await new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))
+  );
+
+  const cover = thumbnail
+    .shadowRoot!.querySelector('canvas[part="cover"]')!
+    .getBoundingClientRect();
+  expect(cover.width).toBe(120);
+  expect(cover.height).toBe(120);
+});
+
 it('freezes once a thumbnail becomes visible, even if it was hidden when its image loaded', async () => {
   document.body.innerHTML = `
     <div id="hidden-host" hidden>

@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Support\Arr;
@@ -39,7 +40,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Color extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Color extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -428,5 +429,11 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry);
+    }
+
+    /** @return array<string, mixed> */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'string'];
     }
 }

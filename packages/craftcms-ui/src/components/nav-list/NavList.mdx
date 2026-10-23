@@ -17,6 +17,14 @@ A run of links in a `<div>` is announced one at a time, with no sense of how man
 
 That is the whole reason this component exists rather than a wrapper `<div>` — and it is why nav items belong inside one even when the visual result looks identical.
 
+## Accessibility
+
+The list doesn't render a navigation landmark. Wrap the top-level list in a `<nav>` and give it a name with `aria-label` (for example, "Settings"), so screen reader users can find it and tell it apart from other navigation on the page. Nested lists in a `subnav` slot don't need their own `<nav>`.
+
+Slot only `craft-nav-item`s into the list. Each item exposes itself as a list item; any other element sits inside the `<ul>` without one, which breaks the list and its count.
+
+Don't add `role="menu"`, `role="menubar"` or arrow-key handling around the list. It's site navigation: Tab moves through the links, and a branch's subnav opens from its own button.
+
 ## Properties
 
 <ArgTypes of={NavListStories} />

@@ -387,17 +387,33 @@
    * Double-clicking a block's titlebar folds it, as it did in Craft 5. The
    * controls sharing the titlebar keep their own double-clicks.
    */
-  function toggleFromTitlebar(uid: string, event: MouseEvent): void {
-    if (
+  /** Whether an event on a titlebar landed on one of its controls. */
+  function isTitlebarControl(event: MouseEvent): boolean {
+    return (
       event.target instanceof Element &&
       event.target.closest(
         'button, a, input, craft-checkbox, craft-action-menu, [data-drag-handle]'
-      )
-    ) {
+      ) !== null
+    );
+  }
+
+  function toggleFromTitlebar(uid: string, event: MouseEvent): void {
+    if (isTitlebarControl(event)) {
       return;
     }
     event.preventDefault();
     setCollapsed(uid, !isCollapsed(uid));
+  }
+
+  /**
+   * Keeps a double-click that folds a block from selecting text too. The
+   * browser selects on the second press, before the `dblclick`, so it's that
+   * press that's canceled.
+   */
+  function preventTitlebarSelection(_uid: string, event: MouseEvent): void {
+    if (event.detail > 1 && !isTitlebarControl(event)) {
+      event.preventDefault();
+    }
   }
 
   function setCollapsed(uid: string, collapsed: boolean): void {
@@ -950,9 +966,18 @@
     emit('update:value', next, 'discrete');
   }
 
-  /** Collapsing is the card's own state, so it can fold away body and footer. */
+  /**
+   * Collapsing is the card's own state, so it can fold away body and footer.
+   * The color goes on the card too, so it's styled as a card in that color —
+   * its borders, and white's darker surface in the dark theme — not only
+   * painted from the wrapper's palette. Without a color, the card has none
+   * of its own either, taking the colors around it.
+   */
   function blockCardAttrs(uid: string): Record<string, unknown> {
-    return {collapsed: isCollapsed(uid)};
+    return {
+      collapsed: isCollapsed(uid),
+      'data-color': block(uid)?.color || undefined,
+    };
   }
 
   function blockIcon(uid: string): {name: string; family: string} | null {
@@ -1593,7 +1618,7 @@
         :item-attrs="blockAttrs"
         :card-attrs="blockCardAttrs"
         @reorder="move"
-        @item-click="(uid, event) => selection.handleClick(uid, event)"
+        @header-mousedown="preventTitlebarSelection"
         @header-dblclick="toggleFromTitlebar"
       >
         <template #label="{id: uid}">

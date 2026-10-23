@@ -69,7 +69,7 @@
 </script>
 
 <template>
-  <craft-card>
+  <craft-card data-color="gray">
     <slot name="header" />
     <div class="body">
       <craft-callout v-if="error" variant="danger" role="alert">{{

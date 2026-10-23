@@ -88,7 +88,7 @@ readonly class SessionInfoController
         $loginName = (string) ($user->email ?? $user->username);
         $context = [
             ...$templateGlobals->resolve(),
-            'action' => action([LoginController::class, 'attemptLogin']),
+            'action' => route('craft.cp.login.attempt'),
             'forElevatedSession' => true,
             'generalConfig' => $generalConfig,
             'staticEmail' => $loginName,

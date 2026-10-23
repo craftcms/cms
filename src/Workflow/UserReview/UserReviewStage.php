@@ -56,7 +56,7 @@ class UserReviewStage extends WorkflowStage
     {
         return Ui::make([
             Group::make('user-review-settings', [
-                Field::make(t('Reviewer groups'), UserGroupSelect::make('userGroups'))
+                Field::make(t('Reviewer Groups'), UserGroupSelect::make('userGroups'))
                     ->required(),
                 Group::make('user-review-approval-requirement', [
                     Field::make(t('Minimum'), Number::make('approvalsRequired')->min(1)->size(3))
@@ -67,7 +67,7 @@ class UserReviewStage extends WorkflowStage
                     ]))
                         ->required(),
                 ])
-                    ->label(t('Approvals required'))
+                    ->label(t('Approvals Required'))
                     ->instructions(t('The minimum number of approvals required in total or per reviewer group.'))
                     ->asField()
                     ->required(),

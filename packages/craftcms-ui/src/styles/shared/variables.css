@@ -95,12 +95,6 @@
   --inset-shadow-2xs: inset 0 1px rgb(0 0 0 / 0.05);
   --inset-shadow-xs: inset 0 1px 1px rgb(0 0 0 / 0.05);
   --inset-shadow-sm: inset 0 2px 4px rgb(0 0 0 / 0.05);
-  --drop-shadow-xs: 0 1px 1px rgb(0 0 0 / 0.05);
-  --drop-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.15);
-  --drop-shadow-md: 0 3px 3px rgb(0 0 0 / 0.12);
-  --drop-shadow-lg: 0 4px 4px rgb(0 0 0 / 0.15);
-  --drop-shadow-xl: 0 9px 7px rgb(0 0 0 / 0.1);
-  --drop-shadow-2xl: 0 25px 25px rgb(0 0 0 / 0.15);
   --text-shadow-2xs: 0px 1px 0px rgb(0 0 0 / 0.15);
   --text-shadow-xs: 0px 1px 1px rgb(0 0 0 / 0.2);
   --text-shadow-sm:
@@ -142,7 +136,33 @@
 /* On [data-theme] too: a var() resolves where it's declared, so :root alone
    would inherit the root palette's value into a themed subtree. */
 :root,
-[data-theme] {
+[data-theme],
+:where(
+  craft-card[data-color='black']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='black']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='black']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='white'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='white']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='white'] > *
+),
+:where(
+  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='white']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='black'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='black']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='black'] > *
+) {
   --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
   --c-color-fill-normal: var(--c-color-neutral-fill-normal);
   --c-color-fill-loud: var(--c-color-neutral-fill-loud);

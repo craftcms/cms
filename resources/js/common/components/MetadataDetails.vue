@@ -20,12 +20,18 @@
 </script>
 
 <template>
-  <LayoutSlot v-if="html || $slots.default" name="content-details">
+  <LayoutSlot
+    v-if="html || $slots.default || $slots.actions"
+    name="content-details"
+  >
     <DetailsPanels :panels="panels">
       <template #info>
         <MetadataDetailsContent :html="html">
           <template v-if="$slots.default" #default>
             <slot />
+          </template>
+          <template v-if="$slots.actions" #actions>
+            <slot name="actions" />
           </template>
         </MetadataDetailsContent>
       </template>

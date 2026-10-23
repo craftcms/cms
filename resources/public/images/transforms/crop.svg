@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="80px" height="60px" viewBox="0 0 80 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <title>crop</title>
+    <style>
+        /* Follows the embedding page's color-scheme, so it matches the CP theme. */
+        @media (prefers-color-scheme: dark) {
+            [fill="#F3F7FD" i] { fill: #333D51; }
+            [fill="#CDD8E4" i] { fill: #4E5B71; }
+            [stroke="#CDD8E4" i] { stroke: #4E5B71; }
+            [fill="#5A6572" i] { fill: #A6B2C2; }
+            [stroke="#5A6572" i] { stroke: #A6B2C2; }
+            [fill="#FFFFFF" i] { fill: #273043; }
+        }
+    </style>
     <defs>
         <path d="M0,0 L80,0 L80,60 L0,60 L0,0 Z" id="path-1"></path>
         <path d="M0,0 L56,0 L56,56 L0,56 L0,0 Z" id="path-2"></path>
@@ -10,7 +21,6 @@
         <path d="M0,0 L8,0 L8,8 L0,8 L0,0 Z" id="path-6"></path>
     </defs>
     <g id="crop" stroke="none" fill="none" transform="translate(0, 0)" xlink:href="#path-1">
-        <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
         <g id="image" stroke-width="1" fill-rule="evenodd" transform="translate(0.5, 4)">
             <rect id="pane" fill="#F3F7FD" x="-0.5" y="0" width="80" height="52" rx="5"></rect>
             <path d="M45.2449996,15 C44.0950711,15 43.0170131,15.5416667 42.3701783,16.4489583 L34.3206784,27.8239583 L31.8339579,24.8854167 C31.172749,24.1135417 30.1953097,23.6666667 29.1459999,23.6666667 C28.0966901,23.6666667 27.1048767,24.1135417 26.4580419,24.8854167 L17.2586135,35.71875 C16.4249153,36.69375 16.2668001,38.034375 16.8417644,39.1583333 C17.4167286,40.2822917 18.6241536,41 19.9465714,41 L31.445857,41 L38.3454283,41 L59.0441423,41 C60.3234378,41 61.4877405,40.3364583 62.091453,39.2802083 C62.6951655,38.2239583 62.6232949,36.9375 61.9189637,35.9489583 L48.119821,16.4489583 C47.4729862,15.5416667 46.3949282,15 45.2449996,15 Z" id="Path" fill="#CDD8E4"></path>

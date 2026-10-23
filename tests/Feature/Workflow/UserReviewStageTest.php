@@ -109,6 +109,29 @@ it('applies a draft approved through a carried approval', function () {
     expect($run->fresh()->status)->toBe(WorkflowStatus::Published);
 });
 
+it('preserves workflow approval when merging live changes but resets it for subsequent draft edits', function () {
+    $group = userReviewGroup([$this->reviewers[0]]);
+    $workflow = userReviewWorkflow($this->entry, [makeUserReviewStage('Review', $group)]);
+    $run = submitUserReview($this->workflows, $this->draft, $this->author);
+    decideUserReview($this->workflows, $this->reviewers[0], $run, $workflow->stages->first(), UserReviewDecision::Approved);
+
+    $this->travel(1)->seconds();
+
+    $this->entry->slug = 'updated-live-slug';
+    expect(Elements::saveElement($this->entry))->toBeTrue();
+    $draft = Entry::find()->draftId($this->draft->draftId)->status(null)->one();
+    Elements::mergeCanonicalChanges($draft);
+    $merged = Entry::find()->draftId($this->draft->draftId)->status(null)->one();
+
+    expect($merged->title)->toBe('Reviewed title')
+        ->and($merged->slug)->toBe('updated-live-slug')
+        ->and($run->fresh()->status)->toBe(WorkflowStatus::Approved);
+
+    $merged->title = 'Unreviewed draft edit';
+    expect(Elements::saveElement($merged))->toBeTrue()
+        ->and($run->fresh()->status)->toBe(WorkflowStatus::Pending);
+});
+
 it('excludes carried reviewers from later review actions and notifications', function () {
     $firstGroup = userReviewGroup([$this->reviewers[0]]);
     $secondGroup = userReviewGroup([$this->reviewers[0], $this->reviewers[1]]);

@@ -4,9 +4,14 @@ import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 export default css`
   :host {
     --_padding-inline: var(--c-spacing-md);
-    --_padding-block: var(--c-spacing-sm);
     /* The icon column of a row with a prefix. */
     --_prefix-size: calc(24rem / 16);
+    /* Enough to center the icon column in a touch target, border included. */
+    --_padding-block: calc(
+      (var(--c-size-touch-target) - var(--_prefix-size) - var(--_rail-border) *
+          2) /
+        2
+    );
     /* The space between the icon column and the label (tighter than the row's gap). */
     --_prefix-gap: var(--c-spacing-sm);
     /* The rule down the side of an inline subnav. */
@@ -83,6 +88,7 @@ export default css`
   }
 
   craft-badge-indicator {
+    --badge-border-width: 2px;
     position: absolute;
     inset-inline-end: 0;
     inset-block-end: 0;
@@ -176,6 +182,12 @@ export default css`
     background-color: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-normal);
     color: var(--c-color-accent-on-quiet);
+  }
+
+  /* A badge on the current row takes the row's tint. */
+  :host([current]) ::slotted(craft-badge-indicator) {
+    --c-color-neutral-fill-normal: var(--c-color-accent-fill-normal);
+    --c-color-neutral-on-normal: var(--c-color-accent-on-normal);
   }
 
   /* Not on the page you're on: its selected fill is the state to show. */

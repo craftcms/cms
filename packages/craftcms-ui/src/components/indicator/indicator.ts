@@ -48,9 +48,19 @@ export default class CraftIndicator extends LitElement {
         border-color: rgba(0, 0, 0, 0.5);
       }
 
-      /* A dark outline would vanish against a black dot. */
+      /* White and black dots are outlined in the other one's color, which
+         swaps along with theirs in the dark theme, so the outline never
+         vanishes against the dot. */
+      .indicator--outline-fill.indicator--white {
+        border-color: color-mix(
+          in srgb,
+          var(--c-color-black-fill-loud),
+          transparent 40%
+        );
+      }
+
       .indicator--outline-fill.indicator--black {
-        border-color: var(--color-white);
+        border-color: var(--c-color-white-fill-loud);
       }
 
       .indicator--solid {
@@ -148,6 +158,7 @@ export default class CraftIndicator extends LitElement {
       class="${classMap({
         indicator: true,
         [`indicator--${this.effectiveAppearance}`]: true,
+        'indicator--white': this.fill === Color.White,
         'indicator--black': this.fill === Color.Black,
       })}"
     ></span>`;

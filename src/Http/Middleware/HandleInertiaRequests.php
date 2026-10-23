@@ -9,6 +9,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\RequestedSite;
@@ -189,6 +190,9 @@ class HandleInertiaRequests extends Middleware
             'isMultiSite' => fn () => Sites::isMultiSite(),
             'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
             'locale' => fn () => app()->getLocale(),
+            ...($currentUser !== null && $nav->hasSourceBadges() ? [
+                'navSourceBadges' => Inertia::defer(fn (): object => (object) $nav->getSourceBadgeCounts()),
+            ] : []),
             'craft' => fn () => [
                 'csrfTokenValue' => csrf_token(),
                 'csrfTokenName' => '_token',
@@ -217,6 +221,9 @@ class HandleInertiaRequests extends Middleware
                         ?? $generalConfig->accessibilityDefaults['underlineLinks']
                         ?? false),
                 ] : null,
+                // Outside `currentUser`, so logged-out pages (login, the
+                // updater) follow the system theme too.
+                'theme' => Theme::forUser($currentUser)->value,
                 'readOnly' => ! $generalConfig->allowAdminChanges,
                 'maintenanceMode' => app()->isDownForMaintenance(),
                 'devMode' => app()->hasDebugModeEnabled(),

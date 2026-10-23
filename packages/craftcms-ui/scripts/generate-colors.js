@@ -1,9 +1,15 @@
 import {execFileSync} from 'child_process';
-import {writeFileSync, readFileSync} from 'fs';
+import {readFileSync} from 'fs';
 import {createRequire} from 'module';
 import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'url';
 import {transformSync} from 'esbuild';
+import {
+  DARK_SURFACE_CONTENTS_SELECTOR,
+  LIGHT_SURFACE_CONTENTS_SELECTOR,
+  NEUTRAL_CARD_SELECTOR,
+  writeFileIfChanged,
+} from './utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -53,6 +59,15 @@ function quietBorder(color) {
   return `color-mix(in srgb, ${color}, transparent var(--c-color-border-quiet-transparency))`;
 }
 
+/**
+ * White and black look the same whichever theme they're in, so their quiet
+ * borders take the light theme's transparency rather than the variable, which
+ * the dark theme lowers.
+ */
+function staticQuietBorder(color) {
+  return `color-mix(in srgb, ${color}, transparent 60%)`;
+}
+
 function colorScale(color) {
   switch (color) {
     case 'white':
@@ -60,24 +75,29 @@ function colorScale(color) {
         fillQuiet: 'var(--color-white)',
         fillNormal: 'var(--color-white)',
         fillLoud: 'var(--color-white)',
-        borderQuiet: quietBorder('var(--color-static-gray-200)'),
+        borderQuiet: staticQuietBorder('var(--color-static-gray-200)'),
         borderNormal: 'var(--color-static-gray-200)',
         borderLoud: 'var(--color-static-gray-200)',
         onQuiet: 'var(--color-static-gray-800)',
         onNormal: 'var(--color-static-gray-800)',
         onLoud: 'var(--color-static-gray-800)',
+        // The hairline around a white surface, and between its parts.
+        edge: staticQuietBorder('var(--color-static-gray-200)'),
       };
     case 'black':
       return {
         fillQuiet: 'var(--color-static-gray-900)',
         fillNormal: 'var(--color-static-gray-900)',
         fillLoud: 'var(--color-static-gray-900)',
-        borderQuiet: quietBorder('var(--color-static-gray-800)'),
+        borderQuiet: staticQuietBorder('var(--color-static-gray-800)'),
         borderNormal: 'var(--color-static-gray-800)',
         borderLoud: 'var(--color-static-gray-800)',
         onQuiet: 'var(--color-static-gray-100)',
         onNormal: 'var(--color-static-gray-100)',
         onLoud: 'var(--color-static-gray-100)',
+        // Black's quiet border is barely lighter than its fill, so a black
+        // surface is edged in its light text color instead.
+        edge: 'color-mix(in srgb, var(--color-static-gray-100), transparent 80%)',
       };
     default:
       const {fill, border, foreground} = colorIncrements;
@@ -95,10 +115,13 @@ function colorScale(color) {
   }
 }
 
-function buildColorableTokens(paletteColors) {
+/** White and black, whose colors are static rather than taken from the theme's palette. */
+const staticColors = ['white', 'black'];
+
+function buildColorableTokens(paletteColors, scaleFor = colorScale) {
   return paletteColors
     .map((color) => {
-      const s = colorScale(color);
+      const s = scaleFor(color);
       return [
         `  /* ${color} */`,
         `  --c-color-${color}-fill-quiet: ${s.fillQuiet};`,
@@ -110,9 +133,15 @@ function buildColorableTokens(paletteColors) {
         `  --c-color-${color}-on-quiet: ${s.onQuiet};`,
         `  --c-color-${color}-on-normal: ${s.onNormal};`,
         `  --c-color-${color}-on-loud: ${s.onLoud};`,
+        ...(s.edge ? [`  --c-color-${color}-edge: ${s.edge};`] : []),
       ].join('\n');
     })
     .join('\n\n');
+}
+
+/** White's colors are black's, and black's white's. */
+function swappedScale(color) {
+  return colorScale(color === 'white' ? 'black' : 'white');
 }
 
 function buildSemanticTokens(semanticColors) {
@@ -159,16 +188,57 @@ function generateStyles(paletteColors, semanticColors) {
 /*
   Also on [data-theme]: these tokens are built from the palette with var(),
   which is substituted where it's declared, so a themed subtree re-resolves them.
+  Likewise what's in a light or dark surface, and a neutral card, so it doesn't
+  take a tinted card's colors (see utils.js).
 */
 :root,
-[data-theme] {
-${buildColorableTokens(paletteColors)}
+[data-theme],
+${DARK_SURFACE_CONTENTS_SELECTOR},
+${LIGHT_SURFACE_CONTENTS_SELECTOR},
+${NEUTRAL_CARD_SELECTOR} {
+${buildColorableTokens(paletteColors.filter((color) => !staticColors.includes(color)))}
 ${buildSemanticTokens(semanticColors)}
+}
+
+/*
+  White and black don't come from the palette, and swap in the dark theme, so
+  a white surface looks black there and a black one white. They follow the
+  page's theme alone, so they're left out of the themed surfaces above.
+*/
+:root,
+[data-theme='light'] {
+${buildColorableTokens(staticColors)}
+}
+
+[data-theme='dark'] {
+${buildColorableTokens(staticColors, swappedScale)}
 }
 
 ${[...paletteColors, ...Object.keys(semanticColors)]
   .map((c) => buildStyleBlock(c))
   .join('\n')}
+
+/*
+  A transparent button's text sits on the page rather than on its color's
+  fill. White's and black's colors don't follow the page's palette, so their
+  text can match the page; those buttons take the neutral colors instead.
+*/
+craft-button:is(${staticColors.map((c) => `[data-color='${c}']`).join(', ')}):is(
+    [variant~='outline'],
+    [variant~='dashed'],
+    [variant~='plain'],
+    [variant~='link']
+  ) {
+  --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
+  --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+  --c-color-on-quiet: var(--c-color-neutral-on-quiet);
+  --c-color-fill-normal: var(--c-color-neutral-fill-normal);
+  --c-color-border-normal: var(--c-color-neutral-border-normal);
+  --c-color-on-normal: var(--c-color-neutral-on-normal);
+  --c-color-fill-loud: var(--c-color-neutral-fill-loud);
+  --c-color-border-loud: var(--c-color-neutral-border-loud);
+  --c-color-on-loud: var(--c-color-neutral-on-loud);
+}
 `;
 }
 
@@ -248,26 +318,46 @@ ${variants}
 
 export default async function main() {
   const {paletteColors, semanticColors} = await loadColorData();
-  const css = generateStyles(paletteColors, semanticColors);
-  writeFileSync(OUT_FILE, css);
-  console.log(`Generated ${OUT_FILE}`);
 
-  writeFileSync(OUT_LIT_FILE, generateLitStyles(paletteColors, semanticColors));
-  console.log(`Generated ${OUT_LIT_FILE}`);
+  // Only write files whose contents changed, so a running Vite dev server
+  // doesn't hot-update every component that imports them
+  if (
+    writeFileIfChanged(
+      OUT_FILE,
+      formatOutput(OUT_FILE, generateStyles(paletteColors, semanticColors))
+    )
+  ) {
+    console.log(`Generated ${OUT_FILE}`);
+  }
 
-  formatOutput([OUT_FILE, OUT_LIT_FILE]);
+  if (
+    writeFileIfChanged(
+      OUT_LIT_FILE,
+      formatOutput(
+        OUT_LIT_FILE,
+        generateLitStyles(paletteColors, semanticColors)
+      )
+    )
+  ) {
+    console.log(`Generated ${OUT_LIT_FILE}`);
+  }
 }
 
 /*
 Both outputs are committed, so run them through the repo formatter. Otherwise
 every build rewrites them unformatted and `vp fmt` flips them back again.
  */
-function formatOutput(files) {
+function formatOutput(file, content) {
   const vpBin = resolve(
     dirname(createRequire(import.meta.url).resolve('vite-plus/package.json')),
     'bin/vp'
   );
-  execFileSync(process.execPath, [vpBin, 'fmt', ...files], {stdio: 'ignore'});
+
+  return execFileSync(
+    process.execPath,
+    [vpBin, 'fmt', `--stdin-filepath=${file}`],
+    {input: content, encoding: 'utf8'}
+  );
 }
 
 // Run when invoked directly (node scripts/generate-colors.js), but not when

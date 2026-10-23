@@ -63,6 +63,8 @@ class LinkData implements Arrayable, Serializable, Stringable
 
     private ?string $filename = null;
 
+    private ?LinkElementLoader $elementLoader = null;
+
     public function __construct(
         private readonly string $value,
         private readonly BaseLinkType $linkType,
@@ -89,6 +91,7 @@ class LinkData implements Arrayable, Serializable, Stringable
     public function getValue(): string
     {
         if (! isset($this->renderedValue)) {
+            $this->elementLoader?->load();
             $this->renderedValue = $this->linkType->renderValue($this->value);
         }
 
@@ -131,6 +134,8 @@ class LinkData implements Arrayable, Serializable, Stringable
             return $this->label;
         }
 
+        $this->elementLoader?->load();
+
         return $this->linkType->linkLabel($this->value);
     }
 
@@ -150,7 +155,13 @@ class LinkData implements Arrayable, Serializable, Stringable
     #[AllowedInSandbox]
     public function getFilename(bool $custom = true): ?string
     {
-        return $custom ? $this->filename : $this->linkType->filename($this->value);
+        if ($custom) {
+            return $this->filename;
+        }
+
+        $this->elementLoader?->load();
+
+        return $this->linkType->filename($this->value);
     }
 
     /**
@@ -233,7 +244,19 @@ class LinkData implements Arrayable, Serializable, Stringable
             return null;
         }
 
+        $this->elementLoader?->load();
+
         return $this->linkType->element($this->value);
+    }
+
+    /**
+     * Sets the loader that fetches this link’s element together with other links’ elements.
+     *
+     * @internal
+     */
+    public function setElementLoader(LinkElementLoader $loader): void
+    {
+        $this->elementLoader = $loader;
     }
 
     /** @return array{type: string, value?: string, label?: string, urlSuffix?: string, target?: string, title?: string, class?: string, id?: string, rel?: string, ariaLabel?: string, download?: true, filename?: string} */

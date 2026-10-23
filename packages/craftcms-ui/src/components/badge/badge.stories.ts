@@ -7,7 +7,7 @@ import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './badge.js';
 import type CraftBadge from './badge.js';
-import {Color} from '@src/constants/colors';
+import {Color, colors} from '@src/constants/colors';
 import {capitalize} from '@src/utilities/string';
 import '../icon/icon.js';
 
@@ -68,6 +68,24 @@ export const AllColors: Story = {
       ${Object.entries(Color).map(
         ([key, value]) =>
           html`<craft-badge fill=${value}>${capitalize(key)}</craft-badge>`
+      )}
+    </div>
+  `,
+};
+
+/**
+ * Links in a badge take its text color and are underlined, losing the underline
+ * on hover. Only a white badge keeps the default link styling.
+ */
+export const Links: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div style="display: grid; gap: 0.5rem; justify-items: start">
+      ${colors.map(
+        (color) =>
+          html`<craft-badge fill=${color}
+            >${capitalize(color)} <a href="#">link</a></craft-badge
+          >`
       )}
     </div>
   `,

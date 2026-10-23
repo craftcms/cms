@@ -164,6 +164,53 @@ it('drops top-level group headings from the collapsed rail', async () => {
   expect(collapsed.map(label)).toEqual(['Entries', 'Utilities']);
 });
 
+it('counts a source once its deferred badge counts arrive, and keeps them across visits', async () => {
+  const tree = [
+    {
+      ...nav()[0],
+      subnav: [
+        {
+          ...nav()[0],
+          label: 'Blog',
+          href: '/admin/content/entries/blog',
+          id: 'nav-content-entries-source-sectionabc',
+        },
+      ],
+    },
+  ];
+  await mount('/admin/content/entries/blog', {}, {tree});
+
+  const badge = () =>
+    container.querySelector('craft-badge-indicator[slot="actions"]') as any;
+  const count = () =>
+    badge()
+      ? Number(badge().badgeCount ?? badge().getAttribute('badge-count'))
+      : null;
+
+  expect(count()).toBeNull();
+
+  state.page.props = {
+    ...state.page.props,
+    navSourceBadges: {'nav-content-entries-source-sectionabc': 7},
+  };
+  await nextTick();
+
+  expect(count()).toBe(7);
+  expect(badge().altText ?? badge().getAttribute('alt-text')).toBe('7 items');
+
+  state.page.deferredProps = {default: ['navSourceBadges']};
+  state.page.props = {...state.page.props, navSourceBadges: undefined};
+  await nextTick();
+
+  expect(count()).toBe(7);
+
+  state.page.deferredProps = {};
+  state.page.props = {...state.page.props};
+  await nextTick();
+
+  expect(count()).toBeNull();
+});
+
 it('keeps a section with a subnav on the trail, not current, for a page beneath it that none of its children claim', async () => {
   const users = {
     ...nav()[1],

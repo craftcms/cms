@@ -104,7 +104,9 @@ It has no implicit role and does not receive focus.
 The content you place in it carries its own semantics, which makes two things your responsibility:
 
 - **Interactive content must provide its own accessible name.** An action button in the `suffix` slot requires a label, and an icon-only button requires one on the icon. The chip's label does not name it.
-- **Decorative prefixes must remain decorative.** A thumbnail that only repeats the label takes `alt=""`. A status indicator that conveys meaning the label does not should be given a `label` of its own.
+- **Decorative prefixes must remain decorative.** A thumbnail that only repeats the label takes `alt=""`. A status indicator that conveys meaning the label does not should be given a `label` of its own, since a dot's color alone doesn't reach everyone (see [Indicator](?path=/docs/components-indicator--docs)).
+
+The chip has no remove behavior of its own. When a button in the `suffix` removes the chip, move focus to a sensible place afterward, such as the next chip, the previous one, or the control that adds chips, so keyboard focus isn't lost to the page.
 
 Setting `selectable` renders a checkbox before the prefix, for chips within a multi-select list.
 Name it with `select-label` so a list of chips does not read as a run of identically labeled checkboxes; it falls back to a generic "Select".

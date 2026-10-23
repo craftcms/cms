@@ -73,6 +73,9 @@ class ActionItem extends Component
 
     public int $badgeCount = 0;
 
+    /** What the badge count is for screen readers, in place of a generic count of items. */
+    public ?string $badgeLabel = null;
+
     /** Whether this is the one currently in effect. */
     public bool $selected = false;
 
@@ -273,6 +276,13 @@ class ActionItem extends Component
     public function badgeCount(int $badgeCount): static
     {
         $this->badgeCount = $badgeCount;
+
+        return $this;
+    }
+
+    public function badgeLabel(?string $badgeLabel): static
+    {
+        $this->badgeLabel = $badgeLabel;
 
         return $this;
     }

@@ -36,7 +36,9 @@ readonly class UserInitiatedElementSave
         CraftUser $actor,
         bool $crossSiteValidate = false,
     ): UserInitiatedElementSaveResult {
-        if ($element->enabled && $element->getEnabledForSite()) {
+        if ($element->getIsDraft()) {
+            $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+        } elseif ($element->enabled && $element->getEnabledForSite()) {
             $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         }
 
@@ -57,10 +59,10 @@ readonly class UserInitiatedElementSave
         }
 
         try {
-            if ($requiresApproval && $isNotNew) {
+            if ($requiresApproval && ! $element->getIsDraft() && $isNotNew) {
                 $element = $this->drafts->createDraft($element, $actor->getCraftUserId());
                 $successful = true;
-            } elseif ($requiresApproval) {
+            } elseif ($requiresApproval && ! $element->getIsDraft()) {
                 $successful = $this->drafts->saveElementAsDraft($element, $actor->getCraftUserId());
             } else {
                 $successful = $this->elements->saveElement(
@@ -84,7 +86,7 @@ readonly class UserInitiatedElementSave
 
         $this->elementActivity->trackActivity($element, ElementActivityType::Save, $actor->asElement());
 
-        if (! $requiresApproval) {
+        if (! $requiresApproval && ! $element->getIsDraft()) {
             $provisional = $element::find()
                 ->provisionalDrafts()
                 ->draftOf($element->id)

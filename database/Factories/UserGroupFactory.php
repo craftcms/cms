@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Database\Factories;
 
 use CraftCms\Cms\User\Models\UserGroup;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Date;
 use Override;
 
 class UserGroupFactory extends Factory
@@ -21,7 +22,7 @@ class UserGroupFactory extends Factory
             'name' => fake()->words(asText: true),
             'handle' => fake()->slug(),
             'description' => fake()->paragraph(),
-            'dateCreated' => $date = fake()->dateTime(),
+            'dateCreated' => $date = fake()->dateTime(Date::now()),
             'dateUpdated' => $date,
         ];
     }

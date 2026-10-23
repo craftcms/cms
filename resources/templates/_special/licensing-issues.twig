@@ -1,18 +1,11 @@
-{% extends '_layouts/base' %}
-
-{% import '_includes/forms.twig' as forms %}
-
-{% set bodyClass = 'licensing-issues' %}
+{% extends '_layouts/message' %}
 {% set title = 'License purchase required.'|t('app') %}
+{% set includePane = false %}
+{% set wide = true %}
 
-
-{% block body %}
-  <div id="licensing-issues" class="pane">
-    <div class="readable">
-      <h1>
-        {{ 'License purchase required.'|t('app') }}
-      </h1>
-
+{% block message %}
+  <craft-pane id="licensing-issues" label="{{ title }}" heading-level="1">
+    <div class="prose grid gap-md">
       <p>
         {{ 'The following licensing {total, plural, =1{issue} other{issues}} can be resolved with a single purchase on Craft Console:'|t('app', {
           total: issues|length,
@@ -25,50 +18,41 @@
         {% endfor %}
       </ul>
 
-      <div class="buttons">
-        <div class="flex mb-0">
-          {% set linkText = 'Resolve now'|t('app') %}
-          {{ tag('a', {
-            class: ['btn', 'link-btn'],
-            href: cartUrl,
-            target: '_blank',
-            text: linkText,
-            aria: {label: linkText},
-          }) }}
-          <span>
-            {{ 'or <a href="{url}">try before buying</a>'|t('app', {
-              url: 'https://craftcms.com/knowledge-base/how-to-trial-craft-cms-and-plugin-editions',
-            })|raw }}
-          </span>
-        </div>
-
-        {{ forms.button({
-          id: 'refresh-btn',
-          icon: 'refresh',
-          label: 'Refresh'|t('app'),
-          class: 'hairline',
-        }) }}
-      </div>
+      <p>
+        {{ 'Not ready to buy? <a href="{url}">Try before buying</a>.'|t('app', {
+          url: 'https://craftcms.com/knowledge-base/how-to-trial-craft-cms-and-plugin-editions',
+        })|raw }}
+      </p>
     </div>
-  </div>
-  <p id="continue" class="light" role="timer"></p>
+
+    <craft-button slot="secondary-action" id="refresh-btn" type="button" icon="arrows-rotate">
+      {{ 'Refresh'|t('app') }}
+    </craft-button>
+    <craft-button
+      slot="primary-action"
+      variant="primary"
+      href="{{ cartUrl }}"
+      target="_blank"
+      icon="arrow-up-right-from-square"
+      icon-position="suffix"
+    >
+      {{ 'Resolve now'|t('app') }}
+      <span class="sr-only">{{ 'Opens in a new window'|t('app') }}</span>
+    </craft-button>
+  </craft-pane>
+
+  <p id="continue" class="mt-lg text-center text-(--c-text-quiet)" role="timer"></p>
 {% endblock %}
 
-{% css %}
-  html {
-    height: 100%;
-  }
-{% endcss %}
-
 {% js %}
-  const $refreshBtn = $('#refresh-btn');
-  $refreshBtn.on('click', async () => {
-    $refreshBtn.addClass('loading');
+  const refreshBtn = document.getElementById('refresh-btn');
+  refreshBtn.addEventListener('click', async () => {
+    refreshBtn.loading = true;
     try {
       await Craft.sendApiRequest('GET', 'ping');
       location.reload();
     } finally {
-      $refreshBtn.removeClass('loading');
+      refreshBtn.loading = false;
     }
   });
 

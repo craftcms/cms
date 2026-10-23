@@ -35,6 +35,10 @@ readonly class Table
 
     public const string CONTENTBLOCKS = 'contentblocks';
 
+    public const string RELEASES = 'releases';
+
+    public const string RELEASE_ITEMS = 'releaseitems';
+
     public const string DEPRECATIONERRORS = 'deprecationerrors';
 
     public const string DRAFTS = 'drafts';
@@ -44,6 +48,8 @@ readonly class Table
     public const string ELEMENTS = 'elements';
 
     public const string ELEMENTS_BULKOPS = 'elements_bulkops';
+
+    public const string ELEMENTS_MODELS = 'elements_models';
 
     public const string ELEMENTS_OWNERS = 'elements_owners';
 

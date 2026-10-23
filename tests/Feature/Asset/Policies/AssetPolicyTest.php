@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Policies\AssetPolicy;
 use CraftCms\Cms\Asset\Policies\VolumeFolderPolicy;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Gate;
@@ -184,6 +185,35 @@ it('returns false for peer asset without peer delete permission', function () {
     $result = $this->policy->delete($user, $asset);
 
     expect($result)->toBeFalse();
+});
+
+it('allows deleting assets for a site in custom-propagation volumes with delete permission', function () {
+    $user = createAssetTestUser([assetPolicyPermission('deleteAssets')]);
+    $asset = createAssetTestAsset($this->volume, uploaderId: $user->id);
+
+    expect($this->policy->deleteForSite($user, $asset))->toBeTrue();
+});
+
+it('denies deleting assets for a site without delete permission', function () {
+    $user = createAssetTestUser([]);
+    $asset = createAssetTestAsset($this->volume, uploaderId: $user->id);
+
+    expect($this->policy->deleteForSite($user, $asset))->toBeFalse();
+});
+
+it('denies deleting assets for a site in volumes that save assets to all sites', function () {
+    $user = createAssetTestUser([assetPolicyPermission('deleteAssets')]);
+    $asset = createAssetTestAsset($this->volume, uploaderId: $user->id);
+    $asset->getVolume()->propagationMethod = PropagationMethod::All;
+
+    expect($this->policy->deleteForSite($user, $asset))->toBeFalse();
+});
+
+it('denies deleting folders for a site', function () {
+    $user = createAssetTestUser([assetPolicyPermission('deleteAssets')]);
+    $asset = createAssetTestAsset($this->volume, isFolder: true);
+
+    expect($this->policy->deleteForSite($user, $asset))->toBeFalse();
 });
 
 it('returns same result for copy as view', function () {

@@ -11,6 +11,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Models\Element;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Override;
 
@@ -27,7 +28,7 @@ class AddressFactory extends Factory
         return [
             'id' => Element::factory()->set('type', AddressElement::class),
             'countryCode' => fake()->countryCode(),
-            'dateCreated' => $created = $this->faker->dateTime(),
+            'dateCreated' => $created = $this->faker->dateTime(Date::now()),
             'dateUpdated' => $created,
         ];
     }

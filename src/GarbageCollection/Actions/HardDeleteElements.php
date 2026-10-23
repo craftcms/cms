@@ -6,6 +6,7 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Eloquent\EloquentElement;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
@@ -51,6 +52,23 @@ class HardDeleteElements extends GarbageCollectionAction
      */
     private function deleteTrashedElements(array $normalElementTypes, array $nestedElementTypes): void
     {
+        // Eloquent elements take their models with them, and stay in the trash if a model refuses to go
+        [$eloquentElementTypes, $normalElementTypes] = collect($normalElementTypes)
+            ->partition(fn (string $elementType) => is_subclass_of($elementType, EloquentElement::class))
+            ->map->values()
+            ->map->all()
+            ->all();
+
+        foreach ($eloquentElementTypes as $elementType) {
+            $this->hardDeleteQuery(DB::table(Table::ELEMENTS))
+                ->where('type', $elementType)
+                ->pluck('id')
+                ->chunk($this->garbageCollection::CHUNK_SIZE)
+                ->each(fn ($idsChunk) => DB::table(Table::ELEMENTS)
+                    ->whereIn('id', $elementType::deleteModels($idsChunk->values()->all()))
+                    ->delete());
+        }
+
         if ($normalElementTypes) {
             $this->hardDeleteQuery(DB::table(Table::ELEMENTS))
                 ->whereIn('type', $normalElementTypes)

@@ -200,7 +200,7 @@ class Schema extends \yii\db\mysql\Schema
     public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
         $baseCommand = (new ShellCommand('mysqldump'))
-            ->addArg('--defaults-file=', $this->_createDumpConfigFile())
+            ->addArg('--defaults-file=', $this->_createDumpConfigFile('mysqldump'))
             ->addArg('--add-drop-table')
             ->addArg('--comments')
             ->addArg('--create-options')
@@ -266,7 +266,7 @@ class Schema extends \yii\db\mysql\Schema
     {
         $commandFromConfig = Cms::config()->restoreCommand;
         $command = (new ShellCommand('mysql'))
-            ->addArg('--defaults-file=', $this->_createDumpConfigFile())
+            ->addArg('--defaults-file=', $this->_createDumpConfigFile('mysql'))
             ->addArg('{database}');
 
         if ($commandFromConfig instanceof Closure) {
@@ -455,10 +455,11 @@ SQL;
     /**
      * Creates a temporary my.cnf file based on the DB config settings.
      *
+     * @param string $program The program that the my.cnf file will be used with (`mysqldump` or `mysql`)
      * @return string The path to the my.cnf file
      * @throws ErrorException
      */
-    private function _createDumpConfigFile(): string
+    private function _createDumpConfigFile(string $program): string
     {
         $this->tempMyCnfPath = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . Str::random(12) . '.cnf';
 
@@ -477,14 +478,33 @@ SQL;
         }
 
         // Certificates
-        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CA])) {
-            $contents .= PHP_EOL . 'ssl_ca=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CA];
-        }
-        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT])) {
-            $contents .= PHP_EOL . 'ssl_cert=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT];
-        }
-        if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY])) {
-            $contents .= PHP_EOL . 'ssl_key=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY];
+        if (
+            isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CA]) ||
+            (defined('PDO::MYSQL_ATTR_SSL_CAPATH') && isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CAPATH])) ||
+            isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT]) ||
+            isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY]) ||
+            (defined('PDO::MYSQL_ATTR_SSL_CIPHER') && isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CIPHER]))
+        ) {
+            if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CA])) {
+                $contents .= PHP_EOL . 'ssl_ca=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CA];
+            }
+            if (defined('PDO::MYSQL_ATTR_SSL_CAPATH') && isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CAPATH])) {
+                $contents .= PHP_EOL . 'ssl_capath=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CAPATH];
+            }
+            if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT])) {
+                $contents .= PHP_EOL . 'ssl_cert=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CERT];
+            }
+            if (isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY])) {
+                $contents .= PHP_EOL . 'ssl_key=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_KEY];
+            }
+            if (defined('PDO::MYSQL_ATTR_SSL_CIPHER') && isset($this->db->attributes[PDO::MYSQL_ATTR_SSL_CIPHER])) {
+                $contents .= PHP_EOL . 'ssl_cipher=' . $this->db->attributes[PDO::MYSQL_ATTR_SSL_CIPHER];
+            }
+        } else {
+            // The db connection wasn't explicitly configured with SSL attributes, but the normal
+            // my.cnf file chain (which --defaults-file causes mysqldump/mysql to ignore) might
+            // still specify them, so carry those over.
+            $contents .= $this->_sslDefaultsFromConfigFiles($program);
         }
 
         FileHelper::writeToFile($this->tempMyCnfPath, '');
@@ -493,6 +513,85 @@ SQL;
         FileHelper::writeToFile($this->tempMyCnfPath, $contents, ['append']);
 
         return $this->tempMyCnfPath;
+    }
+
+    /**
+     * Returns SSL/TLS my.cnf directives based on whatever the normal MySQL config file chain
+     * (e.g. `/etc/my.cnf`, `~/.my.cnf`) would otherwise provide, since those files are ignored
+     * once `--defaults-file` is passed to `mysqldump`/`mysql`.
+     *
+     * @param string $program The program whose defaults should be checked (`mysqldump` or `mysql`)
+     * @return string
+     */
+    private function _sslDefaultsFromConfigFiles(string $program): string
+    {
+        $shellCommand = (new ShellCommand($program))->addArg('--print-defaults');
+
+        // If we don't have proc_open, maybe we've got exec
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $shellCommand->useExec = true;
+        }
+
+        if (!$shellCommand->execute()) {
+            return '';
+        }
+
+        return $this->_sslDirectivesFromPrintDefaults($shellCommand->getOutput() ?? '');
+    }
+
+    /**
+     * Returns SSL/TLS my.cnf directives from the given `--print-defaults` output.
+     *
+     * @param string $output
+     * @return string
+     */
+    private function _sslDirectivesFromPrintDefaults(string $output): string
+    {
+        // The output looks like:
+        //
+        //     mysqldump would have been started with the following arguments:
+        //     --ssl-ca=/path/to/ca.pem --ssl-verify-server-cert=0 --skip-ssl ...
+        //
+        // Values aren't quoted, so split on whitespace that is followed by `--` (rather than on all whitespace),
+        // so values containing spaces stay intact.
+        $pos = strpos($output, '--');
+        if ($pos === false) {
+            return '';
+        }
+
+        $tokens = preg_split('/\s+(?=--)/', trim(substr($output, $pos)), -1, PREG_SPLIT_NO_EMPTY);
+
+        $contents = '';
+
+        foreach ($tokens as $token) {
+            if (!preg_match('/^--([\w-]+)(?:=(.*))?$/s', trim($token), $match)) {
+                continue;
+            }
+
+            // Option names can use dashes or underscores, and can be prefixed with modifiers like `skip-` and `loose-`
+            $name = strtolower(str_replace('_', '-', $match[1]));
+            $baseName = preg_replace('/^(?:loose-)?(?:skip-|disable-|enable-)?/', '', $name);
+            if (!preg_match('/^(ssl|tls)(-|$)/', $baseName)) {
+                continue;
+            }
+
+            if (!isset($match[2])) {
+                $contents .= PHP_EOL . $name;
+                continue;
+            }
+
+            $value = trim($match[2], "\"'");
+
+            // Ignore redacted values
+            if (preg_match('/^\*+$/', $value)) {
+                continue;
+            }
+
+            // Backslashes are escape characters in option files (e.g. within Windows paths)
+            $contents .= PHP_EOL . $name . '=' . str_replace('\\', '\\\\', $value);
+        }
+
+        return $contents;
     }
 
     /**

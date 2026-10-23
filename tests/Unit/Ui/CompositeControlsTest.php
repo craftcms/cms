@@ -122,6 +122,20 @@ it('resolves documented composite Control shapes and properties', function () {
         ])->and($controls['craft:icon-picker']->props)->toBe(['freeOnly' => true]);
 });
 
+it('passes table column info to the client as HTML', function () {
+    $props = Table::make('rows')
+        ->columns([
+            'uri' => ['heading' => 'URI', 'type' => 'singleline', 'info' => 'Type <kbd>{</kbd> for a `variable`.'],
+        ])
+        ->props();
+
+    expect($props['columns']['uri'])->toBe([
+        'heading' => 'URI',
+        'type' => 'singleline',
+        'infoHtml' => 'Type <kbd>{</kbd> for a <code>variable</code>.',
+    ]);
+});
+
 it('renders composite Controls with nested submission names and escaped values', function () {
     $crawler = compositeControlsCrawler();
     $markdown = $crawler->filter('craft-markdown-field[name="settings[body]"][sanitize-html][show-stats]');

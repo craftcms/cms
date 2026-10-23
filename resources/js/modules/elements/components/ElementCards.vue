@@ -5,6 +5,7 @@
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import type {Selectable} from '@/common/composables/useSelectable';
+  import {isInteractiveClick} from '@/common/utils/dom';
   import {
     isInteractiveItemEvent,
     type ElementIndexItemBehavior,
@@ -56,6 +57,7 @@
 
   const emit = defineEmits<{
     (event: 'reorder', startIndex: number, finishIndex: number): void;
+    (event: 'edit', element: CardElement): void;
   }>();
 
   const ids = computed(() => props.data.map((element) => element.id));
@@ -107,6 +109,28 @@
     }
   }
 
+  /**
+   * A double-click opens the element, except on the card's own controls — the
+   * checkbox, an action menu, the reorder button, a link.
+   */
+  function onCardDblclick(id: string | number, event: MouseEvent) {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    if (!element) {
+      return;
+    }
+
+    if (props.itemBehavior?.onDblClick?.(element, event)) {
+      event.preventDefault();
+
+      return;
+    }
+
+    if (!isInteractiveClick(event, event.currentTarget)) {
+      emit('edit', element);
+    }
+  }
+
   function onCardKeydown(
     id: number | string,
     _index: number,
@@ -137,7 +161,7 @@
 </script>
 
 <template>
-  <div class="grid place-items-center min-h-50" v-if="loading">
+  <div class="grid flex-1 place-items-center min-h-50" v-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">
@@ -170,6 +194,7 @@
       :aria-busy="loading ? 'true' : undefined"
       @reorder="(from, to) => emit('reorder', from, to)"
       @item-click="onCardClick"
+      @item-dblclick="onCardDblclick"
       @item-keydown="onCardKeydown"
     >
       <template #thumbnail="{index}">
@@ -218,7 +243,8 @@
     margin-block-end: var(--c-spacing-md);
     display: flex;
     align-items: center;
-    min-height: calc(var(--c-size-control-sm) + var(--c-spacing-sm) + 1px);
+    // As tall as other header bars, such as a card's, plus its bottom border.
+    min-height: calc(var(--c-size-header) + 1px);
     padding-block: 0 var(--c-spacing-sm);
     padding-inline: 0;
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
@@ -253,33 +279,6 @@
   }
 
   .card-grid :deep(> li > craft-card) {
-    height: 100%;
-  }
-
-  // craft-thumbnail defaults its own size via :host, so the card thumbnail
-  // renders at the tiny default instead of filling its 120px column. Match the
-  // thumbnail view (and Craft 5's 120px card thumb column).
-  .card-grid :deep(craft-thumbnail) {
-    --c-thumbnail-size: 120px;
-  }
-
-  // Non-image thumbs (folder / file-kind SVGs) render at a fixed small size.
-  // Center them in the same 120px box an image thumbnail fills, at the size
-  // they get in the thumbnail view.
-  .card-thumb:has(> .thumb) {
-    display: grid;
-    place-items: center;
-    width: 120px;
-    height: 120px;
-  }
-
-  .card-thumb > :deep(.thumb) {
-    width: 72px;
-    height: 72px;
-  }
-
-  .card-thumb > :deep(.thumb svg) {
-    width: 100%;
     height: 100%;
   }
 </style>

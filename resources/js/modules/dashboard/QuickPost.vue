@@ -52,7 +52,7 @@
 </script>
 
 <template>
-  <craft-card>
+  <craft-card data-color="gray">
     <slot name="header" />
     <div class="body">
       <p v-if="widget.data?.message">{{ widget.data.message }}</p>

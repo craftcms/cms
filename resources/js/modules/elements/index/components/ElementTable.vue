@@ -314,7 +314,13 @@
     min-width: 14rem;
   }
 
-  .cp-table-row {
+  // With no other data columns to take the rest of the row, the leading
+  // columns would split it.
+  :deep(.cp-table-cell--title:last-child) {
+    width: auto;
+  }
+
+  :deep(.cp-table-row) {
     --_structure-indent: calc(44px * (var(--structure-level, 1) - 1));
   }
 

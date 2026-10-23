@@ -68,7 +68,7 @@ export function createLinkPopoverController(
     const triggerId = anchorId(trigger);
 
     popover = document.createElement('craft-popover');
-    popover.className = 'markdown-link-popover';
+    popover.className = 'craft-link-popover';
     popover.id = popoverId(triggerId);
     popover.placement = 'bottom-start';
     // Lion positions the overlay against its slotted `invoker` by default, but

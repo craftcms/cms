@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Validation\VolumeRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\CustomFieldLayoutProviderInterface;
@@ -53,6 +54,16 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
     public TranslationMethod $altTranslationMethod = TranslationMethod::None;
 
     public ?string $altTranslationKeyFormat = null;
+
+    /**
+     * Which sites assets in the volume should be saved to.
+     *
+     * Either {@see PropagationMethod::All} (save assets to all sites) or
+     * {@see PropagationMethod::Custom} (let each asset choose which sites it
+     * should be saved to). Volumes that existed on multi-site installs before
+     * the setting was introduced use {@see PropagationMethod::All}.
+     */
+    public PropagationMethod $propagationMethod = PropagationMethod::Custom;
 
     public ?int $sortOrder = null;
 
@@ -131,6 +142,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             'fsHandle' => t('Disk'),
             'assetTransformer' => t('Asset Transformer'),
             'subpath' => t('Subpath'),
+            'propagationMethod' => t('Propagation Method'),
         ];
     }
 
@@ -263,6 +275,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'altTranslationMethod' => $this->altTranslationMethod->value,
             'altTranslationKeyFormat' => $this->altTranslationKeyFormat ?: null,
+            'propagationMethod' => $this->propagationMethod->value,
             'sortOrder' => $this->sortOrder,
         ];
 

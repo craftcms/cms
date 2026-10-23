@@ -5,30 +5,18 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Schema;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Field\BaseOptionsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Email;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Json;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
-use CraftCms\Cms\Gql\Types\Money as MoneyType;
-use CraftCms\Cms\Gql\Types\Number as NumberType;
-use CraftCms\Cms\Mcp\Contracts\ProvidesInputSchema;
+use CraftCms\Cms\Gql\GqlInputSchema;
 use CraftCms\Cms\Support\Arr;
 use GraphQL\Error\UserError;
-use GraphQL\Type\Definition\BooleanType;
-use GraphQL\Type\Definition\EnumType;
-use GraphQL\Type\Definition\FloatType;
-use GraphQL\Type\Definition\IDType;
 use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\IntType;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\NonNull;
-use GraphQL\Type\Definition\ScalarType;
-use GraphQL\Type\Definition\StringType;
 use GraphQL\Type\Definition\Type;
-use GraphQL\Type\Definition\WrappingType;
 use Mcp\Capability\Discovery\SchemaValidator;
 use Mcp\Exception\ToolCallException;
 use stdClass;
@@ -192,15 +180,18 @@ readonly class CustomFieldSchema
     /** @return array<string, mixed> */
     private function fieldSchema(FieldInterface $field, bool $required): array
     {
-        $schema = match (true) {
-            $field instanceof ProvidesInputSchema => $field->getMcpInputSchema(),
-            $field instanceof Json => [],
-            $field instanceof BaseOptionsField => $this->optionsSchema($field),
-            $field instanceof Email => ['type' => 'string', 'format' => 'email'],
-            default => $this->inferredSchema($field),
-        };
+        // A field whose schema can’t be built accepts anything, rather than breaking the element’s schema.
+        try {
+            $schema = match (true) {
+                $field instanceof InputSchemaFieldInterface => $field->getInputSchema(),
+                $field instanceof Json => [],
+                default => GqlInputSchema::fromType($field->getContentGqlMutationArgumentType()),
+            };
+        } catch (Throwable) {
+            $schema = [];
+        }
 
-        $schema = $required ? $this->withoutNull($schema) : $this->withNull($schema);
+        $schema = $required ? GqlInputSchema::withoutNull($schema) : GqlInputSchema::withNull($schema);
         $schema['title'] = $field->name;
 
         if ($field->instructions !== null && $field->instructions !== '') {
@@ -212,54 +203,7 @@ readonly class CustomFieldSchema
 
     private function usesInferredSchema(FieldInterface $field): bool
     {
-        return ! $field instanceof ProvidesInputSchema
-            && ! $field instanceof Json
-            && ! $field instanceof BaseOptionsField
-            && ! $field instanceof Email;
-    }
-
-    /** @return array<string, mixed> */
-    private function optionsSchema(BaseOptionsField $field): array
-    {
-        $values = array_values(array_map(
-            static fn (array $option): string => (string) $option['value'],
-            array_filter($field->options, static fn (array $option): bool => isset($option['value'])),
-        ));
-        $itemSchema = ['type' => 'string'];
-
-        if (! $field->customOptions && $values !== []) {
-            $itemSchema['enum'] = $values;
-        }
-
-        return $field->getIsMultiOptionsField()
-            ? ['type' => 'array', 'items' => $itemSchema]
-            : $itemSchema;
-    }
-
-    /** @return array<string, mixed> */
-    private function inferredSchema(FieldInterface $field): array
-    {
-        try {
-            return $this->gqlSchema($field->getContentGqlMutationArgumentType());
-        } catch (Throwable) {
-            return [];
-        }
-    }
-
-    /**
-     * @param  Type|array<string, mixed>  $definition
-     * @return array<string, mixed>
-     */
-    private function gqlSchema(Type|array $definition): array
-    {
-        $type = is_array($definition) ? $definition['type'] : $definition;
-        $schema = $this->typeSchema($type);
-
-        if (is_array($definition) && isset($definition['description'])) {
-            $schema['description'] = $definition['description'];
-        }
-
-        return $schema;
+        return ! $field instanceof InputSchemaFieldInterface && ! $field instanceof Json;
     }
 
     /**
@@ -287,111 +231,5 @@ readonly class CustomFieldSchema
         }
 
         return is_callable($normalizer) ? $normalizer($value) : $value;
-    }
-
-    /**
-     * @param  list<string>  $visited
-     * @return array<string, mixed>
-     */
-    private function typeSchema(Type $type, array $visited = []): array
-    {
-        if ($type instanceof NonNull) {
-            return $this->withoutNull($this->typeSchema($type->getWrappedType(), $visited));
-        }
-
-        if ($type instanceof ListOfType) {
-            return $this->withNull([
-                'type' => 'array',
-                'items' => $this->typeSchema($type->getWrappedType(), $visited) ?: new stdClass,
-            ]);
-        }
-
-        if ($type instanceof InputObjectType) {
-            if (in_array($type->name, $visited, true)) {
-                return ['type' => ['object', 'null'], 'additionalProperties' => true];
-            }
-
-            $properties = [];
-            $required = [];
-
-            foreach ($type->getFields() as $field) {
-                $fieldSchema = $this->typeSchema($field->getType(), [...$visited, $type->name]);
-                $properties[$field->name] = array_filter([
-                    ...$fieldSchema,
-                    'description' => $field->description ?? $fieldSchema['description'] ?? null,
-                ], static fn (mixed $value): bool => $value !== null && $value !== '') ?: new stdClass;
-
-                if ($field->isRequired()) {
-                    $required[] = $field->name;
-                }
-            }
-
-            return $this->withNull(array_filter([
-                'type' => 'object',
-                'description' => $type->description,
-                'properties' => $properties ?: null,
-                'required' => $required ?: null,
-                'minProperties' => $type->isOneOf() ? 1 : null,
-                'maxProperties' => $type->isOneOf() ? 1 : null,
-                'additionalProperties' => false,
-            ], static fn (mixed $value): bool => $value !== null && $value !== ''));
-        }
-
-        if ($type instanceof EnumType) {
-            return $this->withNull([
-                'type' => 'string',
-                'enum' => array_map(static fn ($value): string => $value->name, $type->getValues()),
-            ]);
-        }
-
-        return $this->withNull($this->scalarSchema($type));
-    }
-
-    /** @return array<string, mixed> */
-    private function scalarSchema(Type $type): array
-    {
-        return match (true) {
-            $type instanceof BooleanType => ['type' => 'boolean'],
-            $type instanceof IntType => ['type' => 'integer'],
-            $type instanceof FloatType, $type instanceof NumberType, $type instanceof MoneyType => ['type' => 'number'],
-            $type instanceof IDType => ['type' => ['string', 'integer']],
-            $type instanceof StringType => ['type' => 'string'],
-            $type instanceof DateTimeType => ['type' => 'string', 'format' => 'date-time'],
-            $type instanceof ScalarType => [],
-            $type instanceof WrappingType => $this->typeSchema($type->getWrappedType()),
-            default => [],
-        };
-    }
-
-    /**
-     * @param  array<string, mixed>  $schema
-     * @return array<string, mixed>
-     */
-    private function withNull(array $schema): array
-    {
-        if (! isset($schema['type'])) {
-            return $schema;
-        }
-
-        $types = (array) $schema['type'];
-        $schema['type'] = array_values(array_unique([...$types, 'null']));
-
-        return $schema;
-    }
-
-    /**
-     * @param  array<string, mixed>  $schema
-     * @return array<string, mixed>
-     */
-    private function withoutNull(array $schema): array
-    {
-        if (! isset($schema['type'])) {
-            return $schema;
-        }
-
-        $types = array_values(array_diff((array) $schema['type'], ['null']));
-        $schema['type'] = count($types) === 1 ? $types[0] : $types;
-
-        return $schema;
     }
 }

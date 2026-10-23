@@ -102,11 +102,20 @@ export default class CraftField extends FormControlMixin(LitElement) {
   instructionsPosition: 'before' | 'after' = 'before';
 
   /**
+   * Visually hides the instructions, keeping them in the input's accessible
+   * description, such as when a placeholder repeats them.
+   */
+  @property({type: Boolean, reflect: true, attribute: 'instructions-sr-only'})
+  instructionsSrOnly = false;
+
+  /**
    * Overrides the inferred width behavior. By default, the field spans its
-   * column, unless the slotted control declares a `maxlength` (reflected
-   * onto the host as `has-maxlength`) — which shrinks the field to the
-   * control's width. `full` spans the column despite a `maxlength`; `auto`
-   * shrinks without one.
+   * column, unless the slotted single-line control declares a `maxlength`
+   * (reflected onto the host as `has-maxlength`) — which shrinks the input
+   * to the control's width, while the heading and feedback still span the
+   * column.
+   * `full` spans the column despite a `maxlength`; `auto` shrinks without
+   * one.
    */
   @property({type: String, reflect: true}) width?: 'full' | 'auto';
 
@@ -147,14 +156,17 @@ export default class CraftField extends FormControlMixin(LitElement) {
   /**
    * Reflects whether the slotted control declares a `maxlength` onto the
    * host, where the stylesheet can react to it — a shadow stylesheet can't
-   * observe light-DOM children via `:host(:has(…))`.
+   * observe light-DOM children via `:host(:has(…))`. Multi-line controls
+   * are left out: a character limit says nothing about how wide they are.
    */
   private __syncHasMaxlength(): void {
+    const control = this.querySelector(':scope > [slot="input"]');
     this.toggleAttribute(
       'has-maxlength',
-      this.querySelector(':scope > [slot="input"]')?.hasAttribute(
-        'maxlength'
-      ) ?? false
+      Boolean(
+        control?.hasAttribute('maxlength') &&
+        !control.matches('textarea, craft-textarea')
+      )
     );
   }
 
@@ -408,7 +420,13 @@ export default class CraftField extends FormControlMixin(LitElement) {
 
   /** The instructions, skipped entirely when there are none. */
   protected override _helpTextTemplate() {
-    return this.__hasHelpText ? super._helpTextTemplate() : html``;
+    if (!this.__hasHelpText) {
+      return html``;
+    }
+
+    return this.instructionsSrOnly
+      ? html`<div class="cp-visually-hidden">${super._helpTextTemplate()}</div>`
+      : super._helpTextTemplate();
   }
 
   /**

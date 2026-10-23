@@ -49,8 +49,8 @@ function rules(): Map<string, string> {
 
   while ((match = pattern.exec(cssText)) !== null) {
     map.set(
-      match[1].trim().replace(/\s+/g, ' '),
-      match[2].replace(/\s+/g, ' ')
+      match[1]!.trim().replace(/\s+/g, ' '),
+      match[2]!.replace(/\s+/g, ' ')
     );
   }
 

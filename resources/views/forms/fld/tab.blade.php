@@ -8,7 +8,7 @@
      * @var bool $disabled
      */
 @endphp
-<div class="fld-tab" data-uid="{{ $tab->uid }}">
+<div @class(['fld-tab', 'fld-tab--sidebar' => $tab->type === \CraftCms\Cms\FieldLayout\Enums\TabType::Sidebar]) data-uid="{{ $tab->uid }}">
     <div class="tabs">
         <div @class(['tab', 'sel', 'draggable' => $customizable])>
             {!! $tab->labelHtml() !!}

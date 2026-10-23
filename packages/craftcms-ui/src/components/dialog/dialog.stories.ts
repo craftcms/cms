@@ -30,6 +30,26 @@ const footerClose = html`
   <craft-button slot="footer" data-dialog="close">Close</craft-button>
 `;
 
+/** Renders the dialog after a button that opens it. */
+function withOpener(
+  args: Parameters<typeof template>[0],
+  content: Parameters<typeof template>[1]
+) {
+  return html`
+    <craft-button
+      @click=${(event: Event) => {
+        const dialog = (
+          event.currentTarget as HTMLElement
+        ).parentElement!.querySelector('craft-dialog') as CraftDialog;
+        dialog.opened = true;
+      }}
+    >
+      Open dialog
+    </craft-button>
+    ${template(args, content)}
+  `;
+}
+
 const meta: Meta<CraftDialog & typeof args> = {
   title: 'Components/Dialog',
   component: 'craft-dialog',
@@ -37,7 +57,7 @@ const meta: Meta<CraftDialog & typeof args> = {
   // step with the component's attributes on their own.
   args: {...args, label: 'Dialog'},
   argTypes,
-  render: (args) => template(args, html`${body}${footerClose}`),
+  render: (args) => withOpener(args, html`${body}${footerClose}`),
   parameters: {
     layout: 'centered',
     actions: {handles: dialogEvents},
@@ -49,37 +69,42 @@ type Story = StoryObj<CraftDialog & typeof args>;
 
 export const Default: Story = {};
 
-/** No label, but the close button keeps the header — it needs somewhere to live. */
-export const NoLabel: Story = {
-  args: {label: ''},
-  async play({canvasElement}) {
-    const dialog = canvasElement.querySelector('craft-dialog') as CraftDialog;
-    await dialog.updateComplete;
-
-    await expect(dialog.shadowRoot!.querySelector('.header')).not.toBeNull();
-    await expect(dialog.shadowRoot!.querySelector('.close')).not.toBeNull();
-  },
-};
-
 /**
- * Neither a label nor a close button, so the header goes entirely rather than
- * leaving a band of padding above the body. Dismissal comes from the footer.
+ * The content draws its own title, so `no-header` drops the header row, close
+ * button included. The `label` still names the dialog, and dismissal comes
+ * from the footer.
  */
 export const NoHeader: Story = {
-  args: {label: '', noClose: true},
+  args: {label: 'Dialog with its own title', noHeader: true},
+  render: (args) =>
+    withOpener(
+      args,
+      html`
+        <h2>Dialog with its own title</h2>
+        ${body}${footerClose}
+      `
+    ),
   async play({canvasElement}) {
     const dialog = canvasElement.querySelector('craft-dialog') as CraftDialog;
     await dialog.updateComplete;
 
     // Also proves the manifest-derived args actually reach the component.
-    await expect(dialog.noClose).toBe(true);
-    await expect(dialog.shadowRoot!.querySelector('.header')).toBeNull();
+    await expect(dialog.noHeader).toBe(true);
+
+    const root = dialog.shadowRoot!;
+    await expect(root.querySelector('.header')).toBeNull();
+    const labelledBy = root
+      .querySelector('dialog')!
+      .getAttribute('aria-labelledby');
+    await expect(
+      root.getElementById(labelledBy ?? '')?.textContent?.trim()
+    ).toBe('Dialog with its own title');
   },
 };
 
 /** No footer slotted — the footer row collapses rather than leaving a gap. */
 export const NoFooter: Story = {
-  render: (args) => template(args, body),
+  render: (args) => withOpener(args, body),
 };
 
 /**
@@ -124,7 +149,7 @@ export const Fullscreen: Story = {
 /** Long content scrolls inside the body rather than growing the surface. */
 export const Scrolling: Story = {
   render: (args) =>
-    template(
+    withOpener(
       args,
       html`
         ${Array.from(

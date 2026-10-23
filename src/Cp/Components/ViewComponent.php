@@ -172,7 +172,12 @@ abstract class ViewComponent implements Htmlable, Stringable
     /** @return array<string, mixed> */
     protected function renderedAttributes(): array
     {
-        return Arr::merge($this->attributes, $this->hostAttributes());
+        // Unset typed properties come through as null; they mustn't clobber
+        // the same attribute passed explicitly, such as an `aria-label`.
+        return Arr::merge(
+            $this->attributes,
+            array_filter($this->hostAttributes(), fn (mixed $value): bool => $value !== null),
+        );
     }
 
     public function __toString(): string

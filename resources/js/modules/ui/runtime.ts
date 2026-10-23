@@ -285,9 +285,23 @@ export function setValue(
   value: UiValue
 ): void {
   let target: UiValues | UiValue[] = source;
+  let parent: UiValues | UiValue[] | null = null;
+  let parentKey: string | number = '';
 
   for (let index = 0; index < path.length; index++) {
     const segment = path[index]!;
+
+    // PHP serializes an empty keyed map as `[]`, so key into it as a map.
+    if (
+      Array.isArray(target) &&
+      target.length === 0 &&
+      parent &&
+      !/^(0|[1-9][0-9]*)$/.test(segment)
+    ) {
+      const map: UiValues = {};
+      (parent as Record<string | number, UiValue>)[parentKey] = map;
+      target = map;
+    }
 
     if (Array.isArray(target)) {
       if (!/^(0|[1-9][0-9]*)$/.test(segment)) {
@@ -301,6 +315,8 @@ export function setValue(
       }
 
       const child: UiValue = target[rowIndex];
+      parent = target;
+      parentKey = rowIndex;
       if (Array.isArray(child) || isRecord(child)) {
         target = child;
       } else {
@@ -316,6 +332,8 @@ export function setValue(
     }
 
     const child: UiValue = target[segment];
+    parent = target;
+    parentKey = segment;
     if (Array.isArray(child) || isRecord(child)) {
       target = child;
     } else {

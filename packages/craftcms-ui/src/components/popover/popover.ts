@@ -116,7 +116,19 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   constructor() {
     super();
     wireOverlayLifecycleEvents(this);
+    this.addEventListener('keydown', this.#claimEscape);
   }
+
+  /**
+   * Lion closes the popover on Escape's keyup, so its keydown would otherwise
+   * reach an ancestor's own Escape handling, such as a panel that closes on it.
+   * Marking it handled leaves the key to the popover alone.
+   */
+  #claimEscape = (event: KeyboardEvent): void => {
+    if (event.key === 'Escape' && this.opened) {
+      event.preventDefault();
+    }
+  };
 
   override _setupOverlayCtrl() {
     super._setupOverlayCtrl();
@@ -182,13 +194,15 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
       ...withDropdownConfig(),
       zIndex: popoverLayer(),
       handlesAccessibility: !this.withoutInvokerAria,
-      inheritsReferenceWidth: this.matchInvokerWidth ? 'min' : 'none',
+      inheritsReferenceWidth: this.matchInvokerWidth
+        ? ('min' as const)
+        : ('none' as const),
       popperConfig: {
         // Position relative to the viewport so the overlay escapes any
         // overflow-clipping / scrolling ancestor (e.g. a popover whose pane has
         // `overflow: auto`). Without this, a popover nested inside another
         // popover's scroll container gets clipped.
-        strategy: 'fixed',
+        strategy: 'fixed' as const,
         placement: this.placement,
         modifiers: [
           {

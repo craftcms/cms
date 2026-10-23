@@ -141,6 +141,19 @@ trait ProvidesLinkField
         ];
     }
 
+    /**
+     * Names the link settings in validation messages the way their settings UI labels them.
+     *
+     * @return array<string, string>
+     */
+    protected function linkSettingsAttributeLabels(): array
+    {
+        return [
+            $this->namespacedAttribute('types') => t('Allowed Link Types'),
+            $this->namespacedAttribute('advancedFields') => t('Advanced Fields'),
+        ];
+    }
+
     /** @return list<'urlSuffix'|'target'|'title'|'class'|'id'|'rel'|'ariaLabel'|'download'> */
     protected function supportedLinkAdvancedFields(): array
     {

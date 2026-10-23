@@ -28,6 +28,12 @@ function titleCase(value: string): string {
  * @fires model-value-changed - The selected color changed. Re-dispatched from
  *   the host as a composed event so it crosses the shadow boundary.
  *
+ * @cssproperty [--c-select-color-swatch-edge=rgb(0 0 0 / 15%)] - Edge of the
+ *   no-color swatch, which would otherwise blend into a dark surface. The dark
+ *   theme lightens it.
+ * @cssproperty [--c-select-color-swatch-ring=transparent] - Ring around every
+ *   swatch. The dark theme sets a faint one.
+ *
  * `model-value-changed` is Lion's own protocol name, not one this package
  * chose, and it is kept because Lion's form system dispatches and listens for
  * it. Prefer the native events above: they are the contract this package
@@ -100,7 +106,8 @@ export default class CraftSelectColor extends LitElement {
   /**
    * Renders a color swatch for the given color value. The special `__blank__`
    * value (the "Transparent" option) reuses the checkerboard treatment so it
-   * reads as "no color".
+   * reads as "no color". Other swatches match the header of a card in that
+   * color, fill and border alike.
    *
    * Structural styling is applied inline (rather than via the component's
    * scoped stylesheet) so the rendered node stays self-contained when Lion's
@@ -111,11 +118,19 @@ export default class CraftSelectColor extends LitElement {
    */
   protected _swatchTemplate(color: string) {
     const isTransparent = color === '__blank__';
+    // Every swatch casts a slight shadow and has an edge in its card header's
+    // border color (see --c-select-color-swatch-edge for no color's). The dark
+    // theme rings them too (see --c-select-color-swatch-ring).
+    const shadows = [
+      '0 0 0 1px var(--c-select-color-swatch-ring, transparent)',
+      '0 1px 1px rgb(0 0 0 / 20%)',
+      `inset 0 0 0 1px ${this._swatchBorder(color)}`,
+    ];
 
     const base =
       'flex:0 0 auto;inline-size:1rem;block-size:1rem;' +
       'border-radius:var(--c-radius-full);' +
-      'box-shadow:inset 0 0 0 1px rgb(0 0 0 / 15%);';
+      `box-shadow:${shadows.join(', ')};`;
 
     const transparent =
       'background:' +
@@ -126,15 +141,33 @@ export default class CraftSelectColor extends LitElement {
       'background-position:0 0, 0 0.25rem, 0.25rem -0.25rem, -0.25rem 0;' +
       'background-size:0.5rem 0.5rem;';
 
+    const fill = `var(--c-color-${color}-fill-quiet)`;
+
     const style = isTransparent
       ? base + transparent
-      : base + `background-color:var(--c-color-${color}-fill-loud);`;
+      : base + `background-color:${fill};`;
 
     return html`<span
       class="select-color__swatch"
       style="${style}"
       aria-hidden="true"
     ></span>`;
+  }
+
+  /**
+   * The border color of a card header in the given color, mirroring the
+   * card's own exceptions for black and white.
+   */
+  protected _swatchBorder(color: string): string {
+    switch (color) {
+      case '__blank__':
+        return 'var(--c-select-color-swatch-edge, rgb(0 0 0 / 15%))';
+      case 'black':
+      case 'white':
+        return `var(--c-color-${color}-edge)`;
+      default:
+        return `var(--c-color-${color}-border-quiet)`;
+    }
   }
 
   /**

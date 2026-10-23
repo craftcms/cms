@@ -299,6 +299,29 @@ describe('addressFieldsHtml', function () {
 });
 
 describe('selectizeHtml', function () {
+    it('maps a boolean value onto the boolean option values', function () {
+        // Legacy configs hand booleans straight through, and the combobox only
+        // takes an option value.
+        expect(FormFields::selectizeHtml([
+            'name' => 'enabled',
+            'value' => true,
+            'options' => [['value' => '1', 'label' => 'Yes'], ['value' => '0', 'label' => 'No']],
+        ]))->toContain('model-value="1"')
+            ->and(FormFields::selectizeHtml([
+                'name' => 'enabled',
+                'value' => false,
+                'options' => [['value' => '1', 'label' => 'Yes'], ['value' => '0', 'label' => 'No']],
+            ]))->toContain('model-value="0"');
+    });
+
+    it('casts a numeric value to its option value', function () {
+        expect(FormFields::selectizeHtml([
+            'name' => 'limit',
+            'value' => 25,
+            'options' => [['value' => '25', 'label' => '25']],
+        ]))->toContain('model-value="25"');
+    });
+
     it('keeps the native multiple select, which posts an array', function () {
         $html = FormFields::selectizeHtml([
             'name' => 'values',

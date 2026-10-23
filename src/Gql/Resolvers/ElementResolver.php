@@ -84,7 +84,7 @@ abstract class ElementResolver extends Resolver
         // Apply parsed orderBy pairs (e.g. [['slug', 'asc'], ['title', 'desc']])
         if (is_array($orderBy)) {
             foreach ($orderBy as [$column, $direction]) {
-                $query->orderBy($column);
+                $query->orderBy($column, $direction);
             }
         }
 

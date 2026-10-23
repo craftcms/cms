@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleElementActivity;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Facades\DB;
 
 it('deletes stale activity', function () {
@@ -12,7 +13,7 @@ it('deletes stale activity', function () {
         'userId' => 1,
         'siteId' => 1,
         'type' => 'foo',
-        'timestamp' => now(),
+        'timestamp' => Query::prepareDateForDb(now()),
     ]);
 
     DB::table(Table::ELEMENTACTIVITY)->insert([
@@ -20,7 +21,7 @@ it('deletes stale activity', function () {
         'userId' => 1,
         'siteId' => 1,
         'type' => 'foo-2',
-        'timestamp' => now()->subMinute()->subSecond(),
+        'timestamp' => Query::prepareDateForDb(now()->subMinute()->subSecond()),
     ]);
 
     expect(DB::table(Table::ELEMENTACTIVITY)->count())->toBe(2);

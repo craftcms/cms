@@ -284,6 +284,47 @@ describe('Vue table rows', () => {
     }
   );
 
+  it('moves between rows with Enter, adding rows at either end, and leaves Ctrl/Command + Enter to the form', async () => {
+    await mountTable();
+    const input = (row: number) =>
+      form.querySelectorAll('tbody tr')[row]!.querySelector('input')!;
+    const press = async (
+      row: number,
+      init: KeyboardEventInit = {}
+    ): Promise<KeyboardEvent> => {
+      const event = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      });
+      input(row).focus();
+      input(row).dispatchEvent(event);
+      await settle();
+      return event;
+    };
+
+    await press(0);
+    expect(document.activeElement).toBe(input(1));
+
+    await press(1);
+    expect(form.querySelectorAll('tbody tr')).toHaveLength(3);
+    expect(document.activeElement).toBe(input(2));
+    expect(input(2).value).toBe('Default');
+
+    await press(0, {shiftKey: true});
+    expect(form.querySelectorAll('tbody tr')).toHaveLength(4);
+    expect(document.activeElement).toBe(input(0));
+    expect(input(1).value).toBe('Alpha');
+
+    for (const modifier of ['ctrlKey', 'metaKey']) {
+      const event = await press(1, {[modifier]: true});
+      expect(event.defaultPrevented).toBe(false);
+      expect(document.activeElement).toBe(input(1));
+    }
+    expect(form.querySelectorAll('tbody tr')).toHaveLength(4);
+  });
+
   it('blocks row additions, deletion, reordering, and row-creating paste during submission without omitting cell values', async () => {
     const {inertiaUi, mutation} = await mountTable();
     inertiaUi.processing = true;

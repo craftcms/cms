@@ -13,7 +13,7 @@
   import type {UiChangeKind, UiControlPayload, UiProperties} from './types';
   import {inputName} from './runtime';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
-  import {canUseVueSlideout, openSlideout} from '@/common/slideouts';
+  import {openSlideout} from '@/common/slideouts';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
 
   /**
@@ -221,9 +221,6 @@
     viewMode,
     selectable,
     readOnly: () => !props.editable,
-    // Chips behave like a file list: a plain click collapses the selection to the
-    // one clicked, and ctrl/cmd adds to it.
-    click: 'replace',
   });
 
   const {
@@ -599,43 +596,41 @@
     updateValue(limit === null ? next : next.slice(-Math.max(limit, 1)));
   }
 
-  /**
-   * Double-click opens the element's editor slideout, as it does on chips
-   * everywhere else in the CP (Craft 5 binds the same gesture in
-   * `BaseElementSelectInput`, via `createElementEditor`).
-   */
+  /** Double-click opens the element's editor slideout, as it does on chips elsewhere. */
   function openEditor(value: number | string): void {
     const element = presentation(value);
-    const elementType = props.control.props.elementType;
-
-    if (canUseVueSlideout()) {
-      const href =
-        element.cpEditUrl ??
-        EditElementController[
-          '/{cpTrigger?}/{actionTrigger?}/elements/edit'
-        ].url(undefined, {
+    const href =
+      element.cpEditUrl ??
+      EditElementController['/{cpTrigger?}/{actionTrigger?}/elements/edit'].url(
+        undefined,
+        {
           query: {
-            elementType,
+            elementType: props.control.props.elementType,
             elementId: element.id,
             siteId: element.siteId ?? null,
           },
-        });
+        }
+      );
 
-      if (href) {
-        void openSlideout(href, {
-          // Registering a handler keeps a save from reloading the page behind,
-          // which would throw away the owner's unsaved edits.
-          onSaved: () => {},
-        });
+    void openSlideout(href, {
+      // Registering a handler keeps a save from reloading the page behind,
+      // which would throw away the owner's unsaved edits.
+      onSaved: ({data}) =>
+        replaceAsset(data?.replacedAssetId, data?.newAssetId),
+    });
+  }
 
-        return;
-      }
+  /** An image saved as a new asset takes the edited asset's place. */
+  function replaceAsset(replacedId: unknown, newId: unknown): void {
+    const from = Number(replacedId);
+    const to = Number(newId);
+
+    if (!from || !to || !ids.value.includes(from)) {
+      return;
     }
 
-    Craft.createElementEditor(elementType, {
-      elementId: element.id,
-      siteId: element.siteId ?? null,
-    });
+    presentations.set(to, {...presentation(from), id: to});
+    updateValue(ids.value.map((id) => (id === from ? to : id)));
   }
 </script>
 
@@ -749,7 +744,13 @@
               <ActionMenu
                 v-if="menuActions(element.id, index).length"
                 :actions="menuActions(element.id, index)"
-                :flush="list.isList.value ? 'inline-start' : undefined"
+                :flush="
+                  list.isList.value
+                    ? 'inline-start'
+                    : list.isThumbs.value
+                      ? false
+                      : undefined
+                "
               />
             </template>
           </ElementList>

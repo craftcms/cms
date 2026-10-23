@@ -1,5 +1,9 @@
-import {useDebounceFn} from '@vueuse/core';
-import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
+import {useTimeoutFn} from '@vueuse/core';
+import {
+  openSlideout,
+  type OpenSlideoutOptions,
+  type SlideoutSaveResult,
+} from '@/common/slideouts';
 
 /**
  * Anything in a row that owns its own click. Double-clicking one of these
@@ -53,6 +57,11 @@ export const CHIP_DOUBLE_CLICK_DELAY = 300;
  * Bound once on the element container and delegated, the way Craft 5's
  * `BaseElementIndexView` does it — so the table and cards views both get it
  * without either having to know about it.
+ *
+ * Admin tables use it too: a link that opens in a slideout carries the same
+ * `data-cp-url` / `data-editable` metadata, plus `data-slideout-width` for a
+ * custom width, so double-clicking its row opens it. A plain link doesn't, so
+ * its row does nothing.
  */
 export interface ElementQuickEditDependencies {
   openSlideout?: typeof openSlideout;
@@ -69,13 +78,16 @@ export function useElementQuickEdit(
   /**
    * Drafts autosave as the user types, and each one is a chance for the row to
    * drift out of date. Trailing-edge only: mid-word rows aren't worth a
-   * request, and the last one always lands.
+   * request, and the last one always lands — unless a full save refreshes
+   * first, or the index goes away.
    */
-  const refreshSoon = useDebounceFn(refreshResults, 600);
+  const refreshSoon = useTimeoutFn(refreshResults, 600, {immediate: false});
 
-  function onSaved(result: SlideoutSaveResult): void {
+  function onSaved(result: SlideoutSaveResult = {}): void {
+    refreshSoon.stop();
+
     if (result.draft) {
-      void refreshSoon();
+      refreshSoon.start();
 
       return;
     }
@@ -83,8 +95,12 @@ export function useElementQuickEdit(
     refreshResults();
   }
 
-  function openEditor(url: string, opener: HTMLElement | null = null): void {
-    void open(url, {opener, onSaved});
+  function openEditor(
+    url: string,
+    opener: HTMLElement | null = null,
+    options: Pick<OpenSlideoutOptions, 'width'> = {}
+  ): void {
+    void open(url, {...options, opener, onSaved});
   }
 
   /**
@@ -322,8 +338,18 @@ export function useElementQuickEdit(
     // Two fast clicks leave a text selection behind.
     window.getSelection()?.removeAllRanges();
 
-    openEditor(element.dataset.cpUrl!, row instanceof HTMLElement ? row : null);
+    // A link carrying the metadata is what focus returns to, as clicking it
+    // would have left it.
+    const opener = element.matches(IMMEDIATE_PRESS_SELECTOR)
+      ? element
+      : row instanceof HTMLElement
+        ? row
+        : null;
+
+    openEditor(element.dataset.cpUrl!, opener, {
+      width: element.dataset.slideoutWidth,
+    });
   }
 
-  return {onDblClick, deferChipClick, openEditor};
+  return {onDblClick, deferChipClick, openEditor, onSaved};
 }

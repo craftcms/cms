@@ -134,15 +134,23 @@ class Search
             )
             ->delete();
 
+        $rows = [];
+
         foreach ($this->searchableAttributes($element) as $attribute) {
             $value = $element->getSearchKeywords($attribute);
-            $this->indexKeywords($element, $value, attribute: $attribute);
+            $rows[] = $this->keywordsRow($element, $value, attribute: $attribute);
         }
 
         foreach ($updateFields as $layoutElementUid => $field) {
             $fieldValue = $element->getFieldValue($field->handle);
             $keywords = $field->getSearchKeywords($fieldValue, $element);
-            $this->indexKeywords($element, $keywords, fieldId: $field->id, layoutElementUid: $layoutElementUid);
+            $rows[] = $this->keywordsRow($element, $keywords, fieldId: $field->id, layoutElementUid: $layoutElementUid);
+        }
+
+        foreach (array_chunk(array_values(array_filter($rows)), 100) as $chunk) {
+            retry(3, function () use ($chunk) {
+                DB::table(Table::SEARCHINDEX)->insert($chunk);
+            }, 1_000, fn (Throwable $e) => $e instanceof QueryException && str_contains($e->getMessage(), 'deadlock'));
         }
 
         $mutex->release();
@@ -476,13 +484,18 @@ class Search
             ->delete();
     }
 
-    private function indexKeywords(
+    /**
+     * The search index row for an attribute's or field's keywords, or `null` if a listener vetoed indexing them.
+     *
+     * @return array<string, int|string>|null
+     */
+    private function keywordsRow(
         ElementInterface $element,
         string $keywords,
         ?string $attribute = null,
         ?int $fieldId = null,
         ?string $layoutElementUid = null,
-    ): void {
+    ): ?array {
         if ($attribute !== null) {
             $attribute = strtolower($attribute);
         }
@@ -494,7 +507,7 @@ class Search
         event($event);
 
         if (! $event->isValid) {
-            return;
+            return null;
         }
 
         $keywords = $event->keywords;
@@ -526,10 +539,7 @@ class Search
             $columns['keywords_vector'] = $keywords;
         }
 
-        retry(3, function () use ($columns) {
-            DB::table(Table::SEARCHINDEX)
-                ->insert($columns);
-        }, 1_000, fn (Throwable $e) => $e instanceof QueryException && str_contains($e->getMessage(), 'deadlock'));
+        return $columns;
     }
 
     /**

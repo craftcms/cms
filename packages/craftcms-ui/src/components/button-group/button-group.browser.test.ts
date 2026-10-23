@@ -3,6 +3,7 @@ import {userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
 import '../../styles/cp.css';
 import '../button/button.js';
+import '../action-menu/action-menu.js';
 import './button-group.js';
 
 beforeEach(() => {
@@ -137,6 +138,20 @@ it('overlaps adjacent buttons’ borders, with no gap', async () => {
   expect(border).toBeGreaterThan(0);
   expect(
     first!.getBoundingClientRect().right - second!.getBoundingClientRect().left
+  ).toBeCloseTo(border);
+});
+
+it('overlaps a menu’s invoker with the button before it, like a direct child', async () => {
+  const [save, invoker] = await render(`
+    <craft-button variant="primary">Save</craft-button>
+    <craft-action-menu>
+      <craft-button slot="invoker" variant="primary" icon="chevron-down"></craft-button>
+    </craft-action-menu>`);
+  const border = parseFloat(getComputedStyle(save!).borderInlineEndWidth);
+
+  expect(border).toBeGreaterThan(0);
+  expect(
+    save!.getBoundingClientRect().right - invoker!.getBoundingClientRect().left
   ).toBeCloseTo(border);
 });
 

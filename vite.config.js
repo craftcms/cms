@@ -190,7 +190,6 @@ export default defineConfig(({mode}) => {
         '!workbench/resources/js/**',
         '!yii2-adapter/resources/js/**',
         'resources/build/**',
-        'resources/legacy/**',
         'resources/js/**/fixtures/**',
       ],
       overrides: [

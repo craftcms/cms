@@ -16,12 +16,12 @@ vi.mock('@craftcms/ui', () => ({
   ButtonVariant: {Fill: 'fill'},
 }));
 
-vi.mock('@craftcms/ui/vue/CraftInput.vue', () => ({
+vi.mock('@craftcms/ui/vue/CraftInputSearch.vue', () => ({
   default: {
-    name: 'CraftInput',
+    name: 'CraftInputSearch',
     inheritAttrs: false,
     setup(_props: unknown, {attrs, slots}: SetupContext) {
-      return () => h('craft-input', attrs, slots.default?.());
+      return () => h('craft-input-search', attrs, slots.default?.());
     },
   },
 }));
@@ -341,7 +341,7 @@ it('names the view mode and sort direction button groups', () => {
 
   expect(viewModes.getAttribute('aria-label')).toBe('View Mode');
   expect(sortDirection.getAttribute('role')).toBe('group');
-  expect(sortDirection.getAttribute('aria-label')).toBe('Sort direction');
+  expect(sortDirection.getAttribute('aria-label')).toBe('Sort Direction');
 });
 
 it('changes sort direction when its actual direction button is clicked', async () => {
@@ -371,28 +371,12 @@ it('changes sort direction when its actual direction button is clicked', async (
   expect(descending.getAttribute('aria-pressed')).toBe('true');
 });
 
-it('returns focus to the search input when the search is cleared', () => {
-  const {onSearchUpdate} = mount({search: 'needle'});
-  const input = container!.querySelector<HTMLElement>(
-    'craft-input[name="search"]'
-  )!;
-  const focus = vi.spyOn(input, 'focus');
-
-  container!
-    .querySelector('craft-icon[label="Clear search"]')!
-    .closest<HTMLElement>('craft-button')!
-    .click();
-
-  expect(onSearchUpdate).toHaveBeenCalledWith('');
-  expect(focus).toHaveBeenCalled();
-});
-
 it('keeps the search input enabled while results load', () => {
   mount({processing: true});
 
   expect(
     container!
-      .querySelector('craft-input[name="search"]')!
+      .querySelector('craft-input-search[name="search"]')!
       .hasAttribute('disabled')
   ).toBe(false);
 });

@@ -2,15 +2,19 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\Resolvers\Elements\Entry;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Tests\TestClasses\Release\ReleaseQueryFixture;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -59,16 +63,53 @@ it('returns empty collection when schema has no section or nested entry field ac
         ->and($result)->toBeEmpty();
 });
 
-it('restricts query to allowed sections based on schema', function () {
+it('exposes releaseId only to schemas with draft read access', function () {
     $fixture = createResolverEntryFixture('news');
+    $gql = app(Gql::class);
 
-    app(Gql::class)->setActiveSchema(new GqlSchema([
+    $gql->setActiveSchema(new GqlSchema([
         'scope' => ["sections.{$fixture['section']->uid}:read"],
     ]));
 
-    $query = Entry::prepareQuery(null, []);
+    expect(EntryArguments::getArguments())->not->toHaveKey('releaseId');
 
-    expect($query)->toBeInstanceOf(EntryQuery::class);
+    $gql->setActiveSchema(new GqlSchema([
+        'scope' => [
+            "sections.{$fixture['section']->uid}:read",
+            'elements.drafts:read',
+        ],
+    ]));
+
+    expect(EntryArguments::getArguments())->toHaveKey('releaseId');
+});
+
+it('keeps release queries within the schema section scope', function () {
+    $allowed = createResolverEntryFixture('allowed');
+    $restricted = createResolverEntryFixture('restricted');
+    $drafts = app(Drafts::class);
+    $userId = User::findOne()->id;
+
+    $allowedDraft = $drafts->createDraft(EntryModel::factory()
+        ->forSection($allowed['section'])
+        ->forEntryType($allowed['entryType'])
+        ->createElement(), $userId);
+    $restrictedDraft = $drafts->createDraft(EntryModel::factory()
+        ->forSection($restricted['section'])
+        ->forEntryType($restricted['entryType'])
+        ->createElement(), $userId);
+
+    $release = ReleaseQueryFixture::create([$allowedDraft, $restrictedDraft]);
+
+    app(Gql::class)->setActiveSchema(new GqlSchema([
+        'scope' => [
+            "sections.{$allowed['section']->uid}:read",
+            'elements.drafts:read',
+        ],
+    ]));
+
+    $query = Entry::prepareQuery(null, ['releaseId' => $release->id]);
+
+    expect($query->ids())->toBe([$allowedDraft->id]);
 });
 
 it('returns preloaded data when source field is not a query', function () {

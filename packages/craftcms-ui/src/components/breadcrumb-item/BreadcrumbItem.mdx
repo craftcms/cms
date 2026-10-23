@@ -24,6 +24,12 @@ A crumb with `href` renders as a link; one without renders as plain text.
 
 `target` and `rel` behave as they do on a native anchor. `rel` defaults to `noreferrer noopener`, which is what a crumb opening in a new tab should carry.
 
+## Accessibility
+
+An icon in the `prefix` or `suffix` slot that only repeats the label stays decorative. One that adds meaning, such as an external-link icon on a crumb with `target="_blank"`, needs a text alternative: use `craft-icon`'s `label`.
+
+Anything in the `separator` slot is hidden from screen readers.
+
 ## Properties
 
 <ArgTypes of="craft-breadcrumb-item" />

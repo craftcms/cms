@@ -241,7 +241,7 @@ class UiResolver
 
     /**
      * @param  list<string>  $namespace
-     * @return array{list<array{path: list<string>, messages: list<string>}>, list<string>}
+     * @return array{list<array{path: list<string>, messages: list<string>, source?: list<string>}>, list<string>}
      */
     private function resolveErrors(UiContext $context, array $namespace): array
     {
@@ -260,7 +260,11 @@ class UiResolver
                 continue;
             }
 
-            $errors[] = ['path' => $ownerPath, 'messages' => $messages];
+            // Keep the path an error was raised at when a control owns it on
+            // a deeper path's behalf, so the control can place it itself.
+            $errors[] = $ownerPath === $absolutePath
+                ? ['path' => $ownerPath, 'messages' => $messages]
+                : ['path' => $ownerPath, 'messages' => $messages, 'source' => $absolutePath];
         }
 
         return [$errors, $globalErrors];

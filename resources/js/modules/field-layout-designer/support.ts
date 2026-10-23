@@ -60,3 +60,8 @@ export function firstFocusableInSiblings(el: Element): HTMLElement | null {
   }
   return null;
 }
+
+/** Whether a `.fld-tab` element is a sidebar tab, rather than a content tab. */
+export function isSidebarTab(el: Element): boolean {
+  return el.classList.contains('fld-tab--sidebar');
+}

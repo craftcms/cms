@@ -66,6 +66,22 @@ export const RequiredWithInstructions: Story = {
   },
 };
 
+/**
+ * `instructions-sr-only` visually hides the instructions, keeping them in the
+ * input's accessible description, such as when its placeholder repeats them.
+ */
+export const InstructionsSrOnly: Story = {
+  render: () => html`
+    <craft-field
+      label="Prompt"
+      help-text="Type { to insert a value."
+      instructions-sr-only
+    >
+      <input slot="input" type="text" placeholder="Type { to insert a value." />
+    </craft-field>
+  `,
+};
+
 export const TipAndWarning: Story = {
   render: () => html`
     <craft-field label="Field label">

@@ -218,6 +218,8 @@ it('can create a field config from a field', function () {
         'name' => 'Plain Text',
         'handle' => 'plainText',
         'instructions' => null,
+        'tip' => null,
+        'warning' => null,
         'searchable' => false,
         'translationMethod' => 'none',
         'translationKeyFormat' => null,
@@ -244,6 +246,21 @@ it('can save a field', function () {
     ])))->toBeTrue();
 
     expect(FieldModel::count())->toBe(1);
+});
+
+it('saves a field’s default tip and warning', function () {
+    $this->fields->saveField($this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Plain Text',
+        'handle' => 'plainText',
+        'tip' => 'A tip.',
+        'warning' => 'A warning.',
+    ]));
+
+    $record = FieldModel::firstOrFail();
+
+    expect($record->tip)->toBe('A tip.')
+        ->and($record->warning)->toBe('A warning.');
 });
 
 it('preps a field for saving', function () {

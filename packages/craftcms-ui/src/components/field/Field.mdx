@@ -63,6 +63,40 @@ The `actions` slot holds field-level controls: a hide-label toggle, a copy-value
 
 `label-extra` does something similar and is **deprecated** — use `actions`.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Nodes\Field` renders a field around a control:
+
+```php
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Enums\ChoicePresentation;
+use CraftCms\Cms\Ui\Enums\FieldWidth;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Title', Text::make('title'))
+        ->required()
+        ->instructions('What this entry will be called in the control panel.')
+        ->tip('Titles appear in search results.')
+        ->width(FieldWidth::Half),
+    Field::make('Status', Choice::make('status')
+        ->presentation(ChoicePresentation::Radios)
+        ->options([
+            ['label' => 'Live', 'value' => 'live'],
+            ['label' => 'Disabled', 'value' => 'disabled'],
+        ]))
+        ->fieldset(),
+]);
+```
+
+The control's path names its input, and validation errors for that path are shown on the field.
+`instructions()`, `tip()`, `warning()`, `required()`, and `translatable()` set the parts of the same names.
+Call `fieldset()` when the control is a group of inputs, such as radio buttons, so the label becomes the group's legend.
+`actions()` adds nodes next to the label, such as a [Copy Attribute](?path=/docs/components-copy-attribute--docs) or an [Action Menu](?path=/docs/components-action-menu--docs).
+
 ## Accessibility
 
 The field is where a control's accessible name and description come from, which makes it the single most load-bearing component in a form.
@@ -70,6 +104,11 @@ The field is where a control's accessible name and description come from, which 
 - **Every control in a form belongs in one.** A bare input has no name; wrapping it is the cheapest way to fix that.
 - **Use `fieldset` for groups.** A label pointing at the first of five checkboxes names that checkbox, not the group.
 - **`required` is announced,** not just marked with a symbol — so a person hears the requirement rather than needing to see the asterisk.
+- **Keep the label visible.** Set `label` on every field, and only use `label-sr-only` when the control's purpose is obvious without it, such as a search box beside its button.
+- **Set state on the control too.** The field never changes the slotted control, so put `required`, `readonly`, and `disabled` on the control as well as the field. That way the control itself is announced as required, read-only, or unavailable.
+- **Errors need text.** Put the messages in the `feedback` slot.
+- **Say how to fix it.** "Enter a date after the start date" helps; "Invalid value" doesn't.
+- **Move focus on submit.** When a form fails validation, move focus to the first invalid control. The field won't move focus for you.
 
 <Canvas of={FieldStories.ReadOnly} sourceState="shown" />
 

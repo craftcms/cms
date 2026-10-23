@@ -20,7 +20,10 @@
       return;
     }
 
-    submitter.claim(button.label);
+    if (!button.action) {
+      submitter.claim(button.label);
+    }
+
     button.onClick?.(event);
   }
 </script>
@@ -35,6 +38,8 @@
       "
       type="button"
       :variant="button.variant ?? ButtonVariant.Solid"
+      .action="button.action"
+      .feedback="button.feedback"
       :loading="submitter.isSubmitting(button.label)"
       :disabled="form.processing || button.disabled"
       :focusable-when-disabled="

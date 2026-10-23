@@ -248,7 +248,7 @@ readonly class Cp
             ),
             'edition' => Edition::get()->value,
             'elementTypeNames' => $elementTypeNames,
-            'elevatedSessionDuration' => $generalConfig->elevatedSessionDuration,
+            'elevatedSessionDuration' => max(0, (int) config('auth.password_timeout', 300)),
             'fieldsWithoutContent' => app(Fields::class)->getFieldsWithoutContent(false)->pluck('handle')->all(),
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => self::httpProxy($generalConfig),

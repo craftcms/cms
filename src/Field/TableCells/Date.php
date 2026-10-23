@@ -35,9 +35,12 @@ class Date extends TableCell
         return $date ? $date->format('Y-m-d') : null;
     }
 
+    /**
+     * Submitted values are local to the site, while stored ones are in UTC.
+     */
     public function normalizeValue(mixed $value, bool $fromRequest = false): mixed
     {
-        return DateTimeHelper::toDateTime($value) ?: null;
+        return DateTimeHelper::toDateTime($value, assumeSystemTimeZone: $fromRequest) ?: null;
     }
 
     public function serializeValue(mixed $value, bool $forDb = false): bool|float|int|string|null

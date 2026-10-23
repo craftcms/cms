@@ -43,7 +43,11 @@ The `content` slot replaces the message region entirely, for a state needing mor
 
 ## Accessibility
 
-The graphic is decoration — the message carries the meaning, so artwork that repeats it should not be announced twice.
+The message is a paragraph, not a heading. When the empty state stands in for a section's content, slot a heading of the right level into `content` so the section still shows up in the outline.
+
+The `icon` is decorative and hidden from screen readers — the message carries the meaning. The component does not hide artwork slotted into `graphic`: give it `alt=""` or `aria-hidden="true"` when it repeats the message, and a text alternative when it says more.
+
+Name the action in the default slot for what it does, such as "Create entry" or "Clear filters".
 
 When an empty state appears in response to something a person did, such as a filter returning nothing, the change needs announcing. The component does not do that: it renders in place and says nothing about arriving, so the code that swaps it in is responsible.
 

@@ -58,6 +58,7 @@ use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\ImportHelper;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Contracts\Control;
@@ -447,8 +448,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ...(Cms::config()->headlessMode ? Arr::only($settings, ['uriFormat']) : $settings),
             ];
         }
+        // The URI and Route columns share the remaining width equally
+        $uriWidth = Cms::config()->headlessMode ? [] : ['width' => 50];
         $siteColumns = [
-            'heading' => ['heading' => t('Site'), 'type' => 'heading'],
+            'heading' => ['heading' => t('Site'), 'type' => 'heading', 'class' => 'thin'],
             'uriFormat' => [
                 'heading' => t('Entry URI Format'),
                 'type' => 'singleline',
@@ -456,10 +459,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'code' => true,
                 'info' => $objectTemplateTip,
                 'textExpanderTriggers' => $entryTemplateTriggers,
+                ...$uriWidth,
             ],
         ];
         if (! Cms::config()->headlessMode) {
-            $siteColumns['destination'] = ElementSiteSettings::destinationColumn(Entry::class);
+            $siteColumns['destination'] = [
+                ...ElementSiteSettings::destinationColumn(Entry::class),
+                'width' => 50,
+            ];
         }
 
         $indexViewModes = array_values(array_map(fn (array $viewMode): array => [
@@ -1713,7 +1720,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ->where('fieldId', $outgoingField->id)
             ->update([
                 'fieldId' => $this->id,
-                'dateUpdated' => now(),
+                'dateUpdated' => Query::prepareDateForDb(now()),
             ]);
 
         parent::afterMergeFrom($outgoingField);

@@ -1,8 +1,21 @@
 import {css} from 'lit';
+import {tintedHost} from '@src/styles/tinted.styles';
 
 export default css`
   :host {
     display: inline-flex;
+  }
+
+  /*
+   * As with chips, a blue link would clash with the fill, so links take the
+   * badge's text color, and are underlined so they still stand apart from it.
+   * Neutral badges keep the default link styling (a black badge's contents
+   * take the dark theme's).
+   */
+  ${tintedHost()} {
+    --c-text-link: currentColor;
+    --c-link-decoration: underline;
+    --c-link-decoration-hover: none;
   }
 
   .badge {

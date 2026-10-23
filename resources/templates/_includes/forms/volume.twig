@@ -2,18 +2,19 @@
 
 {% set addOptionFn %}
 (createOption, selectize) => {
-    const slideout = new Craft.CpScreenSlideout('volumes/edit-volume');
-    slideout.on('submit', ev => {
-        createOption({
-            text: ev.data.name,
-            value: ev.data.id,
-        });
-    });
-    slideout.on('close', () => {
-        if (selectize.lastValidValue === '__add__') {
-            selectize.lastValidValue = '';
-        }
-        selectize.focus();
+    Craft.openSlideout(Craft.getCpUrl('settings/assets/volumes/new'), {
+        onSaved: ({data, draft}) => {
+            const volume = data?.volume;
+            if (!draft && volume) {
+                createOption({text: volume.name, value: volume.id});
+            }
+        },
+        onClosed: () => {
+            if (selectize.lastValidValue === '__add__') {
+                selectize.lastValidValue = '';
+            }
+            selectize.focus();
+        },
     });
 }
 {% endset %}

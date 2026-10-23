@@ -105,6 +105,10 @@ it('encodes every format reported by each driver', function (ImageDriver $driver
 ]);
 
 it('converts CMYK without modifying the source', function (ImageDriver $driver) {
+    if (! extension_loaded('imagick')) {
+        $this->markTestSkipped('Imagick is required to create the CMYK fixture.');
+    }
+
     $sourcePath = storage_path("framework/testing/cmyk-{$driver->value}.jpg");
     $targetPath = storage_path("framework/testing/cmyk-{$driver->value}.png");
     $fixture = new Imagick;

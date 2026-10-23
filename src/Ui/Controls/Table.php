@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ui\Controls;
 
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Contracts\Control as ControlContract;
@@ -275,11 +276,24 @@ class Table extends Control
         ];
     }
 
+    /**
+     * @param  array<string, mixed>  $column
+     * @return array<string, mixed>
+     */
+    private function columnProps(array $column): array
+    {
+        if (isset($column['info']) && ! isset($column['infoHtml'])) {
+            $column['infoHtml'] = Markdown::parseParagraph((string) $column['info']);
+        }
+
+        return array_diff_key($column, ['control' => true, 'info' => true]);
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
         return Arr::whereNotNull([
-            'columns' => array_map(fn (array $column): array => array_diff_key($column, ['control' => true]), $this->columns),
+            'columns' => array_map($this->columnProps(...), $this->columns),
             'allowAdd' => $this->allowAdd,
             'allowDelete' => $this->allowDelete,
             'allowReorder' => $this->allowReorder,

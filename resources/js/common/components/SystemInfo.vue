@@ -52,6 +52,8 @@
   .system-info__icon {
     display: flex;
     aspect-ratio: 1;
+    border-radius: var(--c-radius-md);
+    overflow: hidden;
   }
 
   .system-info__name {

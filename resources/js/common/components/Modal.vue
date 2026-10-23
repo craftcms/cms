@@ -13,7 +13,8 @@
   import {computed, onBeforeUnmount, shallowRef, watch} from 'vue';
   import {t} from '@craftcms/ui';
   import CraftDialog from '@craftcms/ui/components/dialog/dialog';
-  import CornerResizeHandle from '@/common/components/CornerResizeHandle.vue';
+  import '@craftcms/ui/components/resize-grips/resize-grips';
+  import type {ResizeGripsSize} from '@craftcms/ui';
   import {useResizableBox} from '@/common/composables/useResizableBox';
 
   export interface ModalProps {
@@ -24,7 +25,7 @@
     width?: string;
     height?: string;
     maxHeight?: string;
-    /** Adds a corner handle for dragging the modal to a new size. */
+    /** Adds grips along its right and bottom edges, and in their corner, for resizing it. */
     resizable?: boolean;
     /**
      * Whether Escape and a click on the overlay close it. Off for a modal
@@ -172,7 +173,7 @@
       ref="dialog"
       :label="label"
       .opened="true"
-      no-close
+      no-header
       .closeOnOutsideClick="dismissible"
       :class="{'without-overlay': !overlay || isNested}"
       @craft-before-hide="requestClose"
@@ -186,7 +187,15 @@
         >
           <slot></slot>
         </div>
-        <CornerResizeHandle v-if="resizable" :resizer="resizer" />
+        <div v-if="resizable" class="resize-frame">
+          <craft-resize-grips
+            .target="content"
+            @craft-resize="
+              (event: CustomEvent<ResizeGripsSize>) =>
+                resizer.applySize(event.detail)
+            "
+          ></craft-resize-grips>
+        </div>
       </div>
     </craft-dialog>
   </Transition>
@@ -201,7 +210,7 @@
     max-width: calc(100vw - (var(--c-spacing-lg) * 2));
     max-height: calc(100vh - (var(--c-spacing-lg) * 2));
     background-color: var(--c-modal-fill);
-    box-shadow: var(--c-modal-shadow);
+    box-shadow: var(--c-shadow-overlay);
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-modal-radius);
     border-width: var(--c-modal-border-width);
@@ -215,16 +224,13 @@
     isolation: isolate;
   }
 
-  craft-dialog::part(header) {
-    display: none;
-  }
-
   craft-dialog::part(surface) {
     display: block;
     min-inline-size: 0;
     max-inline-size: none;
     max-block-size: none;
     background: none;
+    border: 0;
     box-shadow: none;
     overflow: visible;
   }
@@ -245,20 +251,20 @@
     align-items: center;
   }
 
-  /* Overlaid on the content's own grid cell so the handle can sit in its corner
+  /* Overlaid on the content's own grid cell so the grips can sit on its edges
    without joining the scrolling box. */
   .cp-modal > * {
     grid-area: 1 / 1;
   }
 
-  /* Where the handle sits is this modal's business; how it looks is its own. */
-  .corner-resize-handle {
-    align-self: end;
-    justify-self: end;
-    /* Positioned so the z-index reliably lifts it above `.content`, which is
-     itself positioned and would otherwise paint over the corner. */
+  /* Positioned so the z-index reliably lifts the grips above `.content`, which
+   is itself positioned and would otherwise paint over them. */
+  .resize-frame {
+    --c-resize-grips-radius: var(--c-modal-radius);
+    place-self: stretch;
     position: relative;
     z-index: 1;
+    pointer-events: none;
   }
 
   @media (prefers-reduced-motion: no-preference) {

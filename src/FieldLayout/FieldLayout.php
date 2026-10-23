@@ -14,6 +14,7 @@ use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Concerns\LegacyConstants;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\Enums\TabType;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutCustomFieldsResolving;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutUIElementsResolving;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -449,8 +450,6 @@ class FieldLayout extends Component
     {
         $this->_tabs = [];
 
-        $index = 0;
-
         foreach ($tabs as $tab) {
             if (is_array($tab)) {
                 // Set the layout before anything else
@@ -460,8 +459,14 @@ class FieldLayout extends Component
                 $tab->setLayout($this);
             }
 
-            $tab->sortOrder = ++$index;
             $this->_tabs[] = $tab;
+        }
+
+        // Sidebar tabs always come after content tabs
+        usort($this->_tabs, fn (FieldLayoutTab $a, FieldLayoutTab $b) => ($a->type === TabType::Sidebar) <=> ($b->type === TabType::Sidebar));
+
+        foreach ($this->_tabs as $index => $tab) {
+            $tab->sortOrder = $index + 1;
         }
 
         // Make sure that we aren't missing any mandatory fields

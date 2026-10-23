@@ -78,7 +78,7 @@ class UiHtmlRenderer
         }
     }
 
-    /** @return array<string, array{tabId: string, label: string, url: string, class: string|null}> */
+    /** @return array<string, array{tabId: string, label: string, url: string, class: string|null, icon?: string}> */
     public function tabMenu(UiPayload $payload, bool $namespaceScope = true): array
     {
         $tabs = [];
@@ -96,6 +96,7 @@ class UiHtmlRenderer
                 'label' => (string) $node->props['label'],
                 'url' => "#{$id}",
                 'class' => $this->nodeHasErrors($node, $payload) ? 'error' : null,
+                ...(isset($node->props['icon']) ? ['icon' => (string) $node->props['icon']] : []),
             ];
         }
 
@@ -246,7 +247,7 @@ class UiHtmlRenderer
     }
 
     /** @param list<string> $path
-     * @return list<array{path: list<string>, messages: list<string>}>
+     * @return list<array{path: list<string>, messages: list<string>, source?: list<string>}>
      */
     public function controlErrors(array $path): array
     {
@@ -256,7 +257,7 @@ class UiHtmlRenderer
     }
 
     /**
-     * @param  list<array{path: list<string>, messages: list<string>}>  $errors
+     * @param  list<array{path: list<string>, messages: list<string>, source?: list<string>}>  $errors
      * @param  list<string>  $path
      * @return list<string>
      */

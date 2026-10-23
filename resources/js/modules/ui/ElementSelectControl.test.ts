@@ -100,8 +100,6 @@ describe('ElementSelectControl', () => {
   let app: ReturnType<typeof createApp> | undefined;
   let container: HTMLElement | undefined;
 
-  const createElementEditor = vi.fn();
-
   beforeEach(() => {
     // The menu items' `<craft-icon>`s fetch their SVGs; left in flight they're
     // aborted at teardown and reported as unhandled errors.
@@ -109,9 +107,7 @@ describe('ElementSelectControl', () => {
       'fetch',
       vi.fn(async () => new Response('<svg></svg>'))
     );
-    // Double-click hands off to the global editor; only the hand-off matters here.
-    vi.stubGlobal('Craft', {createElementEditor});
-    createElementEditor.mockClear();
+    vi.stubGlobal('Craft', {});
   });
 
   afterEach(() => {
@@ -520,6 +516,17 @@ describe('ElementSelectControl', () => {
     expect(selectedChips(root)).toEqual([]);
   });
 
+  it('adds a clicked chip to the selection, as its checkbox does', async () => {
+    const root = await mount({props: {limit: 3}, value: [5, 6]});
+
+    for (const chip of chips(root)) {
+      chip.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+      await nextTick();
+    }
+
+    expect(selectedChips(root)).toHaveLength(2);
+  });
+
   it('selects through the chip’s own checkbox', async () => {
     const root = await mount({props: {limit: 3}, value: [5, 6]});
 
@@ -628,7 +635,7 @@ describe('ElementSelectControl', () => {
       await nextTick();
 
       expect(
-        tiles(root, '.card-grid > li').map((li) => li.className.includes('sel'))
+        tiles(root, '.card-grid > li').map((li) => li.classList.contains('sel'))
       ).toEqual([true, false]);
     });
 
@@ -654,9 +661,28 @@ describe('ElementSelectControl', () => {
 
       expect(
         tiles(root, '.thumbsview > li').map((li) =>
-          li.className.includes('sel')
+          li.classList.contains('element--selected')
         )
       ).toEqual([true, false]);
+    });
+
+    /**
+     * A thumbnail's menu sits in its corner, padded like a chip's, so a flush
+     * button would bleed its hover to the tile's edge.
+     */
+    it('keeps a thumbnail’s action menu within its padding', async () => {
+      const root = await mount({
+        props: {viewMode: 'thumbs', limit: 3},
+        value: [5, 6],
+      });
+      const invokers = [
+        ...root.querySelectorAll('.thumb-actions craft-button[slot="invoker"]'),
+      ];
+
+      expect(invokers).toHaveLength(2);
+      expect(invokers.some((invoker) => invoker.hasAttribute('flush'))).toBe(
+        false
+      );
     });
 
     it('selects a card through its checkbox too', async () => {
@@ -673,7 +699,7 @@ describe('ElementSelectControl', () => {
       await nextTick();
 
       expect(
-        tiles(root, '.card-grid > li').map((li) => li.className.includes('sel'))
+        tiles(root, '.card-grid > li').map((li) => li.classList.contains('sel'))
       ).toEqual([true, false]);
     });
 
@@ -795,11 +821,11 @@ describe('ElementSelectControl', () => {
 
       doubleClick(chip(root));
 
-      expect(createElementEditor).toHaveBeenCalledTimes(1);
-      expect(createElementEditor).toHaveBeenCalledWith(
-        'CraftCms\\Cms\\Elements\\Entry',
-        expect.objectContaining({elementId: 5})
-      );
+      expect(stub.openSlideout).toHaveBeenCalledOnce();
+      const [href] = stub.openSlideout.mock.calls[0] as unknown as [string];
+      expect(
+        new URL(href, 'https://example.test').searchParams.get('elementId')
+      ).toBe('5');
     });
 
     it.each([
@@ -808,7 +834,6 @@ describe('ElementSelectControl', () => {
     ])(
       'opens %s in the generic editor when it has no edit URL',
       async (elementType) => {
-        vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
         const root = await mount({
           props: {
             elementType,
@@ -819,7 +844,6 @@ describe('ElementSelectControl', () => {
 
         doubleClick(chip(root));
 
-        expect(createElementEditor).not.toHaveBeenCalled();
         expect(stub.openSlideout).toHaveBeenCalledOnce();
         const [href] = stub.openSlideout.mock.calls[0] as unknown as [string];
         const url = new URL(href, 'https://example.test');
@@ -831,7 +855,6 @@ describe('ElementSelectControl', () => {
     );
 
     it('opens an element’s own edit screen in a Vue slideout', async () => {
-      vi.stubGlobal('Craft', {createElementEditor, openSlideout: vi.fn()});
       const root = await mount({
         props: {
           elementType: 'CraftCms\\Cms\\Asset\\Elements\\Asset',
@@ -844,11 +867,23 @@ describe('ElementSelectControl', () => {
 
       doubleClick(chip(root));
 
-      expect(createElementEditor).not.toHaveBeenCalled();
       expect(stub.openSlideout).toHaveBeenCalledWith(
         '/admin/assets/edit/5',
         expect.objectContaining({onSaved: expect.any(Function)})
       );
+    });
+
+    it('swaps in an image saved as a new asset from the editor', async () => {
+      const root = await mount({value: [5, 6]});
+
+      doubleClick(chip(root));
+      const [, options] = stub.openSlideout.mock.calls[0] as unknown as [
+        string,
+        {onSaved: (result: {data?: Record<string, unknown>}) => void},
+      ];
+      options.onSaved({data: {replacedAssetId: 5, newAssetId: 9}});
+
+      expect(updates.at(-1)).toEqual([9, 6]);
     });
 
     it('stays put when the double-click lands on the chip’s checkbox', async () => {
@@ -860,7 +895,7 @@ describe('ElementSelectControl', () => {
 
       doubleClick(chip(root), checkbox);
 
-      expect(createElementEditor).not.toHaveBeenCalled();
+      expect(stub.openSlideout).not.toHaveBeenCalled();
     });
 
     it('stays put when the double-click lands on a button in the chip', async () => {
@@ -869,7 +904,7 @@ describe('ElementSelectControl', () => {
 
       doubleClick(chip(root), button);
 
-      expect(createElementEditor).not.toHaveBeenCalled();
+      expect(stub.openSlideout).not.toHaveBeenCalled();
     });
   });
   describe('selection toolbar', () => {
@@ -1126,10 +1161,7 @@ describe('ElementSelectControl', () => {
 
     it('copies the selected elements through the clipboard', async () => {
       const copyElements = vi.fn();
-      vi.stubGlobal('Craft', {
-        createElementEditor: vi.fn(),
-        cp: {copyElements},
-      });
+      vi.stubGlobal('Craft', {cp: {copyElements}});
 
       const root = await mountSelected();
       menuItem(bulkMenu(root)!, 'Copy selected').click();
@@ -1397,10 +1429,7 @@ describe('ElementSelectControl', () => {
 
       pencil(root)!.dispatchEvent(new MouseEvent('click', {bubbles: true}));
 
-      expect(createElementEditor).toHaveBeenCalledWith(
-        'CraftCms\\Cms\\Elements\\Entry',
-        expect.objectContaining({elementId: 5})
-      );
+      expect(stub.openSlideout).toHaveBeenCalledOnce();
     });
 
     it('offers no pencil for an element the user can’t edit', async () => {

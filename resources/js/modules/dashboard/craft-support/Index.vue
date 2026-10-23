@@ -73,7 +73,7 @@
         </span>
       </craft-button>
     </div>
-    <craft-card v-show="screen !== 'home'">
+    <craft-card data-color="gray" v-show="screen !== 'home'">
       <h2 slot="label" class="text-sm">{{ cardHeading }}</h2>
       <div v-show="screen !== 'home'" class="space-y-4">
         <SupportSearch
@@ -108,8 +108,8 @@
   }
   .support-tile {
     --c-color-fill-normal: color-mix(
-      var(--c-color-neutral-fill-quiet) 30%,
-      var(--c-surface-default)
+      var(--c-color-gray-fill-quiet),
+      transparent 70%
     );
     display: flex;
     width: 100%;
@@ -117,7 +117,7 @@
     padding-block: 24px;
     padding-inline: 16px;
     border: var(--c-card-border-width, 1px) solid
-      var(--c-color-neutral-border-quiet);
+      var(--c-color-gray-border-quiet);
     border-radius: 0;
     white-space: normal;
   }

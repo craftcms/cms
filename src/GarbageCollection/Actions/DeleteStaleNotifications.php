@@ -18,7 +18,8 @@ class DeleteStaleNotifications extends GarbageCollectionAction
             'deleting stale notifications',
             fn () => DatabaseNotification::query()
                 ->where('type', CpNotification::TYPE)
-                ->where('read_at', '<', now()->subDays(7))
+                // Laravel writes notifications, in the system time zone
+                ->where('read_at', '<', now()->subDays(7)->toDateTimeString())
                 ->delete(),
         );
     }

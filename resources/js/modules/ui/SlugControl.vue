@@ -86,6 +86,7 @@
     autocomplete="off"
     autocorrect="off"
     autocapitalize="none"
+    inline-suffix
     @update:value="emit('update:value', $event, 'typing')"
     @change="onChange"
   >

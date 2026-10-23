@@ -3,6 +3,8 @@
 return [
     'Add a category' => 'Add a category',
     'Add a tag' => 'Add a tag',
+    'Adds “{plural}” and “{singular}” queries, and a “{field}” field to categories.' => 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to categories.',
+    'Adds “{plural}” and “{singular}” queries, and a “{field}” field to tags.' => 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to tags.',
     'An error occurred when duplicating the category.' => 'An error occurred when duplicating the category.',
     'Category Group - {name}' => 'Category Group - {name}',
     'Category Group' => 'Category Group',
@@ -41,6 +43,8 @@ return [
     'No global sets exist yet.' => 'No global sets exist yet.',
     'No tag groups exist yet.' => 'No tag groups exist yet.',
     'Query for categories in the “{name}” category group' => 'Query for categories in the “{name}” category group',
+    'Query for category groups' => 'Query for category groups',
+    'Query for tag groups' => 'Query for tag groups',
     'Query for tags in the “{name}” tag group' => 'Query for tags in the “{name}” tag group',
     'Query for the “{name}” global set' => 'Query for the “{name}” global set',
     'Save categories in the “{categoryGroup}” category group' => 'Save categories in the “{categoryGroup}” category group',

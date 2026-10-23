@@ -207,6 +207,8 @@ readonly class AssetIndexesController
             $assets = Asset::find()
                 ->status(null)
                 ->id($deleteFiles)
+                ->site('*')
+                ->unique()
                 ->all();
 
             foreach ($assets as $asset) {

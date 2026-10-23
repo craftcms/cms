@@ -8,9 +8,11 @@
   const props = withDefaults(
     defineProps<{
       title?: string;
+      wide?: boolean;
     }>(),
     {
       title: t('Sign In'),
+      wide: false,
     }
   );
 
@@ -24,7 +26,10 @@
   </a>
   <main id="cp-login-content" class="cp-login" tabindex="-1">
     <LiveRegion />
-    <div class="cp-login__wrapper grid gap-3 justify-items-center">
+    <div
+      class="cp-login__wrapper grid gap-3 justify-items-center"
+      :class="{'cp-login__wrapper--wide': props.wide}"
+    >
       <h1 class="flex justify-center">
         <img
           v-if="general.cpLogoUrl"
@@ -90,6 +95,10 @@
   .cp-login__wrapper {
     width: 100%;
     max-width: var(--container-sm);
+  }
+
+  .cp-login__wrapper--wide {
+    max-width: var(--container-2xl);
   }
 
   .cp-login__logo {

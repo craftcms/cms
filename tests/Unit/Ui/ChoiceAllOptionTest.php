@@ -37,18 +37,16 @@ function sourcesChoice(?callable $configure = null, ?array $value = null): Crawl
 }
 
 it('renders no select-all by default', function () {
-    expect(sourcesChoice()->filter('craft-checkbox-indeterminate'))->toHaveCount(0);
+    expect(sourcesChoice()->filter('.all'))->toHaveCount(0);
 });
 
-it('nests the options inside a select-all checkbox', function () {
+it('renders the options in a checkbox select, after a select-all checkbox', function () {
     $crawler = sourcesChoice(fn (Choice $choice) => $choice->allOption());
-    $all = $crawler->filter('craft-checkbox-group craft-checkbox-indeterminate');
+    $all = $crawler->filter('craft-checkbox-select > .cp-checkbox-select__item.all');
 
-    // The label is slotted, matching how Checkbox and Radio render theirs.
     expect($all)->toHaveCount(1)
         ->and($all->filter('label[slot="label"]')->text())->toBe('All')
-        // Nesting is how the component finds the boxes it governs.
-        ->and($all->filter('craft-checkbox'))->toHaveCount(2)
+        ->and($crawler->filter('craft-checkbox-select')->attr('all-label'))->toBe('All')
         // All posts under the same name as the options.
         ->and($crawler->filter('input[name="sources[]"]')->extract(['value']))
         ->toBe(['*', 'volume:uploads', 'volume:images']);
@@ -56,28 +54,28 @@ it('nests the options inside a select-all checkbox', function () {
 
 it('takes a custom label', function () {
     expect(sourcesChoice(fn (Choice $choice) => $choice->allOption('All sources'))
-        ->filter('craft-checkbox-indeterminate > label[slot="label"]')->text())->toBe('All sources');
+        ->filter('.all label[slot="label"]')->text())->toBe('All sources');
 });
 
 it('posts a single token by default, and only that token when checked', function () {
     $all = sourcesChoice(fn (Choice $choice) => $choice->allOption())
-        ->filter('craft-checkbox-indeterminate > input[type="checkbox"]');
+        ->filter('.all input[type="checkbox"]');
 
     expect($all->attr('value'))->toBe('*')
         ->and($all->attr('name'))->toBe('sources[]')
         ->and($all->attr('checked'))->toBeNull();
 
-    // With the token selected the options render checked — so the group still
+    // With the token selected the options render checked — so the list still
     // reads as fully selected — but nameless, so only the token posts. They
-    // stay enabled: Lion skips disabled children when “All” propagates, which
-    // would leave it unable to clear them again.
+    // stay enabled, so “All” can clear them again, and remember their name.
     $crawler = sourcesChoice(fn (Choice $choice) => $choice->allOption(), ['*']);
-    $options = $crawler->filter('craft-checkbox input[type="checkbox"]');
+    $options = $crawler->filter('.cp-checkbox-select__item:not(.all) input[type="checkbox"]');
 
-    expect($crawler->filter('craft-checkbox-indeterminate > input')->attr('checked'))->not->toBeNull()
+    expect($crawler->filter('.all input[type="checkbox"]')->attr('checked'))->not->toBeNull()
         ->and($options)->toHaveCount(2)
         ->and($options->each(fn ($i) => $i->attr('checked')))->each->not->toBeNull()
         ->and($options->each(fn ($i) => $i->attr('name')))->each->toBeNull()
+        ->and($options->each(fn ($i) => $i->attr('data-governed-name')))->each->toBe('sources[]')
         ->and($options->each(fn ($i) => $i->attr('disabled')))->each->toBeNull()
         // Only the token posts.
         ->and($crawler->filter('input[name="sources[]"]')->extract(['value']))->toBe(['*']);
@@ -86,14 +84,15 @@ it('posts a single token by default, and only that token when checked', function
 it('carries no value of its own in each-value mode', function () {
     $crawler = sourcesChoice(fn (Choice $choice) => $choice->allOption(mode: AllOptionMode::EachValue));
 
-    expect($crawler->filter('craft-checkbox-indeterminate')->attr('name'))->toBeNull()
-        ->and($crawler->filter('craft-checkbox input[type="checkbox"]')->extract(['value']))
+    expect($crawler->filter('.all input[type="checkbox"]')->attr('name'))->toBeNull()
+        ->and($crawler->filter('craft-checkbox-select')->attr('all-mode'))->toBe('each-value')
+        ->and($crawler->filter('input[name="sources[]"]')->extract(['value']))
         ->toBe(['volume:uploads', 'volume:images']);
 });
 
 it('takes a custom token', function () {
     expect(sourcesChoice(fn (Choice $choice) => $choice->allOption(value: 'everything'), ['everything'])
-        ->filter('craft-checkbox-indeterminate > input')->attr('value'))->toBe('everything');
+        ->filter('.all input[type="checkbox"]')->attr('value'))->toBe('everything');
 });
 
 it('only advertises the label when the option is enabled', function () {

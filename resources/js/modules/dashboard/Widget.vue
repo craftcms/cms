@@ -143,7 +143,7 @@
       @before-leave="(element) => element.setAttribute('inert', '')"
     >
       <div v-if="settings" class="settings-face">
-        <craft-card>
+        <craft-card data-color="gray">
           <h2 slot="label" class="text-sm">
             {{ t('{type} Settings', {type: widget.name}) }}
           </h2>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {computed, ref} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
-  import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
   import SlideoutButton from '@/common/components/SlideoutButton.vue';
   import type {SlideoutSaveResult} from '@/common/slideouts';
   import Text from '@/common/components/Text.vue';
@@ -128,9 +128,7 @@
 
         <div slot="content">
           <div class="p-2">
-            <CraftInput :label="t('Search')" v-model="groupQuery" label-sr-only>
-              <craft-icon name="search" slot="prefix"></craft-icon>
-            </CraftInput>
+            <CraftInputSearch v-model="groupQuery" />
           </div>
           <hr class="m-0" />
           <div v-if="selectableGroups.length < 1" class="p-2">
@@ -147,7 +145,7 @@
               :checked="isSelected(group.id)"
               @click="selectGroup(group)"
             >
-              <div>
+              <div class="user-group-option">
                 {{ groupLabel(group) }}
                 <pre>{{ group.handle }}</pre>
                 <small v-if="group.description">{{ group.description }}</small>
@@ -178,5 +176,17 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: var(--c-spacing-sm);
+  }
+
+  /* Action item labels don't wrap by default, but descriptions should. */
+  .user-group-option {
+    white-space: normal;
+  }
+
+  /* As a block, the description's lines follow its own smaller text rather
+     than the label's line height. */
+  .user-group-option small {
+    display: block;
+    line-height: 1.3;
   }
 </style>

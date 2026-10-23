@@ -148,11 +148,14 @@ class ElementRequest extends FormRequest
     }
 
     /**
+     * The element type the request is for. A route that's pinned to one through an
+     * `elementType` default can't be pointed at another by the request's input.
+     *
      * @return class-string<ElementInterface>
      */
     public function elementType(): string
     {
-        $elementType = Arr::get($this->overrides, 'type', $this->input('elementType'));
+        $elementType = Arr::get($this->overrides, 'type') ?? $this->route('elementType') ?? $this->input('elementType');
         $elementId = Arr::get($this->overrides, 'id', $this->input('elementId'));
         $elementUid = Arr::get($this->overrides, 'uid', $this->input('elementUid'));
 

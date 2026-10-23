@@ -2,7 +2,20 @@
 
 :root,
 :host,
-[data-theme='light'] {
+[data-theme='light'],
+:where(
+  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='white']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='black'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='black']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='black'] > *
+) {
   --color-gray-50: #eaecef;
   --color-gray-100: #d4d7dd;
   --color-gray-200: #c2c6ce;
@@ -513,7 +526,23 @@
   --color-static-base-950: #161c29;
 }
 
-[data-theme='dark'] {
+/* What's in a surface that looks dark (a black card, (filled) chip, or badge,
+   or a white one in the dark theme) is themed dark, so it holds up against
+   the dark fill. (The element itself keeps its own colors.) */
+[data-theme='dark'],
+:where(
+  craft-card[data-color='black']:not([data-theme='dark'] *) > *,
+  craft-chip[data-color='black']:not([appearance~='plain']):not(
+      [data-theme='dark'] *
+    )
+    > *,
+  craft-badge[fill='black']:not([data-theme='dark'] *) > *,
+  [data-theme='dark'] craft-card[data-color='white'] > *,
+  [data-theme='dark']
+    craft-chip[data-color='white']:not([appearance~='plain'])
+    > *,
+  [data-theme='dark'] craft-badge[fill='white'] > *
+) {
   --color-gray-50: #3b4252;
   --color-gray-100: #535a69;
   --color-gray-200: #626877;

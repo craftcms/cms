@@ -55,6 +55,10 @@ import {styleMap} from 'lit/directives/style-map.js';
  *   box when `padding` is absent. Defaults to `--c-spacing-sm`.
  * @cssproperty --c-callout-padding-inline - Inline-axis padding of the callout
  *   box when `padding` is absent. Defaults to `--c-spacing-md`.
+ * @cssproperty --c-callout-icon-padding-inline - Inline-axis padding around
+ *   the icon. Defaults to `--c-spacing-sm`.
+ * @cssproperty --c-callout-text-padding-inline - Inline-axis padding around
+ *   the title and description. Defaults to `--c-spacing-sm`.
  */
 export default class CraftCallout extends Paddable(LitElement, {
   customProperty: ['--_callout-padding-block', '--_callout-padding-inline'],

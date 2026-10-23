@@ -1,7 +1,13 @@
+@php($theme = data_get($page, 'props.craft.theme', 'system'))
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \CraftCms\Cms\Support\Facades\I18N::getLocale()->getOrientation() }}">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \CraftCms\Cms\Support\Facades\I18N::getLocale()->getOrientation() }}"@if ($theme === 'dark') data-theme="dark"@endif>
     <head>
         <meta charset="utf-8" />
+        @if ($theme === 'system')
+            {{-- Before any styles load, so a dark system doesn't flash the light
+                 theme. `useTheme()` takes over once the app boots. --}}
+            <script>if (matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.dataset.theme = 'dark';</script>
+        @endif
         <meta name="viewport" content="width=device-width, initial-scale=1">
         {!! $headHtml !!}
         {{-- Marks the end of the server-rendered asset band. Assets injected

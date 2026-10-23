@@ -32,3 +32,10 @@ test('translator dispatches missing translation events through Laravel', functio
         && $event->getLanguage() === 'nl'
         && $event->getMessage() === 'Unavailable message');
 });
+
+test('translator formats parameters for categories without a source', function () {
+    app()->forgetInstance(Translator::class);
+
+    expect(app(Translator::class)->translate('Unknown option: --{name}', ['name' => 'foo'], 'yii'))
+        ->toBe('Unknown option: --foo');
+});

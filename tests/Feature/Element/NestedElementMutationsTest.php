@@ -20,7 +20,16 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Models\UserGroup;
+use CraftCms\Cms\Workflow\Data\WorkflowStageContext;
+use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
+use CraftCms\Cms\Workflow\Models\Workflow;
+use CraftCms\Cms\Workflow\UserReview\UserReviewDecision;
+use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
+use CraftCms\Cms\Workflow\Workflows;
 
 use function Pest\Laravel\actingAs;
 
@@ -224,4 +233,63 @@ it('rejects cyclic ownership before writing a nested reorder', function () {
     expect(Entry::find()->ownerId($owner->id)->fieldId($this->innerField->id)->pluck('id')->all())
         ->toBe(array_map(fn (Entry $child): int => $child->id, $this->children))
         ->and(Entry::find()->id($owner->id)->one()->dateUpdated->getTimestamp())->toBe($owner->dateUpdated->getTimestamp());
+});
+
+it('preserves approval when a canonical merge deletes nested content and its descendants', function () {
+    $actor = User::findOne();
+    $reviewer = UserModel::factory()->admin()->createElement();
+    $group = UserGroup::factory()->create();
+    $group->users()->sync([$reviewer->id]);
+    $workflow = Workflow::query()->create([
+        'name' => 'Nested content review',
+        'uid' => Str::uuid7()->toString(),
+        'stages' => [[
+            'name' => 'Review',
+            'uid' => Str::uuid7()->toString(),
+            'type' => UserReviewStage::class,
+            'settings' => ['approvalsRequired' => 1, 'userGroups' => [$group->uid]],
+        ]],
+    ]);
+    Section::query()->whereKey($this->page->sectionId)->update(['workflowId' => $workflow->id]);
+    Sections::refreshSections();
+
+    $draft = app(Drafts::class)->createDraft($this->page, $actor->id);
+    $draft->setFieldValueFromRequest('outerMatrix', [
+        'entries' => ["uid:{$this->owner->uid}" => [
+            'type' => 'ownerBlock',
+            'title' => 'Owner',
+            'fields' => ['innerMatrix' => [
+                'entries' => collect($this->children)->mapWithKeys(fn (Entry $child) => [
+                    "uid:$child->uid" => ['type' => 'childBlock', 'title' => $child->title],
+                ])->all(),
+                'sortOrder' => array_map(fn (Entry $child) => $child->uid, $this->children),
+            ]],
+        ]],
+        'sortOrder' => [$this->owner->uid],
+    ]);
+    expect(Elements::saveElement($draft))->toBeTrue();
+    $draftOwner = $draft->getFieldValue('outerMatrix')->status(null)->one();
+    $draftChildIds = $draftOwner->getFieldValue('innerMatrix')->status(null)->pluck('id')->all();
+    expect($draftOwner->id)->not->toBe($this->owner->id)
+        ->and($draftChildIds)->toHaveCount(2)
+        ->and($draftChildIds)->not->toContain($this->children[0]->id);
+
+    $workflows = app(Workflows::class);
+    $run = $workflows->submitForReview($draft);
+    $workflows->reportStageResult(
+        runId: $run->id,
+        stageUid: $workflow->refresh()->stages->sole()->uid,
+        result: fn (WorkflowStageContext $context) => $context->stage->component()->decide(UserReviewDecision::Approved, null, $context, $reviewer),
+        actor: $reviewer,
+    );
+    expect($run->fresh()->status)->toBe(WorkflowStatus::Approved);
+
+    $this->travel(2)->seconds();
+    expect(Elements::deleteElement($this->owner))->toBeTrue();
+    $draft = Entry::find()->draftId($draft->draftId)->status(null)->one();
+    Elements::mergeCanonicalChanges($draft);
+
+    expect(Entry::find()->id($draftOwner->id)->status(null)->one())->toBeNull()
+        ->and(Entry::find()->id($draftChildIds)->status(null)->count())->toBe(0)
+        ->and($run->fresh()->status)->toBe(WorkflowStatus::Approved);
 });

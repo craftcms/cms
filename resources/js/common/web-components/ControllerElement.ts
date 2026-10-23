@@ -1,8 +1,8 @@
 /**
  * Base for the light-DOM custom elements that boot a JS **controller** — a
  * garnish/jQuery class that manages server-rendered markup — on connect, and tear
- * it down on disconnect. Used by `<craft-field-layout-designer>`,
- * `<craft-generated-fields-table>`, and `<craft-sortable-checkbox-select>`.
+ * it down on disconnect. Used by `<craft-field-layout-designer>` and
+ * `<craft-generated-fields-table>`.
  *
  * These render their controller's DOM as **light-DOM children**: the controllers
  * query the document and/or use jQuery, so a shadow root would hide their markup.

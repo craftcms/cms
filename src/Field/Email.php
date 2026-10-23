@@ -9,6 +9,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
@@ -29,7 +30,7 @@ use function CraftCms\Cms\template;
  *
  * @since 6.0.0
  */
-class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -156,5 +157,11 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry);
+    }
+
+    /** @return array<string, mixed> */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'string', 'format' => 'email'];
     }
 }

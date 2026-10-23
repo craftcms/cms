@@ -37,9 +37,11 @@ class Ui
     }
 
     /** @param (Closure(Tab): mixed)|list<Node> $children */
-    public function addTab(string $label, array|Closure $children = [], ?string $uid = null): static
+    public function addTab(string $label, array|Closure $children = [], ?string $uid = null, ?string $icon = null, bool $sidebar = false): static
     {
-        $tab = Tab::make($uid ?? Str::slug($label), $label, is_array($children) ? $children : []);
+        $tab = Tab::make($uid ?? Str::slug($label), $label, is_array($children) ? $children : [])
+            ->icon($icon)
+            ->sidebar($sidebar);
 
         if ($children instanceof Closure) {
             $children($tab);

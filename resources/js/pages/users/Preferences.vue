@@ -26,6 +26,7 @@
     preferredLocale: string;
     weekStartDay: string;
     timeZone: string;
+    theme: string;
     statusIndicators: boolean;
     underlineLinks: boolean;
     disableAutofocus: boolean;
@@ -45,6 +46,7 @@
     preferredLocale: preferences.preferredLocale?.toString() ?? '',
     weekStartDay: preferences.weekStartDay?.toString() ?? '0',
     timeZone: preferences.timeZone?.toString() ?? '__blank__',
+    theme: preferences.theme?.toString() ?? 'system',
     statusIndicators: Boolean(preferences['useShapes']),
     underlineLinks: Boolean(preferences.underlineLinks),
     disableAutofocus: Boolean(preferences.disableAutofocus),
@@ -133,6 +135,7 @@
         'preferredLocale',
         'weekStartDay',
         'timeZone',
+        'theme',
       ],
     },
     {
@@ -240,6 +243,46 @@
             :require-option-match="true"
             show-all-on-empty
           />
+
+          <craft-radio-group
+            buttons
+            name="theme"
+            :label="t('Theme')"
+            .modelValue="form.theme"
+            @model-value-changed="
+              (event: Event) =>
+                (form.theme = (
+                  event.target as HTMLElement & {modelValue: string}
+                ).modelValue)
+            "
+          >
+            <craft-radio
+              v-for="option in props.themeOptions"
+              :key="option.value"
+              .choiceValue="option.value"
+              .checked="form.theme === option.value"
+            >
+              <input
+                slot="input"
+                :id="`theme-${option.value}`"
+                type="radio"
+                name="theme"
+                :value="option.value"
+                :checked="form.theme === option.value"
+              />
+              <label
+                slot="label"
+                :for="`theme-${option.value}`"
+                class="flex items-center gap-sm"
+              >
+                <craft-icon :name="option.icon" />
+                {{ option.label }}
+              </label>
+            </craft-radio>
+            <ul v-if="form.errors.theme" slot="feedback" class="error-list">
+              <li>{{ form.errors.theme }}</li>
+            </ul>
+          </craft-radio-group>
         </craft-field-group>
 
         <HtmlFragmentRenderer :fragment="props.prefsHook" />

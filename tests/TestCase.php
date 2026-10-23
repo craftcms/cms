@@ -23,6 +23,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Tests\Support\DatabaseLock;
+use CraftCms\Cms\Tests\Support\GuardsUtcDateBindings;
 use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\User\Models\User;
@@ -117,6 +118,8 @@ class TestCase extends Orchestra
         // before RefreshDatabase has prepared the database, potentially reading stale data
         Cms::config()->timezone('America/Los_Angeles');
         Cms::setDefaultTimezone();
+
+        GuardsUtcDateBindings::register();
 
         // Tests run in Cp by default
         TemplateMode::set(TemplateMode::Cp);

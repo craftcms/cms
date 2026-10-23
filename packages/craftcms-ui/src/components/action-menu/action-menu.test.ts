@@ -106,6 +106,14 @@ describe('searchable (slot-based)', () => {
     expect(content.querySelector('craft-action-item')).not.toBeNull();
   });
 
+  it('wraps the search input in a search field', async () => {
+    const element = await createFromMarkup(slotBasedMarkup());
+    const input = getSearchInput(element)!;
+
+    expect(input.parentElement!.tagName).toBe('CRAFT-INPUT-SEARCH');
+    expect(input.getAttribute('slot')).toBe('input');
+  });
+
   it('does not insert a search input by default', async () => {
     const element = await createFromMarkup(slotBasedMarkup(''));
 

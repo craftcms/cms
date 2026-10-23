@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Support\Html;
@@ -35,7 +36,7 @@ use function CraftCms\Cms\template;
  *
  * @since 6.0.0
  */
-class PlainText extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class PlainText extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -303,5 +304,11 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry);
+    }
+
+    /** @return array<string, mixed> */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'string'];
     }
 }

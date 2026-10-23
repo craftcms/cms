@@ -57,6 +57,28 @@
   opacity: 0;
 }
 
+/**
+ * The block being edited — the closest one to whatever has focus — is outlined,
+ * so its edges stand out from the blocks around it. A block whose nested block
+ * holds focus leaves the outline to that one.
+ *
+ * Inset, because a parent block's card clips anything outside a nested one.
+ */
+[data-matrix-block]:focus-within:not(
+  :has([data-matrix-block]:focus-within)
+)::after {
+  outline: 2px solid var(--c-color-accent-border-loud);
+  outline-offset: -2px;
+  opacity: 1;
+}
+
+/* A block with an entry type color is outlined in that color instead. */
+[data-matrix-block][data-color]:focus-within:not(
+  :has([data-matrix-block]:focus-within)
+)::after {
+  outline-color: var(--c-color-border-loud);
+}
+
 [data-matrix-block][data-matrix-block-new]::after {
   animation: matrix-block-added 1200ms ease-out;
 }

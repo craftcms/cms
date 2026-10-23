@@ -1,8 +1,6 @@
 import {
   computed,
-  onScopeDispose,
   ref,
-  shallowRef,
   toValue,
   watch,
   type ComputedRef,
@@ -10,17 +8,14 @@ import {
   type Ref,
 } from 'vue';
 import {useElementSize, useEventListener} from '@vueuse/core';
-import {BaseDrag} from '@craftcms/garnish';
-import type {ResizeHandleControls} from '@/common/composables/resizeHandle';
+import type {ResizeGripsSize} from '@craftcms/ui';
 
 /**
- * Two-axis resizing for a centered box — a modal — from a corner handle.
+ * The size of a centered box — a modal — that `<craft-resize-grips>` resizes.
  *
- * The sibling {@link import('./useResizable').useResizable} resizes a layout
- * column: one axis, anchored to an edge, persisted, reported to assistive tech
- * as a splitter. This is the other shape. A centered box grows from both edges
- * at once, has no meaningful "side", and is sized against whatever cap CSS
- * already puts on it rather than a track width.
+ * The grips do the dragging, the keyboard and the clamping, and report each
+ * size, which {@link UseResizableBoxReturn.applySize} takes. This holds that
+ * size and the CSS it implies.
  *
  * It also holds a height floor, because the two are the same question — how
  * big is this box — and answer to the same cap.
@@ -36,15 +31,9 @@ export interface UseResizableBoxOptions {
    * only means anything while the height is content-driven.
    */
   fixedHeight?: MaybeRefOrGetter<boolean>;
-  /** Smallest size a drag can leave it at, in px. Default `200`. */
-  minSize?: number;
-  /** Arrow-key increment, in px. Default `16`. */
-  step?: number;
-  /** Shift + arrow-key increment, in px. Default `64`. */
-  largeStep?: number;
 }
 
-export interface UseResizableBoxReturn extends ResizeHandleControls {
+export interface UseResizableBoxReturn {
   /** Dragged width in px, or `null` while the width is CSS-driven. */
   width: Ref<number | null>;
   /** Dragged height in px, or `null` while the height is CSS-driven. */
@@ -53,62 +42,35 @@ export interface UseResizableBoxReturn extends ResizeHandleControls {
   floor: Ref<number | null>;
   /** The CSS the values above imply, or `{}` when the size is CSS-driven. */
   style: ComputedRef<Record<string, string>>;
+  /** Takes a size the grips reported. Wire to `@craft-resize`'s `detail`. */
+  applySize: (size: ResizeGripsSize) => void;
 }
 
 export function useResizableBox({
   target,
   active,
   fixedHeight,
-  minSize = 200,
-  step = 16,
-  largeStep = 64,
 }: UseResizableBoxOptions): UseResizableBoxReturn {
   const width = ref<number | null>(null);
   const height = ref<number | null>(null);
   const floor = ref<number | null>(null);
-  const handle = shallowRef<HTMLElement | null>(null);
 
   function el(): HTMLElement | null {
     return toValue(target) ?? null;
   }
 
   /**
-   * The largest the box may be. Taken from the CSS rather than a hard-coded
-   * gutter: max-width/max-height compute to px even when authored as calc(),
-   * which the custom properties they're built from do not.
+   * The tallest the box may be. Taken from the CSS rather than a hard-coded
+   * gutter: max-height computes to px even when authored as calc(), which the
+   * custom properties it's built from do not.
    */
-  function bounds(node: HTMLElement): {width: number; height: number} {
-    const styles = getComputedStyle(node);
-
-    return {
-      width: parseFloat(styles.maxWidth) || window.innerWidth,
-      height: parseFloat(styles.maxHeight) || window.innerHeight,
-    };
+  function maxHeight(node: HTMLElement): number {
+    return parseFloat(getComputedStyle(node).maxHeight) || window.innerHeight;
   }
 
-  function measured(): {width: number; height: number} {
-    const rect = el()?.getBoundingClientRect();
-
-    return {
-      width: Math.round(rect?.width ?? 0),
-      height: Math.round(rect?.height ?? 0),
-    };
-  }
-
-  function resize(nextWidth: number, nextHeight: number): void {
-    const node = el();
-    if (!node) return;
-
-    const max = bounds(node);
-    width.value = Math.round(Math.min(Math.max(nextWidth, minSize), max.width));
-    height.value = Math.round(
-      Math.min(Math.max(nextHeight, minSize), max.height)
-    );
-  }
-
-  function reset(): void {
-    width.value = null;
-    height.value = null;
+  function applySize(size: ResizeGripsSize): void {
+    width.value = size.width;
+    height.value = size.height;
   }
 
   const style = computed<Record<string, string>>(() => {
@@ -168,117 +130,21 @@ export function useResizableBox({
     const node = el();
     // min-height beats max-height, so the floor has to respect the cap itself
     // or a shrinking viewport would leave the box taller than the screen.
-    const capped = Math.min(next, node ? bounds(node).height : Infinity);
+    const capped = Math.min(next, node ? maxHeight(node) : Infinity);
 
     if (floor.value === null || capped > floor.value) {
       floor.value = capped;
     }
   }
 
-  // --- Keyboard -------------------------------------------------------------
-
-  function nudge(deltaX: number, deltaY: number): void {
-    // Build on the last size we asked for, not the rendered one: key repeats
-    // outrun Vue's DOM updates, so measuring every time would have them all
-    // read the same stale box and overwrite each other.
-    const size = measured();
-    const node = el();
-    const rtl = node ? getComputedStyle(node).direction === 'rtl' : false;
-
-    resize(
-      (width.value ?? size.width) + (rtl ? -deltaX : deltaX),
-      (height.value ?? size.height) + deltaY
-    );
-  }
-
-  function onKeydown(ev: KeyboardEvent): void {
-    const increment = ev.shiftKey ? largeStep : step;
-
-    switch (ev.key) {
-      case 'ArrowLeft':
-        nudge(-increment, 0);
-        break;
-      case 'ArrowRight':
-        nudge(increment, 0);
-        break;
-      case 'ArrowUp':
-        nudge(0, -increment);
-        break;
-      case 'ArrowDown':
-        nudge(0, increment);
-        break;
-      case 'Enter':
-        reset();
-        break;
-      default:
-        return;
-    }
-
-    ev.preventDefault();
-  }
-
-  // --- Pointer dragging -----------------------------------------------------
-
-  let dragger: BaseDrag | null = null;
-  let startWidth = 0;
-  let startHeight = 0;
-  let startDistX = 0;
-  let startDistY = 0;
-  let sign = 1;
-
-  function setHandle(node: HTMLElement | null): void {
-    handle.value = node;
-  }
-
-  watch(handle, (node) => {
-    dragger?.destroy();
-    dragger = null;
-
-    if (!node) return;
-
-    dragger = new BaseDrag(node, {
-      // The default selector list would swallow pointer-downs on the handle's
-      // own children; the handle *is* the control here.
-      ignoreHandleSelector: null,
-      onBeforeDragStart: () => {
-        // Sync, unlike onDragStart, so we measure what was on screen when the
-        // drag threshold was crossed, and discount the distance already
-        // traveled so the box doesn't jump by it.
-        const size = measured();
-        const box = el();
-        startWidth = size.width;
-        startHeight = size.height;
-        startDistX = dragger?.mouseDistX ?? 0;
-        startDistY = dragger?.mouseDistY ?? 0;
-        sign = box && getComputedStyle(box).direction === 'rtl' ? -1 : 1;
-      },
-      onDrag: () => {
-        const dx = ((dragger?.mouseDistX ?? 0) - startDistX) * sign;
-        const dy = (dragger?.mouseDistY ?? 0) - startDistY;
-
-        // Centered, so each edge moves by the pointer delta.
-        resize(startWidth + dx * 2, startHeight + dy * 2);
-      },
-    });
-  });
-
-  // A smaller viewport lowers the cap; re-clamp so dragging back responds at
-  // once rather than after the overshoot unwinds.
+  // A smaller viewport lowers the cap. The grips re-clamp a dragged size; the
+  // floor is this composable's own.
   useEventListener(window, 'resize', () => {
-    if (width.value !== null && height.value !== null) {
-      resize(width.value, height.value);
-    }
-
     const node = el();
     if (floor.value !== null && node) {
-      floor.value = Math.min(floor.value, bounds(node).height);
+      floor.value = Math.min(floor.value, maxHeight(node));
     }
   });
 
-  onScopeDispose(() => {
-    dragger?.destroy();
-    dragger = null;
-  });
-
-  return {width, height, floor, style, setHandle, onKeydown, reset};
+  return {width, height, floor, style, applySize};
 }

@@ -135,7 +135,7 @@
     if (added) commit('discrete');
   });
 
-  function appendRow(): TableRow {
+  function appendRow(atStart = false): TableRow {
     const value = {...props.control.props.defaultValues};
     for (const [key, column] of columns.value) {
       if (!(key in value))
@@ -149,7 +149,11 @@
     if (includeRowId) {
       row.value[rowIdField.value] = row.id;
     }
-    rows.value.push(row);
+    if (atStart) {
+      rows.value.unshift(row);
+    } else {
+      rows.value.push(row);
+    }
     return row;
   }
 
@@ -344,6 +348,8 @@
       event.defaultPrevented ||
       event.key !== 'Enter' ||
       event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
       event.isComposing ||
       !compatible(key, 'enterNavigation') ||
       disabledCell(rows.value[index]!, key) ||
@@ -351,21 +357,18 @@
     )
       return;
 
-    if (
-      props.control.props.columns[key]?.type === 'multiline' &&
-      !event.ctrlKey &&
-      !event.metaKey
-    )
-      return;
+    if (props.control.props.columns[key]?.type === 'multiline') return;
 
-    const next = index + (event.shiftKey ? -1 : 1);
+    let next = index + (event.shiftKey ? -1 : 1);
     event.preventDefault();
     event.stopPropagation();
-    if (next < 0) return;
-    if (next === rows.value.length) {
+    if (next < 0 || next === rows.value.length) {
       if (!canAdd.value) return;
-      appendRow();
+      clearErrors();
+      appendRow(next < 0);
       commit('discrete');
+      status.value = t('Row added.');
+      next = Math.max(next, 0);
     }
     await nextTick();
     await focusRow(rows.value[next]!.id, key);

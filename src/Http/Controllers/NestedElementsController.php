@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Http\Requests\NestedElementsRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -27,6 +28,7 @@ readonly class NestedElementsController
         private Elements $elements,
         private Drafts $drafts,
         private Workflows $workflows,
+        private Releases $releases,
     ) {}
 
     public function reorder(NestedElementsRequest $request): Response
@@ -56,6 +58,8 @@ readonly class NestedElementsController
         if ($element->getPrimaryOwnerId() !== $owner->id) {
             $draftIds = $this->drafts->getDraftIdsForElement($owner);
             $this->workflows->withContentChangeLock($draftIds, function () use ($element, $owner): void {
+                $this->releases->lockElements($owner);
+
                 DB::table(Table::ELEMENTS_OWNERS)
                     ->where('ownerId', $owner->id)
                     ->where('elementId', $element->id)

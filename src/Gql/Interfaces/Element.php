@@ -10,6 +10,8 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Generators\ElementType;
 use CraftCms\Cms\Gql\Types\InterfaceType;
+use CraftCms\Cms\Gql\Types\Release;
+use CraftCms\Cms\Gql\Types\Site;
 use CraftCms\Cms\Support\Facades\Gql;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InterfaceType as GqlInterfaceType;
@@ -50,7 +52,13 @@ class Element extends InterfaceType implements SingularTypeInterface
     #[Override]
     public static function getFieldDefinitions(): array
     {
-        return Gql::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return Gql::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), GqlHelper::canSchema('settings.sites') ? [
+            'site' => [
+                'name' => 'site',
+                'type' => Type::nonNull(Site::getType()),
+                'description' => 'The site the element is associated with.',
+            ],
+        ] : [], [
             Gql::GRAPHQL_COUNT_FIELD => [
                 'name' => Gql::GRAPHQL_COUNT_FIELD,
                 'type' => Type::int(),
@@ -140,7 +148,7 @@ class Element extends InterfaceType implements SingularTypeInterface
     /** @return array<string, FieldDefinitionConfig> */
     public static function getDraftFieldDefinitions(): array
     {
-        return [
+        return array_merge([
             'isDraft' => [
                 'name' => 'isDraft',
                 'type' => Type::boolean(),
@@ -181,7 +189,14 @@ class Element extends InterfaceType implements SingularTypeInterface
                 'type' => Type::string(),
                 'description' => 'The notes for the draft.',
             ],
-        ];
+        ], GqlHelper::canQueryReleases() ? [
+            'release' => [
+                'name' => 'release',
+                'type' => Release::getType(),
+                'description' => 'The unpublished release the draft is attached to.',
+                'complexity' => GqlHelper::nPlus1Complexity(),
+            ],
+        ] : []);
     }
 
     public static function getName(): string

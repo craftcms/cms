@@ -106,7 +106,7 @@
             v-model="sortField"
             :options="sortOptions"
           />
-          <craft-button-group role="group" :aria-label="t('Sort direction')">
+          <craft-button-group role="group" :aria-label="t('Sort Direction')">
             <craft-button
               type="button"
               icon="asc"

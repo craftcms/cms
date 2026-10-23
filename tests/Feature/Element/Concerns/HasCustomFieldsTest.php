@@ -10,6 +10,8 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
@@ -43,7 +45,7 @@ beforeEach(function () {
             'siteId' => $draft->siteId,
             'fieldId' => $this->field->id,
             'layoutElementUid' => $layoutElementUid,
-            'dateUpdated' => $dateUpdated ?? now(),
+            'dateUpdated' => Query::prepareDateForDb($dateUpdated ?? now()),
             'propagated' => true,
         ]);
     };
@@ -141,6 +143,28 @@ describe('dirty fields', function () {
         expect($this->entry->getDirtyFields())->toContain('testField');
     });
 
+    test('validating an element leaves its fields clean', function () {
+        $this->entry->setFieldValue('testField', 'Stored');
+        Elements::saveElement($this->entry);
+        $entry = entryQuery()->id($this->entry->id)->one();
+
+        $entry->validate();
+
+        expect($entry->getDirtyFields())->toBe([]);
+    });
+
+    test('a posted value only marks its field dirty when it changes the value', function () {
+        $this->entry->setFieldValue('testField', 'Stored');
+        Elements::saveElement($this->entry);
+        $entry = entryQuery()->id($this->entry->id)->one();
+
+        $entry->setFieldValueFromRequest('testField', 'Stored');
+        expect($entry->isFieldDirty('testField'))->toBeFalse();
+
+        $entry->setFieldValueFromRequest('testField', 'Changed');
+        expect($entry->isFieldDirty('testField'))->toBeTrue();
+    });
+
     test('setDirtyFields with empty array clears dirty fields', function () {
         $this->entry->setDirtyFields(['testField']);
         $this->entry->setDirtyFields([], false);
@@ -215,7 +239,7 @@ describe('outdated fields (_outdatedFields)', function () {
 
         DB::table(Table::DRAFTS)
             ->where('id', $draft->draftId)
-            ->update(['dateLastMerged' => now()->addDay()]);
+            ->update(['dateLastMerged' => Query::prepareDateForDb(now()->addDay())]);
 
         ($this->insertChangedField)($draft, now()->subDay(), $draft->getCanonicalId());
         $draft = ($this->reloadDraft)($draft);

@@ -17,7 +17,7 @@ readonly class UiPayload implements JsonSerializable
      * @param  list<string>  $scope
      * @param  list<NodePayload>  $nodes
      * @param  array<string, mixed>  $values
-     * @param  list<array{path: list<string>, messages: list<string>}>  $errors
+     * @param  list<array{path: list<string>, messages: list<string>, source?: list<string>}>  $errors
      * @param  list<string>  $globalErrors
      */
     public function __construct(

@@ -696,10 +696,10 @@ describe('craft-text-expander', () => {
     await vi.advanceTimersByTimeAsync(150);
     resolveFirst({
       data: [{label: 'Stale', value: '#STALE'}],
-    } as HttpResponse<readonly TextExpanderOption[]>);
+    } as unknown as HttpResponse<readonly TextExpanderOption[]>);
     resolveSecond({
       data: [{label: 'Current', value: '#CURRENT'}],
-    } as HttpResponse<readonly TextExpanderOption[]>);
+    } as unknown as HttpResponse<readonly TextExpanderOption[]>);
     await Promise.resolve();
     await expander.updateComplete;
 

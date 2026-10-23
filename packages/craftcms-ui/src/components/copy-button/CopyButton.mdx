@@ -22,9 +22,7 @@ Clipboard writes fail for reasons outside your control: permissions, an insecure
 
 ## Accessibility
 
-`tooltip-label` names what will be copied, which is what makes an icon-only copy button announce as something other than "button".
-
-A copy that succeeds silently is a copy a screen reader user cannot confirm. The button reports success through `craft-copy`; whether that becomes an announcement is up to the surrounding page, and it should.
+The button's accessible name is its slotted content followed by a hidden "Copy to clipboard". Put what's copied in the visible text ("Copy URL"), and don't repeat "Copy to clipboard" there.
 
 ## Properties
 

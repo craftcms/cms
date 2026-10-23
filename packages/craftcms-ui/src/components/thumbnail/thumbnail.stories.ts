@@ -327,14 +327,14 @@ export const Presentations: Story = {
             </craft-chip>
             <craft-card style="width: 280px;" thumb-alignment="end">
               <span slot="label">Separate card thumbnail</span>
-              <div slot="thumbnail">${thumbnail('crop', 120)}</div>
+              <div slot="thumbnail">${thumbnail('fit', 120)}</div>
               Card content
             </craft-card>
             <craft-card style="width: 280px;">
               <span slot="label">Inline card thumbnail</span>
               <div class="card-main">
                 <div class="card-content">Card content</div>
-                ${thumbnail('crop', 120)}
+                ${thumbnail('fit', 120)}
               </div>
             </craft-card>
             <div style="width: 180px; text-align: center;">
@@ -367,9 +367,15 @@ export const Presentations: Story = {
       const box = image.getBoundingClientRect();
       const crop = thumbnail.mode === 'crop';
       const scale = fixture.name === 'Small source' ? 1 : size / 120;
+      // A card's own thumbnail is only as tall as its fitted image.
+      const inCardSlot = Boolean(
+        thumbnail.closest('craft-card > [slot="thumbnail"]')
+      );
 
       await expect(wrapper.width).toBe(size);
-      await expect(wrapper.height).toBe(size);
+      await expect(wrapper.height).toBe(
+        inCardSlot ? fixture.fittedHeight * scale : size
+      );
       await expect(box.width).toBe(crop ? size : fixture.fittedWidth * scale);
       await expect(box.height).toBe(crop ? size : fixture.fittedHeight * scale);
       await expect(getComputedStyle(image).objectFit).toBe(

@@ -16,6 +16,8 @@ export interface BaseOption {
   value: string;
 }
 export interface CheckboxOption extends BaseOption {
+  /** Trusted HTML shown in place of `label`. */
+  labelHtml?: string;
   info?: string;
   checked?: boolean;
   disabled?: boolean;
@@ -113,6 +115,10 @@ export interface ActionItemButton {
   attributes?: ServerAttributes;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
+  /** A number after the label, for a nav entry that counts what it lists. */
+  count?: number;
+  /** What the count is, for screen readers. Defaults to a count of items. */
+  countLabel?: string;
   /**
    * Extra attributes for the rendered element — drag-and-drop drop-target
    * hooks, say. Undefined values are dropped rather than rendered empty.
@@ -175,6 +181,10 @@ export interface ActionItemLink {
   status?: string;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
+  /** A number after the label, for a nav entry that counts what it lists. */
+  count?: number;
+  /** What the count is, for screen readers. Defaults to a count of items. */
+  countLabel?: string;
   /**
    * Extra attributes for the rendered element — drag-and-drop drop-target
    * hooks, say. Undefined values are dropped rather than rendered empty.

@@ -39,8 +39,8 @@ $columns = [
 stores a row as `['col1' => 'Example', 'col2' => true]`. Its normalized value also exposes `name` and `available`.
 Renaming a handle does not change the column's storage ID.
 
-The built-in Table field types are `singleline`, `multiline`, `number`, `checkbox`, `lightswitch`, `color`, `date`, `time`,
-`email`, `url`, `select`, and `heading`. Heading cells display values from the field's default rows and are omitted from
+The built-in Table field types are `singleline`, `multiline`, `number`, `money`, `checkbox`, `lightswitch`, `color`, `date`,
+`time`, `email`, `url`, `link`, `select`, and `heading`. Heading cells display values from the field's default rows and are omitted from
 stored cell data. Dropdowns use the configured default option, or the first option when no default is selected.
 
 ## Rendering and editing
@@ -186,15 +186,16 @@ applied. Registration is required before Craft resolves the field's columns or t
 | Method | Responsibility |
 | --- | --- |
 | `normalizeValue($value, $fromRequest)` | Converts stored or submitted data into the PHP value used by the field. Use `$fromRequest` when those input formats differ. |
-| `serializeValue($value, $forDb)` | Returns a boolean, number, string, or `null`. `$forDb` is `true` for database storage. |
+| `serializeValue($value, $forDb)` | Returns an array, boolean, number, string, or `null`. `$forDb` is `true` for database storage. |
 | `controlValue($context)` | Adapts the normalized value for the editing control. The default calls `serializeValue()`. |
 | `getValueRules()` | Returns Laravel validation rules for the serialized cell value. The Table field runs validation and attaches messages to the row and column. |
 | `searchKeywords($value)` | Returns searchable text. The default converts the serialized value to a string. |
 | `gqlType()` / `gqlInputType()` | Describes GraphQL output and mutation input. The base type is String; the default input type uses `gqlType()`. |
 
 PHP values may be richer than their stored representation. Date cells, for example, normalize to date objects, serialize
-to strings, and override `controlValue()` for the editor's date format. A plugin's serialized cell value must remain a
-scalar or `null`; arrays and objects cannot be persisted as a single cell through this contract.
+to strings, and override `controlValue()` for the editor's date format. Link cells normalize to `LinkData` objects and
+serialize to arrays. A serialized cell value must be JSON-encodable; objects must be converted to arrays or scalars. The
+base `TableCell` class accepts only scalars and `null`, so cell types that store arrays override `serializeValue()`.
 
 Rules validate the serialized value, not an arbitrary normalized object. Align rules with that representation, and keep
 normalization and serialization compatible so stored values can be read back without changing their meaning. If you
@@ -236,6 +237,21 @@ For this API, a column's `control` is rebound to its cell path. Its supported sh
 directly for custom editors. The settings UI's host owns normalization, validation, and saving; it does not run the
 Table content field's cell lifecycle automatically.
 
+## Element references
+
+Cell types that reference elements implement `CraftCms\Cms\Field\Contracts\ElementAwareTableCellInterface`. The Table
+field then calls its methods for the cell values in that column:
+
+| Method | Responsibility |
+| --- | --- |
+| `localizeValues($values, $element)` | Points the column's values' references at the element's site when the values are copied from a site the field translates separately. It receives the whole column, so it can look references up together. |
+| `referenceTargetIds($value)` | Returns the element IDs the value references, so the Table field can record them as field references. |
+| `replaceReferences($value, $oldTargetIds, $newTargetId)` | Returns the value with references to the old IDs replaced, or `null` if it has none. |
+
+Link cells implement this interface for element link types such as entries and assets. When a Table value is normalized,
+its link cells share one element loader, so the first linked element a template uses loads the elements of all links
+in that value.
+
 ## Unavailable plugins
 
 If a configured cell type is unregistered or cannot be constructed, Craft uses `MissingTableCell` and makes the Table
@@ -245,3 +261,7 @@ element's existing field value rather than accepting replacement cell data while
 New column settings cannot select an unavailable type. Existing unavailable configuration can be retained unchanged,
 and re-registering the provider restores its normalization and editor. Do not replace missing plugin types with text
 cells automatically, as that can change the meaning of stored values.
+
+A link cell whose stored value names an unregistered link type keeps that value unchanged. The editor locks that cell
+but still submits its value, so saving other cells doesn't clear it, and the link can still be removed. Validation skips
+the value, and GraphQL resolves it as an empty link.

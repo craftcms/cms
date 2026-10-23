@@ -22,6 +22,7 @@ use CraftCms\Cms\Element\Operations\ElementWrites;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -57,6 +58,7 @@ class Elements
         private readonly ElementPlaceholders $placeholders,
         private readonly ElementTypes $elementTypes,
         private readonly ElementCaches $elementCaches,
+        private readonly Releases $releases,
     ) {}
 
     /**
@@ -693,6 +695,9 @@ class Elements
     /**
      * Deletes elements in the site they are currently loaded in.
      *
+     * Any elements that only exist in that site will be deleted entirely. They will be soft-deleted,
+     * unless they are drafts or nested elements, in which case they will be hard-deleted.
+     *
      * @param  ElementInterface[]  $elements
      *
      * @throws InvalidArgumentException if all elements don’t have the same type and site ID.
@@ -773,6 +778,8 @@ class Elements
 
         if ($updates !== []) {
             Workflows::withContentChangeLock(Drafts::getDraftIdsForElement($owner), function () use ($owner, $updates): void {
+                $this->releases->lockElements($owner);
+
                 foreach ($updates as $id => $sortOrder) {
                     DB::table(Table::ELEMENTS_OWNERS)
                         ->where('ownerId', $owner->id)

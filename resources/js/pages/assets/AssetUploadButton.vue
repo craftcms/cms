@@ -40,6 +40,8 @@
     defineProps<{
       canUpload: boolean;
       folderId?: number;
+      /** The site uploaded assets should be saved in, if not the primary site. */
+      siteId?: number;
       allowedKinds?: string[];
       /** Assets index uploads belong to the application queue when a destination is supplied. */
       destination?: AssetUploadDestination;
@@ -199,7 +201,10 @@
       } satisfies UploaderCallbacks,
     }) as Uploader;
 
-    uploader.setParams({folderId: props.folderId});
+    uploader.setParams({
+      folderId: props.folderId,
+      ...(props.siteId ? {siteId: props.siteId} : {}),
+    });
   }
 
   onMounted(createUploader);
@@ -211,6 +216,7 @@
     [
       () => props.canUpload,
       () => props.folderId,
+      () => props.siteId,
       () => props.allowedKinds,
       () => props.dropZone,
       () => props.destination?.folderId,

@@ -54,6 +54,28 @@ it('resolves, encodes and renders settings for every layout component', function
     'line break' => fn () => attachedTo(new LineBreak(['uid' => 'br-uid'])),
 ]);
 
+it('edits settings that are rendered as Markdown with Markdown controls', function (FieldLayoutComponent $component, array $names) {
+    $context = settingsContext();
+    $components = [];
+    $collect = function (array $nodes) use (&$collect, &$components): void {
+        foreach ($nodes as $node) {
+            if ($node->control !== null) {
+                $components[end($node->control->path)] = $node->control->component;
+            }
+            $collect($node->children ?? []);
+        }
+    };
+    $collect(app(UiResolver::class)->resolve($component->settingsUi($context), $context)->nodes);
+
+    foreach ($names as $name) {
+        expect($components[$name] ?? null)->toBe('craft:markdown', $name);
+    }
+})->with([
+    'field' => fn () => [attachedTo(new EntryTitleField(['uid' => 'title-uid'])), ['instructions', 'tip', 'warning']],
+    'markdown' => fn () => [attachedTo(new Markdown(['content' => '# Hi', 'uid' => 'md-uid'])), ['content']],
+    'tip' => fn () => [attachedTo(new Tip(['tip' => 'Careful.', 'uid' => 'tip-uid'])), ['tip']],
+]);
+
 it('separates settings from conditions, and omits the separator when there are no settings', function () {
     $withSettings = attachedTo(new Heading(['heading' => 'Hi', 'uid' => 'heading-uid']));
     $conditionsOnly = attachedTo(new HorizontalRule(['uid' => 'hr-uid']));

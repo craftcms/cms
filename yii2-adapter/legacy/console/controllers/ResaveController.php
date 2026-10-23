@@ -345,7 +345,7 @@ class ResaveController extends Controller
         }
 
         if (!empty($this->withFields)) {
-            $fieldsService = Craft::$app->getFields();
+            $fieldsService = app(Fields::class);
 
             foreach ($this->withFields as $i => $field) {
                 if (!$field instanceof FieldInterface) {
@@ -366,7 +366,7 @@ class ResaveController extends Controller
                 return false;
             }
 
-            $fieldsService = Craft::$app->getFields();
+            $fieldsService = app(Fields::class);
 
             if (isset($this->set)) {
                 $field = $fieldsService->getFieldByHandle($this->set);
@@ -685,7 +685,7 @@ class ResaveController extends Controller
                     $this->stdout('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);
                     $fail = true;
                 } elseif ($element->errors()->isNotEmpty()) {
-                    $this->stdout('failed: ' . implode(', ', $element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
+                    $this->stdout('failed: ' . implode(', ', $element->errors()->all()) . PHP_EOL, Console::FG_RED);
                     $fail = true;
                 } else {
                     $this->stdout('done' . PHP_EOL, Console::FG_GREEN);

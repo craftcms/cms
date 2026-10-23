@@ -22,6 +22,8 @@ class FieldGroup extends ViewComponent
 {
     protected ?string $gap = null;
 
+    protected bool $separated = false;
+
     protected function tagName(): string
     {
         return 'craft-field-group';
@@ -47,10 +49,19 @@ class FieldGroup extends ViewComponent
         return $this;
     }
 
+    /** Widens the gap between columns and draws a hairline between fields that share a row. */
+    public function separated(bool $separated = true): static
+    {
+        $this->separated = $separated;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
         return [
+            'separated' => $this->separated,
             'style' => $this->gap !== null ? "--gap: {$this->gap};" : null,
         ];
     }

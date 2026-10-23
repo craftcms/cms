@@ -114,25 +114,21 @@ interface Options {
 }
 
 /**
- * Turns the element's action descriptors into menu items the CP action menu can
- * render, dispatching each behavior directly rather than through registered
- * jQuery handlers.
+ * Builds the function that carries out an element action's behavior directly,
+ * rather than through registered jQuery handlers.
  */
-/**
- * Builds the descriptor-to-{@link ActionItem} mapper, dispatcher and all.
- *
- * Separate from {@link useElementActionMenu} so a caller with many menus — a
- * relation field drawing one per chip — can map them all through a single
- * dispatcher instead of standing up a computed per element.
- */
-export function createElementActionMenu({
+export function createElementActionDispatcher({
   currentEntryTypeId,
   slideout = null,
 }: Options = {}) {
   function dispatch(
     behavior: ElementActionBehavior,
-    destructive = false
+    destructive = false,
+    event?: Event
   ): void {
+    const trigger =
+      event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+
     switch (behavior.type) {
       case 'link':
         window.open(
@@ -198,12 +194,12 @@ export function createElementActionMenu({
 
       case 'slideout': {
         const entryTypeId = currentEntryTypeId?.();
-
-        void openSlideout(
+        const url =
           behavior.entryTypeFromField && entryTypeId
             ? Craft.getCpUrl(`settings/entry-types/${entryTypeId}`)
-            : behavior.url
-        );
+            : behavior.url;
+        // The store sends focus to the menu's button once the item is hidden.
+        void openSlideout(url, trigger ? {opener: trigger} : {});
 
         return;
       }
@@ -259,6 +255,19 @@ export function createElementActionMenu({
         void openImageEditorDialog(behavior.settings, (result) => {
           if (!result.newAssetId) {
             reload();
+            return;
+          }
+
+          // Saved as a new asset, which takes the edited one's place wherever
+          // the panel was opened from; the panel is still editing the old one.
+          if (slideout) {
+            slideout.saved({
+              data: {
+                replacedAssetId: behavior.assetId,
+                newAssetId: result.newAssetId,
+              },
+            });
+            slideout.close({force: true});
           }
         });
     }
@@ -310,6 +319,19 @@ export function createElementActionMenu({
     }
   }
 
+  return dispatch;
+}
+
+/**
+ * Builds the descriptor-to-{@link ActionItem} mapper, dispatcher and all.
+ *
+ * Separate from {@link useElementActionMenu} so a caller with many menus — a
+ * relation field drawing one per chip — can map them all through a single
+ * dispatcher instead of standing up a computed per element.
+ */
+export function createElementActionMenu(options: Options = {}) {
+  const dispatch = createElementActionDispatcher(options);
+
   return (items: Array<ElementActionMenuItem>): Array<ActionItem> =>
     items.map(
       (item): ActionItem =>
@@ -320,7 +342,8 @@ export function createElementActionMenu({
               icon: item.icon,
               iconColor: item.color,
               variant: item.destructive ? 'danger' : undefined,
-              onClick: () => dispatch(item.behavior, item.destructive),
+              onClick: (event: Event) =>
+                dispatch(item.behavior, item.destructive, event),
             }
     );
 }

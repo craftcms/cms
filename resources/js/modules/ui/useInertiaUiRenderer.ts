@@ -12,11 +12,15 @@ import {pathsMatch, visitControls} from './runtime';
 
 export interface UiRendererInstance {
   advanceBaseline(): void;
+  rebase?(values: UiPayload['values']): void;
   setSubmitting?(submitting: boolean): void;
   currentValues(): UiPayload['values'];
   mutation(includeGroups?: string[][]): UiPayload['values'];
   resetValues(): void;
   setValue(path: string[], value: UiValue, kind?: UiChangeKind): void;
+  setValues(
+    changes: {path: string[]; value: UiValue; refreshable?: boolean}[]
+  ): void;
 }
 
 interface Options<T extends object, Key extends Extract<keyof T, string>> {
@@ -130,6 +134,15 @@ export function useInertiaUiRenderer<
   }
 
   /**
+   * Takes the values a save without a submission wrote as the baseline, so the
+   * form holds only what differs from them. The renderer reports the new
+   * mutation itself.
+   */
+  function rebase(savedValues: UiPayload['values']): void {
+    renderer.value?.rebase?.(savedValues);
+  }
+
+  /**
    * Throws away the unsaved values and takes the currently loaded payload as
    * the new baseline, leaving the Inertia form clean.
    *
@@ -145,7 +158,15 @@ export function useInertiaUiRenderer<
     form.defaults();
   }
 
-  return {advanceBaseline, errors, onMutation, renderer, resetValues, values};
+  return {
+    advanceBaseline,
+    errors,
+    onMutation,
+    rebase,
+    renderer,
+    resetValues,
+    values,
+  };
 }
 
 /**

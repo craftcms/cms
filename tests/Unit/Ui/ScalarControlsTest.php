@@ -346,16 +346,23 @@ it('implies a multi-select checkbox list for an All option', function () {
     ]);
 });
 
-it('rejects combining reordering with an All option', function () {
-    // Reordering renders a flat cp-checkbox-select; All nests the options
-    // inside the checkbox that governs them. No markup is both.
-    expect(fn () => Choice::make('choice')->allOption()->sortable())
-        ->toThrow(InvalidArgumentException::class)
-        ->and(fn () => Choice::make('choice')->sortable()->allOption())
-        ->toThrow(InvalidArgumentException::class);
+it('allows reordering alongside an All option', function () {
+    expect(Choice::make('choice')->allOption()->sortable()->props())->toMatchArray([
+        'sortable' => true,
+        'allLabel' => 'All',
+        'presentation' => 'checkboxes',
+    ]);
 });
 
-it('renders sortable choices selected-first inside the sortable wrapper', function () {
+it('keeps the add-menu presentation when made sortable', function () {
+    expect(Choice::make('choice')->presentation(ChoicePresentation::AddMenu)->sortable()->props())->toMatchArray([
+        'sortable' => true,
+        'multiple' => true,
+        'presentation' => 'add-menu',
+    ]);
+});
+
+it('renders sortable choices selected-first in a checkbox select', function () {
     $crawler = renderChoice(
         Choice::make('choice')
             ->options([
@@ -366,7 +373,7 @@ it('renders sortable choices selected-first inside the sortable wrapper', functi
             ->sortable(),
         ['three', 'two'],
     );
-    $values = $crawler->filter('craft-sortable-checkbox-select input[type="checkbox"]')
+    $values = $crawler->filter('craft-checkbox-select[sortable] input[type="checkbox"]')
         ->each(fn (Crawler $node) => $node->attr('value'));
 
     expect($values)->toBe(['three', 'two', 'one']);

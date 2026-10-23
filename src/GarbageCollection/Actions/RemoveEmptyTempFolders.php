@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\AssetUploads;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 
@@ -26,7 +27,7 @@ class RemoveEmptyTempFolders extends GarbageCollectionAction
                 $activeUploadFolderIds = UploadSession::query()
                     ->where('handler', AssetUploads::class)
                     ->whereNull('result')
-                    ->where('expiresAt', '>', now())
+                    ->where('expiresAt', '>', Query::prepareDateForDb(now()))
                     ->get(['parameters'])
                     ->pluck('parameters')
                     ->map(fn (array $parameters) => (int) ($parameters['folderId'] ?? 0))
