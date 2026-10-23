@@ -701,7 +701,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     }
 
     event.preventDefault();
-    this.#openedOnIndicatorMousedown = this.opened;
+    this.#openedOnIndicatorMousedown = Boolean(this.opened);
     this._inputNode?.focus();
   };
 
