@@ -115,13 +115,18 @@ readonly class RoutesController
 
     private function saveRoute(Route $route): Response
     {
+        $isNew = $route->uid === null;
+
         try {
-            $this->routes->saveRoute($route);
+            $uid = $this->routes->saveRoute($route);
         } catch (InvalidRouteException $exception) {
             throw ValidationException::withMessages($exception->errors());
         }
 
-        return $this->asSuccess(t('Route saved.'));
+        return $this->asSuccess(
+            t('Route saved.'),
+            redirect: $isNew ? $this->createdRedirectUrl(route('craft.cp.settings.routes.edit', ['uid' => $uid])) : null,
+        );
     }
 
     private function routeFromRequest(Request $request, ?string $routeUid = null): Route
