@@ -686,6 +686,33 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     this._inputNode?.focus();
   };
 
+  /** Whether the listbox was open when the chevron was pressed. */
+  #openedOnIndicatorMousedown = false;
+
+  /**
+   * The chevron sits beside the textbox rather than over it, so a click on it
+   * focuses the textbox and toggles the listbox, as a select's arrow would.
+   * The toggle waits for the click, because Lion closes the listbox on a
+   * mouseup outside the textbox.
+   */
+  #onIndicatorMousedown = (event: MouseEvent) => {
+    if (event.button !== 0 || this.inactive) {
+      return;
+    }
+
+    event.preventDefault();
+    this.#openedOnIndicatorMousedown = this.opened;
+    this._inputNode?.focus();
+  };
+
+  #onIndicatorClick = () => {
+    if (this.inactive) {
+      return;
+    }
+
+    this.opened = !this.#openedOnIndicatorMousedown;
+  };
+
   override _inputGroupInputTemplate() {
     const selectedData = this.#selectedOption()?.data;
     const icon = selectedData?.icon;
@@ -751,6 +778,8 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
             class="indicator"
             name="chevron-down"
             style="font-size: 0.8em"
+            @mousedown=${this.#onIndicatorMousedown}
+            @click=${this.#onIndicatorClick}
           ></craft-icon>
         </div>
       </div>
