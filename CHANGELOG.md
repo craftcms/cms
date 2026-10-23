@@ -135,6 +135,7 @@
 - Fixed a bug where element editors’ error summaries could disappear right after a failed save. ([#20044](https://github.com/craftcms/cms/issues/20044))
 - Fixed a bug where double-clicking a Matrix block’s header to expand or collapse it could also select text. ([#20045](https://github.com/craftcms/cms/issues/20045))
 - Fixed a bug where Matrix fields in cards view didn’t show a dropped entry in its new position until the reorder had saved, and drop placeholders had no gap next to the neighboring card. ([#20046](https://github.com/craftcms/cms/issues/20046))
+- Fixed a bug where Markdown inputs without a toolbar had less padding above and below their text than beside it.
 
 ### Content Management
 
@@ -185,6 +186,10 @@
 - Pressing <kbd>Shift</kbd> + <kbd>Return</kbd> in an editable table’s first row now adds a row above it, if the table allows new rows. ([#20025](https://github.com/craftcms/cms/pull/20025))
 - Fixed an accessibility issue where buttons were still announced as “Loading” after they finished loading, and lost their accessible name if loading took more than five seconds. ([#19975](https://github.com/craftcms/cms/pull/19975))
 - Fixed an accessibility issue where pressing <kbd>Return</kbd> on a dialog’s close button could reopen the dialog, such as the “Check your email” dialog on the Reset Password screen. ([#20049](https://github.com/craftcms/cms/pull/20049))
+- `craft-spinner` now has a `label` property, which describes what is loading to screen readers. Slotted text still replaces it.
+- `craft-field` now has an `instructions-sr-only` attribute, and UI fields and the `Field` view component have `instructionsSrOnly()`, which visually hide instructions while keeping them in the input’s accessible description.
+- Fixed an accessibility issue where spinners in Content Block and Matrix inline-block fields weren’t announced as loading.
+- Fixed an accessibility issue where pressing Escape in a popover inside an element details panel also closed the panel.
 - Fixed a bug where single-select comboboxes had no visible focus ring. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes’ combobox element had no accessible name in Chromium. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed an accessibility issue where the environment variable and alias hints below the site group name and installer Base URL inputs weren’t announced by screen readers. ([#20050](https://github.com/craftcms/cms/pull/20050))
@@ -265,6 +270,8 @@
 - Added the `cp-table--flush` class, which pads the outer edges of each table row by `--cp-container-padding`. ([#19906](https://github.com/craftcms/cms/pull/19906), [#19936](https://github.com/craftcms/cms/pull/19936))
 - Added the `appearance` prop to the `AdminTable` Vue component, and `CraftCms\Cms\Ui\Nodes\Table::appearance()`, which set how a table meets its container: `plain`, `flush`, or `raised`. The values are available as `TableAppearance` from `@craftcms/cp` and `CraftCms\Cms\Cp\Enums\TableAppearance`. ([#19936](https://github.com/craftcms/cms/pull/19936))
 - Added the `max-height` attribute to `<craft-markdown-field>`, which sets how tall the editor grows before it scrolls. ([#19923](https://github.com/craftcms/cms/pull/19923))
+- Added the `--markdown-field-font-size` CSS custom property, which sets the size of `<craft-markdown-field>`’s text.
+- `<craft-markdown-field>` now reflects its `show-toolbar` property to the attribute.
 - Added the `separated` attribute to `<craft-field-group>`, and `CraftCms\Cms\Cp\Components\FieldGroup::separated()`, which widen the gap between columns and draw a hairline between fields that share a row. ([#20022](https://github.com/craftcms/cms/issues/20022), [#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `outline-fill` appearance to `<craft-pane>`, and `CraftCms\Cms\Cp\Enums\PaneAppearance::OutlineFill`. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `appearance` and `size` properties to `<craft-disclosure>`. `appearance="plain"` drops the content’s hairline and indent, and `size` sizes the default toggle. ([#19942](https://github.com/craftcms/cms/pull/19942))

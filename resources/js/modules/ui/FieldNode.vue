@@ -74,6 +74,7 @@
     instructionsHtml?: string;
     required?: boolean;
     instructionsPosition?: 'before' | 'after';
+    instructionsSrOnly?: boolean;
     tip?: string;
     tipHtml?: string;
     warning?: string;
@@ -323,6 +324,7 @@
         : (resolvedNode.props.instructions ?? undefined)
     "
     :instructions-position="resolvedNode.props.instructionsPosition"
+    :instructions-sr-only="resolvedNode.props.instructionsSrOnly || undefined"
     :required="Boolean(resolvedNode.props.required)"
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"

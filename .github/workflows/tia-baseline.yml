@@ -43,7 +43,11 @@ jobs:
           CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       - name: Install libvips
-        run: sudo apt-get update && sudo apt-get install -y libvips-dev
+        run: |
+          sudo apt-get update -o Acquire::Retries=3
+          sudo apt-get install -y --no-install-recommends \
+            -o Acquire::Retries=3 -o Acquire::http::Timeout=20 \
+            libvips42t64
 
       - name: Copy tests .env
         shell: bash

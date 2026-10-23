@@ -530,6 +530,36 @@
     recordChange({kind, path});
   }
 
+  /**
+   * Sets several values at once. When any of them is refreshable, the layout
+   * refreshes once, with all of the values, for the last refreshable one.
+   */
+  function setValues(
+    changes: {path: string[]; value: UiValue; refreshable?: boolean}[]
+  ): void {
+    const refreshing = [...changes]
+      .reverse()
+      .find((change) => change.refreshable);
+
+    for (const change of changes) {
+      setPathValue(values, change.path, change.value);
+    }
+
+    for (const change of changes) {
+      if (change !== refreshing) {
+        recordChange({kind: 'discrete', path: change.path});
+      }
+    }
+
+    if (refreshing) {
+      recordChange({
+        kind: 'discrete',
+        path: refreshing.path,
+        refreshable: true,
+      });
+    }
+  }
+
   defineExpose({
     advanceBaseline,
     rebase,
@@ -538,6 +568,7 @@
     mutation,
     resetValues,
     setValue,
+    setValues,
     canSubmit: () => !renderError.value,
   });
 

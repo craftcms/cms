@@ -102,6 +102,13 @@ export default class CraftField extends FormControlMixin(LitElement) {
   instructionsPosition: 'before' | 'after' = 'before';
 
   /**
+   * Visually hides the instructions, keeping them in the input's accessible
+   * description, such as when a placeholder repeats them.
+   */
+  @property({type: Boolean, reflect: true, attribute: 'instructions-sr-only'})
+  instructionsSrOnly = false;
+
+  /**
    * Overrides the inferred width behavior. By default, the field spans its
    * column, unless the slotted single-line control declares a `maxlength`
    * (reflected onto the host as `has-maxlength`) — which shrinks the input
@@ -413,7 +420,13 @@ export default class CraftField extends FormControlMixin(LitElement) {
 
   /** The instructions, skipped entirely when there are none. */
   protected override _helpTextTemplate() {
-    return this.__hasHelpText ? super._helpTextTemplate() : html``;
+    if (!this.__hasHelpText) {
+      return html``;
+    }
+
+    return this.instructionsSrOnly
+      ? html`<div class="cp-visually-hidden">${super._helpTextTemplate()}</div>`
+      : super._helpTextTemplate();
   }
 
   /**

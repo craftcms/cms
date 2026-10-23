@@ -113,17 +113,12 @@ it('lists the problems admins need to fix', function (array $providers, array $s
     registerTask();
     aiSettings($settings);
 
-    $problems = app(Ai::class)->problems();
-
-    if ($problem === null) {
-        expect($problems)->toBe([]);
-    } else {
-        expect($problems)->toBe(['test:summarize' => $problem]);
-    }
+    expect(app(Ai::class)->problems()['test:summarize'] ?? null)->toBe($problem);
 })->with([
     'resolves, with a key' => [[], ['defaults' => ['text' => ['provider' => 'anthropic']]], null],
     'disabled' => [[], ['tasks' => ['test:summarize' => ['enabled' => false]]], null],
-    'no provider' => [[], [], 'Summarize doesn’t have a provider, and there’s no default text provider.'],
+    'nothing chosen, so AI is off' => [[], [], null],
+    'no provider, while another task has one' => [[], ['tasks' => ['craft:askAi' => ['provider' => 'anthropic']]], 'Summarize doesn’t have a provider, and there’s no default text provider.'],
     'provider missing from config' => [[], ['tasks' => ['test:summarize' => ['provider' => 'mistral']]], 'Summarize uses the mistral provider, which isn’t defined in config/ai.php.'],
     'null key' => [['claude' => ['driver' => 'anthropic', 'key' => null]], ['tasks' => ['test:summarize' => ['provider' => 'claude']]], 'Summarize uses the claude provider, which doesn’t have an API key.'],
     'empty key' => [['claude' => ['driver' => 'anthropic', 'key' => '']], ['tasks' => ['test:summarize' => ['provider' => 'claude']]], 'Summarize uses the claude provider, which doesn’t have an API key.'],

@@ -35,13 +35,14 @@ The spinner is sized in `em`, so it takes the font size of what contains it:
 
 The spinner itself is presentational — an animated shape carries no meaning to a screen reader.
 
-**Slot text saying what is loading.** It is visually hidden but read by screen readers, so someone who cannot see the animation knows what they are waiting for:
+**Say what is loading, with `label` or slotted text.** It is visually hidden but read by screen readers, so someone who cannot see the animation knows what they are waiting for. Slotted text replaces the `label`:
 
 ```html
+<craft-spinner label="Loading entries"></craft-spinner>
 <craft-spinner>Loading entries</craft-spinner>
 ```
 
-Leave the slot empty only when nearby text already says what is loading, such as inside a button that already says "Saving…".
+Leave both out only when nearby text already says what is loading, such as inside a button that already says "Saving…".
 
 ## Properties
 

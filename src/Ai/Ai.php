@@ -97,12 +97,15 @@ class Ai
     /**
      * Returns why enabled tasks can’t run, indexed by task handle, for admins to fix.
      *
-     * Tasks whose provider is missing its API key are included, because their requests will fail.
+     * Tasks whose provider is missing its API key are included, because their requests will fail. Tasks without a
+     * provider are only included once a provider has been chosen for something: until then, AI is off, which isn’t a
+     * problem.
      *
      * @return array<string, string>
      */
     public function problems(): array
     {
+        $isSetUp = $this->hasChosenProvider();
         $problems = [];
 
         foreach ($this->tasks->tasksByHandle()->all() as $handle => $task) {
@@ -110,7 +113,7 @@ class Ai
                 $resolved = $this->resolve($handle);
             } catch (AiUnavailableException $e) {
                 $problem = match ($e->reason) {
-                    AiUnavailableReason::NoDefault => t('{task} doesn’t have a provider, and there’s no default {modality} provider.', [
+                    AiUnavailableReason::NoDefault => ! $isSetUp ? null : t('{task} doesn’t have a provider, and there’s no default {modality} provider.', [
                         'task' => $task::label(),
                         'modality' => mb_strtolower($task::modality()->label()),
                     ]),
@@ -206,5 +209,18 @@ class Ai
             ?? throw new AiUnavailableException($handle, AiUnavailableReason::UnknownTask);
 
         return new TaskClient($this, $task);
+    }
+
+    /**
+     * Returns whether a default or a task has a provider.
+     */
+    private function hasChosenProvider(): bool
+    {
+        $settings = app(Settings::class);
+
+        return array_any(
+            [...array_values($settings->defaults), ...array_values($settings->tasks)],
+            static fn (array $mapping): bool => (bool) Env::parse($mapping['provider'] ?? null),
+        );
     }
 }
