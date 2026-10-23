@@ -269,7 +269,6 @@ export default defineConfig(({mode}) => {
       ],
     },
     base: './',
-    server,
 
     publicDir: 'resources/public',
 
@@ -284,8 +283,10 @@ export default defineConfig(({mode}) => {
     // Otherwise the dev server watches the Composer dependencies' tens of
     // thousands of files, and its memory grows until it runs out. Storybook
     // replaces this `server` block with its own, so .storybook/main.ts sets
-    // the same.
+    // the same. One block with the DDEV settings above: a second `server` key
+    // would replace them, leaving the dev server on plain HTTP.
     server: {
+      ...server,
       watch: {
         ignored: ['**/vendor/**', '**/cms-assets/**'],
       },
