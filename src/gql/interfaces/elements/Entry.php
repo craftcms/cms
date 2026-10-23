@@ -13,7 +13,9 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\Structure;
 use craft\gql\types\DateTime;
+use craft\gql\types\EntryType as EntryTypeGqlType;
 use craft\gql\types\generators\EntryType;
+use craft\gql\types\Section as SectionGqlType;
 use craft\helpers\Gql;
 use craft\models\Section;
 use craft\services\Gql as GqlService;
@@ -239,6 +241,22 @@ class Entry extends Structure
     private static function getConditionalFields(array $sectionFieldArguments): array
     {
         $fields = [];
+        if (Gql::canSchema('settings.sections')) {
+            $fields['section'] = [
+                'name' => 'section',
+                'type' => SectionGqlType::getType(),
+                'description' => 'The section that contains the entry.',
+            ];
+        }
+
+        if (Gql::canSchema('settings.entrytypes')) {
+            $fields['type'] = [
+                'name' => 'type',
+                'type' => Type::nonNull(EntryTypeGqlType::getType()),
+                'description' => 'The entry’s entry type.',
+            ];
+        }
+
         if (Gql::canQueryAllUsers()) {
             $fields = array_merge($fields, [
                 'authorId' => [

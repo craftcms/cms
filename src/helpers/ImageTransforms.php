@@ -411,9 +411,11 @@ class ImageTransforms
         $imagesService = Craft::$app->getImages();
 
         $supported = match ($format) {
+            Format::ID_BMP => $imagesService->getSupportsBmp(),
             Format::ID_WEBP => $imagesService->getSupportsWebP(),
             Format::ID_AVIF => $imagesService->getSupportsAvif(),
             Format::ID_HEIC => $imagesService->getSupportsHeic(),
+            Format::ID_JXL => $imagesService->getSupportsJxl(),
             default => true,
         };
 

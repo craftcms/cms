@@ -13,21 +13,26 @@ use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
+use craft\enums\PropagationMethod;
 use craft\events\ConfigEvent;
 use craft\events\VolumeEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\i18n\Translation;
 use craft\models\FieldLayout;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
+use craft\queue\jobs\ResaveElements;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\db\Expression;
 
 /**
  * Volumes service.
@@ -197,6 +202,7 @@ class Volumes extends Component
     {
         $volume = new Volume([
             'name' => Craft::t('app', 'Temporary Uploads'),
+            'propagationMethod' => PropagationMethod::All,
         ]);
 
         $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
@@ -344,7 +350,16 @@ class Volumes extends Component
             $volumeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $volumeRecord->altTranslationMethod = $data['altTranslationMethod'] ?? Field::TRANSLATION_METHOD_NONE;
             $volumeRecord->altTranslationKeyFormat = $data['altTranslationKeyFormat'] ?? null;
+            // (volumes saved before the setting existed should keep propagating to all sites)
+            $volumeRecord->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
             $volumeRecord->uid = $volumeUid;
+
+            // If assets are now saved to all sites, existing assets will need to be propagated to any sites they're missing from
+            $propagateAssets = (
+                !$isNewVolume &&
+                $volumeRecord->propagationMethod === PropagationMethod::All->value &&
+                $volumeRecord->propagationMethod !== $volumeRecord->getOldAttribute('propagationMethod')
+            );
 
             if (!empty($data['fieldLayouts'])) {
                 // Save the field layout
@@ -401,10 +416,29 @@ class Volumes extends Component
             /** @var Asset[] $assets */
             $assets = Asset::find()
                 ->volumeId($volumeRecord->id)
+                ->site('*')
+                ->unique()
                 ->trashed()
                 ->andWhere(['assets.deletedWithVolume' => true])
                 ->all();
             Craft::$app->getElements()->restoreElements($assets);
+        }
+
+        if ($propagateAssets) {
+            Queue::push(new ResaveElements([
+                'description' => Translation::prep('app', 'Resaving {name} assets', [
+                    'name' => $volumeRecord->name,
+                ]),
+                'elementType' => Asset::class,
+                'criteria' => [
+                    'volumeId' => $volumeRecord->id,
+                    'site' => '*',
+                    'unique' => true,
+                    'preferSites' => [Craft::$app->getSites()->getPrimarySite()->id],
+                    'status' => null,
+                ],
+                'updateSearchIndex' => true,
+            ]));
         }
 
         // Fire an 'afterSaveVolume' event
@@ -527,6 +561,8 @@ class Volumes extends Component
             /** @var Asset[] $assets */
             $assets = Asset::find()
                 ->volumeId($volumeRecord->id)
+                ->site('*')
+                ->unique()
                 ->status(null)
                 ->all();
             $elementsService = Craft::$app->getElements();
@@ -606,6 +642,12 @@ class Volumes extends Component
         }
         if ($db->columnExists(Table::VOLUMES, 'altTranslationMethod')) {
             $query->addSelect(['altTranslationMethod', 'altTranslationKeyFormat']);
+        }
+        if ($db->columnExists(Table::VOLUMES, 'propagationMethod')) {
+            $query->addSelect(['propagationMethod']);
+        } else {
+            // Volumes propagated to all sites before the setting existed
+            $query->addSelect(['propagationMethod' => new Expression(sprintf("'%s'", PropagationMethod::All->value))]);
         }
 
         return $query;

@@ -15,6 +15,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
+use craft\gql\types\Volume;
 use craft\helpers\Gql;
 use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\InterfaceType;
@@ -231,8 +232,18 @@ class Asset extends Element
      */
     protected static function getConditionalFields(): array
     {
+        $fields = [];
+
+        if (Gql::canSchema('settings.volumes')) {
+            $fields['volume'] = [
+                'name' => 'volume',
+                'type' => Type::nonNull(Volume::getType()),
+                'description' => 'The volume that the asset belongs to.',
+            ];
+        }
+
         if (Gql::canQueryAllUsers()) {
-            return [
+            $fields += [
                 'uploaderId' => [
                     'name' => 'uploaderId',
                     'type' => Type::int(),
@@ -247,6 +258,6 @@ class Asset extends Element
             ];
         }
 
-        return [];
+        return $fields;
     }
 }

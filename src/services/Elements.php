@@ -2700,6 +2700,9 @@ class Elements extends Component
     /**
      * Deletes elements in the site they are currently loaded in.
      *
+     * Any elements that only exist in that site will be deleted entirely. They will be soft-deleted,
+     * unless they are drafts or nested elements, in which case they will be hard-deleted.
+     *
      * @param ElementInterface[] $elements
      * @throws InvalidArgumentException if all elements don’t have the same type and site ID.
      * @since 4.4.0
@@ -2721,14 +2724,20 @@ class Elements extends Component
         }
 
         // Separate the multi-site elements from the single-site elements
-        $multiSiteElementIds = $firstElement::find()
-            ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
-            ->status(null)
-            ->drafts(null)
-            ->siteId(['not', $firstElement->siteId])
-            ->unique()
-            ->select(['elements.id'])
-            ->column();
+        // (element queries ignore the siteId param when there's only one site, so check that first)
+        if (Craft::$app->getIsMultiSite(false, true)) {
+            $multiSiteElementIds = $firstElement::find()
+                ->id(array_map(fn(ElementInterface $element) => $element->id, $elements))
+                ->status(null)
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->siteId(['not', $firstElement->siteId])
+                ->unique()
+                ->select(['elements.id'])
+                ->column();
+        } else {
+            $multiSiteElementIds = [];
+        }
 
         $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
         $multiSiteElements = [];
@@ -2768,6 +2777,7 @@ class Elements extends Component
                     ->id($multiSiteElementIds)
                     ->status(null)
                     ->drafts(null)
+                    ->provisionalDrafts(null)
                     ->site('*')
                     ->unique(),
                 true,
@@ -2788,10 +2798,16 @@ class Elements extends Component
             }
         }
 
-        // Fully delete any single-site elements
+        // Delete any single-site elements the same way they'd be deleted normally (soft-deleted),
+        // except for drafts, which are always hard-deleted, and nested elements, which get deleted for a site
+        // along with their owners and couldn't be restored on their own
         if (!empty($singleSiteElements)) {
             foreach ($singleSiteElements as $element) {
-                $this->deleteElement($element, true);
+                $hardDelete = (
+                    $element->getIsDraft() ||
+                    ($element instanceof NestedElementInterface && $element->getPrimaryOwnerId() !== null)
+                );
+                $this->deleteElement($element, $hardDelete);
             }
         }
     }
@@ -4403,6 +4419,19 @@ class Elements extends Component
                 }
             }
 
+            // Bump the owner elements' `dateUpdated` timestamps, recursively, so freshness checks based on
+            // `dateUpdated` (e.g. whether a new revision needs to be created for an ancestor) notice that
+            // something changed, even if this nested element was saved independently of its owner.
+            if (
+                !$element->propagating &&
+                $element instanceof NestedElementInterface &&
+                $element->getIsCanonical() &&
+                isset($element->touchOwnersOnSave) &&
+                $element->touchOwnersOnSave
+            ) {
+                $this->touchOwners($element);
+            }
+
             // Update the changed attributes & fields
             if ($trackChanges) {
                 $userId = Craft::$app->getUser()->getId();
@@ -4491,6 +4520,33 @@ class Elements extends Component
                 $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
                 $this->invalidateCachesForElement($owner);
             }
+        }
+    }
+
+    /**
+     * Updates the `dateUpdated` timestamp of a nested element’s owner, and its owner’s owner, and so on up
+     * the ownership chain, so that anything checking an ancestor’s `dateUpdated` to determine whether it’s
+     * changed (e.g. [[\craft\services\Revisions::createRevision()]], deciding whether a new revision needs
+     * to be created) will notice that it has, even though the ancestor itself wasn’t directly modified.
+     *
+     * @param NestedElementInterface $element The (canonical) nested element that was just saved
+     * @see https://github.com/craftcms/cms/issues/19594
+     */
+    private function touchOwners(NestedElementInterface $element): void
+    {
+        $timestamp = Db::prepareDateForDb($element->dateUpdated ?? DateTimeHelper::now());
+        $owner = $element->getOwner();
+
+        while ($owner !== null) {
+            Db::update(Table::ELEMENTS, [
+                'dateUpdated' => $timestamp,
+            ], ['id' => $owner->id]);
+
+            if (!$owner instanceof NestedElementInterface) {
+                return;
+            }
+
+            $owner = $owner->getOwner();
         }
     }
 

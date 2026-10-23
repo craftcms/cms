@@ -11,6 +11,7 @@ use ArrayIterator;
 use ArrayObject;
 use Craft;
 use craft\base\Model;
+use craft\base\Renderable;
 use craft\elements\Address;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
@@ -18,6 +19,7 @@ use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
+use craft\helpers\Template as TemplateHelper;
 use craft\models\FieldLayout;
 use craft\test\TestCase;
 use craft\test\TestSetup;
@@ -34,6 +36,7 @@ use Traversable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use Twig\Markup;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -370,6 +373,75 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             'foo Bar',
             '{{ "Foo Bar"|lcfirst }}'
+        );
+    }
+
+    /**
+     * `title`, `capitalize`, `upper`, and `lower` all accept an optional `language` argument
+     * that should be respected for language-specific casing rules
+     * (https://github.com/craftcms/cms/discussions/19555).
+     */
+    public function testTitleFilter(): void
+    {
+        $this->testRenderResult(
+            'Ijsselmeer',
+            '{{ "ijsselmeer"|title }}'
+        );
+
+        // Dutch title-cases the "ij" digraph as a single letter, capitalizing both characters
+        $this->testRenderResult(
+            'IJsselmeer',
+            '{{ "ijsselmeer"|title("nl") }}'
+        );
+    }
+
+    /**
+     * @see testTitleFilter()
+     */
+    public function testCapitalizeFilter(): void
+    {
+        $this->testRenderResult(
+            'Istanbul',
+            '{{ "istanbul"|capitalize }}'
+        );
+
+        // Turkish uppercases a dotted "i" to a dotted "İ", not "I"
+        $this->testRenderResult(
+            'İstanbul',
+            '{{ "istanbul"|capitalize("tr") }}'
+        );
+    }
+
+    /**
+     * @see testTitleFilter()
+     */
+    public function testUpperFilter(): void
+    {
+        $this->testRenderResult(
+            'ISTANBUL',
+            '{{ "istanbul"|upper }}'
+        );
+
+        $this->testRenderResult(
+            'İSTANBUL',
+            '{{ "istanbul"|upper("tr") }}'
+        );
+    }
+
+    /**
+     * @see testTitleFilter()
+     */
+    public function testLowerFilter(): void
+    {
+        $this->testRenderResult(
+            'istanbul',
+            '{{ "Istanbul"|lower }}'
+        );
+
+        // Turkish lowercases a dotless "I" to a dotless "ı", not "i"
+        $this->testRenderResult(
+            'ıstanbul',
+            '{{ "Istanbul"|lower("tr") }}'
         );
     }
 
@@ -1670,6 +1742,153 @@ EOL;
                 ['var' => $var],
             );
         }
+    }
+
+    public function testRenderTag(): void
+    {
+        $template = '{{ name }}:{{ foo ?? "-" }}:{{ bar ?? "-" }}';
+        $a = $this->renderable('a', $template);
+        $b = $this->renderable('b', $template);
+        $c = $this->renderable('c', $template);
+        $vars = [
+            'one' => $a,
+            'array' => [$a, $b, $c],
+            'collection' => Collection::make([$a, $b, $c]),
+            'foo' => 'F',
+        ];
+
+        // individual objects
+        $this->testRenderResult('a:F:-', '{% render one %}', $vars);
+        $this->testRenderResult('a:F:B', '{% render one with {bar: "B"} %}', $vars);
+        $this->testRenderResult('a:-:-', '{% render one only %}', $vars);
+        $this->testRenderResult('a:-:B', '{% render one with {bar: "B"} only %}', $vars);
+
+        // arrays
+        $this->testRenderResult("a:F:-\nb:F:-\nc:F:-", '{% render array %}', $vars);
+        $this->testRenderResult("a:F:B\nb:F:B\nc:F:B", '{% render array with {bar: "B"} %}', $vars);
+        $this->testRenderResult("a:-:-\nb:-:-\nc:-:-", '{% render array only %}', $vars);
+        $this->testRenderResult("a:-:B\nb:-:B\nc:-:B", '{% render array with {bar: "B"} only %}', $vars);
+        $this->testRenderResult("a:F:-\nb:F:-", '{% render [one, array[1]] %}', $vars);
+        $this->testRenderResult('', '{% render [] %}', $vars);
+
+        // collections
+        $this->testRenderResult("a:F:-\nb:F:-\nc:F:-", '{% render collection %}', $vars);
+        $this->testRenderResult("a:F:B\nb:F:B\nc:F:B", '{% render collection with {bar: "B"} %}', $vars);
+        $this->testRenderResult("a:-:-\nb:-:-\nc:-:-", '{% render collection only %}', $vars);
+        $this->testRenderResult("a:-:B\nb:-:B\nc:-:B", '{% render collection with {bar: "B"} only %}', $vars);
+        $this->testRenderResult("b:F:-\nc:F:-", '{% render collection.slice(1) %}', $vars);
+        $this->testRenderResult("a:-:B\nb:-:B\nc:-:B", '{{ collection.render({bar: "B"}) }}', $vars);
+
+        // null
+        $this->testRenderResult('', '{% render null %}', $vars);
+
+        // non-renderable items
+        $this->expectException(RuntimeError::class);
+        $this->view->renderString('{% render [one, "foo"] %}', $vars);
+    }
+
+    public function testRenderTagLoop(): void
+    {
+        $template = '{{ name }}:{{ loop.index }}/{{ loop.length }}:{{ loop.index0 }}:{{ loop.revindex }}:{{ loop.revindex0 }}:{{ loop.first ? "first" }}{{ loop.last ? "last" }}:{{ loop.parent.foo ?? "-" }}';
+        $a = $this->renderable('a', $template);
+        $b = $this->renderable('b', $template);
+        $c = $this->renderable('c', $template);
+        $expected = implode("\n", [
+            'a:1/3:0:3:2:first:F',
+            'b:2/3:1:2:1::F',
+            'c:3/3:2:1:0:last:F',
+        ]);
+        $vars = [
+            'array' => [$a, $b, $c],
+            'collection' => Collection::make([$a, $b, $c]),
+            'foo' => 'F',
+        ];
+
+        $this->testRenderResult($expected, '{% render array %}', $vars);
+        $this->testRenderResult($expected, '{% render collection %}', $vars);
+        $this->testRenderResult($expected, '{{ collection.render({foo: "F"}) }}', $vars);
+
+        // non-sequential keys
+        $this->testRenderResult($expected, '{% render {x: array[0], y: array[1], z: array[2]} %}', $vars);
+
+        // `loop` still works with `only`, but `loop.parent` won't have the context
+        $this->testRenderResult('a:1/1:0:1:0:firstlast:-', '{% render [array[0]] only %}', $vars);
+
+        // single item
+        $this->testRenderResult('a:1/1:0:1:0:firstlast:F', '{% render [array[0]] %}', $vars);
+
+        // within a {% for %} loop, rendered objects get their own `loop` variable, and the outer loop is available
+        // via `loop.parent.loop`
+        $inner = $this->renderable('i', '{{ name }}{{ loop.index }}/{{ loop.parent.loop.index }}');
+        $this->testRenderResult(
+            "i1/1\ni2/1\ni1/2\ni2/2",
+            '{% for x in 1..2 %}{% render items %}{% if not loop.last %}{{ "\n" }}{% endif %}{% endfor %}',
+            ['items' => [$inner, $inner]],
+        );
+
+        // a `loop` variable passed via `with` is left alone
+        $custom = $this->renderable('a', '{{ name }}:{{ loop }}');
+        $this->testRenderResult('a:custom', '{% render [obj] with {loop: "custom"} %}', ['obj' => $custom]);
+        $this->testRenderResult('a:custom', '{% render [obj] with {loop: "custom"} only %}', ['obj' => $custom]);
+        $this->testRenderResult(
+            'a:custom',
+            '{% for x in 1..1 %}{% render [obj] with {loop: "custom"} %}{% endfor %}',
+            ['obj' => $custom],
+        );
+
+        // ...whereas `loop` variables in the context are replaced
+        $this->testRenderResult('a1/1', '{% render [obj] %}', [
+            'obj' => $this->renderable('a', '{{ name }}{{ loop.index }}/{{ loop.length }}'),
+            'loop' => 'context',
+        ]);
+
+        // the same goes for Template::render()
+        self::assertSame('a:custom', (string)TemplateHelper::render([$custom], ['loop' => 'custom']));
+        self::assertSame('a1/1', (string)TemplateHelper::render(
+            [$this->renderable('a', '{{ name }}{{ loop.index }}/{{ loop.length }}')],
+            context: ['loop' => 'context'],
+        ));
+
+        // individual objects rendered within a {% for %} loop get its `loop` variable
+        $this->testRenderResult(
+            implode("\n", [
+                'a:1/3:0:3:2:first:F',
+                'b:2/3:1:2:1::F',
+                'c:3/3:2:1:0:last:F',
+            ]),
+            '{% for obj in array %}{% render obj %}{% if not loop.last %}{{ "\n" }}{% endif %}{% endfor %}',
+            $vars,
+        );
+
+        // ...unless `only` is used
+        $loopCheck = $this->renderable('a', '{{ loop is defined ? "yes" : "no" }}');
+        $this->testRenderResult('yes,no', '{% for i in 1..1 %}{% render one %},{% render one only %}{% endfor %}', [
+            'one' => $loopCheck,
+        ]);
+
+        // individual objects rendered outside of a {% for %} loop don’t get a `loop` variable
+        $this->testRenderResult('no', '{% render one %}', [
+            'one' => $loopCheck,
+        ]);
+    }
+
+    private function renderable(string $name, string $template): Renderable
+    {
+        return new class($name, $template) implements Renderable {
+            public function __construct(
+                public string $name,
+                private string $template,
+            ) {
+            }
+
+            public function render(array $variables = []): Markup
+            {
+                $output = Craft::$app->getView()->renderString($this->template, array_merge($variables, [
+                    'name' => $this->name,
+                ]));
+                return new Markup($output, Craft::$app->charset);
+            }
+        };
     }
 
     /**
