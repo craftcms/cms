@@ -11,6 +11,7 @@
     nextTick,
     provide,
     shallowReactive,
+    shallowRef,
     useTemplateRef,
     type Component,
   } from 'vue';
@@ -40,6 +41,14 @@
   import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
+  import useCraftData from '@/common/composables/useCraftData';
+  import {
+    AskAiEditorKey,
+    applyAskAiProposal,
+    useAskAiConversation,
+    askAiContainer,
+    type AskAiRequest,
+  } from '@/modules/ai/ask-ai';
   import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
   import ReleasePicker from '@/modules/releases/components/ReleasePicker.vue';
   import {provideReleaseEditorActions} from '@/modules/releases/releaseEditor';
@@ -105,6 +114,36 @@
 
   provide(NestedOwnerEditorKey, editor.nestedOwnerEditor);
 
+  const askAiRequest = shallowRef<AskAiRequest | null>(null);
+  const {currentUser} = useCraftData();
+
+  provide(AskAiEditorKey, {
+    scope: () => uiPayload.value?.scope ?? [],
+    values: editor.formValues,
+    request: askAiRequest,
+    conversation: useAskAiConversation(payload, currentUser?.value?.id ?? null),
+    ask: (request) => {
+      askAiRequest.value = request;
+      detailsPanels.value?.select('ask-ai');
+    },
+    // Through the fields that render each control path, so nested fields save
+    // their elements.
+    apply: (proposals) => {
+      const container = contentEl.value
+        ? askAiContainer(contentEl.value)
+        : null;
+      let revealed = false;
+
+      // Only the first field is shown, rather than jumping between tabs.
+      return proposals.filter((proposal) => {
+        const applied = applyAskAiProposal(proposal, container, !revealed);
+        revealed ||= applied;
+
+        return applied;
+      });
+    },
+  });
+
   /**
    * Fields outside of a tab — in a field layout whose tab was never saved,
    * say — need the spacing a tab would otherwise give them.
@@ -151,6 +190,7 @@
       Boolean(sidebarPayload.value) ||
       Boolean(payload.metadataHtml) ||
       Boolean(payload.activityTimelineUrl) ||
+      Boolean(payload.askAi) ||
       elementDetailsPanelRegistry.hasVisible(payload)
   );
   const detailsPanels = useTemplateRef<{select: (panelId: string) => void}>(

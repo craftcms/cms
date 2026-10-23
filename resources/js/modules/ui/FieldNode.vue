@@ -16,7 +16,13 @@
   } from 'vue';
   import CopyElementValuesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CopyElementValuesController';
   import CrossSiteCopyModal from './CrossSiteCopyModal.vue';
+  import {
+    AskAiEditorKey,
+    askAiContainer,
+    type ApplyAskAiProposalDetail,
+  } from '@/modules/ai/ask-ai';
   import UiNodeList from './UiNodeList.vue';
+  import {revealElement} from '@/common/utils/dom';
   import {
     FieldActionItems,
     FieldLabelSrOnly,
@@ -266,6 +272,54 @@
     copySites.value = Craft.sites.filter((site) =>
       detail.siteIds.includes(site.id)
     );
+  });
+
+  const askAiEditor = inject(AskAiEditorKey, null);
+
+  // Opens the editor's “Ask AI” panel, about this field alone.
+  useEventListener(window, 'craft:ask-ai', (event: Event) => {
+    const detail = (event as CustomEvent<{trigger?: unknown}>).detail;
+
+    if (
+      !askAiEditor ||
+      !field.value ||
+      !(detail?.trigger instanceof HTMLElement) ||
+      detail.trigger.closest('craft-field') !== field.value
+    ) {
+      return;
+    }
+
+    const editorScope = askAiEditor.scope();
+    const path = control.value.path;
+
+    if (!pathsMatch(path.slice(0, editorScope.length), editorScope)) {
+      return;
+    }
+
+    askAiEditor.ask({context: [path.slice(editorScope.length).join('.')]});
+  });
+
+  useEventListener(window, 'craft:apply-ask-ai-proposal', (event: Event) => {
+    const detail = (event as CustomEvent<ApplyAskAiProposalDetail>).detail;
+    const {proposal, container, reveal} = detail;
+
+    if (
+      !field.value ||
+      !proposal.node.control ||
+      askAiContainer(field.value) !== container ||
+      !pathsMatch(proposal.node.control.path, control.value.path)
+    ) {
+      return;
+    }
+
+    resolvedNode.value = proposal.node as typeof resolvedNode.value;
+    setValue(proposal.value);
+    detail.applied = true;
+
+    // The field may be on another tab than the one showing.
+    if (reveal) {
+      void revealElement(field.value);
+    }
   });
 
   async function copyValue(fromSiteId: number): Promise<void> {
