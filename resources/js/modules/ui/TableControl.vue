@@ -309,10 +309,14 @@
     const control = cell.querySelector<HTMLElement>(cellFocusControls);
     if (!control) return;
     // Prefer the control's own input (e.g. a color picker's text input over its
-    // swatch), unless it's hidden, as with icon pickers.
-    const input = control.hasAttribute('hidden-input')
+    // swatch, or a combobox's textbox over its clear button), unless it's
+    // hidden, as with icon pickers. A combobox slots a wrapper around its input.
+    const slotted = control.hasAttribute('hidden-input')
       ? null
       : control.querySelector<HTMLElement>(':scope > [slot="input"]');
+    const input = slotted?.matches('input, textarea, select')
+      ? slotted
+      : slotted?.querySelector<HTMLElement>('input, textarea, select');
     (input && input.tabIndex >= 0
       ? input
       : firstFocusableWithin(control)
