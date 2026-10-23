@@ -41,13 +41,14 @@ body {
 
 /*
   Date and time inputs lead with their picker icon, as inputs with a prefix
-  icon do. The icon is the browser's own picker button, in the native input's
+  icon do, including a plain `craft-input` given a date or time type, as table
+  cells use. The icon is the browser's own picker button, in the native input's
   light DOM, so it's styled here rather than in the components.
 */
-:is(craft-input-date, craft-input-time)
+:is(craft-input, craft-input-date, craft-input-time)
   > input:is([type='date'], [type='time'])::-webkit-calendar-picker-indicator {
   order: -1;
-  margin-inline: 0 var(--c-spacing-sm);
+  margin-inline: calc(var(--c-spacing-xs) * -1) var(--c-spacing-sm);
   /*
     The browser draws the picker's focus ring and doesn't match focus
     pseudo-classes on it, but it does take the outline color, width, and
