@@ -65,10 +65,7 @@ export default class CraftTooltip extends LionTooltip {
           border-radius: var(--c-radius-sm);
           box-shadow: var(--c-shadow-md);
           width: max-content;
-          max-inline-size: var(
-            --c-tooltip-max-width,
-            min(45ch, 100vw - 2rem)
-          );
+          max-inline-size: var(--c-tooltip-max-width, min(45ch, 100vw - 2rem));
           overflow-wrap: break-word;
         }
       `,
