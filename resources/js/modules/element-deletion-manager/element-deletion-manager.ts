@@ -1,9 +1,42 @@
-import {Base, Modal} from '@craftcms/garnish';
+import {Base} from '@craftcms/garnish';
+import type CraftDialog from '@craftcms/ui/components/dialog/dialog';
+import './element-deletion-manager.css';
 
-// jQuery-built modal/blocker markup + Craft.ui/Craft.cp seams; the modal is the
-// modern @craftcms/garnish Modal (composition).
+// jQuery-built blocker markup + Craft.ui/Craft.cp seams, shown in a
+// `craft-dialog`.
 declare const $: any;
 declare const Craft: any;
+
+type CraftButton = HTMLElement & {disabled: boolean; loading: boolean};
+
+/** A `craft-button`, which is styled in both control panels, unlike `.btn`. */
+function createButton({
+  label,
+  icon,
+  variant,
+}: {
+  label: string;
+  icon?: string | null;
+  variant?: string;
+}): CraftButton {
+  const button = document.createElement('craft-button') as CraftButton;
+  button.setAttribute('type', 'button');
+
+  if (variant) {
+    button.setAttribute('variant', variant);
+  }
+
+  if (icon) {
+    const iconElement = document.createElement('craft-icon');
+    iconElement.setAttribute('name', icon);
+    iconElement.slot = 'prefix';
+    button.append(iconElement);
+  }
+
+  button.append(label);
+
+  return button;
+}
 
 const DEFAULTS = {
   siteId: null,
@@ -29,9 +62,9 @@ export class ElementDeletionManager extends Base {
   elementType: any = null;
   elementIds: any = null;
   hardDelete = false;
-  modal: any = null;
+  modal: CraftDialog | null = null;
   $blockersContainer: any = null;
-  $submitBtn: any = null;
+  submitButton: CraftButton | null = null;
   blockers: any = null;
   succeeded = false;
 
@@ -93,8 +126,8 @@ export class ElementDeletionManager extends Base {
       this.blockers.splice(i, 1);
     }
 
-    if (!this.blockers.length) {
-      this.$submitBtn.removeClass('disabled');
+    if (!this.blockers.length && this.submitButton) {
+      this.submitButton.disabled = false;
     }
   }
 
@@ -105,7 +138,9 @@ export class ElementDeletionManager extends Base {
       return;
     }
 
-    this.$submitBtn?.addClass('loading');
+    if (this.submitButton) {
+      this.submitButton.loading = true;
+    }
     let data: any = null;
     try {
       const response = await Craft.sendActionRequest(
@@ -119,12 +154,14 @@ export class ElementDeletionManager extends Base {
     } catch {
       return;
     } finally {
-      this.$submitBtn?.removeClass('loading');
+      if (this.submitButton) {
+        this.submitButton.loading = false;
+      }
     }
 
     this.succeeded = true;
     this.settings.onSuccess();
-    this.modal?.hide();
+    this.hideModal();
 
     if (data) {
       if (data.showAsFailure) {
@@ -160,74 +197,83 @@ export class ElementDeletionManager extends Base {
     );
   }
 
+  /**
+   * Shows the blockers in a `craft-dialog`, which is styled in both the
+   * Inertia and legacy control panels; Garnish's modal relies on the legacy
+   * stylesheet. It's non-modal because a blocker's actions can open legacy
+   * modals of their own, which would otherwise sit beneath it.
+   */
   createModal(data: any): void {
-    const $container = $('<div/>', {
-      class: 'modal element-deletion-modal',
-    });
+    const dialog = document.createElement('craft-dialog') as CraftDialog;
+    dialog.classList.add('element-deletion-modal');
+    dialog.setAttribute('no-header', '');
+    dialog.nonModal = true;
+    dialog.resizable = true;
 
-    const $body = $('<div/>', {class: 'body'}).appendTo($container);
-
-    $('<h1/>', {
-      class: 'flex flex-inline items-center gap-xs',
+    const $heading = $('<h1/>', {
+      class: 'edm-heading',
       html: Craft.t(
         'app',
         'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:',
         {numBlockers: data.blockers.length, label: data.elementPreview}
       ),
-    }).appendTo($body);
+    }).appendTo(dialog);
+    dialog.label = $heading.text().replace(/\s+/g, ' ').trim();
 
     this.$blockersContainer = $('<div/>', {class: 'edm-blockers'}).appendTo(
-      $body
+      dialog
     );
 
-    const $footer = $('<div/>', {
-      class: 'footer flex flex-justify',
-    }).appendTo($container);
-    $('<div/>', {class: 'flex-grow'}).appendTo($footer);
-    const $closeBtn = $('<button/>', {
-      type: 'button',
-      class: 'btn',
-      text: Craft.t('app', 'Close'),
-    }).appendTo($footer);
-    this.$submitBtn = Craft.ui
-      .createSubmitButton({
-        class: 'disabled',
-        label: Craft.t('app', 'Delete {type}', {
-          type:
-            this.elementIds.length === 1
-              ? Craft.elementTypeNames[this.elementType][2]
-              : Craft.elementTypeNames[this.elementType][3],
-        }),
-        spinner: true,
-      })
-      .appendTo($footer);
+    const footer = document.createElement('div');
+    footer.slot = 'footer';
+    footer.className = 'edm-footer';
+    const closeButton = createButton({label: Craft.t('app', 'Close')});
+    this.submitButton = createButton({
+      label: Craft.t('app', 'Delete {type}', {
+        type:
+          this.elementIds.length === 1
+            ? Craft.elementTypeNames[this.elementType][2]
+            : Craft.elementTypeNames[this.elementType][3],
+      }),
+      variant: 'danger',
+    });
+    this.submitButton.disabled = true;
+    footer.append(closeButton, this.submitButton);
+    dialog.append(footer);
 
-    this.modal = new Modal($container[0], {
-      resizable: true,
-      onFadeIn: () => {
-        Craft.cp.elementThumbLoader.load($container);
-      },
-      onHide: () => {
-        if (!this.succeeded) {
-          this.settings.onCancel();
-        }
-      },
-      onFadeOut: () => {
-        this.destroy();
-      },
+    dialog.addEventListener('craft-after-show', () => {
+      Craft.cp?.elementThumbLoader?.load($(dialog));
+    });
+    dialog.addEventListener('craft-hide', () => {
+      if (!this.succeeded) {
+        this.settings.onCancel();
+      }
+    });
+    dialog.addEventListener('craft-after-hide', () => {
+      this.destroy();
     });
 
-    $closeBtn.on('activate', () => {
-      this.modal.hide();
+    document.body.append(dialog);
+    dialog.opened = true;
+    this.modal = dialog;
+
+    closeButton.addEventListener('click', () => {
+      this.hideModal();
     });
 
-    this.$submitBtn.on('activate', async () => {
+    this.submitButton.addEventListener('click', async () => {
       await this.confirmAndDelete(data.totalElements);
     });
   }
 
+  hideModal(): void {
+    if (this.modal) {
+      this.modal.opened = false;
+    }
+  }
+
   override destroy(): void {
-    this.modal?.destroy();
+    this.modal?.remove();
     this.modal = null;
 
     for (const blocker of this.blockers) {
@@ -247,7 +293,7 @@ class Blocker extends Base {
   data: any = null;
   id: any = null;
   $container: any = null;
-  buttons: any = null;
+  buttons: CraftButton[] = [];
 
   constructor(manager?: any, data?: any) {
     super();
@@ -267,52 +313,57 @@ class Blocker extends Base {
       class: 'edm-blocker',
     }).appendTo(this.manager.$blockersContainer);
 
-    const $headingContainer = $('<div/>', {
-      class: 'flex flex-nowrap gap-0 mb-s',
-    }).appendTo(this.$container);
+    const $heading = $('<h2/>', {class: 'edm-blocker-heading'}).appendTo(
+      this.$container
+    );
 
     if (this.data.details) {
-      $('<button/>', {
+      // A disclosure: the heading's button shows and hides the details.
+      const $toggle = $('<button/>', {
         type: 'button',
-        class: 'fieldtoggle my-0',
-        'data-target': `${this.id}-details`,
-        title: `${Craft.t('app', 'Expand')} “${this.data.summary}”`,
-        'aria-label': `${Craft.t('app', 'Expand')} “${this.data.summary}”`,
-        html: '&nbsp;',
-      }).appendTo($headingContainer);
-    }
+        class: 'edm-toggle',
+        'aria-expanded': 'false',
+        'aria-controls': `${this.id}-details`,
+      }).appendTo($heading);
+      $('<craft-icon/>', {name: 'chevron-right'}).appendTo($toggle);
+      $('<span/>', {text: this.data.summary}).appendTo($toggle);
 
-    $('<h2/>', {
-      class: 'h3 mt-0',
-      text: this.data.summary,
-    }).appendTo($headingContainer);
-
-    if (this.data.details) {
-      $('<div/>', {
+      const $details = $('<div/>', {
         id: `${this.id}-details`,
-        class: 'edm-details hidden mb-m',
+        class: 'edm-details',
+        hidden: true,
         html: this.data.details,
       }).appendTo(this.$container);
+
+      $toggle.on('click', () => {
+        const expanded = $toggle.attr('aria-expanded') !== 'true';
+        $toggle.attr('aria-expanded', String(expanded));
+        $details.prop('hidden', !expanded);
+      });
+    } else {
+      $heading.text(this.data.summary);
     }
 
     if (this.data.actions) {
-      const $actions = $('<div/>', {
-        class: 'flex flex-nowrap',
-      }).appendTo(this.$container);
+      const $actions = $('<div/>', {class: 'edm-actions'}).appendTo(
+        this.$container
+      );
 
       for (const action of this.data.actions) {
-        const $button = Craft.ui.createButton({
-          id: action.id,
-          class: action.class,
+        const button = createButton({
           label: action.label,
           icon: action.icon,
-          spinner: true,
+          variant: action.destructive ? 'danger' : 'outline',
         });
-        this.buttons.push($button);
+        const $button = $(button);
+        this.buttons.push(button);
 
-        $button.addClass('hairline-dark');
-        if (action.destructive) {
-          $button.addClass('error');
+        if (action.id) {
+          button.id = action.id;
+        }
+
+        if (action.class) {
+          $button.addClass(action.class);
         }
 
         if (action.attributes) {
@@ -321,7 +372,7 @@ class Blocker extends Base {
 
         $button.appendTo($actions);
 
-        $button.on('activate', async () => {
+        button.addEventListener('click', async () => {
           if (action.callback) {
             let message;
             try {
@@ -371,7 +422,7 @@ class Blocker extends Base {
           }
 
           const submit = async () => {
-            $button.addClass('loading');
+            button.loading = true;
             let response;
             try {
               response = await Craft.sendActionRequest('POST', action.action, {
@@ -381,7 +432,7 @@ class Blocker extends Base {
                 },
               });
             } finally {
-              $button.removeClass('loading');
+              button.loading = false;
             }
 
             this.resolve(response.data.message);
@@ -403,19 +454,16 @@ class Blocker extends Base {
 
   async resolve(message: any = null): Promise<void> {
     this.$container.addClass('edm-blocker--resolved');
-    for (const $button of this.buttons) {
-      $button.addClass('disabled');
+    for (const button of this.buttons) {
+      button.disabled = true;
     }
     const $messageContainer = $('<div/>', {
-      class: 'edm-blocker-resolved-message flex flex-nowrap items-center',
+      class: 'edm-blocker-resolved-message',
     }).appendTo(this.$container);
-    $('<div/>', {class: 'cp-icon teal'})
-      .append(await Craft.ui.icon('check'))
-      .appendTo($messageContainer);
-    $('<p/>', {
-      class: 'mt-0',
-      text: message ?? Craft.t('app', 'Resolved'),
-    }).appendTo($messageContainer);
+    $('<craft-icon/>', {name: 'check'}).appendTo($messageContainer);
+    $('<p/>', {text: message ?? Craft.t('app', 'Resolved')}).appendTo(
+      $messageContainer
+    );
     this.manager.resolveBlocker(this);
   }
 }

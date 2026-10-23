@@ -147,6 +147,7 @@
 - Fixed a bug where clicking a combobox’s chevron didn’t focus it or open its options. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Fixed a bug where clicking a combobox cell in an editable table could focus its clear button rather than its text input. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Fixed a bug where the hairline between fields that share a row sat off-center before narrow fields, such as quarter-width ones.
+- Fixed a bug where the dialog listing what to resolve before deleting an element wasn’t shown as a dialog on most control panel pages, and its content was added to the bottom of the page unstyled.
 
 ### Content Management
 

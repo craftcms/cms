@@ -1,0 +1,88 @@
+.element-deletion-modal {
+  --c-dialog-inline-size: min(40rem, calc(100vw - var(--c-spacing-lg) * 2));
+}
+
+.element-deletion-modal .edm-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--c-spacing-xs);
+  margin-block: 0 var(--c-spacing-lg);
+  margin-inline: 0;
+  font-size: var(--c-text-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.element-deletion-modal .edm-blockers {
+  margin-inline: calc(var(--c-spacing-lg) * -1);
+  margin-block-end: calc(var(--c-spacing-lg) * -1);
+  border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+}
+
+.element-deletion-modal .edm-blocker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--c-spacing-sm);
+  padding: var(--c-spacing-lg);
+}
+
+.element-deletion-modal .edm-blocker:nth-child(odd) {
+  background-color: var(--c-color-neutral-fill-quiet);
+}
+
+.element-deletion-modal .edm-blocker-heading {
+  margin: 0;
+  font-size: var(--c-text-base);
+  font-weight: var(--font-weight-bold);
+}
+
+.element-deletion-modal .edm-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--c-spacing-xs);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.element-deletion-modal .edm-toggle craft-icon {
+  transition: rotate 150ms;
+}
+
+.element-deletion-modal .edm-toggle[aria-expanded='true'] craft-icon {
+  rotate: 90deg;
+}
+
+.element-deletion-modal .edm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--c-spacing-sm);
+}
+
+.element-deletion-modal .edm-blocker-resolved-message {
+  display: flex;
+  align-items: center;
+  gap: var(--c-spacing-xs);
+  color: var(--c-color-success-on-quiet, var(--c-text-default));
+}
+
+.element-deletion-modal .edm-blocker-resolved-message p {
+  margin: 0;
+}
+
+.element-deletion-modal .edm-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--c-spacing-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .element-deletion-modal .edm-toggle craft-icon {
+    transition: none;
+  }
+}
