@@ -4,6 +4,21 @@ type TranslationStore = Record<string, Record<string, string>>;
 
 let translationsStore: TranslationStore = {};
 
+/**
+ * Splits a token into its name, type and format at its first two commas, as
+ * PHP's `explode(',', $token, 3)` does: commas after those stay in the format,
+ * such as in a plural option's message.
+ */
+function splitToken(token: string): string[] {
+  const [name, type, ...format] = token.split(',');
+
+  return [
+    name!,
+    ...(type === undefined ? [] : [type]),
+    ...(format.length ? [format.join(',')] : []),
+  ];
+}
+
 export function tokenizePattern(
   pattern: string
 ): Array<string | string[]> | false {
@@ -36,12 +51,7 @@ export function tokenizePattern(
       pos = close;
     }
     if (depth === 0) {
-      tokens.push(
-        chars
-          .slice(start + 1, pos)
-          .join('')
-          .split(',', 3)
-      );
+      tokens.push(splitToken(chars.slice(start + 1, pos).join('')));
       start = pos + 1;
       tokens.push(
         chars.slice(start, open === -1 ? chars.length : open).join('')

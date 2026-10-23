@@ -32,7 +32,7 @@ describe('checkbox select', function () {
             ->toContain('name="sources"');
     });
 
-    it('renders an “All” option before the others', function () {
+    it('renders a checked “All” option, posting “*” under the field’s name', function () {
         $crawler = new Crawler(CheckboxSelect::make()
             ->id('sources')
             ->name('sources')
