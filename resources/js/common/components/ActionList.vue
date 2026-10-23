@@ -162,11 +162,13 @@
         {
           kind: 'link',
           href: link.href,
-          external: link.external,
+          // A link that opens elsewhere isn't an Inertia visit, which would
+          // take over this tab instead.
+          external: link.external || Boolean(link.target),
           label: action.label,
           status: isItem ? action.status : undefined,
           onClick: action.onClick,
-          attrs: defined({...attrs, size}),
+          attrs: defined({...attrs, target: link.target, size}),
         },
       ];
     }
