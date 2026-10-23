@@ -117,8 +117,7 @@ readonly class SettingsUi
         $nodes[] = Field::make(t('Tasks'), Table::make('tasks')
             ->keyed()
             ->columns([
-                'label' => ['type' => 'heading', 'heading' => t('Task'), 'width' => '15%'],
-                'details' => ['type' => 'html', 'heading' => t('Details'), 'class' => 'wrap'],
+                'label' => ['type' => 'heading', 'html' => true, 'heading' => t('Task'), 'class' => 'wrap'],
                 'enabled' => ['heading' => t('Status'), 'width' => '15%', 'control' => BooleanMenu::make('enabled')
                     ->yesLabel(t('Enabled'))
                     ->noLabel(t('Disabled'))
@@ -145,8 +144,7 @@ readonly class SettingsUi
         foreach ($this->tasks->tasksByHandle()->all() as $handle => $task) {
             $mapping = $settings->tasks[$handle] ?? [];
             $tasks[$handle] = [
-                'label' => $task::label(),
-                'details' => $this->taskDetails($task),
+                'label' => $this->taskLabelHtml($task),
                 'enabled' => BooleanMenu::optionValue($mapping['enabled'] ?? true),
                 'provider' => $mapping['provider'] ?? null,
                 'model' => $mapping['model'] ?? null,
@@ -260,23 +258,37 @@ readonly class SettingsUi
     }
 
     /**
-     * Returns the task’s description, and the name of the plugin that registered it on its own line, as HTML.
+     * Returns the task’s name, with its description in an info icon, and the plugin that registered it below, as HTML.
      *
      * @param  class-string<TaskInterface>  $task
      */
-    private function taskDetails(string $task): string
+    private function taskLabelHtml(string $task): string
     {
-        $html = '';
-
+        $label = $task::label();
         $description = $task::description();
+        $infoIcon = $description !== null
+            ? Html::tag('craft-info-icon', Html::encode($description), [
+                'label' => t('More info about {name}', ['name' => $label]),
+            ])
+            : '';
+
+        $html = Html::tag('div', Html::encode($label).$infoIcon, [
+            'class' => ['flex', 'items-center', 'gap-1'],
+        ]);
+
         $pluginHandle = $this->plugins->getPluginHandleByClass($task);
 
-        if ($description !== null) {
-            $html .= Html::tag('div', Html::encode($description));
-        }
-
         if ($pluginHandle !== null) {
-            $html .= Html::tag('div', Html::encode($this->plugins->getPlugin($pluginHandle)->name ?? $pluginHandle));
+            $icon = $this->plugins->hasPluginIcon($pluginHandle)
+                ? Html::tag('span', Html::svg($this->plugins->getPluginIconSvg($pluginHandle), sanitize: true, namespace: true), [
+                    'class' => ['inline-flex', 'size-4', 'shrink-0', '[&>svg]:size-full'],
+                    'aria-hidden' => 'true',
+                ])
+                : '';
+
+            $html .= Html::tag('div', $icon.Html::encode($this->plugins->getPlugin($pluginHandle)->name ?? $pluginHandle), [
+                'class' => ['flex', 'items-center', 'gap-1', 'text-xs', 'font-normal', 'text-quiet'],
+            ]);
         }
 
         return $html;

@@ -1127,6 +1127,7 @@ return [
     'Months' => 'Months',
     'More Resources' => 'More Resources',
     'More actions' => 'More actions',
+    'More info about {name}' => 'More info about {name}',
     'More info' => 'More info',
     'More items' => 'More items',
     'More' => 'More',
