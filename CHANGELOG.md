@@ -146,6 +146,7 @@
 - Fixed a bug where pressing <kbd>Return</kbd> on a control within an editable table’s HTML column moved focus to the next row. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Fixed a bug where clicking a combobox’s chevron didn’t focus it or open its options. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Fixed a bug where clicking a combobox cell in an editable table could focus its clear button rather than its text input. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Fixed a bug where the hairline between fields that share a row sat off-center before narrow fields, such as quarter-width ones.
 
 ### Content Management
 
