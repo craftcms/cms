@@ -581,10 +581,10 @@
                 (editable &&
                   (control.props.allowReorder || control.props.allowDelete))
               "
-              class="thin"
+              class="thin row-actions"
             >
               <DropIndicator :edge="closestEdge(row.id)" contained />
-              <div class="flex items-center justify-end gap-2">
+              <div class="flex items-center justify-end gap-xs">
                 <slot
                   name="row-actions"
                   :row="row"
@@ -640,5 +640,10 @@
 <style scoped>
   .row--dragging {
     opacity: 0.4;
+  }
+
+  /* Row action buttons sit as close to the cell edge as the money input's clear button */
+  .row-actions {
+    padding-inline: var(--c-spacing-xs);
   }
 </style>
