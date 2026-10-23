@@ -166,6 +166,22 @@ it('keeps focus on the invoker when its list moves it', async () => {
   expect(button.shadowRoot!.activeElement).toBe(invokerOf(button));
 });
 
+it('leaves focus alone when its list moves it after focus left for somewhere unfocusable', async () => {
+  const button = await renderButton(
+    '<ul><li id="previous">Previous</li><li id="moved"><craft-reorder-button></craft-reorder-button></li></ul><p id="elsewhere">Elsewhere</p>'
+  );
+
+  await userEvent.click(invokerOf(button));
+  await userEvent.keyboard('{Escape}');
+  await userEvent.click(document.getElementById('elsewhere')!);
+  await new Promise((resolve) => setTimeout(resolve));
+  document
+    .getElementById('previous')!
+    .before(document.getElementById('moved')!);
+
+  expect(document.activeElement).toBe(document.body);
+});
+
 it('leaves focus alone when it is removed and added back later', async () => {
   const button = await renderButton(
     '<ul><li id="item"><craft-reorder-button></craft-reorder-button></li></ul>'

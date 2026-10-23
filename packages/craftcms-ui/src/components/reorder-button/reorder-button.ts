@@ -108,10 +108,17 @@ export default class CraftReorderButton extends LitElement {
     });
     this.addEventListener('focusout', (event) => {
       // Moving a focused element drops focus with no `relatedTarget` (Firefox
-      // fires no focusout at all), so only a real destination counts.
+      // fires no focusout at all), and so does clicking somewhere unfocusable.
+      // A move puts focus back in the same task, so check once it's over.
       const to = event.relatedTarget;
       if (to instanceof Node && !this.contains(to)) {
         this._hasFocus = false;
+      } else if (!to) {
+        setTimeout(() => {
+          if (this.isConnected && !this.matches(':focus-within')) {
+            this._hasFocus = false;
+          }
+        });
       }
     });
   }
