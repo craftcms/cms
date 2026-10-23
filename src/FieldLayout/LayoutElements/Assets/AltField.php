@@ -105,4 +105,10 @@ class AltField extends TextareaField
     {
         return true;
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'universal-access';
+    }
 }

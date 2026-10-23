@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Data\UploadResult;
 use CraftCms\Cms\Condition\ConditionBuilderPayload;
 use CraftCms\Cms\Condition\ConditionRulePayload;
 use CraftCms\Cms\Condition\Enums\GroupOperator;
+use CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Data\NotificationButtonData;
@@ -100,6 +101,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     NodePayload::class,
                     ActionItem::class,
                     NavItem::class,
+                    CommandPaletteItem::class,
                     NotificationButtonData::class,
                     NotificationData::class,
                     Permission::class,

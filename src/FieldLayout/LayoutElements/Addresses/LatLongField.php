@@ -176,4 +176,10 @@ class LatLongField extends BaseNativeField
 
         return '61.108, -149.779';
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'location-dot';
+    }
 }

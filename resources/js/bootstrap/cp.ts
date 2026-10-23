@@ -120,6 +120,11 @@ const Cp = {
       canAccessQueueManager: config.get('canAccessQueueManager', false),
     });
 
+    // The command palette's “Run pending queue jobs”.
+    window.addEventListener('craft:run-queue', () => {
+      void queue.runQueue({force: true});
+    });
+
     setTranslations(this.initialConfig.translations ?? {});
   },
 

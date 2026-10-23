@@ -97,6 +97,24 @@ readonly class GeneralSettingsController
         return $this->asSuccess(t('System settings saved.'));
     }
 
+    /**
+     * Turns maintenance mode on or off without touching the other system
+     * settings, for the command palette's maintenance mode actions.
+     */
+    public function maintenanceMode(Request $request): Response
+    {
+        $request->validate([
+            'enabled' => ['required', 'boolean'],
+        ]);
+
+        $enabled = $request->boolean('enabled');
+        $retryDuration = $this->projectConfig->get('system.retryDuration');
+
+        $this->setMaintenanceMode($enabled, $retryDuration === null ? null : (int) $retryDuration);
+
+        return $this->asSuccess($enabled ? t('Maintenance mode enabled.') : t('Maintenance mode disabled.'));
+    }
+
     private function setMaintenanceMode(bool $enabled, ?int $retryDuration): void
     {
         $active = $this->maintenanceMode->active();

@@ -49,6 +49,7 @@
   import ContentDetails from './page/ContentDetails.vue';
   import ContentFooter from './page/ContentFooter.vue';
   import ScreenOverlays from './page/ScreenOverlays.vue';
+  import CommandPalette from '@/modules/command-palette/components/CommandPalette.vue';
   import ScreenSkipLinks from './page/ScreenSkipLinks.vue';
   import {useDetailsResizer} from './page/useDetailsResizer';
   import type {ScreenProps, ScreenSlots} from './types';
@@ -392,7 +393,10 @@
                                       </LayoutSlotOutlet>
                                     </div>
 
-                                    <div class="flex gap-2 items-center">
+                                    <div
+                                      class="flex gap-2 items-center"
+                                      data-command-palette-actions
+                                    >
                                       <LayoutSlotOutlet
                                         name="content-toolbar-actions"
                                       >
@@ -545,6 +549,7 @@
   </div>
 
   <ScreenOverlays :debug="debug" />
+  <CommandPalette />
 </template>
 
 <style scoped lang="postcss">
