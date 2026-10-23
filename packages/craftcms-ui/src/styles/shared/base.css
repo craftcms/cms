@@ -387,24 +387,23 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
 }
 
 .cp-table--editable {
-  --_input-padding-inline: 10px;
+  --_input-padding-inline: var(--_cell-spacing-inline);
   table-layout: auto;
   border: 1px solid var(--c-color-border-quiet);
   border-radius: var(--c-radius-sm);
   overflow: clip;
   margin-block-end: var(--c-spacing-md);
 
-  thead,
-  th {
+  thead th {
     background-color: transparent;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--c-text-sm);
+    padding-block: var(--c-spacing-sm);
+    text-align: inherit;
   }
 
   thead {
     background-color: var(--c-surface-sunken);
-  }
-
-  thead th {
-    font-weight: var(--font-weight-semibold);
   }
 
   thead:not(:last-child):not(:has(~ :is(tbody, tfoot) > tr))
@@ -422,19 +421,13 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     border-start-end-radius: calc(var(--c-radius-sm) - 1px);
   }
 
-  th {
-    font-size: var(--c-text-sm);
-    padding-block: var(--c-spacing-sm);
-    padding-inline: var(--_input-padding-inline);
-    text-align: inherit;
-  }
-
   td {
     padding: 0;
   }
 
   /*
-    Cells without a text input or select get the same padding as `th`. Native
+    Cells without a text input or select get the regular cell padding, which
+    lines their content up with the headers and the inputs' text. Native
     controls only count as direct children (legacy markup), so the inputs
     nested inside color and icon pickers don't.
   */
@@ -442,6 +435,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     :not(
       :has(
         craft-input:not([hidden-input]),
+        craft-input-handle,
         craft-input-money,
         craft-textarea,
         craft-select,
