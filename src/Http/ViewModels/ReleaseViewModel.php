@@ -183,8 +183,7 @@ class ReleaseViewModel extends ViewModel
             ...match (true) {
                 $published => [['key' => 'publishedAt', 'label' => t('Published')]],
                 $readiness !== null => [
-                    // As narrow as its badges, without wrapping them.
-                    ['key' => 'status', 'label' => t('Status'), 'width' => 'max-content'],
+                    ['key' => 'status', 'label' => t('Status'), 'thin' => true],
                     ...($readiness->itemErrors !== [] || $readiness->itemWarnings !== []
                         ? [['key' => 'issues', 'label' => t('Issues'), 'width' => '2fr', 'wrap' => true]]
                         : []),

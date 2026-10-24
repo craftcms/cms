@@ -174,6 +174,30 @@ it.each(['mouse', 'keyboard'])(
   }
 );
 
+it('keeps a thin column as narrow as its content, without wrapping it', async () => {
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {key: 'status', label: 'Status', thin: true},
+      {key: 'notes', label: 'Notes'},
+    ],
+    rows: [{id: 1, name: 'Body', status: 'Ready with warnings', notes: 'None'}],
+  });
+  host.style.width = '600px';
+  await nextTick();
+
+  const cell = page.getByRole('cell', {name: 'Ready with warnings'}).element();
+  const text = document.createRange();
+  text.selectNodeContents(cell);
+  const lines = new Set([...text.getClientRects()].map((rect) => rect.top));
+  const name = page.getByRole('cell', {name: 'Body'}).element();
+
+  expect(lines.size).toBe(1);
+  expect(cell.getBoundingClientRect().width).toBeLessThan(
+    name.getBoundingClientRect().width
+  );
+});
+
 it('renders HTML icon descriptions and hides only their column header text', async () => {
   mountNode({
     columns: [
