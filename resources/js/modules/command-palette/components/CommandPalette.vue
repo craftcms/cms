@@ -922,6 +922,12 @@
     color: var(--c-text-quiet);
   }
 
+  .command-palette__hint-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+  }
+
   .command-palette__view {
     padding: var(--c-modal-padding);
     overflow-y: auto;
