@@ -82,24 +82,33 @@ export function clientProviders(): readonly CommandPaletteProvider[] {
   return providers;
 }
 
+/** What registering something with the palette returns. */
+export interface CommandPaletteRegistration {
+  /** Removes what was registered, such as a component's actions when it goes. */
+  unregister: () => void;
+}
+
 /**
  * Adds actions that depend on the page being viewed. The source is called
  * each time the palette opens, so it can read the page's current state.
  *
- * Returns a function that removes the source again, for a component whose
- * actions should go when it does.
+ * ```js
+ * const {unregister} = Craft.commandPalette.registerActions(() => [...]);
+ * ```
  */
 export function registerActions(
   source: () => CommandPaletteItem[]
-): () => void {
+): CommandPaletteRegistration {
   actionSources.push(source);
 
-  return () => {
-    const index = actionSources.indexOf(source);
+  return {
+    unregister: () => {
+      const index = actionSources.indexOf(source);
 
-    if (index !== -1) {
-      actionSources.splice(index, 1);
-    }
+      if (index !== -1) {
+        actionSources.splice(index, 1);
+      }
+    },
   };
 }
 
