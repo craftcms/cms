@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Models\Element;
@@ -24,6 +25,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
@@ -437,6 +439,32 @@ it('shows release metadata without content links or removal actions', function (
     deleteJson(route('craft.cp.releases.detach', [$release, $draft->draftId]))->assertForbidden();
 
     expect($this->releases->releaseForDraft($draft)?->id)->toBe($release->id);
+});
+
+it('lists a draft whose section was deleted and lets release managers remove it', function () {
+    $draft = releaseControllerDraft($this->actor);
+    $release = $this->releases->create('Deleted section', null, $this->actor);
+    $this->releases->attach($release, $draft, $this->actor);
+
+    // What deleting the section leaves behind: its entries and the section
+    // soft-deleted, and drafts of those entries untouched.
+    DB::table(Table::ELEMENTS)->where('id', $draft->getCanonicalId())->softDelete();
+    DB::table(Table::SECTIONS)->softDelete($draft->sectionId);
+    Sections::refreshSections();
+
+    get(route('craft.cp.releases.show', $release))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('ui.nodes.0.props.rows.0.title.label', 'Controller change')
+            ->where('ui.nodes.0.props.rows.0.title.url', null)
+            ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'The live element has been deleted.'))
+            ->where('ui.nodes.0.props.rows.0._deletable', true));
+
+    actingAs(UserModel::factory()->withPermissions(['accessCp', 'manageReleases'])->createElement());
+
+    deleteJson(route('craft.cp.releases.detach', [$release, $draft->draftId]))->assertOk();
+
+    expect($this->releases->releaseForDraft($draft))->toBeNull();
 });
 
 it('deletes a mutable release through its advertised action without deleting its draft', function (string $source, ReleaseStatus $status) {
