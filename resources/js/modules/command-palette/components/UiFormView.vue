@@ -4,7 +4,7 @@
    * actionUrl}` — the same pair `openUiModal()` takes.
    */
   import {ButtonVariant, t} from '@craftcms/ui';
-  import {onMounted, useTemplateRef} from 'vue';
+  import {computed, onMounted, useId, useTemplateRef} from 'vue';
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import {useUiForm} from '@/modules/ui/useUiForm';
   import type {UiValues} from '@/modules/ui/types';
@@ -26,6 +26,10 @@
     params: () => props.view.params as UiValues | undefined,
   });
   const renderer = useTemplateRef<InstanceType<typeof UiRenderer>>('renderer');
+  const submitId = useId();
+  const disabledReason = computed(() =>
+    form.value?.submitDisabled ? form.value.submitDisabledReason : null
+  );
   const body = useTemplateRef<HTMLElement>('body');
 
   onMounted(async () => {
@@ -60,13 +64,18 @@
         {{ t('Cancel') }}
       </craft-button>
       <craft-button
+        :id="submitId"
         type="submit"
         :variant="ButtonVariant.Primary"
         .loading="loading"
-        .disabled="!form"
+        .disabled="!form || form.submitDisabled"
+        :focusable-when-disabled="disabledReason ? true : undefined"
       >
         {{ form?.submitLabel ?? t('Save') }}
       </craft-button>
+      <craft-tooltip v-if="disabledReason" :for="submitId">
+        {{ disabledReason }}
+      </craft-tooltip>
     </div>
   </form>
 </template>

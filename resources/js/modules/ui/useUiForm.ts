@@ -1,13 +1,23 @@
 import {actionClient, t} from '@craftcms/ui';
-import {nextTick, shallowRef, toValue, type MaybeRefOrGetter} from 'vue';
+import {
+  nextTick,
+  provide,
+  shallowRef,
+  toValue,
+  type MaybeRefOrGetter,
+} from 'vue';
 import {firstFocusableWithin} from '@/common/utils/dom';
-import {visitControls} from './runtime';
+import {UiTableRefresh, visitControls} from './runtime';
 import type {UiPayload, UiValues} from './types';
 
 export interface UiFormResponse {
   ui: UiPayload;
   title?: string | null;
   submitLabel?: string | null;
+  /** Whether the form can't be submitted as it stands. */
+  submitDisabled?: boolean;
+  /** Why it can't be, shown as the submit button's tooltip. */
+  submitDisabledReason?: string | null;
 }
 
 /** What a form needs from the `UiRenderer` drawing it. */
@@ -31,7 +41,8 @@ export interface UiFormOptions {
  * submission's errors back onto the controls that caused them.
  *
  * Shared by `UiModal`, which shows the form in a modal, and the command
- * palette, which shows it in place of its results.
+ * palette, which shows it in place of its results. Tables within the form
+ * reload it when they change, since that can change what may be submitted.
  */
 export function useUiForm(options: UiFormOptions) {
   const form = shallowRef<UiFormResponse | null>(null);
@@ -58,6 +69,8 @@ export function useUiForm(options: UiFormOptions) {
     }
   }
 
+  provide(UiTableRefresh, () => void load());
+
   /**
    * Submits the form's current values. Resolves with the response data, or
    * null if it failed — in which case the errors are shown and focus moves to
@@ -67,7 +80,12 @@ export function useUiForm(options: UiFormOptions) {
     renderer: UiFormRenderer | null,
     body: HTMLElement | null
   ): Promise<Record<string, unknown> | null> {
-    if (!renderer || loading.value || !renderer.canSubmit()) {
+    if (
+      !renderer ||
+      loading.value ||
+      form.value?.submitDisabled ||
+      !renderer.canSubmit()
+    ) {
       return null;
     }
 

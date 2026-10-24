@@ -1,7 +1,12 @@
 import {actionClient} from '@craftcms/ui';
-import {createApp, defineComponent, h, nextTick} from 'vue';
+import {createApp, defineComponent, h, inject, nextTick} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import UiModal from './UiModal.vue';
+import {UiTableRefresh} from './runtime';
+
+const renderer = vi.hoisted(() => ({
+  refreshTable: undefined as (() => void) | undefined,
+}));
 
 vi.mock('@/common/components/ModalForm.vue', () => ({
   default: defineComponent({
@@ -27,6 +32,7 @@ vi.mock('./UiRenderer.vue', () => ({
   default: defineComponent({
     props: ['payload', 'errors'],
     setup(_props, {expose}) {
+      renderer.refreshTable = inject(UiTableRefresh);
       expose({
         canSubmit: () => true,
         currentValues: () => ({details: {a: {accept: '2'}}}),
@@ -117,5 +123,25 @@ describe('UiModal', () => {
       'Not found'
     );
     expect(closed).toHaveBeenCalled();
+  });
+
+  it('holds submission until a table within it changes what can be submitted', async () => {
+    get.mockResolvedValueOnce({
+      data: {ui: {nodes: [], values: {}}, submitDisabled: true},
+    });
+    mount();
+    await flush();
+
+    container.querySelector('form')!.dispatchEvent(new Event('submit'));
+    await flush();
+    expect(post).not.toHaveBeenCalled();
+
+    renderer.refreshTable?.();
+    await flush();
+    container.querySelector('form')!.dispatchEvent(new Event('submit'));
+    await flush();
+
+    expect(get).toHaveBeenCalledTimes(2);
+    expect(post).toHaveBeenCalledOnce();
   });
 });

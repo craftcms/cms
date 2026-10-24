@@ -468,6 +468,41 @@ it('lists a draft whose section was deleted and lets release managers remove it'
     expect($this->releases->releaseForDraft($draft))->toBeNull();
 });
 
+it('lists a release’s drafts for publishing, holding publication until none are blocked', function () {
+    $ready = releaseControllerDraft($this->actor);
+    $blocked = releaseControllerDraft($this->actor);
+    $release = $this->releases->create('Publish from the palette', null, $this->actor);
+    $this->releases->attach($release, $ready, $this->actor);
+    $this->releases->attach($release, $blocked, $this->actor);
+    DB::table(Table::ELEMENTS)->where('id', $blocked->getCanonicalId())->softDelete();
+
+    $modal = getJson(route('craft.cp.releases.publishModal', $release))
+        ->assertOk()
+        ->assertJsonPath('submitDisabled', true)
+        ->assertJsonPath('submitDisabledReason', '1 draft is blocking publication.')
+        ->assertJsonCount(2, 'ui.nodes.0.props.rows')
+        ->assertJsonPath('ui.nodes.0.props.rows.1.status.html', fn (string $html) => str_contains($html, 'Blocked'));
+
+    deleteJson($modal->json('ui.nodes.0.props.rows.1._deleteUrl'))->assertOk();
+
+    getJson(route('craft.cp.releases.publishModal', $release))
+        ->assertOk()
+        ->assertJsonPath('submitDisabled', false)
+        ->assertJsonPath('submitDisabledReason', null)
+        ->assertJsonCount(1, 'ui.nodes.0.props.rows');
+
+    deleteJson(route('craft.cp.releases.detach', [$release, $ready->draftId]))->assertOk();
+
+    getJson(route('craft.cp.releases.publishModal', $release))
+        ->assertOk()
+        ->assertJsonPath('submitDisabled', true)
+        ->assertJsonPath('submitDisabledReason', 'The release has no drafts.');
+
+    $release->update(['status' => ReleaseStatus::Scheduled]);
+
+    getJson(route('craft.cp.releases.publishModal', $release))->assertForbidden();
+});
+
 it('deletes a mutable release through its advertised action without deleting its draft', function (string $source, ReleaseStatus $status) {
     $draft = releaseControllerDraft($this->actor);
     $release = $this->releases->create('Delete release', null, $this->actor);

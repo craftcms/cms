@@ -183,11 +183,10 @@ class Actions
                     ->hint($this->releaseHint($release))
                     ->description(t('Releases'))
                     ->icon('rocket')
-                    ->action([
-                        'type' => 'http',
-                        'method' => 'POST',
-                        'url' => route('craft.cp.releases.publish', ['release' => $release->id]),
-                        'confirm' => t('Publish this release now? Every entry will be published together.'),
+                    ->view([
+                        'type' => 'ui',
+                        'modalUrl' => route('craft.cp.releases.publishModal', ['release' => $release->id]),
+                        'actionUrl' => route('craft.cp.releases.publish', ['release' => $release->id]),
                     ]);
             }
 

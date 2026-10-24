@@ -143,6 +143,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::get('schedule', [ReleasesController::class, 'scheduleModal'])->name('scheduleModal');
             Route::post('schedule', [ReleasesController::class, 'schedule'])->name('schedule');
             Route::post('unschedule', [ReleasesController::class, 'unschedule'])->name('unschedule');
+            Route::get('publish', [ReleasesController::class, 'publishModal'])->name('publishModal');
             Route::post('publish', [ReleasesController::class, 'publish'])->name('publish');
             Route::post('drafts', [ReleasesController::class, 'attach'])->name('attach');
             Route::delete('drafts/{draft}', [ReleasesController::class, 'detach'])->whereNumber('draft')->name('detach');

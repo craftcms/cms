@@ -34,7 +34,7 @@
   import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
-  import {UiTableFlush} from './runtime';
+  import {UiTableFlush, UiTableRefresh} from './runtime';
   import type {UiValues} from './types';
 
   import type {
@@ -63,6 +63,7 @@
     onRefresh?: () => void;
   }>();
   const pageTableFlush = inject(UiTableFlush, ref(false));
+  const onRefresh = props.onRefresh ?? inject(UiTableRefresh, undefined);
   provide(UiTableFlush, ref(false));
   const quickEdit = useElementQuickEdit({refreshResults: refreshTable});
   provide(
@@ -615,8 +616,8 @@
   }
 
   function refreshUi(): void {
-    if (props.onRefresh) {
-      props.onRefresh();
+    if (onRefresh) {
+      onRefresh();
 
       return;
     }
@@ -625,8 +626,8 @@
   }
 
   function refreshTable(): void {
-    if (props.onRefresh) {
-      props.onRefresh();
+    if (onRefresh) {
+      onRefresh();
 
       return;
     }

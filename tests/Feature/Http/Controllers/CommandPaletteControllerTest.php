@@ -403,11 +403,11 @@ it('offers to publish and schedule releases that can be published', function () 
 
     $actions = collect(getJson(route('craft.cp.command-palette.index'))->assertOk()->json('actions'))->keyBy('id');
 
-    expect($actions["publish-release-$release->id"]['action'])->toMatchArray([
-        'type' => 'http',
-        'url' => route('craft.cp.releases.publish', ['release' => $release->id]),
+    expect($actions["publish-release-$release->id"]['view'])->toBe([
+        'type' => 'ui',
+        'modalUrl' => route('craft.cp.releases.publishModal', ['release' => $release->id]),
+        'actionUrl' => route('craft.cp.releases.publish', ['release' => $release->id]),
     ])
-        ->and($actions["publish-release-$release->id"]['action']['confirm'])->not->toBeEmpty()
         ->and($actions["schedule-release-$release->id"]['view'])->toBe([
             'type' => 'ui',
             'modalUrl' => route('craft.cp.releases.scheduleModal', ['release' => $release->id]),
