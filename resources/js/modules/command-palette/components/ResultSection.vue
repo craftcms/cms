@@ -249,10 +249,10 @@
   }
 
   /*
-   * The icon spans both lines; the label, the menu and the description share
-   * the first, and the hint has the second to itself. The hint reaches into
-   * the description's flexible track, so it never widens the label's and
-   * pushes the menu along.
+   * The icon, the label, the menu and the description share the first line,
+   * so the icon centers on the label; the hint has the second to itself. The
+   * hint reaches into the description's flexible track, so it never widens
+   * the label's and pushes the menu along.
    */
   .command-palette-row {
     --_radius: var(--c-radius-sm);
@@ -354,11 +354,6 @@
     justify-content: center;
     width: 1.5rem;
     height: 1.5rem;
-  }
-
-  .command-palette-row:has(.command-palette-row__hint)
-    .command-palette-row__icon {
-    grid-row: 1 / -1;
   }
 
   .command-palette-row__thumb,
