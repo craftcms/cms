@@ -214,7 +214,13 @@
 
   .command-palette-docs :deep(.command-palette-row__icon) {
     align-self: start;
+    justify-content: start;
     block-size: 1lh;
+  }
+
+  /* The book glyph is narrower than its square box; this puts its edge flush with the heading. */
+  .command-palette-docs :deep(.command-palette-row__icon craft-icon) {
+    margin-inline-start: -0.15em;
   }
 
   .command-palette-docs__note {
