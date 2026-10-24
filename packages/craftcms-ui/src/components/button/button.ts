@@ -428,7 +428,7 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
   /**
    * Pulls the button out by the space around its content, so its label or
    * icon lines up with the text beside it. Meant for buttons with no
-   * background, like `plain`. Present with no value, it applies on every
+   * background, like `plain` and `danger-plain`. Present with no value, it applies on every
    * side. Otherwise a space-separated list of `inline`, `block`,
    * `inline-start`, `inline-end`, `block-start` and `block-end`.
    */

@@ -190,6 +190,15 @@ describe('flush', () => {
     expect(style.marginBlockStart).toBe('0px');
   });
 
+  it('pulls a danger-plain button out too', async () => {
+    const {button} = await mountFlush({
+      flush: 'inline-end',
+      variant: 'danger-plain',
+    });
+
+    expect(getComputedStyle(button).marginInlineEnd).toBe('-13px');
+  });
+
   it('follows the padding of a smaller button', async () => {
     const {button} = await mountFlush({flush: 'inline-start', size: 'small'});
 
