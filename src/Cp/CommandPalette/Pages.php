@@ -9,7 +9,6 @@ use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Data\NavItem;
-use CraftCms\Cms\Cp\Events\CommandPalettePagesResolving;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Edition;
@@ -37,8 +36,8 @@ use Illuminate\Container\Attributes\Scoped;
 use function CraftCms\Cms\t;
 
 /**
- * The pages the command palette offers: Craft’s own, plus whatever
- * {@see CommandPalettePagesResolving} listeners add.
+ * The pages the command palette offers: Craft’s own, plus those registered
+ * with {@see PageRegistry}.
  *
  * @since 6.0.0
  */
@@ -55,6 +54,7 @@ class Pages
         private readonly Navigation $navigation,
         private readonly EditUserScreens $editUserScreens,
         private readonly AssetTransformers $assetTransformers,
+        private readonly PageRegistry $registry,
     ) {}
 
     /**
@@ -66,10 +66,7 @@ class Pages
     {
         $key = $user->getCraftUserId() ?? spl_object_id($user);
 
-        if (! isset($this->pages[$key])) {
-            event($event = new CommandPalettePagesResolving($user, $this->craftPages($user)));
-            $this->pages[$key] = array_values($event->pages);
-        }
+        $this->pages[$key] ??= [...$this->craftPages($user), ...$this->registry->items($user)];
 
         return $this->pages[$key];
     }

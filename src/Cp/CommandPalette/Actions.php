@@ -9,7 +9,6 @@ use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Enums\Theme;
-use CraftCms\Cms\Cp\Events\CommandPaletteActionsResolving;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -47,8 +46,8 @@ use Illuminate\Contracts\Foundation\MaintenanceMode;
 use function CraftCms\Cms\t;
 
 /**
- * The actions the command palette offers: Craft’s own, plus whatever
- * {@see CommandPaletteActionsResolving} listeners add.
+ * The actions the command palette offers: Craft’s own, plus those registered
+ * with {@see ActionRegistry}.
  *
  * Each one calls an endpoint that checks permissions on its own; the checks
  * here only decide what's worth offering.
@@ -68,6 +67,7 @@ class Actions
         private readonly AssetTransformers $assetTransformers,
         private readonly Utilities $utilities,
         private readonly ProjectConfig $projectConfig,
+        private readonly ActionRegistry $registry,
     ) {}
 
     /**
@@ -79,10 +79,7 @@ class Actions
     {
         $key = $user->getCraftUserId() ?? spl_object_id($user);
 
-        if (! isset($this->actions[$key])) {
-            event($event = new CommandPaletteActionsResolving($user, $this->craftActions($user)));
-            $this->actions[$key] = array_values($event->actions);
-        }
+        $this->actions[$key] ??= [...$this->craftActions($user), ...$this->registry->items($user)];
 
         return $this->actions[$key];
     }

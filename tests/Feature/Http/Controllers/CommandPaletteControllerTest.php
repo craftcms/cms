@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\CommandPalette\ActionRegistry;
 use CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem;
 use CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider;
+use CraftCms\Cms\Cp\CommandPalette\PageRegistry;
+use CraftCms\Cms\Cp\CommandPalette\SearchProviderRegistry;
 use CraftCms\Cms\Cp\CommandPalette\SearchProviders\GlossarySearchProvider;
-use CraftCms\Cms\Cp\Events\CommandPaletteActionsResolving;
-use CraftCms\Cms\Cp\Events\CommandPalettePagesResolving;
-use CraftCms\Cms\Cp\Events\CommandPaletteSearchProvidersResolving;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -28,7 +28,6 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 
 use function CraftCms\Cms\cp_url;
@@ -455,17 +454,21 @@ it('finds no glossary terms when craftcms.com can’t be reached', function () {
 });
 
 it('lets plugins register pages, actions and search providers', function () {
-    Event::listen(fn (CommandPalettePagesResolving $event) => $event->pages[] = new CommandPaletteItem()
-        ->id('plugin-page')
-        ->label('Plugin Reports')
-        ->href(cp_url('plugin/reports')));
+    app(PageRegistry::class)->register('plugin', fn (CraftUser $user) => [
+        new CommandPaletteItem()
+            ->id('plugin-page')
+            ->label('Plugin Reports')
+            ->href(cp_url('plugin/reports')),
+    ]);
 
-    Event::listen(fn (CommandPaletteActionsResolving $event) => $event->actions[] = new CommandPaletteItem()
-        ->id('plugin-action')
-        ->label('Clear plugin caches')
-        ->action(['type' => 'http', 'url' => cp_url('plugin/clear')]));
+    app(ActionRegistry::class)->register('plugin', fn (CraftUser $user) => [
+        new CommandPaletteItem()
+            ->id('plugin-action')
+            ->label('Clear plugin caches')
+            ->action(['type' => 'http', 'url' => cp_url('plugin/clear')]),
+    ]);
 
-    Event::listen(fn (CommandPaletteSearchProvidersResolving $event) => $event->providers[] = new class implements SearchProvider
+    app(SearchProviderRegistry::class)->register(new class implements SearchProvider
     {
         public function getHandle(): string
         {
@@ -494,4 +497,19 @@ it('lets plugins register pages, actions and search providers', function () {
         ->and(collect($index->json('actions'))->pluck('id'))->toContain('plugin-action')
         ->and(collect(paletteSearch('pages', 'plugin reports'))->pluck('id'))->toContain('plugin-page')
         ->and(paletteSearch('plugin-things', 'widgets')[0]['label'])->toBe('Thing matching widgets');
+});
+
+it('lets plugins remove search providers, pages and actions', function () {
+    app(PageRegistry::class)->register('plugin', fn () => [new CommandPaletteItem()->id('plugin-page')->label('Plugin Reports')]);
+    app(ActionRegistry::class)->register('plugin', fn () => [new CommandPaletteItem()->id('plugin-action')->label('Clear plugin caches')]);
+
+    app(PageRegistry::class)->remove('plugin');
+    app(ActionRegistry::class)->remove('plugin');
+    app(SearchProviderRegistry::class)->remove('glossary');
+
+    $index = getJson(route('craft.cp.command-palette.index'))->assertOk();
+
+    expect(collect($index->json('providers'))->pluck('handle'))->not->toContain('glossary')
+        ->and(collect($index->json('actions'))->pluck('id'))->not->toContain('plugin-action')
+        ->and(collect(paletteSearch('pages', 'plugin reports'))->pluck('id'))->not->toContain('plugin-page');
 });

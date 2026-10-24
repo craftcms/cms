@@ -4,25 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\CommandPalette;
 
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider;
-use CraftCms\Cms\Cp\CommandPalette\SearchProviders\ActionsSearchProvider;
-use CraftCms\Cms\Cp\CommandPalette\SearchProviders\ElementSearchProvider;
-use CraftCms\Cms\Cp\CommandPalette\SearchProviders\GlossarySearchProvider;
-use CraftCms\Cms\Cp\CommandPalette\SearchProviders\PagesSearchProvider;
-use CraftCms\Cms\Cp\Events\CommandPaletteSearchProvidersResolving;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Contracts\CraftUser;
-use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
- * The search providers the control panel’s command palette asks: Craft’s
- * own, plus whatever {@see CommandPaletteSearchProvidersResolving} listeners
- * add.
+ * The search providers the control panel’s command palette asks, as
+ * registered with {@see SearchProviderRegistry}.
  *
- * The pages and actions its “Pages” and “Actions” providers search are
- * registered with {@see Pages} and {@see Actions}.
+ * The pages and actions its “Pages” and “Actions” providers search come
+ * from {@see Pages} and {@see Actions}, which add those registered with
+ * {@see PageRegistry} and {@see ActionRegistry} to Craft’s own.
  *
  * @since 6.0.0
  */
@@ -32,6 +24,10 @@ class CommandPalette
     /** @var array<string, SearchProvider>|null */
     private ?array $searchProviders = null;
 
+    public function __construct(
+        private readonly SearchProviderRegistry $registry,
+    ) {}
+
     /**
      * Every registered search provider, keyed by handle.
      *
@@ -39,26 +35,7 @@ class CommandPalette
      */
     public function getSearchProviders(): array
     {
-        if ($this->searchProviders !== null) {
-            return $this->searchProviders;
-        }
-
-        event($event = new CommandPaletteSearchProvidersResolving([
-            app(PagesSearchProvider::class),
-            app(ActionsSearchProvider::class),
-            new ElementSearchProvider(Entry::class),
-            new ElementSearchProvider(Asset::class),
-            new ElementSearchProvider(User::class),
-            app(GlossarySearchProvider::class),
-        ]));
-
-        $this->searchProviders = [];
-
-        foreach ($event->providers as $provider) {
-            $this->searchProviders[$provider->getHandle()] = $provider;
-        }
-
-        return $this->searchProviders;
+        return $this->searchProviders ??= $this->registry->providers();
     }
 
     /**
