@@ -76,6 +76,7 @@
     :title="modal?.title ?? title"
     :submit-label="modal?.submitLabel ?? submitLabel"
     :loading="loading"
+    :submit-disabled="modal?.submitDisabled"
     :width="width"
     @close="emit('close')"
     @submit="submit"
