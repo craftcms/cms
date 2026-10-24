@@ -415,6 +415,26 @@ it('offers to publish and schedule releases that can be published', function () 
         ]);
 });
 
+it('finds releases by name, published or not, listing unpublished ones first', function () {
+    $actor = User::findOne();
+    $releases = app(Releases::class);
+    $releases->create('Spring launch', null, $actor)
+        ->update(['status' => ReleaseStatus::Published, 'publishedAt' => now()]);
+    $releases->create('Spring sale', null, $actor);
+    $releases->create('Autumn sale', null, $actor);
+
+    $results = paletteSearch('releases', 'spring');
+
+    expect(collect($results)->pluck('label')->all())->toBe(['Spring sale', 'Spring launch'])
+        ->and($results[1]['hint'])->toStartWith('Published')
+        ->and(collect(paletteSearch('releases', 'spr sale'))->pluck('label')->all())->toBe(['Spring sale']);
+
+    Edition::set(Edition::Team);
+
+    expect(collect(getJson(route('craft.cp.command-palette.index'))->json('providers'))->pluck('handle'))
+        ->not->toContain('releases');
+});
+
 it('searches the current Craft CMS docs on craftcms.com, linking out to what it finds', function () {
     $docs = sprintf('https://craftcms.com/docs/%d.x', (int) Cms::VERSION);
 
