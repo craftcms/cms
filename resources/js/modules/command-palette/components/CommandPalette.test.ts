@@ -273,6 +273,23 @@ describe('CommandPalette', () => {
     expect(document.activeElement).toBe(second);
   });
 
+  it('says what Escape does in the footer: clear the search, or close', async () => {
+    const input = await open();
+    const hint = () =>
+      [...document.querySelectorAll('.command-palette__hint-item')]
+        .at(-1)
+        ?.textContent?.replace(/\s+/g, ' ')
+        .trim();
+
+    expect(hint()).toBe('Esc Close');
+
+    input.value = 'maintenance';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await flush();
+
+    expect(hint()).toBe('Esc Clear search');
+  });
+
   it('returns from a focused result to the search box on Escape, with the top result selected', async () => {
     const input = await open();
 
