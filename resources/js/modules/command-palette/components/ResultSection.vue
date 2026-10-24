@@ -275,8 +275,8 @@
 
   @media (hover: hover) {
     .command-palette-row:hover:not(.command-palette-row--selected) {
-      background-color: var(--c-color-neutral-fill-normal);
-      color: var(--c-color-neutral-on-normal);
+      background-color: var(--c-color-neutral-fill-quiet);
+      color: var(--c-color-neutral-on-quiet);
     }
 
     .command-palette-row--danger:hover:not(.command-palette-row--selected) {
