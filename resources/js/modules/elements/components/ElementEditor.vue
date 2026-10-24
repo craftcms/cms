@@ -389,7 +389,7 @@
   }
 
   if (!isSlideout) {
-    onBeforeUnmount(registerActions(paletteActions));
+    onBeforeUnmount(registerActions(paletteActions).unregister);
   }
 
   useAppLayout(() => ({

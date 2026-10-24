@@ -381,7 +381,7 @@ describe('CommandPalette', () => {
 
   it('confirms a page’s own action before running it, once the palette has closed', async () => {
     const discard = vi.fn();
-    const unregister = registerActions(() => [
+    const {unregister} = registerActions(() => [
       {
         id: 'discard',
         label: 'Discard changes',
