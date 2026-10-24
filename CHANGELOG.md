@@ -250,6 +250,7 @@
 - Added the “Query for releases” GraphQL schema permission, nested under “Query for element drafts”, which adds `releases` and `release` queries, and a `release` field to drafts.
 - Added the `hasUrls` field to volumes in GraphQL queries.
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
+- Added the `allowedPrivateHosts` general config setting, which lists hostnames that features fetching remote files can allow to resolve to private IP addresses.
 - Entry type and user group descriptions, fields’ default instructions, tips, and warnings, and field layout elements’ instructions, tips, warnings, and Markdown content now have Markdown inputs. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - The Markdown field’s default toolbar now only includes bold, italic, code, list, link, and preview buttons. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Field layouts with a card view designer now show it and the content tab designer in “Content” and “Appearance” tabs, which show an error icon when their content has errors. ([#20001](https://github.com/craftcms/cms/pull/20001))
@@ -285,6 +286,8 @@
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - Added `CraftCms\Cms\Ui\Nodes\Table`, for rendering admin tables from PHP UI definitions. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Added `CraftCms\Cms\Cp\Components\CopyAttribute` for rendering inline copyable values in PHP and templates. ([#19935](https://github.com/craftcms/cms/pull/19935))
+- `CraftCms\Cms\Filesystem\RemoteFileDownloader::download()` now returns the response.
+- The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Added `CraftCms\Cms\Element\Contracts\ElementInterface::supportsSourceBadgeCounts()`, `sourceSupportsBadgeCount()`, and `sourceBadgeCount()`, and the `defaultBadgeCount` source key, for element types whose sources can show a count of their elements. ([#19967](https://github.com/craftcms/cms/pull/19967))
 - Added `CraftCms\Cms\Cp\Data\ActionItem::$badgeLabel`. Element sources’ `badgeLabel` keys are now passed to screen readers in the control panel nav. ([#19967](https://github.com/craftcms/cms/pull/19967))
 - Added the `<craft-text-diff>` web component, which shows two versions of a text as one word-level diff, with each rewritten phrase as one deletion and one insertion. It can collapse long unchanged stretches, and mark passages of the text.
@@ -333,6 +336,19 @@
 - Removed the `--c-select-*`, `--c-input-spacing-block`, and `--c-form-control-spacing-block` CSS custom properties. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added support for field presentation settings, formatted instructions, and field layout identifiers to `CraftCms\Cms\Ui\Nodes\Group` when using `asField()`, and fixed field spacing in UI modals. ([#19940](https://github.com/craftcms/cms/pull/19940))
 - Added `CraftCms\Cms\Plugin\Concerns\HasSettings::createSettings()`, a static method which replaces `CraftCms\Cms\Contracts\PluginInterface::createSettings()`. ([#19574](https://github.com/craftcms/cms/pull/19574))
+- Added `CraftCms\Cms\Shared\Enums\ModelIdentifier`.
+- Added `CraftCms\Cms\Validation\Rules\ModelReferenceRule`.
+- Added `CraftCms\Cms\Asset\Validation\Rules\VolumeRule`.
+- Added `CraftCms\Cms\Entry\Validation\Rules\EntryTypeRule`.
+- Added `CraftCms\Cms\Section\Validation\Rules\SectionRule`.
+- Added `CraftCms\Cms\Site\Validation\Rules\SiteRule`.
+- Added `CraftCms\Cms\User\Validation\Rules\UserGroupRule`.
+- Added `CraftCms\Cms\Asset\Volumes::resolveVolume()`.
+- Added `CraftCms\Cms\Entry\EntryTypes::resolveEntryType()`.
+- Added `CraftCms\Cms\Section\Sections::resolveSection()`.
+- Added `CraftCms\Cms\Site\Sites::resolveSite()`.
+- `CraftCms\Cms\User\UserGroups::resolveGroup()` now accepts `CraftCms\Cms\User\Data\UserGroup` objects, and has a `$by` argument for limiting which identifier types are accepted.
+- Removed `CraftCms\Cms\Validation\Rules\SiteIdRule`. `CraftCms\Cms\Site\Validation\Rules\SiteRule` should be used instead.
 - `<craft-tabs>` now always has a tab selected. A `selected-index` of `-1` resolves to the first enabled tab.
 - Updated `CraftCms\Cms\Cp\Components\Tabs` to throw an `InvalidArgumentException` when rendered without a label, and `<craft-tabs>` to log a console error when rendered without a `label` attribute.
 - `CraftCms\Cms\Element\Element::searchableAttributes()` is now `final`. `defineSearchableAttributes()` should be overridden instead, including by element types extending `craft\base\Element` through the Yii adapter.

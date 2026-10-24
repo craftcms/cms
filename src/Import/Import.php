@@ -1,0 +1,605 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Import;
+
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Data\SourceColumn;
+use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
+use CraftCms\Cms\Import\DataTypes\DataTypes;
+use CraftCms\Cms\Import\Events\ImportDispatched;
+use CraftCms\Cms\Import\Events\ImportDispatching;
+use CraftCms\Cms\Import\Events\ItemImported;
+use CraftCms\Cms\Import\Events\ItemImporting;
+use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlerInterface;
+use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlers;
+use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\Jobs\Import as ImportJob;
+use CraftCms\Cms\Import\Jobs\ImportPipeline;
+use CraftCms\Cms\Import\Transformers\BaseTransformer;
+use CraftCms\Cms\Support\Facades\ImportLog;
+use CraftCms\Cms\Support\Query;
+use Exception;
+use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+use Throwable;
+
+use function CraftCms\Cms\t;
+
+/**
+ * @since 6.0.0
+ */
+#[Singleton]
+class Import
+{
+    /**
+     * The number of seconds after which a running import plan's lock expires, in case its run never finishes.
+     */
+    private const int RUN_LOCK_TTL = 86400;
+
+    public function __construct(
+        private readonly DataTypes $dataTypes,
+        private readonly ImporterTypes $importerTypes,
+        private readonly FieldImportHandlers $fieldImportHandlers,
+    ) {}
+
+    /**
+     * Returns the available data type classes, keyed by extension.
+     *
+     * @return array<string, class-string<DataTypeInterface>>
+     */
+    public function getAllDataTypes(): array
+    {
+        return $this->dataTypes->byExtension();
+    }
+
+    /**
+     * Returns a local file's data type (its extension), if it's one of the available data types.
+     *
+     * @param  string  $filePath  The path to the file.
+     */
+    public function getDataTypeFromExtension(string $filePath): ?string
+    {
+        $extension = strtolower(File::extension($filePath));
+
+        return $this->dataTypes->find($extension) !== null ? $extension : null;
+    }
+
+    /**
+     * Returns the data type class for a local file, based on its extension.
+     *
+     * @return class-string<DataTypeInterface>
+     *
+     * @throws Exception if the file isn't of an available data type.
+     */
+    private function dataTypeClass(string $filePath): string
+    {
+        return $this->dataTypes->find(File::extension($filePath))
+            ?? throw new Exception(t('Unsupported data type: {type}', ['type' => File::extension($filePath)]));
+    }
+
+    /**
+     * Returns the available importer classes.
+     *
+     * @return list<class-string<BaseImporter>>
+     */
+    public function getAllImporterTypes(): array
+    {
+        return $this->importerTypes->types()->all();
+    }
+
+    /**
+     * Returns the import handler registered for the given field’s class, or for its nearest parent class
+     * that has one, or null if there isn’t any.
+     *
+     * @param  FieldInterface  $field  The field.
+     */
+    public function getFieldImportHandlerFor(FieldInterface $field): ?FieldImportHandlerInterface
+    {
+        return $this->fieldImportHandlers->findFor($field);
+    }
+
+    /**
+     * Resolves each of the import plan's enabled steps into a queued Import job, fires
+     * dispatching/dispatched events, and dispatches an ImportPipeline job chain.
+     *
+     * Returns false without dispatching anything if the import plan is already running.
+     *
+     * @param  ImportPlanData  $importPlan  The import plan to dispatch.
+     * @param  string|null  $connection  The queue connection to run the import on, e.g. `sync` to run it in the current process.
+     */
+    public function dispatchImport(ImportPlanData $importPlan, ?string $connection = null): bool
+    {
+        $runId = (string) Str::uuid();
+
+        if (! Cache::lock(self::runLockKey($importPlan), self::RUN_LOCK_TTL, $runId)->get()) {
+            ImportLog::info("Import plan \"{$importPlan->name}\" wasn’t started because it’s already running.");
+
+            return false;
+        }
+
+        try {
+            $dispatched = $this->dispatchPipeline($importPlan, $runId, $connection);
+        } catch (Throwable $e) {
+            self::releaseRunLock($importPlan, $runId);
+
+            throw $e;
+        }
+
+        if (! $dispatched) {
+            self::releaseRunLock($importPlan, $runId);
+        }
+
+        return $dispatched;
+    }
+
+    /**
+     * Returns whether the import plan is currently running.
+     *
+     * @param  ImportPlanData  $importPlan  The import plan to check.
+     */
+    public function isRunning(ImportPlanData $importPlan): bool
+    {
+        $lock = Cache::lock(self::runLockKey($importPlan), self::RUN_LOCK_TTL);
+
+        if (! $lock->get()) {
+            return true;
+        }
+
+        $lock->release();
+
+        return false;
+    }
+
+    /**
+     * Releases the lock that marks the import plan as running, whichever run holds it.
+     *
+     * @param  ImportPlanData  $importPlan  The import plan to unlock.
+     */
+    public function unlock(ImportPlanData $importPlan): void
+    {
+        Cache::lock(self::runLockKey($importPlan))->forceRelease();
+    }
+
+    /**
+     * Releases the lock that marks the import plan as running, if the given run holds it.
+     *
+     * @param  ImportPlanData  $importPlan  The import plan that was run.
+     * @param  string  $runId  The unique ID of the import run that took the lock.
+     */
+    public static function releaseRunLock(ImportPlanData $importPlan, string $runId): void
+    {
+        Cache::restoreLock(self::runLockKey($importPlan), $runId)->release();
+    }
+
+    /**
+     * Returns the cache key of the lock that marks an import plan as running.
+     */
+    private static function runLockKey(ImportPlanData $importPlan): string
+    {
+        return 'import-plan:'.($importPlan->uid ?? $importPlan->handle).':running';
+    }
+
+    /**
+     * Fires the dispatching event and dispatches the ImportPipeline job for the import plan's enabled steps.
+     */
+    private function dispatchPipeline(ImportPlanData $importPlan, string $runId, ?string $connection): bool
+    {
+        $steps = [];
+
+        // for each enabled step in the $importPlan
+        foreach ($importPlan->enabledSteps() as $key => $step) {
+            $filePath = BaseImporter::resolvedSourcePath($step->source);
+
+            // name for this batch of jobs
+            $steps[$key]['name'] = self::stepLabel($importPlan, $step);
+            $steps[$key]['uid'] = $step->uid;
+            $steps[$key]['job'] = new ImportJob($importPlan, $step->uid, $filePath, $runId, 0);
+        }
+
+        event($event = new ImportDispatching($steps, $importPlan));
+
+        if (! $event->isValid) {
+            return false;
+        }
+
+        // batch pruning should be done by scheduling the queue:prune-batches command
+        // see https://laravel.com/framework/docs/12.x/queues#pruning-batches
+
+        // we need to go through a single job because we want to name our chain
+        $pipeline = new ImportPipeline($event->steps, $event->importPlan, $runId);
+
+        if ($connection !== null) {
+            $pipeline->onConnection($connection);
+        }
+
+        dispatch($pipeline);
+
+        event(new ImportDispatched($event->steps, $event->importPlan));
+
+        return true;
+    }
+
+    /**
+     * Returns a human-readable label for one of an import plan's steps.
+     *
+     * @param  ImportPlanData  $importPlan  The import plan the step belongs to.
+     * @param  BaseImporter  $step  The step to label.
+     */
+    public static function stepLabel(ImportPlanData $importPlan, BaseImporter $step): string
+    {
+        return sprintf('%s: %s', $importPlan->name, $step::displayName());
+    }
+
+    /**
+     * Fires the importing event, applies map remapping, resolves/applies match criteria and clearable items,
+     * then hands the item to the importer and fires the imported event.
+     *
+     * @param  BaseImporter  $importer  The importer config to import into.
+     * @param  array<string, mixed>  $data  The raw item data being imported.
+     * @param  array<string, mixed>  $matchCriteria  any criteria that should be used to match incoming data against existing elements
+     * @param  string|null  $runId  The unique ID of the import run this item belongs to, if any.
+     */
+    public function importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null): void
+    {
+        event($event = new ItemImporting($importer, $data, $runId));
+
+        if (! $event->isValid) {
+            return;
+        }
+
+        $data = $event->data;
+        // if we have a map here, hook it up; if we have both the map and the transformer,
+        // then the map is used first and then transformer can do further manipulation;
+        // if there's no map, the transformer acts as one on its own;
+        if ($importer->map) {
+            $data = ImportHelper::remapData($importer->map, $data);
+        }
+
+        // match criteria come from three places, applied in this order, so for the same key
+        // a later one overrides an earlier one (in-data < importer config < transformer):
+        // 1. matchCriteria coming from the data
+        //      those values can differ from data item to data item, and they're a "simple" array of key => value pairs where
+        //      the key is the property, field handle or column name in the system
+        //      a string value is replaced by the item's own value for that key (from the item or its `fields`), if it has one;
+        //      otherwise (or if it isn't a string) the value is used to match on as it is
+        // 2. matchCriteria coming from the importer config (either from the UI or a registered import plan);
+        //      those values are the same for all the items in the import (it doesn't change for the entire import step),
+        //      which is why we grab it once, in the Import job
+        // 3. matchCriteria coming from the BaseTransformer::additionalMatchCriteria() method - if the import uses a transformer that has it
+        //      those values can be computed dynamically based on the incoming data and can impact the array returned by that method;
+        //      the array should be an array of key-value pairs where
+        //      the key is the property, field handle or column name in the system
+        //      the value is the actual value to match on (not the handle)
+
+        // additional match criteria
+        $additionalMatchCriteria = $importer->transformer instanceof BaseTransformer ?
+            $importer->transformer->additionalMatchCriteria($importer, $data) : [];
+        $this->resolveMatchCriteria($data, $matchCriteria, $additionalMatchCriteria);
+
+        $this->applyClearableItems($data, $importer->clearableItems ?? []);
+
+        try {
+            $importedItem = $importer->importItem($data);
+        } catch (Throwable $e) {
+            $importer->discardAfterItemImportedCallbacks();
+
+            throw $e;
+        }
+
+        $importer->runAfterItemImportedCallbacks($importedItem);
+
+        event(new ItemImported($importer, $data, $runId, $importedItem));
+    }
+
+    /**
+     * Resolves the match criteria so that the returned array contains keys that represent the fields/attributes/properties to update
+     * and values containing the incoming data values (not keys).
+     *
+     * @param  array<mixed>  $data
+     * @param  array<mixed>  $criteria
+     * @param  array<mixed>  $additionalMatchCriteria
+     */
+    private function resolveMatchCriteria(array &$data, array $criteria, array $additionalMatchCriteria): void
+    {
+        $importerConfigLevelCriteria = [];
+        foreach ($criteria as $key => $value) {
+            if ($value !== null && ! is_array($value) && isset($data[$key])/* array_key_exists($key, $data) */) {
+                $importerConfigLevelCriteria[$key] = $data[$key];
+            }
+        }
+
+        $dataSourcedMatchCriteria = $data['matchCriteria'] ?? [];
+
+        if (! empty($dataSourcedMatchCriteria)) {
+            $fields = is_array($data['fields'] ?? null) ? $data['fields'] : [];
+            array_walk(
+                $dataSourcedMatchCriteria,
+                function (&$value, $key) use ($data, $fields) {
+                    if (is_string($value)) {
+                        $value = $data[$key] ?? $fields[$key] ?? $value;
+                    }
+                }
+            );
+        }
+
+        if (! empty($importerConfigLevelCriteria) || ! empty($dataSourcedMatchCriteria)) {
+            // values from the incoming data are matched on literally, not as query param syntax (e.g. `*`, `not 5`)
+            $matchCriteria = array_map(
+                fn ($value) => is_string($value) ? Query::escapeParam($value) : $value,
+                array_merge($dataSourcedMatchCriteria, $importerConfigLevelCriteria),
+            );
+            $data = ['matchCriteria' => $matchCriteria] + $data;
+        }
+
+        // criteria for a container's nested rows are passed down to them below, rather than matched on at this level
+        $levelAdditionalMatchCriteria = array_filter(
+            $additionalMatchCriteria,
+            fn ($value, $key) => ! is_array($value) || ! self::isContainerData($data[$key] ?? null),
+            ARRAY_FILTER_USE_BOTH,
+        );
+
+        // if this level has any additional match criteria, use it
+        if (! empty($levelAdditionalMatchCriteria)) {
+            $matchCriteria = array_replace($data['matchCriteria'] ?? [], $levelAdditionalMatchCriteria);
+            $data = ['matchCriteria' => $matchCriteria] + $data;
+        }
+
+        // walk every array-valued key present in either the data or the configured criteria, not
+        // just ones the importer's own criteria config happens to mention, so that inline
+        // matchCriteria on blocks the config doesn't cover (e.g. a container field the importer
+        // never configured matching for) still gets resolved.
+        $keys = array_unique(array_merge(array_keys($criteria), array_keys($data)));
+
+        foreach ($keys as $key) {
+            if ($key === 'matchCriteria' || ! isset($data[$key]) || ! is_array($data[$key])) {
+                continue;
+            }
+
+            $value = $criteria[$key] ?? [];
+            $nestedAdditionalMatchCriteria = is_array($additionalMatchCriteria[$key] ?? null) ? $additionalMatchCriteria[$key] : [];
+
+            if (! is_array($value)) {
+                continue;
+            }
+
+            if (array_is_list($data[$key])) {
+                foreach ($data[$key] as &$item) {
+                    if (! is_array($item)) {
+                        continue;
+                    }
+
+                    // typed rows (matrix blocks) carry their criteria under their own block type;
+                    // rows without a type (addresses) use the container's criteria directly
+                    $type = is_string($item['type'] ?? null) ? $item['type'] : null;
+
+                    $this->resolveMatchCriteria(
+                        $item,
+                        $type !== null ? ($value[$type] ?? []) : $value,
+                        $type !== null ? ($nestedAdditionalMatchCriteria[$type] ?? []) : $nestedAdditionalMatchCriteria,
+                    );
+                }
+                unset($item);
+            } else {
+                $this->resolveMatchCriteria($data[$key], $value, $nestedAdditionalMatchCriteria);
+            }
+        }
+    }
+
+    /**
+     * Determines whether a data value holds nested rows (e.g. matrix blocks or addresses),
+     * rather than a plain value such as a list of related element IDs.
+     */
+    private static function isContainerData(mixed $value): bool
+    {
+        if (! is_array($value) || $value === []) {
+            return false;
+        }
+
+        if (! array_is_list($value)) {
+            return true;
+        }
+
+        return array_any($value, fn ($item) => is_array($item));
+    }
+
+    /**
+     * Clears out any handles marked as clearable in $clearableItems whose incoming value is missing or empty,
+     * forcing them to null so they're explicitly applied (rather than silently left untouched) further downstream.
+     *
+     * @param  array<mixed>  $data
+     * @param  array<mixed>  $clearableItems
+     */
+    private function applyClearableItems(array &$data, array $clearableItems): void
+    {
+        foreach ($clearableItems as $key => $value) {
+            if (! is_array($value)) {
+                if ($value && (! array_key_exists($key, $data) || self::isEmptyValue($data[$key]))) {
+                    $data[$key] = null;
+                }
+
+                continue;
+            }
+            if (! isset($data[$key])) {
+                continue;
+            }
+            if (! is_array($data[$key])) {
+                continue;
+            }
+
+            if (! empty($data[$key]) && array_is_list($data[$key]) && ! array_is_list($value)) {
+                foreach ($data[$key] as &$item) {
+                    if (! is_array($item)) {
+                        continue;
+                    }
+
+                    // as in resolveMatchCriteria(): typed rows look their map up by block type,
+                    // rows without a type (addresses) use the container's own map
+                    if (isset($item['type'])) {
+                        if (isset($value[$item['type']])) {
+                            $this->applyClearableItems($item, $value[$item['type']]);
+                        }
+
+                        continue;
+                    }
+
+                    $this->applyClearableItems($item, $value);
+                }
+                unset($item);
+            } else {
+                $this->applyClearableItems($data[$key], $value);
+            }
+        }
+
+        // anything left over that's empty/null and isn't explicitly marked clearable should never
+        // reach the importer at all, so the existing value it maps to is left completely untouched
+        foreach ($data as $key => $value) {
+            if (array_key_exists($key, $clearableItems) && $clearableItems[$key] !== null) {
+                continue;
+            }
+
+            if (self::isEmptyValue($value)) {
+                unset($data[$key]);
+            }
+        }
+    }
+
+    /**
+     * Determines whether a value should be treated as "empty" for the purposes of clearableItems.
+     */
+    private static function isEmptyValue(mixed $value): bool
+    {
+        if ($value === null) {
+            return true;
+        }
+
+        if (is_string($value)) {
+            return trim($value) === '';
+        }
+
+        if (is_array($value)) {
+            return $value === [];
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns a file's raw contents, throwing if the read fails or the file is empty.
+     *
+     * @param  string  $filePath  The path to the file to read.
+     */
+    public function getRawData(string $filePath): string
+    {
+        error_clear_last();
+        $rawData = @file_get_contents($filePath);
+        $error = error_get_last();
+        if ($error) {
+            throw new Exception($error['message']);
+        }
+
+        if (! $rawData) {
+            throw new Exception(t('Unable to parse data.'));
+        }
+
+        return $rawData;
+    }
+
+    /**
+     * Reads raw file data and formats it via the appropriate data type.
+     * Return the formatted data, throws on failure.
+     *
+     * @param  string  $filePath  The path to the file to read and format.
+     * @return array<mixed>
+     */
+    public function getFormattedData(string $filePath): array
+    {
+        $rawData = $this->getRawData($filePath);
+
+        // process raw data based on the file type it came from
+        $data = $this->formatData($filePath, $rawData);
+
+        if ($data === null || $data['success'] === false) {
+            throw new Exception($data['error'] ?? t('Unable to parse data.'));
+        }
+
+        return $data['data'];
+    }
+
+    /**
+     * Determines the data type from the file extension and delegates formatting to that type's `format()`, logging and returning null on error.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function formatData(string $filePath, string $rawData): ?array
+    {
+        $dataTypeClass = $this->dataTypeClass($filePath);
+
+        try {
+            $data = $dataTypeClass::format($rawData);
+        } catch (Throwable $e) {
+            ImportLog::error($e->getMessage());
+
+            return null;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Reads raw file data and returns the source column headings (prefixed with a "Please select" placeholder), logging and returning null on error.
+     *
+     * @param  string  $filePath  The path to the file to read.
+     * @return list<SourceColumn>|null
+     */
+    public function getDataHeadings(string $filePath): ?array
+    {
+        $rawData = $this->getRawData($filePath);
+        $dataTypeClass = $this->dataTypeClass($filePath);
+
+        try {
+            $headings = $dataTypeClass::getHeadings($rawData);
+        } catch (Throwable $e) {
+            ImportLog::error($e->getMessage());
+
+            return null;
+        }
+
+        // data types report data they can't parse as a `success`/`error` pair rather than headings
+        if (($headings['success'] ?? null) === false) {
+            ImportLog::error($headings['error'] ?? 'Unable to parse data.');
+
+            return null;
+        }
+
+        return [
+            new SourceColumn(t('Please select'), ''),
+            ...array_map(fn (array $heading): SourceColumn => new SourceColumn(
+                (string) $heading['label'],
+                (string) $heading['value'],
+                $heading['data']['hint'] ?? null,
+            ), $headings),
+        ];
+    }
+
+    /**
+     * Runs the importer’s transformer over the raw item data and returns the transformed array.
+     *
+     * @param  BaseImporter  $importer  The importer config providing the transformer.
+     * @param  array<string, mixed>  $data  The raw item data to transform.
+     * @param  mixed  $element  The element associated with the item, if any.
+     * @return array<string, mixed>
+     */
+    final public function processData(BaseImporter $importer, array $data, mixed $element): array
+    {
+        if (! $importer->transformer instanceof BaseTransformer) {
+            return $data;
+        }
+
+        return $importer->transformer->transform($data, $importer, $element);
+    }
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entries>
+    <entry>
+        <sectionId>fixtureSection</sectionId>
+        <typeId>fixtureType</typeId>
+        <title>first xml entry</title>
+        <plainText>xml text one</plainText>
+    </entry>
+    <entry>
+        <sectionId>fixtureSection</sectionId>
+        <typeId>fixtureType</typeId>
+        <title>second xml entry</title>
+        <plainText>xml text two</plainText>
+    </entry>
+</entries>

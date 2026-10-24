@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \CraftCms\Cms\Entry\Data\EntryType|null getEntryTypeById(int $entryTypeId, bool $withTrashed = false)
  * @method static \CraftCms\Cms\Entry\Data\EntryType|null getEntryTypeByUid(string $uid)
  * @method static \CraftCms\Cms\Entry\Data\EntryType|null getEntryTypeByHandle(string $entryTypeHandle)
+ * @method static \CraftCms\Cms\Entry\Data\EntryType|null resolveEntryType(mixed $entryType, \CraftCms\Cms\Shared\Enums\ModelIdentifier[]|null $by = null)
  * @method static \CraftCms\Cms\Entry\Data\EntryType|null getEntryType(\CraftCms\Cms\Entry\Data\EntryType|int|string|array $entryType)
  * @method static bool saveEntryType(\CraftCms\Cms\Entry\Data\EntryType $entryType, bool $runValidation = true)
  * @method static void handleChangedEntryType(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
