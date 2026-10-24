@@ -33,6 +33,7 @@ import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {attach} from '@actions/ReleasesController';
+import type {AskAiParams} from '@/modules/ai/ask-ai';
 
 export interface ElementEditFormData {
   typeId?: string | number | null;
@@ -151,6 +152,8 @@ export interface ElementEditPayload {
   previewTargets: Array<ElementPreviewTarget>;
   elementDisplayName: string;
   activityUrl: string | null;
+  /** Identifies the element to the “Ask AI” panel, when the user can ask about it. */
+  askAi: AskAiParams | null;
   activityTimelineUrl: string | null;
   activityPageUrl: string | null;
   updatedTimestamps: {element: number | null; canonical: number | null};
@@ -618,6 +621,14 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
   function requestValues(data: object): UiValues {
     return transform?.(data) ?? ({...data} as UiValues);
+  }
+
+  /**
+   * The form's current values, including the sidebar's, as a save would post
+   * them.
+   */
+  function formValues(): UiValues {
+    return {...saveData?.(), ...requestValues(form.data())};
   }
 
   /**
@@ -1218,6 +1229,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     nestedOwnerEditor,
     refreshUi,
     refreshLayout,
+    formValues,
     save,
     sidebarErrors,
     sidebarPayload,

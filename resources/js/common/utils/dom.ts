@@ -104,3 +104,49 @@ export function firstFocusableWithin(
     if (nested) return nested;
   }
 }
+
+/**
+ * Shows an element that may be in a tab panel that isn't selected, selecting
+ * the tab of each panel it's in, then scrolls it into view.
+ *
+ * Panels are found by the `controls` of the `craft-tab`s that select them, so
+ * this covers tabs driven by `craft-tabs` in external-panel mode.
+ */
+export async function revealElement(element: Element): Promise<void> {
+  const root = element.getRootNode() as Document | ShadowRoot;
+
+  for (
+    let ancestor = element.parentElement;
+    ancestor;
+    ancestor = ancestor.parentElement
+  ) {
+    const tab = ancestor.id
+      ? root.querySelector(`craft-tab[controls="${CSS.escape(ancestor.id)}"]`)
+      : null;
+    const tabs = tab?.closest('craft-tabs') as
+      | (HTMLElement & {
+          selectedIndex: number;
+          updateComplete?: Promise<unknown>;
+        })
+      | null
+      | undefined;
+
+    if (!tab || !tabs) {
+      continue;
+    }
+
+    const index = [...tabs.querySelectorAll(':scope > craft-tab')].indexOf(tab);
+
+    if (index !== -1 && tabs.selectedIndex !== index) {
+      tabs.selectedIndex = index;
+      await tabs.updateComplete;
+    }
+  }
+
+  element.scrollIntoView({
+    block: 'nearest',
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 'auto'
+      : 'smooth',
+  });
+}

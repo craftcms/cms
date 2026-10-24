@@ -1,5 +1,5 @@
-import {describe, expect, it} from 'vitest';
-import {isInteractiveClick, isInteractiveElement} from './dom';
+import {describe, expect, it, vi} from 'vitest';
+import {isInteractiveClick, isInteractiveElement, revealElement} from './dom';
 
 describe('isInteractiveElement', () => {
   it('is true for focusable elements', () => {
@@ -84,5 +84,29 @@ describe('isInteractiveClick', () => {
     });
 
     expect(isInteractiveClick(evt, outer)).toBe(true);
+  });
+});
+
+describe('revealElement', () => {
+  it('selects the tab of the panel the element is in, then scrolls to it', async () => {
+    document.body.innerHTML = `
+      <craft-tabs>
+        <craft-tab slot="tab" controls="panel-1"></craft-tab>
+        <craft-tab slot="tab" controls="panel-2"></craft-tab>
+      </craft-tabs>
+      <section id="panel-1"></section>
+      <section id="panel-2" class="hidden"><div><input id="field"></div></section>
+    `;
+    const tabs = document.querySelector('craft-tabs') as HTMLElement & {
+      selectedIndex: number;
+    };
+    tabs.selectedIndex = 0;
+    const field = document.getElementById('field')!;
+    field.scrollIntoView = vi.fn();
+
+    await revealElement(field);
+
+    expect(tabs.selectedIndex).toBe(1);
+    expect(field.scrollIntoView).toHaveBeenCalled();
   });
 });

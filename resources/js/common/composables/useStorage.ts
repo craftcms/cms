@@ -5,7 +5,8 @@ import {shallowRef, type MaybeRefOrGetter} from 'vue';
 
 declare const Craft: {systemUid: string};
 
-function prefixedKey(key: string): string {
+/** Returns the key a value is stored under, prefixed for this Craft install. */
+export function prefixedKey(key: string): string {
   return `Craft-${Craft.systemUid}.${key}`;
 }
 
