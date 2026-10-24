@@ -248,6 +248,31 @@ describe('CommandPalette', () => {
     );
   });
 
+  it('cycles Tab between the search box and the selected result, leaving the other results to the arrow keys', async () => {
+    const input = await open();
+
+    press(input, 'Tab');
+    const first = document.activeElement!;
+    expect(first.textContent).toContain('Entries');
+
+    expect(press(first, 'Tab').defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(input);
+
+    expect(press(input, 'Tab', {shiftKey: true}).defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(first);
+
+    press(first, 'ArrowDown');
+    await nextTick();
+    const second = document.activeElement!;
+    expect(second.textContent).toContain('Collapse the global navigation');
+
+    press(second, 'Tab', {shiftKey: true});
+    expect(document.activeElement).toBe(input);
+
+    press(input, 'Tab');
+    expect(document.activeElement).toBe(second);
+  });
+
   it('returns from a focused result to the search box on Escape, with the top result selected', async () => {
     const input = await open();
 
