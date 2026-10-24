@@ -278,6 +278,11 @@
       background-color: var(--c-color-neutral-fill-normal);
       color: var(--c-color-neutral-on-normal);
     }
+
+    .command-palette-row--danger:hover:not(.command-palette-row--selected) {
+      background-color: var(--c-color-danger-fill-quiet);
+      color: var(--c-color-danger-on-quiet);
+    }
   }
 
   .command-palette-row--selected {
