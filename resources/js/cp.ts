@@ -11,6 +11,7 @@ import {defineLayoutComponentSettingsUiHost} from './modules/ui/layout-component
 import './modules/navigation/components/cp-global-sidebar.js';
 import './modules/navigation/components/cp-queue-indicator.js';
 import './modules/notifications/components/cp-notification-center.js';
+import './modules/command-palette';
 
 /**
  * Legacy ports, assigns window.Craft.* so PHP-emitted code still works

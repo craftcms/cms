@@ -1,0 +1,973 @@
+<script setup lang="ts">
+  /**
+   * The command palette: a search box over the control panel's pages,
+   * actions and content.
+   *
+   * Before anything is typed it lists recent pages and every action. Once
+   * something is, it asks each search provider in parallel and lists what
+   * they find in one ranked list. Choosing an item goes to it, runs it, or —
+   * for an item with a view — swaps the results for that view until it's done
+   * or the person goes back.
+   *
+   * The search box is a combobox whose popup is the results grid: the arrow
+   * keys move the selection while focus stays in the box, Return chooses the
+   * selected item, and Tab moves into the results themselves, starting at the
+   * selected one.
+   */
+  import {actionClient, ButtonVariant, t} from '@craftcms/ui';
+  import {runAction} from '@craftcms/ui/actions.mjs';
+  import {router, usePage} from '@inertiajs/vue3';
+  import {index as indexUrl} from '@actions/CommandPaletteController';
+  import {
+    computed,
+    nextTick,
+    onMounted,
+    shallowRef,
+    useId,
+    useTemplateRef,
+    watch,
+    type Component,
+  } from 'vue';
+  import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
+  import Modal from '@/common/components/Modal.vue';
+  import type {BreadcrumbItem} from '@/common/types';
+  import useCraftData from '@/common/composables/useCraftData';
+  import {useRecentPages} from '../recents';
+  import {
+    clientActions,
+    clientProviders,
+    closeCommandPalette,
+    isCommandPaletteOpen,
+    openedWithShortcut,
+    viewComponent,
+  } from '../registry';
+  import {destructiveLast, matchesWords} from '../rank';
+  import {redirectAfter, runHttpAction} from '../run';
+  import {
+    createPageActionsProvider,
+    onPageActions,
+  } from '../sources/on-page-actions';
+  import {
+    fromServerItem,
+    type CommandPaletteItem,
+    type CommandPaletteProvider,
+    type CommandPaletteView,
+    type CommandPaletteViewResult,
+  } from '../types';
+  import {useCommandPaletteSearch} from '../useCommandPaletteSearch';
+  import ConfirmView from './ConfirmView.vue';
+  import DocsSearchView from './DocsSearchView.vue';
+  import ResultSection, {type ResultRow} from './ResultSection.vue';
+  import ShortcutsView from './ShortcutsView.vue';
+  import UiFormView from './UiFormView.vue';
+
+  const BUILT_IN_VIEWS: Record<string, Component> = {
+    confirm: ConfirmView,
+    docs: DocsSearchView,
+    shortcuts: ShortcutsView,
+    ui: UiFormView,
+  };
+
+  interface Section {
+    key: string;
+    heading: string;
+    items: CommandPaletteItem[];
+  }
+
+  const page = usePage<{crumbs?: BreadcrumbItem[]; title?: string}>();
+  const {siteCrumb} = useCraftData();
+  const recents = useRecentPages();
+  const id = useId();
+
+  const input = useTemplateRef<HTMLInputElement>('input');
+  const searchField = useTemplateRef<{$el: HTMLElement}>('searchField');
+  const hint = useTemplateRef<HTMLElement>('hint');
+
+  /** What the key that opens an item is called on this platform. */
+  const returnKey = /Mac|iPhone|iPad/.test(navigator.platform)
+    ? t('Return')
+    : t('Enter');
+  const results = useTemplateRef<HTMLElement>('results');
+  const viewHeading = useTemplateRef<HTMLElement>('viewHeading');
+  const viewBody = useTemplateRef<HTMLElement>('viewBody');
+
+  const query = shallowRef('');
+  const selectedIndex = shallowRef(0);
+  /** Whether the selection was moved by hand, and so shouldn't follow new results to the top. */
+  const selectionMoved = shallowRef(false);
+  const busy = shallowRef(false);
+  const restoreFocus = shallowRef(true);
+  const activeView = shallowRef<{
+    item: CommandPaletteItem;
+    view: CommandPaletteView;
+  } | null>(null);
+
+  const serverProviders = shallowRef<CommandPaletteProvider[]>([]);
+  const serverActions = shallowRef<CommandPaletteItem[]>([]);
+  const pageActions = shallowRef<CommandPaletteItem[]>([]);
+  const recentItems = shallowRef<CommandPaletteItem[]>([]);
+
+  /** Called once the palette has finished closing, for an item that moves focus itself. */
+  let afterClose: (() => void | Promise<void>) | null = null;
+
+  const pageActionsProvider = createPageActionsProvider(
+    () => pageActions.value
+  );
+
+  /**
+   * The actions the palette opened with, searched right here so they show
+   * straight away. The server's actions provider adds the search-only rest.
+   */
+  const loadedActionsProvider: CommandPaletteProvider = {
+    handle: 'loaded-actions',
+    label: t('Actions'),
+    search: (term) =>
+      serverActions.value.filter((action) => matchesWords(action, term)),
+  };
+
+  const providers = computed<readonly CommandPaletteProvider[]>(() => [
+    ...clientProviders(),
+    pageActionsProvider,
+    loadedActionsProvider,
+    ...serverProviders.value,
+  ]);
+
+  const site = () => new URL(window.location.href).searchParams.get('site');
+  const search = useCommandPaletteSearch(query, providers, site);
+
+  const isSearching = computed(() => query.value.trim() !== '');
+
+  const sections = computed<Section[]>(() => {
+    const all: Section[] = isSearching.value
+      ? [{key: 'results', heading: t('Results'), items: search.results.value}]
+      : [
+          {key: 'recents', heading: t('Recents'), items: recentItems.value},
+          {
+            key: 'actions',
+            heading: t('Actions'),
+            items: destructiveLast([
+              ...pageActions.value,
+              ...serverActions.value,
+            ]),
+          },
+        ];
+
+    return all.filter((section) => section.items.length > 0);
+  });
+
+  const rowsBySection = computed(() => {
+    let index = 0;
+
+    return sections.value.map((section) => ({
+      ...section,
+      gridId: `${id}-${section.key}`,
+      rows: section.items.map(
+        (item): ResultRow => ({
+          item,
+          index: index++,
+          cellId: `${id}-option-${index}`,
+        })
+      ),
+    }));
+  });
+
+  const rows = computed(() =>
+    rowsBySection.value.flatMap((section) => section.rows)
+  );
+  const selectedRow = computed(() => rows.value[selectedIndex.value] ?? null);
+  const gridIds = computed(() =>
+    rowsBySection.value.map((section) => section.gridId).join(' ')
+  );
+
+  // The top result is selected until the person picks another; once they
+  // have, theirs stays selected as other providers' results arrive.
+  watch(query, () => {
+    selectionMoved.value = false;
+    selectedIndex.value = 0;
+  });
+
+  watch(rows, (current, previous) => {
+    if (!selectionMoved.value) {
+      selectedIndex.value = 0;
+
+      return;
+    }
+
+    const selectedId = previous?.[selectedIndex.value]?.item.id;
+    const index = current.findIndex((row) => row.item.id === selectedId);
+    selectedIndex.value = Math.max(index, 0);
+  });
+
+  const statusMessage = computed(() => {
+    if (!isSearching.value || activeView.value) {
+      return '';
+    }
+
+    if (search.searching.value) {
+      return t('Searching…');
+    }
+
+    const count = search.results.value.length;
+
+    return count
+      ? t('{count, plural, =1{# result} other{# results}}', {count})
+      : t('No results');
+  });
+
+  // Recent pages are recorded as they're visited, not when they're opened
+  // from here, so pages reached any other way count too.
+  watch(
+    () => page.url,
+    async () => {
+      await nextTick();
+      const title = page.props.title || document.title;
+      recents.record(window.location.href, title);
+    },
+    {immediate: true}
+  );
+
+  async function loadServerData(): Promise<void> {
+    try {
+      const {data} = await actionClient.get<{
+        providers: Array<{handle: string; label: string}>;
+        actions: CraftCms.Cms.Cp.CommandPalette.CommandPaletteItem[];
+      }>(indexUrl.url());
+      serverProviders.value = data.providers;
+      serverActions.value = data.actions.map(fromServerItem);
+    } catch (error: any) {
+      Craft.cp?.displayError?.(
+        error?.response?.data?.message ?? t('A server error occurred.')
+      );
+    }
+  }
+
+  // This loads after the page, so the shortcut may have opened the palette
+  // already. Starting closed and opening once mounted takes it through the
+  // usual opening — the page's actions gathered, the search box focused.
+  if (isCommandPaletteOpen.value) {
+    isCommandPaletteOpen.value = false;
+    onMounted(() => {
+      isCommandPaletteOpen.value = true;
+    });
+  }
+
+  watch(isCommandPaletteOpen, (open) => {
+    if (!open) {
+      return;
+    }
+
+    const crumbs = page.props.crumbs ?? [];
+    pageActions.value = onPageActions(
+      crumbs.some((crumb) => crumb.id === 'site-crumb') || !siteCrumb.value
+        ? crumbs
+        : [siteCrumb.value, ...crumbs]
+    ).concat(clientActions());
+    recentItems.value = recents.items(window.location.href);
+    void loadServerData();
+    void focusInputOnceShown();
+  });
+
+  /**
+   * Focuses the search input as soon as the dialog has shown itself, which
+   * moves focus into it, rather than once its transition ends — so what's
+   * typed straight after the shortcut lands in the input.
+   */
+  async function focusInputOnceShown(): Promise<void> {
+    await nextTick();
+    await (
+      input.value?.closest('craft-dialog') as
+        | (HTMLElement & {updateComplete?: Promise<unknown>})
+        | null
+    )?.updateComplete;
+    // Selected, so typing replaces a query left from last time.
+    input.value?.focus();
+    input.value?.select();
+  }
+
+  /**
+   * A press on the field's own padding, beside the input and its icon, goes
+   * to the input, so the whole bar acts as one text box.
+   */
+  function onFieldMousedown(event: MouseEvent): void {
+    const target = event.target as Element | null;
+
+    if (target !== input.value && !target?.closest('craft-button')) {
+      event.preventDefault();
+      input.value?.focus();
+    }
+  }
+
+  function onOpened(): void {
+    // The search field manages its input's `aria-describedby`, so the hint
+    // joins through it rather than being set on the input directly.
+    const field = searchField.value?.$el as
+      | (HTMLElement & {addToAriaDescribedBy?: (element: HTMLElement) => void})
+      | undefined;
+    if (hint.value) {
+      field?.addToAriaDescribedBy?.(hint.value);
+    }
+  }
+
+  function close(): void {
+    closeCommandPalette();
+  }
+
+  /**
+   * Escape inside a view goes back to the results wherever focus is — the
+   * dialog itself, say, after a click on its padding; anything else closes.
+   */
+  function onModalClose(event: Event): void {
+    if (activeView.value && event instanceof KeyboardEvent) {
+      back();
+    } else {
+      close();
+    }
+  }
+
+  async function onClosed(): Promise<void> {
+    const callback = afterClose;
+    afterClose = null;
+    restoreFocus.value = true;
+    openedWithShortcut.value = false;
+    activeView.value = null;
+
+    if (callback) {
+      await callback();
+    }
+  }
+
+  /** Back to an empty search, as the palette was first opened. */
+  function reset(): void {
+    query.value = '';
+    activeView.value = null;
+    selectedIndex.value = 0;
+    selectionMoved.value = false;
+    search.reset();
+  }
+
+  /** Closes the palette, then calls `callback`, leaving focus to it. */
+  function closeThen(callback: () => void | Promise<void>): void {
+    afterClose = callback;
+    restoreFocus.value = false;
+    reset();
+    close();
+  }
+
+  function finish(result: CommandPaletteViewResult = {}): void {
+    if (result.run) {
+      closeThen(result.run);
+
+      return;
+    }
+
+    reset();
+    close();
+
+    if (result.message) {
+      Craft.cp?.displayNotice?.(result.message);
+    }
+
+    if (result.reload) {
+      window.location.reload();
+    } else if (result.redirect) {
+      if (result.replace) {
+        // The URL changes before the visit does, so a reload while it's
+        // loading — such as the dev server's — can't land on the removed page.
+        window.history.replaceState(window.history.state, '', result.redirect);
+      }
+
+      router.visit(result.redirect, {replace: result.replace});
+    }
+  }
+
+  function openView(item: CommandPaletteItem, view: CommandPaletteView): void {
+    if (!BUILT_IN_VIEWS[view.type] && !viewComponent(view.type)) {
+      console.error(
+        `No command palette view is registered for “${view.type}”.`
+      );
+      Craft.cp?.displayError?.(t('A server error occurred.'));
+
+      return;
+    }
+
+    activeView.value = {item, view};
+  }
+
+  function back(): void {
+    activeView.value = null;
+  }
+
+  watch(activeView, async (current, previous) => {
+    await nextTick();
+
+    if (current) {
+      // A view can start somewhere other than its heading, such as its own
+      // search box.
+      (
+        viewBody.value?.querySelector<HTMLElement>('[data-autofocus]') ??
+        viewHeading.value
+      )?.focus();
+    } else if (previous && isCommandPaletteOpen.value) {
+      input.value?.focus();
+    }
+  });
+
+  async function runServerAction(item: CommandPaletteItem): Promise<void> {
+    const action = item.action;
+
+    if (!action) {
+      return;
+    }
+
+    if (action.type !== 'http') {
+      closeThen(() => runAction(action));
+
+      return;
+    }
+
+    busy.value = true;
+
+    try {
+      const {redirect} = await runHttpAction(action);
+      finish({...redirectAfter(item, redirect), reload: item.reload});
+    } catch {
+      // Already shown; the palette stays open so the person can try again.
+    } finally {
+      busy.value = false;
+    }
+  }
+
+  function navigate(item: CommandPaletteItem, newTab: boolean): void {
+    const href = item.href;
+
+    if (!href) {
+      return;
+    }
+
+    if (newTab) {
+      window.open(href, '_blank', 'noopener');
+
+      return;
+    }
+
+    reset();
+    close();
+
+    if (item.external) {
+      window.location.assign(href);
+    } else {
+      router.visit(href);
+    }
+  }
+
+  /**
+   * Chooses an item. `trigger` is the click that chose it, when it was a
+   * click on a link: the link then does the navigating itself, so a modified
+   * click can still open it in a new tab.
+   */
+  function activate(
+    item: CommandPaletteItem,
+    {newTab = false, trigger}: {newTab?: boolean; trigger?: MouseEvent} = {}
+  ): void {
+    if (busy.value) {
+      trigger?.preventDefault();
+
+      return;
+    }
+
+    if (item.view) {
+      openView(item, item.view);
+    } else if (item.action && 'confirm' in item.action && item.action.confirm) {
+      openView(item, {type: 'confirm', message: item.action.confirm});
+    } else if (item.run && item.confirm) {
+      openView(item, {type: 'confirm', message: item.confirm});
+    } else if (item.run) {
+      closeThen(item.run);
+    } else if (item.action) {
+      void runServerAction(item);
+    } else if (trigger) {
+      const modified =
+        trigger.metaKey ||
+        trigger.ctrlKey ||
+        trigger.shiftKey ||
+        trigger.altKey;
+
+      if (!modified) {
+        reset();
+        close();
+      }
+    } else {
+      navigate(item, newTab);
+    }
+  }
+
+  /**
+   * Gets out of the way of a result's menu action, which may open a slideout
+   * or modal of its own and take focus there.
+   */
+  function dismissForMenuAction(): void {
+    restoreFocus.value = false;
+    reset();
+    close();
+  }
+
+  function select(index: number): void {
+    selectedIndex.value = index;
+    selectionMoved.value = true;
+  }
+
+  async function scrollSelectedIntoView(): Promise<void> {
+    await nextTick();
+    const row = selectedRow.value;
+
+    if (row) {
+      scrollRowIntoView(document.getElementById(row.cellId));
+    }
+  }
+
+  /** Scrolls to the whole row, since the highlight is painted on it rather than on the cell or item. */
+  function scrollRowIntoView(el: HTMLElement | null): void {
+    el?.closest('[role="row"]')?.scrollIntoView({block: 'nearest'});
+  }
+
+  function moveSelection(step: number): void {
+    const count = rows.value.length;
+
+    if (!count) {
+      return;
+    }
+
+    select((selectedIndex.value + step + count) % count);
+    void scrollSelectedIntoView();
+  }
+
+  function itemElement(index: number): HTMLElement | null {
+    return (
+      results.value?.querySelector<HTMLElement>(
+        `[data-command-palette-index="${index}"]`
+      ) ?? null
+    );
+  }
+
+  function onInputKeydown(event: KeyboardEvent): void {
+    switch (event.key) {
+      case 'ArrowDown':
+      case 'ArrowUp':
+        event.preventDefault();
+        moveSelection(event.key === 'ArrowDown' ? 1 : -1);
+        break;
+      case 'Enter':
+        if (event.isComposing) {
+          return;
+        }
+
+        event.preventDefault();
+
+        if (selectedRow.value) {
+          activate(selectedRow.value.item, {
+            newTab: event.metaKey || event.ctrlKey,
+          });
+        }
+        break;
+      case 'Tab':
+        cycleTabFocus(event);
+        break;
+    }
+  }
+
+  /**
+   * Tab and Shift+Tab cycle through the search box, the selected result, and
+   * its menu button; the arrow keys move between results. Moved by hand
+   * because Safari leaves links out of the Tab order by default, and because
+   * Tab back would otherwise land on the search field rather than its input.
+   */
+  function cycleTabFocus(event: KeyboardEvent): void {
+    if (event.altKey || event.ctrlKey || event.metaKey || !input.value) {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    const row = (
+      target === input.value && selectedRow.value
+        ? itemElement(selectedRow.value.index)
+        : target
+    )?.closest<HTMLElement>('.command-palette-row');
+    const item = row?.querySelector<HTMLElement>(
+      '[data-command-palette-index]'
+    );
+
+    if (!item) {
+      return;
+    }
+
+    const menuButton = row!.querySelector<HTMLElement>(
+      '.command-palette-row__actions [slot="invoker"]'
+    );
+    const stops = [input.value, item, ...(menuButton ? [menuButton] : [])];
+    const index = stops.findIndex(
+      (stop) => stop === target || (target && stop.contains(target))
+    );
+
+    if (index === -1) {
+      return;
+    }
+
+    event.preventDefault();
+    stops.at((index + (event.shiftKey ? -1 : 1)) % stops.length)!.focus();
+  }
+
+  /** Up and down move between the results once focus is among them. */
+  function onResultsKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Tab') {
+      cycleTabFocus(event);
+
+      return;
+    }
+
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+      return;
+    }
+
+    const index = Number(
+      (event.target as HTMLElement | null)?.dataset?.commandPaletteIndex ?? NaN
+    );
+
+    if (Number.isNaN(index)) {
+      return;
+    }
+
+    event.preventDefault();
+    const target = itemElement(index + (event.key === 'ArrowDown' ? 1 : -1));
+    target?.focus();
+    scrollRowIntoView(target);
+  }
+
+  /**
+   * Escape closes a result's menu, or steps back out of a view to the
+   * results. Otherwise it clears the search and returns to the search box,
+   * wherever focus is, or once there's no search, closes the palette. The
+   * search box clears itself when it has focus; the rest is stopped here
+   * before the dialog sees it.
+   */
+  function onKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Escape') {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    const menu = target?.closest<HTMLElement & {close?: () => void}>(
+      'craft-action-menu'
+    );
+
+    // The menu closes itself on Escape, cancelling the event as it does, but
+    // the dialog would still close too.
+    if (menu && !target?.closest('[slot="invoker"]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      menu.close?.();
+      menu.querySelector<HTMLElement>('[slot="invoker"]')?.focus();
+
+      return;
+    }
+
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    if (activeView.value) {
+      back();
+    } else if (query.value) {
+      query.value = '';
+      selectedIndex.value = 0;
+      selectionMoved.value = false;
+      input.value?.focus();
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const activeViewComponent = computed(() =>
+    activeView.value
+      ? (BUILT_IN_VIEWS[activeView.value.view.type] ??
+        viewComponent(activeView.value.view.type))
+      : null
+  );
+</script>
+
+<template>
+  <Modal
+    :is-active="isCommandPaletteOpen"
+    :label="t('Command palette')"
+    width="auto"
+    :dismissible="!busy"
+    :restore-focus="restoreFocus"
+    :instant="openedWithShortcut"
+    style="--c-modal-border-width: 0px"
+    @close="onModalClose"
+    @opened="onOpened"
+    @closed="onClosed"
+  >
+    <div class="command-palette" @keydown="onKeydown">
+      <div v-show="!activeView" class="command-palette__search">
+        <div class="command-palette__field" @mousedown="onFieldMousedown">
+          <CraftInputSearch
+            ref="searchField"
+            v-model="query"
+            class="command-palette__search-field"
+            :placeholder="t('Search for pages, actions, and content')"
+          >
+            <input
+              ref="input"
+              slot="input"
+              type="text"
+              class="command-palette__input"
+              role="combobox"
+              aria-expanded="true"
+              aria-haspopup="grid"
+              aria-autocomplete="list"
+              :aria-controls="gridIds || undefined"
+              :aria-activedescendant="selectedRow?.cellId"
+              autocapitalize="off"
+              spellcheck="false"
+              @keydown="onInputKeydown"
+            />
+          </CraftInputSearch>
+        </div>
+
+        <div
+          ref="results"
+          class="command-palette__results"
+          :aria-busy="search.searching.value ? 'true' : 'false'"
+          @keydown="onResultsKeydown"
+        >
+          <div
+            v-if="busy || (search.searching.value && !rows.length)"
+            class="command-palette__loading"
+          >
+            <craft-spinner
+              :label="busy ? t('Working') : t('Searching…')"
+            ></craft-spinner>
+          </div>
+          <ResultSection
+            v-for="section in rowsBySection"
+            :key="section.key"
+            :grid-id="section.gridId"
+            :heading="section.heading"
+            :rows="section.rows"
+            :selected-index="selectedIndex"
+            @activate="(item, trigger) => activate(item, {trigger})"
+            @select="select"
+            @dismiss="dismissForMenuAction"
+          />
+          <p
+            v-if="
+              isSearching &&
+              !search.searching.value &&
+              !search.results.value.length
+            "
+            class="command-palette__empty"
+          >
+            {{ t('No results') }}
+          </p>
+          <p v-if="search.failed.value.length" class="command-palette__empty">
+            {{
+              t('Couldn’t search {providers}.', {
+                providers: search.failed.value.join(', '),
+              })
+            }}
+          </p>
+        </div>
+
+        <p :id="`${id}-hint`" ref="hint" class="command-palette__hint">
+          <span class="command-palette__hint-item">
+            <kbd>↑</kbd> <kbd>↓</kbd> {{ t('Choose item') }}
+          </span>
+          <span class="command-palette__hint-item">
+            <kbd>{{ returnKey }}</kbd> {{ t('Open item') }}
+          </span>
+          <span class="command-palette__hint-item">
+            <kbd>Tab</kbd> {{ t('Focus item') }}
+          </span>
+          <span class="command-palette__hint-item">
+            <kbd>Esc</kbd> {{ query ? t('Clear search') : t('Close') }}
+          </span>
+        </p>
+        <div class="sr-only" role="status">{{ statusMessage }}</div>
+      </div>
+
+      <div v-if="activeView" ref="viewBody" class="command-palette__view">
+        <div class="command-palette__view-header">
+          <craft-button
+            type="button"
+            size="small"
+            icon="arrow-left"
+            flush="inline-start"
+            :variant="ButtonVariant.Plain"
+            @click="back"
+          >
+            {{ t('Back') }}
+          </craft-button>
+          <h2 ref="viewHeading" tabindex="-1" class="command-palette__title">
+            {{ activeView.item.label }}
+          </h2>
+        </div>
+        <component
+          :is="activeViewComponent"
+          :key="activeView.item.id"
+          :item="activeView.item"
+          :view="activeView.view"
+          @done="finish"
+          @back="back"
+        />
+      </div>
+    </div>
+  </Modal>
+</template>
+
+<style scoped>
+  /* Draws the modal's border inside its clipping box, so the search field's focus ring can cover it. */
+  .command-palette {
+    /*
+     * The search bar's height: a small control between the modal's padding,
+     * which is what a view's heading bar comes to with its small Back button.
+     */
+    --_bar-block-size: calc(
+      var(--c-size-control-sm) + var(--c-modal-padding) * 2
+    );
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    border: 1px var(--c-modal-border-style) var(--c-modal-border-color);
+    border-radius: var(--c-modal-radius);
+    inline-size: min(42rem, calc(100vw - (var(--c-spacing-lg) * 2)));
+    max-block-size: min(36rem, calc(100vh - (var(--c-spacing-lg) * 2)));
+    min-block-size: 0;
+  }
+
+  .command-palette__search,
+  .command-palette__view {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-block-size: 0;
+  }
+
+  .command-palette__field {
+    display: flex;
+    cursor: text;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+    padding-inline: calc(var(--c-modal-padding) - var(--c-spacing-sm));
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    border-start-start-radius: calc(var(--c-modal-radius) - 1px);
+    border-start-end-radius: calc(var(--c-modal-radius) - 1px);
+  }
+
+  .command-palette__search-field {
+    --c-input-border-width: 0px;
+    --c-input-radius: 0px;
+    --c-input-shadow: none;
+    --c-input-fill: transparent;
+    --c-input-height: var(--_bar-block-size);
+    --c-input-spacing-inline: var(--c-spacing-sm);
+    --c-focus-outline-style: none;
+    /* Overrides the field's private clear-button inset, so its icon lines up with the result types' right edge. */
+    --_clear-inset: 0px;
+    flex: 1;
+    min-inline-size: 0;
+    font-size: var(--c-text-lg);
+  }
+
+  .command-palette__input {
+    font: inherit;
+  }
+
+  .command-palette__input::placeholder {
+    color: var(--c-text-quiet);
+    opacity: 1;
+  }
+
+  .command-palette__field:focus-within {
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: calc((var(--c-focus-outline-width) - 1px) * -1);
+  }
+
+  .command-palette__results {
+    position: relative;
+    flex: 1;
+    min-block-size: 0;
+    overflow-y: auto;
+    padding-block: var(--c-spacing-sm);
+    padding-inline: calc(var(--c-modal-padding) - var(--c-spacing-md));
+    scroll-padding-block: var(--c-spacing-sm);
+  }
+
+  .command-palette__empty {
+    margin: 0;
+    padding: var(--c-spacing-md);
+    color: var(--c-text-quiet);
+    text-align: center;
+  }
+
+  .command-palette__loading {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+  }
+
+  .command-palette__hint {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: var(--c-spacing-lg);
+    row-gap: var(--c-spacing-xs);
+    margin: 0;
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-modal-padding);
+    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+    font-size: var(--c-text-sm);
+    color: var(--c-text-quiet);
+  }
+
+  .command-palette__hint-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+  }
+
+  .command-palette__view {
+    padding: var(--c-modal-padding);
+    overflow-y: auto;
+  }
+
+  /* A hairline across the whole modal separates the view's heading from its content. */
+  .command-palette__view-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--c-spacing-lg);
+    margin-inline: calc(var(--c-modal-padding) * -1);
+    margin-block-end: var(--cp-container-padding);
+    padding-inline: var(--c-modal-padding);
+    padding-block-end: var(--c-modal-padding);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .command-palette__title {
+    margin: 0;
+    font-size: var(--c-text-lg);
+    font-weight: var(--font-weight-semibold);
+    overflow-wrap: anywhere;
+  }
+
+  @media (forced-colors: active) {
+    .command-palette__field:focus-within {
+      outline-color: Highlight;
+    }
+  }
+</style>

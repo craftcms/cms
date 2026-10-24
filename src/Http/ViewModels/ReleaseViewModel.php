@@ -146,6 +146,28 @@ class ReleaseViewModel extends ViewModel
             : null);
     }
 
+    /** Why the release can't be published or scheduled yet, if it can't. */
+    public function publishDisabledReason(): ?string
+    {
+        $readiness = $this->readiness();
+
+        if ($readiness === null) {
+            return $this->release->items()->exists() ? null : t('The release has no drafts.');
+        }
+
+        if ($readiness->ready) {
+            return null;
+        }
+
+        if ($readiness->errors !== []) {
+            return implode(' ', $readiness->errors);
+        }
+
+        return t('{count, plural, =1{# draft is blocking publication.} other{# drafts are blocking publication.}}', [
+            'count' => count($readiness->itemErrors),
+        ]);
+    }
+
     public function ui(): UiPayload
     {
         $readiness = $this->readiness();

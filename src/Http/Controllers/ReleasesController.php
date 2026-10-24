@@ -267,6 +267,28 @@ class ReleasesController
         return $this->asSuccess(t('Release unscheduled.'));
     }
 
+    /**
+     * The release's drafts, as listed on its page, for confirming publication.
+     */
+    public function publishModal(Release $release, Request $request): JsonResponse
+    {
+        abort_unless(Gate::check('publishReleases') && $release->status->isMutable(), Response::HTTP_FORBIDDEN);
+
+        $viewModel = app(ReleaseViewModel::class, [
+            'release' => $release,
+            'actor' => $request->craftUser(),
+            'releases' => $this->releases,
+        ]);
+
+        return new JsonResponse([
+            'ui' => $viewModel->ui(),
+            'title' => t('Publish release'),
+            'submitLabel' => t('Publish'),
+            'submitDisabled' => ! $viewModel->readiness()?->ready,
+            'submitDisabledReason' => $viewModel->publishDisabledReason(),
+        ]);
+    }
+
     public function publish(Release $release, Request $request): Response
     {
         $this->releases->publish($release, $request->craftUser());
