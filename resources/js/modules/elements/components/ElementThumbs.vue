@@ -216,6 +216,7 @@
       <li
         v-for="(element, thumbIdx) in data"
         :key="element.id"
+        :data-id="String(element.id)"
         :ref="(el) => setItemRef(el as HTMLElement, element.id)"
         v-bind="itemBehavior?.attrs?.(element)"
         :tabindex="selectable ? 0 : undefined"

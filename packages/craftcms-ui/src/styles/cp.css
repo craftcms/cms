@@ -90,3 +90,71 @@
     overflow: visible;
   }
 }
+
+craft-button.paste-btn {
+  border-color: transparent;
+  color: var(--c-color-neutral-on-quiet);
+  background-image: linear-gradient(
+    135deg,
+    color-mix(var(--c-color-fuchsia-fill-quiet), transparent 70%),
+    color-mix(var(--c-color-violet-fill-quiet), transparent 70%),
+    color-mix(var(--c-color-indigo-fill-quiet), transparent 70%)
+  );
+
+  /* ::before is the button's minimum click target, so the gradient border is drawn with ::after. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: calc(var(--c-button-border-width, 1px) * -1);
+    border: var(--c-button-border-width, 1px) solid transparent;
+    border-radius: inherit;
+    background: linear-gradient(
+        135deg,
+        var(--color-fuchsia-400),
+        var(--color-violet-400),
+        var(--color-indigo-400)
+      )
+      border-box;
+    mask:
+      linear-gradient(#000 0 0) padding-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  &::part(prefix) {
+    color: var(--c-color-fuchsia-fill-loud);
+  }
+
+  &:hover:not([disabled]) {
+    background-color: transparent;
+    background-image: linear-gradient(
+      135deg,
+      color-mix(var(--c-color-fuchsia-fill-normal), transparent 50%),
+      color-mix(var(--c-color-violet-fill-normal), transparent 50%),
+      color-mix(var(--c-color-indigo-fill-normal), transparent 50%)
+    );
+  }
+
+  &:active:not([disabled]) {
+    background-image: linear-gradient(
+      135deg,
+      color-mix(var(--c-color-fuchsia-fill-normal), transparent 20%),
+      color-mix(var(--c-color-violet-fill-normal), transparent 20%),
+      color-mix(var(--c-color-indigo-fill-normal), transparent 20%)
+    );
+  }
+
+  @media (forced-colors: active) {
+    border-color: ButtonBorder;
+    background-image: none;
+
+    &::part(prefix) {
+      color: inherit;
+    }
+
+    &::after {
+      display: none;
+    }
+  }
+}
