@@ -521,8 +521,13 @@
     const row = selectedRow.value;
 
     if (row) {
-      document.getElementById(row.cellId)?.scrollIntoView({block: 'nearest'});
+      scrollRowIntoView(document.getElementById(row.cellId));
     }
+  }
+
+  /** Scrolls to the whole row, since the highlight is painted on it rather than on the cell or item. */
+  function scrollRowIntoView(el: HTMLElement | null): void {
+    el?.closest('[role="row"]')?.scrollIntoView({block: 'nearest'});
   }
 
   function moveSelection(step: number): void {
@@ -634,7 +639,7 @@
     event.preventDefault();
     const target = itemElement(index + (event.key === 'ArrowDown' ? 1 : -1));
     target?.focus();
-    target?.scrollIntoView({block: 'nearest'});
+    scrollRowIntoView(target);
   }
 
   /**
@@ -898,6 +903,7 @@
     overflow-y: auto;
     padding-block: var(--c-spacing-sm);
     padding-inline: calc(var(--c-modal-padding) - var(--c-spacing-md));
+    scroll-padding-block: var(--c-spacing-sm);
   }
 
   .command-palette__empty {
