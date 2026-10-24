@@ -1156,13 +1156,18 @@ readonly class ElementHtml
             $uiLabel();
 
         // show the draft name?
-        if (($config['showDraftName'] ?? true) && $element->getIsDraft() && ! $element->isProvisionalDraft && ! $element->getIsUnpublishedDraft()) {
-            /** @var ElementInterface $element */
-            $content .= Html::tag(
+        $draftLabel = ($config['showDraftName'] ?? true) && $element->getIsDraft() && ! $element->isProvisionalDraft && ! $element->getIsUnpublishedDraft()
+            ? Html::tag(
                 'span',
                 $element->draftName ? Html::encode($element->draftName) : t('Draft'),
                 ['class' => 'context-label'],
-            );
+            )
+            : null;
+
+        // With a draft label, the title truncates on its own, so the label can
+        // wrap below it rather than being cut off.
+        if ($draftLabel !== null) {
+            $content = ($content !== '' ? Html::tag('craft-truncate', $content) : '').$draftLabel;
         }
 
         // the inner span is needed for `text-overflow: ellipsis` (e.g. within breadcrumbs)
@@ -1207,7 +1212,7 @@ readonly class ElementHtml
             return '';
         }
 
-        return Html::tag('craft-truncate', $content, [
+        return Html::tag($draftLabel !== null ? 'span' : 'craft-truncate', $content, [
             'id' => sprintf('%s-label', $config['id']),
             'class' => 'label',
         ]);

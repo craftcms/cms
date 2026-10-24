@@ -240,6 +240,31 @@ ul.path > li:not(:last-child)::after {
   border-radius: var(--c-radius-full);
 }
 
+.label:has(.context-label),
+.label-link:has(.context-label) {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+}
+
+:is(.label-link, .label-link > span):has(> .context-label) {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--c-spacing-sm);
+  min-width: 0;
+  max-width: 100%;
+
+  & > .context-label {
+    display: block;
+    max-width: 100%;
+    margin-inline-start: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 /**
 CP Checkbox Select items with a bare checkbox and label, as legacy code renders
  */
