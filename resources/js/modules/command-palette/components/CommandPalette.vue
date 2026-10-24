@@ -783,6 +783,9 @@
           <span class="command-palette__hint-item">
             <kbd>Tab</kbd> {{ t('Focus item') }}
           </span>
+          <span class="command-palette__hint-item">
+            <kbd>Esc</kbd> {{ query ? t('Clear search') : t('Close') }}
+          </span>
         </p>
         <div class="sr-only" role="status">{{ statusMessage }}</div>
       </div>
