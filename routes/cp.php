@@ -131,6 +131,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::prefix('command-palette')->name('command-palette.')->group(function () {
         Route::get('/', [CommandPaletteController::class, 'index'])->name('index');
         Route::get('search/{provider}', [CommandPaletteController::class, 'search'])->name('search');
+        Route::get('docs', [CommandPaletteController::class, 'docs'])->name('docs');
     });
 
     Route::middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {

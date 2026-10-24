@@ -52,6 +52,12 @@ class CommandPaletteItem extends Component
 
     public string $label = '';
 
+    /**
+     * The label as HTML, for inline formatting such as code. It's output as
+     * is, so it must already be safe. {@see $label} is still what's searched.
+     */
+    public ?string $labelHtml = null;
+
     /** Secondary text shown after the label, such as where a page lives. */
     public ?string $description = null;
 
@@ -63,6 +69,12 @@ class CommandPaletteItem extends Component
 
     /** The language {@see $hint} is in, when it differs from the control panel's. */
     public ?string $hintLang = null;
+
+    /**
+     * The hint as HTML, for inline formatting such as code. It's output as is,
+     * so it must already be safe. {@see $hint} is still what's searched.
+     */
+    public ?string $hintHtml = null;
 
     public ?string $icon = null;
 
@@ -185,6 +197,22 @@ class CommandPaletteItem extends Component
     public function label(string $label): static
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    /** @see $labelHtml */
+    public function labelHtml(?string $html): static
+    {
+        $this->labelHtml = $html;
+
+        return $this;
+    }
+
+    /** @see $hintHtml */
+    public function hintHtml(?string $html): static
+    {
+        $this->hintHtml = $html;
 
         return $this;
     }

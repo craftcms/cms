@@ -184,10 +184,24 @@
             @click="onClick(row, $event)"
             @focus="emit('select', row.index)"
           >
-            <span class="command-palette-row__label">{{ row.item.label }}</span>
+            <span
+              v-if="row.item.labelHtml"
+              class="command-palette-row__label"
+              v-html="row.item.labelHtml"
+            ></span>
+            <span v-else class="command-palette-row__label">{{
+              row.item.label
+            }}</span>
           </component>
           <span
-            v-if="row.item.hint"
+            v-if="row.item.hintHtml"
+            :id="`${row.cellId}-hint`"
+            class="command-palette-row__hint"
+            :lang="row.item.hintLang ?? undefined"
+            v-html="row.item.hintHtml"
+          ></span>
+          <span
+            v-else-if="row.item.hint"
             :id="`${row.cellId}-hint`"
             class="command-palette-row__hint"
             :lang="row.item.hintLang ?? undefined"

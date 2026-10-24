@@ -314,6 +314,27 @@ describe('CommandPalette', () => {
     expect(isCommandPaletteOpen.value).toBe(false);
   });
 
+  it('lists docs search from the start, opening it with its own search box focused', async () => {
+    const input = await open();
+
+    for (
+      let i = 0;
+      i < 50 && selected(input) !== 'Search Craft CMS documentation';
+      i++
+    ) {
+      press(input, 'ArrowDown');
+      await nextTick();
+    }
+    expect(selected(input)).toBe('Search Craft CMS documentation');
+
+    press(input, 'Enter');
+    await flush();
+
+    expect(document.activeElement?.getAttribute('aria-label')).toBe(
+      'Search Craft CMS documentation'
+    );
+  });
+
   it('focuses the search box when its surrounding padding is pressed', async () => {
     const input = await open();
     press(input, 'Tab');

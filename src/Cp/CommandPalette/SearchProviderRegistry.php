@@ -8,7 +8,6 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider;
 use CraftCms\Cms\Cp\CommandPalette\SearchProviders\ActionsSearchProvider;
 use CraftCms\Cms\Cp\CommandPalette\SearchProviders\ElementSearchProvider;
-use CraftCms\Cms\Cp\CommandPalette\SearchProviders\GlossarySearchProvider;
 use CraftCms\Cms\Cp\CommandPalette\SearchProviders\PagesSearchProvider;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Elements\User;
@@ -58,7 +57,6 @@ class SearchProviderRegistry
             new ElementSearchProvider(Entry::class),
             new ElementSearchProvider(Asset::class),
             new ElementSearchProvider(User::class),
-            GlossarySearchProvider::class,
         );
     }
 

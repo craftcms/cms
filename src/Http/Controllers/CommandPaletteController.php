@@ -8,8 +8,12 @@ use CraftCms\Cms\Cp\CommandPalette\Actions;
 use CraftCms\Cms\Cp\CommandPalette\CommandPalette;
 use CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem;
 use CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider;
+use CraftCms\Cms\Cp\CommandPalette\DocsSearch;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+use function CraftCms\Cms\t;
 
 /**
  * Feeds the control panel’s command palette.
@@ -69,6 +73,22 @@ readonly class CommandPaletteController
                 break;
             }
         }
+
+        return new JsonResponse([
+            'results' => collect($results)->toArray(),
+        ]);
+    }
+
+    /** Searches the Craft CMS documentation on craftcms.com, for the palette's docs search view. */
+    public function docs(Request $request, DocsSearch $docsSearch): JsonResponse
+    {
+        $request->validate([
+            'query' => ['required', 'string', 'max:255'],
+        ]);
+
+        $results = $docsSearch->search($request->string('query')->trim()->value());
+
+        abort_if($results === null, Response::HTTP_BAD_GATEWAY, t('Couldn’t search the Craft CMS documentation.'));
 
         return new JsonResponse([
             'results' => collect($results)->toArray(),
