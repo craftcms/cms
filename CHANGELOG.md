@@ -155,6 +155,7 @@
 - Fixed a bug where sections couldn’t be chosen in the “Move to” modal. Sections are now listed as radio buttons.
 - Fixed a bug where asset upload conflict prompts used unstyled radio buttons and checkboxes.
 - Fixed a bug where nested element fields’ “Paste” buttons and relational fields’ “Copy” menu items were missing their icons.
+- Fixed a bug where buttons didn’t show an inset shadow while pressed.
 
 ### Content Management
 

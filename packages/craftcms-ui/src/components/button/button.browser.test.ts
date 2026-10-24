@@ -722,3 +722,12 @@ describe('craft-button selected state', () => {
     }
   );
 });
+
+it('shows an inset shadow while pressed', async () => {
+  await loadTokens();
+  document.body.innerHTML = `<craft-button class="is-active">Add</craft-button>`;
+  const button = document.querySelector('craft-button') as CraftButton;
+  await button.updateComplete;
+
+  expect(getComputedStyle(button).boxShadow).toContain('inset');
+});
