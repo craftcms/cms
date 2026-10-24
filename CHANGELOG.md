@@ -103,6 +103,7 @@
 - Large thumbnails in relational fields, such as Assets fields with the “Large Thumbnails” view mode, now have rounded corners, matching card thumbnails.
 - “Paste” buttons now echo Craft 5’s, with a fuchsia duplicate icon and a fuchsia-to-indigo gradient border and tint.
 - Details for the issues that block an element’s deletion now list the related elements as chips, rather than an embedded element index.
+- Draft name labels in element chips now drop below the element’s title when they don’t fit beside it.
 - Fixed a bug where Language and Formatting Locale options’ hints were shown in the current language, rather than in each option’s own language.
 - Fixed a bug where control panel pages without a title had extra space above their content. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where edit pages for elements without a title, such as nested entries whose entry type has no Title field, had a blank page title. They’re now titled “Untitled {type}”. ([#20008](https://github.com/craftcms/cms/pull/20008))
