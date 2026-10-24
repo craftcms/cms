@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider;
 use CraftCms\Cms\Cp\CommandPalette\SearchProviders\ActionsSearchProvider;
 use CraftCms\Cms\Cp\CommandPalette\SearchProviders\ElementSearchProvider;
 use CraftCms\Cms\Cp\CommandPalette\SearchProviders\PagesSearchProvider;
+use CraftCms\Cms\Cp\CommandPalette\SearchProviders\ReleaseSearchProvider;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
@@ -57,6 +58,7 @@ class SearchProviderRegistry
             new ElementSearchProvider(Entry::class),
             new ElementSearchProvider(Asset::class),
             new ElementSearchProvider(User::class),
+            ReleaseSearchProvider::class,
         );
     }
 

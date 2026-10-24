@@ -15,8 +15,6 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Release\Enums\ReleaseStatus;
-use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -44,9 +42,6 @@ use function CraftCms\Cms\t;
 #[Scoped]
 class Pages
 {
-    /** How many of the most recent unpublished releases are listed. */
-    private const int RELEASE_LIMIT = 50;
-
     /** @var array<int|string, list<CommandPaletteItem>> */
     private array $pages = [];
 
@@ -78,7 +73,6 @@ class Pages
             ...$this->navPages($this->navigation->getTree()),
             ...$this->accountPages($user),
             ...$this->siteRoots(),
-            ...$this->releasePages($user),
             ...($user->isAdmin() ? $this->settingsPages() : []),
         ];
     }
@@ -160,31 +154,6 @@ class Pages
                 ->icon(Icons::earth())
                 ->href($site->getBaseUrl())
                 ->external())
-            ->values()
-            ->all();
-    }
-
-    /** @return list<CommandPaletteItem> */
-    private function releasePages(CraftUser $user): array
-    {
-        if (
-            ! Edition::get()->supportsReleases() ||
-            (! Sections::getTotalEditableSections() && ! $user->can('manageReleases'))
-        ) {
-            return [];
-        }
-
-        return Release::query()
-            ->whereNot('status', ReleaseStatus::Published)
-            ->orderByDesc('dateCreated')
-            ->limit(self::RELEASE_LIMIT)
-            ->get()
-            ->map(fn (Release $release) => new CommandPaletteItem()
-                ->id("release-$release->id")
-                ->label($release->name)
-                ->description(t('Releases'))
-                ->icon('rocket')
-                ->href(route('craft.cp.releases.show', ['release' => $release->id])))
             ->values()
             ->all();
     }
