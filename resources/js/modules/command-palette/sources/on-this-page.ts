@@ -513,7 +513,7 @@ let targetIds = 0;
  */
 export const onThisPageProvider: CommandPaletteProvider = {
   handle: 'on-this-page',
-  thisPage: true,
+  displayFirst: true,
   label: t('On This Page'),
   search(query: string): CommandPaletteItem[] {
     const seen = new Set<HTMLElement>();

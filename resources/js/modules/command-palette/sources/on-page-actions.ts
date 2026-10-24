@@ -263,7 +263,7 @@ export function createPageActionsProvider(
 ): CommandPaletteProvider {
   return {
     handle: 'page-actions',
-    thisPage: true,
+    displayFirst: true,
     label: t('Actions'),
     search(term: string): CommandPaletteItem[] {
       const normalizedTerm = normalize(term);
