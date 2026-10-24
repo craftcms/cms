@@ -73,7 +73,9 @@
   function itemAttrs(id: string | number): Record<string, unknown> | undefined {
     const element = props.data.find((candidate) => candidate.id === id);
 
-    return element ? props.itemBehavior?.attrs?.(element) : undefined;
+    return element
+      ? {'data-id': String(id), ...props.itemBehavior?.attrs?.(element)}
+      : undefined;
   }
 
   function cardAttrs(id: string | number): Record<string, unknown> | undefined {

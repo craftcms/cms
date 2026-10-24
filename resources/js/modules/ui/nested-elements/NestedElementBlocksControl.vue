@@ -1711,9 +1711,9 @@
         <craft-button
           v-if="pasteable.length"
           type="button"
-          variant="dashed"
-          icon="duplicate"
-          class="mt-sm"
+          variant="outline"
+          icon="custom-icons/duplicate"
+          class="paste-btn mt-sm"
           :loading="pasting"
           :disabled="busy"
           @click.stop.prevent="pasteBlocks()"

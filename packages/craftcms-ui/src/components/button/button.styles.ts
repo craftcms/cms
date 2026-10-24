@@ -149,7 +149,8 @@ export default css`
   :host(.is-active:not(:disabled):not(.loading)) {
     color: var(--_active-color);
     background-color: var(--_active-background-color);
-    box-shadow: inset 0 1px 3px var(--c-color-mix-active);
+    box-shadow: inset 0 1px 3px
+      color-mix(in oklab, var(--c-color-mix-active), transparent);
   }
 
   /* Selected state (e.g. inside a radio button-group): show the loud fill. */
