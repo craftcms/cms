@@ -458,7 +458,7 @@ it('lists a draft whose section was deleted and lets release managers remove it'
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes.0.props.rows.0.title.html', 'Controller change<span class="context-label">Controller draft</span>')
-            ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'The live element has been deleted.'))
+            ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'The entry has been deleted.'))
             ->where('ui.nodes.0.props.rows.0._deletable', true));
 
     actingAs(UserModel::factory()->withPermissions(['accessCp', 'manageReleases'])->createElement());
