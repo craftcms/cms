@@ -6,9 +6,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\CommandPalette\ActionRegistry;
 use CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem;
 use CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider;
+use CraftCms\Cms\Cp\CommandPalette\DocsSearch;
 use CraftCms\Cms\Cp\CommandPalette\PageRegistry;
 use CraftCms\Cms\Cp\CommandPalette\SearchProviderRegistry;
-use CraftCms\Cms\Cp\CommandPalette\SearchProviders\GlossarySearchProvider;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -415,42 +415,69 @@ it('offers to publish and schedule releases that can be published', function () 
         ]);
 });
 
-it('finds glossary terms, fetching the glossary once and keeping its links to the web', function () {
+it('searches the current Craft CMS docs on craftcms.com, linking out to what it finds', function () {
+    $docs = sprintf('https://craftcms.com/docs/%d.x', (int) Cms::VERSION);
+
     Http::fake([
-        GlossarySearchProvider::ENDPOINT => Http::response([
+        DocsSearch::ENDPOINT.'*' => Http::response([
             [
-                'title' => 'Entry',
-                'slug' => 'entry',
-                'url' => 'https://craftcms.com/glossary/entry',
-                'summaryPlain' => 'A piece of content.',
-                'docsLinks' => [
-                    ['title' => 'Entries', 'url' => 'https://craftcms.com/docs/entries'],
-                    ['title' => 'Sneaky', 'url' => 'javascript:alert(1)'],
-                ],
+                'title' => 'Matrix Fields',
+                'url' => "$docs/reference/field-types/matrix",
+                'type' => 'Reference / Custom Field Types',
+                'summaryPlain' => 'Matrix fields   manage [nested entries](/docs/entries).',
             ],
-            ['title' => 'Asset', 'slug' => 'asset', 'url' => 'https://craftcms.com/glossary/asset'],
+            [
+                'title' => 'Matrix Fields',
+                'url' => sprintf('https://craftcms.com/docs/%d.x/matrix', (int) Cms::VERSION - 1),
+                'type' => 'Craft CMS (older)',
+            ],
+            ['title' => 'Matrix', 'url' => 'https://craftcms.com/docs/commerce/5.x/matrix', 'type' => 'Craft Commerce'],
+            ['title' => 'Matrix', 'url' => 'https://craftcms.com/docs/getting-started-tutorial/matrix', 'type' => 'Tutorial'],
+            [
+                'title' => '`craft.sections` & <b>more</b>',
+                'url' => 'https://craftcms.com/knowledge-base/craft-sections',
+                'type' => 'Knowledge Base Article',
+                'summaryPlain' => 'Get sections using craft.sections.',
+                'summaryHtml' => 'Get <a href="/docs">sections</a> using <code onclick="x()">craft.sections</code>.',
+            ],
+            ['title' => 'Matrix', 'url' => 'https://craftcms.com/glossary/matrix', 'type' => 'Term'],
+            ['title' => 'Sneaky', 'url' => 'javascript:alert(1)', 'type' => 'Term'],
         ]),
     ]);
 
-    $results = paletteSearch('glossary', 'entry');
-    paletteSearch('glossary', 'asset');
+    $results = getJson(route('craft.cp.command-palette.docs', ['query' => 'matrix']))
+        ->assertOk()
+        ->json('results');
+    getJson(route('craft.cp.command-palette.docs', ['query' => 'Matrix']))->assertOk();
 
-    expect($results)->toHaveCount(1)
-        ->and($results[0]['label'])->toBe('Entry')
-        ->and($results[0]['view'])->toBe([
-            'type' => 'glossary',
-            'definition' => 'A piece of content.',
-            'url' => 'https://craftcms.com/glossary/entry',
-            'docsLinks' => [['title' => 'Entries', 'url' => 'https://craftcms.com/docs/entries']],
-        ]);
+    expect($results)->toHaveCount(3)
+        ->and($results[0])->toMatchArray([
+            'label' => 'Matrix Fields',
+            'hint' => 'Matrix fields manage nested entries.',
+            'description' => 'Reference / Custom Field Types',
+            'href' => "$docs/reference/field-types/matrix",
+            'external' => true,
+        ])
+        ->and($results[1])->toMatchArray([
+            'label' => 'craft.sections & <b>more</b>',
+            'labelHtml' => '<code>craft.sections</code> &amp; &lt;b&gt;more&lt;/b&gt;',
+            'hint' => 'Get sections using craft.sections.',
+            'hintHtml' => 'Get sections using <code>craft.sections</code>.',
+            'description' => 'Knowledge Base',
+        ])
+        ->and($results[2]['description'])->toBe('Glossary');
 
-    Http::assertSentCount(1);
+    Http::assertSentCount(2);
+    Http::assertSent(fn ($request) => $request->url() === DocsSearch::ENDPOINT.'?query=matrix');
+    Http::assertSent(fn ($request) => $request->url() === DocsSearch::ENDPOINT.'?query=matrix&scopes='.urlencode(sprintf('docs/%d.x', (int) Cms::VERSION)));
 });
 
-it('finds no glossary terms when craftcms.com can’t be reached', function () {
-    Http::fake([GlossarySearchProvider::ENDPOINT => Http::response(null, 503)]);
+it('says when the Craft CMS docs can’t be searched', function () {
+    Http::fake([DocsSearch::ENDPOINT.'*' => Http::response(null, 503)]);
 
-    expect(paletteSearch('glossary', 'entry'))->toBe([]);
+    getJson(route('craft.cp.command-palette.docs', ['query' => 'matrix']))
+        ->assertStatus(502)
+        ->assertJsonPath('message', 'Couldn’t search the Craft CMS documentation.');
 });
 
 it('lets plugins register pages, actions and search providers', function () {
@@ -505,11 +532,11 @@ it('lets plugins remove search providers, pages and actions', function () {
 
     app(PageRegistry::class)->remove('plugin');
     app(ActionRegistry::class)->remove('plugin');
-    app(SearchProviderRegistry::class)->remove('glossary');
+    app(SearchProviderRegistry::class)->remove('elements-user');
 
     $index = getJson(route('craft.cp.command-palette.index'))->assertOk();
 
-    expect(collect($index->json('providers'))->pluck('handle'))->not->toContain('glossary')
+    expect(collect($index->json('providers'))->pluck('handle'))->not->toContain('elements-user')
         ->and(collect($index->json('actions'))->pluck('id'))->not->toContain('plugin-action')
         ->and(collect(paletteSearch('pages', 'plugin reports'))->pluck('id'))->not->toContain('plugin-page');
 });

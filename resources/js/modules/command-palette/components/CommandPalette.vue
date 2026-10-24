@@ -56,14 +56,14 @@
   } from '../types';
   import {useCommandPaletteSearch} from '../useCommandPaletteSearch';
   import ConfirmView from './ConfirmView.vue';
-  import GlossaryView from './GlossaryView.vue';
+  import DocsSearchView from './DocsSearchView.vue';
   import ResultSection, {type ResultRow} from './ResultSection.vue';
   import ShortcutsView from './ShortcutsView.vue';
   import UiFormView from './UiFormView.vue';
 
   const BUILT_IN_VIEWS: Record<string, Component> = {
     confirm: ConfirmView,
-    glossary: GlossaryView,
+    docs: DocsSearchView,
     shortcuts: ShortcutsView,
     ui: UiFormView,
   };
@@ -89,6 +89,7 @@
     : t('Enter');
   const results = useTemplateRef<HTMLElement>('results');
   const viewHeading = useTemplateRef<HTMLElement>('viewHeading');
+  const viewBody = useTemplateRef<HTMLElement>('viewBody');
 
   const query = shallowRef('');
   const selectedIndex = shallowRef(0);
@@ -400,7 +401,12 @@
     await nextTick();
 
     if (current) {
-      viewHeading.value?.focus();
+      // A view can start somewhere other than its heading, such as its own
+      // search box.
+      (
+        viewBody.value?.querySelector<HTMLElement>('[data-autofocus]') ??
+        viewHeading.value
+      )?.focus();
     } else if (previous && isCommandPaletteOpen.value) {
       input.value?.focus();
     }
@@ -787,7 +793,7 @@
         <div class="sr-only" role="status">{{ statusMessage }}</div>
       </div>
 
-      <div v-if="activeView" class="command-palette__view">
+      <div v-if="activeView" ref="viewBody" class="command-palette__view">
         <div class="command-palette__view-header">
           <craft-button
             type="button"

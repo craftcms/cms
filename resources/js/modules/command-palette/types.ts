@@ -24,9 +24,13 @@ export interface CommandPaletteView {
 export interface CommandPaletteItem {
   id: string;
   label: string;
+  /** The label as HTML, for inline formatting such as code. Output as is. */
+  labelHtml?: string | null;
   description?: string | null;
   /** Supporting text below the label, searched along with it. */
   hint?: string | null;
+  /** The hint as HTML, for inline formatting such as code. Output as is. */
+  hintHtml?: string | null;
   /** The language the hint is in, when it differs from the control panel's. */
   hintLang?: string | null;
   icon?: string | null;
