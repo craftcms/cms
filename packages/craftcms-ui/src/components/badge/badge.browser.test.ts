@@ -84,3 +84,24 @@ it.each([
     badge.shadowRoot!.querySelector('.badge')!.getBoundingClientRect().height
   ).toBe(document.querySelector('.probe')!.getBoundingClientRect().height);
 });
+
+it('lifts white off the page in the dark theme, and draws black a shade darker', async () => {
+  const fill = async (theme: string, color: string) =>
+    getComputedStyle(
+      (await render(theme, color)).shadowRoot!.querySelector('.badge')!
+    ).backgroundColor;
+  const againstBlack = async (theme: string, color: string) =>
+    contrast(await fill(theme, color), '#000');
+
+  document.body.innerHTML = `<div data-theme="dark"><span class="probe" style="color: var(--c-surface-default)"></span></div>`;
+  const page = contrast(
+    getComputedStyle(document.querySelector('.probe')!).color,
+    '#000'
+  );
+
+  expect(await againstBlack('dark', 'white')).toBeGreaterThan(page);
+  expect(await againstBlack('light', 'white')).toBe(21);
+  expect(await againstBlack('dark', 'black')).toBeLessThan(
+    await againstBlack('light', 'black')
+  );
+});
