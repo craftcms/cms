@@ -11,7 +11,7 @@ use Laravel\Passport\Passport;
 it('manages fields through MCP while preserving omitted attributes and merging settings', function (): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $call = fn (string $operation, array $arguments) => McpRequest::send($this, 'tools/call', [
         'name' => "configuration.$operation",
         'arguments' => ['type' => 'fields', ...$arguments],
