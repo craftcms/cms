@@ -559,49 +559,56 @@
         }
         break;
       case 'Tab':
-        if (!event.shiftKey && selectedRow.value) {
-          const element = itemElement(selectedRow.value.index);
-
-          if (element) {
-            event.preventDefault();
-            element.focus();
-          }
-        }
+        cycleTabFocus(event);
         break;
     }
   }
 
   /**
-   * Tab moves through each result and then its menu button, in order. Moved
-   * by hand because Safari leaves links out of the Tab order by default,
-   * which skipped every result that goes to a page and landed on its menu.
+   * Tab and Shift+Tab cycle through the search box, the selected result, and
+   * its menu button; the arrow keys move between results. Moved by hand
+   * because Safari leaves links out of the Tab order by default, and because
+   * Tab back would otherwise land on the search field rather than its input.
    */
-  function moveTabFocus(event: KeyboardEvent): void {
-    if (event.altKey || event.ctrlKey || event.metaKey || !results.value) {
+  function cycleTabFocus(event: KeyboardEvent): void {
+    if (event.altKey || event.ctrlKey || event.metaKey || !input.value) {
       return;
     }
 
-    const stops = [
-      ...results.value.querySelectorAll<HTMLElement>(
-        '[data-command-palette-index], .command-palette-row__actions craft-button'
-      ),
-    ];
-    const target = event.target as Node | null;
+    const target = event.target as HTMLElement | null;
+    const row = (
+      target === input.value && selectedRow.value
+        ? itemElement(selectedRow.value.index)
+        : target
+    )?.closest<HTMLElement>('.command-palette-row');
+    const item = row?.querySelector<HTMLElement>(
+      '[data-command-palette-index]'
+    );
+
+    if (!item) {
+      return;
+    }
+
+    const menuButton = row!.querySelector<HTMLElement>(
+      '.command-palette-row__actions [slot="invoker"]'
+    );
+    const stops = [input.value, item, ...(menuButton ? [menuButton] : [])];
     const index = stops.findIndex(
       (stop) => stop === target || (target && stop.contains(target))
     );
-    const next = index === -1 ? null : stops[index + (event.shiftKey ? -1 : 1)];
 
-    if (next) {
-      event.preventDefault();
-      next.focus();
+    if (index === -1) {
+      return;
     }
+
+    event.preventDefault();
+    stops.at((index + (event.shiftKey ? -1 : 1)) % stops.length)!.focus();
   }
 
   /** Up and down move between the results once focus is among them. */
   function onResultsKeydown(event: KeyboardEvent): void {
     if (event.key === 'Tab') {
-      moveTabFocus(event);
+      cycleTabFocus(event);
 
       return;
     }
