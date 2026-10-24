@@ -3,9 +3,11 @@
    * One labelled run of results — Recents, Actions, or Results.
    *
    * A grid, as the popup of the palette's search combobox: each row has the
-   * item itself, a menu of its secondary actions right after it when it has
-   * any, and its description at the end, which describes the item for screen
-   * readers too. The item's hit area covers the whole row, menu excepted.
+   * item itself, a menu of its secondary actions right after its label when
+   * it has any, and its description at the end. The item's hint sits below
+   * its label, clear of the menu, and the hint and description both describe
+   * the item for screen readers. The item's hit area covers the whole row,
+   * menu excepted.
    * The search input keeps focus while the arrow keys move the selection,
    * which it points to with `aria-activedescendant`; Tab moves into the rows
    * themselves.
@@ -38,6 +40,16 @@
     /** A menu action was chosen, and the palette should get out of its way. */
     (event: 'dismiss'): void;
   }>();
+
+  /** The hint and description, which screen readers read after the item's label. */
+  function describedBy(row: ResultRow): string | undefined {
+    const ids = [
+      row.item.hint ? `${row.cellId}-hint` : null,
+      row.item.description ? `${row.cellId}-description` : null,
+    ].filter((id) => id !== null);
+
+    return ids.length ? ids.join(' ') : undefined;
+  }
 
   /** Items with nothing to do but go somewhere are links; everything else is a button. */
   function isLink(item: CommandPaletteItem): boolean {
@@ -139,6 +151,23 @@
         :aria-selected="row.index === selectedIndex ? 'true' : 'false'"
       >
         <div role="gridcell" :id="row.cellId" class="command-palette-row__cell">
+          <span class="command-palette-row__icon" aria-hidden="true">
+            <span
+              v-if="row.item.thumbHtml"
+              class="command-palette-row__thumb"
+              v-html="row.item.thumbHtml"
+            ></span>
+            <span
+              v-else-if="row.item.iconSvg"
+              class="command-palette-row__svg"
+              v-html="row.item.iconSvg"
+            ></span>
+            <craft-icon
+              v-else
+              :name="row.item.icon ?? 'arrow-right'"
+              :style="iconColorStyle(row.item.iconColor)"
+            ></craft-icon>
+          </span>
           <component
             :is="
               isLink(row.item) && !row.item.external
@@ -151,42 +180,19 @@
             :type="isLink(row.item) ? undefined : 'button'"
             class="command-palette-row__item"
             :data-command-palette-index="row.index"
-            :aria-describedby="
-              row.item.description ? `${row.cellId}-description` : undefined
-            "
+            :aria-describedby="describedBy(row)"
             @click="onClick(row, $event)"
             @focus="emit('select', row.index)"
           >
-            <span class="command-palette-row__icon">
-              <span
-                v-if="row.item.thumbHtml"
-                class="command-palette-row__thumb"
-                v-html="row.item.thumbHtml"
-              ></span>
-              <span
-                v-else-if="row.item.iconSvg"
-                class="command-palette-row__svg"
-                aria-hidden="true"
-                v-html="row.item.iconSvg"
-              ></span>
-              <craft-icon
-                v-else
-                :name="row.item.icon ?? 'arrow-right'"
-                :style="iconColorStyle(row.item.iconColor)"
-              ></craft-icon>
-            </span>
-            <span class="command-palette-row__text">
-              <span class="command-palette-row__label">{{
-                row.item.label
-              }}</span>
-              <span
-                v-if="row.item.hint"
-                class="command-palette-row__hint"
-                :lang="row.item.hintLang ?? undefined"
-                >{{ row.item.hint }}</span
-              >
-            </span>
+            <span class="command-palette-row__label">{{ row.item.label }}</span>
           </component>
+          <span
+            v-if="row.item.hint"
+            :id="`${row.cellId}-hint`"
+            class="command-palette-row__hint"
+            :lang="row.item.hintLang ?? undefined"
+            >{{ row.item.hint }}</span
+          >
         </div>
         <div role="gridcell" class="command-palette-row__actions">
           <ActionMenu
@@ -224,12 +230,24 @@
     margin-block-start: var(--c-spacing-sm);
   }
 
+  /*
+   * The icon spans both lines; the label, the menu and the description share
+   * the first, and the hint has the second to itself. The hint reaches into
+   * the description's flexible track, so it never widens the label's and
+   * pushes the menu along.
+   */
   .command-palette-row {
     --_radius: var(--c-radius-sm);
     position: relative;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto fit-content(60%) auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-content: center;
     align-items: center;
-    gap: var(--c-spacing-xs);
+    column-gap: var(--c-spacing-xs);
+    min-block-size: var(--c-size-touch-target);
+    padding-block: var(--c-spacing-xs);
+    padding-inline: var(--c-spacing-md);
     border-radius: var(--_radius);
   }
 
@@ -268,26 +286,21 @@
     pointer-events: none;
   }
 
-  /*
-   * Keeps its label on one line while the path wraps instead, up to 60% of
-   * the row, where a longer label wraps.
-   */
   .command-palette-row__cell {
-    flex: 0 0 auto;
-    min-width: 0;
-    max-inline-size: 60%;
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    align-items: center;
   }
 
   .command-palette-row__item {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-sm);
-    width: 100%;
-    min-height: var(--c-size-touch-target);
-    padding-block: var(--c-spacing-xs);
-    padding-inline: var(--c-spacing-md);
+    grid-column: 2;
+    grid-row: 1;
+    min-inline-size: 0;
+    padding: 0;
     border: 0;
-    border-radius: inherit;
     background: none;
     color: inherit;
     font: inherit;
@@ -314,12 +327,20 @@
   }
 
   .command-palette-row__icon {
+    grid-column: 1;
+    grid-row: 1;
+    margin-inline-end: var(--c-spacing-xs);
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
     width: 1.5rem;
     height: 1.5rem;
+  }
+
+  .command-palette-row:has(.command-palette-row__hint)
+    .command-palette-row__icon {
+    grid-row: 1 / -1;
   }
 
   .command-palette-row__thumb,
@@ -346,17 +367,13 @@
     fill: currentColor;
   }
 
-  .command-palette-row__text {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-
   .command-palette-row__label {
     overflow-wrap: anywhere;
   }
 
   .command-palette-row__hint {
+    grid-column: 2 / -1;
+    grid-row: 2;
     font-size: var(--c-text-sm);
     color: var(--c-text-quiet);
     overflow-wrap: anywhere;
@@ -368,12 +385,8 @@
 
   /* Takes whatever room the label leaves. */
   .command-palette-row__description {
-    flex: 1 1 auto;
-    min-inline-size: 0;
-    margin-inline-start: auto;
-    /* Keeps a path that wraps off the row's edges. */
-    padding-block: var(--c-spacing-sm);
-    padding-inline-end: var(--c-spacing-md);
+    grid-column: 4;
+    grid-row: 1;
     font-size: var(--c-text-sm);
     color: var(--c-text-quiet);
     text-align: end;
@@ -384,14 +397,19 @@
     color: inherit;
   }
 
-  /* A flex box, so the menu button centers on the row instead of sitting on a line box. */
+  /* A flex box, so the menu button centers on the label's line instead of sitting on a line box. */
   .command-palette-row__actions {
+    grid-column: 3;
+    grid-row: 1;
     display: flex;
     align-items: center;
-    align-self: stretch;
     position: relative;
     z-index: 1;
-    flex-shrink: 0;
+    --c-focus-outline-offset: calc(var(--c-focus-outline-width) * -1);
+  }
+
+  .command-palette-row--selected .command-palette-row__actions {
+    --c-color-focus-outline: currentColor;
   }
 
   @media (forced-colors: active) {
