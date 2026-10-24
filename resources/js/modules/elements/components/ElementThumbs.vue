@@ -216,6 +216,7 @@
       <li
         v-for="(element, thumbIdx) in data"
         :key="element.id"
+        :data-id="String(element.id)"
         :ref="(el) => setItemRef(el as HTMLElement, element.id)"
         v-bind="itemBehavior?.attrs?.(element)"
         :tabindex="selectable ? 0 : undefined"
@@ -404,8 +405,8 @@
   // tint from it. As white cards do, point it at the tile's own surface, border
   // and text instead.
   .element {
-    --c-color-fill-quiet: var(--c-surface-raised);
-    --c-color-fill-loud: var(--c-surface-raised);
+    --c-color-fill-quiet: var(--c-surface-white);
+    --c-color-fill-loud: var(--c-surface-white);
     --c-color-border-loud: var(--c-border-raised-selected);
     --c-color-on-quiet: var(--c-text-default);
     --c-color-on-loud: var(--c-text-default);

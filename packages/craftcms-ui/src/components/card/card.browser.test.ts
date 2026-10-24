@@ -137,9 +137,9 @@ it('fits its border inside a stretched grid cell', async () => {
   expect(inner.bottom).toBe(host.bottom);
 });
 
-it('divides a white card’s header and footer in its edge color', async () => {
+it('divides a white card’s header and footer with the table border color', async () => {
   document.body.innerHTML = `
-    <span class="probe" style="border: 1px solid var(--c-color-white-edge)"></span>
+    <span class="probe" style="border: 1px solid var(--c-table-border-color)"></span>
     <craft-card data-color="white">
       <span slot="label">Header</span>
       Body
@@ -156,6 +156,7 @@ it('divides a white card’s header and footer in its edge color', async () => {
 
   expect(part('.card__header').borderBottomColor).toBe(expected);
   expect(part('.card__footer').borderTopColor).toBe(expected);
+  expect(part('.card').borderTopColor).not.toBe(expected);
 });
 
 it('styles a selected white card like a selected chip', async () => {
@@ -187,85 +188,28 @@ it('styles a selected white card like a selected chip', async () => {
   expect(part('.card__footer').borderTopColor).toBe(divider);
 });
 
-const surfaces = [
-  ['card', 'data-color', ['.card']],
-  ['chip', 'data-color', ['.cp-chip']],
-  ['badge', 'fill', ['.badge']],
-] as const;
-
-/** How a white or black surface looks: its parts' colors, and its contents'. */
-async function looksOf(
-  element: HTMLElement & {updateComplete: Promise<unknown>},
-  parts: readonly string[]
-): Promise<string[]> {
-  await element.updateComplete;
-
-  return [
-    ...parts.flatMap((selector) => {
-      const style = getComputedStyle(
-        element.shadowRoot!.querySelector(selector)!
-      );
-      return [style.backgroundColor, style.color, style.borderTopColor];
-    }),
-    getComputedStyle(element.querySelector('.content')!).colorScheme,
-  ];
-}
-
-it.each(surfaces)(
-  'keeps a white %s white and a black one black on a light page, however they’re nested',
-  async (name, attribute, parts) => {
-    const tag = `craft-${name}`;
-    document.body.innerHTML = `
-      <${tag} ${attribute}="white"><span class="content">White</span></${tag}>
-      <${tag} ${attribute}="black"><span class="content">Black</span></${tag}>
-      <craft-card data-color="black">
-        <${tag} ${attribute}="white"><span class="content">White in black</span></${tag}>
-      </craft-card>
+it('gives a white card the white surface and text of the dark theme', async () => {
+  document.body.innerHTML = `
+    <div data-theme="dark">
+      <span class="probe" style="background-color: var(--c-surface-white); color: var(--c-text-default)"></span>
       <craft-card data-color="white">
-        <${tag} ${attribute}="black"><span class="content">Black in white</span></${tag}>
-      </craft-card>`;
-    await Promise.all(
-      [...document.querySelectorAll<CraftCard>('craft-card')].map(
-        (card) => card.updateComplete
-      )
-    );
-    const [white, black, whiteInBlack, blackInWhite] = await Promise.all(
-      [...document.querySelectorAll<CraftCard>(`.content`)].map((content) =>
-        looksOf(content.parentElement as CraftCard, parts)
-      )
-    );
+        <span slot="label">Header</span>
+        Body
+      </craft-card>
+    </div>`;
+  const card = document.querySelector<CraftCard>('craft-card')!;
+  await card.updateComplete;
 
-    expect(white![0]).toBe('rgb(255, 255, 255)');
-    expect(white!.at(-1)).toBe('light');
-    expect(black!.at(-1)).toBe('dark');
-    expect(whiteInBlack).toEqual(white);
-    expect(blackInWhite).toEqual(black);
-  }
-);
+  const probe = getComputedStyle(document.querySelector('.probe')!);
+  const root = getComputedStyle(card.shadowRoot!.querySelector('.card')!);
+  const header = getComputedStyle(
+    card.shadowRoot!.querySelector('.card__header')!
+  );
 
-it.each(surfaces)(
-  'swaps how white and black %ss look on a dark page',
-  async (name, attribute, parts) => {
-    const tag = `craft-${name}`;
-    const pair = `
-      <${tag} ${attribute}="white"><span class="content">White</span></${tag}>
-      <${tag} ${attribute}="black"><span class="content">Black</span></${tag}>`;
-    document.body.innerHTML = `
-      <div id="light">${pair}</div>
-      <div id="dark" data-theme="dark">${pair}</div>`;
-    const looks = (id: string) =>
-      Promise.all(
-        [...document.querySelectorAll<CraftCard>(`#${id} ${tag}`)].map(
-          (element) => looksOf(element, parts)
-        )
-      );
-    const [lightWhite, lightBlack] = await looks('light');
-    const [darkWhite, darkBlack] = await looks('dark');
-
-    expect(darkWhite).toEqual(lightBlack);
-    expect(darkBlack).toEqual(lightWhite);
-  }
-);
+  expect(root.backgroundColor).toBe(probe.backgroundColor);
+  expect(root.color).toBe(probe.color);
+  expect(header.color).toBe(probe.color);
+});
 
 function channels(color: string): {rgb: number[]; alpha: number} {
   const values = color.match(/[\d.]+/g)!.map(Number);
@@ -673,4 +617,24 @@ it('keeps a neutral card nested in a tinted one, and what’s in it, neutral', a
     return [style.color, style.borderTopColor];
   };
   expect(look('white')).toEqual(look('top-white'));
+});
+
+it('keeps quiet text and form controls legible on a white card in the dark theme', async () => {
+  document.body.innerHTML = `
+    <div data-theme="dark">
+      <craft-card data-color="white">
+        <span class="quiet" style="color: var(--c-text-quiet)">Instructions</span>
+        <span class="control" style="color: var(--c-form-control-border-color)">Input</span>
+      </craft-card>
+    </div>`;
+  const card = document.querySelector<CraftCard>('craft-card')!;
+  await card.updateComplete;
+  const fill = getComputedStyle(
+    card.shadowRoot!.querySelector('.card')!
+  ).backgroundColor;
+  const colorOf = (selector: string) =>
+    getComputedStyle(document.querySelector(selector)!).color;
+
+  expect(contrast(colorOf('.quiet'), fill)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(colorOf('.control'), fill)).toBeGreaterThanOrEqual(3);
 });

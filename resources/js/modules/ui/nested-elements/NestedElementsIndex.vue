@@ -375,7 +375,9 @@
         <craft-button
           v-if="editable && operations.canPaste.value"
           type="button"
-          :variant="ButtonVariant.Fill"
+          variant="outline"
+          icon="custom-icons/duplicate"
+          class="paste-btn"
           .disabled="busy || loading"
           @click="operations.paste()"
           >{{ operations.pasteButtonLabel.value }}</craft-button

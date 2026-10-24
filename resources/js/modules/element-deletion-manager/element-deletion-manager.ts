@@ -1,4 +1,5 @@
 import {Base} from '@craftcms/garnish';
+import type CraftButton from '@craftcms/ui/components/button/button';
 import type CraftDialog from '@craftcms/ui/components/dialog/dialog';
 import './element-deletion-manager.css';
 
@@ -6,8 +7,6 @@ import './element-deletion-manager.css';
 // `craft-dialog`.
 declare const $: any;
 declare const Craft: any;
-
-type CraftButton = HTMLElement & {disabled: boolean; loading: boolean};
 
 /** A `craft-button`, which is styled in both control panels, unlike `.btn`. */
 function createButton({
@@ -318,15 +317,19 @@ class Blocker extends Base {
     );
 
     if (this.data.details) {
-      // A disclosure: the heading's button shows and hides the details.
-      const $toggle = $('<button/>', {
-        type: 'button',
-        class: 'edm-toggle',
-        'aria-expanded': 'false',
-        'aria-controls': `${this.id}-details`,
-      }).appendTo($heading);
-      $('<craft-icon/>', {name: 'chevron-right'}).appendTo($toggle);
-      $('<span/>', {text: this.data.summary}).appendTo($toggle);
+      // A disclosure: the heading's button shows and hides the details. It's
+      // drawn like craft-disclosure's own trigger, with the chevron after the
+      // label, pointing toward the end of the line while closed and down
+      // while open. craft-disclosure itself would need the button as its
+      // direct child, outside the heading.
+      const toggle = document.createElement('craft-button') as CraftButton;
+      toggle.setAttribute('type', 'button');
+      toggle.setAttribute('variant', 'plain');
+      toggle.setAttribute('flush', '');
+      toggle.setAttribute('aria-controls', `${this.id}-details`);
+      toggle.iconPosition = 'suffix';
+      toggle.append(this.data.summary);
+      $heading.append(toggle);
 
       const $details = $('<div/>', {
         id: `${this.id}-details`,
@@ -335,10 +338,20 @@ class Blocker extends Base {
         html: this.data.details,
       }).appendTo(this.$container);
 
-      $toggle.on('click', () => {
-        const expanded = $toggle.attr('aria-expanded') !== 'true';
-        $toggle.attr('aria-expanded', String(expanded));
+      const setExpanded = (expanded: boolean): void => {
+        const rtl = getComputedStyle(toggle).direction === 'rtl';
+        toggle.setAttribute('aria-expanded', String(expanded));
+        toggle.icon = expanded
+          ? 'chevron-down'
+          : rtl
+            ? 'chevron-left'
+            : 'chevron-right';
         $details.prop('hidden', !expanded);
+      };
+
+      setExpanded(false);
+      toggle.addEventListener('click', () => {
+        setExpanded(toggle.getAttribute('aria-expanded') !== 'true');
       });
     } else {
       $heading.text(this.data.summary);
