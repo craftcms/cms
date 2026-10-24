@@ -475,6 +475,22 @@ describe('[disabled]', () => {
     return {enabled: enabled!, disabled: disabled!};
   }
 
+  it('keeps a focusable disabled button hoverable without letting clicks through', async () => {
+    const button = document.createElement('craft-button') as CraftButton;
+    button.setAttribute('disabled', '');
+    button.setAttribute('focusable-when-disabled', '');
+    button.textContent = 'Publish';
+    const clicked = vi.fn();
+    button.addEventListener('click', clicked);
+    document.body.append(button);
+    await button.updateComplete;
+
+    button.click();
+
+    expect(getComputedStyle(button).pointerEvents).toBe('auto');
+    expect(clicked).not.toHaveBeenCalled();
+  });
+
   it('mutes a disabled button', async () => {
     const {enabled, disabled} = await mountPair('fill');
 

@@ -231,6 +231,7 @@
 - Fixed an accessibility issue where focus rings on tab panels were cut off by the scrolling panel region.
 - Fixed an accessibility issue where the selected tab in `<craft-tabs>`, and the open element details panel’s button, weren’t distinguishable in forced colors mode.
 - Fixed an accessibility issue where an `aria-label` passed to a view component’s `attributes()` could be dropped, leaving icon-only buttons without an accessible name. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Fixed an accessibility issue where tooltips explaining why a button was disabled, such as on disabled secondary form actions, never appeared.
 
 ### Administration
 
