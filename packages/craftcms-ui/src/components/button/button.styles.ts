@@ -150,6 +150,11 @@ export default css`
     --_focus-outline-color: var(--c-color-focus-outline);
   }
 
+  :host([variant~='plain']),
+  :host([variant~='danger-plain']) {
+    --c-focus-outline-offset: calc(var(--c-focus-outline-width) * -1);
+  }
+
   :host(:not(:disabled):not(.loading):active),
   :host(.is-active:not(:disabled):not(.loading)) {
     color: var(--_active-color);
