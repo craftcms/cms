@@ -165,7 +165,11 @@
             <craft-icon
               v-else
               :name="row.item.icon ?? 'arrow-right'"
-              :style="iconColorStyle(row.item.iconColor)"
+              :style="
+                iconColorStyle(
+                  row.item.variant === 'danger' ? null : row.item.iconColor
+                )
+              "
             ></craft-icon>
           </span>
           <component
@@ -336,7 +340,7 @@
   }
 
   .command-palette-row--danger:not(.command-palette-row--selected)
-    .command-palette-row__label {
+    :is(.command-palette-row__label, .command-palette-row__icon) {
     color: var(--c-color-danger-on-quiet);
   }
 
