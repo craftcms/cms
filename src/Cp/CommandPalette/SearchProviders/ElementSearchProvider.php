@@ -10,6 +10,7 @@ use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem;
 use CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider;
+use CraftCms\Cms\Cp\CommandPalette\SearchProviderRegistry;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -27,13 +28,13 @@ use function CraftCms\Cms\t;
  * Finds elements of one type that the user can view and edit.
  *
  * Craft registers one for entries, assets and users. A plugin can register
- * one for its own element type:
+ * one for its own element type with {@see SearchProviderRegistry}:
  *
  * ```php
- * $event->providers[] = new ElementSearchProvider(
+ * $searchProviders->register(new ElementSearchProvider(
  *     Product::class,
  *     fn (CraftUser $user) => $user->can('commerce-manageProducts'),
- * );
+ * ));
  * ```
  *
  * @since 6.0.0
