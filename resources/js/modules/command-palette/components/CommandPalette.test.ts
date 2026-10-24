@@ -11,7 +11,11 @@ import {
   ref,
   type App,
 } from 'vue';
-import {isCommandPaletteOpen, registerActions} from '../registry';
+import {
+  installCommandPaletteShortcut,
+  isCommandPaletteOpen,
+  registerActions,
+} from '../registry';
 import CommandPalette from './CommandPalette.vue';
 
 const state = vi.hoisted(() => ({
@@ -463,7 +467,25 @@ describe('CommandPalette', () => {
     expect((window as any).Craft.cp.displayError).toHaveBeenCalledWith('Nope');
   });
 
+  it('finishes opening when the shortcut opened it before it was mounted', async () => {
+    isCommandPaletteOpen.value = true;
+    const container = document.createElement('div');
+    document.body.append(container);
+    app = createApp(() => h(CommandPalette));
+    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+    app.mount(container);
+    await flush();
+
+    const input =
+      document.querySelector<HTMLInputElement>('[role="combobox"]')!;
+
+    expect(isCommandPaletteOpen.value).toBe(true);
+    expect(document.activeElement).toBe(input);
+    expect(selected(input)).toBe('Entries');
+  });
+
   it('toggles with Cmd/Ctrl+K unless something else handled it', async () => {
+    installCommandPaletteShortcut();
     await open();
     isCommandPaletteOpen.value = false;
 
