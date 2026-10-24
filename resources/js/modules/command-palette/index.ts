@@ -1,5 +1,6 @@
 import {
   closeCommandPalette,
+  installCommandPaletteShortcut,
   openCommandPalette,
   registerActions,
   registerProvider,
@@ -17,6 +18,7 @@ export {PAGE_ACTIONS_ATTRIBUTE} from './sources/on-page-actions';
  * itself is rendered by `PageScreen`.
  */
 registerProvider(onThisPageProvider);
+installCommandPaletteShortcut();
 
 /**
  * `Craft.commandPalette`, for plugins: open or close the palette, and add

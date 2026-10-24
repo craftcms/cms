@@ -17,11 +17,11 @@
   import {actionClient, ButtonVariant, t} from '@craftcms/ui';
   import {runAction} from '@craftcms/ui/actions.mjs';
   import {router, usePage} from '@inertiajs/vue3';
-  import {useEventListener} from '@vueuse/core';
   import {index as indexUrl} from '@actions/CommandPaletteController';
   import {
     computed,
     nextTick,
+    onMounted,
     shallowRef,
     useId,
     useTemplateRef,
@@ -38,6 +38,7 @@
     clientProviders,
     closeCommandPalette,
     isCommandPaletteOpen,
+    openedWithShortcut,
     viewComponent,
   } from '../registry';
   import {destructiveLast, matchesWords} from '../rank';
@@ -95,8 +96,6 @@
   const selectionMoved = shallowRef(false);
   const busy = shallowRef(false);
   const restoreFocus = shallowRef(true);
-  /** Whether it was opened with the keyboard shortcut, and so skips the enter transition. */
-  const openedWithShortcut = shallowRef(false);
   const activeView = shallowRef<{
     item: CommandPaletteItem;
     view: CommandPaletteView;
@@ -239,6 +238,16 @@
         error?.response?.data?.message ?? t('A server error occurred.')
       );
     }
+  }
+
+  // This loads after the page, so the shortcut may have opened the palette
+  // already. Starting closed and opening once mounted takes it through the
+  // usual opening — the page's actions gathered, the search box focused.
+  if (isCommandPaletteOpen.value) {
+    isCommandPaletteOpen.value = false;
+    onMounted(() => {
+      isCommandPaletteOpen.value = true;
+    });
   }
 
   watch(isCommandPaletteOpen, (open) => {
@@ -671,29 +680,6 @@
         viewComponent(activeView.value.view.type))
       : null
   );
-
-  // Open from anywhere with Cmd+K (Ctrl+K elsewhere). A focused editor that
-  // has a use for the shortcut — a rich text field's link command — handles
-  // it first and cancels it, so it's left alone then.
-  useEventListener(window, 'keydown', (event: KeyboardEvent) => {
-    if (
-      event.key.toLowerCase() !== 'k' ||
-      event.altKey ||
-      event.shiftKey ||
-      !(event.metaKey || event.ctrlKey) ||
-      event.defaultPrevented
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-
-    if (!isCommandPaletteOpen.value) {
-      openedWithShortcut.value = true;
-    }
-
-    isCommandPaletteOpen.value = !isCommandPaletteOpen.value;
-  });
 </script>
 
 <template>
