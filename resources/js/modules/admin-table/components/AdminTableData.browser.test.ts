@@ -174,7 +174,7 @@ it.each(['mouse', 'keyboard'])(
   }
 );
 
-it('keeps a thin column as narrow as its content, without wrapping it', async () => {
+it('keeps thin columns, and the delete column, as narrow as their content', async () => {
   const host = mountNode({
     columns: [
       {key: 'name', label: 'Name'},
@@ -182,6 +182,8 @@ it('keeps a thin column as narrow as its content, without wrapping it', async ()
       {key: 'notes', label: 'Notes'},
     ],
     rows: [{id: 1, name: 'Body', status: 'Ready with warnings', notes: 'None'}],
+    deletable: true,
+    deleteUrl: '/settings/delete',
   });
   host.style.width = '600px';
   await nextTick();
@@ -195,6 +197,18 @@ it('keeps a thin column as narrow as its content, without wrapping it', async ()
   expect(lines.size).toBe(1);
   expect(cell.getBoundingClientRect().width).toBeLessThan(
     name.getBoundingClientRect().width
+  );
+
+  const deleteCell = page
+    .getByRole('button', {name: /delete/i})
+    .element()
+    .closest('td')!;
+  const deleteButton = deleteCell.querySelector('craft-button')!;
+  const padding =
+    parseFloat(getComputedStyle(deleteCell).paddingInlineStart) +
+    parseFloat(getComputedStyle(deleteCell).paddingInlineEnd);
+  expect(deleteCell.getBoundingClientRect().width).toBeLessThanOrEqual(
+    deleteButton.getBoundingClientRect().width + padding + 1
   );
 });
 

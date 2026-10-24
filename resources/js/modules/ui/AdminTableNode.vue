@@ -426,7 +426,7 @@
 
             return actions;
           },
-          {meta: {trackSize: '60px'}}
+          {meta: {trackSize: '60px', columnClass: 'thin'}}
         )
       );
     }
