@@ -262,6 +262,9 @@
     --c-link-decoration-hover: underline;
     grid-area: breadcrumbs;
     overflow: auto;
+    /* Room inside the scroll area for focus rings, which it would clip. */
+    padding: var(--c-spacing-sm);
+    margin: calc(var(--c-spacing-sm) * -1);
   }
 
   .cp-header-bar__breadcrumbs

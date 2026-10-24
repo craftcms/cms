@@ -747,3 +747,21 @@ it('shows an inset shadow while pressed', async () => {
 
   expect(getComputedStyle(button).boxShadow).toContain('inset');
 });
+
+it('draws plain buttons’ focus rings just inside their edges, and others’ outside them', async () => {
+  await loadTokens();
+  const variants = ['plain', 'danger-plain', 'outline', 'primary'];
+  document.body.innerHTML = variants
+    .map((variant) => `<craft-button variant="${variant}">Label</craft-button>`)
+    .join('');
+  const buttons = [...document.querySelectorAll<CraftButton>('craft-button')];
+  await Promise.all(buttons.map((button) => button.updateComplete));
+
+  const offsets = buttons.map((button) => {
+    button.focus({focusVisible: true});
+
+    return getComputedStyle(button).outlineOffset;
+  });
+
+  expect(offsets).toEqual(['-2px', '-2px', '2px', '2px']);
+});
