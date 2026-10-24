@@ -632,10 +632,11 @@
   }
 
   /**
-   * Escape steps back one level rather than closing the palette: out of a
-   * view to the results, out of a result's menu to its button, and out of
-   * the results to the search box, with the top result selected again.
-   * Stopped here, before the dialog sees it.
+   * Escape closes a result's menu, or steps back out of a view to the
+   * results. Otherwise it clears the search and returns to the search box,
+   * wherever focus is, or once there's no search, closes the palette. The
+   * search box clears itself when it has focus; the rest is stopped here
+   * before the dialog sees it.
    */
   function onKeydown(event: KeyboardEvent): void {
     if (event.key !== 'Escape') {
@@ -664,14 +665,10 @@
 
     if (activeView.value) {
       back();
-    } else if (
-      target &&
-      target !== input.value &&
-      results.value?.contains(target)
-    ) {
-      selectionMoved.value = false;
+    } else if (query.value) {
+      query.value = '';
       selectedIndex.value = 0;
-      results.value.scrollTop = 0;
+      selectionMoved.value = false;
       input.value?.focus();
     } else {
       return;

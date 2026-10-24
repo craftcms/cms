@@ -290,21 +290,28 @@ describe('CommandPalette', () => {
     expect(hint()).toBe('Esc Clear search');
   });
 
-  it('returns from a focused result to the search box on Escape, with the top result selected', async () => {
+  it('clears the search on Escape wherever focus is, then closes', async () => {
     const input = await open();
+    input.value = 'maintenance';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await flush();
 
-    press(input, 'ArrowDown');
-    await nextTick();
     press(input, 'Tab');
     const focused = document.activeElement!;
     expect(focused).not.toBe(input);
 
     expect(press(focused, 'Escape').defaultPrevented).toBe(true);
-    await nextTick();
+    await flush();
 
     expect(isCommandPaletteOpen.value).toBe(true);
+    expect(input.value).toBe('');
     expect(document.activeElement).toBe(input);
-    expect(selected(input)).toBe('Entries');
+
+    press(input, 'Tab');
+    press(document.activeElement!, 'Escape');
+    await flush();
+
+    expect(isCommandPaletteOpen.value).toBe(false);
   });
 
   it('focuses the search box when its surrounding padding is pressed', async () => {
