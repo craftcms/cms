@@ -3,10 +3,6 @@
 }
 
 .element-deletion-modal .edm-heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--c-spacing-xs);
   margin-block: 0 var(--c-spacing-lg);
   margin-inline: 0;
   font-size: var(--c-text-lg);
@@ -19,10 +15,15 @@
   border-block-start: 1px solid var(--c-color-neutral-border-quiet);
 }
 
+.element-deletion-modal .edm-heading .inline-chips {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
 .element-deletion-modal .edm-blocker {
   display: flex;
   flex-direction: column;
-  gap: var(--c-spacing-sm);
+  gap: var(--c-spacing-md);
   padding: var(--c-spacing-lg);
 }
 
@@ -36,31 +37,14 @@
   font-weight: var(--font-weight-bold);
 }
 
-.element-deletion-modal .edm-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--c-spacing-xs);
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: start;
-  cursor: pointer;
-}
-
-.element-deletion-modal .edm-toggle craft-icon {
-  transition: rotate 150ms;
-}
-
-.element-deletion-modal .edm-toggle[aria-expanded='true'] craft-icon {
-  rotate: 90deg;
-}
-
 .element-deletion-modal .edm-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--c-spacing-sm);
+}
+
+.element-deletion-modal .edm-blocker-heading:has(craft-button) ~ .edm-actions {
+  margin-block-start: var(--c-spacing-xs);
 }
 
 .element-deletion-modal .edm-blocker-resolved-message {
@@ -81,13 +65,7 @@
   gap: var(--c-spacing-sm);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .element-deletion-modal .edm-toggle craft-icon {
-    transition: none;
-  }
-}
-
-.element-deletion-modal .edm-details {
+.element-deletion-modal .edm-details:not([hidden]) {
   display: flex;
   flex-direction: column;
   gap: var(--c-spacing-sm);
