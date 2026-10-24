@@ -215,6 +215,8 @@
   .command-palette-docs :deep(.command-palette-row__icon) {
     align-self: start;
     justify-content: start;
+    inline-size: auto;
+    margin-inline-end: var(--c-spacing-sm);
     block-size: 1lh;
   }
 
