@@ -616,6 +616,11 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
 
 .cp-table--auto {
   table-layout: auto;
+
+  :is(th, td).thin {
+    white-space: nowrap;
+    width: 0.01%;
+  }
 }
 
 .cp-table--loading {

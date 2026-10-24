@@ -362,6 +362,7 @@
           enableSorting: !!column.sortable,
           meta: {
             trackSize: column.width,
+            columnClass: column.thin ? 'thin' : undefined,
             headerSrOnly: column.headerSrOnly,
             wrap: column.wrap,
           },
