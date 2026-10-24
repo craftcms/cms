@@ -130,11 +130,14 @@ it('describes nav pages by where they sit in the nav', function () {
 });
 
 it('gives nav pages without icons their parent’s', function () {
-    $pages = collect(paletteSearch('pages', 'users'))->keyBy('label');
+    // By id, not label: Settings has a “Users” page of its own.
+    $pages = collect(paletteSearch('pages', 'users'));
+    $users = $pages->firstWhere('id', 'nav-users');
+    $allUsers = $pages->first(fn (array $page) => $page['label'] === 'All users' && $page['description'] === 'Users');
     $utilities = collect(paletteSearch('pages', 'utilities'))->keyBy('id');
 
-    expect($pages['Users']['icon'])->not->toBeNull()
-        ->and($pages['All users']['icon'])->toBe($pages['Users']['icon'])
+    expect($users['icon'])->not->toBeNull()
+        ->and($allUsers['icon'])->toBe($users['icon'])
         ->and($utilities['nav-utilities-updates']['icon'])->not->toBe($utilities['nav-utilities']['icon']);
 });
 
