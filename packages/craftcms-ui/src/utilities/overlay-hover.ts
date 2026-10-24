@@ -25,6 +25,19 @@ function isFocusVisible(event: Event): boolean {
 }
 
 /**
+ * Whether the invoker is disabled outright. One kept focusable while disabled
+ * (`focusable-when-disabled`) still shows its overlay, which says why.
+ */
+function hasDisabledInvoker(controller: HoverController): boolean {
+  const invoker = controller.invokerNode as
+    | (EventTarget & {focusableWhenDisabled?: boolean})
+    | null
+    | undefined;
+
+  return controller._hasDisabledInvoker() && !invoker?.focusableWhenDisabled;
+}
+
+/**
  * Lion's `withHoverInteraction`, with the pending show/hide timer cleared on
  * teardown. Lion leaves it armed, so an overlay torn down mid-hover still calls
  * `show()` on its dead controller once the delay elapses.
@@ -62,7 +75,7 @@ export function withHoverInteraction({
         isHovered =
           type === 'mouseleave' ? false : isHovered || type === 'mouseenter';
 
-        if ((isFocused || isHovered) && !controller._hasDisabledInvoker()) {
+        if ((isFocused || isHovered) && !hasDisabledInvoker(controller)) {
           delayTimeout = setTimeout(() => controller.show(), delayIn);
         } else {
           delayTimeout = setTimeout(() => controller.hide(), delayOut);

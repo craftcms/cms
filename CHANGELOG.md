@@ -82,7 +82,7 @@
 - Entry types’ and fields’ “Used by” metadata now lists usages as chips. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - The global header is now lighter in the light theme. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Content within black cards, chips, and badges, such as buttons and badges, is now styled as in the dark theme.
-- White cards, chips, badges, and Matrix blocks now always look white in the light theme and black in the dark theme, and black ones the reverse, including when they’re nested in another card or block. Their contents are styled to match. ([#20041](https://github.com/craftcms/cms/issues/20041))
+- White cards, chips, badges, and Matrix blocks are now a lighter surface than the page in the dark theme, and black ones are a shade darker. ([#20041](https://github.com/craftcms/cms/issues/20041))
 - Links in gray chips, and in black chips, cards, and badges, now have the default link styling, rather than an underline in the chip’s or card’s text color.
 - Card view designers now preview entries as live, and users with a sample user’s name, default avatar, and active status.
 - Color selects’ swatches now match the headers of cards in their colors.
@@ -108,6 +108,8 @@
 - Fixed a bug where edit pages for elements without a title, such as nested entries whose entry type has no Title field, had a blank page title. They’re now titled “Untitled {type}”. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where element indexes kept the page count of the listing they first loaded, after switching sources or filtering. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where submit buttons created by `Craft.ui.createSubmitButton()` and `createSubmitButton()` from `@craftcms/ui` weren’t styled as primary buttons. ([#20008](https://github.com/craftcms/cms/pull/20008))
+- Fixed a bug where tooltips within sticky footers could be positioned off-screen or cut off.
+- Fixed a bug where draft name labels in element chips were cut off at the bottom.
 - Fixed a bug where clicking on a relational field’s chip or card deselected the others. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where avatars’ initials were hard to read in the dark theme. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where pending progress bars’ stripes were oversized and had a seam. ([#20008](https://github.com/craftcms/cms/pull/20008))
@@ -190,10 +192,13 @@
 - Assets in volumes set to let each asset choose which sites it should be saved to can now be deleted for individual sites, as long as they exist in another site. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Deleting an element for the only site it exists in now soft-deletes it, unless it’s a draft or nested element. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - The “Schedule release” modal now has a single date and time input, like releases’ Target Date, in place of separate Date, Time, and Time Zone inputs. Releases’ publication and target dates are now always entered in the user’s time zone.
+- Release pages now list each draft as a chip labeled with its draft name, in a single “Draft” column.
+- Release pages’ “Publish now” and “Schedule” buttons now have tooltips explaining why they’re disabled, and the page counts blocking drafts rather than entries.
 - Fixed a bug where typing in a newly added nested entry’s fields could replace the edit form with a “UI array path … must be a row index” error once the entry autosaved.
 - Fixed a bug where changing a field back to the value it had when the edit page loaded wasn’t autosaved, so field layout elements shown or hidden by conditions based on it didn’t update.
 - Fixed a bug where Table fields’ Date and Time cells, and their default row values, shifted by the site’s UTC offset each time they were saved from the control panel.
 - Fixed a bug where going from one element edit page to another, such as switching sites, opened the next page’s “Revisions” details panel rather than the one that was open.
+- Fixed an error that occurred on release pages if one of the release’s drafts belonged to an element that had been deleted, such as along with its section. The draft is now listed as blocked with “The entry has been deleted.”, and can be removed by anyone who can manage the release.
 
 ### Accessibility
 
@@ -229,6 +234,7 @@
 - Fixed an accessibility issue where focus rings on tab panels were cut off by the scrolling panel region.
 - Fixed an accessibility issue where the selected tab in `<craft-tabs>`, and the open element details panel’s button, weren’t distinguishable in forced colors mode.
 - Fixed an accessibility issue where an `aria-label` passed to a view component’s `attributes()` could be dropped, leaving icon-only buttons without an accessible name. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Fixed an accessibility issue where tooltips explaining why a button was disabled, such as on disabled secondary form actions, never appeared.
 
 ### Administration
 

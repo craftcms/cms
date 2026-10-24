@@ -135,6 +135,11 @@ export default css`
     }
   }
 
+  :host([disabled][focusable-when-disabled]) {
+    pointer-events: auto;
+    cursor: default;
+  }
+
   :host(:focus:not([disabled])),
   :host(:focus-visible) {
     outline: var(--c-focus-outline-width) solid var(--_focus-outline-color);

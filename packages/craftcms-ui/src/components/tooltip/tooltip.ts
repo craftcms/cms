@@ -4,6 +4,11 @@ import {LionTooltip} from '@lion/ui/tooltip.js';
 import {withHoverInteraction} from '../../utilities/overlay-hover.js';
 import {wireOverlayLifecycleEvents} from '../../utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '../../utilities/overlay-position.js';
+import {
+  lowerOverlay,
+  raiseOverlay,
+  topLayerStyles,
+} from '../../utilities/overlay-top-layer.js';
 
 /**
  * craft-tooltip shows contextual text for an external trigger element
@@ -36,6 +41,13 @@ export default class CraftTooltip extends LionTooltip {
 
   #contentWrapper: HTMLElement | null = null;
 
+  /** Lion's controller while it's wired up to the top layer. */
+  #layeredCtrl: EventTarget | null = null;
+
+  #raise = () => raiseOverlay(this);
+
+  #lower = () => lowerOverlay(this);
+
   #onInvokerClick = () => {
     this.opened = !this.opened;
   };
@@ -48,6 +60,7 @@ export default class CraftTooltip extends LionTooltip {
   static override get styles() {
     return [
       ...super.styles,
+      topLayerStyles,
       css`
         :host {
           display: contents;
@@ -174,6 +187,23 @@ export default class CraftTooltip extends LionTooltip {
       'click',
       this.#onInvokerClick
     );
+  }
+
+  override _setupOverlayCtrl() {
+    super._setupOverlayCtrl();
+
+    this.#layeredCtrl = this._overlayCtrl as unknown as EventTarget;
+    this.#layeredCtrl.addEventListener('before-show', this.#raise);
+    this.#layeredCtrl.addEventListener('hide', this.#lower);
+  }
+
+  override _teardownOverlayCtrl() {
+    this.#lower();
+    this.#layeredCtrl?.removeEventListener('before-show', this.#raise);
+    this.#layeredCtrl?.removeEventListener('hide', this.#lower);
+    this.#layeredCtrl = null;
+
+    super._teardownOverlayCtrl();
   }
 
   protected override updated(changed: PropertyValues) {

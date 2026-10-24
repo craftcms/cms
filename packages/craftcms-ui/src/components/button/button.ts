@@ -69,7 +69,19 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     // sets this to "submit"; we override it after super().)
     this.type = 'button';
     this.addEventListener('mousedown', this.#releaseOnDragEnd);
+    this.addEventListener('click', this.#blockDisabledClick, {capture: true});
   }
+
+  /**
+   * A disabled button that stays reachable by the pointer still receives
+   * clicks, so they stop here, before any of the page's own listeners.
+   */
+  #blockDisabledClick = (event: Event) => {
+    if (this.disabled) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  };
 
   override connectedCallback() {
     // Set link-appropriate host state *before* Lion runs, so it skips its
@@ -402,8 +414,15 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;
 
-  /** Keep the button in the tab order when disabled. */
-  @property({attribute: 'focusable-when-disabled', type: Boolean})
+  /**
+   * Keep the button in the tab order when disabled, and reachable by the
+   * pointer, so a tooltip can say why it's disabled.
+   */
+  @property({
+    attribute: 'focusable-when-disabled',
+    type: Boolean,
+    reflect: true,
+  })
   focusableWhenDisabled: boolean = false;
 
   /**

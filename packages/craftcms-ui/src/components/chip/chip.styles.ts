@@ -390,10 +390,10 @@ export default css`
   }
 
   /*
-   * White chips take white's own colors, which swap in the dark theme, so a
-   * white chip looks white in the light theme and black in the dark one, as a
-   * black chip does the reverse. Scoped to the two filled tiers so outline and
-   * plain stay transparent.
+   * White chips take the theme-aware raised surface, its border, and the
+   * default text color, rather than white's static colors, which stay light in
+   * dark mode. Scoped to the two filled tiers so outline and plain stay
+   * transparent.
    *
    * The palette is repointed too, for controls that inherit it, like the
    * action menu's button, whose hover tints from --c-color-fill-quiet.
@@ -401,17 +401,11 @@ export default css`
   :host([data-color='white'][appearance~='fill']:not([selected])) .cp-chip,
   :host([data-color='white'][appearance~='outline-fill']:not([selected]))
     .cp-chip {
-    --c-color-fill-quiet: var(--c-chip-fill, var(--c-color-white-fill-quiet));
-    --c-color-on-quiet: var(--c-chip-text, var(--c-color-white-on-quiet));
-    background-color: var(--c-chip-fill, var(--c-color-white-fill-quiet));
-    border-color: var(--c-chip-border-color, var(--c-color-white-edge));
-    color: var(--c-chip-text, var(--c-color-white-on-quiet));
-  }
-
-  :host([data-color='black'][appearance~='fill']:not([selected])) .cp-chip,
-  :host([data-color='black'][appearance~='outline-fill']:not([selected]))
-    .cp-chip {
-    border-color: var(--c-chip-border-color, var(--c-color-black-edge));
+    --c-color-fill-quiet: var(--c-chip-fill, var(--c-surface-white));
+    --c-color-on-quiet: var(--c-chip-text, var(--c-text-default));
+    background-color: var(--c-chip-fill, var(--c-surface-white));
+    border-color: var(--c-chip-border-color, var(--c-border-raised));
+    color: var(--c-chip-text, var(--c-text-default));
   }
 
   :host([data-color='white'][appearance~='outline']) .cp-chip,

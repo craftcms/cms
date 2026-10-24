@@ -19,6 +19,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Tests\TestClasses\Release\DraftableReleaseElement;
 use CraftCms\Cms\Tests\TestClasses\Release\ReleasePermissions;
 use CraftCms\Cms\User\Elements\User;
@@ -300,6 +301,8 @@ it('attaches and edits the same draft, and explicitly removes it from the releas
     $page = get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
         ->assertOk()
         ->assertJsonPath('props.readiness.ready', true);
+    expect($page->json('props.ui.nodes.0.props.rows.0.title.html'))
+        ->toContain(sprintf('href="%s"', Html::encode($draft->getCpEditUrl())));
     $removeUrl = $page->json('props.ui.nodes.0.props.rows.0._deleteUrl');
 
     deleteJson($removeUrl)->assertOk();
@@ -409,9 +412,8 @@ it('attaches a non-entry draft through HTTP and displays its release item', func
     get(route('craft.cp.releases.show', $release))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('ui.nodes.0.props.rows.0.title.label', 'Prepared content')
-            ->where('ui.nodes.0.props.rows.0.title.url', $draft->getCpEditUrl())
-            ->where('ui.nodes.0.props.rows.0.draftName', 'Prepared content'));
+            ->where('ui.nodes.0.props.rows.0.title.html', fn (string $html) => str_contains($html, 'appearance="plain"')
+                && str_contains($html, '<span class="context-label">Prepared content</span>')));
 });
 
 it('shows release metadata without content links or removal actions', function () {
@@ -430,9 +432,9 @@ it('shows release metadata without content links or removal actions', function (
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('release.canPublish', true)
-            ->where('ui.nodes.0.props.rows.0.title.label', 'Controller change')
-            ->where('ui.nodes.0.props.rows.0.title.url', null)
-            ->where('ui.nodes.0.props.rows.0.draftName', 'Controller draft')
+            ->where('ui.nodes.0.props.rows.0.title.html', fn (string $html) => str_contains($html, 'Controller change')
+                && str_contains($html, '<span class="context-label">Controller draft</span>')
+                && ! str_contains($html, '<a '))
             ->where('ui.nodes.0.props.rows.0._deleteUrl', null)
             ->where('ui.nodes.0.props.rows.0._deletable', false));
 
@@ -455,9 +457,8 @@ it('lists a draft whose section was deleted and lets release managers remove it'
     get(route('craft.cp.releases.show', $release))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('ui.nodes.0.props.rows.0.title.label', 'Controller change')
-            ->where('ui.nodes.0.props.rows.0.title.url', null)
-            ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'The live element has been deleted.'))
+            ->where('ui.nodes.0.props.rows.0.title.html', 'Controller change<span class="context-label">Controller draft</span>')
+            ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'The entry has been deleted.'))
             ->where('ui.nodes.0.props.rows.0._deletable', true));
 
     actingAs(UserModel::factory()->withPermissions(['accessCp', 'manageReleases'])->createElement());

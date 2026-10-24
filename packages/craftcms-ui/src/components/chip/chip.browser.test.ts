@@ -643,33 +643,35 @@ it('draws a selected chip with the accent’s normal border', async () => {
 });
 
 // Inheriting controls, like the action menu's button, tint their hover from
-// --c-color-fill-quiet. A white chip looks black in the dark theme, so they
-// take what they'd get in a black chip on a light page, not a white hover.
+// --c-color-fill-quiet. The white palette's is static white, which left a
+// white hover on a dark chip.
 it.each([
   ['default', ''],
   ['selected', 'selected'],
 ])(
-  'hands slotted controls in a white chip on a dark page what a black chip gives them on a light one (%s)',
+  'hands its own fill to slotted controls in the dark theme (%s)',
   async (_, attrs) => {
-    await import('../../styles/cp.css');
+    await import('../../styles/shared/color-palette.css');
+    await import('../../styles/shared/colorable.css');
+    await import('../../styles/shared/variables.css');
+    await import('../../styles/shared/tokens.css');
 
-    const chip = (color: string) => `
-      <craft-chip data-color="${color}" appearance="outline-fill" ${attrs}>
-        Label
-        <div slot="suffix" style="background-color: var(--c-color-fill-quiet)">…</div>
-      </craft-chip>`;
     document.body.innerHTML = `
-      <div data-theme="dark">${chip('white')}</div>
-      <div>${chip('black')}</div>`;
-    const chips = [...document.querySelectorAll('craft-chip')];
-    await Promise.all(chips.map((element) => element.updateComplete));
+      <div data-theme="dark">
+        <craft-chip data-color="white" appearance="outline-fill" ${attrs}>
+          Label
+          <div slot="suffix" id="action" style="background-color: var(--c-color-fill-quiet)">…</div>
+        </craft-chip>
+      </div>`;
+    const chip = document.querySelector('craft-chip')!;
+    await chip.updateComplete;
 
-    const [white, black] = chips.map(
-      (element) =>
-        getComputedStyle(element.querySelector('[slot="suffix"]')!)
-          .backgroundColor
+    expect(
+      getComputedStyle(document.querySelector('#action')!).backgroundColor
+    ).toBe(
+      getComputedStyle(chip.shadowRoot!.querySelector('.cp-chip')!)
+        .backgroundColor
     );
-    expect(white).toBe(black);
   }
 );
 
