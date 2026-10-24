@@ -184,7 +184,9 @@ class ReleaseViewModel extends ViewModel
                 $published => [['key' => 'publishedAt', 'label' => t('Published')]],
                 $readiness !== null => [
                     ['key' => 'status', 'label' => t('Status')],
-                    ['key' => 'issues', 'label' => t('Issues'), 'width' => '2fr', 'wrap' => true],
+                    ...($readiness->itemErrors !== [] || $readiness->itemWarnings !== []
+                        ? [['key' => 'issues', 'label' => t('Issues'), 'width' => '2fr', 'wrap' => true]]
+                        : []),
                 ],
                 default => [],
             },

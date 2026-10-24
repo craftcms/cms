@@ -360,10 +360,14 @@ function releaseControllerDraft(User $actor): EntryElement
     return $draft;
 }
 
-it('shows an entry’s publication warnings in its release row', function () {
+it('shows an entry’s publication warnings in its release row, in an Issues column only then', function () {
     $draft = releaseControllerDraft($this->actor);
     $release = $this->releases->create('Warned release', null, $this->actor);
     $this->releases->attach($release, $draft, $this->actor);
+    $columns = fn () => get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
+        ->json('props.ui.nodes.0.props.columns.*.key');
+
+    expect($columns())->toBe(['title', 'status']);
 
     Date::setTestNow(now()->addMinute());
     $canonical = $draft->getCanonical();
@@ -375,6 +379,8 @@ it('shows an entry’s publication warnings in its release row', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes.0.props.rows.0.status.html', fn (string $html) => str_contains($html, 'Ready with warnings'))
             ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'Live changes will be merged into this draft before publication.')));
+
+    expect($columns())->toBe(['title', 'status', 'issues']);
 });
 
 it('offers adding to a release only while editing a draft', function (Closure $editedElement, bool $canAddToRelease) {
