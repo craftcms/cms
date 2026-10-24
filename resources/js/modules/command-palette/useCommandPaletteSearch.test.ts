@@ -84,7 +84,7 @@ describe('useCommandPaletteSearch', () => {
       {
         handle: 'on-this-page',
         label: 'On This Page',
-        thisPage: true,
+        displayFirst: true,
         search: () => [{id: 'field', label: 'Site settings'}],
       },
     ]);
@@ -101,7 +101,7 @@ describe('useCommandPaletteSearch', () => {
       {
         handle: 'on-this-page',
         label: 'On This Page',
-        thisPage: true,
+        displayFirst: true,
         search: () => [{id: 'heading', label: 'Settings'}],
       },
       {handle: 'pages', label: 'Pages'},

@@ -62,12 +62,12 @@ export interface CommandPaletteProvider {
   handle: string;
   label: string;
   /**
-   * Whether its results are about the page being viewed — its fields, say,
-   * or its actions. They're listed before any other provider's, however
-   * closely those match, so it should only return close matches itself:
-   * `labelScore(label, query, {loose: false})`.
+   * Whether its results are listed before any other provider's, however
+   * closely those match, such as results about the page being viewed — its
+   * fields, say, or its actions. It should then only return close matches
+   * itself: `labelScore(label, query, {loose: false})`.
    */
-  thisPage?: boolean;
+  displayFirst?: boolean;
   /** Results for the query. Server providers are searched by the palette itself. */
   search?: (
     query: string

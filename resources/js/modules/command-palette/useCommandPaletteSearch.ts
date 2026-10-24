@@ -188,11 +188,12 @@ export function useCommandPaletteSearch(
     );
   }
 
-  // The page being viewed comes first: what's on it is what's most likely
-  // meant, even when something elsewhere matches more closely.
+  // Some providers' results come first, such as the page being viewed: what's
+  // on it is what's most likely meant, even when something elsewhere matches
+  // more closely.
   const results = computed(() => [
-    ...rankedResults((provider) => Boolean(provider.thisPage)),
-    ...rankedResults((provider) => !provider.thisPage),
+    ...rankedResults((provider) => Boolean(provider.displayFirst)),
+    ...rankedResults((provider) => !provider.displayFirst),
   ]);
 
   /** Whether any provider is still working on the current query. */
