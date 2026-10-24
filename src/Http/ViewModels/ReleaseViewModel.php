@@ -265,9 +265,9 @@ class ReleaseViewModel extends ViewModel
             draftName: $element?->draftName,
             url: $viewableElement?->getCpEditUrl(),
             publishedAt: $item->publishedAt,
-            canDetach: $viewableElement !== null
+            canDetach: $element !== null
                 && $item->draftId !== null
-                && $this->actor->can('detach', [$this->release, $viewableElement]),
+                && $this->actor->can('detach', [$this->release, $element]),
         );
     }
 
