@@ -9,6 +9,11 @@ import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import {isFocusable} from '@src/utilities/focus-return.js';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
+import {
+  lowerOverlay,
+  raiseOverlay,
+  topLayerStyles,
+} from '@src/utilities/overlay-top-layer.js';
 import hostStyles from '@src/styles/host.styles';
 import styles from './popover.styles.js';
 
@@ -62,7 +67,7 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   // `hostStyles` for its box-sizing reset, which a shadow root doesn't inherit
   // from the page: without it the pane's 1px border sits outside its width and
   // it overshoots whatever it was sized to.
-  static override styles = [hostStyles, styles];
+  static override styles = [hostStyles, topLayerStyles, styles];
 
   /**
    * Names the popup for assistive tech. Lion gives the content `role="dialog"`,
@@ -225,46 +230,9 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     ).__escKeyHandlerCalled = true;
   };
 
-  /** The `<dialog>` Lion wraps the content in. */
-  get #dialog(): HTMLElement | null {
-    return (
-      this.shadowRoot?.querySelector<HTMLElement>(
-        'dialog[data-overlay-outer-wrapper]'
-      ) ?? null
-    );
-  }
+  #raise = () => raiseOverlay(this);
 
-  /**
-   * Lifts the open popover into the browser's top layer, above every stacking
-   * context. Lion's non-modal dialog otherwise stays inside its ancestors':
-   * a z-index can't raise it past a sticky footer beside, say, a
-   * `container-type` field group, which is a stacking context of its own.
-   *
-   * Before Lion positions it, since the top layer also changes what a fixed
-   * overlay is placed against. Popovers opened later stack above earlier
-   * ones, so nested menus still land on top.
-   */
-  #raise = () => {
-    const dialog = this.#dialog;
-
-    if (!dialog || typeof dialog.showPopover !== 'function') {
-      return;
-    }
-
-    dialog.setAttribute('popover', 'manual');
-
-    if (!dialog.matches(':popover-open')) {
-      dialog.showPopover();
-    }
-  };
-
-  #lower = () => {
-    const dialog = this.#dialog;
-
-    if (dialog?.matches?.(':popover-open')) {
-      dialog.hidePopover();
-    }
-  };
+  #lower = () => lowerOverlay(this);
 
   // @ts-expect-error – Lion expects this to return an OverlayConfig
   _defineOverlayConfig() {
