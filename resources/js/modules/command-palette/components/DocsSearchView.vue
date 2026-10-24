@@ -128,6 +128,7 @@
             count;
           document
             .getElementById(selectedRow.value!.cellId)
+            ?.closest('[role="row"]')
             ?.scrollIntoView({block: 'nearest'});
         }
         break;
