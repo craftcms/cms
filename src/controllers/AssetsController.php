@@ -1389,6 +1389,7 @@ class AssetsController extends Controller
         $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
         $extension = strtolower(pathinfo($uploadedFile->name, PATHINFO_EXTENSION));
 
+        // @phpstan-ignore function.alreadyNarrowedType (Call to function is_array() with array will always evaluate to true.)
         if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
             throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
                 'extension' => $extension,
