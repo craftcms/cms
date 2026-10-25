@@ -255,6 +255,7 @@
 - The MCP server now validates custom field values against the `elements.field-schema` schema, and returns an error that identifies each invalid value. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - The MCP server now accepts any date or time that Date and Time fields can parse, such as “2:30 PM” or a date with a UTC offset, rather than requiring ISO 8601. A value they can’t parse is rejected, rather than clearing the field, and a field’s instructions no longer replace the description of its format.
 - The MCP server’s `mcp:use` OAuth scope has been replaced with `mcp:read`, `mcp:write`, and `mcp:admin`. Users now choose an access level when they authorize an MCP client, defaulting to read only, and only administrators are offered full access. Clients that authorize again keep the earlier level without another prompt. ([#20080](https://github.com/craftcms/cms/pull/20080))
+- The MCP server now only shows and accepts the custom fields that users can see and edit in an element’s edit form, as field layouts’ conditions allow. ([#20091](https://github.com/craftcms/cms/pull/20091))
 - Added the “Query for releases” GraphQL schema permission, nested under “Query for element drafts”, which adds `releases` and `release` queries, and a `release` field to drafts.
 - Added the `hasUrls` field to volumes in GraphQL queries.
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
@@ -496,6 +497,7 @@
 - Fixed a bug where double-clicking an element in an element selection modal didn’t select it. ([#19979](https://github.com/craftcms/cms/pull/19979))
 - Fixed a bug where the MCP server’s `elements.create`, `elements.update`, and `elements.validate` tools silently ignored Matrix entries submitted in the format `elements.field-schema` described. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - Fixed a bug where the MCP server’s upload session endpoints couldn’t find upload sessions when a control panel trigger was set. ([#20080](https://github.com/craftcms/cms/pull/20080))
+- Fixed a bug where updating a Matrix entry with a GraphQL mutation or the MCP server cleared its title when no title was given. ([#20091](https://github.com/craftcms/cms/pull/20091))
 - Fixed a bug where asset indexes didn’t offer to undo moving assets or folders. ([#19985](https://github.com/craftcms/cms/pull/19985)))
 - Fixed a bug where input placeholder text had insufficient contrast in the dark theme.
 - Fixed a bug where the “License purchase required” screen’s Refresh button didn’t work.
