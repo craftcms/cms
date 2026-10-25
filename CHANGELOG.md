@@ -26,6 +26,7 @@
 - Element revision listings now use the control panel’s standard table, with a choice of page sizes. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - The Queue Manager utility now lists jobs a page at a time, with a choice of page sizes. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Queue job pages are now laid out like other detail pages, titled after the job, with a breadcrumb back to the Queue Manager and their Retry and Release buttons in the footer. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- The MCP server page’s setup snippets are now syntax-highlighted. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - The System Report, PHP Info, and Migrations utilities’ tables now line up with their headings. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Dates with times, such as element creation and update dates, revision dates, release dates, and queue job dates, now show the time zone’s abbreviation, like Craft 5. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Dates are now shown in the calendar of the user’s formatting locale, such as the Persian calendar for Persian or the Buddhist calendar for Thai. Named and ICU date formats in Twig, such as `|date('short')`, follow the site locale’s calendar too. ([#8741](https://github.com/craftcms/cms/discussions/8741), [#20085](https://github.com/craftcms/cms/pull/20085))

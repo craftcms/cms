@@ -6,17 +6,18 @@ import {json} from '@tanstack/highlight/languages/json';
 import {markdown} from '@tanstack/highlight/languages/markdown';
 import {php} from '@tanstack/highlight/languages/php';
 import {plaintext} from '@tanstack/highlight/languages/plaintext';
+import {shell} from '@tanstack/highlight/languages/shell';
 import {yaml} from '@tanstack/highlight/languages/yaml';
 import './highlight-code.css';
 
 /**
  * The control panel's syntax highlighter, also exposed as
  * `Craft.highlighter`. Each language also answers to its aliases, such as
- * `xml` for `html` or `javascript` for `js`. Anything else is shown as plain
- * text.
+ * `xml` for `html`, `javascript` for `js`, or `sh` for `shell`. Anything else
+ * is shown as plain text.
  */
 export const highlighter = createHighlighter({
-  languages: [diff, html, js, json, markdown, php, plaintext, yaml],
+  languages: [diff, html, js, json, markdown, php, plaintext, shell, yaml],
 });
 
 /** Splits code into tokens, classed by what they are. */
