@@ -61,12 +61,14 @@
 - Added `craft\services\Images::getSupportsBmp()`.
 - Added `craft\services\Images::getSupportsJxl()`.
 - Added `craft\test\ElementFixtureTrait`. ([#19626](https://github.com/craftcms/cms/pull/19626))
+- Added `craft\web\assets\highlight\HighlightAsset`.
 - `Illuminate\Support\Collection` now has a `render()` macro, which replaces `craft\elements\ElementCollection::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - `craft\helpers\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `craft\helpers\StringHelper::toLowerCase()`, `::toTitleCase()`, and `::toUpperCase()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `craft\services\Assets::getAssetById()` now returns the asset in another site if it doesn’t exist in the current site, when no site ID is passed. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - `elements/save-draft` action responses now include a `canDeleteForSite` key. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Deprecated `craft\helpers\ElementHelper::renderElements()`. `craft\helpers\Template::render()` should be used instead. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- Deprecated `craft\web\assets\prismjs\PrismJsAsset`. `craft\web\assets\highlight\HighlightAsset` should be used instead. `PrismJsAsset` now registers a `Prism` shim backed by TanStack Highlight, which supports Prism’s commonly-used APIs, but not grammar customization, hooks, or plugins.
 
 ### System
 
@@ -79,6 +81,7 @@
 - Updated Axios to 1.20.0. 
 - Updated Twig to 3.30.
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
+- Asset previews and the Project Config utility now use TanStack Highlight for syntax highlighting, rather than Prism.
 - Fixed a bug where entry and address indexes weren’t showing any results if they had a “Field” condition rule set to “is empty”.
 - Fixed a bug where `craft\services\Elements::deleteElementsForSite()` would remove elements’ site rows without deleting the elements, on single-site installs. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Fixed a bug where saving a deeply-nested element on its own wouldn’t update its owners’ `dateUpdated` timestamps, which could cause new revisions to reuse stale nested content. ([#19594](https://github.com/craftcms/cms/issues/19594))

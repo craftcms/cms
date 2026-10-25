@@ -170,19 +170,25 @@
             cancelToken: cancelToken.token,
         }).then(response => {
             cancelToken = null;
+            const highlightDiff = (diff) => Craft.highlighter.highlight(diff, {
+                lang: 'diff',
+                decorations: diff.split("\n").flatMap((line, i) => {
+                    if (line.startsWith('+') && !line.startsWith('+++')) {
+                        return [{lines: i + 1, className: 'diff-inserted'}];
+                    }
+                    if (line.startsWith('-') && !line.startsWith('---')) {
+                        return [{lines: i + 1, className: 'diff-deleted'}];
+                    }
+                    return [];
+                }),
+            }).html;
             let maxLines = 20;
             let lines = response.data.split(/\n/);
             let $diffPane = $('#diff')
                 .removeClass('loading')
                 .addClass('highlight');
             $diffPane.find('.spinner').remove();
-            let $pre = $('<pre/>', {
-                class: 'language-diff',
-            }).appendTo($diffPane);
-            let $code = $('<code/>', {
-                class: 'language-diff diff-highlight',
-                html: Prism.highlight(lines.slice(0, maxLines).join("\n"), Prism.languages.diff, 'diff'),
-            }).appendTo($pre);
+            let $pre = $(highlightDiff(lines.slice(0, maxLines).join("\n"))).appendTo($diffPane);
 
             if (lines.length > maxLines) {
                 let $p = $('<p/>', {
@@ -194,7 +200,7 @@
                     text: Craft.t('app', 'Show all changes'),
                 }).appendTo($p);
                 $button.on('activate', () => {
-                    $code.html(Prism.highlight(response.data, Prism.languages.diff, 'diff'));
+                    $pre.replaceWith(highlightDiff(response.data));
                     $p.remove();
                 });
             }

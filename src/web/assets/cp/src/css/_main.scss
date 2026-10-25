@@ -1274,30 +1274,24 @@ td.right {
   @include mixins.active-token-styles;
 }
 
-// Override .token for Prism
-.highlight {
-  .token {
-    display: inline;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    font-size: inherit;
-    line-height: inherit;
-    text-shadow: none;
-    background: transparent;
-    box-shadow: none;
-  }
-}
-
 .pane.highlight {
-  pre[class*='language-'] {
+  pre.th-code {
     overflow: visible;
 
-    & > code.diff-highlight .token:not(.prefix) {
-      margin-block: 0;
-      margin-inline: -24px;
-      padding-block: 0;
-      padding-inline: 24px;
+    & > code > .th-line {
+      &.diff-inserted,
+      &.diff-deleted {
+        margin-inline: -24px;
+        padding-inline: 24px;
+      }
+
+      &.diff-inserted {
+        background-color: rgb(0 255 128 / 10%);
+      }
+
+      &.diff-deleted {
+        background-color: rgb(255 0 0 / 10%);
+      }
     }
   }
 }
