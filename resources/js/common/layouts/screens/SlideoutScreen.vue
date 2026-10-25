@@ -9,6 +9,13 @@
    * global footer) still get outlets — hidden — so a page written for a full page
    * doesn't lose teleported content here.
    */
+  import {
+    DETAILS_PANEL_ID,
+    ScreenPanelsKey,
+    createScreenPanels,
+  } from '@/common/composables/screenPanels';
+  import DetailsPanels from '@/common/components/DetailsPanels.vue';
+  import ScreenPanel from '@/common/components/ScreenPanel.vue';
   import {t} from '@craftcms/ui/utilities/translate';
   import {ButtonVariant} from '@craftcms/ui';
   import {
@@ -117,7 +124,15 @@
   const hasToolbarMeta = computed(() => regions.has('content-toolbar-meta'));
   const hasTabs = computed(() => regions.has('content-tabs'));
   const hasNotices = computed(() => regions.has('content-notices'));
-  const hasDetails = computed(() => regions.has('content-details'));
+  // The details column: the panels the page adds with `ScreenPanel`, or
+  // whatever it puts in `content-details`. With panels as well, that becomes
+  // a panel of its own.
+  const hasDetailsContent = computed(() => regions.has('content-details'));
+  const hasPanels = computed(() => panels.panels.value.length > 0);
+  const hasOtherPanels = computed(() =>
+    panels.panels.value.some((panel) => panel.id !== DETAILS_PANEL_ID)
+  );
+  const hasDetails = computed(() => hasDetailsContent.value || hasPanels.value);
 
   // The same footer slots a full page forwards, only when the page filled them
   // so the footer's own fallbacks still apply.
@@ -169,6 +184,10 @@
   // A slideout keeps its details rail beside its panels, even when it
   // opens over a page that has a rail of its own.
   provide(ScreenDetailsRailKey, null);
+  // A slideout has panels of its own; the page's stay on the page.
+  const panels = createScreenPanels();
+  provide(ScreenPanelsKey, panels);
+  const panelIdPrefix = `slideout-details-${useId()}`;
 
   const submittingHtml = ref(false);
   const screenErrors = ref<Record<string, string> | null>(null);
@@ -502,10 +521,25 @@
         ref="detailsEl"
         class="slideout-screen__details"
       >
-        <LayoutSlotOutlet name="content-details">
+        <DetailsPanels
+          v-if="hasPanels"
+          :registry="panels"
+          :id-prefix="panelIdPrefix"
+        />
+        <LayoutSlotOutlet v-else name="content-details">
           <slot name="content-details"></slot>
         </LayoutSlotOutlet>
       </aside>
+      <ScreenPanel
+        v-if="hasDetailsContent && hasOtherPanels"
+        :id="DETAILS_PANEL_ID"
+        :label="t('Details')"
+        icon="circle-info"
+      >
+        <LayoutSlotOutlet name="content-details">
+          <slot name="content-details"></slot>
+        </LayoutSlotOutlet>
+      </ScreenPanel>
     </div>
 
     <footer v-if="!props.hideFooter" class="slideout-screen__footer">

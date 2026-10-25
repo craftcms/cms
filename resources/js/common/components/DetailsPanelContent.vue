@@ -1,17 +1,27 @@
 <script setup lang="ts">
   /**
-   * One panel of `DetailsPanels`: a header naming the panel, with its status and
-   * actions, above the panel's content. The default slot replaces the content,
-   * for a panel that renders a named slot of `DetailsPanels`.
+   * One panel of `DetailsPanels`: a header naming the panel, with its status
+   * and actions, above the panel's content. The actions and content are
+   * placeholders that the panel's `ScreenPanel` moves its own into.
    */
   import {t} from '@craftcms/ui';
-  import type {DetailsPanel} from './DetailsPanels.vue';
+  import type {ComponentPublicInstance} from 'vue';
+  import type {DetailsPanel} from './detailsPanels';
+
+  type PlaceholderRef = (
+    element: Element | ComponentPublicInstance | null
+  ) => void;
 
   defineProps<{
     panel: DetailsPanel;
-    componentProps: Record<string, unknown>;
     /** The heading's id, which names the panel and takes focus when it opens. */
     headingId: string;
+    /**
+     * Receive the elements the panel's header actions and content go in. Kept
+     * the same from render to render, so they aren't let go of.
+     */
+    headerRef: PlaceholderRef;
+    bodyRef: PlaceholderRef;
   }>();
   const emit = defineEmits<{
     (event: 'close'): void;
@@ -36,11 +46,7 @@
           {{ panel.statusData.label }}
         </span>
       </span>
-      <component
-        :is="panel.headerActionsComponent"
-        v-if="panel.headerActionsComponent"
-        v-bind="componentProps"
-      />
+      <div :ref="headerRef" class="contents"></div>
       <craft-button
         type="button"
         icon="xmark-large"
@@ -52,13 +58,13 @@
       ></craft-button>
     </div>
   </div>
-  <div class="grow basis-0 min-h-0 cp-inner-scroller">
-    <slot>
-      <component
-        v-if="panel.component"
-        :is="panel.component"
-        v-bind="componentProps"
-      />
-    </slot>
-  </div>
+  <div
+    :ref="bodyRef"
+    class="grow basis-0 min-h-0"
+    :class="
+      panel.scrollsItself
+        ? 'flex flex-col overflow-hidden'
+        : 'cp-inner-scroller'
+    "
+  ></div>
 </template>

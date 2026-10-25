@@ -50,6 +50,14 @@
   import ContentFooter from './page/ContentFooter.vue';
   import ScreenOverlays from './page/ScreenOverlays.vue';
   import ScreenSkipLinks from './page/ScreenSkipLinks.vue';
+  import DetailsPanels from '@/common/components/DetailsPanels.vue';
+  import ScreenPanel from '@/common/components/ScreenPanel.vue';
+  import {
+    DETAILS_PANEL_ID,
+    ScreenPanelsKey,
+    screenPanels,
+  } from '@/common/composables/screenPanels';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {useDetailsResizer} from './page/useDetailsResizer';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
@@ -124,6 +132,7 @@
   // server's own switchers take their menus from the main nav, so a source's
   // switcher is the same on its index and on the pages beneath it.
   const {nav, siteCrumb} = useCraftData();
+
   const crumbs = computed<Array<BreadcrumbItem> | null>(() => {
     const merged = withSubnavCrumbs(
       withNavCrumbMenus(page.props.crumbs ?? [], nav.value ?? [], page.url),
@@ -163,7 +172,16 @@
       regions.has('title') ||
       regions.has('content-actions')
   );
-  const hasDetails = computed(() => regions.has('content-details'));
+  // The details column: the panels pages and the shell add with
+  // `ScreenPanel`, or whatever a page puts in `content-details`. With panels
+  // as well, that becomes a panel of its own.
+  provide(ScreenPanelsKey, screenPanels);
+  const hasDetailsContent = computed(() => regions.has('content-details'));
+  const hasPanels = computed(() => screenPanels.panels.value.length > 0);
+  const hasOtherPanels = computed(() =>
+    screenPanels.panels.value.some((panel) => panel.id !== DETAILS_PANEL_ID)
+  );
+  const hasDetails = computed(() => hasDetailsContent.value || hasPanels.value);
   const hasTabs = computed(() => regions.has('content-tabs'));
   // Decided here rather than inside `ContentFooter`, so the sticky wrapper
   // around it and the notices can be hidden together rather than left
@@ -510,13 +528,25 @@
                               ref="detailsColumn"
                               :resizer="detailsResizer"
                             >
-                              <template
-                                v-if="slots['content-details']"
-                                #content-details
-                              >
+                              <DetailsPanels
+                                v-if="hasPanels"
+                                :registry="screenPanels"
+                                sync-location-hash
+                              />
+                              <LayoutSlotOutlet v-else name="content-details">
                                 <slot name="content-details"></slot>
-                              </template>
+                              </LayoutSlotOutlet>
                             </ContentDetails>
+                            <ScreenPanel
+                              v-if="hasDetailsContent && hasOtherPanels"
+                              :id="DETAILS_PANEL_ID"
+                              :label="t('Details')"
+                              icon="circle-info"
+                            >
+                              <LayoutSlotOutlet name="content-details">
+                                <slot name="content-details"></slot>
+                              </LayoutSlotOutlet>
+                            </ScreenPanel>
                           </div>
                         </aside>
                       </div>

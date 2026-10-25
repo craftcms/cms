@@ -1,9 +1,9 @@
 <script setup lang="ts">
   /**
-   * The details column: a rail of icon buttons, each disclosing one panel. At
-   * most one panel is open, and closing it folds the column to the rail. Panels
-   * render either a named slot or a component, so a page can mix its own markup
-   * with registered panels.
+   * A screen's details column: a rail of icon buttons, each disclosing one
+   * panel. At most one panel is open, and closing it folds the column to the
+   * rail. Each screen renders one, for the panels in its registry, which
+   * pages and the shell fill with `ScreenPanel`.
    *
    * On a full page the rail is teleported away from the panels, so opening a
    * panel from it moves focus to the panel's heading, and Escape or the
@@ -12,46 +12,24 @@
   import '@craftcms/ui/components/disclosure/disclosure';
   import {t} from '@craftcms/ui';
   import {useEventListener, useLocalStorage} from '@vueuse/core';
-  import {computed, nextTick, onBeforeUnmount, shallowRef, watch} from 'vue';
-  import type {Component} from 'vue';
+  import {nextTick, onBeforeUnmount, onMounted, watch} from 'vue';
+  import type {ComponentPublicInstance} from 'vue';
   import {
     useIsSlideout,
     useScreenDetailsOverlay,
     useScreenDetailsRail,
   } from '@/common/composables/screen';
+  import type {ScreenPanels} from '@/common/composables/screenPanels';
   import DetailsPanelContent from './DetailsPanelContent.vue';
   import {initialOf} from '@/common/utils/initialIcon';
+  import type {DetailsPanel} from './detailsPanels';
 
-  export interface DetailsPanel {
-    id: string;
-    label: string;
-    icon: string;
-    /** Show the label's first letter instead of the icon. */
-    initialIcon?: boolean;
-    order?: number;
-    /** A slot to render as the panel. */
-    slot?: string;
-    /** A component to render as the panel, when there's no slot. */
-    component?: Component;
-    /** Optional controls rendered at the end of the panel header. */
-    headerActionsComponent?: Component;
-    /** A status shown in the panel header. */
-    statusData?: DetailsPanelStatus | null;
-  }
-
-  export interface DetailsPanelStatus {
-    label: string;
-    indicator: string;
-  }
+  export type {DetailsPanel, DetailsPanelStatus} from './detailsPanels';
 
   const props = withDefaults(
     defineProps<{
-      panels: DetailsPanel[];
-      /** Props for a component panel, given the panel and the open panel's ID. */
-      componentProps?: (
-        panel: DetailsPanel,
-        activePanelId: string | null
-      ) => Record<string, unknown>;
+      /** The screen's panels. */
+      registry: ScreenPanels;
       idPrefix?: string;
       /** Whether the open panel is mirrored in the URL hash. */
       syncLocationHash?: boolean;
@@ -59,12 +37,8 @@
     {idPrefix: 'details-panel', syncLocationHash: false}
   );
 
-  const visiblePanels = computed<DetailsPanel[]>(() =>
-    [...props.panels].sort(
-      (firstPanel, secondPanel) =>
-        (firstPanel.order ?? 0) - (secondPanel.order ?? 0)
-    )
-  );
+  const visiblePanels = props.registry.panels;
+  const openPanelId = props.registry.openPanelId;
 
   /** Where the rail goes when the shell keeps it apart from the panels. */
   const rail = useScreenDetailsRail();
@@ -81,14 +55,27 @@
     return `${panelElementId(panelId)}-heading`;
   }
 
-  function isVisible(panelId: string): boolean {
-    return visiblePanels.value.some((panel) => panel.id === panelId);
+  function findPanel(panelId: string | null): DetailsPanel | undefined {
+    return visiblePanels.value.find((panel) => panel.id === panelId);
   }
 
-  const initialHash =
-    props.syncLocationHash && window.location.hash
-      ? window.location.hash.slice(1)
-      : null;
+  function isVisible(panelId: string): boolean {
+    return findPanel(panelId) !== undefined;
+  }
+
+  /**
+   * The panel a column opens on: the page's first, so a panel that stays from
+   * page to page doesn't take over the page's details, or that one when the
+   * page has none.
+   */
+  function defaultPanelId(): string | null {
+    return (
+      visiblePanels.value.find((panel) => !panel.persistent)?.id ??
+      visiblePanels.value[0]?.id ??
+      null
+    );
+  }
+
   /**
    * Slideouts don't mirror the open panel in the URL hash, so they remember
    * the panel the person last left open, or that they folded the column,
@@ -100,7 +87,21 @@
     ? useLocalStorage<string | null>('Slideout.detailsPanel', null)
     : null;
 
+  /**
+   * Whether the open panel was opened on purpose: by the person, the URL
+   * hash, or a request, rather than by default.
+   */
+  let openedOnPurpose = false;
+
+  /** The panel to open on when a page's panels arrive. */
   function initialPanelId(): string | null {
+    // One that stays from page to page, opened on purpose, stays open.
+    if (openedOnPurpose && findPanel(openPanelId.value)?.persistent) {
+      return openPanelId.value;
+    }
+
+    openedOnPurpose = false;
+
     if (slideoutPanelId) {
       const remembered = slideoutPanelId.value;
 
@@ -108,25 +109,37 @@
         return null;
       }
 
-      return isVisible(remembered)
-        ? remembered
-        : (visiblePanels.value[0]?.id ?? null);
+      return isVisible(remembered) ? remembered : defaultPanelId();
     }
 
-    return initialHash && isVisible(initialHash)
-      ? initialHash
-      : (visiblePanels.value[0]?.id ?? null);
+    const hash =
+      props.syncLocationHash && window.location.hash
+        ? window.location.hash.slice(1)
+        : null;
+
+    return hash && isVisible(hash) ? hash : defaultPanelId();
   }
 
-  const openPanelId = shallowRef<string | null>(initialPanelId());
+  openPanelId.value = initialPanelId();
 
-  // An open panel that goes away falls back to the first.
+  // Each page's panels open as they would on a fresh page.
+  watch(props.registry.pageGeneration, () => {
+    openPanelId.value = overlaid?.value ? null : initialPanelId();
+  });
+
+  // An open panel that goes away falls back to the page's first, or folds
+  // the column when the page has none. Until a panel is opened on purpose,
+  // the column follows the page's first, as panels arrive in turn.
   watch(visiblePanels, (panels) => {
     if (
       openPanelId.value &&
       !panels.some((panel) => panel.id === openPanelId.value)
     ) {
-      openPanelId.value = panels[0]?.id ?? null;
+      openPanelId.value = panels.some((panel) => !panel.persistent)
+        ? defaultPanelId()
+        : null;
+    } else if (openPanelId.value !== null && !openedOnPurpose) {
+      openPanelId.value = initialPanelId();
     }
   });
 
@@ -158,7 +171,7 @@
       if (panelClosedByShell !== null && openPanelId.value === null) {
         openPanelId.value = isVisible(panelClosedByShell)
           ? panelClosedByShell
-          : (visiblePanels.value[0]?.id ?? null);
+          : defaultPanelId();
       }
 
       panelClosedByShell = null;
@@ -171,8 +184,19 @@
     void nextTick(() => document.getElementById(id)?.focus());
   }
 
+  function focusPanel(panelId: string): void {
+    const panel = findPanel(panelId);
+
+    void nextTick(() =>
+      (
+        panel?.initialFocus?.() ?? document.getElementById(headingId(panelId))
+      )?.focus()
+    );
+  }
+
   function open(panelId: string, withFocus: boolean): void {
     openPanelId.value = panelId;
+    openedOnPurpose = true;
     panelClosedByShell = null;
     updateLocationHash();
 
@@ -181,7 +205,7 @@
     }
 
     if (withFocus) {
-      focusAfterRender(headingId(panelId));
+      focusPanel(panelId);
     }
   }
 
@@ -214,13 +238,25 @@
   }
 
   /**
-   * Set once the panels start going away, such as when an Inertia visit
-   * replaces the page. Every disclosure then disconnects at once.
+   * Set once the column starts going away. Every disclosure then disconnects
+   * at once.
    */
   let unmounting = false;
 
+  onMounted(() =>
+    props.registry.attach({
+      open: (panelId, withFocus) => {
+        if (isVisible(panelId)) {
+          open(panelId, withFocus);
+        }
+      },
+      close,
+    })
+  );
+
   onBeforeUnmount(() => {
     unmounting = true;
+    props.registry.attach(null);
   });
 
   function onShow(panelId: string): void {
@@ -248,12 +284,6 @@
     close(panelId, true);
   }
 
-  function select(panelId: string): void {
-    if (isVisible(panelId)) {
-      open(panelId, true);
-    }
-  }
-
   function updateLocationHash(): void {
     if (props.syncLocationHash && openPanelId.value) {
       const url = new URL(window.location.href);
@@ -273,7 +303,37 @@
     }
   });
 
-  defineExpose({select});
+  /**
+   * Keeps the element a panel's content or header actions go in. One function
+   * per panel, so re-rendering doesn't swap the ref, which would let go of the
+   * element and move the panel's content out and back.
+   */
+  type PlaceholderRef = (
+    element: Element | ComponentPublicInstance | null
+  ) => void;
+
+  const placeholders = new Map<string, PlaceholderRef>();
+
+  function placeholder(
+    elements: Map<string, HTMLElement>,
+    panelId: string
+  ): PlaceholderRef {
+    const key = `${elements === props.registry.bodies ? 'body' : 'header'}:${panelId}`;
+    let ref = placeholders.get(key);
+
+    if (!ref) {
+      ref = (element) => {
+        if (element instanceof HTMLElement) {
+          elements.set(panelId, element);
+        } else if (elements.get(panelId)) {
+          elements.delete(panelId);
+        }
+      };
+      placeholders.set(key, ref);
+    }
+
+    return ref;
+  }
 </script>
 
 <template>
@@ -291,11 +351,10 @@
         <DetailsPanelContent
           :panel="panel"
           :heading-id="headingId(panel.id)"
-          :component-props="componentProps?.(panel, openPanelId) ?? {}"
+          :header-ref="placeholder(registry.headers, panel.id)"
+          :body-ref="placeholder(registry.bodies, panel.id)"
           @close="close(panel.id, true)"
-        >
-          <slot v-if="panel.slot" :name="panel.slot" />
-        </DetailsPanelContent>
+        />
       </section>
     </div>
     <Teleport defer :to="rail ?? 'body'" :disabled="!rail">
