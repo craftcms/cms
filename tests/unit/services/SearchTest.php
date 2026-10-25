@@ -172,7 +172,8 @@ class SearchTest extends TestCase
     public function testLargeKeywordBatchesAreSplitAcrossStatements(): void
     {
         $user = $this->_makeUser(5);
-        $keywords = ' ' . str_repeat('a', 60000) . ' ';
+        // ~60KB of short words (Postgres doesn't allow tsvector words over 2046 bytes)
+        $keywords = ' ' . str_repeat('lorem ', 10000);
         $rows = [];
         for ($i = 0; $i < 20; $i++) {
             $rows[] = [
