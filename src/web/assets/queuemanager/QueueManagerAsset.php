@@ -9,6 +9,7 @@ namespace craft\web\assets\queuemanager;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use craft\web\assets\highlight\HighlightAsset;
 use craft\web\assets\vue\VueAsset;
 use craft\web\View;
 
@@ -31,6 +32,7 @@ class QueueManagerAsset extends AssetBundle
      */
     public $depends = [
         CpAsset::class,
+        HighlightAsset::class,
         VueAsset::class,
     ];
 
