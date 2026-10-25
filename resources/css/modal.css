@@ -2,7 +2,7 @@
 Modal — base styles.
 
 The chrome for `@craftcms/garnish`'s `Modal` and the classes built on it
-(`CpModal`, `EntryMover`, `PromptHandler`, and plugins' `Garnish.Modal`s): the
+(`CpModal`, `EntryMover`, and plugins' `Garnish.Modal`s): the
 shade, the positioned container, and the generic `.header` / `.body` /
 `.footer` layout. Garnish positions and sizes the container itself, and
 toggles its `display` inline.
@@ -23,11 +23,10 @@ toggles its `display` inline.
   position: fixed;
   box-sizing: border-box;
   overflow: hidden;
-  border: var(--c-modal-border-width) var(--c-modal-border-style)
-    var(--c-modal-border-color);
   border-radius: var(--c-modal-radius);
   background-color: var(--c-modal-fill);
-  box-shadow: var(--c-shadow-lg), var(--c-shadow-sm);
+  box-shadow: var(--c-modal-ring), var(--c-shadow-2xl);
+  outline: 1px solid transparent;
   color: var(--c-modal-text, var(--c-text-default));
 }
 
@@ -56,11 +55,15 @@ toggles its `display` inline.
   position: relative;
   z-index: 1;
   box-sizing: border-box;
-  background-color: var(--c-surface-sunken);
+  background-color: var(--c-modal-fill);
 }
 
 .modal > .header {
-  padding: var(--c-modal-padding);
+  display: flex;
+  align-items: center;
+  min-block-size: var(--c-modal-header-height);
+  padding-block: var(--c-spacing-sm);
+  padding-inline: var(--c-modal-padding);
   border-block-end: 1px solid var(--c-color-neutral-border-quiet);
 }
 
@@ -80,9 +83,11 @@ toggles its `display` inline.
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+  align-items: center;
   gap: var(--c-spacing-sm);
+  min-block-size: var(--c-modal-footer-height);
   padding-block: var(--c-spacing-sm);
-  padding-inline: var(--c-modal-padding);
+  padding-inline: var(--cp-container-padding);
   border-block-start: 1px solid var(--c-color-neutral-border-quiet);
 }
 
@@ -118,37 +123,13 @@ toggles its `display` inline.
   display: none;
 }
 
-.cpmodal > .cpmodal-body {
-  padding: var(--c-modal-padding);
+.cpmodal-dialog::part(body) {
+  padding-block-start: calc(var(--c-spacing-md) + var(--c-spacing-xs));
 }
 
-.cpmodal > .cpmodal-footer {
-  display: flex;
-  justify-content: flex-end;
-  padding-block: var(--c-spacing-sm);
-  padding-inline: var(--c-modal-padding);
-  border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-  background-color: var(--c-surface-sunken);
-}
-
-.cpmodal-buttons {
-  display: flex;
-  align-items: center;
-  gap: var(--c-spacing-sm);
-}
-
-.prompt-modal > .body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--c-spacing-md);
-}
-
-.prompt-modal .prompt-msg {
-  font-weight: var(--font-weight-semibold);
-}
-
-.prompt-modal > .body .buttons {
-  justify-content: flex-end;
+.cpmodal-spinner:not([hidden]) {
+  display: block;
+  margin-inline: auto;
 }
 
 .entry-mover-modal {
@@ -157,6 +138,7 @@ toggles its `display` inline.
 }
 
 .entry-mover-modal > .header {
+  justify-content: center;
   text-align: center;
 }
 
@@ -181,4 +163,9 @@ toggles its `display` inline.
   position: absolute;
   inset-block-end: 0;
   inset-inline: 0;
+}
+
+.previewmodal::part(body) {
+  position: relative;
+  padding: 0;
 }

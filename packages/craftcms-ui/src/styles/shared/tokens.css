@@ -126,6 +126,7 @@
     small padding above and below. Add a header's own border widths to it.
   */
   --c-size-header: calc(var(--c-size-control-sm) + var(--c-spacing-sm) * 2);
+  --c-size-footer: calc(54rem / 16);
 
   /*
     Craft's box shadows scale their opacity by this, so each theme can deepen
@@ -303,10 +304,12 @@
   --c-modal-text: var(--c-text-default);
   --c-modal-radius: var(--c-radius-lg);
   /* A hairline, on top of the shadow, so modals keep an edge in either theme. */
-  --c-modal-border-width: 1px;
-  --c-modal-border-style: solid;
-  --c-modal-border-color: var(--c-color-border-quiet);
+  --c-modal-ring: 0 0 0 1px rgb(0 0 0 / 18%);
   --c-modal-padding: var(--c-pane-padding);
+  --c-modal-header-height: calc(
+    var(--c-size-control-sm) + var(--c-modal-padding) * 2 + 1px
+  );
+  --c-modal-footer-height: var(--c-size-footer);
 
   /* Slideouts */
   --c-slideout-shadow:
@@ -362,6 +365,7 @@
 
   /* Shadows read fainter against dark surfaces. */
   --c-shadow-multiplier: 1.5;
+  --c-modal-ring: 0 0 0 1px rgb(255 255 255 / 25%);
 
   --c-border-raised-selected: var(--color-base-500);
   --c-card-fill-selected: var(--color-base-300);
