@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
@@ -31,6 +31,7 @@ use InvalidArgumentException;
 use Throwable;
 use Twig\Error\RuntimeError;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
 
 /**
@@ -482,9 +483,16 @@ class AssetsHelper
     }
 
     /**
-     * Returns the SVG contents for an asset icon with a given extension.
+     * Returns the SVG contents for an asset icon with a given extension, in
+     * the light or dark variant for the control panel theme that's showing,
+     * unless `$dark` says which.
+     *
+     * The paper is laid out in percentages of the icon's box, while its corner
+     * radius, outline and shadow are in pixels, so they look the same at any
+     * size. The outline's outer corners match the image thumbnails and chips
+     * around it, through `--c-thumbnail-image-radius`.
      */
-    public static function iconSvg(string $extension): string
+    public static function iconSvg(string $extension, ?bool $dark = null): string
     {
         if (! preg_match('/^\w+$/', $extension)) {
             throw new InvalidArgumentException("$extension isn’t a valid file extension.");
@@ -496,26 +504,141 @@ class AssetsHelper
             return $path;
         }
 
-        $svg = file_get_contents(Aliases::get('@resources/public/images/thumbs/file.svg'));
+        $dark ??= Theme::resolveFor(currentUserElement()) === Theme::Dark;
+        $radius = 'var(--c-thumbnail-image-radius, 4px)';
+        $shapeRadius = "max(0px, calc($radius - 1px))";
+        $ringRadius = "max(0px, calc($radius - 0.5px))";
+        $paper = ['x' => '14.5%', 'y' => '4%', 'width' => '71%', 'height' => '92%', 'rx' => 4];
+
+        $paperNode = Html::tag('rect', '', [
+            ...$paper,
+            'fill' => $dark ? '#1a2231' : '#fff',
+            'style' => sprintf(
+                'rx: %s; %sfilter: drop-shadow(0 1px 1.5px rgb(0 0 0 / %s))',
+                $shapeRadius, $dark ? 'fill: var(--c-color-black-fill-quiet, #1a2231); ' : '', $dark ? '0.6' : '0.18',
+            ),
+        ]);
+        $ringNode = Html::tag('rect', '', [
+            ...$paper,
+            'fill' => 'none',
+            'stroke' => $dark ? '#fff' : '#000',
+            'stroke-opacity' => $dark ? 0.25 : 0.18,
+            'style' => sprintf(
+                'x: calc(14.5%% - 0.5px); y: calc(4%% - 0.5px); width: calc(71%% + 1px); height: calc(92%% + 1px); rx: %s',
+                $ringRadius,
+            ),
+        ]);
 
         $extLength = strlen($extension);
 
         [$textSize, $extension] = match (true) {
-            $extLength <= 3 => ['19', $extension],
-            $extLength === 4 => ['16', $extension],
-            default => ['15', substr($extension, 0, 3).'…']
+            $extLength <= 3 => ['24', $extension],
+            $extLength === 4 => ['20', $extension],
+            default => ['18', substr($extension, 0, 3).'…']
         };
 
-        $textNode = Html::tag('text', strtoupper($extension), [
+        $quietText = $dark ? '#a6b2c2' : '#5c6982';
+        $textNode = Html::tag('svg', Html::tag('text', strtoupper($extension), [
             'x' => 50,
-            'y' => 73,
+            'y' => 82,
             'text-anchor' => 'middle',
-            'font-family' => 'sans-serif',
-            'fill' => 'hsl(210, 10%, 47%)',
+            'font-family' => 'system-ui, sans-serif',
+            'font-weight' => 600,
+            'fill' => $quietText,
             'font-size' => $textSize,
+            'style' => "fill: var(--c-text-quiet, $quietText)",
+        ]), ['viewBox' => '0 0 100 100']);
+
+        return Html::tag('svg', $paperNode.$ringNode.$textNode, [
+            'xmlns' => 'http://www.w3.org/2000/svg',
+            'width' => '100%',
+            'height' => '100%',
+            'overflow' => 'visible',
+        ]);
+    }
+
+    /**
+     * Returns the SVG contents for a folder icon, in the light or dark variant
+     * for the control panel theme that's showing, unless `$dark` says which.
+     *
+     * Like {@see self::iconSvg()}, it's laid out in percentages of the icon's
+     * box, with its corners, outline and shadow in pixels.
+     */
+    public static function folderIconSvg(?bool $dark = null): string
+    {
+        $dark ??= Theme::resolveFor(currentUserElement()) === Theme::Dark;
+        $radius = 'var(--c-thumbnail-image-radius, 4px)';
+        $shapeRadius = "max(0px, calc($radius - 1px))";
+        $ringRadius = "max(0px, calc($radius - 0.5px))";
+        $back = ['x' => '8%', 'y' => '20%', 'width' => '84%', 'height' => '66%', 'rx' => 4];
+        $tab = ['x' => '8%', 'y' => '13%', 'width' => '36%', 'height' => '13%', 'rx' => 3];
+        $tabTop = 'min(13%, calc(20% - 2.25px))';
+        $tabStyle = "y: $tabTop; height: calc(26% - $tabTop); rx: $shapeRadius";
+        $backColor = $dark ? '#172560' : '#5b96f6';
+
+        $ringNodes = Html::tag('g', implode('', [
+            Html::tag('rect', '', [
+                ...$tab,
+                'style' => "x: calc(8% - 0.5px); y: calc($tabTop - 0.5px); width: calc(36% + 1px); height: calc(26% - $tabTop + 1px); rx: $ringRadius",
+            ]),
+            Html::tag('rect', '', [
+                ...$back,
+                'style' => sprintf(
+                    'x: calc(8%% - 0.5px); y: calc(20%% - 0.5px); width: calc(84%% + 1px); height: calc(66%% + 1px); rx: %s',
+                    $ringRadius,
+                ),
+            ]),
+        ]), [
+            'fill' => 'none',
+            'stroke' => $dark ? '#fff' : '#000',
+            'opacity' => $dark ? 0.25 : 0.18,
+        ]);
+        $seamCoverNodes = Html::tag('g', implode('', [
+            Html::tag('rect', '', [...$tab, 'style' => $tabStyle]),
+            Html::tag('rect', '', [
+                'x' => '8%',
+                'y' => '20%',
+                'width' => '37%',
+                'height' => '7%',
+                'style' => 'width: calc(36% + 2px); height: min(calc(6% + 2px), 10%)',
+            ]),
+        ]), ['fill' => $backColor]);
+        $backNodes = Html::tag('g', implode('', [
+            Html::tag('rect', '', [...$tab, 'style' => $tabStyle]),
+            Html::tag('rect', '', [...$back, 'style' => "rx: $shapeRadius"]),
+        ]), [
+            'fill' => $backColor,
+            'style' => sprintf('filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / %s))', $dark ? '0.6' : '0.18'),
+        ]);
+        $frontNode = Html::tag('rect', '', [
+            'x' => '8%',
+            'y' => '30%',
+            'width' => '84%',
+            'height' => '56%',
+            'rx' => 4,
+            'fill' => $dark ? '#1b2f8c' : '#8ab5f8',
+            'style' => sprintf(
+                'rx: %s; filter: drop-shadow(0 -0.5px 1px rgb(0 0 0 / %s))',
+                $shapeRadius, $dark ? '0.35' : '0.15',
+            ),
         ]);
 
-        return Html::appendToTag($svg, $textNode);
+        $frontEdgeNode = Html::tag('rect', '', [
+            'x' => '12%',
+            'y' => '30%',
+            'width' => '76%',
+            'height' => 1,
+            'fill' => '#fff',
+            'fill-opacity' => $dark ? 0.2 : 0.6,
+            'style' => sprintf('x: calc(8%% + %1$s); width: calc(84%% - 2 * %1$s)', $shapeRadius),
+        ]);
+
+        return Html::tag('svg', $backNodes.$frontNode.$frontEdgeNode.$ringNodes.$seamCoverNodes, [
+            'xmlns' => 'http://www.w3.org/2000/svg',
+            'width' => '100%',
+            'height' => '100%',
+            'overflow' => 'visible',
+        ]);
     }
 
     /**

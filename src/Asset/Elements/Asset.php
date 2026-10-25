@@ -2228,7 +2228,7 @@ JS, [
     protected function thumbSvg(): string
     {
         if ($this->isFolder) {
-            return file_get_contents(Aliases::get('@resources/public/images/thumbs/folder.svg'));
+            return AssetsHelper::folderIconSvg();
         }
 
         return AssetsHelper::iconSvg($this->getExtension());
@@ -2872,6 +2872,8 @@ JS, [
 
         // See if we can show a thumbnail
         try {
+            $showsIcon = ! in_array($this->kind, [FileKind::Video->value, FileKind::Audio->value], true)
+                && AssetsService::getThumbUrl($this, 350, 190, iconFallback: false) === null;
             $previewInner = match ($this->kind) {
                 FileKind::Video->value => Html::tag('video', Html::tag('source', '', [
                     'type' => $this->getMimeType(),
@@ -2888,9 +2890,13 @@ JS, [
                     'controls' => true,
                     'preload' => 'metadata',
                 ]),
-                default => Html::tag('div', $this->getPreviewThumbImg(350, 190), [
-                    'class' => 'preview-thumb',
-                ]),
+                default => $showsIcon
+                    ? Html::tag('div', Html::svg(AssetsHelper::iconSvg($this->getExtension()), sanitize: false, namespace: true), [
+                        'class' => ['preview-thumb', 'mx-auto', 'py-md', 'w-[160px]', 'h-[160px]', 'box-content'],
+                    ])
+                    : Html::tag('div', $this->getPreviewThumbImg(350, 190), [
+                        'class' => 'preview-thumb',
+                    ]),
             };
 
             $previewThumbHtml =
@@ -2900,7 +2906,9 @@ JS, [
                         'preview-thumb-container',
                         $this->hasCheckeredThumb() ? 'checkered' : null,
                     ]),
-                    ...$this->previewBackgroundStyles(),
+                    ...($showsIcon
+                        ? ['style' => ['background-image' => 'linear-gradient(color-mix(in oklab, var(--c-surface-sunken), black 5%), var(--c-surface-sunken))']]
+                        : $this->previewBackgroundStyles()),
                 ]).
                 $previewInner.
                 Html::endTag('div'); // .preview-thumb-container

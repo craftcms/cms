@@ -21,6 +21,7 @@
 - Copy prompts now show their value in a read-only input with a copy button, like Craft 5. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Standalone inputs’ instructions and tips now have the same spacing and styling as other fields. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Selected cards’ checkboxes now stand out against their headers. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- File and folder icons have been redesigned: files look like a sheet of paper, and folders are light blue, each with corners that match nearby image thumbnails, a soft shadow and a 1px outline at any size. The dark theme gets a black sheet and dark blue folders. Asset previews show them on the same gradient images get, rather than stretched to the preview area’s shape. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - The icon picker’s icons are now 32px squares, evenly spaced. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Secondary navigation items are now as wide as the global navigation’s. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Element revision listings now use the control panel’s standard table, with a choice of page sizes. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -304,6 +305,9 @@
 
 ### Extensibility
 
+- `CraftCms\Cms\Asset\AssetsHelper::iconSvg()` now has a `$dark` argument, and returns the dark variant for the control panel’s dark theme by default. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Added `CraftCms\Cms\Asset\AssetsHelper::folderIconSvg()`. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Added `CraftCms\Cms\Cp\Enums\Theme::resolveFor()`. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Translation\Locale::getLanguageTag()`, and the `Craft.formattingLocale` JavaScript variable, which hold the formatting locale as a BCP 47 language tag for `Intl` APIs. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Utility\Utility::subpageTitle()`, which titles a utility’s subpages and gives them a breadcrumb back to the utility. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))

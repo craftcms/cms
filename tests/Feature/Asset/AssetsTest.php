@@ -15,6 +15,7 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Image\Data\ImageColors;
@@ -160,11 +161,13 @@ it('uses file-kind images only when the selected driver does not support the sou
         'filename' => 'test.pdf',
         'kind' => FileKind::Pdf->value,
     ]);
-    $iconUrl = Url::actionUrl('assets/icon', ['extension' => 'pdf']);
-
-    expect($this->assets->getThumbUrl($asset, 100))->toBe($iconUrl)
+    expect($this->assets->getThumbUrl($asset, 100))->toBe(Url::actionUrl('assets/icon', ['extension' => 'pdf']))
         ->and($this->assets->getThumbUrl($asset, 100, iconFallback: false))->toBeNull()
-        ->and($this->assets->getImagePreviewUrl($asset, 1000, 1000))->toBe($iconUrl);
+        ->and($this->assets->getImagePreviewUrl($asset, 1000, 1000))->toBe(Url::actionUrl('assets/icon', ['extension' => 'pdf']));
+
+    request()->cookies->set(Theme::COOKIE, 'dark');
+
+    expect($this->assets->getThumbUrl($asset, 100))->toBe(Url::actionUrl('assets/icon', ['extension' => 'pdf', 'theme' => 'dark']));
 });
 
 it('does not disguise control-panel transform configuration failures as file-kind images', function () {

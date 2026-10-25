@@ -21,6 +21,7 @@ use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Asset\PreviewHandlers\Video;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
@@ -214,12 +215,22 @@ class Assets
                 'mode' => $mode->value,
             ])->url;
         } catch (NotSupportedException|FilesystemException) {
-            return $iconFallback ? Url::actionUrl('assets/icon', [
-                'extension' => $extension,
-            ]) : null;
+            return $iconFallback ? self::iconUrl($extension) : null;
         }
 
         return AssetsHelper::revUrl($url, $asset, fsOnly: true);
+    }
+
+    /**
+     * Returns the URL of a file icon, in the variant for the control panel
+     * theme that's showing, since icon responses are cached by URL.
+     */
+    private static function iconUrl(string $extension): string
+    {
+        return Url::actionUrl('assets/icon', array_filter([
+            'extension' => $extension,
+            'theme' => Theme::resolveFor(currentUserElement()) === Theme::Dark ? Theme::Dark->value : null,
+        ]));
     }
 
     /**
@@ -254,9 +265,7 @@ class Assets
                 )
                 : $asset->getUrl();
         } catch (NotSupportedException) {
-            return Url::actionUrl('assets/icon', [
-                'extension' => $asset->getExtension(),
-            ]);
+            return self::iconUrl($asset->getExtension());
         }
 
         if (! $url) {

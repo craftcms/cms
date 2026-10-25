@@ -533,3 +533,17 @@ describe('INDEX_SKIP_ITEMS_PATTERN', function () {
         'nested file' => ['folder/photo.jpg'],
     ]);
 });
+
+test('icon SVGs are well-formed XML, so they can be served as images', function (bool $dark) {
+    expect(simplexml_load_string(AssetsHelper::iconSvg('pdf', $dark)))->not->toBeFalse();
+})->with([false, true]);
+
+test('folder icon SVGs come in light and dark blue, and are well-formed XML', function (bool $dark, string $fill) {
+    $svg = AssetsHelper::folderIconSvg($dark);
+
+    expect(simplexml_load_string($svg))->not->toBeFalse()
+        ->and($svg)->toContain("fill=\"$fill\"");
+})->with([
+    'light' => [false, '#8ab5f8'],
+    'dark' => [true, '#1b2f8c'],
+]);
