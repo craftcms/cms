@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetContents;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
@@ -239,6 +240,24 @@ it('marks text previews with the language to highlight them as', function (strin
     'Markdown' => ['readme.md', FileKind::Markdown->value, '# Hi', '# Hi'],
     'escaped HTML' => ['page.html', FileKind::Html->value, '<b>hi</b>', '&lt;b&gt;hi&lt;/b&gt;'],
 ]);
+
+it('previews a text file from its stored contents', function () {
+    $disk = Storage::fake('test-disk');
+    config()->set('filesystems.disks.test-disk.root', $disk->path(''));
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'notes.txt',
+        'kind' => FileKind::Text->value,
+    ]);
+    app(AssetContents::class)->set($asset->id, 'Stored text');
+
+    $html = $this->assets->getAssetPreviewHandler(Asset::findOne($asset->id))->getPreviewHtml();
+
+    expect($html)->toContain('<code data-language="text">Stored text</code>');
+});
 
 it('returns null preview handler for unknown asset kinds', function () {
     $volume = Volume::factory()->create(['fs' => 'test-disk']);

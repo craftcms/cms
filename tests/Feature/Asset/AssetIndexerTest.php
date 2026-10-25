@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetContents;
 use CraftCms\Cms\Asset\AssetIndexer;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Enums\AssetIndexStatus;
@@ -702,6 +703,56 @@ it('samples the colors again once the file has changed', function () {
             ->and(Asset::findOrFail($asset->id)->colors['dominant'])->toBe('#c81e28');
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
+    }
+});
+
+it('stores the contents of an indexed text file', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('notes.txt', 'Some text.');
+
+    try {
+        $asset = $this->indexer->indexFileByListing($volumeData, new FsListing([
+            'dirname' => '',
+            'basename' => 'notes.txt',
+            'type' => 'file',
+            'fileSize' => $volumeData->sourceDisk()->size('notes.txt'),
+            'dateModified' => $volumeData->sourceDisk()->lastModified('notes.txt'),
+        ]), $session->id);
+
+        expect(app(AssetContents::class)->get($asset->id))->toBe('Some text.');
+    } finally {
+        $volumeData->sourceDisk()->delete('notes.txt');
+    }
+});
+
+it('reads a text file’s contents again once the file has changed', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('notes.txt', 'Some text.');
+
+    $index = fn () => $this->indexer->indexFileByListing($volumeData, new FsListing([
+        'dirname' => '',
+        'basename' => 'notes.txt',
+        'type' => 'file',
+        'fileSize' => $volumeData->sourceDisk()->size('notes.txt'),
+        'dateModified' => $volumeData->sourceDisk()->lastModified('notes.txt'),
+    ]), $session->id);
+
+    try {
+        $asset = $index();
+        app(AssetContents::class)->set($asset->id, 'Old text.');
+
+        $index();
+        expect(app(AssetContents::class)->get($asset->id))->toBe('Old text.');
+
+        Asset::whereKey($asset->id)->update(['dateModified' => now()->subDay()]);
+        $index();
+        expect(app(AssetContents::class)->get($asset->id))->toBe('Some text.');
+    } finally {
+        $volumeData->sourceDisk()->delete('notes.txt');
     }
 });
 

@@ -19,6 +19,7 @@ use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
 
@@ -86,6 +87,15 @@ class AssetQuery extends ElementQuery
             'assets_sites.alt as siteAlt',
             'volumeFolders.path as folderPath',
         ]);
+
+        $storedContent = DB::table(Table::ASSETCONTENTS)
+            ->selectRaw('1')
+            ->whereColumn('assetId', 'assets.id');
+
+        $this->query->selectRaw(
+            sprintf('exists(%s) as %s', $storedContent->toSql(), $this->query->getGrammar()->wrap('hasStoredContent')),
+            $storedContent->getBindings(),
+        );
 
         $this->beforeQuery(static function (self $elementQuery) {
             $elementQuery->query->leftJoin(new Alias(Table::ASSETS_SITES, 'assets_sites'), function (JoinClause $join) {

@@ -254,6 +254,19 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
+        $logger?->subLabel('assetcontents');
+        Schema::create(Table::ASSETCONTENTS, function (Blueprint $table) {
+            $table->integer('assetId')->primary();
+            // Laravel's MySQL binary type is a 64 KB blob
+            if (DB::isMysql()) {
+                $table->rawColumn('content', 'longblob');
+            } else {
+                $table->binary('content');
+            }
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+        });
+
         $logger?->subLabel('assets_sites');
         Schema::create(Table::ASSETS_SITES, function (Blueprint $table) {
             $table->integer('assetId');
@@ -1220,6 +1233,7 @@ class Install extends Migration
         Schema::table(Table::ADDRESSES, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ASSETINDEXDATA, fn (Blueprint $table) => $table->foreign('volumeId')->references('id')->on(Table::VOLUMES)->cascadeOnDelete());
         Schema::table(Table::ASSETINDEXDATA, fn (Blueprint $table) => $table->foreign('sessionId')->references('id')->on(Table::ASSETINDEXINGSESSIONS)->cascadeOnDelete());
+        Schema::table(Table::ASSETCONTENTS, fn (Blueprint $table) => $table->foreign('assetId')->references('id')->on(Table::ASSETS)->cascadeOnDelete());
         Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('folderId')->references('id')->on(Table::VOLUMEFOLDERS)->cascadeOnDelete());
         Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('uploaderId')->references('id')->on(Table::USERS)->nullOnDelete());

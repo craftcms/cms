@@ -354,11 +354,13 @@ class Assets
             return $event->previewHandler;
         }
 
-        return match ($asset->kind) {
-            FileKind::Image->value => new ImagePreview($asset),
-            FileKind::Pdf->value => new Pdf($asset),
-            FileKind::Video->value => new Video($asset),
-            FileKind::Html->value, FileKind::Javascript->value, FileKind::Json->value, FileKind::Markdown->value, FileKind::Php->value, FileKind::Text->value, FileKind::Xml->value => new Text($asset),
+        $kind = FileKind::tryFrom($asset->kind ?? '');
+
+        return match (true) {
+            $kind === FileKind::Image => new ImagePreview($asset),
+            $kind === FileKind::Pdf => new Pdf($asset),
+            $kind === FileKind::Video => new Video($asset),
+            $kind?->isText() === true => new Text($asset),
             default => null,
         };
     }

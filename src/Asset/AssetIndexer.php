@@ -740,6 +740,15 @@ class AssetIndexer
                     File::delete($tempPath);
                 }
             } else {
+                // Text files' contents are stored, and only read again if the file has changed
+                if (
+                    $asset->shouldStoreContent($filename, $asset->size) &&
+                    (! $asset->hasStoredContent || $fileChanged)
+                ) {
+                    // Read the file itself, rather than the contents stored for it
+                    $asset->setStoredContent(stream_get_contents($asset->getStream()));
+                }
+
                 $asset->dateModified = $timeModified;
                 $this->elements->saveElement($asset);
             }

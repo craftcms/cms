@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\AssetContents;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
@@ -351,16 +352,31 @@ it('restores all supported site variants when loading the deleted entry in one s
         ->and(Entry::find()->id($entry['id'])->siteId('*')->trashed(true)->status(null)->exists())->toBeFalse();
 });
 
-it('reports an asset restore failure when deletion removed its file', function (): void {
+it('restores an asset’s file along with the asset', function (): void {
     $asset = ($this->newAsset)();
     ($this->callLifecycle)('elements.delete', ['type' => 'assets', 'id' => $asset->id])
         ->assertOk()->assertJsonPath('result.structuredContent.deleted', true);
+
+    expect(Storage::disk('lifecycle-assets')->exists($asset->getPath()))->toBeFalse();
+
+    ($this->callLifecycle)('elements.restore', ['type' => 'assets', 'id' => $asset->id])
+        ->assertOk()->assertJsonPath('result.structuredContent.restored', true);
+
+    expect(Asset::find()->id($asset->id)->trashed(true)->status(null)->exists())->toBeFalse()
+        ->and(Storage::disk('lifecycle-assets')->exists($asset->getPath()))->toBeTrue();
+});
+
+it('reports an asset restore failure when its file can’t be put back', function (): void {
+    $asset = ($this->newAsset)();
+    ($this->callLifecycle)('elements.delete', ['type' => 'assets', 'id' => $asset->id])
+        ->assertOk()->assertJsonPath('result.structuredContent.deleted', true);
+    app(AssetContents::class)->set($asset->id, null);
+
     ($this->callLifecycle)('elements.restore', ['type' => 'assets', 'id' => $asset->id])
         ->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Element could not be restored.');
 
-    expect(Asset::find()->id($asset->id)->trashed(true)->status(null)->exists())->toBeTrue()
-        ->and(Storage::disk('lifecycle-assets')->exists($asset->getPath()))->toBeFalse();
+    expect(Asset::find()->id($asset->id)->trashed(true)->status(null)->exists())->toBeTrue();
 });
 
 it('validates proposed nested content without saving or deleting nested entries', function (): void {

@@ -16,6 +16,7 @@ use CraftCms\Cms\Asset\Actions\PreviewAsset;
 use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
+use CraftCms\Cms\Asset\AssetContents;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Concerns\LegacyConstants;
@@ -269,6 +270,14 @@ class Asset extends Element
     public ?bool $keptFile = null;
 
     /**
+     * @var bool|null Whether the file’s contents are stored in the database, such as a text file’s, or a file’s
+     *                whose asset is soft-deleted
+     *
+     * @see AssetContents
+     */
+    public ?bool $hasStoredContent = null;
+
+    /**
      * @var DateTimeInterface|null Date modified
      */
     #[AllowedInSandbox]
@@ -311,6 +320,12 @@ class Asset extends Element
      * place of sampling the file again.
      */
     public ?ImageColors $uploadColors = null;
+
+    /**
+     * The contents to store for the file on the next save, once a new file has come in, or `false` when they’re
+     * unchanged.
+     */
+    private string|false|null $pendingContent = false;
 
     /**
      * @var bool Whether the asset should avoid filename conflicts when saved.
@@ -2584,14 +2599,24 @@ JS, [
     }
 
     /**
-     * Returns the file’s contents.
+     * Returns the file’s contents, from the database if they’re stored there, or from its volume.
      *
      * @throws RuntimeException if [[volumeId]] is missing or invalid
      * @throws AssetException if a stream could not be created
+     *
+     * @see AssetContents
      */
     #[AllowedInSandbox]
     public function getContents(): string
     {
+        if ($this->hasStoredContent && $this->id) {
+            $content = app(AssetContents::class)->get($this->id);
+
+            if ($content !== null) {
+                return $content;
+            }
+        }
+
         return stream_get_contents($this->getStream());
     }
 
@@ -3154,6 +3179,7 @@ JS;
         unset(
             $names['avoidFilenameConflicts'],
             $names['keepFileOnDelete'],
+            $names['hasStoredContent'],
             $names['sanitizeOnUpload'],
             $names['uploadColors'],
         );
@@ -3354,6 +3380,12 @@ JS;
 
             $model->save();
 
+            if ($this->pendingContent !== false) {
+                app(AssetContents::class)->set((int) $this->id, $this->pendingContent);
+                $this->hasStoredContent = $this->pendingContent !== null;
+                $this->pendingContent = false;
+            }
+
             // we're not propagating at this point, so save the alt ONLY against the site we're saving to
             DB::table(Table::ASSETS_SITES)
                 ->upsert([
@@ -3408,6 +3440,22 @@ JS;
                 'keptFile' => $this->keepFileOnDelete,
             ]);
 
+        // Hold onto the file's contents, so it can be put back if the asset is restored
+        if (! $this->hardDelete && ! $this->keepFileOnDelete && ! $this->hasStoredContent) {
+            try {
+                $size = $this->size ?? $this->getVolume()->sourceDisk()->size($this->getPath());
+
+                if (app(AssetContents::class)->fits($size)) {
+                    app(AssetContents::class)->set((int) $this->id, stream_get_contents($this->getStream()));
+                    $this->hasStoredContent = true;
+                } else {
+                    Log::info("Not storing the contents of asset $this->id before deleting it, as the file is too large.");
+                }
+            } catch (Throwable $e) {
+                Log::warning("Couldn’t store the contents of asset $this->id before deleting it: {$e->getMessage()}");
+            }
+        }
+
         return true;
     }
 
@@ -3441,8 +3489,63 @@ JS;
     #[Override]
     public function beforeRestore(): bool
     {
-        // Only allow the asset to be restored if the file was kept on delete
-        return $this->keptFile && parent::beforeRestore();
+        // Only allow the asset to be restored if its file was kept on delete, or can be put back
+        return $this->canRestoreFile() && parent::beforeRestore();
+    }
+
+    #[Override]
+    public function afterRestore(): void
+    {
+        if (! $this->keptFile && $this->hasStoredContent) {
+            $disk = $this->getVolume()->sourceDisk();
+            $path = $this->getPath();
+
+            if (! $disk->exists($path)) {
+                $content = app(AssetContents::class)->get((int) $this->id);
+
+                if ($content === null || ! $disk->put($path, $content)) {
+                    throw new FilesystemException("Unable to restore the file at $path.");
+                }
+            }
+
+            // Contents stored only so the file could be put back aren't needed anymore
+            if (! $this->shouldStoreContent($this->_filename, $this->size)) {
+                app(AssetContents::class)->set((int) $this->id, null);
+                $this->hasStoredContent = false;
+            }
+        }
+
+        parent::afterRestore();
+    }
+
+    /**
+     * Sets the file contents to store in the database when the asset is next saved, or clears them with `null`.
+     *
+     * @see AssetContents
+     */
+    public function setStoredContent(?string $content): void
+    {
+        $this->pendingContent = $content;
+    }
+
+    /**
+     * Returns whether the asset’s file is still around, or can be put back, if the asset is restored.
+     */
+    private function canRestoreFile(): bool
+    {
+        return $this->keptFile || $this->hasStoredContent;
+    }
+
+    /**
+     * Returns whether a file’s contents should be stored in the database for as long as it exists, which text files’
+     * are, as long as they fit.
+     *
+     * @see AssetContents
+     */
+    public function shouldStoreContent(string $filename, ?int $size): bool
+    {
+        return (FileKind::tryFrom(AssetsHelper::getFileKindByExtension($filename))?->isText() ?? false)
+            && app(AssetContents::class)->fits($size);
     }
 
     /** @return array<string, array<string, bool|int|string|null>> */
@@ -3521,7 +3624,7 @@ JS;
             $attributes['data']['editable-image'] = true;
         }
 
-        if ($this->dateDeleted && $this->keptFile && Gate::check('save', $this)) {
+        if ($this->dateDeleted && $this->canRestoreFile() && Gate::check('save', $this)) {
             $attributes['data']['restorable'] = true;
         }
 
@@ -3673,6 +3776,7 @@ JS;
             $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
             $this->_width = $this->_height = null;
             $this->colors = null;
+            $this->pendingContent = $this->shouldStoreContent($filename, $this->size) ? $newDisk->get($newPath) : null;
         }
 
         // If there was a new file involved, update file data.
@@ -3689,6 +3793,7 @@ JS;
             }
 
             $this->size = filesize($tempPath);
+            $this->pendingContent = $this->shouldStoreContent($filename, $this->size) ? file_get_contents($tempPath) : null;
             $mtime = filemtime($tempPath);
             $this->dateModified = $mtime ? Date::createFromTimestampUTC($mtime) : null;
 
