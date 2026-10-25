@@ -60,6 +60,10 @@ export class PreviewFileModal {
 
   /** Finds the opener again, or its menu's button once the menu has closed. */
   #returnFocus: FocusReturnResolver = () => null;
+  /** Keeps the content's tab stop in step with whether it overflows. */
+  #overflowObserver = new ResizeObserver(() => {
+    this.container.tabIndex = this.#overflows() ? 0 : -1;
+  });
   #destroyed = false;
 
   constructor(
@@ -90,7 +94,10 @@ export class PreviewFileModal {
     this.dialog.label = Craft.t('app', 'Preview file');
 
     this.container = document.createElement('div');
-    this.container.className = 'size-full';
+    this.container.className = 'previewmodal-content size-full overflow-auto';
+    this.container.tabIndex = -1;
+    this.container.setAttribute('role', 'region');
+    this.container.setAttribute('aria-label', this.dialog.label);
     this.$container = $(this.container);
     this.dialog.append(this.container);
 
@@ -174,6 +181,7 @@ export class PreviewFileModal {
     this.dialog.removeEventListener('keydown', this.#onKeydown);
     this.dialog.removeEventListener('craft-after-hide', this.#onAfterHide);
     window.removeEventListener('resize', this.#onWindowResize);
+    this.#overflowObserver.disconnect();
     this.dialog.remove();
 
     if (PreviewFileModal.openInstance === this) {
@@ -228,6 +236,7 @@ export class PreviewFileModal {
         this.$container.append(response.data.previewHtml);
         highlightCodeBlocks(this.container);
         this._addBumperButtons();
+        this.#focusContent();
         await Craft.appendHeadHtml(response.data.headHtml);
         await Craft.appendBodyHtml(response.data.bodyHtml);
       })
@@ -278,14 +287,20 @@ export class PreviewFileModal {
     switch (ev.key) {
       case 'ArrowLeft':
       case 'ArrowUp':
-        if (this.getSelectItem()) {
+        if (
+          this.getSelectItem() &&
+          !(ev.key === 'ArrowUp' && this.#scrollsVertically())
+        ) {
           ev.preventDefault();
           this.previewPreviousAsset();
         }
         break;
       case 'ArrowRight':
       case 'ArrowDown':
-        if (this.getSelectItem()) {
+        if (
+          this.getSelectItem() &&
+          !(ev.key === 'ArrowDown' && this.#scrollsVertically())
+        ) {
           ev.preventDefault();
           this.previewNextAsset();
         }
@@ -317,6 +332,37 @@ export class PreviewFileModal {
       PreviewFileModal.resizePreviewImage();
     }
   };
+
+  #overflows(): boolean {
+    const {scrollWidth, clientWidth} = this.container;
+    return this.#scrollsVertically() || scrollWidth > clientWidth;
+  }
+
+  #scrollsVertically(): boolean {
+    return this.container.scrollHeight > this.container.clientHeight;
+  }
+
+  /**
+   * Lets the keyboard reach and scroll the loaded preview. It joins the tab
+   * order when it overflows the dialog, and takes focus unless something
+   * else in the dialog already has it, since the dialog's own focus is on an
+   * element the scroll keys can't move.
+   */
+  #focusContent(): void {
+    this.#overflowObserver.disconnect();
+    for (const element of [this.container, ...this.container.children]) {
+      this.#overflowObserver.observe(element);
+    }
+    this.container.tabIndex = this.#overflows() ? 0 : -1;
+    const active = document.activeElement;
+    if (
+      active === this.dialog ||
+      active === document.body ||
+      active === this.container
+    ) {
+      this.container.focus({preventScroll: true});
+    }
+  }
 
   /** Fits the open image preview, and the dialog around it, to the viewport. */
   static resizePreviewImage(): void {

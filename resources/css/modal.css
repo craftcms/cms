@@ -169,3 +169,11 @@ toggles its `display` inline.
   position: relative;
   padding: 0;
 }
+
+.previewmodal-content {
+  border-radius: var(--c-radius-lg);
+}
+
+.previewmodal-content:focus-visible {
+  outline-offset: calc(-1 * var(--c-focus-outline-width));
+}

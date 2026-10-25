@@ -14,6 +14,16 @@ async function settle(): Promise<void> {
   }
 }
 
+/** Makes preview content report more height than fits, as a long file's does. */
+function stubOverflow(): void {
+  vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockImplementation(
+    function (this: HTMLElement) {
+      return this.classList.contains('previewmodal-content') ? 1000 : 0;
+    }
+  );
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(100);
+}
+
 /** A stand-in for the legacy `Garnish.Select` holding asset elements. */
 function elementSelect(ids: number[]) {
   const $items = $(
@@ -55,6 +65,7 @@ describe('PreviewFileModal', () => {
     document.body.replaceChildren();
     vi.unstubAllGlobals();
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('shows the preview in a dialog, and returns focus once it closes', async () => {
@@ -127,6 +138,55 @@ describe('PreviewFileModal', () => {
 
     dialog!.dispatchEvent(new Event('craft-after-hide'));
     expect(select.focusItem).toHaveBeenCalledWith(select.$items.eq(2));
+  });
+
+  it('focuses the loaded preview, and makes it a tab stop when it overflows', async () => {
+    new PreviewFileModal(5);
+    await settle();
+
+    const content = openDialogs()[0]!.querySelector<HTMLElement>(
+      '.previewmodal-content'
+    )!;
+    expect(document.activeElement).toBe(content);
+    expect(content.tabIndex).toBe(-1);
+
+    PreviewFileModal.openInstance!.quickHide();
+    stubOverflow();
+    new PreviewFileModal(5);
+    await settle();
+
+    expect(document.activeElement).toBe(
+      openDialogs()[0]!.querySelector('.previewmodal-content')
+    );
+    expect(document.activeElement!.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('scrolls an overflowing preview with the up and down arrows, rather than moving between assets', async () => {
+    stubOverflow();
+    const select = elementSelect([1, 2, 3]);
+    PreviewFileModal.showForAsset(select.$items.eq(1), select);
+    await settle();
+
+    const [dialog] = openDialogs();
+    const down = new KeyboardEvent('keydown', {
+      key: 'ArrowDown',
+      cancelable: true,
+    });
+    dialog!.dispatchEvent(down);
+    await settle();
+
+    expect(down.defaultPrevented).toBe(false);
+    expect(dialog!.querySelector('.preview')!.textContent).toBe('2');
+
+    const right = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      cancelable: true,
+    });
+    dialog!.dispatchEvent(right);
+    await settle();
+
+    expect(right.defaultPrevented).toBe(true);
+    expect(dialog!.querySelector('.preview')!.textContent).toBe('3');
   });
 
   it('leaves arrow keys alone without an element select', async () => {
