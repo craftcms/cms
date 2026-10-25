@@ -1,0 +1,52 @@
+.th-attr,
+.th-property,
+.th-link {
+  color: var(--c-color-blue-on-quiet);
+}
+
+.th-tag,
+.th-selector {
+  color: var(--c-color-rose-on-quiet);
+}
+
+.th-string,
+.th-inserted {
+  color: var(--c-color-emerald-on-quiet);
+}
+
+.th-deleted {
+  color: var(--c-color-red-on-quiet);
+}
+
+.th-number,
+.th-variable,
+.th-code-inline {
+  color: var(--c-color-amber-on-quiet);
+}
+
+.th-literal,
+.th-keyword,
+.th-type,
+.th-operator {
+  color: var(--c-color-violet-on-quiet);
+}
+
+.th-function,
+.th-command {
+  color: var(--c-color-cyan-on-quiet);
+}
+
+.th-heading {
+  font-weight: var(--font-weight-semibold);
+}
+
+.th-comment,
+.th-meta {
+  color: var(--c-color-neutral-on-quiet);
+  font-style: italic;
+}
+
+.th-line {
+  display: inline-block;
+  min-width: 100%;
+}

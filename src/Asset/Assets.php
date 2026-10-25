@@ -358,7 +358,7 @@ class Assets
             FileKind::Image->value => new ImagePreview($asset),
             FileKind::Pdf->value => new Pdf($asset),
             FileKind::Video->value => new Video($asset),
-            FileKind::Html->value, FileKind::Javascript->value, FileKind::Json->value, FileKind::Php->value, FileKind::Text->value, FileKind::Xml->value => new Text($asset),
+            FileKind::Html->value, FileKind::Javascript->value, FileKind::Json->value, FileKind::Markdown->value, FileKind::Php->value, FileKind::Text->value, FileKind::Xml->value => new Text($asset),
             default => null,
         };
     }
