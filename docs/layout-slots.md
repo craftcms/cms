@@ -7,8 +7,8 @@ its own markup lives in the main content area. The content is teleported into th
 in the component's scope, so its bindings remain reactive.
 
 Plugins get the component globally as `craft:layout-slot`, the screen layout itself as
-`craft:app-layout`, and `craft:cp-container`, which pads page content to line up with the shell's
-header and toolbar:
+`craft:app-layout`, `craft:screen-panel` for [details panels](#details-panels), and
+`craft:cp-container`, which pads page content to line up with the shell's header and toolbar:
 
 ```vue
 <script setup lang="ts">
@@ -34,10 +34,10 @@ nav, the error summary — is hidden.
 
 ## Only on your own pages
 
-`craft:layout-slot` and `craft:app-layout` only render on a page your plugin registered with
-`Cp.$inertia.register()`. Craft checks the nearest Inertia page above the component, so this
-includes anything that page renders, but not your components rendered on someone else's page: a
-dashboard widget, a UI node, an element details tab. There, they render nothing and log a warning
+`craft:layout-slot`, `craft:screen-panel` and `craft:app-layout` only render on a page your plugin
+registered with `Cp.$inertia.register()`. Craft checks the nearest Inertia page above the
+component, so this includes anything that page renders, but not your components rendered on
+someone else's page: a dashboard widget, a UI node, an element details panel. There, they render nothing and log a warning
 in development builds. This keeps a plugin from replacing the chrome of a page it doesn't own.
 
 `craft:cp-container` only lays out content and works anywhere.
@@ -73,7 +73,8 @@ in development builds. This keeps a plugin from replacing the chrome of a page i
 +----------+-----------------------------------------------------------------------------------------------------------+
 ```
 
-The details pane only appears once `content-details` is filled; the sidebar shows the secondary nav
+The details pane only appears once `content-details` is filled or the screen has
+[details panels](#details-panels); the sidebar shows the secondary nav
 unless `content-sidebar` replaces it, which also removes `subnav-actions`. The toolbar row and
 sticky footer appear once something in them is filled.
 
@@ -138,7 +139,7 @@ The slot wins over the response's button.
 | `content-tabs`            |                                           |
 | `error-summary`           | Replaces the form's error summary.        |
 | `content-notices`         | The sticky notices bar.                   |
-| `content-details`         | Opens the details pane.                   |
+| `content-details`         | Opens the details pane. See below.        |
 | `content-footer`          |                                           |
 | `additional-buttons`      | In the footer, beside the Save menu.      |
 | `primary-action`          | The Save button; its menu stays.          |
@@ -148,13 +149,62 @@ See [slideouts](slideouts.md) for how a page renders in a slideout.
 
 Region names are public API. An unknown name logs a warning in development builds.
 
+## Details panels
+
+The details pane can hold panels: a rail of icon buttons beside it, each opening one panel, as the
+element editor's Info, Activity and Revisions do. Add one with `craft:screen-panel`. It's in the
+rail while the component is mounted, and its content is teleported into the panel, staying in the
+component's scope like a `LayoutSlot`'s:
+
+```vue
+<script setup lang="ts">
+  import {resolveComponent} from 'vue';
+
+  const ScreenPanel = resolveComponent('craft:screen-panel');
+</script>
+
+<template>
+  <ScreenPanel id="sync-log" label="Sync log" icon="list" :order="10">
+    <SyncLog />
+
+    <template #header-actions>
+      <craft-button size="small" variant="plain">Clear</craft-button>
+    </template>
+  </ScreenPanel>
+</template>
+```
+
+| Prop            | Notes                                                                                   |
+| --------------- | --------------------------------------------------------------------------------------- |
+| `id`            | Unique among the screen's panels. On a full page, it's the URL hash of the open one.    |
+| `label`, `icon` | The panel's heading, and its button in the rail.                                        |
+| `initialIcon`   | Shows the label's first letter instead of the icon.                                     |
+| `order`         | Where it goes in the rail; lower comes first.                                           |
+| `status`        | `{label, indicator}`, shown in the panel's header.                                      |
+| `scrollsItself` | The content scrolls itself, so the panel's body doesn't.                                |
+| `initialFocus`  | A function returning what gets focus when the panel is opened. Defaults to its heading. |
+
+The `header-actions` slot goes in the panel's header, before its close button.
+
+A screen opens on its first panel, or on the one in the URL hash. Each full page and each slideout
+has panels of its own; a page's panels don't show in a slideout opened over it. The shell can add
+panels of its own that stay from page to page. A page still opens on its own first panel, unless
+the person left one of those open.
+
+Content in `content-details` and panels can go together. While there are no panels, the content
+fills the details pane as it always has. Once a panel is added, by the page or the shell, the
+content becomes a panel of its own, labelled "Details", and is rendered again there.
+
+To add a panel to the element editor, which isn't your page, register it with
+`Cp.$elementDetailsPanels.register()` instead.
+
 ## Example
 
 The workbench registers a "Layout Slots" nav item (`workbench/layout-slots`) and a "Layout Slots
 Demo" dashboard widget, built with public API only:
 
 - `workbench/resources/js/layout-slots-demo/LayoutSlotsDemo.vue` — a plugin page that fills
-  regions, with a few more to toggle.
+  regions, with a few more to toggle, including details panels.
 - `workbench/resources/js/layout-slots-demo/LayoutSlotsDemoWidget.vue` — a widget on the core
   Dashboard whose slot is refused.
 - `workbench/resources/js/layout-slots-demo/register.ts` — registration through `Cp.booting()`.
