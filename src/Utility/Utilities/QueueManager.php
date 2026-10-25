@@ -39,12 +39,23 @@ class QueueManager extends Utility
     }
 
     #[Override]
+    public static function subpageTitle(): ?string
+    {
+        $job = self::getActiveJob(app(JobProgress::class));
+
+        return $job ? t($job->description) : null;
+    }
+
+    #[Override]
     public static function toolbarHtml(): string
     {
         $progressService = app(JobProgress::class);
 
+        if (self::getActiveJob($progressService)) {
+            return '';
+        }
+
         return Html::tag('QueueManagerToolbar', attributes: [
-            ':activeJob' => self::getActiveJob($progressService),
             ':hasJobs' => $progressService->jobsQuery()->exists(),
         ]);
     }

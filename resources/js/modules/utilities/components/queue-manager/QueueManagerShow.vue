@@ -1,13 +1,29 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {type JobInfo} from '@/modules/queue/types';
+  import {router} from '@inertiajs/vue3';
+  import {type JobInfo, JobStatus} from '@/modules/queue/types';
   import {jobStatusFill} from '@/modules/queue/status-fill';
   import CodeHighlight from '@/common/components/CodeHighlight.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import RetryJobButton from '@/modules/utilities/components/queue-manager/RetryJobButton.vue';
+  import ReleaseJobButton from '@/modules/utilities/components/queue-manager/ReleaseJobButton.vue';
+  import {show} from '@routes/cp/utilities';
   import {computed} from 'vue';
 
   const props = defineProps<{
     job: JobInfo;
   }>();
+
+  const isRetryable = computed(
+    () =>
+      props.job.status.value === JobStatus.Reserved ||
+      props.job.status.value === JobStatus.Failed
+  );
+
+  /** A released job is gone, so its page goes with it. */
+  function released(): void {
+    router.visit(show.url({id: 'queue-manager'}));
+  }
 
   const jobRecord = computed(() =>
     Object.fromEntries(
@@ -65,7 +81,15 @@
 
 <template>
   <div>
-    <h2 class="mb-3">{{ job.description }}</h2>
+    <LayoutSlot name="additional-buttons">
+      <RetryJobButton v-if="isRetryable" :job="job" size="default" />
+      <ReleaseJobButton
+        v-if="job.status.value !== JobStatus.Done"
+        :job="job"
+        size="default"
+        @done="released"
+      />
+    </LayoutSlot>
 
     <table class="table-fixed border-collapse w-full">
       <tbody>
@@ -118,7 +142,7 @@
     </table>
 
     <div class="mt-6">
-      <h4 class="text-lg">{{ t('Job Data') }}</h4>
+      <h2 class="text-lg">{{ t('Job Data') }}</h2>
       <!-- craft-pane makes its own scroll container the tab stop -->
       <craft-pane variant="code" class="my-2" :aria-label="t('Job Data')">
         <CodeHighlight language="json" :value="job" />

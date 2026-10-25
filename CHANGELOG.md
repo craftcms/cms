@@ -25,6 +25,7 @@
 - Secondary navigation items are now as wide as the global navigation’s. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Element revision listings now use the control panel’s standard table, with a choice of page sizes. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - The Queue Manager utility now lists jobs a page at a time, with a choice of page sizes. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Queue job pages are now laid out like other detail pages, titled after the job, with a breadcrumb back to the Queue Manager and their Retry and Release buttons in the footer. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Dates with times, such as element creation and update dates, revision dates, release dates, and queue job dates, now show the time zone’s abbreviation, like Craft 5. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Links are no longer underlined until they’re hovered, unless the “Underline links” accessibility preference is enabled, in which case they’re underlined until hovered. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Folder names in asset indexes are now links.
@@ -297,6 +298,7 @@
 
 ### Extensibility
 
+- Added `CraftCms\Cms\Utility\Utility::subpageTitle()`, which titles a utility’s subpages and gives them a breadcrumb back to the utility. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - Added `CraftCms\Cms\Support\Query::prepareDateForDb()`, which converts a date to the UTC string Craft stores dates as, for writing or comparing it with the query builder. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Eloquent models that extend `CraftCms\Cms\Shared\BaseModel` now store and read dates in UTC, including their timestamps and soft-delete dates. ([#20053](https://github.com/craftcms/cms/pull/20053))
