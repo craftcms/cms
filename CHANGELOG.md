@@ -191,7 +191,7 @@
 - Sites that are added to elements within the “Sites” pane can now be removed again. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Assets are now initially saved to the site they were uploaded from. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Assets in volumes set to let each asset choose which sites it should be saved to can now be deleted for individual sites, as long as they exist in another site. ([#20060](https://github.com/craftcms/cms/pull/20060))
-- Soft-deleted assets can now be restored along with their files, which are held in the database while the assets are in the trash, for files up to 16 MB.
+- Soft-deleted assets can now be restored along with their files, which are held in the database while the assets are in the trash, for files up to 16 MB. ([#20092](https://github.com/craftcms/cms/pull/20092))
 - Deleting an element for the only site it exists in now soft-deletes it, unless it’s a draft or nested element. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - The “Schedule release” modal now has a single date and time input, like releases’ Target Date, in place of separate Date, Time, and Time Zone inputs. Releases’ publication and target dates are now always entered in the user’s time zone.
 - Release pages now list each draft as a chip labeled with its draft name, in a single “Draft” column.
@@ -419,10 +419,10 @@
 - Added `CraftCms\Cms\Translation\Locale::languageId()`.
 - Added `CraftCms\Cms\Asset\Data\Volume::$propagationMethod`. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Added `CraftCms\Cms\Asset\Assets::findAcrossSites()`. ([#20060](https://github.com/craftcms/cms/pull/20060))
-- Added `CraftCms\Cms\Asset\AssetContents`, which reads and writes assets’ stored file contents.
-- Added `CraftCms\Cms\Asset\Elements\Asset::$hasStoredContent` and `setStoredContent()`.
-- `CraftCms\Cms\Asset\Elements\Asset::getContents()` now returns the file’s stored contents when it has them, rather than reading the file from its volume.
-- Added `CraftCms\Cms\Asset\Enums\FileKind::isText()`.
+- Added `CraftCms\Cms\Asset\AssetContents`, which reads and writes assets’ stored file contents. ([#20092](https://github.com/craftcms/cms/pull/20092))
+- Added `CraftCms\Cms\Asset\Elements\Asset::$hasStoredContent` and `setStoredContent()`. ([#20092](https://github.com/craftcms/cms/pull/20092))
+- `CraftCms\Cms\Asset\Elements\Asset::getContents()` now returns the file’s stored contents when it has them, rather than reading the file from its volume. ([#20092](https://github.com/craftcms/cms/pull/20092))
+- Added `CraftCms\Cms\Asset\Enums\FileKind::isText()`. ([#20092](https://github.com/craftcms/cms/pull/20092))
 - `CraftCms\Cms\Asset\Assets::getAssetById()` now returns the asset in another site if it doesn’t exist in the requested site, when no site ID is passed. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - `CraftCms\Cms\Element\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `CraftCms\Cms\Support\Str::lower()`, `::title()`, and `::upper()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
@@ -435,7 +435,7 @@
 
 - MySQL database backups and restores now carry over SSL/TLS settings from the system’s MySQL option files (e.g. `ssl-ca` or `disable-ssl-verify-server-cert`), if the database connection doesn’t have any `PDO::MYSQL_ATTR_SSL_*` attributes set. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
-- Text-based assets’ file contents, such as text, Markdown, JSON, HTML, XML, JavaScript, and PHP files, are now stored in the new `assetcontents` table when they’re uploaded or indexed, for files up to 16 MB, and their previews are shown from it rather than downloading the file.
+- Text-based assets’ file contents, such as text, Markdown, JSON, HTML, XML, JavaScript, and PHP files, are now stored in the new `assetcontents` table when they’re uploaded or indexed, for files up to 16 MB, and their previews are shown from it rather than downloading the file. ([#20092](https://github.com/craftcms/cms/pull/20092))
 - Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
 - Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
 - Updated Twig to 3.30.
