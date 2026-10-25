@@ -602,6 +602,13 @@ class Assets
                         'json',
                     ],
                 ],
+                Asset::KIND_MARKDOWN => [
+                    'label' => 'Markdown',
+                    'extensions' => [
+                        'markdown',
+                        'md',
+                    ],
+                ],
                 Asset::KIND_PDF => [
                     'label' => 'PDF',
                     'extensions' => [

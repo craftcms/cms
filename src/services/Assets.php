@@ -1081,7 +1081,7 @@ class Assets extends Component
             Asset::KIND_IMAGE => new ImagePreview($asset),
             Asset::KIND_PDF => new Pdf($asset),
             Asset::KIND_VIDEO => new Video($asset),
-            Asset::KIND_HTML, Asset::KIND_JAVASCRIPT, Asset::KIND_JSON, Asset::KIND_PHP, Asset::KIND_TEXT, Asset::KIND_XML => new Text($asset),
+            Asset::KIND_HTML, Asset::KIND_JAVASCRIPT, Asset::KIND_JSON, Asset::KIND_MARKDOWN, Asset::KIND_PHP, Asset::KIND_TEXT, Asset::KIND_XML => new Text($asset),
             default => null,
         };
     }
