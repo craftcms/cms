@@ -1,5 +1,5 @@
 import {Base} from '@craftcms/garnish';
-import {elementEditorParams} from '@/modules/slideout/element-editor-slideout';
+import {elementEditorParams} from '@/modules/slideout/element-editor-params';
 import type {UiValues} from '@/modules/ui/types';
 import {closeSlideout, openSlideout} from './store';
 import type {SlideoutInstance, SlideoutSaveResult} from './types';
