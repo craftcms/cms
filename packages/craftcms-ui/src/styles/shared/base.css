@@ -353,6 +353,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
 
   /* Add a rule to the first cells, unless the header row's border already does */
   &:not(:has(> thead)) tr:first-child {
+    th,
     td {
       border-block-start: 1px solid
         color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);

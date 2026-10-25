@@ -175,4 +175,8 @@ Nav states:
     position: sticky;
     inset-block-start: 0;
   }
+
+  .secondary-nav__actions {
+    padding-inline-start: calc(var(--c-spacing-md) + 1px);
+  }
 </style>
