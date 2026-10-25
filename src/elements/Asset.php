@@ -199,6 +199,10 @@ class Asset extends Element
     public const KIND_IMAGE = 'image';
     public const KIND_JAVASCRIPT = 'javascript';
     public const KIND_JSON = 'json';
+    /**
+     * @since 5.12.0
+     */
+    public const KIND_MARKDOWN = 'markdown';
     public const KIND_PDF = 'pdf';
     public const KIND_PHOTOSHOP = 'photoshop';
     public const KIND_PHP = 'php';
