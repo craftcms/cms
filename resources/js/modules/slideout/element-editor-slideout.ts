@@ -57,6 +57,64 @@ interface ElementEditorParams extends UiValues {
 }
 
 /**
+ * The `elements/edit` params for an element editor: from the settings, falling
+ * back to the `data-*` attributes of the element it was opened for.
+ */
+export function elementEditorParams(
+  $element: any,
+  settings: Partial<ElementEditorSlideoutSettings>
+): ElementEditorParams {
+  const params: ElementEditorParams = {};
+
+  if (settings.elementType) {
+    params.elementType = settings.elementType;
+  }
+
+  if (settings.elementId) {
+    params.elementId = settings.elementId;
+  } else if ($element?.data('id')) {
+    params.elementId = $element.data('id');
+  }
+
+  if (settings.draftId !== null && settings.draftId !== undefined) {
+    params.draftId = settings.draftId || null; // could be false
+  } else if ($element?.data('draft-id')) {
+    params.draftId = $element.data('draft-id');
+  } else if (
+    settings.revisionId !== null &&
+    settings.revisionId !== undefined
+  ) {
+    params.revisionId = settings.revisionId || null; // could be false
+  } else if ($element?.data('revision-id')) {
+    params.revisionId = $element.data('revision-id');
+  }
+
+  if (settings.fieldId !== null && settings.fieldId !== undefined) {
+    params.fieldId = settings.fieldId || null; // could be false
+  } else if ($element?.data('field-id')) {
+    params.fieldId = $element.data('field-id');
+  }
+
+  if (settings.ownerId !== null && settings.ownerId !== undefined) {
+    params.ownerId = settings.ownerId || null; // could be false
+  } else if ($element?.data('owner-id')) {
+    params.ownerId = $element.data('owner-id');
+  }
+
+  if (settings.siteId) {
+    params.siteId = settings.siteId;
+  } else if ($element?.data('site-id')) {
+    params.siteId = $element.data('site-id');
+  }
+
+  if (settings.prevalidate) {
+    params.prevalidate = 1;
+  }
+
+  return params;
+}
+
+/**
  * An element editor slideout: loads the `elements/edit` screen for an
  * element (or a new one) and hands control of drafts/submission to
  * `Craft.ElementEditor`.
@@ -206,51 +264,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
   }
 
   override getParams(): ElementEditorParams {
-    const params: ElementEditorParams = {};
-
-    if (this.settings!.elementType) {
-      params.elementType = this.settings!.elementType;
-    }
-
-    if (this.settings!.elementId) {
-      params.elementId = this.settings!.elementId;
-    } else if (this.$element?.data('id')) {
-      params.elementId = this.$element.data('id');
-    }
-
-    if (this.settings!.draftId !== null) {
-      params.draftId = this.settings!.draftId || null; // could be false
-    } else if (this.$element?.data('draft-id')) {
-      params.draftId = this.$element.data('draft-id');
-    } else if (this.settings!.revisionId !== null) {
-      params.revisionId = this.settings!.revisionId || null; // could be false
-    } else if (this.$element?.data('revision-id')) {
-      params.revisionId = this.$element.data('revision-id');
-    }
-
-    if (this.settings!.fieldId !== null) {
-      params.fieldId = this.settings!.fieldId || null; // could be false
-    } else if (this.$element?.data('field-id')) {
-      params.fieldId = this.$element.data('field-id');
-    }
-
-    if (this.settings!.ownerId !== null) {
-      params.ownerId = this.settings!.ownerId || null; // could be false
-    } else if (this.$element?.data('owner-id')) {
-      params.ownerId = this.$element.data('owner-id');
-    }
-
-    if (this.settings!.siteId) {
-      params.siteId = this.settings!.siteId;
-    } else if (this.$element?.data('site-id')) {
-      params.siteId = this.$element.data('site-id');
-    }
-
-    if (this.settings!.prevalidate) {
-      params.prevalidate = 1;
-    }
-
-    return params;
+    return elementEditorParams(this.$element, this.settings!);
   }
 
   override reload(): void {
