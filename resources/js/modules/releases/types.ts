@@ -13,7 +13,7 @@ export function formatReleaseDate(value: string | null): string {
 
   const date = new Date(value);
   const timeZone = window.Craft?.timezone;
-  const formatted = new Intl.DateTimeFormat(undefined, {
+  const formatted = new Intl.DateTimeFormat(window.Craft?.formattingLocale, {
     dateStyle: 'medium',
     timeStyle: 'short',
     timeZone,

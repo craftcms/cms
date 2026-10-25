@@ -444,6 +444,12 @@ class Formatter
         return (bool) preg_match('/[zZvVOXx]/', (string) preg_replace("/'[^']*'/", '', $pattern));
     }
 
+    /**
+     * Returns a formatter for dates in the formatting locale's own calendar,
+     * such as the Persian calendar for `fa`, or the Buddhist calendar for
+     * `th`. A locale ID can pick a calendar explicitly, as with
+     * `ja-JP@calendar=japanese`.
+     */
     private function dateFormatter(
         int $dateType = IntlDateFormatter::FULL,
         int $timeType = IntlDateFormatter::FULL,
@@ -458,6 +464,7 @@ class Formatter
             dateType: $dateType,
             timeType: $timeType,
             timezone: $timeZone,
+            calendar: IntlDateFormatter::TRADITIONAL,
             pattern: $pattern,
         );
     }

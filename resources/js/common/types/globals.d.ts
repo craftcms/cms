@@ -172,6 +172,8 @@ interface CraftStatic {
   siteId?: number;
   /** The control panel's syntax highlighter. */
   highlighter: import('@tanstack/highlight/core').Highlighter;
+  /** The user's formatting locale, as a BCP 47 tag for `Intl`. */
+  formattingLocale?: string;
   cp?: {
     jobInfo?: unknown[];
     displayedJobInfo?: unknown;

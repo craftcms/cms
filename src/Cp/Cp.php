@@ -180,6 +180,7 @@ readonly class Cp
             'defaultCookieOptions' => self::defaultCookieOptions(),
             'earthIcon' => Icons::earth(),
             'fileKinds' => AssetsHelper::getFileKinds(),
+            'formattingLocale' => $formattingLocale->getLanguageTag(),
             'iconBaseUrl' => craftAsset('icons'),
             'language' => app()->getLocale(),
             'left' => $orientation === 'ltr' ? 'left' : 'right',

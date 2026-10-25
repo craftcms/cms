@@ -570,3 +570,17 @@ test('date and time formatting doesn’t repeat a time zone the format already s
         ->and($this->formatter->asDateTime($date, "yyyy-MM-dd HH:mm 'zz'", withTimeZone: true))
         ->toBe('2026-01-15 09:15 zz EST');
 });
+
+test('dates are formatted in the formatting locale’s own calendar', function (string $locale, string $year) {
+    $this->formatter->locale = $locale;
+    $this->formatter->timeZone = 'UTC';
+    $date = Date::parse('2026-10-25 12:00:00', 'UTC');
+
+    expect($this->formatter->asDate($date, 'yyyy'))->toBe($year)
+        ->and($this->formatter->asDateTime($date, 'yyyy'))->toBe($year);
+})->with([
+    'Gregorian' => ['en-US', '2026'],
+    'Persian' => ['fa-IR@numbers=latn', '1405'],
+    'Buddhist' => ['th-TH', '2569'],
+    'explicit calendar' => ['en-US@calendar=persian', '1405'],
+]);

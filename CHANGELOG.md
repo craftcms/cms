@@ -28,6 +28,7 @@
 - Queue job pages are now laid out like other detail pages, titled after the job, with a breadcrumb back to the Queue Manager and their Retry and Release buttons in the footer. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - The System Report, PHP Info, and Migrations utilities’ tables now line up with their headings. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Dates with times, such as element creation and update dates, revision dates, release dates, and queue job dates, now show the time zone’s abbreviation, like Craft 5. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Dates are now shown in the calendar of the user’s formatting locale, such as the Persian calendar for Persian or the Buddhist calendar for Thai. Named and ICU date formats in Twig, such as `|date('short')`, follow the site locale’s calendar too. ([#8741](https://github.com/craftcms/cms/discussions/8741), [#20085](https://github.com/craftcms/cms/pull/20085))
 - Links are no longer underlined until they’re hovered, unless the “Underline links” accessibility preference is enabled, in which case they’re underlined until hovered. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Folder names in asset indexes are now links.
 - The “License purchase required” screen is now shown in a centered pane, like other message pages.
@@ -300,6 +301,7 @@
 
 ### Extensibility
 
+- Added `CraftCms\Cms\Translation\Locale::getLanguageTag()`, and the `Craft.formattingLocale` JavaScript variable, which hold the formatting locale as a BCP 47 language tag for `Intl` APIs. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Utility\Utility::subpageTitle()`, which titles a utility’s subpages and gives them a breadcrumb back to the utility. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - Added `CraftCms\Cms\Support\Query::prepareDateForDb()`, which converts a date to the UTC string Craft stores dates as, for writing or comparing it with the query builder. ([#20053](https://github.com/craftcms/cms/pull/20053))
