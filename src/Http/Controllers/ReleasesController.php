@@ -87,7 +87,9 @@ class ReleasesController
                     'fill' => $release->status->color()->value,
                 ])],
                 'date' => $date === null ? t('Not set') : ['html' => Html::tag('time',
-                    Html::encode($formatter->format($date) ?: t('Not set')),
+                    Html::encode(($formatted = $formatter->format($date))
+                        ? $formatted.' '.DateTimeHelper::timeZoneAbbreviation(Cms::timezone(), $date)
+                        : t('Not set')),
                     ['datetime' => $date->toIso8601String()],
                 )],
                 'itemCount' => (int) $release->items_count,

@@ -544,3 +544,29 @@ test('date formatting follows the ICU default locale when its locale is empty', 
         IntlLocale::setDefault($previousLocale);
     }
 });
+
+test('date and time formatting appends the display time zone’s abbreviation on request', function () {
+    $this->formatter->locale = 'en-US';
+    $this->formatter->timeZone = 'America/New_York';
+    $winter = Date::parse('2026-01-15 14:15:16', 'UTC');
+    $summer = Date::parse('2026-07-15 14:15:16', 'UTC');
+
+    expect($this->formatter->asDateTime($winter, 'short', withTimeZone: true))
+        ->toBe($this->formatter->asDateTime($winter, 'short').' EST')
+        ->and($this->formatter->asDateTime($summer, 'short', withTimeZone: true))
+        ->toBe($this->formatter->asDateTime($summer, 'short').' EDT')
+        ->and($this->formatter->asTime($winter, 'short', withTimeZone: true))
+        ->toBe($this->formatter->asTime($winter, 'short').' EST')
+        ->and($this->formatter->asDateTime($winter, 'short'))->toStartWith('1/15/26, 9:15');
+});
+
+test('date and time formatting doesn’t repeat a time zone the format already shows', function () {
+    $this->formatter->locale = 'en-US';
+    $this->formatter->timeZone = 'America/New_York';
+    $date = Date::parse('2026-01-15 14:15:16', 'UTC');
+
+    expect($this->formatter->asDateTime($date, 'long', withTimeZone: true))
+        ->toBe($this->formatter->asDateTime($date, 'long'))
+        ->and($this->formatter->asDateTime($date, "yyyy-MM-dd HH:mm 'zz'", withTimeZone: true))
+        ->toBe('2026-01-15 09:15 zz EST');
+});

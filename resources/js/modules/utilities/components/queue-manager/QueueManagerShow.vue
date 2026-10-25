@@ -8,6 +8,9 @@
     job: JobInfo;
   }>();
 
+  /** Job timestamps show in the system time zone, as the CP's other dates do. */
+  const craftTimeZone: string | undefined = window.Craft?.timezone;
+
   const jobRecord = computed(() =>
     Object.fromEntries(
       Object.entries(props.job).filter(([, value]) => value !== null)
@@ -125,6 +128,7 @@
                     hour: 'numeric',
                     minute: '2-digit',
                     second: '2-digit',
+                    timeZone: craftTimeZone,
                     timeZoneName: 'short',
                   })
                 }}

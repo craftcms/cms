@@ -131,16 +131,16 @@ class Formatter
 
         $format = $this->dateTimeFormats[$format]['datetime'] ?? $format;
 
-        if (isset($this->defaultDateFormats[$format])) {
-            return $this->dateFormatter(
+        $dateFormatter = isset($this->defaultDateFormats[$format])
+            ? $this->dateFormatter(
                 dateType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
                 timeType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
-            )->format($value->toDateTime());
-        }
+            )
+            : $this->dateFormatter(
+                pattern: $format,
+            );
 
-        return $this->dateFormatter(
-            pattern: $format,
-        )->format($value->toDateTime());
+        return $this->appendTimeZone($dateFormatter, $value, $withTimeZone);
     }
 
     /**
@@ -410,16 +410,38 @@ class Formatter
 
         $format = $this->dateTimeFormats[$format]['time'] ?? $format;
 
-        if (isset($this->defaultDateFormats[$format])) {
-            return $this->dateFormatter(
+        $dateFormatter = isset($this->defaultDateFormats[$format])
+            ? $this->dateFormatter(
                 dateType: IntlDateFormatter::NONE,
                 timeType: $this->defaultDateFormats[$format] ?? IntlDateFormatter::NONE,
-            )->format($value->toDateTime());
+            )
+            : $this->dateFormatter(
+                pattern: $format,
+            );
+
+        return $this->appendTimeZone($dateFormatter, $value, $withTimeZone);
+    }
+
+    /**
+     * Formats a value, appending the abbreviation of the time zone it's
+     * displayed in — the formatter's, as of that date — when requested and the
+     * format doesn't already show a time zone, as the long and full ones do.
+     */
+    private function appendTimeZone(IntlDateFormatter $dateFormatter, CarbonInterface $value, bool $withTimeZone): string
+    {
+        $formatted = (string) $dateFormatter->format($value->toDateTime());
+
+        if (! $withTimeZone || $formatted === '' || $this->patternShowsTimeZone($dateFormatter->getPattern())) {
+            return $formatted;
         }
 
-        return $this->dateFormatter(
-            pattern: $format,
-        )->format($value->toDateTime());
+        return $formatted.' '.DateTimeHelper::timeZoneAbbreviation($this->timeZone, $value);
+    }
+
+    /** Whether an ICU date pattern has a time zone field, ignoring quoted text. */
+    private function patternShowsTimeZone(string $pattern): bool
+    {
+        return (bool) preg_match('/[zZvVOXx]/', (string) preg_replace("/'[^']*'/", '', $pattern));
     }
 
     private function dateFormatter(
