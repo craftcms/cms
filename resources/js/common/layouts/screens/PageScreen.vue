@@ -12,13 +12,9 @@
    * The document scrolls, not the main column, so `CpSidebar` is a sticky,
    * viewport-tall flex child of `.cp__main`.
    */
-  import {computed, provide, useTemplateRef} from 'vue';
+  import {computed, provide, useTemplateRef, watch} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
-  import {
-    useElementBounding,
-    useElementSize,
-    useWindowSize,
-  } from '@vueuse/core';
+  import {useElementBounding, useElementSize} from '@vueuse/core';
   import {useVisibleHeight} from '@/common/composables/useVisibleHeight';
   import {useDebugBarHeight} from '@/common/composables/useDebugBarHeight';
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
@@ -58,6 +54,7 @@
     screenPanels,
   } from '@/common/composables/screenPanels';
   import {t} from '@craftcms/ui/utilities/translate';
+  import {useVisibleViewport} from '@/common/composables/useVisibleViewport';
   import {useDetailsResizer} from './page/useDetailsResizer';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
@@ -224,16 +221,30 @@
   // The `aside`, which spans the row, rather than the pane's own contents,
   // whose height follows from this.
   const detailsAside = useTemplateRef<HTMLElement>('detailsAside');
-  const {top: detailsColumnTop, bottom: detailsColumnBottom} =
-    useElementBounding(detailsAside);
-  const {height: windowHeight} = useWindowSize();
+  const {
+    top: detailsColumnTop,
+    bottom: detailsColumnBottom,
+    update: updateDetailsBounds,
+  } = useElementBounding(detailsAside);
+  // What's on screen of the viewport, which an on-screen keyboard shrinks, so
+  // the pane stays above it rather than running underneath.
+  const visibleViewport = useVisibleViewport();
+  watch([visibleViewport.top, visibleViewport.height], () =>
+    updateDetailsBounds()
+  );
 
   const pageScreenStyle = computed(() => ({
     '--cp-top-bar-visible-height': `${topBarVisibleHeight.value}px`,
-    '--cp-details-offset': `${Math.max(0, detailsColumnTop.value)}px`,
+    '--cp-visible-viewport-top': `${visibleViewport.top.value}px`,
+    '--cp-visible-viewport-height': `${visibleViewport.height.value}px`,
+    '--cp-details-offset': `${Math.max(
+      0,
+      detailsColumnTop.value - visibleViewport.top.value
+    )}px`,
     '--cp-details-end-gap': `${Math.max(
       0,
-      windowHeight.value -
+      visibleViewport.top.value +
+        visibleViewport.height.value -
         (debugBarHeight.value ?? 0) -
         detailsColumnBottom.value
     )}px`,
@@ -790,9 +801,10 @@ Content: the secondary nav, content, and details panes
      short only once the page's end brings the panel's own bottom into view. */
   .cp-content__details-pane {
     position: sticky;
-    inset-block-start: 0;
+    inset-block-start: var(--cp-visible-viewport-top, 0px);
     height: calc(
-      100dvh - var(--cp-debug-bar-height, 0px) - var(--cp-details-offset, 0px) -
+      var(--cp-visible-viewport-height, 100dvh) -
+        var(--cp-debug-bar-height, 0px) - var(--cp-details-offset, 0px) -
         var(--cp-details-end-gap, 0px)
     );
   }
@@ -839,6 +851,12 @@ Folds
  * wider fold below.
  */
   @container cp-shell (width < 932px) {
+    /* Published with or without a column, so a panel opened on a narrow page
+       starts out overlaying rather than being folded as the column appears. */
+    .cp-content {
+      --cp-details-overlay: 1;
+    }
+
     .cp-content--details {
       --cp-details-overlay: 1;
       /* Nothing else shares the row, so the content keeps no floor of its own. */
@@ -884,6 +902,10 @@ Folds
     /* The same fold 250px sooner, for the one case where a third column shares
        the row: a secondary nav beside the content, counted from its minimum. */
     @container cp-shell (width < 1182px) {
+      .cp-content--sidebar {
+        --cp-details-overlay: 1;
+      }
+
       .cp-content--sidebar.cp-content--details {
         --cp-details-overlay: 1;
         --cp-content-main-min: 0px;
