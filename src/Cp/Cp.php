@@ -178,6 +178,7 @@ readonly class Cp
             'clientOs' => request()->clientOs(),
             'datepickerOptions' => self::datepickerOptions($formattingLocale, $locale),
             'defaultCookieOptions' => self::defaultCookieOptions(),
+            'earthIcon' => Icons::earth(),
             'fileKinds' => AssetsHelper::getFileKinds(),
             'iconBaseUrl' => craftAsset('icons'),
             'language' => app()->getLocale(),
