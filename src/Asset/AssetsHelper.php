@@ -562,7 +562,8 @@ class AssetsHelper
      * for the control panel theme that's showing, unless `$dark` says which.
      *
      * Like {@see self::iconSvg()}, it's laid out in percentages of the icon's
-     * box, with its corners, outline and shadow in pixels.
+     * box, with its corners, shadow and (in the dark variant) outline in
+     * pixels.
      */
     public static function folderIconSvg(?bool $dark = null): string
     {
@@ -576,33 +577,37 @@ class AssetsHelper
         $tabStyle = "y: $tabTop; height: calc(26% - $tabTop); rx: $shapeRadius";
         $backColor = $dark ? '#172560' : '#5b96f6';
 
-        $ringNodes = Html::tag('g', implode('', [
-            Html::tag('rect', '', [
-                ...$tab,
-                'style' => "x: calc(8% - 0.5px); y: calc($tabTop - 0.5px); width: calc(36% + 1px); height: calc(26% - $tabTop + 1px); rx: $ringRadius",
-            ]),
-            Html::tag('rect', '', [
-                ...$back,
-                'style' => sprintf(
-                    'x: calc(8%% - 0.5px); y: calc(20%% - 0.5px); width: calc(84%% + 1px); height: calc(66%% + 1px); rx: %s',
-                    $ringRadius,
-                ),
-            ]),
-        ]), [
-            'fill' => 'none',
-            'stroke' => $dark ? '#fff' : '#000',
-            'opacity' => $dark ? 0.25 : 0.18,
-        ]);
-        $seamCoverNodes = Html::tag('g', implode('', [
-            Html::tag('rect', '', [...$tab, 'style' => $tabStyle]),
-            Html::tag('rect', '', [
-                'x' => '8%',
-                'y' => '20%',
-                'width' => '37%',
-                'height' => '7%',
-                'style' => 'width: calc(36% + 2px); height: min(calc(6% + 2px), 10%)',
-            ]),
-        ]), ['fill' => $backColor]);
+        $outlineNodes = '';
+        if ($dark) {
+            $ringNodes = Html::tag('g', implode('', [
+                Html::tag('rect', '', [
+                    ...$tab,
+                    'style' => "x: calc(8% - 0.5px); y: calc($tabTop - 0.5px); width: calc(36% + 1px); height: calc(26% - $tabTop + 1px); rx: $ringRadius",
+                ]),
+                Html::tag('rect', '', [
+                    ...$back,
+                    'style' => sprintf(
+                        'x: calc(8%% - 0.5px); y: calc(20%% - 0.5px); width: calc(84%% + 1px); height: calc(66%% + 1px); rx: %s',
+                        $ringRadius,
+                    ),
+                ]),
+            ]), [
+                'fill' => 'none',
+                'stroke' => '#fff',
+                'opacity' => 0.25,
+            ]);
+            $seamCoverNodes = Html::tag('g', implode('', [
+                Html::tag('rect', '', [...$tab, 'style' => $tabStyle]),
+                Html::tag('rect', '', [
+                    'x' => '8%',
+                    'y' => '20%',
+                    'width' => '37%',
+                    'height' => '7%',
+                    'style' => 'width: calc(36% + 2px); height: min(calc(6% + 2px), 10%)',
+                ]),
+            ]), ['fill' => $backColor]);
+            $outlineNodes = $ringNodes.$seamCoverNodes;
+        }
         $backNodes = Html::tag('g', implode('', [
             Html::tag('rect', '', [...$tab, 'style' => $tabStyle]),
             Html::tag('rect', '', [...$back, 'style' => "rx: $shapeRadius"]),
@@ -633,7 +638,7 @@ class AssetsHelper
             'style' => sprintf('x: calc(8%% + %1$s); width: calc(84%% - 2 * %1$s)', $shapeRadius),
         ]);
 
-        return Html::tag('svg', $backNodes.$frontNode.$frontEdgeNode.$ringNodes.$seamCoverNodes, [
+        return Html::tag('svg', $backNodes.$frontNode.$frontEdgeNode.$outlineNodes, [
             'xmlns' => 'http://www.w3.org/2000/svg',
             'width' => '100%',
             'height' => '100%',
