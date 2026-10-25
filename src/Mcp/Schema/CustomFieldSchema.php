@@ -10,8 +10,6 @@ use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Date;
 use CraftCms\Cms\Field\Json;
 use CraftCms\Cms\Field\Time;
-use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\GqlInputSchema;
 use CraftCms\Cms\Support\Arr;
 use GraphQL\Error\UserError;
@@ -44,16 +42,8 @@ readonly class CustomFieldSchema
 
         $properties = [];
         $required = [];
-        $layoutFields = $layout->getFields(
-            fn (BaseField $layoutField): bool => $layoutField instanceof CustomField
-                && $layoutField->editable($element),
-        );
-
-        foreach ($layoutFields as $layoutField) {
-            if (! $layoutField instanceof CustomField) {
-                continue;
-            }
-
+        // The fields the user can see and edit in the element’s form, as its layout’s conditions allow.
+        foreach ($layout->getEditableCustomFieldElements($element) as $layoutField) {
             $field = $layoutField->getField();
             $handle = $field->handle;
 
