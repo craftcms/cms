@@ -6,7 +6,7 @@ import {registerCraftGlobals} from '@/common/craft-global';
 
 /**
  * Legacy programmatic callers (`CustomizeSourcesModal`, `BaseElementIndex`,
- * `Preview`, `AssetImageEditor`) construct `new Craft.Listbox($container, {…})`
+ * `Preview`) construct `new Craft.Listbox($container, {…})`
  * and expect their `onChange` to receive a **jQuery-wrapped** option (they call
  * `$selectedOption.data('mode')`, `.data('value')`, `.switchDeviceType($opt)`,
  * etc.). The modern {@link Listbox} hands `onChange` a RAW element, so the

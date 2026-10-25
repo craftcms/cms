@@ -555,13 +555,6 @@ abstract class BaseField extends FieldLayoutElement
             return null;
         }
 
-        $namespace = InputNamespace::get();
-        if (! $namespace || $namespace === 'fields') {
-            $namespace = null;
-        } elseif (str_ends_with($namespace, '[fields]')) {
-            $namespace = substr($namespace, 0, -strlen('[fields]'));
-        }
-
         $siteIds = array_values(array_filter(
             array_keys(ElementHelper::siteStatusesForElement($element, true)),
             fn (int $siteId): bool => $siteId !== $element->siteId,
@@ -582,15 +575,6 @@ abstract class BaseField extends FieldLayoutElement
                     'layoutElementUid' => $this->uid,
                     'label' => $label,
                     'siteIds' => $siteIds,
-                ],
-            ],
-            'attributes' => [
-                'data' => [
-                    'cross-site-copy' => true,
-                    'element-id' => $element->id,
-                    'layout-element' => $this->uid,
-                    'label' => $label,
-                    'namespace' => $namespace,
                 ],
             ],
         ];

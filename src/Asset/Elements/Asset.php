@@ -1755,22 +1755,19 @@ JS, [
                 'label' => t('Open in Image Editor'),
             ];
 
-            HtmlStack::jsWithVars(fn ($id, $assetId) => <<<JS
+            HtmlStack::jsWithVars(fn ($id, $settings) => <<<JS
 $('#' + $id).on('activate', () => {
-  new Craft.AssetImageEditor($assetId, {
-    allowDegreeFractions: Craft.isImagick,
-    onSave: (data) => {
-      if (data.newAssetId) {
-        return;
-      }
+  Craft.openAssetImageEditor($settings, (result) => {
+    if (result.newAssetId) {
+      return;
+    }
 
-      $updatePreviewThumbJs
-    },
-  })
+    $updatePreviewThumbJs
+  });
 });
 JS, [
                 InputNamespace::namespaceId($editImageId),
-                $this->id,
+                $this->getImageEditorSettings(),
             ]);
         }
 

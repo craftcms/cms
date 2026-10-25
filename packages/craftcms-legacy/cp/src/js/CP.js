@@ -10,7 +10,6 @@ Craft.CP = Garnish.Base.extend(
   {
     _elementThumbLoader: null,
     animationBlocker: null,
-    authManager: null,
     announcerTimeout: null,
     modalLayers: [],
 
@@ -97,11 +96,6 @@ Craft.CP = Garnish.Base.extend(
     },
 
     init: function () {
-      // Is this session going to expire?
-      if (Craft.remainingSessionTime !== 0) {
-        this.authManager = new Craft.AuthManager();
-      }
-
       // Find all the key elements
       this.$nav = $('#nav');
       this.$navToggle = $('#primary-nav-toggle');

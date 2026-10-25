@@ -121,7 +121,6 @@ function mountNode(
           reorderFailMessage: null,
           deleteUrl: null,
           deleteConfirmMessage: null,
-          deleteModalUrl: null,
           bulkDeleteUrl: null,
           bulkDeleteConfirmMessage: null,
           bulkActions: [],
