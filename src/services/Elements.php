@@ -564,6 +564,17 @@ class Elements extends Component
     private ?bool $_updateSearchIndex = null;
 
     /**
+     * @var int The number of element saves currently in progress
+     */
+    private int $_saveDepth = 0;
+
+    /**
+     * @var array<int,class-string<ElementInterface>> Element types memoized by element ID, while element saves are in progress
+     * @see _elementTypeById()
+     */
+    private array $_elementTypesById = [];
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -1144,13 +1155,30 @@ class Elements extends Component
      */
     private function _elementTypeById(string $property, int|string $elementId): ?string
     {
+        // Nested elements look up their owner’s type repeatedly as they’re saved and propagated,
+        // so memoize element types by ID for the duration of the outermost element save.
+        // (An element’s type can’t change, and we forget them whenever an element is hard-deleted.)
+        $memoize = $property === 'id' && $this->_saveDepth > 0;
+
+        if ($memoize && isset($this->_elementTypesById[$elementId])) {
+            return $this->_elementTypesById[$elementId];
+        }
+
         $class = (new Query())
             ->select(['type'])
             ->from([Table::ELEMENTS])
             ->where([$property => $elementId])
             ->scalar();
 
-        return $class !== false ? $class : null;
+        if ($class === false) {
+            return null;
+        }
+
+        if ($memoize) {
+            $this->_elementTypesById[$elementId] = $class;
+        }
+
+        return $class;
     }
 
     /**
@@ -2645,6 +2673,8 @@ class Elements extends Component
                     Db::delete(Table::ELEMENTS, [
                         'id' => $element->id,
                     ]);
+                    // Forget any element types we’ve memoized, as their elements could have been cascade-deleted
+                    $this->_elementTypesById = [];
                     Db::delete(Table::SEARCHINDEX, [
                         'elementId' => $element->id,
                     ]);
@@ -3913,6 +3943,47 @@ class Elements extends Component
         bool $saveContent = false,
         ?Element_SiteSettingsRecord &$siteSettingsRecord = null,
     ): bool {
+        return $this->_ensureSaveScope(function() use (
+            $element,
+            $runValidation,
+            $propagate,
+            $updateSearchIndex,
+            $supportedSites,
+            $forceTouch,
+            $crossSiteValidate,
+            $saveContent,
+            &$siteSettingsRecord,
+        ) {
+            return $this->_saveElementInScope(
+                $element,
+                $runValidation,
+                $propagate,
+                $updateSearchIndex,
+                $supportedSites,
+                $forceTouch,
+                $crossSiteValidate,
+                $saveContent,
+                $siteSettingsRecord,
+            );
+        });
+    }
+
+    /**
+     * Saves an element, within an element save scope.
+     *
+     * @see _saveElementInternal()
+     */
+    private function _saveElementInScope(
+        ElementInterface $element,
+        bool $runValidation,
+        bool $propagate,
+        ?bool $updateSearchIndex,
+        ?array $supportedSites,
+        bool $forceTouch,
+        bool $crossSiteValidate,
+        bool $saveContent,
+        ?Element_SiteSettingsRecord &$siteSettingsRecord,
+    ): bool {
         /** @var ElementInterface&DraftBehavior $element */
         $isNewElement = !$element->id;
 
@@ -4487,6 +4558,26 @@ class Elements extends Component
         $element->propagateAll = $originalPropagateAll;
 
         return true;
+    }
+
+    /**
+     * Executes the given callback function within an element save scope, which lasts until the outermost
+     * element save completes.
+     *
+     * @param callable $callback
+     * @return mixed
+     */
+    private function _ensureSaveScope(callable $callback): mixed
+    {
+        $this->_saveDepth++;
+
+        try {
+            return $callback();
+        } finally {
+            if (--$this->_saveDepth === 0) {
+                $this->_elementTypesById = [];
+            }
+        }
     }
 
     private function updateSearchIndex(
