@@ -19,6 +19,7 @@
 - A rate limit is now enforced for `users/login`, `auth/verify-totp`, and `auth/verify-recovery-code` requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
 - Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for `users/login`, `users/send-password-reset-email`, `auth/verify-totp`, and `auth/verify-recovery-code` requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
 - Queue jobs’ Job Data is now syntax-highlighted in the Queue Manager utility.
+- The Project Config utility’s “Loaded Project Config Data” is now syntax-highlighted.
 
 ### Development
 

@@ -141,7 +141,7 @@
 <hr>
 
 <h2>{{ 'Loaded Project Config Data'|t('app') }}</h2>
-<div class="pane" tabindex="0">
+<div id="loaded-config" class="pane" tabindex="0">
     <pre><code>{{ entireConfig }}</code></pre>
 </div>
 <div class="buttons">
@@ -154,7 +154,8 @@
         max-height: 500px;
         overflow: auto;
     }
-    .pane pre {
+    .pane pre,
+    .pane pre.th-code {
         margin: 0;
         padding: 0;
         background-color: transparent;
@@ -219,6 +220,9 @@
 {% endif %}
 
 {% js %}
+    const $loadedConfig = $('#loaded-config');
+    $loadedConfig.html(Craft.highlighter.highlight($loadedConfig.find('code').text(), {lang: 'yaml'}).html);
+
     $('#download').on('click', () => {
         $('#download-spinner').removeClass('hidden');
         let params = {};

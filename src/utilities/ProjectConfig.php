@@ -52,9 +52,9 @@ class ProjectConfig extends Utility
         $projectConfig = Craft::$app->getProjectConfig();
         $areChangesPending = $projectConfig->areChangesPending(force: true);
         $view = Craft::$app->getView();
+        $view->registerAssetBundle(HighlightAsset::class);
 
         if ($areChangesPending) {
-            $view->registerAssetBundle(HighlightAsset::class);
             $view->registerTranslations('app', [
                 'Show all changes',
             ]);
