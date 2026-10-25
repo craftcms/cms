@@ -5,7 +5,6 @@
   import CpLink from '@/common/components/CpLink.vue';
   import ActionList from '@/common/components/ActionList.vue';
   import type {ActionItems} from '@/common/types';
-  import VarDump from '@/common/components/VarDump.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
 
