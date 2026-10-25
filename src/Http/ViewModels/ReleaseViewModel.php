@@ -20,6 +20,7 @@ use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Models\ReleaseItem;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownParser;
 use CraftCms\Cms\Support\Html;
@@ -246,8 +247,10 @@ class ReleaseViewModel extends ViewModel
 
     private function formatDate(\DateTimeInterface $date): string
     {
-        return (string) new \IntlDateFormatter(app()->getLocale(), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT, Cms::timezone())
+        $formatted = (string) new \IntlDateFormatter(app()->getLocale(), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT, Cms::timezone())
             ->format($date);
+
+        return $formatted === '' ? '' : $formatted.' '.DateTimeHelper::timeZoneAbbreviation(Cms::timezone(), $date);
     }
 
     private function itemData(ReleaseItem $item): ReleaseItemData

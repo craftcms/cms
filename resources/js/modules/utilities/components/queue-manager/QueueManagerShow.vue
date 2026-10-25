@@ -8,9 +8,6 @@
     job: JobInfo;
   }>();
 
-  /** Job timestamps show in the system time zone, as the CP's other dates do. */
-  const craftTimeZone: string | undefined = window.Craft?.timezone;
-
   const jobRecord = computed(() =>
     Object.fromEntries(
       Object.entries(props.job).filter(([, value]) => value !== null)
@@ -118,20 +115,6 @@
               </template>
               <template v-else-if="name == 'class'">
                 <code>{{ value }}</code>
-              </template>
-              <template v-else-if="name.startsWith('date')">
-                {{
-                  new Date(value).toLocaleString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    timeZone: craftTimeZone,
-                    timeZoneName: 'short',
-                  })
-                }}
               </template>
               <template v-else>
                 <template v-if="typeof value === 'string'">{{
