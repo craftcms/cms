@@ -1,6 +1,8 @@
 import {computed, createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import LayoutSlot from '@/common/components/LayoutSlot.vue';
+import ScreenPanel from '@/common/components/ScreenPanel.vue';
+import {ScreenPanelsKey, screenPanels} from '@/common/composables/screenPanels';
 import PageScreen from './PageScreen.vue';
 
 type NavItem = CraftCms.Cms.Cp.Data.NavItem;
@@ -59,6 +61,27 @@ function navItem(config: Partial<NavItem> & {label: string}): NavItem {
 }
 
 let teardown: (() => void) | undefined;
+
+function addShellPanel(): () => void {
+  const container = document.createElement('div');
+  document.body.append(container);
+  const app = createApp({
+    render: () =>
+      h(ScreenPanel, {
+        id: 'chat',
+        label: 'Chat',
+        icon: 'sparkles',
+        persistent: true,
+      }),
+  });
+  app.provide(ScreenPanelsKey, screenPanels);
+  app.mount(container);
+
+  return () => {
+    app.unmount();
+    container.remove();
+  };
+}
 
 beforeEach(() => {
   vi.stubGlobal('Craft', {systemUid: 'page-screen-test', cpTrigger: 'admin'});
@@ -124,6 +147,81 @@ describe('PageScreen', () => {
       );
     }
   );
+
+  it('gives a page without details panels a details column once the shell has a panel', async () => {
+    stubViewport(true);
+
+    const container = document.createElement('div');
+    document.body.append(container);
+    const app = createApp({render: () => h(PageScreen, {title: 'Dashboard'})});
+    app.mount(container);
+    teardown = () => {
+      screenPanels.unregister('chat');
+      app.unmount();
+      container.remove();
+    };
+    await nextTick();
+
+    const rail = () =>
+      container.querySelector<HTMLElement>('#cp-details-rail')!;
+    expect(rail().style.display).toBe('none');
+
+    const removeShellPanel = addShellPanel();
+
+    await vi.waitFor(() => {
+      expect(rail().style.display).toBe('');
+      expect(
+        container.querySelector('.cp-content__details section h3')?.textContent
+      ).toBe('Chat');
+    });
+
+    removeShellPanel();
+
+    await vi.waitFor(() => expect(rail().style.display).toBe('none'));
+  });
+
+  it('makes a page’s details content a panel of its own while there are other panels', async () => {
+    stubViewport(true);
+
+    const container = document.createElement('div');
+    document.body.append(container);
+    const app = createApp({
+      render: () =>
+        h(PageScreen, {title: 'Token'}, () =>
+          h(LayoutSlot, {name: 'content-details'}, () =>
+            h('p', {class: 'token-details'}, 'Enabled')
+          )
+        ),
+    });
+    app.mount(container);
+    teardown = () => {
+      screenPanels.unregister('chat');
+      app.unmount();
+      container.remove();
+    };
+
+    const details = () =>
+      container.querySelector<HTMLElement>('.cp-content__details')!;
+    await vi.waitFor(() =>
+      expect(details().querySelector('.token-details')).not.toBeNull()
+    );
+    expect(details().querySelector('section')).toBeNull();
+
+    const removeShellPanel = addShellPanel();
+
+    await vi.waitFor(() => {
+      const panel = details().querySelector('section:not([hidden])');
+      expect(panel?.querySelector('h3')?.textContent).toBe('Details');
+      expect(panel?.querySelector('.token-details')).not.toBeNull();
+    });
+
+    removeShellPanel();
+
+    await vi.waitFor(() => {
+      expect(details().querySelector('section')).toBeNull();
+      expect(details().querySelector('.token-details')).not.toBeNull();
+    });
+  });
 
   it('hides the content header while it has nothing to show', async () => {
     stubViewport(true);
