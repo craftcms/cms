@@ -833,6 +833,33 @@ it('ignores superseded responses and aborts an unfinished load on unmount', asyn
   pending[2]!.resolve(result('Unmounted'));
 });
 
+it('refreshes quietly in place, without interrupting a load underway', async () => {
+  const pending: Array<
+    (value: AdminTablePage<(typeof records)[number]>) => void
+  > = [];
+  const loadRows = (_request: AdminTableRequest, _signal: AbortSignal) =>
+    new Promise<AdminTablePage<(typeof records)[number]>>((resolve) =>
+      pending.push(resolve)
+    );
+  const {host, handle} = mountTable({loadRows});
+  pending[0]!(result('Initial'));
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Initial']));
+
+  const quiet = handle.value!.refresh({quiet: true});
+  await nextTick();
+  expect(rowNames(host)).toEqual(['Initial']);
+  pending[1]!(result('Updated'));
+  await quiet;
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Updated']));
+
+  const loud = handle.value!.refresh();
+  await expect(handle.value!.refresh({quiet: true})).resolves.toBe(false);
+  expect(pending).toHaveLength(3);
+  pending[2]!(result('Reloaded'));
+  await loud;
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Reloaded']));
+});
+
 it('refreshes through Inertia after deletion and returns from an emptied final page', async () => {
   inertiaPage.url = '/settings/entry-types?page=2';
   const remove = vi
