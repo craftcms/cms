@@ -43,7 +43,7 @@
 - Added `craft\base\FieldTrait::$warning`.
 - Added `craft\base\NestedElementTrait::$touchOwnersOnSave`.
 - Added `craft\base\Renderable`. ([#19988](https://github.com/craftcms/cms/pull/19988))
-- Added `craft\elements\Asset::KIND_MARKDOWN`.
+- Added `craft\elements\Asset::KIND_MARKDOWN`. ([#20089](https://github.com/craftcms/cms/pull/20089))
 - Added `craft\elements\db\NestedElementQueryTrait::mustHaveField()`.
 - Added `craft\elements\db\NestedElementQueryTrait::mustHaveOwner()`.
 - Added `craft\fieldlayoutelements\BaseField::defaultTip()`.
@@ -75,7 +75,7 @@
 
 - Added support for JPEG XL (`.jxl`) images, when ImageMagick supports it. JPEG XL images can now be uploaded, transformed, and set as a transform’s output format.
 - BMP images can now be transformed and edited in the Image Editor.
-- Added the “Markdown” file kind, and `md` and `markdown` are now included in the default `allowedFileExtensions` config setting value. Markdown files can be previewed with syntax highlighting.
+- Added the “Markdown” file kind, and `md` and `markdown` are now included in the default `allowedFileExtensions` config setting value. Markdown files can be previewed with syntax highlighting. ([#20089](https://github.com/craftcms/cms/pull/20089))
 - MySQL database backups and restores now carry over SSL/TLS settings from the system’s MySQL option files (e.g. `ssl-ca` or `disable-ssl-verify-server-cert`), if the database connection doesn’t have any `PDO::MYSQL_ATTR_SSL_*` attributes set. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
