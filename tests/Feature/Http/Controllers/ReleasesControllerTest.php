@@ -18,6 +18,7 @@ use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Tests\TestClasses\Release\DraftableReleaseElement;
@@ -275,6 +276,24 @@ it('shows release dates with the system time zone’s abbreviation', function ()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('metadataHtml', fn (string $html) => str_contains($html, '9:00')
                 && str_contains($html, ' EST')));
+});
+
+it('shows release dates in the user’s formatting locale', function () {
+    Cms::config()->timezone('UTC');
+    $release = $this->releases->create('Scheduled', null, $this->actor);
+    $release->update(['status' => ReleaseStatus::Scheduled, 'publishedAt' => Date::parse('2026-11-15 14:00:00', 'UTC')]);
+
+    I18N::withLocale('en-US', 'de-DE', function () use ($release): void {
+        get(route('craft.cp.releases.index'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('ui.nodes.0.props.rows.0.date.html', fn (string $html) => str_contains($html, '15.11.2026')));
+
+        get(route('craft.cp.releases.show', $release))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('metadataHtml', fn (string $html) => str_contains($html, '15.11.2026')));
+    });
 });
 
 it('attaches and edits the same draft, and explicitly removes it from the release', function () {

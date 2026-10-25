@@ -22,6 +22,7 @@ use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownParser;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Controls\Markdown;
@@ -247,7 +248,7 @@ class ReleaseViewModel extends ViewModel
 
     private function formatDate(\DateTimeInterface $date): string
     {
-        $formatted = (string) new \IntlDateFormatter(app()->getLocale(), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT, Cms::timezone())
+        $formatted = (string) new \IntlDateFormatter(I18N::getFormattingLocale()->id, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT, Cms::timezone(), \IntlDateFormatter::TRADITIONAL)
             ->format($date);
 
         return $formatted === '' ? '' : $formatted.' '.DateTimeHelper::timeZoneAbbreviation(Cms::timezone(), $date);
