@@ -252,7 +252,7 @@
   /* Checkbox */
   --c-checkbox-size: var(--c-size-control-xs);
   --c-checkbox-radius: var(--c-radius-sm);
-  --c-checkbox-group-spacing: calc(24px - var(--c-checkbox-size));
+  --c-checkbox-group-spacing: calc(20px - var(--c-checkbox-size));
 
   /* Slide rule */
   --c-slide-rule-height: var(--c-size-touch-target);
