@@ -26,6 +26,7 @@
 - Element revision listings now use the control panel’s standard table, with a choice of page sizes. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - The Queue Manager utility now lists jobs a page at a time, with a choice of page sizes. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Queue job pages are now laid out like other detail pages, titled after the job, with a breadcrumb back to the Queue Manager and their Retry and Release buttons in the footer. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- The System Report, PHP Info, and Migrations utilities’ tables now line up with their headings. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Dates with times, such as element creation and update dates, revision dates, release dates, and queue job dates, now show the time zone’s abbreviation, like Craft 5. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Links are no longer underlined until they’re hovered, unless the “Underline links” accessibility preference is enabled, in which case they’re underlined until hovered. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Folder names in asset indexes are now links.
