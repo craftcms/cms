@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {type JobInfo} from '@/modules/queue/types';
+  import {jobStatusFill} from '@/modules/queue/status-fill';
   import CodeHighlight from '@/common/components/CodeHighlight.vue';
   import {computed} from 'vue';
 
@@ -15,22 +16,6 @@
   );
 
   const hiddenProperties = ['delay', 'description', 'progressLabel', 'job'];
-
-  function getStatusVariant(value: number) {
-    if (value === 2 || value === 3) {
-      return 'success';
-    }
-
-    if (value === 4) {
-      return 'danger';
-    }
-
-    if (value === 5) {
-      return 'warning';
-    }
-
-    return 'default';
-  }
 
   /**
    * Formats a TTR value.
@@ -102,7 +87,7 @@
               }"
             >
               <template v-if="name == 'status'">
-                <craft-badge :fill="getStatusVariant(job.status.value)">
+                <craft-badge :fill="jobStatusFill(job.status.value)">
                   {{ job.status.label }}
                 </craft-badge>
               </template>

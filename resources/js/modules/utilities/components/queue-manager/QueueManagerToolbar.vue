@@ -16,9 +16,9 @@
   const props = withDefaults(
     defineProps<{
       activeJob?: JobInfo | null;
-      jobs?: Array<JobInfo>;
+      hasJobs?: boolean;
     }>(),
-    {jobs: () => [], activeJob: null}
+    {hasJobs: false, activeJob: null}
   );
 
   const messages = useMessages();
@@ -79,7 +79,7 @@
       v-if="activeJob.status.value !== JobStatus.Done"
     />
   </template>
-  <template v-else-if="jobs.length">
+  <template v-else-if="hasJobs">
     <craft-button
       type="button"
       @click="retryAll"
