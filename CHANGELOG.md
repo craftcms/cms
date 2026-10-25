@@ -13,6 +13,16 @@
 - HUD tips now match their HUD’s colors, and HUDs have a light outline in dark mode. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Added a “Theme” user preference, with “Light”, “Dark”, and “System” options. “System” is the default. Pages shown to logged-out users, such as the login page, always follow the system’s light or dark setting. ([#19966](https://github.com/craftcms/cms/pull/19966))
 - Improved chip styling. ([#19902](https://github.com/craftcms/cms/pull/19902))
+- Modals now have a subtle outline instead of a border, header and footer bars that match the control panel’s, and rounder corners. Dialogs, such as confirmations and copy prompts, have a compact header with a plain close button. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Asset previews, file conflict prompts, the entry index’s “Move to” action, and the modals for reassigning or replacing relations before a delete now use the control panel’s dialog styling. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Improved the Customize Sources modal: only its three panels scroll, each under a fixed header, and page and source items have tighter, aligned drag handles and action menus. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Element selection modals now have a header-height toolbar, table headings that match the Customize Sources modal’s, and a world icon on the site menu. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- World and earth icons now show the globe for the system time zone. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Copy prompts now show their value in a read-only input with a copy button, like Craft 5. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Standalone inputs’ instructions and tips now have the same spacing and styling as other fields. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Selected cards’ checkboxes now stand out against their headers. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- The icon picker’s icons are now 32px squares, evenly spaced. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Secondary navigation items are now as wide as the global navigation’s. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Links are no longer underlined until they’re hovered, unless the “Underline links” accessibility preference is enabled, in which case they’re underlined until hovered. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - Folder names in asset indexes are now links.
 - The “License purchase required” screen is now shown in a centered pane, like other message pages.
@@ -208,6 +218,9 @@
 - Added `focusReturnFor()` to `@craftcms/ui/utilities/focus-return`. `event` actions now include a `returnFocus` resolver in their event’s `detail`, which finds the action menu’s button again after the menu closes or re-renders when it has a `data-focus-key` attribute.
 - Fixed an accessibility issue where keyboard focus was lost after closing a dialog, slideout, or file preview opened from an action menu, such as “Copy attribute name”, “Copy URL”, “Field settings”, or “Entry type settings”. Focus now returns to the action menu’s button, except on control panel pages that still use legacy slideouts.
 - Opening a slideout no longer focuses its resize handle. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Fixed a bug where pressing <kbd>Esc</kbd> no longer closed a dialog after an element selection modal opened from it had been closed. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Page and source items in the Customize Sources modal now show a focus ring around the whole row, including their drag handle and action menu. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Tips on standalone inputs are now part of the input’s accessible description. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Error summaries now receive focus when a form fails validation, and each error links to its field, switching tabs if needed. ([#20044](https://github.com/craftcms/cms/issues/20044))
 - The card view designer’s “Alignment” setting is now a radio group, which can be changed with the arrow keys.
 - Controls in field layout designers, and rich selects such as color selects, now have the standard focus ring, rather than an inset or flush one.
@@ -373,6 +386,17 @@
 - Deprecated `CraftCms\Cms\Cp\Components\CheckboxSelect::storageKey()`, which now does nothing. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Deprecated `Craft.SortableCheckboxSelect`. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Deprecated `CraftCms\Cms\Element\DeletionBlockers\RelationDeletionBlocker::$elementIndexSettings`, which no longer has any effect.
+- Removed `Craft.UserPhotoInput`. `craft\web\assets\userphoto\UserPhotoAsset` is now deprecated and does nothing. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Added `Craft.openAssetImageEditor()`, which opens the image editor dialog for an asset ID or its editor settings. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Deprecated `Craft.AssetImageEditor`. `Craft.openAssetImageEditor()` should be used instead. Constructing it now opens the image editor dialog, and only its `onSave` setting is supported. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- The `assets/image-editor` action now returns the image editor dialog’s settings, rather than the legacy editor’s HTML. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- The control panel no longer loads Fabric.js. `craft\web\assets\fabric\FabricAsset` is now deprecated and doesn’t register Fabric.js, so plugins that rely on it should bundle it themselves. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- `Craft.PreviewFileModal` and `Craft.CpModal` are now built on `<craft-dialog>` rather than `Garnish.Modal`. `Craft.PreviewFileModal`’s `$container` is now the jQuery-wrapped element holding the preview, and `Craft.CpModal` accepts a `title` setting. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Removed `Craft.ElementEditor::createEditMetaAction()`, `showMetaModal()`, `createMetaModal()`, `checkMetaValues()`, `shakeMetaModal()`, `saveMeta()`, and `showFieldCopyModal()`, which were no longer reachable. Cross-site value copying is handled by the field’s own action menu. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Removed `Craft.AuthManager` and `Craft.cp.authManager`, which no longer had a remaining session time to act on. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Removed the `users/login-modal` action and the `_special/login-modal` template. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Labeled `@craftcms/ui` form controls (`<craft-input>`, `<craft-textarea>`, `<craft-select>`, `<craft-combobox>`, etc.) now lay out their label and help text the same way `<craft-field>` does, and support `tip` and `warning` slots. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Added the `control` CSS part to `<craft-action-item>`. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Removed `CraftCms\Cms\Cp\Components\CheckboxSelect::allCheckbox()`. `allOption()` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Removed the `<craft-sortable-checkbox-select>` web component. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `<craft-resize-grips>` web component. ([#20008](https://github.com/craftcms/cms/pull/20008))
