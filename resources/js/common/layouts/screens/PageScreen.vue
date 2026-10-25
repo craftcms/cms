@@ -12,9 +12,13 @@
    * The document scrolls, not the main column, so `CpSidebar` is a sticky,
    * viewport-tall flex child of `.cp__main`.
    */
-  import {computed, provide, useTemplateRef, watch} from 'vue';
+  import {computed, provide, useTemplateRef} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
-  import {useElementBounding, useElementSize} from '@vueuse/core';
+  import {
+    useElementBounding,
+    useElementSize,
+    useWindowSize,
+  } from '@vueuse/core';
   import {useVisibleHeight} from '@/common/composables/useVisibleHeight';
   import {useDebugBarHeight} from '@/common/composables/useDebugBarHeight';
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
@@ -221,30 +225,21 @@
   // The `aside`, which spans the row, rather than the pane's own contents,
   // whose height follows from this.
   const detailsAside = useTemplateRef<HTMLElement>('detailsAside');
-  const {
-    top: detailsColumnTop,
-    bottom: detailsColumnBottom,
-    update: updateDetailsBounds,
-  } = useElementBounding(detailsAside);
+  const {top: detailsColumnTop, bottom: detailsColumnBottom} =
+    useElementBounding(detailsAside);
+  const {height: windowHeight} = useWindowSize();
   // What's on screen of the viewport, which an on-screen keyboard shrinks, so
-  // the pane stays above it rather than running underneath.
+  // a panel's dialog fits above it rather than running underneath.
   const visibleViewport = useVisibleViewport();
-  watch([visibleViewport.top, visibleViewport.height], () =>
-    updateDetailsBounds()
-  );
 
   const pageScreenStyle = computed(() => ({
     '--cp-top-bar-visible-height': `${topBarVisibleHeight.value}px`,
     '--cp-visible-viewport-top': `${visibleViewport.top.value}px`,
     '--cp-visible-viewport-height': `${visibleViewport.height.value}px`,
-    '--cp-details-offset': `${Math.max(
-      0,
-      detailsColumnTop.value - visibleViewport.top.value
-    )}px`,
+    '--cp-details-offset': `${Math.max(0, detailsColumnTop.value)}px`,
     '--cp-details-end-gap': `${Math.max(
       0,
-      visibleViewport.top.value +
-        visibleViewport.height.value -
+      windowHeight.value -
         (debugBarHeight.value ?? 0) -
         detailsColumnBottom.value
     )}px`,
@@ -261,6 +256,15 @@
     contentLayoutWidth
   );
   provide(ScreenDetailsOverlayKey, detailsOverlaid);
+  // A panel overlaying the page opens in a dialog, and the page behind it is
+  // dimmed rather than covered by the dialog's backdrop: with the keyboard
+  // open, iOS shows the page past the backdrop's reach.
+  const detailsDimmed = computed(
+    () =>
+      hasPanels.value &&
+      detailsOverlaid.value &&
+      screenPanels.openPanelId.value !== null
+  );
   // The details rail renders beside the panel.
   provide(ScreenDetailsRailKey, '#cp-details-rail');
 
@@ -301,7 +305,11 @@
     :additional-skip-links="additionalSkipLinks"
   />
   <div
-    :class="{'page-screen': true, 'page-screen--fill-viewport': fillViewport}"
+    :class="{
+      'page-screen': true,
+      'page-screen--fill-viewport': fillViewport,
+      'page-screen--details-dimmed': detailsDimmed,
+    }"
     :style="pageScreenStyle"
   >
     <CpTopBar
@@ -801,12 +809,17 @@ Content: the secondary nav, content, and details panes
      short only once the page's end brings the panel's own bottom into view. */
   .cp-content__details-pane {
     position: sticky;
-    inset-block-start: var(--cp-visible-viewport-top, 0px);
+    inset-block-start: 0;
     height: calc(
-      var(--cp-visible-viewport-height, 100dvh) -
-        var(--cp-debug-bar-height, 0px) - var(--cp-details-offset, 0px) -
+      100dvh - var(--cp-debug-bar-height, 0px) - var(--cp-details-offset, 0px) -
         var(--cp-details-end-gap, 0px)
     );
+  }
+
+  /* Behind a panel's dialog, matching the shade other dialogs put behind
+     them, a quarter black. */
+  .page-screen--details-dimmed {
+    filter: brightness(0.75);
   }
 
   .cp-content__footer {

@@ -5,8 +5,8 @@ import {shallowRef, type Ref} from 'vue';
  * The part of the page's viewport that's on screen, in its coordinates: how
  * far down it starts, and how tall it is. An on-screen keyboard leaves the
  * viewport the same size on iOS, and shrinks only this. While the page is
- * pinch-zoomed it's the whole viewport, so sticky columns don't shrink to the
- * zoomed area.
+ * pinch-zoomed it's the whole viewport, so what's sized to it doesn't shrink
+ * to the zoomed area.
  */
 export function useVisibleViewport(): {
   top: Readonly<Ref<number>>;
