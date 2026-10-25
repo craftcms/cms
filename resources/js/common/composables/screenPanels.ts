@@ -35,9 +35,8 @@ export interface ScreenPanels {
    * them as it would on a fresh page.
    */
   readonly pageGeneration: Readonly<ShallowRef<number>>;
-  /** Where each panel's content and header actions go, by panel id. */
-  readonly bodies: Map<string, HTMLElement>;
-  readonly headers: Map<string, HTMLElement>;
+  /** Where each panel goes, by panel id. */
+  readonly sections: Map<string, HTMLElement>;
   /** Adds a panel, or updates the one with its id. */
   register(panel: DetailsPanel): void;
   unregister(panelId: string): void;
@@ -80,8 +79,7 @@ export function createScreenPanels(): ScreenPanels {
     ),
     openPanelId,
     pageGeneration,
-    bodies: shallowReactive(new Map<string, HTMLElement>()),
-    headers: shallowReactive(new Map<string, HTMLElement>()),
+    sections: shallowReactive(new Map<string, HTMLElement>()),
 
     register(panel) {
       if (!panel.persistent && !registered.has(panel.id) && !hasPagePanels()) {

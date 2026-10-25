@@ -2,9 +2,9 @@
   /**
    * Adds a panel to the nearest screen's details column while it's mounted:
    * an icon in the rail, and the panel it opens. The default slot is the
-   * panel's content, and `header-actions` goes in its header, both moved
-   * into the column while staying in the scope they're written in, so they
-   * keep their bindings and state.
+   * panel's content, and `header-actions` goes in its header. The panel is
+   * moved into the column while staying in the scope it's written in, so it
+   * keeps its bindings and state.
    *
    * ```vue
    * <ScreenPanel id="info" :label="t('Info')" icon="circle-info">
@@ -12,8 +12,9 @@
    * </ScreenPanel>
    * ```
    */
-  import {computed, onBeforeUnmount, onMounted, watch} from 'vue';
+  import {computed, onBeforeUnmount, onMounted, useId, watch} from 'vue';
   import {useScreenPanels} from '@/common/composables/screenPanels';
+  import DetailsPanelContent from './DetailsPanelContent.vue';
   import type {DetailsPanel, DetailsPanelStatus} from './detailsPanels';
 
   const props = defineProps<{
@@ -42,9 +43,12 @@
     );
   }
 
+  const headingId = `screen-panel-${useId()}-heading`;
+
   const descriptor = computed<DetailsPanel>(() => ({
     id: props.id,
     label: props.label,
+    headingId,
     icon: props.icon,
     initialIcon: props.initialIcon,
     order: props.order,
@@ -72,22 +76,19 @@
 
   onBeforeUnmount(() => panels?.unregister(props.id));
 
-  const body = computed(() => panels?.bodies.get(props.id) ?? null);
-  const header = computed(() => panels?.headers.get(props.id) ?? null);
+  const section = computed(() => panels?.sections.get(props.id) ?? null);
 </script>
 
 <template>
-  <!-- The content's home until the column renders the panel. -->
+  <!-- The panel's home until the column renders its section. -->
   <div hidden>
-    <Teleport :to="body ?? 'body'" :disabled="!body">
-      <slot></slot>
-    </Teleport>
-    <Teleport
-      v-if="$slots['header-actions']"
-      :to="header ?? 'body'"
-      :disabled="!header"
-    >
-      <slot name="header-actions"></slot>
+    <Teleport :to="section ?? 'body'" :disabled="!section">
+      <DetailsPanelContent :panel="descriptor" @close="panels?.close(id)">
+        <template #header-actions>
+          <slot name="header-actions"></slot>
+        </template>
+        <slot></slot>
+      </DetailsPanelContent>
     </Teleport>
   </div>
 </template>

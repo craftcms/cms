@@ -1,10 +1,12 @@
 /**
- * A panel of a screen’s details column, and its trigger in the rail. Its
- * content and header actions are rendered by the `ScreenPanel` that added it.
+ * A panel of a screen’s details column, and its trigger in the rail. The
+ * `ScreenPanel` that added it renders the panel itself.
  */
 export interface DetailsPanel {
   id: string;
   label: string;
+  /** The heading's id, which names the panel and takes focus when it opens. */
+  headingId: string;
   icon: string;
   /** Show the label's first letter instead of the icon. */
   initialIcon?: boolean;

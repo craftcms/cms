@@ -20,7 +20,6 @@
     useScreenDetailsRail,
   } from '@/common/composables/screen';
   import type {ScreenPanels} from '@/common/composables/screenPanels';
-  import DetailsPanelContent from './DetailsPanelContent.vue';
   import {initialOf} from '@/common/utils/initialIcon';
   import type {DetailsPanel} from './detailsPanels';
 
@@ -49,10 +48,6 @@
 
   function panelElementId(panelId: string): string {
     return `${triggerId(panelId)}-panel`;
-  }
-
-  function headingId(panelId: string): string {
-    return `${panelElementId(panelId)}-heading`;
   }
 
   function findPanel(panelId: string | null): DetailsPanel | undefined {
@@ -189,7 +184,8 @@
 
     void nextTick(() =>
       (
-        panel?.initialFocus?.() ?? document.getElementById(headingId(panelId))
+        panel?.initialFocus?.() ??
+        (panel && document.getElementById(panel.headingId))
       )?.focus()
     );
   }
@@ -304,32 +300,26 @@
   });
 
   /**
-   * Keeps the element a panel's content or header actions go in. One function
-   * per panel, so re-rendering doesn't swap the ref, which would let go of the
-   * element and move the panel's content out and back.
+   * Keeps the element a panel goes in. One function per panel, so re-rendering
+   * doesn't swap the ref, which would let go of the element and move the
+   * panel out and back.
    */
-  type PlaceholderRef = (
-    element: Element | ComponentPublicInstance | null
-  ) => void;
+  type SectionRef = (element: Element | ComponentPublicInstance | null) => void;
 
-  const placeholders = new Map<string, PlaceholderRef>();
+  const sectionRefs = new Map<string, SectionRef>();
 
-  function placeholder(
-    elements: Map<string, HTMLElement>,
-    panelId: string
-  ): PlaceholderRef {
-    const key = `${elements === props.registry.bodies ? 'body' : 'header'}:${panelId}`;
-    let ref = placeholders.get(key);
+  function sectionRef(panelId: string): SectionRef {
+    let ref = sectionRefs.get(panelId);
 
     if (!ref) {
       ref = (element) => {
         if (element instanceof HTMLElement) {
-          elements.set(panelId, element);
-        } else if (elements.get(panelId)) {
-          elements.delete(panelId);
+          props.registry.sections.set(panelId, element);
+        } else if (props.registry.sections.get(panelId)) {
+          props.registry.sections.delete(panelId);
         }
       };
-      placeholders.set(key, ref);
+      sectionRefs.set(panelId, ref);
     }
 
     return ref;
@@ -344,18 +334,11 @@
         v-for="panel in visiblePanels"
         :id="panelElementId(panel.id)"
         :key="panel.id"
-        :aria-labelledby="headingId(panel.id)"
+        :ref="sectionRef(panel.id)"
+        :aria-labelledby="panel.headingId"
         :hidden="openPanelId !== panel.id"
         @keydown="onPanelKeydown($event, panel.id)"
-      >
-        <DetailsPanelContent
-          :panel="panel"
-          :heading-id="headingId(panel.id)"
-          :header-ref="placeholder(registry.headers, panel.id)"
-          :body-ref="placeholder(registry.bodies, panel.id)"
-          @close="close(panel.id, true)"
-        />
-      </section>
+      ></section>
     </div>
     <Teleport defer :to="rail ?? 'body'" :disabled="!rail">
       <div
