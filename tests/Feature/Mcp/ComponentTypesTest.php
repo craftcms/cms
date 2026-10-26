@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Conditions\SlugConditionRule;
+use CraftCms\Cms\Entry\Conditions\EntryCondition;
+use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Heading;
@@ -73,4 +76,21 @@ it('describes the elements an element type’s field layouts accept', function (
     ($this->call)('component-types.list', ['kind' => 'field-layout-element'])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Provide scope: the element type whose field layouts the elements go in, such as entries.');
+});
+
+it('describes the rules a condition accepts and points condition settings to them', function (): void {
+    $rules = collect(($this->result)('component-types.list', ['kind' => 'condition-rule', 'scope' => EntryCondition::class])['types'])->keyBy('type');
+    $slug = ($this->result)('component-types.get', ['kind' => 'condition-rule', 'scope' => EntryCondition::class, 'type' => SlugConditionRule::class])['settingsSchema']['properties'];
+    $selectionCondition = ($this->result)('component-types.get', ['kind' => 'field', 'type' => Entries::class])['settingsSchema']['properties']['selectionCondition'];
+
+    expect($rules[SlugConditionRule::class])->toMatchArray(['name' => 'Slug', 'config' => ['class' => SlugConditionRule::class]])
+        ->and(array_column($slug['operator']['oneOf'], 'const'))->toContain('=', 'bw', 'empty')
+        ->and($slug['value']['type'])->toBe('string')
+        ->and($selectionCondition['description'])->toContain('kind: condition-rule and scope: '.EntryCondition::class)
+        ->and($selectionCondition['properties']['class'])->toBe(['const' => EntryCondition::class])
+        ->and($selectionCondition['properties']['conditionRules']['properties']['operator']['enum'])->toBe(['and', 'or']);
+
+    ($this->call)('component-types.list', ['kind' => 'condition-rule', 'scope' => 'Nope'])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'Provide scope: the condition class, which settings schemas name.');
 });

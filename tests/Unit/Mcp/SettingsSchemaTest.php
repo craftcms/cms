@@ -27,12 +27,13 @@ it('describes settings UIs as JSON Schema', function () {
         Scope::make('advanced', [
             Field::make('Label', Text::make('button.label')->maxLength(20)),
         ]),
+        Field::make('IDs', Text::make('ids')->placeholder('Entry IDs'))->tip('Comma-separated.'),
         Field::make('Columns', Table::make('columns')),
         Field::make('Secret', Hidden::make('internal')),
         Field::make('Old', Text::make('old'))->hidden(),
     ]);
 
-    expect(app(SettingsSchema::class)->fromUi($ui, ['mode' => 'fast', 'limit' => 10]))->toEqual([
+    expect(app(SettingsSchema::class)->fromUi($ui, ['mode' => 'fast', 'limit' => 10, 'ids' => []]))->toEqual([
         'type' => 'object',
         'properties' => [
             'mode' => [
@@ -62,6 +63,12 @@ it('describes settings UIs as JSON Schema', function () {
                     ],
                 ],
                 'additionalProperties' => true,
+            ],
+            'ids' => [
+                'title' => 'IDs',
+                'description' => 'Comma-separated.',
+                'type' => 'string',
+                'examples' => ['Entry IDs'],
             ],
             'columns' => [
                 'title' => 'Columns',

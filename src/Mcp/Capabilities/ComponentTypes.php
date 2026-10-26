@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\FieldTypes;
 use CraftCms\Cms\Field\PlainText;
@@ -18,6 +20,9 @@ use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\ElementQueryFactory;
 use CraftCms\Cms\Mcp\Enums\ComponentKind;
 use CraftCms\Cms\Mcp\Schema\SettingsSchema;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Enums\FieldWidth;
 use CraftCms\Cms\Workflow\Contracts\WorkflowStageInterface;
@@ -34,7 +39,7 @@ use Mcp\Schema\ToolAnnotations;
  */
 readonly class ComponentTypes
 {
-    private const string ScopeDescription = 'Required for field-layout-element: the element type handle or class whose field layouts the elements go in, such as entries.';
+    private const string ScopeDescription = 'Required for field-layout-element: the element type handle or class whose field layouts the elements go in, such as entries. Required for condition-rule: the condition class, which settings schemas name.';
 
     public function __construct(
         private FieldTypes $fieldTypes,
@@ -48,7 +53,7 @@ readonly class ComponentTypes
     /** @return array{kind: string, usage: string, types: list<array{type: string, name: string, config?: array<string, mixed>}>} */
     #[McpTool(
         name: 'component-types.list',
-        description: 'Lists the available types of an extendable component, such as field types, workflow stage types, Asset Transform drivers, or field layout elements, including those plugins add. Call component-types.get for a type’s settings schema before configuring it.',
+        description: 'Lists the available types of an extendable component, such as field types, workflow stage types, Asset Transform drivers, field layout elements, or condition rules, including those plugins add. Call component-types.get for a type’s settings schema before configuring it.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     #[RequiresAdmin]
@@ -73,6 +78,13 @@ readonly class ComponentTypes
                     'type' => $id,
                     'name' => $this->layoutElementName($element, $id),
                     'config' => $this->layoutElementConfig($element, $id),
+                ]),
+            ComponentKind::ConditionRule => collect($this->conditionRules($scope))
+                ->map(static fn (array $rule, string $id): array => [
+                    'type' => $id,
+                    'name' => $rule['rule']->getLabel(),
+                    ...($rule['rule']->getGroupLabel() !== null ? ['group' => $rule['rule']->getGroupLabel()] : []),
+                    'config' => $rule['config'],
                 ]),
         };
 
@@ -117,6 +129,12 @@ readonly class ComponentTypes
             ];
         }
 
+        if ($kind === ComponentKind::ConditionRule) {
+            $rule = $this->conditionRules($scope)[$type]['rule'];
+
+            return [...$result, 'settingsSchema' => $this->settingsSchema->fromUi($rule->getUi(), $rule->getConfig())];
+        }
+
         if ($kind === ComponentKind::FieldLayoutElement) {
             return [...$result, 'settingsSchema' => $this->layoutElementSchema($this->layoutElements($scope)[$type])];
         }
@@ -136,6 +154,34 @@ readonly class ComponentTypes
         return $ui !== null
             ? $this->settingsSchema->fromUi($ui, $component->getSettings())
             : ['type' => 'object', 'properties' => (object) [], 'additionalProperties' => false];
+    }
+
+    /**
+     * Returns the rules a condition offers, keyed by an identifier that tells apart rules of the same class,
+     * such as rules for different custom fields.
+     *
+     * @return array<string, array{rule: ConditionRuleInterface, config: array<string, mixed>}>
+     */
+    private function conditionRules(?string $scope): array
+    {
+        if ($scope === null || ! is_subclass_of($scope, ConditionInterface::class)) {
+            throw new ToolCallException('Provide scope: the condition class, which settings schemas name.');
+        }
+
+        $condition = Conditions::createCondition(['class' => $scope, 'forProjectConfig' => true]);
+        $rules = [];
+
+        foreach ($condition->getSelectableConditionRules() as $key => $rule) {
+            $config = str_starts_with($key, '{') ? Json::decode($key) : ['class' => $key];
+            $extra = array_filter(Arr::except($config, ['class']), is_scalar(...));
+            $id = $extra === []
+                ? $config['class']
+                : sprintf('%s(%s)', $config['class'], implode(', ', array_map(static fn (string $name, mixed $value): string => "$name: $value", array_keys($extra), $extra)));
+
+            $rules[$id] = ['rule' => $rule, 'config' => $config];
+        }
+
+        return $rules;
     }
 
     /**

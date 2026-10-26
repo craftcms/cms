@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Mcp\Schema;
 
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Controls\ConditionBuilder;
 use CraftCms\Cms\Ui\Controls\Control;
 use CraftCms\Cms\Ui\Controls\Hidden;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -92,6 +93,10 @@ readonly class SettingsSchema
                     [
                         ...$nodeContext,
                         ...$this->fieldContext($nodeContext, $props),
+                        'notes' => array_values(array_filter([
+                            $this->text($props['tip'] ?? null),
+                            $this->text($props['warning'] ?? null),
+                        ])),
                         'required' => ! empty($props['required']) || ! empty($nodeContext['required']),
                     ],
                     $defaults,
@@ -106,7 +111,7 @@ readonly class SettingsSchema
 
     /**
      * @param  list<string>  $path
-     * @param  array{label?: string, instructions?: string, required?: bool, dependsOn?: string}  $context
+     * @param  array{label?: string, instructions?: string, notes?: list<string>, required?: bool, dependsOn?: string}  $context
      * @param  array<string, mixed>  $defaults
      * @param  array<string, mixed>  $schema
      * @param  list<string>  $required
@@ -121,10 +126,21 @@ readonly class SettingsSchema
         $notes = array_filter([
             $property['description'] ?? null,
             $context['instructions'] ?? null,
+            ...($context['notes'] ?? []),
             isset($context['dependsOn']) ? sprintf('Only applies when %s is enabled.', preg_replace('/^settings\./', '', $context['dependsOn'])) : null,
+            $control instanceof ConditionBuilder && $control->getConditionClass() !== null ? sprintf('component-types.list with kind: condition-rule and scope: %s lists the rule types it accepts.', $control->getConditionClass()) : null,
             $property === [] ? sprintf('Set in the control panel with a %s control; read an existing record’s settings for the value’s shape.', class_basename($control)) : null,
         ]);
         $default = Arr::get($defaults, implode('.', $path));
+        $placeholder = $control->props()['placeholder'] ?? null;
+
+        if (! $this->matchesType($default, $property['type'] ?? null)) {
+            $default = null;
+        }
+
+        if (is_string($placeholder) && $placeholder !== '' && ! isset($property['examples'])) {
+            $property['examples'] = [$placeholder];
+        }
 
         $property = [
             ...Arr::whereNotNull([
@@ -172,6 +188,25 @@ readonly class SettingsSchema
             'label' => $label,
             'instructions' => $instructions ?? ($label === null ? null : ($context['instructions'] ?? null)),
         ]);
+    }
+
+    /** Whether a default value fits a schema type, so mismatched defaults aren’t presented as valid values. */
+    private function matchesType(mixed $value, mixed $type): bool
+    {
+        if ($value === null || $type === null) {
+            return true;
+        }
+
+        return array_any((array) $type, static fn (string $type): bool => match ($type) {
+            'string' => is_string($value),
+            'number' => is_int($value) || is_float($value),
+            'integer' => is_int($value),
+            'boolean' => is_bool($value),
+            'array' => is_array($value) && array_is_list($value),
+            'object' => is_array($value),
+            'null' => false,
+            default => true,
+        });
     }
 
     /**
