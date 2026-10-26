@@ -191,11 +191,11 @@ the difference. Shadows come out as real partial transparency.
    ```
 
    The `<img>` uses the light shot, as the fallback. Set its `width` and
-   `height` to half the image's pixel size, since `screencapture` shoots at 2×
-   on Retina displays. Otherwise GitHub shows the image at twice the size of
-   the UI it was taken from. Read the size with
-   `sips -g pixelWidth -g pixelHeight shot.png`. Give it alt text that
-   says what the shot shows. Stack several shots one after another, each with
+   `height` to exactly half the image file's pixel size, since `screencapture`
+   shoots at 2× on Retina displays, so it isn't shown larger than the UI it was
+   taken from. Read the size from the file with
+   `sips -g pixelWidth -g pixelHeight shot.png`, never from the size GitHub
+   happens to display it at. Give it alt text that says what the shot shows. Stack several shots one after another, each with
    a caption under it, rather than in a multi-column table.
 
 6. Open the PR page to check the images render.
