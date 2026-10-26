@@ -888,6 +888,21 @@ const ALL_COMPONENTS = [
     importPath: '../components/button-group/button-group',
   },
   {
+    tagName: 'craft-grid',
+    className: 'CraftGrid',
+    importPath: '../components/grid/grid',
+  },
+  {
+    tagName: 'craft-grid-cell',
+    className: 'CraftGridCell',
+    importPath: '../components/grid-cell/grid-cell',
+  },
+  {
+    tagName: 'craft-grid-row',
+    className: 'CraftGridRow',
+    importPath: '../components/grid-row/grid-row',
+  },
+  {
     tagName: 'craft-icon',
     className: 'CraftIcon',
     importPath: '../components/icon/icon',

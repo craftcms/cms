@@ -1,0 +1,88 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as GridStories from './grid.stories';
+
+<Meta of={GridStories} name="Docs" />
+
+# Grid
+
+`<craft-grid>` lays out rows of links, buttons and menus that the arrow keys move between. The whole grid is a single Tab stop.
+
+<Canvas of={GridStories.Default} sourceState="shown" />
+
+Each group above is its own grid, named by its heading. Within a group, Down and Up move through the list, Right and Left move between an item and its menu, and Tab moves on to the next group.
+
+## When to use a grid
+
+A grid is a less common pattern. Most lists of links or buttons shouldn't be one. Use a grid only when all of these are true:
+
+- The list is long, so tabbing through every item would be slow.
+- At least some rows hold more than one control, such as an item and a menu of that item's own actions.
+- The list is a single, self-contained widget, such as search results or a palette of commands, rather than part of the page's content or navigation.
+
+Otherwise, use something simpler:
+
+| The UI…                                              | Use                                                     |
+| ---------------------------------------------------- | ------------------------------------------------------- |
+| A list of links or buttons with one control per item | A plain list (`<ul>`), which Tab moves through in order |
+| Site or section navigation                           | `craft-nav-list`                                        |
+| A button that shows a list of actions                | `craft-action-menu`                                     |
+| Static data with column headers                      | A `<table>`                                             |
+| Picking a value from a list                          | `craft-select-rich` or `craft-combobox`                 |
+
+A grid's arrow keys are something people have to discover. Screen readers announce the grid, but sighted keyboard users get no cue, and someone who only uses Tab will skip everything but one item. Only add a grid where the faster movement is worth that cost, and consider showing the keys in a hint beside it.
+
+## Building one
+
+Build it from `<craft-grid-row>`s holding `<craft-grid-cell>`s. The grid adds the semantics and keyboard handling, and nothing visual: style the rows and cells to lay them out.
+
+```html
+<h3 id="actions-heading">Actions</h3>
+<craft-grid aria-labelledby="actions-heading">
+  <craft-grid-row>
+    <craft-grid-cell><button type="button">New entry</button></craft-grid-cell>
+    <craft-grid-cell>
+      <craft-action-menu>
+        <craft-button type="button" icon slot="invoker">
+          <craft-icon name="ellipsis"></craft-icon>
+          <span class="sr-only">Actions for New entry</span>
+        </craft-button>
+        <div slot="content">…</div>
+      </craft-action-menu>
+    </craft-grid-cell>
+  </craft-grid-row>
+  <craft-grid-row>
+    <craft-grid-cell
+      ><button type="button">Clear caches</button></craft-grid-cell
+    >
+  </craft-grid-row>
+</craft-grid>
+```
+
+A row can have fewer cells than the others. Down and Up keep to the same column where they can, and otherwise land on the row's last cell.
+
+## Keyboard
+
+| Key                        | Moves focus to                                                                                 |
+| -------------------------- | ---------------------------------------------------------------------------------------------- |
+| Tab                        | The grid's one Tab stop: the first cell, or the cell focused last. Tab again leaves the grid.  |
+| Right Arrow / Left Arrow   | The next or previous cell in the row, stopping at its ends. Mirrored in right-to-left layouts. |
+| Down Arrow / Up Arrow      | The same column in the next or previous row, or that row's last cell when it's shorter.        |
+| Home / End                 | The first or last cell in the row.                                                             |
+| Control+Home / Control+End | The first cell of the first row, or the last cell of the last row. Command works too on macOS. |
+| Page Down / Page Up        | Five rows down or up.                                                                          |
+
+Keys pressed in an open menu, or in a text field, are left to that control.
+
+## Accessibility
+
+Name every grid. Put a visible heading right before it and point `aria-labelledby` at it, or set `label` when there's no heading. When items come in groups, give each group its own heading and grid, rather than one grid with the groups as rows: the arrow keys should follow the list as it's laid out.
+
+Put one interactive element in each cell: a link, a button, or a menu's button. The grid moves focus to it. A cell with none takes focus itself, so its text can be read. A second control in the same cell can't be reached with the arrow keys. Keep supporting text, such as a hint, in the item's own cell and connect it with `aria-describedby`, so it doesn't become a stop of its own.
+
+The grid draws no focus ring. Each cell's control draws its own, and a cell that takes focus itself needs a `:focus-visible` style.
+
+When the rows are search results, announce how many there are in a `role="status"` element outside the grid. Moving focus into the grid is up to the person: don't move it there as results arrive.
+
+## Properties
+
+<ArgTypes of={GridStories} />

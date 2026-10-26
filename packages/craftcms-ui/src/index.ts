@@ -41,6 +41,9 @@ export {default as CraftDisclosure} from './components/disclosure/disclosure.js'
 export {default as CraftEmpty} from './components/empty/empty.js';
 export {default as CraftField} from './components/field/field.js';
 export {default as CraftFieldGroup} from './components/field-group/field-group.js';
+export {default as CraftGrid} from './components/grid/grid.js';
+export {default as CraftGridCell} from './components/grid-cell/grid-cell.js';
+export {default as CraftGridRow} from './components/grid-row/grid-row.js';
 export {default as CraftIcon} from './components/icon/icon.js';
 export {default as CraftIndicator} from './components/indicator/indicator.js';
 export {default as CraftInfoIcon} from './components/info-icon/info-icon.js';

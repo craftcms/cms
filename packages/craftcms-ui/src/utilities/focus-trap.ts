@@ -8,7 +8,7 @@
  * out of it. These helpers pay that price back.
  */
 
-const FOCUSABLE_SELECTOR = [
+export const FOCUSABLE_SELECTOR = [
   'a[href]',
   'area[href]',
   'button',
