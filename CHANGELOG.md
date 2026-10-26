@@ -272,7 +272,7 @@
 - Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
 - Volumes now have a “Propagation Method” setting, which can be set to “Let each asset choose which sites it should be saved to”. New volumes default to this, as do existing volumes on single-site installs. Existing volumes on multi-site installs continue to save assets to all sites. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for login, password reset, and two-step verification requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
-- Added the `trashedAssetDisk` config setting. When it’s set, soft-deleting an asset moves its file to that disk, and restoring the asset moves it back. Otherwise, soft-deleting an asset deletes its file, and the asset can’t be restored, unless it was deleted along with its volume.
+- Added the `trashedAssetDisk` config setting. When it’s set, soft-deleting an asset moves its file to that disk, and restoring the asset moves it back. Otherwise, soft-deleting an asset deletes its file, and the asset can’t be restored, unless it was deleted along with its volume. ([#8745](https://github.com/craftcms/cms/discussions/8745), [#20093](https://github.com/craftcms/cms/pull/20093))
 - GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, and user groups. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added the `sites`, `site`, `sections`, `section`, `entryTypes`, `entryType`, `volumes`, `volume`, `userGroups`, and `userGroup` GraphQL queries, which are available when the schema includes the corresponding components. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Elements now have `site` fields in GraphQL, when the schema includes the “Query for sites” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
@@ -303,8 +303,8 @@
 - Added the `<craft-text-diff>` web component, which shows two versions of a text as one word-level diff, with each rewritten phrase as one deletion and one insertion. It can collapse long unchanged stretches, and mark passages of the text.
 - Fixed a bug where `t()` from `@craftcms/ui` failed to format a message with a comma inside a plural or select option.
 - `<craft-badge-indicator>` now has a `max` property, which sets the largest count shown before it’s shortened to “99+”. Set it to `Infinity` to show the whole count. Counts are now formatted for the page’s language. ([#19967](https://github.com/craftcms/cms/pull/19967))
-- Added `CraftCms\Cms\Asset\Elements\Asset::$trashedFileExists` and `getTrashedFilePath()`.
-- Removed `CraftCms\Cms\Asset\Elements\Asset::$keptFile`, and the `assets` table’s `keptFile` column. `$trashedFileExists` should be used instead.
+- Added `CraftCms\Cms\Asset\Elements\Asset::$trashedFileExists` and `getTrashedFilePath()`. ([#20093](https://github.com/craftcms/cms/pull/20093))
+- Removed `CraftCms\Cms\Asset\Elements\Asset::$keptFile`, and the `assets` table’s `keptFile` column. `$trashedFileExists` should be used instead. ([#20093](https://github.com/craftcms/cms/pull/20093))
 - Removed `CraftCms\Cms\Element\ElementHelper::renderElements()`. `CraftCms\Cms\Support\Template::render()` should be used instead.
 - System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Admin table links and create actions can now open in a slideout with a custom width, via the `slideoutWidth` link option and new `slideout` and `slideoutWidth` arguments on `CraftCms\Cms\Ui\Nodes\Table::createAction()`. ([#19956](https://github.com/craftcms/cms/pull/19956))
