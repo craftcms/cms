@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Ai;
 
 use BackedEnum;
 use CraftCms\Cms\Ai\Contracts\TaskInterface;
+use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Enums\Modality;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Plugin\Plugins;
@@ -258,7 +259,7 @@ readonly class SettingsUi
     }
 
     /**
-     * Returns the task’s name, with its description in an info icon, and the plugin that registered it below, as HTML.
+     * Returns the task’s name, with its description in an info icon, and the plugin that registered it and what it needs below, as HTML.
      *
      * @param  class-string<TaskInterface>  $task
      */
@@ -288,6 +289,14 @@ readonly class SettingsUi
 
             $html .= Html::tag('div', $icon.Html::encode($this->plugins->getPlugin($pluginHandle)->name ?? $pluginHandle), [
                 'class' => ['flex', 'items-center', 'gap-1', 'my-xs', 'text-xs', 'font-normal', 'text-quiet'],
+            ]);
+        }
+
+        $requirements = array_map(static fn (Capability $capability): string => mb_strtolower($capability->label()), $task::requirements());
+
+        if ($requirements !== []) {
+            $html .= Html::tag('div', Html::encode(t('Needs {requirements}', ['requirements' => implode(', ', $requirements)])), [
+                'class' => ['my-xs', 'text-xs', 'font-normal', 'text-quiet'],
             ]);
         }
 

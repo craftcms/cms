@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ai\Http\Controllers;
 
+use CraftCms\Cms\Ai\Ai;
 use CraftCms\Cms\Ai\Settings;
 use CraftCms\Cms\Ai\SettingsUi;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -29,6 +30,7 @@ readonly class SettingsController
     use RespondsWithFlash;
 
     public function __construct(
+        private Ai $ai,
         private GeneralConfig $generalConfig,
         private ProjectConfig $projectConfig,
         private SettingsUi $settingsUi,
@@ -63,6 +65,7 @@ readonly class SettingsController
     public function store(Request $request, Settings $settings): Response|CpScreenResponse
     {
         $submitted = $request->validate($settings->getRules());
+        $previousMappings = $this->ai->requirementMappings();
 
         // Keep stored mappings the form doesn’t show, such as those of uninstalled plugins.
         Typecast::configure($settings, [
@@ -75,6 +78,7 @@ readonly class SettingsController
         }
 
         $this->projectConfig->set(ProjectConfig::PATH_AI, $settings->toConfig(), 'Update AI settings.');
+        $this->ai->checkRequirements($previousMappings);
 
         return $this->asSuccess(t('AI settings saved.'));
     }

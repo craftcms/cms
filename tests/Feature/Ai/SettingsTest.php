@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Agents\AttachmentProbe;
 use CraftCms\Cms\Ai\AiTasks;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Tests\Support\Ai\AltTextTask;
 use CraftCms\Cms\Tests\Support\Ai\IndexTask;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Ai\DescribeTask;
@@ -153,3 +155,48 @@ it('lists the models laravel/ai names for the provider a task uses', function (a
     'own provider' => [['tasks' => ['test:summarize' => ['provider' => 'anthropic']]]],
     'default provider' => [['defaults' => ['text' => ['provider' => 'anthropic']], 'tasks' => ['test:summarize' => ['provider' => '']]]],
 ]);
+
+it('checks that models can see images when tasks that need vision are saved, and says what tasks need', function (): void {
+    app(AiTasks::class)->register(AltTextTask::class);
+    AttachmentProbe::fake(['I can’t see any image.']);
+
+    post(route('craft.cp.settings.ai.store'), [
+        'tasks' => ['test:altText' => ['enabled' => '1', 'provider' => 'anthropic', 'model' => 'claude-text']],
+    ])->assertRedirect();
+
+    AttachmentProbe::assertPromptedTimes(1);
+
+    get(route('craft.cp.settings.ai.index'))
+        ->assertInertia(function (AssertableInertia $page) {
+            $props = $page->toArray()['props']['ui'];
+
+            expect(new Crawler($props['values']['tasks']['test:altText']['label'])->text())->toContain('Needs vision')
+                ->and(json_encode($props['nodes'], JSON_UNESCAPED_UNICODE))->toContain('Alt text needs vision, which the claude-text model on the anthropic provider doesn’t support.');
+        })
+        ->assertOk();
+});
+
+it('only checks models when a task’s provider or model changes, or when its last check failed', function (): void {
+    app(AiTasks::class)->register(AltTextTask::class);
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_AI, [
+        'tasks' => ['test:altText' => ['enabled' => true, 'provider' => 'anthropic', 'model' => 'claude-vision']],
+    ]);
+    $attempts = 0;
+    AttachmentProbe::fake(function () use (&$attempts): string {
+        $attempts++;
+
+        throw new RuntimeException('Overloaded');
+    });
+    $save = fn (string $model) => post(route('craft.cp.settings.ai.store'), [
+        'tasks' => ['test:altText' => ['enabled' => '1', 'provider' => 'anthropic', 'model' => $model]],
+    ])->assertRedirect();
+
+    $save('claude-vision');
+    expect($attempts)->toBe(0);
+
+    $save('claude-other');
+    expect($attempts)->toBe(1);
+
+    $save('claude-other');
+    expect($attempts)->toBe(2);
+});

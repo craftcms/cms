@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ai;
 
 use BackedEnum;
+use CraftCms\Cms\Ai\Contracts\TaskInterface;
 use CraftCms\Cms\Ai\Data\ResolvedProvider;
 use CraftCms\Cms\Ai\Enums\AiUnavailableReason;
 use CraftCms\Cms\Ai\Enums\Modality;
@@ -44,6 +45,7 @@ class Ai
 
     public function __construct(
         private readonly AiTasks $tasks,
+        private readonly CapabilityChecks $capabilityChecks,
     ) {}
 
     /**
@@ -122,6 +124,12 @@ class Ai
                         'provider' => $e->provider,
                         'file' => 'config/ai.php',
                     ]),
+                    AiUnavailableReason::MissingCapability => t('{task} needs {capability}, which the {model} model on the {provider} provider doesn’t support.', [
+                        'task' => $task::label(),
+                        'capability' => mb_strtolower((string) $e->capability?->label()),
+                        'model' => $e->model,
+                        'provider' => $e->provider,
+                    ]),
                     default => null,
                 };
 
@@ -137,6 +145,22 @@ class Ai
                     'task' => $task::label(),
                     'provider' => $resolved->provider,
                 ]);
+
+                continue;
+            }
+
+            foreach ($task::requirements() as $capability) {
+                $check = $this->capabilityChecks->result($capability, $resolved);
+
+                if ($check?->supported === null && $check?->error !== null) {
+                    $problems[$handle] = t('Craft couldn’t check whether the {model} model on the {provider} provider supports {capability}, which {task} needs: {error}', [
+                        'model' => $check->model,
+                        'provider' => $resolved->provider,
+                        'capability' => mb_strtolower($capability->label()),
+                        'task' => $task::label(),
+                        'error' => $check->error,
+                    ]);
+                }
             }
         }
 
@@ -164,13 +188,99 @@ class Ai
      * the default provider for its modality, with its own model or the default model.
      * A `null` model means the provider’s default model.
      *
+     * A task is unavailable if Craft has found that its model lacks one of the task’s
+     * {@see TaskInterface::requirements() requirements}. Models that haven’t been checked are assumed to have them.
+     *
      * @throws AiUnavailableException
      */
     public function resolve(string $handle): ResolvedProvider
     {
         $task = $this->tasks->getTaskByHandle($handle)
             ?? throw new AiUnavailableException($handle, AiUnavailableReason::UnknownTask);
+        $resolved = $this->resolveMapping($handle, $task);
 
+        foreach ($task::requirements() as $capability) {
+            $check = $this->capabilityChecks->result($capability, $resolved);
+
+            if ($check?->supported === false) {
+                throw new AiUnavailableException($handle, AiUnavailableReason::MissingCapability, $resolved->provider, $capability, $check->model);
+            }
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * Returns the providers and models of enabled tasks that have {@see TaskInterface::requirements() requirements},
+     * indexed by task handle. Pass them to {@see checkRequirements()} after changing the AI settings.
+     *
+     * @return array<string, ResolvedProvider>
+     */
+    public function requirementMappings(): array
+    {
+        $mappings = [];
+
+        foreach ($this->tasks->tasksByHandle()->all() as $handle => $task) {
+            if ($task::requirements() === []) {
+                continue;
+            }
+
+            try {
+                $resolved = $this->resolveMapping($handle, $task);
+            } catch (AiUnavailableException) {
+                continue;
+            }
+
+            if (! $this->missingKey($resolved->provider)) {
+                $mappings[$handle] = $resolved;
+            }
+        }
+
+        return $mappings;
+    }
+
+    /**
+     * Checks that enabled tasks’ models have the capabilities the tasks need, sending a request to each model that
+     * needs checking. Craft runs this when the AI settings are saved.
+     *
+     * A model needs checking when a task’s provider or model changed since `$previous`, or when its last check failed.
+     * Models that haven’t been checked and haven’t changed are left alone, and are assumed to have the capabilities.
+     *
+     * @param  array<string, ResolvedProvider>|null  $previous  The tasks’ mappings from {@see requirementMappings()}
+     *                                                          before the AI settings changed, or `null` to check every model that hasn’t been checked.
+     */
+    public function checkRequirements(?array $previous = null): void
+    {
+        $checked = [];
+
+        foreach ($this->requirementMappings() as $handle => $resolved) {
+            $task = $this->tasks->getTaskByHandle($handle);
+            $before = $previous[$handle] ?? null;
+            $changed = $previous === null || $before?->provider !== $resolved->provider || $before->model !== $resolved->model;
+
+            foreach ($task::requirements() as $capability) {
+                $id = implode("\0", [$capability->value, $resolved->provider, (string) $resolved->model]);
+                $result = $this->capabilityChecks->result($capability, $resolved);
+
+                if (isset($checked[$id]) || $result?->supported !== null || ($result === null && ! $changed)) {
+                    continue;
+                }
+
+                $this->capabilityChecks->check($capability, $resolved);
+                $checked[$id] = true;
+            }
+        }
+    }
+
+    /**
+     * Resolves a task’s provider and model from the AI settings.
+     *
+     * @param  class-string<TaskInterface>  $task
+     *
+     * @throws AiUnavailableException
+     */
+    private function resolveMapping(string $handle, string $task): ResolvedProvider
+    {
         $settings = app(Settings::class);
         $mapping = $settings->tasks[$handle] ?? [];
 
