@@ -153,6 +153,26 @@ the difference. Shadows come out as real partial transparency.
 2. Upload them through the PR's comment box. Open the PR in a new tab, find
    the comment box's file input, and upload with the `file_upload` tool. It
    only reads from folders this session can access, such as the scratchpad.
+
+   The input (`#fc-new_comment_field`) is hidden, so `find` may only offer the
+   "Add files" button, which `file_upload` rejects. Expose the input to the
+   accessibility tree for the upload, then put it back:
+
+   ```js
+   const input = document.getElementById('fc-new_comment_field');
+   input.dataset.shotStyle = input.getAttribute('style') ?? '';
+   input.setAttribute('aria-label', 'Screenshot upload target');
+   input.style.cssText =
+     'position:fixed;inset-block-start:0;inset-inline-start:0;width:40px;height:40px;opacity:0.01;z-index:99999;display:block';
+   ```
+
+   Then `find` "file input labeled Screenshot upload target" and upload to
+   it. Afterwards, restore it:
+
+   ```js
+   input.setAttribute('style', input.dataset.shotStyle);
+   input.removeAttribute('aria-label');
+   ```
 3. Wait a few seconds, then read each upload's
    `https://github.com/user-attachments/assets/…` URL from the comment
    textarea.
