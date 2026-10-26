@@ -1,5 +1,5 @@
 import type {BaseAction} from '@craftcms/ui';
-import type {Component} from 'vue';
+import type {Component, InjectionKey} from 'vue';
 import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 
 type ServerItem = CraftCms.Cms.Cp.CommandPalette.CommandPaletteItem;
@@ -18,7 +18,7 @@ export interface CommandPaletteView {
  *
  * The same shape as `Cp\CommandPalette\CommandPaletteItem` on the server,
  * plus `run`, for items defined on the client. Choosing an item shows its
- * `view`, or calls `run`, or runs its `action`, or goes to its `href` — the
+ * `view`, or calls `run`, or runs its `action`, or goes to its `href` â the
  * first of those it has.
  */
 export interface CommandPaletteItem {
@@ -63,7 +63,7 @@ export interface CommandPaletteProvider {
   label: string;
   /**
    * Whether its results are listed before any other provider's, however
-   * closely those match, such as results about the page being viewed — its
+   * closely those match, such as results about the page being viewed â its
    * fields, say, or its actions. It should then only return close matches
    * itself: `labelScore(label, query, {loose: false})`.
    */
@@ -95,6 +95,14 @@ export interface CommandPaletteViewResult {
 }
 
 export type CommandPaletteViewComponent = Component<CommandPaletteViewProps>;
+
+/**
+ * A selector for the view header's actions, beside the view's heading. A view
+ * injects it and teleports buttons of its own there, such as “Mark all as read”.
+ */
+export const VIEW_ACTIONS: InjectionKey<string> = Symbol(
+  'commandPaletteViewActions'
+);
 
 let generatedIds = 0;
 

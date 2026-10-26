@@ -195,12 +195,11 @@
         @activate="onActivate"
         @select="(index) => (selectedIndex = index)"
       />
-      <p
+      <craft-empty
         v-else-if="statusMessage && !searching"
-        class="command-palette-docs__note"
-      >
-        {{ statusMessage }}
-      </p>
+        class="command-palette-docs__empty"
+        :label="statusMessage"
+      ></craft-empty>
     </div>
     <div class="sr-only" role="status">{{ statusMessage }}</div>
   </div>
@@ -210,6 +209,7 @@
   .command-palette-docs {
     display: flex;
     flex-direction: column;
+    flex: 1;
     gap: var(--c-spacing-md);
   }
 
@@ -224,6 +224,18 @@
   /* The book glyph is narrower than its square box; this puts its edge flush with the heading. */
   .command-palette-docs :deep(.command-palette-row__icon craft-icon) {
     margin-inline-start: -0.15em;
+  }
+
+  /* Fills the space below the search box, like an empty table, so the message sits in its middle. */
+  .command-palette-docs__results {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .command-palette-docs__empty {
+    display: grid;
+    flex: 1;
   }
 
   .command-palette-docs__note {

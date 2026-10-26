@@ -22,6 +22,7 @@
     computed,
     nextTick,
     onMounted,
+    provide,
     shallowRef,
     useId,
     useTemplateRef,
@@ -49,6 +50,7 @@
   } from '../sources/on-page-actions';
   import {
     fromServerItem,
+    VIEW_ACTIONS,
     type CommandPaletteItem,
     type CommandPaletteProvider,
     type CommandPaletteView,
@@ -57,6 +59,7 @@
   import {useCommandPaletteSearch} from '../useCommandPaletteSearch';
   import ConfirmView from './ConfirmView.vue';
   import DocsSearchView from './DocsSearchView.vue';
+  import NotificationsView from './NotificationsView.vue';
   import ResultSection, {type ResultRow} from './ResultSection.vue';
   import ShortcutsView from './ShortcutsView.vue';
   import UiFormView from './UiFormView.vue';
@@ -64,6 +67,7 @@
   const BUILT_IN_VIEWS: Record<string, Component> = {
     confirm: ConfirmView,
     docs: DocsSearchView,
+    notifications: NotificationsView,
     shortcuts: ShortcutsView,
     ui: UiFormView,
   };
@@ -78,6 +82,7 @@
   const {siteCrumb} = useCraftData();
   const recents = useRecentPages();
   const id = useId();
+  provide(VIEW_ACTIONS, `#${id}-view-actions`);
 
   const input = useTemplateRef<HTMLInputElement>('input');
   const searchField = useTemplateRef<{$el: HTMLElement}>('searchField');
@@ -197,6 +202,15 @@
     const index = current.findIndex((row) => row.item.id === selectedId);
     selectedIndex.value = Math.max(index, 0);
   });
+
+  /** Which providers couldn’t be searched, if any. */
+  const failedMessage = computed(() =>
+    search.failed.value.length
+      ? t('Couldn’t search {providers}.', {
+          providers: search.failed.value.join(', '),
+        })
+      : ''
+  );
 
   const statusMessage = computed(() => {
     if (!isSearching.value || activeView.value) {
@@ -762,22 +776,21 @@
             @select="select"
             @dismiss="dismissForMenuAction"
           />
-          <p
+          <craft-empty
             v-if="
               isSearching &&
               !search.searching.value &&
               !search.results.value.length
             "
             class="command-palette__empty"
+            :label="t('No results')"
           >
-            {{ t('No results') }}
-          </p>
-          <p v-if="search.failed.value.length" class="command-palette__empty">
-            {{
-              t('Couldn’t search {providers}.', {
-                providers: search.failed.value.join(', '),
-              })
-            }}
+            <p v-if="failedMessage" class="command-palette__failed">
+              {{ failedMessage }}
+            </p>
+          </craft-empty>
+          <p v-else-if="failedMessage" class="command-palette__failed">
+            {{ failedMessage }}
           </p>
         </div>
 
@@ -813,6 +826,10 @@
           <h2 ref="viewHeading" tabindex="-1" class="command-palette__title">
             {{ activeView.item.label }}
           </h2>
+          <div
+            :id="`${id}-view-actions`"
+            class="command-palette__view-actions"
+          ></div>
         </div>
         <component
           :is="activeViewComponent"
@@ -906,11 +923,22 @@
     scroll-padding-block: var(--c-spacing-sm);
   }
 
+  /* Fills the results, like an empty table, so the message sits in their middle. */
   .command-palette__empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+  }
+
+  .command-palette__failed {
     margin: 0;
     padding: var(--c-spacing-md);
     color: var(--c-text-quiet);
     text-align: center;
+  }
+
+  .command-palette__empty .command-palette__failed {
+    padding: 0;
   }
 
   .command-palette__loading {
@@ -956,6 +984,16 @@
     padding-inline: var(--c-modal-padding);
     padding-block-end: var(--c-modal-padding);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .command-palette__view-actions {
+    display: flex;
+    gap: var(--c-spacing-sm);
+    margin-inline-start: auto;
+
+    &:empty {
+      display: none;
+    }
   }
 
   .command-palette__title {

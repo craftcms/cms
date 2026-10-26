@@ -213,7 +213,7 @@ describe('CommandPalette', () => {
 
     press(input, 'ArrowDown');
     await nextTick();
-    expect(selected(input)).toContain('Collapse the global navigation');
+    expect(selected(input)).toContain('Notifications');
 
     press(input, 'ArrowUp');
     press(input, 'ArrowUp');
@@ -243,9 +243,7 @@ describe('CommandPalette', () => {
     const event = press(input, 'Tab');
 
     expect(event.defaultPrevented).toBe(true);
-    expect(document.activeElement?.textContent).toContain(
-      'Collapse the global navigation'
-    );
+    expect(document.activeElement?.textContent).toContain('Notifications');
   });
 
   it('cycles Tab between the search box and the selected result, leaving the other results to the arrow keys', async () => {
@@ -264,7 +262,7 @@ describe('CommandPalette', () => {
     press(first, 'ArrowDown');
     await nextTick();
     const second = document.activeElement!;
-    expect(second.textContent).toContain('Collapse the global navigation');
+    expect(second.textContent).toContain('Notifications');
 
     press(second, 'Tab', {shiftKey: true});
     expect(document.activeElement).toBe(input);

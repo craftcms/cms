@@ -3,6 +3,7 @@ import type {BreadcrumbItem} from '@/common/types';
 import type {ActionItem} from '@/common/types';
 import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
 import {labelScore, normalize} from '../rank';
+import {getNotifications} from '../../notifications/store';
 import {fieldLabel, trail} from './on-this-page';
 import type {CommandPaletteItem, CommandPaletteProvider} from '../types';
 
@@ -24,6 +25,27 @@ function globalNavigationAction(): CommandPaletteItem {
     description: t('This page'),
     icon: expanded ? 'arrow-left-to-line' : 'arrow-right-from-line',
     run: toggle,
+  };
+}
+
+/**
+ * The current user's notifications, as the global header's notification
+ * center shows them. They come with the page, so the item is there from the
+ * start, even when there are none.
+ */
+function notificationsAction(): CommandPaletteItem {
+  const unread = getNotifications().filter(
+    (notification) => notification.unread
+  );
+
+  return {
+    id: 'notifications',
+    label: t('Notifications'),
+    description: t('My Account'),
+    hint: unread.length ? t('{count} unread', {count: unread.length}) : null,
+    icon: 'bell',
+    keywords: 'alerts inbox mentions reviews',
+    view: {type: 'notifications'},
   };
 }
 
@@ -224,13 +246,14 @@ function pageMenuActions(): CommandPaletteItem[] {
 }
 
 /**
- * Actions for the page being viewed: the chrome's own toggles, its Matrix
- * fields' blocks, the element's other drafts and revisions, the site
- * switcher's sites, and the page's action menus.
+ * Actions for the page being viewed: the user's notifications, the chrome's
+ * own toggles, its Matrix fields' blocks, the element's other drafts and
+ * revisions, the site switcher's sites, and the page's action menus.
  */
 export function onPageActions(crumbs: BreadcrumbItem[]): CommandPaletteItem[] {
   return [
     ...pageMenuActions(),
+    notificationsAction(),
     globalNavigationAction(),
     {
       id: 'keyboard-shortcuts',
