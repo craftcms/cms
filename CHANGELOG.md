@@ -15,6 +15,7 @@
 - Improved chip styling. ([#19902](https://github.com/craftcms/cms/pull/19902))
 - Modals now have a subtle outline instead of a border, header and footer bars that match the control panel’s, and rounder corners. Dialogs, such as confirmations and copy prompts, have a compact header with a plain close button. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Asset previews, file conflict prompts, the entry index’s “Move to” action, and the modals for reassigning or replacing relations before a delete now use the control panel’s dialog styling. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Text file previews now have “Copy” and “Close” buttons. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Improved the Customize Sources modal: only its three panels scroll, each under a fixed header, and page and source items have tighter, aligned drag handles and action menus. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Element selection modals now have a header-height toolbar, table headings that match the Customize Sources modal’s, and a world icon on the site menu. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - World and earth icons now show the globe for the system time zone. ([#20085](https://github.com/craftcms/cms/pull/20085))

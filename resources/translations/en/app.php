@@ -443,6 +443,7 @@ return [
     'Couldn’t apply new migrations.' => 'Couldn’t apply new migrations.',
     'Couldn’t backup the database. How would you like to proceed?' => 'Couldn’t backup the database. How would you like to proceed?',
     'Couldn’t change Craft CMS edition.' => 'Couldn’t change Craft CMS edition.',
+    'Couldn’t copy to the clipboard.' => 'Couldn’t copy to the clipboard.',
     'Couldn’t create {type}.' => 'Couldn’t create {type}.',
     'Couldn’t delete all {type}.' => 'Couldn’t delete all {type}.',
     'Couldn’t delete {type}.' => 'Couldn’t delete {type}.',

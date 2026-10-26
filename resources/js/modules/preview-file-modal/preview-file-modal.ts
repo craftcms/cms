@@ -57,6 +57,8 @@ export class PreviewFileModal {
   $container: any;
   visible = false;
   requestId = 0;
+  /** The footer's Copy and Close buttons, while a text preview is showing. */
+  #footerButtons: HTMLElement[] = [];
 
   /** Finds the opener again, or its menu's button once the menu has closed. */
   #returnFocus: FocusReturnResolver = () => null;
@@ -199,6 +201,7 @@ export class PreviewFileModal {
   ): void {
     this.assetId = assetId;
     this.$container.empty().removeClass(EMPTY_CLASSES);
+    this.#removeFooterButtons();
 
     const [width, height] =
       startingWidth && startingHeight
@@ -234,7 +237,11 @@ export class PreviewFileModal {
 
         this.container.dataset.assetId = String(assetId);
         this.$container.append(response.data.previewHtml);
+        const text = this.container.querySelector('pre > code')?.textContent;
         highlightCodeBlocks(this.container);
+        if (text !== undefined) {
+          this.#addFooterButtons(text);
+        }
         this._addBumperButtons();
         this.#focusContent();
         await Craft.appendHeadHtml(response.data.headHtml);
@@ -246,6 +253,42 @@ export class PreviewFileModal {
         Craft.cp.displayError(response?.data?.message);
         this.hide();
       });
+  }
+
+  /** Offers to copy a text preview, and a visible way to close it. */
+  #addFooterButtons(text: string): void {
+    const copyButton = document.createElement('craft-button');
+    copyButton.setAttribute('type', 'button');
+    copyButton.setAttribute('icon', 'custom-icons/clone-dashed');
+    copyButton.textContent = Craft.t('app', 'Copy');
+    copyButton.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(text);
+        Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
+      } catch {
+        Craft.cp.displayError(
+          Craft.t('app', 'Couldn’t copy to the clipboard.')
+        );
+      }
+    });
+
+    const closeButton = document.createElement('craft-button');
+    closeButton.setAttribute('type', 'button');
+    closeButton.textContent = Craft.t('app', 'Close');
+    closeButton.addEventListener('click', () => this.hide());
+
+    this.#footerButtons = [copyButton, closeButton];
+    for (const button of this.#footerButtons) {
+      button.slot = 'footer';
+      this.dialog.append(button);
+    }
+  }
+
+  #removeFooterButtons(): void {
+    for (const button of this.#footerButtons) {
+      button.remove();
+    }
+    this.#footerButtons = [];
   }
 
   _addBumperButtons(): void {
