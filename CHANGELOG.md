@@ -241,13 +241,13 @@
 
 - Added Settings → Extend → Connections, where administrators choose the providers and models that plugins’ AI features use. Providers come from the `ai.providers` config, with keys set through environment variables. AI features stay off until a provider is chosen. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - AI Connections now checks that the models chosen for AI tasks have the capabilities the tasks need, such as vision, document, audio, or video input, structured output, or tool calling, when the settings are saved. Tasks whose model lacks one are unavailable until a different model is chosen, and the settings explain why. ([#20099](https://github.com/craftcms/cms/pull/20099))
-- Added the “Generate alt text” AI task, which writes alt text for images in each site’s language, filling in images that are missing it when they’re uploaded, replaced, indexed, or analyzed. Sites that share alt text get one.
-- Alternative Text fields now have a “Generate alt text” action, which fills in suggested alt text for editors to review before saving.
-- Added the “Detect focal points” AI task, which sets the focal points of images that don’t have one when they’re uploaded, replaced, indexed, or analyzed, so their crops keep the subject in view.
-- Added the “Tag images” AI task, which tags images with keywords that describe them and the text that appears in them, so they can be found by searching.
-- Images can now be found by searching for the names of their main colors, such as “red” or “teal”. Images sampled before are sampled again the next time they’re indexed.
-- Images are now analyzed by AI tasks that are set up, such as for alt text, when they’re uploaded, replaced, or found by asset indexing. Analysis only fills in what images are missing.
-- Added the “Analyze images” asset action, which queues the selected images to be analyzed by AI tasks that are set up.
+- Added the “Generate alt text” AI task, which writes alt text for images in each site’s language, filling in images that are missing it when they’re uploaded, replaced, indexed, or analyzed. Sites that share alt text get one. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Alternative Text fields now have a “Generate alt text” action, which fills in suggested alt text for editors to review before saving. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added the “Detect focal points” AI task, which sets the focal points of images that don’t have one when they’re uploaded, replaced, indexed, or analyzed, so their crops keep the subject in view. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added the “Tag images” AI task, which tags images with keywords that describe them and the text that appears in them, so they can be found by searching. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Images can now be found by searching for the names of their main colors, such as “red” or “teal”. Images sampled before are sampled again the next time they’re indexed. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Images are now analyzed by AI tasks that are set up, such as for alt text, when they’re uploaded, replaced, or found by asset indexing. Analysis only fills in what images are missing. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added the “Analyze images” asset action, which queues the selected images to be analyzed by AI tasks that are set up. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Field layout tabs can now be sidebar tabs, whose fields are shown in element edit forms’ details sidebar. Sidebar tabs always come after content tabs. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Field layout tabs can now have icons, which are shown before their names in field layout designers and on element edit forms. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Field layout designers now show content tabs and sidebar tabs in separate panes. Tabs can be moved between them by dragging, or with their “Move to the sidebar” and “Move to content” actions. ([#20005](https://github.com/craftcms/cms/pull/20005))
@@ -306,13 +306,13 @@
 - Added `CraftCms\Cms\Ai\Contracts\TaskInterface::requirements()` and `CraftCms\Cms\Ai\Enums\Capability`, which AI tasks use to say what they need from their model, such as vision or tool calling. ([#20099](https://github.com/craftcms/cms/pull/20099))
 - Added `CraftCms\Cms\Ai\CapabilityChecks`, which checks whether providers’ models have a capability. ([#20099](https://github.com/craftcms/cms/pull/20099))
 - Added `CraftCms\Cms\Ai\Enums\AiUnavailableReason::MissingCapability`. ([#20099](https://github.com/craftcms/cms/pull/20099))
-- Added `CraftCms\Cms\Asset\Analysis\ImageAnalysisTask`, which plugins can extend to analyze images with AI. Image analysis tasks that use the same provider and model share one request per image.
-- Added `CraftCms\Cms\Asset\Analysis\ImageAnalyzer` and the `CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage` job.
-- Added `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::suggest()`, which returns the changes image analysis tasks would make without saving them.
-- Added `CraftCms\Cms\Asset\Elements\Asset::$keywords` and `$visibleText`, and the `keywords` and `visibleText` GraphQL fields for assets, which are searchable.
-- Added `CraftCms\Cms\Image\Data\ImageColors::$palette` and `labels()`, and the `palette` and `labels` GraphQL fields for image colors, which list an image’s main colors and their names.
-- Added `CraftCms\Cms\Image\ColorNames`, which names colors in plain words.
-- Field action menu items can now dispatch a `craft:generate-field-value` event with a `url` and `params`, to fill the field with a value generated on the server.
+- Added `CraftCms\Cms\Asset\Analysis\ImageAnalysisTask`, which plugins can extend to analyze images with AI. Image analysis tasks that use the same provider and model share one request per image. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Analysis\ImageAnalyzer` and the `CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage` job. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::suggest()`, which returns the changes image analysis tasks would make without saving them. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Elements\Asset::$keywords` and `$visibleText`, and the `keywords` and `visibleText` GraphQL fields for assets, which are searchable. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Image\Data\ImageColors::$palette` and `labels()`, and the `palette` and `labels` GraphQL fields for image colors, which list an image’s main colors and their names. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Image\ColorNames`, which names colors in plain words. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Field action menu items can now dispatch a `craft:generate-field-value` event with a `url` and `params`, to fill the field with a value generated on the server. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added the `craft:screen-panel` global Vue component, which plugins can use on their own Inertia pages to add panels, with an optional status and header actions, to the screen’s details pane. ([#20084](https://github.com/craftcms/cms/pull/20084))
 - `CraftCms\Cms\Mcp\Contracts\ProvidesInputSchema` has been renamed to `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`, and its `getMcpInputSchema()` method to `getInputSchema()`.
 - Added `CraftCms\Cms\Update\Maintenance`, which turns maintenance mode on and off. ([#20095](https://github.com/craftcms/cms/pull/20095))
