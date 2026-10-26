@@ -2,6 +2,7 @@ import type {ConfigService} from '@craftcms/ui';
 import type {QueueService} from '@/modules/queue/queue';
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {ElementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
+import type {AssistantApi} from '@/bootstrap/assistant';
 import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
 import type {Router} from '@inertiajs/core';
 import type {HttpResponse} from '@craftcms/ui/utilities/api/http';
@@ -75,6 +76,7 @@ interface CpServices {
 interface CpStatic extends CpServices {
   $components: CpComponentRegistry;
   $elementDetailsPanels: ElementDetailsPanelRegistry;
+  $assistant: AssistantApi;
   /** @deprecated Use `$elementDetailsPanels`. */
   $elementDetailsTabs: ElementDetailsPanelRegistry;
   $inertia: InertiaPageRegistry;

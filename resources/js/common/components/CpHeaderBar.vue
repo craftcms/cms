@@ -15,6 +15,7 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+  import AssistantToggle from '@/modules/ai/assistant/AssistantToggle.vue';
 
   // Passed in rather than read here: `crumbs` is a page prop, but whether there's
   // a context menu depends on the shell's own slots, which a child can't see.
@@ -51,6 +52,9 @@
   const maintenanceMode = computed(() => page.props.craft.maintenanceMode);
   const notifications = computed(() => page.props.craft.general.notifications);
   const devMode = computed(() => page.props.craft.devMode);
+  const hasAssistant = computed(
+    () => page.props.craft.currentUser?.aiAssistant ?? false
+  );
 
   /**
    * Which bridge drew this screen, for the badge below. Only the two bridged
@@ -130,6 +134,7 @@
           >
             <craft-icon name="search" :label="t('Search')"></craft-icon>
           </craft-button>
+          <AssistantToggle v-if="hasAssistant" />
           <cp-notification-center
             :notifications.prop="notifications"
           ></cp-notification-center>

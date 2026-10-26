@@ -12,7 +12,7 @@
    * The document scrolls, not the main column, so `CpSidebar` is a sticky,
    * viewport-tall flex child of `.cp__main`.
    */
-  import {computed, provide, useTemplateRef} from 'vue';
+  import {computed, defineAsyncComponent, provide, useTemplateRef} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
   import {
     useElementBounding,
@@ -132,8 +132,18 @@
   // with or without the nav on screen, and each level brings its switcher. The
   // server's own switchers take their menus from the main nav, so a source's
   // switcher is the same on its index and on the pages beneath it.
-  const {nav, siteCrumb} = useCraftData();
+  const {nav, siteCrumb, currentUser} = useCraftData();
 
+  // Loaded once it's shown, so the chat's modules, which open slideouts, aren't
+  // imported by every screen, slideouts included.
+  const AssistantPanel = defineAsyncComponent(
+    () => import('@/modules/ai/assistant/AssistantPanel.vue')
+  );
+
+  /** Whether the user can use the AI assistant. */
+  const assistantEnabled = computed(
+    () => currentUser.value?.aiAssistant ?? false
+  );
   const crumbs = computed<Array<BreadcrumbItem> | null>(() => {
     const merged = withSubnavCrumbs(
       withNavCrumbMenus(page.props.crumbs ?? [], nav.value ?? [], page.url),
@@ -590,6 +600,7 @@
           </footer>
         </div>
       </div>
+      <AssistantPanel v-if="assistantEnabled" />
     </div>
   </div>
 

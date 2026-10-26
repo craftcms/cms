@@ -12,6 +12,8 @@ export interface CpUser {
   admin: boolean;
   /** The "Underline links" accessibility preference. */
   underlineLinks: boolean;
+  /** Whether the user can use the AI assistant, and it can run. */
+  aiAssistant: boolean;
 }
 
 export interface CraftData {

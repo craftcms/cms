@@ -40,8 +40,11 @@ export interface ScreenPanels {
   /** Adds a panel, or updates the one with its id. */
   register(panel: DetailsPanel): void;
   unregister(panelId: string): void;
-  /** Opens a panel, moving focus into it, once it’s in the column. */
-  open(panelId: string): void;
+  /**
+   * Opens a panel once it’s in the column. Focus moves into it, unless the
+   * caller keeps it where it is, such as when a panel is restored on load.
+   */
+  open(panelId: string, options?: {withFocus?: boolean}): void;
   /**
    * Folds the column, if the panel is the open one. Focus goes to the panel’s
    * trigger, unless the caller keeps it, such as a button that toggles it.
@@ -57,17 +60,17 @@ export function createScreenPanels(): ScreenPanels {
   const pageGeneration = shallowRef(0);
   let controller: ScreenPanelsController | null = null;
   /** A panel to open once the column is mounted and lists it. */
-  let pendingOpen: string | null = null;
+  let pendingOpen: {panelId: string; withFocus: boolean} | null = null;
 
   function hasPagePanels(): boolean {
     return [...registered.values()].some((panel) => !panel.persistent);
   }
 
   function flushPendingOpen(): void {
-    if (controller && pendingOpen && registered.has(pendingOpen)) {
-      const panelId = pendingOpen;
+    if (controller && pendingOpen && registered.has(pendingOpen.panelId)) {
+      const {panelId, withFocus} = pendingOpen;
       pendingOpen = null;
-      controller.open(panelId, true);
+      controller.open(panelId, withFocus);
     }
   }
 
@@ -94,13 +97,13 @@ export function createScreenPanels(): ScreenPanels {
       registered.delete(panelId);
     },
 
-    open(panelId) {
-      pendingOpen = panelId;
+    open(panelId, {withFocus = true} = {}) {
+      pendingOpen = {panelId, withFocus};
       flushPendingOpen();
     },
 
     close(panelId, {returnFocus = true} = {}) {
-      if (pendingOpen === panelId) {
+      if (pendingOpen?.panelId === panelId) {
         pendingOpen = null;
       }
 

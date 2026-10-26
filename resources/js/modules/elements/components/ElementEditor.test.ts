@@ -70,6 +70,7 @@ beforeEach(() => {
       additionalButtons: [],
       activityPageUrl: null,
       activityTimelineUrl: null,
+      aiAssistant: null,
       canAddToRelease: true,
       canCreateRelease: false,
       release: null,

@@ -12,7 +12,14 @@ packages:
 # `pnpm install --trust-lockfile` skips the verification pass for an already
 # committed lockfile.
 minimumReleaseAge: 10080
-minimumReleaseAgeExclude: []
+minimumReleaseAgeExclude:
+  # TanStack AI 1.0, for the AI chat, published 2026-10-22. Remove once it's
+  # past the window.
+  - '@tanstack/ai'
+  - '@tanstack/ai-client'
+  - '@tanstack/ai-event-client'
+  - '@tanstack/ai-utils'
+  - '@tanstack/ai-vue'
 
 # Single source of truth for every dependency more than one workspace package
 # needs. Manifests reference these as `catalog:` (or `catalog:legacy`), so two
