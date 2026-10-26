@@ -79,3 +79,16 @@
     </div>
   </form>
 </template>
+
+<style scoped>
+  /* Keeps tables, such as a release's drafts, in line with the view's heading above. */
+  :deep(.cp-table tr > :is(th, td)) {
+    &:first-child {
+      padding-inline-start: 0;
+    }
+
+    &:last-child {
+      padding-inline-end: 0;
+    }
+  }
+</style>
