@@ -8,6 +8,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
+use craft\mcp\EditionFeatures;
 use craft\mcp\ElementLifecycle;
 use craft\mcp\ElementQueryCriteria;
 use craft\mcp\elements\BaseElementAdapter;
@@ -37,6 +38,7 @@ class UserAdapter extends BaseElementAdapter
         ElementSerializer $elementSerializer,
         ElementLifecycle $lifecycle,
         private readonly Users $users,
+        private readonly EditionFeatures $editionFeatures,
     ) {
         parent::__construct($elementSerializer, $lifecycle);
     }
@@ -147,6 +149,11 @@ class UserAdapter extends BaseElementAdapter
     public function create(array $attributes, array $fields, User $actor): array
     {
         $this->requirePermission($actor, 'registerUsers', 'register users');
+
+        // User::beforeSave() fails without an error once the edition’s user limit is reached.
+        if (($reason = $this->editionFeatures->userLimitReason()) !== null) {
+            throw new ToolCallException($reason);
+        }
 
         $user = new User();
 
