@@ -4,6 +4,7 @@
 
 - Added authenticated HTTP, public HTTP, and stdio MCP servers, with OAuth authorization, public content approvals, and plugin extension points.
 - Added `craft\base\InputSchemaFieldInterface`.
+- Plain Text, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `craft\base\InputSchemaFieldInterface`.
 - Added `craft\gql\GqlInputSchema`.
 - Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
 - Fixed a bug where default titles of assets with long filenames were taken from the end of the filename. ([#20112](https://github.com/craftcms/cms/pull/20112))

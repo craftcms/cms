@@ -12,6 +12,7 @@ use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
@@ -30,7 +31,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.12
  */
-class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface, InputSchemaFieldInterface
 {
     /**
      * @inheritdoc
@@ -283,5 +284,14 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
             'type' => DateTimeType::getType(),
             'description' => $this->instructions,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'string', 'format' => 'date-time'];
     }
 }
