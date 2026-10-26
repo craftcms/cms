@@ -256,10 +256,10 @@
 - The MCP server now accepts any date or time that Date and Time fields can parse, such as “2:30 PM” or a date with a UTC offset, rather than requiring ISO 8601. A value they can’t parse is rejected, rather than clearing the field, and a field’s instructions no longer replace the description of its format.
 - The MCP server’s `mcp:use` OAuth scope has been replaced with `mcp:read`, `mcp:write`, and `mcp:admin`. Users now choose an access level when they authorize an MCP client, defaulting to read only, and only administrators are offered full access. Clients that authorize again keep the earlier level without another prompt. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - The MCP server now only shows and accepts the custom fields that users can see and edit in an element’s edit form, as field layouts’ conditions allow. ([#20091](https://github.com/craftcms/cms/pull/20091))
-- Added `caches.list`, `caches.clear`, `queue.status`, `queue.run`, `queue.retry-all`, `queue.release-all`, and `asset-indexes.update` MCP tools, which do what the Caches, Queue Manager, and Asset Indexes utilities do, for users with access to those utilities. ([#PRNUM](https://github.com/craftcms/cms/pull/PRNUM))
-- Added `maintenance-mode.get`, `maintenance-mode.enable`, `maintenance-mode.disable`, and `project-config.rebuild` MCP tools for administrators. ([#PRNUM](https://github.com/craftcms/cms/pull/PRNUM))
-- Added `preferences.get` and `preferences.update` MCP tools, which read and change the user’s preferred language and formatting locale. ([#PRNUM](https://github.com/craftcms/cms/pull/PRNUM))
-- The MCP server’s `configuration.*` tools now manage Asset Transformers and, in Craft Pro, workflows. ([#PRNUM](https://github.com/craftcms/cms/pull/PRNUM))
+- Added `caches.list`, `caches.clear`, `queue.status`, `queue.run`, `queue.retry-all`, `queue.release-all`, and `asset-indexes.update` MCP tools, which do what the Caches, Queue Manager, and Asset Indexes utilities do, for users with access to those utilities. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `maintenance-mode.get`, `maintenance-mode.enable`, `maintenance-mode.disable`, and `project-config.rebuild` MCP tools for administrators. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `preferences.get` and `preferences.update` MCP tools, which read and change the user’s preferred language and formatting locale. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- The MCP server’s `configuration.*` tools now manage Asset Transformers and, in Craft Pro, workflows. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Added the “Query for releases” GraphQL schema permission, nested under “Query for element drafts”, which adds `releases` and `release` queries, and a `release` field to drafts.
 - Added the `hasUrls` field to volumes in GraphQL queries.
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
@@ -294,11 +294,11 @@
 - Added `CraftCms\Cms\Ai\Events\TaskRunning`, `TaskCompleted`, and `TaskFailed`, which plugins can use to track AI usage and failures, and cancel requests. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - Added the `craft:screen-panel` global Vue component, which plugins can use on their own Inertia pages to add panels, with an optional status and header actions, to the screen’s details pane. ([#20084](https://github.com/craftcms/cms/pull/20084))
 - `CraftCms\Cms\Mcp\Contracts\ProvidesInputSchema` has been renamed to `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`, and its `getMcpInputSchema()` method to `getInputSchema()`.
-- Added `CraftCms\Cms\Update\Maintenance`, which turns maintenance mode on and off. ([#PRNUM](https://github.com/craftcms/cms/pull/PRNUM))
-- Added `CraftCms\Cms\Utility\Utilities\ClearCaches::clear()`. ([#PRNUM](https://github.com/craftcms/cms/pull/PRNUM))
-- Added `CraftCms\Cms\Workflow\WorkflowDefinitions`, which validates workflow definitions. ([#PRNUM](https://github.com/craftcms/cms/pull/PRNUM))
-- Added `CraftCms\Cms\Asset\AssetTransformDrivers::settings()`. ([#PRNUM](https://github.com/craftcms/cms/pull/PRNUM))
-- Routes outside the `craft` middleware group can now use `Route::allowDuringMaintenance()` to stay reachable during maintenance mode. ([#PRNUM](https://github.com/craftcms/cms/pull/PRNUM))
+- Added `CraftCms\Cms\Update\Maintenance`, which turns maintenance mode on and off. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Utility\Utilities\ClearCaches::clear()`. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Workflow\WorkflowDefinitions`, which validates workflow definitions. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Asset\AssetTransformDrivers::settings()`. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Routes outside the `craft` middleware group can now use `Route::allowDuringMaintenance()` to stay reachable during maintenance mode. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - MCP tools without `readOnlyHint: true` now require the `mcp:write` scope, and capabilities with `#[RequiresAdmin]` or `#[RequiresAdminChanges]` require `mcp:admin`. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - Plain Text, Markdown, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`.
 - Added `CraftCms\Cms\Gql\GqlInputSchema`, which describes the values GraphQL input types accept as JSON schemas.
@@ -507,7 +507,7 @@
 - Fixed a bug where the MCP server’s `elements.create`, `elements.update`, and `elements.validate` tools silently ignored Matrix entries submitted in the format `elements.field-schema` described. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - Fixed a bug where the MCP server’s upload session endpoints couldn’t find upload sessions when a control panel trigger was set. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - Fixed a bug where updating a Matrix entry with a GraphQL mutation or the MCP server cleared its title when no title was given. ([#20091](https://github.com/craftcms/cms/pull/20091))
-- Fixed a bug where the MCP server was unavailable during maintenance mode, even to users who can access the control panel while the system is off. ([#PRNUM](https://github.com/craftcms/cms/pull/PRNUM))
+- Fixed a bug where the MCP server was unavailable during maintenance mode, even to users who can access the control panel while the system is off. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Fixed a bug where asset indexes didn’t offer to undo moving assets or folders. ([#19985](https://github.com/craftcms/cms/pull/19985)))
 - Fixed a bug where input placeholder text had insufficient contrast in the dark theme.
 - Fixed a bug where the “License purchase required” screen’s Refresh button didn’t work.
