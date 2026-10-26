@@ -315,13 +315,13 @@ describe('uploaded colors', function () {
     });
 
     it('stores the colors the uploader sampled instead of sampling the image', function () {
-        $colors = ['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5', '#123456', '#abcdef']]];
+        $colors = ['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5', '#123456', '#abcdef']], 'palette' => ['#3a6ea5', '#123456']];
         $images = Mockery::mock(ImagesFacade::getFacadeRoot());
         $images->shouldNotReceive('colors');
         ImagesFacade::swap($images);
 
         $original = ($this->uploadImage)(['folderId' => $this->folder->id], ['colors' => $colors]);
-        $replacementColors = ['dominant' => null, 'grid' => [['#654321']]];
+        $replacementColors = ['dominant' => null, 'grid' => [['#654321']], 'palette' => ['#654321']];
         ($this->uploadImage)(['operation' => 'replace', 'assetId' => $original['assetId']], ['colors' => $replacementColors]);
 
         expect(AssetModel::findOrFail($original['assetId'])->colors)->toEqual($replacementColors);

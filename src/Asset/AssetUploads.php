@@ -103,11 +103,13 @@ class AssetUploads implements UploadHandler
     {
         $hexColor = 'regex:/^#[0-9a-f]{6}([0-9a-f]{2})?$/i';
         $validator = Validator::make($request->only('colors'), [
-            'colors' => ['required', 'array:dominant,grid'],
+            'colors' => ['required', 'array:dominant,grid,palette'],
             'colors.dominant' => ['nullable', 'string', $hexColor],
             'colors.grid' => ['required', 'array', 'list', 'min:1', 'max:4'],
             'colors.grid.*' => ['array', 'list', 'min:1', 'max:4'],
             'colors.grid.*.*' => ['string', $hexColor],
+            'colors.palette' => ['nullable', 'array', 'list', 'max:5'],
+            'colors.palette.*' => ['string', $hexColor],
         ]);
 
         if ($validator->fails()) {

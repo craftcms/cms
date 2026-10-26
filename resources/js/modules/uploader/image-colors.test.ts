@@ -35,7 +35,18 @@ describe('sampleImageColors', () => {
     expect(sampleImageColors(pixels(100, 100, red))).toEqual({
       dominant: '#c81e28',
       grid: Array.from({length: 3}, () => Array(4).fill('#c81e28')),
+      palette: ['#c81e28'],
     });
+  });
+
+  it('lists the image’s main colors, most dominant first', () => {
+    const image = pixels(100, 100, red);
+
+    for (let index = 0; index < image.data.length / 4 / 4; index++) {
+      image.data.set([blue[0], blue[1], blue[2], 255], index * 4);
+    }
+
+    expect(sampleImageColors(image).palette).toEqual(['#c81e28', '#1e50c8']);
   });
 
   it('averages each region of the image into the grid', () => {

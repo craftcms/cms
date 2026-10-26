@@ -675,9 +675,32 @@ it('doesn’t sample colors it has already sampled, even inconclusively', functi
         $volumeData->sourceDisk()->delete('red.png');
     }
 })->with([
-    'found' => [['dominant' => '#123456', 'grid' => [['#123456']]]],
-    'inconclusive' => [['dominant' => null, 'grid' => []]],
+    'found' => [['dominant' => '#123456', 'grid' => [['#123456']], 'palette' => ['#123456']]],
+    'inconclusive' => [['dominant' => null, 'grid' => [], 'palette' => []]],
 ]);
+
+it('samples the colors of images that were sampled before palettes were', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('red.png', file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
+    $index = fn () => $this->indexer->indexFileByListing($volumeData, new FsListing([
+        'dirname' => '',
+        'basename' => 'red.png',
+        'type' => 'file',
+        'fileSize' => $volumeData->sourceDisk()->size('red.png'),
+        'dateModified' => $volumeData->sourceDisk()->lastModified('red.png'),
+    ]), $session->id);
+
+    try {
+        $asset = $index();
+        Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => '#123456', 'grid' => [['#123456']]])]);
+
+        expect($index()->colors->palette)->toBe(['#dc1e1e']);
+    } finally {
+        $volumeData->sourceDisk()->delete('red.png');
+    }
+});
 
 it('samples the colors again once the file has changed', function () {
     $volume = createIndexerTestVolume();
@@ -780,7 +803,7 @@ describe('remote images', function () {
 
     it('doesn’t download one that already has colors', function () {
         $asset = ($this->index)();
-        Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => '#123456', 'grid' => []])]);
+        Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => '#123456', 'grid' => [], 'palette' => ['#123456']])]);
 
         $reindexed = ($this->index)();
 

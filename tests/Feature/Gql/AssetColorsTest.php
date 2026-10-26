@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Gql\Arguments\Mutations\Asset as AssetMutationArguments;
 
@@ -69,4 +70,25 @@ it('can’t be set by mutations', function () {
         ->not->toHaveKey('colors')
         ->not->toHaveKey('placeholderDataUrl')
         ->not->toHaveKey('blurhash');
+});
+
+it('queries an image’s palette and the names of its colors', function () {
+    $asset = Asset::factory()->createElement(['kind' => 'image']);
+    Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => '#c81e28', 'grid' => [], 'palette' => ['#c81e28', '#1e50c8', '#e01818']])]);
+    gqlActivateFullAccessSchema();
+
+    graphQL("{ asset(id: {$asset->id}) { colors { palette labels } } }")
+        ->assertOk()
+        ->assertJsonPath('data.asset.colors.palette', ['#c81e28', '#1e50c8', '#e01818'])
+        ->assertJsonPath('data.asset.colors.labels', ['red', 'blue']);
+});
+
+it('makes images searchable by the names of their colors', function () {
+    $image = Asset::factory()->createElement(['kind' => 'image']);
+    $document = Asset::factory()->createElement(['kind' => 'pdf']);
+    $colors = json_encode(['dominant' => '#c81e28', 'grid' => [], 'palette' => ['#c81e28', '#1e50c8']]);
+    Asset::whereKey([$image->id, $document->id])->update(['colors' => $colors]);
+
+    expect(AssetElement::find()->id($image->id)->one()->getSearchKeywords('colors'))->toBe('red blue')
+        ->and(AssetElement::find()->id($document->id)->one()->getSearchKeywords('colors'))->toBe('');
 });

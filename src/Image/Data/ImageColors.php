@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image\Data;
 
 use CraftCms\Cms\Image\ColorGrid;
+use CraftCms\Cms\Image\ColorNames;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Illuminate\Contracts\Support\Arrayable;
@@ -29,12 +30,16 @@ readonly class ImageColors implements Arrayable, JsonSerializable
      *                                    to bottom, each listed from left to right. Colors of regions that aren’t
      *                                    fully opaque include an alpha channel (e.g. `#3a6ea580`). Empty if the image
      *                                    couldn’t be sampled.
+     * @param  list<string>  $palette  The image’s main colors as hex strings, most dominant first. Empty if the image
+     *                                 couldn’t be sampled, or was sampled before palettes were.
      */
     public function __construct(
         #[AllowedInSandbox]
         public ?string $dominant = null,
         #[AllowedInSandbox]
         public array $grid = [],
+        #[AllowedInSandbox]
+        public array $palette = [],
     ) {}
 
     /**
@@ -64,7 +69,21 @@ readonly class ImageColors implements Arrayable, JsonSerializable
         return new self(
             dominant: self::isHexColor($dominant) ? $dominant : null,
             grid: $grid,
+            palette: array_values(array_filter(is_array($data['palette'] ?? null) ? $data['palette'] : [], self::isHexColor(...))),
         );
+    }
+
+    /**
+     * Returns the names of the image’s main colors, such as `red` or `teal`, most dominant first, without repeats.
+     *
+     * @return list<string>
+     *
+     * @see ColorNames
+     */
+    #[AllowedInSandbox]
+    public function labels(): array
+    {
+        return array_values(array_unique(array_map(ColorNames::name(...), $this->palette)));
     }
 
     /**
@@ -129,16 +148,17 @@ readonly class ImageColors implements Arrayable, JsonSerializable
         return is_string($value) && preg_match('/^#[0-9a-f]{6}([0-9a-f]{2})?$/i', $value) === 1;
     }
 
-    /** @return array{dominant: string|null, grid: list<list<string>>} */
+    /** @return array{dominant: string|null, grid: list<list<string>>, palette: list<string>} */
     public function toArray(): array
     {
         return [
             'dominant' => $this->dominant,
             'grid' => $this->grid,
+            'palette' => $this->palette,
         ];
     }
 
-    /** @return array{dominant: string|null, grid: list<list<string>>} */
+    /** @return array{dominant: string|null, grid: list<list<string>>, palette: list<string>} */
     public function jsonSerialize(): array
     {
         return $this->toArray();

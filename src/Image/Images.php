@@ -361,6 +361,7 @@ class Images
         return new ImageColors(
             dominant: $dominant ? $this->hex($dominant) : null,
             grid: $grid,
+            palette: array_values(array_unique(array_map($this->hex(...), $candidates))),
         );
     }
 

@@ -547,7 +547,7 @@ describe('colors', function () {
 
         $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
 
-        expect(AssetModel::findOrFail($this->asset->id)->colors)->toEqual(['dominant' => null, 'grid' => []])
+        expect(AssetModel::findOrFail($this->asset->id)->colors)->toEqual(['dominant' => null, 'grid' => [], 'palette' => []])
             ->and(Asset::find()->id($this->asset->id)->one()->colors)->toEqual(new ImageColors);
     });
 

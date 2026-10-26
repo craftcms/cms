@@ -22,6 +22,7 @@ class ImageColors extends ObjectType
             'right' => $source->right(),
             'top' => $source->top(),
             'bottom' => $source->bottom(),
+            'labels' => $source->labels(),
             default => $source->{$resolveInfo->fieldName},
         };
     }

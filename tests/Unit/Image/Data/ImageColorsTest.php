@@ -11,6 +11,7 @@ it('round-trips stored color data', function () {
             ['#3a6ea5', '#123456'],
             ['#abcdef80', '#000000'],
         ],
+        'palette' => ['#3a6ea5', '#123456'],
     ];
 
     expect(ImageColors::fromArray($data)->toArray())->toBe($data)
@@ -25,10 +26,12 @@ it('drops anything that isn’t a hex color', function () {
             'not a row',
             ['#12345'],
         ],
+        'palette' => ['#3a6ea5', 'url(evil)', 42],
     ]);
 
     expect($colors->dominant)->toBeNull()
-        ->and($colors->grid)->toBe([['#3a6ea5']]);
+        ->and($colors->grid)->toBe([['#3a6ea5']])
+        ->and($colors->palette)->toBe(['#3a6ea5']);
 });
 
 it('averages the colors of the image’s edges in linear light', function () {
@@ -54,4 +57,10 @@ it('has no edge colors without a grid', function () {
 
 it('treats missing keys as unknown', function () {
     expect(ImageColors::fromArray([]))->toEqual(new ImageColors);
+});
+
+it('names the image’s main colors, without repeats', function () {
+    $colors = new ImageColors(palette: ['#c81e28', '#e01818', '#1e50c8', '#f5f5f5']);
+
+    expect($colors->labels())->toBe(['red', 'blue', 'white']);
 });

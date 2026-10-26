@@ -676,7 +676,10 @@ class AssetIndexer
         $fileChanged = $asset->dateModified !== null
             && $timeModified !== null
             && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
-        $needsColors = $asset->colors === null || $fileChanged;
+        $needsColors = $asset->colors === null
+            || $fileChanged
+            // Sampled before palettes were, but not inconclusively
+            || ($asset->colors->dominant !== null && $asset->colors->palette === []);
         $isNew = ! $asset->id;
 
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);

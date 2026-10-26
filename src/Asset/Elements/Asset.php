@@ -834,15 +834,18 @@ class Asset extends Element
     #[Override]
     protected static function defineSearchableAttributes(): array
     {
-        return ['filename', 'extension', 'kind', 'alt', 'keywords', 'visibleText'];
+        return ['filename', 'extension', 'kind', 'alt', 'keywords', 'visibleText', 'colors'];
     }
 
     #[Override]
     protected function searchKeywords(string $attribute): string
     {
-        return $attribute === 'keywords'
-            ? implode(' ', $this->keywords ?? [])
-            : parent::searchKeywords($attribute);
+        return match ($attribute) {
+            'keywords' => implode(' ', $this->keywords ?? []),
+            // Images can be found by the names of their colors
+            'colors' => $this->kind === FileKind::Image->value ? implode(' ', $this->colors?->labels() ?? []) : '',
+            default => parent::searchKeywords($attribute),
+        };
     }
 
     /** @return array<int|string, string|array{label: string, orderBy: string, defaultDir: string}> */

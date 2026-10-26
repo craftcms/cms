@@ -270,7 +270,15 @@ describe('colors', function () {
         expect($this->service->colors($path)->toArray())->toBe([
             'dominant' => '#c81e28',
             'grid' => array_fill(0, 3, array_fill(0, 4, '#c81e28')),
+            'palette' => ['#c81e28'],
         ]);
+    });
+
+    it('lists the image’s main colors, most dominant first', function () {
+        $path = colorsFixture($this->sandboxPath.'/split-palette.png', [200, 30, 40], [100, 0, 199, 149, 30, 80, 200], width: 300, height: 150);
+
+        // Blends of the two, from where they meet, may follow
+        expect(array_slice($this->service->colors($path)->palette, 0, 2))->toBe(['#c81e28', '#1e50c8']);
     });
 
     it('averages each region of the image into the grid', function () {

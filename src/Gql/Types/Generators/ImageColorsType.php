@@ -45,6 +45,16 @@ class ImageColorsType implements GeneratorInterface, SingleGeneratorInterface
                         'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::listOf(Type::nonNull(Type::string()))))),
                         'description' => 'The average colors of the image’s regions, as rows of hex strings from top to bottom, each listed from left to right. Colors of regions that aren’t fully opaque include an alpha channel (e.g. `#3a6ea580`). Empty if the image couldn’t be sampled.',
                     ],
+                    'palette' => [
+                        'name' => 'palette',
+                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string()))),
+                        'description' => 'The image’s main colors as hex strings, most dominant first. Empty if the image couldn’t be sampled.',
+                    ],
+                    'labels' => [
+                        'name' => 'labels',
+                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string()))),
+                        'description' => 'The names of the image’s main colors, such as `red` or `teal`, most dominant first.',
+                    ],
                     'left' => [
                         'name' => 'left',
                         'type' => Type::string(),

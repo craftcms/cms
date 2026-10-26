@@ -9,6 +9,8 @@
 export interface ImageColors {
   dominant: string | null;
   grid: string[][];
+  /** The image's main colors, most dominant first. */
+  palette: string[];
 }
 
 export interface Pixels {
@@ -87,9 +89,18 @@ export async function imageColorsCompletionData(
  * 4×3 regions for landscape and square images, and 3×4 for portrait ones.
  */
 export function sampleImageColors(pixels: Pixels): ImageColors {
+  const candidates = dominantCandidates(pixels);
+  const dominant =
+    candidates.find(
+      ([lightness]) =>
+        lightness >= BLACK_LIGHTNESS && lightness <= WHITE_LIGHTNESS
+    ) ?? candidates[0];
+  const toHex = (color: Oklab) => hex(...fromOklab(color), 255);
+
   return {
-    dominant: dominantColor(pixels),
+    dominant: dominant ? toHex(dominant) : null,
     grid: colorGrid(pixels),
+    palette: [...new Set(candidates.map(toHex))],
   };
 }
 
@@ -152,10 +163,11 @@ function colorGrid({data, width, height}: Pixels): string[][] {
 
 /**
  * Clusters the image's colors with k-means in Oklab, as Intervention Image's
- * dominant palette analysis does, then passes over near-black and near-white
- * clusters in favor of the most dominant other one, if there is one.
+ * dominant palette analysis does, and returns the largest clusters. The
+ * dominant color passes over near-black and near-white ones in favor of the
+ * most dominant other one, if there is one.
  */
-function dominantColor({data}: Pixels): string | null {
+function dominantCandidates({data}: Pixels): Oklab[] {
   const points: Oklab[] = [];
 
   for (let index = 0; index < data.length; index += 4) {
@@ -164,14 +176,7 @@ function dominantColor({data}: Pixels): string | null {
     }
   }
 
-  const candidates = clusterColors(points).slice(0, DOMINANT_CANDIDATES);
-  const dominant =
-    candidates.find(
-      ([lightness]) =>
-        lightness >= BLACK_LIGHTNESS && lightness <= WHITE_LIGHTNESS
-    ) ?? candidates[0];
-
-  return dominant ? hex(...fromOklab(dominant), 255) : null;
+  return clusterColors(points).slice(0, DOMINANT_CANDIDATES);
 }
 
 /** Returns the centroids of the points' clusters, largest first. */
