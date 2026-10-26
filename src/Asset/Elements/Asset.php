@@ -269,6 +269,29 @@ class Asset extends Element
     }
 
     /**
+     * @var string|null The start of a text file’s contents, an empty string if it has nothing to show, or `null` if
+     *                  it isn’t a text file or hasn’t been read yet
+     *
+     * Read from the file whenever a new one is uploaded or indexed, so it isn’t settable from requests. Asset queries
+     * don’t load it, so it’s only known once it’s been set; it’s only saved then, too.
+     *
+     * @see AssetsHelper::previewText()
+     *
+     * @internal
+     */
+    public ?string $previewText = null {
+        set {
+            $this->previewText = $value;
+            $this->previewTextChanged = true;
+        }
+    }
+
+    /**
+     * Whether {@see $previewText} has been set since the asset was loaded, and should be saved.
+     */
+    private bool $previewTextChanged = false;
+
+    /**
      * @var bool Whether the file was moved to the trashed asset disk when the asset was soft-deleted, so it can be put
      *           back if the asset is restored
      *
@@ -2794,7 +2817,7 @@ JS, [
     public function setAttributesFromRequest(array $values): void
     {
         // Determined from the file itself when one comes in, not by whoever's saving.
-        unset($values['colors']);
+        unset($values['colors'], $values['previewText']);
 
         parent::setAttributesFromRequest($values);
     }
@@ -2902,9 +2925,7 @@ JS, [
                     'preload' => 'metadata',
                 ]),
                 default => $showsIcon
-                    ? Html::tag('div', Html::svg(AssetsHelper::iconSvg($this->getExtension()), sanitize: false, namespace: true), [
-                        'class' => ['preview-thumb', 'mx-auto', 'py-md', 'w-[160px]', 'h-[160px]', 'box-content'],
-                    ])
+                    ? $this->getIconPreviewHtml()
                     : Html::tag('div', $this->getPreviewThumbImg(350, 190), [
                         'class' => 'preview-thumb',
                     ]),
@@ -3170,6 +3191,7 @@ JS;
         unset(
             $names['avoidFilenameConflicts'],
             $names['keepFileOnDelete'],
+            $names['previewText'],
             $names['sanitizeOnUpload'],
             $names['uploadColors'],
         );
@@ -3368,7 +3390,12 @@ JS;
 
             $model->colors = $this->colors?->toArray();
 
+            if ($this->previewTextChanged) {
+                $model->previewText = $this->previewText;
+            }
+
             $model->save();
+            $this->previewTextChanged = false;
 
             // we're not propagating at this point, so save the alt ONLY against the site we're saving to
             DB::table(Table::ASSETS_SITES)
@@ -3825,6 +3852,9 @@ JS;
             $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
             $this->_width = $this->_height = null;
             $this->colors = null;
+            $this->previewText = $this->isTextFile($filename)
+                ? AssetsHelper::previewText($this->readFileStart($newDisk->readStream($newPath)))
+                : null;
         }
 
         // If there was a new file involved, update file data.
@@ -3840,6 +3870,9 @@ JS;
                 $this->colors = null;
             }
 
+            $this->previewText = $this->isTextFile($filename)
+                ? AssetsHelper::previewText($this->readFileStart(fopen($tempPath, 'rb')))
+                : null;
             $this->size = filesize($tempPath);
             $mtime = filemtime($tempPath);
             $this->dateModified = $mtime ? Date::createFromTimestampUTC($mtime) : null;
@@ -3863,6 +3896,65 @@ JS;
         $this->tempFilePath = null;
         $this->uploadSource = null;
         $this->uploadColors = null;
+    }
+
+    /**
+     * Returns the preview area’s image for a file without a thumbnail: a closer look at the top of a text file that
+     * has something to show, or the file’s icon.
+     */
+    private function getIconPreviewHtml(): string
+    {
+        $previewText = $this->isTextFile($this->_filename) ? $this->getStoredPreviewText() : null;
+
+        if ($previewText !== null && $previewText !== '') {
+            return Html::tag('div', Html::svg(AssetsHelper::previewTextSvg($previewText), sanitize: false, namespace: true), [
+                'class' => ['preview-thumb', 'mx-auto', 'pt-md', 'w-[240px]', 'h-[160px]', 'box-content'],
+            ]);
+        }
+
+        return Html::tag('div', Html::svg(AssetsHelper::iconSvg($this->getExtension()), sanitize: false, namespace: true), [
+            'class' => ['preview-thumb', 'mx-auto', 'py-md', 'w-[160px]', 'h-[160px]', 'box-content'],
+        ]);
+    }
+
+    /**
+     * Returns the asset’s preview text, looking it up if it hasn’t been set since the asset was loaded.
+     */
+    private function getStoredPreviewText(): ?string
+    {
+        if ($this->previewTextChanged || ! $this->id) {
+            return $this->previewText;
+        }
+
+        return DB::table(Table::ASSETS)->where('id', $this->id)->value('previewText');
+    }
+
+    /**
+     * Returns whether a file is plain text, whose start is kept as its preview text.
+     *
+     * @see $previewText
+     */
+    private function isTextFile(string $filename): bool
+    {
+        return FileKind::tryFrom(AssetsHelper::getFileKindByExtension($filename))?->isText() ?? false;
+    }
+
+    /**
+     * Reads as much from the start of a file as its preview text could need, and closes the stream.
+     *
+     * @param  resource|false|null  $stream
+     */
+    private function readFileStart($stream): string
+    {
+        if (! is_resource($stream)) {
+            return '';
+        }
+
+        try {
+            return (string) fread($stream, AssetsHelper::PREVIEW_TEXT_SOURCE_LENGTH);
+        } finally {
+            fclose($stream);
+        }
     }
 
     /**
