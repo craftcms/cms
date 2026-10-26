@@ -10,8 +10,8 @@ import {ButtonVariant} from '../button/button.js';
 import type CraftButton from '../button/button.js';
 
 const STATUS_ICONS = {
-  rest: 'copy',
-  copying: 'copy',
+  rest: 'custom-icons/clone-dashed',
+  copying: 'custom-icons/clone-dashed',
   success: 'check',
   error: 'xmark-large',
 } as const;
