@@ -51,17 +51,17 @@ class AssetTransformDrivers extends Manager
         $handle = $driver ?? $this->getDefaultDriver();
 
         if (! is_string($handle) || $handle === '') {
-            throw new AssetTransformDriverNotFoundException('The selected Asset Transform driver is invalid.');
+            throw new AssetTransformDriverNotFoundException('The selected asset transform driver is invalid.');
         }
 
         try {
             $resolved = parent::driver($handle);
         } catch (InvalidArgumentException $exception) {
-            throw new AssetTransformDriverNotFoundException("Asset Transform driver [{$handle}] is not registered.", previous: $exception);
+            throw new AssetTransformDriverNotFoundException("Asset transform driver [{$handle}] is not registered.", previous: $exception);
         }
 
         if (! $resolved instanceof AssetTransformDriver) {
-            throw new AssetTransformDriverNotFoundException("Asset Transform driver [{$handle}] is invalid.");
+            throw new AssetTransformDriverNotFoundException("Asset transform driver [{$handle}] is invalid.");
         }
 
         return $resolved;
@@ -94,7 +94,7 @@ class AssetTransformDrivers extends Manager
 
             if (! is_string($path) || $path === '' || str_contains($path, '.')) {
                 throw ValidationException::withMessages([
-                    'driver' => t('The selected Asset Transform driver has invalid settings.'),
+                    'driver' => t('The selected asset transform driver has invalid settings.'),
                 ]);
             }
 

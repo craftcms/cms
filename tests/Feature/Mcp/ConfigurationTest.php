@@ -98,14 +98,14 @@ it('explains that workflows require Craft Pro', function (): void {
         ->assertJsonPath('result.content.0.text', 'The workflows configuration type requires Craft Pro. This site runs Craft Team.');
 });
 
-it('refuses Asset Transformer changes Craft doesn’t allow', function (): void {
+it('refuses asset transformer changes Craft doesn’t allow', function (): void {
     ($this->call)('create', ['type' => 'asset-transformers', 'attributes' => ['name' => 'Remote', 'handle' => 'remote', 'driver' => 'nope']])
         ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Unknown Asset Transform driver [nope]. Available drivers: craft.');
+        ->assertJsonPath('result.content.0.text', 'Unknown asset transform driver [nope]. Available drivers: craft.');
 
     ($this->call)('delete', ['type' => 'asset-transformers', 'identifier' => ['handle' => 'craft']])
         ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'The Craft Asset Transformer cannot be deleted.');
+        ->assertJsonPath('result.content.0.text', 'The Craft asset transformer cannot be deleted.');
 });
 
 it('separates a section lookup handle from its new handle and preserves section settings', function (): void {

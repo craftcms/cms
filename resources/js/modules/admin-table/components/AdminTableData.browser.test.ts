@@ -396,7 +396,7 @@ it('explains blocked deletion on keyboard focus while keeping the row editable a
         id: 'craft',
         name: {label: 'Craft (Default)', url: '/settings/transformers/craft'},
         _deletable: false,
-        _deleteDisabledReason: 'The Craft Asset Transformer cannot be deleted.',
+        _deleteDisabledReason: 'The Craft asset transformer cannot be deleted.',
       },
       {id: 'public', name: 'Public', _deletable: false},
       {id: 'remote', name: 'Remote'},
@@ -413,7 +413,7 @@ it('explains blocked deletion on keyboard focus while keeping the row editable a
   await expect
     .element(page.elementLocator(button))
     .toHaveAccessibleDescription(
-      'The Craft Asset Transformer cannot be deleted.'
+      'The Craft asset transformer cannot be deleted.'
     );
   expect(button.getAttribute('aria-disabled')).toBe('true');
   expect(

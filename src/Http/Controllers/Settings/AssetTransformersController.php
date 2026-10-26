@@ -65,7 +65,7 @@ class AssetTransformersController extends BaseAssetSettingsController
                         '_deletable' => $deleteDisabledReason === null,
                         '_deleteDisabledReason' => $deleteDisabledReason,
                         '_deleteUrl' => route('craft.cp.settings.assets.transformers.destroy', ['handle' => $transformer->handle]),
-                        '_deleteConfirmMessage' => t('Are you sure you want to delete the “{name}” Asset Transformer?', ['name' => $transformer->name]),
+                        '_deleteConfirmMessage' => t('Are you sure you want to delete the “{name}” asset transformer?', ['name' => $transformer->name]),
                     ]),
                 ];
             });
@@ -106,7 +106,7 @@ class AssetTransformersController extends BaseAssetSettingsController
     {
         $transformer = $this->assetTransformers->getAssetTransformerByHandle($handle);
 
-        abort_if($transformer === null, 404, 'Asset Transformer not found');
+        abort_if($transformer === null, 404, 'Asset transformer not found');
 
         return $this->editScreen($transformer);
     }
@@ -134,7 +134,7 @@ class AssetTransformersController extends BaseAssetSettingsController
 
         return $this->asModelSuccess(
             $transformer,
-            t('Asset Transformer saved.'),
+            t('Asset transformer saved.'),
             'assetTransformer',
             redirect: $this->getPostedRedirectUrl($transformer)
                 ?? Url::cpUrl("settings/assets/transformers/{$transformer->handle}"),
@@ -181,14 +181,14 @@ class AssetTransformersController extends BaseAssetSettingsController
             $this->assetTransformers->deleteAssetTransformer($transformer);
         }
 
-        return $this->asSuccess(t('Asset Transformer deleted.'));
+        return $this->asSuccess(t('Asset transformer deleted.'));
     }
 
     private function editScreen(AssetTransformer $transformer): CpScreenResponse
     {
         $title = $transformer->uid
             ? trim($transformer->name) ?: t('Edit Asset Transformer')
-            : t('Create a new Asset Transformer');
+            : t('Create a new asset transformer');
 
         return new CpScreenResponse()
             ->title($title)

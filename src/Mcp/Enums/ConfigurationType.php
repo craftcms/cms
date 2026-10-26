@@ -123,7 +123,7 @@ enum ConfigurationType: string
             self::UserGroups => 'Removes the user group and its membership and permission assignments.',
             self::ImageTransforms => 'Removes the named image transform definition.',
             self::Routes => 'Removes the route from project config.',
-            self::AssetTransformers => 'Removes the Asset Transformer from project config. Refuses to delete the Craft transformer, the default transformer, or one assigned to a volume.',
+            self::AssetTransformers => 'Removes the asset transformer from project config. Refuses to delete the Craft transformer, the default transformer, or one assigned to a volume.',
             self::Workflows => 'Removes the workflow from project config. Refuses to delete a workflow that is assigned to a section.',
         }, 'No configuration undo tool is provided.'];
     }

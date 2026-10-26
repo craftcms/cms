@@ -48,7 +48,7 @@ it('describes workflow stage types and the values their settings accept', functi
         ->and(array_column($settings['properties']['approvalMode']['oneOf'], 'const'))->toBe(['total', 'per-group']);
 });
 
-it('describes field types and Asset Transform drivers', function (): void {
+it('describes field types and asset transform drivers', function (): void {
     $fieldTypes = array_column(($this->result)('component-types.list', ['kind' => 'field'])['types'], 'type');
     $plainText = ($this->result)('component-types.get', ['kind' => 'field', 'type' => PlainText::class])['settingsSchema']['properties'];
     $driver = ($this->result)('component-types.get', ['kind' => 'asset-transform-driver', 'type' => 'craft']);

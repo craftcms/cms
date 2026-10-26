@@ -78,8 +78,8 @@ readonly class AssetTransformers
     }
 
     /**
-     * @param  string|null  $currentHandle  Existing Asset Transformer handle.
-     * @param  string|null  $handle  New Asset Transformer handle.
+     * @param  string|null  $currentHandle  Existing asset transformer handle.
+     * @param  string|null  $handle  New asset transformer handle.
      * @param  string|null  $driver  A driver handle from component-types.list with kind: asset-transform-driver. Changing it clears settings that aren’t supplied.
      * @param  array<string, mixed>|null  $settings  Driver settings, replacing the current settings. Settings the driver doesn’t define are dropped. Redacted values keep their saved value.
      * @return array{transformer: array<string, mixed>}
@@ -142,7 +142,7 @@ readonly class AssetTransformers
         if (! array_key_exists($transformer->driver, $this->drivers->definitions())) {
             $available = implode(', ', array_keys($this->drivers->definitions()));
 
-            throw new ToolCallException("Unknown Asset Transform driver [{$transformer->driver}]. Available drivers: $available.");
+            throw new ToolCallException("Unknown asset transform driver [{$transformer->driver}]. Available drivers: $available.");
         }
 
         try {
@@ -152,7 +152,7 @@ readonly class AssetTransformers
         }
 
         if (! $this->assetTransformers->saveAssetTransformer($transformer)) {
-            throw new ToolCallException(implode("\n", $transformer->errors()->all()) ?: 'Asset Transformer could not be saved.');
+            throw new ToolCallException(implode("\n", $transformer->errors()->all()) ?: 'Asset transformer could not be saved.');
         }
 
         return ['transformer' => $this->serialize($transformer)];
@@ -169,7 +169,7 @@ readonly class AssetTransformers
             : $this->assetTransformers->getAssetTransformerByHandle($handle);
 
         if ($transformer === null) {
-            throw new ToolCallException('Asset Transformer not found.');
+            throw new ToolCallException('Asset transformer not found.');
         }
 
         return clone $transformer;

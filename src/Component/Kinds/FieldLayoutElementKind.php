@@ -133,7 +133,7 @@ readonly class FieldLayoutElementKind implements ComponentKind
 
     private function name(FieldLayoutElement $element, string $id): string
     {
-        $name = Str::headline(class_basename($element));
+        $name = Str::ucfirst(Str::lower(Str::headline(class_basename($element))));
         $suffix = Str::between($id, '(', ')');
 
         return $suffix !== $id ? "$name ($suffix)" : $name;
