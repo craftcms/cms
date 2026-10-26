@@ -242,8 +242,14 @@ export default css`
     width: auto;
   }
 
+  /* As wide as a status dot (craft-indicator's \`md\` size plus its border),
+     so a wider status, like the draft icon, overflows evenly and lines up
+     with the dots. */
   ::slotted([slot='status']) {
     display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    inline-size: calc(0.6em + 2px);
   }
 
   /* A status, such as the draft icon, isn't the chip's own: only its icon
@@ -328,6 +334,7 @@ export default css`
   /* Suffix */
 
   .cp-chip__suffix {
+    margin-inline-start: calc(var(--c-spacing-xs) - var(--_chip-gap));
     padding-block: var(--_chip-block-padding);
     display: flex;
     flex-direction: column;

@@ -45,7 +45,7 @@ All construct `new Craft.ElementThumbLoader()` and/or use the shared
 - `Craft.CP` (creates the shared instance; loads `$pageContainer`, details)
 - `BaseElementIndexView` / `TableElementIndexView` (`$rows`, `$newElements`)
 - `BaseElementSelectInput`, `NestedElementManager`, `ElementEditor`
-- `CpScreenSlideout`, `CpModal`, `Dashboard`, `ImageUpload`, `UserPhotoInput`
+- `CpScreenSlideout`, `CpModal`, `Dashboard`, `ImageUpload`
 - `Preview` / `LivePreview` (static `Craft.ElementThumbLoader.retryAll()`)
 
 ## Deferred

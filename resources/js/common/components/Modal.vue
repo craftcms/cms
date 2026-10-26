@@ -210,18 +210,44 @@
     max-width: calc(100vw - (var(--c-spacing-lg) * 2));
     max-height: calc(100vh - (var(--c-spacing-lg) * 2));
     background-color: var(--c-modal-fill);
-    box-shadow: var(--c-shadow-lg), var(--c-shadow-sm);
+    box-shadow: var(--c-modal-ring), var(--c-shadow-2xl);
+    outline: 1px solid transparent;
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-modal-radius);
-    border-width: var(--c-modal-border-width);
-    border-style: var(--c-modal-border-style);
-    border-color: var(--c-modal-border-color);
     position: relative;
     overflow-y: scroll;
     /* Keeps the slotted content's own z-indexes — a sticky pane footer, say —
      from painting over the modal's chrome, such as the resize handle. Nothing
      can escape this box visually anyway; it scrolls. */
     isolation: isolate;
+  }
+
+  .content > :slotted(craft-pane),
+  .content > :slotted(form > craft-pane) {
+    --c-pane-border-width: 0;
+  }
+
+  .content > :slotted(craft-pane)::part(base),
+  .content > :slotted(form > craft-pane)::part(base) {
+    box-shadow: none;
+  }
+
+  .content > :slotted(craft-pane)::part(header),
+  .content > :slotted(form > craft-pane)::part(header) {
+    min-block-size: var(--c-modal-header-height);
+    padding-block: var(--c-spacing-sm);
+  }
+
+  .content > :slotted(craft-pane)::part(footer),
+  .content > :slotted(form > craft-pane)::part(footer) {
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-footer-height);
+    padding-inline: var(--cp-container-padding);
+  }
+
+  .content > :slotted(craft-pane)::part(footer-actions),
+  .content > :slotted(form > craft-pane)::part(footer-actions) {
+    align-self: center;
   }
 
   craft-dialog::part(surface) {

@@ -343,6 +343,20 @@ describe('selectizeHtml', function () {
             ->and($html)->not->toContain('<craft-combobox');
     });
 
+    it('colors option status dots by their status', function () {
+        $html = FormFields::selectizeHtml([
+            'name' => 'enabled',
+            'value' => '1',
+            'options' => [
+                ['value' => '1', 'label' => 'Yes', 'data' => ['status' => 'enabled']],
+                ['value' => '0', 'label' => 'No', 'data' => ['status' => 'white']],
+            ],
+        ]);
+
+        expect(html_entity_decode($html))->toContain('"indicator":{"fill":"teal"}')
+            ->and(html_entity_decode($html))->toContain('"indicator":{"fill":"white"}');
+    });
+
     it('renders a single select as a combobox', function () {
         $html = FormFields::selectizeHtml([
             'name' => 'status',
