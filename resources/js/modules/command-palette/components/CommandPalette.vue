@@ -893,7 +893,7 @@
   .command-palette__field:focus-within {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
-    outline-offset: calc((var(--c-focus-outline-width) - 1px) * -1);
+    outline-offset: calc(var(--c-focus-outline-width) * -1);
   }
 
   .command-palette__results {
