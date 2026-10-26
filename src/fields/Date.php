@@ -502,6 +502,10 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
      */
     public function getInputSchema(): array
     {
-        return ['type' => 'string', 'format' => 'date-time'];
+        // Any date the field can parse, rather than a strict format, which models and clients easily miss.
+        return [
+            'type' => 'string',
+            'description' => 'A date, or a date and time, such as 2026-11-22 or 2026-11-22T10:00:00+01:00. Include the UTC offset, or the time is read as UTC.',
+        ];
     }
 }

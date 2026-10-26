@@ -9,6 +9,7 @@ use craft\base\InputSchemaFieldInterface;
 use craft\db\Connection;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\Date;
 use craft\fields\Dropdown;
 use craft\fields\Email;
 use craft\fields\MultiSelect;
@@ -101,6 +102,20 @@ class CustomFieldSchemaTest extends TestCase
         $schema->prepareValues($element, ['priority' => 'urgent']);
     }
 
+    public function testDateValuesTheFieldCannotParseAreRejected(): void
+    {
+        $element = $this->element([$this->layoutField(new Date(['name' => 'Published', 'handle' => 'published']))]);
+        $schema = new CustomFieldSchema();
+
+        self::assertSame(['published' => '2026-11-22'], $schema->prepareValues($element, ['published' => '2026-11-22']));
+        self::assertSame(['published' => null], $schema->prepareValues($element, ['published' => null]));
+
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('published: The value couldn’t be parsed.');
+
+        $schema->prepareValues($element, ['published' => 'next Tuesday-ish']);
+    }
+
     /**
      * @param  list<CustomField>  $layoutFields
      */
@@ -114,6 +129,17 @@ class CustomFieldSchemaTest extends TestCase
             public function getEditableCustomFieldElements(ElementInterface $element): array
             {
                 return $this->layoutFields;
+            }
+
+            public function getFieldByHandle(string $handle): ?FieldInterface
+            {
+                foreach ($this->layoutFields as $layoutField) {
+                    if ($layoutField->getField()->handle === $handle) {
+                        return $layoutField->getField();
+                    }
+                }
+
+                return null;
             }
         };
 

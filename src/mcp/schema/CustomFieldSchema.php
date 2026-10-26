@@ -7,8 +7,10 @@ namespace craft\mcp\schema;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\InputSchemaFieldInterface;
+use craft\fields\Date;
 use craft\fields\Json;
 use craft\fields\Matrix;
+use craft\fields\Time;
 use craft\gql\GqlInputSchema;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
@@ -88,7 +90,17 @@ class CustomFieldSchema
         foreach ($values as $handle => $value) {
             $field = $layout->getFieldByHandle((string) $handle);
 
-            if (!$field || !$this->usesInferredSchema($field)) {
+            if (!$field) {
+                continue;
+            }
+
+            if (!$this->usesInferredSchema($field)) {
+                // Date and time schemas accept any string, so a value those fields can’t parse is rejected rather than
+                // clearing the field. Other fields can read a value as empty on purpose, such as a blank option.
+                if (($field instanceof Date || $field instanceof Time) && $value !== null && $value !== '' && $field->normalizeValue($value, $element) === null) {
+                    throw new ToolCallException(sprintf('%s: The value couldn’t be parsed.', $handle));
+                }
+
                 continue;
             }
 
@@ -209,8 +221,11 @@ class CustomFieldSchema
         $schema = $required ? GqlInputSchema::withoutNull($schema) : GqlInputSchema::withNull($schema);
         $schema['title'] = $field->name;
 
+        // The instructions are added to the schema’s own description, which can say what format a value takes.
         if ($field->instructions !== null && $field->instructions !== '') {
-            $schema['description'] = $field->instructions;
+            $schema['description'] = isset($schema['description']) && $schema['description'] !== ''
+                ? "{$schema['description']}\n\n{$field->instructions}"
+                : $field->instructions;
         }
 
         return array_filter($schema, static fn(mixed $value): bool => $value !== null && $value !== '');
