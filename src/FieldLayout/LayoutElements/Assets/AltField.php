@@ -68,7 +68,7 @@ class AltField extends TextareaField
             Gate::check('save', $element)
         ) {
             $items[] = [
-                'icon' => 'wand-magic-sparkles',
+                'icon' => 'sparkles',
                 'label' => t('Generate alt text'),
                 'action' => [
                     'type' => 'event',
