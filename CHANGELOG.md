@@ -15,6 +15,7 @@
 - Fixed a bug where eager-loaded elements were getting reversed twice when both `orderBy` and `inReverse` criteria were set. ([#19994](https://github.com/craftcms/cms/pull/19994))
 - Fixed a bug where skipped revisions were getting reported as root element lookup errors when resaving elements. ([#20026](https://github.com/craftcms/cms/pull/20026))
 - Fixed a bug where pruning revisions could delete nested element revisions in other sites that newer revisions still referenced. ([#20042](https://github.com/craftcms/cms/issues/20042))
+- Fixed a bug where closing an element selector modal while it was loading caused it to keep loading all of the source’s elements in the background. ([#20100](https://github.com/craftcms/cms/issues/20100))
 
 ## 5.11.5.1 - 2026-10-08
 
