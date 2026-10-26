@@ -6,6 +6,7 @@
 - Added `craft\base\InputSchemaFieldInterface`.
 - Plain Text, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `craft\base\InputSchemaFieldInterface`.
 - Added `craft\gql\GqlInputSchema`.
+- Added `craft\utilities\ClearCaches::clear()`.
 - Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
 - Fixed a bug where default titles of assets with long filenames were taken from the end of the filename. ([#20112](https://github.com/craftcms/cms/pull/20112))
 - Fixed a bug where characters were stripped from text that wasn’t UTF-8 when it was converted to UTF-8, such as alt text read from images’ IPTC captions. ([#20111](https://github.com/craftcms/cms/pull/20111))

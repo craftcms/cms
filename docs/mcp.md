@@ -51,6 +51,13 @@ Public callers have no Craft user identity. They receive only approved capabilit
 
 Authenticated and stdio clients can inspect and manage sites, sections, entry types, fields, field layouts, entries, drafts, revisions, structures, assets, volumes, users, addresses, user groups, permissions, routes, image transforms, plugins, and project config. They can also search content and run content-model checks.
 
+Clients can also perform these maintenance tasks:
+
+- **Caches and queue:** `caches.list`, `caches.clear`, `queue.status`, `queue.run`, `queue.retry-all`, and `queue.release-all` do what the Caches and Queue Manager utilities do. They require access to the utility, and are unavailable when it is listed in `disabledUtilities`. `queue.run` runs waiting jobs for up to `maxSeconds` (30 by default, 120 at most) and requires `craft\queue\Queue`. The other queue tools require a queue that implements `craft\queue\QueueInterface`.
+- **System status:** `system-status.get` reads whether the system is live. `system-status.enable` and `system-status.disable` change it for administrators when `allowAdminChanges` is enabled. They refuse when `isSystemLive` is set in the general config, when the project config stores an environment variable reference for the status, or when the project config is read-only.
+- **Project config:** `project-config.rebuild` rebuilds the project config from the database, as the Project Config utility does. It requires an administrator and refuses while the project config is read-only.
+- **Preferences:** `preferences.get` and `preferences.update` read and change the authenticated user's preferred language and formatting locale.
+
 Asset creation and replacement accept HTTPS file references. Craft rejects local paths, private network addresses, redirects, and files that exceed the configured upload limits.
 
 Capability discovery applies user permissions and `allowAdminChanges`. Record operations also enforce the corresponding element permissions. Unavailable capabilities are omitted from discovery and cannot be called directly.
