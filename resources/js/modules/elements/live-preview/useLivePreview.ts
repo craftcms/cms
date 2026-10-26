@@ -51,13 +51,9 @@ declare global {
   }
 }
 
-/** The editor pane's share of the window, or its width in pixels. */
-export const DEFAULT_EDITOR_WIDTH = 0.33;
-export const MIN_PANE_WIDTH = 320;
-
 /**
  * Drives Live Preview for an element editor: the token, the frames, and the
- * preferences that outlive it (pane width, device, orientation).
+ * preferences that outlive it (device, orientation).
  */
 export function useLivePreview(
   preview: () => ElementPreview | null,
@@ -67,10 +63,6 @@ export function useLivePreview(
   const isOpen = ref(false);
   const activeIndex = ref(0);
   const frames = ref<Array<LivePreviewFrame>>([]);
-  const editorWidth = useLocalStorage<number>(
-    'LivePreview.editorWidth',
-    DEFAULT_EDITOR_WIDTH
-  );
   const device = useLocalStorage<DeviceType>('LivePreview.device', 'desktop');
   const orientation = useLocalStorage<DeviceOrientation>(
     'LivePreview.orientation',
@@ -152,6 +144,12 @@ export function useLivePreview(
     });
   }
 
+  // Refreshes still waiting on their URL, before they have a frame to load.
+  const resolving = ref(0);
+  const isLoading = computed(
+    () => resolving.value > 0 || frames.value.some((frame) => !frame.ready)
+  );
+
   let nextFrameId = 0;
   let readyFrame: HTMLIFrameElement | null = null;
   let pendingScroll: {x: number; y: number} | null = null;
@@ -178,6 +176,7 @@ export function useLivePreview(
     }
 
     let url: string;
+    resolving.value++;
 
     try {
       url = await urlFor(target);
@@ -185,6 +184,8 @@ export function useLivePreview(
     } catch (e) {
       error.value = e instanceof Error ? e.message : String(e);
       return;
+    } finally {
+      resolving.value--;
     }
 
     if (!isOpen.value) {
@@ -304,7 +305,7 @@ export function useLivePreview(
     activeTarget,
     frames: readonly(frames),
     error: readonly(error),
-    editorWidth,
+    isLoading,
     device,
     orientation,
     iframeResizerOptions: computed(

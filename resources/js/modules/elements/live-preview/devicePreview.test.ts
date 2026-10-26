@@ -1,5 +1,11 @@
 import {describe, expect, it} from 'vite-plus/test';
-import {DEVICES, deviceLayout} from './devicePreview';
+import {
+  blendShapes,
+  DEVICES,
+  deviceLayout,
+  deviceShape,
+  fitDevice,
+} from './devicePreview';
 
 describe('deviceLayout', () => {
   it('leaves desktop to fill the room', () => {
@@ -47,5 +53,35 @@ describe('deviceLayout', () => {
       width: portrait.frame.height,
       height: portrait.frame.width,
     });
+  });
+});
+
+describe('blendShapes', () => {
+  it('runs from one device to the other', () => {
+    const tablet = deviceShape('tablet', 'portrait')!;
+    const phone = deviceShape('phone', 'portrait')!;
+
+    expect(blendShapes(tablet, phone, 0)).toEqual(tablet);
+    expect(blendShapes(tablet, phone, 1)).toEqual(phone);
+    expect(blendShapes(tablet, phone, 0.5).viewport).toEqual({
+      width: (tablet.viewport.width + phone.viewport.width) / 2,
+      height: (tablet.viewport.height + phone.viewport.height) / 2,
+    });
+  });
+
+  it('never fits wider or taller than the room on the way', () => {
+    const tablet = deviceShape('tablet', 'portrait')!;
+    const phone = deviceShape('phone', 'portrait')!;
+    const room = {width: 900, height: 860};
+
+    for (let step = 0; step <= 20; step++) {
+      const {frame, zoom} = fitDevice(
+        blendShapes(tablet, phone, step / 20),
+        room
+      );
+
+      expect(frame.width * zoom).toBeLessThanOrEqual(room.width - 48 + 1e-9);
+      expect(frame.height * zoom).toBeLessThanOrEqual(room.height - 48 + 1e-9);
+    }
   });
 });

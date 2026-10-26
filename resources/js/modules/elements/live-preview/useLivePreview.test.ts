@@ -171,6 +171,31 @@ describe('useLivePreview', () => {
     expect(preview.frames.value).toEqual([]);
   });
 
+  it('is loading from a refresh until its frame has loaded', async () => {
+    const preview = mount();
+    expect(preview.isLoading.value).toBe(false);
+
+    const opening = preview.open();
+    await nextTick();
+    expect(preview.isLoading.value).toBe(true);
+
+    await opening;
+    expect(preview.isLoading.value).toBe(true);
+
+    const frame = preview.frames.value.at(-1)!;
+    preview.frameLoaded(frame.id, document.createElement('iframe'));
+    expect(preview.isLoading.value).toBe(false);
+  });
+
+  it('stops loading when the token could not be created', async () => {
+    post.mockRejectedValueOnce(new Error('Nope'));
+    const preview = mount();
+
+    await preview.open();
+
+    expect(preview.isLoading.value).toBe(false);
+  });
+
   it('reports a token that could not be created', async () => {
     post.mockRejectedValueOnce(new Error('Nope'));
     const preview = mount();

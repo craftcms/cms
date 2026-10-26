@@ -25,28 +25,40 @@ export interface DeviceLayout {
   zoom: number;
 }
 
-/**
- * Sizes a device preview to fit the available room, or `null` for desktop,
- * which fills it.
- */
-export function deviceLayout(
+/** A device's viewport and bezel, before it's fitted to the room it has. */
+export interface DeviceShape {
+  viewport: {width: number; height: number};
+  bezel: {inline: number; block: number};
+}
+
+/** The device to show, or `null` for desktop, which fills the room. */
+export function deviceShape(
   type: DeviceType,
-  orientation: DeviceOrientation,
-  available: {width: number; height: number},
-  gutter = 24
-): DeviceLayout | null {
+  orientation: DeviceOrientation
+): DeviceShape | null {
   if (type === 'desktop') {
     return null;
   }
 
   const spec = DEVICES[type];
-  const landscape = orientation === 'landscape';
-  const viewport = landscape
-    ? {width: spec.height, height: spec.width}
-    : {width: spec.width, height: spec.height};
-  const bezel = landscape
-    ? {inline: spec.bezel.block, block: spec.bezel.inline}
-    : spec.bezel;
+
+  return orientation === 'landscape'
+    ? {
+        viewport: {width: spec.height, height: spec.width},
+        bezel: {inline: spec.bezel.block, block: spec.bezel.inline},
+      }
+    : {
+        viewport: {width: spec.width, height: spec.height},
+        bezel: spec.bezel,
+      };
+}
+
+/** Sizes a device to fit the available room, keeping a gutter around it. */
+export function fitDevice(
+  {viewport, bezel}: DeviceShape,
+  available: {width: number; height: number},
+  gutter = 24
+): DeviceLayout {
   const frame = {
     width: viewport.width + bezel.inline * 2,
     height: viewport.height + bezel.block * 2,
@@ -58,4 +70,39 @@ export function deviceLayout(
   );
 
   return {viewport, frame, zoom};
+}
+
+/** The shape `progress` of the way from one device to another. */
+export function blendShapes(
+  from: DeviceShape,
+  to: DeviceShape,
+  progress: number
+): DeviceShape {
+  const mix = (a: number, b: number) => a + (b - a) * progress;
+
+  return {
+    viewport: {
+      width: mix(from.viewport.width, to.viewport.width),
+      height: mix(from.viewport.height, to.viewport.height),
+    },
+    bezel: {
+      inline: mix(from.bezel.inline, to.bezel.inline),
+      block: mix(from.bezel.block, to.bezel.block),
+    },
+  };
+}
+
+/**
+ * Sizes a device preview to fit the available room, or `null` for desktop,
+ * which fills it.
+ */
+export function deviceLayout(
+  type: DeviceType,
+  orientation: DeviceOrientation,
+  available: {width: number; height: number},
+  gutter = 24
+): DeviceLayout | null {
+  const shape = deviceShape(type, orientation);
+
+  return shape ? fitDevice(shape, available, gutter) : null;
 }

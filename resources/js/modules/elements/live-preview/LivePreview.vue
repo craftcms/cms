@@ -15,16 +15,37 @@
     setFocusWithin,
     trapFocusWithin,
   } from '@craftcms/garnish';
-  import {useElementSize, useWindowSize} from '@vueuse/core';
-  import {computed, nextTick, ref, useTemplateRef, watch} from 'vue';
-  import ActionMenu from '@/common/components/ActionMenu.vue';
-  import {uiLayerManager} from '@/common/slideouts/panel-stack';
-  import {deviceLayout, type DeviceType} from './devicePreview';
   import {
-    MIN_PANE_WIDTH,
-    type LivePreviewController,
-    type LivePreviewFrame,
-  } from './useLivePreview';
+    useElementSize,
+    useEventListener,
+    usePreferredReducedMotion,
+    useWindowSize,
+  } from '@vueuse/core';
+  import {
+    computed,
+    nextTick,
+    onBeforeUnmount,
+    ref,
+    shallowRef,
+    useId,
+    useTemplateRef,
+    watch,
+  } from 'vue';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import ResizeHandle from '@/common/components/ResizeHandle.vue';
+  import {useResizable} from '@/common/composables/useResizable';
+  import {uiLayerManager} from '@/common/slideouts/panel-stack';
+  import {
+    blendShapes,
+    deviceShape,
+    fitDevice,
+    type DeviceShape,
+    type DeviceType,
+  } from './devicePreview';
+  import type {LivePreviewController, LivePreviewFrame} from './useLivePreview';
+
+  /** Room each pane keeps, however far the divider is dragged. */
+  const MIN_PANE_WIDTH = 320;
 
   const props = defineProps<{
     controller: LivePreviewController;
@@ -44,64 +65,129 @@
   /*
    * Panes
    */
+  const editor = useTemplateRef<HTMLElement>('editor');
+  const editorId = `lp-editor-pane-${useId()}`;
+  const newTabLinkId = `lp-new-tab-${useId()}`;
   const {width: windowWidth} = useWindowSize();
-  const editorWidthPx = computed(() => {
-    const stored = preview.editorWidth.value;
-    const px = stored <= 1 ? stored * windowWidth.value : stored;
-    const max = Math.max(MIN_PANE_WIDTH, windowWidth.value - MIN_PANE_WIDTH);
-
-    return Math.round(Math.min(max, Math.max(MIN_PANE_WIDTH, px)));
+  const resizer = useResizable({
+    target: editor,
+    edge: 'inline-end',
+    minWidth: () => Math.min(MIN_PANE_WIDTH, windowWidth.value / 2),
+    maxWidth: () =>
+      Math.max(MIN_PANE_WIDTH, windowWidth.value - MIN_PANE_WIDTH),
+    cssVariable: '--lp-editor-width',
+    storageKey: 'LivePreview.width',
   });
 
-  const dragging = ref(false);
+  // The drag only starts once the pointer has moved, and by then it could be
+  // over the frame, which would take the events. So the frame lets go of the
+  // pointer as soon as the handle is pressed.
+  const handlePressed = ref(false);
+  useEventListener(window, 'pointerup', () => (handlePressed.value = false));
+  useEventListener(
+    window,
+    'pointercancel',
+    () => (handlePressed.value = false)
+  );
 
-  function isRtl(): boolean {
-    return document.documentElement.dir === 'rtl';
+  /*
+   * Progress bar
+   */
+  const progress = ref(0);
+  const progressVisible = ref(false);
+  let showTimer: ReturnType<typeof setTimeout> | undefined;
+  let hideTimer: ReturnType<typeof setTimeout> | undefined;
+  let trickleTimer: ReturnType<typeof setInterval> | undefined;
+
+  function startProgress(): void {
+    progressVisible.value = true;
+    progress.value = 0.1;
+    clearInterval(trickleTimer);
+    // Creeps toward the end without reaching it, as there's no real progress to report.
+    trickleTimer = setInterval(() => {
+      progress.value += (0.9 - progress.value) * 0.1;
+    }, 200);
   }
 
-  function onHandlePointerDown(event: PointerEvent): void {
-    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-    dragging.value = true;
+  function stopProgress(): void {
+    clearTimeout(showTimer);
+    clearTimeout(hideTimer);
+    clearInterval(trickleTimer);
   }
 
-  function onHandlePointerMove(event: PointerEvent): void {
-    if (!dragging.value) {
-      return;
+  watch(
+    () => preview.isLoading.value,
+    (loading) => {
+      stopProgress();
+
+      if (loading) {
+        if (progressVisible.value) {
+          startProgress();
+        } else {
+          // Quick loads finish before it would show, rather than flashing it.
+          showTimer = setTimeout(startProgress, 250);
+        }
+        return;
+      }
+
+      if (!progressVisible.value) {
+        return;
+      }
+
+      progress.value = 1;
+      hideTimer = setTimeout(() => {
+        progressVisible.value = false;
+        progress.value = 0;
+      }, 400);
     }
+  );
 
-    const px = isRtl() ? windowWidth.value - event.clientX : event.clientX;
-    // Kept as a share of the window, so it scales with it.
-    preview.editorWidth.value = px / windowWidth.value;
-  }
-
-  function onHandlePointerUp(event: PointerEvent): void {
-    (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
-    dragging.value = false;
-  }
-
-  function onHandleKeydown(event: KeyboardEvent): void {
-    const step = event.shiftKey ? 64 : 16;
-    const grow = isRtl() ? 'ArrowLeft' : 'ArrowRight';
-    const shrink = isRtl() ? 'ArrowRight' : 'ArrowLeft';
-
-    if (event.key !== grow && event.key !== shrink) {
-      return;
-    }
-
-    event.preventDefault();
-    const px = editorWidthPx.value + (event.key === grow ? step : -step);
-    preview.editorWidth.value = px / windowWidth.value;
-  }
+  onBeforeUnmount(stopProgress);
 
   /*
    * Devices
    */
   const {width: stageWidth, height: stageHeight} = useElementSize(stage);
+  const reducedMotion = usePreferredReducedMotion();
+  const targetShape = computed(() =>
+    deviceShape(preview.device.value, preview.orientation.value)
+  );
+  const shape = shallowRef<DeviceShape | null>(targetShape.value);
+  let shapeFrame = 0;
+
+  // Animates the device's dimensions rather than its rendered size, so it's
+  // fitted to the stage on every frame and never outgrows it on the way.
+  watch(targetShape, (to) => {
+    cancelAnimationFrame(shapeFrame);
+    const from = shape.value;
+
+    if (!to || !from || reducedMotion.value === 'reduce') {
+      shape.value = to;
+      return;
+    }
+
+    const start = performance.now();
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / 300);
+      const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
+      shape.value = t === 1 ? to : blendShapes(from, to, eased);
+
+      if (t < 1) {
+        shapeFrame = requestAnimationFrame(step);
+      }
+    };
+    shapeFrame = requestAnimationFrame(step);
+  });
+
+  onBeforeUnmount(() => cancelAnimationFrame(shapeFrame));
+
   const layout = computed(() =>
-    deviceLayout(preview.device.value, preview.orientation.value, {
-      width: stageWidth.value,
-      height: stageHeight.value,
-    })
+    shape.value
+      ? fitDevice(shape.value, {
+          width: stageWidth.value,
+          height: stageHeight.value,
+        })
+      : null
   );
 
   const deviceLabels: Record<DeviceType, string> = {
@@ -272,12 +358,19 @@
       v-show="preview.isOpen.value"
       ref="root"
       class="live-preview"
-      :class="{'live-preview--dragging': dragging}"
+      :class="{
+        'live-preview--dragging': handlePressed || resizer.isResizing.value,
+      }"
       :aria-label="t('Preview')"
       tabindex="-1"
-      :style="{'--lp-editor-width': `${editorWidthPx}px`}"
+      :style="resizer.style.value"
     >
-      <section class="lp-editor" :aria-label="title">
+      <section
+        :id="editorId"
+        ref="editor"
+        class="lp-editor"
+        :aria-label="title"
+      >
         <header class="lp-editor__header">
           <craft-button
             type="button"
@@ -300,23 +393,13 @@
         </footer>
       </section>
 
-      <div
-        class="lp-handle"
-        role="separator"
-        aria-orientation="vertical"
-        :aria-label="t('Resize editor')"
-        :aria-valuenow="editorWidthPx"
-        :aria-valuemin="MIN_PANE_WIDTH"
-        :aria-valuemax="Math.max(MIN_PANE_WIDTH, windowWidth - MIN_PANE_WIDTH)"
-        tabindex="0"
-        @pointerdown="onHandlePointerDown"
-        @pointermove="onHandlePointerMove"
-        @pointerup="onHandlePointerUp"
-        @pointercancel="onHandlePointerUp"
-        @keydown="onHandleKeydown"
-      ></div>
-
       <section class="lp-preview" :aria-label="t('Preview')">
+        <ResizeHandle
+          :resizer="resizer"
+          @pointerdown="handlePressed = true"
+          :label="t('Resize editor')"
+          :controls="editorId"
+        />
         <header class="lp-preview__toolbar">
           <craft-button-group
             name="lp-device"
@@ -328,17 +411,15 @@
               v-for="(label, type) in deviceLabels"
               :key="type"
               :value="type"
-              size="small"
-              :aria-label="label"
+              icon
               :title="label"
             >
-              <craft-icon slot="prefix" :name="deviceIcons[type]"></craft-icon>
+              <craft-icon :name="deviceIcons[type]" :label="label"></craft-icon>
             </craft-button>
           </craft-button-group>
 
           <craft-button
             type="button"
-            size="small"
             icon="rotate"
             :disabled="preview.device.value === 'desktop'"
             :aria-label="t('Rotate')"
@@ -372,21 +453,31 @@
             type="button"
             size="small"
             icon="arrows-rotate"
+            :disabled="preview.isLoading.value"
+            .loading="preview.isLoading.value"
             @click="preview.refresh({force: true})"
           >
             {{ t('Refresh') }}
           </craft-button>
 
-          <craft-button
-            v-if="currentUrl"
-            :href="currentUrl"
-            target="_blank"
-            size="small"
-            icon="arrow-up-right-from-square"
-            :title="t('Open in a new tab')"
-          >
-            <span class="sr-only">{{ t('Open in a new tab') }}</span>
-          </craft-button>
+          <template v-if="currentUrl">
+            <craft-button
+              :id="newTabLinkId"
+              icon
+              size="small"
+              :href="currentUrl"
+              target="_blank"
+              rel="noopener"
+            >
+              <craft-icon
+                name="arrow-up-right-from-square"
+                :label="t('Open in a new tab')"
+              ></craft-icon>
+            </craft-button>
+            <craft-tooltip :for="newTabLinkId">
+              {{ t('Open in a new tab') }}
+            </craft-tooltip>
+          </template>
         </header>
 
         <div ref="stage" class="lp-preview__stage">
@@ -407,6 +498,16 @@
             :style="deviceStyle"
           >
             <div class="lp-device__viewport" :style="viewportStyle">
+              <div
+                class="lp-progress"
+                :class="{'lp-progress--visible': progressVisible}"
+                aria-hidden="true"
+              >
+                <div
+                  class="lp-progress__bar"
+                  :style="{inlineSize: `${progress * 100}%`}"
+                ></div>
+              </div>
               <iframe
                 v-for="frame in preview.frames.value"
                 :key="frame.id"
@@ -441,12 +542,15 @@
     inset: 0;
     z-index: var(--c-layer-overlay);
     display: grid;
-    grid-template-columns: var(--lp-editor-width) auto minmax(0, 1fr);
+    grid-template-columns: var(--lp-editor-width, 33%) minmax(0, 1fr);
+    /* Without this the row grows to fit the editor, and the preview with it. */
+    grid-template-rows: minmax(0, 1fr);
     background-color: var(--c-surface-sunken);
   }
 
   .lp-editor {
     display: grid;
+    border-inline-end: 1px solid var(--c-color-border-quiet);
     grid-template-rows: auto minmax(0, 1fr) auto;
     min-width: 0;
     background-color: var(--c-surface-default);
@@ -480,19 +584,8 @@
     border-block-start: 1px solid var(--c-color-border-quiet);
   }
 
-  .lp-handle {
-    width: 6px;
-    cursor: col-resize;
-    touch-action: none;
-    background-color: var(--c-color-border-quiet);
-
-    &:hover,
-    &:focus-visible {
-      background-color: var(--c-color-accent-fill-loud, currentColor);
-    }
-  }
-
   .lp-preview {
+    position: relative;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
     min-width: 0;
@@ -505,6 +598,39 @@
 
   .lp-preview__spacer {
     flex: 1;
+  }
+
+  .lp-progress {
+    position: absolute;
+    z-index: 2;
+    inset-inline: 0;
+    inset-block-start: 0;
+    block-size: 3px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease 200ms;
+  }
+
+  .lp-progress--visible {
+    opacity: 1;
+    transition: none;
+  }
+
+  .lp-progress__bar {
+    block-size: 100%;
+    background-color: var(--c-color-accent-fill-loud);
+    box-shadow: 0 0 8px var(--c-color-accent-fill-loud);
+  }
+
+  .lp-progress--visible .lp-progress__bar {
+    transition: inline-size 200ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lp-progress,
+    .lp-progress--visible .lp-progress__bar {
+      transition: none;
+    }
   }
 
   .lp-preview__stage {
@@ -539,9 +665,6 @@
     border-radius: 2.5rem;
     background-color: var(--c-color-neutral-fill-loud, #1f2937);
     box-shadow: var(--c-shadow-lg);
-    transition:
-      width 300ms,
-      height 300ms;
 
     .lp-device__viewport {
       border-radius: 0.25rem;
@@ -577,13 +700,8 @@
   }
 
   /* An iframe under the pointer takes its events, and the drag with them. */
-  .live-preview--dragging {
-    cursor: col-resize;
-    user-select: none;
-
-    .lp-frame {
-      pointer-events: none;
-    }
+  .live-preview--dragging .lp-frame {
+    pointer-events: none;
   }
 </style>
 
