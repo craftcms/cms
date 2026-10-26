@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
  * @property array{dominant: string|null, grid: list<list<string>>}|null $colors
+ * @property list<string>|null $keywords
+ * @property string|null $visibleText
  *
  * @since 6.0.0
  */
@@ -39,6 +41,7 @@ class Asset extends BaseModel
             'height' => 'int',
             'size' => 'int',
             'colors' => 'array',
+            'keywords' => 'array',
             'deletedWithVolume' => 'bool',
             'keptFile' => 'bool',
             'dateModified' => 'datetime',

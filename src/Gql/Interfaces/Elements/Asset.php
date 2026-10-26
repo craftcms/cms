@@ -115,6 +115,16 @@ class Asset extends Element
                 'type' => Type::string(),
                 'description' => 'A data URL of a tiny PNG made from the average colors of the image’s regions, which can be scaled up as a blurred placeholder for it, or null if it’s not an image or its colors aren’t known.',
             ],
+            'keywords' => [
+                'name' => 'keywords',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'Words and short phrases that describe the image, or null if it hasn’t been tagged.',
+            ],
+            'visibleText' => [
+                'name' => 'visibleText',
+                'type' => Type::string(),
+                'description' => 'Text that appears in the image, or null if it has none or hasn’t been tagged.',
+            ],
             'kind' => [
                 'name' => 'kind',
                 'type' => Type::nonNull(Type::string()),

@@ -29,7 +29,7 @@ beforeEach(function (): void {
     config(['ai.providers' => ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]]);
     app()->instance(Settings::class, new Settings([
         'defaults' => ['text' => ['provider' => 'openai', 'model' => 'gpt-vision']],
-        'tasks' => ['craft:focalPoint' => ['enabled' => false]],
+        'tasks' => ['craft:focalPoint' => ['enabled' => false], 'craft:tagImage' => ['enabled' => false]],
     ]));
     $this->primarySite = Sites::getPrimarySite();
     $this->germanSite = Site::factory()->create(['handle' => 'german', 'language' => 'de']);
@@ -145,7 +145,7 @@ it('offers to generate alt text from the alt text field once it’s set up', fun
     actingAs(User::find()->admin()->one());
     app()->instance(Settings::class, new Settings([
         'defaults' => ['text' => ['provider' => 'openai']],
-        'tasks' => ['craft:altText' => ['enabled' => $enabled], 'craft:focalPoint' => ['enabled' => false]],
+        'tasks' => ['craft:altText' => ['enabled' => $enabled], 'craft:focalPoint' => ['enabled' => false], 'craft:tagImage' => ['enabled' => false]],
     ]));
     $asset = altTextImage('none');
     $field = new AltField;

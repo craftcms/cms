@@ -265,6 +265,34 @@ class Asset extends Element
     }
 
     /**
+     * @var list<string>|null Words and short phrases that describe the image, such as what’s in it, written in the
+     *                        primary site’s language by the “Tag images” AI task, or `null` if it hasn’t been tagged
+     */
+    #[AllowedInSandbox]
+    public ?array $keywords = null {
+        /** @param array<array-key, mixed>|string|null $value */
+        set(array|string|null $value) {
+            if (is_string($value)) {
+                $value = Json::decodeIfJson($value);
+            }
+
+            $this->keywords = is_array($value)
+                ? array_values(array_filter(array_map(
+                    static fn (mixed $keyword): string => is_scalar($keyword) ? trim((string) $keyword) : '',
+                    $value,
+                ), static fn (string $keyword): bool => $keyword !== ''))
+                : null;
+        }
+    }
+
+    /**
+     * @var string|null Text that appears in the image, as found by the “Tag images” AI task, or `null` if it has none
+     *                  or hasn’t been tagged. Whether it’s been tagged is shown by {@see $keywords}.
+     */
+    #[AllowedInSandbox]
+    public ?string $visibleText = null;
+
+    /**
      * @var bool|null Whether the file was kept around when the asset was deleted
      */
     #[AllowedInSandbox]
@@ -806,7 +834,15 @@ class Asset extends Element
     #[Override]
     protected static function defineSearchableAttributes(): array
     {
-        return ['filename', 'extension', 'kind', 'alt'];
+        return ['filename', 'extension', 'kind', 'alt', 'keywords', 'visibleText'];
+    }
+
+    #[Override]
+    protected function searchKeywords(string $attribute): string
+    {
+        return $attribute === 'keywords'
+            ? implode(' ', $this->keywords ?? [])
+            : parent::searchKeywords($attribute);
     }
 
     /** @return array<int|string, string|array{label: string, orderBy: string, defaultDir: string}> */
@@ -2792,7 +2828,7 @@ JS, [
     public function setAttributesFromRequest(array $values): void
     {
         // Determined from the file itself when one comes in, not by whoever's saving.
-        unset($values['colors']);
+        unset($values['colors'], $values['keywords'], $values['visibleText']);
 
         parent::setAttributesFromRequest($values);
     }
@@ -3357,6 +3393,8 @@ JS;
             }
 
             $model->colors = $this->colors?->toArray();
+            $model->keywords = $this->keywords;
+            $model->visibleText = $this->visibleText;
 
             $model->save();
 
