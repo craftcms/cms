@@ -8,14 +8,12 @@
 namespace craft\auth\passkeys;
 
 use Craft;
-use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\records\WebAuthn;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\CredentialRecord;
 use Webauthn\PublicKeyCredentialUserEntity;
-use Webauthn\Util\Base64;
 
 /**
  * Passkey credential repository.
@@ -35,22 +33,11 @@ class CredentialRepository
         if ($record) {
             $serializer = Craft::$app->getAuth()->webauthnServer()->getSerializer();
 
-            $credentialRecord = $serializer->deserialize(
+            return $serializer->deserialize(
                 $record->credential,
                 CredentialRecord::class,
                 'json',
             );
-
-            // if the userHandle is already a fully decoded user UID it means it was created with webauthn v4;
-            // in that case, we should be able to find user by it
-            $found = User::find()->uid($credentialRecord->userHandle)->exists();
-
-            // and if that's the case, we want to base64 encode it again, so that we're comparing correct values
-            if ($found) {
-                $credentialRecord->userHandle = Base64UrlSafe::encodeUnpadded($credentialRecord->userHandle);
-            }
-
-            return $credentialRecord;
         }
 
         return null;
