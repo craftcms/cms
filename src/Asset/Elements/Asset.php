@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Asset\Elements;
 
 use Closure;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Actions\AnalyzeImages;
 use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
 use CraftCms\Cms\Asset\Actions\CopyUrl;
 use CraftCms\Cms\Asset\Actions\DeleteAssets;
@@ -16,6 +17,7 @@ use CraftCms\Cms\Asset\Actions\PreviewAsset;
 use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
+use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Concerns\LegacyConstants;
@@ -768,6 +770,10 @@ class Asset extends Element
             // Edit Image
             if ($isTemp || Gate::check("editImages:$volume->uid")) {
                 $actions[] = EditImage::class;
+            }
+
+            if (app(ImageAnalyzer::class)->available()) {
+                $actions[] = AnalyzeImages::class;
             }
 
             // Move
@@ -3361,6 +3367,11 @@ JS;
                     'siteId' => $this->siteId,
                     'alt' => $this->alt,
                 ], ['assetId', 'siteId']);
+
+            // Uploaded and replaced images are analyzed, such as for alt text, by any AI tasks that are set up
+            if ($isImage) {
+                app(ImageAnalyzer::class)->queue($this);
+            }
         }
 
         $upsert = false;

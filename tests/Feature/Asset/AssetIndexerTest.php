@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\AiTasks;
+use CraftCms\Cms\Ai\Settings;
+use CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage;
 use CraftCms\Cms\Asset\AssetIndexer;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Enums\AssetIndexStatus;
@@ -16,10 +19,14 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Support\Facades\AssetIndexer as AssetIndexerFacade;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Tests\Support\Ai\CaptionImageTask;
+use Illuminate\Bus\UniqueLock;
+use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Database\QueryException;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Filesystem as Flysystem;
 use League\Flysystem\Local\LocalFilesystemAdapter as LocalFlysystemAdapter;
@@ -780,4 +787,38 @@ describe('remote images', function () {
         expect($reindexed->colors->dominant)->toBe('#123456')
             ->and($reindexed->getWidth())->toBe(100);
     });
+});
+
+it('queues new and changed images to be analyzed', function () {
+    Queue::fake();
+    config(['ai.providers' => ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]]);
+    app(AiTasks::class)->register(CaptionImageTask::class);
+    app()->instance(Settings::class, new Settings(['defaults' => ['text' => ['provider' => 'openai']]]));
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('photo.png', file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
+    $listing = fn (int $time): FsListing => new FsListing([
+        'dirname' => '',
+        'basename' => 'photo.png',
+        'type' => 'file',
+        'fileSize' => 99,
+        'dateModified' => $time,
+    ]);
+
+    try {
+        $asset = $this->indexer->indexFileByListing($volumeData, $listing(1_700_000_000), $session->id);
+        $this->indexer->indexFileByListing($volumeData, $listing(1_700_000_000), $session->id);
+
+        Queue::assertPushed(AnalyzeImage::class, 1);
+
+        // Once the first job has run, a changed file is analyzed again
+        new UniqueLock(app(Cache::class))->release(new AnalyzeImage($asset->id));
+        $this->indexer->indexFileByListing($volumeData, $listing(1_700_000_500), $session->id);
+
+        Queue::assertPushed(AnalyzeImage::class, fn (AnalyzeImage $job): bool => $job->assetId === $asset->id);
+        Queue::assertPushed(AnalyzeImage::class, 2);
+    } finally {
+        $volumeData->sourceDisk()->delete('photo.png');
+    }
 });

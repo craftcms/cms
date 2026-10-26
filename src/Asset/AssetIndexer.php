@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use Closure;
+use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -63,6 +64,7 @@ class AssetIndexer
         private readonly Elements $elements,
         private readonly Folders $folders,
         private readonly Volumes $volumes,
+        private readonly ImageAnalyzer $imageAnalyzer,
     ) {}
 
     /** @return Generator<int, FsListing> */
@@ -675,6 +677,7 @@ class AssetIndexer
             && $timeModified !== null
             && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
         $needsColors = $asset->colors === null || $fileChanged;
+        $isNew = ! $asset->id;
 
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
         $tempPath = null;
@@ -731,6 +734,11 @@ class AssetIndexer
                 $asset->dateModified = $timeModified;
 
                 $this->elements->saveElement($asset);
+
+                // New and changed images are analyzed, such as for alt text, by any AI tasks that are set up
+                if ($isNew || $fileChanged) {
+                    $this->imageAnalyzer->queue($asset);
+                }
 
                 $shouldCache = ! $isLocalFs && $cacheImages && Cms::config()->maxCachedCloudImageSize > 0;
 

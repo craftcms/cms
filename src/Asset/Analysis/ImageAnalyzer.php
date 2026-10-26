@@ -1,0 +1,244 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Asset\Analysis;
+
+use CraftCms\Cms\Ai\Ai;
+use CraftCms\Cms\Ai\AiTasks;
+use CraftCms\Cms\Asset\Analysis\Contracts\ImageAnalysisTaskInterface;
+use CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage;
+use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Image\Images;
+use CraftCms\Cms\Image\Raster;
+use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Typecast;
+use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Support\Facades\Log;
+use Laravel\Ai\Files\Image;
+use Laravel\Ai\Responses\StructuredAgentResponse;
+use Throwable;
+
+/**
+ * Runs image analysis tasks for images.
+ *
+ * Tasks that resolve to the same provider and model share one request, so most sites send one request per image no
+ * matter how many tasks they enable. The image is scaled down first, since models don’t look at more detail than that.
+ *
+ * @since 6.0.0
+ */
+#[Singleton]
+class ImageAnalyzer
+{
+    /** The longest side of the image that’s sent to models, in pixels. */
+    private const int MAX_IMAGE_SIZE = 1568;
+
+    public function __construct(
+        private readonly AiTasks $aiTasks,
+        private readonly Ai $ai,
+        private readonly Images $images,
+        private readonly Elements $elements,
+    ) {}
+
+    /**
+     * Returns the registered image analysis tasks, indexed by handle.
+     *
+     * @return array<string, class-string<ImageAnalysisTaskInterface>>
+     */
+    public function tasks(): array
+    {
+        return array_filter(
+            $this->aiTasks->tasksByHandle()->all(),
+            static fn (string $task): bool => is_subclass_of($task, ImageAnalysisTaskInterface::class),
+        );
+    }
+
+    /**
+     * Returns whether any image analysis task is available to run.
+     */
+    public function available(): bool
+    {
+        return array_any(array_keys($this->tasks()), $this->ai->available(...));
+    }
+
+    /**
+     * Returns the handles of the tasks that would run for an image: tasks that are available and have something to do.
+     *
+     * @param  list<string>|null  $handles  The tasks to consider, or `null` for every image analysis task.
+     * @return list<string>
+     */
+    public function pendingTasks(Asset $asset, ?array $handles = null, bool $overwrite = false): array
+    {
+        if ($asset->kind !== FileKind::Image->value) {
+            return [];
+        }
+
+        $pending = [];
+
+        foreach ($this->tasks() as $handle => $task) {
+            if (
+                ($handles === null || in_array($handle, $handles, true)) &&
+                $this->ai->available($handle) &&
+                $task::needed($asset, $overwrite)
+            ) {
+                $pending[] = $handle;
+            }
+        }
+
+        return $pending;
+    }
+
+    /**
+     * Queues the image to be analyzed, if any tasks would run for it.
+     *
+     * @param  list<string>|null  $handles  The tasks to run, or `null` for every image analysis task.
+     * @return bool Whether the image was queued.
+     */
+    public function queue(Asset $asset, ?array $handles = null, bool $overwrite = false): bool
+    {
+        if (! $asset->id || $this->pendingTasks($asset, $handles, $overwrite) === []) {
+            return false;
+        }
+
+        dispatch(new AnalyzeImage($asset->id, $handles, $overwrite))
+            ->onQueue(Cms::config()->lowPriorityQueueName)
+            ->afterCommit();
+
+        return true;
+    }
+
+    /**
+     * Analyzes an image and saves the results.
+     *
+     * Each group of tasks that share a provider and model is analyzed separately. If one group’s request fails, the
+     * other groups’ results are still saved, and then the first failure is thrown.
+     *
+     * @param  list<string>|null  $handles  The tasks to run, or `null` for every image analysis task.
+     * @return list<string> The handles of the tasks whose results were applied.
+     *
+     * @throws Throwable
+     */
+    public function analyze(Asset $asset, ?array $handles = null, bool $overwrite = false): array
+    {
+        $tasks = $this->tasks();
+        $groups = [];
+
+        foreach ($this->pendingTasks($asset, $handles, $overwrite) as $handle) {
+            $resolved = $this->ai->resolve($handle);
+            $groups[$resolved->provider."\0".$resolved->model][self::responseProperty($handle)] = $tasks[$handle];
+        }
+
+        if ($groups === []) {
+            return [];
+        }
+
+        $changes = new ImageAnalysisChanges;
+        $applied = [];
+        $failure = null;
+        $tempPaths = [];
+
+        try {
+            $image = $this->preparedImage($asset, $tempPaths);
+
+            foreach ($groups as $group) {
+                $agent = new ImageAnalysisAgent($group, $asset);
+
+                try {
+                    $response = $this->ai->task(reset($group)::handle())->prompt($agent, $agent->analysisPrompt(), [$image]);
+                } catch (Throwable $exception) {
+                    Log::warning("Couldn’t analyze the image of asset {$asset->id}: {$exception->getMessage()}");
+                    $failure ??= $exception;
+
+                    continue;
+                }
+
+                $data = $response instanceof StructuredAgentResponse ? $response->toArray() : [];
+
+                foreach ($group as $property => $task) {
+                    if (is_array($data[$property] ?? null)) {
+                        $task::apply($asset, $data[$property], $changes, $overwrite);
+                        $applied[] = $task::handle();
+                    }
+                }
+            }
+        } finally {
+            foreach ($tempPaths as $path) {
+                File::delete($path);
+            }
+        }
+
+        $this->save($asset, $changes);
+
+        if ($failure !== null) {
+            throw $failure;
+        }
+
+        return $applied;
+    }
+
+    /**
+     * Returns a task’s property in a combined response. Handles may contain characters some providers don’t allow.
+     */
+    private static function responseProperty(string $handle): string
+    {
+        return (string) preg_replace('/[^a-zA-Z0-9_-]/', '_', $handle);
+    }
+
+    /**
+     * Returns a copy of the image, scaled down to the size that’s sent to models, and rasterized if it’s an SVG.
+     *
+     * @param  list<string>  $tempPaths  Temporary files to delete afterward.
+     */
+    private function preparedImage(Asset $asset, array &$tempPaths): Image
+    {
+        $copy = $asset->getCopyOfFile();
+        $tempPaths[] = $copy;
+        $extension = in_array(strtolower(pathinfo($copy, PATHINFO_EXTENSION)), ['jpg', 'jpeg'], true) ? 'jpg' : 'png';
+        $prepared = AssetsHelper::tempFilePath($extension);
+        $tempPaths[] = $prepared;
+
+        $image = $this->images->loadImage($copy, rasterize: true);
+
+        if (! $image instanceof Raster) {
+            return Image::fromPath($copy);
+        }
+
+        $image->scaleToFit(self::MAX_IMAGE_SIZE, self::MAX_IMAGE_SIZE, false);
+        $image->saveAs($prepared);
+
+        return Image::fromPath($prepared, $extension === 'jpg' ? 'image/jpeg' : 'image/png');
+    }
+
+    /**
+     * Saves the changes: attributes for every site with the asset in its own site, and other sites’ attributes with
+     * the asset in those sites.
+     */
+    private function save(Asset $asset, ImageAnalysisChanges $changes): void
+    {
+        if ($changes->isEmpty()) {
+            return;
+        }
+
+        $siteAttributes = $changes->siteAttributes;
+        $own = [...$changes->attributes, ...($siteAttributes[$asset->siteId] ?? [])];
+        unset($siteAttributes[$asset->siteId]);
+
+        if ($own !== []) {
+            Typecast::configure($asset, $own);
+            $this->elements->saveElement($asset);
+        }
+
+        foreach ($siteAttributes as $siteId => $attributes) {
+            $siteAsset = Asset::find()->id($asset->id)->siteId($siteId)->status(null)->one();
+
+            if ($siteAsset instanceof Asset) {
+                Typecast::configure($siteAsset, $attributes);
+                $this->elements->saveElement($siteAsset);
+            }
+        }
+    }
+}
