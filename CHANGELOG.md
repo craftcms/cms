@@ -243,6 +243,7 @@
 - AI Connections now checks that the models chosen for AI tasks have the capabilities the tasks need, such as vision, document, audio, or video input, structured output, or tool calling, when the settings are saved. Tasks whose model lacks one are unavailable until a different model is chosen, and the settings explain why. ([#20099](https://github.com/craftcms/cms/pull/20099))
 - Added the “Generate alt text” AI task, which writes alt text for images in each site’s language, filling in images that are missing it when they’re uploaded, replaced, indexed, or analyzed. Sites that share alt text get one.
 - Alternative Text fields now have a “Generate alt text” action, which fills in suggested alt text for editors to review before saving.
+- Added the “Detect focal points” AI task, which sets the focal points of images that don’t have one when they’re uploaded, replaced, indexed, or analyzed, so their crops keep the subject in view.
 - Images are now analyzed by AI tasks that are set up, such as for alt text, when they’re uploaded, replaced, or found by asset indexing. Analysis only fills in what images are missing.
 - Added the “Analyze images” asset action, which queues the selected images to be analyzed by AI tasks that are set up.
 - Field layout tabs can now be sidebar tabs, whose fields are shown in element edit forms’ details sidebar. Sidebar tabs always come after content tabs. ([#20005](https://github.com/craftcms/cms/pull/20005))

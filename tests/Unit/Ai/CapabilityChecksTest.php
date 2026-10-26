@@ -13,6 +13,7 @@ use CraftCms\Cms\Ai\Enums\AiUnavailableReason;
 use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
 use CraftCms\Cms\Ai\Settings;
+use CraftCms\Cms\Asset\Analysis\Tasks\DetectFocalPoint;
 use CraftCms\Cms\Asset\Analysis\Tasks\GenerateAltText;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\Ai\AltTextTask;
@@ -74,7 +75,7 @@ beforeEach(function (): void {
         'deepseek' => ['driver' => 'deepseek', 'key' => 'sk-test'],
     ]]);
     // These tests are about their own tasks, not Craft’s
-    app(AiTasks::class)->remove(GenerateAltText::class);
+    app(AiTasks::class)->remove(GenerateAltText::class, DetectFocalPoint::class);
     app(AiTasks::class)->register(AltTextTask::class, SummarizeTask::class);
     app()->instance(Settings::class, new Settings([
         'defaults' => ['text' => ['provider' => 'openai', 'model' => 'gpt-vision']],

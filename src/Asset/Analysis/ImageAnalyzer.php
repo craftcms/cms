@@ -9,6 +9,7 @@ use CraftCms\Cms\Ai\AiTasks;
 use CraftCms\Cms\Asset\Analysis\Contracts\ImageAnalysisTaskInterface;
 use CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage;
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
@@ -42,6 +43,7 @@ class ImageAnalyzer
         private readonly Ai $ai,
         private readonly Images $images,
         private readonly Elements $elements,
+        private readonly AssetTransformers $assetTransformers,
     ) {}
 
     /**
@@ -260,6 +262,11 @@ class ImageAnalyzer
         if ($own !== []) {
             Typecast::configure($asset, $own);
             $this->elements->saveElement($asset);
+        }
+
+        // Transforms are cropped around the focal point
+        if (array_key_exists('focalPoint', $changes->attributes)) {
+            $this->assetTransformers->invalidate($asset);
         }
 
         foreach ($siteAttributes as $siteId => $attributes) {

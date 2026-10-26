@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use CraftCms\Cms\Ai\AiTasks;
+use CraftCms\Cms\Asset\Analysis\Tasks\DetectFocalPoint;
 use CraftCms\Cms\Asset\Analysis\Tasks\GenerateAltText;
 use CraftCms\Cms\Asset\Commands\CleanupAssetIndexesCommand;
 use CraftCms\Cms\Asset\Commands\IndexAllAssetsCommand;
@@ -23,7 +24,7 @@ class AssetServiceProvider extends ServiceProvider
 {
     public function boot(ImageTransformer $imageTransformer, AiTasks $aiTasks): void
     {
-        $aiTasks->register(GenerateAltText::class);
+        $aiTasks->register(GenerateAltText::class, DetectFocalPoint::class);
 
         Event::listen(
             AssetTransformsInvalidating::class,

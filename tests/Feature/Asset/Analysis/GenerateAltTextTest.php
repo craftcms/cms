@@ -27,7 +27,10 @@ use function Pest\Laravel\postJson;
 beforeEach(function (): void {
     config()->set('filesystems.disks.alt-text-test', ['driver' => 'local', 'root' => storage_path('framework/testing/alt-text-test')]);
     config(['ai.providers' => ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]]);
-    app()->instance(Settings::class, new Settings(['defaults' => ['text' => ['provider' => 'openai', 'model' => 'gpt-vision']]]));
+    app()->instance(Settings::class, new Settings([
+        'defaults' => ['text' => ['provider' => 'openai', 'model' => 'gpt-vision']],
+        'tasks' => ['craft:focalPoint' => ['enabled' => false]],
+    ]));
     $this->primarySite = Sites::getPrimarySite();
     $this->germanSite = Site::factory()->create(['handle' => 'german', 'language' => 'de']);
     Sites::refreshSites();
@@ -142,7 +145,7 @@ it('offers to generate alt text from the alt text field once it’s set up', fun
     actingAs(User::find()->admin()->one());
     app()->instance(Settings::class, new Settings([
         'defaults' => ['text' => ['provider' => 'openai']],
-        'tasks' => ['craft:altText' => ['enabled' => $enabled]],
+        'tasks' => ['craft:altText' => ['enabled' => $enabled], 'craft:focalPoint' => ['enabled' => false]],
     ]));
     $asset = altTextImage('none');
     $field = new AltField;
