@@ -236,7 +236,7 @@ class ElementSelect extends Control
         return [
             'elementType' => $this->elementType,
             'customElement' => self::customElement($this->elementType),
-            'elements' => array_map(fn (ElementInterface $element): array => self::elementPayload($element) + self::viewPayload($element, $this->viewMode), $elements),
+            'elements' => array_map(fn (ElementInterface $element): array => self::presentation($element, $this->viewMode), $elements),
             'elementDisplayName' => $this->elementType::lowerDisplayName(),
             'sources' => $this->sources,
             'criteria' => $this->criteria,
@@ -248,6 +248,18 @@ class ElementSelect extends Control
             'viewMode' => $this->viewMode,
             ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
         ];
+    }
+
+    /**
+     * What the control draws an element from: its chip data, plus whatever the
+     * view mode needs on top of that. Elements added client-side, such as pasted
+     * ones, are sent in the same shape.
+     *
+     * @return array<string, mixed>
+     */
+    public static function presentation(ElementInterface $element, string $viewMode = self::VIEW_MODE_LIST): array
+    {
+        return self::elementPayload($element) + self::viewPayload($element, $viewMode);
     }
 
     /**

@@ -2,6 +2,7 @@ import {createApp, defineComponent, h, nextTick, type App} from 'vue';
 import {setIconResolver} from '@craftcms/ui/utilities/icons';
 import {nothing} from 'lit';
 import {afterEach, beforeAll, expect, it, vi} from 'vite-plus/test';
+import {DetailsScreen} from '@/test/DetailsScreen';
 import MetadataDetails from './MetadataDetails.vue';
 
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
@@ -10,15 +11,6 @@ vi.mock('@/common/components/DynamicHtmlRenderer.vue', () => ({
   default: defineComponent({
     props: {html: String},
     setup: (props) => () => h('div', {class: 'details-html'}, props.html),
-  }),
-}));
-
-vi.mock('@/common/components/LayoutSlot.vue', () => ({
-  default: defineComponent({
-    setup:
-      (_, {slots}) =>
-      () =>
-        h('div', slots.default?.()),
   }),
 }));
 
@@ -32,9 +24,18 @@ function mount(html: string | null, controls = false): void {
   document.body.append(container);
   app = createApp({
     render: () =>
-      h(MetadataDetails, {html}, controls ? {default: () => h('input')} : {}),
+      h(DetailsScreen, () =>
+        h(MetadataDetails, {html}, controls ? {default: () => h('input')} : {})
+      ),
   });
   app.mount(container);
+}
+
+/** Lets the panel register, and the column render it. */
+async function settle(): Promise<void> {
+  for (let i = 0; i < 4; i++) {
+    await nextTick();
+  }
 }
 
 afterEach(() => {
@@ -44,7 +45,7 @@ afterEach(() => {
 
 it('shows the metadata in an Info panel', async () => {
   mount('<dl>ID 1</dl>');
-  await nextTick();
+  await settle();
 
   expect(container!.querySelector('craft-disclosure > button')?.id).toBe(
     'details-panel-info'
@@ -56,7 +57,7 @@ it('shows the metadata in an Info panel', async () => {
 
 it('renders nothing without metadata', async () => {
   mount(null);
-  await nextTick();
+  await settle();
 
   expect(container!.querySelector('craft-disclosure')).toBeNull();
 });
@@ -65,7 +66,7 @@ it.each(['<dl>ID 1</dl>', null])(
   'keeps sidebar controls with metadata %s',
   async (html) => {
     mount(html, true);
-    await nextTick();
+    await settle();
 
     const control = container!.querySelector('input');
     const details = container!.querySelector('.details-html');

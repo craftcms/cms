@@ -796,34 +796,6 @@ td.right {
   @include mixins.active-token-styles;
 }
 
-// Override .token for Prism
-.highlight {
-  .token {
-    display: inline;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    font-size: inherit;
-    line-height: inherit;
-    text-shadow: none;
-    background: transparent;
-    box-shadow: none;
-  }
-}
-
-.pane.highlight {
-  pre[class*='language-'] {
-    overflow: visible;
-
-    & > code.diff-highlight .token:not(.prefix) {
-      margin-block: 0;
-      margin-inline: -24px;
-      padding-block: 0;
-      padding-inline: 24px;
-    }
-  }
-}
-
 .success {
   color: var(--fg-success) !important;
 }
@@ -4047,18 +4019,6 @@ table.editable {
         &.textual {
           padding: 0;
 
-          .editable-table-preview {
-            text-align: start;
-            white-space: pre-wrap;
-
-            & + textarea {
-              opacity: 0;
-              height: 0;
-              min-height: 0;
-              padding-block: 0;
-            }
-          }
-
           textarea {
             resize: none;
           }
@@ -4135,8 +4095,7 @@ table.editable {
     textarea,
     textarea.text,
     input.text,
-    pre,
-    .editable-table-preview {
+    pre {
       display: block;
       width: 100%;
       border: none;

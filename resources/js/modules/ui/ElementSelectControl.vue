@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/chip/chip';
-  import {t} from '@craftcms/ui';
-  import {computed, reactive, ref, useId} from 'vue';
+  import {actionClient, t} from '@craftcms/ui';
+  import {computed, nextTick, reactive, ref, useId, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
@@ -15,6 +15,8 @@
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
   import {openSlideout} from '@/common/slideouts';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
+  import {craft} from '@/modules/matrix/clipboard';
+  import {useCopiedElements} from '@/modules/matrix/copied-elements';
 
   /**
    * TODO: Extract the element-select markup into a reusable Vue component
@@ -359,6 +361,136 @@
     await modal.show();
   }
 
+  // ───────────────────────────── pasting ─────────────────────────────
+
+  const copiedElements = useCopiedElements();
+
+  /**
+   * The copied elements this field might relate: ones of its element type,
+   * leaving out drafts and revisions, which a relation never points at.
+   */
+  const copiedIds = computed(() =>
+    copiedElements.value
+      .filter(
+        (element) =>
+          element.type === props.control.props.elementType &&
+          !element.draftId &&
+          !element.revisionId
+      )
+      .map((element) => Number(element.id))
+      .filter((elementId) => Number.isInteger(elementId) && elementId > 0)
+  );
+
+  /**
+   * The copied elements the field's selector would let someone choose, as the
+   * server reports them. Asked again whenever the clipboard changes, since a
+   * paste bypasses the selector's sources, criteria and condition.
+   */
+  const pasteable = ref<ElementPresentation[]>([]);
+  let pasteCheck = 0;
+
+  watch(
+    () => (props.editable ? copiedIds.value.join(',') : ''),
+    async (key) => {
+      const check = ++pasteCheck;
+
+      if (key === '') {
+        pasteable.value = [];
+        return;
+      }
+
+      try {
+        const {data} = await actionClient.post<{
+          elements?: ElementPresentation[];
+        }>('element-selects/pasteable', {
+          elementType: props.control.props.elementType,
+          context: props.control.props.context,
+          sources: props.control.props.sources,
+          criteria: props.control.props.criteria,
+          condition: props.control.props.selectionCondition,
+          siteId: Craft.siteId ?? null,
+          viewMode: props.control.props.viewMode,
+          elementIds: copiedIds.value,
+        });
+
+        if (check === pasteCheck) {
+          pasteable.value = data.elements ?? [];
+        }
+      } catch {
+        if (check === pasteCheck) {
+          pasteable.value = [];
+        }
+      }
+    },
+    {immediate: true}
+  );
+
+  /** What's left to paste once the elements already related are set aside. */
+  const pasteCandidates = computed(() =>
+    pasteable.value.filter((element) => !ids.value.includes(element.id))
+  );
+
+  const pasteLabel = computed(() => {
+    const names = craft().elementTypeNames?.[props.control.props.elementType];
+    const type =
+      (pasteCandidates.value.length === 1 ? names?.[2] : names?.[3]) ??
+      props.control.props.elementDisplayName;
+
+    return t('Paste {type}', {type});
+  });
+
+  /**
+   * Relates the copied elements, after the ones already related, up to the
+   * field's limit, then clears the clipboard, as pasting does elsewhere.
+   *
+   * The button goes once they're pasted, so focus moves to the last pasted
+   * element, which lands about where the button was. The page only scrolls if
+   * none of it is in view, and then only as far as it takes to show it: a
+   * focus() that scrolls on its own centers an element that's just out of
+   * view, which reads as the page jumping.
+   */
+  async function paste(): Promise<void> {
+    const pasted = pasteCandidates.value;
+
+    if (pasted.length === 0 || atLimit.value) {
+      return;
+    }
+
+    for (const element of pasted) {
+      presentations.set(element.id, element);
+    }
+
+    const next = [...ids.value, ...pasted.map((element) => element.id)];
+    const kept =
+      limit.value === null ? next : next.slice(0, Math.max(limit.value, 1));
+
+    updateValue(kept);
+    craft().cp?.clearCopiedElements?.();
+    await nextTick();
+
+    const item = dropZone.value?.querySelector<HTMLElement>(
+      `.elements-stage [data-id="${kept[kept.length - 1]}"]`
+    );
+    const target =
+      (item?.matches('[tabindex="0"]')
+        ? item
+        : item?.querySelector<HTMLElement>(
+            'craft-checkbox, craft-button, button, a[href], [tabindex="0"]'
+          )) ?? (addButton.value?.isConnected ? addButton.value : null);
+
+    if (!target) {
+      return;
+    }
+
+    target.focus({preventScroll: true});
+
+    const rect = target.getBoundingClientRect();
+
+    if (rect.bottom <= 0 || rect.top >= window.innerHeight) {
+      target.scrollIntoView({block: 'nearest'});
+    }
+  }
+
   // ───────────────────────────── chip actions ─────────────────────────────
 
   function removeIds(remove: Set<number>): void {
@@ -399,7 +531,7 @@
 
     if (element.canCopy) {
       actions.push({
-        icon: 'clone-dashed',
+        icon: 'custom-icons/clone-dashed',
         label: t('Copy {type}', {type}),
         // `Craft.cp` owns the clipboard, including its confirmation toast.
         onClick: () => Craft.cp?.copyElements?.([copyDescriptor(value)]),
@@ -448,7 +580,7 @@
 
     if (copyable.length) {
       actions.push({
-        icon: 'clone-dashed',
+        icon: 'custom-icons/clone-dashed',
         label: t('Copy selected'),
         onClick: () => Craft.cp?.copyElements?.(copyable.map(copyDescriptor)),
       });
@@ -785,6 +917,18 @@
           :disabled="!showUpload"
           @uploaded="attachUploaded"
         />
+
+        <craft-button
+          v-if="pasteCandidates.length"
+          type="button"
+          variant="outline"
+          icon="custom-icons/duplicate"
+          class="paste-btn"
+          data-element-select-paste=""
+          @click="paste()"
+        >
+          {{ pasteLabel }}
+        </craft-button>
       </div>
 
       <div slot="footer">

@@ -90,11 +90,11 @@ it('lists sorted transformers with editable default labels, handles, drivers, an
 
     if ($allowAdminChanges) {
         expect($craftRow['_deletable'])->toBeFalse()
-            ->and($craftRow['_deleteDisabledReason'])->toBe('The Craft Asset Transformer cannot be deleted.')
+            ->and($craftRow['_deleteDisabledReason'])->toBe('The Craft asset transformer cannot be deleted.')
             ->and($remoteRow['_deletable'])->toBe($defaultHandle !== 'remote')
-            ->and($remoteRow['_deleteDisabledReason'])->toBe($defaultHandle === 'remote' ? 'This Asset Transformer cannot be deleted because it is configured as the default.' : null)
+            ->and($remoteRow['_deleteDisabledReason'])->toBe($defaultHandle === 'remote' ? 'This asset transformer cannot be deleted because it is configured as the default.' : null)
             ->and($remoteRow['_deleteUrl'])->toBe(action([AssetTransformersController::class, 'destroy'], ['handle' => 'remote']))
-            ->and($remoteRow['_deleteConfirmMessage'])->toBe('Are you sure you want to delete the “A Remote” Asset Transformer?');
+            ->and($remoteRow['_deleteConfirmMessage'])->toBe('Are you sure you want to delete the “A Remote” asset transformer?');
     } else {
         expect($craftRow)->not->toHaveKey('_deleteUrl')
             ->and($remoteRow)->not->toHaveKey('_deleteUrl');
@@ -128,7 +128,7 @@ it('explains why transformers assigned to volumes cannot be deleted', function (
     $row = collect($table['rows'])->firstWhere('id', $transformer->uid);
 
     expect($row['_deletable'])->toBeFalse()
-        ->and($row['_deleteDisabledReason'])->toBe('This Asset Transformer cannot be deleted because it is assigned to a volume.');
+        ->and($row['_deleteDisabledReason'])->toBe('This asset transformer cannot be deleted because it is assigned to a volume.');
 });
 
 it('renders the standalone transformer UI', function () {
@@ -141,7 +141,7 @@ it('renders the standalone transformer UI', function () {
             ->where('refreshUrl', action([AssetTransformersController::class, 'renderUi'])));
 });
 
-it('stores driver settings on the Asset Transformer', function () {
+it('stores driver settings on the asset transformer', function () {
     app(AssetTransformDrivers::class)->extend('controller-test', fn () => new ControllerTestAssetTransformDriver);
 
     postJson(action([AssetTransformersController::class, 'store']), [
@@ -212,7 +212,7 @@ it('renders stored settings for an unavailable transformer driver', function () 
         ->toBe(['endpoint' => 'https://saved.example.test'])
         ->and($settings->attr('readonly'))->not->toBeNull()
         ->and($settings->attr('name'))->toBeNull()
-        ->and($crawler->text())->toContain('This Asset Transformer’s driver is unavailable.');
+        ->and($crawler->text())->toContain('This asset transformer’s driver is unavailable.');
 });
 
 it('keeps the Craft transformer identity pinned', function () {

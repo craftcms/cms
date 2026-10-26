@@ -108,7 +108,7 @@ describe('elementSelectFieldHtml', function () {
         $crawler = new Crawler($html);
         $input = $crawler->filter('craft-field > [slot="input"]');
 
-        expect($input->filter('button')->text())->toBe('Add an entry')
+        expect($input->filter('craft-button')->text())->toBe('Add an entry')
             ->and($input->filter('input[type="hidden"][name="featuredEntryIds"][value=""]'))->toHaveCount(1);
     })->with([false, true]);
 });

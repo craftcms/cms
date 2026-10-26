@@ -217,6 +217,29 @@ it('returns default preview handler for known asset kinds', function () {
     expect($handler)->toBeInstanceOf(Text::class);
 });
 
+it('marks text previews with the language to highlight them as', function (string $filename, string $kind, string $contents, string $expected) {
+    $disk = Storage::fake('test-disk');
+    config()->set('filesystems.disks.test-disk.root', $disk->path(''));
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => $filename,
+        'kind' => $kind,
+    ]);
+    $disk->put($filename, $contents);
+
+    $html = $this->assets->getAssetPreviewHandler($asset)->getPreviewHtml();
+
+    expect($html)->toContain("<code data-language=\"$kind\">$expected</code>")
+        ->and($html)->not->toContain('Prism');
+})->with([
+    'pretty-printed JSON' => ['data.json', FileKind::Json->value, '{"a":1}', "{\n    \"a\": 1\n}"],
+    'Markdown' => ['readme.md', FileKind::Markdown->value, '# Hi', '# Hi'],
+    'escaped HTML' => ['page.html', FileKind::Html->value, '<b>hi</b>', '&lt;b&gt;hi&lt;/b&gt;'],
+]);
+
 it('returns null preview handler for unknown asset kinds', function () {
     $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
@@ -282,7 +305,7 @@ it('dispatches AssetReplacing event with filename', function () {
     @unlink($tempFile);
 });
 
-it('invalidates Asset Transforms once for each source lifecycle operation', function (Closure $operation) {
+it('invalidates asset transforms once for each source lifecycle operation', function (Closure $operation) {
     $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $rootFolder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
     $folder = VolumeFolderModel::factory()->create([

@@ -1132,6 +1132,24 @@ class Plugins
      */
     public function getPluginIconSvg(string $handle): string
     {
+        return file_get_contents($this->pluginIconPath($handle) ?? Icons::resolveIconPath('default-plugin'));
+    }
+
+    /**
+     * Returns whether a plugin has its own SVG icon, rather than the default one {@see getPluginIconSvg()} falls back to.
+     *
+     * @param  string  $handle  The plugin’s handle
+     */
+    public function hasPluginIcon(string $handle): bool
+    {
+        return $this->pluginIconPath($handle) !== null;
+    }
+
+    /**
+     * Returns the path to a plugin’s own `icon.svg`, if it has one.
+     */
+    private function pluginIconPath(string $handle): ?string
+    {
         $basePaths = [];
 
         // If it's installed, let the plugin say where it lives
@@ -1146,18 +1164,12 @@ class Plugins
             $basePaths[] = dirname($basePath).'/resources';
         }
 
-        $iconPath = Arr::first(
+        $basePath = Arr::first(
             array_unique($basePaths),
             fn (string $basePath) => is_file($basePath.'/icon.svg') && File::isSvg($basePath.'/icon.svg'),
         );
 
-        if ($iconPath === null) {
-            $iconPath = Icons::resolveIconPath('default-plugin');
-        } else {
-            $iconPath .= '/icon.svg';
-        }
-
-        return file_get_contents($iconPath);
+        return $basePath === null ? null : $basePath.'/icon.svg';
     }
 
     /**

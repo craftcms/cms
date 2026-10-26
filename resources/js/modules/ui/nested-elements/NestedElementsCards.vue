@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {ButtonVariant, t} from '@craftcms/ui';
+  import {t} from '@craftcms/ui';
   import {onLongPress} from '@vueuse/core';
   import {computed, useTemplateRef} from 'vue';
   import type {Selectable} from '@/common/composables/useSelectable';
@@ -120,7 +120,9 @@
       <craft-button
         v-if="operations.canPaste.value"
         type="button"
-        :variant="ButtonVariant.Fill"
+        variant="outline"
+        icon="custom-icons/duplicate"
+        class="paste-btn"
         .disabled="operations.busy.value || !operations.canAdd(1)"
         @click="operations.paste()"
         >{{ operations.pasteButtonLabel.value }}</craft-button

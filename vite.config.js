@@ -230,6 +230,9 @@ export default defineConfig(({mode}) => {
         'stylelint --allow-empty-input',
       '!(yii2-adapter)/**/*.{html,json,css,scss}': 'vp fmt --write',
       '{resources,yii2-adapter/resources}/js/**/*.{ts,vue}': 'vp check --fix',
+      // Scripts outside those, such as @craftcms/ui's, still need formatting.
+      '!(resources|yii2-adapter)/**/*.{ts,mts,cts,js,mjs,cjs,vue}':
+        'vp fmt --write',
       // Blocks on physical Tailwind classes. Spacing-scale warnings are
       // printed by .vite-hooks/pre-commit, since this hides passing output.
       '{resources,workbench/resources}/**/*.{vue,ts,js,twig,php,html}':
@@ -266,7 +269,6 @@ export default defineConfig(({mode}) => {
       ],
     },
     base: './',
-    server,
 
     publicDir: 'resources/public',
 
@@ -276,6 +278,18 @@ export default defineConfig(({mode}) => {
         vue: 'vue/dist/vue.esm-bundler.js',
       },
       dedupe: ['@awesome.me/webawesome', 'lit'],
+    },
+
+    // Otherwise the dev server watches the Composer dependencies' tens of
+    // thousands of files, and its memory grows until it runs out. Storybook
+    // replaces this `server` block with its own, so .storybook/main.ts sets
+    // the same. One block with the DDEV settings above: a second `server` key
+    // would replace them, leaving the dev server on plain HTTP.
+    server: {
+      ...server,
+      watch: {
+        ignored: ['**/vendor/**', '**/cms-assets/**'],
+      },
     },
 
     // Vitest picks up this config's resolve/aliases. The unit tests colocated

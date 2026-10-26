@@ -2,6 +2,12 @@ import {Base, Modal, type ModalSettings} from '@craftcms/garnish';
 
 declare const Craft: any;
 
+/** A `craft-radio-group`; its `modelValue` is the checked radio's value. */
+type ChoiceGroup = HTMLElement & {modelValue: unknown};
+
+/** A `craft-checkbox`. */
+type ApplyToRemainingCheckbox = HTMLElement & {checked: boolean; label: string};
+
 interface PromptChoice {
   value: string;
   title: string;
@@ -43,10 +49,8 @@ export class PromptHandler extends Base {
   #modalContainer: HTMLElement | null = null;
   #prompt: HTMLElement | null = null;
   #promptMessage: HTMLElement | null = null;
-  #promptChoices: HTMLElement | null = null;
-  #applyToRemainingContainer: HTMLElement | null = null;
-  #applyToRemainingCheckbox: HTMLInputElement | null = null;
-  #applyToRemainingLabel: HTMLElement | null = null;
+  #promptChoices: ChoiceGroup | null = null;
+  #applyToRemainingCheckbox: ApplyToRemainingCheckbox | null = null;
   #promptButtons: HTMLElement | null = null;
 
   #prompts: PromptItem[] = [];
@@ -162,25 +166,27 @@ export class PromptHandler extends Base {
     this.#prompt.className = 'body';
     this.#modalContainer.append(this.#prompt);
 
-    this.#promptMessage = document.createElement('p');
-    this.#promptMessage.className = 'prompt-msg';
-    this.#prompt.append(this.#promptMessage);
-
-    this.#promptChoices = document.createElement('div');
+    // The choices are a radio group named by the prompt's message, and the
+    // batch option a checkbox: `craft-*` controls, which are styled on every
+    // control panel page, unlike native inputs.
+    this.#promptChoices = document.createElement(
+      'craft-radio-group'
+    ) as ChoiceGroup;
     this.#promptChoices.className = 'options';
+    this.#promptChoices.setAttribute('name', 'promptAction');
     this.#prompt.append(this.#promptChoices);
 
-    this.#applyToRemainingContainer = document.createElement('label');
-    this.#applyToRemainingContainer.className = 'assets-applytoremaining';
-    this.#applyToRemainingContainer.style.display = 'none';
-    this.#prompt.append(this.#applyToRemainingContainer);
+    this.#promptMessage = document.createElement('div');
+    this.#promptMessage.className = 'prompt-msg';
+    this.#promptMessage.slot = 'label';
+    this.#promptChoices.append(this.#promptMessage);
 
-    this.#applyToRemainingCheckbox = document.createElement('input');
-    this.#applyToRemainingCheckbox.type = 'checkbox';
-    this.#applyToRemainingContainer.append(this.#applyToRemainingCheckbox);
-
-    this.#applyToRemainingLabel = document.createElement('span');
-    this.#applyToRemainingContainer.append(this.#applyToRemainingLabel);
+    this.#applyToRemainingCheckbox = document.createElement(
+      'craft-checkbox'
+    ) as ApplyToRemainingCheckbox;
+    this.#applyToRemainingCheckbox.className = 'assets-applytoremaining';
+    this.#applyToRemainingCheckbox.hidden = true;
+    this.#prompt.append(this.#applyToRemainingCheckbox);
 
     this.#promptButtons = document.createElement('div');
     this.#promptButtons.className = 'buttons right';
@@ -192,56 +198,54 @@ export class PromptHandler extends Base {
     // legacy `.html()`).
     this.#promptMessage.innerHTML = message;
 
-    const cancelBtn = document.createElement('button');
-    cancelBtn.type = 'button';
-    cancelBtn.className = 'btn';
+    const cancelBtn = document.createElement('craft-button');
+    cancelBtn.setAttribute('type', 'button');
     cancelBtn.textContent = Craft.t('app', 'Cancel');
     this.#promptButtons.append(cancelBtn);
 
-    const submitBtn = document.createElement('button');
-    submitBtn.type = 'submit';
-    submitBtn.className = 'btn submit disabled';
+    const submitBtn = document.createElement('craft-button') as HTMLElement & {
+      disabled: boolean;
+    };
+    submitBtn.setAttribute('type', 'button');
+    submitBtn.setAttribute('variant', 'primary');
     submitBtn.textContent = Craft.t('app', 'OK');
+    submitBtn.disabled = true;
     this.#promptButtons.append(submitBtn);
 
     for (const choice of choices) {
-      const wrapper = document.createElement('div');
-      const label = document.createElement('label');
-      const input = document.createElement('input');
-      input.type = 'radio';
-      input.name = 'promptAction';
-      input.value = choice.value;
-      label.append(input, ` ${choice.title}`);
-      wrapper.append(label);
-      this.#promptChoices.append(wrapper);
-
-      this.addListener(input, 'click', () => {
-        submitBtn.classList.remove('disabled');
-      });
+      const radio = document.createElement('craft-radio') as HTMLElement & {
+        label: string;
+        choiceValue: string;
+      };
+      radio.label = choice.title;
+      radio.choiceValue = choice.value;
+      this.#promptChoices.append(radio);
     }
 
-    this.addListener(submitBtn, 'activate', () => {
-      const checked = this.#modalContainer?.querySelector<HTMLInputElement>(
-        'input[name=promptAction]:checked'
-      );
-      const choice = checked?.value ?? '';
+    const choiceGroup = this.#promptChoices;
+    this.addListener(choiceGroup, 'model-value-changed', () => {
+      submitBtn.disabled = !choiceGroup.modelValue;
+    });
+
+    this.addListener(submitBtn, 'click', () => {
+      const choice = String(choiceGroup.modelValue ?? '');
       const applyToRemaining = !!this.#applyToRemainingCheckbox?.checked;
 
       this._selectPromptChoice(choice, applyToRemaining);
     });
 
-    this.addListener(cancelBtn, 'activate', () => {
+    this.addListener(cancelBtn, 'click', () => {
       const applyToRemaining = !!this.#applyToRemainingCheckbox?.checked;
       this._selectPromptChoice('cancel', applyToRemaining);
     });
 
     if (itemsToGo) {
-      this.#applyToRemainingContainer.style.display = '';
-      this.#applyToRemainingLabel.textContent =
-        ' ' +
-        Craft.t('app', 'Apply this to the {number} remaining conflicts?', {
-          number: itemsToGo,
-        });
+      this.#applyToRemainingCheckbox.hidden = false;
+      this.#applyToRemainingCheckbox.label = Craft.t(
+        'app',
+        'Apply this to the {number} remaining conflicts?',
+        {number: itemsToGo}
+      );
     }
 
     this.modal.show();

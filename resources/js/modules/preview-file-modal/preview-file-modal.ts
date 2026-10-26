@@ -13,6 +13,7 @@ import {
   getFocusedElement,
   bod,
 } from '@craftcms/garnish';
+import {highlightCodeBlocks} from '@/common/utils/highlight-code';
 
 declare const Craft: any;
 declare const $: any;
@@ -295,6 +296,7 @@ export class PreviewFileModal extends Modal {
         this.#$container.removeClass(EMPTY_CLASSES);
         this.#$container.attr('data-asset-id', this.assetId);
         this.#$container.append(response.data.previewHtml);
+        highlightCodeBlocks(this.#$container[0]);
         this._addBumperButtons();
         this._addLiveRegion();
         this._addModalName();

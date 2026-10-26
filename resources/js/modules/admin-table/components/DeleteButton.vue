@@ -78,6 +78,7 @@
       :aria-description="disabledReason || undefined"
       size="small"
       variant="danger-plain"
+      flush="inline-end"
       v-bind="$attrs"
     >
       <craft-icon :name="icon" :label="label"></craft-icon>

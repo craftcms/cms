@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Enums;
 
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Mcp\Capabilities\AssetTransformers;
 use CraftCms\Cms\Mcp\Capabilities\EntryTypes;
 use CraftCms\Cms\Mcp\Capabilities\Fields;
 use CraftCms\Cms\Mcp\Capabilities\ImageTransforms;
@@ -13,6 +15,7 @@ use CraftCms\Cms\Mcp\Capabilities\SiteGroups;
 use CraftCms\Cms\Mcp\Capabilities\Sites;
 use CraftCms\Cms\Mcp\Capabilities\UserGroups;
 use CraftCms\Cms\Mcp\Capabilities\Volumes;
+use CraftCms\Cms\Mcp\Capabilities\Workflows;
 
 /**
  * @since 6.0.0
@@ -28,6 +31,25 @@ enum ConfigurationType: string
     case UserGroups = 'user-groups';
     case ImageTransforms = 'image-transforms';
     case Routes = 'routes';
+    case AssetTransformers = 'asset-transformers';
+    case Workflows = 'workflows';
+
+    /** The Craft edition the type needs, if any. */
+    public function requiredEdition(): ?Edition
+    {
+        return match ($this) {
+            self::Workflows => Edition::Pro,
+            default => null,
+        };
+    }
+
+    /** Whether the type is available in the current Craft edition. */
+    public function available(): bool
+    {
+        $edition = $this->requiredEdition();
+
+        return $edition === null || Edition::isAtLeast($edition);
+    }
 
     /** @return class-string */
     public function capability(): string
@@ -42,6 +64,8 @@ enum ConfigurationType: string
             self::UserGroups => UserGroups::class,
             self::ImageTransforms => ImageTransforms::class,
             self::Routes => Routes::class,
+            self::AssetTransformers => AssetTransformers::class,
+            self::Workflows => Workflows::class,
         };
     }
 
@@ -56,6 +80,8 @@ enum ConfigurationType: string
             self::SiteGroups, self::UserGroups => 'group',
             self::ImageTransforms => 'transform',
             self::Routes => 'route',
+            self::AssetTransformers => 'transformer',
+            self::Workflows => 'workflow',
         };
     }
 
@@ -65,6 +91,7 @@ enum ConfigurationType: string
             self::EntryTypes => 'entryTypes',
             self::SiteGroups, self::UserGroups => 'groups',
             self::ImageTransforms => 'transforms',
+            self::AssetTransformers => 'transformers',
             default => $this->value,
         };
     }
@@ -74,9 +101,11 @@ enum ConfigurationType: string
     {
         return match ($this) {
             self::EntryTypes, self::Volumes => ['On update, an omitted fieldLayout retains the current layout; null clears it.'],
-            self::Fields => ['Creating a field requires a valid, selectable field class. Updates cannot change the field class. Supplied settings merge with existing settings.'],
+            self::Fields => ['Creating a field requires a valid, selectable field class from component-types.list with kind: field; component-types.get describes its settings. Updates cannot change the field class. Supplied settings merge with existing settings.'],
             self::UserGroups => ['Assign permissions separately with user-permissions.group.set, which replaces the complete permission list.'],
             self::Routes => ['Lookup accepts UID or computed URI. uriParts contains literal strings or [name, regex] tuples. Lists routes available to the current site.'],
+            self::AssetTransformers => ['Lookup accepts UID or handle. component-types.list and component-types.get with kind: asset-transform-driver describe drivers and their settings; settings the driver doesn’t define are dropped. Changing the driver clears settings that aren’t supplied.'],
+            self::Workflows => ['Lookup accepts ID or UID. Workflows require Craft Pro. Assign workflows to sections through section settings. component-types.list and component-types.get with kind: workflow-stage describe stage types and their settings. On update, supplied stages replace the current stages.'],
             default => [],
         };
     }
@@ -94,6 +123,8 @@ enum ConfigurationType: string
             self::UserGroups => 'Removes the user group and its membership and permission assignments.',
             self::ImageTransforms => 'Removes the named image transform definition.',
             self::Routes => 'Removes the route from project config.',
+            self::AssetTransformers => 'Removes the asset transformer from project config. Refuses to delete the Craft transformer, the default transformer, or one assigned to a volume.',
+            self::Workflows => 'Removes the workflow from project config. Refuses to delete a workflow that is assigned to a section.',
         }, 'No configuration undo tool is provided.'];
     }
 }

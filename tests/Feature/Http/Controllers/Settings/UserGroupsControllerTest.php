@@ -196,6 +196,18 @@ test('store validates on unique handle and name', function () {
     expect(UserPermissions::getPermissionsByGroupId($newGroup->id)->all())->toEqualCanonicalizing(['viewUsers', 'editUsers', "assignUserGroup:$newGroup->uid"]);
 });
 
+it('lands on a new group when saved without a redirect', function () {
+    Edition::set(Edition::Pro);
+
+    $response = post(action([UserGroupsController::class, 'store']), [
+        'name' => 'A new group',
+        'handle' => 'anewgroup',
+        'permissions' => ['accessCp'],
+    ])->assertSessionHasNoErrors();
+
+    $response->assertRedirect(action([UserGroupsController::class, 'edit'], UserGroup::where('handle', 'anewgroup')->value('id')));
+});
+
 it('can delete a group', function (bool $json) {
     Edition::set(Edition::Pro);
 

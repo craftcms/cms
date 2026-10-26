@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Models\Element;
@@ -18,12 +19,14 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Tests\TestClasses\Release\DraftableReleaseElement;
 use CraftCms\Cms\Tests\TestClasses\Release\ReleasePermissions;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
@@ -59,10 +62,12 @@ it('is a Craft Pro feature', function () {
         ->and(app(UserPermissions::class)->getAllPermissions()->pluck('handle'))->not->toContain('releases');
 });
 
-it('stores a release with its target time in the submitted timezone', function () {
+it('stores a release with its target time in the user’s time zone', function () {
+    Cms::config()->timezone = 'Asia/Tokyo';
+
     postJson(route('craft.cp.releases.store'), [
         'name' => '  October launch  ',
-        'targetDate' => ['date' => '2026-10-16', 'time' => '06:30', 'timezone' => 'Asia/Tokyo'],
+        'targetDate' => ['date' => '2026-10-16', 'time' => '06:30', 'timezone' => 'America/New_York'],
     ])->assertOk();
 
     $release = Release::query()->where('name', 'October launch')->sole();
@@ -105,7 +110,8 @@ it('returns to the releases index after saving, unless continuing to edit', func
     ])->assertJsonPath('redirect', route('craft.cp.releases.show', $release));
 });
 
-it('schedules a release at the submitted local time and requires a time', function () {
+it('schedules a release at the submitted time in the user’s time zone and requires a time', function () {
+    Cms::config()->timezone = 'America/New_York';
     Date::setTestNow('2026-10-01 12:00:00');
 
     $release = $this->releases->create('Scheduled launch', Date::parse('2026-10-02 08:00:00', Cms::timezone()), $this->actor);
@@ -130,7 +136,7 @@ it('schedules a release at the submitted local time and requires a time', functi
     ])->assertJsonValidationErrors(['publishAt.date' => 'The scheduled publication time must be in the future.']);
 
     $publishAt['time'] = '09:00';
-    $publishAt['timezone'] = 'America/New_York';
+    $publishAt['timezone'] = 'Asia/Tokyo';
     postJson(route('craft.cp.releases.schedule', $release), ['publishAt' => $publishAt])->assertOk();
 
     $release->refresh();
@@ -295,6 +301,8 @@ it('attaches and edits the same draft, and explicitly removes it from the releas
     $page = get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
         ->assertOk()
         ->assertJsonPath('props.readiness.ready', true);
+    expect($page->json('props.ui.nodes.0.props.rows.0.title.html'))
+        ->toContain(sprintf('href="%s"', Html::encode($draft->getCpEditUrl())));
     $removeUrl = $page->json('props.ui.nodes.0.props.rows.0._deleteUrl');
 
     deleteJson($removeUrl)->assertOk();
@@ -352,10 +360,14 @@ function releaseControllerDraft(User $actor): EntryElement
     return $draft;
 }
 
-it('shows an entry’s publication warnings in its release row', function () {
+it('shows an entry’s publication warnings in its release row, in an Issues column only then', function () {
     $draft = releaseControllerDraft($this->actor);
     $release = $this->releases->create('Warned release', null, $this->actor);
     $this->releases->attach($release, $draft, $this->actor);
+    $columns = fn () => get(route('craft.cp.releases.show', $release), headers: ['X-Inertia' => 'true'])
+        ->json('props.ui.nodes.0.props.columns.*.key');
+
+    expect($columns())->toBe(['title', 'status']);
 
     Date::setTestNow(now()->addMinute());
     $canonical = $draft->getCanonical();
@@ -367,6 +379,8 @@ it('shows an entry’s publication warnings in its release row', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes.0.props.rows.0.status.html', fn (string $html) => str_contains($html, 'Ready with warnings'))
             ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'Live changes will be merged into this draft before publication.')));
+
+    expect($columns())->toBe(['title', 'status', 'issues']);
 });
 
 it('offers adding to a release only while editing a draft', function (Closure $editedElement, bool $canAddToRelease) {
@@ -404,9 +418,8 @@ it('attaches a non-entry draft through HTTP and displays its release item', func
     get(route('craft.cp.releases.show', $release))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('ui.nodes.0.props.rows.0.title.label', 'Prepared content')
-            ->where('ui.nodes.0.props.rows.0.title.url', $draft->getCpEditUrl())
-            ->where('ui.nodes.0.props.rows.0.draftName', 'Prepared content'));
+            ->where('ui.nodes.0.props.rows.0.title.html', fn (string $html) => str_contains($html, 'appearance="plain"')
+                && str_contains($html, '<span class="context-label">Prepared content</span>')));
 });
 
 it('shows release metadata without content links or removal actions', function () {
@@ -425,15 +438,40 @@ it('shows release metadata without content links or removal actions', function (
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('release.canPublish', true)
-            ->where('ui.nodes.0.props.rows.0.title.label', 'Controller change')
-            ->where('ui.nodes.0.props.rows.0.title.url', null)
-            ->where('ui.nodes.0.props.rows.0.draftName', 'Controller draft')
+            ->where('ui.nodes.0.props.rows.0.title.html', fn (string $html) => str_contains($html, 'Controller change')
+                && str_contains($html, '<span class="context-label">Controller draft</span>')
+                && ! str_contains($html, '<a '))
             ->where('ui.nodes.0.props.rows.0._deleteUrl', null)
             ->where('ui.nodes.0.props.rows.0._deletable', false));
 
     deleteJson(route('craft.cp.releases.detach', [$release, $draft->draftId]))->assertForbidden();
 
     expect($this->releases->releaseForDraft($draft)?->id)->toBe($release->id);
+});
+
+it('lists a draft whose section was deleted and lets release managers remove it', function () {
+    $draft = releaseControllerDraft($this->actor);
+    $release = $this->releases->create('Deleted section', null, $this->actor);
+    $this->releases->attach($release, $draft, $this->actor);
+
+    // What deleting the section leaves behind: its entries and the section
+    // soft-deleted, and drafts of those entries untouched.
+    DB::table(Table::ELEMENTS)->where('id', $draft->getCanonicalId())->softDelete();
+    DB::table(Table::SECTIONS)->softDelete($draft->sectionId);
+    Sections::refreshSections();
+
+    get(route('craft.cp.releases.show', $release))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('ui.nodes.0.props.rows.0.title.html', 'Controller change<span class="context-label">Controller draft</span>')
+            ->where('ui.nodes.0.props.rows.0.issues.html', fn (string $html) => str_contains($html, 'The entry has been deleted.'))
+            ->where('ui.nodes.0.props.rows.0._deletable', true));
+
+    actingAs(UserModel::factory()->withPermissions(['accessCp', 'manageReleases'])->createElement());
+
+    deleteJson(route('craft.cp.releases.detach', [$release, $draft->draftId]))->assertOk();
+
+    expect($this->releases->releaseForDraft($draft))->toBeNull();
 });
 
 it('deletes a mutable release through its advertised action without deleting its draft', function (string $source, ReleaseStatus $status) {

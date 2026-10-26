@@ -60,6 +60,12 @@
     index.openFolder(folderId);
   }
 
+  function onIncludeSubfoldersChange(event: Event) {
+    index.setIncludeSubfolders(
+      Boolean((event.target as {checked?: boolean} | null)?.checked)
+    );
+  }
+
   // Reached only by a double-click the item behavior let through, after it
   // selected the double-clicked item; folders open instead.
   function onDblClick() {
@@ -126,6 +132,15 @@
         @site-change="index.changeSite"
         @dblclick="onDblClick"
       >
+        <template v-if="index.canSearchSubfolders.value" #search-options>
+          <craft-checkbox
+            class="mt-md"
+            .checked="index.includeSubfolders.value"
+            @model-value-changed="onIncludeSubfoldersChange"
+          >
+            <label slot="label">{{ t('Search in subfolders') }}</label>
+          </craft-checkbox>
+        </template>
         <template v-if="showFolderBreadcrumbs" #navbar>
           <div
             class="folder-breadcrumbs -mx-(--cp-container-padding) px-(--cp-container-padding) py-sm border-b border-b-(--c-color-neutral-border-quiet)"

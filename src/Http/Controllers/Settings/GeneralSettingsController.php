@@ -21,13 +21,10 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Ui\UiResolver;
+use CraftCms\Cms\Update\Maintenance;
 use CraftCms\Cms\Validation\Rules\EnvValueRule;
 use CraftCms\Cms\Validation\Rules\TimezoneRule;
-use Illuminate\Contracts\Foundation\MaintenanceMode;
-use Illuminate\Foundation\Events\MaintenanceModeDisabled;
-use Illuminate\Foundation\Events\MaintenanceModeEnabled;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Event;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -43,7 +40,7 @@ readonly class GeneralSettingsController
         private ProjectConfig $projectConfig,
         private GeneralConfig $generalConfig,
         private UiResolver $uiResolver,
-        private MaintenanceMode $maintenanceMode,
+        private Maintenance $maintenance,
     ) {}
 
     public function index(): CpScreenResponse
@@ -89,47 +86,12 @@ readonly class GeneralSettingsController
         }
 
         $retryDuration = $systemSettings['retryDuration'] ?? null;
-        $this->setMaintenanceMode(
+        $this->maintenance->set(
             $request->boolean('maintenanceMode'),
             $retryDuration === null ? null : (int) $retryDuration,
         );
 
         return $this->asSuccess(t('System settings saved.'));
-    }
-
-    private function setMaintenanceMode(bool $enabled, ?int $retryDuration): void
-    {
-        $active = $this->maintenanceMode->active();
-
-        if ($enabled) {
-            $currentPayload = $active ? $this->maintenanceMode->data() : [];
-            $payload = $currentPayload;
-
-            if ($retryDuration === null) {
-                unset($payload['retry']);
-            } else {
-                $payload['retry'] = $retryDuration;
-            }
-
-            if ($active && $payload === $currentPayload) {
-                return;
-            }
-
-            $this->maintenanceMode->activate($payload);
-
-            if (! $active) {
-                Event::dispatch(new MaintenanceModeEnabled);
-            }
-
-            return;
-        }
-
-        if (! $active) {
-            return;
-        }
-
-        $this->maintenanceMode->deactivate();
-        Event::dispatch(new MaintenanceModeDisabled);
     }
 
     private function systemSettingsUi(): UiPayload
@@ -170,7 +132,7 @@ readonly class GeneralSettingsController
         return $this->uiResolver->resolve($ui, new UiContext(
             values: [
                 ...$system,
-                'maintenanceMode' => $this->maintenanceMode->active(),
+                'maintenanceMode' => $this->maintenance->isEnabled(),
             ],
         ));
     }

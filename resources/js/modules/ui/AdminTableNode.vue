@@ -361,6 +361,7 @@
           enableSorting: !!column.sortable,
           meta: {
             trackSize: column.width,
+            columnClass: column.thin ? 'thin' : undefined,
             headerSrOnly: column.headerSrOnly,
             wrap: column.wrap,
           },
@@ -424,7 +425,7 @@
 
             return actions;
           },
-          {meta: {trackSize: '60px'}}
+          {meta: {trackSize: '60px', columnClass: 'thin'}}
         )
       );
     }

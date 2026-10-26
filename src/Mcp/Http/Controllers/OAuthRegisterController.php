@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Http\Controllers;
 
-use CraftCms\Cms\Mcp\OAuth\Metadata;
+use CraftCms\Cms\Mcp\Enums\McpScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -70,7 +70,7 @@ readonly class OAuthRegisterController
                 confidential: false,
                 enableDeviceFlow: false,
             );
-            $this->grantMcpScope($client);
+            $this->grantMcpScopes($client);
         } catch (Throwable $throwable) {
             report($throwable);
 
@@ -85,20 +85,20 @@ readonly class OAuthRegisterController
             'grant_types' => $client->getAttribute('grant_types'),
             'response_types' => ['code'],
             'redirect_uris' => $client->getAttribute('redirect_uris'),
-            'scope' => Metadata::SCOPE,
+            'scope' => implode(' ', McpScope::values()),
             'token_endpoint_auth_method' => 'none',
         ], 201);
     }
 
-    private function grantMcpScope(Model $client): void
+    private function grantMcpScopes(Model $client): void
     {
         $scopes = $client->refresh()->getAttribute('scopes');
 
-        if (! is_array($scopes) || in_array(Metadata::SCOPE, $scopes, true)) {
+        if (! is_array($scopes)) {
             return;
         }
 
-        $client->forceFill(['scopes' => [...$scopes, Metadata::SCOPE]])->save();
+        $client->forceFill(['scopes' => array_values(array_unique([...$scopes, ...McpScope::values()]))])->save();
     }
 
     /** @param array<string, mixed> $validated */

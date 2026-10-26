@@ -209,14 +209,15 @@ it('404s when a site does not exist', function () {
 it('can save a site', function () {
     expect(Site::count())->toBe(1);
 
-    post(action([SitesController::class, 'store']), [
+    $response = post(action([SitesController::class, 'store']), [
         'name' => 'A new site',
         'handle' => 'a_new_site',
         'language' => 'en-US',
         'group' => SiteGroup::first()->id,
-    ])->assertRedirect(route('craft.cp.settings.sites.index'));
+    ]);
 
     expect(Site::count())->toBe(2);
+    $response->assertRedirect(route('craft.cp.settings.sites.edit', ['site' => Site::where('handle', 'a_new_site')->value('id')]));
 });
 
 it('uses the hidden site ID to update the existing site', function () {

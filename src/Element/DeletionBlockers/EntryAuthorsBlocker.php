@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\DeletionBlockers;
 
-use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -52,21 +51,9 @@ class EntryAuthorsBlocker extends BaseDeletionBlocker
 
     public function getDetails(): ?string
     {
-        return app(ElementIndexHtml::class)->html(Entry::class, [
-            'context' => 'pane',
-            'defaultTableColumns' => [
-                ['authors'],
-                ['section'],
-            ],
-            'defaultSort' => ['section', 'asc'],
-            'sources' => false,
-            'jsSettings' => [
-                'criteria' => [
-                    'authorId' => $this->elements->ids()->all(),
-                    'status' => null,
-                ],
-            ],
-        ]);
+        return $this->elementChipsHtml(Entry::find()
+            ->authorId($this->elements->ids()->all())
+            ->status(null));
     }
 
     public function getActions(): array

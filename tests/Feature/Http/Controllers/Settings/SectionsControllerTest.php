@@ -21,11 +21,13 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia;
@@ -473,21 +475,31 @@ it('can save a section', function () {
         'uid' => Str::uuid7()->toString(),
     ]);
 
-    post(action([SectionsController::class, 'store']), validSectionData([
+    $response = post(action([SectionsController::class, 'store']), validSectionData([
         'workflowId' => $workflow->id,
     ]))
-        ->assertSessionDoesntHaveErrors()
-        ->assertRedirectBack();
+        ->assertSessionDoesntHaveErrors();
 
     expect(Section::count())->toBe(2);
     /** @var Section $section */
     $section = $this->sections->getSectionByHandle('a_new_section');
+    // Saved without a redirect (Save and continue editing), a new section
+    // lands on its own edit page rather than back on the blank form.
+    $response->assertRedirect(route('craft.cp.settings.sections.edit', ['section' => $section->id]));
     expect($section->name)->toBe('A new section');
     expect($section->type)->toBe(SectionType::Single);
     expect($section->workflowId)->toBe($workflow->id);
     expect(ProjectConfig::get(ProjectConfigPaths::PATH_SECTIONS.'.'.$section->uid.'.workflow'))->toBe($workflow->uid);
     expect(Arr::first($section->getSiteSettings()))->toBeInstanceOf(SectionSiteSettingsData::class);
     expect(Arr::first($section->getSiteSettings())->template)->toBe('_foo');
+});
+
+it('follows a posted redirect after creating a section', function () {
+    post(action([SectionsController::class, 'store']), validSectionData([
+        'redirect' => Crypt::encrypt('settings/sections'),
+    ]))
+        ->assertSessionDoesntHaveErrors()
+        ->assertRedirect(Url::cpUrl('settings/sections'));
 });
 
 test('values are validated', function (string $attribute, string $value = '', ?string $errorAttribute = null) {

@@ -111,6 +111,12 @@ class Markdown extends Control
     }
 
     #[\Override]
+    public function inputSchema(): array
+    {
+        return Arr::whereNotNull(['type' => 'string', 'description' => 'Markdown.', 'maxLength' => $this->maxLength]);
+    }
+
+    #[\Override]
     public function props(mixed $value = null): array
     {
         return Arr::whereNotNull([

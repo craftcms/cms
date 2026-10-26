@@ -602,57 +602,52 @@
     </template>
   </LivePreview>
 
-  <LayoutSlot
+  <ElementDetailsPanels
     v-if="hasDetails || $slots['details-header']"
-    name="content-details"
+    ref="detailsPanels"
+    :payload="payload"
+    :activity-timeline-version="activityTimelineVersion"
+    :update-payload="updatePayload"
+    :submit-action="submitAction"
+    :sidebar-tabs="sidebarTabs"
   >
-    <ElementDetailsPanels
-      ref="detailsPanels"
-      :payload="payload"
-      :activity-timeline-version="activityTimelineVersion"
-      :update-payload="updatePayload"
-      :submit-action="submitAction"
-      :sync-location-hash="!isSlideout"
-      :sidebar-tabs="sidebarTabs"
-    >
-      <template #sidebar-tab="{tab}">
-        <div
-          :ref="sidebarTabOutletRef(tab.uid)"
-          class="py-lg px-(--cp-container-padding)"
-        ></div>
-      </template>
-      <template #info>
-        <!-- Anything the element type shows above its meta fields, e.g. an
+    <template #sidebar-tab="{tab}">
+      <div
+        :ref="sidebarTabOutletRef(tab.uid)"
+        class="py-lg px-(--cp-container-padding)"
+      ></div>
+    </template>
+    <template #info>
+      <!-- Anything the element type shows above its meta fields, e.g. an
         asset's file preview. -->
-        <slot name="details-header" :payload="payload" />
+      <slot name="details-header" :payload="payload" />
 
-        <MetadataDetailsContent :html="payload.metadataHtml">
-          <!-- Only when there's something to show above the metadata: a form
+      <MetadataDetailsContent :html="payload.metadataHtml">
+        <!-- Only when there's something to show above the metadata: a form
           wrapper has nothing of its own unless it says so through showDetails. -->
-          <template
-            v-if="sidebarPayload || (formWrapper && showDetails)"
-            #default
+        <template
+          v-if="sidebarPayload || (formWrapper && showDetails)"
+          #default
+        >
+          <component
+            :is="formWrapper ?? 'div'"
+            v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
           >
-            <component
-              :is="formWrapper ?? 'div'"
-              v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
-            >
-              <craft-field-group v-if="sidebarPayload">
-                <UiRenderer
-                  ref="sidebarRenderer"
-                  :payload="sidebarPayload"
-                  :errors="sidebarErrors"
-                  :modified="autosave.modified.value"
-                  :disabled="editorLocked"
-                  @update:mutation="onSidebarMutation"
-                />
-              </craft-field-group>
-            </component>
-          </template>
-        </MetadataDetailsContent>
-      </template>
-    </ElementDetailsPanels>
-  </LayoutSlot>
+            <craft-field-group v-if="sidebarPayload">
+              <UiRenderer
+                ref="sidebarRenderer"
+                :payload="sidebarPayload"
+                :errors="sidebarErrors"
+                :modified="autosave.modified.value"
+                :disabled="editorLocked"
+                @update:mutation="onSidebarMutation"
+              />
+            </craft-field-group>
+          </component>
+        </template>
+      </MetadataDetailsContent>
+    </template>
+  </ElementDetailsPanels>
 </template>
 
 <style scoped lang="scss">

@@ -158,6 +158,12 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
    */
   #sortManagedExternally = false;
 
+  /**
+   * The chip whose Replace action opened the Choose menu, which the option
+   * picked next takes the place of. Cleared when the menu closes.
+   */
+  #replacing: HTMLElement | null = null;
+
   /** jQuery-wrapped Create button the activate handler is bound to. */
   #$createBtn: any = null;
 
@@ -360,6 +366,20 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       menu.addEventListener('opened-changed', restoreOnClose);
     }
 
+    // A replace that's abandoned — the menu closed without a pick — mustn't
+    // carry over to the next time the menu opens. The menu closes itself on an
+    // item's click before that click reaches #handleMenuClick, so forget it a
+    // task later, once the pick has been read.
+    const forgetReplacing = (): void => {
+      if (!menu.opened) {
+        menu.removeEventListener('opened-changed', forgetReplacing);
+        setTimeout(() => {
+          this.#replacing = null;
+        });
+      }
+    };
+    menu.addEventListener('opened-changed', forgetReplacing);
+
     menu.opened = true;
   }
 
@@ -397,7 +417,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   /**
    * Render + append a chip for the given component via the
    * `app/render-components` action (legacy `addComponent`). When the select is
-   * at its `limit`, the last chip is replaced. The response's head/body HTML is
+   * at its `limit`, the last chip is replaced. Pass `replace` — a chip — to
+   * put the new one in its place instead. The response's head/body HTML is
    * appended so any chip-level JS boots. Pass `addToMenu: true` (the create
    * flow) to also add a — hidden — Choose-menu option for the component; see
    * {@link #addMenuOption}.
@@ -405,7 +426,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
   async addComponent(
     type: string,
     id: string | number,
-    addToMenu = false
+    addToMenu = false,
+    replace: HTMLElement | null = null
   ): Promise<void> {
     const {data} = await Craft.sendActionRequest(
       'POST',
@@ -423,8 +445,11 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       }
     );
 
-    // At the limit, adding replaces the last chip (legacy behavior, sans fade).
-    if (!this.#canAddMore()) {
+    const replacedLi = replace?.closest<HTMLElement>('li') ?? null;
+
+    // At the limit, adding replaces the last chip (legacy behavior, sans fade)
+    // — unless it's taking a particular chip's place, which frees one up.
+    if (!replacedLi && !this.#canAddMore()) {
       const chips = this.#chips();
       const last = chips[chips.length - 1];
       if (last) {
@@ -434,7 +459,14 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
     const li = document.createElement('li');
     li.innerHTML = data.components[type][id][0];
-    this.#list?.append(li); // the list observer wires the chip + sorter
+
+    // The list observer wires the chip + sorter either way.
+    if (replacedLi?.isConnected) {
+      replacedLi.before(li);
+      this.removeComponent(replacedLi, false);
+    } else {
+      this.#list?.append(li);
+    }
 
     if (addToMenu) {
       this.#addMenuOption(type, id, li.querySelector('craft-chip'));
@@ -545,9 +577,12 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       return;
     }
 
+    // Read here, since the menu forgets it once it has closed.
+    const replacing = this.#replacing;
+
     // Checkbox options toggle in place, leaving the menu open so several can
     // be picked in one go.
-    if (this.settings.checkboxOptions) {
+    if (this.settings.checkboxOptions && !replacing) {
       if (option.hasAttribute('checked')) {
         // No chip yet means its add is still in flight; ignore the click.
         const chip = this.#chips().find(
@@ -577,7 +612,12 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       this.#menu.opened = false;
     }
 
-    this.addComponent(option.dataset.type ?? '', option.dataset.id ?? '');
+    void this.addComponent(
+      option.dataset.type ?? '',
+      option.dataset.id ?? '',
+      false,
+      replacing
+    );
   };
 
   /**
@@ -610,8 +650,9 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
   /**
    * Default behavior for a chip's `replace-component` event: open the Choose
-   * menu. Skipped when a consumer already took the flow over via
-   * `preventDefault()` — see {@link ReplaceComponentEventDetail}.
+   * menu, so the option picked next takes the chip's place. Skipped when a
+   * consumer already took the flow over via `preventDefault()` — see
+   * {@link ReplaceComponentEventDetail}.
    */
   #handleReplaceComponent = (ev: Event): void => {
     if (ev.defaultPrevented) {
@@ -620,6 +661,9 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
 
     ev.preventDefault();
     this.openChooseMenu();
+    // After opening, which clears it whenever the menu closes.
+    this.#replacing =
+      (ev as CustomEvent<ReplaceComponentEventDetail>).detail?.chip ?? null;
   };
 
   // --- Chips ----------------------------------------------------------------------
@@ -733,8 +777,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
         label: Craft.t('app', 'Replace'),
         callback: () => {
           // Announce rather than act: the owning select's container listener
-          // opens the Choose menu as the default (picking an option adds the
-          // replacement and, at the limit, drops this chip), and wrappers can
+          // opens the Choose menu as the default (picking an option puts the
+          // replacement in this chip's place), and wrappers can
           // take the flow over via `preventDefault()` — see
           // {@link ReplaceComponentEventDetail}. Dispatched from the chip so
           // bubbling finds whichever select currently owns it, with no

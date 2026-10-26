@@ -15,6 +15,7 @@ import {
   type UseDragAndDropOptions,
   useDragAndDrop,
 } from './useDragAndDrop.js';
+import type {ReorderPosition} from '@craftcms/ui';
 
 export type {DragState, DraggedItem, DropState};
 
@@ -41,7 +42,7 @@ export interface UseReorderableItemsReturn {
   /** See `useDragAndDrop()`'s `getDropIntoId`. */
   getDropIntoId: () => string | number | null;
   refreshRegistrations: () => void;
-  getRowPosition: (index: number) => 'first' | 'middle' | 'last';
+  getRowPosition: (index: number) => ReorderPosition;
 }
 
 export function useReorderableItems(
@@ -196,6 +197,10 @@ export function useReorderableItems(
   });
 
   function getRowPosition(index: number) {
+    if (itemRefs.value.size === 1) {
+      return 'only';
+    }
+
     if (index === 0) {
       return 'first';
     }
