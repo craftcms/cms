@@ -263,8 +263,8 @@ class Asset extends Element
     }
 
     /**
-     * @var string|null The start of a text file’s contents, or `null` if it isn’t a text file, hasn’t been read yet,
-     *                  or has nothing to show
+     * @var string|null The start of a text file’s contents, an empty string if it has nothing to show, or `null` if
+     *                  it isn’t a text file or hasn’t been read yet
      *
      * Read from the file whenever a new one is uploaded or indexed, so it isn’t settable from requests. Asset queries
      * don’t load it, so it’s only known once it’s been set; it’s only saved then, too.

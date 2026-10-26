@@ -580,20 +580,20 @@ class AssetsHelper
 
     /**
      * Returns the start of a text file’s contents, up to {@see PREVIEW_TEXT_LENGTH} characters, for
-     * {@see Asset::$previewText}, or `null` if there’s nothing to show.
+     * {@see Asset::$previewText}. It’s an empty string if there’s nothing to show, which still marks the file as read.
      *
      * @param  string  $contents  The start of the file, such as its first {@see PREVIEW_TEXT_SOURCE_LENGTH} bytes.
      *
      * @internal
      */
-    public static function previewText(string $contents): ?string
+    public static function previewText(string $contents): string
     {
         $text = mb_scrub(mb_strcut($contents, 0, self::PREVIEW_TEXT_SOURCE_LENGTH, 'UTF-8'), 'UTF-8');
         $text = str_replace(["\r\n", "\r"], "\n", $text);
         // Control characters other than line breaks and tabs have nothing to show
         $text = (string) preg_replace('/[^\P{C}\n\t]/u', '', $text);
 
-        return trim($text) === '' ? null : rtrim(mb_substr($text, 0, self::PREVIEW_TEXT_LENGTH));
+        return rtrim(mb_substr($text, 0, self::PREVIEW_TEXT_LENGTH));
     }
 
     /**

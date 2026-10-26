@@ -740,7 +740,8 @@ class AssetIndexer
                     File::delete($tempPath);
                 }
             } else {
-                // Like colors, preview text that's been read already isn't read again unless the file has changed
+                // Like colors, preview text that's been read already, even with nothing to show, isn't read again
+                // unless the file has changed
                 if (
                     FileKind::tryFrom($asset->kind ?? '')?->isText() &&
                     ($fileChanged || ! $asset->id || ! DB::table(Table::ASSETS)

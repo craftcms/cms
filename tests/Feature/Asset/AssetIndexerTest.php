@@ -726,7 +726,7 @@ it('stores the preview text of an indexed text file', function () {
     }
 });
 
-it('doesn’t read preview text it has already read until the file changes', function () {
+it('doesn’t read preview text it has already read, even with nothing to show, until the file changes', function (string $stored) {
     $volume = createIndexerTestVolume();
     $volumeData = resolveIndexerVolumeData($volume);
     $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
@@ -742,10 +742,10 @@ it('doesn’t read preview text it has already read until the file changes', fun
 
     try {
         $asset = $index();
-        Asset::whereKey($asset->id)->update(['previewText' => 'Old text.']);
+        Asset::whereKey($asset->id)->update(['previewText' => $stored]);
 
         $index();
-        expect(Asset::findOrFail($asset->id)->previewText)->toBe('Old text.');
+        expect(Asset::findOrFail($asset->id)->previewText)->toBe($stored);
 
         Asset::whereKey($asset->id)->update(['dateModified' => now()->subDay()]);
         $index();
@@ -753,7 +753,10 @@ it('doesn’t read preview text it has already read until the file changes', fun
     } finally {
         $volumeData->sourceDisk()->delete('notes.txt');
     }
-});
+})->with([
+    'found' => ['Old text.'],
+    'nothing to show' => [''],
+]);
 
 describe('remote images', function () {
     beforeEach(function () {

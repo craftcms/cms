@@ -549,8 +549,8 @@ test('preview text is capped, without splitting characters', function () {
         ->and(mb_check_encoding($text, 'UTF-8'))->toBeTrue();
 });
 
-test('there’s no preview text for files with nothing to show', function () {
-    expect(AssetsHelper::previewText(" \n\x07\n"))->toBeNull();
+test('preview text is empty for files with nothing to show', function () {
+    expect(AssetsHelper::previewText(" \n\x07\n"))->toBe('');
 });
 
 test('icon SVGs can show preview text, escaped', function () {
