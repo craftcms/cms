@@ -551,7 +551,8 @@ class Import
     }
 
     /**
-     * Reads raw file data and returns the source column headings (prefixed with a "Please select" placeholder), logging and returning null on error.
+     * Reads raw file data and returns the source column headings (prefixed with a "Please select" placeholder, and
+     * without the reserved keys), logging and returning null on error.
      *
      * @param  string  $filePath  The path to the file to read.
      * @return list<SourceColumn>|null
@@ -576,13 +577,15 @@ class Import
             return null;
         }
 
+        $headings = array_filter($headings, fn (array $heading): bool => ! ImportHelper::isReservedDataPath((string) $heading['value']));
+
         return [
             new SourceColumn(t('Please select'), ''),
             ...array_map(fn (array $heading): SourceColumn => new SourceColumn(
                 (string) $heading['label'],
                 (string) $heading['value'],
                 $heading['data']['hint'] ?? null,
-            ), $headings),
+            ), array_values($headings)),
         ];
     }
 

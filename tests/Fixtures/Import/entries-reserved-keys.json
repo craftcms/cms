@@ -1,0 +1,15 @@
+[
+  {
+    "title": "First entry",
+    "myMatchCriteria": "look-alike",
+    "matchCriteria": {"title": "First entry"},
+    "clearableItems": ["plainText"],
+    "keepMissingNestedElements": {"blocks": true},
+    "blocks": [
+      {
+        "heading": "Intro",
+        "matchCriteria": {"heading": "Intro"}
+      }
+    ]
+  }
+]

@@ -32,6 +32,19 @@ use CraftCms\Cms\Support\Str;
 class ImportHelper
 {
     /**
+     * Keys the incoming data can use to steer the import itself, so they're never offered for mapping.
+     */
+    public const array RESERVED_DATA_KEYS = ['matchCriteria', 'clearableItems', 'keepMissingNestedElements'];
+
+    /**
+     * Returns whether any segment of an incoming data path is a reserved key, e.g. `blocks.matchCriteria.title`.
+     */
+    public static function isReservedDataPath(string $path): bool
+    {
+        return array_intersect(explode('.', $path), self::RESERVED_DATA_KEYS) !== [];
+    }
+
+    /**
      * @var array<string, string> Keys prepped for auto-matching, indexed by the original key.
      */
     private static array $autoMatchingKeys = [];

@@ -71,14 +71,6 @@ abstract class ElementImporter extends BaseImporter
      */
     public protected(set) ?array $fieldSettings = null;
 
-    /**
-     * Keys that are reserved for internal use by the importer.
-     * No fields or attributes should attempt to be match with those values.
-     *
-     * @var array|string[]
-     */
-    private array $reservedKeys = ['matchCriteria', 'clearableItems', 'keepMissingNestedElements'];
-
     #[Override]
     public static function getDefaultTransformer(): ?string
     {
@@ -417,7 +409,7 @@ abstract class ElementImporter extends BaseImporter
         $containerAttributes = collect($containerProps)->map(fn ($prop) => $prop['name'])->all();
 
         // $fieldHandles has custom and native fields - basically all field layout elements
-        $fieldHandles = array_diff(array_keys($item), $attributeHandles, $containerAttributes, $this->reservedKeys);
+        $fieldHandles = array_diff(array_keys($item), $attributeHandles, $containerAttributes, ImportHelper::RESERVED_DATA_KEYS);
 
         $attributes = array_filter($item, fn ($key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_KEY);
         $fields = array_filter($item, fn ($key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_KEY);
