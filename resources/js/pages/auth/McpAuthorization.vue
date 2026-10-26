@@ -5,6 +5,7 @@
 
   const props = defineProps<{
     clientName: string;
+    redirectUri: string | null;
     scopes: Array<{
       id: string;
       description: string;
@@ -56,6 +57,10 @@
             </li>
           </ul>
         </template>
+
+        <p v-if="redirectUri" class="authorization__redirect">
+          {{ t('You will be redirected to {url}', {url: redirectUri}) }}
+        </p>
 
         <p class="authorization__warning">
           {{ t('Only continue if you trust this application.') }}
@@ -109,6 +114,10 @@
     display: grid;
     gap: var(--c-spacing-xs);
     padding-inline-start: var(--c-spacing-xl);
+    overflow-wrap: anywhere;
+  }
+
+  .authorization__redirect {
     overflow-wrap: anywhere;
   }
 
