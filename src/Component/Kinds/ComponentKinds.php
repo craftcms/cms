@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp\ComponentKinds;
+namespace CraftCms\Cms\Component\Kinds;
 
 use CraftCms\Cms\Component\TypeRegistry;
 use Illuminate\Container\Attributes\Singleton;
 use Override;
 
 /**
- * The registry of component kinds that the `component-types.*` MCP tools describe.
+ * The registry of component kinds, which describe extendable component types and their settings.
  *
  * @extends TypeRegistry<ComponentKind>
  *

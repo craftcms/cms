@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp\ComponentKinds;
+namespace CraftCms\Cms\Component\Kinds;
 
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
-use CraftCms\Cms\Mcp\Schema\SettingsSchema;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Json;
-use Mcp\Exception\ToolCallException;
+use CraftCms\Cms\Ui\SettingsSchema;
+use InvalidArgumentException;
 
 /**
  * The rules a condition offers.
@@ -70,7 +70,7 @@ readonly class ConditionRuleKind implements ComponentKind
     private function rules(?string $scope): array
     {
         if ($scope === null || ! is_subclass_of($scope, ConditionInterface::class)) {
-            throw new ToolCallException('Provide scope: the condition class, which settings schemas name.');
+            throw new InvalidArgumentException('Provide scope: the condition class, which settings schemas name.');
         }
 
         $condition = Conditions::createCondition(['class' => $scope, 'forProjectConfig' => true]);

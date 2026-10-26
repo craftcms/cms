@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Component\Kinds\ComponentKinds;
+use CraftCms\Cms\Component\Kinds\TypeRegistryKind;
 use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Element\Conditions\SlugConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
@@ -11,8 +13,6 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Heading;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\FieldLayout\LayoutElements\Users\EmailField;
-use CraftCms\Cms\Mcp\ComponentKinds\ComponentKinds;
-use CraftCms\Cms\Mcp\ComponentKinds\TypeRegistryKind;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Models\UserGroup;

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Capabilities;
 
+use Closure;
+use CraftCms\Cms\Component\Kinds\ComponentKind;
+use CraftCms\Cms\Component\Kinds\ComponentKinds;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
-use CraftCms\Cms\Mcp\ComponentKinds\ComponentKind;
-use CraftCms\Cms\Mcp\ComponentKinds\ComponentKinds;
+use InvalidArgumentException;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
@@ -43,7 +45,7 @@ readonly class ComponentTypes
         return [
             'kind' => $kind,
             'usage' => $componentKind->usage(),
-            'types' => $componentKind->types($this->scope($componentKind, $scope)),
+            'types' => $this->call(fn (): array => $componentKind->types($this->scope($componentKind, $scope))),
         ];
     }
 
@@ -66,7 +68,7 @@ readonly class ComponentTypes
     ): array {
         $componentKind = $this->kind($kind);
         $scope = $this->scope($componentKind, $scope);
-        $listed = array_column($componentKind->types($scope), null, 'type');
+        $listed = array_column($this->call(fn (): array => $componentKind->types($scope)), null, 'type');
 
         if (! isset($listed[$type])) {
             throw new ToolCallException("Unknown $kind type [$type]. Call component-types.list for the available types.");
@@ -76,8 +78,50 @@ readonly class ComponentTypes
             'kind' => $kind,
             ...$listed[$type],
             'usage' => $componentKind->usage(),
-            ...$componentKind->describe($type, $scope),
+            ...$this->withConditionHints($this->call(fn (): array => $componentKind->describe($type, $scope))),
         ];
+    }
+
+    /**
+     * Runs a component kind method, reporting invalid input as a tool error.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    private function call(Closure $callback): mixed
+    {
+        try {
+            return $callback();
+        } catch (InvalidArgumentException $exception) {
+            throw new ToolCallException($exception->getMessage(), previous: $exception);
+        }
+    }
+
+    /**
+     * Points condition settings to the condition-rule kind that lists their rules.
+     *
+     * @param  array<array-key, mixed>  $schema
+     * @return array<array-key, mixed>
+     */
+    private function withConditionHints(array $schema): array
+    {
+        foreach ($schema as $key => $value) {
+            if (is_array($value)) {
+                $schema[$key] = $this->withConditionHints($value);
+            }
+        }
+
+        $conditionClass = $schema['x-craft-condition-class'] ?? null;
+
+        if (is_string($conditionClass)) {
+            unset($schema['x-craft-condition-class']);
+            $hint = "component-types.list with kind: condition-rule and scope: $conditionClass lists the rule types it accepts.";
+            $schema['description'] = isset($schema['description']) ? "{$schema['description']} $hint" : $hint;
+        }
+
+        return $schema;
     }
 
     private function kind(string $handle): ComponentKind

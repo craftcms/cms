@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Mcp\Schema\SettingsSchema;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Hidden;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
@@ -12,6 +11,7 @@ use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\Scope;
+use CraftCms\Cms\Ui\SettingsSchema;
 use CraftCms\Cms\Ui\Ui;
 
 it('describes settings UIs as JSON Schema', function () {

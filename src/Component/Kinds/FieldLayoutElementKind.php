@@ -2,19 +2,20 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp\ComponentKinds;
+namespace CraftCms\Cms\Component\Kinds;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
-use CraftCms\Cms\Mcp\ElementQueryFactory;
-use CraftCms\Cms\Mcp\Schema\SettingsSchema;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Enums\FieldWidth;
-use Mcp\Exception\ToolCallException;
+use CraftCms\Cms\Ui\SettingsSchema;
+use InvalidArgumentException;
 
 /**
  * The native fields, custom fields, and UI elements an element type’s field layouts accept.
@@ -25,7 +26,7 @@ readonly class FieldLayoutElementKind implements ComponentKind
 {
     public function __construct(
         private Fields $fields,
-        private ElementQueryFactory $elementQueries,
+        private Elements $elements,
         private SettingsSchema $settingsSchema,
     ) {}
 
@@ -75,10 +76,10 @@ readonly class FieldLayoutElementKind implements ComponentKind
     private function elements(?string $scope): array
     {
         if ($scope === null) {
-            throw new ToolCallException('Provide scope: the element type whose field layouts the elements go in, such as entries.');
+            throw new InvalidArgumentException('Provide scope: the element type whose field layouts the elements go in, such as entries.');
         }
 
-        $layout = $this->fields->createLayout(['type' => $this->elementQueries->resolve($scope)]);
+        $layout = $this->fields->createLayout(['type' => $this->elementType($scope)]);
         $customField = new CustomField($this->fields->createField(['type' => PlainText::class, 'uid' => Str::uuid()->toString()]));
         $elements = [...$layout->getAvailableNativeFields(), $customField, ...$layout->getAvailableUiElements()];
         $byClass = collect($elements)->groupBy(static fn (FieldLayoutElement $element): string => $element::class);
@@ -150,7 +151,7 @@ readonly class FieldLayoutElementKind implements ComponentKind
         if ($element instanceof BaseNativeField) {
             $config['attribute'] = $element->attribute();
         } elseif ($element instanceof CustomField) {
-            $config['fieldUid'] = '<a field UID from configuration.list with type: fields>';
+            $config['fieldUid'] = '<the field’s UID>';
         } elseif (str_contains($id, '(')) {
             $config = [...$config, ...$this->distinctValuesFromId($element, $id)];
         }
@@ -190,5 +191,24 @@ readonly class FieldLayoutElementKind implements ComponentKind
         }
 
         return [...$schema, 'properties' => $properties ?: (object) []];
+    }
+
+    /**
+     * Resolves an element type from its class, reference handle, or plural reference handle.
+     *
+     * @return class-string<ElementInterface>
+     */
+    private function elementType(string $type): string
+    {
+        $types = $this->elements->getAllElementTypes();
+        $elementType = in_array($type, $types, true)
+            ? $type
+            : ($this->elements->getElementTypeByRefHandle($type) ?? $this->elements->getElementTypeByRefHandle(Str::singular($type)));
+
+        if ($elementType === null || ! in_array($elementType, $types, true)) {
+            throw new InvalidArgumentException("Unsupported element type [$type].");
+        }
+
+        return $elementType;
     }
 }

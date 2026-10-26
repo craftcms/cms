@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp\ComponentKinds;
+namespace CraftCms\Cms\Component\Kinds;
 
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\FieldTypes;
-use CraftCms\Cms\Mcp\Schema\SettingsSchema;
+use CraftCms\Cms\Ui\SettingsSchema;
 use Override;
 
 /**

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp\ComponentKinds;
+namespace CraftCms\Cms\Component\Kinds;
 
 use CraftCms\Cms\Asset\AssetTransformDrivers;
-use CraftCms\Cms\Mcp\Schema\SettingsSchema;
+use CraftCms\Cms\Ui\SettingsSchema;
 
 /**
  * Asset transform drivers.

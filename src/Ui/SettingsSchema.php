@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp\Schema;
+namespace CraftCms\Cms\Ui;
 
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Support\Arr;
@@ -13,10 +13,12 @@ use CraftCms\Cms\Ui\Controls\Hidden;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Scope;
-use CraftCms\Cms\Ui\Ui;
 
 /**
  * Describes a component’s settings as JSON Schema, from the settings UI the control panel shows for it.
+ *
+ * Condition settings carry an `x-craft-condition-class` keyword naming their condition class, so clients can look up
+ * the rules it accepts.
  *
  * @since 6.0.0
  */
@@ -143,7 +145,6 @@ readonly class SettingsSchema
             $context['instructions'] ?? null,
             ...($context['notes'] ?? []),
             isset($context['dependsOn']) ? sprintf('Only applies when %s is enabled.', preg_replace('/^settings\./', '', $context['dependsOn'])) : null,
-            $control instanceof ConditionBuilder && $control->getConditionClass() !== null ? sprintf('component-types.list with kind: condition-rule and scope: %s lists the rule types it accepts.', $control->getConditionClass()) : null,
             $property === [] ? sprintf('Set in the control panel with a %s control; read an existing record’s settings for the value’s shape.', class_basename($control)) : null,
         ]);
         $default = Arr::get($defaults, implode('.', $path));
@@ -164,6 +165,7 @@ readonly class SettingsSchema
                 'default' => $default,
             ]),
             ...Arr::except($property, ['description']),
+            ...($control instanceof ConditionBuilder && $control->getConditionClass() !== null ? ['x-craft-condition-class' => $control->getConditionClass()] : []),
         ];
 
         $target = &$schema;

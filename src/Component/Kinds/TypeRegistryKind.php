@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp\ComponentKinds;
+namespace CraftCms\Cms\Component\Kinds;
 
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\TypeRegistry;
-use CraftCms\Cms\Mcp\Schema\SettingsSchema;
+use CraftCms\Cms\Ui\SettingsSchema;
 
 /**
  * A component kind whose types are registered with a {@see TypeRegistry} and configured with settings UIs.

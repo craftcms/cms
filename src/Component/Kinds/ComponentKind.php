@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Mcp\ComponentKinds;
+namespace CraftCms\Cms\Component\Kinds;
 
 use CraftCms\Cms\Component\TypeRegistry;
 
 /**
- * A kind of extendable component that MCP clients can choose and configure, such as field types.
+ * A kind of extendable component that can be chosen and configured, such as field types.
  *
- * Register kinds with {@see ComponentKinds} so the `component-types.*` MCP tools describe them:
+ * Kinds list their available types and describe each type’s settings as JSON Schema, for clients such as the
+ * MCP server’s `component-types.*` tools. Register kinds with {@see ComponentKinds}:
  *
  * ```php
  * public function boot(ComponentKinds $componentKinds): void
@@ -30,7 +31,7 @@ interface ComponentKind
     /** What the kind’s types are, such as “Field types”. */
     public function description(): string;
 
-    /** Where clients use a type and its settings. */
+    /** Instructions for using a type and its settings, written for agents and other clients. */
     public function usage(): string;
 
     /** What the `scope` argument selects for this kind, or `null` if the kind doesn’t take one. */
