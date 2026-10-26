@@ -45,6 +45,8 @@ class AssetsHelper
      * The most characters a file’s preview text keeps, which is more than its icon shows.
      *
      * @see previewText()
+     *
+     * @internal
      */
     public const int PREVIEW_TEXT_LENGTH = 1000;
 
@@ -53,6 +55,8 @@ class AssetsHelper
      * {@see PREVIEW_TEXT_LENGTH} characters of up to four bytes each.
      *
      * @see previewText()
+     *
+     * @internal
      */
     public const int PREVIEW_TEXT_SOURCE_LENGTH = self::PREVIEW_TEXT_LENGTH * 4;
 
@@ -579,6 +583,8 @@ class AssetsHelper
      * {@see Asset::$previewText}, or `null` if there’s nothing to show.
      *
      * @param  string  $contents  The start of the file, such as its first {@see PREVIEW_TEXT_SOURCE_LENGTH} bytes.
+     *
+     * @internal
      */
     public static function previewText(string $contents): ?string
     {

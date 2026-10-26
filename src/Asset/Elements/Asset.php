@@ -266,12 +266,24 @@ class Asset extends Element
      * @var string|null The start of a text file’s contents, or `null` if it isn’t a text file, hasn’t been read yet,
      *                  or has nothing to show
      *
-     * Read from the file whenever a new one is uploaded or indexed, so it isn’t settable from requests.
+     * Read from the file whenever a new one is uploaded or indexed, so it isn’t settable from requests. Asset queries
+     * don’t load it, so it’s only known once it’s been set; it’s only saved then, too.
      *
      * @see AssetsHelper::previewText()
+     *
+     * @internal
      */
-    #[AllowedInSandbox]
-    public ?string $previewText = null;
+    public ?string $previewText = null {
+        set {
+            $this->previewText = $value;
+            $this->previewTextChanged = true;
+        }
+    }
+
+    /**
+     * Whether {@see $previewText} has been set since the asset was loaded, and should be saved.
+     */
+    private bool $previewTextChanged = false;
 
     /**
      * @var bool|null Whether the file was kept around when the asset was deleted
@@ -2904,7 +2916,7 @@ JS, [
                 default => $showsIcon
                     ? Html::tag('div', Html::svg(AssetsHelper::iconSvg(
                         $this->getExtension(),
-                        previewText: $this->isTextFile($this->_filename) ? $this->previewText : null,
+                        previewText: $this->isTextFile($this->_filename) ? $this->getStoredPreviewText() : null,
                     ), sanitize: false, namespace: true), [
                         'class' => ['preview-thumb', 'mx-auto', 'py-md', 'w-[160px]', 'h-[160px]', 'box-content'],
                     ])
@@ -3173,6 +3185,7 @@ JS;
         unset(
             $names['avoidFilenameConflicts'],
             $names['keepFileOnDelete'],
+            $names['previewText'],
             $names['sanitizeOnUpload'],
             $names['uploadColors'],
         );
@@ -3370,9 +3383,13 @@ JS;
             }
 
             $model->colors = $this->colors?->toArray();
-            $model->previewText = $this->previewText;
+
+            if ($this->previewTextChanged) {
+                $model->previewText = $this->previewText;
+            }
 
             $model->save();
+            $this->previewTextChanged = false;
 
             // we're not propagating at this point, so save the alt ONLY against the site we're saving to
             DB::table(Table::ASSETS_SITES)
@@ -3737,6 +3754,18 @@ JS;
         $this->tempFilePath = null;
         $this->uploadSource = null;
         $this->uploadColors = null;
+    }
+
+    /**
+     * Returns the asset’s preview text, looking it up if it hasn’t been set since the asset was loaded.
+     */
+    private function getStoredPreviewText(): ?string
+    {
+        if ($this->previewTextChanged || ! $this->id) {
+            return $this->previewText;
+        }
+
+        return DB::table(Table::ASSETS)->where('id', $this->id)->value('previewText');
     }
 
     /**

@@ -6,9 +6,11 @@ use CraftCms\Cms\Asset\AssetUploadHandler;
 use CraftCms\Cms\Asset\Data\AssetIngest;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Folders;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\Storage;
 
@@ -52,11 +54,13 @@ beforeEach(function () {
 it('stores the start of an uploaded text file as its preview text', function () {
     $asset = ($this->upload)('notes.md', "# Notes\r\n\r\nSome text.");
 
-    expect($asset->previewText)->toBe("# Notes\n\nSome text.");
+    expect(AssetModel::find($asset->id)->previewText)->toBe("# Notes\n\nSome text.");
 });
 
 it('doesn’t store preview text for other files', function () {
-    expect(($this->upload)('archive.zip', 'zip bytes')->previewText)->toBeNull();
+    $asset = ($this->upload)('archive.zip', 'zip bytes');
+
+    expect(AssetModel::find($asset->id)->previewText)->toBeNull();
 });
 
 it('drops the preview text when a text file is replaced with another kind of file', function () {
@@ -65,7 +69,7 @@ it('drops the preview text when a text file is replaced with another kind of fil
 
     app(AssetUploadHandler::class)->replace($asset->id, ($this->source)('archive.zip', 'zip bytes'));
 
-    expect(Asset::findOne($asset->id)->previewText)->toBeNull();
+    expect(AssetModel::find($asset->id)->previewText)->toBeNull();
 });
 
 it('shows a text file’s preview text in its edit page preview, but not its thumbnails', function () {
@@ -74,4 +78,19 @@ it('shows a text file’s preview text in its edit page preview, but not its thu
 
     expect($asset->getPreviewHtml())->toContain('>Some text.</div>')
         ->and($asset->getThumbHtml(120))->not->toContain('Some text.');
+});
+
+it('keeps an asset’s preview text when it’s saved without a new file', function () {
+    $asset = ($this->upload)('notes.txt', 'Some text.');
+    $asset->title = 'Renamed';
+
+    Elements::saveElement($asset);
+
+    expect(AssetModel::find($asset->id)->previewText)->toBe('Some text.');
+});
+
+it('isn’t loaded by asset queries', function () {
+    $asset = ($this->upload)('notes.txt', 'Some text.');
+
+    expect($asset->previewText)->toBeNull();
 });

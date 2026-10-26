@@ -311,8 +311,6 @@
 
 - `CraftCms\Cms\Asset\AssetsHelper::iconSvg()` now has a `$dark` argument, and returns the dark variant for the control panel’s dark theme by default. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Asset\AssetsHelper::folderIconSvg()`. ([#20085](https://github.com/craftcms/cms/pull/20085))
-- Added `CraftCms\Cms\Asset\AssetsHelper::previewText()`. ([#20094](https://github.com/craftcms/cms/pull/20094))
-- Added `CraftCms\Cms\Asset\Elements\Asset::$previewText`. ([#20094](https://github.com/craftcms/cms/pull/20094))
 - Added `CraftCms\Cms\Asset\Enums\FileKind::isText()`. ([#20094](https://github.com/craftcms/cms/pull/20094))
 - `CraftCms\Cms\Asset\AssetsHelper::iconSvg()` now has a `$previewText` argument. ([#20094](https://github.com/craftcms/cms/pull/20094))
 - Added `CraftCms\Cms\Cp\Enums\Theme::resolveFor()`. ([#20085](https://github.com/craftcms/cms/pull/20085))

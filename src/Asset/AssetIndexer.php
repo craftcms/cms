@@ -743,7 +743,10 @@ class AssetIndexer
                 // Like colors, preview text that's been read already isn't read again unless the file has changed
                 if (
                     FileKind::tryFrom($asset->kind ?? '')?->isText() &&
-                    ($asset->previewText === null || $fileChanged)
+                    ($fileChanged || ! $asset->id || ! DB::table(Table::ASSETS)
+                        ->where('id', $asset->id)
+                        ->whereNotNull('previewText')
+                        ->exists())
                 ) {
                     $stream = $asset->getStream();
 
