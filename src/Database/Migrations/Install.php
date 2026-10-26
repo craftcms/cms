@@ -232,7 +232,7 @@ class Install extends Migration
             $table->json('keywords')->nullable();
             $table->text('visibleText')->nullable();
             $table->boolean('deletedWithVolume')->nullable();
-            $table->boolean('keptFile')->nullable();
+            $table->boolean('trashedFileExists')->default(false);
             $table->dateTime('dateModified')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
