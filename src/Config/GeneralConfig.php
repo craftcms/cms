@@ -715,7 +715,7 @@ class GeneralConfig extends BaseConfig
     public ?string $cpTrigger = 'admin';
 
     /**
-     * @var string The Asset Transformer to use when none is selected explicitly.
+     * @var string The asset transformer to use when none is selected explicitly.
      *
      * ::: code
      * ```php Static Config
@@ -2923,6 +2923,29 @@ class GeneralConfig extends BaseConfig
     public ?string $tempAssetUploadDisk = null;
 
     /**
+     * @var string|null The Laravel filesystem disk that soft-deleted assets’ files should be moved to, so the assets
+     *                  can be restored.
+     *
+     *                  Files are stored at the root of the disk, named after their asset’s ID and extension, such as
+     *                  `123.jpg`. Each environment should have its own disk, or its own folder on a shared one,
+     *                  which a `scoped` disk can provide.
+     *
+     *                  If this isn’t set, soft-deleting an asset deletes its file, and the asset can’t be restored.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->trashedAssetDisk('$TRASHED_ASSET_DISK')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_TRASHED_ASSET_DISK=trashedAssets
+     * ```
+     * :::
+     *
+     * @group Assets
+     */
+    public ?string $trashedAssetDisk = null;
+
+    /**
      * @var string|null The Laravel filesystem disk that should stage upload sessions.
      *
      * @group Assets
@@ -3885,7 +3908,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The Asset Transformer to use when none is selected explicitly.
+     * The asset transformer to use when none is selected explicitly.
      *
      * @group Assets
      *
@@ -6155,6 +6178,24 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * The Laravel filesystem disk that soft-deleted assets’ files should be moved to, so the assets can be restored.
+     *
+     * ```php
+     * ->trashedAssetDisk('$TRASHED_ASSET_DISK')
+     * ```
+     *
+     * @group Assets
+     *
+     * @see $trashedAssetDisk
+     */
+    public function trashedAssetDisk(?string $value): self
+    {
+        $this->trashedAssetDisk = $value;
+
+        return $this;
+    }
+
+    /**
      * The Laravel filesystem disk that should stage upload sessions.
      *
      * @group Assets
@@ -6452,6 +6493,18 @@ class GeneralConfig extends BaseConfig
     public function getUploadSessionDisk(): string
     {
         return $this->storageDiskName($this->uploadSessionDisk, 'craft-tmp');
+    }
+
+    /**
+     * Returns the disk name that soft-deleted assets’ files should be moved to, if one is set.
+     *
+     * @see $trashedAssetDisk
+     */
+    public function getTrashedAssetDisk(): ?string
+    {
+        $disk = Env::parse($this->trashedAssetDisk);
+
+        return is_string($disk) && $disk !== '' ? $disk : null;
     }
 
     private function storageDiskName(?string $value, string $default): string

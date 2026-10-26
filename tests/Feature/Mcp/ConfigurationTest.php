@@ -9,10 +9,13 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Mcp\Capabilities\Configuration;
 use CraftCms\Cms\Mcp\Enums\ConfigurationOperation;
 use CraftCms\Cms\Mcp\Enums\ConfigurationType;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\Models\UserGroup;
+use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
 use Illuminate\Testing\TestResponse;
 use Laravel\Passport\Passport;
 use Mcp\Capability\Discovery\SchemaValidator;
@@ -55,7 +58,55 @@ it('manages configuration records using the shared operations', function (string
     'user groups' => ['user-groups', ['name' => 'Editors', 'handle' => 'editors', 'description' => 'Editorial staff'], ['handle' => 'authors', 'description' => null], ['name' => 'Editors']],
     'image transforms' => ['image-transforms', ['name' => 'Thumbnail', 'handle' => 'thumbnail', 'width' => 200, 'height' => 100, 'quality' => 80, 'mode' => 'fit'], ['handle' => 'small', 'width' => null], ['height' => 100, 'quality' => 80, 'mode' => 'fit']],
     'site groups' => ['site-groups', ['name' => 'Archive'], ['name' => 'Legacy'], []],
+    'asset transformers' => ['asset-transformers', ['name' => 'Local', 'handle' => 'local', 'driver' => 'craft'], ['handle' => 'localImages'], ['name' => 'Local', 'driver' => 'craft']],
 ]);
+
+it('manages workflows, keeping stages that aren’t replaced', function (): void {
+    $group = UserGroup::factory()->create();
+    $stage = ['name' => 'Editor review', 'type' => UserReviewStage::class, 'settings' => ['userGroups' => [$group->uid], 'approvalsRequired' => 1, 'approvalMode' => 'total']];
+    $created = ($this->operate)('create', 'workflows', ['attributes' => ['name' => 'Review', 'stages' => [$stage]]])['item'];
+    $updated = ($this->operate)('update', 'workflows', ['identifier' => ['id' => $created['id']], 'attributes' => ['name' => 'Legal review']])['item'];
+
+    expect($created['stages'][0])->toMatchArray($stage)
+        ->and($created['stages'][0]['uid'])->toBeString()
+        ->and($updated)->toMatchArray(['id' => $created['id'], 'name' => 'Legal review', 'stages' => $created['stages']]);
+
+    ($this->call)('update', ['type' => 'workflows', 'identifier' => ['id' => $created['id']], 'attributes' => ['stages' => [[...$stage, 'settings' => []]]]])
+        ->assertJsonPath('result.isError', true);
+
+    $section = Section::factory()->create(['workflowId' => $created['id']]);
+
+    ($this->call)('delete', ['type' => 'workflows', 'identifier' => ['id' => $created['id']]])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'This workflow cannot be deleted while it is assigned to a section.');
+
+    $section->update(['workflowId' => null]);
+
+    expect(($this->operate)('delete', 'workflows', ['identifier' => ['uid' => $created['uid']]]))->toBe(['type' => 'workflows', 'deleted' => true]);
+});
+
+it('explains that workflows require Craft Pro', function (): void {
+    Edition::set(Edition::Team);
+
+    $types = collect(($this->call)('schema')->json('result.structuredContent.types'))->keyBy('type');
+
+    expect($types['asset-transformers']['operations'])->not->toBeEmpty()
+        ->and($types['workflows'])->toBe(['type' => 'workflows', 'operations' => [], 'requiredEdition' => 'Craft Pro']);
+
+    ($this->call)('list', ['type' => 'workflows'])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'The workflows configuration type requires Craft Pro. This site runs Craft Team.');
+});
+
+it('refuses asset transformer changes Craft doesn’t allow', function (): void {
+    ($this->call)('create', ['type' => 'asset-transformers', 'attributes' => ['name' => 'Remote', 'handle' => 'remote', 'driver' => 'nope']])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'Unknown asset transform driver [nope]. Available drivers: craft.');
+
+    ($this->call)('delete', ['type' => 'asset-transformers', 'identifier' => ['handle' => 'craft']])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'The Craft asset transformer cannot be deleted.');
+});
 
 it('separates a section lookup handle from its new handle and preserves section settings', function (): void {
     $entryType = ($this->operate)('create', 'entry-types', ['attributes' => ['name' => 'Article', 'handle' => 'article']])['item'];

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Capabilities;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\CapabilityContainer;
+use CraftCms\Cms\Mcp\EditionFeatures;
 use CraftCms\Cms\Mcp\Enums\ConfigurationOperation;
 use CraftCms\Cms\Mcp\Enums\ConfigurationType;
 use CraftCms\Cms\Mcp\McpActor;
@@ -64,11 +66,17 @@ readonly class Configuration
                 throw new ToolCallException('Provide type when selecting an operation.');
             }
 
-            return ['types' => array_map(static fn (ConfigurationType $type): array => [
+            return ['types' => array_map(static fn (ConfigurationType $type): array => $type->available() ? [
                 'type' => $type->value,
                 'operations' => array_map(static fn (ConfigurationOperation $operation): string => $operation->value, $operations),
+            ] : [
+                'type' => $type->value,
+                'operations' => [],
+                'requiredEdition' => EditionFeatures::name($type->requiredEdition()),
             ], ConfigurationType::cases())];
         }
+
+        $this->authorizeType($type);
 
         if ($operation !== null) {
             $this->authorize($operation->writes());
@@ -199,6 +207,7 @@ readonly class Configuration
         array $options = [],
     ): array {
         $this->authorize($operation->writes());
+        $this->authorizeType($type);
         $values = ['type' => $type->value];
 
         if ($operation->needsIdentifier()) {
@@ -234,6 +243,16 @@ readonly class Configuration
             ConfigurationOperation::Delete => ['type' => $type->value, ...$result],
             default => ['type' => $type->value, 'item' => $result[$type->itemKey()]],
         };
+    }
+
+    private function authorizeType(ConfigurationType $type): void
+    {
+        if (! $type->available()) {
+            $required = EditionFeatures::name($type->requiredEdition());
+            $current = EditionFeatures::name(Edition::get());
+
+            throw new ToolCallException("The {$type->value} configuration type requires $required. This site runs $current.");
+        }
     }
 
     private function authorize(bool $write = false): void

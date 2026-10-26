@@ -111,8 +111,10 @@ it('discovers and completes dynamic client registration and authorization', func
     $this->actingAs(User::query()->firstOrFail(), Cms::config()->getAuthGuard());
     $this->get($metadata['authorization_endpoint'].'?'.http_build_query($parameters))
         ->assertOk()
+        ->assertHeader('X-Frame-Options', 'DENY')
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('clientName', 'Test MCP client')
+            ->where('redirectUri', 'https://client.example/callback')
             ->where('accessOptions', fn ($options): bool => collect($options)->pluck('value')->all() === ['mcp:read', 'mcp:write', 'mcp:admin'])
             ->where('scopes', [])
             ->where('approveAction', route('craft.cp.mcp.oauth.approve'))
@@ -147,6 +149,16 @@ it('discovers and completes dynamic client registration and authorization', func
     'event stream preferred' => [['HTTP_ACCEPT' => 'text/event-stream, application/json']],
     'unspecified acceptance' => [['HTTP_ACCEPT' => null]],
 ]);
+
+it('keeps the Passport consent page out of frames', function (): void {
+    $clientId = $this->postJson(route('craft.cp.mcp.oauth.register'), mcpRegistration())->json('client_id');
+
+    $this->actingAs(User::query()->firstOrFail(), config('passport.guard'));
+    $this->get(route('passport.authorizations.authorize', mcpAuthorizationParameters($clientId)))
+        ->assertOk()
+        ->assertHeader('X-Frame-Options', 'DENY')
+        ->assertHeader('Content-Security-Policy', "frame-ancestors 'none'");
+});
 
 it('uses the configured control panel URL in OAuth metadata', function (): void {
     Cms::config()->baseCpUrl('https://cp.example.test');
