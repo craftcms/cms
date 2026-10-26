@@ -126,7 +126,6 @@
       <input
         slot="input"
         type="text"
-        :aria-label="t('Search Craft CMS documentation')"
         autocapitalize="off"
         spellcheck="false"
         data-autofocus

@@ -86,6 +86,9 @@ describe('DocsSearchView', () => {
     ).toEqual(['craft.matrix', 'craft.matrix']);
 
     expect(input.hasAttribute('role')).toBe(false);
+    // Named by the field's own label, so voice control users can say it.
+    expect(input.hasAttribute('aria-label')).toBe(false);
+    expect(input.closest('craft-input-search')?.label).toBe('Search');
     const links = [
       ...container.querySelectorAll<HTMLAnchorElement>(
         'craft-grid .command-palette-row__item'

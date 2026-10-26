@@ -362,15 +362,19 @@ describe('CommandPalette', () => {
   });
 
   /** Each keyboard instruction as it's read: the keys' names, then what they do. */
+  /** Each instruction, one per list item: its keys' names, then what they do. */
   function instructions(): string[] {
-    return [...document.querySelectorAll('.command-palette__hint-item')].map(
-      (item) =>
-        [
-          ...[...item.querySelectorAll('kbd .sr-only')].map((name) =>
-            name.textContent?.trim()
-          ),
-          item.lastChild?.textContent?.trim(),
-        ].join(' ')
+    return [
+      ...document.querySelectorAll(
+        'section.command-palette__hint ul[role="list"] > li'
+      ),
+    ].map((item) =>
+      [
+        ...[...item.querySelectorAll('kbd .sr-only')].map((name) =>
+          name.textContent?.trim()
+        ),
+        item.lastChild?.textContent?.trim(),
+      ].join(' ')
     );
   }
 
@@ -412,6 +416,23 @@ describe('CommandPalette', () => {
       expect.stringMatching(/^(Return|Enter) Open$/),
       'Escape Clear search',
     ]);
+  });
+
+  it('describes each grid with where its keyboard instructions are', async () => {
+    await open();
+    const grids = [...document.querySelectorAll('craft-grid')];
+
+    expect(grids.length).toBeGreaterThan(1);
+
+    for (const grid of grids) {
+      expect(
+        document
+          .getElementById(grid.getAttribute('aria-describedby')!)
+          ?.textContent?.trim()
+      ).toBe(
+        'Instructions for moving between results are in the Keyboard instructions section.'
+      );
+    }
   });
 
   it('lists Left and Right only while a result has actions of its own', async () => {
@@ -472,9 +493,9 @@ describe('CommandPalette', () => {
 
     await choose('Search Craft CMS documentation');
 
-    expect(document.activeElement?.getAttribute('aria-label')).toBe(
-      'Search Craft CMS documentation'
-    );
+    const field = document.activeElement?.closest('craft-input-search');
+    expect(field?.closest('.command-palette-docs')).not.toBeNull();
+    expect(field?.label).toBe('Search');
   });
 
   it('focuses the search box when its surrounding padding is pressed', async () => {

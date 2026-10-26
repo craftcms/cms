@@ -589,7 +589,6 @@
           <CraftInputSearch
             v-model="query"
             class="command-palette__search-field"
-            :label="t('Search for pages, actions, and content')"
             :placeholder="t('Search for pages, actions, and content')"
           >
             <input
@@ -626,6 +625,7 @@
             :grid-id="`${id}-${section.key}`"
             :heading="section.heading"
             :items="section.items"
+            :description-id="`${id}-grid-description`"
             @activate="activate"
             @dismiss="dismissForMenuAction"
           />
@@ -647,6 +647,14 @@
           </p>
         </div>
 
+        <!-- Hidden, as it's only ever read as the grids' description. -->
+        <p :id="`${id}-grid-description`" hidden>
+          {{
+            t(
+              'Instructions for moving between results are in the Keyboard instructions section.'
+            )
+          }}
+        </p>
         <section
           class="command-palette__hint"
           :aria-labelledby="`${id}-keys-heading`"
@@ -654,19 +662,22 @@
           <h2 :id="`${id}-keys-heading`" class="sr-only">
             {{ t('Keyboard instructions') }}
           </h2>
-          <span
-            v-for="hint in hints"
-            :key="hint.label"
-            class="command-palette__hint-item"
-          >
-            <span class="command-palette__hint-keys">
-              <kbd v-for="key in hint.keys" :key="key.name">
-                <span aria-hidden="true">{{ key.symbol }}</span>
-                <span class="sr-only">{{ key.name }}</span>
-              </kbd>
-            </span>
-            {{ hint.label }}
-          </span>
+          <!-- `role="list"` keeps the list's semantics in Safari, which drops them without list styling. -->
+          <ul role="list" class="command-palette__hint-list">
+            <li
+              v-for="hint in hints"
+              :key="hint.label"
+              class="command-palette__hint-item"
+            >
+              <span class="command-palette__hint-keys">
+                <kbd v-for="key in hint.keys" :key="key.name">
+                  <span aria-hidden="true">{{ key.symbol }}</span>
+                  <span class="sr-only">{{ key.name }}</span>
+                </kbd>
+              </span>
+              {{ hint.label }}
+            </li>
+          </ul>
         </section>
         <div class="sr-only" role="status">{{ statusMessage }}</div>
       </div>
@@ -812,16 +823,21 @@
   }
 
   .command-palette__hint {
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: var(--c-spacing-lg);
-    row-gap: var(--c-spacing-sm);
-    margin: 0;
     padding-block: var(--c-spacing-md);
     padding-inline: var(--c-modal-padding);
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
     font-size: var(--c-text-sm);
     color: var(--c-text-quiet);
+  }
+
+  .command-palette__hint-list {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: var(--c-spacing-lg);
+    row-gap: var(--c-spacing-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
   .command-palette__hint-item {
