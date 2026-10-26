@@ -85,16 +85,17 @@ it('manages workflows, keeping stages that aren’t replaced', function (): void
     expect(($this->operate)('delete', 'workflows', ['identifier' => ['uid' => $created['uid']]]))->toBe(['type' => 'workflows', 'deleted' => true]);
 });
 
-it('only offers workflows in Craft Pro', function (): void {
+it('explains that workflows require Craft Pro', function (): void {
     Edition::set(Edition::Team);
 
-    expect(array_column(($this->call)('schema')->json('result.structuredContent.types'), 'type'))
-        ->toContain('asset-transformers')
-        ->not->toContain('workflows');
+    $types = collect(($this->call)('schema')->json('result.structuredContent.types'))->keyBy('type');
+
+    expect($types['asset-transformers']['operations'])->not->toBeEmpty()
+        ->and($types['workflows'])->toBe(['type' => 'workflows', 'operations' => [], 'requiredEdition' => 'Craft Pro']);
 
     ($this->call)('list', ['type' => 'workflows'])
         ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'The workflows configuration type isn’t available in this Craft edition.');
+        ->assertJsonPath('result.content.0.text', 'The workflows configuration type requires Craft Pro. This site runs Craft Team.');
 });
 
 it('refuses Asset Transformer changes Craft doesn’t allow', function (): void {

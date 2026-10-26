@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element as BaseElement;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -150,3 +151,15 @@ class TestMcpPluginElementAdapter extends BaseElementAdapter
         ];
     }
 }
+
+it('explains when the edition’s user limit prevents creating users', function (): void {
+    Edition::set(Edition::Team);
+    User::factory()->count(5 - User::query()->count())->create();
+
+    ($this->call)('elements.create', ['type' => 'users', 'attributes' => ['email' => 'new@example.com', 'username' => 'new']])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'This site has reached the Craft Team limit of 5 users. Upgrading to Craft Pro would allow more users.');
+
+    expect(McpRequest::send($this, 'tools/call', ['name' => 'info.get'])->json('result.structuredContent.instructions'))
+        ->toContain('- More than 5 users (Craft Pro): elements.create with type: users');
+});

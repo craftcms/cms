@@ -34,13 +34,21 @@ enum ConfigurationType: string
     case AssetTransformers = 'asset-transformers';
     case Workflows = 'workflows';
 
+    /** The Craft edition the type needs, if any. */
+    public function requiredEdition(): ?Edition
+    {
+        return match ($this) {
+            self::Workflows => Edition::Pro,
+            default => null,
+        };
+    }
+
     /** Whether the type is available in the current Craft edition. */
     public function available(): bool
     {
-        return match ($this) {
-            self::Workflows => Edition::isAtLeast(Edition::Pro),
-            default => true,
-        };
+        $edition = $this->requiredEdition();
+
+        return $edition === null || Edition::isAtLeast($edition);
     }
 
     /** @return class-string */
@@ -93,11 +101,11 @@ enum ConfigurationType: string
     {
         return match ($this) {
             self::EntryTypes, self::Volumes => ['On update, an omitted fieldLayout retains the current layout; null clears it.'],
-            self::Fields => ['Creating a field requires a valid, selectable field class. Updates cannot change the field class. Supplied settings merge with existing settings.'],
+            self::Fields => ['Creating a field requires a valid, selectable field class from component-types.list with kind: field; component-types.get describes its settings. Updates cannot change the field class. Supplied settings merge with existing settings.'],
             self::UserGroups => ['Assign permissions separately with user-permissions.group.set, which replaces the complete permission list.'],
             self::Routes => ['Lookup accepts UID or computed URI. uriParts contains literal strings or [name, regex] tuples. Lists routes available to the current site.'],
-            self::AssetTransformers => ['Lookup accepts UID or handle. Settings depend on the driver; settings the driver doesn’t define are dropped. Changing the driver clears settings that aren’t supplied.'],
-            self::Workflows => ['Lookup accepts ID or UID. Workflows require Craft Pro. Assign workflows to sections through section settings. CraftCms\\Cms\\Workflow\\UserReview\\UserReviewStage settings: approvalsRequired (integer), approvalMode (total or per-group), userGroups (user group UIDs). On update, supplied stages replace the current stages.'],
+            self::AssetTransformers => ['Lookup accepts UID or handle. component-types.list and component-types.get with kind: asset-transform-driver describe drivers and their settings; settings the driver doesn’t define are dropped. Changing the driver clears settings that aren’t supplied.'],
+            self::Workflows => ['Lookup accepts ID or UID. Workflows require Craft Pro. Assign workflows to sections through section settings. component-types.list and component-types.get with kind: workflow-stage describe stage types and their settings. On update, supplied stages replace the current stages.'],
             default => [],
         };
     }

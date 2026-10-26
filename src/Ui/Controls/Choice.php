@@ -178,6 +178,18 @@ class Choice extends Control
     }
 
     #[\Override]
+    public function inputSchema(): array
+    {
+        $choices = self::optionsSchema([
+            ...$this->options,
+            ...($this->allLabel !== null ? [['label' => $this->allLabel, 'value' => $this->allValue]] : []),
+        ]);
+        $schema = $choices !== [] ? ['oneOf' => $choices] : [];
+
+        return $this->multiple ? ['type' => 'array', 'items' => $schema ?: (object) []] : $schema;
+    }
+
+    #[\Override]
     public function props(mixed $value = null): array
     {
         $props = [

@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\SensitiveValues;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Validation\ValidationException;
@@ -26,6 +27,7 @@ readonly class AssetTransformers
     public function __construct(
         private AssetTransformerService $assetTransformers,
         private AssetTransformDrivers $drivers,
+        private SensitiveValues $sensitiveValues,
     ) {}
 
     /** @return array{count: int, transformers: list<array<string, mixed>>} */
@@ -54,8 +56,8 @@ readonly class AssetTransformers
     }
 
     /**
-     * @param  string  $driver  A registered Asset Transform driver handle, such as `craft`.
-     * @param  array<string, mixed>  $settings  Driver settings. Settings the driver doesn’t define are dropped.
+     * @param  string  $driver  A driver handle from component-types.list with kind: asset-transform-driver.
+     * @param  array<string, mixed>  $settings  Settings matching component-types.get for the driver. Settings the driver doesn’t define are dropped.
      * @return array{transformer: array<string, mixed>}
      */
     #[RequiresAdminChanges]
@@ -72,14 +74,14 @@ readonly class AssetTransformers
             'driver' => $driver,
         ]);
 
-        return $this->save($transformer, $settings);
+        return $this->save($transformer, $this->sensitiveValues->restore($settings, []));
     }
 
     /**
      * @param  string|null  $currentHandle  Existing Asset Transformer handle.
      * @param  string|null  $handle  New Asset Transformer handle.
-     * @param  string|null  $driver  A registered Asset Transform driver handle. Changing it clears settings that aren’t supplied.
-     * @param  array<string, mixed>|null  $settings  Driver settings, replacing the current settings. Settings the driver doesn’t define are dropped.
+     * @param  string|null  $driver  A driver handle from component-types.list with kind: asset-transform-driver. Changing it clears settings that aren’t supplied.
+     * @param  array<string, mixed>|null  $settings  Driver settings, replacing the current settings. Settings the driver doesn’t define are dropped. Redacted values keep their saved value.
      * @return array{transformer: array<string, mixed>}
      */
     #[RequiresAdminChanges]
@@ -95,6 +97,7 @@ readonly class AssetTransformers
         ?array $settings = null,
     ): array {
         $transformer = $this->find($uid, $currentHandle);
+        $settings = $settings !== null ? $this->sensitiveValues->restore($settings, $transformer->settings) : null;
         $request = $context->getRequest();
         assert($request instanceof CallToolRequest);
         $supplied = array_intersect_key([
@@ -178,6 +181,7 @@ readonly class AssetTransformers
         return [
             'uid' => $transformer->uid,
             ...$transformer->getConfig(),
+            'settings' => $this->sensitiveValues->redact($transformer->settings),
         ];
     }
 }

@@ -48,8 +48,8 @@ readonly class Workflows
             'properties' => [
                 'uid' => ['type' => 'string', 'format' => 'uuid'],
                 'name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255],
-                'type' => ['type' => 'string', 'description' => 'Workflow stage class, such as CraftCms\\Cms\\Workflow\\UserReview\\UserReviewStage.'],
-                'settings' => ['type' => 'object', 'additionalProperties' => true],
+                'type' => ['type' => 'string', 'description' => 'A workflow stage class from component-types.list with kind: workflow-stage.'],
+                'settings' => ['type' => 'object', 'additionalProperties' => true, 'description' => 'Settings matching component-types.get for the stage type.'],
             ],
             'required' => ['name', 'type'],
             'additionalProperties' => false,

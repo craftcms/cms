@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\SensitiveValues;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Mcp\Capability\Attribute\McpTool;
@@ -17,7 +18,10 @@ use Mcp\Schema\ToolAnnotations;
  */
 readonly class ProjectConfig
 {
-    public function __construct(private ProjectConfigService $projectConfig) {}
+    public function __construct(
+        private ProjectConfigService $projectConfig,
+        private SensitiveValues $sensitiveValues,
+    ) {}
 
     /** @return array{path: string|null, external: bool, value: mixed} */
     #[McpTool(
@@ -33,7 +37,7 @@ readonly class ProjectConfig
         return [
             'path' => $path,
             'external' => $external,
-            'value' => is_array($value) ? ProjectConfigHelper::cleanupConfig($value) : $value,
+            'value' => $this->sensitiveValues->redact(is_array($value) ? ProjectConfigHelper::cleanupConfig($value) : $value, $path ?? ''),
         ];
     }
 
@@ -58,7 +62,7 @@ readonly class ProjectConfig
             'hadFileWriteIssues' => $this->projectConfig->getHadFileWriteIssues(),
             'schemaVersionsCompatible' => $this->projectConfig->getAreConfigSchemaVersionsCompatible($schemaIssues),
             'schemaIssues' => $schemaIssues,
-            'appliedChanges' => $this->projectConfig->getAppliedChanges(),
+            'appliedChanges' => $this->sensitiveValues->redact($this->projectConfig->getAppliedChanges()),
         ]];
     }
 
@@ -73,7 +77,7 @@ readonly class ProjectConfig
     {
         return [
             'invert' => $invert,
-            'diff' => ProjectConfigHelper::diff($invert),
+            'diff' => $this->sensitiveValues->redactYaml(ProjectConfigHelper::diff($invert)),
         ];
     }
 
@@ -90,7 +94,7 @@ readonly class ProjectConfig
 
         return [
             'applied' => true,
-            'appliedChanges' => $this->projectConfig->getAppliedChanges(),
+            'appliedChanges' => $this->sensitiveValues->redact($this->projectConfig->getAppliedChanges()),
         ];
     }
 

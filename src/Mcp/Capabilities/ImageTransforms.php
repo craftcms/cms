@@ -72,7 +72,7 @@ readonly class ImageTransforms
      * @param  ImageTransformInterlace  $interlace  Interlace mode.
      * @param  string|null  $fill  Fill color for letterbox mode.
      * @param  bool  $upscale  Whether images can be upscaled.
-     * @param  array<string, array<string, mixed>>  $parameters  Transformer-specific parameters keyed by asset transformer UID.
+     * @param  array<string, array<string, mixed>>  $parameters  Transformer-specific parameters keyed by Asset Transformer UID, matching the parametersSchema from component-types.get for the transformer’s driver.
      * @return array{transform: array<string, mixed>}
      */
     #[RequiresAdminChanges]
@@ -131,7 +131,7 @@ readonly class ImageTransforms
      * @param  ImageTransformInterlace  $interlace  Interlace mode.
      * @param  string|null  $fill  Fill color for letterbox mode.
      * @param  bool  $upscale  Whether images can be upscaled.
-     * @param  array<string, array<string, mixed>>  $parameters  Transformer-specific parameters keyed by asset transformer UID.
+     * @param  array<string, array<string, mixed>>  $parameters  Transformer-specific parameters keyed by Asset Transformer UID, matching the parametersSchema from component-types.get for the transformer’s driver.
      * @return array{transform: array<string, mixed>}
      */
     #[RequiresAdminChanges]
