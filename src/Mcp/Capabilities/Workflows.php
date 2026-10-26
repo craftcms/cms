@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Models\Draft;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
+use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\ElementQueryFactory;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\Serializers\WorkflowReviewSerializer;
@@ -22,9 +23,12 @@ use CraftCms\Cms\Workflow\Exceptions\WorkflowException;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\Cms\Workflow\UserReview\UserReviewDecision;
 use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
+use CraftCms\Cms\Workflow\WorkflowDefinitions;
 use CraftCms\Cms\Workflow\Workflows as WorkflowService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
@@ -35,11 +39,29 @@ use Mcp\Schema\ToolAnnotations;
  */
 readonly class Workflows
 {
+    private const array StagesSchema = [
+        'type' => 'array',
+        'minItems' => 1,
+        'description' => 'Ordered review stages. Omit a new stage’s uid to generate one.',
+        'items' => [
+            'type' => 'object',
+            'properties' => [
+                'uid' => ['type' => 'string', 'format' => 'uuid'],
+                'name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255],
+                'type' => ['type' => 'string', 'description' => 'Workflow stage class, such as CraftCms\\Cms\\Workflow\\UserReview\\UserReviewStage.'],
+                'settings' => ['type' => 'object', 'additionalProperties' => true],
+            ],
+            'required' => ['name', 'type'],
+            'additionalProperties' => false,
+        ],
+    ];
+
     public function __construct(
         private WorkflowService $workflows,
         private ElementQueryFactory $elementQueries,
         private McpActor $actor,
         private WorkflowReviewSerializer $reviews,
+        private WorkflowDefinitions $definitions,
     ) {}
 
     /** @return array{count: int, workflows: list<array<string, mixed>>} */
@@ -64,17 +86,62 @@ readonly class Workflows
         #[Schema(format: 'uuid')]
         ?string $uid = null,
     ): array {
-        if (count(Arr::whereNotNull([$id, $uid])) !== 1) {
-            throw new ToolCallException('Provide exactly one of: id, uid.');
+        return ['workflow' => $this->definition($this->find($id, $uid)->load('sections'))];
+    }
+
+    /**
+     * @param  list<array{uid?: string, name: string, type: string, settings?: array<string, mixed>}>  $stages  Ordered review stages.
+     * @return array{workflow: array<string, mixed>}
+     */
+    #[RequiresAdminChanges]
+    public function create(
+        #[Schema(minLength: 1, maxLength: 255)]
+        string $name,
+        #[Schema(definition: self::StagesSchema)]
+        array $stages,
+    ): array {
+        return $this->save(new Workflow, ['name' => $name, 'stages' => $stages]);
+    }
+
+    /**
+     * @param  list<array{uid?: string, name: string, type: string, settings?: array<string, mixed>}>|null  $stages  Ordered review stages, replacing the current stages. Keep a stage’s uid to keep it the same stage.
+     * @return array{workflow: array<string, mixed>}
+     */
+    #[RequiresAdminChanges]
+    public function update(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+        #[Schema(minLength: 1, maxLength: 255)]
+        ?string $name = null,
+        #[Schema(definition: self::StagesSchema)]
+        ?array $stages = null,
+    ): array {
+        $workflow = $this->find($id, $uid);
+        $config = $workflow->getConfig();
+
+        return $this->save($workflow, [
+            'name' => $name ?? $config['name'],
+            'stages' => $stages ?? $config['stages'],
+        ]);
+    }
+
+    /** @return array{deleted: true} */
+    #[RequiresAdminChanges]
+    public function delete(
+        ?int $id = null,
+        #[Schema(format: 'uuid')]
+        ?string $uid = null,
+    ): array {
+        $workflow = $this->find($id, $uid);
+
+        if ($workflow->sections()->exists()) {
+            throw new ToolCallException('This workflow cannot be deleted while it is assigned to a section.');
         }
 
-        $workflow = $this->workflows->getAllWorkflows()->first(fn (Workflow $workflow): bool => $id !== null ? $workflow->id === $id : $workflow->uid === $uid);
+        $this->workflows->deleteWorkflow($workflow);
 
-        if ($workflow === null) {
-            throw new ToolCallException('Workflow not found.');
-        }
-
-        return ['workflow' => $this->definition($workflow->load('sections'))];
+        return ['deleted' => true];
     }
 
     /** @return array{review: array<string, mixed>|null} */
@@ -278,6 +345,44 @@ readonly class Workflows
     private function response(ElementInterface $draft): array
     {
         return ['review' => $this->reviews->serialize($draft, $this->actor->user())];
+    }
+
+    private function find(?int $id, ?string $uid): Workflow
+    {
+        if (count(Arr::whereNotNull([$id, $uid])) !== 1) {
+            throw new ToolCallException('Provide exactly one of: id, uid.');
+        }
+
+        $workflow = $this->workflows->getAllWorkflows()->first(fn (Workflow $workflow): bool => $id !== null ? $workflow->id === $id : $workflow->uid === $uid);
+
+        if ($workflow === null) {
+            throw new ToolCallException('Workflow not found.');
+        }
+
+        return $workflow;
+    }
+
+    /**
+     * @param  array{name: string, stages: array<int, array<string, mixed>>}  $input
+     * @return array{workflow: array<string, mixed>}
+     */
+    private function save(Workflow $workflow, array $input): array
+    {
+        $input['stages'] = array_map(static fn (array $stage): array => [
+            ...$stage,
+            'uid' => $stage['uid'] ?? Str::uuid7()->toString(),
+            'settings' => $stage['settings'] ?? [],
+        ], $input['stages']);
+
+        try {
+            $workflow->fill($this->definitions->validate($input, $workflow->exists ? $workflow : null));
+        } catch (ValidationException $exception) {
+            throw new ToolCallException(implode("\n", Arr::flatten($exception->errors())), previous: $exception);
+        }
+
+        $this->workflows->saveWorkflow($workflow);
+
+        return ['workflow' => $this->definition($this->find(null, $workflow->uid)->load('sections'))];
     }
 
     /** @return array<string, mixed> */

@@ -67,8 +67,10 @@ readonly class Configuration
             return ['types' => array_map(static fn (ConfigurationType $type): array => [
                 'type' => $type->value,
                 'operations' => array_map(static fn (ConfigurationOperation $operation): string => $operation->value, $operations),
-            ], ConfigurationType::cases())];
+            ], array_values(array_filter(ConfigurationType::cases(), static fn (ConfigurationType $type): bool => $type->available())))];
         }
+
+        $this->authorizeType($type);
 
         if ($operation !== null) {
             $this->authorize($operation->writes());
@@ -199,6 +201,7 @@ readonly class Configuration
         array $options = [],
     ): array {
         $this->authorize($operation->writes());
+        $this->authorizeType($type);
         $values = ['type' => $type->value];
 
         if ($operation->needsIdentifier()) {
@@ -234,6 +237,13 @@ readonly class Configuration
             ConfigurationOperation::Delete => ['type' => $type->value, ...$result],
             default => ['type' => $type->value, 'item' => $result[$type->itemKey()]],
         };
+    }
+
+    private function authorizeType(ConfigurationType $type): void
+    {
+        if (! $type->available()) {
+            throw new ToolCallException("The {$type->value} configuration type isn’t available in this Craft edition.");
+        }
     }
 
     private function authorize(bool $write = false): void

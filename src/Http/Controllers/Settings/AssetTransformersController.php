@@ -13,7 +13,6 @@ use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\AssetTransformerEditViewModel;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Ui;
@@ -126,7 +125,7 @@ class AssetTransformersController extends BaseAssetSettingsController
             'name' => $data['name'] ?? '',
             'handle' => $data['handle'] ?? '',
             'driver' => $data['driver'],
-            'settings' => $this->settings($data['driver'], $data['settings'] ?? []),
+            'settings' => $this->assetTransformDrivers->settings($data['driver'], $data['settings'] ?? []),
         ]);
 
         if (! $this->assetTransformers->saveAssetTransformer($transformer)) {
@@ -218,27 +217,5 @@ class AssetTransformersController extends BaseAssetSettingsController
             readOnly: $this->readOnly,
             values: $values,
         );
-    }
-
-    /**
-     * @param  array<string, mixed>  $settings
-     * @return array<string, mixed>
-     */
-    private function settings(string $driver, array $settings): array
-    {
-        $handles = array_map(function ($field): string {
-            $path = $field->getControl()?->path();
-            $path = is_array($path) && count($path) === 1 ? $path[0] : $path;
-
-            if (! is_string($path) || $path === '' || str_contains($path, '.')) {
-                throw ValidationException::withMessages([
-                    'driver' => t('The selected Asset Transform driver has invalid settings.'),
-                ]);
-            }
-
-            return $path;
-        }, $this->assetTransformDrivers->driver($driver)->definition()->settingsFields);
-
-        return Arr::only($settings, $handles);
     }
 }

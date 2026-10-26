@@ -9,6 +9,7 @@ use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Mcp\Capability\Attribute\McpTool;
+use Mcp\Exception\ToolCallException;
 use Mcp\Schema\ToolAnnotations;
 
 /**
@@ -109,6 +110,24 @@ readonly class ProjectConfig
             'forced' => $force,
             'hadFileWriteIssues' => $this->projectConfig->getHadFileWriteIssues(),
         ];
+    }
+
+    /** @return array{rebuilt: true} */
+    #[McpTool(
+        name: 'project-config.rebuild',
+        description: 'Rebuilds the loaded project config from what’s stored in the database, as the Project Config utility does, and writes it to the YAML files when they’re written automatically. Use it when project config has fallen out of sync with the database.',
+        annotations: new ToolAnnotations(destructiveHint: true),
+    )]
+    #[RequiresAdmin]
+    public function rebuild(): array
+    {
+        if ($this->projectConfig->readOnly) {
+            throw new ToolCallException('Rebuilding the project config is not allowed while it’s in read-only mode.');
+        }
+
+        $this->projectConfig->rebuild();
+
+        return ['rebuilt' => true];
     }
 
     /**
