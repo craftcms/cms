@@ -34,8 +34,17 @@ captures at the display's pixel density, so Retina shots come out at 2×.
    [screenX, screenY + outerHeight - innerHeight]
    ```
 
-3. Use the theme the person is using, normally the control panel's dark theme,
-   and keep it the same across the set.
+3. Capture every shot in both themes, light and dark, so it matches the
+   reader's own GitHub theme. Switch the page's theme without touching the
+   person's preference:
+
+   ```js
+   document.documentElement.dataset.theme = 'dark'; // dark
+   delete document.documentElement.dataset.theme;   // light
+   ```
+
+   Keep the page size, crop and padding the same in both, and name the files
+   `…-light.png` and `…-dark.png`.
 4. Show real, representative content: a seeded entry or asset, a search that
    returns a good mix of results.
 
@@ -131,7 +140,7 @@ the difference. Shadows come out as real partial transparency.
 ## Focused crop
 
 1. `__iso(bg)` with the color the feature normally sits on, e.g. the page's
-   `--c-surface-default`, read from the page.
+   `--c-surface-default`, read from the page in each theme.
 2. Add the same padding to all four sides of the feature's rect. Around 24 CSS
    pixels suits most features; use the same value across a set.
 3. Capture that region once with `capture.sh`. Nothing but the feature
@@ -159,18 +168,41 @@ the difference. Shadows come out as real partial transparency.
    window.onbeforeunload = null;
    ```
 
-5. Put them in the description with `gh pr edit --body-file`. For more than
-   two, use a two-column table with a caption under each image. GitHub scales
-   each image to its cell and links it to the full size:
+5. Put them in the description with `gh pr edit --body-file`, as a `<picture>`
+   per shot, so GitHub shows the one matching the reader's theme:
 
    ```html
-   <table>
-   <tr>
-   <td width="50%" valign="top"><img alt="Default state" src="https://github.com/user-attachments/assets/…" /><br />The default state on an entry.</td>
-   <td width="50%" valign="top"><img alt="Searching" src="https://github.com/user-attachments/assets/…" /><br />Searching “image”.</td>
-   </tr>
-   </table>
+   <picture>
+     <source
+       media="(prefers-color-scheme: dark)"
+       srcset="https://github.com/user-attachments/assets/…"
+     >
+     <source
+       media="(prefers-color-scheme: light)"
+       srcset="https://github.com/user-attachments/assets/…"
+     >
+     <img
+       alt="The command palette, searching “image”"
+       src="https://github.com/user-attachments/assets/…"
+       width="640"
+       height="360"
+     >
+   </picture>
    ```
+
+   The `<img>` uses the light shot, as the fallback. Set its `width` and
+   `height` to exactly half the image file's pixel size, since `screencapture`
+   shoots at 2× on Retina displays, so it isn't shown larger than the UI it was
+   taken from. Read the size from the file with
+   `sips -g pixelWidth -g pixelHeight shot.png`, never from the size GitHub
+   happens to display it at. Give it alt text that says what the shot shows.
+
+   For a gallery of several shots, stack the `<picture>`s one after another,
+   each followed by a blank line and a one-line caption. Don't put them in a
+   multi-column table. A table cell caps each image's width but not its
+   `height`, which squashes it, and leaving `height` off only shrinks the
+   shot. Unlike a bare `<img>`, GitHub doesn't link a `<picture>` to the full
+   size, so readers can't open a shrunken shot any larger.
 
 6. Open the PR page to check the images render.
 
