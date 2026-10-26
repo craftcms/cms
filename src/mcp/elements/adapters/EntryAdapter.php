@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace craft\mcp\elements\adapters;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
@@ -14,6 +15,7 @@ use craft\mcp\ElementLifecycle;
 use craft\mcp\ElementQueryCriteria;
 use craft\mcp\elements\BaseElementAdapter;
 use craft\mcp\serializers\ElementSerializer;
+use craft\models\ElementActivity;
 use Illuminate\Support\Arr;
 use Mcp\Exception\ToolCallException;
 use yii\base\InvalidConfigException;
@@ -79,7 +81,7 @@ class EntryAdapter extends BaseElementAdapter
     {
         return [
             'type' => 'object',
-            'description' => 'For a new entry, provide sectionId. For an existing entry, typeId previews another entry type’s layout.',
+            'description' => 'For a new entry, provide sectionId. For an existing entry or draft, typeId previews another entry type’s layout.',
             'properties' => [
                 'sectionId' => ['type' => 'integer', 'description' => 'Section ID of a new entry.'],
                 'typeId' => ['type' => 'integer', 'description' => 'Entry type ID. Defaults to the section’s first entry type.'],
@@ -97,7 +99,8 @@ class EntryAdapter extends BaseElementAdapter
     protected function notes(): array
     {
         return [
-            'elements.get/update/field-schema load canonical entries, excluding drafts and revisions. Use drafts.list to inspect saved drafts.',
+            'elements.create with asUnpublishedDraft: true saves a new entry as an unpublished draft instead of a live entry, optionally named with draftName and draftNotes. The result sets savedAsDraft and explains the next step.',
+            'elements.get/update/field-schema load canonical entries and saved drafts by their own element ID or UID, excluding provisional drafts and revisions. A canonical ID selects the original entry; a draft ID selects that draft. Updating a draft saves only the draft and leaves the canonical entry unchanged until the draft is applied with drafts.apply. To find drafts of an entry, use drafts.list with the canonical ID.',
             'Duplicating defaults to an unpublished draft. The canonical mode preserves the enabled state. Nested entries keep their owner.',
         ];
     }
@@ -135,9 +138,28 @@ class EntryAdapter extends BaseElementAdapter
         return $this->lifecycle->duplicate($element, asUnpublishedDraft: $mode === 'unpublished');
     }
 
+    public function createUnpublishedDraft(array $attributes, array $fields, User $actor, ?string $draftName = null, ?string $draftNotes = null): array
+    {
+        $entry = $this->prepareCreate($attributes, $fields, $actor);
+
+        if (!Authorization::allows($actor, 'createDrafts', $entry)) {
+            throw new ToolCallException('You are not authorized to create drafts of this entry.');
+        }
+
+        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+
+        if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, $actor->id, $draftName, $draftNotes, markAsSaved: true)) {
+            throw $this->saveFailed($entry);
+        }
+
+        Craft::$app->getElements()->trackActivity($entry, ElementActivity::TYPE_SAVE, $actor);
+
+        return $this->draftResult($entry, "The entry was saved as an unpublished draft (ID {$entry->id}). It is not live until the draft is applied.");
+    }
+
     protected function findQuery(): ElementQueryInterface
     {
-        return Entry::find()->status(null);
+        return Entry::find()->drafts(null)->status(null);
     }
 
     protected function newElement(array $context, User $actor): ElementInterface
@@ -194,6 +216,59 @@ class EntryAdapter extends BaseElementAdapter
         }
 
         parent::authorizeSave($actor, $element);
+    }
+
+    protected function save(ElementInterface $element, User $actor): array
+    {
+        if (!$element->getIsDraft()) {
+            return parent::save($element, $actor);
+        }
+
+        $this->saveDraft($element, $actor);
+
+        $summary = $element->getIsUnpublishedDraft()
+            ? "Your changes were saved to unpublished draft {$element->id}. It is not live until the draft is applied."
+            : "Your changes were saved to draft {$element->id}. Entry {$element->getCanonicalId()} is unchanged until the draft is applied.";
+
+        return $this->draftResult($element, $summary);
+    }
+
+    /**
+     * Saves changes to an existing draft without creating another draft, as the control panel does.
+     */
+    private function saveDraft(ElementInterface $draft, User $actor): void
+    {
+        $lockKey = "element:$draft->id";
+        $mutex = Craft::$app->getMutex();
+
+        if (!$mutex->acquire($lockKey, 15)) {
+            throw new ToolCallException('Could not acquire a lock to save the entry.');
+        }
+
+        try {
+            $draft->setScenario(Element::SCENARIO_ESSENTIALS);
+            $saved = Craft::$app->getElements()->saveElement($draft);
+        } finally {
+            $mutex->release($lockKey);
+        }
+
+        if (!$saved) {
+            throw $this->saveFailed($draft);
+        }
+
+        Craft::$app->getElements()->trackActivity($draft, ElementActivity::TYPE_SAVE, $actor);
+    }
+
+    /**
+     * @return array{element: array<string, mixed>, savedAsDraft: true, instructions: string}
+     */
+    private function draftResult(ElementInterface $draft, string $summary): array
+    {
+        return [
+            'element' => $this->serialize($draft),
+            'savedAsDraft' => true,
+            'instructions' => "$summary Use the draft ID with elements.get, elements.update, and the drafts.* tools. Publish it with drafts.apply when it is ready.",
+        ];
     }
 
     /**

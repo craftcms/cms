@@ -79,6 +79,16 @@ interface ElementAdapter
     public function create(array $attributes, array $fields, User $actor): array;
 
     /**
+     * Creates an element as an unpublished draft, for `elements.create` with `asUnpublishedDraft`.
+     *
+     * @param  array<string, mixed>  $attributes  Values matching the `createAttributes` schema.
+     * @param  array<string, mixed>  $fields  Custom field values keyed by field handle.
+     * @return array{element: array<string, mixed>}&array<string, mixed>
+     * @throws ToolCallException if the type does not support unpublished drafts.
+     */
+    public function createUnpublishedDraft(array $attributes, array $fields, User $actor, ?string $draftName = null, ?string $draftNotes = null): array;
+
+    /**
      * @param  array<string, mixed>  $attributes  Values matching the `updateAttributes` schema.
      * @param  array<string, mixed>  $fields  Custom field values keyed by field handle.
      * @return array{element: array<string, mixed>}&array<string, mixed>
