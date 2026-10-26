@@ -149,11 +149,16 @@ export default class CraftCopyButton extends LitElement {
     return this.tooltipLabel || t('Copy');
   }
 
-  #onSlotChange(event: Event) {
-    const slot = event.target as HTMLSlotElement;
-    this.hasLabel = slot
-      .assignedNodes({flatten: true})
-      .some((node) => node instanceof Element || !!node.textContent?.trim());
+  /**
+   * Checks the host's own children rather than the slot that changed. The
+   * label's slot moves into the button once there's a label, and the slot it
+   * leaves fires `slotchange` with nothing in it, which would flip `hasLabel`
+   * back and forth forever.
+   */
+  #onSlotChange() {
+    this.hasLabel = [...this.childNodes].some(
+      (node) => node instanceof Element || !!node.textContent?.trim()
+    );
   }
 
   override render() {
