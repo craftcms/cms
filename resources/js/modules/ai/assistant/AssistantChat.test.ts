@@ -473,6 +473,86 @@ describe('AssistantChat', () => {
     ).toBe('Actions for Lighthouses');
   });
 
+  async function askQuestion(): Promise<void> {
+    const question = (id: string, options: string[]) => ({
+      id,
+      role: 'assistant',
+      parts: [
+        {
+          type: 'tool-call',
+          id: `call_${id}`,
+          name: 'ask_user',
+          arguments: '{}',
+          state: 'input-complete',
+          output: JSON.stringify({
+            message: 'Asked the user.',
+            question: 'Which one?',
+            options,
+          }),
+        },
+      ],
+    });
+    chat.messages.value = [
+      question('m1', ['Old', 'Older']),
+      {id: 'u1', role: 'user', parts: [{type: 'text', content: 'Old'}]},
+      question('m2', ['The page', 'The author']),
+    ];
+    await flush();
+  }
+
+  function submitComposer(): void {
+    container
+      .querySelector('form')!
+      .dispatchEvent(new Event('submit', {cancelable: true}));
+  }
+
+  it('offers the answers to the latest question as radios above the message box, and sends the one chosen', async () => {
+    await askQuestion();
+
+    const group = container.querySelector('form [role="group"]')!;
+    const radios = [
+      ...group.querySelectorAll<HTMLInputElement>('input[type="radio"]'),
+    ];
+
+    expect(group.textContent).toContain('Which one?');
+    expect(
+      radios.map((radio) => radio.closest('label')?.textContent?.trim())
+    ).toEqual(['The page', 'The author', undefined]);
+
+    submitComposer();
+    await flush();
+
+    expect(chat.sendMessage).not.toHaveBeenCalled();
+
+    radios[1]!.click();
+    submitComposer();
+    await flush();
+
+    expect(chat.sendMessage).toHaveBeenCalledWith('The author');
+  });
+
+  it('chooses the message box as the answer once something is typed in it, and sends that', async () => {
+    await askQuestion();
+    container
+      .querySelector<HTMLInputElement>(
+        'form [role="group"] input[type="radio"]'
+      )!
+      .click();
+
+    await type('Neither');
+
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[type="radio"][aria-label="Another answer"]'
+      )!.checked
+    ).toBe(true);
+
+    submitComposer();
+    await flush();
+
+    expect(chat.sendMessage).toHaveBeenCalledWith('Neither');
+  });
+
   it('shows what a message was sent with on its bubble, apart from its text', async () => {
     chat.messages.value = [
       {

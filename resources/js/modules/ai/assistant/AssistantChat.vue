@@ -402,6 +402,11 @@
           : t('Couldn’t find the field'),
       running: () => t('Showing a field…'),
     },
+    ask_user: {
+      icon: 'message-question',
+      done: () => t('Asked a question'),
+      running: () => t('Asking a question…'),
+    },
   };
 
   /** A tool call’s icon: its own, or a wrench for the MCP server’s tools. */
@@ -481,6 +486,79 @@
 
     if (url) {
       router.visit(url);
+    }
+  }
+
+  /** The question an `ask_user` call asked, and its answers. */
+  function questionOf(
+    output: unknown
+  ): {question: string; options: string[]} | null {
+    const result = resultOf(output) as {
+      question?: unknown;
+      options?: unknown;
+    } | null;
+
+    return typeof result?.question === 'string' && Array.isArray(result.options)
+      ? {question: result.question, options: result.options as string[]}
+      : null;
+  }
+
+  /**
+   * The question the assistant is waiting for an answer to: the latest one in
+   * its latest message, which the next message the user sends answers. It’s
+   * shown as soon as it’s asked, while the assistant finishes its reply.
+   */
+  const openQuestion = computed(() => {
+    const last = messages.value.at(-1);
+
+    if (last?.role !== 'assistant') {
+      return null;
+    }
+
+    const part = [...last.parts]
+      .reverse()
+      .find((part) => part.type === 'tool-call' && part.name === 'ask_user');
+    const question =
+      part?.type === 'tool-call' ? questionOf(part.output) : null;
+
+    return part?.type === 'tool-call' && question
+      ? {id: part.id, ...question}
+      : null;
+  });
+
+  /** The answer chosen to the open question: an index of its answers, or the message box. */
+  const answer = shallowRef<number | 'other' | null>(null);
+
+  watch(
+    () => openQuestion.value?.id,
+    (id) => {
+      // What the user already typed is their answer, until they choose another.
+      answer.value = id && draft.value.trim() ? 'other' : null;
+
+      if (id) {
+        status.value = t('The assistant asked: {question}', {
+          question: openQuestion.value!.question,
+        });
+      }
+    }
+  );
+
+  /** The message Send sends: the chosen answer, or what’s in the message box. */
+  const outgoing = computed(() =>
+    openQuestion.value && typeof answer.value === 'number'
+      ? (openQuestion.value.options[answer.value] ?? '')
+      : openQuestion.value && answer.value !== 'other'
+        ? ''
+        : draft.value.trim()
+  );
+
+  /** Chooses the message box as the answer, and puts focus in it when it’s clicked. */
+  function chooseOtherAnswer(event: Event): void {
+    answer.value = 'other';
+
+    // A click from the arrow keys has no detail, and focus stays on the radios.
+    if (event instanceof MouseEvent && event.detail > 0) {
+      focus();
     }
   }
 
@@ -603,10 +681,14 @@
 
   function onDraftChange(event: Event): void {
     draft.value = String((event.target as CraftTextarea).modelValue ?? '');
+
+    if (openQuestion.value && draft.value.trim()) {
+      answer.value = 'other';
+    }
   }
 
   async function send(): Promise<void> {
-    const message = draft.value.trim();
+    const message = outgoing.value;
 
     if (!message || isLoading.value) {
       return;
@@ -619,8 +701,15 @@
       return;
     }
 
-    draft.value = '';
-    mentions.value = [];
+    if (message === draft.value.trim()) {
+      draft.value = '';
+      mentions.value = [];
+    }
+
+    await submit(message);
+  }
+
+  async function submit(message: string): Promise<void> {
     status.value = '';
     historyScroll.pin();
     await sendMessage(withMessageContext(message, context.takeForMessage()));
@@ -817,6 +906,14 @@
                 >
               </craft-chip>
             </p>
+            <p
+              v-if="
+                entry.part.name === 'ask_user' && questionOf(entry.part.output)
+              "
+              class="assistant-chat__cards"
+            >
+              {{ questionOf(entry.part.output)!.question }}
+            </p>
           </li>
         </template>
         <li v-if="approvals.length" class="assistant-chat__message">
@@ -913,17 +1010,62 @@
             </li>
           </ul>
 
-          <craft-textarea
-            ref="messageBox"
-            class="assistant-chat__message-box"
-            :class="{'assistant-chat__message-box--empty': !draft}"
-            :label="t('Ask anything')"
-            :placeholder="messageBoxPlaceholder"
-            rows="2"
-            .modelValue="draft"
-            @model-value-changed="onDraftChange"
-            @keydown="onDraftKeydown"
-          ></craft-textarea>
+          <!-- While the assistant waits for an answer, its answers are radios
+            above the message box, and the box is the last one. They share a
+            name, so they're one set for the arrow keys, around the box. -->
+          <div
+            class="assistant-chat__answer"
+            :role="openQuestion ? 'group' : undefined"
+            :aria-labelledby="openQuestion ? `${idPrefix}-question` : undefined"
+          >
+            <template v-if="openQuestion">
+              <p :id="`${idPrefix}-question`" class="assistant-chat__question">
+                {{ openQuestion.question }}
+              </p>
+              <label
+                v-for="(option, index) in openQuestion.options"
+                :key="`${openQuestion.id}-${index}`"
+                class="assistant-chat__option"
+              >
+                <input
+                  type="radio"
+                  :name="`${idPrefix}-answer`"
+                  :checked="answer === index"
+                  @change="answer = index"
+                  @keydown.enter.prevent="send"
+                />
+                {{ option }}
+              </label>
+            </template>
+            <div class="assistant-chat__option">
+              <input
+                v-if="openQuestion"
+                type="radio"
+                :name="`${idPrefix}-answer`"
+                :checked="answer === 'other'"
+                :aria-label="t('Another answer')"
+                @click="chooseOtherAnswer"
+                @keydown.enter.prevent="send"
+              />
+              <craft-textarea
+                ref="messageBox"
+                class="assistant-chat__message-box"
+                :class="{
+                  'assistant-chat__message-box--empty': !draft || openQuestion,
+                }"
+                :label="openQuestion ? t('Another answer') : t('Ask anything')"
+                :placeholder="
+                  openQuestion
+                    ? t('Type another answer…')
+                    : messageBoxPlaceholder
+                "
+                rows="2"
+                .modelValue="draft"
+                @model-value-changed="onDraftChange"
+                @keydown="onDraftKeydown"
+              ></craft-textarea>
+            </div>
+          </div>
           <craft-text-expander
             v-if="messageBoxInputId"
             :for="messageBoxInputId"
@@ -972,7 +1114,7 @@
                 key="send"
                 class="assistant-chat__send"
                 type="submit"
-                :variant="draft.trim() ? 'primary' : 'fill'"
+                :variant="outgoing ? 'primary' : 'fill'"
                 size="small"
                 icon
               >
@@ -1178,6 +1320,41 @@
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
+  }
+
+  .assistant-chat__answer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--c-spacing-xs);
+  }
+
+  .assistant-chat__question {
+    margin-block-end: var(--c-spacing-xs);
+    font-weight: 600;
+  }
+
+  .assistant-chat__option {
+    display: flex;
+    align-items: start;
+    gap: var(--c-spacing-sm);
+  }
+
+  .assistant-chat__option > input {
+    flex: none;
+    inline-size: 1em;
+    block-size: 1em;
+    margin: 0;
+    margin-block-start: calc(0.5lh - 0.5em);
+    accent-color: var(--c-color-accent-fill-loud);
+  }
+
+  .assistant-chat__option > input:has(+ .assistant-chat__message-box) {
+    margin-block-start: calc(var(--c-spacing-xs) + 0.5lh - 0.5em);
+  }
+
+  .assistant-chat__option > .assistant-chat__message-box {
+    flex: 1;
+    min-inline-size: 0;
   }
 
   .assistant-chat__message-box {

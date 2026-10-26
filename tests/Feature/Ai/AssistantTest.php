@@ -219,6 +219,21 @@ it('shows the elements the user can view as chips, which only the chat gets, lea
         ->toBe([]);
 });
 
+it('ends the reply once the assistant has asked a question, as the answer is the user’s next message', function () {
+    AssistantAgent::fake([
+        new ToolCall('call_1', 'ask_user', ['question' => 'Which title?', 'options' => ['Keeper', 'Beacon']]),
+        'Which title do you prefer?',
+    ]);
+    $threadId = (string) Str::uuid();
+
+    chat($threadId, 'Suggest some titles')->assertOk()->streamedContent();
+
+    $message = ConversationMessage::query()->where('role', 'assistant')->sole();
+
+    expect($message->tool_results[0]['name'])->toBe('ask_user')
+        ->and((string) $message->content)->not->toContain('Which title do you prefer?');
+});
+
 it('shows up to three elements as cards and more as a list of chips, unless the model chooses', function (int $count, ?string $view, string $shown) {
     request()->setUserResolver(static fn () => auth()->user());
     $elements = array_map(
