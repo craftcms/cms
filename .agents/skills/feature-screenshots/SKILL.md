@@ -205,24 +205,39 @@ the difference. Shadows come out as real partial transparency.
        alt="The command palette, searching “image”"
        src="https://github.com/user-attachments/assets/…"
        width="640"
-       height="360"
      >
    </picture>
    ```
 
-   The `<img>` uses the light shot, as the fallback. Set its `width` and
-   `height` to exactly half the image file's pixel size, since `screencapture`
-   shoots at 2× on Retina displays, so it isn't shown larger than the UI it was
-   taken from. Read the size from the file with
-   `sips -g pixelWidth -g pixelHeight shot.png`, never from the size GitHub
-   happens to display it at. Give it alt text that says what the shot shows.
+   The `<img>` uses the light shot, as the fallback. Set its `width` to exactly
+   half the image file's pixel width, since `screencapture` shoots at 2× on
+   Retina displays, so it isn't shown larger than the UI it was taken from.
+   Read it from the file with `sips -g pixelWidth shot.png`, never from the
+   size GitHub happens to display it at. Leave `height` off: GitHub caps an
+   image's width to fit its container but keeps a set height, which squashes
+   it. Give it alt text that says what the shot shows.
 
-   For a gallery of several shots, stack the `<picture>`s one after another,
-   each followed by a blank line and a one-line caption. Don't put them in a
-   multi-column table. A table cell caps each image's width but not its
-   `height`, which squashes it, and leaving `height` off only shrinks the
-   shot. Unlike a bare `<img>`, GitHub doesn't link a `<picture>` to the full
-   size, so readers can't open a shrunken shot any larger.
+   For a gallery of more than two shots, use a two-column table with a
+   caption under each shot:
+
+   ```html
+   <table>
+   <tr>
+   <td width="50%" valign="top">
+   <picture>…</picture>
+   <br />The default state on an entry.
+   </td>
+   <td width="50%" valign="top">
+   <picture>…</picture>
+   <br />Searching “image”.
+   </td>
+   </tr>
+   </table>
+   ```
+
+   Each shot is scaled down to fit its cell. Unlike a bare `<img>`, GitHub
+   doesn't link a `<picture>` to the full-size file, so readers can't click a
+   shot to enlarge it.
 
 6. Open the PR page to check the images render.
 
