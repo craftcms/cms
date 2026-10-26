@@ -18,7 +18,12 @@ use CraftCms\Cms\Tests\Support\Ai\AltTextTask;
 use CraftCms\Cms\Tests\Support\Ai\MediaTask;
 use CraftCms\Cms\Tests\Support\Ai\ResearchTask;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
+use GuzzleHttp\Psr7\Response as Psr7Response;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
+use Laravel\Ai\Exceptions\ProviderConnectionException;
+use Laravel\Ai\Exceptions\ProviderOverloadedException;
 use Laravel\Ai\Files\Base64Audio;
 use Laravel\Ai\Files\Base64Document;
 use Laravel\Ai\Files\Base64Image;
@@ -179,3 +184,30 @@ it('checks that models can read documents, hear audio, and watch videos', functi
 
     expect(app(CapabilityChecks::class)->result($capability, new ResolvedProvider('openai', 'gpt-media'))?->supported)->toBe($readable);
 })->with([Capability::DocumentInput, Capability::AudioInput, Capability::VideoInput])->with(['readable' => true, 'unreadable' => false]);
+
+it('doesn’t cache errors that can be fixed right away, but checks the model again', function (Throwable $exception): void {
+    $attempts = 0;
+    AttachmentProbe::fake(function (string $prompt, Collection $attachments) use (&$attempts, $exception): string {
+        if (++$attempts === 1) {
+            throw $exception;
+        }
+
+        return swatchColor($attachments);
+    });
+
+    $failures = app(Ai::class)->checkRequirements();
+
+    expect($failures)->toHaveCount(1)
+        ->and($failures[0]->transient)->toBeTrue()
+        ->and(app(Ai::class)->available('test:altText'))->toBeTrue()
+        ->and(app(Ai::class)->problems())->toBe([]);
+
+    app(Ai::class)->checkRequirements(app(Ai::class)->requirementMappings());
+
+    expect($attempts)->toBe(2)
+        ->and(app(CapabilityChecks::class)->result(Capability::Vision, new ResolvedProvider('deepseek', 'deepseek-chat'))?->supported)->toBeTrue();
+})->with([
+    'unreachable' => fn () => ProviderConnectionException::forProvider('deepseek'),
+    'bad API key' => fn () => new RequestException(new Response(new Psr7Response(401, [], '{"error":{"message":"Invalid API key"}}'))),
+    'overloaded' => fn () => ProviderOverloadedException::forProvider('deepseek'),
+]);

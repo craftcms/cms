@@ -14,9 +14,12 @@ use CraftCms\Cms\Ai\Data\ResolvedProvider;
 use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Ai\AiManager;
 use Laravel\Ai\Contracts\Providers\TextProvider;
+use Laravel\Ai\Exceptions\FailoverableException;
 use Laravel\Ai\Files\Audio;
 use Laravel\Ai\Files\Document;
 use Laravel\Ai\Files\File;
@@ -32,8 +35,9 @@ use Throwable;
  * filled with one color and asks which color it is. Documents, audio, and video are checked the same way, with a PDF
  * with a word on it, a few beeps, and a video filled with one color. For structured output, it asks for a word and a
  * number in a JSON schema. For tool calling, it gives the model a tool that returns a code, and asks for the code. Results are cached. A model that answers correctly, or wrongly,
- * is cached indefinitely. A request that fails, such as for a missing API key, is cached for a day and checked again
- * the next time the AI settings are saved.
+ * is cached indefinitely. Other errors are cached for a day, and checked again the next time the AI settings are
+ * saved. Errors that can be fixed right away, such as the provider being unreachable or rejecting its API key, aren’t
+ * cached, though the model is still checked again the next time the AI settings are saved.
  *
  * @since 6.0.0
  */
@@ -98,7 +102,10 @@ class CapabilityChecks
         $key = $this->cacheKey($capability, $resolved);
         $value = ['model' => $result->model, 'supported' => $result->supported, 'error' => $result->error];
 
-        if ($result->supported === null) {
+        if ($result->transient) {
+            // Remember that the model still needs checking, but not why, since the problem may be fixed any moment
+            Cache::forever($key, [...$value, 'error' => null]);
+        } elseif ($result->supported === null) {
             Cache::put($key, $value, self::ERROR_TTL);
         } else {
             Cache::forever($key, $value);
@@ -172,7 +179,7 @@ class CapabilityChecks
         try {
             $response = new AttachmentProbe()->prompt($question, [$attachment], $resolved->provider, $resolved->model, self::TIMEOUT);
         } catch (Throwable $exception) {
-            return $this->checkResult($capability, $resolved, null, $exception->getMessage());
+            return $this->failedResult($capability, $resolved, $exception);
         }
 
         return $this->checkResult($capability, $resolved, $isCorrect(mb_strtolower($response->text)));
@@ -252,7 +259,7 @@ class CapabilityChecks
                 timeout: self::TIMEOUT,
             );
         } catch (Throwable $exception) {
-            return $this->checkResult(Capability::StructuredOutput, $resolved, null, $exception->getMessage());
+            return $this->failedResult(Capability::StructuredOutput, $resolved, $exception);
         }
 
         $data = $response instanceof StructuredAgentResponse ? $response->toArray() : [];
@@ -272,15 +279,42 @@ class CapabilityChecks
                 timeout: self::TIMEOUT,
             );
         } catch (Throwable $exception) {
-            return $this->checkResult(Capability::ToolCalling, $resolved, null, $exception->getMessage());
+            return $this->failedResult(Capability::ToolCalling, $resolved, $exception);
         }
 
         return $this->checkResult(Capability::ToolCalling, $resolved, str_contains($response->text, $code));
     }
 
-    private function checkResult(Capability $capability, ResolvedProvider $resolved, ?bool $supported, ?string $error = null): CapabilityCheck
+    private function checkResult(Capability $capability, ResolvedProvider $resolved, ?bool $supported): CapabilityCheck
     {
-        return new CapabilityCheck($capability, $resolved->provider, $this->modelName($resolved), $supported, $error);
+        return new CapabilityCheck($capability, $resolved->provider, $this->modelName($resolved), $supported);
+    }
+
+    private function failedResult(Capability $capability, ResolvedProvider $resolved, Throwable $exception): CapabilityCheck
+    {
+        return new CapabilityCheck(
+            $capability,
+            $resolved->provider,
+            $this->modelName($resolved),
+            null,
+            $exception->getMessage(),
+            self::isTransient($exception),
+        );
+    }
+
+    /**
+     * Returns whether a request failed for a reason that can be fixed right away, rather than because of the model:
+     * the provider couldn’t be reached, rejected the API key, was rate limited or overloaded, or had a server error.
+     */
+    private static function isTransient(Throwable $exception): bool
+    {
+        if ($exception instanceof FailoverableException || $exception instanceof ConnectionException) {
+            return true;
+        }
+
+        $status = $exception instanceof RequestException ? $exception->response->status() : null;
+
+        return in_array($status, [401, 403, 408], true) || ($status !== null && $status >= 500);
     }
 
     /**

@@ -6,12 +6,14 @@ use CraftCms\Cms\Ai\Agents\AttachmentProbe;
 use CraftCms\Cms\Ai\AiTasks;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Tests\Support\Ai\AltTextTask;
 use CraftCms\Cms\Tests\Support\Ai\IndexTask;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Ai\DescribeTask;
 use CraftCms\Cms\User\Elements\User;
 use Inertia\Testing\AssertableInertia;
+use Laravel\Ai\Exceptions\ProviderConnectionException;
 use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
@@ -199,4 +201,20 @@ it('only checks models when a task’s provider or model changes, or when its la
 
     $save('claude-other');
     expect($attempts)->toBe(2);
+});
+
+it('shows errors that can be fixed right away after saving, rather than in the settings', function (): void {
+    app(AiTasks::class)->register(AltTextTask::class);
+    AttachmentProbe::fake([fn () => throw ProviderConnectionException::forProvider('anthropic')]);
+
+    post(route('craft.cp.settings.ai.store'), [
+        'tasks' => ['test:altText' => ['enabled' => '1', 'provider' => 'anthropic', 'model' => 'claude-vision']],
+    ])->assertRedirect();
+
+    expect(collect(Flash::all())->where('type', 'error')->pluck('message')->implode(''))
+        ->toStartWith('Craft couldn’t check whether the claude-vision model on the anthropic provider supports vision:');
+
+    get(route('craft.cp.settings.ai.index'))
+        ->assertInertia(fn (AssertableInertia $page) => expect(json_encode($page->toArray()['props']['ui']['nodes'], JSON_UNESCAPED_UNICODE))->not->toContain('couldn’t check'))
+        ->assertOk();
 });

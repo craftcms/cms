@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Ai;
 
 use BackedEnum;
 use CraftCms\Cms\Ai\Contracts\TaskInterface;
+use CraftCms\Cms\Ai\Data\CapabilityCheck;
 use CraftCms\Cms\Ai\Data\ResolvedProvider;
 use CraftCms\Cms\Ai\Enums\AiUnavailableReason;
 use CraftCms\Cms\Ai\Enums\Modality;
@@ -248,10 +249,13 @@ class Ai
      *
      * @param  array<string, ResolvedProvider>|null  $previous  The tasks’ mappings from {@see requirementMappings()}
      *                                                          before the AI settings changed, or `null` to check every model that hasn’t been checked.
+     * @return list<CapabilityCheck> Checks that failed for a reason that can be fixed right away, such as the provider
+     *                               being unreachable. Their errors aren’t cached, so show them now.
      */
-    public function checkRequirements(?array $previous = null): void
+    public function checkRequirements(?array $previous = null): array
     {
         $checked = [];
+        $transientFailures = [];
 
         foreach ($this->requirementMappings() as $handle => $resolved) {
             $task = $this->tasks->getTaskByHandle($handle);
@@ -266,10 +270,16 @@ class Ai
                     continue;
                 }
 
-                $this->capabilityChecks->check($capability, $resolved);
+                $check = $this->capabilityChecks->check($capability, $resolved);
                 $checked[$id] = true;
+
+                if ($check->transient) {
+                    $transientFailures[] = $check;
+                }
             }
         }
+
+        return $transientFailures;
     }
 
     /**

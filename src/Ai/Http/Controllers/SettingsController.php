@@ -12,6 +12,7 @@ use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\UiContext;
@@ -78,7 +79,15 @@ readonly class SettingsController
         }
 
         $this->projectConfig->set(ProjectConfig::PATH_AI, $settings->toConfig(), 'Update AI settings.');
-        $this->ai->checkRequirements($previousMappings);
+
+        foreach ($this->ai->checkRequirements($previousMappings) as $failure) {
+            Flash::error(t('Craft couldn’t check whether the {model} model on the {provider} provider supports {capability}: {error}', [
+                'model' => $failure->model,
+                'provider' => $failure->provider,
+                'capability' => mb_strtolower($failure->capability->label()),
+                'error' => $failure->error,
+            ]));
+        }
 
         return $this->asSuccess(t('AI settings saved.'));
     }
