@@ -195,8 +195,14 @@ the difference. Shadows come out as real partial transparency.
    shoots at 2× on Retina displays, so it isn't shown larger than the UI it was
    taken from. Read the size from the file with
    `sips -g pixelWidth -g pixelHeight shot.png`, never from the size GitHub
-   happens to display it at. Give it alt text that says what the shot shows. Stack several shots one after another, each with
-   a caption under it, rather than in a multi-column table.
+   happens to display it at. Give it alt text that says what the shot shows.
+
+   For a gallery of several shots, stack the `<picture>`s one after another,
+   each followed by a blank line and a one-line caption. Don't put them in a
+   multi-column table. A table cell caps each image's width but not its
+   `height`, which squashes it, and leaving `height` off only shrinks the
+   shot. Unlike a bare `<img>`, GitHub doesn't link a `<picture>` to the full
+   size, so readers can't open a shrunken shot any larger.
 
 6. Open the PR page to check the images render.
 
