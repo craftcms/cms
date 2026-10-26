@@ -7,6 +7,7 @@ import {
   createTextInput,
   createCopyTextPrompt,
 } from './index.js';
+import type CraftTextarea from '../components/textarea/textarea.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -14,18 +15,22 @@ beforeEach(() => {
 
 it('leaves custom element registration to the application entry', () => {
   for (const tag of [
+    'craft-copy-button',
     'craft-dialog',
+    'craft-input',
     'craft-input-color',
+    'craft-input-copy',
     'craft-input-password',
     'craft-slide-picker',
     'craft-switch',
+    'craft-textarea',
   ]) {
     expect(customElements.get(tag)).toBeUndefined();
   }
 });
 
 describe('createCopyTextPrompt', () => {
-  it('opens a craft-dialog with a readonly input and a copy button', () => {
+  it('opens a craft-dialog with a read-only copy field', () => {
     const dialog = createCopyTextPrompt({
       label: 'Full URL',
       value: 'https://x',
@@ -34,17 +39,13 @@ describe('createCopyTextPrompt', () => {
     expect(dialog.tagName.toLowerCase()).toBe('craft-dialog');
     expect(dialog.getAttribute('label')).toBe('Full URL');
     expect(dialog.hasAttribute('open')).toBe(true);
-    // appended to the document
     expect(dialog.isConnected).toBe(true);
 
-    const input = dialog.querySelector<HTMLInputElement>(
-      '.copytext input.text'
-    );
-    expect(input?.getAttribute('value')).toBe('https://x');
-    expect(input?.readOnly).toBe(true);
-
-    const copyBtn = dialog.querySelector('craft-copy-button');
-    expect(copyBtn?.getAttribute('value')).toBe('https://x');
+    const field = dialog.querySelector('craft-input-copy');
+    expect(field?.label).toBe('Full URL');
+    expect(field?.labelSrOnly).toBe(true);
+    expect(field?.modelValue).toBe('https://x');
+    expect(field?.inputSize).toBe(25);
   });
 
   it('renders a textarea when config.textarea is set', () => {
@@ -56,19 +57,21 @@ describe('createCopyTextPrompt', () => {
       rows: 10,
     });
 
-    const textarea = dialog.querySelector<HTMLTextAreaElement>(
-      '.copytext textarea.text.code'
-    );
-    expect(textarea).not.toBeNull();
-    // happy-dom reflects `rows` as a string; real browsers return a number.
-    expect(Number(textarea?.rows)).toBe(10);
-    expect(textarea?.readOnly).toBe(true);
-    expect(textarea?.value).toBe('{"a":1}');
+    const field = dialog.querySelector<CraftTextarea>('craft-textarea.code');
+    expect(field?.labelSrOnly).toBe(true);
+    expect(field?.monospace).toBe(true);
+    expect(field?.readOnly).toBe(true);
+    expect(Number(field?.rows)).toBe(10);
+    expect(field?.modelValue).toBe('{"a":1}');
+
+    const copyButton = dialog.querySelector('craft-copy-button');
+    expect(copyButton?.slot).toBe('footer');
+    expect(copyButton?.value).toBe('{"a":1}');
   });
 
   it('removes the dialog once it has closed', () => {
     const dialog = createCopyTextPrompt({value: 'x'});
-    const child = dialog.querySelector('craft-copy-button')!;
+    const child = dialog.querySelector('craft-input-copy')!;
 
     child.dispatchEvent(new CustomEvent('craft-after-hide', {bubbles: true}));
     expect(dialog.isConnected).toBe(true);

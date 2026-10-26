@@ -50,7 +50,11 @@ describe('show', function () {
             'assetId' => $asset->id,
         ])
             ->assertOk()
-            ->assertJsonStructure(['html']);
+            ->assertJson([
+                'assetId' => $asset->id,
+                'filename' => 'editor-test.jpg',
+            ])
+            ->assertJsonStructure(['focalPoint', 'imageWidth', 'imageHeight', 'imageEditorRatios', 'allowDegreeFractions', 'orientation']);
     });
 });
 

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Utility\Utilities;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -60,6 +62,26 @@ readonly class QueueController
         return new JsonResponse([
             'total' => $this->jobProgress->getTotalJobs(),
             'jobs' => $this->jobProgress->getJobInfo($limit),
+        ]);
+    }
+
+    /**
+     * A page of the Queue Manager's jobs.
+     */
+    public function jobs(TableRequest $tableRequest): JsonResponse
+    {
+        if (! $this->utilities->checkAuthorization(Utilities\QueueManager::class)) {
+            abort(403, 'User is not authorized to perform this action.');
+        }
+
+        $jobs = $this->jobProgress->jobsQuery()
+            ->paginate($tableRequest->limit(), page: $tableRequest->page());
+
+        return new JsonResponse([
+            'data' => $jobs->items(),
+            'pagination' => Arr::only($jobs->toArray(), [
+                'total', 'per_page', 'current_page', 'last_page', 'next_page_url', 'prev_page_url', 'from', 'to',
+            ]),
         ]);
     }
 

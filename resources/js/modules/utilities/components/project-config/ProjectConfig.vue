@@ -83,11 +83,11 @@
 </script>
 
 <template>
-  <div class="project-config-utility">
+  <div class="project-config-utility grid grid-cols-1 gap-8">
     <!-- YAML Changes Section -->
     <section class="config-section">
-      <h2>{{ sectionTitle }}</h2>
-      <p v-html="sectionDescription" class="mb-3"></p>
+      <h2 class="mb-2">{{ sectionTitle }}</h2>
+      <p v-html="sectionDescription"></p>
 
       <div class="mt-3">
         <!-- YAML exists -->
@@ -171,9 +171,8 @@
 
     <!-- Rebuild Config Section -->
     <template v-if="!readOnly">
-      <hr />
       <section class="config-section">
-        <h2>{{ t('Rebuild the Config') }}</h2>
+        <h2 class="mb-2">{{ t('Rebuild the Config') }}</h2>
         <p>
           {{
             t(
@@ -215,9 +214,8 @@
     </template>
 
     <!-- Loaded Config Section -->
-    <hr />
     <section class="config-section">
-      <h2>{{ t('Loaded Project Config Data') }}</h2>
+      <h2 class="mb-2">{{ t('Loaded Project Config Data') }}</h2>
       <!-- craft-pane makes its own scroll container the tab stop -->
       <craft-pane
         variant="code"

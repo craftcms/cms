@@ -580,6 +580,7 @@
     box-sizing: border-box;
     inline-size: var(--cp-rail-width);
     padding: var(--c-spacing-md);
+    padding-block-start: calc(var(--c-spacing-md) + 2px);
     border-inline-start: 1px solid var(--c-color-border-quiet);
     background-color: var(--c-surface-sunken);
   }

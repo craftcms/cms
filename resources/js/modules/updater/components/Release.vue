@@ -15,7 +15,7 @@
     if (!date) {
       return '';
     }
-    return new Date(date).toLocaleDateString(undefined, {
+    return new Date(date).toLocaleDateString(window.Craft?.formattingLocale, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',

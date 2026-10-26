@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Providers;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
@@ -27,6 +28,7 @@ use GuzzleHttp\Utils;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
@@ -75,6 +77,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // The control panel sets this one from JavaScript, so it can't be encrypted.
+        EncryptCookies::except(Theme::COOKIE);
+
         AuthenticationException::redirectUsing(function () {
             $loginPath = Cms::config()->getLoginPath();
 

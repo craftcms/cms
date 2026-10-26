@@ -114,7 +114,6 @@
   }
 
   .notification-icon {
-    margin-block-start: calc(var(--c-spacing) * 0.5);
     font-size: calc(20rem / 16);
     color: var(--c-color-info-on-quiet);
 

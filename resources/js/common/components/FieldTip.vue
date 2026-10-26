@@ -1,7 +1,8 @@
 <script setup lang="ts">
   /**
-   * A callout about a single input. Place it in the input's `after` slot so
-   * it's added to the input's accessible description.
+   * A field tip's text, with an optional "Learn more" link. Give it
+   * `slot="tip"` inside a field or labeled control, which renders it as the
+   * field's tip notice and adds it to the control's accessible description.
    */
   import {t} from '@craftcms/ui';
 
@@ -15,17 +16,11 @@
 </script>
 
 <template>
-  <craft-callout
-    data-description
-    variant="info"
-    appearance="plain"
-    class="p-0"
-    icon="lightbulb"
-  >
+  <span>
     <span v-if="html" v-html="message"></span>
     <template v-else>{{ message }}</template>
     <template v-if="href"
       >{{ ' ' }}<a :href="href">{{ t('Learn more') }}</a></template
     >
-  </craft-callout>
+  </span>
 </template>

@@ -333,10 +333,11 @@ describe('getSidebarHtml', function () {
             ->toContain("site-{$entry->siteId}-field sel")
             ->toContain("name=\"enabledForSite[{$entry->siteId}]\"")
             ->toContain("name=\"enabledForSite[{$sites[1]->id}]\"")
-            ->toContain('>2 other sites</button>')
-            ->toContain("site-{$sites[0]->id}-field lightswitch-field hidden")
+            ->toContain("site-{$sites[0]->id}-field lightswitch-field\"")
             ->toContain("site={$sites[0]->handle}")
-            ->toContain('<span class="sr-only">, selected</span>');
+            ->toContain('<span class="sr-only">, selected</span>')
+            // 10 or fewer sites shouldn’t be within a disclosure
+            ->not->toContain('element-sites-toggle');
     });
 
     test('event can append to existing html', function () {

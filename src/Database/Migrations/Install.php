@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Migrations;
 
 use Closure;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\PromptTask;
@@ -231,6 +232,7 @@ class Install extends Migration
             $table->json('colors')->nullable();
             $table->json('keywords')->nullable();
             $table->text('visibleText')->nullable();
+            $table->string('previewText', AssetsHelper::PREVIEW_TEXT_LENGTH)->nullable();
             $table->boolean('deletedWithVolume')->nullable();
             $table->boolean('trashedFileExists')->default(false);
             $table->dateTime('dateModified')->nullable();

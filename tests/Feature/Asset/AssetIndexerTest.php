@@ -735,6 +735,59 @@ it('samples the colors again once the file has changed', function () {
     }
 });
 
+it('stores the preview text of an indexed text file', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('notes.txt', 'Some text.');
+
+    try {
+        $asset = $this->indexer->indexFileByListing($volumeData, new FsListing([
+            'dirname' => '',
+            'basename' => 'notes.txt',
+            'type' => 'file',
+            'fileSize' => $volumeData->sourceDisk()->size('notes.txt'),
+            'dateModified' => $volumeData->sourceDisk()->lastModified('notes.txt'),
+        ]), $session->id);
+
+        expect(Asset::findOrFail($asset->id)->previewText)->toBe('Some text.');
+    } finally {
+        $volumeData->sourceDisk()->delete('notes.txt');
+    }
+});
+
+it('doesn’t read preview text it has already read, even with nothing to show, until the file changes', function (string $stored) {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('notes.txt', 'Some text.');
+
+    $index = fn () => $this->indexer->indexFileByListing($volumeData, new FsListing([
+        'dirname' => '',
+        'basename' => 'notes.txt',
+        'type' => 'file',
+        'fileSize' => $volumeData->sourceDisk()->size('notes.txt'),
+        'dateModified' => $volumeData->sourceDisk()->lastModified('notes.txt'),
+    ]), $session->id);
+
+    try {
+        $asset = $index();
+        Asset::whereKey($asset->id)->update(['previewText' => $stored]);
+
+        $index();
+        expect(Asset::findOrFail($asset->id)->previewText)->toBe($stored);
+
+        Asset::whereKey($asset->id)->update(['dateModified' => now()->subDay()]);
+        $index();
+        expect(Asset::findOrFail($asset->id)->previewText)->toBe('Some text.');
+    } finally {
+        $volumeData->sourceDisk()->delete('notes.txt');
+    }
+})->with([
+    'found' => ['Old text.'],
+    'nothing to show' => [''],
+]);
+
 describe('remote images', function () {
     beforeEach(function () {
         $root = storage_path('framework/testing/asset-indexer-test/remote-disk');

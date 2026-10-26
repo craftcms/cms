@@ -749,6 +749,24 @@ class AssetIndexer
                     File::delete($tempPath);
                 }
             } else {
+                // Like colors, preview text that's been read already, even with nothing to show, isn't read again
+                // unless the file has changed
+                if (
+                    FileKind::tryFrom($asset->kind ?? '')?->isText() &&
+                    ($fileChanged || ! $asset->id || ! DB::table(Table::ASSETS)
+                        ->where('id', $asset->id)
+                        ->whereNotNull('previewText')
+                        ->exists())
+                ) {
+                    $stream = $asset->getStream();
+
+                    try {
+                        $asset->previewText = AssetsHelper::previewText((string) fread($stream, AssetsHelper::PREVIEW_TEXT_SOURCE_LENGTH));
+                    } finally {
+                        fclose($stream);
+                    }
+                }
+
                 $asset->dateModified = $timeModified;
                 $this->elements->saveElement($asset);
             }
