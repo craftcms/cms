@@ -13,6 +13,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\Users as UsersField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
@@ -81,9 +82,9 @@ it('imports an entries field value using a transformer with ID map', function ()
     $importer = (clone $this->importer)
         ->transformer(new class extends EntryTransformer
         {
-            public function transform(mixed $item): array
+            public function transform(array $item, BaseImporter $importer, mixed $element): array
             {
-                $array = parent::transform($item);
+                $array = parent::transform($item, $importer, $element);
                 $array['myEntries'] = $item['myEntriesToBeMapped'];
 
                 return $array;
@@ -99,9 +100,9 @@ it('imports an entries field value using a transformer with element lookup', fun
     $importer = (clone $this->importer)
         ->transformer(new class extends EntryTransformer
         {
-            public function transform(mixed $item): array
+            public function transform(array $item, BaseImporter $importer, mixed $element): array
             {
-                $array = parent::transform($item);
+                $array = parent::transform($item, $importer, $element);
                 $array['myEntries'] = EntryElement::find()->title($item['myEntriesToBeMapped'])->ids();
 
                 return $array;

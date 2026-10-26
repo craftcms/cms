@@ -2,8 +2,8 @@
   /**
    * An import's ordered list of steps.
    *
-   * The list owns the steps outright: adding, editing, reordering and deleting all
-   * happen against this component's state, and the steps only reach the server when
+   * The list owns the steps outright: adding, editing, reordering, disabling and
+   * deleting all happen against this component's state, and the steps only reach the server when
    * the import's own form is submitted.
    */
   import '@craftcms/ui/components/button/button';
@@ -70,6 +70,7 @@
       source: null,
       transformer: null,
       batchSize: null,
+      enabled: true,
       settings: {},
     };
   }
@@ -106,6 +107,23 @@
 
     next.splice(to, 0, moved);
     steps.value = next;
+  }
+
+  const enabledCount = computed(
+    () => steps.value.filter((step) => step.enabled).length
+  );
+
+  /** A step can only be disabled while another step stays enabled. */
+  function canToggle(step: ImportStep): boolean {
+    return props.editable && (!step.enabled || enabledCount.value > 1);
+  }
+
+  function toggleEnabled(step: ImportStep): void {
+    steps.value = steps.value.map((existing) =>
+      existing.uid === step.uid
+        ? {...existing, enabled: !existing.enabled}
+        : existing
+    );
   }
 
   function replace(uid: string, step: ImportStep): void {
@@ -217,7 +235,10 @@
         ></craft-reorder-button>
 
         <span class="flex-1">
-          <span class="font-bold">{{ stepLabel(step, index) }}</span>
+          <span :id="`step-label-${step.uid}`" class="font-bold">{{
+            stepLabel(step, index)
+          }}</span>
+          <span v-if="!step.enabled" class="ms-2">({{ t('Disabled') }})</span>
           <span
             v-if="errorsByStep[step.uid]"
             :id="`step-error-${step.uid}`"
@@ -246,6 +267,16 @@
           @click="edit(step)"
         >
           {{ editable ? t('Edit') : t('View') }}
+        </craft-button>
+
+        <craft-button
+          :id="`step-toggle-${step.uid}`"
+          type="button"
+          :aria-labelledby="`step-toggle-${step.uid} step-label-${step.uid}`"
+          .disabled="!canToggle(step)"
+          @click="toggleEnabled(step)"
+        >
+          {{ step.enabled ? t('Disable step') : t('Enable step') }}
         </craft-button>
 
         <craft-button

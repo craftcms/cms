@@ -7,6 +7,8 @@ export interface TableColumn {
   label: string;
   sortable?: boolean;
   width?: string;
+  /** As narrow as its content, which doesn't wrap. Needs the table's auto layout. */
+  thin?: boolean;
   headerSrOnly?: boolean;
   wrap?: boolean;
 }

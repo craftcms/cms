@@ -11,7 +11,9 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Gql\Interfaces\Structure;
 use CraftCms\Cms\Gql\Types\DateTime;
+use CraftCms\Cms\Gql\Types\EntryType as EntryTypeGqlType;
 use CraftCms\Cms\Gql\Types\Generators\EntryType;
+use CraftCms\Cms\Gql\Types\Section as SectionGqlType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Gql;
 use GraphQL\Type\Definition\Argument;
@@ -232,6 +234,22 @@ class Entry extends Structure
     private static function getConditionalFields(array $sectionFieldArguments): array
     {
         $fields = [];
+        if (GqlHelper::canSchema('settings.sections')) {
+            $fields['section'] = [
+                'name' => 'section',
+                'type' => SectionGqlType::getType(),
+                'description' => 'The section that contains the entry.',
+            ];
+        }
+
+        if (GqlHelper::canSchema('settings.entrytypes')) {
+            $fields['type'] = [
+                'name' => 'type',
+                'type' => Type::nonNull(EntryTypeGqlType::getType()),
+                'description' => 'The entry’s entry type.',
+            ];
+        }
+
         if (GqlHelper::canQueryAllUsers()) {
             $fields = array_merge($fields, [
                 'authorId' => [

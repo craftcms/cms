@@ -2372,6 +2372,15 @@ JS, [
     }
 
     #[Override]
+    public static function getFieldLayoutForProperty(string $property): ?FieldLayout
+    {
+        return match ($property) {
+            'addresses' => app(Fields::class)->getLayoutByType(Address::class),
+            default => null
+        };
+    }
+
+    #[Override]
     public function importIntoContainerAttribute(array $attribute, array $item, BaseImporter $importer): void
     {
         // user addresses are super-special; they're kind of the same as Addresses field and technically they are nested elements,

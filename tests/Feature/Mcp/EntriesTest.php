@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -18,6 +19,8 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\McpRequest;
+use CraftCms\Cms\User\Conditions\AdminConditionRule;
+use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Http\Request;
 use Laravel\Passport\Passport;
@@ -90,7 +93,7 @@ it('reads custom fields on demand and expands only one level of nested content',
 
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $selected = McpRequest::send($this, 'tools/call', [
         'name' => 'elements.list',
         'arguments' => ['type' => 'entries', 'criteria' => ['id' => $entry->id], 'fields' => ['blocks']],
@@ -233,4 +236,65 @@ it('accepts Matrix entries only in the format the field schema describes', funct
     expect(fn () => $elements->validate('entries', id: $created['id'], fields: [
         'contentBlocks' => ['entries' => [['body' => ['richText' => '<p>Example body</p>']]], 'sortOrder' => ['new:1']],
     ]))->toThrow(ToolCallException::class, 'Invalid fields: /contentBlocks/entries/0: Additional object properties are not allowed: ["body"]');
+});
+
+it('updates one Matrix entry, leaving the other entries and its other values as they were', function (string $identity): void {
+    $text = Field::factory()->create(['handle' => 'text', 'type' => PlainText::class]);
+    $blockType = EntryType::factory()->withField($text)->create(['handle' => 'note', 'hasTitleField' => true]);
+    $notes = Field::factory()->create([
+        'handle' => 'notes',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockType->id]],
+    ]);
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->withField($notes)->create())->create();
+    Fields::refreshFields();
+    EntryTypes::refreshEntryTypes();
+
+    $elements = app(ElementCapabilities::class);
+    $owner = $elements->create('entries', ['sectionId' => $section->id, 'title' => 'Owner'], ['notes' => [
+        'entries' => [
+            ['note' => ['title' => 'First', 'text' => 'First text']],
+            ['note' => ['title' => 'Second', 'text' => 'Second text']],
+        ],
+        'sortOrder' => ['new:1', 'new:2'],
+    ]])['element'];
+    [$first, $second] = Entry::find()->id($owner['id'])->one()->getFieldValue('notes')->all();
+
+    $elements->update('entries', id: $owner['id'], fields: ['notes' => [
+        'entries' => [['note' => ['id' => $second->{$identity}, 'text' => 'New text']]],
+    ]]);
+
+    $entries = Entry::find()->id($owner['id'])->one()->getFieldValue('notes')->all();
+
+    expect(array_map(fn (Entry $entry): array => [$entry->title, $entry->getFieldValue('text')], $entries))->toBe([
+        ['First', 'First text'],
+        ['Second', 'New text'],
+    ])->and(array_map(fn (Entry $entry): int => $entry->id, $entries))->toBe([$first->id, $second->id]);
+})->with(['id', 'uid']);
+
+it('only shows and accepts the custom fields the user can see', function (): void {
+    $secret = Field::factory()->create(['handle' => 'secret', 'type' => PlainText::class]);
+    $teaser = Field::factory()->create(['handle' => 'teaser', 'type' => PlainText::class]);
+    // Only shown to users who aren’t admins.
+    $hidden = new CustomField(config: ['fieldUid' => $secret->uid])->userCondition([
+        'class' => UserCondition::class,
+        'conditionRules' => [['class' => AdminConditionRule::class, 'value' => false]],
+    ]);
+    $layout = FieldLayout::factory()->withContentTab([new CustomField(config: ['fieldUid' => $teaser->uid]), $hidden])->create();
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->withFieldLayout($layout)->create())->create();
+    Fields::refreshFields();
+    EntryTypes::refreshEntryTypes();
+
+    $elements = app(ElementCapabilities::class);
+    $id = $elements->create('entries', ['sectionId' => $section->id, 'title' => 'Entry'], ['teaser' => 'Teaser'])['element']['id'];
+    $entry = Entry::find()->id($id)->one();
+    $entry->setFieldValue('secret', 'Hidden value');
+    app(Elements::class)->saveElement($entry);
+
+    expect($elements->get('entries', id: $entry->id)['element'])->toHaveKey('teaser')->not->toHaveKey('secret')
+        ->and($elements->fieldSchema('entries', id: $entry->id)['schema']['properties'])->toHaveKey('teaser')->not->toHaveKey('secret')
+        ->and(fn () => $elements->update('entries', id: $entry->id, fields: ['secret' => 'Changed']))
+        ->toThrow(ToolCallException::class);
+
+    expect(Entry::find()->id($entry->id)->one()->getFieldValue('secret'))->toBe('Hidden value');
 });

@@ -27,6 +27,7 @@ use CraftCms\Cms\Release\Models\ReleaseItem;
 use CraftCms\Cms\Release\Notifications\ReleaseFailed;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
@@ -360,7 +361,7 @@ class Releases
         $published = 0;
         $releaseIds = Release::query()
             ->where('status', ReleaseStatus::Scheduled)
-            ->where('publishedAt', '<=', now())
+            ->where('publishedAt', '<=', Query::prepareDateForDb(now()))
             ->orderBy('publishedAt')
             ->pluck('id');
 
@@ -573,6 +574,14 @@ class Releases
                 $draft = $this->freshDraft((int) $item->draftId);
             } catch (ReleaseException $exception) {
                 $itemErrors[$item->id][] = $exception->getMessage();
+
+                continue;
+            }
+
+            // Deleting an element, or the section it's in, leaves its drafts
+            // behind, so the draft loads but there's nothing left to apply it to.
+            if (! $draft->getIsUnpublishedDraft() && $draft->getCanonical(true)->trashed) {
+                $itemErrors[$item->id][] = t('The {type} has been deleted.', ['type' => $draft::lowerDisplayName()]);
 
                 continue;
             }

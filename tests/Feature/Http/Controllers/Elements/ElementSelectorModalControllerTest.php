@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -10,6 +11,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
@@ -196,6 +198,29 @@ describe('asset folders', function () {
                 ['Test volume', Folders::getRootFolderByVolumeId($this->volume->id)->id],
                 ['parent', $parent->id],
             ]);
+    });
+
+    it('searches subfolders when asked to, as the assets index does', function () {
+        $child = Folders::ensureFolderByFullPathAndVolume('parent/child', $this->volume);
+        $parent = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'parent/']);
+        $nestedAsset = AssetModel::factory()->createElement([
+            'volumeId' => $this->volume->id,
+            'folderId' => $child->id,
+            'filename' => 'nested-needle.txt',
+            'kind' => 'text',
+        ]);
+        Search::indexElementAttributes($nestedAsset);
+
+        $search = ['folderId' => $parent->id, 'search' => 'nested-needle', 'showFolders' => false];
+        $ids = fn (array $props) => collect($props['data'])->pluck('id')->all();
+
+        $props = ($this->postAssets)($search);
+        expect($props['canSearchSubfolders'])->toBeTrue()
+            ->and($ids($props))->not->toContain($nestedAsset->id);
+
+        $props = ($this->postAssets)([...$search, 'includeSubfolders' => 1]);
+        expect($props['includeSubfolders'])->toBeTrue()
+            ->and($ids($props))->toContain($nestedAsset->id);
     });
 
     it('ignores a requested folder outside the current volume', function () {

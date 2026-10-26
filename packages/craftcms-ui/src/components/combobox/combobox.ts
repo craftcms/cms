@@ -522,7 +522,37 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       }
     }
 
-    return entries;
+    return q === '' ? entries : this.#exactMatchesFirst(q, entries);
+  }
+
+  /**
+   * Moves options whose label or value is exactly the query to the front of
+   * their group, so the first match, which becomes active, is the one typed.
+   * Other options keep their order, and groups stay together.
+   */
+  #exactMatchesFirst(
+    loweredQuery: string,
+    entries: VisibleEntry[]
+  ): VisibleEntry[] {
+    const isExact = ({option}: VisibleEntry) =>
+      option.label.toLowerCase() === loweredQuery ||
+      String(option.value).toLowerCase() === loweredQuery;
+    const sorted: VisibleEntry[] = [];
+
+    for (let start = 0; start < entries.length;) {
+      let end = start;
+      while (
+        end < entries.length &&
+        entries[end]!.groupLabel === entries[start]!.groupLabel
+      ) {
+        end++;
+      }
+      const run = entries.slice(start, end);
+      sorted.push(...run.filter(isExact), ...run.filter((e) => !isExact(e)));
+      start = end;
+    }
+
+    return sorted;
   }
 
   #isGroup(item: ComboboxItem): item is ComboboxOptGroup {
@@ -656,6 +686,33 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     this._inputNode?.focus();
   };
 
+  /** Whether the listbox was open when the chevron was pressed. */
+  #openedOnIndicatorMousedown = false;
+
+  /**
+   * The chevron sits beside the textbox rather than over it, so a click on it
+   * focuses the textbox and toggles the listbox, as a select's arrow would.
+   * The toggle waits for the click, because Lion closes the listbox on a
+   * mouseup outside the textbox.
+   */
+  #onIndicatorMousedown = (event: MouseEvent) => {
+    if (event.button !== 0 || this.inactive) {
+      return;
+    }
+
+    event.preventDefault();
+    this.#openedOnIndicatorMousedown = Boolean(this.opened);
+    this._inputNode?.focus();
+  };
+
+  #onIndicatorClick = () => {
+    if (this.inactive) {
+      return;
+    }
+
+    this.opened = !this.#openedOnIndicatorMousedown;
+  };
+
   override _inputGroupInputTemplate() {
     const selectedData = this.#selectedOption()?.data;
     const icon = selectedData?.icon;
@@ -704,7 +761,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
             ? html`<craft-button
                 class="clear"
                 type="button"
-                appearance="plain"
+                variant="plain"
                 size="small"
                 icon
                 aria-label=${t('Clear')}
@@ -721,6 +778,8 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
             class="indicator"
             name="chevron-down"
             style="font-size: 0.8em"
+            @mousedown=${this.#onIndicatorMousedown}
+            @click=${this.#onIndicatorClick}
           ></craft-icon>
         </div>
       </div>

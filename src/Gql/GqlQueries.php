@@ -10,6 +10,8 @@ use CraftCms\Cms\Gql\Queries\Asset;
 use CraftCms\Cms\Gql\Queries\Entry;
 use CraftCms\Cms\Gql\Queries\Ping;
 use CraftCms\Cms\Gql\Queries\Query;
+use CraftCms\Cms\Gql\Queries\Release;
+use CraftCms\Cms\Gql\Queries\Settings;
 use CraftCms\Cms\Gql\Queries\User;
 use Illuminate\Container\Attributes\Singleton;
 
@@ -38,5 +40,7 @@ class GqlQueries extends TypeRegistry
         Entry::class,
         Asset::class,
         User::class,
+        Settings::class,
+        Release::class,
     ];
 }

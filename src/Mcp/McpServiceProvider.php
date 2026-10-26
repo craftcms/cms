@@ -9,11 +9,15 @@ use CraftCms\Cms\Cp\Settings as CpSettings;
 use CraftCms\Cms\Http\Controllers\UploadSessionController;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
+use CraftCms\Cms\Http\Middleware\ForgetTriggerParameters;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Mcp\Commands\ServeCommand;
+use CraftCms\Cms\Mcp\Enums\McpScope;
+use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
+use CraftCms\Cms\Mcp\Http\Controllers\OAuthApproveController;
 use CraftCms\Cms\Mcp\Http\Controllers\OAuthAuthorizationController;
 use CraftCms\Cms\Mcp\Http\Controllers\OAuthMetadataController;
 use CraftCms\Cms\Mcp\Http\Controllers\OAuthRegisterController;
@@ -32,9 +36,8 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Contracts\AuthorizationViewResponse;
-use Laravel\Passport\Http\Controllers\ApproveAuthorizationController;
 use Laravel\Passport\Http\Controllers\DenyAuthorizationController;
-use Laravel\Passport\Http\Middleware\CheckToken;
+use Laravel\Passport\Http\Middleware\CheckTokenForAnyScope;
 use Laravel\Passport\Passport;
 use Laravel\Passport\Scope;
 use Symfony\Component\HttpFoundation\Response;
@@ -84,7 +87,9 @@ class McpServiceProvider extends ServiceProvider
 
             Passport::tokensCan([
                 ...$scopes,
-                Metadata::SCOPE => t('Use Craft MCP'),
+                ...collect(McpScope::cases())
+                    ->mapWithKeys(fn (McpScope $scope): array => [$scope->value => $scope->description()])
+                    ->all(),
             ]);
         });
 
@@ -101,8 +106,8 @@ class McpServiceProvider extends ServiceProvider
             'url' => route('craft.cp.settings.mcp.index'),
             'iconName' => 'light/robot',
         ];
-        $cpSettings->registerSetting('System', 'mcp', $settings);
-        $cpSettings->registerReadOnlySetting('System', 'mcp', $settings);
+        $cpSettings->registerSetting('Extend', 'mcp', $settings);
+        $cpSettings->registerReadOnlySetting('Extend', 'mcp', $settings);
 
         if (! $this->app->routesAreCached()) {
             $this->registerRoutes($router, $routes, $metadata);
@@ -114,6 +119,7 @@ class McpServiceProvider extends ServiceProvider
     {
         $config = Cms::config()->mcp;
         $middleware = [
+            ForgetTriggerParameters::class,
             EnsureInstalled::class,
             AddLogContext::class,
             ResolveSite::class,
@@ -124,7 +130,7 @@ class McpServiceProvider extends ServiceProvider
             AddOAuthChallenge::class,
             ReorderJsonAccept::class,
             'auth:craft-mcp',
-            CheckToken::using(Metadata::SCOPE),
+            CheckTokenForAnyScope::using(McpScope::Read->satisfyingValues()),
             'can:accessCp',
             'can:useCraftMcp',
             SetActivityOrigin::class,
@@ -157,11 +163,15 @@ class McpServiceProvider extends ServiceProvider
                             ->name('authorize');
 
                         $router->middleware(['auth:'.Cms::config()->getAuthGuard(), 'can:accessCp', 'can:useCraftMcp'])->group(function (Router $router): void {
-                            $router->post('authorize', [ApproveAuthorizationController::class, 'approve'])->name('approve');
+                            $router->post('authorize', [OAuthApproveController::class, 'approve'])->name('approve');
                             $router->delete('authorize', [DenyAuthorizationController::class, 'deny'])->name('deny');
                         });
                     });
                 });
+
+                $router->get($config->endpoint, [EndpointPageController::class, 'admin'])
+                    ->middleware(['web', 'craft', HandleInertiaRequests::class])
+                    ->name('mcp.page');
 
                 $router->options($config->endpoint, [McpController::class, 'preflight'])
                     ->middleware($middleware);
@@ -173,7 +183,7 @@ class McpServiceProvider extends ServiceProvider
                 $router
                     ->prefix("$config->endpoint/uploads")
                     ->name('mcp.uploads.')
-                    ->middleware($authenticatedMiddleware)
+                    ->middleware([...$authenticatedMiddleware, CheckTokenForAnyScope::using(McpScope::Write->satisfyingValues())])
                     ->group(function (Router $router): void {
                         $router->any('{upload}/transfer', [UploadSessionController::class, 'transfer'])
                             ->whereUuid('upload')

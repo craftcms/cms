@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\Field\TableCells\MissingTableCell;
@@ -68,6 +69,8 @@ it('resolves normalized cell values for their form inputs', function (array $col
     'date input' => [['type' => 'date'], '2026-04-17T13:45:00+00:00', '2026-04-17'],
     'time input in site timezone' => [['type' => 'time'], '2026-04-17T13:45:00+00:00', '06:45'],
     'normalized colour' => [['type' => 'color'], '#ABC', '#aabbcc'],
+    'single-line text without line breaks' => [['type' => 'singleline'], "First\r\nsecond\nthird", 'First second third'],
+    'multi-line text with line breaks' => [['type' => 'multiline'], "First\r\nsecond", "First\nsecond"],
     'configured select default' => [[
         'type' => 'select',
         'options' => [['label' => 'Draft', 'value' => 'draft'], ['label' => 'Published', 'value' => 'published', 'default' => true]],
@@ -85,6 +88,21 @@ it('resolves normalized cell values for their form inputs', function (array $col
         'options' => [['label' => 'Draft', 'value' => 'draft', 'default' => true]],
     ], '', ''],
 ]);
+
+it('edits single-line cells in one-row textareas that keep their values on one line', function () {
+    $field = new Table([
+        'handle' => 'details',
+        'columns' => ['col1' => ['heading' => 'Value', 'handle' => 'value', 'type' => 'singleline']],
+    ]);
+    $control = $field->uiControl(new FieldContext('details', value: $field->normalizeValue([['col1' => 'Ada']], null)));
+    $payload = app(UiResolver::class)->resolve(Ui::make([
+        UiField::make('Details', $control),
+    ]), new UiContext);
+    $cell = $payload->nodes[0]->control->uis[0]->nodes[0]->control;
+
+    expect($cell->component)->toBe('craft:textarea')
+        ->and($cell->props)->toMatchArray(['rows' => 1, 'singleLine' => true]);
+});
 
 it('validates optional built-in cell values and reports their table paths', function (string $type, mixed $value, bool $valid) {
     $field = new Table([
@@ -163,6 +181,17 @@ it('rejects unavailable currencies in money column settings', function () {
 
     expect($field->validate())->toBeFalse()
         ->and($field->errors()->has('columns.amount.currency'))->toBeTrue();
+});
+
+it('names link column settings by their labels in validation errors', function () {
+    $field = new Table([
+        'name' => 'Resources',
+        'handle' => 'resources',
+        'columns' => ['col1' => ['heading' => 'Link', 'handle' => 'link', 'type' => 'link', 'types' => []]],
+    ]);
+
+    expect($field->validate())->toBeFalse()
+        ->and($field->errors()->get('columns.col1.types'))->toBe(['The Allowed Link Types field is required.']);
 });
 
 it('keeps column handles scalar while rendering validation errors by cell', function () {
@@ -312,6 +341,88 @@ it('renders registered cells and their validation feedback in inline HTML inputs
             ['path' => ['details', '0', 'col1'], 'messages' => ['Quantity must be positive.']],
         ])
         ->and($payload['globalErrors'])->toBe([]);
+});
+
+it('round-trips link cells through request values, storage, and editor values', function () {
+    $field = new Table([
+        'handle' => 'links',
+        'columns' => ['col1' => [
+            'heading' => 'Link', 'handle' => 'link', 'type' => 'link',
+            'types' => ['url', 'email'], 'showLabelField' => true, 'advancedFields' => ['urlSuffix'],
+        ]],
+    ]);
+
+    $normalized = $field->normalizeValueFromRequest([
+        ['col1' => ['type' => 'url', 'value' => ' https://example.com ', 'label' => 'Docs', 'urlSuffix' => 'page=2', 'target' => '_blank']],
+        ['col1' => ['type' => 'url', 'value' => '']],
+    ], null);
+    $stored = $field->serializeValueForDb($normalized, new Entry);
+    $payload = app(UiResolver::class)->resolve(Ui::make([
+        UiField::make('Links', $field->uiControl(new FieldContext('links', value: $field->normalizeValue($stored, null)))),
+    ]), new UiContext);
+    $cell = $payload->nodes[0]->control->uis[0]->nodes[0]->control;
+
+    expect($normalized[0]['link'])->toBeInstanceOf(LinkData::class)
+        ->and((string) $normalized[0]['link']->getLink())->toBe('<a href="https://example.com?page=2">Docs</a>')
+        ->and($normalized[1]['link'])->toBeNull()
+        ->and($stored)->toBe([
+            ['col1' => ['value' => 'https://example.com', 'type' => 'url', 'label' => 'Docs', 'urlSuffix' => '?page=2']],
+            ['col1' => null],
+        ])
+        ->and($payload->values['links'][0]['col1'])->toBe([...$stored[0]['col1'], 'defaultLabel' => 'example.com'])
+        ->and($cell->component)->toBe('craft:link')
+        ->and(array_column($cell->props['types'], 'id'))->toBe(['url', 'email'])
+        ->and($cell->props['advancedFields'])->toBe(['urlSuffix'])
+        ->and($field->getSearchKeywords($normalized, new Entry))->toContain('https://example.com?page=2');
+});
+
+it('keeps submitted dates and times in the site timezone through storage and the editor', function () {
+    $field = new Table([
+        'handle' => 'events',
+        'columns' => [
+            'col1' => ['heading' => 'Date', 'handle' => 'date', 'type' => 'date'],
+            'col2' => ['heading' => 'Time', 'handle' => 'time', 'type' => 'time'],
+        ],
+        'defaultRowValues' => [['col1' => '2026-10-24', 'col2' => '17:00']],
+    ]);
+
+    $normalized = $field->normalizeValueFromRequest([['col1' => '2026-10-24', 'col2' => '17:00']], null);
+    $stored = $field->serializeValueForDb($normalized, new Entry);
+    $control = $field->uiControl(new FieldContext('events', value: $field->normalizeValue($stored, null)));
+    $payload = app(UiResolver::class)->resolve(Ui::make([UiField::make('Events', $control)]), new UiContext);
+
+    expect($payload->values['events'][0])->toMatchArray(['col1' => '2026-10-24', 'col2' => '17:00'])
+        ->and($control->props()['defaultValues'])->toMatchArray(['col1' => '2026-10-24', 'col2' => '17:00']);
+});
+
+it('validates link cells against their column settings', function (array $value, ?string $expected) {
+    $field = new Table([
+        'handle' => 'links',
+        'columns' => ['col1' => ['heading' => 'Resource', 'handle' => 'resource', 'type' => 'link', 'types' => ['url'], 'maxLength' => 20]],
+    ]);
+    $errors = [];
+
+    $field->validateTableData($field->normalizeValue([['col1' => $value]], null), function (string $path, string $message) use (&$errors): void {
+        $errors[$path][] = $message;
+    }, 'links');
+
+    expect($errors['links.0.col1'][0] ?? null)->toBe($expected);
+})->with([
+    'valid URL' => [['type' => 'url', 'value' => 'https://example.com'], null],
+    'disallowed type' => [['type' => 'email', 'value' => 'author@example.com'], 'Resource no longer allows Email links.'],
+    'too long' => [['type' => 'url', 'value' => 'https://example.com/long-path'], 'Resource should contain at most 20 characters.'],
+]);
+
+it('indexes cells that serialize to arrays as words by default', function () {
+    $cell = new class extends TableCell
+    {
+        public function serializeValue(mixed $value, bool $forDb = false): array
+        {
+            return ['first', ['second', 3]];
+        }
+    };
+
+    expect($cell->searchKeywords(null))->toBe('first second 3');
 });
 
 class ScaledTableCell extends TableCell

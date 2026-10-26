@@ -23,6 +23,7 @@
   import ElementActivityAvatars from '@/modules/elements/components/ElementActivityAvatars.vue';
   import ElementViewButtons from '@/modules/elements/components/ElementViewButtons.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useIsSlideout} from '@/common/composables/screen';
   import {useSlideout} from '@/common/slideouts/useSlideout';
@@ -206,11 +207,16 @@
 
   // In a panel, the panel's own screen is what's out of date — not the page
   // behind it.
+  /** Shows the latest version, which is what the stale notice asks for. */
   function reload(): void {
     if (slideout) {
-      void slideout.reload();
+      void slideout
+        .reload()
+        .then(() => activity.rebase(payload.updatedTimestamps));
     } else {
-      router.reload();
+      router.reload({
+        onSuccess: () => activity.rebase(payload.updatedTimestamps),
+      });
     }
   }
 
@@ -288,6 +294,11 @@
 </script>
 
 <template>
+  <!-- The shell's own summary is worded for settings screens. -->
+  <LayoutSlot v-if="form.hasErrors" name="error-summary">
+    <ErrorSummary :errors="form.errors" :title="t('Couldn’t save changes')" />
+  </LayoutSlot>
+
   <LayoutSlot
     v-if="payload.isProvisionalDraft || payload.statusLabelHtml"
     name="content-toolbar-meta"
@@ -488,6 +499,8 @@
         variant="warning"
         icon="triangle-exclamation"
         class="mb-4"
+        rounded="none"
+        appearance="fill"
       >
         {{ payload.mergeNotice }}
       </craft-callout>
@@ -521,52 +534,52 @@
     </CpContainer>
   </div>
 
-  <LayoutSlot
+  <ElementDetailsPanels
     v-if="hasDetails || $slots['details-header']"
-    name="content-details"
+    ref="detailsPanels"
+    :payload="payload"
+    :activity-timeline-version="activityTimelineVersion"
+    :update-payload="updatePayload"
+    :submit-action="submitAction"
+    :sidebar-tabs="sidebarTabs"
   >
-    <ElementDetailsPanels
-      ref="detailsPanels"
-      :payload="payload"
-      :activity-timeline-version="activityTimelineVersion"
-      :update-payload="updatePayload"
-      :submit-action="submitAction"
-      :sync-location-hash="!isSlideout"
-      :sidebar-tabs="sidebarTabs"
-    >
-      <template #sidebar-tab="{tab}">
-        <div
-          :ref="sidebarTabOutletRef(tab.uid)"
-          class="py-lg px-(--cp-container-padding)"
-        ></div>
-      </template>
-      <template #info>
-        <!-- Anything the element type shows above its meta fields, e.g. an
+    <template #sidebar-tab="{tab}">
+      <div
+        :ref="sidebarTabOutletRef(tab.uid)"
+        class="py-lg px-(--cp-container-padding)"
+      ></div>
+    </template>
+    <template #info>
+      <!-- Anything the element type shows above its meta fields, e.g. an
         asset's file preview. -->
-        <slot name="details-header" :payload="payload" />
+      <slot name="details-header" :payload="payload" />
 
-        <MetadataDetailsContent :html="payload.metadataHtml">
-          <template v-if="sidebarPayload || formWrapper" #default>
-            <component
-              :is="formWrapper ?? 'div'"
-              v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
-            >
-              <craft-field-group v-if="sidebarPayload">
-                <UiRenderer
-                  ref="sidebarRenderer"
-                  :payload="sidebarPayload"
-                  :errors="sidebarErrors"
-                  :modified="autosave.modified.value"
-                  :disabled="editorLocked"
-                  @update:mutation="onSidebarMutation"
-                />
-              </craft-field-group>
-            </component>
-          </template>
-        </MetadataDetailsContent>
-      </template>
-    </ElementDetailsPanels>
-  </LayoutSlot>
+      <MetadataDetailsContent :html="payload.metadataHtml">
+        <!-- Only when there's something to show above the metadata: a form
+          wrapper has nothing of its own unless it says so through showDetails. -->
+        <template
+          v-if="sidebarPayload || (formWrapper && showDetails)"
+          #default
+        >
+          <component
+            :is="formWrapper ?? 'div'"
+            v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
+          >
+            <craft-field-group v-if="sidebarPayload">
+              <UiRenderer
+                ref="sidebarRenderer"
+                :payload="sidebarPayload"
+                :errors="sidebarErrors"
+                :modified="autosave.modified.value"
+                :disabled="editorLocked"
+                @update:mutation="onSidebarMutation"
+              />
+            </craft-field-group>
+          </component>
+        </template>
+      </MetadataDetailsContent>
+    </template>
+  </ElementDetailsPanels>
 </template>
 
 <style scoped lang="scss">

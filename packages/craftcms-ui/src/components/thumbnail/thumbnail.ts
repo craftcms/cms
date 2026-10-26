@@ -113,10 +113,10 @@ export default class CraftThumbnail extends LitElement {
   private capturedFrame: HTMLImageElement | null = null;
 
   /**
-   * Watches the real `<img>` for its box becoming (or staying) a real,
-   * non-zero size — covers both "wasn't visible/laid out yet when it
-   * loaded" (e.g. inside a closed tab or accordion) and later layout
-   * changes, with one mechanism.
+   * Watches the real `<img>` until its box is a real, non-zero size, for
+   * images that weren't visible or laid out yet when they loaded (e.g.
+   * inside a closed tab or accordion). Disconnected once the cover is
+   * painted, since the hidden `<img>` no longer reflects the layout.
    */
   private resizeObserver: ResizeObserver | null = null;
 
@@ -373,6 +373,9 @@ export default class CraftThumbnail extends LitElement {
       ctx.drawImage(frame, 0, 0, width, height);
     }
 
+    // Freezing hides the <img> as a 1x1 box, which mustn't be measured again.
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
     this.frozen = true;
   }
 }

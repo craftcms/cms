@@ -695,6 +695,9 @@ class Elements
     /**
      * Deletes elements in the site they are currently loaded in.
      *
+     * Any elements that only exist in that site will be deleted entirely. They will be soft-deleted,
+     * unless they are drafts or nested elements, in which case they will be hard-deleted.
+     *
      * @param  ElementInterface[]  $elements
      *
      * @throws InvalidArgumentException if all elements don’t have the same type and site ID.

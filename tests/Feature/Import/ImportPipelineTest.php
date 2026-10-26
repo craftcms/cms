@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportChunkFinished;
 use CraftCms\Cms\Import\Events\ImportChunkStarted;
+use CraftCms\Cms\Import\Events\ImportDispatching;
 use CraftCms\Cms\Import\Events\ImportFinished;
 use CraftCms\Cms\Import\Events\ImportStarted;
 use CraftCms\Cms\Import\Events\ImportStepFinished;
@@ -150,6 +151,77 @@ it('gives the pipeline and every step job the same run ID when dispatching an im
 
         return Str::isUuid($pipeline->runId) && $jobRunIds === [$pipeline->runId, $pipeline->runId];
     });
+});
+
+it('leaves disabled steps out when dispatching an import', function () {
+    $this->importPlan->steps[0]->enabled(false);
+
+    app(Import::class)->dispatchImport($this->importPlan);
+
+    Bus::assertDispatched(fn (ImportPipeline $pipeline) => array_column($pipeline->steps, 'uid') === ['step-2']);
+});
+
+it('runs the pipeline and every step batch on the connection the import is dispatched on', function () {
+    app(Import::class)->dispatchImport($this->importPlan, 'sync');
+    $pipeline = Bus::dispatched(ImportPipeline::class)->first();
+
+    expect($pipeline->connection)->toBe('sync');
+
+    $pipeline->handle();
+
+    expect(array_map(fn (PendingBatch $batch) => $batch->connection(), ($this->pendingBatches)()))->toBe(['sync', 'sync']);
+});
+
+it('refuses to dispatch an import plan that is already running', function () {
+    $import = app(Import::class);
+
+    expect($import->dispatchImport($this->importPlan))->toBeTrue()
+        ->and($import->isRunning($this->importPlan))->toBeTrue()
+        ->and($import->dispatchImport($this->importPlan))->toBeFalse();
+
+    Bus::assertDispatchedTimes(ImportPipeline::class, 1);
+});
+
+it('lets an import plan run again once its import has finished', function () {
+    $import = app(Import::class);
+    $import->dispatchImport($this->importPlan);
+    $pipeline = Bus::dispatched(ImportPipeline::class)->first();
+
+    new FinishImport($this->importPlan, $pipeline->runId)->handle();
+
+    expect($import->isRunning($this->importPlan))->toBeFalse();
+});
+
+it('lets an import plan run again once a step batch was canceled', function () {
+    $import = app(Import::class);
+    $import->dispatchImport($this->importPlan);
+    $pipeline = Bus::dispatched(ImportPipeline::class)->first();
+    $pipeline->handle();
+    $pendingBatches = ($this->pendingBatches)();
+
+    $pendingBatches[0]->finallyCallbacks()[0](new BatchFake(
+        'batch-id', 'Step', 1, 0, 0, [], [], CarbonImmutable::now(), CarbonImmutable::now(),
+    ));
+
+    expect($import->isRunning($this->importPlan))->toBeFalse();
+});
+
+it('lets an import plan run again when it has no enabled steps', function () {
+    $import = app(Import::class);
+    Event::listen(fn (ImportDispatching $event) => $event->steps = []);
+    $import->dispatchImport($this->importPlan);
+
+    Bus::dispatched(ImportPipeline::class)->first()->handle();
+
+    expect($import->isRunning($this->importPlan))->toBeFalse();
+});
+
+it('doesn’t mark an import plan as running when its dispatch is canceled', function () {
+    $import = app(Import::class);
+    Event::listen(fn (ImportDispatching $event) => $event->isValid = false);
+
+    expect($import->dispatchImport($this->importPlan))->toBeFalse()
+        ->and($import->isRunning($this->importPlan))->toBeFalse();
 });
 
 it('passes the run ID to the item importing and imported events', function () {

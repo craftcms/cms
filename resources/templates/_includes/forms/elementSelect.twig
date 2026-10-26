@@ -120,22 +120,18 @@
 
     <div class="flex">
         {% if allowAdd %}
-            {{ tag('button', {
+            {{ tag('craft-button', {
                 type: 'button',
                 command: '--add-element',
+                variant: 'dashed',
+                icon: 'plus',
                 class: [
-                    'btn',
                     'add',
-                    'icon',
-                    'dashed',
-                    'wrap',
-                    disabled ? 'disabled',
                     limit and elements|length >= limit ? 'hidden',
                 ]|filter,
                 text: selectionLabel ?? 'Choose'|t('app'),
                 disabled: disabled,
                 aria: {
-                    label: selectionLabel ?? 'Choose'|t('app'),
                     describedby: describedBy ?? false,
                 }
             }) }}
@@ -148,11 +144,11 @@
                         role: 'combobox',
                         labelledBy: labelId ?? false,
                     }) }}
-                    <div class="spinner hidden"></div>
+                    <craft-spinner class="spinner hidden"></craft-spinner>
                 </div>
             {% endif %}
         {% endif %}
-        <div class="spinner hidden"></div>
+        <craft-spinner class="spinner hidden"></craft-spinner>
     </div>
 {% endtag %}
 

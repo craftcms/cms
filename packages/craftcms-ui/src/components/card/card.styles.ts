@@ -38,6 +38,13 @@ export default css`
     );
   }
 
+  /* A neutral card re-resolves the tokens a tinted card recolors (see
+     tokens.css). The selected tab's indicator has no token of its own to go
+     back to, so it's cleared, leaving tabs their default. */
+  :host(:is([data-color='white'], [data-color='gray'], [data-color='slate'])) {
+    --c-tab-border-active: initial;
+  }
+
   :host([active]) .card {
     color: var(--c-color-on-quiet);
     background-color: color-mix(var(--c-color-fill-quiet), transparent 40%);
@@ -49,6 +56,11 @@ export default css`
       border-color: var(--c-color-border-loud);
       color: var(--c-color-on-loud);
       --c-checkbox-border-color: var(--c-color-on-loud);
+      /* Plain controls here hover over the quiet fill, which would be a light
+         patch under the header's light text. */
+      --c-color-fill-quiet: var(--c-color-fill-loud);
+      --c-color-border-quiet: var(--c-color-border-loud);
+      --c-color-on-quiet: var(--c-color-on-loud);
     }
   }
 
@@ -107,8 +119,8 @@ export default css`
   }
 
   :host([data-color='white']) .card {
-    --c-color-fill-quiet: var(--c-surface-raised);
-    --c-color-fill-loud: var(--c-surface-raised);
+    --c-color-fill-quiet: var(--c-surface-white);
+    --c-color-fill-loud: var(--c-surface-white);
     --c-color-border-quiet: var(--c-border-raised);
     --c-color-border-loud: var(--c-border-raised-selected);
     --c-color-on-quiet: var(--c-text-default);
@@ -229,6 +241,7 @@ export default css`
 
   .card__header__suffix {
     display: flex;
+    align-items: center;
     gap: var(--c-spacing-md);
   }
 

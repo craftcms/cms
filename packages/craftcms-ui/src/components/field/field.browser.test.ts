@@ -3,6 +3,7 @@ import {userEvent} from 'vite-plus/test/browser';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import type CraftField from './field.js';
 import './field.js';
+import '../textarea/textarea.js';
 import '../input/input.js';
 import '../select/select.js';
 import '../combobox/combobox.js';
@@ -120,6 +121,24 @@ it('exposes translation help on keyboard focus and dismisses it with Escape', as
 });
 
 it.each([
+  ['a textarea', '<textarea slot="input" maxlength="100"></textarea>'],
+  [
+    'a craft-textarea',
+    '<craft-textarea slot="input" maxlength="100"><textarea slot="input" maxlength="100"></textarea></craft-textarea>',
+  ],
+])('keeps %s with a maxlength spanning the column', async (_case, control) => {
+  document.body.innerHTML = `<div style="width: 400px"><craft-field label="Notes">${control}</craft-field></div>`;
+  const field = document.querySelector<CraftField>('craft-field')!;
+  await field.updateComplete;
+
+  expect(
+    field
+      .shadowRoot!.querySelector('.input-group__container')!
+      .getBoundingClientRect().width
+  ).toBe(400);
+});
+
+it.each([
   ['width="auto"', '<craft-field label="Date" width="auto">'],
   ['a maxlength', '<craft-field label="Code">'],
 ])(
@@ -143,3 +162,23 @@ it.each([
     expect(width(container)).toBeLessThan(400);
   }
 );
+
+it('keeps a maxlength wider than the column within the column', async () => {
+  // A Title's 255-character maxlength sizes its input far wider than a form.
+  document.body.innerHTML =
+    '<div style="width: 400px"><craft-field label="Title"><craft-input slot="input" maxlength="255"><input slot="input" maxlength="255" size="255"></craft-input></craft-field></div>';
+  const field = document.querySelector<CraftField>('craft-field')!;
+  await field.updateComplete;
+  await vi.waitFor(() =>
+    expect(field.hasAttribute('has-maxlength')).toBe(true)
+  );
+
+  expect(
+    field
+      .shadowRoot!.querySelector('.input-group__input')!
+      .getBoundingClientRect().width
+  ).toBeLessThanOrEqual(400);
+  expect(
+    field.querySelector('craft-input')!.getBoundingClientRect().width
+  ).toBeLessThanOrEqual(400);
+});

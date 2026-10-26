@@ -41,7 +41,8 @@
     missingFolders.value
       ? Object.keys(missingFolders.value).map((id: string) => {
           return {
-            label: escapeHtml(missingFolders.value[id]!),
+            label: missingFolders.value[id]!,
+            labelHtml: `<code>${escapeHtml(missingFolders.value[id]!)}</code>`,
             value: id,
           };
         })
@@ -52,7 +53,8 @@
     missingFiles.value
       ? Object.keys(missingFiles.value).map((id: string) => {
           return {
-            label: escapeHtml(missingFiles.value[id]!),
+            label: missingFiles.value[id]!,
+            labelHtml: `<code>${escapeHtml(missingFiles.value[id]!)}</code>`,
             value: id,
           };
         })
@@ -135,12 +137,10 @@
               class="my-2"
               :label="t('Delete folders')"
               :model-value="formData.deleteFolder?.map(String) ?? []"
+              @update:model-value="(value) => (formData.deleteFolder = value)"
               :options="deleteFolderOptions"
               :allow-select-all="true"
             >
-              <template #label="{option}">
-                <code>{{ option.label }}</code>
-              </template>
             </CheckboxGroup>
           </template>
           <template v-if="hasMissingFiles">
@@ -150,12 +150,10 @@
               class="my-2"
               :label="t('Delete assets')"
               :model-value="formData.deleteAsset?.map(String) ?? []"
+              @update:model-value="(value) => (formData.deleteAsset = value)"
               :options="deleteAssetOptions"
               :allow-select-all="true"
             >
-              <template #label="{option}">
-                <code>{{ option.label }}</code>
-              </template>
             </CheckboxGroup>
           </template>
         </div>

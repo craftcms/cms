@@ -26,6 +26,7 @@ $lightIcons = [
     'signs-post',
     'sitemap',
     'sliders',
+    'sparkles',
     'tags',
     'upload',
     'user-group',

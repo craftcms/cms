@@ -1,4 +1,4 @@
-import {router} from '@inertiajs/vue3';
+import {router, usePage} from '@inertiajs/vue3';
 import {installMessages, showMessage, type CpMessage} from './index';
 
 /**
@@ -15,6 +15,9 @@ export function setUpInertiaMessages(): void {
  * Shows the messages the server flashed with each page response. `success`
  * covers every visit (partial reloads and `replace` visits included) and
  * `navigate` the first page and history visits; the queue drops the repeats.
+ * A visit that comes back with validation errors fires `error` instead, after
+ * its page is in place, so its messages (the "Couldn't save" one) are read from
+ * there.
  *
  * Deferred a tick so the new page has mounted and registered any inline
  * outlets the messages target.
@@ -35,6 +38,7 @@ function handleMessages() {
 
   router.on('success', (event) => handlePage(event.detail.page));
   router.on('navigate', (event) => handlePage(event.detail.page));
+  router.on('error', () => handlePage(usePage()));
 }
 
 /**

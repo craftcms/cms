@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
+use CraftCms\Cms\Import\Commands\RunImportPlanCommand;
+use CraftCms\Cms\Import\Commands\UnlockImportPlanCommand;
 use CraftCms\Cms\SystemMessage\Commands\ImportSystemMessagesCommand;
 use Illuminate\Support\ServiceProvider;
 use Override;
@@ -20,11 +22,13 @@ class ImportServiceProvider extends ServiceProvider
     }
 
     /**
-     * Registers the system messages import command; the other import commands are registered by their domains.
+     * Registers the run/unlock import plan and system messages import commands; the other import commands are registered by their domains.
      */
     public function boot(): void
     {
         $this->commands([
+            RunImportPlanCommand::class,
+            UnlockImportPlanCommand::class,
             ImportSystemMessagesCommand::class,
         ]);
     }

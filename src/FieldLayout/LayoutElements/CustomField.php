@@ -1045,10 +1045,12 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         $attribute = $this->attribute();
         $isContainer = $field instanceof ImportableElementContainerFieldInterface;
 
+        // key the mapping by the layout element’s uid, because its handle can be overridden at any time
+        // (see ImportHelper::resolveMappingKeys())
         return MappingColumn::make(
             handle: $attribute,
             label: (string) $this->label(),
-            prefixedHandle: ImportHelper::prefixedHandleForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix),
+            prefixedHandle: ImportHelper::prefixedHandleForMapping($this->uid ?? $attribute, $ownerField, $field, $fieldLayout, $provider, $prefix),
             isContainer: $isContainer,
             canBeMatchCriteria: $this->canBeMatchCriteria(),
             canBeCleared: $this->canBeCleared(),

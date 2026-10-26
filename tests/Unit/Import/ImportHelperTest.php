@@ -6,6 +6,8 @@ use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\ImportHelper;
+use CraftCms\Cms\Tests\Support\Import\TestImporter;
+use Twig\Sandbox\SecurityError;
 
 /** @param list<string> $path */
 function importMappingColumn(array $path, bool $isContainer = false): MappingColumn
@@ -69,6 +71,30 @@ it('doesn’t set a key when the rule is null', function () {
 
     expect(array_keys($result))->not()->toContain('b');
     expect($result['a'])->toBe(1);
+});
+
+it('doesn’t pass through an incoming key of the same name when the rule is null', function () {
+    $result = ImportHelper::remapData(['b' => null], ['b' => 1, 'c' => 2]);
+
+    expect($result)->toBe(['c' => 2]);
+});
+
+it('doesn’t pass through a nested incoming key of the same name when the rule is null', function () {
+    $data = ['address' => ['street' => '123 Main St', 'city' => 'Boston', 'zip' => '02101']];
+    $map = ['address' => ['street' => 'address.street', 'zip' => null]];
+
+    $result = ImportHelper::remapData($map, $data);
+
+    expect($result['address'])->toBe(['street' => '123 Main St', 'city' => 'Boston']);
+});
+
+it('still passes through a root key when a nested rule of the same name is null', function () {
+    $data = ['title' => 'Root', 'address' => ['street' => '123 Main St']];
+    $map = ['location' => ['street' => 'address.street', 'title' => null]];
+
+    $result = ImportHelper::remapData($map, $data);
+
+    expect($result['title'])->toBe('Root');
 });
 
 it('sets a key to an empty string when the rule is the sentinel \'""\'', function () {
@@ -507,4 +533,145 @@ it('falls back to root data when the rule path does not start with the current b
     $result = ImportHelper::remapData($map, $data);
 
     expect($result['items'][0]['source'])->toBe('Craft');
+});
+
+it('drops match criteria checked on fields that aren’t mapped', function () {
+    $importer = new TestImporter()
+        ->map(['title' => 'name', 'slug' => '', 'body' => null, 'nested' => ['text' => '']])
+        ->matchCriteria(['title' => '1', 'slug' => '1', 'body' => 1, 'missing' => '1', 'nested' => ['text' => '1']]);
+
+    expect(ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer))->toBe(['title' => 'name']);
+});
+
+it('keeps match criteria pointing at incoming data keys without a map', function () {
+    $importer = new TestImporter()->matchCriteria(['title' => 'name']);
+
+    expect(ImportHelper::normalizeMatchCriteriaFromImporterConfig($importer))->toBe(['title' => 'name']);
+});
+
+it('renders a template rule against the incoming data', function () {
+    $result = ImportHelper::remapData(
+        ['title' => ImportHelper::TEMPLATE_RULE],
+        ['first' => 'Ada', 'last' => 'Lovelace'],
+        ['title' => '{first} {last}'],
+    );
+
+    expect($result)->toBe(['title' => 'Ada Lovelace']);
+});
+
+it('renders a template rule without variables as plain text', function () {
+    $result = ImportHelper::remapData(['title' => ImportHelper::TEMPLATE_RULE], ['a' => 1], ['title' => 'Imported']);
+
+    expect($result['title'])->toBe('Imported');
+});
+
+it('renders a template rule that reads a column whose name isn\'t an identifier', function () {
+    $result = ImportHelper::remapData(
+        ['title' => ImportHelper::TEMPLATE_RULE],
+        ['author' => ['First Name' => 'Ada']],
+        ['title' => "By {{ object.author['First Name'] }}"],
+    );
+
+    expect($result['title'])->toBe('By Ada');
+});
+
+it('renders a template rule inside a list against each row', function () {
+    $data = ['items' => [['name' => 'Alice', 'age' => 30], ['name' => 'Bob', 'age' => 25]]];
+    $map = ['people' => ['fullName' => 'items.name', 'label' => ImportHelper::TEMPLATE_RULE]];
+    $templates = ['people' => ['label' => '{items.name} ({items.age})']];
+
+    $result = ImportHelper::remapData($map, $data, $templates);
+
+    expect($result['people'])->toBe([
+        ['fullName' => 'Alice', 'label' => 'Alice (30)'],
+        ['fullName' => 'Bob', 'label' => 'Bob (25)'],
+    ]);
+});
+
+it('finds the list to map from a nested map made only of template rules', function () {
+    $data = ['items' => [['name' => 'Alice', 'age' => 30], ['name' => 'Bob', 'age' => 25]]];
+    $map = ['people' => ['label' => ImportHelper::TEMPLATE_RULE]];
+    $templates = ['people' => ['label' => '{items.name} ({items.age})']];
+
+    $result = ImportHelper::remapData($map, $data, $templates);
+
+    expect($result['people'])->toBe([
+        ['label' => 'Alice (30)'],
+        ['label' => 'Bob (25)'],
+    ]);
+});
+
+it('renders a template rule inside a block-type container against each row of its type', function () {
+    $data = ['blocks' => ['heading' => [['text' => 'Hello'], ['text' => 'Bye']]]];
+    $map = ['blocks' => ['heading' => ['title' => ImportHelper::TEMPLATE_RULE]]];
+    $templates = ['blocks' => ['heading' => ['title' => '{blocks.heading.text}!']]];
+
+    $result = ImportHelper::remapData($map, $data, $templates);
+
+    expect($result['blocks'])->toBe([
+        ['type' => 'heading', 'title' => 'Hello!'],
+        ['type' => 'heading', 'title' => 'Bye!'],
+    ]);
+});
+
+it('renders template rules in the sandbox', function () {
+    ImportHelper::remapData(['title' => ImportHelper::TEMPLATE_RULE], [], ['title' => "{{ include('foo') }}"]);
+})->throws(SecurityError::class);
+
+it('offers source columns as template variables, as print tags when their path isn\'t made of identifiers', function () {
+    $triggers = ImportHelper::templateTextExpanderTriggers([
+        new SourceColumn('Please select', ''),
+        new SourceColumn('Use template', ImportHelper::TEMPLATE_RULE),
+        new SourceColumn('Title', 'title'),
+        new SourceColumn('First Name', 'author.First Name'),
+    ]);
+
+    expect($triggers)->toHaveCount(1)
+        ->and($triggers[0]['trigger'])->toBe('{')
+        ->and(array_column($triggers[0]['options'], 'value'))->toBe(["{{ object.author['First Name'] }}", '{title}']);
+});
+
+it('applies a nested map with a single path to each row of the list it reads from', function () {
+    $data = ['items' => [['name' => 'Alice'], ['name' => 'Bob']]];
+
+    $result = ImportHelper::remapData(['people' => ['label' => 'items.name']], $data);
+
+    expect($result['people'])->toBe([['label' => 'Alice'], ['label' => 'Bob']]);
+});
+
+it('maps the object a nested map with a single path reads from, keeping its unused keys', function () {
+    $data = ['address' => ['street' => '123 Main St', 'city' => 'Boston']];
+
+    $result = ImportHelper::remapData(['location' => ['road' => 'address.street']], $data);
+
+    expect($result['location'])->toBe(['road' => '123 Main St', 'city' => 'Boston']);
+    expect($result)->not()->toHaveKey('address');
+});
+
+it('reads a nested map from the parent its paths share when they end at different depths', function () {
+    $data = ['a' => ['b' => ['c' => 1], 'd' => 2]];
+
+    $result = ImportHelper::remapData(['x' => ['p' => 'a.b', 'q' => 'a.b.c']], $data);
+
+    expect($result['x'])->toBe(['p' => ['c' => 1], 'q' => 1, 'd' => 2]);
+});
+
+it('finds the list to map from a nested map made only of a template rule that reads one path', function () {
+    $data = ['items' => [['name' => 'Alice'], ['name' => 'Bob']]];
+    $map = ['people' => ['label' => ImportHelper::TEMPLATE_RULE]];
+    $templates = ['people' => ['label' => 'Hi {items.name}']];
+
+    $result = ImportHelper::remapData($map, $data, $templates);
+
+    expect($result['people'])->toBe([['label' => 'Hi Alice'], ['label' => 'Hi Bob']]);
+});
+
+it('renders a template without the incoming data’s reserved keys, while still passing them on', function () {
+    $result = ImportHelper::remapData(
+        ['title' => ImportHelper::TEMPLATE_RULE],
+        ['name' => 'Ada', 'matchCriteria' => ['title' => 'Ada']],
+        ['title' => '{name}{matchCriteria.title}'],
+    );
+
+    expect($result)->toBe(['title' => 'Ada', 'matchCriteria' => ['title' => 'Ada']]);
 });

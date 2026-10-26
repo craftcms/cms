@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Data;
 
+use CraftCms\Cms\Import\ImportHelper;
 use JsonSerializable;
 use Spatie\TypeScriptTransformer\Attributes\Optional;
 
@@ -20,6 +21,15 @@ readonly class SourceColumn implements JsonSerializable
         #[Optional]
         public ?string $hint = null,
     ) {}
+
+    /**
+     * Returns whether the column is read from the data source, rather than being one of the fixed
+     * "Please select" and "Use template" options.
+     */
+    public function isDataColumn(): bool
+    {
+        return ! in_array($this->value, ['', ImportHelper::TEMPLATE_RULE], true);
+    }
 
     /** @return array<string, string> */
     public function jsonSerialize(): array

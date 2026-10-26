@@ -25,7 +25,8 @@ afterEach(() => {
 async function mountTable(
   keyed = false,
   refresh?: (values: UiValues) => Promise<UiPayload>,
-  controlProps: Partial<TableControlProps> = {}
+  controlProps: Partial<TableControlProps> = {},
+  values?: UiValues
 ) {
   form = document.createElement('form');
   const host = document.createElement('div');
@@ -35,7 +36,11 @@ async function mountTable(
   const errors = ref<UiPayload['errors']>([]);
   let inertiaUi!: InertiaForm<TableUiValues>;
   let advanceBaseline!: () => void;
-  const source = {...payload(keyed), refreshable: Boolean(refresh)};
+  const source = {
+    ...payload(keyed),
+    refreshable: Boolean(refresh),
+    ...(values ? {values} : {}),
+  };
   Object.assign(source.nodes[0]!.control!.props, controlProps);
   if (controlProps.columns?.title?.required) {
     for (const rowUi of source.nodes[0]!.control!.uis ?? []) {
@@ -283,6 +288,80 @@ describe('Vue table rows', () => {
       );
     }
   );
+
+  it('moves between rows with Enter, adding rows at either end, and leaves Ctrl/Command + Enter to the form', async () => {
+    await mountTable();
+    const input = (row: number) =>
+      form.querySelectorAll('tbody tr')[row]!.querySelector('input')!;
+    const press = async (
+      row: number,
+      init: KeyboardEventInit = {}
+    ): Promise<KeyboardEvent> => {
+      const event = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      });
+      input(row).focus();
+      input(row).dispatchEvent(event);
+      await settle();
+      return event;
+    };
+
+    await press(0);
+    expect(document.activeElement).toBe(input(1));
+
+    await press(1);
+    expect(form.querySelectorAll('tbody tr')).toHaveLength(3);
+    expect(document.activeElement).toBe(input(2));
+    expect(input(2).value).toBe('Default');
+
+    await press(0, {shiftKey: true});
+    expect(form.querySelectorAll('tbody tr')).toHaveLength(4);
+    expect(document.activeElement).toBe(input(0));
+    expect(input(1).value).toBe('Alpha');
+
+    for (const modifier of ['ctrlKey', 'metaKey']) {
+      const event = await press(1, {[modifier]: true});
+      expect(event.defaultPrevented).toBe(false);
+      expect(document.activeElement).toBe(input(1));
+    }
+    expect(form.querySelectorAll('tbody tr')).toHaveLength(4);
+  });
+
+  it('leaves Enter to controls inside an HTML column', async () => {
+    const info = '<button type="button">More info</button>';
+    await mountTable(
+      false,
+      undefined,
+      {
+        columns: {
+          label: {type: 'heading', html: true, heading: 'Label'},
+          title: {type: 'singleline', heading: 'Title'},
+        },
+      },
+      {
+        rows: [
+          {label: info, title: 'Alpha'},
+          {label: info, title: 'Beta'},
+        ],
+      }
+    );
+    const button = form.querySelector<HTMLButtonElement>('tbody th button')!;
+    const event = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+
+    button.focus();
+    button.dispatchEvent(event);
+    await settle();
+
+    expect(event.defaultPrevented).toBe(false);
+    expect(document.activeElement).toBe(button);
+  });
 
   it('blocks row additions, deletion, reordering, and row-creating paste during submission without omitting cell values', async () => {
     const {inertiaUi, mutation} = await mountTable();

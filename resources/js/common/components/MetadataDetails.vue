@@ -1,40 +1,31 @@
 <script setup lang="ts">
   /**
-   * A settings screen's details column: an Info panel showing any sidebar
-   * controls (the default slot) above the server's metadata HTML (ID, usages, …).
+   * A settings screen's details: an Info panel showing any sidebar controls
+   * (the default slot) above the server's metadata HTML (ID, usages, …).
    */
   import {t} from '@craftcms/ui';
-  import DetailsPanels, {
-    type DetailsPanel,
-  } from '@/common/components/DetailsPanels.vue';
   import MetadataDetailsContent from '@/common/components/MetadataDetailsContent.vue';
-  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import ScreenPanel from '@/common/components/ScreenPanel.vue';
 
   defineProps<{
     html: string | null | undefined;
   }>();
-
-  const panels: DetailsPanel[] = [
-    {id: 'info', label: t('Info'), icon: 'circle-info', slot: 'info'},
-  ];
 </script>
 
 <template>
-  <LayoutSlot
+  <ScreenPanel
     v-if="html || $slots.default || $slots.actions"
-    name="content-details"
+    id="info"
+    :label="t('Info')"
+    icon="circle-info"
   >
-    <DetailsPanels :panels="panels">
-      <template #info>
-        <MetadataDetailsContent :html="html">
-          <template v-if="$slots.default" #default>
-            <slot />
-          </template>
-          <template v-if="$slots.actions" #actions>
-            <slot name="actions" />
-          </template>
-        </MetadataDetailsContent>
+    <MetadataDetailsContent :html="html">
+      <template v-if="$slots.default" #default>
+        <slot />
       </template>
-    </DetailsPanels>
-  </LayoutSlot>
+      <template v-if="$slots.actions" #actions>
+        <slot name="actions" />
+      </template>
+    </MetadataDetailsContent>
+  </ScreenPanel>
 </template>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql;
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -311,6 +312,22 @@ class GqlHelper
         $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
 
         return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('drafts', $allowedEntities['elements'], true);
+    }
+
+    /**
+     * Returns whether the schema can query releases, which requires that it can also query drafts.
+     *
+     * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
+     */
+    public static function canQueryReleases(?GqlSchema $schema = null): bool
+    {
+        if (! Edition::get()->supportsReleases()) {
+            return false;
+        }
+
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+
+        return isset($allowedEntities['elements']) && is_array($allowedEntities['elements']) && in_array('drafts', $allowedEntities['elements'], true) && in_array('releases', $allowedEntities['elements'], true);
     }
 
     /**

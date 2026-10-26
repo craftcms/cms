@@ -8,6 +8,7 @@ use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\UseWriteConnection;
+use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
 use CraftCms\Cms\Mcp\Http\Middleware\SetActivityOrigin;
 use CraftCms\Cms\Mcp\Public\Access;
@@ -43,6 +44,10 @@ readonly class PublicRouteRegistrar
             SetActivityOrigin::class,
         ];
 
+        $this->router->get($this->access->route(), [EndpointPageController::class, 'public'])
+            ->middleware(['web', 'craft', 'throttle:60,1'])
+            ->defaults('publicMcp', true)
+            ->name('craft.mcp.public.page');
         $this->router->options($this->access->route(), [McpController::class, 'preflight'])
             ->middleware($middleware)
             ->defaults('publicMcp', true);

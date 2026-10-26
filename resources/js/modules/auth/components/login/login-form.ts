@@ -1,4 +1,4 @@
-import {html, LitElement, nothing} from 'lit';
+import {html, LitElement, nothing, unsafeCSS} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 import {
   browserSupportsWebAuthn,
@@ -12,6 +12,7 @@ import {
   ConfigService,
 } from '@craftcms/ui';
 import {csrf} from '@craftcms/ui/utilities/api/actionClient';
+import choiceInputStyles from '@craftcms/ui/styles/shared/choice-inputs.css?inline';
 import componentStyles from './login-form.styles.js';
 import type {TwoFactorData} from './login-challenge.js';
 import './login-challenge.js';
@@ -29,7 +30,13 @@ type View = 'login' | 'reset-password' | 'challenge';
  * @fires craft:login:error   - When login fails.    Cancelable — call `preventDefault()` to suppress built-in error display. Detail: `{ message: string }`
  */
 export default class CraftLoginForm extends LitElement {
-  static override styles = [visuallyHiddenStyles, componentStyles];
+  // The “Stay signed in” checkbox's input is in this shadow root, out of reach
+  // of the control panel's global choice input styles.
+  static override styles = [
+    visuallyHiddenStyles,
+    unsafeCSS(choiceInputStyles),
+    componentStyles,
+  ];
 
   /** Show the passkey sign-in button if the platform supports it */
   @property({type: Boolean, attribute: 'show-passkey-btn'})

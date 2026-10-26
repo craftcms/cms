@@ -37,33 +37,34 @@ async function sectionFor(preview, changed) {
 
   const entries = await storyIndex(preview.url);
 
-  // A component "changed" if any changed file lives in the same directory as one
-  // of this Storybook's story entries. Collapse its entries down to one link per
+  // A component "changed" if a changed file belongs to one of this Storybook's
+  // story entries. In a Storybook with a directory per component, that's any
+  // file in the entry's directory. Otherwise it's a file beside the entry that
+  // shares its name, such as `Table.vue` or `Table.test.ts` for
+  // `Table.stories.ts`, so other components in the same directory don't match.
+  // Collapse its entries down to one link per
   // component, preferring the Docs page when present. Group by title rather than
   // importPath: a component's Docs page comes from its `.mdx` file, and its
   // stories from its `.stories.ts` file.
   //
-  // Scope the changed-file matching to the relevant subtree so similarly-named
-  // directories elsewhere in the repo don't create false positives.
-  const baseDir =
-    preview.name === '@craftcms/ui'
-      ? 'packages/craftcms-ui'
-      : preview.name === 'resources/js'
-        ? 'resources/js'
-        : null;
-
-  const changedInScope = baseDir
-    ? changed
-        .filter((file) => file.startsWith(`${baseDir}/`))
-        .map((file) => file.slice(baseDir.length + 1))
-    : changed;
+  // Each Storybook's importPaths are relative to the directory holding its
+  // `.storybook` config, so prefix them with that to compare against the
+  // repo-relative paths of the changed files.
+  const toRepoPath = (dir) => (preview.root ? `${preview.root}/${dir}` : dir);
 
   const byTitle = new Map();
   for (const entry of entries) {
     if (!entry?.importPath) continue;
     const dir = dirOf(entry.importPath);
-    if (!dir || !changedInScope.some((file) => file.startsWith(`${dir}/`)))
-      continue;
+    if (!dir) continue;
+    const repoDir = toRepoPath(dir);
+    const component = entry.importPath.split('/').pop().split('.')[0];
+    const matches = preview.directoryPerComponent
+      ? (file) => file.startsWith(`${repoDir}/`)
+      : (file) =>
+          dirOf(file) === repoDir &&
+          file.split('/').pop().startsWith(`${component}.`);
+    if (!changed.some(matches)) continue;
     const current = byTitle.get(entry.title);
     if (!current || (entry.type === 'docs' && current.type !== 'docs')) {
       byTitle.set(entry.title, entry);
@@ -87,11 +88,15 @@ module.exports = async ({github, context}) => {
   const previews = [
     {
       name: '@craftcms/ui',
+      root: 'packages/craftcms-ui',
+      directoryPerComponent: true,
       result: process.env.CP_RESULT,
       url: process.env.CP_URL,
     },
     {
       name: 'resources/js',
+      root: '',
+      directoryPerComponent: false,
       result: process.env.RESOURCES_RESULT,
       url: process.env.RESOURCES_URL,
     },

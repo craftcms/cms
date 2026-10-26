@@ -23,11 +23,9 @@ use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Query;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use League\Fractal\Manager;
-use League\Fractal\Resource\Item;
-use League\Fractal\Serializer\DataArraySerializer;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -38,6 +36,11 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class Import
 {
+    /**
+     * The number of seconds after which a running import plan's lock expires, in case its run never finishes.
+     */
+    private const int RUN_LOCK_TTL = 86400;
+
     public function __construct(
         private readonly DataTypes $dataTypes,
         private readonly ImporterTypes $importerTypes,
@@ -101,18 +104,95 @@ class Import
     }
 
     /**
-     * Resolves each of the import plan's steps into a queued Import job, fires
+     * Resolves each of the import plan's enabled steps into a queued Import job, fires
      * dispatching/dispatched events, and dispatches an ImportPipeline job chain.
      *
+     * Returns false without dispatching anything if the import plan is already running.
+     *
      * @param  ImportPlanData  $importPlan  The import plan to dispatch.
+     * @param  string|null  $connection  The queue connection to run the import on, e.g. `sync` to run it in the current process.
      */
-    public function dispatchImport(ImportPlanData $importPlan): bool
+    public function dispatchImport(ImportPlanData $importPlan, ?string $connection = null): bool
     {
         $runId = (string) Str::uuid();
+
+        if (! Cache::lock(self::runLockKey($importPlan), self::RUN_LOCK_TTL, $runId)->get()) {
+            ImportLog::info("Import plan \"{$importPlan->name}\" wasn’t started because it’s already running.");
+
+            return false;
+        }
+
+        try {
+            $dispatched = $this->dispatchPipeline($importPlan, $runId, $connection);
+        } catch (Throwable $e) {
+            self::releaseRunLock($importPlan, $runId);
+
+            throw $e;
+        }
+
+        if (! $dispatched) {
+            self::releaseRunLock($importPlan, $runId);
+        }
+
+        return $dispatched;
+    }
+
+    /**
+     * Returns whether the import plan is currently running.
+     *
+     * @param  ImportPlanData  $importPlan  The import plan to check.
+     */
+    public function isRunning(ImportPlanData $importPlan): bool
+    {
+        $lock = Cache::lock(self::runLockKey($importPlan), self::RUN_LOCK_TTL);
+
+        if (! $lock->get()) {
+            return true;
+        }
+
+        $lock->release();
+
+        return false;
+    }
+
+    /**
+     * Releases the lock that marks the import plan as running, whichever run holds it.
+     *
+     * @param  ImportPlanData  $importPlan  The import plan to unlock.
+     */
+    public function unlock(ImportPlanData $importPlan): void
+    {
+        Cache::lock(self::runLockKey($importPlan))->forceRelease();
+    }
+
+    /**
+     * Releases the lock that marks the import plan as running, if the given run holds it.
+     *
+     * @param  ImportPlanData  $importPlan  The import plan that was run.
+     * @param  string  $runId  The unique ID of the import run that took the lock.
+     */
+    public static function releaseRunLock(ImportPlanData $importPlan, string $runId): void
+    {
+        Cache::restoreLock(self::runLockKey($importPlan), $runId)->release();
+    }
+
+    /**
+     * Returns the cache key of the lock that marks an import plan as running.
+     */
+    private static function runLockKey(ImportPlanData $importPlan): string
+    {
+        return 'import-plan:'.($importPlan->uid ?? $importPlan->handle).':running';
+    }
+
+    /**
+     * Fires the dispatching event and dispatches the ImportPipeline job for the import plan's enabled steps.
+     */
+    private function dispatchPipeline(ImportPlanData $importPlan, string $runId, ?string $connection): bool
+    {
         $steps = [];
 
-        // for each step in the $importPlan
-        foreach ($importPlan->steps ?? [] as $key => $step) {
+        // for each enabled step in the $importPlan
+        foreach ($importPlan->enabledSteps() as $key => $step) {
             $filePath = BaseImporter::resolvedSourcePath($step->source);
 
             // name for this batch of jobs
@@ -131,7 +211,13 @@ class Import
         // see https://laravel.com/framework/docs/12.x/queues#pruning-batches
 
         // we need to go through a single job because we want to name our chain
-        dispatch(new ImportPipeline($event->steps, $event->importPlan, $runId));
+        $pipeline = new ImportPipeline($event->steps, $event->importPlan, $runId);
+
+        if ($connection !== null) {
+            $pipeline->onConnection($connection);
+        }
+
+        dispatch($pipeline);
 
         event(new ImportDispatched($event->steps, $event->importPlan));
 
@@ -171,7 +257,7 @@ class Import
         // then the map is used first and then transformer can do further manipulation;
         // if there's no map, the transformer acts as one on its own;
         if ($importer->map) {
-            $data = ImportHelper::remapData($importer->map, $data);
+            $data = ImportHelper::remapData($importer->map, $data, $importer->templates ?? []);
         }
 
         // match criteria come from three places, applied in this order, so for the same key
@@ -465,7 +551,8 @@ class Import
     }
 
     /**
-     * Reads raw file data and returns the source column headings (prefixed with a "Please select" placeholder), logging and returning null on error.
+     * Reads raw file data and returns the source column headings (prefixed with a "Please select" placeholder and
+     * a "Use template" option, and without the reserved keys), logging and returning null on error.
      *
      * @param  string  $filePath  The path to the file to read.
      * @return list<SourceColumn>|null
@@ -490,18 +577,21 @@ class Import
             return null;
         }
 
+        $headings = array_filter($headings, fn (array $heading): bool => ! ImportHelper::isReservedDataPath((string) $heading['value']));
+
         return [
             new SourceColumn(t('Please select'), ''),
+            new SourceColumn(t('Use template'), ImportHelper::TEMPLATE_RULE),
             ...array_map(fn (array $heading): SourceColumn => new SourceColumn(
                 (string) $heading['label'],
                 (string) $heading['value'],
                 $heading['data']['hint'] ?? null,
-            ), $headings),
+            ), array_values($headings)),
         ];
     }
 
     /**
-     * Runs a Fractal transformer over the raw item data (with config/element as meta) and returns the transformed array.
+     * Runs the importer’s transformer over the raw item data and returns the transformed array.
      *
      * @param  BaseImporter  $importer  The importer config providing the transformer.
      * @param  array<string, mixed>  $data  The raw item data to transform.
@@ -510,23 +600,10 @@ class Import
      */
     final public function processData(BaseImporter $importer, array $data, mixed $element): array
     {
-        // turn the data from the json/csv/xml file into a fractal collection
-        $resource = new Item($data, $importer->transformer);
-        $resource->setMeta(['config' => $importer, 'element' => $element]);
-
-        // Load Fractal
-        $fractalManager = new Manager;
-        $fractalManager->setSerializer(new DataArraySerializer);
-
-        $fractalData = $fractalManager->createData($resource);
-
-        // note: ->toArray() freaks out if the transformer is null; not sure if that's expected or not
-        if ($fractalData->getResource()->getTransformer() === null) {
-            return $fractalData->getResource()->getData();
+        if (! $importer->transformer instanceof BaseTransformer) {
+            return $data;
         }
 
-        $data = $fractalData->toArray();
-
-        return $data['data'];
+        return $importer->transformer->transform($data, $importer, $element);
     }
 }

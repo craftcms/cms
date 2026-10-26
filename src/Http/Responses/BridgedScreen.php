@@ -12,6 +12,7 @@ use CraftCms\Cms\View\LegacyReadyShim;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Support\Header;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\template;
@@ -72,17 +73,7 @@ final class BridgedScreen
             return $index;
         }
 
-        /**
-         * Otherwise this is server-rendered legacy markup, and legacy JS
-         * expects the environment a normal document build gives it: the
-         * libraries (jQuery, Garnish, `cp.js` — all `Position::BodyEnd`) loaded
-         * in source order, before anything that uses them. A client-side visit
-         * can't offer that, so it becomes a hard visit.
-         *
-         * The rule is deliberately total: bridged screen + Inertia visit → hard
-         * visit, with no partial case to get wrong.
-         */
-        if ($request->inertia()) {
+        if (self::needsHardVisit($request)) {
             return Inertia::location($request->fullUrl());
         }
 
@@ -99,6 +90,24 @@ final class BridgedScreen
             ->with($variables)
             ->with(['screen' => ['mode' => 'page'], 'bridged' => 'screen'])
             ->toResponse($request);
+    }
+
+    /**
+     * Whether a request for a server-rendered screen has to become a hard visit.
+     *
+     * Legacy JS expects the environment a normal document build gives it: the
+     * libraries (jQuery, Garnish, `cp.js` — all `Position::BodyEnd`) loaded in
+     * source order, before anything that uses them. A client-side visit can't
+     * offer that, so it becomes a hard visit.
+     *
+     * The one exception is a partial reload of the screen already on display,
+     * such as the shell loading its deferred props once the page is up. It
+     * swaps nothing and runs no legacy JS, and a hard visit would only load
+     * the page again to defer the same props, forever.
+     */
+    public static function needsHardVisit(Request $request): bool
+    {
+        return $request->inertia() && $request->header(Header::PARTIAL_COMPONENT) !== self::PAGE;
     }
 
     /**

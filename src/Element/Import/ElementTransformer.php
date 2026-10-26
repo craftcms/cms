@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Import;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -25,7 +26,7 @@ class ElementTransformer extends BaseTransformer
     private array $fieldHandles = [];
 
     /**
-     * This method is called automatically by Fractal when transforming an item.
+     * This method is called automatically for each item being imported.
      * It's responsible for converting the incoming data (e.g. from the json file)
      * into an array that's understood and can be imported into an Element.
      *
@@ -42,23 +43,20 @@ class ElementTransformer extends BaseTransformer
      *
      * Returns the transformed data array, ready to be imported into an Element.
      *
-     * @param  mixed  $item  The raw item data to transform.
+     * @param  array<string, mixed>  $item  The raw item data to transform.
+     * @param  BaseImporter  $importer  The importer configuration.
+     * @param  mixed  $element  The element the item is being imported into.
      * @return array<string, mixed>
      *
      * @throws \ReflectionException
      */
-    public function transform(mixed $item): array
+    public function transform(array $item, BaseImporter $importer, mixed $element): array
     {
-        $element = $this->getCurrentScope()->getResource()->getMeta()['element'] ?? null;
-
         // automatically include all Importable properties (e.g. sectionId, typeId for Entry)
         // that apply to the importer's current settings
-        if ($this->props === null) {
-            $config = $this->getCurrentScope()->getResource()->getMeta()['config'];
-            $this->props = $config instanceof ElementImporter
-                ? $config->getAvailableProperties()
-                : ImportHelper::getImportableProperties($config);
-        }
+        $this->props ??= $importer instanceof ElementImporter
+            ? $importer->getAvailableProperties()
+            : ImportHelper::getImportableProperties($importer);
 
         $array = [];
 

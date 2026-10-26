@@ -15,6 +15,7 @@ use CraftCms\Cms\Element\Events\SetElementUri;
 use CraftCms\Cms\Element\Jobs\UpdateElementSlugsAndUris;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\DB;
 
@@ -79,7 +80,7 @@ readonly class ElementUris
             ->update([
                 'slug' => $element->slug,
                 'uri' => $element->uri,
-                'dateUpdated' => now(),
+                'dateUpdated' => Query::prepareDateForDb(now()),
             ]);
 
         event(new ElementSlugAndUriUpdated($element));

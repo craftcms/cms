@@ -237,18 +237,9 @@ export class EditableTable extends Base<EditableTableSettings> {
         this.$tbody.add($actionButtons),
         'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
         (ev: any) => {
-          const $target = $(ev.target);
-          const $tr = $target.closest('tr');
+          const $tr = $(ev.target).closest('tr');
           if ($tr.length && !editableTableRowData.get($tr[0])) {
-            const $textarea = $target.hasClass('editable-table-preview')
-              ? $target.next()
-              : null;
             this.createRowObj($tr);
-            setTimeout(() => {
-              if ($textarea && !$textarea.is(':focus')) {
-                $textarea.focus();
-              }
-            }, 100);
           }
         }
       );
@@ -1010,7 +1001,6 @@ export class Row extends Base {
       td = this.tds[colId] = this.$tds[i];
 
       if (Craft.inArray(col.type, EditableTable.textualColTypes)) {
-        $('.editable-table-preview', td).remove();
         let $input;
         if (col.type === 'color') {
           $input = $('input.color-input', td);
@@ -1296,12 +1286,12 @@ export class Row extends Base {
 
   handleKeypress(ev: any): void {
     const keyCode = ev.keyCode ? ev.keyCode : ev.charCode;
-    const ctrl = Garnish.isCtrlKeyPressed(ev);
 
-    // Going to the next/previous row?
+    // Going to the next/previous row? (Ctrl/Command + Return submits the form.)
     if (
       keyCode === Garnish.RETURN_KEY &&
-      (ev.data.type !== 'multiline' || ctrl)
+      ev.data.type !== 'multiline' &&
+      !Garnish.isCtrlKeyPressed(ev)
     ) {
       ev.preventDefault();
       ev.stopPropagation();

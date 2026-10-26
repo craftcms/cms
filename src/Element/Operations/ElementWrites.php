@@ -731,7 +731,7 @@ readonly class ElementWrites
 
                 if ($trackChanges) {
                     $userId = currentUser()?->getCraftUserId();
-                    $timestamp = now();
+                    $timestamp = Query::prepareDateForDb(now());
 
                     foreach ($dirtyAttributes as $attributeName) {
                         DB::table(Table::CHANGEDATTRIBUTES)

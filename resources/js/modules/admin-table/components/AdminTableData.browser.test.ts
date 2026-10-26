@@ -174,6 +174,44 @@ it.each(['mouse', 'keyboard'])(
   }
 );
 
+it('keeps thin columns, and the delete column, as narrow as their content', async () => {
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {key: 'status', label: 'Status', thin: true},
+      {key: 'notes', label: 'Notes'},
+    ],
+    rows: [{id: 1, name: 'Body', status: 'Ready with warnings', notes: 'None'}],
+    deletable: true,
+    deleteUrl: '/settings/delete',
+  });
+  host.style.width = '600px';
+  await nextTick();
+
+  const cell = page.getByRole('cell', {name: 'Ready with warnings'}).element();
+  const text = document.createRange();
+  text.selectNodeContents(cell);
+  const lines = new Set([...text.getClientRects()].map((rect) => rect.top));
+  const name = page.getByRole('cell', {name: 'Body'}).element();
+
+  expect(lines.size).toBe(1);
+  expect(cell.getBoundingClientRect().width).toBeLessThan(
+    name.getBoundingClientRect().width
+  );
+
+  const deleteCell = page
+    .getByRole('button', {name: /delete/i})
+    .element()
+    .closest('td')!;
+  const deleteButton = deleteCell.querySelector('craft-button')!;
+  const padding =
+    parseFloat(getComputedStyle(deleteCell).paddingInlineStart) +
+    parseFloat(getComputedStyle(deleteCell).paddingInlineEnd);
+  expect(deleteCell.getBoundingClientRect().width).toBeLessThanOrEqual(
+    deleteButton.getBoundingClientRect().width + padding + 1
+  );
+});
+
 it('renders HTML icon descriptions and hides only their column header text', async () => {
   mountNode({
     columns: [

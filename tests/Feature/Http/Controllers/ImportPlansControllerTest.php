@@ -15,7 +15,9 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportPlanSaved;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\ImportPlans;
+use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -25,6 +27,7 @@ use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Import\UserImporter;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -161,6 +164,25 @@ it('rejects an import with no steps', function () {
     expect(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
 });
 
+it('saves whether each step is enabled', function () {
+    ($this->saveImportPlan)([
+        ($this->entryStep)(),
+        ($this->entryStep)(overrides: ['enabled' => false]),
+    ])->assertOk();
+
+    $saved = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport');
+
+    expect(array_map(fn ($step) => $step->enabled, $saved->steps))->toBe([true, false]);
+});
+
+it('rejects an import whose steps are all disabled', function () {
+    ($this->saveImportPlan)([($this->entryStep)(overrides: ['enabled' => false])])
+        ->assertStatus(400)
+        ->assertJsonPath('errors.steps.0', 'An import plan needs at least one enabled step.');
+
+    expect(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
+});
+
 it('reports a step’s own validation errors against that step', function () {
     $step = ($this->entryStep)([], ['source' => 'tests/Fixtures/Import/does-not-exist.json']);
 
@@ -202,8 +224,11 @@ it('returns a container field’s destination columns for an unsaved step', func
     expect($response->json('fieldName'))->toBe('Outer Matrix');
     expect($response->json('groups.0.providerName'))->toBe('Outer ET');
 
+    $outerEntryType = EntryTypes::getEntryTypeByHandle('outerEt');
+    $innerMatrixUid = $outerEntryType->getFieldLayout()->getCustomFieldElements()[0]->uid;
+
     $handles = array_column($response->json('groups.0.destinationCols'), 'prefixedHandle');
-    expect($handles)->toContain('outerMatrix[outerEt][fields][innerMatrix]');
+    expect($handles)->toContain("outerMatrix[$outerEntryType->uid][fields][$innerMatrixUid]");
 });
 
 it('rejects nested mapping columns for a step whose importer can’t be built', function () {
@@ -228,6 +253,41 @@ it('returns a step’s mapping structure without the import being saved', functi
         ->and($response->json('suggestions.title'))->toBe('title');
 
     expect(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
+});
+
+it('offers a template option and the source columns as template variables when mapping a step', function () {
+    $response = $this->postJson(action([ImportPlansController::class, 'stepMapping']), [
+        'step' => ($this->entryStep)(),
+    ]);
+
+    $response->assertOk();
+    expect($response->json('sourceDataCols.1'))->toBe(['label' => 'Use template', 'value' => ImportHelper::TEMPLATE_RULE])
+        ->and(array_column($response->json('templateTextExpanderTriggers.0.options'), 'value'))->toContain('{title}')
+        ->and($response->json('suggestions.title'))->toBe('title');
+});
+
+it('reports a template that can’t be parsed against its own mapping path', function () {
+    $response = $this->postJson(action([ImportPlansController::class, 'validateStep']), [
+        'step' => ($this->entryStep)([
+            'map' => ['title' => ImportHelper::TEMPLATE_RULE],
+            'templates' => ['title' => '{{ title'],
+        ]),
+    ]);
+
+    $response->assertStatus(422);
+    expect(array_keys($response->json('errors')))->toContain('settings.templates.title');
+});
+
+it('reports a missing template for a column mapped to one', function () {
+    $response = $this->postJson(action([ImportPlansController::class, 'validateStep']), [
+        'step' => ($this->entryStep)([
+            'map' => ['title' => ImportHelper::TEMPLATE_RULE],
+            'templates' => ['title' => ' '],
+        ]),
+    ]);
+
+    $response->assertStatus(422);
+    expect(array_keys($response->json('errors')))->toContain('settings.templates.title');
 });
 
 it('builds a step’s settings form from the posted draft step', function () {
@@ -384,6 +444,19 @@ it('persists match criteria and clearable items alongside the map', function () 
         ->and($importer->clearableItems)->toBe(['title' => 1]);
 });
 
+it('persists templates alongside the map', function () {
+    ($this->saveImportPlan)([
+        ($this->entryStep)([
+            'map' => ['title' => ImportHelper::TEMPLATE_RULE],
+            'templates' => ['title' => '{title} ({slug})'],
+        ]),
+    ])->assertOk();
+
+    $importer = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport')->steps[0];
+
+    expect($importer->templates)->toBe(['title' => '{title} ({slug})']);
+});
+
 it('still decodes JSON-encoded container branches on save', function () {
     ($this->saveImportPlan)([
         ($this->entryStep)([
@@ -434,6 +507,17 @@ it('lists a registered import plan alongside the saved ones, keyed by its regist
     expect($imports->getEditableImportPlans()->keys()->all())->toBe(['savedImport'])
         ->and($imports->getNonEditableImportPlans()->keys()->all())->toBe(['registeredImport'])
         ->and($imports->getImportPlanByHandle('registeredImport')?->isEditable())->toBeFalse();
+});
+
+it('refuses to run an import plan that is already running', function () {
+    Bus::fake();
+    ($this->createImportPlan)('Fixture Import', 'fixtureImport');
+
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertOk();
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertBadRequest()
+        ->assertJsonPath('message', 'This import plan is already running.');
+
+    Bus::assertDispatchedTimes(ImportPipeline::class, 1);
 });
 
 it('saves the order the editable import plans are put in', function () {

@@ -88,6 +88,7 @@ export default css`
   }
 
   craft-badge-indicator {
+    --badge-border-width: 2px;
     position: absolute;
     inset-inline-end: 0;
     inset-block-end: 0;
@@ -181,6 +182,12 @@ export default css`
     background-color: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-normal);
     color: var(--c-color-accent-on-quiet);
+  }
+
+  /* A badge on the current row takes the row's tint. */
+  :host([current]) ::slotted(craft-badge-indicator) {
+    --c-color-neutral-fill-normal: var(--c-color-accent-fill-normal);
+    --c-color-neutral-on-normal: var(--c-color-accent-on-normal);
   }
 
   /* Not on the page you're on: its selected fill is the state to show. */
@@ -384,10 +391,13 @@ export default css`
        row's own would. Well past the 24px 2.5.8 floor either way. */
     width: var(--_rail-size);
     height: var(--_rail-size);
+    /* The row's ring offset, which the plain button would otherwise inset. */
+    --_row-focus-outline-offset: var(--c-focus-outline-offset);
 
     /* A plain button is transparent, which would leave only a bare chevron
        and its ring to show a keyboard user where they are. */
     craft-button {
+      --c-focus-outline-offset: var(--_row-focus-outline-offset);
       width: 100%;
       height: 100%;
       background-color: var(--c-color-neutral-fill-quiet);

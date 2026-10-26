@@ -31,11 +31,6 @@ const meta = {
     layout: 'centered',
   },
   render: function (args) {
-    let style = '';
-    if (args.maxWidth) {
-      style = `--max-width: ${args.maxWidth};`;
-    }
-
     return html`
       <craft-tooltip
         placement="${args.placement}"
@@ -87,5 +82,13 @@ export const Playground: Story = {
       ],
       defaultValue: 'top',
     },
+  },
+};
+
+/** Long content wraps at `--c-tooltip-max-width`, so its lines stay readable. */
+export const LongContent: Story = {
+  args: {
+    content:
+      'Generates alt text for images when they’re uploaded, describing what they show for people who can’t see them. Existing images keep their alt text unless it’s blank.',
   },
 };

@@ -64,10 +64,10 @@ class AssetImporter extends ElementImporter
             ...parent::settingsUi(),
             UiField::make(t('Volume'), Choice::make(['volume'])
                 ->value($this->volume)
-                ->placeholder(t('Please select'))
                 ->options($this->availableVolumes())
                 ->reactive())
-                ->instructions(t('The volume to import into.')),
+                ->instructions(t('The volume to import into.'))
+                ->required(),
         ];
     }
 
@@ -265,6 +265,9 @@ class AssetImporter extends ElementImporter
         return Volumes::getAllVolumes()->map(fn ($volume) => [
             'label' => $volume->name,
             'value' => $volume->uid,
+        ])->prepend([
+            'label' => t('Please select'),
+            'value' => null,
         ])->all();
     }
 }

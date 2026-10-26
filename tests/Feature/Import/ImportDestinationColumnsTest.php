@@ -115,7 +115,7 @@ it('offers match criteria and clearing on a relation field', function () {
         ->and($col->canBeCleared)->toBeTrue();
 });
 
-it('uses map[attr] as the prefixedHandleForMap for top-level fields without an owner field', function () {
+it('names a top-level custom field by its layout element uid', function () {
     $plainTextField = Field::factory()->create([
         'name' => 'Plain Text',
         'handle' => 'plainText',
@@ -132,11 +132,12 @@ it('uses map[attr] as the prefixedHandleForMap for top-level fields without an o
     $fieldLayout = app(FieldsService::class)->getLayoutByUid($fieldLayoutModel->uid);
     $cols = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
     $col = collect($cols)->firstWhere('handle', 'plainText');
+    $elementUid = $fieldLayout->getCustomFieldElements()[0]->uid;
 
-    expect($col->prefixedHandleForMap)->toBe('map[plainText]');
-    expect($col->prefixedHandleForMatchCriteria)->toBe('matchCriteria[plainText]');
-    expect($col->prefixedHandle)->toBe('plainText');
-    expect($col->prefixedHandleAsArray)->toBe(['plainText']);
+    expect($col->prefixedHandleForMap)->toBe("map[$elementUid]");
+    expect($col->prefixedHandleForMatchCriteria)->toBe("matchCriteria[$elementUid]");
+    expect($col->prefixedHandle)->toBe($elementUid);
+    expect($col->prefixedHandleAsArray)->toBe([$elementUid]);
 });
 
 // A content block is its own layout provider, so its handle appears once.
@@ -146,6 +147,8 @@ it('names the keep flag for a container field inside a content block without rep
     $cbMatrixField = ImportFixtures::matrixField('cbMatrix', [$blockEntryType], 'CB Matrix');
     Fields::refreshFields();
 
+    $elementUid = Str::uuid()->toString();
+
     Field::factory()->create([
         'name' => 'My Content Block',
         'handle' => 'myContentBlock',
@@ -154,7 +157,7 @@ it('names the keep flag for a container field inside a content block without rep
             'uid' => Str::uuid()->toString(),
             'name' => 'Content',
             'elements' => [[
-                'uid' => Str::uuid()->toString(),
+                'uid' => $elementUid,
                 'type' => CustomField::class,
                 'fieldUid' => $cbMatrixField->uid,
                 'required' => false,
@@ -169,7 +172,7 @@ it('names the keep flag for a container field inside a content block without rep
     $cols = ImportHelper::getDestinationColsForFieldLayout($provider->getFieldLayout(), $field, $provider, 'myContentBlock');
     $col = collect($cols)->firstWhere('handle', 'cbMatrix');
 
-    expect($col->prefixedHandle)->toBe('myContentBlock[fields][cbMatrix]')
-        ->and($col->prefixedHandleForKeepFlag)->toBe('keepMissingNestedElements[myContentBlock][fields][cbMatrix][__keep__]')
-        ->and($col->prefixedHandleAsArray)->toBe(['myContentBlock', 'fields', 'cbMatrix']);
+    expect($col->prefixedHandle)->toBe("myContentBlock[fields][$elementUid]")
+        ->and($col->prefixedHandleForKeepFlag)->toBe("keepMissingNestedElements[myContentBlock][fields][$elementUid][__keep__]")
+        ->and($col->prefixedHandleAsArray)->toBe(['myContentBlock', 'fields', $elementUid]);
 });

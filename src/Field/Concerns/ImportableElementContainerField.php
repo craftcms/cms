@@ -85,6 +85,25 @@ trait ImportableElementContainerField
     }
 
     /**
+     * By default, the field has one field layout provider, and its custom fields are under the `fields` key.
+     *
+     * @see ImportableElementContainerFieldInterface::resolveMappingKeys()
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    public function resolveMappingKeys(array $tree): array
+    {
+        $provider = $this->getFieldLayoutProviders()[0] ?? null;
+
+        if ($provider && is_array($tree['fields'] ?? null)) {
+            $tree['fields'] = ImportHelper::resolveMappingKeys($tree['fields'], $provider->getFieldLayout());
+        }
+
+        return $tree;
+    }
+
+    /**
      * By default, let mapping validation pass.
      *
      * @see ImportableElementContainerFieldInterface::validateMapping()

@@ -132,7 +132,7 @@
           <craft-reorder-button
             :ref="(el: any) => setHandleRef(el, route.uid)"
             :position="getRowPosition(index)"
-            @reorder="
+            @craft-reorder="
               (e: CustomEvent<{direction: 'up' | 'down'}>) =>
                 handleReorder(
                   index,

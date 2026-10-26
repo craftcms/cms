@@ -11,6 +11,7 @@ use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\Data\MappingTemplate;
 use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Arr;
@@ -18,6 +19,10 @@ use CraftCms\Cms\Support\Attributes\Importable;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Controls\Concerns\HasTextExpander;
+
+use function CraftCms\Cms\renderSandboxedObjectTemplate;
+use function CraftCms\Cms\t;
 
 /**
  * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, defaultValue: mixed, trait: class-string|null}
@@ -27,10 +32,30 @@ use CraftCms\Cms\Support\Str;
  * @phpstan-type MappableLeaf array{path: string, segments: list<string>}
  * @phpstan-type IncomingCol array{segments: list<string>, value: string}
  *
+ * @phpstan-import-type TextExpanderTrigger from HasTextExpander
+ *
  * @since 6.0.0
  */
 class ImportHelper
 {
+    /**
+     * The `$map` leaf that marks a destination as filled from its object template in `BaseImporter::$templates`.
+     */
+    public const string TEMPLATE_RULE = '__template__';
+
+    /**
+     * Keys the incoming data can use to steer the import itself, so they're never mapped or read by a template.
+     */
+    public const array RESERVED_DATA_KEYS = ['matchCriteria', 'clearableItems', 'keepMissingNestedElements'];
+
+    /**
+     * Returns whether any segment of an incoming data path is a reserved key, e.g. `blocks.matchCriteria.title`.
+     */
+    public static function isReservedDataPath(string $path): bool
+    {
+        return array_intersect(explode('.', $path), self::RESERVED_DATA_KEYS) !== [];
+    }
+
     /**
      * @var array<string, string> Keys prepped for auto-matching, indexed by the original key.
      */
@@ -78,13 +103,18 @@ class ImportHelper
         // ones coming from the UI will have a value of 1
         // ones coming from a registered import plan should be strings that point to the original data keys
 
-        // for the ones coming from the UI - we need to resolve those to the mapped column names
+        // for the ones coming from the UI - we need to resolve those to the mapped column names;
+        // a field that isn't mapped has nothing to match on, so its criterion is dropped
         $dottedMap = Arr::dot($map);
         $dottedMatchCriteria = Arr::dot($matchCriteria);
 
         foreach ($dottedMatchCriteria as $key => $value) {
             if (is_numeric($value) && $value == 1) {
-                $dottedMatchCriteria[$key] = $dottedMap[$key];
+                if (in_array($dottedMap[$key] ?? null, [null, ''], true)) {
+                    unset($dottedMatchCriteria[$key]);
+                } else {
+                    $dottedMatchCriteria[$key] = $dottedMap[$key];
+                }
             }
         }
 
@@ -294,34 +324,108 @@ class ImportHelper
     }
 
     /**
+     * Replaces each layout element uid key in one level of a mapping tree with that field’s current handle,
+     * and does the same inside container fields.
+     *
+     * Mappings use layout element uids so they keep working after a handle override changes.
+     * Keys that aren’t layout element uids are left unchanged.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    public static function resolveMappingKeys(array $tree, ?FieldLayout $fieldLayout): array
+    {
+        if (! $fieldLayout) {
+            return $tree;
+        }
+
+        $layoutElements = [];
+        foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+            if ($layoutElement->uid !== null) {
+                $layoutElements[$layoutElement->uid] = $layoutElement;
+            }
+        }
+
+        $resolved = [];
+
+        foreach ($tree as $key => $value) {
+            $layoutElement = $layoutElements[$key] ?? null;
+
+            if (! $layoutElement) {
+                $resolved[$key] = $value;
+
+                continue;
+            }
+
+            $field = $layoutElement->getField();
+
+            $resolved[$layoutElement->attribute()] = $field instanceof ImportableElementContainerFieldInterface && is_array($value)
+                ? $field->resolveMappingKeys($value)
+                : $value;
+        }
+
+        return $resolved;
+    }
+
+    /**
      * Rebuilds raw import data into the shape described by the map.
      *
      * @param  array<mixed>  $map
      * @param  array<mixed>  $data
+     * @param  array<mixed>  $templates  the object templates for the map's `TEMPLATE_RULE` leaves, keyed like the map
      * @return array<mixed>
      */
-    public static function remapData(array $map, array $data): array
+    public static function remapData(array $map, array $data, array $templates = []): array
     {
-        return self::mapNode($map, $data, $data, null, true)['data'];
+        return self::mapNode(self::withTemplates($map, $templates), $data, $data, $data, null, true)['data'];
+    }
+
+    /**
+     * Swaps each `TEMPLATE_RULE` leaf in the map for the template it's filled from.
+     *
+     * @param  array<mixed>  $map
+     * @param  array<mixed>  $templates
+     * @return array<mixed>
+     */
+    protected static function withTemplates(array $map, array $templates): array
+    {
+        foreach ($map as $key => $rule) {
+            $templatesForKey = $templates[$key] ?? null;
+
+            if (is_array($rule)) {
+                $map[$key] = self::withTemplates($rule, is_array($templatesForKey) ? $templatesForKey : []);
+            } elseif ($rule === self::TEMPLATE_RULE) {
+                $map[$key] = new MappingTemplate(is_string($templatesForKey) ? $templatesForKey : '');
+            }
+        }
+
+        return $map;
     }
 
     /**
      * Maps one level of `$map` against `$currentData`, following each rule and recursing into
      * nested maps or lists.
      *
+     * `$templateData` is what this level's object templates are rendered against: the root data,
+     * with each list being mapped swapped for its item that's being mapped.
+     *
      * @param  array<mixed>  $map
      * @param  array<mixed>  $rootData
+     * @param  array<mixed>  $templateData
      * @return MappedNode
      */
     protected static function mapNode(
         array $map,
         array $rootData,
+        array $templateData,
         mixed $currentData,
         ?string $currentBasePath,
         bool $keepUnused
     ): array {
         $result = [];
         $consumedKeys = [];
+        // keys explicitly left unmapped, so an incoming key of the same name isn't passed through to them either
+        $skippedKeys = [];
 
         foreach ($map as $targetKey => $rule) {
             // The rule is itself a nested map, so work out what part of the data it should read from.
@@ -330,7 +434,7 @@ class ImportHelper
 
                 if ($source === null) {
                     // No direct source found, so recurse into the map as a plain nested object instead.
-                    $nested = self::mapNode($rule, $rootData, $currentData, $currentBasePath, false);
+                    $nested = self::mapNode($rule, $rootData, $templateData, $currentData, $currentBasePath, false);
                     $result[$targetKey] = $nested['data'];
                     array_push($consumedKeys, ...$nested['consumed']);
 
@@ -341,20 +445,20 @@ class ImportHelper
 
                 if (self::blockLooksGroupedByType($rule, $source['value'])) {
                     // The source groups rows by block type, e.g. {typeA: [...], typeB: [...]}.
-                    $mapped = self::mapGroupedBlocksByType($rule, $rootData, $source['value'], $source['basePath']);
+                    $mapped = self::mapGroupedBlocksByType($rule, $rootData, $templateData, $source['value'], $source['basePath']);
                     $result[$targetKey] = $mapped['data'];
                     array_push($consumedKeys, ...$mapped['consumed']);
                 } elseif (array_is_list($source['value'])) {
                     // The source is a flat list, so map each row on its own.
                     $result[$targetKey] = array_map(
                         fn ($row) => is_array($row)
-                            ? self::mapRowByOwnType($rule, $rootData, $row, $source['basePath'])
+                            ? self::mapRowByOwnType($rule, $rootData, self::templateDataFor($templateData, $source['basePath'], $row), $row, $source['basePath'])
                             : $row,
                         $source['value']
                     );
                 } else {
                     // The source is a single nested object, so map it directly.
-                    $result[$targetKey] = self::mapNode($rule, $rootData, $source['value'], $source['basePath'], true)['data'];
+                    $result[$targetKey] = self::mapNode($rule, $rootData, $templateData, $source['value'], $source['basePath'], true)['data'];
                 }
 
                 continue;
@@ -362,6 +466,7 @@ class ImportHelper
 
             if ($rule === null) {
                 // A null rule means: don't set this field at all.
+                $skippedKeys[] = $targetKey;
 
                 continue;
             }
@@ -369,6 +474,21 @@ class ImportHelper
             if ($rule === '""') {
                 // '""' is a special marker meaning: set this field to an empty string.
                 $result[$targetKey] = '';
+
+                continue;
+            }
+
+            if ($rule instanceof MappingTemplate) {
+                $variables = self::withoutReservedKeys($templateData);
+                $result[$targetKey] = renderSandboxedObjectTemplate($rule->template, $variables, $variables);
+
+                foreach ($rule->paths as $path) {
+                    $consumed = self::consumedKey($path, $currentBasePath);
+
+                    if ($consumed !== null) {
+                        $consumedKeys[] = $consumed;
+                    }
+                }
 
                 continue;
             }
@@ -383,7 +503,7 @@ class ImportHelper
 
         if ($keepUnused && is_array($currentData)) {
             foreach ($currentData as $key => $value) {
-                if (! in_array($key, $consumedKeys, true) && ! array_key_exists($key, $result)) {
+                if (! in_array($key, $consumedKeys, true) && ! in_array($key, $skippedKeys, true) && ! array_key_exists($key, $result)) {
                     $result[$key] = $value;
                 }
             }
@@ -480,16 +600,17 @@ class ImportHelper
      *
      * @param  array<mixed>  $rule
      * @param  array<mixed>  $rootData
+     * @param  array<mixed>  $templateData
      * @param  array<mixed>  $row
      * @return array<mixed>
      */
-    protected static function mapRowByOwnType(array $rule, array $rootData, array $row, ?string $basePath): array
+    protected static function mapRowByOwnType(array $rule, array $rootData, array $templateData, array $row, ?string $basePath): array
     {
         if (array_key_exists('type', $row) && is_string($row['type']) && array_key_exists($row['type'], $rule) && is_array($rule[$row['type']])) {
-            return self::mapRowForType($row['type'], $rule[$row['type']], $rootData, $row, $basePath);
+            return self::mapRowForType($row['type'], $rule[$row['type']], $rootData, $templateData, $row, $basePath);
         }
 
-        return self::mapNode($rule, $rootData, $row, $basePath, true)['data'];
+        return self::mapNode($rule, $rootData, $templateData, $row, $basePath, true)['data'];
     }
 
     /**
@@ -498,10 +619,11 @@ class ImportHelper
      *
      * @param  array<mixed>  $blockTypeMap
      * @param  array<mixed>  $rootData
+     * @param  array<mixed>  $templateData
      * @param  array<mixed>  $sourceValue
      * @return MappedNode
      */
-    protected static function mapGroupedBlocksByType(array $blockTypeMap, array $rootData, array $sourceValue, string $basePath): array
+    protected static function mapGroupedBlocksByType(array $blockTypeMap, array $rootData, array $templateData, array $sourceValue, string $basePath): array
     {
         $items = [];
         $consumedKeys = [];
@@ -522,7 +644,7 @@ class ImportHelper
 
             foreach ($sourceValue[$type] as $row) {
                 if (is_array($row)) {
-                    $items[] = self::mapRowForType((string) $type, $typeMap, $rootData, $row, $typeBasePath);
+                    $items[] = self::mapRowForType((string) $type, $typeMap, $rootData, self::templateDataFor($templateData, $typeBasePath, $row), $row, $typeBasePath);
                 }
             }
         }
@@ -538,12 +660,65 @@ class ImportHelper
      *
      * @param  array<mixed>  $typeMap
      * @param  array<mixed>  $rootData
+     * @param  array<mixed>  $templateData
      * @param  array<mixed>  $row
      * @return array<mixed>
      */
-    protected static function mapRowForType(string $type, array $typeMap, array $rootData, array $row, ?string $basePath): array
+    protected static function mapRowForType(string $type, array $typeMap, array $rootData, array $templateData, array $row, ?string $basePath): array
     {
-        return ['type' => $type] + self::mapNode($typeMap, $rootData, $row, $basePath, true)['data'];
+        return ['type' => $type] + self::mapNode($typeMap, $rootData, $templateData, $row, $basePath, true)['data'];
+    }
+
+    /**
+     * Returns the data to render object templates against for one item of the list at `$basePath`:
+     * the data so far, with that list swapped for the item, so `{list.key}` reads the item's own value.
+     *
+     * @param  array<mixed>  $templateData
+     * @param  array<mixed>  $item
+     * @return array<mixed>
+     */
+    protected static function templateDataFor(array $templateData, string $basePath, array $item): array
+    {
+        Arr::set($templateData, $basePath, $item);
+
+        return $templateData;
+    }
+
+    /**
+     * Returns the data with its reserved keys removed at every depth.
+     *
+     * @param  array<mixed>  $data
+     * @return array<mixed>
+     */
+    protected static function withoutReservedKeys(array $data): array
+    {
+        $data = Arr::except($data, self::RESERVED_DATA_KEYS);
+
+        return array_map(fn (mixed $value) => is_array($value) ? self::withoutReservedKeys($value) : $value, $data);
+    }
+
+    /**
+     * Returns a data path relative to the current base path: the whole path at the root, what's left of it
+     * below the base path, or null if it points somewhere else.
+     */
+    protected static function relativePath(string $path, ?string $currentBasePath): ?string
+    {
+        if ($currentBasePath === null) {
+            return $path;
+        }
+
+        return str_starts_with($path, $currentBasePath.'.') ? substr($path, strlen($currentBasePath) + 1) : null;
+    }
+
+    /**
+     * Returns the key a data path consumes at the current level (the first segment of its relative path),
+     * or null if it points somewhere else.
+     */
+    protected static function consumedKey(string $path, ?string $currentBasePath): ?string
+    {
+        $relativePath = self::relativePath($path, $currentBasePath);
+
+        return $relativePath === null ? null : explode('.', $relativePath)[0];
     }
 
     /**
@@ -554,42 +729,46 @@ class ImportHelper
      */
     protected static function mapScalarValue(string $path, array $rootData, mixed $currentData, ?string $currentBasePath): array
     {
-        // The rule path is relative to where we are, so strip the shared prefix off first.
-        if ($currentBasePath !== null && str_starts_with($path, $currentBasePath.'.')) {
-            $relativePath = substr($path, strlen($currentBasePath) + 1);
+        $relativePath = self::relativePath($path, $currentBasePath);
 
-            return [
-                'value' => is_array($currentData) ? self::findPath($currentData, $relativePath)['value'] : null,
-                'consumed' => explode('.', $relativePath)[0],
-            ];
+        if ($currentBasePath !== null && $relativePath !== null) {
+            // The rule path is under where we are, so read it from the current data.
+            $value = is_array($currentData) ? self::findPath($currentData, $relativePath)['value'] : null;
+        } else {
+            // We're at the root, or the rule path didn't match our position, so read it straight from the root.
+            $value = self::findPath($rootData, $path)['value'];
         }
 
-        // The rule path didn't match our position, so read it straight from the root.
         return [
-            'value' => self::findPath($rootData, $path)['value'],
-            'consumed' => $currentBasePath === null ? explode('.', $path)[0] : null,
+            'value' => $value,
+            'consumed' => self::consumedKey($path, $currentBasePath),
         ];
     }
 
     /**
-     * Finds the path that all of a rule's leaf values share, so a nested map can be resolved
+     * Finds the parent path that all of a rule's leaf values share, so a nested map can be resolved
      * to one source.
+     *
+     * The source is what holds the leaf values, so a leaf's own last segment is never part of it;
+     * that way a rule with a single leaf (`items.name`) resolves to `items` just as one with several does.
      *
      * @param  array<mixed>  $map
      */
     protected static function sharedSourcePath(array $map, ?string $currentBasePath): ?string
     {
-        $paths = self::collectLeafPaths($map, $currentBasePath);
+        $parents = array_map(
+            fn (string $path): array => array_slice(explode('.', $path), 0, -1),
+            self::collectLeafPaths($map, $currentBasePath),
+        );
 
-        if ($paths === []) {
+        if ($parents === []) {
             return null;
         }
 
-        $common = explode('.', array_shift($paths));
+        $common = array_shift($parents);
 
-        // Narrow the shared path down to what every leaf path has in common.
-        foreach ($paths as $path) {
-            $parts = explode('.', (string) $path);
+        // Narrow the shared path down to what every leaf's parent path has in common.
+        foreach ($parents as $parts) {
             $next = [];
 
             for ($i = 0, $max = min(count($common), count($parts)); $i < $max; $i++) {
@@ -614,7 +793,8 @@ class ImportHelper
     }
 
     /**
-     * Collects every leaf (string) rule path inside a map, relative to the current base path.
+     * Collects every leaf rule path inside a map, relative to the current base path.
+     * A template contributes the paths it reads.
      *
      * @param  array<mixed>  $map
      * @return list<string>
@@ -626,12 +806,22 @@ class ImportHelper
         foreach ($map as $rule) {
             if (is_array($rule)) {
                 array_push($paths, ...self::collectLeafPaths($rule, $currentBasePath));
-            } elseif (is_string($rule)) {
-                // Only keep leaf paths that fall under the current base path (or all of them, if we're at the root).
-                if ($currentBasePath !== null && str_starts_with($rule, $currentBasePath.'.')) {
-                    $paths[] = substr($rule, strlen($currentBasePath) + 1);
-                } elseif ($currentBasePath === null) {
-                    $paths[] = $rule;
+
+                continue;
+            }
+
+            $rulePaths = match (true) {
+                $rule instanceof MappingTemplate => $rule->paths,
+                is_string($rule) => [$rule],
+                default => [],
+            };
+
+            // Only keep leaf paths that fall under the current base path (or all of them, if we're at the root).
+            foreach ($rulePaths as $path) {
+                $relativePath = self::relativePath($path, $currentBasePath);
+
+                if ($relativePath !== null) {
+                    $paths[] = $relativePath;
                 }
             }
         }
@@ -707,6 +897,68 @@ class ImportHelper
     }
 
     /**
+     * Returns the text expander triggers that offer the source columns as variables in a mapping template,
+     * the same way `SelectOptions::getObjectTemplateTextExpanderTriggers()` offers an object's properties.
+     *
+     * A column whose path isn't made of plain identifiers can't be written as `{path}`, so it's offered as
+     * a print tag that reads it off `object` instead, e.g. `{{ object['First Name'] }}`.
+     *
+     * @param  list<SourceColumn>  $sourceDataCols
+     * @return list<TextExpanderTrigger>
+     */
+    public static function templateTextExpanderTriggers(array $sourceDataCols): array
+    {
+        $options = [];
+
+        foreach ($sourceDataCols as $sourceCol) {
+            if (! $sourceCol->isDataColumn()) {
+                continue;
+            }
+
+            $value = self::templateVariable($sourceCol->value);
+
+            $options[] = [
+                'label' => $sourceCol->label,
+                'value' => $value,
+                'keywords' => [$sourceCol->value],
+                'data' => ['hint' => $value],
+            ];
+        }
+
+        usort($options, fn (array $a, array $b): int => strnatcasecmp($a['label'], $b['label']));
+
+        return [[
+            'trigger' => '{',
+            'boundary' => 'anywhere',
+            'label' => t('Object Template Variables'),
+            'options' => $options,
+        ]];
+    }
+
+    /**
+     * Returns how a template reads the incoming data at `$path`, e.g. `title` is `{title}`.
+     *
+     * Shorthand only works with plain identifiers, so any other path reads its value off `object` in a print tag,
+     * e.g. `author.First Name` is `{{ object.author['First Name'] }}`.
+     */
+    private static function templateVariable(string $path): string
+    {
+        $segments = explode('.', $path);
+        $isIdentifier = fn (string $segment): bool => preg_match('/^\w+$/', $segment) === 1;
+
+        if (array_all($segments, $isIdentifier)) {
+            return sprintf('{%s}', $path);
+        }
+
+        $reference = implode('', array_map(
+            fn (string $segment): string => $isIdentifier($segment) ? ".$segment" : sprintf("['%s']", addcslashes($segment, "'\\")),
+            $segments,
+        ));
+
+        return sprintf('{{ object%s }}', $reference);
+    }
+
+    /**
      * Returns a best-guess incoming column for each of `$map`'s unmapped leaves, as a tree keyed
      * the same way as the map itself. It uses the same normalized-handle matching as the
      * auto-magic mapping done at import time.
@@ -720,13 +972,14 @@ class ImportHelper
      * @param  list<MappingColumn|CompoundMappingColumn>  $destinationCols
      * @param  list<SourceColumn>  $sourceDataCols
      * @param  array<mixed>  $map  The current (possibly partially saved) map tree.
+     * @param  BaseImporter|null  $importer  The importer used to convert uids in the mapping paths to handles before matching.
      * @return array<mixed>
      */
-    public static function suggestMapValues(array $destinationCols, array $sourceDataCols, array $map): array
+    public static function suggestMapValues(array $destinationCols, array $sourceDataCols, array $map, ?BaseImporter $importer = null): array
     {
         $incomingCols = [];
         foreach ($sourceDataCols as $sourceCol) {
-            if ($sourceCol->value === '') {
+            if (! $sourceCol->isDataColumn()) {
                 continue;
             }
 
@@ -742,10 +995,41 @@ class ImportHelper
         $leaves = [];
         self::collectMappableLeaves($destinationCols, $map, $leaves);
 
+        if ($importer) {
+            $leaves = self::matchLeavesOnHandles($leaves, $importer);
+        }
+
         $suggestions = [];
         self::assignSuggestions($leaves, array_values($incomingCols), $suggestions);
 
         return $suggestions;
+    }
+
+    /**
+     * Updates each leaf so it’s matched on handles instead of uids, because the incoming data uses
+     * field and entry type handles.
+     *
+     * @param  list<MappableLeaf>  $leaves
+     * @return list<MappableLeaf>
+     */
+    private static function matchLeavesOnHandles(array $leaves, BaseImporter $importer): array
+    {
+        $tree = [];
+        foreach ($leaves as $leaf) {
+            Arr::set($tree, $leaf['path'], $leaf['path']);
+        }
+
+        $resolvedPaths = array_flip(Arr::dot($importer->resolveMappingKeys($tree)));
+
+        foreach ($leaves as $i => $leaf) {
+            $resolvedPath = $resolvedPaths[$leaf['path']] ?? null;
+
+            if (is_string($resolvedPath)) {
+                $leaves[$i]['segments'] = self::matchSegments($resolvedPath);
+            }
+        }
+
+        return $leaves;
     }
 
     /**

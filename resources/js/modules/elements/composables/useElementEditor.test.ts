@@ -874,6 +874,17 @@ describe('useElementEditor', () => {
     await nextTick();
   }
 
+  /** Types into the Slug field the way a user would. */
+  async function typeSlug(value: string): Promise<void> {
+    await nextTick();
+    const slugInput =
+      container!.querySelector<HTMLInputElement>('input[name="slug"]')!;
+    slugInput.value = value;
+    slugInput.dispatchEvent(new Event('input', {bubbles: true}));
+    slugInput.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+  }
+
   it('does not write a pending draft after the editor is removed', async () => {
     vi.useFakeTimers();
     onTestFinished(() => {
@@ -985,6 +996,55 @@ describe('useElementEditor', () => {
     vi.useRealTimers();
   });
 
+  it('autosaves a value edited back to what the page loaded with', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    let saved = {title: 'Van Gogh', slug: 'van-gogh'};
+    postSpy.mockImplementation(
+      async (_url: string, data: {title?: string; slug?: string}) => {
+        saved = {
+          title: data.title ?? saved.title,
+          slug: data.slug ?? saved.slug,
+        };
+
+        return {
+          data: {
+            draftId: 7,
+            ui: fieldLayout(saved.title),
+            screen: {sidebarUi: sidebarUi(saved.slug, false)},
+          },
+        };
+      }
+    );
+    mount(
+      payload({
+        canAutosave: true,
+        ui: fieldLayout('Van Gogh'),
+        sidebarUi: sidebarUi('van-gogh', false),
+      })
+    );
+    const lastSent = () => postSpy.mock.calls.at(-1)![1];
+
+    await typeSlug('van-gogh-test');
+    await vi.advanceTimersByTimeAsync(1000);
+    await typeSlug('van-gogh');
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(postSpy).toHaveBeenCalledTimes(2);
+    expect(lastSent()).toMatchObject({slug: 'van-gogh'});
+
+    await typeTitle('Van Gogh!');
+    await vi.advanceTimersByTimeAsync(1000);
+    await typeTitle('Van Gogh');
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(postSpy).toHaveBeenCalledTimes(4);
+    expect(lastSent()).toMatchObject({title: 'Van Gogh'});
+    expect(saved).toEqual({title: 'Van Gogh', slug: 'van-gogh'});
+  });
+
   it('refreshes the field layout without autosaving and preserves unsaved values', async () => {
     const {editor} = mount(
       payload({
@@ -1055,6 +1115,44 @@ describe('useElementEditor', () => {
     await editor.activity.poll();
 
     expect(editor.activity.isStale.value).toBe(true);
+  });
+
+  it('doesn’t report a discarded draft as someone else’s edit', async () => {
+    // The provisional draft and the canonical element have different
+    // `dateUpdated`s, and polls report whichever one they're asked about.
+    postSpy.mockImplementation(async (_url: string, data: any) => ({
+      data: {
+        activity: [],
+        updatedTimestamp: data?.draftId ? 2 : 1,
+        canonicalUpdatedTimestamp: 1,
+      },
+    }));
+    const screen = payload({
+      activityUrl: '/actions/elements/recent-activity',
+      draftId: 9,
+      isProvisionalDraft: true,
+      updatedTimestamps: {element: 2, canonical: 1},
+    });
+    const {editor, page} = mount(screen);
+    // The reload lands on the canonical element.
+    const reload = vi
+      .spyOn(router, 'reload')
+      .mockImplementation((options?: any) => {
+        page.props = {
+          ...screen,
+          draftId: null,
+          isProvisionalDraft: false,
+          updatedTimestamps: {element: 1, canonical: 1},
+        };
+        options?.onFinish?.();
+      });
+    await editor.activity.poll();
+
+    await editor.discardDraft();
+    await editor.activity.poll();
+
+    expect(editor.activity.isStale.value).toBe(false);
+    reload.mockRestore();
   });
 
   it('omits presentation-only null controls when refreshing an untouched UI', async () => {
@@ -1593,8 +1691,102 @@ describe('useElementEditor', () => {
         options.onFinish?.({});
         await nextTick();
       },
+      /**
+       * A response that failed validation, landing in Inertia's order: the
+       * errors are set straight after the page, before Vue flushes.
+       */
+      async fail(
+        page: {props: Record<string, unknown>},
+        props: any,
+        errors: Record<string, string>
+      ) {
+        const {options} = this.last();
+        page.props = props;
+        await options.onError(errors);
+        await nextTick();
+        options.onFinish?.({});
+        await nextTick();
+      },
     };
   }
+
+  /**
+   * A provisional draft with a Title cleared and autosaved, then a Save the
+   * server rejects. It writes the draft anyway, moving its `dateUpdated`.
+   */
+  async function failSaveOfAutosavedDraft() {
+    vi.useFakeTimers();
+    postSpy.mockImplementation(async (url: string) =>
+      url.includes('recent-activity')
+        ? {
+            data: {
+              activity: [],
+              updatedTimestamp: 3,
+              canonicalUpdatedTimestamp: 1,
+            },
+          }
+        : {
+            data: {
+              draftId: 9,
+              timestamp: 'at 5:13 AM',
+              updatedTimestamp: 2,
+              canonicalUpdatedTimestamp: 1,
+            },
+          }
+    );
+    const screen = payload({
+      activityUrl: '/actions/elements/recent-activity',
+      canAutosave: true,
+      draftId: 9,
+      isProvisionalDraft: true,
+      updatedTimestamps: {element: 2, canonical: 1},
+      ui: fieldLayout('Title'),
+    });
+    const mounted = mount(screen);
+
+    await typeTitle('');
+    await vi.advanceTimersByTimeAsync(2000);
+    await nextTick();
+    expect(mounted.editor.autosave.status.value).toBe('saved');
+
+    const save = interceptSave();
+    mounted.editor.save();
+    await save.fail(
+      mounted.page,
+      {...screen, updatedTimestamps: {element: 3, canonical: 1}},
+      {title: 'Title cannot be blank.'}
+    );
+    save.restore();
+    vi.useRealTimers();
+
+    return mounted;
+  }
+
+  it('reports neither its own write nor the last autosave once a save fails', async () => {
+    const {editor} = await failSaveOfAutosavedDraft();
+
+    await editor.activity.poll();
+
+    expect(editor.form.errors).toEqual({title: 'Title cannot be blank.'});
+    expect(editor.activity.isStale.value).toBe(false);
+    expect(editor.autosave.status.value).toBe('idle');
+  });
+
+  it('clears a failed save’s errors when the draft is discarded', async () => {
+    const {editor, page} = await failSaveOfAutosavedDraft();
+    const reload = vi
+      .spyOn(router, 'reload')
+      .mockImplementation((options?: any) => {
+        page.props = payload({ui: fieldLayout('Title')});
+        options?.onFinish?.();
+      });
+
+    await editor.discardDraft();
+
+    expect(editor.form.hasErrors).toBe(false);
+    expect(editor.autosave.status.value).toBe('idle');
+    reload.mockRestore();
+  });
 
   it('saves a newer mutation before attaching after an earlier autosave', async () => {
     vi.useFakeTimers();

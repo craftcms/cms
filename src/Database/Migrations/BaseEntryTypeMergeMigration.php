@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -73,7 +74,7 @@ class BaseEntryTypeMergeMigration extends Migration
                 ->update([
                     'typeId' => $persistingEntryTypeRecord->id,
                     'deletedWithEntryType' => false,
-                    'dateUpdated' => now(),
+                    'dateUpdated' => Query::prepareDateForDb(now()),
                 ]);
         });
     }
@@ -104,7 +105,7 @@ class BaseEntryTypeMergeMigration extends Migration
                             ->where('id', $row->id)
                             ->update([
                                 'content' => $content,
-                                'dateUpdated' => now(),
+                                'dateUpdated' => Query::prepareDateForDb(now()),
                             ]);
                     }
 

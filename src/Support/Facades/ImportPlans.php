@@ -19,6 +19,7 @@ use Override;
  * @method static LaravelCollection getNonEditableImportPlans()
  * @method static ?ImportPlanData getImportPlanByHandle(?string $handle, bool $editableOnly = false)
  * @method static ?ImportPlanData getImportPlanByUid(string $uid, bool $editableOnly = false)
+ * @method static ?ImportPlanData getImportPlanByHandleOrUid(string $handleOrUid)
  * @method static bool saveImportPlan(ImportPlanData $importPlan)
  * @method static bool duplicateImportPlan(ImportPlanData $importPlan)
  * @method static void deleteImportPlan(ImportPlanData $importPlan)

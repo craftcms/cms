@@ -1,7 +1,10 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
+import {userEvent} from 'vite-plus/test/browser';
+import type CraftButton from '../button/button.js';
 import type CraftActionMenu from './action-menu.js';
 import './action-menu.js';
 import '../action-item/action-item.js';
+import '../button/button.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -32,4 +35,28 @@ it('keeps items within the popover when their content is wide', async () => {
     content.getBoundingClientRect().right
   );
   expect(content.scrollWidth).toBe(content.clientWidth);
+});
+
+it('closes and returns focus to a craft-button invoker when an item is chosen with Enter', async () => {
+  document.body.innerHTML = `
+    <craft-action-menu>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content">
+        <craft-action-item>First</craft-action-item>
+      </div>
+    </craft-action-menu>
+  `;
+  const menu = document.querySelector<CraftActionMenu>('craft-action-menu')!;
+  const invoker = menu.querySelector<CraftButton>('craft-button')!;
+  await invoker.updateComplete;
+  invoker.focus();
+  await userEvent.keyboard('{Enter}');
+  await menu.updateComplete;
+
+  menu.querySelector<HTMLElement>('craft-action-item')!.focus();
+  await userEvent.keyboard('{Enter}');
+  await menu.updateComplete;
+
+  expect(menu.opened).toBe(false);
+  expect(document.activeElement).toBe(invoker);
 });

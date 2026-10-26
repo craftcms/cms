@@ -58,3 +58,51 @@ it('stays open while the invoker has keyboard focus', async () => {
 
   expect(tooltip.opened).toBe(true);
 });
+
+it('wraps long content at a readable width', async () => {
+  document.body.innerHTML = `
+    <button id="invoker" type="button">Info</button>
+    <craft-tooltip for="invoker">${'Words that go on and on. '.repeat(20)}</craft-tooltip>
+    <craft-tooltip for="invoker">Short</craft-tooltip>`;
+  const [long, short] = document.querySelectorAll('craft-tooltip');
+  await long!.updateComplete;
+  await short!.updateComplete;
+  long!.opened = true;
+  short!.opened = true;
+  await after(100);
+
+  const longContent = long!.querySelector<HTMLElement>('[slot="content"]')!;
+  const shortContent = short!.querySelector<HTMLElement>('[slot="content"]')!;
+  const ch = parseFloat(getComputedStyle(longContent).fontSize) * 0.6;
+
+  expect(longContent.getBoundingClientRect().width).toBeLessThan(ch * 60);
+  expect(longContent.getBoundingClientRect().height).toBeGreaterThan(
+    parseFloat(getComputedStyle(longContent).lineHeight) * 2
+  );
+  expect(shortContent.getBoundingClientRect().width).toBeLessThan(80);
+});
+
+it('shows in full beside an invoker in a blurred backdrop that clips', async () => {
+  document.body.innerHTML = `
+    <div style="overflow: clip; width: 80px; margin: 100px 0 0 200px">
+      <div style="backdrop-filter: blur(4px)">
+        <button id="invoker" type="button">Publish</button>
+        <craft-tooltip for="invoker" placement="top">Several drafts are blocking publication.</craft-tooltip>
+      </div>
+    </div>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.updateComplete;
+  tooltip.opened = true;
+  await after(100);
+
+  const invoker = document.querySelector('button')!.getBoundingClientRect();
+  const content = tooltip.querySelector<HTMLElement>('[slot="content"]')!;
+  const rect = content.getBoundingClientRect();
+
+  expect(invoker.top - rect.bottom).toBeGreaterThanOrEqual(0);
+  expect(invoker.top - rect.bottom).toBeLessThan(20);
+  expect(rect.right).toBeGreaterThan(280);
+  expect(
+    document.elementFromPoint(rect.right - 4, rect.top + rect.height / 2)
+  ).toBe(content);
+});

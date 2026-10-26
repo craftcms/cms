@@ -60,7 +60,7 @@ craft-markdown-field:not(:defined) {
   box-shadow: var(--markdown-field-shadow) !important;
   color: var(--markdown-field-text) !important;
   font-family: var(--c-font-mono) !important;
-  font-size: var(--c-text-base) !important;
+  font-size: var(--markdown-field-font-size, var(--c-text-base)) !important;
   line-height: 1.5 !important;
   white-space: pre-wrap;
 }
@@ -204,6 +204,12 @@ craft-markdown-field:defined .overtype-placeholder {
   font-family: var(--c-font-mono) !important;
 }
 
+craft-markdown-field:defined:not([show-toolbar]) .overtype-input,
+craft-markdown-field:defined:not([show-toolbar]) .overtype-preview,
+craft-markdown-field:defined:not([show-toolbar]) .overtype-placeholder {
+  padding-block: var(--c-spacing-md) !important;
+}
+
 craft-markdown-field:defined .overtype-preview {
   color: var(--markdown-field-text) !important;
 }
@@ -273,16 +279,4 @@ craft-markdown-field:defined
 
 .markdown-field-preview > :last-child {
   margin-block-end: 0;
-}
-
-.markdown-link-popover {
-  --max-width: min(360px, calc(100vw - var(--c-spacing-xl)));
-}
-
-.markdown-link-popover::part(dialog) {
-  z-index: 10001;
-}
-
-.markdown-link-popover::part(body) {
-  width: min(360px, calc(100vw - var(--c-spacing-xl)));
 }

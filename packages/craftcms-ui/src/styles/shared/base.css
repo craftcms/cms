@@ -40,169 +40,15 @@ body {
 }
 
 /*
-  Checkboxes and radio buttons are drawn here rather than natively, so they look
-  the same in every browser and their border radius is real (native ones always
-  compute a zero radius, which squares off their focus ring). This lives in the
-  light DOM because the components' ::slotted() styles can't override the base
-  reset.
-*/
-:is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'],
-craft-radio > input[type='radio'] {
-  appearance: none;
-  display: inline-grid;
-  place-items: center;
-  flex-shrink: 0;
-  /* Center the box on the first line of its label */
-  line-height: inherit;
-  margin-block: calc((1lh - var(--c-checkbox-size)) / 2);
-  margin-inline: 0;
-  width: var(--c-checkbox-size);
-  height: var(--c-checkbox-size);
-  border: var(--c-form-control-border-width) var(--c-form-control-border-style)
-    var(--c-checkbox-border-color, var(--c-form-control-border-color));
-  border-radius: var(--c-checkbox-radius);
-  background-color: var(--c-input-fill);
-  color: var(--c-checkbox-checked-mark, var(--c-color-accent-on-loud));
-  cursor: pointer;
-
-  &::before {
-    content: '';
-    width: 65%;
-    aspect-ratio: 1;
-    background-color: currentColor;
-    visibility: hidden;
-  }
-
-  &:checked {
-    border-color: transparent;
-    background-color: var(
-      --c-checkbox-checked-fill,
-      var(--c-color-accent-fill-loud)
-    );
-
-    &::before {
-      visibility: visible;
-    }
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  @media (forced-colors: active) {
-    &:checked {
-      border-color: Highlight;
-    }
-
-    &::before {
-      forced-color-adjust: none;
-      background-color: Highlight;
-    }
-  }
-}
-
-:is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'] {
-  &::before {
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' viewBox='0 0 255.8 234.9'%3E%3Cpath d='M245.9,4.6c-10.7-7.8-25.7-5.4-33.5,5.3l-119.4,164.2-52.1-52.1c-9.4-9.4-24.6-9.4-33.9,0-9.3,9.4-9.4,24.6,0,33.9l72,72c5,5,11.8,7.5,18.8,7s13.4-4.1,17.5-9.8L251.2,38.1c7.8-10.7,5.4-25.7-5.3-33.5Z'/%3E%3C/svg%3E");
-    mask-repeat: no-repeat;
-    mask-position: center;
-    mask-size: contain;
-  }
-
-  &:indeterminate {
-    border-color: transparent;
-    background-color: var(
-      --c-checkbox-checked-fill,
-      var(--c-color-accent-fill-loud)
-    );
-
-    &::before {
-      visibility: visible;
-      mask-image: none;
-      aspect-ratio: auto;
-      width: 55%;
-      height: 2px;
-      border-radius: 1px;
-    }
-
-    @media (forced-colors: active) {
-      border-color: Highlight;
-    }
-  }
-}
-
-craft-radio > input[type='radio'] {
-  border-radius: 50%;
-
-  &::before {
-    width: 40%;
-    border-radius: 50%;
-  }
-}
-
-craft-radio[data-button] > input[type='radio'] {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  border: 0;
-  border-radius: inherit;
-
-  &,
-  &:checked {
-    background-color: transparent;
-  }
-
-  /* Picking the selected option again does nothing. */
-  &:checked {
-    cursor: default;
-  }
-
-  &::before {
-    display: none;
-  }
-
-  &:disabled {
-    opacity: 1;
-  }
-}
-
-/*
-  The input's corners (and so its focus ring's) follow its button's: rounded
-  only on the group's outer ends, and square where options meet. It sits
-  inside the button's border, so it takes the button's inner radius; the
-  ring's outer corners then come to the button's radius plus the space
-  between them plus the ring's width.
-*/
-craft-radio[data-button][data-button-start] > input[type='radio'] {
-  border-start-start-radius: calc(
-    var(--c-button-radius, var(--c-form-control-radius)) - 1px
-  );
-  border-end-start-radius: calc(
-    var(--c-button-radius, var(--c-form-control-radius)) - 1px
-  );
-}
-
-craft-radio[data-button][data-button-end] > input[type='radio'] {
-  border-start-end-radius: calc(
-    var(--c-button-radius, var(--c-form-control-radius)) - 1px
-  );
-  border-end-end-radius: calc(
-    var(--c-button-radius, var(--c-form-control-radius)) - 1px
-  );
-}
-
-/*
   Date and time inputs lead with their picker icon, as inputs with a prefix
-  icon do. The icon is the browser's own picker button, in the native input's
+  icon do, including a plain `craft-input` given a date or time type, as table
+  cells use. The icon is the browser's own picker button, in the native input's
   light DOM, so it's styled here rather than in the components.
 */
-:is(craft-input-date, craft-input-time)
+:is(craft-input, craft-input-date, craft-input-time)
   > input:is([type='date'], [type='time'])::-webkit-calendar-picker-indicator {
   order: -1;
-  margin-inline: 0 var(--c-spacing-sm);
+  margin-inline: calc(var(--c-spacing-xs) * -1) var(--c-spacing-sm);
   /*
     The browser draws the picker's focus ring and doesn't match focus
     pseudo-classes on it, but it does take the outline color, width, and
@@ -440,6 +286,7 @@ Modify with `cp-table--compact` to reduce the vertical cell padding
 Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
 Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-container-padding`, for tables that span their container's padding
+Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
  */
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
@@ -513,8 +360,10 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
   }
 
   textarea,
-  /* Color inputs sit in padded cells, so they keep their own input styles */
-  input:not([type='checkbox']):not([type='radio']):not(craft-input-color input) {
+  /* Color inputs sit in padded cells, and text inputs outside editable tables are regular fields, so both keep their own input styles */
+  input:not([type='checkbox']):not([type='radio']):not(craft-input-color input):not(
+      .cp-table:not(.cp-table--editable) craft-input input
+    ) {
     --c-focus-outline-offset: -2px;
     border: 0;
     padding-block: var(--_cell-spacing-block);
@@ -541,24 +390,23 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
 }
 
 .cp-table--editable {
-  --_input-padding-inline: 10px;
+  --_input-padding-inline: var(--_cell-spacing-inline);
   table-layout: auto;
   border: 1px solid var(--c-color-border-quiet);
   border-radius: var(--c-radius-sm);
   overflow: clip;
   margin-block-end: var(--c-spacing-md);
 
-  thead,
-  th {
+  thead th {
     background-color: transparent;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--c-text-sm);
+    padding-block: var(--c-spacing-sm);
+    text-align: inherit;
   }
 
   thead {
     background-color: var(--c-surface-sunken);
-  }
-
-  thead th {
-    font-weight: var(--font-weight-semibold);
   }
 
   thead:not(:last-child):not(:has(~ :is(tbody, tfoot) > tr))
@@ -576,19 +424,13 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
     border-start-end-radius: calc(var(--c-radius-sm) - 1px);
   }
 
-  th {
-    font-size: var(--c-text-sm);
-    padding-block: var(--c-spacing-sm);
-    padding-inline: var(--_input-padding-inline);
-    text-align: inherit;
-  }
-
   td {
     padding: 0;
   }
 
   /*
-    Cells without a text input or select get the same padding as `th`. Native
+    Cells without a text input or select get the regular cell padding, which
+    lines their content up with the headers and the inputs' text. Native
     controls only count as direct children (legacy markup), so the inputs
     nested inside color and icon pickers don't.
   */
@@ -596,6 +438,7 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
     :not(
       :has(
         craft-input:not([hidden-input]),
+        craft-input-handle,
         craft-input-money,
         craft-textarea,
         craft-select,
@@ -616,6 +459,10 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
   :is(th, td).thin {
     white-space: nowrap;
     width: 0.01%;
+  }
+
+  :is(th, td).wrap {
+    white-space: normal;
   }
 
   /* Size thin selects to their widest option so the selected label isn't truncated */
@@ -688,28 +535,39 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
     --c-input-height: var(--c-size-control-sm);
   }
 
+  /*
+    Color cells act as their text field, except for the swatch: the field loses
+    its border and padding so its value follows the swatch, and the cell draws
+    the field's focus ring. The swatch keeps its own pointer and focus ring.
+  */
+  td:has(craft-input-color) {
+    cursor: text;
+
+    craft-input-color {
+      --c-input-border-width: 0px;
+      --c-input-radius: 0px;
+      --c-input-shadow: none;
+      --c-input-spacing-inline: var(--c-spacing-xs);
+    }
+
+    craft-input-color > input[slot='input'] {
+      --c-focus-outline-style: none;
+    }
+
+    &:has(craft-input-color > input[slot='input']:focus-visible) {
+      outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+      outline-offset: calc(var(--c-focus-outline-width) * -1);
+    }
+  }
+
   td.select-cell {
     padding-inline: var(--_input-padding-inline);
-  }
-
-  /* Compat */
-  .editable-table-preview {
-    text-align: start;
-    white-space: pre-wrap;
-  }
-
-  .editable-table-preview + textarea {
-    height: 0;
-    min-height: 0;
-    opacity: 0;
-    padding-block: 0;
   }
 
   textarea,
   textarea.text,
   input.text,
-  pre,
-  .editable-table-preview {
+  pre {
     display: block;
     width: 100%;
     border: none;
@@ -760,6 +618,11 @@ Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-contai
 
 .cp-table--auto {
   table-layout: auto;
+
+  :is(th, td).thin {
+    white-space: nowrap;
+    width: 0.01%;
+  }
 }
 
 .cp-table--loading {

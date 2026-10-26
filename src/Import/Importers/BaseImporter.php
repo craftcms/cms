@@ -36,7 +36,11 @@ use InvalidArgumentException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Mime\MimeTypes;
 use Throwable;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
+use Twig\Sandbox\SecurityError;
 
+use function CraftCms\Cms\renderSandboxedObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -49,6 +53,11 @@ abstract class BaseImporter
     public protected(set) string|BaseTransformer|null $transformer = null;
 
     public protected(set) ?int $batchSize = null;
+
+    /**
+     * Whether the step runs when its import plan does. Disabled steps stay in the plan but are skipped.
+     */
+    public protected(set) bool $enabled = true;
 
     /**
      * @var array<mixed> The mapping configuration, keyed by what to import into.
@@ -82,6 +91,19 @@ abstract class BaseImporter
      */
     public protected(set) ?array $clearableItems = null;
 
+    /**
+     * @var array<mixed>|null
+     *
+     * array => keyed like $map; the value is the object template to render for each `$map` leaf set to
+     *  `ImportHelper::TEMPLATE_RULE`, e.g. `['title' => '{firstName} {lastName}']`;
+     *  the template is rendered against the incoming data (or, inside a nested list, against the incoming data
+     *  with that list swapped for the item being mapped), so `{blocks.heading}` reads the current block's heading;
+     *  templates whose `$map` leaf isn't `ImportHelper::TEMPLATE_RULE` are ignored;
+     *
+     *  null => no templates
+     */
+    public protected(set) ?array $templates = null;
+
     public ?string $uid = null;
 
     /**
@@ -104,6 +126,7 @@ abstract class BaseImporter
         $this->source($config['source'] ?? null);
         $this->transformer($config['transformer'] ?? null);
         $this->batchSize($config['batchSize'] ?? null);
+        $this->enabled((bool) ($config['enabled'] ?? true));
 
         $settings = $config['settings'] ?? [];
         if (is_string($settings)) {
@@ -190,6 +213,16 @@ abstract class BaseImporter
     }
 
     /**
+     * Sets whether the step runs when its import plan does.
+     */
+    public function enabled(bool $enabled): self
+    {
+        $this->enabled = $enabled;
+
+        return $this;
+    }
+
+    /**
      * Sets the mapping configuration for the importer.
      *
      * @param  array<mixed>  $map  The mapping configuration array.
@@ -216,6 +249,19 @@ abstract class BaseImporter
         }
 
         $this->matchCriteria = ImportHelper::decodeRecursive($matchCriteria);
+
+        return $this;
+    }
+
+    /**
+     * Sets the object templates used by the `$map` leaves set to `ImportHelper::TEMPLATE_RULE`, and returns
+     * the current instance.
+     *
+     * @param  array<mixed>|null  $templates
+     */
+    public function templates(?array $templates = null): self
+    {
+        $this->templates = $templates;
 
         return $this;
     }
@@ -286,7 +332,7 @@ abstract class BaseImporter
      */
     protected static function settingNames(): array
     {
-        return ['map', 'matchCriteria', 'clearableItems'];
+        return ['map', 'matchCriteria', 'clearableItems', 'templates'];
     }
 
     /**
@@ -301,6 +347,11 @@ abstract class BaseImporter
             'settings.map' => ['array'],
             'settings.matchCriteria' => ['nullable', 'array'],
             'settings.clearableItems' => ['nullable', 'array'],
+            'settings.templates' => [
+                'nullable',
+                'array',
+                fn (string $attribute, mixed $value, Closure $fail, Validator $validator) => self::validateTemplates($value, $validator),
+            ],
         ];
     }
 
@@ -327,6 +378,7 @@ abstract class BaseImporter
             source: $data['source'],
             transformer: $data['transformer'],
             batchSize: $data['batchSize'],
+            enabled: $data['enabled'],
             settings: $data['settings'],
         );
     }
@@ -334,7 +386,7 @@ abstract class BaseImporter
     /**
      * Builds the step data array validated by `getRules()`/`getSettingsRules()`, from the importer's current state.
      *
-     * @return array{uid: string|null, type: class-string<static>, source: string|null, transformer: string|null, batchSize: int|null, settings: array<string, mixed>}
+     * @return array{uid: string|null, type: class-string<static>, source: string|null, transformer: string|null, batchSize: int|null, enabled: bool, settings: array<string, mixed>}
      */
     public function toArrayData(): array
     {
@@ -344,10 +396,12 @@ abstract class BaseImporter
             'source' => $this->source,
             'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
             'batchSize' => $this->batchSize,
+            'enabled' => $this->enabled,
             'settings' => [
                 'map' => $this->map,
                 'matchCriteria' => $this->matchCriteria,
                 'clearableItems' => $this->clearableItems,
+                'templates' => $this->templates,
             ],
         ];
     }
@@ -669,6 +723,79 @@ abstract class BaseImporter
     {
         // by default this does nothing
         return true;
+    }
+
+    /**
+     * Checks that every `$map` leaf set to `ImportHelper::TEMPLATE_RULE` has a template, and that each of those
+     * templates compiles, adding any errors under the template's own path.
+     */
+    protected static function validateTemplates(mixed $templates, Validator $validator): void
+    {
+        $map = ImportHelper::decodeRecursive($validator->getData()['settings']['map'] ?? []);
+
+        if (! is_array($map)) {
+            return;
+        }
+
+        $templates = is_array($templates) ? $templates : [];
+
+        foreach (Arr::dot($map) as $path => $rule) {
+            if ($rule !== ImportHelper::TEMPLATE_RULE) {
+                continue;
+            }
+
+            $attribute = "settings.templates.$path";
+            $template = Arr::get($templates, (string) $path);
+
+            if (! is_string($template) || trim($template) === '') {
+                $validator->errors()->add($attribute, t('{attribute} cannot be blank.', ['attribute' => t('Template')]));
+
+                continue;
+            }
+
+            try {
+                renderSandboxedObjectTemplate($template, []);
+            } catch (SyntaxError|SecurityError $e) {
+                $validator->errors()->add($attribute, t('The template couldn’t be parsed: {error}', ['error' => $e->getRawMessage()]));
+            } catch (RuntimeError) {
+                // rendered without the incoming data, so errors that depend on it can only show up at import time
+            }
+        }
+    }
+
+    /**
+     * Prepares the importer's settings for an import run.
+     *
+     * Mapping trees can use uids instead of handles (see `resolveMappingKeys()`), and the import needs
+     * handles. Call this right before importing, but not when the settings will be shown or saved again.
+     */
+    public function prepareForImport(): void
+    {
+        $this->map = $this->resolveMappingKeys($this->map);
+
+        if ($this->matchCriteria !== null) {
+            $this->matchCriteria = $this->resolveMappingKeys($this->matchCriteria);
+        }
+
+        if ($this->clearableItems !== null) {
+            $this->clearableItems = $this->resolveMappingKeys($this->clearableItems);
+        }
+
+        if ($this->templates !== null) {
+            $this->templates = $this->resolveMappingKeys($this->templates);
+        }
+    }
+
+    /**
+     * Replaces any uid keys in a mapping tree with the current handles.
+     * By default, the tree is returned unchanged.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    public function resolveMappingKeys(array $tree): array
+    {
+        return $tree;
     }
 
     /**

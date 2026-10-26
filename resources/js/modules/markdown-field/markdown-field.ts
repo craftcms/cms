@@ -127,7 +127,8 @@ class MarkdownField extends LitElement {
   @property({attribute: 'toolbar-buttons', type: Array})
   toolbarButtons: string[] = [];
 
-  @property({attribute: 'show-toolbar', type: Boolean})
+  /** Reflected, so the stylesheet can space the text without a toolbar above it. */
+  @property({attribute: 'show-toolbar', type: Boolean, reflect: true})
   showToolbar = false;
 
   @property({attribute: 'upload-folder-id', type: Number})
@@ -282,7 +283,8 @@ class MarkdownField extends LitElement {
     const options: RenderOptions = {
       autoResize: true,
       fontFamily: 'var(--c-font-mono)',
-      fontSize: 'var(--c-text-base)',
+      // Set on the editor's layers, so `--markdown-field-font-size` on an ancestor can change it.
+      fontSize: 'var(--markdown-field-font-size, var(--c-text-base))',
       lineHeight: 'var(--c-leading-normal)',
       maxHeight: this.maxHeight ? `${this.maxHeight}px` : null,
       minHeight: undefined,

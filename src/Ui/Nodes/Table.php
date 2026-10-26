@@ -26,7 +26,7 @@ class Table implements Node
 {
     use Conditionable;
 
-    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool, wrap?: bool}> */
+    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, thin?: bool, headerSrOnly?: bool, wrap?: bool}> */
     private array $columns = [];
 
     /** @var list<array<string, mixed>> */
@@ -110,10 +110,11 @@ class Table implements Node
      * Columns with `sortable => true` get clickable headers that cycle ascending, descending,
      * then back to the rows' own order. See {@see rows()} for the `_sort` override.
      * `width` sets a fixed or relative column width (e.g. `34px` or `1.5fr`).
+     * `thin` makes the column as narrow as its content, which doesn't wrap.
      * `headerSrOnly` hides only the visible header text.
      * `wrap` lets long cell content wrap instead of widening the column.
      *
-     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool, wrap?: bool}>  $columns
+     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, thin?: bool, headerSrOnly?: bool, wrap?: bool}>  $columns
      */
     public function columns(array $columns): static
     {
@@ -520,13 +521,17 @@ class Table implements Node
             };
 
             $head = Html::tag('tr', implode('', array_map(
-                fn (array $column) => Html::tag('th', Html::encode($column['label'])),
+                fn (array $column) => Html::tag('th', Html::encode($column['label']), [
+                    'class' => ($column['thin'] ?? false) ? ['thin'] : null,
+                ]),
                 $columns,
             )));
 
             $body = implode('', array_map(
                 fn (array $row) => Html::tag('tr', implode('', array_map(
-                    fn (array $column) => Html::tag('td', $renderCell($column, $row)),
+                    fn (array $column) => Html::tag('td', $renderCell($column, $row), [
+                        'class' => ($column['thin'] ?? false) ? ['thin'] : null,
+                    ]),
                     $columns,
                 ))),
                 $rows,

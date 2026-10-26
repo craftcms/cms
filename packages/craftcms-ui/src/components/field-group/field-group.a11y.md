@@ -15,6 +15,10 @@ A layout grid for fields. It adds no role or name, so it doesn't group fields fo
 - [x] Children are placed in DOM order, without `order` or grid areas, so reading and focus order match the visual order. Per WCAG 1.3.2 (Meaningful Sequence) and 2.4.3 (Focus Order). Verified for intrinsic-width children by `uses intrinsic widths when space allows and stacks them when it does not` in `field-group.browser.test.ts`.
 - [ ] Inside a required `fieldset` field, nested required fields hide only their decorative asterisk and keep their visually hidden "Required" text. Per WCAG 1.3.1 (Info and Relationships) and 3.3.2 (Labels or Instructions). Not yet verified.
 
+### Visual
+
+- [x] In a `separated` group, column hairlines are drawn with CSS borders on pseudo-elements, so they add nothing to the accessibility tree, aren't announced, and keep a visible system color in forced colors mode. They appear only between fields that share a row. Per WCAG 1.3.1 (Info and Relationships). Verified by `draws a hairline between separated fields that share a row, and only there` in `field-group.browser.test.ts`.
+
 ### Reflow and zoom
 
 - [x] Intrinsic-width children stack onto separate rows when the group narrows. Per WCAG 1.4.10 (Reflow). Verified by `uses intrinsic widths when space allows and stacks them when it does not` in `field-group.browser.test.ts`.

@@ -14,6 +14,7 @@ use CraftCms\Cms\Gql\Interfaces\Element;
 use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Generators\AssetType;
 use CraftCms\Cms\Gql\Types\Generators\ImageColorsType;
+use CraftCms\Cms\Gql\Types\Volume;
 use CraftCms\Cms\Support\Facades\Gql;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InterfaceType;
@@ -236,8 +237,18 @@ class Asset extends Element
     /** @return array<string, FieldDefinitionConfig> */
     protected static function getConditionalFields(): array
     {
+        $fields = [];
+
+        if (GqlHelper::canSchema('settings.volumes')) {
+            $fields['volume'] = [
+                'name' => 'volume',
+                'type' => Type::nonNull(Volume::getType()),
+                'description' => 'The volume that the asset belongs to.',
+            ];
+        }
+
         if (GqlHelper::canQueryAllUsers()) {
-            return [
+            $fields += [
                 'uploaderId' => [
                     'name' => 'uploaderId',
                     'type' => Type::int(),
@@ -252,6 +263,6 @@ class Asset extends Element
             ];
         }
 
-        return [];
+        return $fields;
     }
 }

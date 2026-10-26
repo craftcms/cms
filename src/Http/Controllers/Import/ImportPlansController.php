@@ -249,7 +249,8 @@ class ImportPlansController
             destinationCols: $destinationCols,
             sourceDataCols: $sourceDataCols,
             values: MappingValues::fromImporter($importer),
-            suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map),
+            suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map, $importer),
+            templateTextExpanderTriggers: ImportHelper::templateTextExpanderTriggers($sourceDataCols),
         )->jsonSerialize());
     }
 
@@ -326,6 +327,7 @@ class ImportPlansController
             array_merge($importer->getDestinationCols(), $allDestinationCols),
             $sourceDataCols,
             $importer->map,
+            $importer,
         );
         $rootPath = implode('.', Arr::bracketsToArray((string) $fieldHandle));
 
@@ -335,6 +337,7 @@ class ImportPlansController
             groups: $groups,
             sourceDataCols: $sourceDataCols,
             suggestions: self::subtree($suggestions, $rootPath),
+            templateTextExpanderTriggers: ImportHelper::templateTextExpanderTriggers($sourceDataCols),
         )->jsonSerialize());
     }
 
@@ -487,6 +490,10 @@ class ImportPlansController
 
         abort_if(is_null($importPlan), 404, 'Import plan not found.');
 
+        if ($this->importService->isRunning($importPlan)) {
+            return $this->asFailure(t('This import plan is already running.'));
+        }
+
         try {
             $dispatched = $this->importService->dispatchImport($importPlan);
         } catch (Throwable $e) {
@@ -554,7 +561,7 @@ class ImportPlansController
                                 'url' => action([self::class, 'run']),
                                 'body' => [
                                     'uid' => $importPlan->uid,
-                                    'redirect' => Crypt::encrypt(action([self::class, 'index'])),
+                                    'redirect' => Crypt::encrypt(route('craft.cp.import.edit', ['handle' => $importPlan->handle])),
                                 ],
                                 'confirm' => t('Are you sure you want to run “{name}”?', [
                                     'name' => $importPlan->name,

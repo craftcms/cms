@@ -9,6 +9,7 @@ use Override;
 
 /**
  * @method static \CraftCms\Cms\Asset\Elements\Asset|null getAssetById(int $assetId, int|null $siteId = null)
+ * @method static \CraftCms\Cms\Element\Queries\AssetQuery findAcrossSites()
  * @method static int getTotalAssets(mixed $criteria = null)
  * @method static void replaceAssetFile(\CraftCms\Cms\Asset\Elements\Asset $asset, string $pathOnServer, string $filename, string|null $mimeType = null)
  * @method static bool moveAsset(\CraftCms\Cms\Asset\Elements\Asset $asset, \CraftCms\Cms\Asset\Data\VolumeFolder $folder, string $filename = '')

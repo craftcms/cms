@@ -46,7 +46,8 @@ readonly class NotificationCenter
             ->where('type', CpNotification::TYPE)
             ->where(fn (Builder $query) => $query
                 ->whereNull('read_at')
-                ->orWhere('read_at', '>', now()->subDays(7)))
+                // Laravel writes notifications, in the system time zone
+                ->orWhere('read_at', '>', now()->subDays(7)->toDateTimeString()))
             ->get()
             ->map(fn (DatabaseNotification $notification): NotificationData => $this->prepare($notification))
             ->all();
@@ -69,7 +70,7 @@ readonly class NotificationCenter
             ->reorder()
             ->where('type', CpNotification::TYPE)
             ->whereIn('id', $ids)
-            ->update(['read_at' => now()]);
+            ->update(['read_at' => now()->toDateTimeString()]);
     }
 
     /** @return MorphMany<DatabaseNotification, Model>|null */

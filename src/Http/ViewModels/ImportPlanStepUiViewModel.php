@@ -54,7 +54,7 @@ class ImportPlanStepUiViewModel extends ViewModel
                 ->reactive())
                 ->instructions(t('What this step imports.')),
             UiField::make(t('Data Source'), Text::make('source')
-                ->placeholder('@root/resources/my-data.json'))
+                ->placeholder('resources/my-data.json'))
                 ->instructions(t('The aliased or @root-relative path to a file or a URL containing the data you want this step to import.'))
                 ->required()
                 ->visible($hasType),

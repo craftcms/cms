@@ -47,6 +47,16 @@ it('can create a revision', function () {
     Event::assertDispatchedOnce(RevisionCreated::class);
 });
 
+it('reuses the last revision when the element hasn’t changed since', function () {
+    Entry::factory()->create();
+    $element = EntryElement::findOne();
+
+    $revisionId = $this->revisions->createRevision($element);
+
+    expect($this->revisions->createRevision($element))->toBe($revisionId)
+        ->and($this->revisions->createRevision($element, force: true))->not->toBe($revisionId);
+});
+
 it('can revert an element to a revision', function () {
     Event::fake([
         ElementRevertingToRevision::class,

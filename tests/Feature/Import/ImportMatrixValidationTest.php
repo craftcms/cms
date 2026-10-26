@@ -48,8 +48,8 @@ it('validateMapping returns true when all entry types in the map are allowed', f
     };
 
     $value = [
-        'firstEt' => ['map' => ['plainText' => 'plainText']],
-        'secondEt' => ['map' => ['plainText' => 'plainText']],
+        $this->firstEntryType->uid => ['map' => ['plainText' => 'plainText']],
+        $this->secondEntryType->uid => ['map' => ['plainText' => 'plainText']],
     ];
 
     $result = $this->matrixField->validateMapping($value, 'map', $fail, $this->validator, ['field' => $this->matrixField]);

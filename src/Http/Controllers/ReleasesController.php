@@ -223,13 +223,11 @@ class ReleasesController
     {
         Gate::authorize('publish', $release);
 
-        $date = $release->publishedAt ?? $release->targetDate;
-        $timezone = $date?->getTimezone()->getName() ?? Cms::timezone();
         $ui = $uiResolver->resolve(Ui::make([
-            ReleaseDateGroup::make('publishAt', t('Publication date'), min: now($timezone)->format('Y-m-d'))
+            ReleaseDateGroup::dateTimeField('publishAt', t('Publication date'), min: now(Cms::timezone())->format('Y-m-d'))
                 ->required(),
         ]), new UiContext(values: [
-            'publishAt' => ReleaseDateGroup::value($date, $timezone),
+            'publishAt' => ReleaseDateGroup::dateTimeValue($release->publishedAt ?? $release->targetDate),
         ]));
 
         return new JsonResponse([
@@ -245,7 +243,6 @@ class ReleasesController
             'publishAt' => ['required', 'array'],
             'publishAt.date' => ['required', 'date_format:Y-m-d'],
             'publishAt.time' => ['required', 'date_format:H:i'],
-            'publishAt.timezone' => ['nullable', 'timezone'],
         ]);
 
         $publishAt = $this->dateTime($validated['publishAt']);
@@ -311,11 +308,15 @@ class ReleasesController
             'targetDate' => ['nullable', 'array'],
             'targetDate.date' => ['nullable', 'date_format:Y-m-d'],
             'targetDate.time' => ['nullable', 'date_format:H:i'],
-            'targetDate.timezone' => ['nullable', 'timezone'],
         ]);
     }
 
-    /** @param array{date?: string, time?: string, timezone?: string}|null $value */
+    /**
+     * Parses a submitted release date and time in the user’s time zone, which
+     * is the zone the control presents them in.
+     *
+     * @param  array{date?: string, time?: string}|null  $value
+     */
     private function dateTime(?array $value): ?\DateTimeInterface
     {
         if (($value['date'] ?? '') === '') {
@@ -324,7 +325,7 @@ class ReleasesController
 
         return DateTimeHelper::toDateTime([
             'datetime' => trim(sprintf('%s %s', $value['date'], $value['time'] ?? '00:00')),
-            'timezone' => $value['timezone'] ?? null,
+            'timezone' => Cms::timezone(),
         ]) ?: null;
     }
 

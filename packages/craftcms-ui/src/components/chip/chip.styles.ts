@@ -401,9 +401,9 @@ export default css`
   :host([data-color='white'][appearance~='fill']:not([selected])) .cp-chip,
   :host([data-color='white'][appearance~='outline-fill']:not([selected]))
     .cp-chip {
-    --c-color-fill-quiet: var(--c-chip-fill, var(--c-surface-raised));
+    --c-color-fill-quiet: var(--c-chip-fill, var(--c-surface-white));
     --c-color-on-quiet: var(--c-chip-text, var(--c-text-default));
-    background-color: var(--c-chip-fill, var(--c-surface-raised));
+    background-color: var(--c-chip-fill, var(--c-surface-white));
     border-color: var(--c-chip-border-color, var(--c-border-raised));
     color: var(--c-chip-text, var(--c-text-default));
   }

@@ -16,6 +16,8 @@ export interface BaseOption {
   value: string;
 }
 export interface CheckboxOption extends BaseOption {
+  /** Trusted HTML shown in place of `label`. */
+  labelHtml?: string;
   info?: string;
   checked?: boolean;
   disabled?: boolean;
@@ -194,6 +196,8 @@ export interface ActionItemLink {
    * CP, and for the handful of places still handing off to the legacy stack.
    */
   external?: boolean;
+  /** Where the link opens, such as `_blank` for a new tab. Implies `external`. */
+  target?: string;
   /**
    * Marks this as the one currently in effect, for a list that's a choice
    * rather than a set of commands — a source switcher, say. When any item in a

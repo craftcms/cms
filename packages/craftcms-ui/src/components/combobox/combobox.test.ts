@@ -189,6 +189,40 @@ describe('craft-combobox', () => {
     }
   );
 
+  it('lists exact matches first, so only one option looks selected', async () => {
+    const combobox = await createFixture((c) => {
+      c.requireOptionMatch = false;
+      c.options = [
+        {
+          type: 'optgroup',
+          label: 'Routes',
+          options: [
+            {
+              label: 'App\\Http\\Controllers\\SitePageController@exhibitions',
+              value: 'App\\Http\\Controllers\\SitePageController@exhibitions',
+            },
+            {label: 'exhibit', value: 'exhibit'},
+          ],
+        },
+      ];
+    });
+
+    combobox.querySelector('input')!.focus();
+    await typeQuery(combobox, 'exhibit');
+
+    const options = optionEls(combobox);
+    expect(
+      String((options[0] as HTMLElement & {choiceValue: unknown}).choiceValue)
+    ).toBe('exhibit');
+    expect(combobox.activeIndex).toBe(0);
+    expect(
+      options.filter(
+        (option) =>
+          option.hasAttribute('active') || option.hasAttribute('checked')
+      )
+    ).toHaveLength(1);
+  });
+
   it('shows the selected option’s icon in the textbox', async () => {
     const combobox = await createFixture((c) => {
       c.options = [

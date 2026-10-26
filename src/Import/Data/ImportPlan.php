@@ -164,6 +164,16 @@ class ImportPlan extends Component implements CpEditable, Validatable
     }
 
     /**
+     * Returns the import plan's enabled steps, in order.
+     *
+     * @return list<BaseImporter>
+     */
+    public function enabledSteps(): array
+    {
+        return array_values(array_filter($this->steps ?? [], fn (BaseImporter $step): bool => $step->enabled));
+    }
+
+    /**
      * Serializes the import plan's steps into an array of arrays.
      *
      * @return array<int, array<string, mixed>>|null
@@ -230,6 +240,10 @@ class ImportPlan extends Component implements CpEditable, Validatable
     {
         if ($validator === null) {
             return;
+        }
+
+        if (! empty($this->steps) && empty($this->enabledSteps())) {
+            $validator->errors()->add('steps', t('An import plan needs at least one enabled step.'));
         }
 
         foreach ($this->steps ?? [] as $i => $step) {

@@ -6,18 +6,14 @@ export default css`
     position: relative;
   }
 
-  /* The top layer's popover defaults would center it and paint it as a box of
-     its own; Lion positions the content, so the wrapper stays invisible. */
-  dialog[data-overlay-outer-wrapper][popover] {
-    inset: auto;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    overflow: visible;
-    width: auto;
-    height: auto;
+  /* With no box of its own, the popover can't take a button group's overlap,
+     so its invoker does. */
+  ::slotted([slot='invoker']) {
+    margin-inline-start: var(--c-button-group-overlap);
+  }
+
+  ::slotted(:not([slot='invoker'])) {
+    --c-button-group-overlap: initial;
   }
 
   .popover-pane {

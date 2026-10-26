@@ -65,10 +65,10 @@ readonly class LoginController extends AuthenticationController
             inertiaProps: [
                 'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
                 'oauthLoginButtons' => $oauthLoginButtons,
-                'action' => $request->isCpRequest() ? action([self::class, 'attemptLogin']) : action_url('users/login'),
+                'action' => $request->isCpRequest() ? route('craft.cp.login.attempt') : action_url('users/login'),
             ],
             data: [
-                'action' => action([self::class, 'attemptLogin']),
+                'action' => $request->isCpRequest() ? route('craft.cp.login.attempt') : action([self::class, 'attemptLogin']),
                 'oauthLoginButtons' => $oauthLoginButtons,
             ],
         );
@@ -103,7 +103,7 @@ readonly class LoginController extends AuthenticationController
         }
 
         $html = template('_special/login-modal', [
-            'action' => action([LoginController::class, 'attemptLogin']),
+            'action' => route('craft.cp.login.attempt'),
             'staticEmail' => $staticEmail,
             'forElevatedSession' => $forElevatedSession,
         ], templateMode: TemplateMode::Cp);

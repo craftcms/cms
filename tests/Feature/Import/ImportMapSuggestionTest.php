@@ -2,14 +2,19 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Field\Fields as FieldsService;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\ImportHelper;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
 
-function nestedMatrixDestinationCols(): array
+/**
+ * @return array{cols: array, importer: EntryImporter}
+ */
+function nestedMatrixMapping(): array
 {
     $plainText = ImportFixtures::plainTextField('plainText', 'Plain Text');
     $plainText2 = ImportFixtures::plainTextField('plainText2', 'Plain Text 2');
@@ -50,12 +55,16 @@ function nestedMatrixDestinationCols(): array
         return $cols;
     };
 
-    $top = ImportHelper::getDestinationColsForFieldLayout($fieldsService->getLayoutByUid($layoutModel->uid));
-    $level1 = $colsFor('matrixOuter', 'matrixOuter');
+    $fieldLayout = $fieldsService->getLayoutByUid($layoutModel->uid);
+    $top = ImportHelper::getDestinationColsForFieldLayout($fieldLayout);
+    $level1 = $colsFor('matrixOuter', collect($top)->firstWhere('handle', 'matrixOuter')->prefixedHandle);
     $innerCol = collect($level1)->firstWhere('handle', 'matrixInner');
     $level2 = $colsFor('matrixInner', $innerCol->prefixedHandle);
 
-    return [...$top, ...$level1, ...$level2];
+    return [
+        'cols' => [...$top, ...$level1, ...$level2],
+        'importer' => new EntryImporter()->fieldLayout($fieldLayout),
+    ];
 }
 
 function nestedMatrixSourceCols(): array
@@ -85,9 +94,15 @@ function nestedMatrixSourceCols(): array
 }
 
 it('suggests a column for every level of a real nested matrix', function () {
-    $result = ImportHelper::suggestMapValues(nestedMatrixDestinationCols(), nestedMatrixSourceCols(), []);
+    ['cols' => $cols, 'importer' => $importer] = nestedMatrixMapping();
 
-    expect($result)->toEqual([
+    $result = ImportHelper::suggestMapValues($cols, nestedMatrixSourceCols(), [], $importer);
+
+    $innerPlainText = collect($cols)->last(fn ($col) => $col->handle === 'plainText');
+    expect(Arr::get($result, implode('.', $innerPlainText->prefixedHandleAsArray)))
+        ->toBe('matrixOuter.fields.matrixInner.fields.plainText');
+
+    expect($importer->resolveMappingKeys($result))->toEqual([
         'plainText' => 'plainText',
         'matrixOuter' => [
             'withMatrix' => [
@@ -114,7 +129,9 @@ it('suggests the same columns however their handles are spelled', function () {
         'MATRIXOUTER.fields.matrix inner.fields.Plain Text 2',
     ]);
 
-    $result = ImportHelper::suggestMapValues(nestedMatrixDestinationCols(), $sourceCols, []);
+    ['cols' => $cols, 'importer' => $importer] = nestedMatrixMapping();
+
+    $result = $importer->resolveMappingKeys(ImportHelper::suggestMapValues($cols, $sourceCols, [], $importer));
 
     $innerFields = $result['matrixOuter']['withMatrix']['fields']['matrixInner']['withPlainText']['fields'];
 

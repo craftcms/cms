@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\CmsAssets;
@@ -268,11 +269,11 @@ readonly class Navigation
                             fn (NavItem $item) => $item->label(t('Entries')),
                             fn (NavItem $item) => $item->label(t($page, category: 'site')),
                         )
-                        ->href(sprintf('content/%s', Str::slug($page)))
+                        ->href(sprintf('content/%s', ElementSources::pageSlug($page)))
                         ->icon($entryPageSettings[$page]['icon'] ?? 'newspaper')
                         ->subnav($this->sourceSubnav(
                             Entry::class,
-                            sprintf('content/%s', Str::slug($page)),
+                            sprintf('content/%s', ElementSources::pageSlug($page)),
                             $page,
                         ))
                     )
@@ -301,8 +302,8 @@ readonly class Navigation
                 ->icon('calendar'));
         }
 
-        // Add any Plugin nav items
-        $pluginNavItems = collect();
+        // Add the nav items of registered Eloquent element types, then any plugins'
+        $pluginNavItems = collect(app(EloquentElements::class)->navItems());
 
         foreach ($this->plugins->getAllPlugins() as $plugin) {
             if (! $plugin->hasCpSection) {
@@ -579,7 +580,7 @@ readonly class Navigation
                 : $pages
                     ->map(
                         fn (string $page) => [
-                            sprintf('content/%s', Str::slug($page)),
+                            sprintf('content/%s', ElementSources::pageSlug($page)),
                             $page,
                         ],
                     )

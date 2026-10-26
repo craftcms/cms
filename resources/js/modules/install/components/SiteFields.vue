@@ -3,6 +3,8 @@
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import {computed} from 'vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
+  import InputCallout from '@/common/components/InputCallout.vue';
+  import {envVarsDocsUrl} from '@/common/utils/docsUrls';
   import Select from '@/common/form/Select.vue';
   import {usePage} from '@inertiajs/vue3';
   import type {BaseOption, SelectItem} from '@/common/types';
@@ -53,25 +55,16 @@
     :error="errors?.baseUrl"
     :text-expander-triggers="page.props.baseUrlTextExpanderTriggers"
   >
-    <craft-callout
+    <InputCallout
       slot="after"
-      variant="info"
-      appearance="plain"
-      class="p-0"
-      icon="lightbulb"
-    >
-      <span
-        v-html="
-          t(
-            'Type <kbd>$</kbd> to choose an environment variable, or <kbd>@</kbd> to choose an alias.'
-          )
-        "
-      ></span>
-      <a
-        href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
-        >{{ t('Learn more') }}</a
-      >
-    </craft-callout>
+      :message="
+        t(
+          'Type <kbd>$</kbd> to choose an environment variable, or <kbd>@</kbd> to choose an alias.'
+        )
+      "
+      :href="envVarsDocsUrl"
+      html
+    />
   </CraftInput>
 
   <Select

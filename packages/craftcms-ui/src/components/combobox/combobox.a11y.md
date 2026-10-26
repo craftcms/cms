@@ -36,6 +36,7 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 - [ ] Known deviation: Escape always empties the textbox as well as closing the list (Lion's `_listboxOnKeyDown`), so typed text is lost. The APG example closes the list first and keeps the text, clearing it only on a second Escape. Per WCAG 2.1.1 (Keyboard) and 3.2.2 (On Input). Not yet verified.
 - [ ] Tab closes the list without selecting the active option, and moves focus as usual. Per WCAG 2.1.2 (No Keyboard Trap). Not yet verified.
 - [ ] Selecting an option with a pointer returns focus to the textbox. Per WCAG 2.4.3 (Focus Order). Not yet verified.
+- [x] Clicking the chevron focuses the textbox and opens or closes the list, as a select's arrow does, so pointer users aren't left with a dead target beside the textbox. The chevron stays hidden from assistive technology, since Down and Up already open the list. Per WCAG 2.5.8 (Target Size (Minimum)) and 3.2.4 (Consistent Identification). Verified by `opens and closes its options from the chevron, focusing the textbox` and `gives the whole end of the field beside the clear button to the chevron, with a text cursor` in `combobox-options.browser.test.ts`.
 - [x] Typing announces `input` but commits nothing; `change` fires only when an option is chosen or the field is left. Per WCAG 3.2.2 (On Input). Verified by `emits native input while typing and change when the field is left` in `combobox.test.ts`.
 - [ ] A keyboard-focused textbox shows the focus ring at 3:1 against the surface, and in `multiple-choice` mode the ring is drawn around the whole token area. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Not yet verified.
 
@@ -54,6 +55,10 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 
 - [ ] Known gap: how many options match, and that none match, aren't announced. There is no live region; the only count is the `aria-setsize` read out with the active option. Per WCAG 4.1.3 (Status Messages).
 - [ ] Known gap: the "Showing {shown} of {total}" footer shown when matches exceed `limit` is `aria-hidden="true"`, so screen reader users aren't told the list is incomplete. Per WCAG 1.3.1 (Info and Relationships) and 4.1.3 (Status Messages).
+
+### Zoom and reflow
+
+- [x] The open list stays within the viewport: it's at least as wide as the field, and no wider than 22.5rem unless the field is, so long labels and hints truncate rather than push it off-screen. Per WCAG 1.4.10 (Reflow). Verified by `keeps the list within the viewport when an option is long, $expected` in `combobox-options.browser.test.ts`.
 
 ### Pointer
 

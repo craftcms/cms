@@ -62,19 +62,19 @@ class EntryImporter extends ElementImporter
             ...parent::settingsUi(),
             UiField::make(t('Section'), Choice::make(['section'])
                 ->value($this->section)
-                ->placeholder(t('Please select'))
                 ->options($this->availableSections())
                 ->reactive())
-                ->instructions(t('The section to import into.')),
+                ->instructions(t('The section to import into.'))
+                ->required(),
             Group::make('entry-type-group', [
                 // reactive: choosing an entry type is what resolves the field layout,
                 // which the step's mapping is gated on
                 UiField::make(t('Entry Type'), Choice::make('entryType')
                     ->value($this->entryType)
-                    ->placeholder(t('Please select'))
                     ->options($this->availableEntryTypes())
                     ->reactive())
-                    ->instructions(t('The entry type to import into.')),
+                    ->instructions(t('The entry type to import into.'))
+                    ->required(),
             ])
                 ->dependsOn('settings.section')
                 ->visible($this->section !== null),
@@ -181,7 +181,7 @@ class EntryImporter extends ElementImporter
             $section = null;
             $entryType = null;
 
-            // if it's UI-driven element import where the fieldLayout was chosen in the editable config,
+            // if it's an element import where the fieldLayout was chosen in the config,
             // we need to ensure the sectionId and typeId are both set
             if ($this->section) {
                 $section = Sections::getSectionByUid($this->section);
@@ -276,6 +276,9 @@ class EntryImporter extends ElementImporter
         return Sections::getAllSections()->map(fn ($section) => [
             'label' => $section->name,
             'value' => $section->uid,
+        ])->prepend([
+            'label' => t('Please select'),
+            'value' => null,
         ])->all();
     }
 
@@ -295,6 +298,9 @@ class EntryImporter extends ElementImporter
         return collect($section?->getEntryTypes())->map(fn ($entryType) => [
             'label' => $entryType->name,
             'value' => $entryType->uid,
+        ])->prepend([
+            'label' => t('Please select'),
+            'value' => null,
         ])->all();
     }
 }

@@ -61,6 +61,10 @@ class Draft extends BaseModel
      */
     public static function lockIds(int ...$draftIds): void
     {
+        if ($draftIds === []) {
+            return;
+        }
+
         DB::table(Table::DRAFTS)->whereIn('id', $draftIds)->orderBy('id')->lockForUpdate()->get(['id']);
     }
 

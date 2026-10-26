@@ -141,10 +141,10 @@ export default class CraftSelectColor extends LitElement {
       'background-position:0 0, 0 0.25rem, 0.25rem -0.25rem, -0.25rem 0;' +
       'background-size:0.5rem 0.5rem;';
 
-    // White cards take the raised surface rather than white's own fill.
+    // White cards take the white surface rather than white's own fill.
     const fill =
       color === 'white'
-        ? 'var(--c-surface-raised)'
+        ? 'var(--c-surface-white)'
         : `var(--c-color-${color}-fill-quiet)`;
 
     const style = isTransparent
