@@ -55,6 +55,14 @@ export const MetadataDetails = defineAsyncComponent(
 );
 
 /**
+ * Adds a panel to the screen's details column while it's mounted: a rail icon
+ * and the panel it opens, with the default slot as the panel's content.
+ */
+export const ScreenPanel = defineAsyncComponent(
+  () => import('./common/components/ScreenPanel.vue')
+);
+
+/**
  * An element's own actions (Delete, Copy URL, …), from its
  * `actionMenuDescriptors()`, with their behaviors dispatched client-side.
  */
