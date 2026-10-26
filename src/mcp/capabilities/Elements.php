@@ -410,7 +410,11 @@ readonly class Elements
         $adapter = $this->adapters->find($type);
 
         if ($adapter === null) {
-            throw new ResourceReadException("Unsupported element type [$type].");
+            throw new ResourceReadException(sprintf(
+                'Unsupported element type [%s]. Supported types: %s.',
+                $type,
+                implode(', ', $this->adapters->handles()),
+            ));
         }
 
         return $adapter->schema();

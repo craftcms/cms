@@ -58,11 +58,40 @@ class ElementAdapterRegistry extends Component
         return array_map(static fn(string $type): string => $type::handle(), $this->types());
     }
 
+    /**
+     * Finds an adapter by its handle, or by the reference handle or class of the element type it adapts.
+     */
     public function find(string $handle): ?ElementAdapter
     {
+        $type = $this->typeByHandle($handle) ?? $this->typeByElementType($handle);
+
+        return $type === null ? null : Craft::$app->get('mcp')->getCapabilityContainer()->get($type);
+    }
+
+    /** @return class-string<ElementAdapter>|null */
+    private function typeByHandle(string $handle): ?string
+    {
         foreach ($this->types() as $type) {
-            if ($type::handle() === $handle || $type::elementType() === $handle) {
-                return Craft::$app->get('mcp')->getCapabilityContainer()->get($type);
+            if ($type::handle() === $handle) {
+                return $type;
+            }
+        }
+
+        return null;
+    }
+
+    /** @return class-string<ElementAdapter>|null */
+    private function typeByElementType(string $handle): ?string
+    {
+        $elementType = Craft::$app->getElements()->getElementTypeByRefHandle($handle);
+
+        if ($elementType === null) {
+            return null;
+        }
+
+        foreach ($this->types() as $type) {
+            if ($type::elementType() === $elementType) {
+                return $type;
             }
         }
 
