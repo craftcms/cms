@@ -32,21 +32,17 @@ readonly class MappingTemplate
      */
     private static function readPaths(string $template): array
     {
-        $paths = [];
-
         // tags, and everything inside a `{% verbatim %}` block, aren't read
         $template = (string) preg_replace('/\{%-?\s*verbatim\s*-?%\}.*?\{%-?\s*endverbatim\s*-?%\}/s', '', $template);
         $template = (string) preg_replace('/\{%.*?%\}/s', '', $template);
 
-        // print tags, e.g. `{{ object.author['First Name'] }}`, are read and then removed, so their
-        // braces aren't mistaken for shorthand below
-        $template = (string) preg_replace_callback('/\{\{.*?\}\}/s', function (array $printTag) use (&$paths): string {
-            array_push($paths, ...self::objectReferencePaths($printTag[0]));
+        // print tags, e.g. `{{ object.author['First Name'] }}`, are read first, then removed so their
+        // braces aren't mistaken for shorthand
+        preg_match_all('/\{\{.*?\}\}/s', $template, $printTags);
+        $printTagPaths = self::objectReferencePaths(implode(' ', $printTags[0]));
+        $template = (string) preg_replace('/\{\{.*?\}\}/s', '', $template);
 
-            return '';
-        }, $template);
-
-        array_push($paths, ...self::shorthandPaths($template));
+        $paths = [...$printTagPaths, ...self::shorthandPaths($template)];
 
         return array_values(array_unique(array_filter(
             $paths,
@@ -55,13 +51,13 @@ readonly class MappingTemplate
     }
 
     /**
-     * Returns the paths read by `object` references, e.g. `object.author['First Name']` reads `author.First Name`.
+     * Returns the paths read by `object` references in the given print tags, e.g. `object.author['First Name']` reads `author.First Name`.
      *
      * @return list<string>
      */
-    private static function objectReferencePaths(string $printTag): array
+    private static function objectReferencePaths(string $printTags): array
     {
-        preg_match_all('/\bobject((?:\.\w+|\[([\'"]).*?\2\])+)/', $printTag, $references);
+        preg_match_all('/\bobject((?:\.\w+|\[([\'"]).*?\2\])+)/', $printTags, $references);
 
         return array_map(function (string $reference): string {
             preg_match_all('/\.(?<name>\w+)|\[([\'"])(?<quoted>.*?)\2\]/', $reference, $segments, PREG_SET_ORDER);

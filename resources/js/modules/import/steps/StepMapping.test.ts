@@ -499,6 +499,25 @@ it('shows a template input only once “Use template” is chosen', async () => 
   ).toEqual(templateTextExpanderTriggers);
 });
 
+it('explains how to insert a variable in an info icon beside the template’s label', async () => {
+  mount([title]);
+
+  chooseSource(TEMPLATE_RULE);
+  await nextTick();
+
+  const field = cells()[0]!.querySelector('craft-field')!;
+  const info = field.querySelector<HTMLElement & {label?: string}>(
+    'craft-info-icon'
+  )!;
+
+  expect(info.getAttribute('slot')).toBe('heading-suffix');
+  expect(info.label).toBe('More info about Template title');
+  expect(info.textContent!.trim()).toBe(
+    'Type { to choose an object template variable.'
+  );
+  expect(field.querySelector('[slot="tip"]')).toBeNull();
+});
+
 it('writes a column’s template to the templates tree, validated before it’s handed back', async () => {
   mount([title]);
 

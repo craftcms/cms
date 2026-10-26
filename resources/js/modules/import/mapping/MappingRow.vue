@@ -61,8 +61,11 @@
     stringAt(context.values.templates, path.value)
   );
 
+  /** How the server's template errors are keyed: the column's path joined with dots. */
+  const templateErrorKey = computed(() => path.value.join('.'));
+
   const templateErrors = computed<string[]>(
-    () => context.templateErrors.value[path.value.join('.')] ?? []
+    () => context.templateErrors.value[templateErrorKey.value] ?? []
   );
 
   const isBestGuess = computed(() =>
@@ -125,7 +128,7 @@
       path.value,
       value == null ? '' : String(value)
     );
-    delete context!.templateErrors.value[path.value.join('.')];
+    delete context!.templateErrors.value[templateErrorKey.value];
   });
 
   // `craft-checkbox` announces its starting state too, which would write to the
@@ -242,7 +245,7 @@
         <craft-field
           v-if="isTemplate"
           class="template"
-          :label="t('{field} template', {field: col.label})"
+          :label="t('Template')"
           :has-errors="templateErrors.length > 0"
           width="full"
           required
@@ -270,12 +273,21 @@
             :for="templateInputId"
             .triggers="context.templateTextExpanderTriggers"
           />
-          <span
-            slot="tip"
-            v-html="
-              t('Type <kbd>{</kbd> to choose an object template variable.')
+          <craft-info-icon
+            v-if="context.editable"
+            slot="heading-suffix"
+            :label="
+              t('More info about {name}', {
+                name: `${t('Template')} ${col.label}`,
+              })
             "
-          ></span>
+          >
+            <span
+              v-html="
+                t('Type <kbd>{</kbd> to choose an object template variable.')
+              "
+            ></span>
+          </craft-info-icon>
           <ul v-if="templateErrors.length" slot="feedback" class="error-list">
             <li v-for="error in templateErrors" :key="error">{{ error }}</li>
           </ul>

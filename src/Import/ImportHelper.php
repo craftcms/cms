@@ -390,12 +390,12 @@ class ImportHelper
     protected static function withTemplates(array $map, array $templates): array
     {
         foreach ($map as $key => $rule) {
-            $template = $templates[$key] ?? null;
+            $templatesForKey = $templates[$key] ?? null;
 
             if (is_array($rule)) {
-                $map[$key] = self::withTemplates($rule, is_array($template) ? $template : []);
+                $map[$key] = self::withTemplates($rule, is_array($templatesForKey) ? $templatesForKey : []);
             } elseif ($rule === self::TEMPLATE_RULE) {
-                $map[$key] = new MappingTemplate(is_string($template) ? $template : '');
+                $map[$key] = new MappingTemplate(is_string($templatesForKey) ? $templatesForKey : '');
             }
         }
 
@@ -698,16 +698,27 @@ class ImportHelper
     }
 
     /**
-     * Returns the key a data path consumes at the current level: its first segment below the current
-     * base path, or below the root when we're at the root. A path elsewhere consumes nothing.
+     * Returns a data path relative to the current base path: the whole path at the root, what's left of it
+     * below the base path, or null if it points somewhere else.
+     */
+    protected static function relativePath(string $path, ?string $currentBasePath): ?string
+    {
+        if ($currentBasePath === null) {
+            return $path;
+        }
+
+        return str_starts_with($path, $currentBasePath.'.') ? substr($path, strlen($currentBasePath) + 1) : null;
+    }
+
+    /**
+     * Returns the key a data path consumes at the current level (the first segment of its relative path),
+     * or null if it points somewhere else.
      */
     protected static function consumedKey(string $path, ?string $currentBasePath): ?string
     {
-        if ($currentBasePath !== null && str_starts_with($path, $currentBasePath.'.')) {
-            return explode('.', substr($path, strlen($currentBasePath) + 1))[0];
-        }
+        $relativePath = self::relativePath($path, $currentBasePath);
 
-        return $currentBasePath === null ? explode('.', $path)[0] : null;
+        return $relativePath === null ? null : explode('.', $relativePath)[0];
     }
 
     /**
@@ -718,19 +729,18 @@ class ImportHelper
      */
     protected static function mapScalarValue(string $path, array $rootData, mixed $currentData, ?string $currentBasePath): array
     {
-        // The rule path is relative to where we are, so strip the shared prefix off first.
-        if ($currentBasePath !== null && str_starts_with($path, $currentBasePath.'.')) {
-            $relativePath = substr($path, strlen($currentBasePath) + 1);
+        $relativePath = self::relativePath($path, $currentBasePath);
 
-            return [
-                'value' => is_array($currentData) ? self::findPath($currentData, $relativePath)['value'] : null,
-                'consumed' => self::consumedKey($path, $currentBasePath),
-            ];
+        if ($currentBasePath !== null && $relativePath !== null) {
+            // The rule path is under where we are, so read it from the current data.
+            $value = is_array($currentData) ? self::findPath($currentData, $relativePath)['value'] : null;
+        } else {
+            // We're at the root, or the rule path didn't match our position, so read it straight from the root.
+            $value = self::findPath($rootData, $path)['value'];
         }
 
-        // The rule path didn't match our position, so read it straight from the root.
         return [
-            'value' => self::findPath($rootData, $path)['value'],
+            'value' => $value,
             'consumed' => self::consumedKey($path, $currentBasePath),
         ];
     }
@@ -806,12 +816,12 @@ class ImportHelper
                 default => [],
             };
 
+            // Only keep leaf paths that fall under the current base path (or all of them, if we're at the root).
             foreach ($rulePaths as $path) {
-                // Only keep leaf paths that fall under the current base path (or all of them, if we're at the root).
-                if ($currentBasePath !== null && str_starts_with($path, $currentBasePath.'.')) {
-                    $paths[] = substr($path, strlen($currentBasePath) + 1);
-                } elseif ($currentBasePath === null) {
-                    $paths[] = $path;
+                $relativePath = self::relativePath($path, $currentBasePath);
+
+                if ($relativePath !== null) {
+                    $paths[] = $relativePath;
                 }
             }
         }
@@ -901,7 +911,7 @@ class ImportHelper
         $options = [];
 
         foreach ($sourceDataCols as $sourceCol) {
-            if (in_array($sourceCol->value, ['', self::TEMPLATE_RULE], true)) {
+            if (! $sourceCol->isDataColumn()) {
                 continue;
             }
 
@@ -969,7 +979,7 @@ class ImportHelper
     {
         $incomingCols = [];
         foreach ($sourceDataCols as $sourceCol) {
-            if (in_array($sourceCol->value, ['', self::TEMPLATE_RULE], true)) {
+            if (! $sourceCol->isDataColumn()) {
                 continue;
             }
 
