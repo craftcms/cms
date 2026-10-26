@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ai;
 
 use CraftCms\Cms\Ai\Contracts\TaskInterface;
+use CraftCms\Cms\Asset\Analysis\Tasks\DetectFocalPoint;
+use CraftCms\Cms\Asset\Analysis\Tasks\GenerateAltText;
+use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
 use CraftCms\Cms\Component\TypeRegistry;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
@@ -28,6 +31,12 @@ use InvalidArgumentException;
 class AiTasks extends TypeRegistry
 {
     protected const string CONTRACT = TaskInterface::class;
+
+    protected const array DEFAULT_TYPES = [
+        GenerateAltText::class,
+        DetectFocalPoint::class,
+        TagImage::class,
+    ];
 
     /**
      * @return Collection<string, class-string<TaskInterface>>
