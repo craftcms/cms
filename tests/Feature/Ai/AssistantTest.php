@@ -6,6 +6,7 @@ use CraftCms\Cms\Activity\EventTypes\ElementUpdated;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Ai\Assistant\AssistantAgent;
 use CraftCms\Cms\Ai\Assistant\McpTools;
+use CraftCms\Cms\Ai\Assistant\ShowElements;
 use CraftCms\Cms\Ai\Http\Controllers\AssistantController;
 use CraftCms\Cms\Ai\Settings;
 use CraftCms\Cms\Ai\Tasks\Assistant;
@@ -16,6 +17,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Support\Facades\Search;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Users;
@@ -182,6 +184,59 @@ it('waits for the user to approve a tool call that changes anything, then resume
     AssistantAgent::assertPrompted(static fn (AgentPrompt $prompt): bool => $prompt->approvalDecisions?->get('call_1')?->isApproved() === $approved
         && $prompt->agent->currentConversation() === $threadId);
 })->with(['approved' => true, 'rejected' => false]);
+
+it('shows the elements the user can view as chips, which only the chat gets, leaving out the others', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Lighthouses']);
+    $hidden = EntryModel::factory()->createElement(['title' => 'Hidden']);
+    AssistantAgent::fake([
+        new ToolCall('call_1', 'show_elements', ['elements' => [
+            ['type' => 'entries', 'id' => $entry->id],
+            ['type' => 'entries', 'id' => 999999],
+        ]]),
+        'Here it is.',
+    ]);
+    $threadId = (string) Str::uuid();
+
+    $events = chatEvents(chat($threadId, 'Find the lighthouses')->assertOk());
+
+    $stored = Json::decode(ConversationMessage::query()->where('role', 'assistant')->sole()->tool_results[0]['result']);
+    $streamed = Json::decode(array_find($events, static fn (array $event): bool => $event['type'] === 'TOOL_CALL_RESULT')['content']);
+    $reloaded = Json::decode(getJson(action([AssistantController::class, 'show'], ['threadId' => $threadId]))->json('messages.1.parts.0.output'));
+
+    expect($stored['elements'])->toBe([['type' => 'entries', 'id' => $entry->id, 'siteId' => $entry->siteId, 'label' => 'Lighthouses']])
+        ->and($stored['message'])->toContain('1 couldn’t be found');
+
+    foreach ([$streamed, $reloaded] as $shown) {
+        expect($shown['elements'])->toHaveCount(1)
+            ->and($shown['elements'][0])->toMatchArray(['id' => $entry->id, 'label' => 'Lighthouses', 'cpEditUrl' => $entry->getCpEditUrl()])
+            ->and($shown['elements'][0]['actions'])->not->toBeEmpty();
+    }
+
+    actingAs(UserModel::factory()->withPermissions(['accessCp', Assistant::PERMISSION])->createElement());
+    request()->setUserResolver(static fn () => auth()->user());
+
+    expect(Json::decode(app(ShowElements::class)->handle(new ToolRequest(['elements' => [['type' => 'entries', 'id' => $hidden->id]]])))['elements'])
+        ->toBe([]);
+});
+
+it('shows up to three elements as cards and more as a list of chips, unless the model chooses', function (int $count, ?string $view, string $shown) {
+    request()->setUserResolver(static fn () => auth()->user());
+    $elements = array_map(
+        static fn (int $index): array => ['type' => 'entries', 'id' => EntryModel::factory()->createElement(['title' => "Lighthouse $index"])->id],
+        range(1, $count),
+    );
+    $tool = app(ShowElements::class);
+
+    $result = Json::decode($tool->forDisplay($tool->handle(new ToolRequest(array_filter(['elements' => $elements, 'view' => $view])))));
+
+    expect($result['view'])->toBe($shown)
+        ->and($result['elements'][0])->toHaveKey($shown === 'cards' ? 'cardHeaderHtml' : 'status')
+        ->and($result['elements'][0])->not->toHaveKey($shown === 'cards' ? 'status' : 'cardHeaderHtml');
+})->with([
+    'three' => [3, null, 'cards'],
+    'four' => [4, null, 'list'],
+    'one as a list' => [1, 'list', 'list'],
+]);
 
 it('records changes made through the assistant’s tools as the assistant’s', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Lighthouses']);

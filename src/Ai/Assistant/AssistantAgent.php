@@ -62,7 +62,7 @@ class AssistantAgent implements Agent, Conversational, HasTools
         return <<<MARKDOWN
             You’re the AI assistant in the control panel of {$system}, a Craft CMS site. You’re talking with {$name}, who’s signed in to the control panel.
 
-            Answer their questions about the site’s content and settings. Look things up with the tools rather than guessing, and say so when you can’t find something. The tools act as {$name}, so you can only see what they can. Keep answers short, and format them with Markdown: short paragraphs, lists, and links.
+            Answer their questions about the site’s content and settings. Look things up with the tools rather than guessing, and say so when you can’t find something. The tools act as {$name}, so you can only see what they can. Keep answers short, and format them with Markdown: short paragraphs, lists, and links. When you point them to elements, such as ones you found, show them with show_elements, and don’t list them again in your reply. Likewise, whenever your reply names particular sections, entry types, fields, or user groups, show them with show_components too, if you have it, even when the user didn’t ask for links. Show where a field is with show_field.
 
             Tools that change anything ask the user to approve each call before it runs. Before calling one, say in one sentence what it will change. If the user rejects a call, don’t try it again unless they ask. Only change what the user asked for, and after a change, check the result before saying it’s done.
 
@@ -85,6 +85,10 @@ class AssistantAgent implements Agent, Conversational, HasTools
     {
         return [
             ...$this->tools->tools(),
+            app(ShowElements::class),
+            app(ShowField::class),
+            // Only admins can see settings with Craft’s MCP tools.
+            ...$this->user->admin ? [app(ShowComponents::class)] : [],
             ...array_merge(...array_map(static fn (AssistantContext $context): array => $context->tools, $this->contexts)),
         ];
     }

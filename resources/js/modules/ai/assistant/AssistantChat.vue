@@ -10,6 +10,7 @@
   import '@craftcms/ui/components/textarea/textarea';
   import type CraftTextarea from '@craftcms/ui/components/textarea/textarea';
   import {useChat, type UIMessage} from '@tanstack/ai-vue';
+  import {router} from '@inertiajs/vue3';
   import {useElementSize} from '@vueuse/core';
   import type {
     TextExpanderSelectDetail,
@@ -31,6 +32,17 @@
   import AssistantApprovals, {
     type AssistantApproval,
   } from './AssistantApprovals.vue';
+  import ElementCards from '@/modules/elements/components/ElementCards.vue';
+  import ElementChips, {
+    type ChipElement,
+  } from '@/modules/elements/components/ElementChips.vue';
+  import {useSelectable} from '@/common/composables/useSelectable';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import CpLink from '@/common/components/CpLink.vue';
+  import {
+    createElementActionMenu,
+    type ElementActionMenuItem,
+  } from '@/modules/elements/composables/useElementActionMenu';
   import AssistantChipStatus from './AssistantChipStatus.vue';
   import AssistantMentionHighlights from './AssistantMentionHighlights.vue';
   import AssistantContextPicker from './AssistantContextPicker.vue';
@@ -41,9 +53,12 @@
     renderMarkdown,
   } from './assistant';
   import {
+    assistantFieldUrl,
+    revealAssistantField,
     splitMessageContext,
     useAssistantContext,
     withMessageContext,
+    type AssistantFieldTarget,
     type AssistantMessageContext,
     type AssistantProposal,
   } from './context';
@@ -357,7 +372,7 @@
    */
   const ownTools: Record<
     string,
-    {icon: string; done: () => string; running: () => string}
+    {icon: string; done: (output: unknown) => string; running: () => string}
   > = {
     read_editor_element: {
       icon: 'eye',
@@ -369,12 +384,108 @@
       done: () => t('Proposed changes'),
       running: () => t('Proposing changes…'),
     },
+    show_elements: {
+      icon: 'list',
+      done: () => t('Showed elements'),
+      running: () => t('Showing elements…'),
+    },
+    show_components: {
+      icon: 'gear',
+      done: () => t('Showed settings'),
+      running: () => t('Showing settings…'),
+    },
+    show_field: {
+      icon: 'location-crosshairs',
+      done: (output) =>
+        fieldTargetOf(output)
+          ? t('Showed a field')
+          : t('Couldn’t find the field'),
+      running: () => t('Showing a field…'),
+    },
   };
 
   /** A tool call’s icon: its own, or a wrench for the MCP server’s tools. */
   function toolIcon(name: string): string {
     return ownTools[name]?.icon ?? 'wrench';
   }
+
+  /** An element a `show_elements` call showed, with what its chip’s menu offers. */
+  type ShownElement = ChipElement & {actions?: ElementActionMenuItem[]};
+
+  /** One dispatcher for every shown element’s menu. */
+  const toActionItems = createElementActionMenu();
+
+  /** The elements a `show_elements` call showed, as chips draw them. */
+  function elementsOf(output: unknown): ShownElement[] {
+    const elements = (resultOf(output) as {elements?: unknown} | null)
+      ?.elements;
+
+    return Array.isArray(elements) ? (elements as ShownElement[]) : [];
+  }
+
+  /** How a `show_elements` call showed its elements: as cards, or as a list of chips. */
+  function viewOf(output: unknown): 'cards' | 'list' {
+    return (resultOf(output) as {view?: unknown} | null)?.view === 'cards'
+      ? 'cards'
+      : 'list';
+  }
+
+  /** A setting a `show_components` call showed, as its chip draws it. */
+  interface ShownComponent {
+    type: string;
+    id: number | string;
+    label: string;
+    icon: {name: string; family: string} | null;
+    cpEditUrl: string | null;
+  }
+
+  /** The settings a `show_components` call showed. */
+  function componentsOf(output: unknown): ShownComponent[] {
+    const components = (resultOf(output) as {components?: unknown} | null)
+      ?.components;
+
+    return Array.isArray(components) ? (components as ShownComponent[]) : [];
+  }
+
+  /** The field a `show_field` call showed, if it found it. */
+  function fieldTargetOf(output: unknown): AssistantFieldTarget | null {
+    const result = resultOf(output) as Partial<AssistantFieldTarget> | null;
+
+    return result?.element && result.field
+      ? (result as AssistantFieldTarget)
+      : null;
+  }
+
+  /**
+   * Shows a field: in its element’s open editor, or else by opening the
+   * editor at it. Modified clicks are left to the browser.
+   */
+  function showField(event: MouseEvent, target: AssistantFieldTarget): void {
+    if (
+      event.button !== 0 ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (revealAssistantField(target)) {
+      return;
+    }
+
+    const url = assistantFieldUrl(target);
+
+    if (url) {
+      router.visit(url);
+    }
+  }
+
+  /** Shown elements can’t be selected. */
+  const noSelection = useSelectable<number>({ids: [], enabled: false});
 
   /** What a tool call did, is doing, or is waiting to do. */
   function toolActivity(part: {
@@ -392,7 +503,7 @@
     }
 
     if (part.output !== undefined) {
-      return own ? own.done() : t('Used {tool}', {tool});
+      return own ? own.done(part.output) : t('Used {tool}', {tool});
     }
 
     if (part.state === 'error') {
@@ -607,6 +718,105 @@
               :call-id="entry.part.id"
               @status="status = $event"
             />
+            <template
+              v-if="
+                entry.part.name === 'show_elements' &&
+                elementsOf(entry.part.output).length
+              "
+            >
+              <div
+                v-if="viewOf(entry.part.output) === 'cards'"
+                class="assistant-chat__cards"
+              >
+                <ElementCards
+                  :data="elementsOf(entry.part.output)"
+                  :selection="noSelection"
+                  read-only
+                  single-column
+                  :render-server-actions="false"
+                >
+                  <template #actions="{element}">
+                    <ActionMenu
+                      v-if="(element as ShownElement).actions?.length"
+                      :actions="
+                        toActionItems((element as ShownElement).actions!)
+                      "
+                      :label="
+                        t('Actions for {name}', {name: element?.label ?? ''})
+                      "
+                    />
+                  </template>
+                </ElementCards>
+              </div>
+              <ElementChips
+                v-else
+                class="assistant-chat__cards"
+                :data="elementsOf(entry.part.output)"
+                :selection="noSelection"
+                read-only
+                linked
+              >
+                <template #suffix="{element}">
+                  <ActionMenu
+                    v-if="(element as ShownElement).actions?.length"
+                    :actions="toActionItems((element as ShownElement).actions!)"
+                    :label="t('Actions for {name}', {name: element.label})"
+                    flush="inline-start"
+                  />
+                </template>
+              </ElementChips>
+            </template>
+            <ul
+              v-if="
+                entry.part.name === 'show_components' &&
+                componentsOf(entry.part.output).length
+              "
+              class="assistant-chat__cards assistant-chat__components"
+            >
+              <li
+                v-for="component in componentsOf(entry.part.output)"
+                :key="`${component.type}:${component.id}`"
+              >
+                <craft-chip>
+                  <craft-icon
+                    v-if="component.icon"
+                    slot="icon"
+                    :name="component.icon.name"
+                    :family="component.icon.family"
+                  ></craft-icon>
+                  <CpLink
+                    v-if="component.cpEditUrl"
+                    :href="component.cpEditUrl"
+                    bare
+                    >{{ component.label }}</CpLink
+                  >
+                  <template v-else>{{ component.label }}</template>
+                </craft-chip>
+              </li>
+            </ul>
+            <p
+              v-if="
+                entry.part.name === 'show_field' &&
+                fieldTargetOf(entry.part.output)
+              "
+              class="assistant-chat__cards"
+            >
+              <craft-chip icon="location-crosshairs">
+                <a
+                  :href="
+                    assistantFieldUrl(fieldTargetOf(entry.part.output)!) ??
+                    undefined
+                  "
+                  @click="showField($event, fieldTargetOf(entry.part.output)!)"
+                  >{{
+                    t('{field} in {element}', {
+                      field: fieldTargetOf(entry.part.output)!.field.label,
+                      element: fieldTargetOf(entry.part.output)!.element.label,
+                    })
+                  }}</a
+                >
+              </craft-chip>
+            </p>
           </li>
         </template>
         <li v-if="approvals.length" class="assistant-chat__message">
@@ -871,6 +1081,15 @@
 
   .assistant-chat__cards {
     grid-column: 1 / -1;
+  }
+
+  .assistant-chat__components {
+    display: grid;
+    justify-items: start;
+    gap: var(--c-spacing-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
   .assistant-chat__activity {

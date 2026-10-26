@@ -383,6 +383,96 @@ describe('AssistantChat', () => {
     expect(layer().querySelector('mark')).toBeNull();
   });
 
+  it('shows the elements show_elements returned as chips that link to them, with their actions', async () => {
+    chat.messages.value = [
+      {
+        id: 'm1',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'tool-call',
+            id: 'call_1',
+            name: 'show_elements',
+            arguments: '{}',
+            state: 'input-complete',
+            output: JSON.stringify({
+              message: 'Showed 1 element(s).',
+              elements: [
+                {
+                  id: 4,
+                  label: 'Lighthouses',
+                  cpEditUrl: '/admin/entries/4',
+                  actions: [
+                    {
+                      label: 'View in a new tab',
+                      behavior: {type: 'link', href: '/lighthouses'},
+                    },
+                  ],
+                },
+              ],
+            }),
+          },
+        ],
+      },
+    ];
+    await flush();
+
+    const link = container.querySelector('craft-chip a');
+
+    expect(container.textContent).toContain('Showed elements');
+    expect(link?.textContent).toBe('Lighthouses');
+    expect(link?.getAttribute('href')).toBe('/admin/entries/4');
+    expect(
+      container
+        .querySelector('craft-chip craft-action-menu craft-button')
+        ?.getAttribute('aria-label')
+    ).toBe('Actions for Lighthouses');
+    expect(container.textContent).toContain('View in a new tab');
+  });
+
+  it('shows the elements show_elements returned as cards, with their actions, when it chose cards', async () => {
+    chat.messages.value = [
+      {
+        id: 'm1',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'tool-call',
+            id: 'call_1',
+            name: 'show_elements',
+            arguments: '{}',
+            state: 'input-complete',
+            output: JSON.stringify({
+              view: 'cards',
+              elements: [
+                {
+                  id: 4,
+                  label: 'Lighthouses',
+                  cardHeaderHtml: '<a href="/admin/entries/4">Lighthouses</a>',
+                  actions: [
+                    {
+                      label: 'View in a new tab',
+                      behavior: {type: 'link', href: '/lighthouses'},
+                    },
+                  ],
+                },
+              ],
+            }),
+          },
+        ],
+      },
+    ];
+    await flush();
+
+    expect(container.querySelector('craft-chip')).toBeNull();
+    expect(container.textContent).toContain('Lighthouses');
+    expect(
+      container
+        .querySelector('craft-action-menu craft-button')
+        ?.getAttribute('aria-label')
+    ).toBe('Actions for Lighthouses');
+  });
+
   it('shows what a message was sent with on its bubble, apart from its text', async () => {
     chat.messages.value = [
       {

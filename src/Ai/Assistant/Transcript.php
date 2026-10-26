@@ -64,6 +64,19 @@ class Transcript
     }
 
     /**
+     * A tool call’s result as the chat shows it, with the results of the assistant’s display tools expanded, as
+     * {@see AssistantStreamProtocol} streams them.
+     *
+     * @param  array<string, mixed>  $call
+     */
+    private function output(array $call): mixed
+    {
+        return is_string($call['name'] ?? null) && is_string($call['result']) && ! ($call['denied'] ?? false)
+            ? ToolDisplays::forDisplay($call['name'], $call['result'])
+            : $call['result'];
+    }
+
+    /**
      * Each step’s text, then its tool calls, in the order the model wrote them.
      *
      * @return list<array<string, mixed>>
@@ -91,7 +104,7 @@ class Transcript
                         array_key_exists('result', $call) => 'complete',
                         default => 'error',
                     },
-                    ...array_key_exists('result', $call) ? ['output' => $call['result']] : [],
+                    ...array_key_exists('result', $call) ? ['output' => $this->output($call)] : [],
                     // Calls that needed approval, whether the user has answered yet, and how.
                     ...array_key_exists('approval_reason', $call) || ($call['denied'] ?? false) ? ['approval' => [
                         'id' => (string) $call['id'],

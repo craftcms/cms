@@ -1,7 +1,8 @@
-import {afterEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {assistantApi} from '@/bootstrap/assistant';
 import {
   registerAssistantEditor,
+  revealAssistantField,
   splitMessageContext,
   useAppliedProposals,
   useAssistantContext,
@@ -160,6 +161,45 @@ describe('useAssistantContext', () => {
     expect(context.request()).toEqual([
       expect.objectContaining({elementId: 42, namespace: [], values: {}}),
     ]);
+  });
+});
+
+describe('revealAssistantField', () => {
+  it('highlights the field in its element’s latest open editor, under the editor’s scope, and focuses its control', async () => {
+    const dialog = document.createElement('div');
+    dialog.innerHTML =
+      '<craft-field id="ui-editor-fields-summary"><button>Actions</button><div slot="input"><input></div></craft-field>';
+    document.body.append(dialog);
+    const close = registerAssistantEditor({
+      ...editor('slideout'),
+      container: () => dialog,
+    });
+    const target = {
+      element: {
+        canonicalId: 42,
+        siteId: 1,
+        label: 'Lighthouses',
+        cpEditUrl: null,
+      },
+      field: {label: 'Summary', path: ['fields', 'summary']},
+    };
+    const field = dialog.querySelector('craft-field')!;
+    field.scrollIntoView = () => {};
+
+    expect(revealAssistantField(target)).toBe(true);
+    expect(field.hasAttribute('data-highlighted')).toBe(true);
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(field.querySelector('input'))
+    );
+    expect(
+      revealAssistantField({
+        ...target,
+        element: {...target.element, canonicalId: 7},
+      })
+    ).toBe(false);
+
+    close();
+    dialog.remove();
   });
 });
 

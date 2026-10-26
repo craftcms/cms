@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Ai\Assistant\AssistantAgent;
+use CraftCms\Cms\Ai\Assistant\ShowComponents;
+use CraftCms\Cms\Ai\Assistant\ShowElements;
+use CraftCms\Cms\Ai\Assistant\ShowField;
 use CraftCms\Cms\Ai\AssistantContextTypes;
 use CraftCms\Cms\Ai\Http\Controllers\AssistantController;
 use CraftCms\Cms\Ai\Settings;
@@ -25,6 +28,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\Ai\TestOrderContext;
 use CraftCms\Cms\Ui\Nodes\ActionMenu;
 use CraftCms\Cms\Ui\UiContext;
@@ -37,6 +41,7 @@ use Illuminate\Testing\TestResponse;
 use Laravel\Ai\Models\ConversationMessage;
 use Laravel\Ai\Prompts\AgentPrompt;
 use Laravel\Ai\Responses\Data\ToolCall;
+use Laravel\Ai\Tools\Request as ToolRequest;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -414,4 +419,57 @@ it('keeps nothing that setting a Matrix field’s value on a draft writes', func
 
     expect(proposeChangesResult()['proposals'])->not->toBe([])
         ->and(DB::table(Table::ENTRIES)->count())->toBe($entries);
+});
+
+it('shows where a field is in an element’s editor, by the path of its control', function (string $field, ?array $shown) {
+    request()->setUserResolver(static fn () => auth()->user());
+
+    $result = Json::decode(app(ShowField::class)->handle(new ToolRequest(['type' => 'entries', 'id' => $this->entry->id, 'field' => $field])));
+
+    expect($result['field'] ?? null)->toBe($shown);
+})->with([
+    'custom field' => ['summary', ['label' => 'Summary', 'path' => ['fields', 'summary']]],
+    'sidebar field' => ['slug', ['label' => 'Slug', 'path' => ['slug']]],
+    'not in the editor' => ['body', null],
+]);
+
+it('only lets admins show settings', function (bool $admin) {
+    if (! $admin) {
+        actingAs(UserModel::factory()->withPermissions(['accessCp', Assistant::PERMISSION, "viewEntries:{$this->section->uid}"])->createElement());
+    }
+    AssistantAgent::fake(['Done.']);
+
+    chatAboutEntry($this->entry)->assertOk()->streamedContent();
+
+    AssistantAgent::assertPrompted(static fn (AgentPrompt $prompt): bool => in_array('show_components', array_map(static fn ($tool): string => $tool->name(), [...$prompt->agent->tools()]), true) === $admin);
+})->with([
+    'admin' => [true],
+    'not an admin' => [false],
+]);
+
+it('shows settings as chips that link to where they’re edited, leaving out those that don’t exist', function () {
+    $tool = app(ShowComponents::class);
+
+    $result = Json::decode($tool->forDisplay($tool->handle(new ToolRequest(['components' => [
+        ['type' => 'sections', 'id' => $this->section->id],
+        ['type' => 'fields', 'id' => 999999],
+    ]]))));
+
+    expect($result['message'])->toContain('1 couldn’t be found')
+        ->and($result['components'])->toHaveCount(1)
+        ->and($result['components'][0])->toMatchArray(['type' => 'sections', 'id' => $this->section->id, 'cpEditUrl' => Url::cpUrl("settings/sections/{$this->section->id}")]);
+});
+
+it('shows an element nested in a Matrix field as the entry it’s in, and tells the model', function () {
+    request()->setUserResolver(static fn () => auth()->user());
+    $owner = entryWithNotes();
+    $note = $owner->getFieldValue('notes')->one();
+
+    $result = Json::decode(app(ShowElements::class)->handle(new ToolRequest(['elements' => [
+        ['type' => 'entries', 'id' => $note->id],
+        ['type' => 'entries', 'id' => $owner->id],
+    ]])));
+
+    expect(array_column($result['elements'], 'id'))->toBe([$owner->id])
+        ->and($result['message'])->toContain("“{$owner->getUiLabel()}”");
 });

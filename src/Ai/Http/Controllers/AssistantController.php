@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ai\Http\Controllers;
 
 use CraftCms\Cms\Ai\Assistant\AssistantAgent;
+use CraftCms\Cms\Ai\Assistant\AssistantStreamProtocol;
 use CraftCms\Cms\Ai\Assistant\Content\ElementContexts;
 use CraftCms\Cms\Ai\Assistant\McpTools;
 use CraftCms\Cms\Ai\Assistant\MessageContext;
@@ -127,7 +128,7 @@ readonly class AssistantController
         }
 
         return $response
-            ->usingAgentUserInteractionProtocol($threadId, $chat->runId() ?: null)
+            ->usingProtocol(new AssistantStreamProtocol($threadId, $chat->runId() ?: null))
             ->toResponse($request);
     }
 

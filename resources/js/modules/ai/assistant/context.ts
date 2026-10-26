@@ -1,6 +1,9 @@
 import {createGlobalState} from '@vueuse/core';
 import {computed, shallowReactive, shallowRef, type InjectionKey} from 'vue';
+import {highlightField} from '@/common/composables/useFieldHighlight';
+import {firstFocusableWithin} from '@/common/utils/dom';
 import {useLocalStorage} from '@/common/composables/useStorage';
+import {fieldId} from '@/modules/ui/runtime';
 import type {
   UiNodePayload,
   UiPayload,
@@ -316,6 +319,65 @@ export function applyAssistantProposal(
   );
 
   return detail.applied;
+}
+
+/** A field a `show_field` call showed, in its element’s editor. */
+export interface AssistantFieldTarget {
+  element: {
+    canonicalId: number;
+    siteId: number;
+    label: string;
+    cpEditUrl: string | null;
+  };
+  field: {
+    label: string;
+    /** The path of the field’s control, relative to the element’s values, such as `['fields', 'summary']`. */
+    path: string[];
+  };
+}
+
+/**
+ * Highlights a field in its element’s open editor, the latest one if there
+ * are several, and moves focus to it. Returns whether it found it.
+ */
+export function revealAssistantField(target: AssistantFieldTarget): boolean {
+  const editor = assistantEditors()
+    .reverse()
+    .find(
+      (editor) =>
+        editor.params().canonicalId === target.element.canonicalId &&
+        editor.params().siteId === target.element.siteId
+    );
+  const id = editor ? fieldId([...editor.scope(), ...target.field.path]) : null;
+  const field = id
+    ? (editor?.container() ?? document).querySelector<HTMLElement>(
+        `craft-field#${CSS.escape(id)}`
+      )
+    : null;
+
+  if (!field) {
+    return false;
+  }
+
+  // Once it’s shown, as it may be on a tab that isn’t. The control rather than
+  // the first thing in the field, which can be its actions menu.
+  void highlightField(field).then(() =>
+    firstFocusableWithin(
+      field.querySelector<HTMLElement>(':scope > [slot="input"]') ?? field
+    )?.focus({preventScroll: true})
+  );
+
+  return true;
+}
+
+/**
+ * The URL that opens a field’s element at the field, or `null` if the user
+ * can’t edit it. The page’s editor highlights the field its fragment names.
+ */
+export function assistantFieldUrl(target: AssistantFieldTarget): string | null {
+  return target.element.cpEditUrl
+    ? `${target.element.cpEditUrl}#${fieldId(target.field.path)}`
+    : null;
 }
 
 /** What a message keeps of each item it was sent with. */
