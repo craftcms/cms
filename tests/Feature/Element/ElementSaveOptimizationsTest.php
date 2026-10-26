@@ -130,24 +130,25 @@ function optimizationsOwnershipRows(EntryElement $owner): array
 
 /**
  * Returns the number of queries that look up a single element’s type by its ID, executed within the callback.
+ *
+ * Pass an element ID to only count lookups of that element’s type. A save can also look up other elements’ types,
+ * such as a revision’s, when it makes one.
  */
-function optimizationsTypeQueryCount(callable $callback): int
+function optimizationsTypeQueryCount(callable $callback, ?int $elementId = null): int
 {
+    // Compiled by the connection’s own grammar, so it’s quoted and prefixed the way it will run
+    $sql = DB::table(Table::ELEMENTS)->select('type')->where('id', 0)->toSql();
     $count = 0;
-    $recording = true;
 
-    DB::listen(function ($query) use (&$count, &$recording) {
-        if ($recording && preg_match('/^select "type" from "elements" where "id" = \?/', $query->sql)) {
+    DB::listen(function ($query) use ($sql, $elementId, &$count) {
+        if (str_starts_with($query->sql, $sql) && ($elementId === null || (int) $query->bindings[0] === $elementId)) {
             $count++;
         }
     });
 
-    try {
-        $callback();
-    } finally {
-        $recording = false;
-    }
+    $callback();
 
+    // Read now, so lookups after the callback don't count
     return $count;
 }
 
@@ -165,7 +166,7 @@ it('looks up a nested element’s owner type once per save, across all sites', f
         ]])
         ->all());
 
-    $count = optimizationsTypeQueryCount(fn () => expect(Elements::saveElement($owner))->toBeTrue());
+    $count = optimizationsTypeQueryCount(fn () => expect(Elements::saveElement($owner))->toBeTrue(), $owner->id);
 
     // 3 nested entries × 2 sites used to look up the owner’s type separately
     expect($count)->toBeLessThanOrEqual(1);
