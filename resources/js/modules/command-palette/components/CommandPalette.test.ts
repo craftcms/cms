@@ -259,6 +259,95 @@ describe('CommandPalette', () => {
     expect(document.activeElement).toBe(items[1]);
   });
 
+  it('starts the results from the top again when the search changes', async () => {
+    const input = await open();
+    const search = async (value: string) => {
+      input.value = value;
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+      await flush();
+    };
+    const tabStop = () =>
+      document
+        .querySelector('craft-grid [tabindex="0"]')
+        ?.querySelector('.command-palette-row__label')
+        ?.textContent?.trim();
+
+    await search('o');
+    const items = [
+      ...document.querySelectorAll<HTMLElement>(
+        'craft-grid .command-palette-row__item'
+      ),
+    ];
+    expect(items.length).toBeGreaterThan(1);
+    items[0]!.focus();
+    press(items[0]!, 'ArrowDown');
+    await flush();
+    expect(tabStop()).not.toBe(
+      items[0]!
+        .querySelector('.command-palette-row__label')
+        ?.textContent?.trim()
+    );
+
+    input.focus();
+    await search('on');
+    expect(
+      document.querySelectorAll('craft-grid .command-palette-row__item').length
+    ).toBeGreaterThan(2);
+
+    expect(tabStop()).toBe(
+      document
+        .querySelector('craft-grid .command-palette-row__label')
+        ?.textContent?.trim()
+    );
+  });
+
+  it('starts the results from the top again when a provider answers late', async () => {
+    vi.useFakeTimers();
+    get.mockImplementation((async (url: string) =>
+      url === '/palette'
+        ? {
+            data: {
+              providers: [{handle: 'entries', label: 'Entries'}],
+              actions: [
+                serverAction('homepage-settings', 'Open the homepage settings'),
+              ],
+            },
+          }
+        : {
+            data: {
+              results: [
+                serverAction('entry-1', 'Homepage', {href: '/admin/entries/1'}),
+                serverAction('entry-2', 'Homepage hero', {
+                  href: '/admin/entries/2',
+                }),
+              ],
+            },
+          }) as never);
+    const input = await open();
+    const tabStop = () =>
+      document
+        .querySelector('craft-grid [tabindex="0"]')
+        ?.querySelector('.command-palette-row__label')
+        ?.textContent?.trim();
+
+    input.value = 'homepage';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await flush();
+    expect(tabStop()).toBe('Open the homepage settings');
+
+    vi.runAllTimers();
+    await flush();
+    await flush();
+    vi.useRealTimers();
+
+    expect(
+      [
+        ...document.querySelectorAll('craft-grid .command-palette-row__label'),
+      ].map((label) => label.textContent?.trim())
+    ).toEqual(['Homepage', 'Homepage hero', 'Open the homepage settings']);
+    expect(tabStop()).toBe('Homepage');
+  });
+
   it('lists destructive actions last', async () => {
     await open();
 

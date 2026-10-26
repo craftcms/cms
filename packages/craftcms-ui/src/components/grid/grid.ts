@@ -117,6 +117,17 @@ export default class CraftGrid extends LitElement {
     return html`<slot @slotchange=${() => this.#sync()}></slot>`;
   }
 
+  /**
+   * Puts the Tab stop back on the first cell, for when the grid's rows are
+   * replaced by different ones — new search results, say — rather than
+   * changed in place.
+   */
+  resetTabStop(): void {
+    this.#active = null;
+    this.#position = {row: 0, column: 0};
+    this.#sync();
+  }
+
   /** The element in each cell that takes focus, row by row, leaving out empty rows. */
   #targets(): HTMLElement[][] {
     return this.#rows()

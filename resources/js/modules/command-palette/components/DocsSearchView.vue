@@ -9,9 +9,18 @@
    */
   import {actionClient, t} from '@craftcms/ui';
   import {docs as docsUrl} from '@actions/CommandPaletteController';
-  import {computed, onBeforeUnmount, shallowRef, useId, watch} from 'vue';
+  import {
+    computed,
+    nextTick,
+    onBeforeUnmount,
+    shallowRef,
+    useId,
+    useTemplateRef,
+    watch,
+  } from 'vue';
   import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
   import {fromServerItem, type CommandPaletteItem} from '../types';
+  import {resetResultGrids} from '../grids';
   import ResultSection from './ResultSection.vue';
 
   defineEmits<{
@@ -61,6 +70,17 @@
 
     searching.value = true;
     timer = setTimeout(() => void search(value), SEARCH_DEBOUNCE);
+  });
+
+  const resultsRegion = useTemplateRef<HTMLElement>('resultsRegion');
+
+  // New results start from the top, unless focus is among them already.
+  watch(results, async () => {
+    await nextTick();
+
+    if (!resultsRegion.value?.contains(document.activeElement)) {
+      resetResultGrids(resultsRegion.value);
+    }
   });
 
   onBeforeUnmount(() => {
@@ -113,7 +133,11 @@
       />
     </CraftInputSearch>
 
-    <div class="command-palette-docs__results" :aria-busy="searching">
+    <div
+      ref="resultsRegion"
+      class="command-palette-docs__results"
+      :aria-busy="searching"
+    >
       <div
         v-if="searching && !results.length"
         class="command-palette-docs__note"

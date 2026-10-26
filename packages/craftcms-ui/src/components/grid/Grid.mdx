@@ -81,7 +81,7 @@ Put one interactive element in each cell: a link, a button, or a menu's button. 
 
 The grid draws no focus ring. Each cell's control draws its own, and a cell that takes focus itself needs a `:focus-visible` style.
 
-When the rows are search results, announce how many there are in a `role="status"` element outside the grid. Moving focus into the grid is up to the person: don't move it there as results arrive.
+When the rows are search results, announce how many there are in a `role="status"` element outside the grid. Moving focus into the grid is up to the person: don't move it there as results arrive. When the search changes, call `resetTabStop()`, so Tab into the new results starts at the first one rather than where the old ones were left.
 
 ## Properties
 

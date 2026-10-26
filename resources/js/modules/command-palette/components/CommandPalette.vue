@@ -41,6 +41,7 @@
     viewComponent,
   } from '../registry';
   import {destructiveLast, matchesWords} from '../rank';
+  import {resetResultGrids} from '../grids';
   import {redirectAfter, runHttpAction} from '../run';
   import {
     createPageActionsProvider,
@@ -153,6 +154,16 @@
         ];
 
     return all.filter((section) => section.items.length > 0);
+  });
+
+  // New results start from the top, whether they come from a new query or
+  // from a provider answering late — unless focus is among them already.
+  watch(sections, async () => {
+    await nextTick();
+
+    if (!results.value?.contains(document.activeElement)) {
+      resetResultGrids(results.value);
+    }
   });
 
   /** Which providers couldn’t be searched, if any. */

@@ -321,6 +321,18 @@ describe('craft-grid', () => {
     expect(tabStops(grid)).toEqual(['fresh']);
   });
 
+  it('puts the tab stop back on the first cell when asked to', async () => {
+    const grid = await render(linkGrid(3));
+
+    byId('r2c1').focus();
+    await settle();
+    expect(tabStops(grid)).toEqual(['r2c1']);
+
+    grid.resetTabStop();
+
+    expect(tabStops(grid)).toEqual(['r0c0']);
+  });
+
   it('takes a control that resets its own tabindex back out of the tab order', async () => {
     const grid = await render(linkGrid(2));
 
