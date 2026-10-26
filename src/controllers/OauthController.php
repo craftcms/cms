@@ -3,7 +3,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\db\Query;
 use craft\db\Table;
 use craft\filters\IpRateLimitIdentity;
 use craft\helpers\Db;
@@ -16,6 +15,7 @@ use craft\web\View;
 use DateTime;
 use GuzzleHttp\Psr7\Response as PsrResponse;
 use GuzzleHttp\Psr7\ServerRequest;
+use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -167,7 +167,7 @@ class OauthController extends Controller
             $entity->setIdentifier((string)$user->id);
             $authorization->setUser($entity);
 
-            if (!in_array('consent', $prompts, true) && $this->hasConsent($authorization, $resource)) {
+            if (!in_array('consent', $prompts, true) && $oauth->reuseConsent($authorization, $resource)) {
                 $authorization->setAuthorizationApproved(true);
                 return $this->psrResponse($oauth->server($resource)->completeAuthorizationRequest($authorization, new PsrResponse()));
             }
@@ -184,11 +184,22 @@ class OauthController extends Controller
             $pending[$authToken] = ['request' => serialize($authorization), 'expires' => time() + 600, 'userId' => $user->id, 'resourceId' => $definition->id];
             $session->set('oauthPending', $pending);
 
+            $requested = array_map(fn(ScopeEntityInterface $scope) => $scope->getIdentifier(), $authorization->getScopes());
+            $choices = $definition->levelChoices($requested, $user);
+            if ($choices) {
+                $requested = array_diff($requested, $definition->scopeLevels);
+            }
+
             return $this->renderTemplate('oauth/authorize', [
                 'clientName' => $authorization->getClient()->getName(),
                 'authToken' => $authToken,
                 'consentDescription' => $definition->consentDescription,
-                'scopes' => array_map(fn($scope) => $definition->scopes[$scope->getIdentifier()], $authorization->getScopes()),
+                'accessOptions' => array_map(fn(string $level) => [
+                    'value' => $level,
+                    'label' => $definition->scopeLabels[$level] ?? $level,
+                    'description' => $definition->scopes[$level],
+                ], $choices),
+                'scopes' => array_map(fn(string $scope) => $definition->scopes[$scope], array_values($requested)),
                 'approveAction' => $oauth->url('approve', $resource),
                 'denyAction' => $oauth->url('deny', $resource),
             ], View::TEMPLATE_MODE_CP);
@@ -243,32 +254,21 @@ class OauthController extends Controller
         $session->set('oauthPending', $pending);
 
         try {
-            Craft::$app->getOAuth()->authorizedUser((string)$item['userId'], $resource);
+            $oauth = Craft::$app->getOAuth();
+            $user = $oauth->authorizedUser((string)$item['userId'], $resource);
             $authorization = unserialize($item['request']);
-            if (!$authorization instanceof AuthorizationRequestInterface || !(new Repositories(Craft::$app->getOAuth()->getResource($resource)))->getClientEntity($authorization->getClient()->getIdentifier())) {
+            if (!$authorization instanceof AuthorizationRequestInterface || !(new Repositories($oauth->getResource($resource)))->getClientEntity($authorization->getClient()->getIdentifier())) {
                 throw new BadRequestHttpException('The authorization request is invalid.');
             }
+            if ($approved) {
+                $level = $this->request->getBodyParam('access');
+                $oauth->approveScopes($authorization, $resource, $user, is_string($level) ? $level : null);
+            }
             $authorization->setAuthorizationApproved($approved);
-            return $this->psrResponse(Craft::$app->getOAuth()->server($resource)->completeAuthorizationRequest($authorization, new PsrResponse()));
+            return $this->psrResponse($oauth->server($resource)->completeAuthorizationRequest($authorization, new PsrResponse()));
         } catch (OAuthServerException $e) {
             return $this->psrResponse($e->generateHttpResponse(new PsrResponse()));
         }
-    }
-
-    private function hasConsent(AuthorizationRequestInterface $request, string $resource): bool
-    {
-        $rows = (new Query())->select(['scopes'])->from(Table::OAUTH_ACCESS_TOKENS)->where([
-            'resourceId' => $resource,
-            'clientId' => $request->getClient()->getIdentifier(),
-            'userId' => $request->getUser()->getIdentifier(),
-            'revoked' => false,
-        ])->andWhere(['>', 'expiresAt', Db::prepareDateForDb(new DateTime())])->all();
-        $granted = [];
-        foreach ($rows as $row) {
-            $granted = array_merge($granted, json_decode($row['scopes'], true, flags: JSON_THROW_ON_ERROR));
-        }
-        $requested = array_map(fn($scope) => $scope->getIdentifier(), $request->getScopes());
-        return $rows && !array_diff($requested, $granted);
     }
 
     private function promptError(AuthorizationRequestInterface $request, string $error): Response

@@ -20,7 +20,17 @@ php craft oauth/generate-keys
 
 Grant the intended users **Use Craft MCP** and control panel access. Configure an MCP client with the authenticated endpoint URL, normally `https://example.com/admin/mcp`. Use the normal Craft login process, including two-factor authentication, then approve or deny the client's consent request.
 
-MCP uses the OAuth resource ID `mcp` and scope `mcp:use`. Clients discover registration, authorization, and token endpoints through OAuth metadata. See the [OAuth guide](oauth.md) for signing keys, shared configuration, discovery URLs, token lifetimes, and consent behavior.
+MCP uses the OAuth resource ID `mcp`. Clients discover registration, authorization, and token endpoints through OAuth metadata. See the [OAuth guide](oauth.md) for signing keys, shared configuration, discovery URLs, token lifetimes, and consent behavior.
+
+Each token carries one of three access levels. A broader scope includes the narrower ones:
+
+| Scope | Grants |
+| --- | --- |
+| `mcp:read` | Resources, prompts, and tools with `readOnlyHint: true`. |
+| `mcp:write` | Also tools without `readOnlyHint: true`. |
+| `mcp:admin` | Also capabilities marked `RequiresAdmin` or `RequiresAdminChanges`, including reads. |
+
+The user chooses the access level on the consent screen. It defaults to read only, and administrators are the only users offered full access. When a client authorizes again while the user still has an active token for it, Craft skips the consent screen and keeps the level the user chose before. Clients can send `prompt=consent` to show the screen anyway. An unauthenticated request receives a `401` response whose `WWW-Authenticate` header requests every MCP scope. Scopes only narrow access: the user's Craft permissions still apply. The stdio server is not scoped.
 
 ## Configuration
 
@@ -62,7 +72,7 @@ Field settings and project config values whose keys look sensitive, as defined b
 
 Asset creation and replacement accept HTTPS file references. Craft rejects local paths, private network addresses, redirects, and files that exceed the configured upload limits.
 
-Capability discovery applies user permissions and `allowAdminChanges`. Record operations also enforce the corresponding element permissions. Unavailable capabilities are omitted from discovery and cannot be called directly.
+Capability discovery applies user permissions, `allowAdminChanges`, and the access token's scope. Record operations also enforce the corresponding element permissions. Unavailable capabilities are omitted from discovery and cannot be called directly.
 
 Start with `info.get`. Read `elements.schema` or `craft://element-types/{type}` before changing elements, and `elements.field-schema` before writing custom fields. `configuration.schema` describes each configuration operation. List results supply pagination information; retain the query criteria and use the returned offsets to continue.
 
@@ -101,7 +111,7 @@ class MyCapabilities
 
 The SDK attributes `McpTool`, `McpResource`, `McpResourceTemplate`, and `McpPrompt` identify capabilities. Craft collects plugin classes on first capability discovery; it does not scan plugin directories. Duplicate capability identities are rejected.
 
-Craft provides method attributes `RequiresPermission`, `RequiresAdmin`, `RequiresAdminChanges`, `RequiresHttp`, and `PublicMcp`. `PublicMcp` makes a method eligible for public approval. Plugin public methods must enforce their own content restrictions; approvals for Craft's core public content tools do not automatically filter arbitrary plugin code.
+Craft provides method attributes `RequiresPermission`, `RequiresAdmin`, `RequiresAdminChanges`, `RequiresHttp`, and `PublicMcp`. `RequiresAdmin` and `RequiresAdminChanges` also require the `mcp:admin` scope. Set `readOnlyHint` on reads; tools without `readOnlyHint: true` require the `mcp:write` scope. `PublicMcp` makes a method eligible for public approval. Plugin public methods must enforce their own content restrictions; approvals for Craft's core public content tools do not automatically filter arbitrary plugin code.
 
 Additional extension points are:
 

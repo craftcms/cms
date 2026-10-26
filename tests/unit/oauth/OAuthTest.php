@@ -8,7 +8,9 @@ use craft\config\OAuthConfig;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\oauth\Resource;
 use craft\oauth\User as OAuthUser;
+use craft\services\Mcp;
 use craft\services\OAuth;
 use craft\services\Sites;
 use craft\web\Request;
@@ -41,7 +43,7 @@ class OAuthTest extends TestCase
             'refreshTokenDuration' => 'P30D',
             'authorizationCodeDuration' => 'PT10M',
             'resources' => [
-                'mcp' => ['scopes' => ['mcp:use' => 'Use MCP'], 'defaultScopes' => ['mcp:use'], 'permissions' => ['accessCp', 'useCraftMcp'], 'resourceUrl' => 'https://cms.example/admin/mcp', 'consentDescription' => 'Use MCP'],
+                'mcp' => new Resource(['resourceUrl' => 'https://cms.example/admin/mcp'] + get_object_vars((new Mcp())->getOAuthResource())),
                 'api' => ['scopes' => ['api:read' => 'Read content', 'api:write' => 'Change content'], 'defaultScopes' => ['api:read'], 'permissions' => ['useApi'], 'resourceUrl' => 'https://api.example/content', 'consentDescription' => 'Read content'],
             ],
         ]);
@@ -104,8 +106,8 @@ class OAuthTest extends TestCase
     public function testCredentialsCannotCrossResourceBoundaries(): void
     {
         // Both resources recognize the scope: rejection must come from resource ownership.
-        $this->app->oauthConfig->resources['api']['scopes'] = ['mcp:use' => 'Use API'];
-        $this->app->oauthConfig->resources['api']['defaultScopes'] = ['mcp:use'];
+        $this->app->oauthConfig->resources['api']['scopes'] = ['mcp:read' => 'Use API'];
+        $this->app->oauthConfig->resources['api']['defaultScopes'] = ['mcp:read'];
 
         $verifier = str_repeat('d', 43);
         $code = $this->authorize($verifier);
@@ -177,7 +179,7 @@ class OAuthTest extends TestCase
 
     public function testUnknownAndForeignScopesAreRejected(): void
     {
-        foreach (['mcp:use', 'api:unknown', 'api:read api:unknown'] as $scope) {
+        foreach (['mcp:read', 'api:unknown', 'api:read api:unknown'] as $scope) {
             $this->expectOAuthError(fn() => $this->authorize(str_repeat('g', 43), 'api', $scope), 'invalid_scope');
         }
     }
@@ -205,6 +207,49 @@ class OAuthTest extends TestCase
         self::assertSame(['api:read'], $this->tokenScopes($fresh['access_token']));
     }
 
+    /**
+     * @dataProvider accessLevelProvider
+     */
+    public function testChosenAccessLevelIsGranted(bool $admin, ?string $level, array $expected): void
+    {
+        $this->app->identity->admin = $admin;
+        $tokens = $this->grant('mcp', null, fn($authorization) => $this->oauth->approveScopes($authorization, 'mcp', $this->app->identity, $level));
+
+        self::assertSame($expected, $this->tokenScopes($tokens['access_token'], 'mcp'));
+    }
+
+    public static function accessLevelProvider(): array
+    {
+        return [
+            'read by default' => [true, null, ['mcp:read']],
+            'write' => [true, 'mcp:write', ['mcp:read', 'mcp:write']],
+            'admin' => [true, 'mcp:admin', ['mcp:read', 'mcp:write', 'mcp:admin']],
+            'admin for a non-admin' => [false, 'mcp:admin', ['mcp:read']],
+            'unknown level' => [true, 'api:read', ['mcp:read']],
+        ];
+    }
+
+    public function testRefreshDropsAdminAccessAfterLosingAdminStatus(): void
+    {
+        $this->app->identity->admin = true;
+        $tokens = $this->grant('mcp', null, fn($authorization) => $this->oauth->approveScopes($authorization, 'mcp', $this->app->identity, 'mcp:admin'));
+
+        $this->app->identity->admin = false;
+        $fresh = $this->exchange(['grant_type' => 'refresh_token', 'refresh_token' => $tokens['refresh_token']]);
+        self::assertSame(['mcp:read', 'mcp:write'], $this->tokenScopes($fresh['access_token'], 'mcp'));
+    }
+
+    public function testReauthorizationReusesTheEarlierAccessLevel(): void
+    {
+        $this->app->identity->admin = true;
+        $this->grant('mcp', null, fn($authorization) => $this->oauth->approveScopes($authorization, 'mcp', $this->app->identity, 'mcp:write'));
+
+        $tokens = $this->grant('mcp', null, fn($authorization) => self::assertTrue($this->oauth->reuseConsent($authorization, 'mcp')));
+        self::assertSame(['mcp:read', 'mcp:write'], $this->tokenScopes($tokens['access_token'], 'mcp'));
+
+        $this->grant('mcp', 'mcp:admin', fn($authorization) => self::assertFalse($this->oauth->reuseConsent($authorization, 'mcp')));
+    }
+
     public function testDiscoveryUrlsRetainCpBasePathAndPort(): void
     {
         $this->app->generalConfig->baseCpUrl = 'https://cms.example:8443/installation/';
@@ -229,24 +274,24 @@ class OAuthTest extends TestCase
         self::assertSame('https://cms.example:8443/index.php?p=oauth/api/token', $this->oauth->url('token', 'api'));
     }
 
-    private function grant(string $resource, ?string $scope = null): array
+    private function grant(string $resource, ?string $scope = null, ?callable $prepare = null): array
     {
         $verifier = str_repeat('h', 43);
-        $code = $this->authorize($verifier, $resource, $scope);
+        $code = $this->authorize($verifier, $resource, $scope, $prepare);
 
         return $this->exchange(['grant_type' => 'authorization_code', 'code' => $code, 'redirect_uri' => 'https://client.example/callback', 'code_verifier' => $verifier], $resource);
     }
 
-    private function tokenScopes(string $token): array
+    private function tokenScopes(string $token, string $resource = 'api'): array
     {
-        $request = $this->oauth->resourceServer('api')->validateAuthenticatedRequest(
-            new ServerRequest('POST', $this->oauth->resource('api'), ['Authorization' => "Bearer $token"]),
+        $request = $this->oauth->resourceServer($resource)->validateAuthenticatedRequest(
+            new ServerRequest('POST', $this->oauth->resource($resource), ['Authorization' => "Bearer $token"]),
         );
 
         return $request->getAttribute('oauth_scopes');
     }
 
-    private function authorize(string $verifier, string $resource = 'mcp', ?string $scope = null): string
+    private function authorize(string $verifier, string $resource = 'mcp', ?string $scope = null, ?callable $prepare = null): string
     {
         $challenge = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');
         $parameters = [
@@ -262,6 +307,9 @@ class OAuthTest extends TestCase
         $user = new OAuthUser();
         $user->setIdentifier((string)$this->app->identity->id);
         $authorization->setUser($user);
+        if ($prepare) {
+            $prepare($authorization);
+        }
         $authorization->setAuthorizationApproved(true);
         $response = $server->completeAuthorizationRequest($authorization, new Response());
         parse_str(parse_url($response->getHeaderLine('Location'), PHP_URL_QUERY), $query);

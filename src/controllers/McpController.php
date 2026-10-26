@@ -40,7 +40,8 @@ class McpController extends Controller
             $session->setIdentity(null);
 
             try {
-                $session->setIdentity($oauth->authenticate(ServerRequest::fromGlobals(), 'mcp'));
+                $session->setIdentity($oauth->authenticate(ServerRequest::fromGlobals(), 'mcp', scopes: $scopes));
+                Craft::$app->get('mcp')->tokenScopes = $scopes;
             } catch (OAuthServerException $exception) {
                 $this->response->getHeaders()->set('WWW-Authenticate', 'Bearer resource_metadata="' . $oauth->resourceMetadataUrl('mcp') . '", scope="' . implode(' ', array_keys($oauth->getResource('mcp')->scopes)) . '"');
                 $this->response->setStatusCode(401);

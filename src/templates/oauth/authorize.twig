@@ -1,20 +1,43 @@
 {% extends '_layouts/message.twig' %}
+{% import '_includes/forms.twig' as forms %}
 {% set title = 'Authorize client'|t('app') %}
 
 {% block message %}
   <h1>{{ title }}</h1>
   <p>{{ '{client} would like to access Craft CMS as you.'|t('app', {client: clientName}) }}</p>
   <p>{{ consentDescription }}</p>
-  <p><strong>{{ 'Scopes:'|t('app') }}</strong></p>
-  <ul class="bullets" style="padding-inline-start: 0; list-style-position: inside;">
-    {% for description in scopes %}
-      <li>{{ description }}</li>
-    {% endfor %}
-  </ul>
-  <form method="post" action="{{ approveAction }}" class="buttons">
+  <form method="post" action="{{ approveAction }}">
     {{ csrfInput() }}
     {{ hiddenInput('authToken', authToken) }}
-    <button class="btn submit" type="submit">{{ 'Authorize'|t('app') }}</button>
-    <button class="btn" type="submit" formaction="{{ denyAction }}">{{ 'Deny'|t('app') }}</button>
+    {% if accessOptions %}
+      <fieldset>
+        <legend><strong>{{ 'Access:'|t('app') }}</strong></legend>
+        {% for option in accessOptions %}
+          <div>
+            {{ forms.radio({
+              id: "access-#{loop.index}",
+              name: 'access',
+              value: option.value,
+              label: option.label,
+              checked: loop.first,
+              describedBy: "access-#{loop.index}-description",
+            }) }}
+            <p id="access-{{ loop.index }}-description" class="light smalltext" style="margin-block: 2px var(--s); padding-inline-start: 22px;">{{ option.description }}</p>
+          </div>
+        {% endfor %}
+      </fieldset>
+    {% endif %}
+    {% if scopes %}
+      <p><strong>{{ 'Scopes:'|t('app') }}</strong></p>
+      <ul class="bullets" style="padding-inline-start: 0; list-style-position: inside;">
+        {% for description in scopes %}
+          <li>{{ description }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <div class="buttons">
+      <button class="btn submit" type="submit">{{ 'Authorize'|t('app') }}</button>
+      <button class="btn" type="submit" formaction="{{ denyAction }}">{{ 'Deny'|t('app') }}</button>
+    </div>
   </form>
 {% endblock %}

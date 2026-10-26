@@ -16,10 +16,14 @@ use craft\mcp\public\Access;
 use craft\mcp\PublicCapabilityDiscovery;
 use craft\mcp\PublicElementTypes;
 use craft\mcp\Settings;
+use craft\oauth\Resource;
 use craft\services\Elements;
+use craft\services\Mcp as McpService;
+use craft\services\OAuth;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Discovery\DiscovererInterface;
 use Mcp\Capability\Discovery\DiscoveryState;
+use Mcp\Schema\ToolAnnotations;
 use PHPUnit\Framework\TestCase;
 use yii\console\Application;
 
@@ -40,6 +44,13 @@ class CapabilityDiscoveryTest extends TestCase
         $this->timezone = date_default_timezone_get();
         $this->app = new DiscoveryTestApplication(['id' => 'discovery-test', 'basePath' => dirname(__DIR__, 3) . '/src']);
         $this->app->identity = new DiscoveryTestUser(['active' => true]);
+        $this->app->set('mcp', new McpService(['tokenScopes' => [McpService::SCOPE_ADMIN]]));
+        $this->app->set('oauth', new class() extends OAuth {
+            public function getResource(string $id): Resource
+            {
+                return (new McpService())->getOAuthResource();
+            }
+        });
         $this->config = new GeneralConfig(['allowAdminChanges' => false]);
         $registry = new CapabilityRegistry([PluginTools::class]);
         $empty = new class() implements DiscovererInterface {
@@ -60,16 +71,40 @@ class CapabilityDiscoveryTest extends TestCase
 
     public function testPermissionsAndAdminChangesControlPluginDiscovery(): void
     {
-        self::assertSame([], $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin.read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
 
         $this->app->identity->allowed = ['editContent'];
-        self::assertSame(['plugin.edit'], $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin.edit', 'plugin.read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
 
         $this->app->identity->admin = true;
-        self::assertSame(['plugin.edit'], $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin.edit', 'plugin.read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
 
         $this->config->allowAdminChanges = true;
-        self::assertSame(['plugin.configure', 'plugin.edit'], $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin.configure', 'plugin.edit', 'plugin.read'], $this->toolNames($this->discovery->discover(__DIR__, [])));
+    }
+
+    /**
+     * @dataProvider tokenScopeProvider
+     */
+    public function testTokenScopeControlsDiscovery(?array $scopes, array $expected): void
+    {
+        $this->app->identity->admin = true;
+        $this->config->allowAdminChanges = true;
+        Craft::$app->get('mcp')->tokenScopes = $scopes;
+
+        self::assertSame($expected, $this->toolNames($this->discovery->discover(__DIR__, [])));
+        self::assertSame(['plugin.configure', 'plugin.edit', 'plugin.read'], $this->toolNames($this->discovery->discoverStdio(__DIR__, [])));
+    }
+
+    public static function tokenScopeProvider(): array
+    {
+        return [
+            'no token' => [null, []],
+            'read' => [[McpService::SCOPE_READ], ['plugin.read']],
+            'write' => [[McpService::SCOPE_READ, McpService::SCOPE_WRITE], ['plugin.edit', 'plugin.read']],
+            'write alone' => [[McpService::SCOPE_WRITE], ['plugin.edit', 'plugin.read']],
+            'admin' => [[McpService::SCOPE_READ, McpService::SCOPE_WRITE, McpService::SCOPE_ADMIN], ['plugin.configure', 'plugin.edit', 'plugin.read']],
+        ];
     }
 
     public function testPublicPluginToolRequiresExplicitApproval(): void
@@ -139,6 +174,12 @@ class DiscoveryTestUser extends User
 
 class PluginTools
 {
+    #[McpTool(name: 'plugin.read', annotations: new ToolAnnotations(readOnlyHint: true))]
+    public function read(): string
+    {
+        return 'read';
+    }
+
     #[McpTool(name: 'plugin.edit')]
     #[RequiresPermission('editContent')]
     public function edit(): string

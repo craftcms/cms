@@ -3,20 +3,26 @@
 namespace craft\services;
 
 use Craft;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
 use craft\events\RegisterOAuthResourcesEvent;
 use craft\helpers\App;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\oauth\Repositories;
 use craft\oauth\Resource;
 use DateInterval;
+use DateTime;
 use GuzzleHttp\Psr7\Uri;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
+use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
+use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use League\OAuth2\Server\ResourceServer;
 use Psr\Http\Message\ServerRequestInterface;
 use yii\base\Component;
@@ -55,6 +61,9 @@ class OAuth extends Component
                 }
                 if (!array_is_list($resource->defaultScopes) || ($resource->defaultScopes && !$resource->allowsScopes($resource->defaultScopes))) {
                     throw new InvalidConfigException('OAuth default scopes must be a subset of the resource scopes.');
+                }
+                if ($resource->scopeLevels && (!$resource->allowsScopes($resource->scopeLevels) || count(array_unique($resource->scopeLevels)) !== count($resource->scopeLevels))) {
+                    throw new InvalidConfigException('OAuth scope levels must be a list of distinct resource scopes.');
                 }
                 $url = isset($resource->resourceUrl) ? $resource->getResourceUrl() : '';
                 $uri = new Uri($url);
@@ -110,16 +119,77 @@ class OAuth extends Component
     /**
      * Authenticates a resource's bearer token and requires every supplied scope.
      * @param string[] $requiredScopes
+     * @param array|null $scopes Set to the scope IDs the token grants.
      */
-    public function authenticate(ServerRequestInterface $request, string $resource, array $requiredScopes = []): User
+    public function authenticate(ServerRequestInterface $request, string $resource, array $requiredScopes = [], ?array &$scopes = null): User
     {
         $request = $this->resourceServer($resource)->validateAuthenticatedRequest($request);
-        $scopes = $request->getAttribute('oauth_scopes', []);
-        if (!is_array($scopes) || !$this->getResource($resource)->allowsScopes($scopes) || array_diff($requiredScopes, $scopes)) {
+        $granted = $request->getAttribute('oauth_scopes', []);
+        if (!is_array($granted) || !$this->getResource($resource)->allowsScopes($granted) || array_diff($requiredScopes, $granted)) {
             throw OAuthServerException::accessDenied('The token does not grant the required scopes for this resource.');
         }
 
-        return $this->authorizedUser((string)$request->getAttribute('oauth_user_id'), $resource);
+        $user = $this->authorizedUser((string)$request->getAttribute('oauth_user_id'), $resource);
+        $scopes = $granted;
+        return $user;
+    }
+
+    /**
+     * Narrows an authorization request to the access level the user chose, falling back to the narrowest level they
+     * may choose.
+     */
+    public function approveScopes(AuthorizationRequestInterface $request, string $resource, User $user, ?string $level): void
+    {
+        $definition = $this->getResource($resource);
+        $choices = $definition->levelChoices($this->scopeIds($request->getScopes()), $user);
+        $this->narrowRequest($request, $definition, in_array($level, $choices, true) ? $level : ($choices[0] ?? null));
+    }
+
+    /**
+     * Whether the user already approved the request's scopes for its client. If so, narrows the request to the access
+     * level they chose before.
+     */
+    public function reuseConsent(AuthorizationRequestInterface $request, string $resource): bool
+    {
+        $definition = $this->getResource($resource);
+        $rows = (new Query())->select(['scopes'])->from(Table::OAUTH_ACCESS_TOKENS)->where([
+            'resourceId' => $resource,
+            'clientId' => $request->getClient()->getIdentifier(),
+            'userId' => $request->getUser()->getIdentifier(),
+            'revoked' => false,
+        ])->andWhere(['>', 'expiresAt', Db::prepareDateForDb(new DateTime())])->column();
+        $granted = [];
+        foreach ($rows as $scopes) {
+            $granted = array_merge($granted, json_decode($scopes, true, flags: JSON_THROW_ON_ERROR));
+        }
+
+        if (!$definition->grantsCover($granted, $this->scopeIds($request->getScopes()))) {
+            return false;
+        }
+
+        $level = $definition->highestLevel($granted);
+        if ($level !== null) {
+            $this->narrowRequest($request, $definition, $level);
+        }
+        return true;
+    }
+
+    private function narrowRequest(AuthorizationRequestInterface $request, Resource $definition, ?string $level): void
+    {
+        $scopeIds = $definition->narrowScopes($this->scopeIds($request->getScopes()), $level);
+        $request->setScopes(array_values(array_filter(
+            $request->getScopes(),
+            fn(ScopeEntityInterface $scope) => in_array($scope->getIdentifier(), $scopeIds, true),
+        )));
+    }
+
+    /**
+     * @param ScopeEntityInterface[] $scopes
+     * @return string[]
+     */
+    private function scopeIds(array $scopes): array
+    {
+        return array_map(fn(ScopeEntityInterface $scope) => $scope->getIdentifier(), $scopes);
     }
 
     public function authorizedUser(string $id, string $resource): User

@@ -79,7 +79,7 @@ readonly class Assets
     #[McpTool(
         name: 'assets.transform-url',
         description: 'Gets a transformed asset URL for previewing. Accepts a named image transform handle or inline parameters such as width, height, mode, and format. Uses Craft 5 transform generation settings and may return a temporary generation URL.',
-        annotations: new ToolAnnotations(readOnlyHint: false, destructiveHint: false),
+        annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function transformUrl(
         #[Schema(definition: [

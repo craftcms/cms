@@ -66,7 +66,14 @@ class Repositories implements ClientRepositoryInterface, AccessTokenRepositoryIn
             throw OAuthServerException::accessDenied('An authenticated user is required.');
         }
 
-        Craft::$app->get('oauth')->authorizedUser($userIdentifier, $this->resource->id);
+        $user = Craft::$app->get('oauth')->authorizedUser($userIdentifier, $this->resource->id);
+
+        // Drop scopes the user may no longer be granted, such as admin access after losing admin status.
+        $allowed = $this->resource->scopesForUser($user, array_map(fn(ScopeEntityInterface $scope) => $scope->getIdentifier(), $scopes));
+        $scopes = array_values(array_filter($scopes, fn(ScopeEntityInterface $scope) => in_array($scope->getIdentifier(), $allowed, true)));
+        if (!$scopes) {
+            throw OAuthServerException::invalidScope('(empty)');
+        }
 
         return $scopes;
     }
