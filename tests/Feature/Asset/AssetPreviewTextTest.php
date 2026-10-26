@@ -76,7 +76,7 @@ it('shows a text file’s preview text in its edit page preview, but not its thu
     actingAs(UserElement::findOne());
     $asset = ($this->upload)('notes.txt', 'Some text.');
 
-    expect($asset->getPreviewHtml())->toContain('>Some text.</div>')
+    expect($asset->getPreviewHtml())->toContain('>Some text.</div>')->not->toContain('>TXT</text>')
         ->and($asset->getThumbHtml(120))->not->toContain('Some text.');
 });
 
@@ -93,4 +93,11 @@ it('isn’t loaded by asset queries', function () {
     $asset = ($this->upload)('notes.txt', 'Some text.');
 
     expect($asset->previewText)->toBeNull();
+});
+
+it('shows the file icon in the edit page preview of a text file with nothing to show', function () {
+    actingAs(UserElement::findOne());
+    $asset = ($this->upload)('blank.txt', "  \n");
+
+    expect($asset->getPreviewHtml())->toContain('>TXT</text>')->not->toContain('<foreignObject');
 });

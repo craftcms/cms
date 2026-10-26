@@ -2914,12 +2914,7 @@ JS, [
                     'preload' => 'metadata',
                 ]),
                 default => $showsIcon
-                    ? Html::tag('div', Html::svg(AssetsHelper::iconSvg(
-                        $this->getExtension(),
-                        previewText: $this->isTextFile($this->_filename) ? $this->getStoredPreviewText() : null,
-                    ), sanitize: false, namespace: true), [
-                        'class' => ['preview-thumb', 'mx-auto', 'py-md', 'w-[160px]', 'h-[160px]', 'box-content'],
-                    ])
+                    ? $this->getIconPreviewHtml()
                     : Html::tag('div', $this->getPreviewThumbImg(350, 190), [
                         'class' => 'preview-thumb',
                     ]),
@@ -3754,6 +3749,25 @@ JS;
         $this->tempFilePath = null;
         $this->uploadSource = null;
         $this->uploadColors = null;
+    }
+
+    /**
+     * Returns the preview area’s image for a file without a thumbnail: a closer look at the top of a text file that
+     * has something to show, or the file’s icon.
+     */
+    private function getIconPreviewHtml(): string
+    {
+        $previewText = $this->isTextFile($this->_filename) ? $this->getStoredPreviewText() : null;
+
+        if ($previewText !== null && $previewText !== '') {
+            return Html::tag('div', Html::svg(AssetsHelper::previewTextSvg($previewText), sanitize: false, namespace: true), [
+                'class' => ['preview-thumb', 'mx-auto', 'pt-md', 'w-[240px]', 'h-[160px]', 'box-content'],
+            ]);
+        }
+
+        return Html::tag('div', Html::svg(AssetsHelper::iconSvg($this->getExtension()), sanitize: false, namespace: true), [
+            'class' => ['preview-thumb', 'mx-auto', 'py-md', 'w-[160px]', 'h-[160px]', 'box-content'],
+        ]);
     }
 
     /**

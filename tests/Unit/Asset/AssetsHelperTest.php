@@ -553,18 +553,15 @@ test('preview text is empty for files with nothing to show', function () {
     expect(AssetsHelper::previewText(" \n\x07\n"))->toBe('');
 });
 
-test('icon SVGs can show preview text, escaped', function () {
-    $xml = simplexml_load_string(AssetsHelper::iconSvg('html', false, "<script>alert(1)</script>\n\tindented"));
+test('preview text SVGs show the text escaped, without an extension label', function (bool $dark) {
+    $xml = simplexml_load_string(AssetsHelper::previewTextSvg("<script>alert(1)</script>\n\tindented", $dark));
 
     expect($xml)->not->toBeFalse()
         ->and($xml->xpath('//*[local-name()="script"]'))->toBe([])
         ->and((string) $xml->xpath('//*[local-name()="foreignObject"]/*[local-name()="div"]')[0])
-        ->toBe("<script>alert(1)</script>\n\tindented");
-});
-
-test('icon SVGs leave out empty preview text', function () {
-    expect(AssetsHelper::iconSvg('txt', false, ''))->not->toContain('<foreignObject');
-});
+        ->toBe("<script>alert(1)</script>\n\tindented")
+        ->and($xml->xpath('//*[local-name()="text"]'))->toBe([]);
+})->with([false, true]);
 
 test('folder icon SVGs come in light and dark blue, and are well-formed XML', function (bool $dark, string $fill) {
     $svg = AssetsHelper::folderIconSvg($dark);

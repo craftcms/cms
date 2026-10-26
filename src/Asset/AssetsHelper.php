@@ -511,7 +511,7 @@ class AssetsHelper
      * size. The outline's outer corners match the image thumbnails and chips
      * around it, through `--c-thumbnail-image-radius`.
      */
-    public static function iconSvg(string $extension, ?bool $dark = null, ?string $previewText = null): string
+    public static function iconSvg(string $extension, ?bool $dark = null): string
     {
         if (! preg_match('/^\w+$/', $extension)) {
             throw new InvalidArgumentException("$extension isn’t a valid file extension.");
@@ -568,9 +568,7 @@ class AssetsHelper
             'style' => "fill: var(--c-text-quiet, $quietText)",
         ]), ['viewBox' => '0 0 100 100']);
 
-        $previewTextNode = $previewText !== null && $previewText !== '' ? self::iconPreviewTextNode($previewText, $quietText) : '';
-
-        return Html::tag('svg', $paperNode.$ringNode.$previewTextNode.$textNode, [
+        return Html::tag('svg', $paperNode.$ringNode.$textNode, [
             'xmlns' => 'http://www.w3.org/2000/svg',
             'width' => '100%',
             'height' => '100%',
@@ -597,36 +595,78 @@ class AssetsHelper
     }
 
     /**
-     * Returns a file’s preview text as small monospaced text that wraps across the icon’s paper, fading out toward
-     * its bottom.
+     * Returns the SVG contents for a closer look at a text file than its icon gives: the top of the page, zoomed in
+     * and cut off at the bottom, with the file’s preview text wrapping across it and fading toward the cut. It has no extension label, and fills a 240×160 box.
+     *
+     * Like {@see iconSvg()}, it comes in a light or dark variant for the control panel theme that’s showing, unless
+     * `$dark` says which.
+     *
+     * @internal
      */
-    private static function iconPreviewTextNode(string $previewText, string $color): string
+    public static function previewTextSvg(string $previewText, ?bool $dark = null): string
     {
-        $fade = 'linear-gradient(#000, transparent)';
-        $block = Html::tag('div', Html::encode($previewText), [
+        $dark ??= Theme::resolveFor(currentUserElement()) === Theme::Dark;
+        $quietText = $dark ? '#a6b2c2' : '#5c6982';
+        // The page runs past the bottom of the box, so its bottom edge is never seen
+        $page = ['x' => 12, 'y' => 12, 'width' => 216, 'height' => 300, 'rx' => 6];
+
+        $paperNode = Html::tag('rect', '', [
+            ...$page,
+            'fill' => $dark ? '#1a2231' : '#fff',
+            'style' => sprintf(
+                '%sfilter: drop-shadow(0 2px 3px rgb(0 0 0 / %s))',
+                $dark ? 'fill: var(--c-color-black-fill-quiet, #1a2231); ' : '', $dark ? '0.6' : '0.18',
+            ),
+        ]);
+        $ringNode = Html::tag('rect', '', [
+            'x' => 11.5,
+            'y' => 11.5,
+            'width' => 217,
+            'height' => 301,
+            'rx' => 6.5,
+            'fill' => 'none',
+            'stroke' => $dark ? '#fff' : '#000',
+            'stroke-opacity' => $dark ? 0.25 : 0.18,
+        ]);
+
+        $fade = 'linear-gradient(#000 50%, rgb(0 0 0 / 30%))';
+        // Exactly this many lines fill the text area, so it's cut off between two lines rather than through one. It
+        // stops a little above the bottom of the box, leaving a gap below the last line.
+        $lines = 11;
+        $textHeight = 131;
+        $lineHeight = $textHeight / $lines;
+        $textNode = Html::tag('foreignObject', Html::tag('div', Html::encode($previewText), [
             'xmlns' => 'http://www.w3.org/1999/xhtml',
             'style' => [
                 'height' => '100%',
                 'overflow' => 'hidden',
                 'margin' => 0,
                 'font-family' => 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-                'font-size' => '3.2px',
-                'line-height' => '4.2px',
+                'font-size' => sprintf('%.2fpx', $lineHeight / 1.3),
+                'line-height' => sprintf('%.4fpx', $lineHeight),
                 'white-space' => 'pre-wrap',
                 'overflow-wrap' => 'anywhere',
                 'tab-size' => 4,
-                'color' => "var(--c-text-quiet, $color)",
+                'color' => "var(--c-text-quiet, $quietText)",
                 '-webkit-mask-image' => $fade,
                 'mask-image' => $fade,
             ],
+        ]), [
+            'x' => 26,
+            'y' => 26,
+            'width' => 188,
+            'height' => $textHeight,
         ]);
 
-        return Html::tag('svg', Html::tag('foreignObject', $block, [
-            'x' => 19.5,
-            'y' => 9,
-            'width' => 61,
-            'height' => 82,
-        ]), ['viewBox' => '0 0 100 100']);
+        return Html::tag('svg', $paperNode.$ringNode.$textNode, [
+            'xmlns' => 'http://www.w3.org/2000/svg',
+            'viewBox' => '0 0 240 160',
+            'width' => '100%',
+            'height' => '100%',
+            'overflow' => 'visible',
+            // Only the bottom is cut off, so the shadow still shows on the other sides
+            'style' => 'clip-path: inset(-20px -20px 0 -20px)',
+        ]);
     }
 
     /**
