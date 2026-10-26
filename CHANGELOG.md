@@ -69,14 +69,14 @@
 - Fixed a bug where custom fields nested within Content Block fields weren’t editable from element indexes. ([#19602](https://github.com/craftcms/cms/discussions/19602))
 - Fixed a bug where nested relational fields weren’t enforcing their “Validate related {type}” setting. ([#19625](https://github.com/craftcms/cms/pull/19625))
 - Fixed a bug where newly-created generated fields weren’t immediately available to card previews. ([#19166](https://github.com/craftcms/cms/pull/19166))
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-mjj9-pjh4-r48g)
-- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-r56r-f696-c8w9, GHSA-f6gf-r952-rxg6, GHSA-qcvp-ggx3-97r6)
-- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-qj3q-j7r4-428p, GHSA-9hp6-3565-gvh5)
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-v4q3-2g5g-wjj6)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-v25r-wr32-jfg7)
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. (GHSA-xpg7-m6gm-4xfh, GHSA-mp59-9rf5-93wr)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-hvp5-pwxx-2752)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-5v62-pcq7-fxj9)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. ([GHSA-mjj9-pjh4-r48g](https://github.com/craftcms/cms/security/advisories/GHSA-mjj9-pjh4-r48g))
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. ([GHSA-r56r-f696-c8w9](https://github.com/craftcms/cms/security/advisories/GHSA-r56r-f696-c8w9), [GHSA-f6gf-r952-rxg6](https://github.com/craftcms/cms/security/advisories/GHSA-f6gf-r952-rxg6), [GHSA-qcvp-ggx3-97r6](https://github.com/craftcms/cms/security/advisories/GHSA-qcvp-ggx3-97r6))
+- Fixed [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. ([GHSA-qj3q-j7r4-428p](https://github.com/craftcms/cms/security/advisories/GHSA-qj3q-j7r4-428p), [GHSA-9hp6-3565-gvh5](https://github.com/craftcms/cms/security/advisories/GHSA-9hp6-3565-gvh5))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-v4q3-2g5g-wjj6](https://github.com/craftcms/cms/security/advisories/GHSA-v4q3-2g5g-wjj6))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. ([GHSA-v25r-wr32-jfg7](https://github.com/craftcms/cms/security/advisories/GHSA-v25r-wr32-jfg7))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerabilities. ([GHSA-xpg7-m6gm-4xfh](https://github.com/craftcms/cms/security/advisories/GHSA-xpg7-m6gm-4xfh), [GHSA-mp59-9rf5-93wr](https://github.com/craftcms/cms/security/advisories/GHSA-mp59-9rf5-93wr))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-hvp5-pwxx-2752](https://github.com/craftcms/cms/security/advisories/GHSA-hvp5-pwxx-2752))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-5v62-pcq7-fxj9](https://github.com/craftcms/cms/security/advisories/GHSA-5v62-pcq7-fxj9))
 
 ## 5.11.1 - 2026-09-02
 
