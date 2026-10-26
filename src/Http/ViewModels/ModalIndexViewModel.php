@@ -169,7 +169,29 @@ class ModalIndexViewModel extends ContentIndexViewModel
             $source['criteria']['folderId'] = $folder->id;
         }
 
+        if ($source !== null && $this->includeSubfolders()) {
+            $source['criteria']['includeSubfolders'] = true;
+        }
+
         return [$sourceKey, $source];
+    }
+
+    /**
+     * Whether a search reaches into the subfolders of the folder on screen, as
+     * on the assets index.
+     */
+    public function includeSubfolders(): bool
+    {
+        return $this->search() !== null
+            && $this->search() !== ''
+            && $this->request->boolean('includeSubfolders')
+            && $this->canSearchSubfolders();
+    }
+
+    /** Whether the folder on screen has subfolders for a search to reach. */
+    public function canSearchSubfolders(): bool
+    {
+        return ($this->folder() ?? $this->sourceRootFolder())?->getHasChildren() ?? false;
     }
 
     /**
@@ -263,6 +285,44 @@ class ModalIndexViewModel extends ContentIndexViewModel
         }
 
         return Folders::getFolderById((int) $folderId);
+    }
+
+    /**
+     * Folder card labels link to the folder, like their chips in the table view.
+     *
+     * @return array<string, mixed>
+     */
+    #[\Override]
+    protected function cardConfig(ElementInterface $element): array
+    {
+        $folderUrl = $this->folderLinkUrl($element);
+
+        return $folderUrl === null ? [] : [
+            'hyperlink' => true,
+            'hyperlinkUrl' => $folderUrl,
+            'hyperlinkAttributes' => ['data-folder-link' => true],
+        ];
+    }
+
+    /**
+     * Folder thumb labels link to the folder, like their chips in the table view.
+     *
+     * @return array{labelUrl?: string, labelLinkAttributes?: array<string, mixed>}
+     */
+    #[\Override]
+    protected function extraThumbData(ElementInterface $element): array
+    {
+        $folderUrl = $this->folderLinkUrl($element);
+
+        return $folderUrl === null ? [] : [
+            'labelUrl' => $folderUrl,
+            'labelLinkAttributes' => ['data-folder-link' => ''],
+        ];
+    }
+
+    private function folderLinkUrl(ElementInterface $element): ?string
+    {
+        return $element instanceof Asset && $element->isFolder ? $this->folderUrl($element) : null;
     }
 
     private function folderUrl(Asset $folder): ?string

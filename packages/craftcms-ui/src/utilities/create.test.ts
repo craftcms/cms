@@ -68,16 +68,16 @@ describe('createSubmitButton', () => {
     const button = createSubmitButton();
 
     expect(button.type).toBe('submit');
-    expect(button.variant).toBe('accent');
+    expect(button.variant).toBe('primary');
     expect(button.classList.contains('submit')).toBe(true);
     expect(button.querySelector('.label')!.textContent).toBe('Submit');
   });
 
   it('keeps a configured label and variant', () => {
-    const button = createSubmitButton({label: 'Apply', variant: 'neutral'});
+    const button = createSubmitButton({label: 'Apply', variant: 'fill'});
 
     expect(button.querySelector('.label')!.textContent).toBe('Apply');
-    expect(button.variant).toBe('neutral');
+    expect(button.variant).toBe('fill');
   });
 });
 

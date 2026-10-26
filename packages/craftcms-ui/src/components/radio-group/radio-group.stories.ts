@@ -5,6 +5,7 @@ import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './radio-group.js';
 import '../radio/radio.js';
+import '../icon/icon.js';
 import type CraftRadioGroup from './radio-group.js';
 
 /**
@@ -96,5 +97,63 @@ export const ServerRendered: Story = {
           <label slot="label" for="color-blue">Blue</label>
         </craft-radio>
       </div>
+    </craft-radio-group>`,
+};
+
+/**
+ * `buttons` shows the options as a row of joined buttons. They're still
+ * radios: the group is one tab stop, and the arrow keys move the selection.
+ */
+export const Buttons: Story = {
+  parameters: {controls: {disable: true}},
+  render: () =>
+    html`<craft-radio-group buttons>
+      <label slot="label">Alignment</label>
+      ${['Start', 'Center', 'End'].map(
+        (label) =>
+          html`<craft-radio
+            .choiceValue="${label.toLowerCase()}"
+            ?checked="${label === 'Center'}"
+          >
+            <label slot="label">${label}</label>
+          </craft-radio>`
+      )}
+    </craft-radio-group>`,
+};
+
+/**
+ * An option labeled only by an icon gets a square button. The icon's `label`
+ * names the radio.
+ */
+export const IconButtons: Story = {
+  parameters: {
+    controls: {disable: true},
+    a11y: {
+      config: {
+        // The best-practice rule only counts visible text as a label, so it
+        // doesn't see the icons' names, and Lion always gives each input an
+        // `aria-describedby` for its help text, which the rule then flags.
+        rules: [{id: 'label-title-only', enabled: false}],
+      },
+    },
+  },
+  render: () =>
+    html`<craft-radio-group buttons>
+      <label slot="label">View</label>
+      ${[
+        ['list', 'list-unordered', 'List'],
+        ['table', 'table', 'Table'],
+        ['thumbs', 'grid', 'Thumbnails'],
+      ].map(
+        ([value, icon, label]) =>
+          html`<craft-radio
+            .choiceValue="${value}"
+            ?checked="${value === 'list'}"
+          >
+            <label slot="label"
+              ><craft-icon name="${icon}" label="${label}"></craft-icon
+            ></label>
+          </craft-radio>`
+      )}
     </craft-radio-group>`,
 };

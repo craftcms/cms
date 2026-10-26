@@ -144,6 +144,50 @@ describe('craft-thumbnail placeholder', () => {
     );
   });
 
+  // The thumbnail box is square, but a fit image only fills part of it. With
+  // its dimensions known, the placeholder covers the image's box instead.
+  it('puts the placeholder on a fit image’s own box when its size is known', async () => {
+    const element = await createThumbnail({
+      src: 'a.png',
+      placeholder,
+      width: '120',
+      height: '87',
+    });
+    const img = image(element)!;
+
+    expect(box(element).classList.contains('thumbnail--placeholder')).toBe(
+      false
+    );
+    expect(img.classList.contains('thumbnail__image--placeholder')).toBe(true);
+    expect(img.classList.contains('thumbnail__image--landscape')).toBe(true);
+    expect(img.style.getPropertyValue('--_placeholder')).toBe(
+      `url("${placeholder}")`
+    );
+    expect(img.style.aspectRatio).toBe('120 / 87');
+
+    img.dispatchEvent(new Event('load'));
+    await element.updateComplete;
+
+    expect(img.classList.contains('thumbnail__image--placeholder')).toBe(false);
+    // The box stays the same size once the image is in.
+    expect(img.style.aspectRatio).toBe('120 / 87');
+  });
+
+  it('keeps the placeholder on the thumbnail box when cropping', async () => {
+    const element = await createThumbnail({
+      src: 'a.png',
+      placeholder,
+      mode: 'crop',
+      width: '120',
+      height: '87',
+    });
+
+    expect(box(element).classList.contains('thumbnail--placeholder')).toBe(
+      true
+    );
+    expect(image(element)!.style.aspectRatio).toBe('');
+  });
+
   it('doesn’t change the image’s accessible name', async () => {
     const element = await createThumbnail({
       src: 'a.png',

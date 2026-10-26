@@ -1,5 +1,6 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftButton from '../button/button.js';
+import type CraftButtonGroup from './button-group.js';
 import '../button/button.js';
 import './button-group.js';
 
@@ -15,7 +16,7 @@ beforeEach(() => {
 describe('craft-button-group', () => {
   async function createGroup(multiple: boolean): Promise<{
     form: HTMLFormElement;
-    group: HTMLElement;
+    group: CraftButtonGroup;
     buttons: CraftButton[];
   }> {
     const form = document.createElement('form');
@@ -75,7 +76,7 @@ describe('craft-button-group', () => {
     expect(values).toEqual(['events']);
   });
 
-  it('posts a single value in radio mode', async () => {
+  it('posts a single value in single-selection mode', async () => {
     const {form, group, buttons} = await createGroup(false);
 
     let value = '';
@@ -87,6 +88,96 @@ describe('craft-button-group', () => {
 
     expect(value).toBe('events');
     expect(new FormData(form).get('topics')).toBe('events');
+  });
+
+  it('keeps the selected button selected when it’s clicked again', async () => {
+    const {group, buttons} = await createGroup(false);
+    click(buttons[1]!);
+    await group.updateComplete;
+
+    buttons[1]!.dispatchEvent(new MouseEvent('mousedown'));
+    buttons[1]!.dispatchEvent(new MouseEvent('mouseup'));
+    click(buttons[1]!);
+    await buttons[1]!.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(group.value).toBe('events');
+    expect(buttons[1]!.hasAttribute('active')).toBe(true);
+    expect(buttons[1]!.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('is a group of toggle buttons, each its own tab stop', async () => {
+    const {group, buttons} = await createGroup(false);
+    click(buttons[1]!);
+    await group.updateComplete;
+
+    expect(group.getAttribute('role')).toBe('group');
+    expect(
+      buttons.map((button) => button.getAttribute('aria-pressed'))
+    ).toEqual(['false', 'true']);
+    expect(buttons.every((button) => button.tabIndex === 0)).toBe(true);
+  });
+
+  it('keeps a role the consumer gave it', async () => {
+    document.body.innerHTML = `
+      <craft-button-group role="toolbar">
+        <craft-button>Save</craft-button>
+      </craft-button-group>
+    `;
+
+    const group = document.querySelector('craft-button-group')!;
+    await group.updateComplete;
+
+    expect(group.getAttribute('role')).toBe('toolbar');
+  });
+
+  it('marks dividers between buttons, but not beside the selected one', async () => {
+    document.body.innerHTML = `
+      <craft-button-group name="mode" value="b">
+        <craft-button value="a">A</craft-button>
+        <craft-button value="b">B</craft-button>
+        <craft-button value="c">C</craft-button>
+        <craft-button value="d">D</craft-button>
+      </craft-button-group>
+    `;
+
+    const group = document.querySelector('craft-button-group')!;
+    await group.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    const buttons = Array.from(document.querySelectorAll('craft-button'));
+    const dividers = (attribute: string) =>
+      buttons.map((button) => button.hasAttribute(attribute));
+
+    expect(dividers('data-button-group-divider')).toEqual([
+      false,
+      false,
+      false,
+      true,
+    ]);
+    expect(dividers('data-button-group-divider-end')).toEqual([
+      false,
+      false,
+      true,
+      false,
+    ]);
+
+    group.value = 'd';
+
+    await vi.waitFor(() => {
+      expect(dividers('data-button-group-divider')).toEqual([
+        false,
+        true,
+        true,
+        false,
+      ]);
+      expect(dividers('data-button-group-divider-end')).toEqual([
+        true,
+        true,
+        false,
+        false,
+      ]);
+    });
   });
 
   it('adopts its value from a child marked active in markup', async () => {

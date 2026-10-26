@@ -47,6 +47,23 @@ readonly class ElementRoute
         return (bool) preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*(?:\\\\[a-zA-Z_][a-zA-Z0-9_]*)+(?:@[a-zA-Z_][a-zA-Z0-9_]*)?$/D', $destination);
     }
 
+    /**
+     * Returns whether a site settings destination refers to a route rather than a template.
+     *
+     * Namespaced values are controller actions and values with slashes are template paths.
+     * Anything else is a route only if a named route by that name is registered.
+     */
+    public static function isRoute(string $destination): bool
+    {
+        $destination = self::normalize($destination);
+
+        return match (true) {
+            str_contains($destination, '\\') => true,
+            str_contains($destination, '/') => false,
+            default => app(Router::class)->has($destination),
+        };
+    }
+
     private function isController(): bool
     {
         return str_contains($this->destination, '\\');

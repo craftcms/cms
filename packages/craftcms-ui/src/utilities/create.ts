@@ -131,7 +131,7 @@ export function createButton(config: CreateButtonConfig = {}): CraftButton {
 
 /**
  * Creates a submit `<craft-button>` (legacy `Craft.ui.createSubmitButton`).
- * Accent variant by default; keeps the legacy `submit` class token for
+ * Primary variant by default; keeps the legacy `submit` class token for
  * selector compatibility.
  */
 export function createSubmitButton(
@@ -141,7 +141,7 @@ export function createSubmitButton(
     ...config,
     type: 'submit',
     label: config.label || t('Submit'),
-    variant: config.variant ?? 'accent',
+    variant: config.variant ?? 'primary',
   });
   button.classList.add('submit');
 

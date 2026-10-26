@@ -1,7 +1,7 @@
 import {actionClient} from '@craftcms/ui';
-import {useEventListener, useResizeObserver} from '@vueuse/core';
 import {computed, nextTick, onScopeDispose, watch, type Ref} from 'vue';
 import {useFetch} from '@/common/composables/useFetch';
+import {usePinnedScroll} from '@/common/composables/usePinnedScroll';
 
 export interface ActivityTarget {
   label: string;
@@ -108,31 +108,14 @@ export function useActivityTimeline(
   }
 
   /**
-   * Whether the newest activity is kept in view. The timeline keeps growing
-   * after it loads — each event is a lazily loaded component that renders in
-   * afterwards — so a single scroll once it loads lands short of the end.
-   * Instead it stays pinned as the content grows, until the reader scrolls
-   * away from the end.
+   * Keeps the newest activity in view. The timeline keeps growing after it
+   * loads — each event is a lazily loaded component that renders in afterwards
+   * — so a single scroll once it loads lands short of the end. Instead it stays
+   * pinned as the content grows, until the reader scrolls away from the end.
    */
-  let pinnedToEnd = false;
-  /** Where pinning last left the scroll position. */
-  let pinnedScrollTop = 0;
-
-  function pinToEnd(): void {
-    if (pinnedToEnd && timeline.value !== null) {
-      timeline.value.scrollTop = timeline.value.scrollHeight;
-      pinnedScrollTop = timeline.value.scrollTop;
-    }
-  }
-
-  async function scrollToEnd(): Promise<void> {
-    pinnedToEnd = true;
-    await nextTick();
-    pinToEnd();
-  }
-
-  // `events` is read so the rail is observed once it has rendered.
-  useResizeObserver(
+  const timelineScroll = usePinnedScroll(
+    timeline,
+    // `events` is read so the rail is observed once it has rendered.
     () =>
       events.value && timeline.value
         ? [
@@ -142,28 +125,14 @@ export function useActivityTimeline(
             ),
           ]
         : [],
-    pinToEnd
+    {pinned: false}
   );
 
-  useEventListener(
-    timeline,
-    'scroll',
-    () => {
-      const element = timeline.value;
-
-      if (element === null) {
-        return;
-      }
-
-      // The scroll pinning sets off arrives late, after more may have rendered
-      // below it, so only a move up from where pinning left it lets go.
-      const atEnd =
-        element.scrollHeight - element.scrollTop - element.clientHeight < 2;
-      pinnedToEnd =
-        atEnd || (pinnedToEnd && element.scrollTop >= pinnedScrollTop - 1);
-    },
-    {passive: true}
-  );
+  async function scrollToEnd(): Promise<void> {
+    timelineScroll.pin();
+    await nextTick();
+    timelineScroll.stick();
+  }
 
   watch(
     () => props.active,

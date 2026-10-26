@@ -213,3 +213,26 @@ it('retains nested cards when only a sibling field in an outer block is edited',
     app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new UiContext(mode: ControlMode::ReadOnly));
     expect(SessionAuth::checkAuthorization("manageNestedElements::{$block->id}::field:nestedCards"))->toBeFalse();
 });
+
+it('only marks the nested fields whose posted values changed as dirty', function () {
+    [$entry, $blockType] = matrixShapeFixture();
+    [$first, $second] = [Str::uuid()->toString(), Str::uuid()->toString()];
+    $value = fn (string $firstText) => [
+        'entries' => [
+            "uid:$first" => ['type' => $blockType->handle, 'title' => 'First', 'fields' => ['shapeInnerText' => $firstText]],
+            "uid:$second" => ['type' => $blockType->handle, 'title' => 'Second', 'fields' => ['shapeInnerText' => 'Untouched']],
+        ],
+        'sortOrder' => ["uid:$first", "uid:$second"],
+    ];
+
+    saveMatrixShape($entry, $value('Original'));
+
+    // Editing one block's field posts every block's fields.
+    /** @var EntryElement $owner */
+    $owner = entryQuery()->id($entry->id)->one();
+    $owner->setFieldValueFromRequest('shapeMatrix', $value('Edited'));
+    [$firstBlock, $secondBlock] = array_values($owner->getFieldValue('shapeMatrix')->all());
+
+    expect($firstBlock->getDirtyFields())->toBe(['shapeInnerText'])
+        ->and($secondBlock->getDirtyFields())->toBe([]);
+});

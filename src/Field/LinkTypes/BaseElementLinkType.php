@@ -411,6 +411,46 @@ JS, [
      */
     public function elementQuery(?string $value): ?ElementQueryInterface
     {
+        $reference = static::parseReference($value);
+
+        if (! $reference) {
+            return null;
+        }
+
+        return static::referencedElementsQuery([$reference['id']], $reference['siteId']);
+    }
+
+    /**
+     * Fetches the elements linked by the given values with one query per site, so later element() calls are cached.
+     *
+     * @param  list<string>  $values
+     */
+    public static function preloadElements(array $values): void
+    {
+        $idsBySite = [];
+        foreach (array_unique($values) as $value) {
+            $reference = static::parseReference($value);
+
+            if ($reference && ! isset(self::$fetchedElements[$value])) {
+                $idsBySite[$reference['siteId'] ?? 0][$value] = $reference['id'];
+            }
+        }
+
+        foreach ($idsBySite as $siteId => $ids) {
+            $elements = collect(static::referencedElementsQuery(array_values($ids), $siteId ?: null)->all())
+                ->keyBy('id');
+
+            foreach ($ids as $value => $id) {
+                self::$fetchedElements[$value] = $elements->get($id) ?? false;
+            }
+        }
+    }
+
+    /**
+     * @return array{id: int, siteId: int|null}|null
+     */
+    protected static function parseReference(?string $value): ?array
+    {
         if (
             ! $value ||
             ! preg_match(sprintf('/^\{%s:(\d+)(?:@(\d+))?:url\}$/', static::elementType()::refHandle()), $value, $match)
@@ -418,17 +458,25 @@ JS, [
             return null;
         }
 
-        $id = $match[1];
-        $siteId = $match[2] ?? null;
+        return [
+            'id' => (int) $match[1],
+            'siteId' => isset($match[2]) ? (int) $match[2] : null,
+        ];
+    }
 
+    /**
+     * @param  list<int>  $ids
+     */
+    protected static function referencedElementsQuery(array $ids, ?int $siteId): ElementQueryInterface
+    {
         $query = static::elementType()::find()
-            ->id((int) $id)
+            ->id($ids)
             ->status(null)
             ->drafts(null)
             ->revisions(null);
 
         if ($siteId) {
-            $query->siteId((int) $siteId);
+            $query->siteId($siteId);
         } else {
             $query
                 ->site('*')

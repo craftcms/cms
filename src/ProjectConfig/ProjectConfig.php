@@ -92,6 +92,8 @@ class ProjectConfig
 
     public const string PATH_ADDRESS_FIELD_LAYOUTS = self::PATH_ADDRESSES.'.'.'fieldLayouts';
 
+    public const string PATH_AI = 'ai';
+
     public const string PATH_ASSET_TRANSFORMERS = 'assetTransformers';
 
     public const string PATH_DATE_MODIFIED = 'dateModified';

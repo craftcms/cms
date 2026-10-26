@@ -51,7 +51,7 @@
       >{{ t('Export') }}</craft-button
     >
     <fieldset slot="content-body" class="flex flex-col gap-sm">
-      <legend class="sr-only">{{ t('Export format') }}</legend>
+      <legend class="sr-only">{{ t('Export Format') }}</legend>
       <label :for="limitId" class="flex items-center gap-md">
         {{ t('Limit') }}
         <input

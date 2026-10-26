@@ -116,6 +116,25 @@ it.each(['readOnly', 'interactionsDisabled'] as const)(
   }
 );
 
+// A clickable row gets the default cursor rather than a text one over its text.
+it('marks only the rows a click would select as clickable', async () => {
+  const {root} = mountTable({excludeSecond: true});
+  await nextTick();
+
+  expect(
+    [...root.querySelectorAll('tbody tr')].map((row) =>
+      row.classList.contains('cp-table-row--clickable')
+    )
+  ).toEqual([true, false, true]);
+});
+
+it('marks no rows clickable while selection is read-only', async () => {
+  const {root} = mountTable({readOnly: true});
+  await nextTick();
+
+  expect(root.querySelector('tbody tr.cp-table-row--clickable')).toBeNull();
+});
+
 it('selects eligible rows through the shared select-all checkbox', async () => {
   const {root, selection} = mountTable({excludeSecond: true});
   const all = root.querySelector<HTMLElement & {checked: boolean}>(

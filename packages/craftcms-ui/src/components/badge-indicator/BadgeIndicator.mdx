@@ -13,6 +13,10 @@ It attaches to whatever it sits beside — a nav item, a tab, a button — and s
 
 <Canvas of={BadgeIndicatorStories.Numbered} sourceState="shown" />
 
+A count above `max` (99 by default) is shown as `99+`. For a tally rather than a nudge, such as how many elements a source has, set `max` to `Infinity` and the marker grows to fit the whole number, formatted for the page's language:
+
+<Canvas of={BadgeIndicatorStories.Uncapped} sourceState="shown" />
+
 ## Not the Same as Badge
 
 [Badge](?path=/docs/components-badge--docs) is a pill with a label, naming a state in place. This is a marker that draws attention to something else.
@@ -43,6 +47,12 @@ For a count, `badge-count-suffix` supplies the units, because a number alone is 
 ```
 
 Announced as "3 unread messages" rather than "3", which could be anything.
+
+When the marker sits on a button or link, make its meaning part of that control, so it's announced when the control is reached. Put the text inside the control's label, or reference it with `aria-describedby`.
+
+The marker has no live region. If the count changes while the page is open and the change matters, announce it through a status message of your own, such as a `role="status"` region, rather than expecting the new number to be read.
+
+Use `inverse` only on a dark or colored surface. On the default surface its fill is too light to stand out.
 
 ## Properties
 

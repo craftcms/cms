@@ -44,7 +44,6 @@ use craft\events\SetElementRouteEvent;
 use CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementActionsResolving;
-use CraftCms\Cms\Element\Events\ElementAdditionalButtonsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementCacheTagsResolving;
@@ -104,24 +103,7 @@ trait LegacyConstants
 
     public static function registerEvents(): void
     {
-        // Find all classes that extend Element
-        $classes = get_declared_classes();
-        $elementClasses = [
-            Address::class,
-            Asset::class,
-            Category::class,
-            ContentBlock::class,
-            Entry::class,
-            GlobalSet::class,
-            Tag::class,
-            User::class,
-        ];
-
-        foreach ($classes as $class) {
-            if (is_subclass_of($class, Element::class)) {
-                $elementClasses[] = $class;
-            }
-        }
+        $elementClasses = self::legacyElementClasses();
 
         Event::listen(function(ElementCacheTagsResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
@@ -636,27 +618,6 @@ trait LegacyConstants
             }
         });
 
-        Event::listen(function(ElementAdditionalButtonsResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_ADDITIONAL_BUTTONS)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new DefineHtmlEvent([
-                    'sender' => $event->element,
-                    'html' => $event->html,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_DEFINE_ADDITIONAL_BUTTONS, $yiiEvent);
-
-                $event->html = $yiiEvent->html;
-            }
-        });
-
         Event::listen(function(ElementAltActionsResolving $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_ALT_ACTIONS)) {
@@ -972,6 +933,53 @@ trait LegacyConstants
                 self::triggerEvent($class, $class::EVENT_AFTER_MOVE_IN_STRUCTURE, $yiiEvent);
             }
         });
+    }
+
+    /**
+     * @return list<class-string>
+     */
+    private static function legacyElementClasses(): array
+    {
+        $elementClasses = [
+            Address::class,
+            Asset::class,
+            Category::class,
+            ContentBlock::class,
+            Entry::class,
+            GlobalSet::class,
+            Tag::class,
+            User::class,
+        ];
+
+        // Find all classes that extend Element
+        foreach (get_declared_classes() as $class) {
+            if (is_subclass_of($class, Element::class)) {
+                $elementClasses[] = $class;
+            }
+        }
+
+        return $elementClasses;
+    }
+
+    /**
+     * Returns additional buttons that should be shown on the element's edit page.
+     *
+     * @deprecated 6.0.0 Override `defineAdditionalButtonDescriptors()` or listen for {@see \CraftCms\Cms\Element\Events\ElementAdditionalButtonDescriptorsResolving} instead.
+     */
+    public function getAdditionalButtons(): string
+    {
+        $event = new DefineHtmlEvent(['sender' => $this]);
+
+        foreach (self::legacyElementClasses() as $class) {
+            if (
+                self::hasEventHandlers($class, $class::EVENT_DEFINE_ADDITIONAL_BUTTONS) &&
+                self::matchesElementClass($class, static::class)
+            ) {
+                self::triggerEvent($class, $class::EVENT_DEFINE_ADDITIONAL_BUTTONS, $event);
+            }
+        }
+
+        return $event->html;
     }
 
     private static function hasEventHandlers(string $class, string $name): bool

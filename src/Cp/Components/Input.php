@@ -61,6 +61,8 @@ class Input extends ViewComponent
 
     protected bool $monospace = false;
 
+    protected bool $inlineSuffix = false;
+
     protected bool $hiddenInput = false;
 
     protected bool $autofocus = false;
@@ -184,6 +186,17 @@ class Input extends ViewComponent
     public function monospace(bool $monospace = true): static
     {
         $this->monospace = $monospace;
+
+        return $this;
+    }
+
+    /**
+     * Draws suffix content inside the input's border, with no divider before
+     * it, leaving a button there at its own size.
+     */
+    public function inlineSuffix(bool $inlineSuffix = true): static
+    {
+        $this->inlineSuffix = $inlineSuffix;
 
         return $this;
     }
@@ -397,6 +410,7 @@ class Input extends ViewComponent
             'width' => $this->width,
             'center' => $this->center,
             'monospace' => $this->monospace,
+            'inline-suffix' => $this->inlineSuffix,
             'hidden-input' => $this->hiddenInput,
             // Lion pushes these host properties onto the slotted input when
             // the element upgrades (LionInput::updated()), overwriting the

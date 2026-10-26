@@ -23,6 +23,7 @@ import TextControl from './TextControl.vue';
 import TextareaControl from './TextareaControl.vue';
 import IconPickerControl from './IconPickerControl.vue';
 import ElementSelectControl from './ElementSelectControl.vue';
+import ElementSitesControl from './ElementSitesControl.vue';
 import GroupedEntryTypeManagerControl from './GroupedEntryTypeManagerControl.vue';
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
 import FieldSelectControl from './FieldSelectControl.vue';
@@ -96,6 +97,7 @@ export function registerUiComponents(
   components.register('craft:address', AddressControl);
   components.register('craft:icon-picker', IconPickerControl);
   components.register('craft:element-select', ElementSelectControl);
+  components.register('craft:element-sites', ElementSitesControl);
   components.register('craft:field-select', FieldSelectControl);
   components.register('craft:entry-type-select', EntryTypeSelectControl);
   components.register(

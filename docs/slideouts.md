@@ -7,8 +7,8 @@ the shell around it differs.
 Screens that haven't been ported to a Vue page still work: they fall back to a built-in component
 that draws the server-rendered HTML the response already carries.
 
-> This is the Vue/Inertia system. The legacy `Craft.CpScreenSlideout` (jQuery/Garnish, in
-> `resources/js/modules/slideout/`) still exists and is unchanged — see
+> This is the Vue/Inertia system, and the one core uses. The legacy `Craft.CpScreenSlideout`
+> (jQuery/Garnish, in `resources/js/modules/slideout/`) remains for plugins — see
 > [Coexisting with the legacy stack](#coexisting-with-the-legacy-stack).
 
 ## Basic Usage
@@ -53,6 +53,7 @@ Fetches `href` as an Inertia page and mounts it in a panel. Returns the `Slideou
 | `opener` | `HTMLElement \| null` | Element to refocus when the panel closes, and what the [stacking rules](#stacking-and-nesting) are resolved against. Defaults to whatever had focus when it opened. |
 | `width` | `string` | Width for this panel, as any CSS **length**. Defaults to `--slideout-width`. |
 | `onSaved` | `(result) => void` | Called when the screen saves. See [Telling the opener](#telling-the-opener). |
+| `onClosed` | `() => void` | Called once the panel is gone, however it closed — including along with its parent. |
 
 Pass `opener` whenever you have it — focus restoration and nesting both depend on it.
 
@@ -410,17 +411,20 @@ result props come back, and `rowSelection` is keyed by element id and lives outs
 
 ## Coexisting with the legacy stack
 
-The legacy `Craft.Slideout` (and its `CpScreenSlideout` / `ElementEditorSlideout` subclasses) is
-still very much alive — matrix, component select and the nested element manager all open one, and
-the field layout designer falls back to it.
-
-> The designer's component settings use `openSlideoutWith()` when the Vue stack is available, and
-> the legacy slideout otherwise. It has to: `SlideoutHost` is only mounted by the Inertia CP shell,
-> and the designer is also reachable from legacy-stack screens through the `fieldLayoutDesigner()`
-> Twig function. `canUseVueSlideout()` in
-> `resources/js/modules/field-layout-designer/settings-slideout.ts` decides, keying off whether the
-> shell registered its globals. So both kinds can be on screen at once: a Vue panel opened over a legacy
+Core opens its slideouts through the Vue stack — all but two-step verification setup, whose
+auth-method setup flow still hands plugins a legacy panel. The legacy `Craft.Slideout` (and its
+`CpScreenSlideout` / `ElementEditorSlideout` subclasses) remains for plugins and the yii2-adapter's
+nested element manager, so both kinds can be on screen at once: a Vue panel opened over a legacy
 slideout, or a legacy element editor opened from inside a Vue panel.
+
+Server-rendered menus open slideouts declaratively, with `{type: 'event'}` actions that
+`runAction()` dispatches: `craft:open-slideout` (`{url}`), `craft:edit-element`,
+`craft:edit-entry-type` and `craft:edit-field`. See `resources/js/modules/slideout-actions/` and
+`resources/js/modules/fields/`.
+
+> Widgets that open slideouts (the field layout designer, relation fields, component selects) need
+> the Inertia CP shell, which mounts `SlideoutHost`. Craft 5-era screens render inside it, so only
+> pages outside the shell entirely — the `_special/*` pages and the Plugin Store — lack it.
 
 Everything that needs to see *all* open panels rather than one stack's own lives in
 **`resources/js/common/slideouts/panel-stack.ts`**, and both implementations register with it:

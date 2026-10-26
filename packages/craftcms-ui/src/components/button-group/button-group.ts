@@ -5,11 +5,19 @@ import styles from './button-group.styles.js';
 
 const START_ATTRIBUTE = 'data-button-group-start';
 const END_ATTRIBUTE = 'data-button-group-end';
+const DIVIDER_ATTRIBUTE = 'data-button-group-divider';
+const DIVIDER_END_ATTRIBUTE = 'data-button-group-divider-end';
 
 /**
  * @summary Wrapper component used to group a set of buttons together.
  * When `name` is set, the selected value is submitted with the form. Set
  * `multiple` to allow more than one selected button.
+ *
+ * A group that holds a selection is a group of toggle buttons: each button
+ * keeps its role and its own tab stop, and reports its state with
+ * `aria-pressed`. For a form setting that picks one value from a set of
+ * options, use `craft-radio-group` with `buttons` instead, which looks the
+ * same but is announced and operated as radios.
  *
  * @slot - The default slot.
  *
@@ -19,7 +27,7 @@ export default class CraftButtonGroup extends LitElement {
   static override styles: CSSResultGroup = [styles];
   /**
    * Makes the group a form-associated custom element, so its selected value
-   * posts with the form in radio mode.
+   * posts with the form in selection mode.
    */
   static formAssociated = true;
 
@@ -47,17 +55,45 @@ export default class CraftButtonGroup extends LitElement {
   @property({reflect: true, type: Boolean}) multiple = false;
 
   /**
-   * Re-marks the ends when a child is shown or hidden, which changes which
-   * one is visibly first or last without firing `slotchange`.
+   * Re-marks the ends and dividers when a child is shown or hidden, which
+   * changes which one is visibly first or last without firing `slotchange`,
+   * or when one is selected or deselected.
    */
   private _childObserver = new MutationObserver(() => this._markEnds());
+
+  /**
+   * Buttons use `active` for their pressed state too, and clear it when a
+   * mouse press ends, including on the selected button. In single-selection
+   * mode that would leave the selected button looking deselected, so it gets
+   * its `active` back.
+   */
+  private _selectionObserver = new MutationObserver((records) => {
+    if (!this.name || this.multiple) {
+      return;
+    }
+    for (const {target} of records) {
+      if (
+        target instanceof Element &&
+        target.localName === 'craft-button' &&
+        !target.hasAttribute('active') &&
+        target.getAttribute('value') === this.value
+      ) {
+        target.setAttribute('active', '');
+      }
+    }
+  });
 
   override connectedCallback() {
     super.connectedCallback();
     this._childObserver.observe(this, {
       childList: true,
       attributes: true,
-      attributeFilter: ['hidden', 'style', 'class'],
+      attributeFilter: ['hidden', 'style', 'class', 'active', 'aria-pressed'],
+      subtree: true,
+    });
+    this._selectionObserver.observe(this, {
+      attributes: true,
+      attributeFilter: ['active'],
       subtree: true,
     });
   }
@@ -65,7 +101,7 @@ export default class CraftButtonGroup extends LitElement {
   override firstUpdated(changed: PropertyValues) {
     super.firstUpdated(changed);
     if (this.name) {
-      this._setupRadioMode();
+      this._setupSelectionMode();
     }
     this._markEnds();
   }
@@ -73,9 +109,9 @@ export default class CraftButtonGroup extends LitElement {
   override updated(changed: PropertyValues) {
     if (changed.has('name') || changed.has('multiple')) {
       if (this.name) {
-        this._setupRadioMode();
+        this._setupSelectionMode();
       } else {
-        this._teardownRadioMode();
+        this._teardownSelectionMode();
       }
     }
     if ((changed.has('value') || changed.has('multiple')) && this.name) {
@@ -87,6 +123,7 @@ export default class CraftButtonGroup extends LitElement {
     super.disconnectedCallback();
     this.removeEventListener('click', this._handleClick);
     this._childObserver.disconnect();
+    this._selectionObserver.disconnect();
   }
 
   /**
@@ -94,6 +131,11 @@ export default class CraftButtonGroup extends LitElement {
    * outer corners. `:first-child` and `:last-child` can't be used: a group
    * can open with hidden inputs, or with an empty placeholder a framework
    * renders and later fills.
+   *
+   * Also marks the dividers between neighbors: between every pair, except
+   * on either side of a selected child, whose own look sets it apart. Both
+   * neighbors draw it, at the edge they share, so it still shows when either
+   * one is raised above the other, as a hovered or focused one is.
    */
   private _markEnds() {
     const visible = Array.from(this.children).filter((child) =>
@@ -103,9 +145,32 @@ export default class CraftButtonGroup extends LitElement {
     const last = visible[visible.length - 1];
 
     for (const child of Array.from(this.children)) {
+      const index = visible.indexOf(child);
+      const previous = index > 0 ? visible[index - 1] : undefined;
+      const next = index >= 0 ? visible[index + 1] : undefined;
+
       child.toggleAttribute(START_ATTRIBUTE, child === first);
       child.toggleAttribute(END_ATTRIBUTE, child === last);
+      child.toggleAttribute(
+        DIVIDER_ATTRIBUTE,
+        previous !== undefined &&
+          !this._isSelected(child) &&
+          !this._isSelected(previous)
+      );
+      child.toggleAttribute(
+        DIVIDER_END_ATTRIBUTE,
+        next !== undefined &&
+          !this._isSelected(child) &&
+          !this._isSelected(next)
+      );
     }
+  }
+
+  private _isSelected(element: Element): boolean {
+    return (
+      element.hasAttribute('active') ||
+      element.getAttribute('aria-pressed') === 'true'
+    );
   }
 
   private _isVisible(element: Element): boolean {
@@ -135,15 +200,24 @@ export default class CraftButtonGroup extends LitElement {
     return true;
   }
 
-  private _setupRadioMode() {
-    this.setAttribute('role', this.multiple ? 'group' : 'radiogroup');
+  /** Whether the group set its own `role`, so it can tell it from a consumer's. */
+  private _ownsRole = false;
+
+  private _setupSelectionMode() {
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'group');
+      this._ownsRole = true;
+    }
     this.removeEventListener('click', this._handleClick);
     this.addEventListener('click', this._handleClick);
     this._syncChildren();
   }
 
-  private _teardownRadioMode() {
-    this.removeAttribute('role');
+  private _teardownSelectionMode() {
+    if (this._ownsRole) {
+      this.removeAttribute('role');
+      this._ownsRole = false;
+    }
     this.removeEventListener('click', this._handleClick);
   }
 

@@ -10,14 +10,15 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Utils;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
 use Illuminate\Contracts\Database\Query\Expression;
@@ -315,12 +316,13 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * If no partial template exists for an element, its string representation will be output instead.
      *
-     * @see ElementHelper::renderElements()
+     * @see Template::render()
      */
     /** @param array<string, mixed> $variables */
+    #[AllowedInSandbox]
     public function render(array $variables = []): HtmlString
     {
-        return ElementHelper::renderElements($this->all(), $variables);
+        return Template::render($this->all(), $variables);
     }
 
     /**

@@ -23,6 +23,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Tests\Support\DatabaseLock;
+use CraftCms\Cms\Tests\Support\GuardsUtcDateBindings;
 use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\User\Models\User;
@@ -117,6 +118,8 @@ class TestCase extends Orchestra
         // before RefreshDatabase has prepared the database, potentially reading stale data
         Cms::config()->timezone('America/Los_Angeles');
         Cms::setDefaultTimezone();
+
+        GuardsUtcDateBindings::register();
 
         // Tests run in Cp by default
         TemplateMode::set(TemplateMode::Cp);
@@ -286,6 +289,7 @@ class TestCase extends Orchestra
             $driver = $config->get("database.connections.{$connection}.driver");
 
             $config->set('database.default', $connection);
+            $config->set('queue.failed.database', $connection);
             $config->set("database.connections.{$connection}.database", env('DB_DATABASE', database_path('craft_tests.sqlite')));
             $config->set("database.connections.{$connection}.host", env('DB_HOST', '127.0.0.1'));
             $config->set("database.connections.{$connection}.username", env('DB_USERNAME', 'root'));

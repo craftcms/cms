@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -171,7 +172,7 @@ class ElementSources
             ->sources($elementType, $context)
             ->unless(
                 $withDisabled,
-                fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false)),
+                fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false))->values(),
             );
 
         if (
@@ -477,6 +478,21 @@ class ElementSources
     }
 
     /**
+     * Returns the URL segment for a given page name, as in `content/{slug}`.
+     *
+     * Pages are looked up by {@see pageNameId()}, so the slug keeps every letter, number and mark of the name, in
+     * any script, and has the same ID as the name. Whitespace, dashes and underscores become single dashes, and
+     * other characters are dropped.
+     */
+    public static function pageSlug(string $page): string
+    {
+        $slug = (string) preg_replace('/[\s_-]+/u', '-', mb_strtolower($page));
+        $slug = (string) preg_replace('/[^\p{L}\p{N}\p{M}-]+/u', '', $slug);
+
+        return trim((string) preg_replace('/-+/', '-', $slug), '-');
+    }
+
+    /**
      * Returns whether the given custom source should be available for the current user.
      */
     /** @param SourceConfig $source */
@@ -505,6 +521,45 @@ class ElementSources
             $user->getGroups(),
             fn ($group) => in_array($group->uid, $source['userGroups'], true),
         );
+    }
+
+    /**
+     * Returns whether a source should show a count of its elements in the nav.
+     *
+     * `defaultBadgeCount` is ignored for the element types the main nav counts,
+     * which only check project config before deferring their counts.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  SourceConfig  $source
+     */
+    public function showsBadgeCount(string $elementType, array $source): bool
+    {
+        if (! $elementType::sourceSupportsBadgeCount($source)) {
+            return false;
+        }
+
+        $default = Navigation::countsSources($elementType) ? false : ($source['defaultBadgeCount'] ?? false);
+
+        return (bool) ($source['showBadgeCount'] ?? $default);
+    }
+
+    /**
+     * Returns whether an admin has turned on a count for any of the given element types’ sources.
+     *
+     * Reads project config alone, so it's cheap enough to ask on every request.
+     *
+     * @param  array<class-string<ElementInterface>>  $elementTypes
+     */
+    public function hasBadgeCountsEnabled(array $elementTypes): bool
+    {
+        return array_any($elementTypes, function (string $elementType): bool {
+            $configs = $this->sourceConfigs($elementType);
+
+            return is_array($configs) && array_any(
+                $configs,
+                fn (mixed $config): bool => is_array($config) && filter_var($config['showBadgeCount'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            );
+        });
     }
 
     /**
@@ -553,12 +608,14 @@ class ElementSources
                             : null,
                         'sites' => $s['sites'] ?? null,
                         'userGroups' => $s['userGroups'] ?? null,
+                        'showBadgeCount' => isset($s['showBadgeCount']) ? filter_var($s['showBadgeCount'], FILTER_VALIDATE_BOOLEAN) : null,
                     ],
                     self::TYPE_HEADING => [
                         'heading' => $s['heading'] ?? '',
                     ],
                     default => [
                         'disabled' => $s['disabled'] ?? null,
+                        'showBadgeCount' => isset($s['showBadgeCount']) ? filter_var($s['showBadgeCount'], FILTER_VALIDATE_BOOLEAN) : null,
                     ],
                 },
             ], fn ($val) => $val !== null))

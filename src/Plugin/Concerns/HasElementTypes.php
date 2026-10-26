@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementTypes;
+use CraftCms\Cms\Element\Eloquent\EloquentElement;
+use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Plugin\Plugin;
 
 /**
@@ -24,6 +26,10 @@ trait HasElementTypes
 
     public function bootHasElementTypes(): void
     {
-        $this->app->make(ElementTypes::class)->register(...$this->elementTypes);
+        [$eloquentElementTypes, $elementTypes] = collect($this->elementTypes)
+            ->partition(fn (string $elementType) => is_subclass_of($elementType, EloquentElement::class));
+
+        $this->app->make(ElementTypes::class)->register(...$elementTypes);
+        $this->app->make(EloquentElements::class)->register(...$eloquentElementTypes);
     }
 }

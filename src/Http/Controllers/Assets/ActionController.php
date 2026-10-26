@@ -101,6 +101,8 @@ readonly class ActionController
                 ->select(['elements.id'])
                 ->folderId($folder->id)
                 ->filename(Query::escapeParam($asset->getFilename()))
+                ->site('*')
+                ->unique()
                 ->one();
 
             if ($conflictingAsset) {
@@ -137,7 +139,7 @@ readonly class ActionController
 
         $assetIds = $request->input('assetId');
         /** @var Asset[] $assets */
-        $assets = Asset::find()
+        $assets = $this->assets->findAcrossSites()
             ->id($assetIds)
             ->all();
 
@@ -187,7 +189,7 @@ readonly class ActionController
             'assetId' => ['required', 'integer'],
         ]);
 
-        $asset = Asset::findOne($assetId = $request->integer('assetId'));
+        $asset = $this->assets->getAssetById($assetId = $request->integer('assetId'));
 
         abort_if($asset === null, 400, "Invalid asset ID: $assetId");
 

@@ -41,6 +41,7 @@ class Tag extends Element
         $fieldName = $resolveInfo->fieldName;
 
         return match ($fieldName) {
+            'group' => $source->getGroup(),
             'groupHandle' => $source->getGroup()->handle,
             default => parent::resolve($source, $arguments, $context, $resolveInfo),
         };

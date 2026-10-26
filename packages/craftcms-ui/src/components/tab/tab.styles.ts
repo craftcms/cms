@@ -64,6 +64,16 @@ export default css`
     min-width: 0;
   }
 
+  ::slotted([slot='prefix']) {
+    align-self: center;
+    margin-inline-end: var(--c-spacing-sm);
+  }
+
+  ::slotted([slot='suffix']) {
+    align-self: center;
+    margin-inline-start: var(--c-spacing-sm);
+  }
+
   .tab__text {
     display: block;
     ${trimmedTextBoxStyles}

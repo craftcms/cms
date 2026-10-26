@@ -44,7 +44,7 @@
   const showDisplayedRows = computed(
     () => props.total != null && props.from != null && props.to != null
   );
-  const pageSizeLabel = t('Items per page');
+  const pageSizeLabel = t('Items per Page');
 </script>
 
 <template>

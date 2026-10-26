@@ -30,7 +30,7 @@ it('emits name and value as host attributes when named, without a hidden input',
         ->buttons([Button::make()->label('Left')->value('left')])
         ->toHtml();
 
-    expect($html)->toContainTag('craft-button-group', ['id' => 'alignment', 'name' => 'alignment', 'value' => 'left'])
+    expect($html)->toContainTag('craft-button-group', ['id' => 'alignment', 'name' => 'alignment', 'value' => 'left', 'role' => 'group'])
         ->and($html)->not->toContain('type="hidden"');
 });
 

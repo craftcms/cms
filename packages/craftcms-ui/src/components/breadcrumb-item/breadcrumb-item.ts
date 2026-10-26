@@ -36,7 +36,7 @@ export default class CraftBreadcrumbItem extends LitElement {
     :host {
       white-space: nowrap;
       display: inline-flex;
-      gap: var(--c-spacing-md);
+      gap: var(--c-spacing-sm);
       align-items: center;
       color: inherit;
     }
@@ -56,10 +56,6 @@ export default class CraftBreadcrumbItem extends LitElement {
 
     a.label:hover {
       text-decoration: underline;
-    }
-
-    slot[name='prefix']::slotted(*) {
-      margin-inline-end: var(--c-spacing-sm);
     }
 
     slot[name='suffix']::slotted(*) {

@@ -90,7 +90,7 @@ class InputTypeTest extends TestCase
                 [
                     'entries' =>
                         [
-                            ['blockType' => ['id' => 2, 'one', 'two']],
+                            ['blockType' => ['id' => 2, 'title' => 'Kept', 'one', 'two']],
                             ['blockTypeA' => ['snap' => 1, 'crackle' => 2, 'pop' => 3], 'blockTypeB' => ['id' => 88, 'stuff' => 'ok']],
                         ],
                     'sortOrder' => [2, 'new:1'],
@@ -100,11 +100,11 @@ class InputTypeTest extends TestCase
                         [
                             2 => [
                                 'type' => 'blockType',
+                                'title' => 'Kept',
                                 'fields' => [
                                     'one',
                                     'two',
                                 ],
-                                'title' => null,
                             ],
                             'new:1' => [
                                 'type' => 'blockTypeA',
@@ -113,7 +113,6 @@ class InputTypeTest extends TestCase
                                     'crackle' => 2,
                                     'pop' => 3,
                                 ],
-                                'title' => null,
                             ],
                         ],
                     'sortOrder' => [2, 'new:1'],
@@ -136,14 +135,12 @@ class InputTypeTest extends TestCase
                                     'one',
                                     'two',
                                 ],
-                                'title' => null,
                             ],
                             88 => [
                                 'type' => 'blockTypeB',
                                 'fields' => [
                                     'stuff' => 'ok',
                                 ],
-                                'title' => null,
                             ],
                         ],
                 ],
@@ -165,22 +162,18 @@ class InputTypeTest extends TestCase
                             'new:1' => [
                                 'type' => 'blockType',
                                 'fields' => ['one'],
-                                'title' => null,
                             ],
                             'new:2' => [
                                 'type' => 'blockType',
                                 'fields' => ['two'],
-                                'title' => null,
                             ],
                             'new:3' => [
                                 'type' => 'blockType',
                                 'fields' => ['three'],
-                                'title' => null,
                             ],
                             'new:4' => [
                                 'type' => 'blockType',
                                 'fields' => ['four'],
-                                'title' => null,
                             ],
                         ],
                     'sortOrder' => ['new:1', 'new:2', 'new:3', 'new:4'],

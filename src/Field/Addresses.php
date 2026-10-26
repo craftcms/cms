@@ -276,14 +276,20 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
     public function canSaveElement(NestedElementInterface $element, User $user): bool
     {
-        if (! $user->can('save', $owner = $element->getOwner())) {
+        if (! $owner = $element->getOwner()) {
             return false;
         }
 
-        // addresses don't support drafts, so make sure they can edit the canonical owner too
-        $canonicalOwner = $owner->getCanonical(true);
-        if ($canonicalOwner !== $owner && ! $user->can('save', $canonicalOwner)) {
-            return false;
+        // The user may not be able to save this owner, but can save another one, such as a draft of it
+        if (! $user->can('save', $owner)) {
+            if ($owner->getIsRevision()) {
+                return false;
+            }
+            $authorized = array_any($element->getOwners(['revisions' => false]), fn ($otherOwner) => $otherOwner->id !== $owner->id && $user->can('save', $otherOwner));
+
+            if (! $authorized) {
+                return false;
+            }
         }
 
         // If this is a new address, make sure we aren't hitting the Max Addresses limit
@@ -771,9 +777,6 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         return $config + [
             'allowedViewModes' => [ElementIndexViewMode::Cards],
             'pageSize' => $this->pageSize ?? 50,
-            // addresses don't have drafts, but in this particular context we need to allow drafts,
-            // so that addresses show while adding them via slideout in the element index view mode
-            'canHaveDrafts' => true,
         ];
     }
 

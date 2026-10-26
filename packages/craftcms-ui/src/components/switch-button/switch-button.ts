@@ -44,6 +44,14 @@ export default class CraftSwitchButton extends LionSwitchButton {
           height: var(--c-switch-height);
           width: calc(var(--c-switch-height) * 1.75);
           margin: -1px;
+          /* Round the focus ring to match the track */
+          border-radius: var(--c-radius-full);
+          cursor: pointer;
+        }
+
+        :host([disabled]) {
+          cursor: not-allowed;
+          opacity: 0.5;
         }
 
         :host([size='small']) {
@@ -53,6 +61,11 @@ export default class CraftSwitchButton extends LionSwitchButton {
 
         .btn {
           width: 100%;
+        }
+
+        /* The host's own focus ring covers this, so drop Lion's thumb outline */
+        :host(:focus:not([disabled])) .switch-button__thumb {
+          outline: none;
         }
 
         .switch-button__track {

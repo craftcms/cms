@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Http\Responses;
 
 use CraftCms\Cms\Auth\AuthenticationViews;
+use CraftCms\Cms\Mcp\Enums\McpScope;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Laravel\Passport\Client;
@@ -32,21 +33,32 @@ readonly class AuthorizationView
     {
         $request = $parameters['request'];
         $clientName = (string) $parameters['client']->getAttribute('name');
-        $scopes = array_map(
-            static fn (Scope $scope): array => [
+        $isMcp = $request->routeIs('craft.cp.mcp.oauth.*');
+        $user = $request->craftUser();
+        $accessChoices = $isMcp && $user
+            ? McpScope::choices(array_map(static fn (Scope $scope): string => $scope->id, $parameters['scopes']), $user)
+            : [];
+
+        $scopes = collect($parameters['scopes'])
+            ->reject(static fn (Scope $scope): bool => $accessChoices !== [] && McpScope::tryFrom($scope->id) !== null)
+            ->map(static fn (Scope $scope): array => [
                 'id' => $scope->id,
                 'description' => $scope->description,
-            ],
-            $parameters['scopes'],
-        );
+            ])
+            ->values()
+            ->all();
+        $accessOptions = array_map(static fn (McpScope $scope): array => [
+            'value' => $scope->value,
+            'label' => $scope->label(),
+            'description' => $scope->description(),
+        ], $accessChoices);
+
         $authToken = $parameters['authToken'];
         $csrfToken = csrf_token();
-        $routePrefix = $request->routeIs('craft.cp.mcp.oauth.*')
-            ? 'craft.cp.mcp.oauth.'
-            : 'passport.authorizations.';
+        $routePrefix = $isMcp ? 'craft.cp.mcp.oauth.' : 'passport.authorizations.';
         $approveAction = route($routePrefix.'approve');
         $denyAction = route($routePrefix.'deny');
-        $viewData = compact('clientName', 'scopes', 'authToken', 'csrfToken', 'approveAction', 'denyAction');
+        $viewData = compact('clientName', 'scopes', 'accessOptions', 'authToken', 'csrfToken', 'approveAction', 'denyAction');
 
         $response = $this->views->render(
             request: $request,

@@ -33,6 +33,7 @@ use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Contracts\CraftUser;
@@ -891,10 +892,10 @@ class Users
             ->upsert([
                 'userId' => $userId,
                 'message' => $message,
-                'dateCreated' => now(),
-                'dateUpdated' => now(),
+                'dateCreated' => Query::prepareDateForDb(now()),
+                'dateUpdated' => Query::prepareDateForDb(now()),
             ], ['userId', 'message'], [
-                'expiryDate' => $expiryDate,
+                'expiryDate' => Query::prepareDateForDb($expiryDate),
             ]);
     }
 
@@ -926,7 +927,7 @@ class Users
             ->where('message', $message)
             ->where(function (Builder $query) {
                 $query->whereNull('expiryDate')
-                    ->orWhere('expiryDate', '>', now());
+                    ->orWhere('expiryDate', '>', Query::prepareDateForDb(now()));
             })
             ->exists();
     }
@@ -979,7 +980,8 @@ class Users
             ->whereNotExists(function (Builder $query) {
                 $query->from(Table::PASSWORD_RESET_TOKENS, 'password_reset_tokens')
                     ->whereColumn('password_reset_tokens.email', 'users.email')
-                    ->where('password_reset_tokens.created_at', '>=', now()->subSeconds(Cms::config()->purgePendingUsersDuration));
+                    // Laravel's password broker writes this table, in the system time zone
+                    ->where('password_reset_tokens.created_at', '>=', now()->subSeconds(Cms::config()->purgePendingUsersDuration)->toDateTimeString());
             })
             ->cursor()
             ->each(function (User $user) {

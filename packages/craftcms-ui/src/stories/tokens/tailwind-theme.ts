@@ -41,7 +41,7 @@ export function themeEntries(css: string = source): ThemeEntry[] {
 
   const entries: ThemeEntry[] = [];
 
-  for (const [, property, rawValue] of body.matchAll(
+  for (const [, property = '', rawValue = ''] of body.matchAll(
     /--([a-z0-9-]+):\s*([^;]+);/g
   )) {
     const namespace = themeNamespaces.find((candidate) =>

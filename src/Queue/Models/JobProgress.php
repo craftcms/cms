@@ -9,6 +9,7 @@ use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Prunable;
 use Override;
@@ -75,6 +76,6 @@ class JobProgress extends BaseModel
         return static::query()
             // Cancelled jobs may still be delayed or reserved on an external queue.
             ->where('status', '!=', JobStatus::Cancelled->value)
-            ->where('dateCreated', '<', now()->subDays(7));
+            ->where('dateCreated', '<', Query::prepareDateForDb(now()->subDays(7)));
     }
 }

@@ -126,7 +126,7 @@ describe('generated fields UI table', () => {
     card.className = 'card-view-designer';
     table.parentElement!.append(card);
     const cvd = {
-      findCheckboxByValue: vi.fn((): HTMLElement | null => null),
+      hasCheckbox: vi.fn(() => false),
       addCheckbox: vi.fn(),
       updateCheckboxLabel: vi.fn(),
       removeCheckbox: vi.fn(),
@@ -154,11 +154,11 @@ describe('generated fields UI table', () => {
     expect(cvd.addCheckbox).toHaveBeenCalledWith(
       expect.objectContaining({
         value: `generatedField:${uid}`,
-        labelHtml: 'New field',
+        label: 'New field',
       })
     );
 
-    cvd.findCheckboxByValue.mockReturnValue(card);
+    cvd.hasCheckbox.mockReturnValue(true);
     await name(1, 'Renamed field');
     expect(cvd.updateCheckboxLabel).toHaveBeenCalledWith(
       `generatedField:${uid}`,

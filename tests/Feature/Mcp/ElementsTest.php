@@ -18,7 +18,7 @@ use Laravel\Passport\Passport;
 beforeEach(function (): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
 
     $this->call = fn (string $tool, array $arguments): TestResponse => McpRequest::send($this, 'tools/call', [
         'name' => $tool,

@@ -9,6 +9,14 @@ import * as TooltipStories from './tooltip.stories';
 
 <Canvas of={TooltipStories.Playground} sourceState="shown" />
 
+## Accessibility
+
+The content carries `role="tooltip"`, and the invoker references it with `aria-describedby`, or `aria-labelledby` when `invoker-relation="label"`. It shows on hover and on keyboard focus, and Escape dismisses it while the invoker has focus.
+
+Because a tooltip describes its invoker by default, the invoker needs an accessible name of its own. An icon-only button still needs an `aria-label`, as `craft-field`'s translation indicator has.
+
+Point `for` at an element that can take keyboard focus, such as a real `button`. Keyboard users never see a tooltip on anything else.
+
 ## Properties
 
 <ArgTypes of={TooltipStories} />

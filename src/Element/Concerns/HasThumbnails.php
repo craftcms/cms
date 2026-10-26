@@ -64,6 +64,7 @@ trait HasThumbnails
             'alt' => $this->thumbAlt(),
             'animated' => $this->couldHaveAnimatedThumb() ?: null,
             'placeholder' => $this->thumbPlaceholderUrl(),
+            ...$this->thumbDimensionAttributes($size, $mode),
         ]);
     }
 
@@ -143,5 +144,34 @@ trait HasThumbnails
     protected function thumbPlaceholderUrl(): ?string
     {
         return null;
+    }
+
+    /**
+     * Returns the width and height the element's thumbnail image is displayed at, if they're known.
+     *
+     * They let the thumbnail reserve the image's box before it loads, so its placeholder covers exactly that area.
+     *
+     * @param  int  $size  The maximum width and height the thumbnail should have.
+     * @return array{int, int}|null
+     */
+    protected function thumbDimensions(int $size, ImageTransformMode $mode): ?array
+    {
+        return null;
+    }
+
+    /**
+     * @return array{width?: int, height?: int}
+     */
+    private function thumbDimensionAttributes(int $size, ImageTransformMode $mode): array
+    {
+        $dimensions = $this->thumbDimensions($size, $mode);
+
+        if ($dimensions === null) {
+            return [];
+        }
+
+        [$width, $height] = $dimensions;
+
+        return ['width' => $width, 'height' => $height];
     }
 }

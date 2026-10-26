@@ -7,7 +7,10 @@ export interface TableColumn {
   label: string;
   sortable?: boolean;
   width?: string;
+  /** As narrow as its content, which doesn't wrap. Needs the table's auto layout. */
+  thin?: boolean;
   headerSrOnly?: boolean;
+  wrap?: boolean;
 }
 
 export interface TableLink {
@@ -15,6 +18,8 @@ export interface TableLink {
   url?: string | null;
   /** Opens the URL's screen in a slideout, reloading the table once it's saved. */
   slideout?: boolean;
+  /** The slideout's width, as a CSS length. */
+  slideoutWidth?: string | null;
 }
 
 /** A menu item that opens a server-built form in a modal instead of following a link. */
@@ -83,6 +88,7 @@ export type TableRow = Record<string, TableCellValue> & {
   _deleteDisabledReason?: string | null;
   _deleteUrl?: string;
   _deleteConfirmMessage?: string;
+  _deleteLabel?: string;
   _status?: TableStatus | null;
   _search?: string;
   _sort?: Record<string, string | number | boolean | null>;
@@ -99,6 +105,8 @@ export interface TableProps {
   emptyMessage: string | null;
   createLabel: string | null;
   createUrl: string | null;
+  createSlideout?: boolean;
+  createSlideoutWidth?: string | null;
   createMenuItems: Array<{label: string; url: string}> | null;
   createActionInPageHeader: boolean;
   reorderUrl: string | null;

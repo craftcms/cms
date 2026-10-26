@@ -48,6 +48,14 @@ describe('attributes', function () {
             ->toContain(' label-sr-only');
     });
 
+    it('only renders instructions-sr-only when set', function () {
+        expect(Field::make()->instructions('Type { to insert a value.')->toHtml())
+            ->not->toContain('instructions-sr-only');
+
+        expect(Field::make()->instructions('Type { to insert a value.')->instructionsSrOnly()->toHtml())
+            ->toContain(' instructions-sr-only');
+    });
+
     it('only renders width when set', function () {
         expect(Field::make()->toHtml())
             ->not->toContain('width');

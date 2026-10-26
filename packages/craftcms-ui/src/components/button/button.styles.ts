@@ -135,6 +135,11 @@ export default css`
     }
   }
 
+  :host([disabled][focusable-when-disabled]) {
+    pointer-events: auto;
+    cursor: default;
+  }
+
   :host(:focus:not([disabled])),
   :host(:focus-visible) {
     outline: var(--c-focus-outline-width) solid var(--_focus-outline-color);
@@ -145,11 +150,17 @@ export default css`
     --_focus-outline-color: var(--c-color-focus-outline);
   }
 
+  :host([variant~='plain']),
+  :host([variant~='danger-plain']) {
+    --c-focus-outline-offset: calc(var(--c-focus-outline-width) * -1);
+  }
+
   :host(:not(:disabled):not(.loading):active),
   :host(.is-active:not(:disabled):not(.loading)) {
     color: var(--_active-color);
     background-color: var(--_active-background-color);
-    box-shadow: inset 0 1px 3px var(--c-color-mix-active);
+    box-shadow: inset 0 1px 3px
+      color-mix(in oklab, var(--c-color-mix-active), transparent);
   }
 
   /* Selected state (e.g. inside a radio button-group): show the loud fill. */
@@ -193,26 +204,38 @@ export default css`
   Flush
    */
   :host([variant~='plain'][flush='']),
+  :host([variant~='danger-plain'][flush='']),
   :host([variant~='plain'][flush~='inline']),
-  :host([variant~='plain'][flush~='inline-start']) {
+  :host([variant~='danger-plain'][flush~='inline']),
+  :host([variant~='plain'][flush~='inline-start']),
+  :host([variant~='danger-plain'][flush~='inline-start']) {
     margin-inline-start: calc(var(--_flush-inline) * -1);
   }
 
   :host([variant~='plain'][flush='']),
+  :host([variant~='danger-plain'][flush='']),
   :host([variant~='plain'][flush~='inline']),
-  :host([variant~='plain'][flush~='inline-end']) {
+  :host([variant~='danger-plain'][flush~='inline']),
+  :host([variant~='plain'][flush~='inline-end']),
+  :host([variant~='danger-plain'][flush~='inline-end']) {
     margin-inline-end: calc(var(--_flush-inline) * -1);
   }
 
   :host([variant~='plain'][flush='']),
+  :host([variant~='danger-plain'][flush='']),
   :host([variant~='plain'][flush~='block']),
-  :host([variant~='plain'][flush~='block-start']) {
+  :host([variant~='danger-plain'][flush~='block']),
+  :host([variant~='plain'][flush~='block-start']),
+  :host([variant~='danger-plain'][flush~='block-start']) {
     margin-block-start: calc(var(--_flush-block) * -1);
   }
 
   :host([variant~='plain'][flush='']),
+  :host([variant~='danger-plain'][flush='']),
   :host([variant~='plain'][flush~='block']),
-  :host([variant~='plain'][flush~='block-end']) {
+  :host([variant~='danger-plain'][flush~='block']),
+  :host([variant~='plain'][flush~='block-end']),
+  :host([variant~='danger-plain'][flush~='block-end']) {
     margin-block-end: calc(var(--_flush-block) * -1);
   }
 
@@ -220,10 +243,10 @@ export default css`
   :host([action-state='loading']) {
     position: relative;
 
-    .prefix,
-    .label,
-    .suffix {
-      visibility: hidden;
+    /* Hidden with opacity, not visibility, so the label stays in the button's
+       accessible name. The live region adds "Loading" to it. */
+    .button-content {
+      opacity: 0;
     }
 
     craft-spinner {
@@ -249,10 +272,6 @@ export default css`
     justify-content: center;
     align-items: center;
     line-height: 1;
-  }
-
-  :host([icon][size~='small']) {
-    font-size: 0.8em;
   }
 
   /*
@@ -357,6 +376,27 @@ export default css`
   :host([variant~='outline']),
   :host([variant~='dashed']) {
     border-color: var(--c-color-border-loud);
+  }
+
+  :host(
+    [variant~='outline']:not([variant~='primary']):not([variant~='danger']):not(
+      [inherit]
+    ):not([active]):not(.is-active)
+  ),
+  :host(
+    [variant~='dashed']:not([variant~='primary']):not([variant~='danger']):not(
+      [inherit]
+    ):not([active]):not(.is-active)
+  ) {
+    border-color: var(--c-form-control-border-color);
+    border-inline-start-color: var(
+      --c-button-group-border-start-color,
+      var(--c-form-control-border-color)
+    );
+    border-inline-end-color: var(
+      --c-button-group-border-end-color,
+      var(--c-form-control-border-color)
+    );
   }
 
   :host([variant~='dashed']) {
@@ -472,6 +512,15 @@ export default css`
     color: inherit;
   }
 
+  /* A selected button keeps its selected look while hovered. After the
+     variants' hover rules, which would otherwise paint over it. */
+  :host([variant][active]:not(:disabled):not(.loading):hover),
+  :host([variant].is-active:not(:disabled):not(.loading):hover) {
+    background-color: var(--c-color-fill-loud);
+    color: var(--c-color-on-loud);
+    border-color: var(--c-color-border-loud);
+  }
+
   /* After the variants, whose colors would otherwise paint over Lion's own
      disabled rule and leave a disabled button looking enabled. */
   :host([disabled]) {
@@ -579,8 +628,10 @@ export default css`
     padding-inline: var(--c-spacing-lg);
   }
 
+  /* Only an icon-only link sits flush in its square; one with a label keeps
+     its padding. */
   :host([href][size~='zero']:not([disabled])) .link,
-  :host([href][icon]:not([disabled])) .link {
+  :host([href][icon]:empty:not([disabled])) .link {
     padding-inline: 0;
   }
 
@@ -592,5 +643,34 @@ export default css`
   :host([flush]) .label--text {
     text-box: normal;
     padding-block: 0;
+  }
+
+  :host(
+    :is(
+      [variant~='fill'],
+      [variant~='solid'],
+      [variant~='primary'],
+      [variant~='danger'],
+      [variant~='plain'],
+      [variant~='danger-plain']
+    )
+  ) {
+    --_divider-left: var(--c-button-divider-start-color, transparent);
+    --_divider-right: var(--c-button-divider-end-color, transparent);
+    background-image:
+      linear-gradient(to right, var(--_divider-left) 1px, transparent 1px),
+      linear-gradient(to left, var(--_divider-right) 1px, transparent 1px);
+    background-origin: border-box;
+  }
+
+  :host(:dir(rtl)) {
+    --_divider-left: var(--c-button-divider-end-color, transparent);
+    --_divider-right: var(--c-button-divider-start-color, transparent);
+  }
+
+  /* Ellipsis (action menu) icons read small at craft-icon's 0.8em */
+  craft-icon[name='ellipsis'],
+  ::slotted(craft-icon[name='ellipsis']) {
+    font-size: 1em;
   }
 `;

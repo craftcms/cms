@@ -87,7 +87,8 @@ class TwigRenderer implements TwigRendererInterface
         }
 
         try {
-            return $twig->createTemplate($template)->render($variables);
+            // Escaping is compiled into the template, so each mode needs its own name.
+            return $twig->createTemplate($template, $escapeHtml ? 'escaped' : 'unescaped')->render($variables);
         } finally {
             if (! $escapeHtml) {
                 $twig->setDefaultEscaperStrategy();
@@ -145,7 +146,8 @@ class TwigRenderer implements TwigRendererInterface
         try {
             $cacheKey = md5($templateMode->value.':'.$template);
             $normalizedTemplate = $this->normalizedObjectTemplates[$cacheKey] ??= $this->normalizeObjectTemplate($template);
-            $templateObj = $twig->createTemplate($normalizedTemplate);
+            // Escaping is compiled into the template, so each strategy needs its own name.
+            $templateObj = $twig->createTemplate($normalizedTemplate, 'escaper '.($escaperStrategy ?: 'none'));
 
             // Get the variables to pass to the template
             if ($object instanceof ArrayableInterface) {

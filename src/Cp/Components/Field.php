@@ -46,6 +46,8 @@ class Field extends ViewComponent
 
     protected string $instructionsPosition = 'before';
 
+    protected bool $instructionsSrOnly = false;
+
     protected bool $required = false;
 
     protected bool $translatable = false;
@@ -124,6 +126,17 @@ class Field extends ViewComponent
     public function instructionsPosition(string $position): static
     {
         $this->instructionsPosition = $position;
+
+        return $this;
+    }
+
+    /**
+     * Visually hides the instructions, keeping them in the input’s accessible description, such as when the input’s
+     * placeholder repeats them.
+     */
+    public function instructionsSrOnly(bool $instructionsSrOnly = true): static
+    {
+        $this->instructionsSrOnly = $instructionsSrOnly;
 
         return $this;
     }
@@ -280,6 +293,7 @@ class Field extends ViewComponent
             'disabled' => $this->isDisabled(),
             'has-errors' => $this->normalizedErrors() !== [],
             'instructions-position' => $this->instructionsPosition === 'after' ? 'after' : null,
+            'instructions-sr-only' => $this->instructionsSrOnly,
         ];
     }
 

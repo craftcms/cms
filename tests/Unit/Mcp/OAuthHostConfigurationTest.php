@@ -32,7 +32,9 @@ it('preserves host Passport configuration during provider registration and boot'
     expect(config('passport.guard'))->toBe('host-guard')
         ->and(Passport::defaultScopes())->toBe(['host:read'])
         ->and(Passport::$scopes['host:read'] ?? null)->toBe('Read host data')
-        ->and(Passport::hasScope('mcp:use'))->toBeTrue();
+        ->and(Passport::hasScope('mcp:read'))->toBeTrue()
+        ->and(Passport::hasScope('mcp:write'))->toBeTrue()
+        ->and(Passport::hasScope('mcp:admin'))->toBeTrue();
 
     $response = app(AuthorizationViewResponse::class)->withParameters([])->toResponse(request());
 

@@ -36,7 +36,6 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\UiContext;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -130,7 +129,6 @@ class EditElementController
         $canSave = $this->canSave($element, $this->request->craftUser());
         $canSaveCanonical = Gate::check('saveCanonical', $element);
         $canCreateDrafts = Gate::check('createDrafts', $canonical);
-        $canDuplicate = ! $isRevision && Gate::check('duplicateAsDraft', $element);
 
         // Preview targets
         $previewTargets = $element->id ? $element->getPreviewTargets() : [];
@@ -170,23 +168,7 @@ class EditElementController
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
 
-        $redirectUrl = $this->request->query('returnUrl');
-        if ($redirectUrl) {
-            // only require the URL to be hashed if it contains Twig code
-            try {
-                $redirectUrl = Crypt::decrypt($redirectUrl);
-            } catch (DecryptException) {
-                if (str_contains($redirectUrl, '{')) {
-                    abort(400, "Invalid returnUrl param: $redirectUrl");
-                }
-            }
-
-            // swap the QS placeholder with a `?`
-            // (see https://github.com/craftcms/cms/issues/18923)
-            $redirectUrl = str_replace(':QS:', '?', $redirectUrl);
-        } else {
-            $redirectUrl = ElementHelper::postEditUrl($element);
-        }
+        $redirectUrl = $this->postEditRedirectUrl($element);
 
         // Site statuses
         if ($canEditMultipleSites) {
@@ -222,20 +204,6 @@ class EditElementController
                 ($this->isSlideout() ? '' : Html::tag('div', attributes: ['class' => 'flex-grow'])).
                 Html::tag('div', attributes: ['class' => 'activity-container']),
             )
-            ->additionalButtonsHtml(fn () => $this->additionalButtons(
-                element: $element,
-                canonical: $canonical,
-                isRevision: $isRevision,
-                canSave: $canSave,
-                canSaveCanonical: $canSaveCanonical,
-                canCreateDrafts: $canCreateDrafts,
-                canDuplicate: $canDuplicate,
-                previewTargets: $previewTargets,
-                enablePreview: $enablePreview,
-                isCurrent: $isCurrent,
-                isUnpublishedDraft: $isUnpublishedDraft,
-                isDraft: $isDraft
-            ))
             ->actionMenuItems(fn () => $this->actionMenuItems($element, $previewTargets))
             ->noticeHtml($notice)
             ->errorSummary(fn () => new ElementResponse()->errorSummary($element))
@@ -256,6 +224,7 @@ class EditElementController
                         'canSaveCanonical' => $canSaveCanonical,
                         'elementId' => $element->id,
                         'canonicalId' => $canonical->id,
+                        'cpEditUrl' => $element->getCpEditUrl(),
                         'draftId' => $element->draftId,
                         'draftName' => $isDraft ? $element->draftName : null,
                         'elementType' => $element::class,
@@ -534,113 +503,6 @@ class EditElementController
     private function isSlideout(): bool
     {
         return $this->request->hasHeader('X-Craft-Container-Id');
-    }
-
-    /** @param list<array<string, mixed>>|null $previewTargets */
-    private function additionalButtons(
-        ElementInterface $element,
-        ElementInterface $canonical,
-        bool $isRevision,
-        bool $canSave,
-        bool $canSaveCanonical,
-        bool $canCreateDrafts,
-        bool $canDuplicate,
-        ?array $previewTargets,
-        bool $enablePreview,
-        bool $isCurrent,
-        bool $isUnpublishedDraft,
-        bool $isDraft,
-    ): string {
-        $components = [];
-
-        // Preview (View will be added later by JS)
-        if ($previewTargets) {
-            $components[] =
-                Html::beginTag('div', [
-                    'class' => ['preview-btn-container', 'btngroup'],
-                ]).
-                ($enablePreview
-                    ? Html::beginTag('button', [
-                        'type' => 'button',
-                        'class' => ['preview-btn', 'btn'],
-                    ]).
-                    Html::tag('span', t('Preview'), ['class' => 'label']).
-                    Html::endTag('button')
-                    : '').
-                Html::endTag('div');
-        }
-
-        // Create a draft
-        if ($isCurrent && ! $isUnpublishedDraft && $canCreateDrafts) {
-            if ($canSave) {
-                $components[] = Html::button(t('Create a draft'), [
-                    'class' => ['btn', 'formsubmit'],
-                    'data' => [
-                        'action' => 'elements/save-draft',
-                        'redirect' => Crypt::encrypt('{cpEditUrl}'),
-                        'params' => ['dropProvisional' => 1],
-                    ],
-                ]);
-            } else {
-                $components[] = Html::beginForm().
-                    Html::actionInput('elements/save-draft').
-                    Html::redirectInput('{cpEditUrl}').
-                    Html::hiddenInput('elementId', (string) $canonical->id).
-                    Html::button(t('Create a draft'), [
-                        'class' => ['btn', 'formsubmit'],
-                    ]).
-                    Html::endForm();
-            }
-        }
-
-        if (! $canSave && $canDuplicate) {
-            // save as a new is now available to people who can create drafts
-            $components[] = Html::beginForm().
-                Html::actionInput('elements/duplicate').
-                Html::redirectInput('{cpEditUrl}').
-                Html::hiddenInput('elementId', (string) $canonical->id).
-                Html::hiddenInput('asUnpublishedDraft', '1').
-                Html::button(t('Save as a new {type}', ['type' => $element::lowerDisplayName()]), [
-                    'class' => ['btn', 'formsubmit'],
-                ]).
-                Html::endForm();
-        }
-
-        // Apply draft
-        if ($isDraft && ! $isCurrent && $canSave && $canSaveCanonical) {
-            $components[] = Html::button(t('Apply draft'), [
-                'class' => ['btn', 'secondary', 'formsubmit', 'tooltip-draft-btn'],
-                'data' => [
-                    'action' => 'elements/apply-draft',
-                    'redirect' => Crypt::encrypt('{cpEditUrl}'),
-                ],
-            ]);
-        }
-
-        // Revert content from this revision
-        if ($isRevision && $canSaveCanonical && $element->hasRevisions()) {
-            $returnUrl = $this->request->query('returnUrl');
-
-            $components[] = Html::beginForm().
-                Html::actionInput('elements/revert').
-                Html::redirectInput('{cpEditUrl}').
-                ($returnUrl
-                    ? Html::hiddenInput('redirectParams', Json::encode([
-                        'returnUrl' => $returnUrl,
-                    ]))
-                    : ''
-                ).
-                Html::hiddenInput('elementId', (string) $canonical->id).
-                Html::hiddenInput('revisionId', (string) $element->revisionId).
-                Html::button(t('Revert content from this revision'), [
-                    'class' => ['btn', 'formsubmit', 'revision-draft-btn'],
-                ]).
-                Html::endForm();
-        }
-
-        $components[] = $element->getAdditionalButtons();
-
-        return implode("\n", array_filter($components));
     }
 
     /**

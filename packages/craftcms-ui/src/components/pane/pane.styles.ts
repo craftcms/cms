@@ -60,6 +60,15 @@ export default css`
     --_pane-shadow: none;
   }
 
+  :host([appearance='outline-fill']) {
+    --_pane-background: var(
+      --c-pane-background,
+      color-mix(var(--c-color-neutral-fill-quiet), transparent 70%)
+    );
+    --_pane-border-color: var(--c-color-neutral-border-quiet);
+    --_pane-shadow: none;
+  }
+
   :host([appearance='sunken']) {
     --_pane-background: var(--c-pane-background, var(--c-surface-sunken));
     --_pane-border-color: transparent;
@@ -142,11 +151,21 @@ export default css`
   }
 
   .cp-pane__header {
+    /* Room for a small button, like other header bars, so a header is the
+       same height with or without actions. With the pane's top border and the
+       header's own bottom border, it's a header bar's height, as a card
+       header is. */
+    --_header-height: calc(var(--c-size-header) - var(--_pane-border-width));
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-sizing: border-box;
+    min-block-size: var(--_header-height);
     padding-inline: var(--_pane-spacing);
-    padding-block: calc(var(--_pane-spacing) / 2);
+    padding-block: max(
+      0px,
+      calc((var(--_header-height) - 1px - var(--c-size-control-sm)) / 2)
+    );
     position: sticky;
     inset-block-start: 0;
     z-index: var(--c-layer-sticky, 10);

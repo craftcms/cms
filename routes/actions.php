@@ -51,6 +51,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElements
 use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
+use CraftCms\Cms\Http\Controllers\Elements\PasteableElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
 use CraftCms\Cms\Http\Controllers\Elements\SaveElementController;
 use CraftCms\Cms\Http\Controllers\Elements\SearchController as ElementSearchController;
@@ -89,7 +90,6 @@ use CraftCms\Cms\Http\Controllers\Users\SuspendController;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
-use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\EnsureTwoFactorChallengeIsRecent;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
@@ -212,8 +212,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         // App
         Route::post('app/get-cp-alerts', [CpAlertsController::class, 'index']);
         Route::post('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
-        Route::post('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie'])
-            ->withoutMiddleware(EnforceLicenses::class);
+        Route::post('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);
         Route::middleware(RequireAdmin::class)->post('app/get-plugin-license-info', [PluginsController::class, 'getLicenseInfo']);
         Route::middleware(RequireAdminChanges::class)->post('app/update-plugin-license', [PluginsController::class, 'updateLicense']);
         Route::post('app/render-elements', [RenderController::class, 'elements']);
@@ -290,6 +289,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('element-indexes/perform-action', PerformElementActionController::class);
         Route::post('element-search/search', ElementSearchController::class);
         Route::post('element-selector-modals/body', ElementSelectorModalController::class);
+        Route::post('element-selects/pasteable', PasteableElementsController::class);
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('element-index-settings/get-customize-sources-modal-data', [ElementSourcesController::class, 'show']);
             Route::post('element-index-settings/save-customize-sources-modal-settings', [ElementSourcesController::class, 'store']);

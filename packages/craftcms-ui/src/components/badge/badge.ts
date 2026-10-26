@@ -34,7 +34,11 @@ export default class CraftBadge extends LitElement {
   /** Leaves out the prefix region, default indicator included. */
   @property({attribute: 'no-prefix', type: Boolean}) noPrefix: boolean = false;
 
-  /** The badge's scale: `small`, `medium` (the default), or `large`. */
+  /**
+   * The badge's scale: `small`, `medium` (the default), or `large`. A labeled
+   * badge is as tall as a small control, or as an extra-small one (and a
+   * checkbox) when `small`.
+   */
   @property() size: SizeValue = Size.Medium;
 
   /**

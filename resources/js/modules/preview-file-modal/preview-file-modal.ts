@@ -1,4 +1,8 @@
 import {
+  focusReturnFor,
+  type FocusReturnResolver,
+} from '@craftcms/ui/utilities/focus-return';
+import {
   Modal,
   LEFT_KEY,
   RIGHT_KEY,
@@ -9,6 +13,7 @@ import {
   getFocusedElement,
   bod,
 } from '@craftcms/garnish';
+import {highlightCodeBlocks} from '@/common/utils/highlight-code';
 
 declare const Craft: any;
 declare const $: any;
@@ -58,6 +63,9 @@ export class PreviewFileModal extends Modal {
 
   #$container: any = null;
 
+  /** Finds the opener again, or its menu's button once the menu has closed. */
+  #returnFocus: FocusReturnResolver = () => null;
+
   constructor(assetId: number, elementSelectOrSettings?: any, settings?: any) {
     // (assetId, settings) overload
     if (settings === undefined && $.isPlainObject(elementSelectOrSettings)) {
@@ -75,6 +83,7 @@ export class PreviewFileModal extends Modal {
 
     this.elementSelect = elementSelectOrSettings ?? null;
     this.$triggerElement = getFocusedElement();
+    this.#returnFocus = focusReturnFor(this.$triggerElement);
 
     if (PreviewFileModal.openInstance) {
       PreviewFileModal.openInstance.quickHide();
@@ -170,8 +179,8 @@ export class PreviewFileModal extends Modal {
     const $element = this.getSelectItem();
     if ($element) {
       this.elementSelect.focusItem($element);
-    } else if (this.$triggerElement?.length) {
-      this.$triggerElement.focus();
+    } else {
+      this.#returnFocus()?.focus();
     }
     this.destroy();
   }
@@ -287,6 +296,7 @@ export class PreviewFileModal extends Modal {
         this.#$container.removeClass(EMPTY_CLASSES);
         this.#$container.attr('data-asset-id', this.assetId);
         this.#$container.append(response.data.previewHtml);
+        highlightCodeBlocks(this.#$container[0]);
         this._addBumperButtons();
         this._addLiveRegion();
         this._addModalName();

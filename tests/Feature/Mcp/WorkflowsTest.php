@@ -58,7 +58,7 @@ beforeEach(function (): void {
     Sections::refreshSections();
 
     $this->callWorkflow = function (string $tool, array $arguments = [], ?User $actor = null): TestResponse {
-        Passport::actingAs($actor ?? $this->author, ['mcp:use'], 'craft-mcp');
+        Passport::actingAs($actor ?? $this->author, ['mcp:admin'], 'craft-mcp');
 
         return McpRequest::send($this, 'tools/call', [
             'name' => $tool,
@@ -107,7 +107,7 @@ it('reviews and publishes a draft through MCP as distinct operations', function 
 });
 
 it('saves enabled entries in a workflow section as drafts and suggests submitting them', function (string $tool, Closure $arguments, bool $unpublished): void {
-    Passport::actingAs($this->author, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($this->author, ['mcp:admin'], 'craft-mcp');
 
     $saved = McpRequest::send($this, 'tools/call', ['name' => $tool, 'arguments' => $arguments($this)])
         ->assertOk()
@@ -129,6 +129,12 @@ it('saves enabled entries in a workflow section as drafts and suggests submittin
         ->assertJsonPath('result.structuredContent.review.status', 'pending');
 })->with([
     'new entry' => ['elements.create', fn ($test): array => ['type' => 'entries', 'attributes' => [
+        'sectionId' => $test->section->id,
+        'typeId' => $test->entry->typeId,
+        'title' => 'Proposed entry',
+        'enabled' => true,
+    ]], true],
+    'new entry as unpublished draft' => ['elements.create', fn ($test): array => ['type' => 'entries', 'asUnpublishedDraft' => true, 'attributes' => [
         'sectionId' => $test->section->id,
         'typeId' => $test->entry->typeId,
         'title' => 'Proposed entry',
@@ -180,7 +186,7 @@ it('allows submission after rejection to create a new review run', function (): 
 });
 
 it('keeps workflow administration private while allowing draft-scoped review inspection', function (): void {
-    Passport::actingAs($this->author, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($this->author, ['mcp:admin'], 'craft-mcp');
     McpRequest::send($this, 'tools/call', ['name' => 'workflows.list'])
         ->assertOk()
         ->assertJsonPath('result.structuredContent.workflows.0.sections.0.id', $this->section->id)
@@ -274,6 +280,40 @@ it('inspects custom stages without exposing settings or pretending they accept u
     ($this->callWorkflow)('workflows.approve', ['runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid']], $this->reviewer)
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'The current workflow stage does not accept user reviews.');
+});
+
+it('requires edit permission and resets approval when MCP changes the existing draft', function (): void {
+    $submitted = ($this->callWorkflow)('workflows.submit')->json('result.structuredContent.review');
+    ($this->callWorkflow)('workflows.approve', [
+        'runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid'],
+    ], $this->reviewer)->assertJsonPath('result.structuredContent.review.status', 'approved');
+    Passport::actingAs($this->reviewer, ['mcp:admin'], 'craft-mcp');
+    McpRequest::send($this, 'tools/call', [
+        'name' => 'drafts.get', 'arguments' => ['draftId' => $this->draft->draftId],
+    ])->assertOk()->assertJsonPath('result.isError', false)
+        ->assertJsonPath('result.structuredContent.draft.title', 'Reviewed title');
+    McpRequest::send($this, 'tools/call', [
+        'name' => 'drafts.update',
+        'arguments' => ['draftId' => $this->draft->draftId, 'attributes' => ['title' => 'Unauthorized edit']],
+    ])->assertOk()->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'You are not authorized to save this entry.');
+
+    expect(EntryElement::find()->draftId($this->draft->draftId)->status(null)->one()->title)->toBe('Reviewed title')
+        ->and(WorkflowRun::find($submitted['runId'])->status)->toBe(WorkflowStatus::Approved);
+
+    Passport::actingAs($this->author, ['mcp:admin'], 'craft-mcp');
+
+    McpRequest::send($this, 'tools/call', [
+        'name' => 'drafts.update',
+        'arguments' => ['draftId' => $this->draft->draftId, 'attributes' => ['title' => 'Unreviewed edit']],
+    ])->assertOk()->assertJsonPath('result.isError', false)
+        ->assertJsonPath('result.structuredContent.draft.id', $this->draft->id);
+
+    ($this->callWorkflow)('drafts.apply')->assertJsonPath('result.isError', true);
+    expect(WorkflowRun::find($submitted['runId'])->status)->not->toBe(WorkflowStatus::Approved)
+        ->and(EntryElement::find()->draftId($this->draft->draftId)->status(null)->one()->title)->toBe('Unreviewed edit')
+        ->and(EntryElement::find()->draftOf($this->entry->id)->status(null)->count())->toBe(1)
+        ->and(EntryElement::find()->id($this->entry->id)->status(null)->one()->title)->toBe('Canonical title');
 });
 
 it('rejects stale approvals on draft application without changing the canonical entry', function (): void {

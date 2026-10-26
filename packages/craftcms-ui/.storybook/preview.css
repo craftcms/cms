@@ -1,3 +1,9 @@
+/* The CP defines this in resources/css/cp.css; components and table styles
+   pad with it, so stories need it to look as they do in the CP. */
+:root {
+  --cp-container-padding: var(--c-spacing-lg);
+}
+
 .flex {
   display: flex;
 }
@@ -75,7 +81,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  text-align: left;
+  text-align: start;
 }
 
 table th,

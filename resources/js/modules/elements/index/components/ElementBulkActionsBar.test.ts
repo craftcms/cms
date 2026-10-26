@@ -193,6 +193,30 @@ it('copies the selected element with its site ID', async () => {
   ]);
 });
 
+it('previews the selected asset', async () => {
+  const PreviewFileModal = vi.fn();
+  vi.stubGlobal('Craft', {cp: {copyElements: vi.fn()}, PreviewFileModal});
+  const container = mount({
+    key: 'PreviewAsset',
+    label: 'Preview file',
+    bulk: false,
+    action: {type: 'event', name: 'craft:preview-file'},
+  });
+  await nextTick();
+
+  window.dispatchEvent(
+    new CustomEvent('craft:preview-file', {
+      detail: {
+        trigger: container.querySelector('craft-action-item'),
+        elementIds: ['11'],
+        elementType: 'Asset',
+      },
+    })
+  );
+
+  expect(PreviewFileModal).toHaveBeenCalledWith(11);
+});
+
 it.each(['edit', 'view'] as const)(
   'emits %s only from the bulk bar that triggered it',
   async (type) => {

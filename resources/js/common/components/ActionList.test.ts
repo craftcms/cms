@@ -161,6 +161,29 @@ describe('ActionList', () => {
     expect(click.defaultPrevented).toBe(false);
   });
 
+  it('opens a link with a target there, rather than making an Inertia visit', async () => {
+    const container = mount({
+      actions: [
+        {
+          type: 'link',
+          href: '/admin/entries/blog/1',
+          label: 'Open in a new tab',
+          target: '_blank',
+        },
+      ],
+      as: 'craft-action-item',
+    });
+    await nextTick();
+
+    const item = container.querySelector('craft-action-item')!;
+    const click = new MouseEvent('click', {bubbles: true, cancelable: true});
+
+    item.dispatchEvent(click);
+
+    expect(item.target).toBe('_blank');
+    expect(click.defaultPrevented).toBe(false);
+  });
+
   it('keeps a separator between menu items and drops it between buttons', async () => {
     const actions: ActionItems = [{label: 'One'}, {type: 'hr'}, {label: 'Two'}];
 

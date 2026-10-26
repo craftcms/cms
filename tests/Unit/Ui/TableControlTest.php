@@ -34,7 +34,7 @@ it('resolves table cells at concrete paths while keeping row templates outside v
         ->and($table->props['hiddenRows'])->toBe(['0'])
         ->and($payload->errors)->toBe([
             ['path' => ['settings', 'rows', '0', 'name'], 'messages' => ['A real cell error.']],
-            ['path' => ['settings', 'rows'], 'messages' => ['An unbound row error.']],
+            ['path' => ['settings', 'rows'], 'messages' => ['An unbound row error.'], 'source' => ['settings', 'rows', '__template__', 'name']],
         ]);
 });
 
@@ -92,6 +92,18 @@ it('resolves implicit option groups for reusable table combobox columns', functi
         ]],
         ['label' => 'Literal address', 'value' => 'admin@example.com'],
     ]);
+});
+
+it('gives single-line columns a one-row textarea that keeps its value on one line', function () {
+    $ui = Ui::make([
+        Field::make('Rows', Table::make('rows')->columns([
+            'name' => ['heading' => 'Name', 'type' => 'singleline', 'code' => true],
+        ])->value([['name' => 'Ada']])),
+    ]);
+    $control = app(UiResolver::class)->resolve($ui, new UiContext)->nodes[0]->control->uis[0]->nodes[0]->control;
+
+    expect($control->component)->toBe('craft:textarea')
+        ->and($control->props)->toBe(['rows' => 1, 'monospace' => true, 'singleLine' => true]);
 });
 
 it('applies table modes to concrete cells and reusable row templates', function (ControlMode $mode) {

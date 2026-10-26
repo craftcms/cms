@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
@@ -747,7 +748,8 @@ abstract class ContentIndexViewModel extends ViewModel
                 ->href($url)
                 ->selected($key === $sourceKey)
                 ->status($source['status'] ?? null)
-                ->badgeCount((int) ($source['badgeCount'] ?? 0));
+                ->badgeCount($this->sourceBadgeCount($source))
+                ->badgeLabel(isset($source['badgeLabel']) ? (string) $source['badgeLabel'] : null);
 
             if ($group === null) {
                 $items[] = $item;
@@ -763,6 +765,30 @@ abstract class ContentIndexViewModel extends ViewModel
             $items,
             fn (NavItem $item): bool => ! $item->group || $item->subnav !== [],
         ));
+    }
+
+    /**
+     * A source's count for the secondary nav.
+     *
+     * Types the main nav lists get theirs from there, after the page loads,
+     * so only other element types are counted here.
+     *
+     * @param  array<string, mixed>  $source
+     */
+    private function sourceBadgeCount(array $source): int
+    {
+        if (isset($source['badgeCount'])) {
+            return (int) $source['badgeCount'];
+        }
+
+        if (
+            Navigation::countsSources($this->elementType) ||
+            ! ElementSources::showsBadgeCount($this->elementType, $source)
+        ) {
+            return 0;
+        }
+
+        return $this->elementType::sourceBadgeCount($source, $this->siteId());
     }
 
     /**
@@ -1387,7 +1413,20 @@ abstract class ContentIndexViewModel extends ViewModel
                 ? $this->editUrl($element)
                 : null,
             'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit),
+            ...$this->extraThumbData($element),
         ], $elements);
+    }
+
+    /**
+     * Additional data for an element's thumb. A thumb with no `url` can still
+     * link its label, by setting `labelUrl` (and optionally
+     * `labelLinkAttributes`).
+     *
+     * @return array{labelUrl?: string, labelLinkAttributes?: array<string, mixed>}
+     */
+    protected function extraThumbData(ElementInterface $element): array
+    {
+        return [];
     }
 
     /**
@@ -1417,6 +1456,17 @@ abstract class ContentIndexViewModel extends ViewModel
         return [];
     }
 
+    /**
+     * Capabilities an element type adds to its rows, for bulk actions whose
+     * `selectionAttribute` names them.
+     *
+     * @return array<string, bool>
+     */
+    protected function extraCapabilities(ElementInterface $element): array
+    {
+        return [];
+    }
+
     /** @return array<string, mixed> */
     private function baseRowData(ElementInterface $element, ?ElementHtml $elementHtml = null): array
     {
@@ -1425,7 +1475,10 @@ abstract class ContentIndexViewModel extends ViewModel
         return [
             'label' => $element->getUiLabel(),
             ...$this->elementUrls($element),
-            'capabilities' => $elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+            'capabilities' => [
+                ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+                ...$this->extraCapabilities($element),
+            ],
             ...$this->extraRowData($element),
         ];
     }

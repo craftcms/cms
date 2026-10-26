@@ -345,6 +345,9 @@ test('asTimestamp', function (mixed $input, string $output, ?string $locale = nu
         [(clone $dateTime)->sub(new DateInterval('P1D'))->format('Y-m-d'), 'Gisteren', 'nl'],
         [(clone $dateTime)->sub(new DateInterval('P1D'))->format('Y-m-d 00:00:00'), 'Gisteren', 'nl'],
         [new DateTime('2021-01-01 00:00:00'), 'Jan 1, 2021'],
+        [(clone $dateTime)->add(new DateInterval('P3D'))->format('Y-m-d'), (clone $dateTime)->add(new DateInterval('P3D'))->format('l')],
+        [(clone $dateTime)->add(new DateInterval('P7D'))->format('Y-m-d'), (clone $dateTime)->add(new DateInterval('P7D'))->format('M j, Y')],
+        [new DateTime('2099-05-07 12:00:00', new DateTimeZone('UTC')), 'May 7, 2099'],
     ];
 });
 

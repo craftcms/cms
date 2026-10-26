@@ -56,6 +56,7 @@ use craft\base\NestedElementInterface;
 use craft\base\PluginInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\RelationalFieldInterface;
+use craft\base\Renderable;
 use craft\base\SavableComponentInterface;
 use craft\base\Serializable;
 use craft\base\SortableFieldInterface;
@@ -334,6 +335,7 @@ class ClassAliases
         class_alias(\CraftCms\Cms\Component\Contracts\Indicative::class, Indicative::class);
         class_alias(\CraftCms\Cms\Component\Contracts\MissingComponentInterface::class, MissingComponentInterface::class);
         class_alias(\CraftCms\Cms\Component\Contracts\SavableComponentInterface::class, SavableComponentInterface::class);
+        class_alias(\CraftCms\Cms\Component\Contracts\Renderable::class, Renderable::class);
         class_alias(\CraftCms\Cms\Component\Contracts\Statusable::class, Statusable::class);
         class_alias(\CraftCms\Cms\Component\Contracts\Thumbable::class, Thumbable::class);
         class_alias(\CraftCms\Cms\Component\Exceptions\MissingComponentException::class, MissingComponentException::class);

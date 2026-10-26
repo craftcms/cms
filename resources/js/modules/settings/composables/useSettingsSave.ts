@@ -23,7 +23,11 @@ export interface UseSettingsSaveOptions<T extends object> {
   onSaveShortcut?: (event: KeyboardEvent) => void;
   /** Receives the response data when saving from a slideout. */
   onSuccess?: (data?: any) => void;
-  /** Called with a failed slideout save's response data, before the errors are applied. */
+  /**
+   * Called when a save fails validation: from a slideout with the response
+   * data, before the errors are applied, and from a page with `{errors}`, once
+   * the page the server sent back is in place.
+   */
   onError?: (data: any) => void;
   /** Runs before any submission, including the cmd/ctrl + s shortcut below. */
   onBeforeSave?: () => void;
@@ -299,6 +303,7 @@ export function useSettingsSave<T extends object>(
 
             return false;
           },
+          onError: (errors) => options.onError?.({errors}),
           onSuccess: options.onSuccess,
         });
     }

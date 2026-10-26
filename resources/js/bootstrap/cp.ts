@@ -16,6 +16,8 @@ import {
 } from './element-details-panels.js';
 import type {ScreenPageProps} from '@/common/composables/screen';
 import {setUpInertiaMessages} from '@/modules/messages/inertia';
+import {trackScrollbarWidth} from '@/common/utils/scrollbarWidth';
+import {registerSubmitShortcut} from '@/common/utils/submitShortcut';
 
 type TranslationStore = Record<string, Record<string, string>>;
 
@@ -127,6 +129,9 @@ const Cp = {
     bootingCallbacks.forEach((callback) => callback(this));
     bootingCallbacks = [];
 
+    // Before the app mounts, so the shell keeps clear of the page scrollbar from the first paint.
+    trackScrollbarWidth();
+
     // Before the app mounts, so the first page's messages have somewhere to go.
     setUpInertiaMessages();
 
@@ -147,6 +152,7 @@ const Cp = {
     handleNonInertiaRequests();
     handleAccessibleRouting();
     registerSlideoutGlobals();
+    registerSubmitShortcut();
 
     bootedCallbacks.forEach((callback) => callback(this));
     bootedCallbacks = [];

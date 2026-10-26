@@ -11,6 +11,7 @@ use CraftCms\Cms\Filesystem\Contracts\UploadHandler;
 use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Filesystem\Events\UploadSessionStarting;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -139,7 +140,7 @@ class Uploads
     {
         $removed = $failed = 0;
 
-        foreach (UploadSession::query()->where('expiresAt', '<=', now())->lazyById(100) as $expired) {
+        foreach (UploadSession::query()->where('expiresAt', '<=', Query::prepareDateForDb(now()))->lazyById(100) as $expired) {
             try {
                 $removed += DB::transaction(function () use ($expired) {
                     $session = UploadSession::query()->lockForUpdate()->find($expired->id);

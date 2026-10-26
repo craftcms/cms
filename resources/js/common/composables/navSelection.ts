@@ -1,4 +1,11 @@
-type NavNode = CraftCms.Cms.Cp.Data.ActionItem;
+type NavNode = CraftCms.Cms.Cp.Data.ActionItem & {
+  /**
+   * The page sits beneath this item, which has a subnav that doesn't cover it —
+   * a user's edit screen under Users, say. It's on the trail without being the
+   * page itself.
+   */
+  pageBeneath?: boolean;
+};
 
 /**
  * Marks the trail from the nav's root to the page you're on.
@@ -76,16 +83,20 @@ function childrenOf(item: NavNode): Array<NavNode> {
 
 function selectWithin(
   items: Array<NavNode>,
-  best: NavNode | null
+  best: NavNode | null,
+  bestIsPage: boolean
 ): Array<NavNode> {
   return items.map((item) => {
     const children = childrenOf(item);
-    const subnav = children.length ? selectWithin(children, best) : item.subnav;
+    const subnav = children.length
+      ? selectWithin(children, best, bestIsPage)
+      : item.subnav;
     const selected =
       item === best ||
       (Array.isArray(subnav) && subnav.some((child) => child.selected));
+    const pageBeneath = item === best && !bestIsPage && children.length > 0;
 
-    return {...item, selected, subnav};
+    return {...item, selected, subnav, ...(pageBeneath ? {pageBeneath} : {})};
   });
 }
 
@@ -100,13 +111,15 @@ export function withNavSelection(
   items: Array<NavNode>,
   url: string
 ): Array<NavNode> {
-  let path = pathOf(url);
+  const pagePath = pathOf(url);
 
-  // Your own account sits under Users, which is where the nav points.
-  path = path.replace(/\/myaccount(\/|$)/, '/users$1');
+  // Your own account sits under Users, which is where the nav points. It's
+  // beneath Users, though, not the Users page itself.
+  const path = pagePath.replace(/\/myaccount(\/|$)/, '/users$1');
 
   const query = queryOf(url);
   let best: NavNode | null = null;
+  let bestIsPage = false;
   let bestLength = -1;
   let bestQuerySize = -1;
 
@@ -124,6 +137,7 @@ export function withNavSelection(
           (itemPath.length === bestLength && querySize > bestQuerySize))
       ) {
         best = item;
+        bestIsPage = itemPath === pagePath;
         bestLength = itemPath.length;
         bestQuerySize = querySize;
       }
@@ -132,7 +146,7 @@ export function withNavSelection(
 
   findBest(items);
 
-  return selectWithin(items, best);
+  return selectWithin(items, best, bestIsPage);
 }
 
 /**

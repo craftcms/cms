@@ -36,15 +36,15 @@ beforeEach(function () {
     $this->uris = instantiateWithoutConstructor(TestElementUris::class);
     $this->writes = instantiateWithoutConstructor(TestElementWrites::class);
 
-    $this->executor = new TestPropagateElementWrites(
-        $this->elements,
-        Mockery::mock(Drafts::class),
-        $this->uris,
-        Mockery::mock(ElementCaches::class),
-        Mockery::mock(Search::class),
-        $this->sites,
-        Mockery::mock(Workflows::class),
-    );
+    $this->executor = app(TestPropagateElementWrites::class, [
+        'elements' => $this->elements,
+        'drafts' => Mockery::mock(Drafts::class),
+        'elementUris' => $this->uris,
+        'elementCaches' => Mockery::mock(ElementCaches::class),
+        'search' => Mockery::mock(Search::class),
+        'sites' => $this->sites,
+        'workflows' => Mockery::mock(Workflows::class),
+    ]);
 
     $this->primarySite = new Site([
         'id' => 1,

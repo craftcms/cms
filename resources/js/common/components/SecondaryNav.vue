@@ -36,10 +36,12 @@
   /**
    * Whether there is a menu to draw. The `actions` slot is a second way to put
    * something there, so a caller that fills only the slot still gets a menu.
+   * A function rather than a computed: slots aren't reactive, so a computed
+   * would keep its first answer when a page fills or empties the slot later.
    */
-  const hasActions = computed(
-    () => actions.length > 0 || Boolean(slots.actions)
-  );
+  function hasActions(): boolean {
+    return actions.length > 0 || Boolean(slots.actions);
+  }
 
   const isLarge = cpBreakpoints.greaterOrEqual('lg');
 
@@ -123,7 +125,7 @@ Nav states:
       </div>
     </craft-popover>
 
-    <craft-action-menu v-if="hasActions">
+    <craft-action-menu v-if="hasActions()">
       <craft-button type="button" size="small" slot="invoker">
         <craft-icon name="ellipsis" :label="t('Customize')"></craft-icon>
       </craft-button>
@@ -154,10 +156,14 @@ Nav states:
       the same actions are already at the end of the action menu above, and
       this element stays in the DOM translated off-screen. -->
     <div
-      v-if="isLarge && hasActions"
+      v-if="isLarge && hasActions()"
       class="secondary-nav__actions flex flex-wrap gap-2 mt-4"
     >
-      <ActionMenu :actions="actions" :button-variant="ButtonVariant.Outline">
+      <ActionMenu
+        :actions="actions"
+        :button-variant="ButtonVariant.Outline"
+        :inherit="false"
+      >
         <template #actions><slot name="actions"></slot></template>
       </ActionMenu>
     </div>

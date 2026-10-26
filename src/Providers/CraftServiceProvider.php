@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Providers;
 
+use CraftCms\Cms\Ai\AiServiceProvider;
 use CraftCms\Cms\Asset\AssetServiceProvider;
 use CraftCms\Cms\Auth\AuthServiceProvider;
 use CraftCms\Cms\Config\ConfigServiceProvider;
@@ -22,6 +23,7 @@ use CraftCms\Cms\Mcp\McpServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
 use CraftCms\Cms\ProjectConfig\ProjectConfigServiceProvider;
 use CraftCms\Cms\Queue\QueueServiceProvider;
+use CraftCms\Cms\Release\ReleaseServiceProvider;
 use CraftCms\Cms\Route\RouteServiceProvider;
 use CraftCms\Cms\Section\SectionServiceProvider;
 use CraftCms\Cms\Structure\StructureServiceProvider;
@@ -57,9 +59,11 @@ class CraftServiceProvider extends AggregateServiceProvider
         RouteServiceProvider::class,
         PassportServiceProvider::class,
         McpServiceProvider::class,
+        AiServiceProvider::class,
         AppServiceProvider::class,
         ConsoleServiceProvider::class,
         ElementServiceProvider::class,
+        ReleaseServiceProvider::class,
         EmailServiceProvider::class,
         GqlServiceProvider::class,
         PluginServiceProvider::class,

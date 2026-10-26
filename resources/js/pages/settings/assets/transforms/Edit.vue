@@ -166,7 +166,7 @@
           :disabled="!editable"
           @update:model-value="setQualityPreset($event, setValue)"
         >
-          <select slot="input" :aria-label="t('Quality preset')">
+          <select slot="input" :aria-label="t('Quality Preset')">
             <option
               v-for="option in options(control)"
               :key="String(option.value)"

@@ -24,6 +24,7 @@ use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\ContentIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\EntryIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\FieldEditViewModel;
+use CraftCms\Cms\Http\ViewModels\ReleaseViewModel;
 use CraftCms\Cms\Http\ViewModels\UserAddressesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserIndexViewModel;
 use CraftCms\Cms\Http\ViewModels\UserPasskeysViewModel;
@@ -32,6 +33,12 @@ use CraftCms\Cms\Http\ViewModels\UserPreferencesViewModel;
 use CraftCms\Cms\Http\ViewModels\UserSignInProvidersViewModel;
 use CraftCms\Cms\Http\ViewModels\WorkflowEditViewModel;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Release\Data\AttachedReleaseData;
+use CraftCms\Cms\Release\Data\ReleaseDetailData;
+use CraftCms\Cms\Release\Data\ReleaseItemData;
+use CraftCms\Cms\Release\Data\ReleaseReadiness;
+use CraftCms\Cms\Release\Data\ReleaseSummaryData;
+use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
@@ -80,6 +87,12 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     ControlPayload::class,
                     ConditionBuilderPayload::class,
                     ConditionRulePayload::class,
+                    AttachedReleaseData::class,
+                    ReleaseDetailData::class,
+                    ReleaseItemData::class,
+                    ReleaseReadiness::class,
+                    ReleaseSummaryData::class,
+                    ReleaseStatus::class,
                     GroupOperator::class,
                     UiPayload::class,
                     WidgetData::class,
@@ -97,6 +110,7 @@ class TypeScriptTransformerServiceProvider extends TypeScriptTransformerApplicat
                     HtmlFragment::class,
                     AssetIndexViewModel::class,
                     ContentIndexViewModel::class,
+                    ReleaseViewModel::class,
                     EntryIndexViewModel::class,
                     FieldEditViewModel::class,
                     UserAddressesViewModel::class,

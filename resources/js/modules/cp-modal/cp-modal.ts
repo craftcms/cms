@@ -104,31 +104,28 @@ export class CpModal extends Modal {
     );
 
     // Footer
-    this.#$footer = $('<div/>', {class: 'cpmodal-footer hidden'});
-    $('<div/>', {class: 'flex-grow'}).appendTo(this.#$footer);
-    const $btnContainer = $('<div/>', {class: 'flex flex-nowrap'}).appendTo(
+    // Modern components rather than the legacy `.btn`/`.spinner` markup,
+    // whose styles aren't loaded on Inertia pages.
+    this.#$footer = $('<div/>', {class: 'cpmodal-footer', hidden: true});
+    const $btnContainer = $('<div/>', {class: 'cpmodal-buttons'}).appendTo(
       this.#$footer
     );
 
-    this.#$loadSpinner = $('<div/>', {
-      class: 'spinner',
-      title: Craft.t('app', 'Loading'),
-      'aria-label': Craft.t('app', 'Loading'),
+    this.#$loadSpinner = $('<craft-spinner/>', {
+      label: Craft.t('app', 'Loading'),
     }).prependTo($btnContainer);
 
-    this.#$cancelBtn = $('<button/>', {
+    this.#$cancelBtn = $('<craft-button/>', {
       type: 'button',
-      class: 'btn',
       text: Craft.t('app', 'Cancel'),
     }).appendTo($btnContainer);
 
     if (this.#cpSettings.showSubmitButton) {
-      this.#$saveBtn = Craft.ui
-        .createSubmitButton({
-          label: Craft.t('app', 'Save'),
-          spinner: true,
-        })
-        .appendTo($btnContainer);
+      this.#$saveBtn = $('<craft-button/>', {
+        type: 'submit',
+        variant: 'primary',
+        text: Craft.t('app', 'Save'),
+      }).appendTo($btnContainer);
     }
 
     // Container form — fresh id per instance (the legacy shared-id default was a
@@ -244,11 +241,11 @@ export class CpModal extends Modal {
   }
 
   showLoadSpinner(): void {
-    this.#$loadSpinner.removeClass('hidden');
+    this.#$loadSpinner.prop('hidden', false);
   }
 
   hideLoadSpinner(): void {
-    this.#$loadSpinner.addClass('hidden');
+    this.#$loadSpinner.prop('hidden', true);
   }
 
   update(data: any): Promise<void> {
@@ -269,7 +266,7 @@ export class CpModal extends Modal {
         Craft.setElementAttributes(this.#$container, data.formAttributes);
       }
 
-      this.#$footer.removeClass('hidden');
+      this.#$footer.prop('hidden', false);
 
       requestAnimationFrame(() => {
         Craft.appendHeadHtml(data.headHtml);
@@ -289,11 +286,11 @@ export class CpModal extends Modal {
   }
 
   showSubmitSpinner(): void {
-    this.#$saveBtn?.addClass('loading');
+    this.#$saveBtn?.prop('loading', true);
   }
 
   hideSubmitSpinner(): void {
-    this.#$saveBtn?.removeClass('loading');
+    this.#$saveBtn?.prop('loading', false);
   }
 
   handleSubmit(ev: Event): void {

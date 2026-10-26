@@ -55,7 +55,7 @@ beforeEach(function (): void {
     )['element'];
 
     $this->callLifecycle = function (string $tool, array $arguments, ?User $actor = null): TestResponse {
-        Passport::actingAs($actor ?? $this->actor, ['mcp:use'], 'craft-mcp');
+        Passport::actingAs($actor ?? $this->actor, ['mcp:admin'], 'craft-mcp');
 
         return McpRequest::send($this, 'tools/call', ['name' => $tool, 'arguments' => $arguments]);
     };

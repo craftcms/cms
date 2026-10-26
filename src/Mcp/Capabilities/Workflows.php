@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Models\Draft;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\ElementQueryFactory;
 use CraftCms\Cms\Mcp\McpActor;
@@ -198,7 +199,7 @@ readonly class Workflows
     private function stageTransition(ElementInterface $draft, int $runId, string $stageUid, WorkflowTransition $transition, Closure $result, ?string $note = null): array
     {
         return $this->transition($draft, fn () => DB::transaction(function () use ($draft, $runId, $stageUid, $transition, $result, $note): void {
-            $this->workflows->lockDraftIds([(int) $draft->draftId]);
+            Draft::lockIds((int) $draft->draftId);
             $run = $this->workflows->latestRun($draft);
             $stage = $run?->stages()->get($run->currentStage);
             $expectedStatus = $transition === WorkflowTransition::RequestReview ? WorkflowStatus::Failed : WorkflowStatus::Pending;

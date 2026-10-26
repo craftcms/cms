@@ -6,6 +6,10 @@ use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
+use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Ui\Controls\ElementSelect;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field;
@@ -34,11 +38,11 @@ it('selects thumbnail modes for each relationship presentation', function (strin
         expect($element)->not->toHaveKeys(['cardHeaderHtml', 'cardContentHtml', 'cardThumbHtml']);
     }
 })->with([
-    'list' => ['list', 'thumbHtml', 'fit', 30],
-    'inline list' => ['list-inline', 'thumbHtml', 'fit', 30],
+    'list' => ['list', 'thumbHtml', 'fit', 26],
+    'inline list' => ['list-inline', 'thumbHtml', 'fit', 26],
     'tiles' => ['thumbs', 'thumbHtml', 'fit', 120],
-    'cards' => ['cards', 'cardThumbHtml', 'crop', 120],
-    'card grid' => ['cards-grid', 'cardThumbHtml', 'crop', 120],
+    'cards' => ['cards', 'cardThumbHtml', 'fit', 120],
+    'card grid' => ['cards-grid', 'cardThumbHtml', 'fit', 120],
 ]);
 
 it('resolves and renders ordered element relationships', function () {
@@ -192,4 +196,21 @@ it('gives each chip its element’s edit screen', function () {
 
     expect($element['cpEditUrl'])->toBe($asset->getCpEditUrl())
         ->and($element['cpEditUrl'])->not->toBeNull();
+});
+
+it('gives each chip its element’s color', function () {
+    $entryType = EntryTypeModel::factory()->create(['color' => 'violet']);
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    EntryTypes::refreshEntryTypes();
+    Sections::refreshSections();
+    $entry = Entry::factory()->forSection($section)->forEntryType($entryType)->createElement();
+    $asset = AssetModel::factory()->createElement();
+
+    $entryElement = ElementSelect::make('related')->elementType(EntryElement::class)
+        ->props([$entry->id])['elements'][0];
+    $assetElement = ElementSelect::make('related')->elementType($asset::class)
+        ->props([$asset->id])['elements'][0];
+
+    expect($entryElement['color'])->toBe('violet')
+        ->and($assetElement['color'])->toBeNull();
 });

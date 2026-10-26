@@ -14,6 +14,7 @@ use Illuminate\Database\PostgresConnection;
 use Illuminate\Database\SQLiteConnection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Pdo\Mysql;
 
 beforeEach(function () {
     Cms::config()->backupCommand = null;
@@ -385,4 +386,61 @@ it('rejects sqlite in-memory databases', function () {
         ->toThrow(RuntimeException::class, 'file-backed database connection');
     expect(fn () => app(Backups::class)->restore($backupPath, $connection))
         ->toThrow(RuntimeException::class, 'file-backed database connection');
+});
+
+it('writes the connection’s SSL options to the mysql defaults file', function () {
+    $connection = backupsTestMysqlConnection([
+        'options' => [
+            Mysql::ATTR_SSL_CA => '/etc/ssl/ca.pem',
+            Mysql::ATTR_SSL_CERT => '/etc/ssl/cert.pem',
+            Mysql::ATTR_SSL_KEY => '/etc/ssl/key.pem',
+        ],
+    ]);
+
+    $path = new ReflectionMethod(Backups::class, 'createMysqlDefaultsFile')
+        ->invoke(app(Backups::class), $connection, 'mysqldump');
+
+    try {
+        expect(file($path, FILE_IGNORE_NEW_LINES))->toContain(
+            'ssl_ca=/etc/ssl/ca.pem',
+            'ssl_cert=/etc/ssl/cert.pem',
+            'ssl_key=/etc/ssl/key.pem',
+        );
+    } finally {
+        unlink($path);
+    }
+});
+
+it('carries over SSL/TLS options from the mysql option file chain', function (array $expected, string $output) {
+    expect(new ReflectionMethod(Backups::class, 'sslDirectivesFromPrintDefaults')->invoke(app(Backups::class), $output))
+        ->toBe($expected);
+})->with(function () {
+    $header = 'mysqldump would have been started with the following arguments:'.PHP_EOL;
+
+    return [
+        'empty' => [[], ''],
+        'header only' => [[], $header],
+        'no ssl options' => [[], $header.'--host=localhost --user=root --password=***** --quick'],
+        'basic' => [
+            ['ssl-ca=/etc/ssl/ca.pem', 'ssl-cert=/etc/ssl/cert.pem', 'ssl-key=/etc/ssl/key.pem'],
+            $header.'--host=db --ssl-ca=/etc/ssl/ca.pem --ssl-cert=/etc/ssl/cert.pem --ssl-key=/etc/ssl/key.pem --quick',
+        ],
+        'flags and prefixes' => [
+            ['skip-ssl', 'disable-ssl-verify-server-cert', 'loose-ssl-mode=REQUIRED', 'ssl=0'],
+            $header.'--skip-ssl --disable-ssl-verify-server-cert --loose-ssl-mode=REQUIRED --ssl=0',
+        ],
+        'verification and tls' => [
+            ['skip-ssl=true', 'ssl-verify-server-cert=0', 'tls-version=TLSv1.2,TLSv1.3'],
+            $header.'--skip-ssl=true --ssl-verify-server-cert=0 --tls-version=TLSv1.2,TLSv1.3',
+        ],
+        'underscores' => [['ssl-ca=/etc/ssl/ca.pem'], $header.'--ssl_ca=/etc/ssl/ca.pem'],
+        'spaces in values' => [
+            ['ssl-ca=/path/with spaces/ca.pem', 'ssl-key=/other path/key.pem'],
+            $header.'--ssl-ca=/path/with spaces/ca.pem --quick --ssl-key=/other path/key.pem',
+        ],
+        'windows paths' => [['ssl-ca=C:\\\\Program Files\\\\MySQL\\\\ca.pem'], $header.'--ssl-ca=C:\\Program Files\\MySQL\\ca.pem'],
+        'quoted values' => [['ssl-cipher=AES256-SHA'], $header.'--ssl-cipher="AES256-SHA"'],
+        'redacted values' => [[], $header.'--ssl-key=*****'],
+        'not ssl' => [[], $header.'--sslx=1 --skip-sslx --tlsfoo=bar'],
+    ];
 });

@@ -397,11 +397,11 @@ it('uses the editor’s own site crumb rather than the shared one', function () 
 });
 
 /** @return array{field: FieldInterface, owner: Entry, ownerDraft: Entry, block: Entry} */
-function createEditElementMatrixFixture(): array
+function createEditElementMatrixFixture(bool $blockHasTitleField = true): array
 {
     $blockType = EntryType::factory()
         ->withField(Field::factory()->create(['handle' => 'innerText', 'type' => PlainText::class]))
-        ->create(['handle' => 'matrixBlock', 'hasTitleField' => true]);
+        ->create(['handle' => 'matrixBlock', 'hasTitleField' => $blockHasTitleField]);
 
     $matrixField = Field::factory()->create([
         'handle' => 'matrixField',
@@ -468,5 +468,18 @@ it('renders a nested entry’s own edit page with the entry editor', function ()
             ->component('elements/Edit')
             ->where('elementId', $block->id)
             ->where('cpEditUrl', $block->getCpEditUrl())
+        );
+});
+
+it('titles an untitled nested entry’s edit page “Untitled entry”', function () {
+    ['block' => $block] = createEditElementMatrixFixture(blockHasTitleField: false);
+
+    expect($block->title)->toBeNull();
+
+    get($block->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('elements/Edit')
+            ->where('title', 'Untitled entry')
         );
 });

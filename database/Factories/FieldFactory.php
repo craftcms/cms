@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Database\Factories;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Date;
 use Override;
 
 class FieldFactory extends Factory
@@ -21,7 +22,7 @@ class FieldFactory extends Factory
             'name' => $this->faker->words(asText: true),
             'handle' => $this->faker->slug(1),
             'type' => PlainText::class,
-            'dateCreated' => $created = $this->faker->dateTime(),
+            'dateCreated' => $created = $this->faker->dateTime(Date::now()),
             'dateUpdated' => $created,
         ];
     }

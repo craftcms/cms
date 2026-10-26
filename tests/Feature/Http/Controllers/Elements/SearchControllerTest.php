@@ -19,6 +19,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Http\Controllers\Elements\SearchController;
+use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -304,7 +305,7 @@ it('passes the reference element context into element conditions', function () {
         }
     };
 
-    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), $referenceEntry) extends Elements
+    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class), $referenceEntry) extends Elements
     {
         public ?int $requestedElementId = null;
 
@@ -316,9 +317,10 @@ it('passes the reference element context into element conditions', function () {
             ElementPlaceholders $placeholders,
             ElementTypes $elementTypes,
             ElementCaches $elementCaches,
+            Releases $releases,
             private readonly Entry $referenceEntry,
         ) {
-            parent::__construct($placeholders, $elementTypes, $elementCaches);
+            parent::__construct($placeholders, $elementTypes, $elementCaches, $releases);
         }
 
         public function getElementById(

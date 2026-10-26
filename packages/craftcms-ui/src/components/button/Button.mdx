@@ -45,7 +45,7 @@ The `icon` attribute always renders a decorative icon, hidden from screen reader
 
 ## Flush
 
-A `plain` button has no background, so the space around its label only shows on hover. Add `flush` to pull the button out by that space, so its label or icon lines up with the text beside it.
+A `plain` or `danger-plain` button has no background, so the space around its label only shows on hover. Add `flush` to pull the button out by that space, so its label or icon lines up with the text beside it.
 
 - `flush` with no value applies on every side.
 - Otherwise, pass a space-separated list of sides: `inline`, `block`, `inline-start`, `inline-end`, `block-start` or `block-end`. For example, `flush="inline-end"` for a close button at the end of a heading.
@@ -61,6 +61,15 @@ The offset follows the button's size, and an icon-only button aligns its icon ra
 ## Links
 
 <Canvas of={ButtonStories.Links} />
+
+## Accessibility
+
+- Name an icon-only button with `aria-label` on the host, or with a `label` on the `craft-icon` it contains. A button with no name gets a warning outline, but the outline doesn't name it.
+- When an icon means something the label doesn't, such as "opens in a new window", slot a labeled `craft-icon` or add `sr-only` text. The `icon` attribute is always decorative.
+- Say what a `danger` button does in its label ("Delete entry"), so the color only reinforces it.
+- Anything that goes to a URL is a link: set `href` rather than navigating from a click handler.
+- `xsmall` buttons keep a 24px hit area that reaches past their visible box. Leave room between them and other targets.
+- For an on/off setting, use `craft-switch`. A `toggle` button only reports the state it's asked to change to, so whoever owns `active` must update it.
 
 ## Properties
 

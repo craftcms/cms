@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
@@ -11,6 +12,7 @@ use CraftCms\Cms\Mcp\PublicRouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\Support\McpRequest;
+use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Facades\Auth;
@@ -44,11 +46,24 @@ function mcpAuthorizationParameters(string $clientId, array $overrides = []): ar
         'response_type' => 'code',
         'client_id' => $clientId,
         'redirect_uri' => 'https://client.example/callback',
-        'scope' => 'mcp:use',
+        'scope' => 'mcp:read mcp:write mcp:admin',
         'state' => 'client-state',
         'code_challenge_method' => 'S256',
         'code_challenge' => rtrim(strtr(base64_encode(hash('sha256', str_repeat('v', 43), true)), '+/', '-_'), '='),
     ], $overrides);
+}
+
+function mcpExchangeAuthorizationCode(TestCase $test, string $clientId, string $location): void
+{
+    parse_str(parse_url($location, PHP_URL_QUERY), $callback);
+
+    $test->postJson(route('passport.token'), [
+        'grant_type' => 'authorization_code',
+        'client_id' => $clientId,
+        'redirect_uri' => 'https://client.example/callback',
+        'code' => $callback['code'],
+        'code_verifier' => str_repeat('v', 43),
+    ])->assertOk();
 }
 
 it('discovers and completes dynamic client registration and authorization', function (array $acceptHeaders): void {
@@ -65,26 +80,26 @@ it('discovers and completes dynamic client registration and authorization', func
         ->assertUnauthorized()
         ->headers->get('WWW-Authenticate');
 
-    expect($challenge)->toContain('scope="mcp:use"');
+    expect($challenge)->toContain('scope="mcp:read mcp:write mcp:admin"');
     preg_match('/resource_metadata="([^"]+)"/', $challenge, $match);
 
     $resource = $this->getJson($match[1])
         ->assertOk()
         ->assertJsonPath('resource', $endpoint)
-        ->assertJsonPath('scopes_supported.0', 'mcp:use')
+        ->assertJsonPath('scopes_supported', ['mcp:read', 'mcp:write', 'mcp:admin'])
         ->json();
     $issuer = $resource['authorization_servers'][0];
     $discovery = parse_url($issuer, PHP_URL_SCHEME).'://'.parse_url($issuer, PHP_URL_HOST).'/.well-known/oauth-authorization-server'.parse_url($issuer, PHP_URL_PATH);
     $metadata = $this->getJson($discovery)
         ->assertOk()
         ->assertJsonPath('token_endpoint', route('passport.token'))
-        ->assertJsonPath('scopes_supported.0', 'mcp:use')
+        ->assertJsonPath('scopes_supported', ['mcp:read', 'mcp:write', 'mcp:admin'])
         ->json();
 
     expect($metadata)->toHaveKeys(['authorization_endpoint', 'registration_endpoint']);
     $registration = $this->postJson($metadata['registration_endpoint'], mcpRegistration())
         ->assertCreated()
-        ->assertJsonPath('scope', 'mcp:use')
+        ->assertJsonPath('scope', 'mcp:read mcp:write mcp:admin')
         ->assertJsonPath('token_endpoint_auth_method', 'none')
         ->json();
 
@@ -98,6 +113,8 @@ it('discovers and completes dynamic client registration and authorization', func
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('clientName', 'Test MCP client')
+            ->where('accessOptions', fn ($options): bool => collect($options)->pluck('value')->all() === ['mcp:read', 'mcp:write', 'mcp:admin'])
+            ->where('scopes', [])
             ->where('approveAction', route('craft.cp.mcp.oauth.approve'))
             ->where('denyAction', route('craft.cp.mcp.oauth.deny')));
 
@@ -222,7 +239,7 @@ it('requires both the MCP scope and Craft endpoint permissions', function (array
     $user->save();
     $userPermissions = app(UserPermissions::class);
     $userPermissions->saveUserPermissions($user->id, ['accessCp', 'useCraftMcp']);
-    Passport::actingAs($user, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($user, ['mcp:read'], 'craft-mcp');
     $endpoint = route('craft.cp.mcp.server');
     $headers = McpRequest::headers('server/discover');
 
@@ -236,6 +253,92 @@ it('requires both the MCP scope and Craft endpoint permissions', function (array
     $this->postJson($endpoint, McpRequest::payload('server/discover'), $headers)->assertForbidden();
 })->with([
     'missing MCP scope' => [[], ['accessCp', 'useCraftMcp']],
-    'missing control panel permission' => [['mcp:use'], ['useCraftMcp']],
-    'missing MCP permission' => [['mcp:use'], ['accessCp']],
+    'missing control panel permission' => [['mcp:read'], ['useCraftMcp']],
+    'missing MCP permission' => [['mcp:read'], ['accessCp']],
+]);
+
+it('grants the access level chosen on the consent screen', function (bool $admin, array $approval, array $options, array $granted): void {
+    Edition::set(Edition::Pro);
+    $user = User::query()->firstOrFail();
+    $user->admin = $admin;
+    $user->save();
+    app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp', 'useCraftMcp']);
+
+    $clientId = $this->postJson(route('craft.cp.mcp.oauth.register'), mcpRegistration())->json('client_id');
+    $parameters = mcpAuthorizationParameters($clientId);
+
+    $this->actingAs($user, Cms::config()->getAuthGuard());
+    $this->get(route('craft.cp.mcp.oauth.authorize').'?'.http_build_query($parameters))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('accessOptions', fn ($accessOptions): bool => collect($accessOptions)->pluck('value')->all() === $options));
+
+    $location = $this->post(route('craft.cp.mcp.oauth.approve'), [
+        'auth_token' => session('authToken'),
+        ...$approval,
+    ])->assertRedirect()->headers->get('Location');
+    mcpExchangeAuthorizationCode($this, $clientId, $location);
+
+    expect(Passport::token()->newQuery()->sole()->scopes)->toBe($granted);
+})->with([
+    'read by default' => [true, [], ['mcp:read', 'mcp:write', 'mcp:admin'], ['mcp:read']],
+    'write' => [true, ['access' => 'mcp:write'], ['mcp:read', 'mcp:write', 'mcp:admin'], ['mcp:read', 'mcp:write']],
+    'admin' => [true, ['access' => 'mcp:admin'], ['mcp:read', 'mcp:write', 'mcp:admin'], ['mcp:read', 'mcp:write', 'mcp:admin']],
+    'admin for a non-admin' => [false, ['access' => 'mcp:admin'], ['mcp:read', 'mcp:write'], ['mcp:read']],
+]);
+
+it('reuses the earlier access level when a client authorizes again', function (): void {
+    $clientId = $this->postJson(route('craft.cp.mcp.oauth.register'), mcpRegistration())->json('client_id');
+    $authorizeUrl = fn (string $scope): string => route('craft.cp.mcp.oauth.authorize').'?'.http_build_query(mcpAuthorizationParameters($clientId, ['scope' => $scope]));
+
+    $this->actingAs(User::query()->firstOrFail(), Cms::config()->getAuthGuard());
+    $this->get($authorizeUrl('mcp:read mcp:write mcp:admin'))->assertOk();
+    $location = $this->post(route('craft.cp.mcp.oauth.approve'), [
+        'auth_token' => session('authToken'),
+        'access' => 'mcp:write',
+    ])->headers->get('Location');
+    mcpExchangeAuthorizationCode($this, $clientId, $location);
+
+    $location = $this->get($authorizeUrl('mcp:read mcp:write mcp:admin'))->assertRedirect()->headers->get('Location');
+    mcpExchangeAuthorizationCode($this, $clientId, $location);
+
+    expect(Passport::token()->newQuery()->pluck('scopes')->all())->toBe([['mcp:read', 'mcp:write'], ['mcp:read', 'mcp:write']]);
+
+    $this->get($authorizeUrl('mcp:admin'))->assertOk();
+});
+
+it('exposes only the tools the token scope covers', function (array $scopes, array $visible, array $hidden): void {
+    Passport::actingAs(User::query()->firstOrFail(), $scopes, 'craft-mcp');
+
+    $names = array_column(McpRequest::tools($this), 'name');
+
+    expect(array_diff($visible, $names))->toBe([])
+        ->and(array_intersect($hidden, $names))->toBe([]);
+})->with([
+    'read' => [['mcp:read'], ['elements.list', 'assets.transform-url'], ['elements.create', 'configuration.list']],
+    'write' => [['mcp:write'], ['elements.list', 'elements.create'], ['configuration.list']],
+    'admin' => [['mcp:admin'], ['elements.list', 'elements.create', 'configuration.list'], []],
+]);
+
+it('rejects calls to tools outside the token scope', function (): void {
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:read'], 'craft-mcp');
+
+    McpRequest::send($this, 'tools/call', ['name' => 'elements.delete', 'arguments' => ['type' => 'entry', 'id' => 1]])
+        ->assertJsonPath('error.message', 'Tool not found: "elements.delete".');
+});
+
+it('requires write access for upload sessions', function (array $scopes, int $status): void {
+    $user = User::query()->firstOrFail();
+    Passport::actingAs($user, ['mcp:write'], 'craft-mcp');
+    $upload = McpRequest::send($this, 'tools/call', [
+        'name' => 'assets.upload.prepare',
+        'arguments' => ['filename' => 'notes.txt', 'size' => 3, 'volumeId' => Volume::factory()->create()->id],
+    ])->assertJsonPath('result.isError', false)->json('result.structuredContent.upload');
+
+    Passport::actingAs($user, $scopes, 'craft-mcp');
+
+    $this->getJson($upload['urls']['status'])->assertStatus($status);
+})->with([
+    'read' => [['mcp:read'], 403],
+    'write' => [['mcp:write'], 200],
 ]);

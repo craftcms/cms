@@ -18,6 +18,7 @@ use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -934,6 +935,25 @@ it('keeps a deleted nested entry deleted after resaving the owner with no change
     $manager->maintainNestedElements($owner2, false);
 
     expect(DB::table(Table::ELEMENTS)->where('id', $nested->id)->value('dateDeleted'))->not->toBeNull();
+});
+
+it('keeps a newly created unsaved nested draft when the owner is saved with an unchanged value', function () {
+    ['owner' => $owner, 'field' => $field, 'entryType' => $entryType] = createMatrixOwnerFixture();
+
+    $nested = new EntryElement([
+        'typeId' => $entryType->id,
+        'fieldId' => $field->id,
+        'siteId' => $owner->siteId,
+    ]);
+    $nested->setOwnerId($owner->id);
+    $nested->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+    expect(app(Drafts::class)->saveElementAsDraft($nested, markAsSaved: false))->toBeTrue();
+
+    $owner = EntryElement::find()->id($owner->id)->one();
+    $owner->setFieldValueFromRequest($field->handle, '*');
+
+    expect(app(Elements::class)->saveElement($owner))->toBeTrue()
+        ->and(DB::table(Table::ELEMENTS)->where('id', $nested->id)->exists())->toBeTrue();
 });
 
 it('keeps a new nested entry owned when added while the owner is resaving', function () {

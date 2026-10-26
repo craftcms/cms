@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
+use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -67,7 +67,7 @@ readonly class TransformController
             abort_if(! is_string($handle), 400, 'Invalid transform handle.');
         }
 
-        $asset = Asset::findOne(['id' => $assetId]);
+        $asset = app(Assets::class)->getAssetById((int) $assetId);
 
         abort_if(! $asset, 400, "Invalid asset ID: $assetId");
 

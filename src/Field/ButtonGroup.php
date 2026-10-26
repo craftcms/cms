@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\Components\Button;
-use CraftCms\Cms\Cp\Components\ButtonGroup as ButtonGroupComponent;
+use CraftCms\Cms\Cp\Components\Icon;
+use CraftCms\Cms\Cp\Components\Radio;
+use CraftCms\Cms\Cp\Components\RadioGroup;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
@@ -83,45 +82,33 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
         }
 
         $id = $this->getInputId();
-        $options = $this->translatedOptions(true, $value, $element);
-
-        if ($this->iconsOnly) {
-            foreach ($options as &$option) {
-                if (! empty($option['icon']) || ($option['icon'] ?? null) === '0') {
-                    $option['attributes']['title'] = $option['attributes']['aria']['label'] = $option['label'];
-                    unset($option['label']);
-                }
-            }
-            unset($option);
-        }
-
         $selectedValue = $this->encodeValue($value);
+        $radios = [];
 
-        $buttons = [];
-        foreach ($options as $option) {
-            $optionValue = $option['value'] ?? null;
-            $selected = $optionValue !== null && $optionValue == $selectedValue;
+        foreach ($this->translatedOptions(true, $value, $element) as $index => $option) {
+            if (isset($option['optgroup'])) {
+                continue;
+            }
 
-            $buttons[] = Button::make()
-                ->label($option['label'] ?? null)
-                ->icon($option['icon'] ?? null)
-                ->variant('outline')
-                ->active($selected)
+            $icon = $option['icon'] ?? null;
+            $iconOnly = $this->iconsOnly && $icon !== null;
+
+            $radios[] = Radio::make()
+                ->id("$id-$index")
+                ->name($this->handle)
+                ->value((string) $option['value'])
+                ->checked($option['value'] !== null && $option['value'] == $selectedValue)
                 ->disabled($static)
-                ->attributes(Arr::merge([
-                    'class' => Html::explodeClass($option['class'] ?? []),
-                    'value' => $optionValue,
-                    'data' => ['value' => $optionValue],
-                    'aria' => ['pressed' => $selected ? 'true' : 'false'],
-                ], $option['attributes'] ?? []));
+                ->label($iconOnly ? Icon::make()->name($icon)->label($option['label']) : $option['label'])
+                ->icon($iconOnly ? null : $icon)
+                ->describedBy($this->describedBy)
+                ->attributes(['title' => $iconOnly ? $option['label'] : null]);
         }
 
-        return ButtonGroupComponent::make()
+        return RadioGroup::make()
             ->id($id)
-            ->name($this->handle)
-            ->value($selectedValue !== null ? (string) $selectedValue : null)
-            ->disabled($static)
-            ->buttons($buttons)
+            ->buttons()
+            ->options($radios)
             ->toHtml();
     }
 }

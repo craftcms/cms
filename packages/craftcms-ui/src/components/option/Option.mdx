@@ -34,7 +34,11 @@ That means the same list reads sensibly in a narrow slideout and on a wide page 
 
 Lion supplies the option semantics and selection state.
 
-Remember that everything inside the option is announced. A decorative icon should be hidden, or every entry in the list will be read with the same prefix before the part that distinguishes it.
+Remember that everything inside the option is announced. A decorative icon should be hidden, or every entry in the list will be read with the same prefix before the part that distinguishes it. A `craft-icon` without a `label` is hidden already. Give an `<img>` an empty `alt`, and an inline `<svg>` `aria-hidden="true"`. Artwork that carries meaning needs a text alternative instead.
+
+Put the visible label first and the `hint` and decoration after it, so the option's name starts with the words a person sees and can say.
+
+A status dot or colored icon only reinforces the option's text. Say the status in words too, such as "Offline".
 
 ## Properties
 

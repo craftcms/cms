@@ -1,4 +1,12 @@
-import {createApp, defineComponent, h, inject, nextTick, provide} from 'vue';
+import {
+  createApp,
+  defineComponent,
+  h,
+  inject,
+  nextTick,
+  provide,
+  reactive,
+} from 'vue';
 import {afterEach, describe, expect, it} from 'vitest';
 import LayoutSlot from '@/common/components/LayoutSlot.vue';
 import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
@@ -37,15 +45,18 @@ const Shell = defineComponent({
     scope: {type: String, required: true},
     slot: {type: String, default: 'details'},
     outletKey: {type: Number, default: 0},
+    showOutlet: {type: Boolean, default: true},
   },
   setup(props, {slots}) {
     provideLayoutSlotRegistry(props.scope);
 
     return () =>
       h('div', {class: `shell shell--${props.scope}`}, [
-        h(LayoutSlotOutlet, {name: props.slot, key: props.outletKey}, () =>
-          h('span', {class: 'fallback'}, 'fallback')
-        ),
+        props.showOutlet
+          ? h(LayoutSlotOutlet, {name: props.slot, key: props.outletKey}, () =>
+              h('span', {class: 'fallback'}, 'fallback')
+            )
+          : null,
         slots.default?.(),
       ]);
   },
@@ -275,6 +286,40 @@ describe('LayoutSlot and a replaced outlet', () => {
     await nextTick();
 
     instance.$.props.outletKey = 1;
+    await nextTick();
+    await nextTick();
+
+    const outlet = root.querySelector('[data-layout-slot="details"]')!;
+
+    expect(outlet.querySelector('.filled')?.textContent).toBe('from the page');
+    expect(root.querySelectorAll('.filled')).toHaveLength(1);
+  });
+
+  it('waits for an outlet that went away before the page came back', async () => {
+    const state = reactive({showOutlet: true, showPage: true});
+    const Page = defineComponent({
+      setup: () => () =>
+        h(Shell, {scope: 'page', showOutlet: state.showOutlet}, () =>
+          state.showPage
+            ? h(LayoutSlot, {name: 'details'}, () =>
+                h('span', {class: 'filled'}, 'from the page')
+              )
+            : null
+        ),
+    });
+
+    const root = mount(Page);
+    await nextTick();
+
+    state.showOutlet = false;
+    state.showPage = false;
+    await nextTick();
+
+    state.showPage = true;
+    await nextTick();
+    await nextTick();
+
+    state.showOutlet = true;
     await nextTick();
     await nextTick();
 

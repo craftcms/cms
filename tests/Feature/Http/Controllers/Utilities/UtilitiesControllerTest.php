@@ -2,12 +2,16 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::findOne());
@@ -39,4 +43,22 @@ it('leaves the utilities nav to the main navigation', function () {
             ->missing('subnav')
             ->etc()
         );
+});
+
+it('returns the nav badge counts for each utility and the Utilities item', function () {
+    DB::table('deprecationerrors')->insert([
+        'key' => 'test-deprecation',
+        'message' => 'Test deprecation message',
+        'fingerprint' => md5('test-deprecation'),
+        'lastOccurrence' => now(),
+        'file' => __FILE__,
+        'dateCreated' => now(),
+        'dateUpdated' => now(),
+        'uid' => Str::uuid(),
+    ]);
+
+    postJson(action([UtilitiesController::class, 'badgeCount']))
+        ->assertOk()
+        ->assertJsonPath('badgeCounts.nav-utilities-deprecation-errors', 1)
+        ->assertJsonPath('badgeCounts.nav-utilities', 1);
 });

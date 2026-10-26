@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -25,9 +26,11 @@ use CraftCms\Cms\Site\Events\SitesReordering;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Update\Updates;
 use Exception;
@@ -35,9 +38,9 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -542,19 +545,32 @@ class Sites
         }
 
         if ($isNewSite && $oldPrimarySiteId) {
-            // Re-save most localizable element types
+            // Re-save assets for the new site
             // (skip entries because they only support specific sites)
-            // (skip Matrix blocks because they will be re-saved when their owners are re-saved).
-            $elementTypes = [
-                Asset::class,
+            // (skip assets in volumes with custom propagation, as they only get saved to the sites they're assigned to)
+            // (volumes are queried directly so the volumes service's cache isn't primed with a partially-applied config)
+            $volumeIds = Schema::hasColumn(Table::VOLUMES, 'propagationMethod')
+                ? DB::table(Table::VOLUMES)
+                    ->whereNull('dateDeleted')
+                    ->pluck('propagationMethod', 'id')
+                : collect();
+            $propagatingVolumeIds = $volumeIds
+                ->reject(fn (string $propagationMethod) => $propagationMethod === PropagationMethod::Custom->value)
+                ->keys()
+                ->all();
+
+            $criteria = [
+                'siteId' => $oldPrimarySiteId,
             ];
 
-            foreach ($elementTypes as $elementType) {
+            if (count($propagatingVolumeIds) !== $volumeIds->count()) {
+                $criteria['volumeId'] = $propagatingVolumeIds;
+            }
+
+            if (! isset($criteria['volumeId']) || $criteria['volumeId'] !== []) {
                 dispatch(new PropagateElements(
-                    elementType: $elementType,
-                    criteria: [
-                        'siteId' => $oldPrimarySiteId,
-                    ],
+                    elementType: Asset::class,
+                    criteria: $criteria,
                     siteId: $site->id,
                     isNewSite: true,
                 ));
@@ -683,7 +699,7 @@ class Sites
                     ->whereIn('sectionId', $soloSectionIds)
                     ->update([
                         'siteId' => $transferContentTo,
-                        'dateUpdated' => now(),
+                        'dateUpdated' => Query::prepareDateForDb(now()),
                     ]);
 
                 // Update the project config too
@@ -715,7 +731,7 @@ class Sites
                         ->whereIn('elementId', $entryIds)
                         ->update([
                             'siteId' => $transferContentTo,
-                            'dateUpdated' => now(),
+                            'dateUpdated' => Query::prepareDateForDb(now()),
                         ]);
 
                     DB::table(Table::RELATIONS)
@@ -723,7 +739,7 @@ class Sites
                         ->whereNotNull('sourceSiteId')
                         ->update([
                             'sourceSiteId' => $transferContentTo,
-                            'dateUpdated' => now(),
+                            'dateUpdated' => Query::prepareDateForDb(now()),
                         ]);
 
                     // Nested entries
@@ -742,7 +758,7 @@ class Sites
                             ->where('siteId', $site->id)
                             ->update([
                                 'siteId' => $transferContentTo,
-                                'dateUpdated' => now(),
+                                'dateUpdated' => Query::prepareDateForDb(now()),
                             ]);
 
                         DB::table(Table::RELATIONS)
@@ -750,7 +766,7 @@ class Sites
                             ->whereNotNull('sourceSiteId')
                             ->update([
                                 'sourceSiteId' => $transferContentTo,
-                                'dateUpdated' => now(),
+                                'dateUpdated' => Query::prepareDateForDb(now()),
                             ]);
                     }
                 }
@@ -877,8 +893,8 @@ class Sites
         }
 
         foreach ($results as $result) {
-            $result->dateCreated = Date::parse($result->dateCreated);
-            $result->dateUpdated = Date::parse($result->dateUpdated);
+            $result->dateCreated = DateTimeHelper::toDateTime($result->dateCreated);
+            $result->dateUpdated = DateTimeHelper::toDateTime($result->dateUpdated);
 
             $site = new Site($result);
             $this->allSitesById[$site->id] = $site;
@@ -941,14 +957,14 @@ class Sites
                 ->where('id', $oldPrimarySiteId)
                 ->update([
                     'primary' => false,
-                    'dateUpdated' => now(),
+                    'dateUpdated' => Query::prepareDateForDb(now()),
                 ]);
 
             DB::table(Table::SITES)
                 ->where('id', $newPrimarySiteId)
                 ->update([
                     'primary' => true,
-                    'dateUpdated' => now(),
+                    'dateUpdated' => Query::prepareDateForDb(now()),
                 ]);
 
             // Update all of the non-localized elements

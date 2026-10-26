@@ -84,7 +84,7 @@ abstract class BaseContentFixture extends DbFixture
             $this->populateElement($element, $data);
 
             if (!$this->saveElement($element)) {
-                throw new InvalidElementException($element, implode(' ', $element->getErrorSummary(true)));
+                throw new InvalidElementException($element, implode(' ', $element->errors()->all()));
             }
 
             $this->_elements[$key] = $element;

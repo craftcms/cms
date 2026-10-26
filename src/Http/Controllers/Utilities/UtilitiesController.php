@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates;
@@ -28,10 +29,15 @@ readonly class UtilitiesController
         private Utilities $utilitiesService,
     ) {}
 
-    public function badgeCount(): JsonResponse
+    /**
+     * The nav's badge counts, keyed by nav item id, so the control panel can
+     * refresh them without a visit — each utility's as well as the Utilities
+     * item's.
+     */
+    public function badgeCount(Navigation $navigation): JsonResponse
     {
         return new JsonResponse([
-            'badgeCount' => $this->utilitiesService->getUtilitiesBadgeCount(),
+            'badgeCounts' => (object) $navigation->getBadgeCounts(),
         ]);
     }
 

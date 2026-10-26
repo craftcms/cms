@@ -184,6 +184,11 @@ enum Edition: int implements Arrayable
         return $this->value >= self::Team->value;
     }
 
+    public function supportsReleases(): bool
+    {
+        return $this->value >= self::Pro->value;
+    }
+
     public function supportsPublicRegistration(): bool
     {
         return $this->value >= self::Pro->value;

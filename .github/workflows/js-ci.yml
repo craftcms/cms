@@ -141,6 +141,9 @@ jobs:
           - name: Run TypeScript type check
             run: vp run typecheck
 
+          - name: Run @craftcms/ui type check
+            run: vp run @craftcms/ui#check:types
+
           - name: Run @craftcms/ui tests
             run: vp run test:ui
 

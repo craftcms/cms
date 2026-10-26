@@ -69,3 +69,39 @@ describe.each(['light', 'dark'])('in the %s theme', (theme) => {
     }
   });
 });
+
+it.each([
+  ['small', '--c-size-control-xs'],
+  ['medium', '--c-size-control-sm'],
+])('makes a %s labeled badge as tall as %s', async (size, token) => {
+  document.body.innerHTML = `
+    <span class="probe" style="display: block; block-size: var(${token})"></span>
+    <craft-badge size="${size}" no-prefix>3/10</craft-badge>`;
+  const badge = document.querySelector('craft-badge')!;
+  await badge.updateComplete;
+
+  expect(
+    badge.shadowRoot!.querySelector('.badge')!.getBoundingClientRect().height
+  ).toBe(document.querySelector('.probe')!.getBoundingClientRect().height);
+});
+
+it('lifts white off the page in the dark theme, and draws black a shade darker', async () => {
+  const fill = async (theme: string, color: string) =>
+    getComputedStyle(
+      (await render(theme, color)).shadowRoot!.querySelector('.badge')!
+    ).backgroundColor;
+  const againstBlack = async (theme: string, color: string) =>
+    contrast(await fill(theme, color), '#000');
+
+  document.body.innerHTML = `<div data-theme="dark"><span class="probe" style="color: var(--c-surface-default)"></span></div>`;
+  const page = contrast(
+    getComputedStyle(document.querySelector('.probe')!).color,
+    '#000'
+  );
+
+  expect(await againstBlack('dark', 'white')).toBeGreaterThan(page);
+  expect(await againstBlack('light', 'white')).toBe(21);
+  expect(await againstBlack('dark', 'black')).toBeLessThan(
+    await againstBlack('light', 'black')
+  );
+});

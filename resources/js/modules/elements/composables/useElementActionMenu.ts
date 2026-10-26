@@ -1,5 +1,3 @@
-import {Uploader} from '@/modules/uploader/uploader';
-import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
 import {router} from '@inertiajs/vue3';
 import {actionClient, t} from '@craftcms/ui';
 import {computed, type ComputedRef} from 'vue';
@@ -8,6 +6,8 @@ import type {ActionItem} from '@/common/types';
 import {ElementDeletionManager} from '@/modules/element-deletion-manager';
 import type {UiProperties, UiValues} from '@/modules/ui/types';
 import {openUiModal} from '@/modules/ui/open-ui-modal';
+import {submitNativeForm} from '@/common/utils/forms';
+import {replaceAssetFile} from '@/modules/assets/replaceAssetFile';
 import {
   openImageEditorDialog,
   type ImageEditorSettings,
@@ -114,25 +114,21 @@ interface Options {
 }
 
 /**
- * Turns the element's action descriptors into menu items the CP action menu can
- * render, dispatching each behavior directly rather than through registered
- * jQuery handlers.
+ * Builds the function that carries out an element action's behavior directly,
+ * rather than through registered jQuery handlers.
  */
-/**
- * Builds the descriptor-to-{@link ActionItem} mapper, dispatcher and all.
- *
- * Separate from {@link useElementActionMenu} so a caller with many menus — a
- * relation field drawing one per chip — can map them all through a single
- * dispatcher instead of standing up a computed per element.
- */
-export function createElementActionMenu({
+export function createElementActionDispatcher({
   currentEntryTypeId,
   slideout = null,
 }: Options = {}) {
   function dispatch(
     behavior: ElementActionBehavior,
-    destructive = false
+    destructive = false,
+    event?: Event
   ): void {
+    const trigger =
+      event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+
     switch (behavior.type) {
       case 'link':
         window.open(
@@ -198,12 +194,12 @@ export function createElementActionMenu({
 
       case 'slideout': {
         const entryTypeId = currentEntryTypeId?.();
-
-        void openSlideout(
+        const url =
           behavior.entryTypeFromField && entryTypeId
             ? Craft.getCpUrl(`settings/entry-types/${entryTypeId}`)
-            : behavior.url
-        );
+            : behavior.url;
+        // The store sends focus to the menu's button once the item is hidden.
+        void openSlideout(url, trigger ? {opener: trigger} : {});
 
         return;
       }
@@ -230,7 +226,7 @@ export function createElementActionMenu({
         return;
 
       case 'replaceFile':
-        replaceFile(behavior.assetId);
+        replaceAssetFile(behavior.assetId, reload);
 
         return;
 
@@ -259,6 +255,19 @@ export function createElementActionMenu({
         void openImageEditorDialog(behavior.settings, (result) => {
           if (!result.newAssetId) {
             reload();
+            return;
+          }
+
+          // Saved as a new asset, which takes the edited one's place wherever
+          // the panel was opened from; the panel is still editing the old one.
+          if (slideout) {
+            slideout.saved({
+              data: {
+                replacedAssetId: behavior.assetId,
+                newAssetId: result.newAssetId,
+              },
+            });
+            slideout.close({force: true});
           }
         });
     }
@@ -310,80 +319,18 @@ export function createElementActionMenu({
     }
   }
 
-  /**
-   * Posts to an action the browser should handle itself — a file download,
-   * which can't come back through Inertia.
-   */
-  function submitNativeForm(action: string, params: UiValues): void {
-    const form = document.createElement('form');
-    form.method = 'post';
-    form.action = action;
-    form.hidden = true;
+  return dispatch;
+}
 
-    const fields = {...params};
-    if (Craft.csrfTokenName) {
-      fields[Craft.csrfTokenName] = Craft.csrfTokenValue;
-    }
-
-    for (const [name, value] of Object.entries(fields)) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = name;
-      input.value = String(value);
-      form.append(input);
-    }
-
-    document.body.append(form);
-    form.submit();
-    form.remove();
-  }
-
-  /**
-   * Swaps the asset's file for a newly uploaded one through the native
-   * uploader, then reloads so the filename, size, dimensions, and thumbnail all
-   * come back from the server together.
-   */
-  function replaceFile(assetId: number): void {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.name = 'replaceFile';
-    input.hidden = true;
-    document.body.append(input);
-
-    const uploaderSettings = {
-      dropZone: null,
-      fileInput: input,
-      paramName: 'replaceFile',
-      replace: true,
-    };
-    Object.assign(uploaderSettings, {
-      on: {
-        done: ({result}) => {
-          if (result?.error) {
-            Craft.cp?.displayError?.(result.error);
-
-            return;
-          }
-
-          Craft.cp?.displayNotice?.(t('New file uploaded.'));
-          Craft.broadcaster?.postMessage({event: 'saveElement', id: assetId});
-          reload();
-        },
-        fail: ({error, canceled}) => {
-          if (!canceled) {
-            Craft.cp?.displayError?.(
-              error instanceof Error ? error.message : t('Replace file failed.')
-            );
-          }
-        },
-        settled: () => input.remove(),
-      } satisfies UploaderCallbacks,
-    });
-    const uploader = new Uploader(input, uploaderSettings);
-
-    uploader.setParams({assetId});
-    input.click();
-  }
+/**
+ * Builds the descriptor-to-{@link ActionItem} mapper, dispatcher and all.
+ *
+ * Separate from {@link useElementActionMenu} so a caller with many menus — a
+ * relation field drawing one per chip — can map them all through a single
+ * dispatcher instead of standing up a computed per element.
+ */
+export function createElementActionMenu(options: Options = {}) {
+  const dispatch = createElementActionDispatcher(options);
 
   return (items: Array<ElementActionMenuItem>): Array<ActionItem> =>
     items.map(
@@ -395,7 +342,8 @@ export function createElementActionMenu({
               icon: item.icon,
               iconColor: item.color,
               variant: item.destructive ? 'danger' : undefined,
-              onClick: () => dispatch(item.behavior, item.destructive),
+              onClick: (event: Event) =>
+                dispatch(item.behavior, item.destructive, event),
             }
     );
 }

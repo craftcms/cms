@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Conditions\OptionsFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
@@ -54,7 +55,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
+abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
 {
     /**
      * @var bool Whether the field should support multiple selections
@@ -317,13 +318,13 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $columns['icon'] = ['heading' => t('Icon'), 'type' => 'icon', 'class' => 'thin'];
         }
         if (static::$optionColors) {
-            $columns['color'] = ['heading' => t('Color'), 'type' => 'color'];
+            $columns['color'] = ['heading' => t('Color'), 'type' => 'color', 'class' => 'thin'];
         }
         $columns['default'] = [
             'heading' => t('Default?'),
             'type' => 'checkbox',
             'radioMode' => ! static::$multi,
-            'class' => 'thin',
+            'class' => 'thin centered',
         ];
 
         $rows = array_map(function (array $option): array {
@@ -823,5 +824,23 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }
 
         return null;
+    }
+
+    /** @return array<string, mixed> */
+    public function getInputSchema(): array
+    {
+        $values = array_values(array_map(
+            static fn (array $option): string => (string) $option['value'],
+            array_filter($this->options, static fn (array $option): bool => isset($option['value'])),
+        ));
+        $itemSchema = ['type' => 'string'];
+
+        if (! $this->customOptions && $values !== []) {
+            $itemSchema['enum'] = $values;
+        }
+
+        return $this->getIsMultiOptionsField()
+            ? ['type' => 'array', 'items' => $itemSchema]
+            : $itemSchema;
     }
 }

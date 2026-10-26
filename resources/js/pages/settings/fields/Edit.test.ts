@@ -3,6 +3,7 @@ import {setIconResolver} from '@craftcms/ui/utilities/icons';
 import {nothing} from 'lit';
 import {afterEach, beforeAll, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {UiChange, UiPayload} from '@/modules/ui/types';
+import {DetailsScreen} from '@/test/DetailsScreen';
 import Edit from './Edit.vue';
 
 beforeAll(() => setIconResolver(() => nothing));
@@ -25,15 +26,6 @@ vi.mock('@/common/components/DynamicHtmlRenderer.vue', () => ({
   default: defineComponent({
     props: {html: String},
     setup: (props) => () => h('div', {class: 'details-html'}, props.html),
-  }),
-}));
-
-vi.mock('@/common/components/LayoutSlot.vue', () => ({
-  default: defineComponent({
-    setup:
-      (_, {slots}) =>
-      () =>
-        h('div', slots.default?.()),
   }),
 }));
 
@@ -80,15 +72,20 @@ afterEach(() => {
 });
 
 function mount(details: string | null = null): void {
-  app = createApp(Edit, {
-    ui,
-    submit: {method: 'post', url: '/actions/fields/store'},
-    refreshUrl: '/actions/fields/render-ui',
-    supportedTranslationMethods: {
-      OldField: ['none', 'custom'],
-      NewField: ['none'],
-    },
-    details,
+  app = createApp({
+    render: () =>
+      h(DetailsScreen, () =>
+        h(Edit, {
+          ui,
+          submit: {method: 'post', url: '/actions/fields/store'},
+          refreshUrl: '/actions/fields/render-ui',
+          supportedTranslationMethods: {
+            OldField: ['none', 'custom'],
+            NewField: ['none'],
+          },
+          details,
+        })
+      ),
   });
   app.mount(container);
 }
@@ -123,7 +120,9 @@ it('saves and starts another field from the ui action', async () => {
 
 it('shows the field’s details in an Info panel', async () => {
   mount('<dl>ID 1</dl>');
-  await nextTick();
+  await vi.waitFor(() =>
+    expect(container.querySelector('craft-disclosure')).not.toBeNull()
+  );
 
   expect(container.querySelector('craft-disclosure > button')?.id).toBe(
     'details-panel-info'

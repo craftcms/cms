@@ -50,9 +50,9 @@ it('opens a folder with the current view and fresh pagination', () => {
   };
 
   expect(
-    itemBehavior.onClick?.(
+    itemBehavior.onKeydown?.(
       folder,
-      new MouseEvent('click', {bubbles: true, cancelable: true})
+      new KeyboardEvent('keydown', {key: 'Enter', cancelable: true})
     )
   ).toBe(true);
   expect(visitedUrl().pathname).toBe('/cp/assets/photos/products');
@@ -105,6 +105,43 @@ it('opens a folder from its title link, unless the click is modified', () => {
 
   link.remove();
 });
+
+// A folder only opens from its link, or Enter. Anywhere else, a click or Space
+// selects it, as it would an asset — in a table row, a card or a thumb alike.
+it.each([
+  ['table row', () => document.createElement('tr')],
+  ['card', () => document.createElement('craft-card')],
+  ['thumb', () => document.createElement('li')],
+])(
+  'leaves a click or Space on a folder %s, outside its link, to selection',
+  (_, createItem) => {
+    const {itemBehavior} = useAssetIndexItemBehavior({visit});
+    const folder = {
+      id: 'folder:7',
+      isFolder: true,
+      folderUrl: '/cp/assets/photos/products',
+    };
+    const item = createItem();
+    const body = item.appendChild(document.createElement('span'));
+    const click = new MouseEvent('click', {bubbles: true, cancelable: true});
+    Object.defineProperty(click, 'target', {value: body});
+    const space = new KeyboardEvent('keydown', {key: ' ', cancelable: true});
+    Object.defineProperty(space, 'target', {value: item});
+
+    expect(itemBehavior.onClick?.(folder, click)).toBe(false);
+    expect(itemBehavior.onKeydown?.(folder, space)).toBe(false);
+    expect(visit).not.toHaveBeenCalled();
+
+    const enter = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      cancelable: true,
+    });
+    Object.defineProperty(enter, 'target', {value: item});
+
+    expect(itemBehavior.onKeydown?.(folder, enter)).toBe(true);
+    expect(visit).toHaveBeenCalledTimes(1);
+  }
+);
 
 it('marks assets and folders for drag-and-drop', () => {
   const {itemBehavior} = useAssetIndexItemBehavior({visit});
@@ -164,4 +201,77 @@ it('closes the open preview on Shift+Space', () => {
   );
   expect(hidePreview).toHaveBeenCalledOnce();
   expect(PreviewFileModal).not.toHaveBeenCalled();
+});
+
+/** Double-clicks `target` inside `row`, handing the event to `onDblClick`. */
+function dblClick(
+  row: HTMLElement,
+  target: HTMLElement,
+  handle: (event: MouseEvent) => boolean | undefined
+): boolean | undefined {
+  let result: boolean | undefined;
+  row.addEventListener(
+    'dblclick',
+    (event) => {
+      result = handle(event as MouseEvent);
+    },
+    {once: true}
+  );
+  target.dispatchEvent(
+    new MouseEvent('dblclick', {bubbles: true, cancelable: true})
+  );
+
+  return result;
+}
+
+function folderRow(): {
+  row: HTMLElement;
+  body: HTMLElement;
+  button: HTMLElement;
+} {
+  const row = document.createElement('div');
+  const body = document.createElement('span');
+  const button = document.createElement('button');
+  row.append(body, button);
+  document.body.append(row);
+
+  return {row, body, button};
+}
+
+const folder = {
+  id: 'folder:7',
+  isFolder: true,
+  folderUrl: '/cp/assets/photos/products',
+  folderId: 7,
+};
+
+it('opens a folder when its row, card or thumb is double-clicked', () => {
+  const {itemBehavior} = useAssetIndexItemBehavior({visit});
+  const {row, body} = folderRow();
+
+  expect(
+    dblClick(row, body, (event) => itemBehavior.onDblClick?.(folder, event))
+  ).toBe(true);
+  expect(visitedUrl().pathname).toBe('/cp/assets/photos/products');
+});
+
+it('leaves a double-click on a control inside a folder to the control', () => {
+  const {itemBehavior} = useAssetIndexItemBehavior({visit});
+  const {row, button} = folderRow();
+
+  // Still handled, so the index doesn't try to edit the folder instead.
+  expect(
+    dblClick(row, button, (event) => itemBehavior.onDblClick?.(folder, event))
+  ).toBe(true);
+  expect(visit).not.toHaveBeenCalled();
+});
+
+it('leaves double-clicked assets to the index, which edits them', () => {
+  const {itemBehavior} = useAssetIndexItemBehavior({visit});
+  const {row, body} = folderRow();
+
+  expect(
+    dblClick(row, body, (event) => itemBehavior.onDblClick?.({id: 42}, event))
+  ).toBe(false);
+  expect(visit).not.toHaveBeenCalled();
 });

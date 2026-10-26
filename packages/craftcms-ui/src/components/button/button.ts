@@ -69,7 +69,19 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     // sets this to "submit"; we override it after super().)
     this.type = 'button';
     this.addEventListener('mousedown', this.#releaseOnDragEnd);
+    this.addEventListener('click', this.#blockDisabledClick, {capture: true});
   }
+
+  /**
+   * A disabled button that stays reachable by the pointer still receives
+   * clicks, so they stop here, before any of the page's own listeners.
+   */
+  #blockDisabledClick = (event: Event) => {
+    if (this.disabled) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  };
 
   override connectedCallback() {
     // Set link-appropriate host state *before* Lion runs, so it skips its
@@ -109,11 +121,6 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     this.#contentObserver?.disconnect();
     this.#contentObserver = null;
     this.#stopAwaitingRender();
-
-    if (this.announcementTimer) {
-      clearTimeout(this.announcementTimer);
-      this.announcementTimer = null;
-    }
   }
 
   /**
@@ -201,20 +208,22 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
     if (changedProperties.has('loading')) {
       if (this.loading) {
         this.announceLoading();
+      } else if (changedProperties.get('loading')) {
+        this.clearLoadingAnnouncement();
       }
     }
   }
 
+  /**
+   * "Loading" stays in the live region until loading ends, since the region
+   * sits inside the button and some screen readers read it as button content.
+   */
   private announceLoading() {
     this.liveRegion.textContent = t('Loading');
+  }
 
-    if (this.announcementTimer) {
-      clearTimeout(this.announcementTimer);
-    }
-
-    this.announcementTimer = setTimeout(() => {
-      this.liveRegion.textContent = '';
-    }, 5000);
+  private clearLoadingAnnouncement() {
+    this.liveRegion.textContent = '';
   }
 
   private syncLinkHostState() {
@@ -306,6 +315,13 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
    * name, so the check waits until it's visible.
    */
   #checkAccessibleName(): void {
+    // Removed while the check waited on its icons. Detached, the button is its
+    // own root, which can't resolve an `aria-labelledby` ID, and there's no
+    // longer anything to flag.
+    if (!this.isConnected) {
+      return;
+    }
+
     // In link mode the host is role="presentation" (name not computable on
     // it); the real accessible element is the inner anchor.
     const nameTarget = this.isLink
@@ -398,14 +414,21 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;
 
-  /** Keep the button in the tab order when disabled. */
-  @property({attribute: 'focusable-when-disabled', type: Boolean})
+  /**
+   * Keep the button in the tab order when disabled, and reachable by the
+   * pointer, so a tooltip can say why it's disabled.
+   */
+  @property({
+    attribute: 'focusable-when-disabled',
+    type: Boolean,
+    reflect: true,
+  })
   focusableWhenDisabled: boolean = false;
 
   /**
    * Pulls the button out by the space around its content, so its label or
    * icon lines up with the text beside it. Meant for buttons with no
-   * background, like `plain`. Present with no value, it applies on every
+   * background, like `plain` and `danger-plain`. Present with no value, it applies on every
    * side. Otherwise a space-separated list of `inline`, `block`,
    * `inline-start`, `inline-end`, `block-start` and `block-end`.
    */
@@ -469,8 +492,6 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
 
   /** The caller's `type` before link mode forced it to "button". */
   private originalType: string | null = null;
-
-  private announcementTimer: ReturnType<typeof setTimeout> | null = null;
 
   private get isLink(): boolean {
     return !!this.href && !this.disabled;

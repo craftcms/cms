@@ -30,7 +30,8 @@ class TableColumn
 
         $type = $config['type'] ?? 'singleline';
         $control = match ($type) {
-            'singleline', 'email', 'url' => Text::make([$key])->inputType($type === 'singleline' ? 'text' : $type),
+            'singleline' => Textarea::make([$key])->rows(1)->singleLine()->monospace($config['code'] ?? false),
+            'email', 'url' => Text::make([$key])->inputType($type),
             'heading' => Text::make([$key])->mode(ControlMode::ReadOnly),
             'multiline' => Textarea::make([$key])->rows($config['rows'] ?? 1)->monospace($config['code'] ?? false),
             'number' => Number::make([$key])->min($config['min'] ?? null)->max($config['max'] ?? null)->step($config['step'] ?? null),

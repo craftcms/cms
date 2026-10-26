@@ -127,6 +127,7 @@
     "playwright": "^1.59.1",
     "plop": "^4.0.5",
     "recursive-copy": "^2.0.14",
+    "refractor": "^3.6.0",
     "remark-gfm": "catalog:",
     "rimraf": "^6.1.3",
     "storybook": "catalog:",
@@ -147,6 +148,7 @@
     "@simplewebauthn/browser": "catalog:",
     "@vitest/browser-playwright": "4.1.10",
     "autosize": "^6.0.1",
+    "diff": "^9.0.0",
     "dom-input-range": "^2.0.1",
     "inputmask": "catalog:"
   },

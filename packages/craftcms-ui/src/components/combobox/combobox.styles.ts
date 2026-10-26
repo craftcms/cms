@@ -17,8 +17,14 @@ export default css`
     ${baseComboboxStyles}
   }
 
+  /* Lion sets the field's width as an inline min-width, which wins over this cap on wider fields */
+  #overlay-content-node-wrapper {
+    max-inline-size: min(calc(360rem / 16), calc(100vw - var(--c-spacing-lg)));
+  }
+
   ::slotted([slot='listbox']) {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--c-spacing-xs);
     border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);
@@ -35,13 +41,23 @@ export default css`
     border: 0;
   }
 
+  /*
+    The chevron's padding fills the end of the field beside the clear button, so
+    the whole area is a target for opening the list. It focuses the textbox, so
+    it shows the textbox's cursor.
+  */
   .indicator {
     position: absolute;
-    inset-block-start: 50%;
-    inset-inline-end: var(--c-input-spacing-inline);
-    transform: translateY(-50%);
+    inset-block: 0;
+    inset-inline-end: 0;
     width: 1em;
-    height: 1em;
+    height: auto;
+    padding-inline: calc(var(--c-input-spacing-inline) * 0.5)
+      var(--c-input-spacing-inline);
+  }
+
+  :host(:not([disabled], [readonly])) .indicator {
+    cursor: text;
   }
 
   .clear {
@@ -59,6 +75,10 @@ export default css`
     pointer-events: none;
   }
 
+  .prefix--indicator {
+    display: flex;
+  }
+
   :host([has-prefix-icon]) ::slotted(.form-control) {
     padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
   }
@@ -73,6 +93,13 @@ export default css`
   }
 
   :host([multiple-choice]) .input-group__input:focus-within {
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
+  /* Lion turns off the textbox's own outline, so draw the ring on its wrapper */
+  :host(:not([multiple-choice])) ::slotted(.form-control:focus-within) {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);

@@ -94,6 +94,12 @@ describe('Translate', () => {
       // Token with type and format
       ['{count, number, integer}', ['', ['count', ' number', ' integer'], '']],
 
+      // Commas after the type stay in the last part
+      [
+        '{num, plural, =1{one, at least} other{#, or more}}',
+        ['', ['num', ' plural', ' =1{one, at least} other{#, or more}'], ''],
+      ],
+
       // Complex plural pattern
       [
         '{num, plural, =1{user} other{users}}',
@@ -368,6 +374,11 @@ describe('Translate', () => {
         'You have {count, plural, =0{no items} =1{one item} other{# items}}',
         {count: 0},
         'You have no items',
+      ],
+      [
+        '{num, plural, =1{# change couldn’t be applied, because its field is gone.} other{# changes couldn’t be applied, because their fields are gone.}}',
+        {num: 2},
+        '2 changes couldn’t be applied, because their fields are gone.',
       ],
       [
         'You have {count, plural, =0{no items} =1{one item} other{# items}}',

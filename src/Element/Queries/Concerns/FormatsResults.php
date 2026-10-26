@@ -232,6 +232,14 @@ trait FormatsResults
             return;
         }
 
+        $placeholderDefault = null;
+
+        foreach ($orders as $order) {
+            if (($order['column'] ?? null) instanceof OrderByPlaceholderExpression && $order['column']->default !== null) {
+                $placeholderDefault = $order['column']->default;
+            }
+        }
+
         $elementQuery->query->orders = array_filter(
             array: $orders,
             callback: fn ($order) => ! isset($order['column']) || ! $order['column'] instanceof OrderByPlaceholderExpression,
@@ -239,6 +247,12 @@ trait FormatsResults
 
         // Order by was set
         if (count($elementQuery->query->orders) > 0) {
+            return;
+        }
+
+        if ($placeholderDefault !== null) {
+            $elementQuery->orderBy($placeholderDefault);
+
             return;
         }
 

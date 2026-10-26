@@ -7,6 +7,7 @@ import type {
 } from '@/modules/elements/composables/useElementEditor';
 import WorkflowUserReviewActions from '../user-review/WorkflowUserReviewActions.vue';
 import WorkflowDetailsPanel from './WorkflowDetailsPanel.vue';
+import {ReleaseEditorActionsKey} from '@/modules/releases/releaseEditor';
 
 type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
 
@@ -56,7 +57,7 @@ describe('WorkflowDetailsPanel', () => {
     vi.unstubAllGlobals();
   });
 
-  it('enables applying a draft after its review is approved', async () => {
+  it('enables applying a draft and adding it to a release after its review is approved', async () => {
     const approvedReview = review({
       status: 'approved',
       statusLabel: 'Approved',
@@ -108,6 +109,18 @@ describe('WorkflowDetailsPanel', () => {
       data: JSON.stringify({
         workflowReview: approvedReview,
         editorActions: approvedEditorActions,
+        release: {
+          canAddToRelease: true,
+          canCreateRelease: true,
+          releaseOptions: [
+            {
+              id: 4,
+              name: 'October launch',
+              status: 'draft',
+              targetDate: '2026-10-16T06:30:00+09:00',
+            },
+          ],
+        },
       }),
     });
 
@@ -123,6 +136,9 @@ describe('WorkflowDetailsPanel', () => {
       canonicalId: 12,
       siteId: 1,
       editorActions: pendingEditorActions,
+      canAddToRelease: false,
+      canCreateRelease: false,
+      releaseOptions: [],
     } as unknown as ElementEditPayload);
     const updatePayload: ElementEditPayloadUpdater = (update) => {
       const patch =
@@ -142,11 +158,19 @@ describe('WorkflowDetailsPanel', () => {
         }),
     });
     app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+    const releaseActions = {select: vi.fn(), create: vi.fn()};
+    app.provide(ReleaseEditorActionsKey, releaseActions);
     app.component(
       'craft:user-review-workflow-stage-actions',
       WorkflowUserReviewActions
     );
     app.mount(container);
+
+    expect(
+      [...container.querySelectorAll<HTMLElement>('craft-button')].find(
+        (button) => button.textContent?.trim() === 'Add to release'
+      )
+    ).toBeUndefined();
 
     const submitReview = [
       ...container.querySelectorAll<HTMLElement>('craft-button'),
@@ -161,8 +185,93 @@ describe('WorkflowDetailsPanel', () => {
     const applyDraft = [
       ...container.querySelectorAll<HTMLElement>('craft-button'),
     ].find((button) => button.textContent?.trim() === 'Apply draft')!;
+    const addToRelease = [
+      ...container.querySelectorAll<HTMLElement>('craft-button'),
+    ].find((button) => button.textContent?.trim() === 'Add to release')!;
     expect(applyDraft).toBeTruthy();
+    expect(addToRelease).toBeTruthy();
     applyDraft.click();
     expect(submitAction).toHaveBeenCalledWith(approvedEditorActions.buttons[0]);
+
+    await vi.waitFor(() =>
+      expect(
+        [...container!.querySelectorAll<HTMLElement>('craft-action-item')].find(
+          (item) => item.textContent?.trim().startsWith('October launch')
+        )
+      ).toBeDefined()
+    );
+    const releaseItem = [
+      ...container.querySelectorAll<HTMLElement>('craft-action-item'),
+    ].find((item) => item.textContent?.trim().startsWith('October launch'))!;
+    releaseItem.click();
+
+    expect(releaseActions.select).toHaveBeenCalledWith({
+      id: 4,
+      name: 'October launch',
+      status: 'draft',
+      targetDate: '2026-10-16T06:30:00+09:00',
+    });
+  });
+
+  it('explains instead of applying an approved draft the release schedule holds back', async () => {
+    const applyDraft = {
+      label: 'Apply draft',
+      actionUrl: '/actions/elements/apply-draft',
+      params: {workflowRunId: 41, workflowCurrentStage: 1},
+      redirect: null,
+      disabled: true,
+      disabledReason: 'Cancel the release schedule before applying this draft.',
+      includeFormData: false,
+    };
+    const submitAction = vi.fn();
+
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(WorkflowDetailsPanel, {
+          payload: {
+            workflow: {
+              current: review({
+                status: 'approved',
+                applyDisabledReason: null,
+                actionComponent: null,
+                showDefaultActions: true,
+                actionProps: {},
+                canApply: true,
+              }),
+              draftReviews: [],
+            },
+            applyDraftUrl: '/actions/elements/apply-draft',
+            draftId: 7,
+            isProvisionalDraft: false,
+            elementType: 'craft\\elements\\Entry',
+            canonicalId: 12,
+            siteId: 1,
+            editorActions: {primary: null, menu: [], buttons: [applyDraft]},
+            canAddToRelease: false,
+            canCreateRelease: false,
+            releaseOptions: [],
+          } as unknown as ElementEditPayload,
+          updatePayload: vi.fn(),
+          submitAction,
+        }),
+    });
+    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+    app.mount(container);
+    await nextTick();
+
+    const button = [
+      ...container.querySelectorAll<HTMLElement & {disabled: boolean}>(
+        'craft-button'
+      ),
+    ].find((element) => element.textContent?.trim() === 'Apply draft')!;
+    button.click();
+
+    expect(submitAction).not.toHaveBeenCalled();
+    expect(button.disabled).toBe(true);
+    expect(
+      container.querySelector(`craft-tooltip[for="${button.id}"]`)?.textContent
+    ).toContain('Cancel the release schedule before applying this draft.');
   });
 });

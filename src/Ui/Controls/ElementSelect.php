@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -235,7 +236,7 @@ class ElementSelect extends Control
         return [
             'elementType' => $this->elementType,
             'customElement' => self::customElement($this->elementType),
-            'elements' => array_map(fn (ElementInterface $element): array => self::elementPayload($element) + self::viewPayload($element, $this->viewMode), $elements),
+            'elements' => array_map(fn (ElementInterface $element): array => self::presentation($element, $this->viewMode), $elements),
             'elementDisplayName' => $this->elementType::lowerDisplayName(),
             'sources' => $this->sources,
             'criteria' => $this->criteria,
@@ -247,6 +248,18 @@ class ElementSelect extends Control
             'viewMode' => $this->viewMode,
             ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
         ];
+    }
+
+    /**
+     * What the control draws an element from: its chip data, plus whatever the
+     * view mode needs on top of that. Elements added client-side, such as pasted
+     * ones, are sent in the same shape.
+     *
+     * @return array<string, mixed>
+     */
+    public static function presentation(ElementInterface $element, string $viewMode = self::VIEW_MODE_LIST): array
+    {
+        return self::elementPayload($element) + self::viewPayload($element, $viewMode);
     }
 
     /**
@@ -269,7 +282,7 @@ class ElementSelect extends Control
         }
 
         if (in_array($viewMode, [self::VIEW_MODE_LIST, self::VIEW_MODE_LIST_INLINE], true)) {
-            return ['thumbHtml' => $element->getThumbHtml(30, ImageTransformMode::Fit)];
+            return ['thumbHtml' => $element->getThumbHtml(ElementHtml::CHIP_THUMB_SIZE, ImageTransformMode::Fit)];
         }
 
         return [];
@@ -326,6 +339,8 @@ class ElementSelect extends Control
             'draftId' => $element->draftId,
             'revisionId' => $element->revisionId,
             'status' => self::statusPayload($element),
+            // The chip takes the element's color (an entry's type color, say), as element index chips do.
+            'color' => $element instanceof Colorable ? $element->getColor()?->value : null,
             'actions' => $element->actionMenuDescriptors(ElementActionContext::Field),
         ];
     }

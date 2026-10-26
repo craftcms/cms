@@ -43,7 +43,7 @@ beforeEach(function (): void {
 
     $this->callActivity = function (string $tool, array $arguments = [], ?User $actor = null): TestResponse {
         $actor ??= $this->author;
-        Passport::actingAs($actor, ['mcp:use'], 'craft-mcp');
+        Passport::actingAs($actor, ['mcp:admin'], 'craft-mcp');
 
         return McpRequest::send($this, 'tools/call', [
             'name' => $tool,

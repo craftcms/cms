@@ -58,6 +58,8 @@ it('runs the schedule hook immediately when the schedule was already resolved', 
 });
 
 it('does not register scheduled tasks when the plugin has no schedule hook', function () {
+    $schedule = app(Schedule::class);
+    $baselineEventCount = count($schedule->events());
     $plugin = TestPlugin::create([
         'handle' => 'test-plugin',
         'name' => 'Test Plugin',
@@ -65,7 +67,7 @@ it('does not register scheduled tasks when the plugin has no schedule hook', fun
 
     $plugin->bootHasScheduling();
 
-    expect(app(Schedule::class)->events())->toBeEmpty();
+    expect($schedule->events())->toHaveCount($baselineEventCount);
 });
 
 class ScheduledTestPlugin extends TestPlugin

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Http\Controllers\SettingsController as AiSettingsController;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
@@ -33,6 +34,7 @@ use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\QueueController;
+use CraftCms\Cms\Http\Controllers\ReleasesController;
 use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
@@ -107,7 +109,7 @@ Route::allowDuringMaintenance()->prefix('updates')->name('updates.')->group(func
 
 Route::allowDuringMaintenance()->middleware(RunQueue::class)->group(function () {
     Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
-    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME);
+    Route::post(CpAuthPath::Login->value, [LoginController::class, 'attemptLogin'])->middleware('throttle:'.LoginRateLimiter::NAME)->name('login.attempt');
     Route::match(['get', 'post'], CpAuthPath::Logout->value, [LoginController::class, 'logout'])->name('logout');
     Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm'])->middleware(EnsureTwoFactorChallengeIsRecent::class);
     Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
@@ -124,6 +126,22 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('notifications/mark-read', [NotificationsController::class, 'markRead']);
+
+    Route::middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
+        Route::resource('releases', ReleasesController::class)
+            ->except('edit')
+            ->whereNumber('release');
+
+        Route::prefix('releases/{release}')->name('releases.')->whereNumber('release')->group(function () {
+            Route::post('validate', [ReleasesController::class, 'validateRelease'])->name('validate');
+            Route::get('schedule', [ReleasesController::class, 'scheduleModal'])->name('scheduleModal');
+            Route::post('schedule', [ReleasesController::class, 'schedule'])->name('schedule');
+            Route::post('unschedule', [ReleasesController::class, 'unschedule'])->name('unschedule');
+            Route::post('publish', [ReleasesController::class, 'publish'])->name('publish');
+            Route::post('drafts', [ReleasesController::class, 'attach'])->name('attach');
+            Route::delete('drafts/{draft}', [ReleasesController::class, 'detach'])->whereNumber('draft')->name('detach');
+        });
+    });
 
     Route::prefix('workflows')->middleware(RequireEdition::class.':'.Edition::Pro->value)->group(function () {
         Route::post('submit', [WorkflowTransitionsController::class, 'submit']);
@@ -289,6 +307,15 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         // Index page
         Route::get('settings', SettingsIndexController::class)
             ->name('settings.index');
+
+        Route::get('settings/ai', [AiSettingsController::class, 'index'])
+            ->name('settings.ai.index');
+        Route::post('settings/ai', [AiSettingsController::class, 'store'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.ai.store');
+        Route::post('settings/ai/render-ui', [AiSettingsController::class, 'renderUi'])
+            ->middleware(RequireAdminChanges::class)
+            ->name('settings.ai.render-ui');
 
         Route::get('settings/mcp', [McpSettingsController::class, 'index'])
             ->name('settings.mcp.index');

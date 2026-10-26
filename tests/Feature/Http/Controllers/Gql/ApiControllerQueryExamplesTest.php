@@ -147,3 +147,19 @@ function createGraphqlQueryExamplesFixture(): array
         'dessert' => $dessert,
     ];
 }
+
+it('applies the orderBy argument’s sort direction', function (string $orderBy, array $expected) {
+    $response = graphQL(<<<GRAPHQL
+{
+  entries(section: "ingredients", orderBy: "$orderBy") {
+    slug
+  }
+}
+GRAPHQL);
+
+    expect(collect($response->json('data.entries'))->pluck('slug')->all())->toBe($expected);
+})->with([
+    'ascending' => ['slug ASC', ['pepper', 'salt']],
+    'descending' => ['slug DESC', ['salt', 'pepper']],
+    'multiple columns' => ['sectionId, slug desc', ['salt', 'pepper']],
+]);

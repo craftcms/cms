@@ -302,7 +302,7 @@ class Tags extends Component
             $tags = Tag::find()
                 ->groupId($tagGroupRecord->id)
                 ->trashed()
-                ->andWhere(['tags.deletedWithGroup' => true])
+                ->where('tags.deletedWithGroup', true)
                 ->all();
 
             Elements::restoreElements($tags);

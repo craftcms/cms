@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Actions\PreviewAsset;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Actions\ChangeSortOrder;
 use CraftCms\Cms\Element\Actions\Copy;
 use CraftCms\Cms\Element\Actions\Delete;
@@ -92,6 +94,16 @@ it('serializes client-owned element actions as events', function () {
 
     expect($duplicate['action']['type'])->toBe('http')
         ->and($duplicate['action']['url'])->toContain('element-indexes/perform-action');
+});
+
+it('serializes Preview file as an event, since it has nothing to perform', function () {
+    $action = $this->elementActions->createAction(PreviewAsset::class, Asset::class);
+    $items = $this->elementActions->serializeActionItems([$action]);
+
+    expect($items[0]['action'])->toBe([
+        'type' => 'event',
+        'name' => 'craft:preview-file',
+    ]);
 });
 
 it('serializes standard selection capabilities for page bulk actions', function () {

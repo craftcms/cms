@@ -1,77 +1,65 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
 # Do not export those files in the Composer archive (lighter dependency)
 /.agents/ export-ignore
 /.ai/ export-ignore
-/.browserslistrc export-ignore
+/.amp/ export-ignore
 /.claude/ export-ignore
 /.codecov.yml export-ignore
 /.codex/ export-ignore
-/.ddev/ export-ignore
+/.dockerignore export-ignore
+/.editorconfig export-ignore
 /.env.example export-ignore
 /.git-blame-ignore-revs export-ignore
 /.gitattributes export-ignore
 /.github/ export-ignore
 /.gitignore export-ignore
-/.lando.yml export-ignore
 /.mcp.json export-ignore
+/.node-version export-ignore
+/.npmrc export-ignore
+/.storybook/ export-ignore
+/.stylelintignore export-ignore
+/.stylelintrc.json export-ignore
 /.vite-hooks/ export-ignore
+/AGENTS.md export-ignore
 /CHANGELOG-WIP.md export-ignore
 /CHANGELOG.md export-ignore
+/CONTRIBUTING.md export-ignore
 /README.md export-ignore
 /artisan export-ignore
 /boost.json export-ignore
-/codeception.yml export-ignore
 /composer.lock export-ignore
 /crowdin.yml export-ignore
-/ecs.php export-ignore
-/gulpfile.js export-ignore
-/lerna.json export-ignore
-/lib/craft/behaviors/CustomFieldBehavior.php export-ignore
+/docs/ export-ignore
 /opencode.json export-ignore
-/pnpm-lock.yaml export-ignore
 /package.json export-ignore
-/pnpm-workspace.yaml export-ignore
 /packages/ export-ignore
 /phpstan.neon export-ignore
+/phpunit.xml.dist export-ignore
+/pint.json export-ignore
+/playwright.config.js export-ignore
+/pnpm-lock.yaml export-ignore
+/pnpm-workspace.yaml export-ignore
+/postcss.config.js export-ignore
+/rector.php export-ignore
 /resources/css/ export-ignore
 /resources/js/ export-ignore
 /scripts/ export-ignore
-/src/web/assets/**/src/ export-ignore
-/stubs/ export-ignore
+/testbench.yaml export-ignore
 /tests/ export-ignore
 /tests-playwright/ export-ignore
 /tsconfig.json export-ignore
-/webpack.config.js export-ignore
+/vite.config.js export-ignore
 
-# Ignore exporting the adapter as it will be split off and released on its own.
+# Ignore exporting the adapter and built assets as they are split off and released on their own.
 /yii2-adapter export-ignore
+/cms-assets export-ignore
 
 # Workbench is only for development
 /workbench export-ignore
 
 # Identify generated files
-/resources/translations/a*/app.php linguist-generated=true
-/resources/translations/c*/app.php linguist-generated=true
-/resources/translations/d*/app.php linguist-generated=true
-/resources/translations/en-GB/app.php linguist-generated=true
-/resources/translations/es/app.php linguist-generated=true
-/resources/translations/f*/app.php linguist-generated=true
-/resources/translations/h*/app.php linguist-generated=true
-/resources/translations/i*/app.php linguist-generated=true
-/resources/translations/j*/app.php linguist-generated=true
-/resources/translations/k*/app.php linguist-generated=true
-/resources/translations/n*/app.php linguist-generated=true
-/resources/translations/p*/app.php linguist-generated=true
-/resources/translations/r*/app.php linguist-generated=true
-/resources/translations/s*/app.php linguist-generated=true
-/resources/translations/t*/app.php linguist-generated=true
-/resources/translations/z*/app.php linguist-generated=true
-/src/web/assets/**/dist/**/*.css linguist-generated=true
-/src/web/assets/**/dist/**/*.css.map linguist-generated=true
-/src/web/assets/**/dist/**/*.min.js linguist-generated=true
-/src/web/assets/**/dist/**/*.min.js.map linguist-generated=true
-
-# Built CMS assets generated files
-/cms-assets/resources/**/* linguist-generated=true
-
-# Auto detect text files and perform LF normalization
-* text=auto
+/resources/translations/*/app.php linguist-generated=true
+/resources/translations/en/app.php -linguist-generated
+/packages/craftcms-graphiql/dist/** linguist-generated=true

@@ -8,6 +8,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Date;
 use Override;
 
 class SectionSiteSettingsFactory extends Factory
@@ -23,8 +24,8 @@ class SectionSiteSettingsFactory extends Factory
             'sectionId' => Section::factory(),
             'siteId' => Site::factory(),
             'hasUrls' => $this->faker->boolean(),
-            'dateCreated' => $this->faker->dateTime(),
-            'dateUpdated' => $this->faker->dateTime(),
+            'dateCreated' => $this->faker->dateTime(Date::now()),
+            'dateUpdated' => $this->faker->dateTime(Date::now()),
         ];
     }
 }

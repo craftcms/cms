@@ -14,7 +14,11 @@ import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
  */
 export function useElementIndexViewMode(
   viewState: Ref<ViewState>,
-  visitor: IndexVisitor
+  visitor: IndexVisitor,
+  /** The mode the current payload was rendered for, if it says. */
+  renderedMode: () => ViewMode['mode'] | undefined = () => undefined,
+  /** The modes the index can show, if it's limited to some. */
+  availableModes: () => ViewMode['mode'][] | undefined = () => undefined
 ) {
   const mode = computed<ViewMode['mode']>({
     get: () => viewState.value.mode,
@@ -38,17 +42,31 @@ export function useElementIndexViewMode(
     },
   });
 
-  // On a fresh full-page load the server renders for the default `table` mode
-  // (it has no access to the persisted view state), so if local storage restored
-  // a non-table mode, re-request the server-rendered elements for it. The page
-  // folds this into one mount-time restore visit alongside the sort/column
-  // restores (see `useElementIndex`), so they can't interrupt each other.
+  // The server has no access to the persisted view state, so the first payload
+  // is rendered for the URL's `viewMode`, or else the source's default mode.
+  // Rows rendered for one mode don't draw in another — table rows have no card
+  // HTML — so the two have to agree. The page folds this into one mount-time
+  // restore visit alongside the sort/column restores (see `useElementIndex`),
+  // so they can't interrupt each other.
   function restore(): IndexRestore | null {
     const persisted = viewState.value.mode;
+    const rendered = renderedMode() ?? 'table';
 
+    // A mode named in the URL wins over the persisted one.
+    if (visitor.currentQuery().viewMode !== undefined) {
+      if (rendered !== persisted) {
+        viewState.value.mode = rendered;
+      }
+
+      return null;
+    }
+
+    // Otherwise, re-request the rows for the persisted mode — unless it's one
+    // the index can't show, in which case the view falls back to what was
+    // rendered anyway.
     if (
-      visitor.currentQuery().viewMode !== undefined ||
-      persisted === 'table'
+      persisted === rendered ||
+      availableModes()?.includes(persisted) === false
     ) {
       return null;
     }

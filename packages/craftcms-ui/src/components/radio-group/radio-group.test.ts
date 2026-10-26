@@ -72,3 +72,62 @@ describe('SSR name adoption', () => {
     expect(element.modelValue).toBe('green');
   });
 });
+
+describe('buttons', () => {
+  it('keeps each option a named radio input', async () => {
+    const element = await createFromMarkup(
+      SSR_MARKUP.replace('<craft-radio-group', '<craft-radio-group buttons')
+    );
+    await element.registrationComplete;
+    await element.updateComplete;
+
+    const radios = Array.from(element.querySelectorAll('craft-radio'));
+    const inputs = radios.map((radio) => radio.querySelector('input')!);
+
+    expect(element.getAttribute('role')).toBe('radiogroup');
+    expect(inputs.map((input) => input.type)).toEqual([
+      'radio',
+      'radio',
+      'radio',
+    ]);
+    expect(inputs.map((input) => input.labels?.[0]?.textContent)).toEqual([
+      'Red',
+      'Green',
+      'Blue',
+    ]);
+    expect(radios.map((radio) => radio.hasAttribute('data-button'))).toEqual([
+      true,
+      true,
+      true,
+    ]);
+    expect(
+      radios.map((radio) => [
+        radio.hasAttribute('data-button-start'),
+        radio.hasAttribute('data-button-end'),
+      ])
+    ).toEqual([
+      [true, false],
+      [false, false],
+      [false, true],
+    ]);
+  });
+
+  it('stops drawing buttons when turned off', async () => {
+    const element = await createFromMarkup(
+      SSR_MARKUP.replace('<craft-radio-group', '<craft-radio-group buttons')
+    );
+    await element.registrationComplete;
+
+    element.buttons = false;
+    await element.updateComplete;
+
+    const radios = Array.from(element.querySelectorAll('craft-radio'));
+
+    expect(radios.some((radio) => radio.hasAttribute('data-button'))).toBe(
+      false
+    );
+    expect(
+      radios.some((radio) => radio.hasAttribute('data-button-start'))
+    ).toBe(false);
+  });
+});

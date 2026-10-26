@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use CraftCms\Cms\Asset\Actions\PreviewAsset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\Actions\Copy;
 use CraftCms\Cms\Element\Actions\Delete;
@@ -50,6 +51,7 @@ class ElementActions
      * clicking one dispatches the mapped window event (with the live selection
      * in its detail) instead of POSTing to the perform endpoint. Copy mirrors
      * Craft 5, where it stores the selection in localStorage for paste targets.
+     * Preview has nothing to perform; its only behavior is the modal.
      *
      * @var array<class-string<ElementActionInterface>, string>
      */
@@ -57,6 +59,7 @@ class ElementActions
         Copy::class => 'craft:copy-elements',
         Actions\Edit::class => 'craft:edit-element',
         Actions\View::class => 'craft:view-element',
+        PreviewAsset::class => 'craft:preview-file',
     ];
 
     /**
@@ -65,7 +68,7 @@ class ElementActions
      */
     public function availableActions(string $elementType, string $sourceKey, ElementQueryInterface $elementQuery): array
     {
-        $actions = $elementType::actions($sourceKey);
+        $actions = $this->withCurrentQuery($elementQuery, fn (): array => $elementType::actions($sourceKey));
 
         foreach ($actions as $index => $action) {
             $actions[$index] = $this->createAction($action, $elementType);
@@ -92,6 +95,36 @@ class ElementActions
         }
 
         return $actions;
+    }
+
+    /**
+     * Runs `$callback` with `$elementQuery` as the current element index's
+     * query, as element types read it while defining their actions (Show in
+     * folder only applies to a subfolder search, say), then puts back whatever
+     * was current before.
+     *
+     * @template T
+     *
+     * @param  callable(): T  $callback
+     * @return T
+     */
+    private function withCurrentQuery(ElementQueryInterface $elementQuery, callable $callback): mixed
+    {
+        $currentIndex = app(CurrentElementIndex::class);
+        $wasActive = $currentIndex->isActive();
+        $previousQuery = $currentIndex->query();
+
+        $currentIndex->activate($elementQuery);
+
+        try {
+            return $callback();
+        } finally {
+            if ($wasActive) {
+                $currentIndex->activate($previousQuery);
+            } else {
+                $currentIndex->reset();
+            }
+        }
     }
 
     /**

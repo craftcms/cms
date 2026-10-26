@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -10,6 +11,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
@@ -155,8 +157,8 @@ describe('asset folders', function () {
         $rows = collect(($this->postAssets)()['data']);
 
         expect($rows->pluck('isFolder')->all())->toBe([true, true])
-            ->and($rows->pluck('id')->sort()->values()->all())
-            ->toBe(["folder:{$first}", "folder:{$second}"]);
+            ->and($rows->pluck('id')->all())
+            ->toEqualCanonicalizing(["folder:{$first}", "folder:{$second}"]);
     });
 
     it('links folder titles’ labels to the folder', function () {
@@ -167,6 +169,19 @@ describe('asset folders', function () {
         // Only the label is the link, not the whole chip.
         expect($title)->toStartWith('<craft-chip')
             ->toMatch('/<a class="label-link" href="[^"]*assets\/testvolume\/a-subfolder" data-folder-link>/');
+    });
+
+    it('links folder labels in the card and thumb views', function () {
+        Folders::ensureFolderByFullPathAndVolume('a-subfolder', $this->volume);
+
+        $card = ($this->postAssets)(['viewMode' => 'cards'])['data'][0];
+        $thumb = ($this->postAssets)(['viewMode' => 'thumbs'])['data'][0];
+
+        expect($card['cardContentHtml'])
+            ->toMatch('/<a class="label-link" href="[^"]*assets\/testvolume\/a-subfolder" data-folder-link>/')
+            ->and($thumb['url'])->toBeNull()
+            ->and($thumb['labelUrl'])->toEndWith('assets/testvolume/a-subfolder')
+            ->and($thumb['labelLinkAttributes'])->toBe(['data-folder-link' => '']);
     });
 
     it('lists the requested subfolder, with a trail back to the volume root', function () {
@@ -183,6 +198,29 @@ describe('asset folders', function () {
                 ['Test volume', Folders::getRootFolderByVolumeId($this->volume->id)->id],
                 ['parent', $parent->id],
             ]);
+    });
+
+    it('searches subfolders when asked to, as the assets index does', function () {
+        $child = Folders::ensureFolderByFullPathAndVolume('parent/child', $this->volume);
+        $parent = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'parent/']);
+        $nestedAsset = AssetModel::factory()->createElement([
+            'volumeId' => $this->volume->id,
+            'folderId' => $child->id,
+            'filename' => 'nested-needle.txt',
+            'kind' => 'text',
+        ]);
+        Search::indexElementAttributes($nestedAsset);
+
+        $search = ['folderId' => $parent->id, 'search' => 'nested-needle', 'showFolders' => false];
+        $ids = fn (array $props) => collect($props['data'])->pluck('id')->all();
+
+        $props = ($this->postAssets)($search);
+        expect($props['canSearchSubfolders'])->toBeTrue()
+            ->and($ids($props))->not->toContain($nestedAsset->id);
+
+        $props = ($this->postAssets)([...$search, 'includeSubfolders' => 1]);
+        expect($props['includeSubfolders'])->toBeTrue()
+            ->and($ids($props))->toContain($nestedAsset->id);
     });
 
     it('ignores a requested folder outside the current volume', function () {

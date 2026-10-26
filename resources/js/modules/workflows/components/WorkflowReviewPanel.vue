@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {computed, shallowRef, watch} from 'vue';
   import type {ElementEditorActions} from '@/modules/elements/composables/useElementEditor';
+  import type {WorkflowReleaseState} from '../composables/useWorkflowTransition';
   import WorkflowDefaultActions from './WorkflowDefaultActions.vue';
   import Timeline from './Timeline.vue';
 
@@ -18,6 +19,7 @@
     reviewUpdated: [
       review: WorkflowReviewData,
       editorActions: ElementEditorActions,
+      release: WorkflowReleaseState | null | undefined,
     ];
   }>();
 
@@ -34,10 +36,11 @@
 
   function updateReview(
     value: WorkflowReviewData,
-    editorActions: ElementEditorActions
+    editorActions: ElementEditorActions,
+    release: WorkflowReleaseState | null | undefined
   ): void {
     review.value = value;
-    emit('reviewUpdated', value, editorActions);
+    emit('reviewUpdated', value, editorActions, release);
   }
 </script>
 

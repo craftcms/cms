@@ -1,7 +1,9 @@
 import {t, type ElementInfo} from '@craftcms/ui';
 import {createElementSelectorModal} from '@/modules/element-selector-modal/create-element-selector-modal';
 import '@craftcms/ui/components/disclosure/disclosure';
+import '@craftcms/ui/components/field/field';
 import '@craftcms/ui/components/field-group/field-group';
+import '@craftcms/ui/components/pane/pane';
 import {
   html,
   LitElement,
@@ -10,6 +12,7 @@ import {
   type TemplateResult,
 } from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
+import './craft-link-field.css';
 
 export type LinkTypeConfig = {
   id: string;
@@ -23,14 +26,43 @@ export type LinkTypeConfig = {
   elementSelectConfig?: import('@/modules/ui/types').UiValues;
 };
 
-export type LinkFieldValue = {
+/** The link attributes a field can let authors set, under “Advanced”. */
+export type LinkAdvancedField =
+  | 'urlSuffix'
+  | 'target'
+  | 'title'
+  | 'class'
+  | 'id'
+  | 'rel'
+  | 'ariaLabel'
+  | 'download';
+
+type LinkAttributes = {
+  urlSuffix: string;
+  target: string;
+  title: string;
+  class: string;
+  id: string;
+  rel: string;
+  ariaLabel: string;
+  download: boolean;
+  filename: string;
+};
+
+export type LinkFieldValue = LinkAttributes & {
   defaultLabel: string;
   href: string;
   label: string;
-  title: string;
   type: string;
-  urlSuffix: string;
   value: string;
+};
+
+/** Whether a change came from typing, or from a discrete choice. */
+export type LinkChangeKind = 'typing' | 'discrete';
+
+export type LinkChangeDetail = {
+  kind: LinkChangeKind;
+  value: LinkFieldValue;
 };
 
 type ElementSelectStartDetail = {
@@ -38,10 +70,40 @@ type ElementSelectStartDetail = {
   waitUntil: (promise: Promise<unknown>) => void;
 };
 
-const formValueKeys = ['type', 'value', 'label', 'urlSuffix', 'title'] as const;
+const emptyAttributes: LinkAttributes = {
+  urlSuffix: '',
+  target: '',
+  title: '',
+  class: '',
+  id: '',
+  rel: '',
+  ariaLabel: '',
+  download: false,
+  filename: '',
+};
+
+const formValueKeys = [
+  'type',
+  'value',
+  'label',
+  ...(Object.keys(emptyAttributes) as Array<keyof LinkAttributes>),
+] as const;
 
 let advancedPanelIndex = 0;
 
+/**
+ * Edits a link: its type, its destination, and optionally its label and
+ * advanced attributes.
+ *
+ * By default it's a form of its own, with Apply and Cancel buttons that fire
+ * `apply` and `cancel`. With `live`, it's a field like any other: each edit
+ * fires `link-change` straight away, and it sits in a pane when it has a label
+ * or advanced attributes.
+ *
+ * @fires apply - The link was applied. `detail` is the `LinkFieldValue`.
+ * @fires cancel - Editing was canceled.
+ * @fires link-change - A `live` field was edited. `detail` is a `LinkChangeDetail`.
+ */
 @customElement('craft-link-field')
 class CraftLinkField extends LitElement {
   @property({attribute: 'advanced-fields', type: Array})
@@ -62,6 +124,10 @@ class CraftLinkField extends LitElement {
   @property({reflect: true, type: Boolean})
   disabled = false;
 
+  /** Applies each edit as it's made, rather than on Apply. */
+  @property({reflect: true, type: Boolean})
+  live = false;
+
   @state()
   private defaultLabel = '';
 
@@ -69,13 +135,10 @@ class CraftLinkField extends LitElement {
   private label = '';
 
   @state()
-  private linkTitle = '';
+  private linkAttributes: LinkAttributes = {...emptyAttributes};
 
   @state()
   private typeId = '';
-
-  @state()
-  private urlSuffix = '';
 
   @state()
   private value = '';
@@ -87,6 +150,9 @@ class CraftLinkField extends LitElement {
 
   private readonly valueErrorId = `${this.advancedPanelId}-value-errors`;
 
+  /** The last value a `live` edit sent out, so its echo doesn't reset what's being typed. */
+  private emittedValue: Partial<LinkFieldValue> | null = null;
+
   override connectedCallback(): void {
     super.connectedCallback();
 
@@ -96,13 +162,22 @@ class CraftLinkField extends LitElement {
   }
 
   override willUpdate(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has('modelValue')) {
+    if (changedProperties.has('modelValue') && !this.isEcho(this.modelValue)) {
       const value = this.modelValue ?? {};
       this.defaultLabel = value.defaultLabel ?? '';
       this.label = value.label ?? '';
-      this.linkTitle = value.title ?? '';
+      this.linkAttributes = {
+        urlSuffix: value.urlSuffix ?? '',
+        target: value.target ?? '',
+        title: value.title ?? '',
+        class: value.class ?? '',
+        id: value.id ?? '',
+        rel: value.rel ?? '',
+        ariaLabel: value.ariaLabel ?? '',
+        download: Boolean(value.download),
+        filename: value.filename ?? '',
+      };
       this.typeId = value.type ?? '';
-      this.urlSuffix = value.urlSuffix ?? '';
       this.value = value.value ?? '';
     }
 
@@ -111,20 +186,28 @@ class CraftLinkField extends LitElement {
     }
   }
 
+  private isEcho(value: Partial<LinkFieldValue> | null): boolean {
+    const emitted = this.emittedValue;
+
+    return Boolean(
+      emitted &&
+      value &&
+      (Object.keys(emitted) as Array<keyof LinkFieldValue>).every(
+        (key) => key === 'href' || value[key] === emitted[key]
+      )
+    );
+  }
+
   private get selectedType(): LinkTypeConfig | undefined {
     return this.types.find((type) => type.id === this.typeId);
   }
 
-  private get showTitleField(): boolean {
-    return this.advancedFields.includes('title');
-  }
-
-  private get showUrlSuffixField(): boolean {
-    return this.advancedFields.includes('urlSuffix');
+  private hasAdvancedField(field: LinkAdvancedField): boolean {
+    return this.advancedFields.includes(field);
   }
 
   private get showAdvancedFields(): boolean {
-    return this.showUrlSuffixField || this.showTitleField;
+    return this.showLabelField || this.advancedFields.length > 0;
   }
 
   private handleTypeChange(event: Event): void {
@@ -135,10 +218,14 @@ class CraftLinkField extends LitElement {
     this.value = '';
     this.defaultLabel = '';
     this.valueError = '';
+    this.change('discrete');
   }
 
   private handleValueChange(event: Event): void {
-    if (!(event.target instanceof HTMLElement)) {
+    if (
+      !(event.target instanceof HTMLElement) ||
+      this.isInitialization(event)
+    ) {
       return;
     }
     // SAFETY: This handler is registered only on the craft-input value control.
@@ -148,6 +235,7 @@ class CraftLinkField extends LitElement {
     this.defaultLabel = this.defaultLabelFor(
       this.normalizeTextValue(this.value)
     );
+    this.change('typing');
   }
 
   private inputValue(input: HTMLElementTagNameMap['craft-input']): string {
@@ -155,17 +243,63 @@ class CraftLinkField extends LitElement {
   }
 
   private handleLabelChange(event: Event): void {
-    if (!(event.target instanceof HTMLElement)) {
+    if (
+      !(event.target instanceof HTMLElement) ||
+      this.isInitialization(event)
+    ) {
       return;
     }
     // SAFETY: this handler is registered only on the craft-input label control.
     this.label = this.inputValue(
       event.target as HTMLElementTagNameMap['craft-input']
     );
+    this.change('typing');
   }
 
-  private textInputValue(event: Event): string {
-    return event.target instanceof HTMLInputElement ? event.target.value : '';
+  private handleAttributeInput(
+    attribute: Exclude<keyof LinkAttributes, 'download'>
+  ): (event: Event) => void {
+    return (event) => {
+      if (
+        !(event.target instanceof HTMLElement) ||
+        this.isInitialization(event)
+      ) {
+        return;
+      }
+      // SAFETY: this handler is registered only on craft-input controls.
+      this.linkAttributes = {
+        ...this.linkAttributes,
+        [attribute]: this.inputValue(
+          event.target as HTMLElementTagNameMap['craft-input']
+        ),
+      };
+      this.change('typing');
+    };
+  }
+
+  private handleSwitch(
+    update: (checked: boolean) => Partial<LinkAttributes>
+  ): (event: Event) => void {
+    return (event) => {
+      if (
+        !(event.target instanceof HTMLElement) ||
+        this.isInitialization(event)
+      ) {
+        return;
+      }
+      // SAFETY: this handler is registered only on craft-switch controls.
+      const {checked} = event.target as HTMLElementTagNameMap['craft-switch'];
+      this.linkAttributes = {
+        ...this.linkAttributes,
+        ...update(Boolean(checked)),
+      };
+      this.change('discrete');
+    };
+  }
+
+  /** Lion fires `model-value-changed` once as a control sets up; that isn't an edit. */
+  private isInitialization(event: Event): boolean {
+    return event instanceof CustomEvent && Boolean(event.detail?.initialize);
   }
 
   private async chooseElement(event: Event): Promise<void> {
@@ -199,6 +333,7 @@ class CraftLinkField extends LitElement {
         this.value = `{${type.refHandle}:${element.id}@${element.siteId}:url}`;
         this.defaultLabel = String(element.label || '');
         this.valueError = '';
+        this.change('discrete');
       },
     });
 
@@ -321,16 +456,63 @@ class CraftLinkField extends LitElement {
     return /^[^/]+\/$/.test(label) ? label.slice(0, -1) : label;
   }
 
-  private apply(): void {
+  /** The link as it stands, or `null` when no link type is selected. */
+  private currentValue(): LinkFieldValue | null {
     const type = this.selectedType;
-    const value =
-      type?.kind === 'text' ? this.normalizeTextValue(this.value) : this.value;
 
     if (!type) {
+      return null;
+    }
+
+    const value =
+      type.kind === 'text' ? this.normalizeTextValue(this.value) : this.value;
+    const urlSuffix = this.normalizeUrlSuffix(this.linkAttributes.urlSuffix);
+    const destination =
+      type.kind === 'text' ? this.renderTextDestination(type.id, value) : value;
+
+    return {
+      ...this.linkAttributes,
+      defaultLabel: this.defaultLabelFor(value),
+      href: value ? `${destination}${urlSuffix}` : '',
+      label: this.label.trim(),
+      title: this.linkAttributes.title.trim(),
+      type: type.id,
+      urlSuffix,
+      value,
+    };
+  }
+
+  /** Commits an edit straight away when `live`. */
+  private change(kind: LinkChangeKind): void {
+    if (!this.live) {
       return;
     }
 
+    const value = this.currentValue();
+
     if (!value) {
+      return;
+    }
+
+    this.emittedValue = value;
+    this.modelValue = value;
+    this.dispatchEvent(
+      new CustomEvent<LinkChangeDetail>('link-change', {
+        bubbles: true,
+        detail: {kind, value},
+      })
+    );
+  }
+
+  private apply(): void {
+    const type = this.selectedType;
+    const linkValue = this.currentValue();
+
+    if (!type || !linkValue) {
+      return;
+    }
+
+    if (!linkValue.value) {
       this.valueError = t('{attribute} cannot be blank.', {
         attribute: type.label,
       });
@@ -338,7 +520,7 @@ class CraftLinkField extends LitElement {
       return;
     }
 
-    if (type.kind === 'text' && !this.validateTextValue(value)) {
+    if (type.kind === 'text' && !this.validateTextValue(linkValue.value)) {
       this.valueError = t('{attribute} is invalid.', {
         attribute: type.label,
       });
@@ -347,20 +529,6 @@ class CraftLinkField extends LitElement {
     }
 
     this.valueError = '';
-
-    const urlSuffix = this.normalizeUrlSuffix(this.urlSuffix);
-    const destination =
-      type.kind === 'text' ? this.renderTextDestination(type.id, value) : value;
-
-    const linkValue: LinkFieldValue = {
-      defaultLabel: this.defaultLabelFor(value),
-      href: `${destination}${urlSuffix}`,
-      label: this.label.trim(),
-      title: this.linkTitle.trim(),
-      type: type.id,
-      urlSuffix,
-      value,
-    };
     this.modelValue = linkValue;
     this.dispatchEvent(
       new CustomEvent<LinkFieldValue>('apply', {
@@ -374,6 +542,38 @@ class CraftLinkField extends LitElement {
     this.dispatchEvent(new CustomEvent('cancel', {bubbles: true}));
   }
 
+  /** A label for one of the controls in the type + destination row, marked up like a grouped UI field's. */
+  private renderLabel(label: string): TemplateResult {
+    return html`<span slot="label">${label}</span>`;
+  }
+
+  private renderTypeSelect(): TemplateResult | typeof nothing {
+    if (this.types.length < 2) {
+      return nothing;
+    }
+
+    return html`
+      <craft-field>
+        ${this.renderLabel(t('Link Type'))}
+        <craft-select
+          slot="input"
+          .modelValue=${this.typeId}
+          .disabled=${this.disabled}
+        >
+          <select
+            slot="input"
+            .value=${this.typeId}
+            @change=${this.handleTypeChange}
+          >
+            ${this.types.map(
+              (type) => html`<option value=${type.id}>${type.label}</option>`
+            )}
+          </select>
+        </craft-select>
+      </craft-field>
+    `;
+  }
+
   private renderTypeInput(): TemplateResult | typeof nothing {
     const type = this.selectedType;
 
@@ -383,12 +583,13 @@ class CraftLinkField extends LitElement {
 
     if (type.kind === 'element') {
       return html`
-        <div class=${this.valueError ? 'field has-errors' : 'field'}>
-          <div class="heading"><label>${type.label}</label></div>
-          <div class="input ltr">
+        <craft-field>
+          ${this.renderLabel(type.label)}
+          <div slot="input" class="craft-link-field__element">
             <craft-button
               type="button"
-              variant="fill"
+              variant="dashed"
+              icon=${this.value ? nothing : 'plus'}
               ?disabled=${this.disabled}
               aria-describedby=${this.valueError ? this.valueErrorId : nothing}
               aria-invalid=${this.valueError ? 'true' : nothing}
@@ -396,14 +597,14 @@ class CraftLinkField extends LitElement {
             >
               ${this.value ? t('Change') : t('Choose')}
             </craft-button>
-            ${this.defaultLabel
+            ${this.value && this.defaultLabel
               ? html`<span class="craft-link-selected-label"
                   >${this.defaultLabel}</span
                 >`
               : nothing}
           </div>
-          ${this.renderValueError()}
-        </div>
+          ${this.renderValueError('feedback')}
+        </craft-field>
       `;
     }
 
@@ -411,19 +612,20 @@ class CraftLinkField extends LitElement {
     const inputMode = type.inputAttributes?.inputmode ?? undefined;
 
     return html`
-      <craft-input
-        data-link-value
-        label=${type.label}
-        type=${inputType}
-        inputmode=${inputMode ?? nothing}
-        aria-describedby=${this.valueError ? this.valueErrorId : nothing}
-        aria-invalid=${this.valueError ? 'true' : nothing}
-        .modelValue=${this.value}
-        .disabled=${this.disabled}
-        @model-value-changed=${this.handleValueChange}
-      >
+      <craft-field>
+        ${this.renderLabel(type.label)}
+        <craft-input
+          slot="input"
+          data-link-value
+          type=${inputType}
+          inputmode=${inputMode ?? nothing}
+          aria-invalid=${this.valueError ? 'true' : nothing}
+          .modelValue=${this.value}
+          .disabled=${this.disabled}
+          @model-value-changed=${this.handleValueChange}
+        ></craft-input>
         ${this.renderValueError('feedback')}
-      </craft-input>
+      </craft-field>
     `;
   }
 
@@ -435,66 +637,89 @@ class CraftLinkField extends LitElement {
     return html`
       <ul id=${this.valueErrorId} class="errors" slot=${slot ?? nothing}>
         <li>
-          <span class="visually-hidden">${t('Error:')}</span>
+          <span class="sr-only">${t('Error:')}</span>
           ${this.valueError}
         </li>
       </ul>
     `;
   }
 
-  private renderUrlSuffixField(): TemplateResult {
-    const inputId = `${this.advancedPanelId}-url-suffix`;
-
+  private renderTextAttribute(
+    attribute: Exclude<keyof LinkAttributes, 'download' | 'target'>,
+    label: string,
+    options: {helpText?: string; code?: boolean; placeholder?: string} = {}
+  ): TemplateResult {
     return html`
-      <div class="field">
-        <div class="heading">
-          <label for=${inputId}>${t('URL Suffix')}</label>
-          <craft-info-icon>
-            ${t(
-              'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.',
-              {
-                ex1: '?p1=foo&p2=bar',
-                ex2: '#anchor',
-              }
-            )}
-          </craft-info-icon>
-        </div>
-        <div class="input ltr">
-          <input
-            id=${inputId}
-            class="text fullwidth"
-            type="text"
-            ?disabled=${this.disabled}
-            .value=${this.urlSuffix}
-            @input=${(event: Event) =>
-              (this.urlSuffix = this.textInputValue(event))}
-          />
-        </div>
-      </div>
+      <craft-input
+        label=${label}
+        help-text=${options.helpText ?? nothing}
+        placeholder=${options.placeholder ?? nothing}
+        type="text"
+        ?monospace=${options.code}
+        .modelValue=${this.linkAttributes[attribute]}
+        .disabled=${this.disabled}
+        @model-value-changed=${this.handleAttributeInput(attribute)}
+      ></craft-input>
     `;
   }
 
-  private renderTitleField(): TemplateResult {
-    const inputId = `${this.advancedPanelId}-title`;
+  private renderAdvancedField(field: LinkAdvancedField): TemplateResult {
+    const separateWithSpaces = t('Separate multiple values with spaces.');
 
-    return html`
-      <div class="field">
-        <div class="heading">
-          <label for=${inputId}>${t('Title Text')}</label>
-        </div>
-        <div class="input ltr">
-          <input
-            id=${inputId}
-            class="text fullwidth"
-            type="text"
-            ?disabled=${this.disabled}
-            .value=${this.linkTitle}
-            @input=${(event: Event) =>
-              (this.linkTitle = this.textInputValue(event))}
-          />
-        </div>
-      </div>
-    `;
+    switch (field) {
+      case 'urlSuffix':
+        return this.renderTextAttribute('urlSuffix', t('URL Suffix'), {
+          helpText: t(
+            'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.',
+            {ex1: '?p1=foo&p2=bar', ex2: '#anchor'}
+          ),
+        });
+      case 'target':
+        return html`
+          <craft-switch
+            label=${t('Open in a new tab')}
+            .checked=${this.linkAttributes.target === '_blank'}
+            .disabled=${this.disabled}
+            @model-value-changed=${this.handleSwitch((checked) => ({
+              target: checked ? '_blank' : '',
+            }))}
+          ></craft-switch>
+        `;
+      case 'title':
+        return this.renderTextAttribute('title', t('Title Text'));
+      case 'class':
+        return this.renderTextAttribute('class', t('Class Name'), {
+          helpText: separateWithSpaces,
+          code: true,
+        });
+      case 'id':
+        return this.renderTextAttribute('id', t('ID'), {code: true});
+      case 'rel':
+        return this.renderTextAttribute(
+          'rel',
+          t('Relation ({ex})', {ex: 'rel'}),
+          {
+            helpText: separateWithSpaces,
+            code: true,
+          }
+        );
+      case 'ariaLabel':
+        return this.renderTextAttribute('ariaLabel', t('ARIA Label'));
+      case 'download':
+        return html`
+          <craft-switch
+            label=${t('Download')}
+            .checked=${this.linkAttributes.download}
+            .disabled=${this.disabled}
+            @model-value-changed=${this.handleSwitch((download) => ({
+              download,
+            }))}
+          ></craft-switch>
+          ${this.linkAttributes.download
+            ? this.renderTextAttribute('filename', t('Filename'))
+            : nothing}
+        `;
+    }
   }
 
   private renderAdvancedFields(): TemplateResult | typeof nothing {
@@ -502,94 +727,122 @@ class CraftLinkField extends LitElement {
       return nothing;
     }
 
+    const fields = (
+      [
+        'urlSuffix',
+        'target',
+        'title',
+        'class',
+        'id',
+        'rel',
+        'ariaLabel',
+        'download',
+      ] as const
+    ).filter((field) => this.hasAdvancedField(field));
+
     return html`
-      <craft-disclosure id=${this.advancedPanelId}>
+      <craft-disclosure id=${this.advancedPanelId} size="small">
         <craft-button
           slot="invoker"
           type="button"
-          appearance="plain"
-          icon="chevron-down"
-          ?disabled=${this.disabled}
+          variant="plain"
+          size="small"
+          flush
+          icon="chevron-right"
+          icon-position="suffix"
         >
           ${t('Advanced')}
         </craft-button>
-        <craft-field-group slot="content" class="meta pane hairline">
-          ${this.showUrlSuffixField ? this.renderUrlSuffixField() : nothing}
-          ${this.showTitleField ? this.renderTitleField() : nothing}
+        <craft-field-group slot="content">
+          ${this.showLabelField
+            ? html`
+                <craft-input
+                  label=${t('Label')}
+                  type="text"
+                  placeholder=${this.defaultLabel || nothing}
+                  .modelValue=${this.label}
+                  .disabled=${this.disabled}
+                  @model-value-changed=${this.handleLabelChange}
+                ></craft-input>
+              `
+            : nothing}
+          ${fields.map((field) => this.renderAdvancedField(field))}
         </craft-field-group>
       </craft-disclosure>
     `;
   }
 
-  override render(): TemplateResult {
-    return html`
-      <craft-field-group class="craft-link-field">
-        ${this.types.length > 1
-          ? html`
-              <craft-select
-                label=${t('Link Type')}
-                .modelValue=${this.typeId}
-                .disabled=${this.disabled}
-              >
-                <select
-                  slot="input"
-                  .value=${this.typeId}
-                  @change=${this.handleTypeChange}
-                >
-                  ${this.types.map(
-                    (type) =>
-                      html`<option value=${type.id}>${type.label}</option>`
-                  )}
-                </select>
-              </craft-select>
-            `
-          : nothing}
-        ${this.renderTypeInput()}
-        ${this.showLabelField
-          ? html`
-              <craft-input
-                label=${t('Label')}
-                type="text"
-                .modelValue=${this.label}
-                .disabled=${this.disabled}
-                @model-value-changed=${this.handleLabelChange}
-              ></craft-input>
-            `
-          : nothing}
-        ${this.renderAdvancedFields()}
+  private renderButtons(): TemplateResult | typeof nothing {
+    if (this.live) {
+      return nothing;
+    }
 
-        <div class="buttons right">
-          <craft-button
-            type="button"
-            variant="plain"
-            size="small"
-            ?disabled=${this.disabled}
-            @click=${this.cancel}
-          >
-            ${t('Cancel')}
-          </craft-button>
-          <craft-button
-            type="button"
-            size="small"
-            ?disabled=${this.disabled}
-            @click=${this.apply}
-          >
-            ${t('Apply')}
-          </craft-button>
+    return html`
+      <div class="buttons right">
+        <craft-button
+          type="button"
+          variant="plain"
+          size="small"
+          ?disabled=${this.disabled}
+          @click=${this.cancel}
+        >
+          ${t('Cancel')}
+        </craft-button>
+        <craft-button
+          type="button"
+          size="small"
+          ?disabled=${this.disabled}
+          @click=${this.apply}
+        >
+          ${t('Apply')}
+        </craft-button>
+      </div>
+    `;
+  }
+
+  private renderHiddenInputs(): TemplateResult[] | typeof nothing {
+    if (!this.name) {
+      return nothing;
+    }
+
+    return formValueKeys.map((key) => {
+      const value = this.modelValue?.[key];
+
+      return html`
+        <input
+          type="hidden"
+          name=${`${this.name}[${key}]`}
+          .value=${typeof value === 'boolean'
+            ? value
+              ? '1'
+              : ''
+            : (value ?? '')}
+          ?disabled=${this.disabled}
+        />
+      `;
+    });
+  }
+
+  override render(): TemplateResult {
+    const content = html`
+      <div class="craft-link-field">
+        <div class="craft-link-field__destination">
+          ${this.renderTypeSelect()} ${this.renderTypeInput()}
         </div>
-        ${this.name
-          ? formValueKeys.map(
-              (key) => html`
-                <input
-                  type="hidden"
-                  name=${`${this.name}[${key}]`}
-                  .value=${this.modelValue?.[key] ?? ''}
-                  ?disabled=${this.disabled}
-                />
-              `
-            )
-          : nothing}
-      </craft-field-group>
+        ${this.renderAdvancedFields()} ${this.renderButtons()}
+      </div>
+    `;
+
+    return html`
+      ${this.live && this.showAdvancedFields
+        ? html`<craft-pane
+            class="craft-link-field__pane"
+            appearance="outline"
+            padding="lg"
+            >${content}</craft-pane
+          >`
+        : content}
+      ${this.renderHiddenInputs()}
     `;
   }
 
@@ -599,3 +852,9 @@ class CraftLinkField extends LitElement {
 }
 
 export default CraftLinkField;
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'craft-link-field': CraftLinkField;
+  }
+}

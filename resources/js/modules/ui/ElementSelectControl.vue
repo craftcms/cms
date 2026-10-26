@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/chip/chip';
-  import {t} from '@craftcms/ui';
-  import {computed, reactive, ref, useId} from 'vue';
+  import {actionClient, t} from '@craftcms/ui';
+  import {computed, nextTick, reactive, ref, useId, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
@@ -13,8 +13,10 @@
   import type {UiChangeKind, UiControlPayload, UiProperties} from './types';
   import {inputName} from './runtime';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
-  import {canUseVueSlideout, openSlideout} from '@/common/slideouts';
+  import {openSlideout} from '@/common/slideouts';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
+  import {craft} from '@/modules/matrix/clipboard';
+  import {useCopiedElements} from '@/modules/matrix/copied-elements';
 
   /**
    * TODO: Extract the element-select markup into a reusable Vue component
@@ -221,9 +223,6 @@
     viewMode,
     selectable,
     readOnly: () => !props.editable,
-    // Chips behave like a file list: a plain click collapses the selection to the
-    // one clicked, and ctrl/cmd adds to it.
-    click: 'replace',
   });
 
   const {
@@ -362,6 +361,136 @@
     await modal.show();
   }
 
+  // ───────────────────────────── pasting ─────────────────────────────
+
+  const copiedElements = useCopiedElements();
+
+  /**
+   * The copied elements this field might relate: ones of its element type,
+   * leaving out drafts and revisions, which a relation never points at.
+   */
+  const copiedIds = computed(() =>
+    copiedElements.value
+      .filter(
+        (element) =>
+          element.type === props.control.props.elementType &&
+          !element.draftId &&
+          !element.revisionId
+      )
+      .map((element) => Number(element.id))
+      .filter((elementId) => Number.isInteger(elementId) && elementId > 0)
+  );
+
+  /**
+   * The copied elements the field's selector would let someone choose, as the
+   * server reports them. Asked again whenever the clipboard changes, since a
+   * paste bypasses the selector's sources, criteria and condition.
+   */
+  const pasteable = ref<ElementPresentation[]>([]);
+  let pasteCheck = 0;
+
+  watch(
+    () => (props.editable ? copiedIds.value.join(',') : ''),
+    async (key) => {
+      const check = ++pasteCheck;
+
+      if (key === '') {
+        pasteable.value = [];
+        return;
+      }
+
+      try {
+        const {data} = await actionClient.post<{
+          elements?: ElementPresentation[];
+        }>('element-selects/pasteable', {
+          elementType: props.control.props.elementType,
+          context: props.control.props.context,
+          sources: props.control.props.sources,
+          criteria: props.control.props.criteria,
+          condition: props.control.props.selectionCondition,
+          siteId: Craft.siteId ?? null,
+          viewMode: props.control.props.viewMode,
+          elementIds: copiedIds.value,
+        });
+
+        if (check === pasteCheck) {
+          pasteable.value = data.elements ?? [];
+        }
+      } catch {
+        if (check === pasteCheck) {
+          pasteable.value = [];
+        }
+      }
+    },
+    {immediate: true}
+  );
+
+  /** What's left to paste once the elements already related are set aside. */
+  const pasteCandidates = computed(() =>
+    pasteable.value.filter((element) => !ids.value.includes(element.id))
+  );
+
+  const pasteLabel = computed(() => {
+    const names = craft().elementTypeNames?.[props.control.props.elementType];
+    const type =
+      (pasteCandidates.value.length === 1 ? names?.[2] : names?.[3]) ??
+      props.control.props.elementDisplayName;
+
+    return t('Paste {type}', {type});
+  });
+
+  /**
+   * Relates the copied elements, after the ones already related, up to the
+   * field's limit, then clears the clipboard, as pasting does elsewhere.
+   *
+   * The button goes once they're pasted, so focus moves to the last pasted
+   * element, which lands about where the button was. The page only scrolls if
+   * none of it is in view, and then only as far as it takes to show it: a
+   * focus() that scrolls on its own centers an element that's just out of
+   * view, which reads as the page jumping.
+   */
+  async function paste(): Promise<void> {
+    const pasted = pasteCandidates.value;
+
+    if (pasted.length === 0 || atLimit.value) {
+      return;
+    }
+
+    for (const element of pasted) {
+      presentations.set(element.id, element);
+    }
+
+    const next = [...ids.value, ...pasted.map((element) => element.id)];
+    const kept =
+      limit.value === null ? next : next.slice(0, Math.max(limit.value, 1));
+
+    updateValue(kept);
+    craft().cp?.clearCopiedElements?.();
+    await nextTick();
+
+    const item = dropZone.value?.querySelector<HTMLElement>(
+      `.elements-stage [data-id="${kept[kept.length - 1]}"]`
+    );
+    const target =
+      (item?.matches('[tabindex="0"]')
+        ? item
+        : item?.querySelector<HTMLElement>(
+            'craft-checkbox, craft-button, button, a[href], [tabindex="0"]'
+          )) ?? (addButton.value?.isConnected ? addButton.value : null);
+
+    if (!target) {
+      return;
+    }
+
+    target.focus({preventScroll: true});
+
+    const rect = target.getBoundingClientRect();
+
+    if (rect.bottom <= 0 || rect.top >= window.innerHeight) {
+      target.scrollIntoView({block: 'nearest'});
+    }
+  }
+
   // ───────────────────────────── chip actions ─────────────────────────────
 
   function removeIds(remove: Set<number>): void {
@@ -402,7 +531,7 @@
 
     if (element.canCopy) {
       actions.push({
-        icon: 'clone-dashed',
+        icon: 'custom-icons/clone-dashed',
         label: t('Copy {type}', {type}),
         // `Craft.cp` owns the clipboard, including its confirmation toast.
         onClick: () => Craft.cp?.copyElements?.([copyDescriptor(value)]),
@@ -451,7 +580,7 @@
 
     if (copyable.length) {
       actions.push({
-        icon: 'clone-dashed',
+        icon: 'custom-icons/clone-dashed',
         label: t('Copy selected'),
         onClick: () => Craft.cp?.copyElements?.(copyable.map(copyDescriptor)),
       });
@@ -599,43 +728,41 @@
     updateValue(limit === null ? next : next.slice(-Math.max(limit, 1)));
   }
 
-  /**
-   * Double-click opens the element's editor slideout, as it does on chips
-   * everywhere else in the CP (Craft 5 binds the same gesture in
-   * `BaseElementSelectInput`, via `createElementEditor`).
-   */
+  /** Double-click opens the element's editor slideout, as it does on chips elsewhere. */
   function openEditor(value: number | string): void {
     const element = presentation(value);
-    const elementType = props.control.props.elementType;
-
-    if (canUseVueSlideout()) {
-      const href =
-        element.cpEditUrl ??
-        EditElementController[
-          '/{cpTrigger?}/{actionTrigger?}/elements/edit'
-        ].url(undefined, {
+    const href =
+      element.cpEditUrl ??
+      EditElementController['/{cpTrigger?}/{actionTrigger?}/elements/edit'].url(
+        undefined,
+        {
           query: {
-            elementType,
+            elementType: props.control.props.elementType,
             elementId: element.id,
             siteId: element.siteId ?? null,
           },
-        });
+        }
+      );
 
-      if (href) {
-        void openSlideout(href, {
-          // Registering a handler keeps a save from reloading the page behind,
-          // which would throw away the owner's unsaved edits.
-          onSaved: () => {},
-        });
+    void openSlideout(href, {
+      // Registering a handler keeps a save from reloading the page behind,
+      // which would throw away the owner's unsaved edits.
+      onSaved: ({data}) =>
+        replaceAsset(data?.replacedAssetId, data?.newAssetId),
+    });
+  }
 
-        return;
-      }
+  /** An image saved as a new asset takes the edited asset's place. */
+  function replaceAsset(replacedId: unknown, newId: unknown): void {
+    const from = Number(replacedId);
+    const to = Number(newId);
+
+    if (!from || !to || !ids.value.includes(from)) {
+      return;
     }
 
-    Craft.createElementEditor(elementType, {
-      elementId: element.id,
-      siteId: element.siteId ?? null,
-    });
+    presentations.set(to, {...presentation(from), id: to});
+    updateValue(ids.value.map((id) => (id === from ? to : id)));
   }
 </script>
 
@@ -650,33 +777,6 @@
       value=""
     />
     <component :is="control.props.customElement" :id="id">
-      <div v-if="editable && !atLimit" class="flex gap-md pb-md" slot="header">
-        <craft-button
-          ref="addButton"
-          type="button"
-          variant="dashed"
-          icon="plus"
-          data-element-select-add=""
-          :disabled="atLimit || undefined"
-          :aria-label="control.props.selectionLabel"
-          @click="openSelector()"
-        >
-          {{ control.props.selectionLabel }}
-        </craft-button>
-
-        <AssetUploadButton
-          v-if="control.props.canUpload !== undefined"
-          variant="dashed"
-          :can-upload="control.props.canUpload"
-          :folder-id="control.props.uploadFolderId ?? undefined"
-          :allowed-kinds="uploadKinds"
-          :drop-zone="dropZone"
-          :reload-on-complete="false"
-          :disabled="!showUpload"
-          @uploaded="attachUploaded"
-        />
-      </div>
-
       <div class="relative" v-if="ids.length > 0">
         <!--
           Selection toolbar. The whole bar is selection-only, so a field that
@@ -709,33 +809,35 @@
             </template>
           </div>
 
-          <ActionMenu
-            :actions="bulkActions"
-            :class="{
-              invisible: !hasSelection || !bulkActions.length,
-            }"
-          >
-            <template #invoker="{attributes}">
-              <craft-button
-                type="button"
-                variant="plain"
-                size="small"
-                v-bind="attributes"
-              >
-                {{ t('Actions') }}
-                <craft-icon name="chevron-down" slot="suffix"></craft-icon>
-              </craft-button>
-            </template>
-          </ActionMenu>
+          <div class="flex items-center gap-sm ms-auto">
+            <ActionMenu
+              :actions="bulkActions"
+              :class="{
+                invisible: !hasSelection || !bulkActions.length,
+              }"
+            >
+              <template #invoker="{attributes}">
+                <craft-button
+                  type="button"
+                  variant="plain"
+                  size="small"
+                  flush
+                  v-bind="attributes"
+                >
+                  {{ t('Actions') }}
+                  <craft-icon name="chevron-down" slot="suffix"></craft-icon>
+                </craft-button>
+              </template>
+            </ActionMenu>
 
-          <craft-badge
-            size="small"
-            class="me-sm"
-            no-prefix
-            v-if="!hasSelection || !bulkActions.length"
-          >
-            {{ ids.length }}/{{ limit }}
-          </craft-badge>
+            <craft-badge
+              size="small"
+              no-prefix
+              v-if="limit !== null && (!hasSelection || !bulkActions.length)"
+            >
+              {{ ids.length }}/{{ limit }}
+            </craft-badge>
+          </div>
         </div>
         <div class="elements-stage">
           <ElementList
@@ -774,11 +876,59 @@
               <ActionMenu
                 v-if="menuActions(element.id, index).length"
                 :actions="menuActions(element.id, index)"
-                :flush="list.isList.value ? 'inline-start' : undefined"
+                :flush="
+                  list.isList.value
+                    ? 'inline-start'
+                    : list.isThumbs.value
+                      ? false
+                      : undefined
+                "
               />
             </template>
           </ElementList>
         </div>
+      </div>
+
+      <div
+        v-if="editable && !atLimit"
+        class="flex gap-md"
+        :class="{'pt-md': ids.length > 0}"
+      >
+        <craft-button
+          ref="addButton"
+          type="button"
+          variant="dashed"
+          icon="plus"
+          data-element-select-add=""
+          :aria-label="control.props.selectionLabel"
+          @click="openSelector()"
+        >
+          {{ control.props.selectionLabel }}
+        </craft-button>
+
+        <AssetUploadButton
+          v-if="control.props.canUpload !== undefined"
+          variant="dashed"
+          :can-upload="control.props.canUpload"
+          :folder-id="control.props.uploadFolderId ?? undefined"
+          :allowed-kinds="uploadKinds"
+          :drop-zone="dropZone"
+          :reload-on-complete="false"
+          :disabled="!showUpload"
+          @uploaded="attachUploaded"
+        />
+
+        <craft-button
+          v-if="pasteCandidates.length"
+          type="button"
+          variant="outline"
+          icon="custom-icons/duplicate"
+          class="paste-btn"
+          data-element-select-paste=""
+          @click="paste()"
+        >
+          {{ pasteLabel }}
+        </craft-button>
       </div>
 
       <div slot="footer">
@@ -791,13 +941,9 @@
 <style lang="scss" scoped>
   .element-selections-header {
     margin-block-end: var(--c-spacing-md);
-    padding: var(--c-spacing-sm);
-    padding-inline-start: calc(
-      var(--c-spacing-md) + 1px
-    ); // so the checkboxes line up
-    background-color: var(--c-color-neutral-fill-quiet);
-    border-start-start-radius: var(--c-radius-md);
-    border-start-end-radius: var(--c-radius-md);
+    min-height: calc(var(--c-size-control-sm) + var(--c-spacing-sm) + 1px);
+    padding-block: 0 var(--c-spacing-sm);
+    padding-inline: 0;
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 

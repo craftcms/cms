@@ -16,6 +16,8 @@ export interface BaseOption {
   value: string;
 }
 export interface CheckboxOption extends BaseOption {
+  /** Trusted HTML shown in place of `label`. */
+  labelHtml?: string;
   info?: string;
   checked?: boolean;
   disabled?: boolean;
@@ -55,8 +57,7 @@ export interface SectionSiteSettingsData {
   singleHomepage: boolean;
   singleUri: string | null;
   uriFormat: string | null;
-  routeType: 'template' | 'route';
-  route: string | null;
+  destination: string;
 }
 
 export interface ChipIndicator {
@@ -114,6 +115,10 @@ export interface ActionItemButton {
   attributes?: ServerAttributes;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
+  /** A number after the label, for a nav entry that counts what it lists. */
+  count?: number;
+  /** What the count is, for screen readers. Defaults to a count of items. */
+  countLabel?: string;
   /**
    * Extra attributes for the rendered element — drag-and-drop drop-target
    * hooks, say. Undefined values are dropped rather than rendered empty.
@@ -127,6 +132,11 @@ export interface ActionItemButton {
    * labels stay aligned whichever one is current.
    */
   selected?: boolean;
+  /**
+   * Whether this is the page you're on rather than an ancestor of it. Left
+   * out, a nav takes the selected item with nothing selected beneath it.
+   */
+  current?: boolean;
   variant?: VariantKey | string;
   icon?: string;
   /**
@@ -171,6 +181,10 @@ export interface ActionItemLink {
   status?: string;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
+  /** A number after the label, for a nav entry that counts what it lists. */
+  count?: number;
+  /** What the count is, for screen readers. Defaults to a count of items. */
+  countLabel?: string;
   /**
    * Extra attributes for the rendered element — drag-and-drop drop-target
    * hooks, say. Undefined values are dropped rather than rendered empty.
@@ -182,6 +196,8 @@ export interface ActionItemLink {
    * CP, and for the handful of places still handing off to the legacy stack.
    */
   external?: boolean;
+  /** Where the link opens, such as `_blank` for a new tab. Implies `external`. */
+  target?: string;
   /**
    * Marks this as the one currently in effect, for a list that's a choice
    * rather than a set of commands — a source switcher, say. When any item in a
@@ -189,6 +205,11 @@ export interface ActionItemLink {
    * labels stay aligned whichever one is current.
    */
   selected?: boolean;
+  /**
+   * Whether this is the page you're on rather than an ancestor of it. Left
+   * out, a nav takes the selected item with nothing selected beneath it.
+   */
+  current?: boolean;
   variant?: VariantKey | string;
   hidden?: boolean;
   disabled?: boolean;

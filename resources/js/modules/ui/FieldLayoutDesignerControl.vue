@@ -1,8 +1,10 @@
 <script setup lang="ts">
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-  import {actionClient} from '@craftcms/ui';
-  import type {UiControlPayload, UiValue, UiValues} from './types';
+  import {actionClient, t} from '@craftcms/ui';
+  import {onBeforeUnmount, watch} from 'vue';
+  import type {UiControlPayload, UiPayload, UiValue, UiValues} from './types';
   import {inputName} from './runtime';
+  import {registerOutlets} from './outlets';
   import {useServerRenderedControl} from './useServerRenderedControl';
 
   type FieldLayoutDesignerProps = {
@@ -16,6 +18,7 @@
     control: UiControlPayload<FieldLayoutDesignerProps>;
     value: UiValues;
     editable: boolean;
+    errors?: UiPayload['errors'];
   }>();
   const emit = defineEmits<{
     (event: 'update:value', value: UiValues, kind: 'discrete'): void;
@@ -57,7 +60,71 @@
         : value;
     },
     update: (value) => emit('update:value', value, 'discrete'),
+    afterRender(root) {
+      syncTabErrors(root);
+      // The Appearance tab's outlet, for the owner's own display settings.
+      releaseOutlets?.();
+      releaseOutlets = registerOutlets(root);
+    },
   });
+  let releaseOutlets: (() => void) | undefined;
+  onBeforeUnmount(() => releaseOutlets?.());
+
+  /**
+   * The top-level settings an error falls under for each of the designer's
+   * tabs, relative to the control's own path.
+   */
+  const tabErrorKeys: Record<string, string[]> = {
+    content: ['customFields', 'tabs', 'generatedFields'],
+    appearance: ['cardView', 'thumbFieldKey'],
+  };
+
+  /** Flags the designer's Content and Appearance tabs that have errors. */
+  function syncTabErrors(root: HTMLElement): void {
+    const base = props.control.path;
+    // The designer owns every error raised within it, so where each one
+    // belongs is in the path it was raised at.
+    const keys = (props.errors ?? [])
+      .map((error) =>
+        error.messages.length ? (error.source ?? error.path) : []
+      )
+      .filter(
+        (path) =>
+          path.length > base.length &&
+          base.every((segment, i) => path[i] === segment)
+      )
+      .map((path) => path[base.length]!);
+
+    for (const [tabName, errorKeys] of Object.entries(tabErrorKeys)) {
+      const tab = root.querySelector(`craft-tab[data-fld-tab="${tabName}"]`);
+      if (!tab) {
+        continue;
+      }
+
+      const hasErrors = keys.some((key) => errorKeys.includes(key));
+      let icon = tab.querySelector(':scope > [data-fld-tab-error]');
+      if (hasErrors && !icon) {
+        icon = document.createElement('craft-icon');
+        icon.setAttribute('name', 'circle-exclamation');
+        icon.setAttribute('slot', 'suffix');
+        icon.setAttribute('label', t('Errors'));
+        icon.setAttribute('data-fld-tab-error', '');
+        tab.append(icon);
+      } else if (!hasErrors) {
+        icon?.remove();
+      }
+    }
+  }
+
+  watch(
+    () => props.errors,
+    () => {
+      if (host.value) {
+        syncTabErrors(host.value);
+      }
+    },
+    {deep: true}
+  );
 </script>
 
 <template>

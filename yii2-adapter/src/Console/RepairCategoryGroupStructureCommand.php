@@ -9,7 +9,6 @@ use craft\elements\Category;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Structure\Commands\RepairCommand;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
-use yii\db\Expression;
 
 class RepairCategoryGroupStructureCommand extends RepairCommand implements PromptsForMissingInput
 {
@@ -31,38 +30,6 @@ class RepairCategoryGroupStructureCommand extends RepairCommand implements Promp
             return self::FAILURE;
         }
 
-        $elements = Category::find()
-            ->group($group)
-            ->site('*')
-            ->unique()
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->status(null)
-            ->withStructure(false)
-            ->addSelect([
-                'structureelements.root',
-                'structureelements.lft',
-                'structureelements.rgt',
-                'structureelements.level',
-            ])
-            ->leftJoin('{{%structureelements}} structureelements', [
-                'and',
-                '[[structureelements.elementId]] = [[elements.id]]',
-                ['structureelements.structureId' => $group->structureId],
-            ])
-            ->andWhere([
-                'or',
-                ['elements.draftId' => null],
-                ['elements.canonicalId' => null],
-                ['and', ['drafts.provisional' => true], ['not', ['structureelements.lft' => null]]],
-            ])
-            ->orderBy([
-                new Expression('CASE WHEN [[structureelements.lft]] IS NOT NULL THEN 0 ELSE 1 END ASC'),
-                'structureelements.lft' => SORT_ASC,
-                'elements.dateCreated' => SORT_ASC,
-            ])
-            ->collect();
-
-        return $this->repairStructure($group->structureId, $elements);
+        return $this->repairStructure($group->structureId, Category::find()->group($group));
     }
 }

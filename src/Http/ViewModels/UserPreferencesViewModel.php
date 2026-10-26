@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
@@ -38,6 +39,7 @@ class UserPreferencesViewModel extends ViewModel
             'preferredLocale' => $this->userLocale(),
             'weekStartDay' => $this->user->getPreference('weekStartDay', Cms::config()->defaultWeekStartDay),
             'timeZone' => $this->user->getPreference('timeZone'),
+            'theme' => Theme::forUser($this->user)->value,
             'useShapes' => $this->user->getPreference('useShapes') ?? $a11yDefaults['useShapes'] ?? false,
             'underlineLinks' => $this->user->getPreference('underlineLinks') ?? $a11yDefaults['underlineLinks'] ?? false,
             'disableAutofocus' => $this->user->getPreference('disableAutofocus') ?? $a11yDefaults['disableAutofocus'] ?? false,
@@ -139,6 +141,16 @@ class UserPreferencesViewModel extends ViewModel
                 'value' => '__blank__',
             ],
             ...SelectOptions::getTimeZoneOptions(),
+        ];
+    }
+
+    /** @return array<int, array{icon: string, label: string, value: string}> */
+    public function themeOptions(): array
+    {
+        return [
+            ['icon' => 'sun', 'label' => t('Light'), 'value' => Theme::Light->value],
+            ['icon' => 'moon', 'label' => t('Dark'), 'value' => Theme::Dark->value],
+            ['icon' => 'desktop', 'label' => t('System'), 'value' => Theme::System->value],
         ];
     }
 

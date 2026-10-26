@@ -44,7 +44,8 @@ it('renders system messages through the configured site template and preserves t
         ['template' => 'mail/custom-system-message.twig'],
     ));
 
-    $user = UserModel::factory()->createElement();
+    // A name the template has to escape.
+    $user = UserModel::factory()->createElement(['firstName' => "D'angelo", 'fullName' => "D'angelo Smith"]);
     $user = User::find()->id($user->id)->one();
 
     $mailable = app(SystemMessages::class)
@@ -54,13 +55,14 @@ it('renders system messages through the configured site template and preserves t
     $html = $mailable->render();
     $plainText = view($mailable->build()->textView, $mailable->buildViewData())->render();
 
+    // The template escapes everything but the HTML body.
     expect($html)->toContain('custom-system-message')
-        ->and($html)->toContain($renderedMessage->subject)
-        ->and($html)->toContain($renderedMessage->textBody)
+        ->and($html)->toContain(e($renderedMessage->subject))
+        ->and($html)->toContain(e($renderedMessage->textBody))
         ->and($html)->toContain($renderedMessage->htmlBody)
         ->and($html)->toContain($renderedMessage->key)
         ->and($html)->toContain($renderedMessage->language)
-        ->and($html)->toContain($user->email)
+        ->and($html)->toContain(e($user->email))
         ->and($html)->not->toContain('<table class="wrapper"')
         ->and(trim($plainText))->toBe($renderedMessage->textBody);
 });

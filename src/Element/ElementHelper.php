@@ -20,7 +20,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\HtmlString;
 use RuntimeException;
 use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -654,24 +653,6 @@ class ElementHelper
         }
 
         return empty($element->$attribute);
-    }
-
-    /**
-     * Renders the given elements using their partial templates.
-     *
-     * If no partial template exists for an element, its string representation will be output instead.
-     *
-     * @param  ElementInterface[]  $elements
-     */
-    /**
-     * @param  ElementInterface[]  $elements
-     * @param  array<string,mixed>  $variables
-     */
-    public static function renderElements(array $elements, array $variables = []): HtmlString
-    {
-        $output = array_map(fn (ElementInterface $element) => (string) $element->render($variables), $elements);
-
-        return new HtmlString(implode("\n", $output));
     }
 
     /**

@@ -3,7 +3,10 @@ import {HttpResponseError} from '@inertiajs/core';
 import {useHttp} from '@inertiajs/vue3';
 import {computed, shallowRef, type Ref} from 'vue';
 import {useMessages} from '@/modules/messages/useMessages';
-import type {ElementEditorActions} from '@/modules/elements/composables/useElementEditor';
+import type {
+  ElementEditorActions,
+  ElementEditPayload,
+} from '@/modules/elements/composables/useElementEditor';
 
 type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
 
@@ -14,9 +17,15 @@ export type WorkflowIdentity = {
   siteId: number | null;
 };
 
+export type WorkflowReleaseState = Pick<
+  ElementEditPayload,
+  'canAddToRelease' | 'canCreateRelease' | 'releaseOptions'
+>;
+
 type WorkflowTransitionResponse = {
   workflowReview: WorkflowReviewData;
   editorActions: ElementEditorActions;
+  release?: WorkflowReleaseState | null;
   message?: string;
 };
 
@@ -27,7 +36,11 @@ type WorkflowTransitionRequest = WorkflowIdentity & {
 
 export function useWorkflowTransition(
   identity: () => WorkflowIdentity,
-  updated: (review: WorkflowReviewData, actions: ElementEditorActions) => void
+  updated: (
+    review: WorkflowReviewData,
+    actions: ElementEditorActions,
+    release: WorkflowReleaseState | null | undefined
+  ) => void
 ): {
   error: Ref<string | null>;
   processing: Ref<boolean>;
@@ -52,7 +65,7 @@ export function useWorkflowTransition(
 
     try {
       const data = await request.post(url);
-      updated(data.workflowReview, data.editorActions);
+      updated(data.workflowReview, data.editorActions, data.release);
       if (data.message) {
         messages.success(data.message);
       }

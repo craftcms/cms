@@ -233,7 +233,7 @@ it('reads saved values from server-rendered attributes', async () => {
 });
 
 it('commits free text on Tab without adding duplicates', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const {control, input} = await fixture();
   const next = document.createElement('button');
   next.textContent = 'Next';
@@ -249,7 +249,7 @@ it('commits free text on Tab without adding duplicates', async () => {
 });
 
 it('removes tokens and clears all values through buttons', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const {control} = await fixture((c) => {
     c.clearable = true;
     c.modelValue = ['a', 'b'];
@@ -268,7 +268,7 @@ it('removes tokens and clears all values through buttons', async () => {
 });
 
 it('skips selected options when continuing keyboard selection', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
+  const {userEvent} = await import('vite-plus/test/browser');
   const {control, input} = await fixture((c) => {
     c.requireOptionMatch = true;
     c.showAllOnEmpty = true;

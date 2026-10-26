@@ -22,7 +22,7 @@
 </script>
 
 <template>
-  <craft-card>
+  <craft-card data-color="gray">
     <slot name="header" />
     <craft-spinner class="body-loading" visible role="status">{{
       t('Loading…')

@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Structure\Models\StructureElement;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Date;
 use Override;
 
 class StructureFactory extends Factory
@@ -19,7 +20,7 @@ class StructureFactory extends Factory
     public function definition(): array
     {
         return [
-            'dateCreated' => $created = $this->faker->dateTime(),
+            'dateCreated' => $created = $this->faker->dateTime(Date::now()),
             'dateUpdated' => $created,
         ];
     }

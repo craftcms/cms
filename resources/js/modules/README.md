@@ -6,7 +6,6 @@ is a self-contained folder that follows one shared pattern so the next port
 looks like the last one.
 
 Reference implementations, simplest to richest:
-[`sortable-checkbox-select`](./sortable-checkbox-select/),
 [`listbox`](./listbox/),
 [`grouped-entry-type-manager`](./grouped-entry-type-manager/),
 [`component-select`](./component-select/).

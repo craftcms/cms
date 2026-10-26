@@ -41,10 +41,11 @@
   /** Remember the row's natural width so switching to the menu cannot change the threshold. */
   const addFromMenu = computed(
     () =>
-      groups.value.length > 1 ||
-      (buttonsWidth.value > 0 &&
-        addAreaWidth.value > 0 &&
-        addAreaWidth.value < buttonsWidth.value)
+      props.choices.length > 1 &&
+      (groups.value.length > 1 ||
+        (buttonsWidth.value > 0 &&
+          addAreaWidth.value > 0 &&
+          addAreaWidth.value < buttonsWidth.value))
   );
 
   function menuInvoker() {

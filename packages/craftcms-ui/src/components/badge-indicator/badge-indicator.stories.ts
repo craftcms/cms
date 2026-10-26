@@ -1,5 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
+import {html} from 'lit';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 
 import './badge-indicator.js';
@@ -39,6 +40,20 @@ export const Numbered: Story = {
     'badge-count': 5,
     'badge-count-suffix': 'updates',
   },
+};
+
+/**
+ * With `max` set to `Infinity`, a count is shown in full and the badge grows to
+ * fit it, for a tally such as how many elements a source has.
+ */
+export const Uncapped: Story = {
+  parameters: {controls: {disable: true}},
+  render: () =>
+    html`<craft-badge-indicator
+      variant="inverse"
+      badge-count="50000"
+      .max=${Infinity}
+    ></craft-badge-indicator>`,
 };
 
 /** The default variant, for the standard surface. */

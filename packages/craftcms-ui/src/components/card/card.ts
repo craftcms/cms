@@ -53,12 +53,22 @@ import {
  *
  * @cssproperty --c-card-border-width - Border width. Defaults to `1px`.
  * @cssproperty --c-card-radius - Corner radius. Defaults to `--c-radius-md`.
- * @cssproperty --c-card-shadow - Box shadow. Defaults to `--c-shadow-sm`.
+ * @cssproperty --c-card-shadow - Box shadow. Defaults to the theme's
+ *   `--c-shadow-sm`, or `--c-shadow-xs` for a white card.
+ * @cssproperty --c-card-fill-selected - Header and footer fill of a selected
+ *   card without a color. Defaults to the neutral loud fill.
+ * @cssproperty --c-card-border-selected - Border color of a selected card
+ *   without a color. Defaults to the neutral loud border.
+ * @cssproperty --c-card-text-selected - Header and footer text color of a
+ *   selected card without a color. Defaults to the neutral loud text color.
  * @cssproperty --c-card-padding-inline - Inline (horizontal) padding of the
- *   header, body, and footer. Defaults to `--c-spacing-md`.
+ *   header, body, and footer. Defaults to `--c-spacing-md` for the
+ *   header/footer and `--cp-container-padding` for the body, or
+ *   `--c-spacing-lg` where that isn't defined.
  * @cssproperty --c-card-padding-block - Block (vertical) padding of the header,
  *   body, and footer. Defaults to `--c-spacing-sm` for the header/footer and
- *   `--c-spacing-md` for the body.
+ *   `--cp-container-padding` for the body, or `--c-spacing-lg` where that
+ *   isn't defined.
  *
  * @property padding - Spacing for every padded region, from the shared spacing
  *   scale. Supplied by the `Paddable` mixin, the same as `craft-pane` and

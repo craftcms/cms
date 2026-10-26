@@ -31,9 +31,31 @@ select.addEventListener('change', () => save(select.modelValue));
 
 It also emits `model-value-changed`, Lion's internal protocol name. Prefer the native events — they carry the component as `event.target`.
 
+## In PHP
+
+In a Craft control panel screen, or a plugin's `settingsUi()`, describe the UI with `CraftCms\Cms\Ui\Ui` instead of writing markup.
+`CraftCms\Cms\Ui\Controls\ColorSelect` renders a color select:
+
+```php
+use CraftCms\Cms\Ui\Controls\ColorSelect;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+
+Ui::make([
+    Field::make('Color', ColorSelect::make('color')
+        ->allowTransparent()
+        ->blankLabel('No color')),
+]);
+```
+
+`allowTransparent()` adds a blank option, labeled with `blankLabel()`.
+`colors()` narrows the palette to the colors you list.
+
 ## Accessibility
 
-Each option is named by its color, so the list is usable without seeing the swatches.
+Each option is named by its color, so the list is usable without seeing the swatches, including in forced colors mode, where the swatches lose their fill. The swatches are hidden from screen readers. Keyboard and listbox behavior come from [Select Rich](?path=/docs/form-controls-select-controls-select-rich--docs).
+
+Always set `label`. Without one the control has no name.
 
 Color names are not meanings, though. If a color carries significance in your interface — red for a problem, green for a healthy state — say so in the label or help text, because "Red" alone does not tell a person what choosing red will do.
 

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
-use CraftCms\Cms\Ui\Controls\Textarea;
+use CraftCms\Cms\Ui\Controls\Markdown as MarkdownControl;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\MarkdownContent;
 use CraftCms\Cms\Ui\UiContext;
@@ -90,8 +91,9 @@ class Markdown extends BaseUiElement
     protected function settingsNodes(UiContext $context): array
     {
         return [
-            Field::make(t('Content'), Textarea::make('content')
-                ->monospace()
+            Field::make(t('Content'), MarkdownControl::make('content')
+                ->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)
+                ->rows(1)
                 ->value($this->content)),
             Field::make(t('Display content in a pane'), Lightswitch::make('displayInPane')
                 ->value($this->displayInPane)),

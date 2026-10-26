@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftButton from './button.js';
 import './button.js';
 
@@ -26,6 +26,12 @@ function content(element: CraftButton): HTMLElement | null {
 }
 
 beforeEach(() => {
+  document.body.innerHTML = '';
+});
+
+// Disconnects the last test's buttons, which cancels their pending feedback
+// resets before the environment is torn down.
+afterEach(() => {
   document.body.innerHTML = '';
 });
 
@@ -89,6 +95,29 @@ describe('craft-button link mode', () => {
     await element.updateComplete;
     await new Promise((resolve) => setTimeout(resolve));
     expect(content(element)!.classList.contains('a11y-error')).toBe(true);
+  });
+});
+
+describe('craft-button accessible name check', () => {
+  // A detached button's root is itself, which can't resolve an
+  // `aria-labelledby` ID, so a check that ran after removal threw.
+  it('skips the check for a button removed before it ran', async () => {
+    const errors: unknown[] = [];
+    const onRejection = (reason: unknown) => errors.push(reason);
+    process.on('unhandledRejection', onRejection);
+
+    const label = document.createElement('span');
+    label.id = 'button-name';
+    label.textContent = 'Settings';
+    const element = document.createElement('craft-button') as CraftButton;
+    element.setAttribute('aria-labelledby', 'button-name');
+    document.body.append(label, element);
+    element.remove();
+    await element.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    process.off('unhandledRejection', onRejection);
+    expect(errors).toEqual([]);
   });
 });
 
@@ -286,6 +315,53 @@ describe('craft-button actions', () => {
   });
 });
 
+describe('craft-button action feedback', () => {
+  it('cancels its pending reset to idle once it is removed', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const element = await createButton({
+        action: '{"type":"event","name":"craft:test-feedback"}',
+      });
+      const states: string[] = [];
+      element.addEventListener('craft-state-change', (event) => {
+        states.push((event as CustomEvent<{state: string}>).detail.state);
+      });
+
+      await element.triggerAction();
+      element.remove();
+      vi.advanceTimersByTime(element.feedbackDuration * 2);
+
+      expect(states).toEqual(['success']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps a new run’s feedback for its full duration', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const element = await createButton({
+        action: '{"type":"event","name":"craft:test-feedback"}',
+      });
+
+      await element.triggerAction();
+      vi.advanceTimersByTime(element.feedbackDuration - 1);
+      await element.triggerAction();
+      vi.advanceTimersByTime(element.feedbackDuration - 1);
+
+      expect(element.actionState).toBe('success');
+
+      vi.advanceTimersByTime(1);
+
+      expect(element.actionState).toBe('idle');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe('craft-button toggle', () => {
   it('derives aria-pressed from active', async () => {
     const button = document.createElement('craft-button');
@@ -348,6 +424,44 @@ describe('craft-button toggle', () => {
     button.click();
 
     expect(fired).toBe(false);
+  });
+});
+
+describe('craft-button loading', () => {
+  function liveRegion(element: CraftButton): string {
+    return (
+      element.shadowRoot?.querySelector('[data-live-region]')?.textContent ?? ''
+    );
+  }
+
+  it('clears the loading announcement when loading ends', async () => {
+    const button = await createButton({}, 'Reset password');
+
+    button.loading = true;
+    await button.updateComplete;
+
+    expect(liveRegion(button)).toBe('Loading');
+
+    button.loading = false;
+    await button.updateComplete;
+
+    expect(liveRegion(button)).toBe('');
+  });
+
+  it('keeps the loading announcement for as long as loading lasts', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const button = await createButton({}, 'Reset password');
+
+      button.loading = true;
+      await button.updateComplete;
+      vi.advanceTimersByTime(10000);
+
+      expect(liveRegion(button)).toBe('Loading');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

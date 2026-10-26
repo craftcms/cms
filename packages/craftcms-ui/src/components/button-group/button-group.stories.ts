@@ -29,10 +29,11 @@ const meta = {
     docs: {
       description: {
         component: `
-Groups a set of buttons together visually and optionally as a radio input.
+Groups a set of buttons together visually and optionally as a set of toggle
+buttons.
 
-When a \`name\` attribute is set, the group enters **radio mode**: exactly one
-button is selected at a time, the selection is reflected back via the \`value\`
+When a \`name\` attribute is set, the group enters **selection mode**: exactly
+one button is selected at a time, the selection is reflected back via the \`value\`
 property, and a \`change\` event fires with \`event.detail.value\` on each change.
 The group is form-associated and submits its value with the surrounding form.
         `.trim(),
@@ -59,12 +60,12 @@ export const Default: Story = {
 };
 
 /**
- * When `name` is set the group behaves as a radio input: clicking a button
- * selects it and deselects the previous selection. The active button receives
+ * When `name` is set, clicking a button selects it and deselects the previous
+ * selection. The active button receives
  * the `active` attribute and `aria-pressed="true"`.
  */
-export const RadioMode: Story = {
-  name: 'Radio mode',
+export const SelectionMode: Story = {
+  name: 'Selection mode',
   render: () => html`
     <craft-button-group name="view" value="list">
       <craft-button value="list">List</craft-button>
@@ -75,11 +76,11 @@ export const RadioMode: Story = {
 };
 
 /**
- * Radio mode works across all button variants. The selected button retains
+ * Selection mode works across all button variants. The selected button retains
  * its `active` styling regardless of the chosen variant.
  */
-export const RadioModeVariants: Story = {
-  name: 'Radio mode — variants',
+export const SelectionModeVariants: Story = {
+  name: 'Selection mode — variants',
   render: () => html`
     <div style="display:flex;flex-direction:column;gap:1rem">
       ${(['solid', 'fill', 'outline', 'dashed', 'plain'] as const).map(
@@ -100,9 +101,9 @@ export const RadioModeVariants: Story = {
   `,
 };
 
-/** Icon-only buttons work in radio mode just like labeled buttons. */
-export const RadioModeIcons: Story = {
-  name: 'Radio mode — icon buttons',
+/** Icon-only buttons work in selection mode just like labeled buttons. */
+export const SelectionModeIcons: Story = {
+  name: 'Selection mode — icon buttons',
   render: () => html`
     <craft-button-group name="layout" value="rows">
       <craft-button value="rows" aria-label="Row view">

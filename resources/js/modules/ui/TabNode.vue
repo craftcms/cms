@@ -34,7 +34,10 @@
     :data-ui-tab="node.uid"
     :data-layout-tab="node.uid"
   >
-    <craft-field-group>
+    <craft-field-group
+      separated
+      style="--c-field-group-separator-spacing: var(--cp-container-padding)"
+    >
       <UiNodeList
         :nodes="node.children ?? []"
         :values="values"

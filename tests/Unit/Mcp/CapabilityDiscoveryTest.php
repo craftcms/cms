@@ -7,8 +7,9 @@ use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\CapabilityDiscovery;
 use CraftCms\Cms\Mcp\CapabilityRegistry;
 use CraftCms\Cms\Tests\Support\McpCapabilities\Example;
-use CraftCms\Cms\User\Contracts\CraftUser;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Http\Request;
+use Laravel\Passport\AccessToken;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Discovery\DiscovererInterface;
 use Mcp\Capability\Discovery\DiscoveryState;
@@ -46,8 +47,9 @@ it('filters capabilities by their required Craft permissions', function (bool $a
             return $this->state;
         }
     };
-    $user = Mockery::mock(CraftUser::class);
+    $user = Mockery::mock(User::class);
     $user->expects('can')->with('manageMyPlugin')->andReturn($allowed);
+    $user->allows('currentAccessToken')->andReturn(new AccessToken(['oauth_scopes' => ['mcp:write']]));
     $request = Request::create('/');
     $request->setUserResolver(fn () => $user);
 

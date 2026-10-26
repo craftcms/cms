@@ -182,3 +182,64 @@ it('opens the move picker at the old parent and returns there after moving', asy
   });
   expect(visit).toHaveBeenCalledWith('/cp/assets/photos');
 });
+
+it('moves selected folders the way dropping them does, so the move can be undone', async () => {
+  const performMove = vi.fn(async () => 1);
+  scope.stop();
+  scope = effectScope();
+  scope.run(() => {
+    useAssetFolderActions(
+      {
+        findRow: () => undefined,
+        clearSelection: () => {},
+        refresh: async () => {},
+        captureSelection: () => () => {},
+        view: {} as never,
+      },
+      performMove
+    );
+  });
+
+  window.dispatchEvent(
+    new CustomEvent('assets:move-folders', {
+      detail: {elementIds: ['folder:7', 'folder:8'], sources: ['volume:abc']},
+    })
+  );
+  await VolumeFolderSelectorModal.mock.calls[0]![0].onSelect([{folderId: 12}]);
+
+  expect(performMove).toHaveBeenCalledWith(12, [], [7, 8]);
+  expect(post).not.toHaveBeenCalled();
+});
+
+it('moves the current folder itself and returns to its parent', async () => {
+  const performMove = vi.fn(async () => 1);
+  scope.stop();
+  scope = effectScope();
+  scope.run(() => {
+    useAssetFolderActions(
+      {
+        findRow: () => undefined,
+        clearSelection: () => {},
+        refresh: async () => {},
+        captureSelection: () => () => {},
+        view: {} as never,
+      },
+      performMove
+    );
+  });
+  post
+    .mockResolvedValueOnce({
+      data: {transferList: [], newFolderUrl: '/cp/assets/other/managed'},
+    })
+    .mockResolvedValueOnce({data: {}});
+
+  window.dispatchEvent(
+    new CustomEvent('assets:move-folders', {
+      detail: {folderIds: [7], redirectUrl: '/cp/assets/photos'},
+    })
+  );
+  await VolumeFolderSelectorModal.mock.calls[0]![0].onSelect([{folderId: 12}]);
+
+  expect(performMove).not.toHaveBeenCalled();
+  expect(visit).toHaveBeenCalledWith('/cp/assets/photos');
+});

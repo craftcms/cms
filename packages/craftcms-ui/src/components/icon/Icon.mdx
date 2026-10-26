@@ -56,6 +56,10 @@ The rule of thumb is what the icon sits beside:
 - **Beside text that doesn't say what the icon adds** — it needs a label, or hidden `sr-only` text next to it. An external-link icon after "View" means "opens in a new window", and a screen reader user should hear that too.
 - **On its own** — it needs a label, because nothing else names it. This is the usual case inside an icon-only button.
 
+A badge is `aria-hidden` like any other icon until it has a label, and its color alone doesn't tell anyone the status. Say the status in nearby text or in the `label`.
+
+The component colors an icon fetched by `name` with `currentColor`, which keeps it visible in forced colors mode. It doesn't recolor slotted artwork, so draw a slotted `<svg>` with `currentColor` too.
+
 ## Properties
 
 <ArgTypes of={IconStories} />

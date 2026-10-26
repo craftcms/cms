@@ -85,9 +85,9 @@ interface CpStatic extends CpServices {
 }
 
 interface CpNotificationSettings {
-  icon: string;
-  iconLabel: string;
-  details: string;
+  icon?: string;
+  iconLabel?: string;
+  details?: string | HTMLElement;
 }
 
 interface SlideoutInstance {
@@ -170,6 +170,8 @@ interface CraftStatic {
   getCpUrl(path: string, params?: string | LegacyWidgetSettings): string;
   defaultIndexCriteria: LegacyWidgetSettings;
   siteId?: number;
+  /** The control panel's syntax highlighter. */
+  highlighter: import('@tanstack/highlight/core').Highlighter;
   cp?: {
     jobInfo?: unknown[];
     displayedJobInfo?: unknown;

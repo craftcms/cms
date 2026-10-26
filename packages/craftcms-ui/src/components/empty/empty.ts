@@ -34,9 +34,15 @@ export default class CraftEmpty extends LitElement {
         text-align: center;
       }
 
+      /* Decorative (the label says the same), so it needn't meet 3:1 */
+      .cp-empty__icon {
+        color: var(--color-slate-200);
+      }
+
       .label {
         margin: 0;
         font-size: 1.25em;
+        color: var(--c-text-quiet);
       }
 
       :host([appearance~='outline']) {

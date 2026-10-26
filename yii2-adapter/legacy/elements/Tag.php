@@ -240,11 +240,11 @@ class Tag extends Element
             ->title(Db::escapeParam($this->title));
 
         if ($this->id) {
-            $query->andWhere(['not', ['elements.id' => $this->id]]);
+            $query->where('elements.id', '!=', $this->id);
         }
 
         if ($query->exists()) {
-            $this->addError($attribute, t('{attribute} "{value}" has already been taken.'));
+            $this->errors()->add($attribute, t('{attribute} "{value}" has already been taken.'));
         }
     }
 

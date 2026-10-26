@@ -30,7 +30,7 @@ it('exposes the authenticated MCP connection settings', function () {
 
     get(action(SettingsIndexController::class))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('settings.System.mcp', [
+            ->where('settings.Extend.mcp', [
                 'label' => 'MCP',
                 'url' => route('craft.cp.settings.mcp.index'),
                 'iconName' => 'light/robot',
@@ -181,7 +181,7 @@ it('applies Craft permissions to plugin capabilities on the authenticated server
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $user = UserModel::query()->firstOrFail();
-    Passport::actingAs($user, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
 
     postJson(route('craft.cp.mcp.server'), McpRequest::payload('tools/call', ['name' => 'example.manage']), McpRequest::headers('tools/call', 'example.manage'))
         ->assertOk()

@@ -22,7 +22,7 @@ beforeEach(function (): void {
     Edition::set(Edition::Pro);
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $this->call = fn (string $operation, array $arguments = []): TestResponse => McpRequest::send($this, 'tools/call', [
         'name' => "configuration.$operation",
         'arguments' => $arguments,
@@ -196,7 +196,7 @@ it('keeps read-only admin discovery usable while refusing configuration writes',
 
 it('does not expose configuration to users without admin access', function (): void {
     $user = User::factory()->withPermissions(['accessCp', 'useCraftMcp'])->create(['admin' => false]);
-    Passport::actingAs($user, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
 
     McpRequest::send($this, 'tools/call', ['name' => 'configuration.list', 'arguments' => ['type' => 'sites']])
         ->assertBadRequest()->assertJsonPath('error.message', 'Tool not found: "configuration.list".');

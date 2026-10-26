@@ -19,9 +19,11 @@ That is why this is a different component from a [Checkbox](?path=/docs/form-con
 
 ## Accessibility
 
-The mixed state is exposed as `aria-checked="mixed"`, which is announced as such — so a person hears that some of the set is selected rather than being told it is simply off.
+The mixed state is set through the native input's `indeterminate` property, which browsers announce as "mixed" — so a person hears that some of the set is selected rather than being told it is simply off.
 
 Label the parent with what the set contains rather than with "Select all". "All entry types" says what is being selected; "Select all" says only what the control does, which the checkbox shape already conveys.
+
+Place it inside a [Checkbox Group](?path=/docs/form-controls-choice-controls-checkbox-group--docs) whose label names the question the set answers.
 
 ## Properties
 

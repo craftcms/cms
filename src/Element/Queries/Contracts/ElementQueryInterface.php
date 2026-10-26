@@ -152,6 +152,32 @@ interface ElementQueryInterface extends Builder
     public function draftId(?int $value = null): static;
 
     /**
+     * Narrows the query results to drafts attached to a release.
+     *
+     * The value is a release ID from the `releases` table.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch drafts attached to a release #}
+     * {% set {elements-var} = {twig-method}
+     *   .releaseId(10)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch drafts attached to a release
+     * ${elements-var} = {php-method}
+     *     ->releaseId(10)
+     *     ->all();
+     * ```
+     *
+     * @param  int|null  $value  The release ID
+     * @return static self reference
+     */
+    public function releaseId(?int $value = null): static;
+
+    /**
      * Narrows the query results to only drafts of a given {element}.
      *
      * Possible values include:

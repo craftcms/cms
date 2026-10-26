@@ -3,15 +3,15 @@
   import '@craftcms/ui/components/button-group/button-group';
   import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/checkbox-group/checkbox-group';
-  import '@craftcms/ui/components/checkbox-indeterminate/checkbox-indeterminate';
+  import '@craftcms/ui/components/checkbox-select/checkbox-select';
+  import type CraftCheckboxSelect from '@craftcms/ui/components/checkbox-select/checkbox-select';
+  import type {CheckboxSelectOption} from '@craftcms/ui/components/checkbox-select/checkbox-select';
+  import '@craftcms/ui/components/icon/icon';
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
   import {computed, inject, ref, watch} from 'vue';
-  import type {CheckboxOption} from '@/common/types';
-  import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {UiControlPayload, UiValue} from './types';
-  import type {Slots} from 'vue';
   import {FieldLabelSrOnly, inputName, serverErrorValidators} from './runtime';
 
   type ChoiceValue = boolean | number | string;
@@ -175,12 +175,6 @@
 
   function onButtonClicked(value: ChoiceValue): void {
     const optionValue = inputValue(value);
-
-    if (!props.control.props.multiple) {
-      emit('update:value', optionValue);
-      return;
-    }
-
     const values = Array.isArray(props.value)
       ? props.value.map(inputValue)
       : [];
@@ -197,13 +191,6 @@
   }
 
   /**
-   * Renders its children with no element of its own, so the option loop can be
-   * written once whether or not a `craft-checkbox-indeterminate` wraps it.
-   */
-  const Passthrough = (_props: unknown, {slots}: {slots: Slots}) =>
-    slots.default?.();
-
-  /**
    * Whether “All” speaks for the options rather than merely toggling them: it
    * posts its own token and they post nothing.
    */
@@ -218,37 +205,23 @@
     return props.control.props.allValue ?? '*';
   }
 
-  function allChecked(): boolean {
-    return allIsSingleValue() && selected(allValue());
-  }
-
-  /**
-   * “All” owns the value while it's checked, so toggling it swaps the whole
-   * selection rather than adding to it. Unchecking falls back to nothing
-   * selected, which is what the options themselves then build on.
-   */
-  function onAllChanged(event: Event): void {
-    if (!(event.target instanceof HTMLInputElement)) {
-      throw new TypeError('Expected a choice input event target.');
-    }
-
-    emit('update:value', event.target.checked ? [allValue()] : []);
-  }
-
   function hasThumbnails(): boolean {
     return props.control.props.options.some((option) => option.thumbnail);
   }
 
-  // Reordering needs a drag affordance `craft-checkbox-group` doesn't have on
-  // its own, so it renders through the CP's CheckboxGroup instead.
-  const useCheckboxGroup = computed(
+  // Sorting, an “All” option, and the “Add item” menu render through
+  // `craft-checkbox-select`; plain checkboxes stay a `craft-checkbox-group`.
+  const useCheckboxSelect = computed(
     () =>
-      props.control.props.presentation === 'checkboxes' &&
-      props.control.props.sortable === true
+      props.control.props.presentation === 'add-menu' ||
+      (props.control.props.presentation === 'checkboxes' &&
+        (props.control.props.sortable === true ||
+          props.control.props.allLabel !== undefined))
   );
 
-  // Display order is owned by the client: the server sends the selected options
-  // first, and a drag only reorders — it never changes what is checked.
+  // Display order is owned by the client: the server sends the selected
+  // options first, and the element reorders its items itself, so read the
+  // order back from it rather than putting the old one back on the next render.
   const order = ref<string[]>(optionValues(props.control.props.options));
 
   watch(
@@ -266,13 +239,7 @@
     return options.map((option) => inputValue(option.value));
   }
 
-  function optionHtml(value: string): string | undefined {
-    return props.control.props.options.find(
-      (option) => inputValue(option.value) === value
-    )?.labelHtml;
-  }
-
-  const groupOptions = computed<CheckboxOption[]>(() => {
+  const selectOptionsInOrder = computed<CheckboxSelectOption[]>(() => {
     const byValue = new Map(
       props.control.props.options.map((option) => [
         inputValue(option.value),
@@ -287,8 +254,11 @@
         ? [
             {
               label: option.label,
+              ...(option.labelHtml !== undefined
+                ? {labelHtml: option.labelHtml}
+                : {}),
               value,
-              disabled: !props.editable || option.disabled,
+              disabled: !!option.disabled,
             },
           ]
         : [];
@@ -299,24 +269,22 @@
     Array.isArray(props.value) ? props.value.map(inputValue) : []
   );
 
-  function onGroupValue(values: string[]): void {
-    emit(
-      'update:value',
-      order.value.filter((value) => values.includes(value))
-    );
-  }
+  function onCheckboxSelectValue(event: Event): void {
+    // Its checkboxes fire their own `model-value-changed`, which bubbles up
+    // to this listener too.
+    const select = event.currentTarget;
+    if (
+      event.target !== select ||
+      !(select instanceof HTMLElement) ||
+      select.localName !== 'craft-checkbox-select'
+    ) {
+      return;
+    }
 
-  function onGroupReorder(options: CheckboxOption[]): void {
-    order.value = options.map((option) => option.value);
-
-    // The value carries the display order, so a reorder changes it too.
-    const selected = Array.isArray(props.value)
-      ? props.value.map(inputValue)
-      : [];
-    emit(
-      'update:value',
-      order.value.filter((value) => selected.includes(value))
-    );
+    // SAFETY: Checked by tag name above.
+    const element = select as CraftCheckboxSelect;
+    order.value = element.options.map((option) => option.value);
+    emit('update:value', element.modelValue);
   }
 </script>
 
@@ -373,8 +341,10 @@
     </select>
   </craft-select>
   <craft-button-group
-    v-else-if="control.props.presentation === 'buttons'"
-    :role="control.props.multiple ? 'group' : 'radiogroup'"
+    v-else-if="
+      control.props.presentation === 'buttons' && control.props.multiple
+    "
+    role="group"
     :aria-invalid="invalid ? 'true' : undefined"
     :aria-required="required ? 'true' : undefined"
   >
@@ -382,12 +352,12 @@
       v-if="editable"
       type="hidden"
       :name="inputName(control.path)"
-      :value="control.props.multiple ? '' : inputValue(value)"
+      value=""
     />
     <input
-      v-for="option in control.props.multiple
-        ? control.props.options.filter((option) => selected(option.value))
-        : []"
+      v-for="option in control.props.options.filter((option) =>
+        selected(option.value)
+      )"
       :key="inputValue(option.value)"
       type="hidden"
       :name="`${inputName(control.path)}[]`"
@@ -412,25 +382,29 @@
       <template v-else-if="!option.icon">{{ option.label }}</template>
     </craft-button>
   </craft-button-group>
-  <CheckboxGroup
-    v-else-if="useCheckboxGroup"
-    :name="editable ? `${inputName(control.path)}[]` : undefined"
+  <craft-checkbox-select
+    v-else-if="useCheckboxSelect"
+    role="group"
+    :name="editable ? inputName(control.path) : undefined"
     :disabled="!editable"
-    :model-value="groupValue"
-    :options="groupOptions"
-    :sortable="control.props.sortable"
-    @update:model-value="onGroupValue"
-    @update:options="onGroupReorder"
-  >
-    <template #label="{option}">
-      <span v-if="optionHtml(option.value)" v-html="optionHtml(option.value)" />
-      <template v-else>{{ option.label }}</template>
-    </template>
-  </CheckboxGroup>
+    :sortable="control.props.sortable === true"
+    :presentation="
+      control.props.presentation === 'add-menu' ? 'add-menu' : 'checkboxes'
+    "
+    :all-label="control.props.allLabel ?? null"
+    :all-value="allValue()"
+    :all-mode="allIsSingleValue() ? 'single-value' : 'each-value'"
+    :aria-invalid="invalid ? 'true' : undefined"
+    :aria-required="required ? 'true' : undefined"
+    .options="selectOptionsInOrder"
+    .modelValue="groupValue"
+    @model-value-changed="onCheckboxSelectValue"
+  ></craft-checkbox-select>
   <component
     :is="control.props.multiple ? 'craft-checkbox-group' : 'craft-radio-group'"
     v-else
     :thumbnails="hasThumbnails() || undefined"
+    :buttons="control.props.presentation === 'buttons' || undefined"
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
@@ -448,74 +422,64 @@
       :name="inputName(control.path)"
       value=""
     />
-    <component
-      :is="
-        control.props.allLabel ? 'craft-checkbox-indeterminate' : Passthrough
-      "
-      :label="control.props.allLabel"
-      :all-mode="allIsSingleValue() ? 'single-value' : 'each-value'"
-      .choiceValue="allValue()"
-      .checked="allChecked()"
+    <div
+      v-for="(option, index) in control.props.options"
+      :key="inputValue(option.value)"
     >
-      <input
-        v-if="control.props.allLabel && allIsSingleValue() && editable"
-        slot="input"
-        :id="`${optionId(0)}-all`"
-        type="checkbox"
-        :name="`${inputName(control.path)}[]`"
-        :value="allValue()"
-        :checked="allChecked()"
-        @change="onAllChanged"
-      />
-      <div
-        v-for="(option, index) in control.props.options"
-        :key="inputValue(option.value)"
+      <label
+        v-if="option.thumbnail"
+        class="radio-thumbnail"
+        :for="optionId(index)"
       >
-        <label
-          v-if="option.thumbnail"
-          class="radio-thumbnail"
-          :for="optionId(index)"
-        >
-          <img
-            :src="option.thumbnail.src"
-            :width="option.thumbnail.width"
-            :height="option.thumbnail.height"
-            :style="
-              option.thumbnail.aspectRatio
-                ? {aspectRatio: option.thumbnail.aspectRatio}
-                : undefined
-            "
-            alt=""
-          />
-        </label>
-        <component
-          :is="control.props.multiple ? 'craft-checkbox' : 'craft-radio'"
+        <img
+          :src="option.thumbnail.src"
+          :width="option.thumbnail.width"
+          :height="option.thumbnail.height"
+          :style="
+            option.thumbnail.aspectRatio
+              ? {aspectRatio: option.thumbnail.aspectRatio}
+              : undefined
+          "
+          alt=""
+        />
+      </label>
+      <component
+        :is="control.props.multiple ? 'craft-checkbox' : 'craft-radio'"
+        :title="
+          control.props.presentation === 'buttons' && option.icon
+            ? option.label
+            : undefined
+        "
+        :disabled="!editable || option.disabled"
+        .choiceValue="inputValue(option.value)"
+        .checked="selected(option.value)"
+      >
+        <input
+          slot="input"
+          :id="optionId(index)"
+          :type="control.props.multiple ? 'checkbox' : 'radio'"
+          :name="
+            editable
+              ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
+              : ''
+          "
+          :value="inputValue(option.value)"
+          :checked="selected(option.value)"
           :disabled="!editable || option.disabled"
-          .choiceValue="inputValue(option.value)"
-          .checked="allChecked() || selected(option.value)"
-        >
-          <input
-            slot="input"
-            :id="optionId(index)"
-            :type="control.props.multiple ? 'checkbox' : 'radio'"
-            :name="
-              editable && !allChecked()
-                ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
-                : ''
-            "
-            :value="inputValue(option.value)"
-            :checked="allChecked() || selected(option.value)"
-            :disabled="!editable || option.disabled"
-            :required="editable && required && !control.props.multiple"
-            :aria-invalid="invalid ? 'true' : undefined"
-            @change="onOptionChanged"
+          :required="editable && required && !control.props.multiple"
+          :aria-invalid="invalid ? 'true' : undefined"
+          @change="onOptionChanged"
+        />
+        <label slot="label" :for="optionId(index)">
+          <craft-icon
+            v-if="control.props.presentation === 'buttons' && option.icon"
+            :name="option.icon"
+            :label="option.label"
           />
-          <label slot="label" :for="optionId(index)">
-            <span v-if="option.labelHtml" v-html="option.labelHtml" />
-            <template v-else>{{ option.label }}</template>
-          </label>
-        </component>
-      </div>
-    </component>
+          <span v-else-if="option.labelHtml" v-html="option.labelHtml" />
+          <template v-else>{{ option.label }}</template>
+        </label>
+      </component>
+    </div>
   </component>
 </template>

@@ -26,6 +26,14 @@ export default class CraftBadgeIndicator extends LitElement {
   @property({attribute: 'badge-count-suffix'}) badgeCountSuffix: string | null =
     null;
 
+  /**
+   * The largest count shown in full. Anything above it shows as `{max}+`, as
+   * an unread count past 99 stops being useful and would not fit. Set it to
+   * `Infinity` for a count that's a tally rather than a nudge, such as how many
+   * elements a source has, so the badge grows to fit the whole number.
+   */
+  @property({type: Number}) max: number = 99;
+
   /** Theme variant of the badge indicator. Defaults to "primary" */
   @property() variant: 'primary' | 'secondary' | 'inverse' = 'primary';
 
@@ -46,16 +54,14 @@ export default class CraftBadgeIndicator extends LitElement {
     return this.badgeCount !== null && this.badgeCount > 0;
   }
 
-  private truncatedNumber() {
-    if (!this.showCount) return;
+  private truncatedNumber(): string {
+    const count = this.badgeCount ?? 0;
+    const format = (value: number) =>
+      new Intl.NumberFormat(document.documentElement.lang || undefined).format(
+        value
+      );
 
-    // @ts-expect-error we're already checking that badgeCount is not null in showCount
-    if (this.badgeCount > 99) {
-      return '99+';
-    } else {
-      // @ts-expect-error we're already checking that badgeCount is not null in showCount
-      return this.badgeCount.toString();
-    }
+    return count > this.max ? `${format(this.max)}+` : format(count);
   }
 
   private getBadgeRole() {

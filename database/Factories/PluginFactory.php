@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Database\Factories;
 
 use CraftCms\Cms\Plugin\Models\Plugin;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Date;
 use Override;
 
 class PluginFactory extends Factory
@@ -21,7 +22,7 @@ class PluginFactory extends Factory
             'handle' => $this->faker->slug(),
             'version' => $this->faker->semver(),
             'schemaVersion' => $this->faker->semver(),
-            'installDate' => $this->faker->dateTime(),
+            'installDate' => $this->faker->dateTime(Date::now()),
         ];
     }
 }

@@ -235,13 +235,10 @@ readonly class SitesController
             throw ValidationException::withMessages($site->errors()->getMessages());
         }
 
-        if ($isNew) {
-            Flash::success(t('Site created'));
-
-            return to_route('craft.cp.settings.sites.index');
-        }
-
-        return $this->asSuccess(t('Site saved.'));
+        return $this->asSuccess(
+            $isNew ? t('Site created') : t('Site saved.'),
+            redirect: $isNew ? $this->createdRedirectUrl(route('craft.cp.settings.sites.edit', ['site' => $site->id])) : null,
+        );
     }
 
     public function reorder(Request $request): \Symfony\Component\HttpFoundation\Response
@@ -328,7 +325,7 @@ readonly class SitesController
                 ->required()
                 ->tip(sprintf(
                     '%s [%s](%s)',
-                    t('Type `$` to choose an environment variable.'),
+                    t('Type <kbd>$</kbd> to choose an environment variable.'),
                     t('Learn more'),
                     'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                 )),
@@ -380,7 +377,7 @@ readonly class SitesController
                     ->instructions(t('The base URL for the site.'))
                     ->tip(sprintf(
                         '%s [%s](%s)',
-                        t('Type `$` to choose an environment variable, or `@` to choose an alias.'),
+                        t('Type <kbd>$</kbd> to choose an environment variable, or <kbd>@</kbd> to choose an alias.'),
                         t('Learn more'),
                         'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                     )),

@@ -96,3 +96,23 @@ describe('slots', function () {
             ->and($html)->toContain('<craft-icon name="chevron-down" slot="suffix">');
     });
 });
+
+test('an aria-label passed as an attribute names an icon-only button', function () {
+    $html = Button::make()
+        ->icon('custom-icons/slideout-left')
+        ->attributes(['aria' => ['label' => 'Left']])
+        ->toHtml();
+
+    expect($html)->toContain('aria-label="Left"');
+});
+
+test('the accessible name wins over an aria-label attribute', function () {
+    $html = Button::make()
+        ->icon('xmark')
+        ->accessibleName('Close')
+        ->attributes(['aria' => ['label' => 'Ignored']])
+        ->toHtml();
+
+    expect($html)->toContain('aria-label="Close"')
+        ->not->toContain('aria-label="Ignored"');
+});

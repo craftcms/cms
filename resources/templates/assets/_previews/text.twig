@@ -1,24 +1,3 @@
-<div class="highlight {{ asset.kind }}">
-    <pre><code class="language-{{ language }}">{{ contents|raw }}</code></pre>
-</div>
-{% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\PrismJsAsset") %}
-{% js %}
-var instance = Craft.PreviewFileModal.openInstance;
-var $highlight = instance.$container.find('.highlight');
-
-if ($highlight.length && $highlight.hasClass('json')) {
-    var $target = $highlight.find('code');
-    $target.html(JSON.stringify(JSON.parse($target.html()), undefined, 4));
-}
-
-if ($highlight.length) {
-    Prism.highlightElement($highlight.find('code').get(0));
-}
-
-instance.base();
-
-instance.$container
-    .height(instance.$container.height())
-    .width(instance.$container.width())
-    .css({'overflow': 'auto'});
-{% endjs %}
+<craft-pane variant="code" aria-label="{{ asset.filename }}" style="--c-pane-max-block-size: none; block-size: 100%; margin: 0">
+    <pre class="th-code"><code data-language="{{ language }}">{{ contents|raw }}</code></pre>
+</craft-pane>

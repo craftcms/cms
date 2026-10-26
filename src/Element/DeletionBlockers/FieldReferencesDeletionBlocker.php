@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\DeletionBlockers;
 
-use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Field\FieldReferences;
@@ -62,19 +61,12 @@ class FieldReferencesDeletionBlocker extends BaseDeletionBlocker
             ->map(function ($sourceIds, string $sourceElementType) {
                 /** @var class-string<ElementInterface> $sourceElementType */
                 return Html::tag('h3', $sourceElementType::pluralDisplayName()).
-                    app(ElementIndexHtml::class)->html($sourceElementType, [
-                        'context' => 'pane',
-                        'sources' => false,
-                        'jsSettings' => [
-                            'criteria' => [
-                                'id' => $sourceIds->all(),
-                                'drafts' => null,
-                                'provisionalDrafts' => null,
-                                'revisions' => false,
-                                'status' => null,
-                            ],
-                        ],
-                    ]);
+                    $this->elementChipsHtml($sourceElementType::find()
+                        ->id($sourceIds->all())
+                        ->drafts(null)
+                        ->provisionalDrafts(null)
+                        ->revisions(false)
+                        ->status(null));
             })
             ->join('');
     }

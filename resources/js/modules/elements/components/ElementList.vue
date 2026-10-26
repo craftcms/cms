@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {computed} from 'vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementChips from '@/modules/elements/components/ElementChips.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
@@ -29,7 +30,7 @@
     thumbHtml?: string;
   }
 
-  withDefaults(
+  const props = withDefaults(
     defineProps<{
       /** The elements to draw, in display order. */
       data?: Array<ListElement>;
@@ -52,10 +53,25 @@
     }
   );
 
-  defineEmits<{
+  // Thumbs link any tile with a `url`. In a relational field, clicking an
+  // element selects or edits it, so the tiles shouldn't navigate away.
+  const thumbsData = computed(() =>
+    props.data.map(({url: _url, ...element}) => element)
+  );
+
+  const emit = defineEmits<{
     (event: 'edit', element: ListElement): void;
     (event: 'reorder', startIndex: number, finishIndex: number): void;
   }>();
+
+  /** Cards and thumbs report their own element shape; edit the one we were given. */
+  function edit(id: string | number): void {
+    const element = props.data.find((candidate) => candidate.id === id);
+
+    if (element) {
+      emit('edit', element);
+    }
+  }
 </script>
 
 <template>
@@ -69,6 +85,7 @@
     :loading="loading"
     :single-column="viewMode === 'cards'"
     :sortable="sortable"
+    @edit="(element) => edit(element.id)"
     @reorder="
       (startIndex, finishIndex) => $emit('reorder', startIndex, finishIndex)
     "
@@ -81,13 +98,14 @@
 
   <ElementThumbs
     v-else-if="viewMode === 'thumbs'"
-    :data="data"
+    :data="thumbsData"
     :selection="selection"
     :selectable="selectable"
     :select-all="selectAll"
     :read-only="readOnly"
     :loading="loading"
     :sortable="sortable"
+    @edit="(element) => edit(element.id)"
     @reorder="
       (startIndex, finishIndex) => $emit('reorder', startIndex, finishIndex)
     "

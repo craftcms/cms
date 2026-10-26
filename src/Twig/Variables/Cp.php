@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Twig\Variables;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Cp\Alerts;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Events\FormActionsResolving;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Navigation;
@@ -27,6 +28,7 @@ use Illuminate\Support\Uri;
 use InvalidArgumentException;
 use Stringable;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
@@ -48,6 +50,14 @@ class Cp extends Component
     public function getRequestedSite(): ?Site
     {
         return app(RequestedSite::class)->get();
+    }
+
+    /**
+     * Returns the current user’s control panel theme: `light`, `dark` or `system`.
+     */
+    public function getTheme(): string
+    {
+        return Theme::forUser(currentUserElement())->value;
     }
 
     /**

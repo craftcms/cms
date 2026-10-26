@@ -93,7 +93,7 @@ test('stops resetting its state once it is removed', async () => {
     >
       Duplicate
     </craft-action-item>`
-  )) as HTMLElement & {feedbackDuration: number};
+  )) as unknown as HTMLElement & {feedbackDuration: number};
   const states: string[] = [];
   item.addEventListener('craft-state-change', (event) => {
     states.push((event as CustomEvent<{state: string}>).detail.state);

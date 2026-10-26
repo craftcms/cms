@@ -151,8 +151,8 @@ Legacy compat styles
   .draft-notice .draft-icon {
     position: relative;
     flex-shrink: 0;
-    width: 34px;
-    height: 34px;
+    width: var(--c-size-control-md);
+    height: var(--c-size-control-md);
     display: flex;
     justify-content: center;
     align-items: center;

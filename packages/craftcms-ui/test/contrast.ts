@@ -25,11 +25,16 @@ function luminance([red, green, blue]: [number, number, number]): number {
 
 /**
  * The WCAG contrast ratio between `foreground` and `background`, with the
- * foreground composited over the background first.
+ * foreground composited over the background first, and a translucent
+ * background composited over `backdrop`.
  */
-export function contrast(foreground: string, background: string): number {
-  const back = paint(background);
-  const front = paint(foreground, background);
+export function contrast(
+  foreground: string,
+  background: string,
+  backdrop = '#fff'
+): number {
+  const back = paint(background, backdrop);
+  const front = paint(foreground, `rgb(${back.join(', ')})`);
   const [lighter, darker] = [luminance(front), luminance(back)].sort(
     (a, b) => b - a
   );

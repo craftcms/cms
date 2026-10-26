@@ -35,6 +35,14 @@ export const paletteColors = [
   'slate',
 ] as const;
 
+/**
+ * Palette colors that are neutral rather than tinted. A component in one of
+ * these colors keeps the usual UI colors for what's in it (links, controls,
+ * text) instead of taking on its own color, as tinted colors do. Black's
+ * contents are themed dark instead.
+ */
+export const neutralColors = ['white', 'gray', 'slate', 'black'] as const;
+
 /** Semantic meaning → palette color. */
 export const semanticColors = {
   neutral: 'slate',

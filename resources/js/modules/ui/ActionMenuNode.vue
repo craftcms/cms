@@ -22,7 +22,15 @@
 
   const props = defineProps<{
     node: UiNodePayload<ActionMenuNodeProps>;
+    /** The UI scope the node renders in; its uid is only unique within it. */
+    scope?: string[];
   }>();
+
+  // Repeated scoped content, such as Matrix blocks, renders the same uids once
+  // per scope, so the scope is part of what identifies this menu.
+  const focusKey = computed(() =>
+    JSON.stringify([...(props.scope ?? []), props.node.uid])
+  );
 
   // A field's control may say what its menu should read (see FieldActionItems).
   const resolveItems = inject(FieldActionItems, undefined);
@@ -34,10 +42,13 @@
 </script>
 
 <template>
+  <!-- The scope and uid stay the same across re-renders, so `data-focus-key`
+    lets focus find this menu's button again after one (see `focusReturnFor()`). -->
   <ActionMenu
     :actions="items"
     :icon="props.node.props.icon"
     :label="props.node.props.label"
     :data-ui-node="props.node.uid"
+    :data-focus-key="focusKey"
   />
 </template>

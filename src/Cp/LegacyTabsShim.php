@@ -64,7 +64,7 @@ final class LegacyTabsShim
             }
 
             $component = $component->tab(
-                Tab::make()->label($label)->controls($id),
+                Tab::make()->label($label)->icon(is_string($tab['icon'] ?? null) ? $tab['icon'] : null)->controls($id),
             );
         }
 

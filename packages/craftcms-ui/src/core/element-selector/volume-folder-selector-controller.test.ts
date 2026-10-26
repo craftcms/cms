@@ -51,6 +51,26 @@ describe('configuration', () => {
     expect(create().indexSettings().foldersOnly).toBe(true);
   });
 
+  it('starts from the default source and the last folder of its path', () => {
+    expect(
+      create({
+        defaultSource: 'volume:abc',
+        defaultSourcePath: [{folderId: 1}, {folderId: 5}],
+      }).indexParams()
+    ).toMatchObject({source: 'volume:abc', folderId: 5, showFolders: true});
+  });
+
+  it('reads the default source and path from indexSettings, as legacy callers pass them', () => {
+    expect(
+      create({
+        indexSettings: {
+          defaultSource: 'volume:abc',
+          defaultSourcePath: [{folderId: 5}],
+        },
+      }).indexParams()
+    ).toMatchObject({source: 'volume:abc', folderId: 5});
+  });
+
   it('never offers the site menu, since folders do not vary by site', () => {
     expect(create({showSiteMenu: true}).indexParams().showSiteMenu).toBe('0');
   });

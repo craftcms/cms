@@ -60,6 +60,23 @@ it('defaults native asset thumbnails to fit', function () {
         ]);
 });
 
+it('gives fit thumbnails the size they’re displayed at, so placeholders match them', function (ImageTransformMode $mode, ?int $width, ?int $height, ?string $thumbWidth, ?string $thumbHeight) {
+    new ControlPanelAssetTransformDriver()->register();
+    Cms::config()->defaultAssetTransformer('test');
+    $asset = Asset::factory()->createElement(['volumeId' => $this->volume->id, 'width' => $width, 'height' => $height]);
+
+    $thumbnail = new Crawler($asset->getThumbHtml(120, $mode))->filter('craft-thumbnail');
+
+    expect($thumbnail->attr('width'))->toBe($thumbWidth)
+        ->and($thumbnail->attr('height'))->toBe($thumbHeight);
+})->with([
+    'landscape' => [ImageTransformMode::Fit, 800, 600, '120', '90'],
+    'portrait' => [ImageTransformMode::Fit, 600, 800, '90', '120'],
+    // Cropped thumbnails fill the box, so their placeholder already does too.
+    'cropped' => [ImageTransformMode::Crop, 800, 600, null, null],
+    'missing dimensions' => [ImageTransformMode::Fit, null, null, null, null],
+]);
+
 it('shows image thumbnails’ placeholders while they load', function (?ImageColors $colors, bool $hasPlaceholder) {
     new ControlPanelAssetTransformDriver()->register();
     Cms::config()->defaultAssetTransformer('test');

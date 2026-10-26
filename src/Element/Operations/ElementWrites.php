@@ -25,6 +25,7 @@ use CraftCms\Cms\Element\Events\ElementsResaved;
 use CraftCms\Cms\Element\Events\ElementsResaving;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
+use CraftCms\Cms\Element\Models\Draft;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -43,7 +44,6 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\Workflow\Workflows;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
@@ -75,7 +75,6 @@ readonly class ElementWrites
         private ElementCaches $elementCaches,
         private Search $search,
         private Sites $sites,
-        private Workflows $workflows,
     ) {
         $this->propagationSites = new WeakMap;
     }
@@ -516,8 +515,7 @@ readonly class ElementWrites
                 DB::beginTransaction();
 
                 try {
-                    $this->workflows->lockDraftIds($draftIdsToLock);
-
+                    Draft::lockIds(...$draftIdsToLock);
                     $this->updateModel($element, $isNewElement, $forceTouch, $fieldLayout, $trackChanges, $dirtyAttributes);
 
                     if ($siteSettingsRecord === null) {
@@ -733,7 +731,7 @@ readonly class ElementWrites
 
                 if ($trackChanges) {
                     $userId = currentUser()?->getCraftUserId();
-                    $timestamp = now();
+                    $timestamp = Query::prepareDateForDb(now());
 
                     foreach ($dirtyAttributes as $attributeName) {
                         DB::table(Table::CHANGEDATTRIBUTES)

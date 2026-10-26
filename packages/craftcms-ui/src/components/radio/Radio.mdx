@@ -26,9 +26,11 @@ Like [Checkbox](?path=/docs/form-controls-choice-controls-checkbox--docs), it ke
 
 ## Accessibility
 
-Lion wires the label to the input, and the group provides the radio-group semantics that make arrow-key navigation between options work.
+Lion wires the label to the input. The group names the question with `role="radiogroup"` and its label, and the browser's native radio grouping — every option sharing the group's `name` — is what makes the arrow keys move between options.
 
-That is one more reason not to use a radio outside a group: alone, it is a control a person can select but never deselect, with no siblings to move between.
+That is one more reason not to use a radio outside a group: alone, it is a control a person can select but never deselect, with no siblings to move between and no question to answer.
+
+Give every radio a visible label that says what choosing it means. Clicking the label selects the radio, so the label also enlarges its target.
 
 ## Properties
 

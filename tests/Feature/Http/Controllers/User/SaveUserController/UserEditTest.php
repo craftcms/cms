@@ -9,8 +9,18 @@ use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 use function Pest\Laravel\actingAs;
+
+// Each test gets its own photo directory: one shared between parallel test
+// processes let two of them claim the same filename at once.
+afterEach(function () {
+    if (isset($this->photoRoot)) {
+        File::deleteDirectory($this->photoRoot);
+    }
+});
 
 it('succeeds when admin edits another user', function () {
     $admin = UserFactory::new()->admin()->createElement();
@@ -172,7 +182,7 @@ it('can upload a photo for another user', function () {
 
     config()->set('filesystems.disks.test', [
         'driver' => 'local',
-        'root' => public_path('test'),
+        'root' => $this->photoRoot = storage_path('framework/testing/user-photos/'.Str::uuid()),
         'url' => '/test',
     ]);
 

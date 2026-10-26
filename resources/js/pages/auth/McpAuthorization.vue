@@ -1,11 +1,17 @@
 <script setup lang="ts">
+  import {ref} from 'vue';
   import {t} from '@craftcms/ui';
   import AuthBase from '@/common/layouts/AuthBase.vue';
 
-  defineProps<{
+  const props = defineProps<{
     clientName: string;
     scopes: Array<{
       id: string;
+      description: string;
+    }>;
+    accessOptions: Array<{
+      value: string;
+      label: string;
       description: string;
     }>;
     authToken: string;
@@ -13,6 +19,8 @@
     approveAction: string;
     denyAction: string;
   }>();
+
+  const access = ref(props.accessOptions[0]?.value ?? '');
 </script>
 
 <template>
@@ -22,13 +30,32 @@
       :label="t('{name} wants to access your account', {name: clientName})"
     >
       <div class="authorization__content">
-        <p>{{ t('This application will be able to:') }}</p>
+        <craft-radio-group
+          v-if="accessOptions.length"
+          name="access-choice"
+          :label="t('Access')"
+          .modelValue="access"
+          @model-value-changed="access = $event.target.modelValue"
+        >
+          <craft-radio
+            v-for="option in accessOptions"
+            :key="option.value"
+            :label="option.label"
+            :help-text="option.description"
+            .choiceValue="option.value"
+            .checked="option.value === access"
+          ></craft-radio>
+        </craft-radio-group>
 
-        <ul class="authorization__scopes">
-          <li v-for="scope in scopes" :key="scope.id">
-            {{ scope.description }}
-          </li>
-        </ul>
+        <template v-if="scopes.length">
+          <p>{{ t('This application will be able to:') }}</p>
+
+          <ul class="authorization__scopes">
+            <li v-for="scope in scopes" :key="scope.id">
+              {{ scope.description }}
+            </li>
+          </ul>
+        </template>
 
         <p class="authorization__warning">
           {{ t('Only continue if you trust this application.') }}
@@ -45,6 +72,12 @@
       <form slot="primary-action" :action="approveAction" method="post">
         <input type="hidden" name="_token" :value="csrfToken" />
         <input type="hidden" name="auth_token" :value="authToken" />
+        <input
+          v-if="accessOptions.length"
+          type="hidden"
+          name="access"
+          :value="access"
+        />
         <craft-button type="submit" variant="primary">
           {{ t('Authorize') }}
         </craft-button>

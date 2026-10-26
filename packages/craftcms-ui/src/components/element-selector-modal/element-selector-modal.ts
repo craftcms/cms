@@ -36,7 +36,6 @@ const NARROW_THRESHOLD = 550;
  * @csspart footer - The footer row.
  * @csspart secondary-actions - The left-hand footer group.
  * @csspart primary-actions - The right-hand footer group.
- * @csspart close - The header close button.
  * @csspart cancel - The Cancel button.
  * @csspart select - The Select button.
  *
@@ -99,8 +98,30 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
   #resizeObserver: ResizeObserver | null = null;
 
+  #sizeLockFrame?: number;
+
+  #windowResizeTimer?: ReturnType<typeof setTimeout>;
+
+  /**
+   * The surface keeps the height it opened at, so switching sources or pages
+   * doesn't shrink and grow it while the index reloads. A window resize lets it
+   * settle to a new size, then holds that one.
+   */
+  #onWindowResize = () => {
+    this.#unlockSize();
+    clearTimeout(this.#windowResizeTimer);
+    this.#windowResizeTimer = setTimeout(() => this.#queueSizeLock(), 200);
+  };
+
+  constructor() {
+    super();
+    // An index needs room, and how much depends on its columns and the screen.
+    this.resizable = true;
+  }
+
   override connectedCallback(): void {
     super.connectedCallback();
+    window.addEventListener('resize', this.#onWindowResize);
 
     if (typeof ResizeObserver !== 'undefined') {
       this.#resizeObserver = new ResizeObserver(([entry]) => {
@@ -114,6 +135,60 @@ export default class CraftElementSelectorModal extends CraftDialog {
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.#resizeObserver?.disconnect();
+    window.removeEventListener('resize', this.#onWindowResize);
+    clearTimeout(this.#windowResizeTimer);
+    this.#unlockSize();
+  }
+
+  protected override updated(changed: PropertyValues): void {
+    super.updated(changed);
+
+    if (!this.opened || !this.hasIndex) {
+      this.#unlockSize();
+    } else if (
+      (changed.has('hasIndex') || changed.has('opened')) &&
+      !this.hasAttribute('size-locked')
+    ) {
+      this.#queueSizeLock();
+    }
+  }
+
+  /**
+   * Waits for the slotted index to lay out (it renders a frame after it
+   * arrives), then holds the surface at the height it settled at.
+   */
+  #queueSizeLock(): void {
+    if (this.#sizeLockFrame !== undefined) {
+      cancelAnimationFrame(this.#sizeLockFrame);
+    }
+
+    this.#sizeLockFrame = requestAnimationFrame(() => {
+      this.#sizeLockFrame = requestAnimationFrame(() => {
+        this.#sizeLockFrame = undefined;
+        const surface = this.shadowRoot?.querySelector<HTMLElement>('.surface');
+
+        if (!this.opened || !this.hasIndex || !surface) {
+          return;
+        }
+
+        const height = surface.getBoundingClientRect().height;
+
+        if (height > 0) {
+          this.style.setProperty('--_locked-block-size', `${height}px`);
+          this.setAttribute('size-locked', '');
+        }
+      });
+    });
+  }
+
+  #unlockSize(): void {
+    if (this.#sizeLockFrame !== undefined) {
+      cancelAnimationFrame(this.#sizeLockFrame);
+      this.#sizeLockFrame = undefined;
+    }
+
+    this.removeAttribute('size-locked');
+    this.style.removeProperty('--_locked-block-size');
   }
 
   protected override willUpdate(changed: PropertyValues): void {
@@ -152,35 +227,28 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
   /**
    * An `h1` rather than the base's `h2` — the modal is the page's main content
-   * while it is open — and the close button alongside it.
+   * while it is open. There is no close button: Cancel, Escape and the
+   * backdrop all dismiss it.
    *
-   * The heading is rendered even when `show-title` is off, because the dialog is
-   * labeled by it; it is only taken out of flow.
+   * Without `show-title` there is no header at all, but the heading is still
+   * rendered, out of flow, because the dialog is labeled by it.
    */
   protected override renderHeader(): TemplateResult {
-    return html`
-      <header class="header" part="header">
-        ${this.label === ''
-          ? nothing
-          : html`<h1
-              class=${this.showTitle ? 'title' : 'title title--hidden'}
-              part="title"
-              id=${this.titleId}
-            >
-              ${this.label}
-            </h1>`}
-        <button
-          type="button"
-          class="close"
-          part="close"
-          aria-label=${t('Close')}
-          ?disabled=${this.busy}
-          @click=${this.#onCloseClick}
-        >
-          <craft-icon name="xmark-large"></craft-icon>
-        </button>
-      </header>
-    `;
+    if (this.label === '') {
+      return html``;
+    }
+
+    const title = html`<h1
+      class=${this.showTitle ? 'title' : 'title title--hidden'}
+      part="title"
+      id=${this.titleId}
+    >
+      ${this.label}
+    </h1>`;
+
+    return this.showTitle
+      ? html`<header class="header" part="header">${title}</header>`
+      : title;
   }
 
   protected override renderBody(): TemplateResult {
@@ -276,13 +344,6 @@ export default class CraftElementSelectorModal extends CraftDialog {
   };
 
   // Same dismissal as Cancel — the controller decides whether it is allowed.
-  #onCloseClick = (): void => {
-    if (this.busy) {
-      return;
-    }
-
-    this.requestClose();
-  };
 }
 
 if (!customElements.get('craft-element-selector-modal')) {

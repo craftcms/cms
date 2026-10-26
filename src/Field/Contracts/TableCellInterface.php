@@ -17,7 +17,8 @@ interface TableCellInterface extends ComponentInterface, ConfigurableComponentIn
 
     public function normalizeValue(mixed $value, bool $fromRequest = false): mixed;
 
-    public function serializeValue(mixed $value, bool $forDb = false): bool|float|int|string|null;
+    /** @return array<array-key, mixed>|bool|float|int|string|null */
+    public function serializeValue(mixed $value, bool $forDb = false): array|bool|float|int|string|null;
 
     /** @return list<mixed> */
     public function getValueRules(): array;

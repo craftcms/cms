@@ -49,6 +49,43 @@ describe('useElementIndexViewMode', () => {
     });
   });
 
+  // Rows rendered for one mode don't draw in another: cards over table rows
+  // came out as empty shells.
+  it('follows the mode the URL asked for, over the persisted one', () => {
+    const viewState = viewStateRef('cards');
+    const {restore} = useElementIndexViewMode(
+      viewState,
+      {...visitor, currentQuery: () => ({viewMode: 'table'})},
+      () => 'table'
+    );
+
+    expect(restore()).toBeNull();
+    expect(viewState.value.mode).toBe('table');
+  });
+
+  it('re-requests the persisted mode when the source renders another by default', () => {
+    const {restore} = useElementIndexViewMode(
+      viewStateRef('table'),
+      visitor,
+      () => 'cards'
+    );
+
+    expect(restore()).toEqual({
+      params: {viewMode: 'table'},
+      only: ['data', 'pagination', 'structure'],
+    });
+  });
+
+  it('leaves a payload already rendered for the persisted mode alone', () => {
+    const {restore} = useElementIndexViewMode(
+      viewStateRef('cards'),
+      visitor,
+      () => 'cards'
+    );
+
+    expect(restore()).toBeNull();
+  });
+
   it('stays put when the mode is unchanged', () => {
     const {mode} = useElementIndexViewMode(viewStateRef('structure'), visitor);
 

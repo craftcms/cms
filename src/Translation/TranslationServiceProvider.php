@@ -24,6 +24,8 @@ class TranslationServiceProvider extends ServiceProvider
             fallbackLocale: $this->app->make(ConfigRepository::class)->get('app.fallback_locale'),
             defaultCategory: 'app',
             eventDispatcher: $this->app->make(LaravelEventDispatcher::class),
+            // Categories without a source, such as Yii’s, would otherwise come back with their placeholders unformatted.
+            defaultMessageFormatter: new IntlMessageFormatter,
         ));
     }
 

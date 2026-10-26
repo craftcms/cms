@@ -49,25 +49,28 @@ export default css`
   }
 
   .progress-bar--pending .progress-bar__fill {
+    --_stripe-size: calc(var(--_height) * 2);
     width: 100%;
-    background: repeating-linear-gradient(
+    background-color: var(--_track-color);
+    background-image: linear-gradient(
       -45deg,
-      var(--_fill-color),
-      var(--_fill-color) 10px,
-      var(--_track-color) 10px,
-      var(--_track-color) 20px
+      var(--_fill-color) 25%,
+      transparent 25%,
+      transparent 50%,
+      var(--_fill-color) 50%,
+      var(--_fill-color) 75%,
+      transparent 75%
     );
-    background-size: 300% 100%;
-    background-position: 0 0;
+    background-size: var(--_stripe-size) var(--_stripe-size);
     animation: progress-bar-pending 1s linear infinite;
   }
 
   @keyframes progress-bar-pending {
-    0% {
+    from {
       background-position: 0 0;
     }
-    100% {
-      background-position: 28.28px 0; /* sqrt(2) * 20px for 45deg stripes */
+    to {
+      background-position: var(--_stripe-size) 0;
     }
   }
 
@@ -83,7 +86,6 @@ export default css`
 
   .progress-bar__status {
     font-size: 0.9em;
-    fon
   }
 
   .visually-hidden {

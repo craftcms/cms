@@ -31,6 +31,14 @@ type Story = StoryObj<SpinnerArgs>;
 /** The slotted text is announced but not shown. */
 export const Default: Story = {};
 
+/**
+ * `label` says what is loading without slotting text, such as from a template
+ * that renders the spinner with a property. Slotted text replaces it.
+ */
+export const Label: Story = {
+  args: {'default-slot': '', label: 'Loading entries'},
+};
+
 /** `visible` hides the spinner without removing it from the layout. */
 export const Hidden: Story = {
   args: {visible: false},

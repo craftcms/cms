@@ -6,6 +6,7 @@
   import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
   import {
     useWorkflowTransition,
+    type WorkflowReleaseState,
     type WorkflowIdentity,
   } from '../composables/useWorkflowTransition';
   import {
@@ -28,6 +29,7 @@
     reviewUpdated: [
       review: WorkflowReviewData,
       editorActions: ElementEditorActions,
+      release: WorkflowReleaseState | null | undefined,
     ];
   }>();
 
@@ -52,8 +54,8 @@
 
   const {error, processing, transition} = useWorkflowTransition(
     identity,
-    (review, actions) => {
-      emit('reviewUpdated', review, actions);
+    (review, actions, release) => {
+      emit('reviewUpdated', review, actions, release);
       note.value = '';
     }
   );
@@ -74,18 +76,20 @@
     if (
       event.key !== 'Enter' ||
       (!event.metaKey && !event.ctrlKey) ||
-      event.isComposing ||
-      processing.value ||
-      overage.value > 0
+      event.isComposing
     ) {
       return;
     }
 
+    // Claimed even when it can't act, so it doesn't submit the page's form.
+    event.preventDefault();
+    if (processing.value || overage.value > 0) {
+      return;
+    }
+
     if (props.review.canComment && !noteIsEmpty.value) {
-      event.preventDefault();
       void addComment();
     } else if (props.review.canSubmit) {
-      event.preventDefault();
       void submitForReview();
     }
   }

@@ -91,6 +91,22 @@ it('passes element link type settings to the link picker', function () {
         ]);
 });
 
+it('gives the link picker every advanced field and the link’s default label', function () {
+    $advancedFields = ['urlSuffix', 'target', 'title', 'class', 'id', 'rel', 'ariaLabel', 'download'];
+    $field = new Link(['types' => ['url'], 'advancedFields' => $advancedFields]);
+    $value = $field->normalizeValue(['type' => 'url', 'value' => 'https://craftcms.com/', 'target' => '_blank'], null);
+
+    $control = $field->uiControl(new FieldContext('value', $value));
+
+    expect($control->props()['advancedFields'])->toBe($advancedFields)
+        ->and($control->getValue())->toMatchArray([
+            'type' => 'url',
+            'value' => 'https://craftcms.com/',
+            'target' => '_blank',
+            'defaultLabel' => 'craftcms.com',
+        ]);
+});
+
 it('passes element link type settings to the Markdown link picker', function () {
     $field = new Markdown([
         'linkSettingsTypes' => ['asset'],

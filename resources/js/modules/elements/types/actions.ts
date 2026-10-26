@@ -66,6 +66,14 @@ export interface ElementCapabilities {
   copyable: boolean;
   duplicatable: boolean;
   deletable: boolean;
+  /** Asset rows: the file can be renamed or moved. */
+  movable?: boolean;
+  /** Asset rows: the file can be replaced with an upload. */
+  replaceable?: boolean;
+  /** Asset rows: the image can be opened in the image editor. */
+  imageEditable?: boolean;
+  /** Asset rows: the file has a public URL. */
+  hasUrl?: boolean;
 }
 
 export function selectionAllows(
