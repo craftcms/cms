@@ -67,7 +67,8 @@
    */
   const editor = useTemplateRef<HTMLElement>('editor');
   const editorId = `lp-editor-pane-${useId()}`;
-  const newTabLinkId = `lp-new-tab-${useId()}`;
+  const controlId = `lp-control-${useId()}`;
+  const newTabLinkId = `${controlId}-new-tab`;
   const {width: windowWidth} = useWindowSize();
   const resizer = useResizable({
     target: editor,
@@ -248,13 +249,18 @@
     };
   });
 
+  // The page itself is sized for the device it's going to, once, rather than
+  // reflowing on every frame of the animation; the screen clips it on the way.
   const viewportStyle = computed(() => {
     const value = layout.value;
+    const target = targetShape.value?.viewport;
 
-    return value
+    return value && target
       ? {
           width: `${value.viewport.width}px`,
           height: `${value.viewport.height}px`,
+          '--lp-frame-width': `${target.width}px`,
+          '--lp-frame-height': `${target.height}px`,
         }
       : undefined;
   });
@@ -409,23 +415,33 @@
           >
             <craft-button
               v-for="(label, type) in deviceLabels"
+              :id="`${controlId}-${type}`"
               :key="type"
               :value="type"
               icon
-              :title="label"
             >
               <craft-icon :name="deviceIcons[type]" :label="label"></craft-icon>
             </craft-button>
           </craft-button-group>
+          <craft-tooltip
+            v-for="(label, type) in deviceLabels"
+            :key="type"
+            :for="`${controlId}-${type}`"
+          >
+            {{ label }}
+          </craft-tooltip>
 
           <craft-button
+            :id="`${controlId}-rotate`"
             type="button"
             icon="rotate"
             :disabled="preview.device.value === 'desktop'"
             :aria-label="t('Rotate')"
-            :title="t('Rotate')"
             @click="rotate"
           ></craft-button>
+          <craft-tooltip :for="`${controlId}-rotate`">
+            {{ t('Rotate') }}
+          </craft-tooltip>
 
           <div class="lp-preview__spacer"></div>
 
@@ -450,6 +466,7 @@
           </ActionMenu>
 
           <craft-button
+            :id="`${controlId}-refresh`"
             type="button"
             size="small"
             icon="arrows-rotate"
@@ -459,6 +476,9 @@
           >
             {{ t('Refresh') }}
           </craft-button>
+          <craft-tooltip :for="`${controlId}-refresh`">
+            {{ t('Reload the preview') }}
+          </craft-tooltip>
 
           <template v-if="currentUrl">
             <craft-button
@@ -636,6 +656,8 @@
   .lp-preview__stage {
     position: relative;
     overflow: hidden;
+    /* Keeps the device's animation from laying out anything outside it. */
+    contain: strict;
   }
 
   .lp-preview__error {
@@ -652,6 +674,10 @@
 
   .lp-device__viewport {
     position: relative;
+    display: grid;
+    /* Centred even while a larger page overflows it, on the way to a bigger device. */
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    place-items: unsafe center;
     width: 100%;
     height: 100%;
     background-color: white;
@@ -673,30 +699,20 @@
   }
 
   .lp-device--scrolls .lp-device__viewport {
+    align-items: start;
     overflow-y: auto;
   }
 
   .lp-frame {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    grid-area: 1 / 1;
+    width: var(--lp-frame-width, 100%);
+    height: var(--lp-frame-height, 100%);
     border: 0;
     visibility: hidden;
   }
 
   .lp-frame--ready {
     visibility: visible;
-  }
-
-  .lp-device--scrolls .lp-frame {
-    position: static;
-    display: block;
-  }
-
-  .lp-device--scrolls .lp-frame:not(.lp-frame--ready) {
-    position: absolute;
-    inset-block-start: 0;
   }
 
   /* An iframe under the pointer takes its events, and the drag with them. */
