@@ -122,11 +122,13 @@
       </div>
 
       <div class="cp-header-bar__end" v-else-if="section === 'end'">
-        <div class="flex gap-md items-center">
-          <CommandPaletteTrigger />
-          <cp-notification-center
-            :notifications.prop="notifications"
-          ></cp-notification-center>
+        <div class="flex gap-lg items-center">
+          <div class="flex gap-sm items-center">
+            <CommandPaletteTrigger />
+            <cp-notification-center
+              :notifications.prop="notifications"
+            ></cp-notification-center>
+          </div>
           <UserMenu />
         </div>
       </div>
@@ -181,7 +183,7 @@
     );
     min-height: calc(42rem / 16);
     display: grid;
-    gap: var(--spacing);
+    gap: var(--c-spacing-sm);
     grid-template-areas: 'start . indicators end' 'breadcrumbs breadcrumbs breadcrumbs breadcrumbs';
     grid-template-columns:
       var(--c-size-touch-target)
