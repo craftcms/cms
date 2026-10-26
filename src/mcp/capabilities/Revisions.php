@@ -21,7 +21,7 @@ use Mcp\Exception\ToolCallException;
 use Mcp\Schema\ToolAnnotations;
 
 /**
- * @since 6.0.0
+ * @since 5.12.0
  */
 readonly class Revisions
 {

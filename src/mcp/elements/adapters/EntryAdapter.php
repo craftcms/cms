@@ -19,7 +19,7 @@ use Mcp\Exception\ToolCallException;
 use yii\base\InvalidConfigException;
 
 /**
- * @since 6.0.0
+ * @since 5.12.0
  */
 class EntryAdapter extends BaseElementAdapter
 {

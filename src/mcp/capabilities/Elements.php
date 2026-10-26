@@ -29,7 +29,7 @@ use Mcp\Schema\ToolAnnotations;
  * Tool input schemas stay compact. Each element type's full criteria and attribute schemas are served by
  * `elements.schema` and the `craft://element-types/{type}` resource, and inputs are validated against them.
  *
- * @since 6.0.0
+ * @since 5.12.0
  */
 readonly class Elements
 {

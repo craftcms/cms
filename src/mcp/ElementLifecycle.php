@@ -13,7 +13,7 @@ use craft\services\Elements;
 use Mcp\Exception\ToolCallException;
 
 /**
- * @since 6.0.0
+ * @since 5.12.0
  */
 readonly class ElementLifecycle
 {

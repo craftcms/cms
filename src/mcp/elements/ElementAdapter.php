@@ -14,7 +14,7 @@ use Mcp\Exception\ToolCallException;
  *
  * Register adapters with {@see ElementAdapterRegistry}. Extending {@see BaseElementAdapter} is recommended.
  *
- * @since 6.0.0
+ * @since 5.12.0
  */
 interface ElementAdapter
 {

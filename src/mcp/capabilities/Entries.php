@@ -16,7 +16,7 @@ use Mcp\Exception\ResourceReadException;
 /**
  * Entry-specific MCP capabilities. Entries are listed and managed through the `elements.*` tools.
  *
- * @since 6.0.0
+ * @since 5.12.0
  */
 readonly class Entries
 {

@@ -25,7 +25,7 @@ use Mcp\Schema\ToolAnnotations;
 /**
  * User-specific MCP capabilities. Users are listed and managed through the `elements.*` tools.
  *
- * @since 6.0.0
+ * @since 5.12.0
  */
 readonly class Users
 {

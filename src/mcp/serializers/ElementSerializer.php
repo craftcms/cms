@@ -16,7 +16,7 @@ use Illuminate\Support\Arr;
 use Mcp\Exception\ToolCallException;
 
 /**
- * @since 6.0.0
+ * @since 5.12.0
  */
 class ElementSerializer extends \yii\base\Component
 {

@@ -17,7 +17,7 @@ use craft\services\Users;
 use Mcp\Exception\ToolCallException;
 
 /**
- * @since 6.0.0
+ * @since 5.12.0
  */
 class UserAdapter extends BaseElementAdapter
 {

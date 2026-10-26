@@ -10,7 +10,7 @@ use craft\elements\db\ElementQueryInterface;
 use Mcp\Exception\ToolCallException;
 
 /**
- * @since 6.0.0
+ * @since 5.12.0
  */
 class ElementQueryCriteria
 {

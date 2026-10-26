@@ -25,7 +25,7 @@ use Mcp\Schema\ToolAnnotations;
  * Asset-specific MCP capabilities: creating assets from files, replacing files, uploads, and transform URLs. Assets
  * are listed and managed through the `elements.*` tools.
  *
- * @since 6.0.0
+ * @since 5.12.0
  */
 readonly class Assets
 {

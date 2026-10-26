@@ -21,7 +21,7 @@ use Mcp\Exception\ToolCallException;
  * A subclass must define {@see handle()}, {@see elementType()}, and {@see updateAttributesSchema()}. It can opt into
  * creation by defining {@see createAttributesSchema()}, and override any other method to add type-specific rules.
  *
- * @since 6.0.0
+ * @since 5.12.0
  */
 abstract class BaseElementAdapter implements ElementAdapter
 {
