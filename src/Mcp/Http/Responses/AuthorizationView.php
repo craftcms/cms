@@ -32,7 +32,9 @@ readonly class AuthorizationView
     public function __invoke(array $parameters): Response
     {
         $request = $parameters['request'];
-        $clientName = (string) $parameters['client']->getAttribute('name');
+        $client = $parameters['client'];
+        $clientName = (string) $client->getAttribute('name');
+        $redirectUri = $request->query('redirect_uri') ?? $client->getAttribute('redirect_uris')[0] ?? null;
         $isMcp = $request->routeIs('craft.cp.mcp.oauth.*');
         $user = $request->craftUser();
         $accessChoices = $isMcp && $user
@@ -58,7 +60,7 @@ readonly class AuthorizationView
         $routePrefix = $isMcp ? 'craft.cp.mcp.oauth.' : 'passport.authorizations.';
         $approveAction = route($routePrefix.'approve');
         $denyAction = route($routePrefix.'deny');
-        $viewData = compact('clientName', 'scopes', 'accessOptions', 'authToken', 'csrfToken', 'approveAction', 'denyAction');
+        $viewData = compact('clientName', 'redirectUri', 'scopes', 'accessOptions', 'authToken', 'csrfToken', 'approveAction', 'denyAction');
 
         $response = $this->views->render(
             request: $request,
@@ -67,6 +69,10 @@ readonly class AuthorizationView
             templateData: $viewData,
         );
 
-        return Router::toResponse($request, $response);
+        $response = Router::toResponse($request, $response);
+        $response->headers->set('X-Frame-Options', 'DENY');
+        $response->headers->set('Content-Security-Policy', "frame-ancestors 'none'", replace: false);
+
+        return $response;
     }
 }
