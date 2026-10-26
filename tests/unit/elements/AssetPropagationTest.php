@@ -14,6 +14,7 @@ use craft\elements\actions\DeleteForSite;
 use craft\elements\Asset;
 use craft\elements\User;
 use craft\enums\PropagationMethod;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\models\Site;
 use craft\models\Volume;
@@ -257,10 +258,49 @@ class AssetPropagationTest extends TestCase
         self::assertStringContainsString('element-sites-pane', $html);
         self::assertStringContainsString('site=testSite3', $html);
 
-        // 2+ other sites should be listed within a disclosure, after the current site
-        self::assertStringContainsString('>3 other sites</button>', $html);
-        self::assertStringContainsString('site-1001-field hidden', $html);
+        // 10 or fewer sites shouldn't be within a disclosure
+        self::assertStringNotContainsString('element-sites-toggle', $html);
+        self::assertStringNotContainsString('field hidden"', $html);
+    }
+
+    public function testSitesFieldCollapsesOtherSitesWhenThereAreMoreThanTen(): void
+    {
+        $sitesFieldHtml = new ReflectionMethod(Asset::class, 'sitesFieldHtml');
+        Craft::$app->getUser()->setIdentity(User::findOne(1));
+        $sitesService = Craft::$app->getSites();
+        $this->volume->propagationMethod = PropagationMethod::Custom;
+        $asset = Craft::$app->getAssets()->getAssetById($this->createAsset(1000)->id, 1000);
+
+        // Bring the total number of sites up to 10
+        $newSiteIds = [];
+        while (count($sitesService->getAllSiteIds()) < 10) {
+            $newSiteIds[] = $this->createSite(count($newSiteIds) + 1)->id;
+        }
+
+        $saveToAllSites = function() use (&$asset) {
+            $asset->setEnabledForSite(array_fill_keys(Craft::$app->getSites()->getAllSiteIds(), true));
+            self::assertTrue(Craft::$app->getElements()->saveElement($asset), json_encode($asset->getErrors()));
+            $asset = Craft::$app->getAssets()->getAssetById($asset->id, 1000);
+        };
+
+        // 10 sites should all be listed
+        $saveToAllSites();
+        $html = $sitesFieldHtml->invoke($asset);
+        foreach ($sitesService->getAllSiteIds() as $siteId) {
+            self::assertStringContainsString("site-$siteId-field", $html);
+        }
+        self::assertStringNotContainsString('element-sites-toggle', $html);
+        self::assertStringNotContainsString('field hidden"', $html);
+
+        // 11 sites should list the other 10 within a disclosure, after the current site
+        $newSiteIds[] = $this->createSite(count($newSiteIds) + 1)->id;
+        $saveToAllSites();
+        $html = $sitesFieldHtml->invoke($asset);
+        self::assertStringContainsString('>10 other sites</button>', $html);
         self::assertStringNotContainsString('site-1000-field sel hidden', $html);
+        foreach (ArrayHelper::withoutValue($sitesService->getAllSiteIds(), 1000) as $siteId) {
+            self::assertStringContainsString("site-$siteId-field hidden", $html);
+        }
         self::assertLessThan(strpos($html, 'element-sites-toggle'), strpos($html, 'site-1000-field sel'));
     }
 
@@ -295,6 +335,19 @@ class AssetPropagationTest extends TestCase
         }
 
         return null;
+    }
+
+    private function createSite(int $num): Site
+    {
+        $sitesService = Craft::$app->getSites();
+        $site = new Site([
+            'groupId' => $sitesService->getPrimarySite()->groupId,
+            'name' => "Extra site $num",
+            'handle' => "extraSite$num",
+            'language' => 'en-US',
+        ]);
+        self::assertTrue($sitesService->saveSite($site), json_encode($site->getErrors()));
+        return $site;
     }
 
     private function createAsset(int $siteId, ?Volume $volume = null): Asset

@@ -6656,9 +6656,9 @@ JS,
             ->filter();
         [$currentSites, $otherSites] = $sites->partition(fn(Site $site) => $site->id === $this->siteId);
 
-        // If the element is saved to 2+ other sites, list them within a disclosure
+        // If there are more than 10 sites, list the other sites within a disclosure
         $idPrefix = sprintf('element-sites-%s', StringHelper::randomString(10));
-        $collapsible = $otherSites->count() > 1;
+        $collapsible = $sites->count() > 10;
 
         $siteField = fn(Site $site) => Html::tag('div', implode('', [
             Html::tag('div', Html::tag('label', implode('', [
