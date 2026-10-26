@@ -715,7 +715,7 @@ class GeneralConfig extends BaseConfig
     public ?string $cpTrigger = 'admin';
 
     /**
-     * @var string The Asset Transformer to use when none is selected explicitly.
+     * @var string The asset transformer to use when none is selected explicitly.
      *
      * ::: code
      * ```php Static Config
@@ -3885,7 +3885,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The Asset Transformer to use when none is selected explicitly.
+     * The asset transformer to use when none is selected explicitly.
      *
      * @group Assets
      *

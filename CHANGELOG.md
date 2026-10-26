@@ -256,6 +256,13 @@
 - The MCP server now accepts any date or time that Date and Time fields can parse, such as “2:30 PM” or a date with a UTC offset, rather than requiring ISO 8601. A value they can’t parse is rejected, rather than clearing the field, and a field’s instructions no longer replace the description of its format.
 - The MCP server’s `mcp:use` OAuth scope has been replaced with `mcp:read`, `mcp:write`, and `mcp:admin`. Users now choose an access level when they authorize an MCP client, defaulting to read only, and only administrators are offered full access. Clients that authorize again keep the earlier level without another prompt. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - The MCP server now only shows and accepts the custom fields that users can see and edit in an element’s edit form, as field layouts’ conditions allow. ([#20091](https://github.com/craftcms/cms/pull/20091))
+- Added `caches.list`, `caches.clear`, `queue.status`, `queue.run`, `queue.retry-all`, `queue.release-all`, and `asset-indexes.update` MCP tools, which do what the Caches, Queue Manager, and Asset Indexes utilities do, for users with access to those utilities. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `maintenance-mode.get`, `maintenance-mode.enable`, `maintenance-mode.disable`, and `project-config.rebuild` MCP tools for administrators. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `preferences.get` and `preferences.update` MCP tools, which read and change the user’s preferred language and formatting locale. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- The MCP server’s `configuration.*` tools can now manage asset transformers and workflows. Managing workflows requires Craft Pro. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `component-types.list` and `component-types.get` MCP tools, which list the available field types, workflow stage types, asset transform drivers, field layout elements, and condition rules, and describe each one’s settings as JSON Schema, with their labels, instructions, accepted values, and defaults. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- The MCP server now tells clients which features need a higher Craft edition, including more users than the edition allows, so they can explain that a feature such as workflows requires Craft Pro rather than treat it as unknown. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- The MCP server now redacts sensitive values, such as API keys, passwords, and license keys, in field settings, asset transformer settings, and project config. Clients can send a redacted value back to keep the saved value. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Added the “Query for releases” GraphQL schema permission, nested under “Query for element drafts”, which adds `releases` and `release` queries, and a `release` field to drafts.
 - Added the `hasUrls` field to volumes in GraphQL queries.
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
@@ -290,6 +297,14 @@
 - Added `CraftCms\Cms\Ai\Events\TaskRunning`, `TaskCompleted`, and `TaskFailed`, which plugins can use to track AI usage and failures, and cancel requests. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - Added the `craft:screen-panel` global Vue component, which plugins can use on their own Inertia pages to add panels, with an optional status and header actions, to the screen’s details pane. ([#20084](https://github.com/craftcms/cms/pull/20084))
 - `CraftCms\Cms\Mcp\Contracts\ProvidesInputSchema` has been renamed to `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`, and its `getMcpInputSchema()` method to `getInputSchema()`.
+- Added `CraftCms\Cms\Update\Maintenance`, which turns maintenance mode on and off. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Utility\Utilities\ClearCaches::clear()`. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Workflow\WorkflowDefinitions`, which validates workflow definitions. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Asset\AssetTransformDrivers::settings()`. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Ui\Controls\Control::inputSchema()`, which describes the values a control accepts as JSON Schema. Custom controls can override it so the MCP server can describe the settings they set. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Component\Kinds\ComponentKinds`, `CraftCms\Cms\Component\Kinds\ComponentKind`, and `CraftCms\Cms\Component\Kinds\TypeRegistryKind`, which plugins can use to describe their own kinds of extendable components and their settings, such as for the `component-types.list` and `component-types.get` MCP tools. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Ui\SettingsSchema`, which describes a settings UI as JSON Schema. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Routes outside the `craft` middleware group can now use `Route::allowDuringMaintenance()` to stay reachable during maintenance mode. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - MCP tools without `readOnlyHint: true` now require the `mcp:write` scope, and capabilities with `#[RequiresAdmin]` or `#[RequiresAdminChanges]` require `mcp:admin`. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - Plain Text, Markdown, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`.
 - Added `CraftCms\Cms\Gql\GqlInputSchema`, which describes the values GraphQL input types accept as JSON schemas.
@@ -498,6 +513,7 @@
 - Fixed a bug where the MCP server’s `elements.create`, `elements.update`, and `elements.validate` tools silently ignored Matrix entries submitted in the format `elements.field-schema` described. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - Fixed a bug where the MCP server’s upload session endpoints couldn’t find upload sessions when a control panel trigger was set. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - Fixed a bug where updating a Matrix entry with a GraphQL mutation or the MCP server cleared its title when no title was given. ([#20091](https://github.com/craftcms/cms/pull/20091))
+- Fixed a bug where the MCP server was unavailable during maintenance mode, even to users who can access the control panel while the system is off. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Fixed a bug where asset indexes didn’t offer to undo moving assets or folders. ([#19985](https://github.com/craftcms/cms/pull/19985)))
 - Fixed a bug where input placeholder text had insufficient contrast in the dark theme.
 - Fixed a bug where the “License purchase required” screen’s Refresh button didn’t work.
@@ -661,7 +677,7 @@
 - Fixed a race condition where concurrent requests could invalidate the same workflow run and record duplicate activity. ([#19866](https://github.com/craftcms/cms/pull/19866))
 - Fixed a bug where transaction rollback errors could hide the original element save exception after the database had aborted the transaction. ([#19866](https://github.com/craftcms/cms/pull/19866))
 - Fixed a bug where multi-instance fields’ search keywords were indexed per field rather than per instance, so searching by one instance’s handle could match other instances’ values. ([#13991](https://github.com/craftcms/cms/pull/13991))
-- Fixed a bug where named image transforms saved outside the Settings controller could bypass dimension and Asset Transformer parameter validation and normalization. ([#19826](https://github.com/craftcms/cms/pull/19826))
+- Fixed a bug where named image transforms saved outside the Settings controller could bypass dimension and asset transformer parameter validation and normalization. ([#19826](https://github.com/craftcms/cms/pull/19826))
 - Fixed bugs that could allow sites saved outside the control panel to reference invalid groups, retain inconsistent primary or URL settings, or use invalid content transfer targets. ([#19825](https://github.com/craftcms/cms/pull/19825))
 - Fixed a bug where invalid route data could be saved to project config. ([#19824](https://github.com/craftcms/cms/pull/19824))
 - Fixed a bug where `CraftCms\Cms\User\UserGroups::saveGroup()` did not validate user groups, and added its `$runValidation` argument. ([#19820](https://github.com/craftcms/cms/pull/19820))
@@ -1001,8 +1017,8 @@
 - Added a control panel notification center and `CraftCms\Cms\Cp\Notifications\CpNotification`, backed by Laravel database notifications. Deprecated announcement service compatibility remains available through `craftcms/yii2-adapter`.
 - Replaced Craft’s system status with Laravel maintenance mode, including an admin-only Maintenance Mode control in General Settings.
 - Removed `CraftCms\Cms\Config\GeneralConfig::$isSystemLive`, `app()->isLive()`, and the core `craft:on` and `craft:off` commands. Deprecated compatibility remains available through `craftcms/yii2-adapter`.
-- Moved the `generateTransformsBeforePageLoad` setting to Craft Asset Transformer profiles.
-- Removed per-call immediate generation arguments from the core Asset Transform APIs and GraphQL transform arguments.
+- Moved the `generateTransformsBeforePageLoad` setting to Craft asset transformer profiles.
+- Removed per-call immediate generation arguments from the core asset transform APIs and GraphQL transform arguments.
 - Removed the core image transformer registry, contracts, fallback transformer, and execution methods from `CraftCms\Cms\Image\ImageTransforms`. Legacy equivalents remain available through `craftcms/yii2-adapter`.
 - Improved environment variable and alias settings fields to show suggestions after typing `$` or `@`, automatically bracing embedded environment variables.
 - Improved new password fields to provide the configured password rules to supported password managers. ([#19516](https://github.com/craftcms/cms/pull/19516))

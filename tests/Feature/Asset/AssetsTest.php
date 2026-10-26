@@ -305,7 +305,7 @@ it('dispatches AssetReplacing event with filename', function () {
     @unlink($tempFile);
 });
 
-it('invalidates Asset Transforms once for each source lifecycle operation', function (Closure $operation) {
+it('invalidates asset transforms once for each source lifecycle operation', function (Closure $operation) {
     $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $rootFolder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
     $folder = VolumeFolderModel::factory()->create([

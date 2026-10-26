@@ -47,6 +47,12 @@ class Color extends Control
     }
 
     #[\Override]
+    public function inputSchema(): array
+    {
+        return ['type' => 'string', 'pattern' => '^#[0-9a-fA-F]{6}$'];
+    }
+
+    #[\Override]
     public function props(mixed $value = null): array
     {
         return ['presets' => $this->presets];
