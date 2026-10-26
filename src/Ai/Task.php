@@ -25,7 +25,12 @@ use CraftCms\Cms\Ai\Enums\Modality;
  *
  *     public static function description(): ?string
  *     {
- *         return t('Writes alt text for an image. Needs a model with vision.', category: 'alt-text');
+ *         return t('Writes alt text for an image.', category: 'alt-text');
+ *     }
+ *
+ *     public static function requirements(): array
+ *     {
+ *         return [Capability::Vision];
  *     }
  * }
  * ```
@@ -42,5 +47,10 @@ abstract class Task implements TaskInterface
     public static function description(): ?string
     {
         return null;
+    }
+
+    public static function requirements(): array
+    {
+        return [];
     }
 }

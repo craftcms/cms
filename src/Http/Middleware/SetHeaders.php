@@ -65,7 +65,11 @@ class SetHeaders
         // Prevent some possible XSS attack vectors
         if ($request->isCpRequest()) {
             $response->headers->set('Content-Security-Policy', "frame-ancestors 'self'", replace: false);
-            $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+
+            if (! $response->headers->has('X-Frame-Options')) {
+                $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+            }
+
             $response->headers->set('X-Content-Type-Options', 'nosniff');
         }
 
