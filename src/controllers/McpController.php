@@ -3,9 +3,12 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\mcp\HttpTransportMiddleware;
 use craft\mcp\ServerFactory;
 use craft\web\Controller;
+use craft\web\View;
 use GuzzleHttp\Psr7\ServerRequest;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Mcp\Server\Stateless\StatelessProtocol;
@@ -32,12 +35,11 @@ class McpController extends Controller
 
     public function beforeAction($action): bool
     {
-        // CORS preflight requests carry no credentials, including while the system is offline.
-        if ($action->id === 'admin' && $this->request->getIsOptions()) {
+        // CORS preflight requests and GET requests, which show setup instructions or are rejected, don't need
+        // credentials, including while the system is offline.
+        if ($action->id === 'admin' && ($this->request->getIsOptions() || $this->request->getIsGet())) {
             $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
-        }
-
-        if ($action->id === 'admin' && !$this->request->getIsOptions()) {
+        } elseif ($action->id === 'admin') {
             $oauth = Craft::$app->getOAuth();
             $session = Craft::$app->getUser();
             $session->enableSession = false;
@@ -65,18 +67,58 @@ class McpController extends Controller
 
     public function actionAdmin(): Response
     {
+        if ($this->isEndpointPageRequest()) {
+            return $this->renderEndpointPage(Craft::$app->getOAuth()->resource('mcp'), false);
+        }
+
         $servers = Craft::$app->get('mcp')->getCapabilityContainer()->get(ServerFactory::class);
         return $this->handle($this->request->getIsOptions() ? $servers->preflight() : $servers->admin());
     }
 
     public function actionPublic(): Response
     {
-        if (!Craft::$app->get('mcp')->getSettings()->publicEnabled) {
+        $settings = Craft::$app->get('mcp')->getSettings();
+        if (!$settings->publicEnabled) {
             throw new NotFoundHttpException();
+        }
+
+        if ($this->isEndpointPageRequest()) {
+            return $this->renderEndpointPage(UrlHelper::siteUrl(trim($settings->publicRoute, '/')), true);
         }
 
         $servers = Craft::$app->get('mcp')->getCapabilityContainer()->get(ServerFactory::class);
         return $this->handle($this->request->getIsOptions() ? $servers->preflight() : $servers->public());
+    }
+
+    /** Whether a browser opened the endpoint, rather than an MCP client requesting an event stream or JSON. */
+    private function isEndpointPageRequest(): bool
+    {
+        if (!$this->request->getIsGet()) {
+            return false;
+        }
+
+        foreach (array_keys($this->request->getAcceptableContentTypes()) as $type) {
+            if (in_array($type, ['text/html', 'text/*', '*/*'], true)) {
+                return true;
+            }
+            if (in_array($type, ['text/event-stream', 'application/json', 'application/*'], true)) {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    /** Renders setup instructions for people who open the endpoint in a browser. */
+    private function renderEndpointPage(string $url, bool $isPublic): Response
+    {
+        $serverName = (StringHelper::slugify(Craft::$app->getSystemName()) ?: 'craft') . ($isPublic ? '' : '-admin');
+
+        return $this->renderTemplate('mcp/_endpoint.twig', [
+            'url' => $url,
+            'serverName' => $serverName,
+            'isPublic' => $isPublic,
+        ], View::TEMPLATE_MODE_CP);
     }
 
     private function handle(StatelessProtocol $protocol): Response

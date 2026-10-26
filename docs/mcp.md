@@ -8,7 +8,7 @@ Craft exposes content and configuration through the Model Context Protocol. It u
 - **Public HTTP:** a configurable site route, `/mcp` by default. It is disabled until an administrator enables it and approves capabilities and content sources under **Settings → MCP**.
 - **Stdio:** `php craft mcp/serve --user=…`. The argument accepts a user ID, username, or email. That user must be active and have **Use Craft MCP** permission. The process acts as that user.
 
-HTTP requests use the stateless transport for protocol version `2026-07-28`. Send JSON-RPC messages with POST. Stdio uses the SDK's session-based transport. It omits capabilities marked `RequiresHttp`; restart the process after changing permissions, instruction configuration, or the content model externally.
+HTTP requests use the stateless transport for protocol version `2026-07-28`. Send JSON-RPC messages with POST. Opening an HTTP endpoint in a browser shows its URL and setup instructions for common AI assistants; other GET requests receive a `405` response. Stdio uses the SDK's session-based transport. It omits capabilities marked `RequiresHttp`; restart the process after changing permissions, instruction configuration, or the content model externally.
 
 ## Authenticated HTTP setup
 
