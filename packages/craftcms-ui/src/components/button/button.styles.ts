@@ -550,21 +550,10 @@ export default css`
     margin-inline-start: var(--c-spacing-sm);
   }
 
-  /* A fixed-height keycap, as far from the button's end as from its top and
-     bottom. The 2px is the keycap's own border. */
   .shortcut {
-    /* Shrinks to fit a button too short for the full keycap. */
-    --_shortcut-height: min(
-      calc(20rem / 16),
-      var(--_height) - var(--_border-width) * 2 - var(--c-spacing-xs)
-    );
     --c-shortcut-shadow: none;
     margin-inline-start: var(--c-spacing-md);
-    margin-inline-end: calc(
-      (var(--_height) - var(--_border-width) * 2 - var(--_shortcut-height)) /
-        2 - var(--_padding-inline)
-    );
-    line-height: calc(var(--_shortcut-height) - 2px);
+    margin-inline-end: calc(var(--c-spacing) / -2);
   }
 
   .button-content--start {
