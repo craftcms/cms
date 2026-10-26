@@ -546,11 +546,8 @@
 </template>
 
 <style scoped lang="css">
-  /* `craft-action-menu` styles the separators it generates itself inline, and
-     its shadow `::slotted()` rule can't reach inside the slotted content — so
-     a slotted rule has to bring its own margin and line to match. With the
-     menu's gap between items, the space around it matches the menu's
-     padding. */
+  /* Matching what `craft-action-menu` applies inline to the separators in a
+     menu, for the lists that aren't in one. */
   .action-list__separator {
     margin-block: calc(var(--c-spacing-sm) - var(--c-spacing-xs));
     margin-inline: 0;

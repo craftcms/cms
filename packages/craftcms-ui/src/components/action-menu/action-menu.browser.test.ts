@@ -60,3 +60,46 @@ it('closes and returns focus to a craft-button invoker when an item is chosen wi
   expect(menu.opened).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
+
+it('spaces separators in slotted content, including ones added later, as it does those it renders from actions', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `
+    <craft-action-menu id="slotted">
+      <button slot="invoker" type="button">Open</button>
+      <div slot="content">
+        <craft-action-item>First</craft-action-item>
+        <hr />
+        <craft-action-item>Second</craft-action-item>
+      </div>
+    </craft-action-menu>
+    <craft-action-menu id="generated"></craft-action-menu>
+  `;
+  const slotted = document.querySelector<CraftActionMenu>('#slotted')!;
+  const generated = document.querySelector<CraftActionMenu>('#generated')!;
+  generated.actions = [
+    {type: 'button', label: 'First'},
+    {type: 'hr'},
+    {type: 'button', label: 'Second'},
+  ];
+  await slotted.updateComplete;
+  await generated.updateComplete;
+  slotted.opened = true;
+  generated.opened = true;
+  await slotted.updateComplete;
+  await generated.updateComplete;
+
+  const later = document.createElement('hr');
+  slotted.querySelector('[slot="content"]')!.append(later);
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const spacing = (hr: Element) => {
+    const style = getComputedStyle(hr);
+
+    return [style.marginBlockStart, style.marginBlockEnd, style.marginInline];
+  };
+  const expected = spacing(generated.querySelector('hr')!);
+
+  expect(expected[0]).not.toBe('0px');
+  expect(spacing(slotted.querySelector('hr')!)).toEqual(expected);
+  expect(spacing(later)).toEqual(expected);
+});
