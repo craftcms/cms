@@ -272,6 +272,30 @@ Previously `.readable`
   ul {
     list-style: disc;
   }
+
+  ol {
+    list-style: decimal;
+  }
+
+  li:has(> input[type='checkbox']) {
+    list-style: none;
+    margin-inline-start: -1.25em;
+  }
+
+  blockquote {
+    display: grid;
+    gap: 0.5em;
+    margin-inline: 0;
+    padding-inline-start: 0.75em;
+    border-inline-start: 3px solid var(--c-color-neutral-border-normal);
+    color: var(--c-text-quiet);
+  }
+
+  :not(pre) > code {
+    padding-inline: 0.25em;
+    border-radius: var(--c-radius-sm);
+    background-color: var(--c-surface-sunken);
+  }
 }
 
 /**
