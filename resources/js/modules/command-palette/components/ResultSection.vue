@@ -14,7 +14,7 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import {createElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
-  import type {CommandPaletteItem} from '../types';
+  import {hasActions, type CommandPaletteItem} from '../types';
 
   const props = defineProps<{
     gridId: string;
@@ -53,10 +53,6 @@
   }
 
   const elementActionItems = createElementActionMenu();
-
-  function hasMenu(item: CommandPaletteItem): boolean {
-    return Boolean(item.actions?.length || item.elementActions?.length);
-  }
 
   /**
    * The item's menu: its own actions, then the element's, mapped the way
@@ -216,7 +212,7 @@
           </span>
         </craft-grid-cell>
         <craft-grid-cell
-          v-if="hasMenu(item)"
+          v-if="hasActions(item)"
           class="command-palette-row__actions"
         >
           <ActionMenu

@@ -102,6 +102,11 @@ export interface CommandPaletteViewResult {
 
 export type CommandPaletteViewComponent = Component<CommandPaletteViewProps>;
 
+/** Whether an item has a menu of its own actions, or its element's. */
+export function hasActions(item: CommandPaletteItem): boolean {
+  return Boolean(item.actions?.length || item.elementActions?.length);
+}
+
 let generatedIds = 0;
 
 /** A server item in the client's shape. */

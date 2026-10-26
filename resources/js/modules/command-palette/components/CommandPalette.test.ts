@@ -212,8 +212,8 @@ describe('CommandPalette', () => {
     const input = await open();
 
     expect(
-      [...document.querySelectorAll('h2')].map((heading) =>
-        heading.textContent?.trim()
+      [...document.querySelectorAll('.command-palette__results h2')].map(
+        (heading) => heading.textContent?.trim()
       )
     ).toEqual(['Recents', 'Actions']);
     expect(
@@ -361,21 +361,86 @@ describe('CommandPalette', () => {
     ]);
   });
 
-  it('says what Escape does in the footer: clear the search, or close', async () => {
-    const input = await open();
-    const hint = () =>
-      [...document.querySelectorAll('.command-palette__hint-item')]
-        .at(-1)
-        ?.textContent?.replace(/\s+/g, ' ')
-        .trim();
+  /** Each keyboard instruction as it's read: the keys' names, then what they do. */
+  function instructions(): string[] {
+    return [...document.querySelectorAll('.command-palette__hint-item')].map(
+      (item) =>
+        [
+          ...[...item.querySelectorAll('kbd .sr-only')].map((name) =>
+            name.textContent?.trim()
+          ),
+          item.lastChild?.textContent?.trim(),
+        ].join(' ')
+    );
+  }
 
-    expect(hint()).toBe('Esc Close');
+  it('gives keyboard instructions a region of their own, apart from the search field', async () => {
+    const input = await open();
+    const region = document.querySelector<HTMLElement>(
+      'section.command-palette__hint'
+    )!;
+    const heading = document.getElementById(
+      region.getAttribute('aria-labelledby')!
+    )!;
+
+    expect(heading.textContent?.trim()).toBe('Keyboard instructions');
+    expect(region.contains(heading)).toBe(true);
+    expect(input.getAttribute('aria-describedby') ?? '').not.toContain(
+      region.id || heading.id
+    );
+    expect(
+      [...region.querySelectorAll('kbd')].every(
+        (key) =>
+          key.querySelector('[aria-hidden="true"]') &&
+          key.querySelector('.sr-only')?.textContent?.trim()
+      )
+    ).toBe(true);
+    expect(instructions()).toEqual([
+      'Tab Next section',
+      'Up arrow Down arrow Move within a section',
+      expect.stringMatching(/^(Return|Enter) Open$/),
+      'Escape Close',
+    ]);
 
     input.value = 'maintenance';
     input.dispatchEvent(new Event('input', {bubbles: true}));
     await flush();
 
-    expect(hint()).toBe('Esc Clear search');
+    expect(instructions()).toEqual([
+      'Tab Go to results',
+      'Up arrow Down arrow Move between results',
+      expect.stringMatching(/^(Return|Enter) Open$/),
+      'Escape Clear search',
+    ]);
+  });
+
+  it('lists Left and Right only while a result has actions of its own', async () => {
+    get.mockResolvedValue({
+      data: {
+        providers: [],
+        actions: [
+          serverAction('blog', 'Blog', {
+            href: '/admin/entries/blog',
+            actions: [
+              {label: 'Open in a new tab', href: '/admin/entries/blog'},
+            ],
+          }),
+        ],
+      },
+    } as never);
+    const input = await open();
+
+    expect(instructions()).toContain(
+      'Left arrow Right arrow Move to a result’s actions'
+    );
+
+    input.value = 'maintenance';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await flush();
+
+    expect(instructions().some((line) => line.startsWith('Left arrow'))).toBe(
+      false
+    );
   });
 
   it('clears the search on Escape wherever focus is, then closes', async () => {

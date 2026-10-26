@@ -49,6 +49,7 @@
   } from '../sources/on-page-actions';
   import {
     fromServerItem,
+    hasActions,
     type CommandPaletteItem,
     type CommandPaletteProvider,
     type CommandPaletteView,
@@ -82,13 +83,27 @@
   const id = useId();
 
   const input = useTemplateRef<HTMLInputElement>('input');
-  const searchField = useTemplateRef<{$el: HTMLElement}>('searchField');
-  const hint = useTemplateRef<HTMLElement>('hint');
+
+  /** A key in the keyboard instructions: shown as its symbol, read by its name. */
+  interface HintKey {
+    symbol: string;
+    name: string;
+  }
 
   /** What the key that opens an item is called on this platform. */
   const returnKey = /Mac|iPhone|iPad/.test(navigator.platform)
     ? t('Return')
     : t('Enter');
+
+  const KEYS = {
+    tab: {symbol: 'Tab', name: t('Tab')},
+    up: {symbol: '↑', name: t('Up arrow')},
+    down: {symbol: '↓', name: t('Down arrow')},
+    left: {symbol: '←', name: t('Left arrow')},
+    right: {symbol: '→', name: t('Right arrow')},
+    return: {symbol: returnKey, name: returnKey},
+    escape: {symbol: 'Esc', name: t('Escape')},
+  } satisfies Record<string, HintKey>;
   const results = useTemplateRef<HTMLElement>('results');
   /** Where focus was when the palette opened, for when closing leaves it nowhere. */
   let opener: HTMLElement | null = null;
@@ -191,6 +206,34 @@
       : t('No results');
   });
 
+  /**
+   * The keyboard instructions in the footer. Each section is one Tab stop,
+   * which the Tab and arrow lines say when there's more than one. Left and
+   * Right only reach a result's own menu, so they're listed only while a
+   * result has one.
+   */
+  const hints = computed(() => [
+    ...(sections.value.length > 1
+      ? [
+          {keys: [KEYS.tab], label: t('Next section')},
+          {keys: [KEYS.up, KEYS.down], label: t('Move within a section')},
+        ]
+      : [
+          {keys: [KEYS.tab], label: t('Go to results')},
+          {keys: [KEYS.up, KEYS.down], label: t('Move between results')},
+        ]),
+    ...(sections.value.some((section) => section.items.some(hasActions))
+      ? [
+          {
+            keys: [KEYS.left, KEYS.right],
+            label: t('Move to a result’s actions'),
+          },
+        ]
+      : []),
+    {keys: [KEYS.return], label: t('Open')},
+    {keys: [KEYS.escape], label: query.value ? t('Clear search') : t('Close')},
+  ]);
+
   // Recent pages are recorded as they're visited, not when they're opened
   // from here, so pages reached any other way count too.
   watch(
@@ -276,17 +319,6 @@
     if (target !== input.value && !target?.closest('craft-button')) {
       event.preventDefault();
       input.value?.focus();
-    }
-  }
-
-  function onOpened(): void {
-    // The search field manages its input's `aria-describedby`, so the hint
-    // joins through it rather than being set on the input directly.
-    const field = searchField.value?.$el as
-      | (HTMLElement & {addToAriaDescribedBy?: (element: HTMLElement) => void})
-      | undefined;
-    if (hint.value) {
-      field?.addToAriaDescribedBy?.(hint.value);
     }
   }
 
@@ -549,14 +581,12 @@
     :instant="openedWithShortcut"
     style="--c-modal-border-width: 0px"
     @close="onModalClose"
-    @opened="onOpened"
     @closed="onClosed"
   >
     <div class="command-palette" @keydown="onKeydown">
       <div v-show="!activeView" class="command-palette__search">
         <div class="command-palette__field" @mousedown="onFieldMousedown">
           <CraftInputSearch
-            ref="searchField"
             v-model="query"
             class="command-palette__search-field"
             :label="t('Search for pages, actions, and content')"
@@ -617,21 +647,27 @@
           </p>
         </div>
 
-        <p :id="`${id}-hint`" ref="hint" class="command-palette__hint">
-          <span class="command-palette__hint-item">
-            <kbd>Tab</kbd> {{ t('Move to results') }}
+        <section
+          class="command-palette__hint"
+          :aria-labelledby="`${id}-keys-heading`"
+        >
+          <h2 :id="`${id}-keys-heading`" class="sr-only">
+            {{ t('Keyboard instructions') }}
+          </h2>
+          <span
+            v-for="hint in hints"
+            :key="hint.label"
+            class="command-palette__hint-item"
+          >
+            <span class="command-palette__hint-keys">
+              <kbd v-for="key in hint.keys" :key="key.name">
+                <span aria-hidden="true">{{ key.symbol }}</span>
+                <span class="sr-only">{{ key.name }}</span>
+              </kbd>
+            </span>
+            {{ hint.label }}
           </span>
-          <span class="command-palette__hint-item">
-            <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd>
-            {{ t('Move between results') }}
-          </span>
-          <span class="command-palette__hint-item">
-            <kbd>{{ returnKey }}</kbd> {{ t('Open result') }}
-          </span>
-          <span class="command-palette__hint-item">
-            <kbd>Esc</kbd> {{ query ? t('Clear search') : t('Close') }}
-          </span>
-        </p>
+        </section>
         <div class="sr-only" role="status">{{ statusMessage }}</div>
       </div>
 
@@ -779,9 +815,9 @@
     display: flex;
     flex-wrap: wrap;
     column-gap: var(--c-spacing-lg);
-    row-gap: var(--c-spacing-xs);
+    row-gap: var(--c-spacing-sm);
     margin: 0;
-    padding-block: var(--c-spacing-sm);
+    padding-block: var(--c-spacing-md);
     padding-inline: var(--c-modal-padding);
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
     font-size: var(--c-text-sm);
@@ -792,6 +828,11 @@
     display: inline-flex;
     align-items: center;
     gap: var(--c-spacing-sm);
+  }
+
+  .command-palette__hint-keys {
+    display: inline-flex;
+    gap: var(--c-spacing-xs);
   }
 
   .command-palette__view {
