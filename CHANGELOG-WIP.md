@@ -89,6 +89,7 @@
 #### MCP
 - Added authenticated and configurable public Model Context Protocol (MCP) servers for inspecting and managing Craft sites, content, assets, users, plugins, and project config. ([#19846](https://github.com/craftcms/cms/pull/19846))
 - Added the `mcp:read`, `mcp:write`, and `mcp:admin` OAuth scopes for the authenticated MCP server. Users choose an access level when they authorize an MCP client, and it defaults to read only. ([#20080](https://github.com/craftcms/cms/pull/20080))
+- The OAuth authorization page now shows where the user will be redirected, and can no longer be displayed in a frame. ([#20105](https://github.com/craftcms/cms/pull/20105))
 - Added the `mcp:serve` command, which serves the authenticated MCP server over stdio as a named user. ([#19846](https://github.com/craftcms/cms/pull/19846))
 
 #### General

@@ -393,6 +393,52 @@ readonly class ElementWrites
         ?ElementSiteSettings &$siteSettingsRecord = null,
         ?bool $inheritedUpdateSearchIndex = null,
     ): bool {
+        return $this->elements->ensureSaveScope(function () use (
+            $element,
+            $runValidation,
+            $propagate,
+            $updateSearchIndex,
+            $supportedSites,
+            $forceTouch,
+            $crossSiteValidate,
+            $saveContent,
+            &$siteSettingsRecord,
+            $inheritedUpdateSearchIndex,
+        ) {
+            return $this->saveInScope(
+                $element,
+                $runValidation,
+                $propagate,
+                $updateSearchIndex,
+                $supportedSites,
+                $forceTouch,
+                $crossSiteValidate,
+                $saveContent,
+                $siteSettingsRecord,
+                $inheritedUpdateSearchIndex,
+            );
+        });
+    }
+
+    /**
+     * Saves an element, within an element save scope.
+     *
+     * @param  array<int, array{siteId:int, siteUid:string, propagate:bool, enabledByDefault:bool}>|null  $supportedSites
+     *
+     * @see saveInternal()
+     */
+    private function saveInScope(
+        ElementInterface $element,
+        bool $runValidation,
+        bool $propagate,
+        ?bool $updateSearchIndex,
+        ?array $supportedSites,
+        bool $forceTouch,
+        bool $crossSiteValidate,
+        bool $saveContent,
+        ?ElementSiteSettings &$siteSettingsRecord,
+        ?bool $inheritedUpdateSearchIndex,
+    ): bool {
         $originalScenario = $element->ruleset->getScenario();
         try {
             $isNewElement = ! $element->id;

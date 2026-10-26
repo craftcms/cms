@@ -19,6 +19,7 @@ use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Nodes\Table as UiTable;
 use CraftCms\Cms\Ui\Ui;
@@ -75,7 +76,7 @@ class ReleasesController
             ->paginate($request->limit(), pageName: Cms::config()->getPageTriggerParam(), page: $request->page())
             ->appends($request->except(Cms::config()->getPageTriggerParam()));
 
-        $formatter = new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::MEDIUM, IntlDateFormatter::SHORT, Cms::timezone());
+        $formatter = new IntlDateFormatter(I18N::getFormattingLocale()->id, IntlDateFormatter::MEDIUM, IntlDateFormatter::SHORT, Cms::timezone(), IntlDateFormatter::TRADITIONAL);
         $rows = $paginator->getCollection()->map(function (Release $release) use ($formatter): array {
             $date = $release->publishedAt ?? $release->targetDate;
             $canDelete = $release->status->isMutable() && Gate::allows('manage', $release);
@@ -87,7 +88,9 @@ class ReleasesController
                     'fill' => $release->status->color()->value,
                 ])],
                 'date' => $date === null ? t('Not set') : ['html' => Html::tag('time',
-                    Html::encode($formatter->format($date) ?: t('Not set')),
+                    Html::encode(($formatted = $formatter->format($date))
+                        ? $formatted.' '.DateTimeHelper::timeZoneAbbreviation(Cms::timezone(), $date)
+                        : t('Not set')),
                     ['datetime' => $date->toIso8601String()],
                 )],
                 'itemCount' => (int) $release->items_count,

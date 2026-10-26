@@ -129,7 +129,23 @@
                 }
               }
             "
-          />
+          >
+            <template #option="{option}">
+              <!-- The menu button shows a copy of this option in its own shadow
+                root, out of reach of utility classes, so the layout is inline
+                and the icon's name is an attribute the copy keeps. -->
+              <span
+                style="
+                  display: inline-flex;
+                  align-items: center;
+                  gap: var(--c-spacing-sm);
+                "
+              >
+                <craft-icon :name.attr="'world'"></craft-icon>
+                {{ option.label }}
+              </span>
+            </template>
+          </CraftSelectRich>
         </div>
 
         <CraftSelectRich

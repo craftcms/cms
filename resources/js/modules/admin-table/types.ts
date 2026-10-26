@@ -54,7 +54,7 @@ export interface AdminTableDataOptions<TData extends Record<string, any>> {
 
 export interface AdminTableHandle {
   selectedIds: Array<string | number>;
-  refresh: () => Promise<boolean>;
+  refresh: (options?: {quiet?: boolean}) => Promise<boolean>;
   removeRows: (ids: Array<string | number>) => void;
   clearSelection: () => void;
 }

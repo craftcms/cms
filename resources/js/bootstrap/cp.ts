@@ -103,7 +103,10 @@ const Cp = {
 
   init() {
     config.initialize(this.initialConfig);
-    configureIcons(config.get('iconBaseUrl', '/vendor/craft/icons'));
+    configureIcons(
+      config.get('iconBaseUrl', '/vendor/craft/icons'),
+      config.get('earthIcon', 'earth-americas')
+    );
 
     setUrlDefaults(() => ({
       cpTrigger: routeSegment(String(config.get('cpTrigger') ?? '')),

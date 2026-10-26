@@ -32,6 +32,7 @@ use CraftCms\Cms\Cp\Components\Textarea;
 use CraftCms\Cms\Cp\Enums\CheckboxSelectPresentation;
 use CraftCms\Cms\Cp\Enums\Size;
 use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -1234,7 +1235,7 @@ readonly class FormFields
             'disabled' => (bool) ($option['disabled'] ?? false),
             'data' => array_filter([
                 ...$data,
-                'indicator' => $status !== null ? ['fill' => $status] : null,
+                'indicator' => $status !== null ? ['fill' => Color::tryFromStatus((string) $status)->value ?? $status] : null,
                 'icon' => $icon,
                 'color' => $color,
                 'hint' => $hint,

@@ -6,11 +6,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Responses\BridgedScreen;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Support\Header;
@@ -27,15 +25,13 @@ beforeEach(function () {
 dataset('bridgedScreens', [
     'cp screen response' => [
         function (): string {
-            $entryType = EntryType::factory()->create();
-            $section = Section::factory()->withEntryTypes($entryType)->create(['enableVersioning' => true]);
+            Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
+                ->prefix(Cms::config()->cpTrigger)
+                ->get('bridged-cp-screen-test', fn () => new CpScreenResponse()
+                    ->title('Bridged screen')
+                    ->contentHtml('<p>Server-rendered content</p>'));
 
-            $entry = EntryModel::factory()
-                ->forSection($section)
-                ->forEntryType($entryType)
-                ->createElement();
-
-            return cp_url("revisions/$entry->id-$entry->slug");
+            return cp_url('bridged-cp-screen-test');
         },
     ],
     'template extending _layouts/cp' => [

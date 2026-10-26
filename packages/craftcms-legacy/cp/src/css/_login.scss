@@ -86,49 +86,6 @@ body.login {
   }
 }
 
-.login-modal {
-  width: calc(600px + var(--l) * 2);
-  max-width: calc(100% - 20px);
-  background: var(--login-modal-bg, var(--modal-bg));
-  border-radius: var(--radius-lg);
-
-  .body {
-    display: flex;
-    flex-direction: row;
-    padding: var(--l);
-
-    .login-modal-intro,
-    .login-modal-form {
-      width: 300px;
-      max-width: 100%;
-    }
-
-    .login-modal-intro {
-      padding: var(--m);
-    }
-  }
-
-  @media screen and (width <= 656px) {
-    border-radius: var(--radius-lg);
-
-    .body {
-      padding: var(--m);
-      flex-direction: column;
-      gap: var(--m);
-      overflow: auto;
-
-      .login-modal-intro {
-        padding-block: var(--xs);
-        padding-inline: var(--xl);
-      }
-
-      .login-modal-form {
-        border-radius: 0;
-      }
-    }
-  }
-}
-
 .login-container {
   position: relative;
   width: calc(15rem + var(--pane-padding) * 2);
