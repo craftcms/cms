@@ -25,6 +25,7 @@
     volumes: ['*', ...props.volumeOptions.map((v) => v.value)],
     cacheImages: false,
     listEmptyFolders: false,
+    analyzeImages: false,
   });
 
   async function handleSubmit() {
@@ -83,6 +84,23 @@
         >
           <div slot="help-text">
             {{ t('Include empty folders in the review step.') }}
+          </div>
+        </craft-switch>
+
+        <craft-switch
+          name="analyzeImages"
+          :label="t('Analyze images')"
+          :checked="form.analyzeImages"
+          @change="
+            form.analyzeImages = ($event.target as HTMLInputElement).checked
+          "
+        >
+          <div slot="help-text">
+            {{
+              t(
+                'Sample the colors of images that are missing them, and queue images for any AI tasks that are set up, such as alt text, even if their files haven’t changed.'
+              )
+            }}
           </div>
         </craft-switch>
       </div>

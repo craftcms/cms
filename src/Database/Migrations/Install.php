@@ -208,6 +208,7 @@ class Install extends Migration
             $table->integer('processedEntries')->default(0);
             $table->boolean('cacheRemoteImages')->nullable();
             $table->boolean('listEmptyFolders')->default(false)->nullable();
+            $table->boolean('analyzeImages')->default(false);
             $table->boolean('isCli')->default(false)->nullable();
             $table->boolean('actionRequired')->nullable()->default(false);
             $table->boolean('processIfRootEmpty')->default(false)->nullable();

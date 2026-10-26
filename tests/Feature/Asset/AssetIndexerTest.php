@@ -679,28 +679,32 @@ it('doesn’t sample colors it has already sampled, even inconclusively', functi
     'inconclusive' => [['dominant' => null, 'grid' => [], 'palette' => []]],
 ]);
 
-it('samples the colors of images that were sampled before palettes were', function () {
+it('samples the colors of unchanged images that are missing them, or were sampled before palettes were, when asked to analyze images', function (?array $stored) {
     $volume = createIndexerTestVolume();
     $volumeData = resolveIndexerVolumeData($volume);
     $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
     $volumeData->sourceDisk()->put('red.png', file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
-    $index = fn () => $this->indexer->indexFileByListing($volumeData, new FsListing([
+    $index = fn (bool $analyzeImages) => $this->indexer->indexFileByListing($volumeData, new FsListing([
         'dirname' => '',
         'basename' => 'red.png',
         'type' => 'file',
         'fileSize' => $volumeData->sourceDisk()->size('red.png'),
         'dateModified' => $volumeData->sourceDisk()->lastModified('red.png'),
-    ]), $session->id);
+    ]), $session->id, analyzeImages: $analyzeImages);
 
     try {
-        $asset = $index();
-        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#123456', 'grid' => [['#123456']]]])]);
+        $asset = $index(false);
+        Asset::whereKey($asset->id)->update(['analysis' => $stored === null ? null : json_encode(['colors' => $stored])]);
 
-        expect($index()->analysis->colors->palette)->toBe(['#dc1e1e']);
+        expect($index(false)->analysis?->colors?->palette)->toBe($stored === null ? null : [])
+            ->and($index(true)->analysis->colors->palette)->toBe(['#dc1e1e']);
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
     }
-});
+})->with([
+    'missing' => [null],
+    'sampled before palettes' => [['dominant' => '#123456', 'grid' => [['#123456']]]],
+]);
 
 it('samples the colors again once the file has changed', function () {
     $volume = createIndexerTestVolume();
@@ -894,6 +898,40 @@ it('queues new and changed images to be analyzed', function () {
 
         Queue::assertPushed(AnalyzeImage::class, fn (AnalyzeImage $job): bool => $job->assetId === $asset->id);
         Queue::assertPushed(AnalyzeImage::class, 2);
+    } finally {
+        $volumeData->sourceDisk()->delete('photo.png');
+    }
+});
+
+it('queues unchanged images to be analyzed when asked to', function () {
+    Queue::fake();
+    config(['ai.providers' => ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]]);
+    app(AiTasks::class)->register(CaptionImageTask::class);
+    app()->instance(Settings::class, new Settings(['defaults' => ['text' => ['provider' => 'openai']]]));
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true, analyzeImages: true);
+    $volumeData->sourceDisk()->put('photo.png', file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
+    $listing = new FsListing([
+        'dirname' => '',
+        'basename' => 'photo.png',
+        'type' => 'file',
+        'fileSize' => 99,
+        'dateModified' => 1_700_000_000,
+    ]);
+
+    try {
+        $asset = $this->indexer->indexFileByListing($volumeData, $listing, $session->id);
+        new UniqueLock(app(Cache::class))->release(new AnalyzeImage($asset->id));
+
+        $this->indexer->indexFileByListing($volumeData, $listing, $session->id);
+        Queue::assertPushed(AnalyzeImage::class, 1);
+
+        $this->indexer->indexFileByListing($volumeData, $listing, $session->id, analyzeImages: true);
+        Queue::assertPushed(AnalyzeImage::class, 2);
+
+        // The utility indexes over several requests, so the session remembers it
+        expect($session->fresh()->analyzeImages)->toBeTrue();
     } finally {
         $volumeData->sourceDisk()->delete('photo.png');
     }

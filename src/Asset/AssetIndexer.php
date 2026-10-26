@@ -145,6 +145,7 @@ class AssetIndexer
         array $volumes,
         bool $cacheRemoteImages = true,
         bool $listEmptyFolders = false,
+        bool $analyzeImages = false,
     ): AssetIndexingSession {
         $volumeList = [];
 
@@ -154,7 +155,7 @@ class AssetIndexer
             }
         }
 
-        $session = $this->createIndexingSession($volumeList, $cacheRemoteImages, listEmptyFolders: $listEmptyFolders);
+        $session = $this->createIndexingSession($volumeList, $cacheRemoteImages, listEmptyFolders: $listEmptyFolders, analyzeImages: $analyzeImages);
         $total = 0;
 
         /** @var Volume $volume */
@@ -184,6 +185,7 @@ class AssetIndexer
         bool $cacheRemoteImages = true,
         bool $isCli = false,
         bool $listEmptyFolders = false,
+        bool $analyzeImages = false,
     ): AssetIndexingSession {
         $indexedVolumes = [];
 
@@ -197,6 +199,7 @@ class AssetIndexer
             'processedEntries' => 0,
             'cacheRemoteImages' => $cacheRemoteImages,
             'listEmptyFolders' => $listEmptyFolders,
+            'analyzeImages' => $analyzeImages,
             'actionRequired' => false,
             'isCli' => $isCli,
             'processIfRootEmpty' => false,
@@ -288,7 +291,7 @@ class AssetIndexer
                 if ($indexEntry->isDir) {
                     $recordId = $this->indexFolderByEntry($indexEntry)->id;
                 } else {
-                    $recordId = $this->indexFileByEntry($indexEntry, $indexingSession->cacheRemoteImages)->id;
+                    $recordId = $this->indexFileByEntry($indexEntry, $indexingSession->cacheRemoteImages, analyzeImages: $indexingSession->analyzeImages)->id;
                 }
 
                 $indexEntry->transitionTo(AssetIndexStatus::Indexed, $recordId);
@@ -492,6 +495,7 @@ class AssetIndexer
         int $sessionId,
         bool $cacheImages = false,
         bool $createIfMissing = true,
+        bool $analyzeImages = false,
     ): Asset {
         $dirname = dirname($path);
         if (in_array($dirname, ['.', '/', '\\'])) {
@@ -506,7 +510,7 @@ class AssetIndexer
             'fileSize' => $volume->sourceDisk()->size($path),
         ]);
 
-        return $this->indexFileByListing($volume, $listing, $sessionId, $cacheImages, $createIfMissing);
+        return $this->indexFileByListing($volume, $listing, $sessionId, $cacheImages, $createIfMissing, $analyzeImages);
     }
 
     /**
@@ -521,6 +525,7 @@ class AssetIndexer
         int $sessionId,
         bool $cacheImages = false,
         bool $createIfMissing = true,
+        bool $analyzeImages = false,
     ): Asset {
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
@@ -533,7 +538,7 @@ class AssetIndexer
 
         return $this->indexByListing(
             $indexEntry,
-            fn () => $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing),
+            fn () => $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing, $analyzeImages),
         );
     }
 
@@ -605,6 +610,7 @@ class AssetIndexer
         AssetIndexData $indexEntry,
         bool $cacheImages = false,
         bool $createIfMissing = true,
+        bool $analyzeImages = false,
     ): Asset {
         $uriPath = $indexEntry->uri;
         $dirname = dirname((string) $uriPath);
@@ -676,11 +682,13 @@ class AssetIndexer
             && $timeModified !== null
             && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
         $colors = $asset->analysis?->colors;
-        $needsColors = $colors === null
-            || $fileChanged
-            // Sampled before palettes were, but not inconclusively
-            || ($colors->dominant !== null && $colors->palette === []);
         $isNew = ! $asset->id;
+        // New and changed files are always sampled. Unchanged ones that are missing colors, or were sampled before
+        // palettes were (but not inconclusively), are only sampled when asked to analyze images, since a remote
+        // file has to be downloaded to sample it.
+        $needsColors = $isNew
+            || $fileChanged
+            || ($analyzeImages && ($colors === null || ($colors->dominant !== null && $colors->palette === [])));
 
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
         $tempPath = null;
@@ -742,8 +750,9 @@ class AssetIndexer
 
                 $this->elements->saveElement($asset);
 
-                // New and changed images are analyzed, such as for alt text, by any AI tasks that are set up
-                if ($isNew || $fileChanged) {
+                // New and changed images are analyzed, such as for alt text, by any AI tasks that are set up, and
+                // unchanged ones are too when asked. Images that aren't missing anything aren't queued.
+                if ($isNew || $fileChanged || $analyzeImages) {
                     $this->imageAnalyzer->queue($asset);
                 }
 
