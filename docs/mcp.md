@@ -58,6 +58,8 @@ Clients can also perform these maintenance tasks:
 - **Project config:** `project-config.rebuild` rebuilds the project config from the database, as the Project Config utility does. It requires an administrator and refuses while the project config is read-only.
 - **Preferences:** `preferences.get` and `preferences.update` read and change the authenticated user's preferred language and formatting locale.
 
+Field settings and project config values whose keys look sensitive, as defined by the `security` component's `sensitiveKeywords`, are returned redacted as `•` characters. This includes environment variable references. Project config diffs are redacted the same way. To keep a saved value when updating field settings, send its redacted value back.
+
 Asset creation and replacement accept HTTPS file references. Craft rejects local paths, private network addresses, redirects, and files that exceed the configured upload limits.
 
 Capability discovery applies user permissions and `allowAdminChanges`. Record operations also enforce the corresponding element permissions. Unavailable capabilities are omitted from discovery and cannot be called directly.

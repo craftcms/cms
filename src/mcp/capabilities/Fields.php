@@ -10,6 +10,7 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\StringHelper;
 use craft\mcp\attributes\RequiresAdmin;
 use craft\mcp\attributes\RequiresAdminChanges;
+use craft\mcp\SensitiveValues;
 use craft\services\Fields as FieldService;
 use Illuminate\Support\Arr;
 use Mcp\Capability\Attribute\McpResource;
@@ -25,8 +26,10 @@ use Mcp\Server\RequestContext;
  */
 class Fields
 {
-    public function __construct(private FieldService $fields)
-    {
+    public function __construct(
+        private FieldService $fields,
+        private SensitiveValues $sensitiveValues,
+    ) {
     }
 
     /** @return array{count: int, fields: list<array<string, mixed>>} */
@@ -90,7 +93,7 @@ class Fields
             'searchable' => $searchable,
             'translationMethod' => $translationMethod,
             'translationKeyFormat' => $translationKeyFormat,
-            'settings' => $settings,
+            'settings' => $this->sensitiveValues->restore($settings, []),
         ]);
 
         return ['field' => $this->save($field)];
@@ -143,7 +146,7 @@ class Fields
         ], $request->arguments);
 
         if (array_key_exists('settings', $request->arguments)) {
-            $attributes = [...array_replace($field->getSettings(), $settings), ...$attributes];
+            $attributes = [...array_replace($field->getSettings(), $this->sensitiveValues->restore($settings, $field->getSettings())), ...$attributes];
         }
 
         Craft::configure($field, $attributes);
@@ -238,6 +241,10 @@ class Fields
     private function serialize(FieldInterface $field): array
     {
         $config = $this->fields->createFieldConfig($field);
+
+        if (isset($config['settings'])) {
+            $config['settings'] = $this->sensitiveValues->redact($config['settings']);
+        }
 
         return [
             'id' => $field->getId(),
