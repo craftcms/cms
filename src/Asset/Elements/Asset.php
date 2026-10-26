@@ -36,6 +36,7 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -108,6 +109,7 @@ use DOMDocument;
 use DOMXPath;
 use Exception;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
@@ -115,6 +117,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Imagick;
 use Intervention\Image\Encoders\PngEncoder;
 use InvalidArgumentException;
@@ -263,10 +266,13 @@ class Asset extends Element
     }
 
     /**
-     * @var bool|null Whether the file was kept around when the asset was deleted
+     * @var bool Whether the file was moved to the trashed asset disk when the asset was soft-deleted, so it can be put
+     *           back if the asset is restored
+     *
+     * @see GeneralConfig::$trashedAssetDisk
      */
     #[AllowedInSandbox]
-    public ?bool $keptFile = null;
+    public bool $trashedFileExists = false;
 
     /**
      * @var DateTimeInterface|null Date modified
@@ -3405,7 +3411,6 @@ JS;
             ->where('id', $this->id)
             ->update([
                 'deletedWithVolume' => $this->deletedWithVolume,
-                'keptFile' => $this->keepFileOnDelete,
             ]);
 
         return true;
@@ -3414,12 +3419,22 @@ JS;
     #[Override]
     public function afterDelete(): void
     {
+        $trashedAssetDisk = $this->hardDelete ? null : Cms::config()->getTrashedAssetDisk();
+
         if (! $this->keepFileOnDelete) {
-            try {
-                $this->getVolume()->sourceDisk()->delete($this->getPath());
-            } catch (UnableToDeleteFile) {
-                // NBD
+            if ($trashedAssetDisk !== null) {
+                $this->moveFileToTrash($trashedAssetDisk);
+            } else {
+                try {
+                    $this->getVolume()->sourceDisk()->delete($this->getPath());
+                } catch (UnableToDeleteFile) {
+                    // NBD
+                }
             }
+        }
+
+        if ($this->hardDelete && $this->trashedFileExists) {
+            $this->deleteTrashedFile();
         }
 
         $this->deleteTransformData();
@@ -3441,8 +3456,117 @@ JS;
     #[Override]
     public function beforeRestore(): bool
     {
-        // Only allow the asset to be restored if the file was kept on delete
-        return $this->keptFile && parent::beforeRestore();
+        // Only allow the asset to be restored if its file can be too
+        return $this->canRestoreFile() && parent::beforeRestore();
+    }
+
+    #[Override]
+    public function afterRestore(): void
+    {
+        if ($this->trashedFileExists) {
+            $this->restoreFileFromTrash();
+        }
+
+        parent::afterRestore();
+    }
+
+    /**
+     * Returns the path to the asset’s file on the trashed asset disk: its ID, followed by its extension.
+     *
+     * @see GeneralConfig::$trashedAssetDisk
+     */
+    public function getTrashedFilePath(): string
+    {
+        $extension = $this->getExtension();
+
+        return $extension !== '' ? "$this->id.$extension" : (string) $this->id;
+    }
+
+    /**
+     * Returns whether the asset’s file can be restored along with it: either it was moved to the trashed asset disk,
+     * which is still configured, or it was left in place when the asset’s volume was deleted.
+     */
+    private function canRestoreFile(): bool
+    {
+        return $this->deletedWithVolume || (
+            $this->trashedFileExists &&
+            Cms::config()->getTrashedAssetDisk() !== null
+        );
+    }
+
+    /**
+     * Moves the asset’s file to the trashed asset disk, so it can be put back if the asset is restored.
+     */
+    private function moveFileToTrash(string $trashedAssetDisk): void
+    {
+        $sourceDisk = $this->getVolume()->sourceDisk();
+        $path = $this->getPath();
+
+        if (! $sourceDisk->exists($path)) {
+            return;
+        }
+
+        $this->copyFileBetweenDisks($sourceDisk, $path, Storage::disk($trashedAssetDisk), $this->getTrashedFilePath());
+        $sourceDisk->delete($path);
+
+        DB::table(Table::ASSETS)->where('id', $this->id)->update(['trashedFileExists' => true]);
+        $this->trashedFileExists = true;
+    }
+
+    /**
+     * Moves the asset’s file back from the trashed asset disk into its volume.
+     *
+     * @throws FileException if a file already exists where the asset’s file belongs
+     */
+    private function restoreFileFromTrash(): void
+    {
+        $trashedAssetDisk = Storage::disk((string) Cms::config()->getTrashedAssetDisk());
+        $volumeDisk = $this->getVolume()->sourceDisk();
+        $path = $this->getPath();
+
+        if ($volumeDisk->exists($path)) {
+            throw new FileException(t('A file with the name “{filename}” already exists.', ['filename' => $this->_filename]));
+        }
+
+        $this->copyFileBetweenDisks($trashedAssetDisk, $this->getTrashedFilePath(), $volumeDisk, $path);
+        $trashedAssetDisk->delete($this->getTrashedFilePath());
+
+        DB::table(Table::ASSETS)->where('id', $this->id)->update(['trashedFileExists' => false]);
+        $this->trashedFileExists = false;
+    }
+
+    private function deleteTrashedFile(): void
+    {
+        $trashedAssetDisk = Cms::config()->getTrashedAssetDisk();
+
+        if ($trashedAssetDisk !== null) {
+            Storage::disk($trashedAssetDisk)->delete($this->getTrashedFilePath());
+        }
+    }
+
+    /**
+     * Streams a file from one disk to another, so large files aren’t read into memory.
+     *
+     * @throws FilesystemException
+     */
+    private function copyFileBetweenDisks(Filesystem $from, string $fromPath, Filesystem $to, string $toPath): void
+    {
+        $stream = $from->readStream($fromPath);
+
+        if (! is_resource($stream)) {
+            throw new FilesystemException("Unable to read $fromPath.");
+        }
+
+        try {
+            if (! $to->writeStream($toPath, $stream)) {
+                throw new FilesystemException("Unable to write $toPath.");
+            }
+        } finally {
+            // Some adapters close the stream themselves
+            if (get_resource_type($stream) === 'stream') {
+                fclose($stream);
+            }
+        }
     }
 
     /** @return array<string, array<string, bool|int|string|null>> */
@@ -3521,7 +3645,7 @@ JS;
             $attributes['data']['editable-image'] = true;
         }
 
-        if ($this->dateDeleted && $this->keptFile && Gate::check('save', $this)) {
+        if ($this->dateDeleted && $this->canRestoreFile() && Gate::check('save', $this)) {
             $attributes['data']['restorable'] = true;
         }
 
