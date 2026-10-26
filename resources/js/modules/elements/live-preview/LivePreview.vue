@@ -4,8 +4,8 @@
    * edits are autosaved.
    *
    * The editor isn't rendered here. The page's own editor content is moved into
-   * `#{editorTargetId}` while this is open, so there's one form, one autosave
-   * queue, and nothing to reconcile when it closes.
+   * the exposed `editorTarget` while this is open, so there's one form, one
+   * autosave queue, and nothing to reconcile when it closes.
    */
   import {t} from '@craftcms/ui';
   import {
@@ -49,7 +49,6 @@
 
   const props = defineProps<{
     controller: LivePreviewController;
-    editorTargetId: string;
     title: string;
   }>();
 
@@ -60,6 +59,10 @@
 
   const root = useTemplateRef<HTMLElement>('root');
   const stage = useTemplateRef<HTMLElement>('stage');
+  const editorTarget = useTemplateRef<HTMLElement>('editorTarget');
+
+  // An element rather than an id, so the content follows it if it's replaced.
+  defineExpose({editorTarget});
   const preview = props.controller;
 
   /*
@@ -154,24 +157,53 @@
     deviceShape(preview.device.value, preview.orientation.value)
   );
   const shape = shallowRef<DeviceShape | null>(targetShape.value);
+  // The page is resized once, at the midpoint, faded out so it doesn't jump.
+  const frameShape = shallowRef<DeviceShape | null>(targetShape.value);
+  const frameOpacity = ref(1);
+  // How far the device is from desktop, which has no bezel, gutter or corners.
+  const framing = ref(targetShape.value ? 1 : 0);
   let shapeFrame = 0;
+
+  /** Desktop as a device: a bezel-less screen the size of the stage. */
+  function stageShape(): DeviceShape {
+    return {
+      viewport: {width: stageWidth.value, height: stageHeight.value},
+      bezel: {inline: 0, block: 0},
+    };
+  }
 
   // Animates the device's dimensions rather than its rendered size, so it's
   // fitted to the stage on every frame and never outgrows it on the way.
   watch(targetShape, (to) => {
     cancelAnimationFrame(shapeFrame);
-    const from = shape.value;
 
-    if (!to || !from || reducedMotion.value === 'reduce') {
-      shape.value = to;
+    if (reducedMotion.value === 'reduce' || !stageWidth.value) {
+      shape.value = frameShape.value = to;
+      frameOpacity.value = 1;
+      framing.value = to ? 1 : 0;
       return;
     }
+
+    const from = shape.value ?? stageShape();
+    const end = to ?? stageShape();
+    const startOpacity = frameOpacity.value;
+    const startFraming = framing.value;
+    const endFraming = to ? 1 : 0;
+    frameShape.value ??= from;
 
     const start = performance.now();
     const step = (now: number) => {
       const t = Math.min(1, (now - start) / 300);
       const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
-      shape.value = t === 1 ? to : blendShapes(from, to, eased);
+      shape.value = t === 1 ? to : blendShapes(from, end, eased);
+      framing.value = startFraming + (endFraming - startFraming) * eased;
+
+      if (t === 1) {
+        frameShape.value = to;
+      } else if (t >= 0.5) {
+        frameShape.value = end;
+      }
+      frameOpacity.value = t < 0.5 ? startOpacity * (1 - 2 * t) : 2 * t - 1;
 
       if (t < 1) {
         shapeFrame = requestAnimationFrame(step);
@@ -184,10 +216,11 @@
 
   const layout = computed(() =>
     shape.value
-      ? fitDevice(shape.value, {
-          width: stageWidth.value,
-          height: stageHeight.value,
-        })
+      ? fitDevice(
+          shape.value,
+          {width: stageWidth.value, height: stageHeight.value},
+          24 * framing.value
+        )
       : null
   );
 
@@ -246,14 +279,15 @@
       width: `${value.frame.width}px`,
       height: `${value.frame.height}px`,
       transform: `scale(${value.zoom})`,
+      '--lp-framing': framing.value,
     };
   });
 
-  // The page itself is sized for the device it's going to, once, rather than
-  // reflowing on every frame of the animation; the screen clips it on the way.
+  // The page is sized for one device at a time rather than reflowing on every
+  // frame of the animation; the screen clips it on the way.
   const viewportStyle = computed(() => {
     const value = layout.value;
-    const target = targetShape.value?.viewport;
+    const target = frameShape.value?.viewport;
 
     return value && target
       ? {
@@ -261,6 +295,7 @@
           height: `${value.viewport.height}px`,
           '--lp-frame-width': `${target.width}px`,
           '--lp-frame-height': `${target.height}px`,
+          '--lp-frame-opacity': frameOpacity.value,
         }
       : undefined;
   });
@@ -384,15 +419,15 @@
             icon="xmark"
             variant="plain"
             @click="preview.close()"
+            aria-label="t('Close Preview')"
           >
-            {{ t('Close Preview') }}
           </craft-button>
           <div class="lp-editor__status">
             <slot name="status"></slot>
           </div>
         </header>
         <form class="lp-editor__body" novalidate @submit.prevent="emit('save')">
-          <div :id="editorTargetId"></div>
+          <div ref="editorTarget"></div>
         </form>
         <footer class="lp-editor__footer">
           <slot name="footer"></slot>
@@ -407,97 +442,101 @@
           :controls="editorId"
         />
         <header class="lp-preview__toolbar">
-          <craft-button-group
-            name="lp-device"
-            :value="preview.device.value"
-            :aria-label="t('Device type')"
-            @change="onDeviceChange"
-          >
-            <craft-button
-              v-for="(label, type) in deviceLabels"
-              :id="`${controlId}-${type}`"
-              :key="type"
-              :value="type"
-              icon
+          <div>
+            <ActionMenu
+              v-if="preview.targets.value.length > 1"
+              :key="preview.activeIndex.value"
+              :actions="targetActions"
+              :label="preview.activeTarget.value?.label ?? null"
+              :flush="false"
             >
-              <craft-icon :name="deviceIcons[type]" :label="label"></craft-icon>
-            </craft-button>
-          </craft-button-group>
-          <craft-tooltip
-            v-for="(label, type) in deviceLabels"
-            :key="type"
-            :for="`${controlId}-${type}`"
-          >
-            {{ label }}
-          </craft-tooltip>
+              <template #invoker="{attributes}">
+                <craft-button
+                  v-bind="attributes"
+                  type="button"
+                  icon="chevron-down"
+                  icon-position="suffix"
+                >
+                  {{ preview.activeTarget.value?.label }}
+                </craft-button>
+              </template>
+            </ActionMenu>
+          </div>
 
-          <craft-button
-            :id="`${controlId}-rotate`"
-            type="button"
-            icon="rotate"
-            :disabled="preview.device.value === 'desktop'"
-            :aria-label="t('Rotate')"
-            @click="rotate"
-          ></craft-button>
-          <craft-tooltip :for="`${controlId}-rotate`">
-            {{ t('Rotate') }}
-          </craft-tooltip>
-
-          <div class="lp-preview__spacer"></div>
-
-          <ActionMenu
-            v-if="preview.targets.value.length > 1"
-            :key="preview.activeIndex.value"
-            :actions="targetActions"
-            :label="preview.activeTarget.value?.label ?? null"
-            :flush="false"
-          >
-            <template #invoker="{attributes}">
+          <div class="flex gap-md items-center">
+            <craft-button-group
+              name="lp-device"
+              :value="preview.device.value"
+              :aria-label="t('Device type')"
+              @change="onDeviceChange"
+            >
               <craft-button
-                v-bind="attributes"
-                type="button"
-                size="small"
-                icon="chevron-down"
-                icon-position="suffix"
+                v-for="(label, type) in deviceLabels"
+                :id="`${controlId}-${type}`"
+                :key="type"
+                :value="type"
+                icon
               >
-                {{ preview.activeTarget.value?.label }}
+                <craft-icon
+                  :name="deviceIcons[type]"
+                  :label="label"
+                ></craft-icon>
               </craft-button>
-            </template>
-          </ActionMenu>
-
-          <craft-button
-            :id="`${controlId}-refresh`"
-            type="button"
-            size="small"
-            icon="arrows-rotate"
-            :disabled="preview.isLoading.value"
-            .loading="preview.isLoading.value"
-            @click="preview.refresh({force: true})"
-          >
-            {{ t('Refresh') }}
-          </craft-button>
-          <craft-tooltip :for="`${controlId}-refresh`">
-            {{ t('Reload the preview') }}
-          </craft-tooltip>
-
-          <template v-if="currentUrl">
-            <craft-button
-              :id="newTabLinkId"
-              icon
-              size="small"
-              :href="currentUrl"
-              target="_blank"
-              rel="noopener"
+            </craft-button-group>
+            <craft-tooltip
+              v-for="(label, type) in deviceLabels"
+              :key="type"
+              :for="`${controlId}-${type}`"
             >
-              <craft-icon
-                name="arrow-up-right-from-square"
-                :label="t('Open in a new tab')"
-              ></craft-icon>
-            </craft-button>
-            <craft-tooltip :for="newTabLinkId">
-              {{ t('Open in a new tab') }}
+              {{ label }}
             </craft-tooltip>
-          </template>
+
+            <craft-button
+              :id="`${controlId}-rotate`"
+              type="button"
+              icon="rotate"
+              :disabled="preview.device.value === 'desktop'"
+              :aria-label="t('Rotate')"
+              @click="rotate"
+            ></craft-button>
+            <craft-tooltip :for="`${controlId}-rotate`">
+              {{ t('Rotate') }}
+            </craft-tooltip>
+          </div>
+
+          <div class="justify-self-end">
+            <craft-button
+              :id="`${controlId}-refresh`"
+              type="button"
+              icon="arrows-rotate"
+              :disabled="preview.isLoading.value"
+              .loading="preview.isLoading.value"
+              @click="preview.refresh({force: true})"
+            >
+              {{ t('Refresh') }}
+            </craft-button>
+            <craft-tooltip :for="`${controlId}-refresh`">
+              {{ t('Reload the preview') }}
+            </craft-tooltip>
+
+            <template v-if="currentUrl">
+              <craft-button
+                :id="newTabLinkId"
+                icon
+                :href="currentUrl"
+                target="_blank"
+                rel="noopener"
+              >
+                <craft-icon
+                  name="arrow-up-right-from-square"
+                  :label="t('Open in a new tab')"
+                ></craft-icon>
+              </craft-button>
+              <craft-tooltip :for="newTabLinkId">
+                {{ t('Open in a new tab') }}
+              </craft-tooltip>
+            </template>
+          </div>
         </header>
 
         <div ref="stage" class="lp-preview__stage">
@@ -612,12 +651,11 @@
   }
 
   .lp-preview__toolbar {
+    /* Equal sides keep the device controls centred whatever the target's label. */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     background-color: var(--c-surface-default);
     border-block-end: 1px solid var(--c-color-border-quiet);
-  }
-
-  .lp-preview__spacer {
-    flex: 1;
   }
 
   .lp-progress {
@@ -688,12 +726,12 @@
     display: grid;
     place-items: center;
     transform-origin: center;
-    border-radius: 2.5rem;
+    border-radius: calc(2.5rem * var(--lp-framing, 1));
     background-color: var(--c-color-neutral-fill-loud, #1f2937);
     box-shadow: var(--c-shadow-lg);
 
     .lp-device__viewport {
-      border-radius: 0.25rem;
+      border-radius: calc(0.25rem * var(--lp-framing, 1));
       overflow: hidden;
     }
   }
@@ -708,6 +746,7 @@
     width: var(--lp-frame-width, 100%);
     height: var(--lp-frame-height, 100%);
     border: 0;
+    opacity: var(--lp-frame-opacity, 1);
     visibility: hidden;
   }
 

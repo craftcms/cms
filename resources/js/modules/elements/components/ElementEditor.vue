@@ -11,7 +11,6 @@
     nextTick,
     provide,
     shallowReactive,
-    useId,
     useTemplateRef,
     watch,
     type Component,
@@ -295,7 +294,11 @@
   const canPreview = computed(
     () => showElementControls.value && Boolean(payload.preview?.targets.length)
   );
-  const livePreviewEditorId = `lp-editor-${useId()}`;
+  const livePreviewPane =
+    useTemplateRef<InstanceType<typeof LivePreview>>('livePreviewPane');
+  const livePreviewTarget = computed(
+    () => livePreviewPane.value?.editorTarget ?? null
+  );
   const previewButton = useTemplateRef<HTMLElement>('previewButton');
 
   watch(autosave.saves, () => void livePreview.refresh());
@@ -547,8 +550,8 @@
   </LayoutSlot>
 
   <Teleport
-    :to="`#${livePreviewEditorId}`"
-    :disabled="!livePreview.isOpen.value"
+    :to="livePreviewTarget"
+    :disabled="!livePreview.isOpen.value || !livePreviewTarget"
     defer
   >
     <div ref="content" class="py-lg">
@@ -581,8 +584,8 @@
 
   <LivePreview
     v-if="canPreview"
+    ref="livePreviewPane"
     :controller="livePreview"
-    :editor-target-id="livePreviewEditorId"
     :title="payload.title"
     @save="primaryAction()"
     @closed="previewButton?.focus()"
