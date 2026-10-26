@@ -8,12 +8,12 @@ use CraftCms\Cms\Gql\Arguments\Mutations\Asset as AssetMutationArguments;
 
 it('queries an image’s colors', function (?array $stored, ?array $expected) {
     $asset = Asset::factory()->createElement(['kind' => 'image']);
-    Asset::whereKey($asset->id)->update(['colors' => $stored === null ? null : json_encode($stored)]);
+    Asset::whereKey($asset->id)->update(['analysis' => $stored === null ? null : json_encode(['colors' => $stored])]);
     gqlActivateFullAccessSchema();
 
-    graphQL("{ asset(id: {$asset->id}) { colors { dominant grid left right top bottom } } }")
+    graphQL("{ asset(id: {$asset->id}) { analysis { colors { dominant grid left right top bottom } } } }")
         ->assertOk()
-        ->assertJsonPath('data.asset.colors', $expected);
+        ->assertJsonPath('data.asset.analysis.colors', $expected);
 })->with([
     'sampled' => [
         ['dominant' => '#3a6ea5', 'grid' => [['#ff0000', '#3a6ea5', '#0000ff'], ['#990000', '#3a6ea5', '#000099']]],
@@ -35,7 +35,7 @@ it('queries an image’s colors', function (?array $stored, ?array $expected) {
 
 it('queries an image’s placeholder data URL', function () {
     $asset = Asset::factory()->createElement(['kind' => 'image']);
-    Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5']]])]);
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5']]]])]);
     gqlActivateFullAccessSchema();
 
     graphQL("{ asset(id: {$asset->id}) { placeholderDataUrl } }")
@@ -54,7 +54,7 @@ it('has no placeholder data URL for an image whose colors aren’t known', funct
 
 it('queries an image’s BlurHash', function (?array $stored, bool $hasHash) {
     $asset = Asset::factory()->createElement(['kind' => 'image']);
-    Asset::whereKey($asset->id)->update(['colors' => $stored === null ? null : json_encode($stored)]);
+    Asset::whereKey($asset->id)->update(['analysis' => $stored === null ? null : json_encode(['colors' => $stored])]);
     gqlActivateFullAccessSchema();
 
     graphQL("{ asset(id: {$asset->id}) { blurhash } }")
@@ -68,26 +68,27 @@ it('queries an image’s BlurHash', function (?array $stored, bool $hasHash) {
 it('can’t be set by mutations', function () {
     expect(AssetMutationArguments::getArguments())
         ->not->toHaveKey('colors')
+        ->not->toHaveKey('analysis')
         ->not->toHaveKey('placeholderDataUrl')
         ->not->toHaveKey('blurhash');
 });
 
 it('queries an image’s palette and the names of its colors', function () {
     $asset = Asset::factory()->createElement(['kind' => 'image']);
-    Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => '#c81e28', 'grid' => [], 'palette' => ['#c81e28', '#1e50c8', '#e01818']])]);
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#c81e28', 'grid' => [], 'palette' => ['#c81e28', '#1e50c8', '#e01818']]])]);
     gqlActivateFullAccessSchema();
 
-    graphQL("{ asset(id: {$asset->id}) { colors { palette labels } } }")
+    graphQL("{ asset(id: {$asset->id}) { analysis { colors { palette labels } } } }")
         ->assertOk()
-        ->assertJsonPath('data.asset.colors.palette', ['#c81e28', '#1e50c8', '#e01818'])
-        ->assertJsonPath('data.asset.colors.labels', ['red', 'blue']);
+        ->assertJsonPath('data.asset.analysis.colors.palette', ['#c81e28', '#1e50c8', '#e01818'])
+        ->assertJsonPath('data.asset.analysis.colors.labels', ['red', 'blue']);
 });
 
 it('makes images searchable by the names of their colors', function () {
     $image = Asset::factory()->createElement(['kind' => 'image']);
     $document = Asset::factory()->createElement(['kind' => 'pdf']);
-    $colors = json_encode(['dominant' => '#c81e28', 'grid' => [], 'palette' => ['#c81e28', '#1e50c8']]);
-    Asset::whereKey([$image->id, $document->id])->update(['colors' => $colors]);
+    $colors = json_encode(['colors' => ['dominant' => '#c81e28', 'grid' => [], 'palette' => ['#c81e28', '#1e50c8']]]);
+    Asset::whereKey([$image->id, $document->id])->update(['analysis' => $colors]);
 
     expect(AssetElement::find()->id($image->id)->one()->getSearchKeywords('colors'))->toBe('red blue')
         ->and(AssetElement::find()->id($document->id)->one()->getSearchKeywords('colors'))->toBe('');

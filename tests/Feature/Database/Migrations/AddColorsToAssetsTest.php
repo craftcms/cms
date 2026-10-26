@@ -13,7 +13,7 @@ function runAddColorsToAssetsMigration(): void
 }
 
 it('adds the colors column to installs that predate it', function () {
-    Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->dropColumn('colors'));
+    Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->dropColumn('analysis'));
 
     runAddColorsToAssetsMigration();
 
@@ -22,7 +22,7 @@ it('adds the colors column to installs that predate it', function () {
 
 it('replaces the dominantColor column on installs that added it', function () {
     Schema::table(Table::ASSETS, function (Blueprint $table) {
-        $table->dropColumn('colors');
+        $table->dropColumn('analysis');
         $table->string('dominantColor', 7)->nullable();
     });
 
@@ -32,9 +32,10 @@ it('replaces the dominantColor column on installs that added it', function () {
         ->and(Schema::hasColumn(Table::ASSETS, 'dominantColor'))->toBeFalse();
 });
 
-it('leaves up-to-date installs alone', function () {
+it('leaves installs that store colors in analysis alone', function () {
     runAddColorsToAssetsMigration();
 
-    expect(Schema::hasColumn(Table::ASSETS, 'colors'))->toBeTrue()
+    expect(Schema::hasColumn(Table::ASSETS, 'colors'))->toBeFalse()
+        ->and(Schema::hasColumn(Table::ASSETS, 'analysis'))->toBeTrue()
         ->and(Schema::hasColumn(Table::ASSETS, 'dominantColor'))->toBeFalse();
 });

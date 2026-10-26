@@ -229,9 +229,7 @@ class Install extends Migration
             $table->unsignedInteger('height')->nullable();
             $table->unsignedBigInteger('size')->nullable();
             $table->string('focalPoint', 13)->nullable()->default(null);
-            $table->json('colors')->nullable();
-            $table->json('keywords')->nullable();
-            $table->text('visibleText')->nullable();
+            $table->json('analysis')->nullable();
             $table->string('previewText', AssetsHelper::PREVIEW_TEXT_LENGTH)->nullable();
             $table->boolean('deletedWithVolume')->nullable();
             $table->boolean('trashedFileExists')->default(false);

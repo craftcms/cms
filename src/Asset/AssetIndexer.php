@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use Closure;
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -674,10 +675,11 @@ class AssetIndexer
         $fileChanged = $asset->dateModified !== null
             && $timeModified !== null
             && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
-        $needsColors = $asset->colors === null
+        $colors = $asset->analysis?->colors;
+        $needsColors = $colors === null
             || $fileChanged
             // Sampled before palettes were, but not inconclusively
-            || ($asset->colors->dominant !== null && $asset->colors->palette === []);
+            || ($colors->dominant !== null && $colors->palette === []);
         $isNew = ! $asset->id;
 
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
@@ -730,7 +732,11 @@ class AssetIndexer
                 // Colors that have been sampled already, even inconclusively, aren't sampled again unless the
                 // file has changed
                 if ($localPath !== null && $needsColors) {
-                    $asset->colors = Images::colors($localPath);
+                    $colors = Images::colors($localPath);
+                    // What was found in a file that's changed doesn't describe it anymore
+                    $asset->analysis = $fileChanged || $asset->analysis === null
+                        ? new ImageAnalysis(colors: $colors)
+                        : $asset->analysis->withColors($colors);
                 }
                 $asset->dateModified = $timeModified;
 

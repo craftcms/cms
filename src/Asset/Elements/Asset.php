@@ -17,7 +17,9 @@ use CraftCms\Cms\Asset\Actions\PreviewAsset;
 use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
+use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Concerns\LegacyConstants;
@@ -246,55 +248,30 @@ class Asset extends Element
     public ?int $size = null;
 
     /**
-     * @var ImageColors|null Color data sampled from the image, or `null` if it hasn't been sampled yet
+     * @var ImageAnalysis|null What was found in the image: its colors, and its keywords and the text in it, or `null`
+     *                         if it’s not an image, or nothing has been found yet
      *
-     * Sampled from the file whenever a new one is uploaded or indexed, so it isn't settable from requests.
+     * Colors are sampled from the file whenever a new one is uploaded or indexed, and keywords and text are found by
+     * the “Tag images” AI task, so it isn’t settable from requests.
      *
      * @see Images::colors()
+     * @see TagImage
      */
     #[AllowedInSandbox]
-    public ?ImageColors $colors = null {
-        /** @param ImageColors|array<array-key, mixed>|string|null $value */
-        set(ImageColors|array|string|null $value) {
+    public ?ImageAnalysis $analysis = null {
+        /** @param ImageAnalysis|array<array-key, mixed>|string|null $value */
+        set(ImageAnalysis|array|string|null $value) {
             if (is_string($value)) {
                 $value = Json::decodeIfJson($value);
             }
 
-            $this->colors = match (true) {
-                $value instanceof ImageColors, $value === null => $value,
-                is_array($value) => ImageColors::fromArray($value),
+            $this->analysis = match (true) {
+                $value instanceof ImageAnalysis, $value === null => $value,
+                is_array($value) => ImageAnalysis::fromArray($value),
                 default => null,
             };
         }
     }
-
-    /**
-     * @var list<string>|null Words and short phrases that describe the image, such as what’s in it, written in the
-     *                        primary site’s language by the “Tag images” AI task, or `null` if it hasn’t been tagged
-     */
-    #[AllowedInSandbox]
-    public ?array $keywords = null {
-        /** @param array<array-key, mixed>|string|null $value */
-        set(array|string|null $value) {
-            if (is_string($value)) {
-                $value = Json::decodeIfJson($value);
-            }
-
-            $this->keywords = is_array($value)
-                ? array_values(array_filter(array_map(
-                    static fn (mixed $keyword): string => is_scalar($keyword) ? trim((string) $keyword) : '',
-                    $value,
-                ), static fn (string $keyword): bool => $keyword !== ''))
-                : null;
-        }
-    }
-
-    /**
-     * @var string|null Text that appears in the image, as found by the “Tag images” AI task, or `null` if it has none
-     *                  or hasn’t been tagged. Whether it’s been tagged is shown by {@see $keywords}.
-     */
-    #[AllowedInSandbox]
-    public ?string $visibleText = null;
 
     /**
      * @var string|null The start of a text file’s contents, an empty string if it has nothing to show, or `null` if
@@ -864,14 +841,15 @@ class Asset extends Element
     #[Override]
     protected static function defineSearchableAttributes(): array
     {
-        return ['filename', 'extension', 'kind', 'alt', 'keywords', 'visibleText', 'colors'];
+        return ['filename', 'extension', 'kind', 'alt', 'keywords', 'text', 'colors'];
     }
 
     #[Override]
     protected function searchKeywords(string $attribute): string
     {
         return match ($attribute) {
-            'keywords' => implode(' ', $this->keywords ?? []),
+            'keywords' => implode(' ', $this->analysis->keywords ?? []),
+            'text' => $this->analysis->text ?? '',
             // Images can be found by the names of their colors
             'colors' => $this->kind === FileKind::Image->value ? $this->colorKeywords() : '',
             default => parent::searchKeywords($attribute),
@@ -885,7 +863,7 @@ class Asset extends Element
     {
         $language = $this->getSite()->language;
 
-        return collect($this->colors?->labels() ?? [])
+        return collect($this->analysis?->colors?->labels() ?? [])
             ->flatMap(fn (string $name): array => [$name, mb_strtolower(ColorNames::label($name, $language))])
             ->unique()
             ->implode(' ');
@@ -1955,11 +1933,11 @@ JS, [
 
     private function hasTransparency(): ?bool
     {
-        if (empty($this->colors->grid)) {
+        if (empty($this->analysis->colors->grid)) {
             return null;
         }
 
-        foreach ($this->colors->grid as $row) {
+        foreach ($this->analysis->colors->grid as $row) {
             foreach ($row as $color) {
                 if (strlen($color) > 7) {
                     return true;
@@ -2706,7 +2684,7 @@ JS, [
     #[AllowedInSandbox]
     public function getPlaceholderDataUrl(): ?string
     {
-        $grid = $this->kind === FileKind::Image->value ? $this->colors?->grid : null;
+        $grid = $this->kind === FileKind::Image->value ? $this->analysis?->colors?->grid : null;
 
         if (! $grid) {
             return null;
@@ -2736,7 +2714,7 @@ JS, [
     #[AllowedInSandbox]
     public function getBlurhash(): ?string
     {
-        $grid = $this->kind === FileKind::Image->value ? $this->colors?->grid : null;
+        $grid = $this->kind === FileKind::Image->value ? $this->analysis?->colors?->grid : null;
 
         if (! $grid) {
             return null;
@@ -2871,7 +2849,7 @@ JS, [
     public function setAttributesFromRequest(array $values): void
     {
         // Determined from the file itself when one comes in, not by whoever's saving.
-        unset($values['colors'], $values['keywords'], $values['visibleText'], $values['previewText']);
+        unset($values['colors'], $values['analysis'], $values['previewText']);
 
         parent::setAttributesFromRequest($values);
     }
@@ -3049,8 +3027,8 @@ CSS,
         }
 
         // ImageColors only holds hex colors, so these are safe to put in a `style` attribute.
-        $left = $this->colors?->left();
-        $right = $this->colors?->right();
+        $left = $this->analysis?->colors?->left();
+        $right = $this->analysis?->colors?->right();
 
         if ($left === null || $right === null) {
             return [];
@@ -3442,9 +3420,7 @@ JS;
                 $model->focalPoint = null;
             }
 
-            $model->colors = $this->colors?->toArray();
-            $model->keywords = $this->keywords;
-            $model->visibleText = $this->visibleText;
+            $model->analysis = $this->analysis?->toArray();
 
             if ($this->previewTextChanged) {
                 $model->previewText = $this->previewText;
@@ -3912,7 +3888,8 @@ JS;
             $this->size = $this->uploadSource->size();
             $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
             $this->_width = $this->_height = null;
-            $this->colors = null;
+            // What was found in the old file doesn’t describe the new one
+            $this->analysis = null;
             $this->previewText = $this->isTextFile($filename)
                 ? AssetsHelper::previewText($this->readFileStart($newDisk->readStream($newPath)))
                 : null;
@@ -3922,13 +3899,14 @@ JS;
         if ($tempPath && file_exists($tempPath)) {
             $this->kind = AssetsHelper::getFileKindByExtension($filename);
 
+            // What was found in the old file doesn’t describe the new one, so only its colors are known
             if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
-                $this->colors = $this->uploadColors ?? Images::colors($tempPath);
+                $this->analysis = new ImageAnalysis(colors: $this->uploadColors ?? Images::colors($tempPath));
             } else {
                 $this->_width = null;
                 $this->_height = null;
-                $this->colors = null;
+                $this->analysis = null;
             }
 
             $this->previewText = $this->isTextFile($filename)

@@ -530,7 +530,7 @@ describe('colors', function () {
     it('are stored when an image file comes in', function () {
         $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
 
-        expect(Asset::find()->id($this->asset->id)->one()->colors?->dominant)->toBe('#c81e28');
+        expect(Asset::find()->id($this->asset->id)->one()->analysis?->colors?->dominant)->toBe('#c81e28');
     });
 
     it('are cleared when the file is replaced by one that isn’t an image', function () {
@@ -540,7 +540,7 @@ describe('colors', function () {
         file_put_contents($replacement, 'not an image');
         $this->assets->replaceAssetFile(Asset::find()->id($this->asset->id)->one(), $replacement, 'photo.txt');
 
-        expect(Asset::find()->id($this->asset->id)->one()->colors)->toBeNull();
+        expect(Asset::find()->id($this->asset->id)->one()->analysis)->toBeNull();
     });
 
     it('are stored as inconclusive when none can be sampled', function () {
@@ -550,14 +550,31 @@ describe('colors', function () {
 
         $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
 
-        expect(AssetModel::findOrFail($this->asset->id)->colors)->toEqual(['dominant' => null, 'grid' => [], 'palette' => []])
-            ->and(Asset::find()->id($this->asset->id)->one()->colors)->toEqual(new ImageColors);
+        expect(AssetModel::findOrFail($this->asset->id)->analysis['colors'])->toEqual(['dominant' => null, 'grid' => [], 'palette' => []])
+            ->and(Asset::find()->id($this->asset->id)->one()->analysis?->colors)->toEqual(new ImageColors);
+    });
+
+    it('forgets what was found in the old file when the file is replaced', function () {
+        $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
+        $asset = Asset::find()->id($this->asset->id)->one();
+        $asset->analysis = $asset->analysis->withTags(['harbor'], 'Pier 9');
+        app(Elements::class)->saveElement($asset);
+
+        $this->assets->replaceAssetFile(Asset::find()->id($this->asset->id)->one(), colorsImage(), 'photo.png');
+        $analysis = Asset::find()->id($this->asset->id)->one()->analysis;
+
+        expect($analysis?->colors?->dominant)->toBe('#c81e28')
+            ->and($analysis?->keywords)->toBeNull()
+            ->and($analysis?->text)->toBeNull();
     });
 
     it('can’t be set from a request', function () {
-        $this->asset->setAttributesFromRequest(['colors' => ['dominant' => '#000000']]);
+        $this->asset->setAttributesFromRequest([
+            'analysis' => ['colors' => ['dominant' => '#000000'], 'keywords' => ['harbor']],
+            'colors' => ['dominant' => '#000000'],
+        ]);
 
-        expect($this->asset->colors)->toBeNull();
+        expect($this->asset->analysis)->toBeNull();
     });
 });
 

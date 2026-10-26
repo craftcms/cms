@@ -148,13 +148,13 @@ it('rejects an id that doesn’t resolve to an asset', function () {
 });
 
 it('shows the image preview’s placeholder over a gradient between the image’s edge colors', function () {
-    AssetModel::whereKey($this->asset->id)->update(['colors' => json_encode([
+    AssetModel::whereKey($this->asset->id)->update(['analysis' => json_encode(['colors' => [
         'dominant' => '#3a6ea5',
         'grid' => [
             ['#ff0000', '#3a6ea5', '#0000ff'],
             ['#990000', '#3a6ea5', '#000099'],
         ],
-    ])]);
+    ]])]);
 
     get($this->asset->getCpEditUrl())
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -166,7 +166,7 @@ it('shows the image preview’s placeholder over a gradient between the image’
 });
 
 it('leaves the preview background alone without a usable dominant color', function (?string $colors) {
-    AssetModel::whereKey($this->asset->id)->update(['colors' => $colors]);
+    AssetModel::whereKey($this->asset->id)->update(['analysis' => $colors === null ? null : json_encode(['colors' => json_decode($colors, true)])]);
 
     get($this->asset->getCpEditUrl())
         ->assertInertia(fn (AssertableInertia $page) => $page

@@ -36,45 +36,53 @@ function taggableImage(): Asset
     return Asset::find()->id($asset->id)->status(null)->one();
 }
 
-it('tags images with keywords and the text in them, and makes them searchable', function (): void {
+it('tags images with keywords and the text in them, keeps their colors, and makes them searchable', function (): void {
     $asset = taggableImage();
+    AssetModel::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#c81e28', 'grid' => [['#c81e28']], 'palette' => ['#c81e28']]])]);
+    $asset = Asset::find()->id($asset->id)->one();
     ImageAnalysisAgent::fake([['craft_tagImage' => [
         'keywords' => [' lighthouse ', 'coast', 'lighthouse', '', 'dusk'],
-        'visibleText' => "  Keep out\nPrivate property ",
+        'text' => "  Keep out\nPrivate property ",
     ]]]);
 
     app(ImageAnalyzer::class)->analyze($asset);
     $saved = Asset::find()->id($asset->id)->one();
 
-    expect($saved->keywords)->toBe(['lighthouse', 'coast', 'dusk'])
-        ->and($saved->visibleText)->toBe("Keep out\nPrivate property")
+    expect($saved->analysis->keywords)->toBe(['lighthouse', 'coast', 'dusk'])
+        ->and($saved->analysis->text)->toBe("Keep out\nPrivate property")
+        ->and($saved->analysis->colors?->dominant)->toBe('#c81e28')
         ->and($saved->getSearchKeywords('keywords'))->toBe('lighthouse coast dusk')
-        ->and($saved->getSearchKeywords('visibleText'))->toContain('Keep out');
+        ->and($saved->getSearchKeywords('text'))->toContain('Keep out');
 });
 
-it('exposes keywords and visible text to GraphQL', function (): void {
+it('exposes what was found in images to GraphQL', function (): void {
     $asset = taggableImage();
-    AssetModel::whereKey($asset->id)->update(['keywords' => json_encode(['coast']), 'visibleText' => 'Pier 9']);
+    AssetModel::whereKey($asset->id)->update(['analysis' => json_encode([
+        'colors' => ['dominant' => '#c81e28', 'grid' => [['#c81e28']], 'palette' => ['#c81e28']],
+        'keywords' => ['coast'],
+        'text' => 'Pier 9',
+    ])]);
     gqlActivateFullAccessSchema();
 
-    graphQL("{ asset(id: {$asset->id}) { keywords visibleText } }")
+    graphQL("{ asset(id: {$asset->id}) { analysis { colors { dominant } keywords text } } }")
         ->assertOk()
-        ->assertJsonPath('data.asset.keywords', ['coast'])
-        ->assertJsonPath('data.asset.visibleText', 'Pier 9');
+        ->assertJsonPath('data.asset.analysis.colors.dominant', '#c81e28')
+        ->assertJsonPath('data.asset.analysis.keywords', ['coast'])
+        ->assertJsonPath('data.asset.analysis.text', 'Pier 9');
 });
 
 it('only tags images that haven’t been tagged, unless asked to overwrite their tags', function (): void {
     $asset = taggableImage();
     // An image with keywords has been tagged, even without any text in it
-    AssetModel::whereKey($asset->id)->update(['keywords' => json_encode(['coast']), 'visibleText' => null]);
+    AssetModel::whereKey($asset->id)->update(['analysis' => json_encode(['keywords' => ['coast']])]);
     $asset = Asset::find()->id($asset->id)->one();
-    ImageAnalysisAgent::fake([['craft_tagImage' => ['keywords' => ['harbor'], 'visibleText' => 'Pier 9']]]);
+    ImageAnalysisAgent::fake([['craft_tagImage' => ['keywords' => ['harbor'], 'text' => 'Pier 9']]]);
 
     expect(app(ImageAnalyzer::class)->pendingTasks($asset))->toBe([]);
 
     app(ImageAnalyzer::class)->analyze($asset, overwrite: true);
     $saved = Asset::find()->id($asset->id)->one();
 
-    expect($saved->keywords)->toBe(['harbor'])
-        ->and($saved->visibleText)->toBe('Pier 9');
+    expect($saved->analysis->keywords)->toBe(['harbor'])
+        ->and($saved->analysis->text)->toBe('Pier 9');
 });

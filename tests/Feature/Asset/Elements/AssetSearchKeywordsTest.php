@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Site\Models\Site;
@@ -13,7 +14,7 @@ it('makes images findable by their colorsâ€™ names, in English and in the siteâ€
 
     $asset = Asset::factory()->createElement(['kind' => 'image']);
     // Red, then blue
-    $asset->colors = new ImageColors(palette: ['#d0302a', '#2563eb']);
+    $asset->analysis = new ImageAnalysis(colors: new ImageColors(palette: ['#d0302a', '#2563eb']));
 
     expect($asset->getSearchKeywords('colors'))->toBe($expected);
 })->with([

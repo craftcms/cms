@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
@@ -20,7 +21,7 @@ function placeholderAsset(array $grid, string $kind = FileKind::Image->value): A
 {
     $asset = new Asset;
     $asset->kind = $kind;
-    $asset->colors = new ImageColors(dominant: '#3a6ea5', grid: $grid);
+    $asset->analysis = new ImageAnalysis(colors: new ImageColors(dominant: '#3a6ea5', grid: $grid));
 
     return $asset;
 }
@@ -75,7 +76,7 @@ it('encodes a BlurHash with one component per region', function (array $grid, st
 it('is null without a color grid', function (?ImageColors $colors) {
     $asset = new Asset;
     $asset->kind = FileKind::Image->value;
-    $asset->colors = $colors;
+    $asset->analysis = new ImageAnalysis(colors: $colors);
 
     expect($asset->getPlaceholderDataUrl())->toBeNull()
         ->and($asset->getBlurhash())->toBeNull();
@@ -106,14 +107,14 @@ describe('as a background', function () {
     });
 
     it('paints the placeholder behind <img> tags', function () {
-        $this->asset->colors = new ImageColors(grid: [['#3a6ea5']]);
+        $this->asset->analysis = new ImageAnalysis(colors: new ImageColors(grid: [['#3a6ea5']]));
 
         expect(new Crawler((string) $this->asset->getImg(['width' => 100, 'height' => 100]))->filter('img')->attr('style'))
             ->toBe("background: url({$this->asset->getPlaceholderDataUrl()}) center / cover no-repeat;");
     });
 
     it('leaves the placeholder off <img> tags for images with transparent regions', function (?ImageColors $colors) {
-        $this->asset->colors = $colors;
+        $this->asset->analysis = new ImageAnalysis(colors: $colors);
 
         expect(new Crawler((string) $this->asset->getImg(['width' => 100, 'height' => 100]))->filter('img')->attr('style'))->toBeNull();
     })->with([
@@ -122,7 +123,7 @@ describe('as a background', function () {
     ]);
 
     it('paints the placeholder behind the file preview until it loads', function () {
-        $this->asset->colors = new ImageColors(grid: [['#3a6ea5']]);
+        $this->asset->analysis = new ImageAnalysis(colors: new ImageColors(grid: [['#3a6ea5']]));
 
         $img = new Crawler(new Image($this->asset)->getPreviewHtml())->filter('img');
 

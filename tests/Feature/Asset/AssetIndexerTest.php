@@ -638,9 +638,9 @@ it('stores the colors of an indexed image', function () {
     try {
         $asset = $this->indexer->indexFileByListing($volumeData, $listing, $session->id);
 
-        expect($asset->colors->dominant)->toBe('#c81e28')
-            ->and($asset->colors->grid)->toBe(array_fill(0, 3, array_fill(0, 4, '#c81e28')))
-            ->and(Asset::findOrFail($asset->id)->colors)->toEqual($asset->colors->toArray());
+        expect($asset->analysis->colors->dominant)->toBe('#c81e28')
+            ->and($asset->analysis->colors->grid)->toBe(array_fill(0, 3, array_fill(0, 4, '#c81e28')))
+            ->and(Asset::findOrFail($asset->id)->analysis['colors'])->toEqual($asset->analysis->colors->toArray());
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
     }
@@ -667,10 +667,10 @@ it('doesn’t sample colors it has already sampled, even inconclusively', functi
 
     try {
         $asset = $index();
-        Asset::whereKey($asset->id)->update(['colors' => json_encode($stored)]);
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => $stored])]);
 
-        expect($index()->colors->toArray())->toBe($stored)
-            ->and(Asset::findOrFail($asset->id)->colors)->toEqual($stored);
+        expect($index()->analysis->colors->toArray())->toBe($stored)
+            ->and(Asset::findOrFail($asset->id)->analysis['colors'])->toEqual($stored);
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
     }
@@ -694,9 +694,9 @@ it('samples the colors of images that were sampled before palettes were', functi
 
     try {
         $asset = $index();
-        Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => '#123456', 'grid' => [['#123456']]])]);
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#123456', 'grid' => [['#123456']]]])]);
 
-        expect($index()->colors->palette)->toBe(['#dc1e1e']);
+        expect($index()->analysis->colors->palette)->toBe(['#dc1e1e']);
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
     }
@@ -724,12 +724,12 @@ it('samples the colors again once the file has changed', function () {
     try {
         $asset = $index();
         Asset::whereKey($asset->id)->update([
-            'colors' => json_encode(['dominant' => '#123456', 'grid' => [['#123456']]]),
+            'analysis' => json_encode(['colors' => ['dominant' => '#123456', 'grid' => [['#123456']]]]),
             'dateModified' => now()->subDay(),
         ]);
 
-        expect($index()->colors->dominant)->toBe('#c81e28')
-            ->and(Asset::findOrFail($asset->id)->colors['dominant'])->toBe('#c81e28');
+        expect($index()->analysis->colors->dominant)->toBe('#c81e28')
+            ->and(Asset::findOrFail($asset->id)->analysis['colors']['dominant'])->toBe('#c81e28');
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
     }
@@ -826,20 +826,20 @@ describe('remote images', function () {
 
         $asset = ($this->index)();
 
-        expect($asset->colors->dominant)->toBe('#c81e28')
-            ->and(Asset::findOrFail($asset->id)->colors['dominant'])->toBe('#c81e28')
+        expect($asset->analysis->colors->dominant)->toBe('#c81e28')
+            ->and(Asset::findOrFail($asset->id)->analysis['colors']['dominant'])->toBe('#c81e28')
             ->and($tempFiles())->toBe($before);
     });
 
     it('doesn’t download one whose colors came up inconclusive', function () {
         $tempFiles = fn () => glob(Path::temp('assets*')) ?: [];
         $asset = ($this->index)();
-        Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => null, 'grid' => []])]);
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => null, 'grid' => []]])]);
         $before = $tempFiles();
 
         $reindexed = ($this->index)();
 
-        expect($reindexed->colors->dominant)->toBeNull()
+        expect($reindexed->analysis->colors->dominant)->toBeNull()
             ->and($reindexed->getWidth())->toBe(100)
             ->and($tempFiles())->toBe($before);
     });
@@ -847,20 +847,20 @@ describe('remote images', function () {
     it('downloads one whose file has changed', function () {
         $asset = ($this->index)();
         Asset::whereKey($asset->id)->update([
-            'colors' => json_encode(['dominant' => '#123456', 'grid' => [['#123456']]]),
+            'analysis' => json_encode(['colors' => ['dominant' => '#123456', 'grid' => [['#123456']]]]),
             'dateModified' => now()->subDay(),
         ]);
 
-        expect(($this->index)()->colors->dominant)->toBe('#c81e28');
+        expect(($this->index)()->analysis->colors->dominant)->toBe('#c81e28');
     });
 
     it('doesn’t download one that already has colors', function () {
         $asset = ($this->index)();
-        Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => '#123456', 'grid' => [], 'palette' => ['#123456']])]);
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#123456', 'grid' => [], 'palette' => ['#123456']]])]);
 
         $reindexed = ($this->index)();
 
-        expect($reindexed->colors->dominant)->toBe('#123456')
+        expect($reindexed->analysis->colors->dominant)->toBe('#123456')
             ->and($reindexed->getWidth())->toBe(100);
     });
 });

@@ -13,7 +13,7 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Element;
 use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Generators\AssetType;
-use CraftCms\Cms\Gql\Types\Generators\ImageColorsType;
+use CraftCms\Cms\Gql\Types\Generators\ImageAnalysisType;
 use CraftCms\Cms\Gql\Types\Volume;
 use CraftCms\Cms\Support\Facades\Gql;
 use GraphQL\Type\Definition\FieldDefinition;
@@ -100,10 +100,10 @@ class Asset extends Element
                 'type' => Type::listOf(Type::float()),
                 'description' => 'The focal point represented as an array with `x` and `y` keys, or null if it’s not an image.',
             ],
-            'colors' => [
-                'name' => 'colors',
-                'type' => ImageColorsType::generateType(null),
-                'description' => 'Color data sampled from the image, or null if it’s not an image or it hasn’t been sampled yet.',
+            'analysis' => [
+                'name' => 'analysis',
+                'type' => ImageAnalysisType::generateType(null),
+                'description' => 'What was found in the image: its colors, and its keywords and the text in it, or null if it’s not an image or nothing has been found yet.',
             ],
             'blurhash' => [
                 'name' => 'blurhash',
@@ -114,16 +114,6 @@ class Asset extends Element
                 'name' => 'placeholderDataUrl',
                 'type' => Type::string(),
                 'description' => 'A data URL of a tiny PNG made from the average colors of the image’s regions, which can be scaled up as a blurred placeholder for it, or null if it’s not an image or its colors aren’t known.',
-            ],
-            'keywords' => [
-                'name' => 'keywords',
-                'type' => Type::listOf(Type::string()),
-                'description' => 'Words and short phrases that describe the image, or null if it hasn’t been tagged.',
-            ],
-            'visibleText' => [
-                'name' => 'visibleText',
-                'type' => Type::string(),
-                'description' => 'Text that appears in the image, or null if it has none or hasn’t been tagged.',
             ],
             'kind' => [
                 'name' => 'kind',

@@ -324,13 +324,13 @@ describe('uploaded colors', function () {
         $replacementColors = ['dominant' => null, 'grid' => [['#654321']], 'palette' => ['#654321']];
         ($this->uploadImage)(['operation' => 'replace', 'assetId' => $original['assetId']], ['colors' => $replacementColors]);
 
-        expect(AssetModel::findOrFail($original['assetId'])->colors)->toEqual($replacementColors);
+        expect(AssetModel::findOrFail($original['assetId'])->analysis['colors'])->toEqual($replacementColors);
     });
 
     it('samples the image itself without usable colors from the uploader', function (?array $colors) {
         $completed = ($this->uploadImage)(['folderId' => $this->folder->id], $colors === null ? [] : ['colors' => $colors]);
 
-        expect(Asset::findOne($completed['assetId'])->colors->grid)->toHaveCount(4)->each->toHaveCount(3);
+        expect(Asset::findOne($completed['assetId'])->analysis->colors->grid)->toHaveCount(4)->each->toHaveCount(3);
     })->with([
         'none sent' => [null],
         'empty grid' => [['dominant' => '#3a6ea5', 'grid' => []]],

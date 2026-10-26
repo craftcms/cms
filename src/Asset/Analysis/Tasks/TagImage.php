@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Analysis\Tasks;
 
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Analysis\ImageAnalysisChanges;
 use CraftCms\Cms\Asset\Analysis\ImageAnalysisTask;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -41,7 +42,7 @@ class TagImage extends ImageAnalysisTask
     public static function needed(Asset $asset, bool $overwrite): bool
     {
         // Images that have been tagged have keywords, even if they have no text
-        return $overwrite || $asset->keywords === null;
+        return $overwrite || $asset->analysis?->keywords === null;
     }
 
     public static function instructions(Asset $asset): string
@@ -56,23 +57,27 @@ class TagImage extends ImageAnalysisTask
     {
         return [
             'keywords' => $schema->array()->items($schema->string())->max(self::MAX_KEYWORDS)->required(),
-            'visibleText' => $schema->string()->description('Text that appears in the image, or an empty string.')->required(),
+            'text' => $schema->string()->description('Text that appears in the image, or an empty string.')->required(),
         ];
     }
 
     public static function apply(Asset $asset, array $result, ImageAnalysisChanges $changes, bool $overwrite): void
     {
-        if (is_array($result['keywords'] ?? null) && ($overwrite || $asset->keywords === null)) {
-            $keywords = array_values(array_unique(array_filter(array_map(
+        $analysis = $asset->analysis ?? new ImageAnalysis;
+
+        if (! $overwrite && $analysis->keywords !== null) {
+            return;
+        }
+
+        $keywords = is_array($result['keywords'] ?? null)
+            ? array_slice(array_values(array_unique(array_filter(array_map(
                 static fn (mixed $keyword): string => is_string($keyword) ? trim($keyword) : '',
                 $result['keywords'],
-            ))));
+            )))), 0, self::MAX_KEYWORDS)
+            : $analysis->keywords;
+        $text = is_string($result['text'] ?? null) ? (trim($result['text']) ?: null) : $analysis->text;
 
-            $changes->set('keywords', array_slice($keywords, 0, self::MAX_KEYWORDS));
-        }
-
-        if (is_string($result['visibleText'] ?? null) && ($overwrite || $asset->keywords === null)) {
-            $changes->set('visibleText', trim($result['visibleText']) ?: null);
-        }
+        // Keeps the image's colors
+        $changes->set('analysis', $analysis->withTags($keywords, $text));
     }
 }
