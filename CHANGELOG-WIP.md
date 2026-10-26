@@ -42,7 +42,7 @@
 - Added the `defaultAssetTransformer` config setting.
 - Added the `uploadSessionDisk` config setting, which determines the disk used to stage upload sessions. ([#19650](https://github.com/craftcms/cms/pull/19650))
 - Renamed the `tempAssetUploadFs` config setting to `tempAssetUploadDisk`, which now references a Laravel filesystem disk. ([#19650](https://github.com/craftcms/cms/pull/19650))
-- Moved the `generateTransformsBeforePageLoad` config setting to Craft Asset Transformer profiles.
+- Moved the `generateTransformsBeforePageLoad` config setting to Craft asset transformer profiles.
 - Image assets now have [BlurHash](https://blurha.sh) strings, available via `asset.blurhash` in templates. ([#19755](https://github.com/craftcms/cms/pull/19755))
 - `<img>` tags returned by `asset.getImg()` now have a blurred placeholder as their background, unless the image has transparent regions. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Added the `blurhash`, `colors`, and `placeholderDataUrl` fields to assets in GraphQL queries. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#19755](https://github.com/craftcms/cms/pull/19755))

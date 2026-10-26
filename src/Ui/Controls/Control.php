@@ -161,6 +161,39 @@ abstract class Control implements ControlContract
         return false;
     }
 
+    /**
+     * Returns a JSON Schema for the values this control accepts, so clients such as the MCP server can
+     * fill in settings without the control panel. An empty schema accepts any value.
+     *
+     * @return array<string, mixed>
+     */
+    public function inputSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns `oneOf` choices for a list of control options.
+     *
+     * @param  array<array-key, mixed>  $options
+     * @return list<array{const: mixed, title?: string}>
+     */
+    protected static function optionsSchema(array $options): array
+    {
+        $choices = [];
+
+        foreach ($options as $option) {
+            if (! is_array($option) || ! array_key_exists('value', $option) || ! empty($option['disabled'])) {
+                continue;
+            }
+
+            $label = isset($option['label']) ? trim(strip_tags((string) $option['label'])) : '';
+            $choices[] = ['const' => $option['value'], ...($label !== '' && $label !== (string) $option['value'] ? ['title' => $label] : [])];
+        }
+
+        return $choices;
+    }
+
     /** Whether the control renders nested uis. See the contract. */
     public function nestsUis(): bool
     {
