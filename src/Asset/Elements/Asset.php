@@ -3506,8 +3506,17 @@ JS;
             return;
         }
 
-        $this->copyFileBetweenDisks($sourceDisk, $path, Storage::disk($trashedAssetDisk), $this->getTrashedFilePath());
-        $sourceDisk->delete($path);
+        $trashDisk = Storage::disk($trashedAssetDisk);
+        $trashPath = $this->getTrashedFilePath();
+        $this->copyFileBetweenDisks($sourceDisk, $path, $trashDisk, $trashPath);
+
+        // The disks aren't part of the transaction, so the original only goes once the deletion is committed, and the
+        // copy if it's rolled back
+        DB::afterCommit(fn () => $sourceDisk->delete($path));
+        DB::afterRollBack(function () use ($trashDisk, $trashPath) {
+            $trashDisk->delete($trashPath);
+            $this->trashedFileExists = false;
+        });
 
         DB::table(Table::ASSETS)->where('id', $this->id)->update(['trashedFileExists' => true]);
         $this->trashedFileExists = true;
@@ -3528,8 +3537,16 @@ JS;
             throw new FileException(t('A file with the name “{filename}” already exists.', ['filename' => $this->_filename]));
         }
 
-        $this->copyFileBetweenDisks($trashedAssetDisk, $this->getTrashedFilePath(), $volumeDisk, $path);
-        $trashedAssetDisk->delete($this->getTrashedFilePath());
+        $trashPath = $this->getTrashedFilePath();
+        $this->copyFileBetweenDisks($trashedAssetDisk, $trashPath, $volumeDisk, $path);
+
+        // As with trashing it, the trashed file only goes once the restoration is committed, and the copy if it's
+        // rolled back
+        DB::afterCommit(fn () => $trashedAssetDisk->delete($trashPath));
+        DB::afterRollBack(function () use ($volumeDisk, $path) {
+            $volumeDisk->delete($path);
+            $this->trashedFileExists = true;
+        });
 
         DB::table(Table::ASSETS)->where('id', $this->id)->update(['trashedFileExists' => false]);
         $this->trashedFileExists = false;
@@ -3540,7 +3557,8 @@ JS;
         $trashedAssetDisk = Cms::config()->getTrashedAssetDisk();
 
         if ($trashedAssetDisk !== null) {
-            Storage::disk($trashedAssetDisk)->delete($this->getTrashedFilePath());
+            $trashPath = $this->getTrashedFilePath();
+            DB::afterCommit(fn () => Storage::disk($trashedAssetDisk)->delete($trashPath));
         }
     }
 

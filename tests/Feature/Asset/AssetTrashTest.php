@@ -11,8 +11,11 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Events\ElementLifecycleDeleted;
+use CraftCms\Cms\Element\Events\ElementRestored;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Support\Facades\Elements;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -143,4 +146,34 @@ it('leaves the files of assets deleted with their volume in place, and restores 
     expect($this->volumeDisk->get('report.pdf'))->toBe('pdf bytes')
         ->and($this->trashDisk->allFiles())->toBe([])
         ->and(Elements::restoreElement(($this->findTrashed)($asset->id)))->toBeTrue();
+});
+
+it('leaves a file in its volume if trashing its asset is rolled back', function () {
+    $asset = ($this->upload)('report.pdf', 'pdf bytes');
+    Event::listen(ElementLifecycleDeleted::class, fn () => throw new RuntimeException('Nope'));
+
+    expect(fn () => Elements::deleteElement($asset))->toThrow(RuntimeException::class)
+        ->and($this->volumeDisk->get('report.pdf'))->toBe('pdf bytes')
+        ->and($this->trashDisk->allFiles())->toBe([])
+        ->and(Asset::findOne($asset->id)->trashedFileExists)->toBeFalse();
+});
+
+it('leaves a file in the trash if restoring its asset is rolled back', function () {
+    $asset = ($this->upload)('report.pdf', 'pdf bytes');
+    Elements::deleteElement($asset);
+    Event::listen(ElementRestored::class, fn () => throw new RuntimeException('Nope'));
+
+    expect(fn () => Elements::restoreElement(($this->findTrashed)($asset->id)))->toThrow(RuntimeException::class)
+        ->and($this->volumeDisk->exists('report.pdf'))->toBeFalse()
+        ->and($this->trashDisk->get("$asset->id.pdf"))->toBe('pdf bytes')
+        ->and(($this->findTrashed)($asset->id)->trashedFileExists)->toBeTrue();
+});
+
+it('keeps a trashed file if hard-deleting its asset is rolled back', function () {
+    $asset = ($this->upload)('report.pdf', 'pdf bytes');
+    Elements::deleteElement($asset);
+    Event::listen(ElementLifecycleDeleted::class, fn () => throw new RuntimeException('Nope'));
+
+    expect(fn () => Elements::deleteElement(($this->findTrashed)($asset->id), hardDelete: true))->toThrow(RuntimeException::class)
+        ->and($this->trashDisk->get("$asset->id.pdf"))->toBe('pdf bytes');
 });
