@@ -17,6 +17,7 @@ use craft\fields\Number;
 use craft\fields\PlainText;
 use craft\mcp\schema\CustomFieldSchema;
 use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
 use craft\services\Config;
 use Mcp\Capability\Discovery\SchemaValidator;
 use Mcp\Exception\ToolCallException;
@@ -116,6 +117,45 @@ class CustomFieldSchemaTest extends TestCase
         $schema->prepareValues($element, ['published' => 'next Tuesday-ish']);
     }
 
+    public function testFieldsHiddenByTheLayoutAreLeftOutOfTheSchema(): void
+    {
+        $conditional = new class(new PlainText(['name' => 'Conditional', 'handle' => 'conditional'])) extends CustomField {
+            public function showInForm(?ElementInterface $element = null): bool
+            {
+                return $element?->slug === 'show-conditional';
+            }
+        };
+        $conditional->uid = 'conditional';
+        $tab = new class([new CustomField(new PlainText(['name' => 'Always', 'handle' => 'always'])), $conditional]) extends FieldLayoutTab {
+            public function __construct(private array $layoutElements)
+            {
+            }
+
+            public function getElements(): array
+            {
+                return $this->layoutElements;
+            }
+        };
+        $layout = new class($tab) extends FieldLayout {
+            public function __construct(private FieldLayoutTab $tab)
+            {
+            }
+
+            public function getTabs(): array
+            {
+                return [$this->tab];
+            }
+        };
+        $entry = $this->entry($layout);
+        $schema = new CustomFieldSchema();
+
+        $entry->slug = 'other';
+        self::assertSame(['always'], array_keys($schema->forElement($entry)['properties']));
+
+        $entry->slug = 'show-conditional';
+        self::assertSame(['always', 'conditional'], array_keys($schema->forElement($entry)['properties']));
+    }
+
     /**
      * @param  list<CustomField>  $layoutFields
      */
@@ -143,12 +183,17 @@ class CustomFieldSchemaTest extends TestCase
             }
         };
 
+        return $this->entry($layout);
+    }
+
+    private function entry(FieldLayout $layout): Entry
+    {
         return new class($layout) extends Entry {
             public function __construct(private FieldLayout $layout)
             {
             }
 
-            public function getFieldLayout(): ?FieldLayout
+            public function getFieldLayout(): FieldLayout
             {
                 return $this->layout;
             }
