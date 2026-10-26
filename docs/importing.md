@@ -17,8 +17,8 @@ An **import plan** is a named, handled, ordered list of **steps**
 (`src/Import/Data/ImportPlan.php`, service `src/Import/ImportPlan.php`). Each step is one
 importer instance with its own `uid`, `type` (the importer FQCN), `source`, `transformer`,
 `batchSize` and `settings` (importer-specific settings plus `map`, `matchCriteria`,
-`clearableItems` and, for elements, `site`, `fieldLayout`, `keepMissingNestedElements` and
-`fieldSettings`). Two flavours:
+`clearableItems`, `templates` and, for elements, `site`, `fieldLayout`, `keepMissingNestedElements`
+and `fieldSettings`). Two flavours:
 
 - **Editable** — created in the CP, stored in `import_plans`.
 - **Non-editable** — registered in code from a service provider's `boot()` via
@@ -62,7 +62,8 @@ none gets it, and one that sets a different handle is skipped and logged. Regist
 twice throws an `InvalidArgumentException`; `remove(...$handles)` unregisters plans (e.g. to
 replace one). Registered steps typically set no `->map()` and no field layout; the transformer
 (or the per-row `type`/`sectionId` data) does that work, which is why one step can span multiple
-sections and entry types.
+sections and entry types. A step that does set a map can fill a destination from a template (see
+§5): `->map(['title' => ImportHelper::TEMPLATE_RULE])->templates(['title' => '{first} {last}'])`.
 
 ### What's persisted for an editable plan
 
@@ -210,7 +211,7 @@ with the `Import\ImporterTypes` registry from a service provider's `boot()`
 `Import::importItem()` (`src/Import/Import.php:174`):
 
 1. `ItemImporting` event (cancelable, can rewrite `$data`).
-2. Apply the map via `ImportHelper::remapData()` — only if a map is set.
+2. Apply the map (and render its templates) via `ImportHelper::remapData()` — only if a map is set.
 3. Collect `additionalMatchCriteria()` from the transformer.
 4. Resolve match criteria.
 5. Apply clearable items.
@@ -220,6 +221,33 @@ with the `Import\ImporterTypes` registry from a service provider's `boot()`
 8. `ItemImported` event, carrying the returned `importedItem`.
 
 Both item events also carry the `runId` (`null` outside a run).
+
+### Nested maps
+
+A nested map (a container's branch of `map`) reads from the common **parent** path of the columns
+mapped inside it (`ImportHelper::sharedSourcePath()`), so a single mapped column (`items.name`)
+finds the list `items` just as several do. Each item in that list becomes one row. Mixing a
+top-level column with nested ones leaves no common parent, so no list is found.
+
+### Mapping templates
+
+A `map` leaf set to `ImportHelper::TEMPLATE_RULE` (`'__template__'`) is filled from the matching
+leaf of the `templates` tree, which is keyed like `map`. `remapData()` swaps each marker for a
+`Data\MappingTemplate` before walking the map.
+
+- Rendered with `renderSandboxedObjectTemplate()` — sandboxed, since `saveImportPlans` isn't
+  admin-only — with no escaping. Plain text comes through as is.
+- Rendered against the incoming row; inside a nested list, against the row with that list swapped
+  for the item being mapped, so `{blocks.heading}` is the current block's heading. The reserved keys
+  (see §6) are stripped first.
+- Variables are `{path}` shorthand, or `{{ object.path['Not An Identifier'] }}` for column names
+  that aren't identifiers.
+- The paths a template reads (`MappingTemplate::$paths`, taken from those two forms only, not from
+  `{% %}` tags) count like mapped columns: they're consumed rather than passed through, and help a
+  nested map find its list.
+- `BaseImporter::validateTemplates()` requires a non-blank template that compiles in the sandbox
+  for every marked leaf, with errors keyed `settings.templates.<path>`. Errors that depend on the
+  data only show at import time.
 
 ### Match criteria
 
@@ -260,8 +288,11 @@ is accepted and expanded). Behavior:
 3. Transformer runs *after* the element is resolved, so it can see the existing element
    via its `$element` argument.
 4. Split the result into native attributes, custom fields, and container properties. The
-   reserved keys (`matchCriteria`, `clearableItems`, `keepMissingNestedElements`) are never
-   treated as fields. Attributes are applied via
+   reserved keys (`ImportHelper::RESERVED_DATA_KEYS`: `matchCriteria`, `clearableItems`,
+   `keepMissingNestedElements`) are never treated as fields. They're also left out of the mapping
+   screen's incoming-data options (any path with one of them as a segment;
+   `ImportHelper::isReservedDataPath()`) and stripped from the data templates are rendered
+   against. Attributes are applied via
    `$this->setAttributesForImport($element, $attributes, $data)` on the importer (base implementation
    strips `id`/`uid` and applies the rest via `setAttributesFromRequest()`; `AssetImporter`
    overrides it to resolve filename/folder/temp-file handling and download).
@@ -431,7 +462,7 @@ the row still imports. New assets for a row that then fails to save are left in 
 ## 8. Nested data formats
 
 Matrix itself accepts the flat and the `sortOrder`/`entries` shapes. The grouped-by-type shape is
-converted into the flat one by `ImportHelper::remapData()` (`src/Support/ImportHelper.php`), so it
+converted into the flat one by `ImportHelper::remapData()` (`src/Import/ImportHelper.php`), so it
 only works when the step has a map with per-type submaps; without one (e.g. from the CLI) its rows
 carry no `type` and are dropped. Grouped rows come out in the map's type order.
 
@@ -517,12 +548,19 @@ Screens are Vue/Inertia under `resources/js/pages/import/`, backed by `ImportPla
   The file is only downloaded and parsed once the mapping is opened; a read error at that point
   is shown under the source field too, until the source changes.
 - The mapping table: **Destination / Incoming data / Match / Clear**. The incoming-data select
-  is a combobox that shows each column's first-row value as a hint, and the most likely
-  column is pre-selected (`ImportHelper::suggestMapValues()`). Attributes with
-  `canBeSet: false` are match-only. Container rows show a "Map field" button opening a nested
-  slideout instead of a select; the slideout has the "Keep existing nested elements missing
-  from the imported data" checkbox and one section per field-layout provider, and nests
-  arbitrarily deep. All four trees are held client-side and saved with the step.
+  is a combobox offering "Please select", "Use template", then the source columns (without the
+  reserved keys), each with its first-row value as a hint; the most likely column is
+  pre-selected (`ImportHelper::suggestMapValues()`). Attributes with `canBeSet: false` are
+  match-only. Container rows show a "Map field" button opening a nested slideout instead of a
+  select; the slideout has the "Keep existing nested elements missing from the imported data"
+  checkbox and one section per field-layout provider, and nests arbitrarily deep.
+- "Use template" shows a Template field under the select. It's a `craft-text-expander`: typing
+  `{` lists the source columns as variables (`ImportHelper::templateTextExpanderTriggers()`), as
+  an info icon by the label explains. A mapping panel that uses templates validates them
+  (`import/validate-step`) when applied, and stays open with any errors shown on their fields.
+- The six trees (`map`, `matchCriteria`, `clearableItems`, `keepMissingNestedElements`,
+  `fieldSettings`, `templates`; `Data\MappingValues`) are held client-side and saved with the
+  step.
 - The mapping endpoints (`ImportPlansController::mappingImporter()`) only build the posted draft
   step for users with `saveImportPlans`. Anyone else gets the saved step with the posted step's
   UID, so they can't make the server fetch a source of their choosing.
