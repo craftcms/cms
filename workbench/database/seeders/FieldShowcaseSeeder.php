@@ -253,6 +253,10 @@ class FieldShowcaseSeeder extends Seeder
             'handle' => 'showcase',
             'type' => SectionType::Channel,
             'entryTypes' => [$entryType],
+            'previewTargets' => [
+                ['label' => 'Entry page', 'urlFormat' => '{url}', 'refresh' => true],
+                ['label' => 'Showcase listing', 'urlFormat' => 'showcase', 'refresh' => true],
+            ],
             'siteSettings' => [
                 $site->id => new SectionSiteSettings([
                     'siteId' => $site->id,
