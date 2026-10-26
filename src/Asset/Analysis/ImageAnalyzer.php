@@ -124,8 +124,47 @@ class ImageAnalyzer
      */
     public function analyze(Asset $asset, ?array $handles = null, bool $overwrite = false): array
     {
+        [$changes, $applied, $failure] = $this->run($asset, $handles, $overwrite);
+
+        $this->save($asset, $changes);
+
+        if ($failure !== null) {
+            throw $failure;
+        }
+
+        return $applied;
+    }
+
+    /**
+     * Analyzes an image and returns the changes the tasks would make, without saving them, such as to suggest them to
+     * an editor.
+     *
+     * @param  list<string>|null  $handles  The tasks to run, or `null` for every image analysis task.
+     *
+     * @throws Throwable if any request fails
+     */
+    public function suggest(Asset $asset, ?array $handles = null, bool $overwrite = true): ImageAnalysisChanges
+    {
+        [$changes, , $failure] = $this->run($asset, $handles, $overwrite);
+
+        if ($failure !== null) {
+            throw $failure;
+        }
+
+        return $changes;
+    }
+
+    /**
+     * @param  list<string>|null  $handles
+     * @return array{ImageAnalysisChanges, list<string>, Throwable|null}
+     */
+    private function run(Asset $asset, ?array $handles, bool $overwrite): array
+    {
         $tasks = $this->tasks();
         $groups = [];
+        $changes = new ImageAnalysisChanges;
+        $applied = [];
+        $failure = null;
 
         foreach ($this->pendingTasks($asset, $handles, $overwrite) as $handle) {
             $resolved = $this->ai->resolve($handle);
@@ -133,12 +172,9 @@ class ImageAnalyzer
         }
 
         if ($groups === []) {
-            return [];
+            return [$changes, $applied, $failure];
         }
 
-        $changes = new ImageAnalysisChanges;
-        $applied = [];
-        $failure = null;
         $tempPaths = [];
 
         try {
@@ -171,13 +207,7 @@ class ImageAnalyzer
             }
         }
 
-        $this->save($asset, $changes);
-
-        if ($failure !== null) {
-            throw $failure;
-        }
-
-        return $applied;
+        return [$changes, $applied, $failure];
     }
 
     /**

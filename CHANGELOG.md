@@ -241,6 +241,8 @@
 
 - Added Settings → Extend → Connections, where administrators choose the providers and models that plugins’ AI features use. Providers come from the `ai.providers` config, with keys set through environment variables. AI features stay off until a provider is chosen. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - AI Connections now checks that the models chosen for AI tasks have the capabilities the tasks need, such as vision, document, audio, or video input, structured output, or tool calling, when the settings are saved. Tasks whose model lacks one are unavailable until a different model is chosen, and the settings explain why. ([#20099](https://github.com/craftcms/cms/pull/20099))
+- Added the “Generate alt text” AI task, which writes alt text for images in each site’s language, filling in images that are missing it when they’re uploaded, replaced, indexed, or analyzed. Sites that share alt text get one.
+- Alternative Text fields now have a “Generate alt text” action, which fills in suggested alt text for editors to review before saving.
 - Images are now analyzed by AI tasks that are set up, such as for alt text, when they’re uploaded, replaced, or found by asset indexing. Analysis only fills in what images are missing.
 - Added the “Analyze images” asset action, which queues the selected images to be analyzed by AI tasks that are set up.
 - Field layout tabs can now be sidebar tabs, whose fields are shown in element edit forms’ details sidebar. Sidebar tabs always come after content tabs. ([#20005](https://github.com/craftcms/cms/pull/20005))
@@ -303,6 +305,8 @@
 - Added `CraftCms\Cms\Ai\Enums\AiUnavailableReason::MissingCapability`. ([#20099](https://github.com/craftcms/cms/pull/20099))
 - Added `CraftCms\Cms\Asset\Analysis\ImageAnalysisTask`, which plugins can extend to analyze images with AI. Image analysis tasks that use the same provider and model share one request per image.
 - Added `CraftCms\Cms\Asset\Analysis\ImageAnalyzer` and the `CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage` job.
+- Added `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::suggest()`, which returns the changes image analysis tasks would make without saving them.
+- Field action menu items can now dispatch a `craft:generate-field-value` event with a `url` and `params`, to fill the field with a value generated on the server.
 - Added the `craft:screen-panel` global Vue component, which plugins can use on their own Inertia pages to add panels, with an optional status and header actions, to the screen’s details pane. ([#20084](https://github.com/craftcms/cms/pull/20084))
 - `CraftCms\Cms\Mcp\Contracts\ProvidesInputSchema` has been renamed to `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`, and its `getMcpInputSchema()` method to `getInputSchema()`.
 - Added `CraftCms\Cms\Update\Maintenance`, which turns maintenance mode on and off. ([#20095](https://github.com/craftcms/cms/pull/20095))

@@ -14,6 +14,7 @@ use CraftCms\Cms\Http\Controllers\App\PluginsController;
 use CraftCms\Cms\Http\Controllers\App\RenderController;
 use CraftCms\Cms\Http\Controllers\Assets\ActionController as AssetsActionController;
 use CraftCms\Cms\Http\Controllers\Assets\FolderController as AssetsFolderController;
+use CraftCms\Cms\Http\Controllers\Assets\GenerateAltTextController;
 use CraftCms\Cms\Http\Controllers\Assets\IconController as AssetsIconController;
 use CraftCms\Cms\Http\Controllers\Assets\ImageEditorController;
 use CraftCms\Cms\Http\Controllers\Assets\PreviewController as AssetsPreviewController;
@@ -347,6 +348,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // Assets
         Route::post('assets/resolve-upload-conflict', ResolveUploadConflictController::class);
+        Route::post('assets/generate-alt-text', GenerateAltTextController::class);
         Route::post('assets/delete-asset', [AssetsActionController::class, 'deleteAsset']);
         Route::post('assets/move-asset', [AssetsActionController::class, 'moveAsset']);
         Route::post('assets/download-asset', [AssetsActionController::class, 'downloadAsset']);
