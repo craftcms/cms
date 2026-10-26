@@ -302,6 +302,7 @@
 - Added `CraftCms\Cms\Workflow\WorkflowDefinitions`, which validates workflow definitions. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Added `CraftCms\Cms\Asset\AssetTransformDrivers::settings()`. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Added `CraftCms\Cms\Ui\Controls\Control::inputSchema()`, which describes the values a control accepts as JSON Schema. Custom controls can override it so the MCP server can describe the settings they set. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Mcp\ComponentKinds\ComponentKinds`, `CraftCms\Cms\Mcp\ComponentKinds\ComponentKind`, and `CraftCms\Cms\Mcp\ComponentKinds\TypeRegistryKind`, which plugins can use to describe their own kinds of components through the `component-types.list` and `component-types.get` MCP tools. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Routes outside the `craft` middleware group can now use `Route::allowDuringMaintenance()` to stay reachable during maintenance mode. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - MCP tools without `readOnlyHint: true` now require the `mcp:write` scope, and capabilities with `#[RequiresAdmin]` or `#[RequiresAdminChanges]` require `mcp:admin`. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - Plain Text, Markdown, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Schema;
 
+use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\ConditionBuilder;
@@ -21,6 +22,20 @@ use CraftCms\Cms\Ui\Ui;
  */
 readonly class SettingsSchema
 {
+    /**
+     * Describes a component’s settings, from its settings UI and default settings.
+     *
+     * @return array<string, mixed>
+     */
+    public function fromComponent(ConfigurableComponentInterface $component): array
+    {
+        $ui = $component->settingsUi();
+
+        return $ui !== null
+            ? $this->fromUi($ui, $component->getSettings())
+            : ['type' => 'object', 'properties' => (object) [], 'additionalProperties' => false];
+    }
+
     /**
      * @param  list<Node>|Ui  $ui
      * @param  array<string, mixed>  $defaults  The component’s default settings.

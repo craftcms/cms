@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Element\Conditions\SlugConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Field\Entries;
@@ -10,10 +11,13 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Heading;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\FieldLayout\LayoutElements\Users\EmailField;
+use CraftCms\Cms\Mcp\ComponentKinds\ComponentKinds;
+use CraftCms\Cms\Mcp\ComponentKinds\TypeRegistryKind;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
+use CraftCms\Cms\Workflow\WorkflowStageTypes;
 use Illuminate\Testing\TestResponse;
 use Laravel\Passport\Passport;
 
@@ -75,7 +79,7 @@ it('describes the elements an element type’s field layouts accept', function (
 
     ($this->call)('component-types.list', ['kind' => 'field-layout-element'])
         ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Provide scope: the element type whose field layouts the elements go in, such as entries.');
+        ->assertJsonPath('result.content.0.text', 'Provide scope: The element type handle or class whose field layouts the elements go in, such as entries.');
 });
 
 it('describes the rules a condition accepts and points condition settings to them', function (): void {
@@ -94,3 +98,47 @@ it('describes the rules a condition accepts and points condition settings to the
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Provide scope: the condition class, which settings schemas name.');
 });
+
+it('lists the component kinds, including those plugins register', function (): void {
+    app(ComponentKinds::class)->register(WidgetStageKind::class);
+
+    $kinds = collect(($this->result)('component-types.list', [])['kinds'])->keyBy('kind');
+    $types = ($this->result)('component-types.list', ['kind' => 'widget-stage'])['types'];
+    $schema = ($this->result)('component-types.get', ['kind' => 'widget-stage', 'type' => UserReviewStage::class])['settingsSchema'];
+
+    expect($kinds->keys()->all())->toContain('field', 'workflow-stage', 'asset-transform-driver', 'field-layout-element', 'condition-rule', 'widget-stage')
+        ->and($kinds['field-layout-element']['scope'])->toContain('element type')
+        ->and($kinds['field'])->not->toHaveKey('scope')
+        ->and($types)->toBe([['type' => UserReviewStage::class, 'name' => 'User Review']])
+        ->and($schema['properties'])->toHaveKey('approvalMode');
+
+    ($this->call)('component-types.list', ['kind' => 'nope'])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', fn (string $text): bool => str_starts_with($text, 'Unknown component kind [nope]. Available kinds: field, '));
+});
+
+readonly class WidgetStageKind extends TypeRegistryKind
+{
+    public static function handle(): string
+    {
+        return 'widget-stage';
+    }
+
+    public function description(): string
+    {
+        return 'Widget stages.';
+    }
+
+    public function usage(): string
+    {
+        return 'Use them as widget stages.';
+    }
+
+    protected function registry(): TypeRegistry
+    {
+        $registry = new WorkflowStageTypes;
+        $registry->remove(...$registry->types()->reject(fn (string $type): bool => $type === UserReviewStage::class)->all());
+
+        return $registry;
+    }
+}
