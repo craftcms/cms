@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
 trait EagerloadsTransforms
 {
     /**
-     * @var mixed The Asset Transforms that should be preloaded, if supported by their drivers
+     * @var mixed The asset transforms that should be preloaded, if supported by their drivers
      *            ---
      *            ```php{4}
      *            // fetch images with their 'thumb' transforms preloaded
@@ -64,7 +64,7 @@ trait EagerloadsTransforms
     }
 
     /**
-     * Asks capable Asset Transform drivers to preload the requested transforms for matching assets.
+     * Asks capable asset transform drivers to preload the requested transforms for matching assets.
      *
      * This may improve later transform rendering performance, but does not guarantee that output has materialized.
      *

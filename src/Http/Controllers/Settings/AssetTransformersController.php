@@ -13,7 +13,6 @@ use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\AssetTransformerEditViewModel;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Ui;
@@ -66,7 +65,7 @@ class AssetTransformersController extends BaseAssetSettingsController
                         '_deletable' => $deleteDisabledReason === null,
                         '_deleteDisabledReason' => $deleteDisabledReason,
                         '_deleteUrl' => route('craft.cp.settings.assets.transformers.destroy', ['handle' => $transformer->handle]),
-                        '_deleteConfirmMessage' => t('Are you sure you want to delete the “{name}” Asset Transformer?', ['name' => $transformer->name]),
+                        '_deleteConfirmMessage' => t('Are you sure you want to delete the “{name}” asset transformer?', ['name' => $transformer->name]),
                     ]),
                 ];
             });
@@ -107,7 +106,7 @@ class AssetTransformersController extends BaseAssetSettingsController
     {
         $transformer = $this->assetTransformers->getAssetTransformerByHandle($handle);
 
-        abort_if($transformer === null, 404, 'Asset Transformer not found');
+        abort_if($transformer === null, 404, 'Asset transformer not found');
 
         return $this->editScreen($transformer);
     }
@@ -126,7 +125,7 @@ class AssetTransformersController extends BaseAssetSettingsController
             'name' => $data['name'] ?? '',
             'handle' => $data['handle'] ?? '',
             'driver' => $data['driver'],
-            'settings' => $this->settings($data['driver'], $data['settings'] ?? []),
+            'settings' => $this->assetTransformDrivers->settings($data['driver'], $data['settings'] ?? []),
         ]);
 
         if (! $this->assetTransformers->saveAssetTransformer($transformer)) {
@@ -135,7 +134,7 @@ class AssetTransformersController extends BaseAssetSettingsController
 
         return $this->asModelSuccess(
             $transformer,
-            t('Asset Transformer saved.'),
+            t('Asset transformer saved.'),
             'assetTransformer',
             redirect: $this->getPostedRedirectUrl($transformer)
                 ?? Url::cpUrl("settings/assets/transformers/{$transformer->handle}"),
@@ -182,14 +181,14 @@ class AssetTransformersController extends BaseAssetSettingsController
             $this->assetTransformers->deleteAssetTransformer($transformer);
         }
 
-        return $this->asSuccess(t('Asset Transformer deleted.'));
+        return $this->asSuccess(t('Asset transformer deleted.'));
     }
 
     private function editScreen(AssetTransformer $transformer): CpScreenResponse
     {
         $title = $transformer->uid
             ? trim($transformer->name) ?: t('Edit Asset Transformer')
-            : t('Create a new Asset Transformer');
+            : t('Create a new asset transformer');
 
         return new CpScreenResponse()
             ->title($title)
@@ -218,27 +217,5 @@ class AssetTransformersController extends BaseAssetSettingsController
             readOnly: $this->readOnly,
             values: $values,
         );
-    }
-
-    /**
-     * @param  array<string, mixed>  $settings
-     * @return array<string, mixed>
-     */
-    private function settings(string $driver, array $settings): array
-    {
-        $handles = array_map(function ($field): string {
-            $path = $field->getControl()?->path();
-            $path = is_array($path) && count($path) === 1 ? $path[0] : $path;
-
-            if (! is_string($path) || $path === '' || str_contains($path, '.')) {
-                throw ValidationException::withMessages([
-                    'driver' => t('The selected Asset Transform driver has invalid settings.'),
-                ]);
-            }
-
-            return $path;
-        }, $this->assetTransformDrivers->driver($driver)->definition()->settingsFields);
-
-        return Arr::only($settings, $handles);
     }
 }

@@ -23,6 +23,7 @@ use CraftCms\Cms\GarbageCollection\Actions\DeletePointlessChangeData;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleBulkOpData;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleElementActivity;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteStaleNotifications;
+use CraftCms\Cms\GarbageCollection\Actions\DeleteTrashedAssetFiles;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteUnsupportedSiteEntries;
 use CraftCms\Cms\GarbageCollection\Actions\FireRunEvent;
 use CraftCms\Cms\GarbageCollection\Actions\GarbageCollectionAction;
@@ -117,6 +118,7 @@ class GarbageCollection
             [DeletePartialElements::class, ['elementType' => ContentBlock::class, 'table' => Table::CONTENTBLOCKS]],
             [DeletePartialElements::class, ['elementType' => Entry::class, 'table' => Table::ENTRIES]],
             [DeletePartialElements::class, ['elementType' => User::class, 'table' => Table::USERS]],
+            DeleteTrashedAssetFiles::class,
             [DeleteOrphanedFieldLayouts::class, ['elementType' => Asset::class, 'table' => Table::VOLUMES]],
             [DeleteOrphanedFieldLayouts::class, ['elementType' => Entry::class, 'table' => Table::ENTRYTYPES]],
             DeleteUnsupportedSiteEntries::class,

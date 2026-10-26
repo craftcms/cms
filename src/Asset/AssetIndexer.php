@@ -443,9 +443,7 @@ class AssetIndexer
             ->where('countedFolders.path', 'like', new Concat(['folders.path', new Value('%')]));
 
         if (! $missing) {
-            return $query->where(fn (Builder $query) => $query
-                ->whereNull('countedElements.dateDeleted')
-                ->orWhere('countedAssets.keptFile', 1));
+            return $query->whereNull('countedElements.dateDeleted');
         }
 
         return $query

@@ -127,5 +127,5 @@ it('converts transform validation failures into MCP tool errors', function (): v
     ])
         ->assertOk()
         ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Invalid Asset Transform parameter value.');
+        ->assertJsonPath('result.content.0.text', 'Invalid asset transform parameter value.');
 });

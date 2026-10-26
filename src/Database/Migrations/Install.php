@@ -230,7 +230,7 @@ class Install extends Migration
             $table->string('focalPoint', 13)->nullable()->default(null);
             $table->json('colors')->nullable();
             $table->boolean('deletedWithVolume')->nullable();
-            $table->boolean('keptFile')->nullable();
+            $table->boolean('trashedFileExists')->default(false);
             $table->dateTime('dateModified')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
