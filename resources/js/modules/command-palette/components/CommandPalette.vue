@@ -22,7 +22,6 @@
     computed,
     nextTick,
     onMounted,
-    provide,
     shallowRef,
     useId,
     useTemplateRef,
@@ -50,7 +49,6 @@
   } from '../sources/on-page-actions';
   import {
     fromServerItem,
-    VIEW_ACTIONS,
     type CommandPaletteItem,
     type CommandPaletteProvider,
     type CommandPaletteView,
@@ -82,7 +80,6 @@
   const {siteCrumb} = useCraftData();
   const recents = useRecentPages();
   const id = useId();
-  provide(VIEW_ACTIONS, `#${id}-view-actions`);
 
   const input = useTemplateRef<HTMLInputElement>('input');
   const searchField = useTemplateRef<{$el: HTMLElement}>('searchField');
@@ -836,6 +833,7 @@
           :key="activeView.item.id"
           :item="activeView.item"
           :view="activeView.view"
+          :actions-target="`#${id}-view-actions`"
           @done="finish"
           @back="back"
         />

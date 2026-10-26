@@ -6,23 +6,26 @@
    * first.
    */
   import {t} from '@craftcms/ui';
-  import {computed, inject, onBeforeUnmount, shallowRef} from 'vue';
+  import {computed, onBeforeUnmount, shallowRef} from 'vue';
   import {
     getNotifications,
     markNotificationsRead,
     navigateToNotification,
     onNotificationsChange,
   } from '../../notifications/store';
-  import {VIEW_ACTIONS, type CommandPaletteViewResult} from '../types';
+  import type {
+    CommandPaletteViewProps,
+    CommandPaletteViewResult,
+  } from '../types';
 
   import '../../notifications/components/cp-notification-list';
+
+  defineProps<Partial<CommandPaletteViewProps>>();
 
   const emit = defineEmits<{
     (event: 'done', result: CommandPaletteViewResult): void;
     (event: 'back'): void;
   }>();
-
-  const actionsTarget = inject(VIEW_ACTIONS, null);
 
   const notifications = shallowRef(getNotifications());
   const stopListening = onNotificationsChange(() => {

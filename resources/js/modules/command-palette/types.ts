@@ -1,5 +1,5 @@
 import type {BaseAction} from '@craftcms/ui';
-import type {Component, InjectionKey} from 'vue';
+import type {Component} from 'vue';
 import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 
 type ServerItem = CraftCms.Cms.Cp.CommandPalette.CommandPaletteItem;
@@ -82,6 +82,12 @@ export interface CommandPaletteProvider {
 export interface CommandPaletteViewProps {
   item: CommandPaletteItem;
   view: CommandPaletteView;
+  /**
+   * A selector for the view header’s actions, beside its heading. Buttons of
+   * the view’s own, such as “Mark all as read”, go there with
+   * `<Teleport defer :to="actionsTarget">`.
+   */
+  actionsTarget?: string;
 }
 
 export interface CommandPaletteViewResult {
@@ -95,14 +101,6 @@ export interface CommandPaletteViewResult {
 }
 
 export type CommandPaletteViewComponent = Component<CommandPaletteViewProps>;
-
-/**
- * A selector for the view header's actions, beside the view's heading. A view
- * injects it and teleports buttons of its own there, such as “Mark all as read”.
- */
-export const VIEW_ACTIONS: InjectionKey<string> = Symbol(
-  'commandPaletteViewActions'
-);
 
 let generatedIds = 0;
 

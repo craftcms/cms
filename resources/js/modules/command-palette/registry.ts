@@ -127,9 +127,10 @@ export function clientActions(): CommandPaletteItem[] {
 /**
  * Registers the component an item's `view` of this type renders.
  *
- * It receives `item` and `view` props, and emits `done` (optionally with a
- * `{message, redirect, reload}` result) once its work has succeeded, or `back`
- * to return to the search results.
+ * It receives `item` and `view` props, and `actionsTarget`, a selector for the
+ * view header's actions to `<Teleport>` buttons of its own into. It emits
+ * `done` (optionally with a `{message, run, redirect, reload}` result) once its
+ * work has succeeded, or `back` to return to the search results.
  */
 export function registerView(
   type: string,
