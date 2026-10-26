@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Cp;
@@ -220,6 +221,7 @@ class HandleInertiaRequests extends Middleware
                     'underlineLinks' => (bool) ($currentUser->getPreference('underlineLinks')
                         ?? $generalConfig->accessibilityDefaults['underlineLinks']
                         ?? false),
+                    'aiAssistant' => Assistant::isAvailable(),
                 ] : null,
                 // Outside `currentUser`, so logged-out pages (login, the
                 // updater) follow the system theme too.

@@ -13,6 +13,7 @@ use CraftCms\Cms\Ai\Enums\AiUnavailableReason;
 use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
 use CraftCms\Cms\Ai\Settings;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\Ai\AltTextTask;
 use CraftCms\Cms\Tests\Support\Ai\MediaTask;
@@ -75,7 +76,11 @@ beforeEach(function (): void {
     app(AiTasks::class)->register(AltTextTask::class, SummarizeTask::class);
     app()->instance(Settings::class, new Settings([
         'defaults' => ['text' => ['provider' => 'openai', 'model' => 'gpt-vision']],
-        'tasks' => ['test:altText' => ['provider' => 'deepseek', 'model' => 'deepseek-chat']],
+        'tasks' => [
+            'test:altText' => ['provider' => 'deepseek', 'model' => 'deepseek-chat'],
+            // Craft’s own assistant needs tool calling, which would be checked on the default provider as well.
+            Assistant::handle() => ['enabled' => false],
+        ],
     ]));
 });
 
