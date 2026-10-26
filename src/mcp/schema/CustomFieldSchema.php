@@ -6,8 +6,6 @@ namespace craft\mcp\schema;
 
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
-use craft\fieldlayoutelements\BaseField;
-use craft\fieldlayoutelements\CustomField;
 use craft\fields\BaseOptionsField;
 use craft\fields\Email;
 use craft\fields\Json;
@@ -45,16 +43,8 @@ class CustomFieldSchema
 
         $properties = [];
         $required = [];
-        $layoutFields = $layout->getFields(
-            fn(BaseField $layoutField): bool => $layoutField instanceof CustomField
-                && $layoutField->editable($element),
-        );
-
-        foreach ($layoutFields as $layoutField) {
-            if (!$layoutField instanceof CustomField) {
-                continue;
-            }
-
+        // The fields the user can see and edit in the element’s form, as its layout’s conditions allow.
+        foreach ($layout->getEditableCustomFieldElements($element) as $layoutField) {
             $field = $layoutField->getField();
             $handle = $field->handle;
 

@@ -63,7 +63,11 @@ class ElementSerializer extends \yii\base\Component
             ? $this->serialize($nested)
             : null;
 
-        foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+        $layout = $element->getFieldLayout();
+        // The fields the user can see in the element’s form, as its layout’s conditions allow.
+        $customFields = $public ? $layout?->getCustomFields() : $layout?->getVisibleCustomFields($element);
+
+        foreach ($customFields ?? [] as $field) {
             if ($fields !== null && !in_array($field->handle, $fields, true)) {
                 continue;
             }

@@ -3,6 +3,7 @@
 namespace crafttests\unit\mcp;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\db\Connection;
 use craft\elements\Entry;
@@ -65,9 +66,9 @@ class CustomFieldSchemaTest extends TestCase
             {
             }
 
-            public function getFields(callable $filter): array
+            public function getEditableCustomFieldElements(ElementInterface $element): array
             {
-                return array_filter($this->layoutFields, $filter);
+                return $this->layoutFields;
             }
         };
         $element = new class($layout) extends Entry {
