@@ -91,6 +91,12 @@
     inline-size: 100%;
   }
 
+  /* Sits the column labels as far below the view's heading as they are from its sides. */
+  .command-palette-shortcuts thead th {
+    height: auto;
+    padding-block-start: 0;
+  }
+
   /* The keys are row headers for the table's sake, not to be bolded. */
   .command-palette-shortcuts tbody th {
     font-weight: inherit;

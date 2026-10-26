@@ -91,4 +91,10 @@
       padding-inline-end: 0;
     }
   }
+
+  /* Fits the header row to its labels, so they sit as far below the view's heading as they do from its sides. */
+  :deep(.cp-table thead th) {
+    height: auto;
+    padding-block-start: 0;
+  }
 </style>
