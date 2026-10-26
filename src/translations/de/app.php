@@ -1359,7 +1359,7 @@ return [
     'Rating: {rating} out of {max} stars' => 'Bewertung: {rating} von {max} Sterne',
     'Raw data (fastest)' => 'Rohdaten (am schnellsten)',
     'Reactivate' => 'Erneut aktivieren',
-    'Read Only' => 'Nur lesen',
+    'Read Only' => 'Nicht bearbeitbar',
     'Ready to upgrade?' => 'Bereit für das Upgrade?',
     'Ready' => 'Bereit',
     'Really delete folder “{folder}”?' => 'Ordner „{folder}“ wirklich löschen?',
