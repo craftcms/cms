@@ -5,29 +5,55 @@
    * token-minting redirect that lands on the tokenized preview.
    */
   import {t} from '@craftcms/ui';
+  import {computed} from 'vue';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import type {ActionItemLink} from '@/common/types';
   import type {ElementPreviewTarget} from '@/modules/elements/composables/useElementEditor';
 
   const props = defineProps<{
     targets: Array<ElementPreviewTarget>;
   }>();
 
-  function labelFor(target: ElementPreviewTarget): string {
-    return props.targets.length === 1 ? t('View') : target.label;
-  }
+  const actions = computed<ActionItemLink[]>(() =>
+    props.targets.map((target) => ({
+      type: 'link',
+      href: target.url,
+      label: target.label,
+      target: '_blank',
+    }))
+  );
 </script>
 
 <template>
+  <ActionMenu
+    v-if="targets.length > 1"
+    :actions="actions"
+    :label="t('View')"
+    :flush="false"
+  >
+    <template #invoker="{attributes}">
+      <craft-button
+        v-bind="attributes"
+        type="button"
+        variant="link"
+        size="small"
+        icon="chevron-down"
+        icon-position="suffix"
+      >
+        {{ t('View') }}
+      </craft-button>
+    </template>
+  </ActionMenu>
   <craft-button
-    v-for="target in targets"
-    :key="target.url"
-    :href="target.url"
+    v-else-if="targets.length"
+    :href="targets[0]!.url"
     target="_blank"
     variant="link"
     size="small"
     icon="arrow-up-right-from-square"
     icon-position="suffix"
   >
-    {{ labelFor(target) }}
+    {{ t('View') }}
     <span class="sr-only">{{ t('Opens in a new window') }}</span>
   </craft-button>
 </template>

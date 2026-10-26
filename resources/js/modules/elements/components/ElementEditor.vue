@@ -353,24 +353,29 @@
     "
     name="content-toolbar-meta"
   >
-    <craft-button
-      v-if="canPreview"
-      ref="previewButton"
-      type="button"
-      size="small"
-      variant="outline"
-      @click="livePreview.open()"
-    >
-      {{ t('Preview') }}
-    </craft-button>
+    <template v-if="showElementControls && payload.previewTargets.length">
+      <span
+        v-if="payload.isProvisionalDraft || payload.statusLabelHtml"
+        class="element-editor__toolbar-separator"
+        aria-hidden="true"
+      ></span>
+      <craft-button
+        v-if="canPreview"
+        ref="previewButton"
+        type="button"
+        size="small"
+        variant="link"
+        icon="eye"
+        @click="livePreview.open()"
+      >
+        {{ t('Preview') }}
+      </craft-button>
+      <ElementViewButtons :targets="payload.previewTargets" />
+    </template>
     <ElementActivityAvatars :entries="activity.activity.value" />
     <WorkflowDraftsStatus
       v-if="!isSlideout && payload.workflow.draftReviews.length"
       :drafts="payload.workflow.draftReviews"
-    />
-    <ElementViewButtons
-      v-if="showElementControls"
-      :targets="payload.previewTargets"
     />
   </LayoutSlot>
 
@@ -653,5 +658,12 @@
 <style scoped lang="scss">
   craft-callout {
     --c-callout-padding-inline: calc(var(--cp-container-padding) - 4px);
+  }
+
+  .element-editor__toolbar-separator {
+    align-self: stretch;
+    inline-size: 1px;
+    margin-block: var(--c-spacing-2xs, 0.125rem);
+    background-color: var(--c-color-border-quiet);
   }
 </style>
