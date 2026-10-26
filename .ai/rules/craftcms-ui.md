@@ -32,6 +32,9 @@ If a documented pattern fits the component — a WAI-ARIA APG pattern, or anothe
 ## Build the UI package before consumers
 Build `@craftcms/ui` with `vp run build:ui` before building or checking the main Vite application after UI package changes. Run its tests with `vp run test:ui`.
 
+## Add new strings to the translation source
+When you add a `t()` string, add it to `resources/translations/en/app.php` as `'String' => 'String'`, next to its neighbors in the file's order. The control panel sends the package's strings to translators from there too.
+
 ## Don't comment CSS unless it's a hack
 Leave CSS uncommented — `.css`/`.scss` files, Lit `css` templates and Vue `<style>` blocks. Only comment a genuine hack, or a workaround for platform or library behaviour a reader couldn't infer, and keep it to one line about the code, not the history behind it.
 

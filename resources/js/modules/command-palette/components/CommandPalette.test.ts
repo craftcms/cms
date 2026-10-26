@@ -418,23 +418,6 @@ describe('CommandPalette', () => {
     ]);
   });
 
-  it('describes each grid with where its keyboard instructions are', async () => {
-    await open();
-    const grids = [...document.querySelectorAll('craft-grid')];
-
-    expect(grids.length).toBeGreaterThan(1);
-
-    for (const grid of grids) {
-      expect(
-        document
-          .getElementById(grid.getAttribute('aria-describedby')!)
-          ?.textContent?.trim()
-      ).toBe(
-        'Instructions for moving between results are in the Keyboard instructions section.'
-      );
-    }
-  });
-
   it('lists Left and Right only while a result has actions of its own', async () => {
     get.mockResolvedValue({
       data: {

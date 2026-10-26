@@ -963,7 +963,6 @@ return [
     'Installing Craft CMS…' => 'Installing Craft CMS…',
     'Installing the plugin…' => 'Installing the plugin…',
     'Installing {name}' => 'Installing {name}',
-    'Instructions for moving between results are in the Keyboard instructions section.' => 'Instructions for moving between results are in the Keyboard instructions section.',
     'Instructions' => 'Instructions',
     'Interlace' => 'Interlace',
     'Interlacing' => 'Interlacing',

@@ -106,17 +106,78 @@ function section(id: string, heading: string, items: Item[]) {
   `;
 }
 
+interface Key {
+  symbol: string;
+  name: string;
+}
+
+const instructions: {keys: Key[]; label: string}[] = [
+  {keys: [{symbol: 'Tab', name: 'Tab'}], label: 'Next section'},
+  {
+    keys: [
+      {symbol: '↑', name: 'Up arrow'},
+      {symbol: '↓', name: 'Down arrow'},
+    ],
+    label: 'Move within a section',
+  },
+  {
+    keys: [
+      {symbol: '←', name: 'Left arrow'},
+      {symbol: '→', name: 'Right arrow'},
+    ],
+    label: 'Move to an item’s actions',
+  },
+  {keys: [{symbol: 'Enter', name: 'Enter'}], label: 'Open'},
+];
+
+const instructionsStyle =
+  'display: flex; flex-wrap: wrap; column-gap: var(--c-spacing-lg); row-gap: var(--c-spacing-sm); margin: 0; padding: 0; list-style: none; font-size: var(--c-text-sm); color: var(--c-text-quiet)';
+
+/** The grids' keys, in a region of their own beside them, one command per list item. */
+function keyboardInstructions(id: string) {
+  return html`
+    <section
+      aria-labelledby="${id}"
+      style="margin-block-start: var(--c-spacing-lg)"
+    >
+      <h3 id="${id}" class="sr-only">Keyboard instructions</h3>
+      <ul role="list" style="${instructionsStyle}">
+        ${instructions.map(
+          ({keys, label}) => html`
+            <li
+              style="display: inline-flex; align-items: center; gap: var(--c-spacing-sm)"
+            >
+              <span style="display: inline-flex; gap: var(--c-spacing-xs)">
+                ${keys.map(
+                  (key) =>
+                    html`<kbd
+                      ><span aria-hidden="true">${key.symbol}</span
+                      ><span class="sr-only">${key.name}</span></kbd
+                    >`
+                )}
+              </span>
+              ${label}
+            </li>
+          `
+        )}
+      </ul>
+    </section>
+  `;
+}
+
 /**
  * Two labeled groups of links and buttons, each its own grid. Some items have
  * a menu of their own actions beside them, which is what makes this a grid:
  * Down and Up move through the list, Right and Left between an item and its
- * menu, and Tab from one group to the next.
+ * menu, and Tab from one group to the next. Keyboard instructions beside
+ * them say so, since few people know a grid's keys.
  */
 export const Default: Story = {
   render: () => html`
     <div style="max-inline-size: 28rem">
       ${section('grid-recent-heading', 'Recent', recent)}
       ${section('grid-actions-heading', 'Actions', actions)}
+      ${keyboardInstructions('grid-keys-heading')}
     </div>
   `,
 };

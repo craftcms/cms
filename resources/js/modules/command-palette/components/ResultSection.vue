@@ -22,8 +22,6 @@
     items: CommandPaletteItem[];
     /** Whether links open in a new tab, which each one then says. */
     newTab?: boolean;
-    /** The id of a description for the grid, such as where to find its keyboard instructions. */
-    descriptionId?: string;
   }>();
 
   const emit = defineEmits<{
@@ -128,11 +126,7 @@
     <h2 :id="`${gridId}-heading`" class="command-palette-section__heading">
       {{ heading }}
     </h2>
-    <craft-grid
-      :id="gridId"
-      :aria-labelledby="`${gridId}-heading`"
-      :aria-describedby="descriptionId"
-    >
+    <craft-grid :id="gridId" :aria-labelledby="`${gridId}-heading`">
       <craft-grid-row
         v-for="(item, index) in items"
         :key="item.id"

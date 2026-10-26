@@ -625,7 +625,6 @@
             :grid-id="`${id}-${section.key}`"
             :heading="section.heading"
             :items="section.items"
-            :description-id="`${id}-grid-description`"
             @activate="activate"
             @dismiss="dismissForMenuAction"
           />
@@ -647,14 +646,6 @@
           </p>
         </div>
 
-        <!-- Hidden, as it's only ever read as the grids' description. -->
-        <p :id="`${id}-grid-description`" hidden>
-          {{
-            t(
-              'Instructions for moving between results are in the Keyboard instructions section.'
-            )
-          }}
-        </p>
         <section
           class="command-palette__hint"
           :aria-labelledby="`${id}-keys-heading`"

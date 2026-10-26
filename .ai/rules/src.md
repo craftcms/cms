@@ -22,4 +22,4 @@ Element queries default their `siteId` to `getCurrentSite()`, so a CP view model
 The element selector modal posts its index params in the body, so honour an explicit `site` input before falling back to `RequestedSite`, which only reads the query string.
 
 ## User-facing strings use US English
-Write user-facing strings (`t()` source strings, exception and log messages) in US English. Translation files are keyed by the English source string. When you change one, rename its key in every `resources/translations/*/app.php`. In `en-GB/app.php`, rename only the key and keep the British value (e.g. `'Canceled' => 'Cancelled'`).
+Write user-facing strings (`t()` source strings, exception and log messages) in US English. Translation files are keyed by the English source string. When you add one, add it to `resources/translations/en/app.php` as `'String' => 'String'`, next to its neighbors in the file's order. When you change one, rename its key in every `resources/translations/*/app.php`. In `en-GB/app.php`, rename only the key and keep the British value (e.g. `'Canceled' => 'Cancelled'`).

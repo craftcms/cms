@@ -9,7 +9,7 @@ import * as GridStories from './grid.stories';
 
 <Canvas of={GridStories.Default} sourceState="shown" />
 
-Each group above is its own grid, named by its heading. Within a group, Down and Up move through the list, Right and Left move between an item and its menu, and Tab moves on to the next group.
+Each group above is its own grid, named by its heading. Within a group, Down and Up move through the list, Right and Left move between an item and its menu, and Tab moves on to the next group. The keyboard instructions below the grids say so.
 
 ## When to use a grid
 
@@ -18,6 +18,7 @@ A grid is a less common pattern. Most lists of links or buttons shouldn't be one
 - The list is long, so tabbing through every item would be slow.
 - At least some rows hold more than one control, such as an item and a menu of that item's own actions.
 - The list is a single, self-contained widget, such as search results or a palette of commands, rather than part of the page's content or navigation.
+- There's room to show keyboard instructions beside it.
 
 Otherwise, use something simpler:
 
@@ -29,7 +30,7 @@ Otherwise, use something simpler:
 | Static data with column headers                      | A `<table>`                                             |
 | Picking a value from a list                          | `craft-select-rich` or `craft-combobox`                 |
 
-A grid's arrow keys are something people have to discover. Screen readers announce the grid, but sighted keyboard users get no cue, and someone who only uses Tab will skip everything but one item. Only add a grid where the faster movement is worth that cost, and consider showing the keys in a hint beside it.
+A grid's arrow keys are something people have to discover. Few web UIs use them, so they're unfamiliar even to keyboard users. Screen readers announce the grid, but sighted keyboard users get no cue, and someone who only uses Tab will skip everything but one item. Without instructions beside it, a grid causes more confusion than it saves time, so don't use one where there's no room to show them.
 
 ## Building one
 
@@ -82,6 +83,8 @@ Put one interactive element in each cell: a link, a button, or a menu's button. 
 The grid draws no focus ring. Each cell's control draws its own, and a cell that takes focus itself needs a `:focus-visible` style.
 
 When the rows are search results, announce how many there are in a `role="status"` element outside the grid. Moving focus into the grid is up to the person: don't move it there as results arrive. When the search changes, call `resetTabStop()`, so Tab into the new results starts at the first one rather than where the old ones were left.
+
+Show keyboard instructions beside the grid, as the example does: in a region of their own named by a heading, as a list with one item per command. Write each key as a `<kbd>` with its symbol hidden from screen readers and its spoken name, such as "Up arrow", in `sr-only` text. Don't point the grid at them with `aria-describedby`: screen readers don't announce a grid's description when focus moves into one of its cells.
 
 ## Properties
 

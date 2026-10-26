@@ -2,7 +2,7 @@
 
 Follows the WAI-ARIA APG [Layout Grid](https://www.w3.org/WAI/ARIA/apg/patterns/grid/examples/layout-grids/) examples: rows of links, buttons and menu buttons, arranged in `craft-grid-row`s and `craft-grid-cell`s. The grid is one Tab stop, and the arrow keys move between its cells. Each cell holds one interactive element, which takes focus. A cell with none takes focus itself.
 
-A grid is a less common pattern. Use it only for a long, self-contained list, such as search results or a palette of commands, where at least some rows hold more than one control, such as an item and a menu of its own actions.
+A grid is a less common pattern. Use it only for a long, self-contained list, such as search results or a palette of commands, where at least some rows hold more than one control, such as an item and a menu of its own actions. Use it only where there's room to show keyboard instructions beside it. Few web UIs use a grid's keys, so without instructions people won't know them, and the grid confuses more than it helps.
 
 **Not for:**
 
@@ -45,4 +45,5 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 - 2.4.7 (Focus Visible): the grid draws no focus ring of its own. Each cell's control shows its own. See [Accessibility](./Grid.mdx#accessibility).
 - 1.3.1 (Info and Relationships): name each group of items with its own heading and grid, rather than making the groups rows of one grid. See [Accessibility](./Grid.mdx#accessibility).
 - 1.3.1 (Info and Relationships): put one interactive element in each cell. A second one isn't reachable with the arrow keys. See [Accessibility](./Grid.mdx#accessibility).
+- Keyboard instructions: show the grid's keys beside it, in a region named by a heading, as a list with one item per command. Don't connect them to the grid with `aria-describedby`. See [Accessibility](./Grid.mdx#accessibility).
 - 4.1.3 (Status Messages): when the rows come from a search, announce how many there are in a status message outside the grid. See [Accessibility](./Grid.mdx#accessibility).
