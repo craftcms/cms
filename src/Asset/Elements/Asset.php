@@ -41,6 +41,7 @@ use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Actions\DeleteForSite;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -50,6 +51,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
@@ -83,6 +85,7 @@ use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Search;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
@@ -467,6 +470,41 @@ class Asset extends Element
         return true;
     }
 
+    /** @return list<int|array{siteId: int, propagate: bool}> */
+    #[Override]
+    public function getSupportedSites(): array
+    {
+        $siteIds = parent::getSupportedSites();
+
+        if ($this->getVolume()->propagationMethod !== PropagationMethod::Custom) {
+            return $siteIds;
+        }
+
+        // Figure out which sites the asset is currently saved in
+        $currentSites = [];
+        $sourceIds = array_filter([$this->id, $this->duplicateOf->id ?? null]);
+
+        if (! empty($sourceIds)) {
+            $currentSites = array_flip(self::find()
+                ->status(null)
+                ->id($sourceIds)
+                ->site('*')
+                ->pluck('elements_sites.siteId')
+                ->all());
+        }
+
+        return array_map(fn (int $siteId) => [
+            'siteId' => $siteId,
+            // Only actually propagate to this site if it's the current site, or the asset has been assigned
+            // a status for this site, or the asset already exists for this site
+            'propagate' => (
+                $siteId === $this->siteId ||
+                $this->getEnabledForSite($siteId) !== null ||
+                isset($currentSites[$siteId])
+            ),
+        ], $siteIds);
+    }
+
     /**
      * @return AssetQuery The newly created [[AssetQuery]] instance.
      */
@@ -749,6 +787,15 @@ class Asset extends Element
             // Delete
             if (Gate::check("deletePeerAssets:$volume->uid")) {
                 $actions[] = DeleteAssets::class;
+            }
+
+            // Delete for site
+            if (
+                $volume->propagationMethod === PropagationMethod::Custom &&
+                Sites::isMultiSite() &&
+                Gate::check("deleteAssets:$volume->uid")
+            ) {
+                $actions[] = DeleteForSite::class;
             }
         }
 
@@ -3382,6 +3429,18 @@ JS;
 
         $this->deleteTransformData();
         parent::afterDelete();
+    }
+
+    #[Override]
+    public function afterDeleteForSite(): void
+    {
+        // Delete the site-specific asset data
+        DB::table(Table::ASSETS_SITES)
+            ->where('assetId', $this->id)
+            ->where('siteId', $this->siteId)
+            ->delete();
+
+        parent::afterDeleteForSite();
     }
 
     #[Override]

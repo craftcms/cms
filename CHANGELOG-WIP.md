@@ -24,6 +24,7 @@
 - Element index searches now update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Clicking anywhere on an element index table row or card (other than an interactive control) now selects it. ([#19351](https://github.com/craftcms/cms/pull/19351))
 - Element index sources can now show a count of their elements in the control panel nav, via a new “Show count” setting in the “Customize sources” modal. Entries, assets, and users support it.
+- Apps can now manage their own Eloquent models as elements in the control panel, with an element index and nav item, an element editor, permissions or model policies, search, activity history, relation fields, and Twig element queries. Elements are kept in sync with their models in both directions, and the models and their tables are left unchanged. ([#19971](https://github.com/craftcms/cms/pull/19971))
 
 #### Entries
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
@@ -87,6 +88,7 @@
 
 #### MCP
 - Added authenticated and configurable public Model Context Protocol (MCP) servers for inspecting and managing Craft sites, content, assets, users, plugins, and project config. ([#19846](https://github.com/craftcms/cms/pull/19846))
+- Added the `mcp:read`, `mcp:write`, and `mcp:admin` OAuth scopes for the authenticated MCP server. Users choose an access level when they authorize an MCP client, and it defaults to read only. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - Added the `mcp:serve` command, which serves the authenticated MCP server over stdio as a named user. ([#19846](https://github.com/craftcms/cms/pull/19846))
 
 #### General
@@ -570,6 +572,9 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Deprecated `craft\base\conditions\BaseElementSelectConditionRule`. `CraftCms\Cms\Condition\BaseElementSelectConditionRule` should be used instead.
 
 ###### Elements
+- Added `CraftCms\Cms\Element\Eloquent\EloquentElement`, a base class for element types that represent an app’s Eloquent models, and `CraftCms\Cms\Element\Eloquent\EloquentElements::register()`. ([#19971](https://github.com/craftcms/cms/pull/19971))
+- Added `CraftCms\Cms\Element\Eloquent\EloquentElementsField`, a base class for field types that relate elements to an Eloquent element type’s elements. ([#19971](https://github.com/craftcms/cms/pull/19971))
+- Added the `craft:eloquent-elements:sync` command, which creates elements for existing rows of registered Eloquent element types’ models. ([#19971](https://github.com/craftcms/cms/pull/19971))
 - Deprecated `craft\elements\conditions\ElementCondition`. `CraftCms\Cms\Element\Conditions\ElementCondition` should be used instead.
 - Deprecated `craft\elements\conditions\ElementConditionInterface`. `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface` should be used instead.
 - Deprecated `craft\elements\conditions\ElementConditionRuleInterface`. `CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface` should be used instead.

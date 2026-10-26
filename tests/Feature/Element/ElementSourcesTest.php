@@ -165,6 +165,19 @@ it('can generate a page name id', function () {
     expect($this->elementSources->pageNameId('Another page'))->toBe('anotherpage');
 });
 
+it('generates a page slug with the same name id as the page name', function (string $name, string $slug) {
+    expect($this->elementSources->pageSlug($name))->toBe($slug)
+        ->and($this->elementSources->pageNameId($slug))->toBe($this->elementSources->pageNameId($name));
+})->with([
+    'plain' => ['Blog', 'blog'],
+    'spaces and punctuation' => ['News & Events', 'news-events'],
+    'apostrophe' => ['Don’t Miss', 'dont-miss'],
+    'non-Latin' => ['Αναρτήσεις', 'αναρτήσεις'],
+    'accented' => ['Événements', 'événements'],
+    'combining mark' => ["Cafe\u{0301}s", "cafe\u{0301}s"],
+    'at sign' => ['Q @ A', 'q-a'],
+]);
+
 class TestElementSourceSortOptionsElement extends Element
 {
     public static array $requestedSources = [];

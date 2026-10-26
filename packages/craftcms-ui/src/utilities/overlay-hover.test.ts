@@ -77,4 +77,19 @@ describe('withHoverInteraction', () => {
 
     expect(calls).toEqual(['hide']);
   });
+
+  it('shows while a disabled invoker stays focusable', async () => {
+    const {controller, calls, invokerNode} = createController(true);
+    Object.assign(invokerNode, {focusableWhenDisabled: true});
+    const {init} = withHoverInteraction({
+      delayIn: 0,
+      delayOut: 20,
+    }).visibilityTriggerFunction({controller});
+
+    init();
+    invokerNode.dispatchEvent(new MouseEvent('mouseenter'));
+    await after(50);
+
+    expect(calls).toEqual(['show']);
+  });
 });

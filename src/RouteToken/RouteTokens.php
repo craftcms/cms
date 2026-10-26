@@ -9,6 +9,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
@@ -218,7 +219,7 @@ class RouteTokens
         }
 
         $affectedRows = DB::table(Table::ROUTETOKENS)
-            ->where('expiryDate', '<=', now())
+            ->where('expiryDate', '<=', Query::prepareDateForDb(now()))
             ->delete();
 
         $this->deletedExpiredTokens = true;

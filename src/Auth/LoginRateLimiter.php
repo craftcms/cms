@@ -15,9 +15,18 @@ class LoginRateLimiter
 {
     public const string NAME = 'login';
 
-    public function limit(Request $request): Limit
+    /**
+     * Five attempts a minute for each account from an IP address, which a successful login resets, and the
+     * default rate limit for the IP address across all accounts, which it doesn't.
+     *
+     * @return list<Limit>
+     */
+    public function limit(Request $request): array
     {
-        return Limit::perMinute(5)->by($this->key($request));
+        return array_values(array_filter([
+            Limit::perMinute(5)->by($this->key($request)),
+            DefaultRateLimit::for($request),
+        ]));
     }
 
     public function clear(Request $request): void

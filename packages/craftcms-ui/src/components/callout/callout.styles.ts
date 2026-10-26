@@ -51,6 +51,8 @@ export default css`
   .callout__title,
   .callout__description {
     padding-inline: var(--c-callout-text-padding-inline, var(--c-spacing-sm));
+    --c-link-decoration: underline;
+    --c-link-decoration-hover: none;
   }
 
   .callout__title {

@@ -17,6 +17,8 @@
 
 ### Visual
 
+- [x] Links in the title and body take the callout's text color, so they're underlined until hovered. Per WCAG 1.4.1 (Use of Color). Verified by `gives links its text color and an underline until hovered, in every appearance` in `callout-link.browser.test.ts`.
+- [x] Links in the `action` slot keep their own styling, so button-styled links aren't underlined. Verified by `leaves links in the action slot to their own styling` in `callout-link.browser.test.ts`.
 - [ ] Each non-`neutral` variant supplies a distinct icon shape, so the variant isn't conveyed by color alone. Per WCAG 1.4.1 (Use of Color). `falls back to the variant's icon` and `re-resolves the icon when the variant changes` in `callout.test.ts` cover `warning` and `success` only. Not yet verified for `info` and `danger`.
 - [ ] Text and links meet 4.5:1 against the callout background for every variant and appearance, in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Not yet verified.
 - [ ] In forced-colors mode, the box edge and the icon stay visible. Not yet verified. The `fill` and `plain` appearances have a transparent border, so their box may disappear.

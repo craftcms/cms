@@ -66,6 +66,14 @@ describe('craft-spinner', () => {
     expect(seen).toEqual(['hide', 'show']);
   });
 
+  it('announces its label when nothing is slotted', async () => {
+    const element = await createSpinner({label: 'Loading entries'}, '');
+
+    expect(
+      element.shadowRoot!.querySelector('.cp-visually-hidden')!.textContent
+    ).toBe('Loading entries');
+  });
+
   /** The slotted text is the accessible name, and is visually hidden. */
   it('keeps its slotted label for assistive technology', async () => {
     const element = await createSpinner({}, 'Saving entry');

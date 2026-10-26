@@ -5,6 +5,9 @@
 > [!IMPORTANT]
 > This update contains breaking changes for plugins. See [#19882](https://github.com/craftcms/cms/pull/19882) for details.
 
+> [!WARNING]
+> Plugins should pass dates they write or compare with the query builder through `CraftCms\Cms\Support\Query::prepareDateForDb()`, so they’re stored in UTC like Craft’s own. Laravel stores a bound date in the system time zone. Eloquent models that extend `CraftCms\Cms\Shared\BaseModel` are converted automatically. See [#20053](https://github.com/craftcms/cms/pull/20053) for details.
+
 ### Control Panel UI
 
 - HUD tips now match their HUD’s colors, and HUDs have a light outline in dark mode. ([#20005](https://github.com/craftcms/cms/pull/20005))
@@ -79,7 +82,7 @@
 - Entry types’ and fields’ “Used by” metadata now lists usages as chips. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - The global header is now lighter in the light theme. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Content within black cards, chips, and badges, such as buttons and badges, is now styled as in the dark theme.
-- White cards, chips, badges, and Matrix blocks now always look white in the light theme and black in the dark theme, and black ones the reverse, including when they’re nested in another card or block. Their contents are styled to match. ([#20041](https://github.com/craftcms/cms/issues/20041))
+- White cards, chips, badges, and Matrix blocks are now a lighter surface than the page in the dark theme, and black ones are a shade darker. ([#20041](https://github.com/craftcms/cms/issues/20041))
 - Links in gray chips, and in black chips, cards, and badges, now have the default link styling, rather than an underline in the chip’s or card’s text color.
 - Card view designers now preview entries as live, and users with a sample user’s name, default avatar, and active status.
 - Color selects’ swatches now match the headers of cards in their colors.
@@ -91,11 +94,23 @@
 - Chips, cards, and Matrix blocks without a color no longer have a fill of their own, and take on the color of the card or Matrix block they’re within, including the UI within them. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Dashboard widgets are now gray cards. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Thumbnails’ headers are now padded like chips, and their action menu buttons no longer touch the thumbnail’s edge. ([#20008](https://github.com/craftcms/cms/pull/20008))
+- Editable tables’ single-line text cells now wrap their text, and their date and time cells’ picker icons now come before their values. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Editable tables’ cell contents now line up with their headers, and their row action buttons are closer together. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Color inputs’ `#` is now shown as the start of their value, and color cells in editable tables now act as a single text field, apart from their swatch. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Side-by-side fields now have a wider gap between them. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Combobox clear buttons no longer have a background color until they’re hovered. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Long tooltips now wrap at a readable width. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Large thumbnails in relational fields, such as Assets fields with the “Large Thumbnails” view mode, now have rounded corners, matching card thumbnails.
+- “Paste” buttons now echo Craft 5’s, with a fuchsia duplicate icon and a fuchsia-to-indigo gradient border and tint.
+- Details for the issues that block an element’s deletion now list the related elements as chips, rather than an embedded element index.
+- Draft name labels in element chips now drop below the element’s title when they don’t fit beside it.
 - Fixed a bug where Language and Formatting Locale options’ hints were shown in the current language, rather than in each option’s own language.
 - Fixed a bug where control panel pages without a title had extra space above their content. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where edit pages for elements without a title, such as nested entries whose entry type has no Title field, had a blank page title. They’re now titled “Untitled {type}”. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where element indexes kept the page count of the listing they first loaded, after switching sources or filtering. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where submit buttons created by `Craft.ui.createSubmitButton()` and `createSubmitButton()` from `@craftcms/ui` weren’t styled as primary buttons. ([#20008](https://github.com/craftcms/cms/pull/20008))
+- Fixed a bug where tooltips within sticky footers could be positioned off-screen or cut off.
+- Fixed a bug where draft name labels in element chips were cut off at the bottom.
 - Fixed a bug where clicking on a relational field’s chip or card deselected the others. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where avatars’ initials were hard to read in the dark theme. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Fixed a bug where pending progress bars’ stripes were oversized and had a seam. ([#20008](https://github.com/craftcms/cms/pull/20008))
@@ -125,6 +140,25 @@
 - Fixed a bug where text inputs with a long character limit, such as Title fields, could stretch past their column after a failed save.
 - Fixed a bug where white, gray, and slate nested entry blocks took some of their colors from a colored block they were nested in. ([#20041](https://github.com/craftcms/cms/issues/20041))
 - Fixed a bug where outline, dashed, plain, and link buttons with a white or black color, such as Matrix fields’ “Add {type}” buttons for white or black entry types, could have unreadable text.
+- Fixed a bug where control panel forms that failed validation didn’t show an error notification, such as “Couldn’t save entry.” ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where element editors still said “Saved at …” after a failed save, and after discarding changes. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where element editors said the element had been updated after a failed save. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where element editors kept a failed save’s errors after discarding changes. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where element editors’ error summaries could disappear right after a failed save. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- Fixed a bug where double-clicking a Matrix block’s header to expand or collapse it could also select text. ([#20045](https://github.com/craftcms/cms/issues/20045))
+- Fixed a bug where Matrix fields in cards view didn’t show a dropped entry in its new position until the reorder had saved, and drop placeholders had no gap next to the neighboring card. ([#20046](https://github.com/craftcms/cms/issues/20046))
+- Fixed a bug where Markdown inputs without a toolbar had less padding above and below their text than beside it.
+- Fixed a bug where pressing <kbd>Return</kbd> on a control within an editable table’s HTML column moved focus to the next row. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Fixed a bug where clicking a combobox’s chevron didn’t focus it or open its options. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Fixed a bug where clicking a combobox cell in an editable table could focus its clear button rather than its text input. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Fixed a bug where the hairline between fields that share a row sat off-center before narrow fields, such as quarter-width ones.
+- Fixed a bug where the dialog listing what to resolve before deleting an element wasn’t shown as a dialog on most control panel pages, and its content was added to the bottom of the page unstyled.
+- Fixed a bug where modals built on Garnish’s `Modal`, such as the “Replace relations” and “Move to” modals and asset upload conflict prompts, weren’t shown as modals, and their buttons were unstyled.
+- Fixed a bug where element selects’ “Choose” buttons in server-rendered forms, such as the “Replace relations” modal, were unstyled.
+- Fixed a bug where sections couldn’t be chosen in the “Move to” modal. Sections are now listed as radio buttons.
+- Fixed a bug where asset upload conflict prompts used unstyled radio buttons and checkboxes.
+- Fixed a bug where nested element fields’ “Paste” buttons and relational fields’ “Copy” menu items were missing their icons.
+- Fixed a bug where buttons didn’t show an inset shadow while pressed.
 
 ### Content Management
 
@@ -136,11 +170,13 @@
 - Clicking a Matrix block in blocks view no longer selects it. Blocks are selected with their checkboxes instead. ([#19974](https://github.com/craftcms/cms/pull/19974))
 - Fields without a visible label or instructions no longer have an action menu.
 - Double-clicking an element in a relational field’s card or thumbnail view now opens its slideout, as it does in list views.
+- Relational fields now have a “Paste” button when the clipboard holds elements one of their sources would list. Pasting relates the copied elements and clears the clipboard.
 - Double-clicking an asset folder in an asset index or element selection modal now opens it, and double-clicking an element’s thumbnail in an element index now opens its slideout. ([#19979](https://github.com/craftcms/cms/pull/19979))
 - Saving the Customize Sources modal from an element index’s action menu now goes to the source that was last edited, as it does from the secondary nav. ([#19929](https://github.com/craftcms/cms/pull/19929))
 - Element details panels (Info, Activity, Revisions, and plugin-provided panels) are now opened by disclosure buttons rather than tabs. Opening a panel moves focus to its heading, and pressing <kbd>Esc</kbd> or the panel’s close button returns focus to its button.
 - The element details pane now spans the full viewport height once the page is scrolled, and the Activity panel’s timeline scrolls within the panel, keeping the comment form in view. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - The “View all activity” and “View all revisions” links are now shown in their details panels’ headers. ([#19919](https://github.com/craftcms/cms/pull/19919))
+- The Activity panel now shows a change from one text to another as a word-level diff, rather than the text before and after.
 - Comments can now be submitted with <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in the Activity and Workflow details panels. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - Comment fields in the Activity and Workflow details panels now start one line high, keep the Comment button inside the field, and show how many characters a comment is over the limit. ([#19923](https://github.com/craftcms/cms/pull/19923))
 - Workflow review notes can now be up to 10,000 characters long, matching activity comments. ([#19923](https://github.com/craftcms/cms/pull/19923))
@@ -150,26 +186,56 @@
 - Table columns with invalid settings are now flagged in the Table field’s settings, and link setting validation errors in Link, Markdown, and Table fields now name the setting. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Link cells in Table fields now truncate long URLs, so columns keep their configured widths.
 - Double-clicking an admin table row now opens its link’s slideout, if it has one. ([#19957](https://github.com/craftcms/cms/pull/19957))
+- Element edit pages now have a “Sites” pane in their details sidebars on multi-site installs, in place of the “Status” pane. It lists the sites the element is saved to (that the user can edit), with status toggles and links to the element in each site, and lets authors add the element to other sites. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Element editor slideouts can now be switched to other sites, by clicking on a site name within the “Sites” pane. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Sites that are added to elements within the “Sites” pane can now be removed again. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Assets are now initially saved to the site they were uploaded from. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Assets in volumes set to let each asset choose which sites it should be saved to can now be deleted for individual sites, as long as they exist in another site. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Deleting an element for the only site it exists in now soft-deletes it, unless it’s a draft or nested element. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- The “Schedule release” modal now has a single date and time input, like releases’ Target Date, in place of separate Date, Time, and Time Zone inputs. Releases’ publication and target dates are now always entered in the user’s time zone.
+- Release pages now list each draft as a chip labeled with its draft name, in a single “Draft” column.
+- Release pages’ “Publish now” and “Schedule” buttons now have tooltips explaining why they’re disabled, and the page counts blocking drafts rather than entries.
 - Fixed a bug where typing in a newly added nested entry’s fields could replace the edit form with a “UI array path … must be a row index” error once the entry autosaved.
 - Fixed a bug where changing a field back to the value it had when the edit page loaded wasn’t autosaved, so field layout elements shown or hidden by conditions based on it didn’t update.
 - Fixed a bug where Table fields’ Date and Time cells, and their default row values, shifted by the site’s UTC offset each time they were saved from the control panel.
+- Fixed a bug where going from one element edit page to another, such as switching sites, opened the next page’s “Revisions” details panel rather than the one that was open.
+- Fixed an error that occurred on release pages if one of the release’s drafts belonged to an element that had been deleted, such as along with its section. The draft is now listed as blocked with “The entry has been deleted.”, and can be removed by anyone who can manage the release.
 
 ### Accessibility
 
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
+- Added the `returnFocus` property to `<craft-dialog>`, and the `returnFocus` option to `Craft.openSlideout()`, for deciding where focus goes when they close.
+- Added `focusReturnFor()` to `@craftcms/ui/utilities/focus-return`. `event` actions now include a `returnFocus` resolver in their event’s `detail`, which finds the action menu’s button again after the menu closes or re-renders when it has a `data-focus-key` attribute.
+- Fixed an accessibility issue where keyboard focus was lost after closing a dialog, slideout, or file preview opened from an action menu, such as “Copy attribute name”, “Copy URL”, “Field settings”, or “Entry type settings”. Focus now returns to the action menu’s button, except on control panel pages that still use legacy slideouts.
 - Opening a slideout no longer focuses its resize handle. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Error summaries now receive focus when a form fails validation, and each error links to its field, switching tabs if needed. ([#20044](https://github.com/craftcms/cms/issues/20044))
 - The card view designer’s “Alignment” setting is now a radio group, which can be changed with the arrow keys.
 - Controls in field layout designers, and rich selects such as color selects, now have the standard focus ring, rather than an inset or flush one.
 - Pressing <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Return</kbd> in a text input or textarea now submits its form, including in editable table cells, where it previously moved focus to the next row. ([#20025](https://github.com/craftcms/cms/pull/20025))
 - Pressing <kbd>Shift</kbd> + <kbd>Return</kbd> in an editable table’s first row now adds a row above it, if the table allows new rows. ([#20025](https://github.com/craftcms/cms/pull/20025))
+- The dashboard’s widget settings now include each widget’s name in its reorder button, column picker, and Delete button labels, and announce a widget’s new position to screen readers after it’s reordered. ([#20073](https://github.com/craftcms/cms/pull/20073))
+- Reorder buttons no longer offer a “Move down” option for the only item in a list. ([#20073](https://github.com/craftcms/cms/pull/20073))
 - Fixed an accessibility issue where buttons were still announced as “Loading” after they finished loading, and lost their accessible name if loading took more than five seconds. ([#19975](https://github.com/craftcms/cms/pull/19975))
+- Fixed an accessibility issue where pressing <kbd>Return</kbd> on a dialog’s close button could reopen the dialog, such as the “Check your email” dialog on the Reset Password screen. ([#20049](https://github.com/craftcms/cms/pull/20049))
+- `craft-spinner` now has a `label` property, which describes what is loading to screen readers. Slotted text still replaces it.
+- `craft-field` now has an `instructions-sr-only` attribute, and UI fields and the `Field` view component have `instructionsSrOnly()`, which visually hide instructions while keeping them in the input’s accessible description.
+- Fixed an accessibility issue where spinners in Content Block and Matrix inline-block fields weren’t announced as loading.
+- Fixed an accessibility issue where pressing Escape in a popover inside an element details panel also closed the panel.
+- Fixed an accessibility issue where keyboard focus was lost after moving an item with its reorder button’s “Move up” or “Move down” option. ([#20073](https://github.com/craftcms/cms/pull/20073))
+- Fixed a bug where the “Move up” and “Move down” options didn’t move anything on Settings → Routes or in the dashboard’s widget settings. ([#20073](https://github.com/craftcms/cms/pull/20073))
+- Fixed an accessibility issue where choosing an action menu item with <kbd>Return</kbd> could reopen the menu, or activate whatever received focus next, such as removing an option that had just been added to a checkbox select. ([#20073](https://github.com/craftcms/cms/pull/20073))
+- Fixed an accessibility issue where keyboard focus could be lost after closing a popover with <kbd>Esc</kbd>, such as the dashboard’s widget settings in Firefox. ([#20073](https://github.com/craftcms/cms/pull/20073))
+- Fixed an accessibility issue where <kbd>Esc</kbd> had to be pressed twice to close a popover after using a menu inside it, such as the dashboard’s widget settings after reordering a widget. ([#20073](https://github.com/craftcms/cms/pull/20073))
 - Fixed a bug where single-select comboboxes had no visible focus ring. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Fixed a bug where single-select comboboxes’ combobox element had no accessible name in Chromium. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Fixed an accessibility issue where the environment variable and alias hints below the site group name and installer Base URL inputs weren’t announced by screen readers. ([#20050](https://github.com/craftcms/cms/pull/20050))
+- Fixed an accessibility issue where links in callouts matched the surrounding text color and weren’t underlined, so they could only be told apart by hovering. ([#20050](https://github.com/craftcms/cms/pull/20050))
 - Fixed an accessibility issue where fields’ translation indicators and their help text were hidden. ([#19915](https://github.com/craftcms/cms/pull/19915))
 - Fixed an accessibility issue where field layout tabs and image editor tabs weren’t announced with a name for their tab list.
 - Fixed an accessibility issue where focus rings on tab panels were cut off by the scrolling panel region.
 - Fixed an accessibility issue where the selected tab in `<craft-tabs>`, and the open element details panel’s button, weren’t distinguishable in forced colors mode.
 - Fixed an accessibility issue where an `aria-label` passed to a view component’s `attributes()` could be dropped, leaving icon-only buttons without an accessible name. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Fixed an accessibility issue where tooltips explaining why a button was disabled, such as on disabled secondary form actions, never appeared.
 
 ### Administration
 
@@ -187,6 +253,11 @@
 - The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - The MCP server’s `elements.update` tool can now set and clear assets’ focal points via a `focalPoint` attribute. ([#19933](https://github.com/craftcms/cms/pull/19933))
 - The MCP server now validates custom field values against the `elements.field-schema` schema, and returns an error that identifies each invalid value. ([#19965](https://github.com/craftcms/cms/pull/19965))
+- The MCP server now accepts any date or time that Date and Time fields can parse, such as “2:30 PM” or a date with a UTC offset, rather than requiring ISO 8601. A value they can’t parse is rejected, rather than clearing the field, and a field’s instructions no longer replace the description of its format.
+- The MCP server’s `mcp:use` OAuth scope has been replaced with `mcp:read`, `mcp:write`, and `mcp:admin`. Users now choose an access level when they authorize an MCP client, defaulting to read only, and only administrators are offered full access. Clients that authorize again keep the earlier level without another prompt. ([#20080](https://github.com/craftcms/cms/pull/20080))
+- The MCP server now only shows and accepts the custom fields that users can see and edit in an element’s edit form, as field layouts’ conditions allow. ([#20091](https://github.com/craftcms/cms/pull/20091))
+- Added the “Query for releases” GraphQL schema permission, nested under “Query for element drafts”, which adds `releases` and `release` queries, and a `release` field to drafts.
+- Added the `hasUrls` field to volumes in GraphQL queries.
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - Added the `allowedPrivateHosts` general config setting, which lists hostnames that features fetching remote files can allow to resolve to private IP addresses.
 - Entry type and user group descriptions, fields’ default instructions, tips, and warnings, and field layout elements’ instructions, tips, warnings, and Markdown content now have Markdown inputs. ([#20001](https://github.com/craftcms/cms/pull/20001))
@@ -199,14 +270,28 @@
 - Card view designers’ previews now include a sample chip above the card, which reflects the owner’s color and whether its cards have thumbnails. ([#20003](https://github.com/craftcms/cms/pull/20003))
 - Field layouts’ Generated Fields setting is now in the field layout designer’s Content tab. ([#20003](https://github.com/craftcms/cms/pull/20003))
 - Field layout element and dashboard widget width pickers now preview the new width on hover. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
+- Volumes now have a “Propagation Method” setting, which can be set to “Let each asset choose which sites it should be saved to”. New volumes default to this, as do existing volumes on single-site installs. Existing volumes on multi-site installs continue to save assets to all sites. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for login, password reset, and two-step verification requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
+- GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, and user groups. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added the `sites`, `site`, `sections`, `section`, `entryTypes`, `entryType`, `volumes`, `volume`, `userGroups`, and `userGroup` GraphQL queries, which are available when the schema includes the corresponding components. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Elements now have `site` fields in GraphQL, when the schema includes the “Query for sites” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Entries now have `section` and `type` fields in GraphQL, when the schema includes the “Query for sections” and “Query for entry types” components. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Assets now have `volume` fields in GraphQL, when the schema includes the “Query for volumes” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Users now have `groups` fields in GraphQL, when the schema includes the “Query for user groups” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Fixed a bug where impersonation URLs, including those generated by `craft:users:impersonate`, redirected to the login page rather than signing in as the user.
 
 ### Extensibility
 
+- `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
+- Added `CraftCms\Cms\Support\Query::prepareDateForDb()`, which converts a date to the UTC string Craft stores dates as, for writing or comparing it with the query builder. ([#20053](https://github.com/craftcms/cms/pull/20053))
+- Eloquent models that extend `CraftCms\Cms\Shared\BaseModel` now store and read dates in UTC, including their timestamps and soft-delete dates. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Added `CraftCms\Cms\Ai\Task` and `CraftCms\Cms\Ai\AiTasks`, for registering AI tasks. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - Added `CraftCms\Cms\Support\Facades\Ai`, which plugins use to run `laravel/ai` agents and requests with the provider and model administrators choose for each task. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - Added `CraftCms\Cms\Ai\Events\TaskRunning`, `TaskCompleted`, and `TaskFailed`, which plugins can use to track AI usage and failures, and cancel requests. ([#20006](https://github.com/craftcms/cms/pull/20006))
+- Added the `craft:screen-panel` global Vue component, which plugins can use on their own Inertia pages to add panels, with an optional status and header actions, to the screen’s details pane. ([#20084](https://github.com/craftcms/cms/pull/20084))
 - `CraftCms\Cms\Mcp\Contracts\ProvidesInputSchema` has been renamed to `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`, and its `getMcpInputSchema()` method to `getInputSchema()`.
+- MCP tools without `readOnlyHint: true` now require the `mcp:write` scope, and capabilities with `#[RequiresAdmin]` or `#[RequiresAdminChanges]` require `mcp:admin`. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - Plain Text, Markdown, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`.
 - Added `CraftCms\Cms\Gql\GqlInputSchema`, which describes the values GraphQL input types accept as JSON schemas.
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
@@ -217,6 +302,8 @@
 - The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Added `CraftCms\Cms\Element\Contracts\ElementInterface::supportsSourceBadgeCounts()`, `sourceSupportsBadgeCount()`, and `sourceBadgeCount()`, and the `defaultBadgeCount` source key, for element types whose sources can show a count of their elements. ([#19967](https://github.com/craftcms/cms/pull/19967))
 - Added `CraftCms\Cms\Cp\Data\ActionItem::$badgeLabel`. Element sources’ `badgeLabel` keys are now passed to screen readers in the control panel nav. ([#19967](https://github.com/craftcms/cms/pull/19967))
+- Added the `<craft-text-diff>` web component, which shows two versions of a text as one word-level diff, with each rewritten phrase as one deletion and one insertion. It can collapse long unchanged stretches, and mark passages of the text.
+- Fixed a bug where `t()` from `@craftcms/ui` failed to format a message with a comma inside a plural or select option.
 - `<craft-badge-indicator>` now has a `max` property, which sets the largest count shown before it’s shortened to “99+”. Set it to `Infinity` to show the whole count. Counts are now formatted for the page’s language. ([#19967](https://github.com/craftcms/cms/pull/19967))
 - Removed `CraftCms\Cms\Element\ElementHelper::renderElements()`. `CraftCms\Cms\Support\Template::render()` should be used instead.
 - System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
@@ -231,6 +318,8 @@
 - Added the `cp-table--flush` class, which pads the outer edges of each table row by `--cp-container-padding`. ([#19906](https://github.com/craftcms/cms/pull/19906), [#19936](https://github.com/craftcms/cms/pull/19936))
 - Added the `appearance` prop to the `AdminTable` Vue component, and `CraftCms\Cms\Ui\Nodes\Table::appearance()`, which set how a table meets its container: `plain`, `flush`, or `raised`. The values are available as `TableAppearance` from `@craftcms/cp` and `CraftCms\Cms\Cp\Enums\TableAppearance`. ([#19936](https://github.com/craftcms/cms/pull/19936))
 - Added the `max-height` attribute to `<craft-markdown-field>`, which sets how tall the editor grows before it scrolls. ([#19923](https://github.com/craftcms/cms/pull/19923))
+- Added the `--markdown-field-font-size` CSS custom property, which sets the size of `<craft-markdown-field>`’s text.
+- `<craft-markdown-field>` now reflects its `show-toolbar` property to the attribute.
 - Added the `separated` attribute to `<craft-field-group>`, and `CraftCms\Cms\Cp\Components\FieldGroup::separated()`, which widen the gap between columns and draw a hairline between fields that share a row. ([#20022](https://github.com/craftcms/cms/issues/20022), [#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `outline-fill` appearance to `<craft-pane>`, and `CraftCms\Cms\Cp\Enums\PaneAppearance::OutlineFill`. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `appearance` and `size` properties to `<craft-disclosure>`. `appearance="plain"` drops the content’s hairline and indent, and `size` sizes the default toggle. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -239,6 +328,8 @@
 - Element details panels’ content is no longer padded by the details pane. Panels registered via `Cp.$elementDetailsPanels` with a `component` should set their own padding, using `--cp-container-padding` for the inline padding. ([#19919](https://github.com/craftcms/cms/pull/19919))
 - Added the `label` attribute to `<craft-tabs>`, and `CraftCms\Cms\Cp\Components\Tabs::label()`, which set the tab list’s accessible name.
 - Added `CraftCms\Cms\Cp\Navigation::sourceSubnav()`, which builds a subnav from an element type’s sources, for plugins adding their own control panel section.
+- Added `CraftCms\Cms\Element\Eloquent\EloquentElement` and `CraftCms\Cms\Element\Eloquent\EloquentElements::register()`, for managing an app’s Eloquent models as elements in the control panel, kept in sync with their models. ([#19971](https://github.com/craftcms/cms/pull/19971))
+- Added `CraftCms\Cms\Element\Eloquent\EloquentElementsField`, a base class for field types that relate elements to an Eloquent element type’s elements. ([#19971](https://github.com/craftcms/cms/pull/19971))
 - Added `CraftCms\Cms\Http\Responses\CpScreenResponse::ui()`, for rendering UI definitions or resolved payloads. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Added `CraftCms\Cms\Cp\Data\ActionItem::$status` and `status()`. ([#19892](https://github.com/craftcms/cms/pull/19892))
 - Added `craft.cp.selectize()` and `CraftCms\Cms\Cp\FormFields::selectizeFromConfig()`, which render the legacy selectize variables as a combobox.
@@ -301,6 +392,7 @@
 - `CraftCms\Cms\Ui\Controls\Choice::sortable()` no longer implies the “Add item” menu, and can now be combined with `allOption()`. `presentation(ChoicePresentation::AddMenu)` should be used for the menu. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Deprecated `CraftCms\Cms\Cp\Components\CheckboxSelect::storageKey()`, which now does nothing. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Deprecated `Craft.SortableCheckboxSelect`. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Deprecated `CraftCms\Cms\Element\DeletionBlockers\RelationDeletionBlocker::$elementIndexSettings`, which no longer has any effect.
 - Removed `CraftCms\Cms\Cp\Components\CheckboxSelect::allCheckbox()`. `allOption()` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Removed the `<craft-sortable-checkbox-select>` web component. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `<craft-resize-grips>` web component. ([#20008](https://github.com/craftcms/cms/pull/20008))
@@ -322,10 +414,45 @@
 - Added `CraftCms\Cms\Ui\Nodes\Tab::icon()` and `sidebar()`, and `$icon` and `$sidebar` arguments to `CraftCms\Cms\Ui\Ui::addTab()`. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Added `CraftCms\Cms\Cp\Components\Tab::icon()`. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Added a `prefix` slot to `<craft-tab>`. ([#20005](https://github.com/craftcms/cms/pull/20005))
+- The `capitalize`, `lower`, `title`, and `upper` Twig filters now have `language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- Added the `craft:project-config:check` command, which checks project config schema compatibility without applying changes.
+- Added the `{% render %}` Twig tag. `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- Added `CraftCms\Cms\Component\Contracts\Renderable`. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- Added `CraftCms\Cms\Support\Template::render()`. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- `Illuminate\Support\Collection` now has a `render()` macro. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- Addresses now support drafts.
+- Element fixtures no longer create revisions by default. Set their `createRevisions` property to `true` to retain the previous behavior. ([#19626](https://github.com/craftcms/cms/pull/19626))
+- Added `CraftCms\Cms\Element\Element::showSitesField()`, `sitesFieldHtml()`, and `sitesNodes()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Added `CraftCms\Cms\Ui\Controls\ElementSites`. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Added `CraftCms\Cms\Ui\Controls\ElementSelect::presentation()`, which returns the data an element select control draws an element from.
+- Added `CraftCms\Cms\Field\Field::$tip` and `$warning`.
+- Added `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::defaultTip()` and `defaultWarning()`.
+- Nested elements now have a `$touchOwnersOnSave` property.
+- Added `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::mustHaveField()` and `mustHaveOwner()`.
+- Added `CraftCms\Cms\Gql\Queries\Settings`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `CraftCms\Cms\Gql\Types\EntryType`, `Section`, `Site`, `UserGroup`, and `Volume`. ([#20055](https://github.com/craftcms/cms/pull/20055))
+- Added `CraftCms\Cms\Translation\Locale::languageId()`.
+- Added `CraftCms\Cms\Asset\Data\Volume::$propagationMethod`. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Added `CraftCms\Cms\Asset\Assets::findAcrossSites()`. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- `CraftCms\Cms\Asset\Assets::getAssetById()` now returns the asset in another site if it doesn’t exist in the requested site, when no site ID is passed. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- `CraftCms\Cms\Element\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- `CraftCms\Cms\Support\Str::lower()`, `::title()`, and `::upper()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- `elements/save-draft` action responses now include a `canDeleteForSite` key. ([#20061](https://github.com/craftcms/cms/pull/20061))
+- Added `CraftCms\Cms\Plugin\Plugins::hasPluginIcon()`. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Added `CraftCms\Cms\Ui\Controls\Textarea::singleLine()`. ([#20074](https://github.com/craftcms/cms/pull/20074))
+- Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
 
 ### System
 
+- MySQL database backups and restores now carry over SSL/TLS settings from the system’s MySQL option files (e.g. `ssl-ca` or `disable-ssl-verify-server-cert`), if the database connection doesn’t have any `PDO::MYSQL_ATTR_SSL_*` attributes set. ([#19366](https://github.com/craftcms/cms/pull/19366))
+- MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
+- Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
+- Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
+- Updated Twig to 3.30.
+- Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 - Fixed a bug where element query date params, such as `postDate`, `before`, `after`, `dateCreated`, and Date field params, as well as date condition rules, were off by the system time zone’s UTC offset. ([#19963](https://github.com/craftcms/cms/pull/19963))
+- Fixed a bug where many dates Craft stores, such as elements’ soft-delete dates and sites’, plugins’, relations’, and activity events’ dates, were stored in the system time zone rather than UTC. ([#20053](https://github.com/craftcms/cms/pull/20053))
+- Fixed a bug where revisions were created for elements that hadn’t changed since their last revision, including nested entries that hadn’t changed between their owner’s revisions, if the system time zone wasn’t UTC. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Fixed a bug where dates more than six days out, such as pending entries’ post dates in element indexes, were shown as a day of the week. ([#19972](https://github.com/craftcms/cms/pull/19972))
 - Fixed a bug where nested elements weren’t indented in structure views’ element index tables. ([#19972](https://github.com/craftcms/cms/pull/19972))
 - Fixed a bug where users’ Permissions, Preferences, and Password screens had two “Save and continue editing” actions. ([#19972](https://github.com/craftcms/cms/pull/19972))
@@ -385,12 +512,16 @@
 - Fixed a bug where pages with a secondary nav sidebar, such as Commerce → Store Management → General, showed an empty actions menu below the nav. ([#19959](https://github.com/craftcms/cms/pull/19959))
 - Fixed a bug where double-clicking an element in an element selection modal didn’t select it. ([#19979](https://github.com/craftcms/cms/pull/19979))
 - Fixed a bug where the MCP server’s `elements.create`, `elements.update`, and `elements.validate` tools silently ignored Matrix entries submitted in the format `elements.field-schema` described. ([#19965](https://github.com/craftcms/cms/pull/19965))
+- Fixed a bug where the MCP server’s upload session endpoints couldn’t find upload sessions when a control panel trigger was set. ([#20080](https://github.com/craftcms/cms/pull/20080))
+- Fixed a bug where updating a Matrix entry with a GraphQL mutation or the MCP server cleared its title when no title was given. ([#20091](https://github.com/craftcms/cms/pull/20091))
 - Fixed a bug where asset indexes didn’t offer to undo moving assets or folders. ([#19985](https://github.com/craftcms/cms/pull/19985)))
 - Fixed a bug where input placeholder text had insufficient contrast in the dark theme.
 - Fixed a bug where the “License purchase required” screen’s Refresh button didn’t work.
 - Fixed a bug where link buttons with an icon and a label had no inline padding.
 - Fixed a bug where the Deprecation Warnings utility listed warnings caused by Craft’s own Yii adapter code, rather than by project or plugin code. ([#19995](https://github.com/craftcms/cms/pull/19995))
 - Fixed a bug where the GraphQL `orderBy` argument’s sort direction was ignored. ([#19996](https://github.com/craftcms/cms/pull/19996))
+- Fixed a bug where entry index pages whose names weren’t written in plain Latin letters, such as “Αναρτήσεις” or “Événements”, opened an empty index rather than their first source. ([#20058](https://github.com/craftcms/cms/issues/20058))
+- Fixed an error that occurred when executing GraphQL queries with schemas that could query categories, tags, or global sets.
 - Fixed a bug where custom `orderBy` params on relational field values, such as `entry.myEntriesField.orderBy('title')`, didn’t take precedence over the field’s related order. ([#19997](https://github.com/craftcms/cms/pull/19997))
 - Fixed a bug where action menu items could overflow their menu, such as user groups’ descriptions in the user permissions “Choose” menu. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Fixed a bug where tables without body rows had a double border below their header, and header cells’ backgrounds extended past the table’s rounded corners. ([#20001](https://github.com/craftcms/cms/pull/20001))
@@ -402,6 +533,7 @@
 - Fixed a bug where view mode and image transform mode illustrations, along with native controls, were dark in the light theme when the operating system was set to dark mode. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Fixed a bug where the “No color” and Black color options had no visible edge in the dark theme. ([#20003](https://github.com/craftcms/cms/pull/20003))
 - Fixed a bug where `{placeholder}` parameters weren’t replaced in messages from translation categories without translations, such as Yii’s console error messages.
+- Fixed a bug where control panel screens that hadn’t been ported to Vue, such as plugins’ Twig-rendered pages, kept reloading when an element source had “Show count” enabled. ([#20082](https://github.com/craftcms/cms/pull/20082))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

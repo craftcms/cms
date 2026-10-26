@@ -6,6 +6,7 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\Activity\Contracts\ShouldBeRetained;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -26,7 +27,7 @@ class PurgeExpiredActivity extends GarbageCollectionAction
                 DB::table(Table::ACTIVITYEVENTS)
                     ->select(['id', 'eventType'])
                     ->whereNull('rootEventId')
-                    ->where('occurredAt', '<', now()->subSeconds($this->generalConfig->activityRetentionDuration))
+                    ->where('occurredAt', '<', Query::prepareDateForDb(now()->subSeconds($this->generalConfig->activityRetentionDuration)))
                     ->orderBy('id')
                     ->chunkById(
                         $this->garbageCollection::CHUNK_SIZE,

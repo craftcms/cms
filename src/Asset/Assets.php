@@ -21,6 +21,7 @@ use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Asset\PreviewHandlers\Video;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -29,6 +30,7 @@ use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -64,9 +66,36 @@ class Assets
         private readonly CraftAssetTransformDriver $craftAssetTransformDriver,
     ) {}
 
+    /**
+     * Returns an asset by its ID.
+     *
+     * If no site ID is passed, the asset will be returned in the requested site if it exists there,
+     * or in another site it exists in otherwise (e.g. for volumes with custom propagation).
+     */
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
     {
-        return $this->elements->getElementById($assetId, Asset::class, $siteId);
+        if ($siteId !== null) {
+            return $this->elements->getElementById($assetId, Asset::class, $siteId);
+        }
+
+        /** @var Asset|null */
+        return $this->findAcrossSites()->id($assetId)->one();
+    }
+
+    /**
+     * Returns an asset query that isn't limited to a single site.
+     *
+     * Each asset will be returned once, in the requested site if it exists there, or in another site
+     * it exists in otherwise (e.g. for volumes with custom propagation).
+     */
+    public function findAcrossSites(): AssetQuery
+    {
+        $preferredSite = app(RequestedSite::class)->get() ?? Sites::getCurrentSite();
+
+        return Asset::find()
+            ->site('*')
+            ->preferSites([$preferredSite->id])
+            ->unique();
     }
 
     public function getTotalAssets(mixed $criteria = null): int
@@ -329,7 +358,7 @@ class Assets
             FileKind::Image->value => new ImagePreview($asset),
             FileKind::Pdf->value => new Pdf($asset),
             FileKind::Video->value => new Video($asset),
-            FileKind::Html->value, FileKind::Javascript->value, FileKind::Json->value, FileKind::Php->value, FileKind::Text->value, FileKind::Xml->value => new Text($asset),
+            FileKind::Html->value, FileKind::Javascript->value, FileKind::Json->value, FileKind::Markdown->value, FileKind::Php->value, FileKind::Text->value, FileKind::Xml->value => new Text($asset),
             default => null,
         };
     }

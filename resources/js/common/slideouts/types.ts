@@ -16,8 +16,10 @@ export interface SlideoutInstance {
   props: ScreenPageProps;
   loading: boolean;
   error: string | null;
-  /** Refocused when the panel closes. */
+  /** Refocused when the panel closes, unless {@link returnFocus} says otherwise. */
   opener: HTMLElement | null;
+  /** See {@link OpenSlideoutOptions.returnFocus}. */
+  returnFocus?: SlideoutReturnFocus;
   /** See {@link OpenSlideoutOptions.onSaved}. */
   onSaved: ((result: SlideoutSaveResult) => void) | null;
   /** See {@link OpenSlideoutOptions.onClosed}. */
@@ -40,12 +42,25 @@ export interface SlideoutSaveResult {
   draft?: boolean;
 }
 
+export type SlideoutReturnFocus = (
+  opener: HTMLElement | null
+) => HTMLElement | null | undefined;
+
 export interface OpenSlideoutOptions {
   /** Save this nested element into the specified derivative owner, never its canonical owner. */
   nestedOwnerId?: number;
   prepareNestedOwner?: () => Promise<number | undefined>;
   /** Element to refocus on close. Defaults to whatever had focus at open time. */
   opener?: HTMLElement | null;
+  /**
+   * Decides where focus goes when the panel closes, called with the opener.
+   *
+   * Only needed for a target other than the opener. When it's unset or returns
+   * nothing that can take focus, focus goes to the opener, then to the button
+   * of the menu the opener sat in once that has closed, then to the panel the
+   * opener was in.
+   */
+  returnFocus?: SlideoutReturnFocus;
   /**
    * Width for this panel, as any CSS length (`'40rem'`, `'70vw'`, …).
    *

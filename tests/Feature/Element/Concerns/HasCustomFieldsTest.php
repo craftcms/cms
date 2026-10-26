@@ -11,6 +11,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
@@ -44,7 +45,7 @@ beforeEach(function () {
             'siteId' => $draft->siteId,
             'fieldId' => $this->field->id,
             'layoutElementUid' => $layoutElementUid,
-            'dateUpdated' => $dateUpdated ?? now(),
+            'dateUpdated' => Query::prepareDateForDb($dateUpdated ?? now()),
             'propagated' => true,
         ]);
     };
@@ -238,7 +239,7 @@ describe('outdated fields (_outdatedFields)', function () {
 
         DB::table(Table::DRAFTS)
             ->where('id', $draft->draftId)
-            ->update(['dateLastMerged' => now()->addDay()]);
+            ->update(['dateLastMerged' => Query::prepareDateForDb(now()->addDay())]);
 
         ($this->insertChangedField)($draft, now()->subDay(), $draft->getCanonicalId());
         $draft = ($this->reloadDraft)($draft);

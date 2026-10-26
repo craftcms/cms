@@ -60,7 +60,7 @@ craft-markdown-field:not(:defined) {
   box-shadow: var(--markdown-field-shadow) !important;
   color: var(--markdown-field-text) !important;
   font-family: var(--c-font-mono) !important;
-  font-size: var(--c-text-base) !important;
+  font-size: var(--markdown-field-font-size, var(--c-text-base)) !important;
   line-height: 1.5 !important;
   white-space: pre-wrap;
 }
@@ -202,6 +202,12 @@ craft-markdown-field:defined .overtype-preview,
 craft-markdown-field:defined .overtype-placeholder {
   padding-block: var(--c-spacing-xs) !important;
   font-family: var(--c-font-mono) !important;
+}
+
+craft-markdown-field:defined:not([show-toolbar]) .overtype-input,
+craft-markdown-field:defined:not([show-toolbar]) .overtype-preview,
+craft-markdown-field:defined:not([show-toolbar]) .overtype-placeholder {
+  padding-block: var(--c-spacing-md) !important;
 }
 
 craft-markdown-field:defined .overtype-preview {

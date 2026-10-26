@@ -40,6 +40,7 @@
     align-items: center;
     color: currentColor;
     text-decoration: none;
+    border-radius: var(--c-radius-md);
   }
 
   /* Same icon track as the expanded state, so the logo doesn't change size

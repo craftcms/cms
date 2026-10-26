@@ -33,11 +33,6 @@ window.addEventListener('craft:edit-field', ((ev: CustomEvent) => {
     );
   };
 
-  // Focus the trigger so closing the slideout returns focus to it.
-  if (trigger instanceof HTMLElement) {
-    trigger.focus();
-  }
-
   const url = Craft.getCpUrl('settings/fields/edit', {fieldId});
 
   void openSlideout(url, {
@@ -60,10 +55,6 @@ window.addEventListener('craft:edit-entry-type', ((ev: CustomEvent) => {
 
   if (!entryTypeId) {
     return;
-  }
-
-  if (trigger instanceof HTMLElement) {
-    trigger.focus();
   }
 
   const url = Craft.getCpUrl(`settings/entry-types/${entryTypeId}`);

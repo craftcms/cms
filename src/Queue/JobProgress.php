@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Queue;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Queue\ClearableQueue;
@@ -262,7 +263,7 @@ readonly class JobProgress
             ->where('status', '!=', JobStatus::Cancelled->value)
             ->update([
                 'status' => $status->value,
-                'dateUpdated' => now(),
+                'dateUpdated' => Query::prepareDateForDb(now()),
             ]);
     }
 

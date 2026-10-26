@@ -444,6 +444,14 @@ class Install extends Migration
             $table->primary(['elementId', 'key']);
         });
 
+        $logger?->subLabel('elements_models');
+        Schema::create(Table::ELEMENTS_MODELS, function (Blueprint $table) {
+            $table->integer('elementId')->primary();
+            $table->string('modelType');
+            $table->string('modelKey');
+            $table->unique(['modelType', 'modelKey']);
+        });
+
         $logger?->subLabel('elements_owners');
         Schema::create(Table::ELEMENTS_OWNERS, function (Blueprint $table) {
             $table->integer('elementId');
@@ -1013,6 +1021,7 @@ class Install extends Migration
             $table->text('titleTranslationKeyFormat')->nullable();
             $table->string('altTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('altTranslationKeyFormat')->nullable();
+            $table->string('propagationMethod')->default(PropagationMethod::Custom->value);
             $table->unsignedSmallInteger('sortOrder')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -1254,6 +1263,7 @@ class Install extends Migration
         Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('draftId')->references('id')->on(Table::DRAFTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('revisionId')->references('id')->on(Table::REVISIONS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
+        Schema::table(Table::ELEMENTS_MODELS, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTS_OWNERS, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTS_OWNERS, fn (Blueprint $table) => $table->foreign('ownerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTS_SITES, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());

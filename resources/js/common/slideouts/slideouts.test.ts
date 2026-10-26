@@ -209,6 +209,100 @@ describe('slideout store', () => {
     opener.remove();
   });
 
+  it('focuses what returnFocus returns on close', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+    const hidden = document.createElement('div');
+    hidden.hidden = true;
+    const opener = document.createElement('button');
+    hidden.appendChild(opener);
+    const target = document.createElement('button');
+    document.body.append(hidden, target);
+    const returnFocus = vi.fn(() => target);
+
+    const panel = (await openSlideout('/a', {opener, returnFocus}))!;
+    closeSlideout(panel.id);
+
+    expect(returnFocus).toHaveBeenCalledWith(opener);
+    expect(document.activeElement).toBe(target);
+  });
+
+  it('falls back to the opener when returnFocus finds nothing', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+
+    const panel = (await openSlideout('/a', {
+      opener,
+      returnFocus: () => null,
+    }))!;
+    closeSlideout(panel.id);
+
+    expect(document.activeElement).toBe(opener);
+  });
+
+  it('sends focus to the menu’s button when the item that opened it is hidden', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+    const container = document.createElement('div');
+    container.innerHTML = `
+      <craft-action-menu>
+        <button slot="invoker">Actions</button>
+        <div slot="content"><button>Entry type settings</button></div>
+      </craft-action-menu>
+    `;
+    document.body.append(container);
+    const invoker = container.querySelector<HTMLElement>('[slot="invoker"]');
+    const item = container.querySelector<HTMLElement>(
+      '[slot="content"] button'
+    )!;
+
+    const panel = (await openSlideout('/a', {opener: item}))!;
+    container.querySelector<HTMLElement>('[slot="content"]')!.hidden = true;
+    closeSlideout(panel.id);
+
+    expect(document.activeElement).toBe(invoker);
+    container.remove();
+  });
+
+  it('sends focus to the panel it was opened from once the opener’s menu is gone', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+    const outer = (await openSlideout('/outer'))!;
+    const origin = document.createElement('div');
+    origin.tabIndex = -1;
+    origin.dataset.slideoutId = outer.id;
+    origin.innerHTML = `
+      <craft-action-menu>
+        <button slot="invoker">Actions</button>
+        <div slot="content"><button>Entry type settings</button></div>
+      </craft-action-menu>
+    `;
+    document.body.append(origin);
+    const item = origin.querySelector<HTMLElement>('[slot="content"] button')!;
+
+    const panel = (await openSlideout('/a', {opener: item}))!;
+    origin.querySelector('craft-action-menu')!.remove();
+    closeSlideout(panel.id);
+
+    expect(document.activeElement).toBe(origin);
+    origin.remove();
+    closeSlideout(outer.id, {force: true});
+  });
+
   it('surfaces a load failure on the panel instead of throwing', async () => {
     fetchSlideoutPage.mockRejectedValue(new Error('boom'));
 

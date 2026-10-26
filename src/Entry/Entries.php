@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\Query;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
@@ -273,7 +274,7 @@ class Entries
                         ->whereIn('id', $ids)
                         ->update([
                             'sectionId' => $section->id,
-                            'dateUpdated' => now(),
+                            'dateUpdated' => Query::prepareDateForDb(now()),
                         ]);
                 }
 

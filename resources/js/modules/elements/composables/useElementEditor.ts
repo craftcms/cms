@@ -814,11 +814,20 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
             })
           );
         }
+
+        if (!slideout) {
+          // A failed save still writes the draft, so the user's changes aren't
+          // lost, which moves its `dateUpdated`; without this the next poll
+          // would report our own write as someone else's change.
+          activity.rebase(props.updatedTimestamps);
+        }
       },
-      // A submission supersedes any in-flight draft write.
+      // A submission supersedes any in-flight draft write, and what the last
+      // one reported.
       onBeforeSave: () => {
         invalidateUiRefreshes();
         autosave.cancel();
+        autosave.resetStatus();
       },
       onSuccess: (data) => {
         draftElementIds.clear();
@@ -1081,6 +1090,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       savedUi.value = null;
       savedScreen.value = null;
       autosave.clearSaved();
+      autosave.resetStatus();
+      // The errors were the discarded changes' own.
+      form.clearErrors();
       // The draft the autosave pointer names has just been deleted; leaving it
       // set would send the next save at it, and `draftIsProvisional` reads it to
       // decide whether the screen is showing provisional changes.

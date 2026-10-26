@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Workflows;
@@ -492,7 +493,7 @@ readonly class Drafts
             ->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', '=', 'elements.draftId')
             ->where('drafts.saved', false)
             ->whereNull('drafts.canonicalId')
-            ->where('elements.dateUpdated', '<', now()->subSeconds(Cms::config()->purgeUnsavedDraftsDuration))
+            ->where('elements.dateUpdated', '<', Query::prepareDateForDb(now()->subSeconds(Cms::config()->purgeUnsavedDraftsDuration)))
             ->get();
 
         foreach ($drafts as $draftInfo) {

@@ -387,17 +387,33 @@
    * Double-clicking a block's titlebar folds it, as it did in Craft 5. The
    * controls sharing the titlebar keep their own double-clicks.
    */
-  function toggleFromTitlebar(uid: string, event: MouseEvent): void {
-    if (
+  /** Whether an event on a titlebar landed on one of its controls. */
+  function isTitlebarControl(event: MouseEvent): boolean {
+    return (
       event.target instanceof Element &&
       event.target.closest(
         'button, a, input, craft-checkbox, craft-action-menu, [data-drag-handle]'
-      )
-    ) {
+      ) !== null
+    );
+  }
+
+  function toggleFromTitlebar(uid: string, event: MouseEvent): void {
+    if (isTitlebarControl(event)) {
       return;
     }
     event.preventDefault();
     setCollapsed(uid, !isCollapsed(uid));
+  }
+
+  /**
+   * Keeps a double-click that folds a block from selecting text too. The
+   * browser selects on the second press, before the `dblclick`, so it's that
+   * press that's canceled.
+   */
+  function preventTitlebarSelection(_uid: string, event: MouseEvent): void {
+    if (event.detail > 1 && !isTitlebarControl(event)) {
+      event.preventDefault();
+    }
   }
 
   function setCollapsed(uid: string, collapsed: boolean): void {
@@ -1602,6 +1618,7 @@
         :item-attrs="blockAttrs"
         :card-attrs="blockCardAttrs"
         @reorder="move"
+        @header-mousedown="preventTitlebarSelection"
         @header-dblclick="toggleFromTitlebar"
       >
         <template #label="{id: uid}">
@@ -1694,9 +1711,9 @@
         <craft-button
           v-if="pasteable.length"
           type="button"
-          variant="dashed"
-          icon="duplicate"
-          class="mt-sm"
+          variant="outline"
+          icon="custom-icons/duplicate"
+          class="paste-btn mt-sm"
           :loading="pasting"
           :disabled="busy"
           @click.stop.prevent="pasteBlocks()"

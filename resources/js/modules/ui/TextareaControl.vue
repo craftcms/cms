@@ -15,10 +15,11 @@
     maxLength?: number;
     placeholder?: string;
     monospace?: boolean;
+    singleLine?: boolean;
     textExpanderTriggers?: TextExpanderTriggers;
   };
 
-  defineProps<{
+  const props = defineProps<{
     control: UiControlPayload<TextareaControlProps>;
     value: unknown;
     label?: string;
@@ -30,6 +31,27 @@
   const emit = defineEmits<{
     (event: 'update:value', value: string, kind: 'typing'): void;
   }>();
+
+  /** Single-line values wrap, but can't contain line breaks. */
+  function onBeforeInput(event: InputEvent): void {
+    if (
+      props.control.props.singleLine &&
+      ['insertLineBreak', 'insertParagraph'].includes(event.inputType)
+    ) {
+      event.preventDefault();
+    }
+  }
+
+  function onInput(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    if (!props.control.props.singleLine || !/[\r\n]/.test(textarea.value)) {
+      return;
+    }
+
+    const caret = textarea.selectionStart;
+    textarea.value = textarea.value.replace(/\r\n?|\n/g, ' ');
+    textarea.setSelectionRange(caret, caret);
+  }
 
   const onModelValueChanged = ignoreModelValueInitialization((event) => {
     if (!(event.target instanceof CraftTextarea)) {
@@ -67,6 +89,8 @@
       :readonly="control.mode === 'readOnly'"
       :disabled="control.mode === 'disabled'"
       :aria-invalid="invalid ? 'true' : undefined"
+      @beforeinput="onBeforeInput"
+      @input="onInput"
     ></textarea>
   </craft-textarea>
   <craft-text-expander

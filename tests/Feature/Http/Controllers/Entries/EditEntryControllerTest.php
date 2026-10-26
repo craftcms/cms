@@ -319,7 +319,7 @@ it('ends the breadcrumbs with a revision switcher instead of naming the draft in
 it('caps the context menu at five revisions, listing every draft', function () {
     foreach (range(1, 7) as $i) {
         app(Drafts::class)->createDraft($this->entry, auth()->id(), name: "Draft $i");
-        app(Revisions::class)->createRevision($this->entry, auth()->id(), "Revision $i");
+        app(Revisions::class)->createRevision($this->entry, auth()->id(), "Revision $i", force: true);
     }
 
     get($this->entry->getCpEditUrl())

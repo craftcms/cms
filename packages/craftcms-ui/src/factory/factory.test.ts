@@ -65,6 +65,24 @@ describe('createCopyTextPrompt', () => {
     expect(textarea?.readOnly).toBe(true);
     expect(textarea?.value).toBe('{"a":1}');
   });
+
+  it('removes the dialog once it has closed', () => {
+    const dialog = createCopyTextPrompt({value: 'x'});
+    const child = dialog.querySelector('craft-copy-button')!;
+
+    child.dispatchEvent(new CustomEvent('craft-after-hide', {bubbles: true}));
+    expect(dialog.isConnected).toBe(true);
+
+    dialog.dispatchEvent(new CustomEvent('craft-after-hide', {bubbles: true}));
+    expect(dialog.isConnected).toBe(false);
+  });
+
+  it('hands returnFocus to the dialog', () => {
+    const returnFocus = () => null;
+    const dialog = createCopyTextPrompt({value: 'x', returnFocus});
+
+    expect(dialog.returnFocus).toBe(returnFocus);
+  });
 });
 
 describe('createTextInput', () => {

@@ -7,8 +7,10 @@ use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Tests\Support\Ai\IndexTask;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\Ai\DescribeTask;
 use CraftCms\Cms\User\Elements\User;
 use Inertia\Testing\AssertableInertia;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -40,6 +42,29 @@ it('shows registered tasks with their stored mappings', function (): void {
             ->component('Ui')
             ->where('ui.values.tasks.test:summarize.enabled', '0')
             ->where('ui.values.tasks.test:summarize.provider', 'anthropic'))
+        ->assertOk();
+});
+
+it('shows each task’s name, its description in an info icon, and the plugin that registered it', function (): void {
+    loadTestPlugin();
+    app(AiTasks::class)->register(DescribeTask::class);
+
+    get(route('craft.cp.settings.ai.index'))
+        ->assertInertia(function (AssertableInertia $page) {
+            $columns = $page->toArray()['props']['ui']['nodes'];
+            $values = $page->toArray()['props']['ui']['values']['tasks'];
+            $summarize = new Crawler($values['test:summarize']['label']);
+            $describe = new Crawler($values['test-plugin:describe']['label']);
+
+            expect(json_encode($columns))->not->toContain('"details"')
+                ->and($summarize->text())->toBe('Summarize')
+                ->and($summarize->filter('craft-info-icon')->count())->toBe(0)
+                ->and($describe->filter('div')->first()->getNode(0)->firstChild->textContent)->toBe('Describe')
+                ->and($describe->filter('craft-info-icon')->attr('label'))->toBe('More info about Describe')
+                ->and($describe->filter('craft-info-icon')->text())->toBe('Writes <descriptions> of things.')
+                ->and($describe->filter('div')->last()->text())->toBe('Test Plugin')
+                ->and($describe->filter('div')->last()->filter('span[aria-hidden="true"] svg')->count())->toBe(1);
+        })
         ->assertOk();
 });
 
@@ -104,6 +129,7 @@ it('warns about re-indexing only when a task uses embeddings', function (bool $h
 
 it('lists the tasks that can’t run, and marks providers without an API key', function (): void {
     config(['ai.providers.keyless' => ['driver' => 'anthropic', 'key' => null]]);
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_AI, ['tasks' => ['craft:askAi' => ['provider' => 'anthropic']]]);
 
     $response = get(route('craft.cp.settings.ai.index'))->assertOk();
 

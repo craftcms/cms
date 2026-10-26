@@ -25,6 +25,8 @@ class Textarea extends Control
 
     private bool $monospace = false;
 
+    private bool $singleLine = false;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
         $textarea = TextareaComponent::make()
@@ -80,6 +82,16 @@ class Textarea extends Control
         return $this;
     }
 
+    /**
+     * Keeps the value to a single line, while letting it wrap. Line breaks can't be typed, and pasted ones become spaces.
+     */
+    public function singleLine(bool $singleLine = true): static
+    {
+        $this->singleLine = $singleLine;
+
+        return $this;
+    }
+
     #[\Override]
     public function props(mixed $value = null): array
     {
@@ -88,6 +100,7 @@ class Textarea extends Control
             'maxLength' => $this->maxLength,
             'placeholder' => $this->placeholder,
             'monospace' => $this->monospace ?: null,
+            'singleLine' => $this->singleLine ?: null,
             ...$this->textExpanderProps(),
         ]);
     }

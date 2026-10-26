@@ -1691,8 +1691,102 @@ describe('useElementEditor', () => {
         options.onFinish?.({});
         await nextTick();
       },
+      /**
+       * A response that failed validation, landing in Inertia's order: the
+       * errors are set straight after the page, before Vue flushes.
+       */
+      async fail(
+        page: {props: Record<string, unknown>},
+        props: any,
+        errors: Record<string, string>
+      ) {
+        const {options} = this.last();
+        page.props = props;
+        await options.onError(errors);
+        await nextTick();
+        options.onFinish?.({});
+        await nextTick();
+      },
     };
   }
+
+  /**
+   * A provisional draft with a Title cleared and autosaved, then a Save the
+   * server rejects. It writes the draft anyway, moving its `dateUpdated`.
+   */
+  async function failSaveOfAutosavedDraft() {
+    vi.useFakeTimers();
+    postSpy.mockImplementation(async (url: string) =>
+      url.includes('recent-activity')
+        ? {
+            data: {
+              activity: [],
+              updatedTimestamp: 3,
+              canonicalUpdatedTimestamp: 1,
+            },
+          }
+        : {
+            data: {
+              draftId: 9,
+              timestamp: 'at 5:13 AM',
+              updatedTimestamp: 2,
+              canonicalUpdatedTimestamp: 1,
+            },
+          }
+    );
+    const screen = payload({
+      activityUrl: '/actions/elements/recent-activity',
+      canAutosave: true,
+      draftId: 9,
+      isProvisionalDraft: true,
+      updatedTimestamps: {element: 2, canonical: 1},
+      ui: fieldLayout('Title'),
+    });
+    const mounted = mount(screen);
+
+    await typeTitle('');
+    await vi.advanceTimersByTimeAsync(2000);
+    await nextTick();
+    expect(mounted.editor.autosave.status.value).toBe('saved');
+
+    const save = interceptSave();
+    mounted.editor.save();
+    await save.fail(
+      mounted.page,
+      {...screen, updatedTimestamps: {element: 3, canonical: 1}},
+      {title: 'Title cannot be blank.'}
+    );
+    save.restore();
+    vi.useRealTimers();
+
+    return mounted;
+  }
+
+  it('reports neither its own write nor the last autosave once a save fails', async () => {
+    const {editor} = await failSaveOfAutosavedDraft();
+
+    await editor.activity.poll();
+
+    expect(editor.form.errors).toEqual({title: 'Title cannot be blank.'});
+    expect(editor.activity.isStale.value).toBe(false);
+    expect(editor.autosave.status.value).toBe('idle');
+  });
+
+  it('clears a failed save’s errors when the draft is discarded', async () => {
+    const {editor, page} = await failSaveOfAutosavedDraft();
+    const reload = vi
+      .spyOn(router, 'reload')
+      .mockImplementation((options?: any) => {
+        page.props = payload({ui: fieldLayout('Title')});
+        options?.onFinish?.();
+      });
+
+    await editor.discardDraft();
+
+    expect(editor.form.hasErrors).toBe(false);
+    expect(editor.autosave.status.value).toBe('idle');
+    reload.mockRestore();
+  });
 
   it('saves a newer mutation before attaching after an earlier autosave', async () => {
     vi.useFakeTimers();

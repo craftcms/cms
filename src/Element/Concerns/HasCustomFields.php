@@ -11,6 +11,7 @@ use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -225,8 +226,8 @@ trait HasCustomFields
                 ->where('siteId', $this->siteId)
                 ->when(
                     value: $this->dateLastMerged,
-                    callback: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateLastMerged),
-                    default: fn (Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated),
+                    callback: fn (Builder $query) => $query->where('dateUpdated', '>=', Query::prepareDateForDb($this->dateLastMerged)),
+                    default: fn (Builder $query) => $query->where('dateUpdated', '>=', Query::prepareDateForDb($this->dateCreated)),
                 )
                 ->pluck('layoutElementUid')
                 ->all();

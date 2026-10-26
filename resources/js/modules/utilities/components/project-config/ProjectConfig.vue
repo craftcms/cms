@@ -10,6 +10,7 @@
   } from '@actions/Utilities/ProjectConfigController';
   import SyncConfigButton from '@/modules/utilities/components/project-config/SyncConfigButton.vue';
   import TransitionFade from '@/common/components/TransitionFade.vue';
+  import CodeHighlight from '@/common/components/CodeHighlight.vue';
 
   const props = defineProps<{
     readOnly: boolean;
@@ -223,7 +224,7 @@
         class="my-3"
         :aria-label="t('Loaded Project Config Data')"
       >
-        <pre><code>{{ entireConfig }}</code></pre>
+        <CodeHighlight language="yaml" :code="entireConfig" />
       </craft-pane>
       <div class="buttons">
         <craft-button :href="download().url">

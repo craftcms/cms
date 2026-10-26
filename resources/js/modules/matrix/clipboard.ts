@@ -32,6 +32,7 @@ export interface ClipboardRuntime {
     announce(message: string): void;
     displayError(message?: string): void;
     copyElements(elementInfo: CopiedElementInfo[]): void;
+    clearCopiedElements(): void;
     getCopiedElements(): CopiedElementInfo[];
     onCopyElements(
       callback: (elementInfo: CopiedElementInfo[], buttonLabel?: string) => void

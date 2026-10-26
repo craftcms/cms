@@ -41,5 +41,12 @@
 </script>
 
 <template>
-  <ActionMenu v-if="actions.length" :actions="actions" :flush="flush" />
+  <!-- One per element editor, and a slideout scopes its own, so a fixed key
+    is enough for focus to find this menu again after a re-render. -->
+  <ActionMenu
+    v-if="actions.length"
+    :actions="actions"
+    :flush="flush"
+    data-focus-key="element-actions"
+  />
 </template>

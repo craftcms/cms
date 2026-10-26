@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import {type JobInfo} from '@/modules/queue/types';
-  import VarDump from '@/common/components/VarDump.vue';
+  import CodeHighlight from '@/common/components/CodeHighlight.vue';
   import {computed} from 'vue';
 
   const props = defineProps<{
@@ -147,9 +147,10 @@
 
     <div class="mt-6">
       <h4 class="text-lg">{{ t('Job Data') }}</h4>
-      <div class="my-2">
-        <VarDump :data="job" style="font-size: 0.8rem" />
-      </div>
+      <!-- craft-pane makes its own scroll container the tab stop -->
+      <craft-pane variant="code" class="my-2" :aria-label="t('Job Data')">
+        <CodeHighlight language="json" :value="job" />
+      </craft-pane>
     </div>
   </div>
 </template>

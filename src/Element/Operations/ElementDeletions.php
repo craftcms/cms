@@ -39,6 +39,7 @@ use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\BulkOps;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Query;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -151,7 +152,7 @@ readonly class ElementDeletions
                         ->whereIn('id', $relationIds)
                         ->update([
                             'targetId' => $prevailingElement->id,
-                            'dateUpdated' => now(),
+                            'dateUpdated' => Query::prepareDateForDb(now()),
                         ]);
                 }
             }
@@ -175,7 +176,7 @@ readonly class ElementDeletions
                         ->whereIn('id', $structureElementIds)
                         ->update([
                             'elementId' => $prevailingElement->id,
-                            'dateUpdated' => now(),
+                            'dateUpdated' => Query::prepareDateForDb(now()),
                         ]);
                 }
             }
@@ -325,7 +326,7 @@ readonly class ElementDeletions
                     DB::table(Table::ELEMENTS)
                         ->where('id', $element->id)
                         ->update([
-                            'dateUpdated' => $now = now(),
+                            'dateUpdated' => $now = Query::prepareDateForDb(now()),
                             'dateDeleted' => $now,
                             'deletedWithOwner' => $element->deletedWithOwner,
                         ]);
@@ -411,14 +412,20 @@ readonly class ElementDeletions
                 return;
             }
 
-            $multiSiteElementIds = $firstElement::find()
-                ->id(Arr::pluck($elements, 'id'))
-                ->status(null)
-                ->drafts(null)
-                ->siteId(['not', $firstElement->siteId])
-                ->unique()
-                ->pluck('elements.id')
-                ->all();
+            // (element queries ignore the siteId param when there's only one site, so check that first)
+            if (Sites::isMultiSite(withTrashed: true)) {
+                $multiSiteElementIds = $firstElement::find()
+                    ->id(Arr::pluck($elements, 'id'))
+                    ->status(null)
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
+                    ->siteId(['not', $firstElement->siteId])
+                    ->unique()
+                    ->pluck('elements.id')
+                    ->all();
+            } else {
+                $multiSiteElementIds = [];
+            }
 
             $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
             $multiSiteElements = [];
@@ -451,6 +458,7 @@ readonly class ElementDeletions
                         ->id($multiSiteElementIds)
                         ->status(null)
                         ->drafts(null)
+                        ->provisionalDrafts(null)
                         ->site('*')
                         ->unique(),
                     continueOnError: true,
@@ -473,8 +481,15 @@ readonly class ElementDeletions
                 }
             }
 
+            // Delete any single-site elements the same way they'd be deleted normally (soft-deleted),
+            // except for drafts, which are always hard-deleted, and nested elements, which get deleted for a site
+            // along with their owners and couldn't be restored on their own
             foreach ($singleSiteElements as $element) {
-                $this->deleteElement($element, true);
+                $hardDelete = (
+                    $element->getIsDraft() ||
+                    ($element instanceof NestedElementInterface && $element->getPrimaryOwnerId() !== null)
+                );
+                $this->deleteElement($element, $hardDelete);
             }
         });
     }
@@ -567,7 +582,7 @@ readonly class ElementDeletions
                     ->where('id', $element->id)
                     ->update([
                         'dateDeleted' => null,
-                        'dateUpdated' => now(),
+                        'dateUpdated' => Query::prepareDateForDb(now()),
                         'deletedWithOwner' => null,
                     ]);
 
@@ -624,7 +639,7 @@ readonly class ElementDeletions
                         ->where('t.canonicalId', $canonicalId),
                 )
                 ->update([
-                    'dateDeleted' => $delete ? now() : null,
+                    'dateDeleted' => $delete ? Query::prepareDateForDb(now()) : null,
                 ]);
         }
     }
