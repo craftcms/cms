@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ai;
 
-use BackedEnum;
 use CraftCms\Cms\Ai\Contracts\TaskInterface;
 use CraftCms\Cms\Ai\Data\CapabilityCheck;
 use CraftCms\Cms\Ai\Data\ResolvedProvider;
@@ -16,6 +15,7 @@ use Illuminate\Container\Attributes\Singleton;
 use Laravel\Ai\AiManager;
 use Throwable;
 
+use function CraftCms\Cms\enum_value;
 use function CraftCms\Cms\t;
 
 /**
@@ -87,8 +87,7 @@ class Ai
             return false;
         }
 
-        $driver = $config['driver'] ?? null;
-        $driver = $driver instanceof BackedEnum ? $driver->value : $driver;
+        $driver = enum_value($config['driver'] ?? null);
 
         if (in_array($driver, self::KEYLESS_DRIVERS, true)) {
             return false;
