@@ -67,6 +67,7 @@ use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
 use CraftCms\Cms\Image\Blurhash;
 use CraftCms\Cms\Image\ColorGrid;
+use CraftCms\Cms\Image\ColorNames;
 use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
@@ -872,9 +873,22 @@ class Asset extends Element
         return match ($attribute) {
             'keywords' => implode(' ', $this->keywords ?? []),
             // Images can be found by the names of their colors
-            'colors' => $this->kind === FileKind::Image->value ? implode(' ', $this->colors?->labels() ?? []) : '',
+            'colors' => $this->kind === FileKind::Image->value ? $this->colorKeywords() : '',
             default => parent::searchKeywords($attribute),
         };
+    }
+
+    /**
+     * Returns the names of the image’s main colors in English and in the site’s language, such as “red rot”.
+     */
+    private function colorKeywords(): string
+    {
+        $language = $this->getSite()->language;
+
+        return collect($this->colors?->labels() ?? [])
+            ->flatMap(fn (string $name): array => [$name, mb_strtolower(ColorNames::label($name, $language))])
+            ->unique()
+            ->implode(' ');
     }
 
     /** @return array<int|string, string|array{label: string, orderBy: string, defaultDir: string}> */

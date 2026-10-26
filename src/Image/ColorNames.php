@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
+use function CraftCms\Cms\t;
+
 /**
  * Names colors in plain words, such as “red” or “teal”, so images can be found by the colors in them.
  *
@@ -42,6 +44,28 @@ class ColorNames
             $chroma < 0.035 => $lightness > 0.9 ? 'white' : 'gray',
             $hue >= 30 && $hue < 100 && $lightness < 0.55 => 'brown',
             default => self::hueName($hue),
+        };
+    }
+
+    /**
+     * Returns a color name, such as `red`, translated for display or search, such as “Rot” in German.
+     */
+    public static function label(string $name, ?string $locale = null): string
+    {
+        return match ($name) {
+            'black' => t('Black', locale: $locale),
+            'white' => t('White', locale: $locale),
+            'gray' => t('Gray', locale: $locale),
+            'brown' => t('Brown', locale: $locale),
+            'red' => t('Red', locale: $locale),
+            'orange' => t('Orange', locale: $locale),
+            'yellow' => t('Yellow', locale: $locale),
+            'green' => t('Green', locale: $locale),
+            'teal' => t('Teal', locale: $locale),
+            'blue' => t('Blue', locale: $locale),
+            'purple' => t('Purple', locale: $locale),
+            'pink' => t('Pink', locale: $locale),
+            default => $name,
         };
     }
 
