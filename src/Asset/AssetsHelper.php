@@ -42,6 +42,21 @@ class AssetsHelper
     public const string INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
     /**
+     * The most characters a file’s preview text keeps, which is more than its icon shows.
+     *
+     * @see previewText()
+     */
+    public const int PREVIEW_TEXT_LENGTH = 1000;
+
+    /**
+     * How many bytes to read from the start of a file for its preview text: enough for
+     * {@see PREVIEW_TEXT_LENGTH} characters of up to four bytes each.
+     *
+     * @see previewText()
+     */
+    public const int PREVIEW_TEXT_SOURCE_LENGTH = self::PREVIEW_TEXT_LENGTH * 4;
+
+    /**
      * Get a temporary file path.
      *
      * @param  string  $extension  extension to use. "tmp" by default.
@@ -492,7 +507,7 @@ class AssetsHelper
      * size. The outline's outer corners match the image thumbnails and chips
      * around it, through `--c-thumbnail-image-radius`.
      */
-    public static function iconSvg(string $extension, ?bool $dark = null): string
+    public static function iconSvg(string $extension, ?bool $dark = null, ?string $previewText = null): string
     {
         if (! preg_match('/^\w+$/', $extension)) {
             throw new InvalidArgumentException("$extension isn’t a valid file extension.");
@@ -549,12 +564,63 @@ class AssetsHelper
             'style' => "fill: var(--c-text-quiet, $quietText)",
         ]), ['viewBox' => '0 0 100 100']);
 
-        return Html::tag('svg', $paperNode.$ringNode.$textNode, [
+        $previewTextNode = $previewText !== null && $previewText !== '' ? self::iconPreviewTextNode($previewText, $quietText) : '';
+
+        return Html::tag('svg', $paperNode.$ringNode.$previewTextNode.$textNode, [
             'xmlns' => 'http://www.w3.org/2000/svg',
             'width' => '100%',
             'height' => '100%',
             'overflow' => 'visible',
         ]);
+    }
+
+    /**
+     * Returns the start of a text file’s contents, up to {@see PREVIEW_TEXT_LENGTH} characters, for
+     * {@see Asset::$previewText}, or `null` if there’s nothing to show.
+     *
+     * @param  string  $contents  The start of the file, such as its first {@see PREVIEW_TEXT_SOURCE_LENGTH} bytes.
+     */
+    public static function previewText(string $contents): ?string
+    {
+        $text = mb_scrub(mb_strcut($contents, 0, self::PREVIEW_TEXT_SOURCE_LENGTH, 'UTF-8'), 'UTF-8');
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        // Control characters other than line breaks and tabs have nothing to show
+        $text = (string) preg_replace('/[^\P{C}\n\t]/u', '', $text);
+
+        return trim($text) === '' ? null : rtrim(mb_substr($text, 0, self::PREVIEW_TEXT_LENGTH));
+    }
+
+    /**
+     * Returns a file’s preview text as small monospaced text that wraps across the icon’s paper, fading out toward
+     * its bottom.
+     */
+    private static function iconPreviewTextNode(string $previewText, string $color): string
+    {
+        $fade = 'linear-gradient(#000, transparent)';
+        $block = Html::tag('div', Html::encode($previewText), [
+            'xmlns' => 'http://www.w3.org/1999/xhtml',
+            'style' => [
+                'height' => '100%',
+                'overflow' => 'hidden',
+                'margin' => 0,
+                'font-family' => 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+                'font-size' => '3.2px',
+                'line-height' => '4.2px',
+                'white-space' => 'pre-wrap',
+                'overflow-wrap' => 'anywhere',
+                'tab-size' => 4,
+                'color' => "var(--c-text-quiet, $color)",
+                '-webkit-mask-image' => $fade,
+                'mask-image' => $fade,
+            ],
+        ]);
+
+        return Html::tag('svg', Html::tag('foreignObject', $block, [
+            'x' => 19.5,
+            'y' => 9,
+            'width' => 61,
+            'height' => 82,
+        ]), ['viewBox' => '0 0 100 100']);
     }
 
     /**

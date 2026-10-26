@@ -538,6 +538,34 @@ test('icon SVGs are well-formed XML, so they can be served as images', function 
     expect(simplexml_load_string(AssetsHelper::iconSvg('pdf', $dark)))->not->toBeFalse();
 })->with([false, true]);
 
+test('preview text keeps the start of a file’s visible text, with its line breaks and tabs', function () {
+    expect(AssetsHelper::previewText("one\r\n\ttwo\x07\rthree  \n\n"))->toBe("one\n\ttwo\nthree");
+});
+
+test('preview text is capped, without splitting characters', function () {
+    $text = AssetsHelper::previewText(str_repeat('é', AssetsHelper::PREVIEW_TEXT_LENGTH * 3));
+
+    expect(mb_strlen($text))->toBe(AssetsHelper::PREVIEW_TEXT_LENGTH)
+        ->and(mb_check_encoding($text, 'UTF-8'))->toBeTrue();
+});
+
+test('there’s no preview text for files with nothing to show', function () {
+    expect(AssetsHelper::previewText(" \n\x07\n"))->toBeNull();
+});
+
+test('icon SVGs can show preview text, escaped', function () {
+    $xml = simplexml_load_string(AssetsHelper::iconSvg('html', false, "<script>alert(1)</script>\n\tindented"));
+
+    expect($xml)->not->toBeFalse()
+        ->and($xml->xpath('//*[local-name()="script"]'))->toBe([])
+        ->and((string) $xml->xpath('//*[local-name()="foreignObject"]/*[local-name()="div"]')[0])
+        ->toBe("<script>alert(1)</script>\n\tindented");
+});
+
+test('icon SVGs leave out empty preview text', function () {
+    expect(AssetsHelper::iconSvg('txt', false, ''))->not->toContain('<foreignObject');
+});
+
 test('folder icon SVGs come in light and dark blue, and are well-formed XML', function (bool $dark, string $fill) {
     $svg = AssetsHelper::folderIconSvg($dark);
 

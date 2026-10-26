@@ -263,6 +263,17 @@ class Asset extends Element
     }
 
     /**
+     * @var string|null The start of a text file’s contents, or `null` if it isn’t a text file, hasn’t been read yet,
+     *                  or has nothing to show
+     *
+     * Read from the file whenever a new one is uploaded or indexed, so it isn’t settable from requests.
+     *
+     * @see AssetsHelper::previewText()
+     */
+    #[AllowedInSandbox]
+    public ?string $previewText = null;
+
+    /**
      * @var bool|null Whether the file was kept around when the asset was deleted
      */
     #[AllowedInSandbox]
@@ -2783,7 +2794,7 @@ JS, [
     public function setAttributesFromRequest(array $values): void
     {
         // Determined from the file itself when one comes in, not by whoever's saving.
-        unset($values['colors']);
+        unset($values['colors'], $values['previewText']);
 
         parent::setAttributesFromRequest($values);
     }
@@ -2891,7 +2902,10 @@ JS, [
                     'preload' => 'metadata',
                 ]),
                 default => $showsIcon
-                    ? Html::tag('div', Html::svg(AssetsHelper::iconSvg($this->getExtension()), sanitize: false, namespace: true), [
+                    ? Html::tag('div', Html::svg(AssetsHelper::iconSvg(
+                        $this->getExtension(),
+                        previewText: $this->isTextFile($this->_filename) ? $this->previewText : null,
+                    ), sanitize: false, namespace: true), [
                         'class' => ['preview-thumb', 'mx-auto', 'py-md', 'w-[160px]', 'h-[160px]', 'box-content'],
                     ])
                     : Html::tag('div', $this->getPreviewThumbImg(350, 190), [
@@ -3356,6 +3370,7 @@ JS;
             }
 
             $model->colors = $this->colors?->toArray();
+            $model->previewText = $this->previewText;
 
             $model->save();
 
@@ -3678,6 +3693,9 @@ JS;
             $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
             $this->_width = $this->_height = null;
             $this->colors = null;
+            $this->previewText = $this->isTextFile($filename)
+                ? AssetsHelper::previewText($this->readFileStart($newDisk->readStream($newPath)))
+                : null;
         }
 
         // If there was a new file involved, update file data.
@@ -3693,6 +3711,9 @@ JS;
                 $this->colors = null;
             }
 
+            $this->previewText = $this->isTextFile($filename)
+                ? AssetsHelper::previewText($this->readFileStart(fopen($tempPath, 'rb')))
+                : null;
             $this->size = filesize($tempPath);
             $mtime = filemtime($tempPath);
             $this->dateModified = $mtime ? Date::createFromTimestampUTC($mtime) : null;
@@ -3716,6 +3737,34 @@ JS;
         $this->tempFilePath = null;
         $this->uploadSource = null;
         $this->uploadColors = null;
+    }
+
+    /**
+     * Returns whether a file is plain text, whose start is kept as its preview text.
+     *
+     * @see $previewText
+     */
+    private function isTextFile(string $filename): bool
+    {
+        return FileKind::tryFrom(AssetsHelper::getFileKindByExtension($filename))?->isText() ?? false;
+    }
+
+    /**
+     * Reads as much from the start of a file as its preview text could need, and closes the stream.
+     *
+     * @param  resource|false|null  $stream
+     */
+    private function readFileStart($stream): string
+    {
+        if (! is_resource($stream)) {
+            return '';
+        }
+
+        try {
+            return (string) fread($stream, AssetsHelper::PREVIEW_TEXT_SOURCE_LENGTH);
+        } finally {
+            fclose($stream);
+        }
     }
 
     /**

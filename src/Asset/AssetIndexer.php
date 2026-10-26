@@ -740,6 +740,20 @@ class AssetIndexer
                     File::delete($tempPath);
                 }
             } else {
+                // Like colors, preview text that's been read already isn't read again unless the file has changed
+                if (
+                    FileKind::tryFrom($asset->kind ?? '')?->isText() &&
+                    ($asset->previewText === null || $fileChanged)
+                ) {
+                    $stream = $asset->getStream();
+
+                    try {
+                        $asset->previewText = AssetsHelper::previewText((string) fread($stream, AssetsHelper::PREVIEW_TEXT_SOURCE_LENGTH));
+                    } finally {
+                        fclose($stream);
+                    }
+                }
+
                 $asset->dateModified = $timeModified;
                 $this->elements->saveElement($asset);
             }
