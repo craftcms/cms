@@ -5,6 +5,7 @@ namespace crafttests\unit\mcp;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\db\Connection;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
@@ -13,7 +14,6 @@ use craft\fields\Email;
 use craft\fields\MultiSelect;
 use craft\fields\Number;
 use craft\fields\PlainText;
-use craft\mcp\contracts\ProvidesInputSchema;
 use craft\mcp\schema\CustomFieldSchema;
 use craft\models\FieldLayout;
 use craft\services\Config;
@@ -143,9 +143,9 @@ class SchemaTestApplication extends Application
     }
 }
 
-class SchemaPluginField extends PlainText implements ProvidesInputSchema
+class SchemaPluginField extends PlainText implements InputSchemaFieldInterface
 {
-    public function getMcpInputSchema(): array
+    public function getInputSchema(): array
     {
         return [
             'type' => 'object',

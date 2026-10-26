@@ -6,12 +6,12 @@ namespace craft\mcp\schema;
 
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\fields\BaseOptionsField;
 use craft\fields\Email;
 use craft\fields\Json;
 use craft\fields\Matrix;
 use craft\gql\GqlInputSchema;
-use craft\mcp\contracts\ProvidesInputSchema;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ListOfType;
@@ -198,7 +198,7 @@ class CustomFieldSchema
     private function fieldSchema(FieldInterface $field, bool $required): array
     {
         $schema = match (true) {
-            $field instanceof ProvidesInputSchema => $field->getMcpInputSchema(),
+            $field instanceof InputSchemaFieldInterface => $field->getInputSchema(),
             $field instanceof Json => [],
             $field instanceof BaseOptionsField => $this->optionsSchema($field),
             $field instanceof Email => ['type' => 'string', 'format' => 'email'],
@@ -217,7 +217,7 @@ class CustomFieldSchema
 
     private function usesInferredSchema(FieldInterface $field): bool
     {
-        return !$field instanceof ProvidesInputSchema
+        return !$field instanceof InputSchemaFieldInterface
             && !$field instanceof Json
             && !$field instanceof BaseOptionsField
             && !$field instanceof Email;

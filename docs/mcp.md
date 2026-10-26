@@ -99,5 +99,5 @@ Additional extension points are:
 - `Craft::$app->get('mcp')->getElementAdapterRegistry()->register(MyAdapter::class)` for adapters implementing `craft\mcp\elements\ElementAdapter`.
 - `Craft::$app->get('mcp')->getCheckRegistry()->register(MyCheck::class)` for content-model checks implementing `craft\mcp\contentmodel\Check`.
 - `craft\mcp\serializers\ElementSerializer::EVENT_SERIALIZING`, with `craft\mcp\events\ElementSerializing`, to change serialized data. Check the event's `public` flag before adding fields.
-- `craft\mcp\contracts\ProvidesInputSchema` on custom fields to describe their writable input with `getMcpInputSchema()`.
+- `craft\base\InputSchemaFieldInterface` on custom field types to describe the values they accept with `getInputSchema()`.
 - `craft\mcp\AdminInstructions::EVENT_COLLECT_INSTRUCTIONS`, with `craft\mcp\events\CollectingAdminInstructions`, to append plugin guidance to `info.get`.
