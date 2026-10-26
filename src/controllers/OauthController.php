@@ -27,7 +27,17 @@ use yii\web\Response;
 
 class OauthController extends Controller
 {
-    protected array|bool|int $allowAnonymous = true;
+    // Clients must be able to discover, register, and refresh tokens while the system is offline. Resources decide
+    // whether the token's user may access them then.
+    protected array|bool|int $allowAnonymous = [
+        'metadata' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'resource' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'register' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'token' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'authorize' => self::ALLOW_ANONYMOUS_LIVE,
+        'approve' => self::ALLOW_ANONYMOUS_LIVE,
+        'deny' => self::ALLOW_ANONYMOUS_LIVE,
+    ];
 
     public function behaviors(): array
     {

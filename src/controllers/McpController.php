@@ -32,6 +32,11 @@ class McpController extends Controller
 
     public function beforeAction($action): bool
     {
+        // CORS preflight requests carry no credentials, including while the system is offline.
+        if ($action->id === 'admin' && $this->request->getIsOptions()) {
+            $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+        }
+
         if ($action->id === 'admin' && !$this->request->getIsOptions()) {
             $oauth = Craft::$app->getOAuth();
             $session = Craft::$app->getUser();

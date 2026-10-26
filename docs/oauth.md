@@ -206,6 +206,8 @@ The supported flow is:
 
 Only public clients, the authorization code grant with S256 PKCE, and refresh tokens are supported. Registering a client does not grant access. A registration request may include a supported scope subset, but the registration response advertises all allowed resource scopes; the authorization request determines the actual grant.
 
+Discovery metadata, registration, and the token endpoint stay available while the system is offline, so clients can refresh tokens. Authorization still requires a user who may access the control panel while the system is offline, and each resource decides whether its API answers then. MCP requires the token's user to have that permission.
+
 ## Scopes, consent, and token lifetime
 
 Authorization grants only the requested scopes, and the consent screen shows their descriptions. `defaultScopes` is used when `scope` is omitted. If no defaults are defined, the client must explicitly request at least one allowed scope. Scope IDs are local to a resource.
