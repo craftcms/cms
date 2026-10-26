@@ -250,6 +250,7 @@ class ImportPlansController
             sourceDataCols: $sourceDataCols,
             values: MappingValues::fromImporter($importer),
             suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map, $importer),
+            templateTextExpanderTriggers: ImportHelper::templateTextExpanderTriggers($sourceDataCols),
         )->jsonSerialize());
     }
 
@@ -336,6 +337,7 @@ class ImportPlansController
             groups: $groups,
             sourceDataCols: $sourceDataCols,
             suggestions: self::subtree($suggestions, $rootPath),
+            templateTextExpanderTriggers: ImportHelper::templateTextExpanderTriggers($sourceDataCols),
         )->jsonSerialize());
     }
 

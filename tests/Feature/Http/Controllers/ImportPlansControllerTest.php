@@ -15,6 +15,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportPlanSaved;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\ImportPlans;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Section\Models\Section;
@@ -254,6 +255,41 @@ it('returns a step’s mapping structure without the import being saved', functi
     expect(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
 });
 
+it('offers a template option and the source columns as template variables when mapping a step', function () {
+    $response = $this->postJson(action([ImportPlansController::class, 'stepMapping']), [
+        'step' => ($this->entryStep)(),
+    ]);
+
+    $response->assertOk();
+    expect($response->json('sourceDataCols.1'))->toBe(['label' => 'Use template', 'value' => ImportHelper::TEMPLATE_RULE])
+        ->and(array_column($response->json('templateTextExpanderTriggers.0.options'), 'value'))->toContain('{title}')
+        ->and($response->json('suggestions.title'))->toBe('title');
+});
+
+it('reports a template that can’t be parsed against its own mapping path', function () {
+    $response = $this->postJson(action([ImportPlansController::class, 'validateStep']), [
+        'step' => ($this->entryStep)([
+            'map' => ['title' => ImportHelper::TEMPLATE_RULE],
+            'templates' => ['title' => '{{ title'],
+        ]),
+    ]);
+
+    $response->assertStatus(422);
+    expect(array_keys($response->json('errors')))->toContain('settings.templates.title');
+});
+
+it('reports a missing template for a column mapped to one', function () {
+    $response = $this->postJson(action([ImportPlansController::class, 'validateStep']), [
+        'step' => ($this->entryStep)([
+            'map' => ['title' => ImportHelper::TEMPLATE_RULE],
+            'templates' => ['title' => ' '],
+        ]),
+    ]);
+
+    $response->assertStatus(422);
+    expect(array_keys($response->json('errors')))->toContain('settings.templates.title');
+});
+
 it('builds a step’s settings form from the posted draft step', function () {
     $response = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
         'step' => ($this->entryStep)(),
@@ -406,6 +442,19 @@ it('persists match criteria and clearable items alongside the map', function () 
 
     expect($importer->matchCriteria)->toBe(['title' => 1])
         ->and($importer->clearableItems)->toBe(['title' => 1]);
+});
+
+it('persists templates alongside the map', function () {
+    ($this->saveImportPlan)([
+        ($this->entryStep)([
+            'map' => ['title' => ImportHelper::TEMPLATE_RULE],
+            'templates' => ['title' => '{title} ({slug})'],
+        ]),
+    ])->assertOk();
+
+    $importer = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport')->steps[0];
+
+    expect($importer->templates)->toBe(['title' => '{title} ({slug})']);
 });
 
 it('still decodes JSON-encoded container branches on save', function () {

@@ -19,6 +19,7 @@ import {
   openContextSlideout,
 } from '@/modules/import/context-slideout';
 import {applySuggestions, cloneValues, toObjectTree} from './paths';
+import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
 import type {
   MappingColumn,
   MappingColumnGroup,
@@ -33,6 +34,7 @@ export interface NestedMappingContext {
   fieldName: string;
   groups: MappingColumnGroup[];
   sourceDataCols: SourceColumn[];
+  templateTextExpanderTriggers: TextExpanderTriggers;
   values: MappingValues;
   /** Which of this panel's own `values.map` leaves hold a guessed value. */
   suggestedMap: SuggestedMap;
@@ -101,6 +103,8 @@ export async function openNestedMapping(
       fieldName: data.fieldName,
       groups: data.groups,
       sourceDataCols: data.sourceDataCols ?? [],
+      templateTextExpanderTriggers:
+        data.templateTextExpanderTriggers as TextExpanderTriggers,
       values,
       suggestedMap,
       editable: options.editable,

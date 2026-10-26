@@ -36,7 +36,11 @@ use InvalidArgumentException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Mime\MimeTypes;
 use Throwable;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
+use Twig\Sandbox\SecurityError;
 
+use function CraftCms\Cms\renderSandboxedObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -86,6 +90,19 @@ abstract class BaseImporter
      *  null => nothing is cleared; missing/empty incoming values are left untouched
      */
     public protected(set) ?array $clearableItems = null;
+
+    /**
+     * @var array<mixed>|null
+     *
+     * array => keyed like $map; the value is the object template to render for each `$map` leaf set to
+     *  `ImportHelper::TEMPLATE_RULE`, e.g. `['title' => '{firstName} {lastName}']`;
+     *  the template is rendered against the incoming data (or, inside a nested list, against the incoming data
+     *  with that list swapped for the item being mapped), so `{blocks.heading}` reads the current block's heading;
+     *  templates whose `$map` leaf isn't `ImportHelper::TEMPLATE_RULE` are ignored;
+     *
+     *  null => no templates
+     */
+    public protected(set) ?array $templates = null;
 
     public ?string $uid = null;
 
@@ -237,6 +254,19 @@ abstract class BaseImporter
     }
 
     /**
+     * Sets the object templates used by the `$map` leaves set to `ImportHelper::TEMPLATE_RULE`, and returns
+     * the current instance.
+     *
+     * @param  array<mixed>|null  $templates
+     */
+    public function templates(?array $templates = null): self
+    {
+        $this->templates = $templates;
+
+        return $this;
+    }
+
+    /**
      * Sets the field/attribute handles that should be cleared on import when no data is provided
      * for them or the provided value is empty, and returns the current instance.
      *
@@ -302,7 +332,7 @@ abstract class BaseImporter
      */
     protected static function settingNames(): array
     {
-        return ['map', 'matchCriteria', 'clearableItems'];
+        return ['map', 'matchCriteria', 'clearableItems', 'templates'];
     }
 
     /**
@@ -317,6 +347,11 @@ abstract class BaseImporter
             'settings.map' => ['array'],
             'settings.matchCriteria' => ['nullable', 'array'],
             'settings.clearableItems' => ['nullable', 'array'],
+            'settings.templates' => [
+                'nullable',
+                'array',
+                fn (string $attribute, mixed $value, Closure $fail, Validator $validator) => self::validateTemplates($value, $validator),
+            ],
         ];
     }
 
@@ -366,6 +401,7 @@ abstract class BaseImporter
                 'map' => $this->map,
                 'matchCriteria' => $this->matchCriteria,
                 'clearableItems' => $this->clearableItems,
+                'templates' => $this->templates,
             ],
         ];
     }
@@ -690,6 +726,44 @@ abstract class BaseImporter
     }
 
     /**
+     * Checks that every `$map` leaf set to `ImportHelper::TEMPLATE_RULE` has a template, and that each of those
+     * templates compiles, adding any errors under the template's own path.
+     */
+    protected static function validateTemplates(mixed $templates, Validator $validator): void
+    {
+        $map = ImportHelper::decodeRecursive($validator->getData()['settings']['map'] ?? []);
+
+        if (! is_array($map)) {
+            return;
+        }
+
+        $templates = is_array($templates) ? $templates : [];
+
+        foreach (Arr::dot($map) as $path => $rule) {
+            if ($rule !== ImportHelper::TEMPLATE_RULE) {
+                continue;
+            }
+
+            $attribute = "settings.templates.$path";
+            $template = Arr::get($templates, (string) $path);
+
+            if (! is_string($template) || trim($template) === '') {
+                $validator->errors()->add($attribute, t('{attribute} cannot be blank.', ['attribute' => t('Template')]));
+
+                continue;
+            }
+
+            try {
+                renderSandboxedObjectTemplate($template, []);
+            } catch (SyntaxError|SecurityError $e) {
+                $validator->errors()->add($attribute, t('The template couldn’t be parsed: {error}', ['error' => $e->getRawMessage()]));
+            } catch (RuntimeError) {
+                // rendered without the incoming data, so errors that depend on it can only show up at import time
+            }
+        }
+    }
+
+    /**
      * Prepares the importer's settings for an import run.
      *
      * Mapping trees can use uids instead of handles (see `resolveMappingKeys()`), and the import needs
@@ -705,6 +779,10 @@ abstract class BaseImporter
 
         if ($this->clearableItems !== null) {
             $this->clearableItems = $this->resolveMappingKeys($this->clearableItems);
+        }
+
+        if ($this->templates !== null) {
+            $this->templates = $this->resolveMappingKeys($this->templates);
         }
     }
 

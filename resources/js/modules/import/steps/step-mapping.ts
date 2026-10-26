@@ -26,10 +26,12 @@ import type {
   ImportStep,
   SuggestedMap,
 } from '@/modules/import/mapping/types';
+import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
 
 export interface StepMappingContext {
   destinationCols: MappingColumnEntry[];
   sourceDataCols: SourceColumn[];
+  templateTextExpanderTriggers: TextExpanderTriggers;
   values: MappingValues;
   suggestedMap: SuggestedMap;
   editable: boolean;
@@ -99,6 +101,7 @@ export async function openStepMapping(
       clearableItems: {},
       keepMissingNestedElements: {},
       fieldSettings: {},
+      templates: {},
     }
   );
   const suggestedMap: SuggestedMap = {};
@@ -117,6 +120,8 @@ export async function openStepMapping(
     {
       destinationCols: data.destinationCols ?? [],
       sourceDataCols: data.sourceDataCols ?? [],
+      templateTextExpanderTriggers: (data.templateTextExpanderTriggers ??
+        []) as TextExpanderTriggers,
       values,
       suggestedMap,
       editable: options.editable,

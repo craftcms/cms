@@ -576,6 +576,30 @@ it('orders keyed entries by the given sortOrder', function () {
     );
 });
 
+it('imports a block per incoming row when only one of the block’s fields is mapped', function () {
+    $map = [
+        'title' => 'title',
+        'sectionId' => 'sectionId',
+        'typeId' => 'typeId',
+        'myMatrix' => ['firstEt' => ['title' => 'content.heading']],
+    ];
+
+    $this->import->importItem($this->importer, ImportHelper::remapData($map, [
+        'title' => 'imported entry',
+        'sectionId' => $this->section->handle,
+        'typeId' => $this->entryType->handle,
+        'content' => [
+            ['type' => 'firstEt', 'heading' => 'block 1'],
+            ['type' => 'firstEt', 'heading' => 'block 2'],
+        ],
+    ]));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+
+    expect(array_map(fn (EntryElement $block) => $block->title, $entry->getFieldValue('myMatrix')->status(null)->all()))
+        ->toBe(['block 1', 'block 2']);
+});
+
 describe('raw grouped/flat data through the full pipeline', function () {
     it('imports raw data end-to-end, matching and clearing correctly', function (array $map, callable $makeRawData) {
         $importer = (clone $this->importer)

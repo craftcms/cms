@@ -9,6 +9,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -146,4 +147,28 @@ it('doesn’t import an unmapped field, even when it’s match criteria and the 
 
     expect($entry)->not->toBeNull()
         ->and($entry->getFieldValue('optionalText'))->toBeNull();
+});
+
+it('imports values rendered from mapping templates', function () {
+    ImportFixtures::plainTextField('optionalText', 'Optional Text');
+    Fields::refreshFields();
+
+    $entryType = ImportFixtures::entryTypeWithTitle(
+        [CustomField::make('optionalText')],
+        ['name' => 'With Optional Text', 'handle' => 'withOptionalText'],
+    );
+    $section = Section::factory()->withEntryTypes($entryType)->create(['minAuthors' => 0]);
+
+    $importer = $this->importer
+        ->section($section->uid)
+        ->entryType($entryType->uid)
+        ->map(['title' => ImportHelper::TEMPLATE_RULE, 'optionalText' => ImportHelper::TEMPLATE_RULE])
+        ->templates(['title' => '{first} {last}', 'optionalText' => "Born {{ object['Birth Year'] }}"]);
+
+    $this->import->importItem($importer, ['first' => 'Ada', 'last' => 'Lovelace', 'Birth Year' => 1815]);
+
+    $entry = EntryElement::find()->title('Ada Lovelace')->status(null)->one();
+
+    expect($entry)->not->toBeNull()
+        ->and($entry->getFieldValue('optionalText'))->toBe('Born 1815');
 });

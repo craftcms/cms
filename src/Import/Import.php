@@ -257,7 +257,7 @@ class Import
         // then the map is used first and then transformer can do further manipulation;
         // if there's no map, the transformer acts as one on its own;
         if ($importer->map) {
-            $data = ImportHelper::remapData($importer->map, $data);
+            $data = ImportHelper::remapData($importer->map, $data, $importer->templates ?? []);
         }
 
         // match criteria come from three places, applied in this order, so for the same key
@@ -551,8 +551,8 @@ class Import
     }
 
     /**
-     * Reads raw file data and returns the source column headings (prefixed with a "Please select" placeholder, and
-     * without the reserved keys), logging and returning null on error.
+     * Reads raw file data and returns the source column headings (prefixed with a "Please select" placeholder and
+     * a "Use template" option, and without the reserved keys), logging and returning null on error.
      *
      * @param  string  $filePath  The path to the file to read.
      * @return list<SourceColumn>|null
@@ -581,6 +581,7 @@ class Import
 
         return [
             new SourceColumn(t('Please select'), ''),
+            new SourceColumn(t('Use template'), ImportHelper::TEMPLATE_RULE),
             ...array_map(fn (array $heading): SourceColumn => new SourceColumn(
                 (string) $heading['label'],
                 (string) $heading['value'],

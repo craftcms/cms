@@ -10,10 +10,13 @@
   import '@craftcms/ui/components/badge/badge';
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/checkbox/checkbox';
+  import '@craftcms/ui/components/field/field';
   import '@craftcms/ui/components/info-icon/info-icon';
+  import '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/select/select';
   import '@craftcms/ui/components/select-rich/select-rich';
-  import {computed, inject, useTemplateRef} from 'vue';
+  import '@craftcms/ui/components/text-expander/text-expander';
+  import {computed, inject, useId, useTemplateRef} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {ignoreModelValueInitialization} from '@/modules/ui/runtime';
   import {checkedValue, getAt, isChecked, setAt} from './paths';
@@ -21,6 +24,7 @@
     type FieldMappingSetting,
     type MappingColumn,
     MappingContextKey,
+    TEMPLATE_RULE,
   } from './types';
 
   const props = defineProps<{
@@ -34,13 +38,32 @@
   }
 
   const nestedTrigger = useTemplateRef<HTMLElement>('nestedTrigger');
-  const path = computed(() => props.col.prefixedHandleAsArray);
 
-  const mapValue = computed<string>(() => {
-    const value = getAt(context.values.map, path.value);
+  /** Reads a column's leaf in one of the trees as a string, with nothing set reading as `''`. */
+  function stringAt(
+    tree: Record<string, unknown>,
+    columnPath: string[]
+  ): string {
+    const value = getAt(tree, columnPath);
 
     return value === null || value === undefined ? '' : String(value);
-  });
+  }
+  const path = computed(() => props.col.prefixedHandleAsArray);
+
+  const mapValue = computed(() => stringAt(context.values.map, path.value));
+
+  /** Whether the column is filled from a template rather than a source column. */
+  const isTemplate = computed(() => mapValue.value === TEMPLATE_RULE);
+
+  const templateInputId = useId();
+
+  const templateValue = computed(() =>
+    stringAt(context.values.templates, path.value)
+  );
+
+  const templateErrors = computed<string[]>(
+    () => context.templateErrors.value[path.value.join('.')] ?? []
+  );
 
   const isBestGuess = computed(() =>
     Boolean(getAt(context.suggestedMap, path.value))
@@ -88,6 +111,22 @@
       setAt(context!.values.matchCriteria, path.value, '');
     }
   }
+
+  /**
+   * Kept when the column is switched to another option, so switching back doesn't
+   * lose it. The server only reads a template while the column is mapped to one.
+   */
+  const onTemplateChanged = ignoreModelValueInitialization((event) => {
+    const value = (event.target as HTMLElement & {modelValue?: unknown})
+      .modelValue;
+
+    setAt(
+      context!.values.templates,
+      path.value,
+      value == null ? '' : String(value)
+    );
+    delete context!.templateErrors.value[path.value.join('.')];
+  });
 
   // `craft-checkbox` announces its starting state too, which would write to the
   // trees before the user has touched anything and read as an unsaved change.
@@ -200,6 +239,47 @@
             t('Suggested')
           }}</craft-badge>
         </div>
+        <craft-field
+          v-if="isTemplate"
+          class="template"
+          :label="t('{field} template', {field: col.label})"
+          :has-errors="templateErrors.length > 0"
+          width="full"
+          required
+        >
+          <craft-input
+            slot="input"
+            monospace
+            .modelValue="templateValue"
+            required
+            :disabled="!context.editable"
+            :aria-invalid="templateErrors.length ? 'true' : undefined"
+            @model-value-changed="onTemplateChanged"
+          >
+            <input
+              :id="templateInputId"
+              slot="input"
+              :data-mapping-template-invalid="
+                templateErrors.length ? context.panelId : undefined
+              "
+            />
+          </craft-input>
+          <craft-text-expander
+            v-if="context.editable"
+            slot="input"
+            :for="templateInputId"
+            .triggers="context.templateTextExpanderTriggers"
+          />
+          <span
+            slot="tip"
+            v-html="
+              t('Type <kbd>{</kbd> to choose an object template variable.')
+            "
+          ></span>
+          <ul v-if="templateErrors.length" slot="feedback" class="error-list">
+            <li v-for="error in templateErrors" :key="error">{{ error }}</li>
+          </ul>
+        </craft-field>
       </template>
       <div v-if="importSettings.length" class="import-settings">
         <craft-select
@@ -267,6 +347,11 @@
     display: flex;
     justify-content: flex-end;
     margin-block-start: var(--c-spacing-sm);
+  }
+
+  .template {
+    margin-block-start: var(--c-spacing-md);
+    white-space: normal;
   }
 
   .import-settings {
