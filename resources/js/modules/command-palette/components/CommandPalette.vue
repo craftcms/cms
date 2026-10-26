@@ -9,10 +9,9 @@
    * for an item with a view — swaps the results for that view until it's done
    * or the person goes back.
    *
-   * The search box is a combobox whose popup is the results grid: the arrow
-   * keys move the selection while focus stays in the box, Return chooses the
-   * selected item, and Tab moves into the results themselves, starting at the
-   * selected one.
+   * The search box is a plain search field. Each group of results is a
+   * `craft-grid` after it, which Tab moves into and the arrow keys move
+   * around; choosing a result is always a press on the result itself.
    */
   import {actionClient, ButtonVariant, t} from '@craftcms/ui';
   import {runAction} from '@craftcms/ui/actions.mjs';
@@ -58,7 +57,7 @@
   import ConfirmView from './ConfirmView.vue';
   import DocsSearchView from './DocsSearchView.vue';
   import NotificationsView from './NotificationsView.vue';
-  import ResultSection, {type ResultRow} from './ResultSection.vue';
+  import ResultSection from './ResultSection.vue';
   import ShortcutsView from './ShortcutsView.vue';
   import UiFormView from './UiFormView.vue';
 
@@ -90,13 +89,12 @@
     ? t('Return')
     : t('Enter');
   const results = useTemplateRef<HTMLElement>('results');
+  /** Where focus was when the palette opened, for when closing leaves it nowhere. */
+  let opener: HTMLElement | null = null;
   const viewHeading = useTemplateRef<HTMLElement>('viewHeading');
   const viewBody = useTemplateRef<HTMLElement>('viewBody');
 
   const query = shallowRef('');
-  const selectedIndex = shallowRef(0);
-  /** Whether the selection was moved by hand, and so shouldn't follow new results to the top. */
-  const selectionMoved = shallowRef(false);
   const busy = shallowRef(false);
   const restoreFocus = shallowRef(true);
   const activeView = shallowRef<{
@@ -155,49 +153,6 @@
         ];
 
     return all.filter((section) => section.items.length > 0);
-  });
-
-  const rowsBySection = computed(() => {
-    let index = 0;
-
-    return sections.value.map((section) => ({
-      ...section,
-      gridId: `${id}-${section.key}`,
-      rows: section.items.map(
-        (item): ResultRow => ({
-          item,
-          index: index++,
-          cellId: `${id}-option-${index}`,
-        })
-      ),
-    }));
-  });
-
-  const rows = computed(() =>
-    rowsBySection.value.flatMap((section) => section.rows)
-  );
-  const selectedRow = computed(() => rows.value[selectedIndex.value] ?? null);
-  const gridIds = computed(() =>
-    rowsBySection.value.map((section) => section.gridId).join(' ')
-  );
-
-  // The top result is selected until the person picks another; once they
-  // have, theirs stays selected as other providers' results arrive.
-  watch(query, () => {
-    selectionMoved.value = false;
-    selectedIndex.value = 0;
-  });
-
-  watch(rows, (current, previous) => {
-    if (!selectionMoved.value) {
-      selectedIndex.value = 0;
-
-      return;
-    }
-
-    const selectedId = previous?.[selectedIndex.value]?.item.id;
-    const index = current.findIndex((row) => row.item.id === selectedId);
-    selectedIndex.value = Math.max(index, 0);
   });
 
   /** Which providers couldn’t be searched, if any. */
@@ -267,6 +222,11 @@
       return;
     }
 
+    opener =
+      document.activeElement instanceof HTMLElement &&
+      document.activeElement !== document.body
+        ? document.activeElement
+        : null;
     const crumbs = page.props.crumbs ?? [];
     pageActions.value = onPageActions(
       crumbs.some((crumb) => crumb.id === 'site-crumb') || !siteCrumb.value
@@ -345,14 +305,23 @@
     if (callback) {
       await callback();
     }
+
+    // An item that was meant to move focus, but didn't — copying to the
+    // clipboard, say — would otherwise leave it on the page itself.
+    if (
+      (!document.activeElement || document.activeElement === document.body) &&
+      opener?.isConnected
+    ) {
+      opener.focus();
+    }
+
+    opener = null;
   }
 
   /** Back to an empty search, as the palette was first opened. */
   function reset(): void {
     query.value = '';
     activeView.value = null;
-    selectedIndex.value = 0;
-    selectionMoved.value = false;
     search.reset();
   }
 
@@ -419,7 +388,13 @@
         viewHeading.value
       )?.focus();
     } else if (previous && isCommandPaletteOpen.value) {
-      input.value?.focus();
+      // Back to the result that opened the view, as a dialog returns focus
+      // to its opener.
+      (
+        results.value?.querySelector<HTMLElement>(
+          `[data-command-palette-item="${CSS.escape(previous.item.id)}"]`
+        ) ?? input.value
+      )?.focus();
     }
   });
 
@@ -431,7 +406,13 @@
     }
 
     if (action.type !== 'http') {
-      closeThen(() => runAction(action));
+      closeThen(async () => {
+        await runAction(action);
+
+        if (action.type === 'clipboard') {
+          Craft.cp?.displayNotice?.(t('Copied!'));
+        }
+      });
 
       return;
     }
@@ -448,40 +429,14 @@
     }
   }
 
-  function navigate(item: CommandPaletteItem, newTab: boolean): void {
-    const href = item.href;
-
-    if (!href) {
-      return;
-    }
-
-    if (newTab) {
-      window.open(href, '_blank', 'noopener');
-
-      return;
-    }
-
-    reset();
-    close();
-
-    if (item.external) {
-      window.location.assign(href);
-    } else {
-      router.visit(href);
-    }
-  }
-
   /**
-   * Chooses an item. `trigger` is the click that chose it, when it was a
-   * click on a link: the link then does the navigating itself, so a modified
-   * click can still open it in a new tab.
+   * Chooses an item. `trigger` is the click that chose it — by pointer, or by
+   * Return on the focused result. A link does the navigating itself, so a
+   * modified click can still open it in a new tab.
    */
-  function activate(
-    item: CommandPaletteItem,
-    {newTab = false, trigger}: {newTab?: boolean; trigger?: MouseEvent} = {}
-  ): void {
+  function activate(item: CommandPaletteItem, trigger: MouseEvent): void {
     if (busy.value) {
-      trigger?.preventDefault();
+      trigger.preventDefault();
 
       return;
     }
@@ -496,7 +451,7 @@
       closeThen(item.run);
     } else if (item.action) {
       void runServerAction(item);
-    } else if (trigger) {
+    } else {
       const modified =
         trigger.metaKey ||
         trigger.ctrlKey ||
@@ -507,8 +462,6 @@
         reset();
         close();
       }
-    } else {
-      navigate(item, newTab);
     }
   }
 
@@ -520,137 +473,6 @@
     restoreFocus.value = false;
     reset();
     close();
-  }
-
-  function select(index: number): void {
-    selectedIndex.value = index;
-    selectionMoved.value = true;
-  }
-
-  async function scrollSelectedIntoView(): Promise<void> {
-    await nextTick();
-    const row = selectedRow.value;
-
-    if (row) {
-      scrollRowIntoView(document.getElementById(row.cellId));
-    }
-  }
-
-  /** Scrolls to the whole row, since the highlight is painted on it rather than on the cell or item. */
-  function scrollRowIntoView(el: HTMLElement | null): void {
-    el?.closest('[role="row"]')?.scrollIntoView({block: 'nearest'});
-  }
-
-  function moveSelection(step: number): void {
-    const count = rows.value.length;
-
-    if (!count) {
-      return;
-    }
-
-    select((selectedIndex.value + step + count) % count);
-    void scrollSelectedIntoView();
-  }
-
-  function itemElement(index: number): HTMLElement | null {
-    return (
-      results.value?.querySelector<HTMLElement>(
-        `[data-command-palette-index="${index}"]`
-      ) ?? null
-    );
-  }
-
-  function onInputKeydown(event: KeyboardEvent): void {
-    switch (event.key) {
-      case 'ArrowDown':
-      case 'ArrowUp':
-        event.preventDefault();
-        moveSelection(event.key === 'ArrowDown' ? 1 : -1);
-        break;
-      case 'Enter':
-        if (event.isComposing) {
-          return;
-        }
-
-        event.preventDefault();
-
-        if (selectedRow.value) {
-          activate(selectedRow.value.item, {
-            newTab: event.metaKey || event.ctrlKey,
-          });
-        }
-        break;
-      case 'Tab':
-        cycleTabFocus(event);
-        break;
-    }
-  }
-
-  /**
-   * Tab and Shift+Tab cycle through the search box, the selected result, and
-   * its menu button; the arrow keys move between results. Moved by hand
-   * because Safari leaves links out of the Tab order by default, and because
-   * Tab back would otherwise land on the search field rather than its input.
-   */
-  function cycleTabFocus(event: KeyboardEvent): void {
-    if (event.altKey || event.ctrlKey || event.metaKey || !input.value) {
-      return;
-    }
-
-    const target = event.target as HTMLElement | null;
-    const row = (
-      target === input.value && selectedRow.value
-        ? itemElement(selectedRow.value.index)
-        : target
-    )?.closest<HTMLElement>('.command-palette-row');
-    const item = row?.querySelector<HTMLElement>(
-      '[data-command-palette-index]'
-    );
-
-    if (!item) {
-      return;
-    }
-
-    const menuButton = row!.querySelector<HTMLElement>(
-      '.command-palette-row__actions [slot="invoker"]'
-    );
-    const stops = [input.value, item, ...(menuButton ? [menuButton] : [])];
-    const index = stops.findIndex(
-      (stop) => stop === target || (target && stop.contains(target))
-    );
-
-    if (index === -1) {
-      return;
-    }
-
-    event.preventDefault();
-    stops.at((index + (event.shiftKey ? -1 : 1)) % stops.length)!.focus();
-  }
-
-  /** Up and down move between the results once focus is among them. */
-  function onResultsKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Tab') {
-      cycleTabFocus(event);
-
-      return;
-    }
-
-    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
-      return;
-    }
-
-    const index = Number(
-      (event.target as HTMLElement | null)?.dataset?.commandPaletteIndex ?? NaN
-    );
-
-    if (Number.isNaN(index)) {
-      return;
-    }
-
-    event.preventDefault();
-    const target = itemElement(index + (event.key === 'ArrowDown' ? 1 : -1));
-    target?.focus();
-    scrollRowIntoView(target);
   }
 
   /**
@@ -689,8 +511,6 @@
       back();
     } else if (query.value) {
       query.value = '';
-      selectedIndex.value = 0;
-      selectionMoved.value = false;
       input.value?.focus();
     } else {
       return;
@@ -728,6 +548,7 @@
             ref="searchField"
             v-model="query"
             class="command-palette__search-field"
+            :label="t('Search for pages, actions, and content')"
             :placeholder="t('Search for pages, actions, and content')"
           >
             <input
@@ -735,15 +556,8 @@
               slot="input"
               type="text"
               class="command-palette__input"
-              role="combobox"
-              aria-expanded="true"
-              aria-haspopup="grid"
-              aria-autocomplete="list"
-              :aria-controls="gridIds || undefined"
-              :aria-activedescendant="selectedRow?.cellId"
               autocapitalize="off"
               spellcheck="false"
-              @keydown="onInputKeydown"
             />
           </CraftInputSearch>
         </div>
@@ -752,10 +566,13 @@
           ref="results"
           class="command-palette__results"
           :aria-busy="search.searching.value ? 'true' : 'false'"
-          @keydown="onResultsKeydown"
         >
           <div
-            v-if="busy || (search.searching.value && !rows.length)"
+            v-if="
+              busy ||
+              (search.searching.value &&
+                !sections.some((section) => section.items.length))
+            "
             class="command-palette__loading"
           >
             <craft-spinner
@@ -763,14 +580,12 @@
             ></craft-spinner>
           </div>
           <ResultSection
-            v-for="section in rowsBySection"
+            v-for="section in sections"
             :key="section.key"
-            :grid-id="section.gridId"
+            :grid-id="`${id}-${section.key}`"
             :heading="section.heading"
-            :rows="section.rows"
-            :selected-index="selectedIndex"
-            @activate="(item, trigger) => activate(item, {trigger})"
-            @select="select"
+            :items="section.items"
+            @activate="activate"
             @dismiss="dismissForMenuAction"
           />
           <craft-empty
@@ -793,13 +608,14 @@
 
         <p :id="`${id}-hint`" ref="hint" class="command-palette__hint">
           <span class="command-palette__hint-item">
-            <kbd>↑</kbd> <kbd>↓</kbd> {{ t('Choose item') }}
+            <kbd>Tab</kbd> {{ t('Move to results') }}
           </span>
           <span class="command-palette__hint-item">
-            <kbd>{{ returnKey }}</kbd> {{ t('Open item') }}
+            <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd>
+            {{ t('Move between results') }}
           </span>
           <span class="command-palette__hint-item">
-            <kbd>Tab</kbd> {{ t('Focus item') }}
+            <kbd>{{ returnKey }}</kbd> {{ t('Open result') }}
           </span>
           <span class="command-palette__hint-item">
             <kbd>Esc</kbd> {{ query ? t('Clear search') : t('Close') }}
@@ -888,7 +704,6 @@
     --c-input-fill: transparent;
     --c-input-height: var(--_bar-block-size);
     --c-input-spacing-inline: var(--c-spacing-sm);
-    --c-focus-outline-style: none;
     /* Overrides the field's private clear-button inset, so its icon lines up with the result types' right edge. */
     --_clear-inset: 0px;
     flex: 1;
@@ -896,7 +711,9 @@
     font-size: var(--c-text-lg);
   }
 
+  /* The bar draws the input's ring, so the clear button keeps its own. */
   .command-palette__input {
+    --c-focus-outline-style: none;
     font: inherit;
   }
 
@@ -905,7 +722,7 @@
     opacity: 1;
   }
 
-  .command-palette__field:focus-within {
+  .command-palette__field:has(.command-palette__input:focus) {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: calc(var(--c-focus-outline-width) * -1);
@@ -1002,7 +819,7 @@
   }
 
   @media (forced-colors: active) {
-    .command-palette__field:focus-within {
+    .command-palette__field:has(.command-palette__input:focus) {
       outline-color: Highlight;
     }
   }

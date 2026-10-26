@@ -61,7 +61,7 @@ describe('NotificationsView', () => {
     expect(done).toHaveBeenCalledWith({run: expect.any(Function)});
   });
 
-  it('marks all of the unread notifications as read', async () => {
+  it('marks all of the unread notifications as read, then moves focus to the heading', async () => {
     const post = vi
       .spyOn(actionClient, 'post')
       .mockResolvedValue({data: {}} as never);
@@ -71,12 +71,19 @@ describe('NotificationsView', () => {
       notification('c', true),
     ]);
 
+    container.classList.add('command-palette__view');
+    const heading = document.createElement('h2');
+    heading.tabIndex = -1;
+    container.prepend(heading);
+
     container.querySelector<HTMLElement>('craft-button')!.click();
+    await nextTick();
     await nextTick();
 
     expect(post).toHaveBeenCalledWith(expect.any(String), {ids: ['a', 'c']});
     expect(getNotifications().some(({unread}) => unread)).toBe(false);
     expect(container.querySelector('craft-button')).toBeNull();
+    expect(document.activeElement).toBe(heading);
   });
 
   it('says when there are none', async () => {

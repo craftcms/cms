@@ -18,7 +18,6 @@ describe('DocsSearchView', () => {
   let app: ReturnType<typeof createApp>;
   let container: HTMLElement;
   const get = vi.spyOn(actionClient, 'get');
-  const open = vi.spyOn(window, 'open').mockReturnValue(null);
 
   function mount(): HTMLInputElement {
     container = document.createElement('div');
@@ -32,7 +31,7 @@ describe('DocsSearchView', () => {
     app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
     app.mount(container);
 
-    return container.querySelector<HTMLInputElement>('[role="combobox"]')!;
+    return container.querySelector<HTMLInputElement>('[data-autofocus]')!;
   }
 
   async function type(input: HTMLInputElement, value: string): Promise<void> {
@@ -54,7 +53,7 @@ describe('DocsSearchView', () => {
     vi.clearAllMocks();
   });
 
-  it('searches once typing pauses, and opens the selected result in a new tab', async () => {
+  it('searches once typing pauses, listing links that say they open in a new tab', async () => {
     get.mockResolvedValue({
       data: {
         results: [
@@ -86,19 +85,17 @@ describe('DocsSearchView', () => {
       [...container.querySelectorAll('code')].map((code) => code.textContent)
     ).toEqual(['craft.matrix', 'craft.matrix']);
 
-    input.dispatchEvent(
-      new KeyboardEvent('keydown', {key: 'ArrowDown', bubbles: true})
-    );
-    await nextTick();
-    input.dispatchEvent(
-      new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
-    );
-
-    expect(open).toHaveBeenCalledWith(
-      'https://craftcms.com/docs/matrix',
-      '_blank',
-      'noopener'
-    );
+    expect(input.hasAttribute('role')).toBe(false);
+    const links = [
+      ...container.querySelectorAll<HTMLAnchorElement>(
+        'craft-grid .command-palette-row__item'
+      ),
+    ];
+    expect(links.map((link) => [link.href, link.target, link.rel])).toEqual([
+      ['https://craftcms.com/glossary/matrix', '_blank', 'noopener'],
+      ['https://craftcms.com/docs/matrix', '_blank', 'noopener'],
+    ]);
+    expect(links[1]!.textContent).toContain('Opens in a new window');
   });
 
   it('keeps the latest results when an earlier search answers late', async () => {

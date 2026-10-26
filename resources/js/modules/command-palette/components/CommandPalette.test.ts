@@ -18,6 +18,8 @@ import {
 } from '../registry';
 import CommandPalette from './CommandPalette.vue';
 
+import '@craftcms/ui/components/grid/grid';
+
 const state = vi.hoisted(() => ({
   page: null as any,
   visit: vi.fn(),
@@ -173,15 +175,25 @@ describe('CommandPalette', () => {
     isCommandPaletteOpen.value = true;
     await flush();
 
-    return document.querySelector<HTMLInputElement>('[role="combobox"]')!;
+    return document.querySelector<HTMLInputElement>('.command-palette__input')!;
   }
 
-  function selected(input: HTMLInputElement): string {
-    const cell = document.getElementById(
-      input.getAttribute('aria-activedescendant') ?? ''
-    );
+  /** The result with this label: the link or button the person presses. */
+  function result(label: string): HTMLElement {
+    return [
+      ...document.querySelectorAll<HTMLElement>('.command-palette-row__item'),
+    ].find(
+      (item) =>
+        item
+          .querySelector('.command-palette-row__label')
+          ?.textContent?.trim() === label
+    )!;
+  }
 
-    return cell?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+  /** Chooses a result, as a click or Return on it does. */
+  async function choose(label: string): Promise<void> {
+    result(label).click();
+    await flush();
   }
 
   function press(target: Element, key: string, init: KeyboardEventInit = {}) {
@@ -196,7 +208,7 @@ describe('CommandPalette', () => {
     return event;
   }
 
-  it('opens on recent pages and actions, with the first one selected', async () => {
+  it('opens on recent pages and actions, each a grid named by its heading, with focus in the search field', async () => {
     const input = await open();
 
     expect(
@@ -204,22 +216,47 @@ describe('CommandPalette', () => {
         heading.textContent?.trim()
       )
     ).toEqual(['Recents', 'Actions']);
+    expect(
+      [...document.querySelectorAll('craft-grid')].map((grid) =>
+        document
+          .getElementById(grid.getAttribute('aria-labelledby')!)
+          ?.textContent?.trim()
+      )
+    ).toEqual(['Recents', 'Actions']);
     expect(document.activeElement).toBe(input);
-    expect(selected(input)).toBe('Entries');
   });
 
-  it('moves the selection with the arrow keys while focus stays in the search box', async () => {
+  it('keeps the search field a plain text field, which Enter does nothing in', async () => {
     const input = await open();
 
-    press(input, 'ArrowDown');
-    await nextTick();
-    expect(selected(input)).toContain('Notifications');
+    expect(input.hasAttribute('role')).toBe(false);
+    expect(input.hasAttribute('aria-activedescendant')).toBe(false);
 
-    press(input, 'ArrowUp');
-    press(input, 'ArrowUp');
-    await nextTick();
-    expect(selected(input)).toBe('Uninstall SEO');
+    press(input, 'Enter');
+    await flush();
+
+    expect(isCommandPaletteOpen.value).toBe(true);
+    expect(request).not.toHaveBeenCalled();
+    expect(state.visit).not.toHaveBeenCalled();
     expect(document.activeElement).toBe(input);
+  });
+
+  it('makes each group of results one tab stop, moved around with the arrow keys', async () => {
+    await open();
+    const actions = document.querySelectorAll('craft-grid')[1]!;
+    const items = [
+      ...actions.querySelectorAll<HTMLElement>('.command-palette-row__item'),
+    ];
+
+    expect(items.map((item) => item.getAttribute('tabindex'))).toEqual([
+      '0',
+      ...items.slice(1).map(() => '-1'),
+    ]);
+
+    items[0]!.focus();
+    press(items[0]!, 'ArrowDown');
+
+    expect(document.activeElement).toBe(items[1]);
   });
 
   it('lists destructive actions last', async () => {
@@ -233,42 +270,6 @@ describe('CommandPalette', () => {
       'Enable maintenance mode',
       'Uninstall SEO',
     ]);
-  });
-
-  it('moves focus to the selected result on Tab', async () => {
-    const input = await open();
-
-    press(input, 'ArrowDown');
-    await nextTick();
-    const event = press(input, 'Tab');
-
-    expect(event.defaultPrevented).toBe(true);
-    expect(document.activeElement?.textContent).toContain('Notifications');
-  });
-
-  it('cycles Tab between the search box and the selected result, leaving the other results to the arrow keys', async () => {
-    const input = await open();
-
-    press(input, 'Tab');
-    const first = document.activeElement!;
-    expect(first.textContent).toContain('Entries');
-
-    expect(press(first, 'Tab').defaultPrevented).toBe(true);
-    expect(document.activeElement).toBe(input);
-
-    expect(press(input, 'Tab', {shiftKey: true}).defaultPrevented).toBe(true);
-    expect(document.activeElement).toBe(first);
-
-    press(first, 'ArrowDown');
-    await nextTick();
-    const second = document.activeElement!;
-    expect(second.textContent).toContain('Notifications');
-
-    press(second, 'Tab', {shiftKey: true});
-    expect(document.activeElement).toBe(input);
-
-    press(input, 'Tab');
-    expect(document.activeElement).toBe(second);
   });
 
   it('says what Escape does in the footer: clear the search, or close', async () => {
@@ -294,7 +295,7 @@ describe('CommandPalette', () => {
     input.dispatchEvent(new Event('input', {bubbles: true}));
     await flush();
 
-    press(input, 'Tab');
+    result('Enable maintenance mode').focus();
     const focused = document.activeElement!;
     expect(focused).not.toBe(input);
 
@@ -305,7 +306,7 @@ describe('CommandPalette', () => {
     expect(input.value).toBe('');
     expect(document.activeElement).toBe(input);
 
-    press(input, 'Tab');
+    result('Entries').focus();
     press(document.activeElement!, 'Escape');
     await flush();
 
@@ -313,20 +314,9 @@ describe('CommandPalette', () => {
   });
 
   it('lists docs search from the start, opening it with its own search box focused', async () => {
-    const input = await open();
+    await open();
 
-    for (
-      let i = 0;
-      i < 50 && selected(input) !== 'Search Craft CMS documentation';
-      i++
-    ) {
-      press(input, 'ArrowDown');
-      await nextTick();
-    }
-    expect(selected(input)).toBe('Search Craft CMS documentation');
-
-    press(input, 'Enter');
-    await flush();
+    await choose('Search Craft CMS documentation');
 
     expect(document.activeElement?.getAttribute('aria-label')).toBe(
       'Search Craft CMS documentation'
@@ -335,7 +325,7 @@ describe('CommandPalette', () => {
 
   it('focuses the search box when its surrounding padding is pressed', async () => {
     const input = await open();
-    press(input, 'Tab');
+    result('Entries').focus();
     expect(document.activeElement).not.toBe(input);
 
     const field = input.closest<HTMLElement>('.command-palette__field')!;
@@ -349,16 +339,10 @@ describe('CommandPalette', () => {
     expect(document.activeElement).toBe(input);
   });
 
-  it('confirms destructive actions in the palette, and Escape goes back to the results as they were', async () => {
-    const input = await open();
+  it('confirms destructive actions in the palette, and Escape goes back to the result that opened it', async () => {
+    await open();
 
-    while (selected(input) !== 'Uninstall SEO') {
-      press(input, 'ArrowDown');
-      await nextTick();
-    }
-
-    press(input, 'Enter');
-    await flush();
+    await choose('Uninstall SEO');
 
     const heading = document.querySelector<HTMLElement>('h2[tabindex="-1"]')!;
     expect(heading.textContent?.trim()).toBe('Uninstall SEO');
@@ -373,8 +357,7 @@ describe('CommandPalette', () => {
 
     expect(document.querySelector('h2[tabindex="-1"]')).toBeNull();
     expect(isCommandPaletteOpen.value).toBe(true);
-    expect(document.activeElement).toBe(input);
-    expect(selected(input)).toBe('Uninstall SEO');
+    expect(document.activeElement).toBe(result('Uninstall SEO'));
   });
 
   it('confirms a page’s own action before running it, once the palette has closed', async () => {
@@ -388,15 +371,9 @@ describe('CommandPalette', () => {
         run: discard,
       },
     ]);
-    const input = await open();
+    await open();
 
-    while (selected(input) !== 'Discard changes') {
-      press(input, 'ArrowDown');
-      await nextTick();
-    }
-
-    press(input, 'Enter');
-    await flush();
+    await choose('Discard changes');
 
     expect(document.body.textContent).toContain('Discard your changes?');
     expect(discard).not.toHaveBeenCalled();
@@ -417,22 +394,16 @@ describe('CommandPalette', () => {
   });
 
   it('goes back from a view on Escape, even with focus on the dialog itself', async () => {
-    const input = await open();
+    await open();
 
-    while (selected(input) !== 'Uninstall SEO') {
-      press(input, 'ArrowDown');
-      await nextTick();
-    }
-
-    press(input, 'Enter');
-    await flush();
+    await choose('Uninstall SEO');
 
     press(document.querySelector('[role="dialog"]')!, 'Escape');
     await flush();
 
     expect(isCommandPaletteOpen.value).toBe(true);
     expect(document.querySelector('h2[tabindex="-1"]')).toBeNull();
-    expect(document.activeElement).toBe(input);
+    expect(document.activeElement).toBe(result('Uninstall SEO'));
   });
 
   it('finds the actions it opened with before the server answers', async () => {
@@ -463,15 +434,9 @@ describe('CommandPalette', () => {
     request.mockResolvedValue({
       data: {messages: [], redirect: '/admin/settings/general'},
     } as never);
-    const input = await open();
+    await open();
 
-    while (selected(input) !== 'Enable maintenance mode') {
-      press(input, 'ArrowDown');
-      await nextTick();
-    }
-
-    press(input, 'Enter');
-    await flush();
+    await choose('Enable maintenance mode');
 
     expect(request).toHaveBeenCalledWith({
       url: '/admin/settings/general/maintenance-mode',
@@ -498,20 +463,14 @@ describe('CommandPalette', () => {
         ],
       },
     } as never);
-    const input = await open();
-
-    while (selected(input) !== 'Delete the News section') {
-      press(input, 'ArrowDown');
-      await nextTick();
-    }
+    await open();
 
     let urlWhenVisited = '';
     state.visit.mockImplementation(() => {
       urlWhenVisited = window.location.pathname;
     });
 
-    press(input, 'Enter');
-    await flush();
+    await choose('Delete the News section');
 
     expect(state.visit).toHaveBeenCalledWith('/admin/settings/sections', {
       replace: true,
@@ -521,15 +480,9 @@ describe('CommandPalette', () => {
 
   it('stays open when an action fails', async () => {
     request.mockRejectedValue({response: {data: {message: 'Nope'}}});
-    const input = await open();
+    await open();
 
-    while (selected(input) !== 'Enable maintenance mode') {
-      press(input, 'ArrowDown');
-      await nextTick();
-    }
-
-    press(input, 'Enter');
-    await flush();
+    await choose('Enable maintenance mode');
 
     expect(isCommandPaletteOpen.value).toBe(true);
     expect((window as any).Craft.cp.displayError).toHaveBeenCalledWith('Nope');
@@ -544,12 +497,44 @@ describe('CommandPalette', () => {
     app.mount(container);
     await flush();
 
-    const input =
-      document.querySelector<HTMLInputElement>('[role="combobox"]')!;
+    const input = document.querySelector<HTMLInputElement>(
+      '.command-palette__input'
+    )!;
 
     expect(isCommandPaletteOpen.value).toBe(true);
     expect(document.activeElement).toBe(input);
-    expect(selected(input)).toBe('Entries');
+  });
+
+  it('gives focus back to where it was, and says so, once a copy closes the palette', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {writeText},
+      configurable: true,
+    });
+    get.mockResolvedValue({
+      data: {
+        providers: [],
+        actions: [
+          serverAction('copy-id', 'Copy ID', {
+            action: {type: 'clipboard', value: '42'},
+          }),
+        ],
+      },
+    } as never);
+    const trigger = document.createElement('button');
+    document.body.append(trigger);
+    trigger.focus();
+    await open();
+
+    await choose('Copy ID');
+    await flush();
+
+    expect(isCommandPaletteOpen.value).toBe(false);
+    expect(writeText).toHaveBeenCalledWith('42');
+    expect((window as any).Craft.cp.displayNotice).toHaveBeenCalledWith(
+      'Copied!'
+    );
+    expect(document.activeElement).toBe(trigger);
   });
 
   it('toggles with Cmd/Ctrl+K unless something else handled it', async () => {

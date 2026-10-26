@@ -1,16 +1,13 @@
 <script setup lang="ts">
   /**
-   * One labelled run of results — Recents, Actions, or Results.
+   * One labelled group of results — Recents, Actions, or Results — as a
+   * `craft-grid` named by its heading.
    *
-   * A grid, as the popup of the palette's search combobox: each row has the
-   * item itself, a menu of its secondary actions right after its label when
-   * it has any, and its description at the end. The item's hint sits below
-   * its label, clear of the menu, and the hint and description both describe
-   * the item for screen readers. The item's hit area covers the whole row,
-   * menu excepted.
-   * The search input keeps focus while the arrow keys move the selection,
-   * which it points to with `aria-activedescendant`; Tab moves into the rows
-   * themselves.
+   * Each row has the item itself, with its hint and description, and a menu
+   * of its secondary actions right after its label when it has any. The hint
+   * and description stay in the item's cell, so the arrow keys move only
+   * between the item and its menu, and both describe the item for screen
+   * readers. The item's hit area covers the whole row, menu excepted.
    */
   import {t, type BaseAction} from '@craftcms/ui';
   import CpLink from '@/common/components/CpLink.vue';
@@ -19,33 +16,32 @@
   import {createElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
   import type {CommandPaletteItem} from '../types';
 
-  export interface ResultRow {
-    item: CommandPaletteItem;
-    /** Its position across every section, which the selection is kept by. */
-    index: number;
-    /** The id of the cell holding the item, for `aria-activedescendant`. */
-    cellId: string;
-  }
-
-  defineProps<{
+  const props = defineProps<{
     gridId: string;
     heading: string;
-    rows: ResultRow[];
-    selectedIndex: number;
+    items: CommandPaletteItem[];
+    /** Whether links open in a new tab, which each one then says. */
+    newTab?: boolean;
   }>();
 
   const emit = defineEmits<{
     (event: 'activate', item: CommandPaletteItem, trigger: MouseEvent): void;
-    (event: 'select', index: number): void;
     /** A menu action was chosen, and the palette should get out of its way. */
     (event: 'dismiss'): void;
   }>();
 
+  function itemId(index: number): string {
+    return `${props.gridId}-item-${index}`;
+  }
+
   /** The hint and description, which screen readers read after the item's label. */
-  function describedBy(row: ResultRow): string | undefined {
+  function describedBy(
+    item: CommandPaletteItem,
+    index: number
+  ): string | undefined {
     const ids = [
-      row.item.hint ? `${row.cellId}-hint` : null,
-      row.item.description ? `${row.cellId}-description` : null,
+      item.hint || item.hintHtml ? `${itemId(index)}-hint` : null,
+      item.description ? `${itemId(index)}-description` : null,
     ].filter((id) => id !== null);
 
     return ids.length ? ids.join(' ') : undefined;
@@ -127,10 +123,6 @@
           : `var(--c-color-${color}-fill-loud, currentColor)`,
     };
   }
-
-  function onClick(row: ResultRow, event: MouseEvent): void {
-    emit('activate', row.item, event);
-  }
 </script>
 
 <template>
@@ -138,96 +130,102 @@
     <h2 :id="`${gridId}-heading`" class="command-palette-section__heading">
       {{ heading }}
     </h2>
-    <div role="grid" :id="gridId" :aria-labelledby="`${gridId}-heading`">
-      <div
-        v-for="row in rows"
-        :key="row.item.id"
-        role="row"
+    <craft-grid :id="gridId" :aria-labelledby="`${gridId}-heading`">
+      <craft-grid-row
+        v-for="(item, index) in items"
+        :key="item.id"
         class="command-palette-row"
-        :class="{
-          'command-palette-row--selected': row.index === selectedIndex,
-          'command-palette-row--danger': row.item.variant === 'danger',
-        }"
-        :aria-selected="row.index === selectedIndex ? 'true' : 'false'"
+        :class="{'command-palette-row--danger': item.variant === 'danger'}"
       >
-        <div role="gridcell" :id="row.cellId" class="command-palette-row__cell">
+        <craft-grid-cell class="command-palette-row__cell">
           <span class="command-palette-row__icon" aria-hidden="true">
             <span
-              v-if="row.item.thumbHtml"
+              v-if="item.thumbHtml"
               class="command-palette-row__thumb"
-              v-html="row.item.thumbHtml"
+              v-html="item.thumbHtml"
             ></span>
             <span
-              v-else-if="row.item.iconSvg"
+              v-else-if="item.iconSvg"
               class="command-palette-row__svg"
-              v-html="row.item.iconSvg"
+              v-html="item.iconSvg"
             ></span>
             <craft-icon
               v-else
-              :name="row.item.icon ?? 'arrow-right'"
+              :name="item.icon ?? 'arrow-right'"
               :style="
                 iconColorStyle(
-                  row.item.variant === 'danger' ? null : row.item.iconColor
+                  item.variant === 'danger' ? null : item.iconColor
                 )
               "
             ></craft-icon>
           </span>
           <component
             :is="
-              isLink(row.item) && !row.item.external
+              isLink(item) && !item.external && !newTab
                 ? CpLink
-                : isLink(row.item)
+                : isLink(item)
                   ? 'a'
                   : 'button'
             "
-            :href="isLink(row.item) ? row.item.href : undefined"
-            :type="isLink(row.item) ? undefined : 'button'"
+            :href="isLink(item) ? item.href : undefined"
+            :target="isLink(item) && newTab ? '_blank' : undefined"
+            :rel="isLink(item) && newTab ? 'noopener' : undefined"
+            :type="isLink(item) ? undefined : 'button'"
             class="command-palette-row__item"
-            :data-command-palette-index="row.index"
-            :aria-describedby="describedBy(row)"
-            @click="onClick(row, $event)"
-            @focus="emit('select', row.index)"
+            :data-command-palette-item="item.id"
+            :aria-describedby="describedBy(item, index)"
+            @click="emit('activate', item, $event)"
           >
             <span
-              v-if="row.item.labelHtml"
+              v-if="item.labelHtml"
               class="command-palette-row__label"
-              v-html="row.item.labelHtml"
+              v-html="item.labelHtml"
             ></span>
             <span v-else class="command-palette-row__label">{{
-              row.item.label
+              item.label
             }}</span>
+            <template v-if="isLink(item) && newTab">
+              <craft-icon
+                name="arrow-up-right-from-square"
+                class="command-palette-row__new-tab"
+                aria-hidden="true"
+              ></craft-icon>
+              <span class="sr-only">{{ t('Opens in a new window') }}</span>
+            </template>
           </component>
           <span
-            v-if="row.item.hintHtml"
-            :id="`${row.cellId}-hint`"
+            v-if="item.hintHtml"
+            :id="`${itemId(index)}-hint`"
             class="command-palette-row__hint"
-            :lang="row.item.hintLang ?? undefined"
-            v-html="row.item.hintHtml"
+            :lang="item.hintLang ?? undefined"
+            v-html="item.hintHtml"
           ></span>
           <span
-            v-else-if="row.item.hint"
-            :id="`${row.cellId}-hint`"
+            v-else-if="item.hint"
+            :id="`${itemId(index)}-hint`"
             class="command-palette-row__hint"
-            :lang="row.item.hintLang ?? undefined"
-            >{{ row.item.hint }}</span
+            :lang="item.hintLang ?? undefined"
+            >{{ item.hint }}</span
           >
-        </div>
-        <div role="gridcell" class="command-palette-row__actions">
-          <ActionMenu
-            v-if="hasMenu(row.item)"
-            :actions="menuActions(row.item)"
-            :label="t('Actions for {item}', {item: row.item.label})"
-          />
-        </div>
-        <div
-          role="gridcell"
-          :id="`${row.cellId}-description`"
-          class="command-palette-row__description"
+          <span
+            v-if="item.description"
+            :id="`${itemId(index)}-description`"
+            class="command-palette-row__description"
+          >
+            {{ item.description }}
+          </span>
+        </craft-grid-cell>
+        <craft-grid-cell
+          v-if="hasMenu(item)"
+          class="command-palette-row__actions"
         >
-          {{ row.item.description }}
-        </div>
-      </div>
-    </div>
+          <ActionMenu
+            :actions="menuActions(item)"
+            :label="t('Actions for {item}', {item: item.label})"
+          />
+        </craft-grid-cell>
+      </craft-grid-row>
+    </craft-grid>
   </section>
 </template>
 
@@ -274,24 +272,24 @@
   }
 
   @media (hover: hover) {
-    .command-palette-row:hover:not(.command-palette-row--selected) {
+    .command-palette-row:hover:not(:focus-within) {
       background-color: var(--c-color-neutral-fill-quiet);
       color: var(--c-color-neutral-on-quiet);
     }
 
-    .command-palette-row--danger:hover:not(.command-palette-row--selected) {
+    .command-palette-row--danger:hover:not(:focus-within) {
       background-color: var(--c-color-danger-fill-quiet);
       color: var(--c-color-danger-on-quiet);
     }
   }
 
-  .command-palette-row--selected {
+  .command-palette-row:focus-within {
     background-color: var(--c-color-neutral-fill-loud);
     color: var(--c-color-neutral-on-loud);
   }
 
-  /* Still red once selected: the danger pair stands in for the neutral one. */
-  .command-palette-row--selected.command-palette-row--danger {
+  /* Still red once focused: the danger pair stands in for the neutral one. */
+  .command-palette-row--danger:focus-within {
     background-color: var(--c-color-danger-fill-normal);
     color: var(--c-color-danger-on-normal);
   }
@@ -344,7 +342,7 @@
     border-radius: inherit;
   }
 
-  .command-palette-row--danger:not(.command-palette-row--selected)
+  .command-palette-row--danger:not(:focus-within)
     :is(.command-palette-row__label, .command-palette-row__icon) {
     color: var(--c-color-danger-on-quiet);
   }
@@ -389,6 +387,11 @@
     overflow-wrap: anywhere;
   }
 
+  .command-palette-row__new-tab {
+    margin-inline-start: var(--c-spacing-xs);
+    vertical-align: middle;
+  }
+
   .command-palette-row__hint {
     grid-column: 2 / -1;
     grid-row: 2;
@@ -397,7 +400,7 @@
     overflow-wrap: anywhere;
   }
 
-  .command-palette-row--selected .command-palette-row__hint {
+  .command-palette-row:focus-within .command-palette-row__hint {
     color: inherit;
   }
 
@@ -411,7 +414,7 @@
     overflow-wrap: anywhere;
   }
 
-  .command-palette-row--selected .command-palette-row__description {
+  .command-palette-row:focus-within .command-palette-row__description {
     color: inherit;
   }
 
@@ -426,12 +429,12 @@
     --c-focus-outline-offset: calc(var(--c-focus-outline-width) * -1);
   }
 
-  .command-palette-row--selected .command-palette-row__actions {
+  .command-palette-row:focus-within .command-palette-row__actions {
     --c-color-focus-outline: currentColor;
   }
 
   @media (forced-colors: active) {
-    .command-palette-row--selected {
+    .command-palette-row:focus-within {
       outline: 1px solid Highlight;
     }
 

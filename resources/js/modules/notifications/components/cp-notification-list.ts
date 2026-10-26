@@ -303,9 +303,14 @@ class CpNotificationList extends LitElement {
                     size="small"
                     variant="plain"
                     flush
-                    @click=${(event: MouseEvent) => {
+                    @click=${async (event: MouseEvent) => {
                       event.stopPropagation();
+                      const item = (
+                        event.currentTarget as HTMLElement
+                      ).closest<HTMLElement>('.notification-item');
                       void markNotificationsRead([notification.id]);
+                      await this.updateComplete;
+                      this.#focusItem(item);
                     }}
                   >
                     ${t('Mark as read')}
@@ -336,6 +341,27 @@ class CpNotificationList extends LitElement {
         </div>
       </article>
     `;
+  }
+
+  /**
+   * Moves focus to a notification once its Mark as read button has gone:
+   * to its link, or to the notification itself when it has none.
+   */
+  #focusItem(item: HTMLElement | null): void {
+    if (!item?.isConnected) {
+      return;
+    }
+
+    const link = item.querySelector<HTMLElement>('.notification-card-link');
+
+    if (link) {
+      link.focus();
+
+      return;
+    }
+
+    item.tabIndex = -1;
+    item.focus();
   }
 
   protected override render() {

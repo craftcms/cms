@@ -6,7 +6,7 @@
    * first.
    */
   import {t} from '@craftcms/ui';
-  import {computed, onBeforeUnmount, shallowRef} from 'vue';
+  import {computed, nextTick, onBeforeUnmount, shallowRef} from 'vue';
   import {
     getNotifications,
     markNotificationsRead,
@@ -39,6 +39,19 @@
       .map((notification) => notification.id)
   );
 
+  /**
+   * Marks every unread notification as read. The button goes once they are,
+   * so focus moves to the view's heading rather than being dropped.
+   */
+  async function markAllRead(event: MouseEvent): Promise<void> {
+    const view = (event.currentTarget as HTMLElement).closest<HTMLElement>(
+      '.command-palette__view'
+    );
+    void markNotificationsRead(unreadIds.value);
+    await nextTick();
+    view?.querySelector<HTMLElement>('h2[tabindex="-1"]')?.focus();
+  }
+
   function open(event: CustomEvent<{url: string}>): void {
     event.preventDefault();
     emit('done', {run: () => navigateToNotification(event.detail.url)});
@@ -64,7 +77,7 @@
           size="small"
           variant="plain"
           flush="inline-end"
-          @click="markNotificationsRead(unreadIds)"
+          @click="markAllRead"
         >
           {{ t('Mark all as read') }}
         </craft-button>
