@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Heading;
+use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
+use CraftCms\Cms\FieldLayout\LayoutElements\Users\EmailField;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Models\UserGroup;
@@ -51,4 +55,22 @@ it('describes field types and Asset Transform drivers', function (): void {
     ($this->call)('component-types.get', ['kind' => 'field', 'type' => 'Nope'])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Unknown field type [Nope]. Call component-types.list for the available types.');
+});
+
+it('describes the elements an element type’s field layouts accept', function (): void {
+    $types = collect(($this->result)('component-types.list', ['kind' => 'field-layout-element', 'scope' => 'users'])['types'])->keyBy('type');
+    $warning = ($this->result)('component-types.get', ['kind' => 'field-layout-element', 'scope' => 'users', 'type' => Tip::class.'(style: warning)']);
+    $customField = ($this->result)('component-types.get', ['kind' => 'field-layout-element', 'scope' => 'users', 'type' => CustomField::class])['settingsSchema']['properties'];
+
+    expect($types[EmailField::class.'(attribute: email)']['config'])->toBe(['type' => EmailField::class, 'attribute' => 'email'])
+        ->and($types)->toHaveKeys([CustomField::class, Heading::class, Tip::class.'(style: tip)'])
+        ->and($warning['config'])->toBe(['type' => Tip::class, 'style' => 'warning'])
+        ->and($warning['settingsSchema']['properties']['tip']['type'])->toBe('string')
+        ->and($customField)->toHaveKeys(['label', 'instructions', 'userCondition', 'elementCondition'])
+        ->and($customField['required'])->toMatchArray(['type' => 'boolean', 'default' => false])
+        ->and($customField['width']['enum'])->toContain(25, 50, 100);
+
+    ($this->call)('component-types.list', ['kind' => 'field-layout-element'])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'Provide scope: the element type whose field layouts the elements go in, such as entries.');
 });
