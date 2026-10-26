@@ -373,6 +373,27 @@ export default class CraftTabs extends LionTabs {
     }
   }
 
+  override connectedCallback() {
+    super.connectedCallback();
+
+    // Moving the strip disconnects and reconnects it, and the listeners
+    // dropped on disconnect were bound in `firstUpdated`, which won't run again.
+    if (!this.hasUpdated) {
+      return;
+    }
+
+    if (this.#external) {
+      this.#setupExternal();
+    }
+
+    if (this.syncLocationHash) {
+      window.addEventListener('hashchange', this.#selectFromHash);
+    }
+
+    this.#resizeObserver ??= new ResizeObserver(this.#queueMeasure);
+    this.#resizeObserver.observe(this);
+  }
+
   override disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('hashchange', this.#selectFromHash);
