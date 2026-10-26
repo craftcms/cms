@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ai;
 
-use BackedEnum;
 use Closure;
 use CraftCms\Cms\Ai\Agents\AttachmentProbe;
 use CraftCms\Cms\Ai\Agents\StructuredOutputProbe;
@@ -28,12 +27,14 @@ use Laravel\Ai\Files\Video;
 use Laravel\Ai\Responses\StructuredAgentResponse;
 use Throwable;
 
+use function CraftCms\Cms\enum_value;
+
 /**
  * Checks whether providers’ models have the {@see Capability capabilities} that tasks need.
  *
  * `laravel/ai` doesn’t know what each model supports, so Craft asks the model. For vision, it sends a small image
  * filled with one color and asks which color it is. Documents, audio, and video are checked the same way, with a PDF
- * with a word on it, a few beeps, and a video filled with one color. For structured output, it asks for a word and a
+ * with a word on it, a few beeps, and a video filled with one color. The files are in `resources/ai/probes`. For structured output, it asks for a word and a
  * number in a JSON schema. For tool calling, it gives the model a tool that returns a code, and asks for the code. Results are cached. A model that answers correctly, or wrongly,
  * is cached indefinitely. Other errors are cached for a day, and checked again the next time the AI settings are
  * saved. Errors that can be fixed right away, such as the provider being unreachable or rejecting its API key, aren’t
@@ -49,19 +50,6 @@ class CapabilityChecks
     private const int ERROR_TTL = 86400;
 
     private const int TIMEOUT = 30;
-
-    /** Solid 32×32 PNGs, base64-encoded, keyed by the color that fills them. */
-    private const array SWATCHES = [
-        'red' => 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAKklEQVR42mO4IydHU8QwasGoBaMWjFowasGoBaMWjFowasGoBaMWDBULAJI2YD30P/0LAAAAAElFTkSuQmCC',
-        'green' => 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAKklEQVR42mOQW2VDU8QwasGoBaMWjFowasGoBaMWjFowasGoBaMWDBULAAWeED3qlHLVAAAAAElFTkSuQmCC',
-        'blue' => 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAKklEQVR42mOQC7hDU8QwasGoBaMWjFowasGoBaMWjFowasGoBaMWDBULAGjvKEzsJbubAAAAAElFTkSuQmCC',
-        'yellow' => 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAK0lEQVR42mP4cEmOpohh1IJRC0YtGLVg1IJRC0YtGLVg1IJRC0YtGCoWAAD+c4BqqrG/CgAAAABJRU5ErkJggg==',
-        'black' => 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAGUlEQVR42u3BMQEAAADCoPVP7WENoAAAAG4MIAABITLN7AAAAABJRU5ErkJggg==',
-        'white' => 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAJklEQVR42u3NMQ0AAAwDoPo33arYsQQMkB6LQCAQCAQCgUAg+BIMi1X0ptsIcT0AAAAASUVORK5CYII=',
-    ];
-
-    /** Words for the document check, which a model can’t guess without reading the document. */
-    private const array WORDS = ['lighthouse', 'marmalade', 'saxophone', 'glacier', 'tangerine', 'compass'];
 
     public function __construct(private readonly AiManager $aiManager) {}
 
@@ -116,56 +104,61 @@ class CapabilityChecks
 
     private function checkVision(ResolvedProvider $resolved): CapabilityCheck
     {
-        $color = array_rand(self::SWATCHES);
+        [$path, $color, $colors] = self::probeFile('image', 'png');
 
         return $this->checkAttachment(
             Capability::Vision,
             $resolved,
-            'Which color fills the attached image? Answer with one of: '.implode(', ', array_keys(self::SWATCHES)).'.',
-            Image::fromBase64(self::SWATCHES[$color], 'image/png'),
-            static fn (string $answer): bool => self::namedColors($answer) === [$color],
+            'Which color fills the attached image? Answer with one of: '.implode(', ', $colors).'.',
+            Image::fromPath($path, 'image/png'),
+            static fn (string $answer): bool => self::named($answer, $colors) === [$color],
         );
     }
 
     private function checkDocumentInput(ResolvedProvider $resolved): CapabilityCheck
     {
-        $word = self::WORDS[array_rand(self::WORDS)];
+        [$path, $word] = self::probeFile('document', 'pdf');
 
         return $this->checkAttachment(
             Capability::DocumentInput,
             $resolved,
             'Which word is written in the attached PDF? Answer with that word.',
-            Document::fromString(self::pdf($word), 'application/pdf'),
-            static fn (string $answer): bool => preg_match("/\\b$word\\b/", $answer) === 1,
+            Document::fromPath($path),
+            static fn (string $answer): bool => self::named($answer, [$word]) === [$word],
         );
     }
 
     private function checkAudioInput(ResolvedProvider $resolved): CapabilityCheck
     {
-        $beeps = random_int(1, 4);
-        $numbers = ['one' => 1, 'two' => 2, 'three' => 3, 'four' => 4];
+        [$path, $beeps] = self::probeFile('audio', 'wav');
+        $words = ['1' => 'one', '2' => 'two', '3' => 'three', '4' => 'four'];
 
         return $this->checkAttachment(
             Capability::AudioInput,
             $resolved,
             'How many beeps are in the attached audio? Answer with a number.',
-            Audio::fromBase64(base64_encode(self::beeps($beeps)), 'audio/wav'),
-            static fn (string $answer): bool => preg_match('/\\b([1-9]|one|two|three|four)\\b/', $answer, $match) === 1
-                && ($numbers[$match[1]] ?? (int) $match[1]) === $beeps,
+            Audio::fromPath($path, 'audio/wav'),
+            static function (string $answer) use ($beeps, $words): bool {
+                $counts = array_map(
+                    static fn (string $named): string => (string) (array_search($named, $words, true) ?: $named),
+                    self::named($answer, [...array_map(strval(...), array_keys($words)), ...array_values($words)]),
+                );
+
+                return array_values(array_unique($counts)) === [$beeps];
+            },
         );
     }
 
     private function checkVideoInput(ResolvedProvider $resolved): CapabilityCheck
     {
-        $color = array_rand(self::SWATCHES);
-        $path = dirname(__DIR__, 2)."/resources/ai/probes/$color.mp4";
+        [$path, $color, $colors] = self::probeFile('video', 'mp4');
 
         return $this->checkAttachment(
             Capability::VideoInput,
             $resolved,
-            'Which color fills the attached video? Answer with one of: '.implode(', ', array_keys(self::SWATCHES)).'.',
-            Video::fromBase64(base64_encode((string) file_get_contents($path)), 'video/mp4'),
-            static fn (string $answer): bool => self::namedColors($answer) === [$color],
+            'Which color fills the attached video? Answer with one of: '.implode(', ', $colors).'.',
+            Video::fromPath($path, 'video/mp4'),
+            static fn (string $answer): bool => self::named($answer, $colors) === [$color],
         );
     }
 
@@ -186,67 +179,28 @@ class CapabilityChecks
     }
 
     /**
-     * Returns the swatch colors an answer names.
+     * Picks a random probe file of a kind from `resources/ai/probes`. Each file is named after its answer, such as
+     * `red.png` for an image filled with red.
      *
+     * @return array{string, string, list<string>} The file’s path, its answer, and the answers of every file of the kind.
+     */
+    private static function probeFile(string $kind, string $extension): array
+    {
+        $paths = glob(dirname(__DIR__, 2)."/resources/ai/probes/$kind/*.$extension") ?: [];
+        $path = $paths[array_rand($paths)];
+
+        return [$path, basename($path, ".$extension"), array_map(static fn (string $path): string => basename($path, ".$extension"), $paths)];
+    }
+
+    /**
+     * Returns the words an answer names, out of the given ones.
+     *
+     * @param  list<string>  $words
      * @return list<string>
      */
-    private static function namedColors(string $answer): array
+    private static function named(string $answer, array $words): array
     {
-        return array_values(array_filter(
-            array_keys(self::SWATCHES),
-            static fn (string $name): bool => preg_match("/\\b$name\\b/", $answer) === 1,
-        ));
-    }
-
-    /**
-     * Returns a one-page PDF with a word on it.
-     */
-    private static function pdf(string $word): string
-    {
-        $content = "BT /F1 36 Tf 40 60 Td ($word) Tj ET";
-        $objects = [
-            '<< /Type /Catalog /Pages 2 0 R >>',
-            '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 150] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
-            '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
-            '<< /Length '.strlen($content)." >>\nstream\n$content\nendstream",
-        ];
-        $pdf = "%PDF-1.4\n";
-        $offsets = [];
-
-        foreach ($objects as $i => $object) {
-            $offsets[] = strlen($pdf);
-            $pdf .= ($i + 1)." 0 obj\n$object\nendobj\n";
-        }
-
-        $xref = strlen($pdf);
-        $pdf .= 'xref'."\n0 ".(count($objects) + 1)."\n0000000000 65535 f \n";
-
-        foreach ($offsets as $offset) {
-            $pdf .= sprintf("%010d 00000 n \n", $offset);
-        }
-
-        return $pdf.'trailer'."\n<< /Size ".(count($objects) + 1)." /Root 1 0 R >>\nstartxref\n$xref\n%%EOF\n";
-    }
-
-    /**
-     * Returns a WAV file with a number of short beeps, separated by silence.
-     */
-    private static function beeps(int $count): string
-    {
-        $rate = 8000;
-        $silence = static fn (float $seconds): string => str_repeat(pack('v', 0), (int) ($rate * $seconds));
-        $tone = '';
-
-        for ($i = 0; $i < (int) ($rate * 0.25); $i++) {
-            $tone .= pack('v', (int) (12000 * sin(2 * M_PI * 880 * $i / $rate)) & 0xFFFF);
-        }
-
-        $samples = $silence(0.3).implode($silence(0.4), array_fill(0, $count, $tone)).$silence(0.3);
-
-        return 'RIFF'.pack('V', 36 + strlen($samples)).'WAVE'
-            .'fmt '.pack('VvvVVvv', 16, 1, 1, $rate, $rate * 2, 2, 16)
-            .'data'.pack('V', strlen($samples)).$samples;
+        return array_values(array_filter($words, static fn (string $word): bool => preg_match('/\\b'.preg_quote($word, '/').'\\b/', $answer) === 1));
     }
 
     private function checkStructuredOutput(ResolvedProvider $resolved): CapabilityCheck
@@ -328,7 +282,7 @@ class CapabilityChecks
         return self::CACHE_PREFIX.md5(implode("\0", [
             $capability->value,
             $resolved->provider,
-            $driver instanceof BackedEnum ? $driver->value : (string) $driver,
+            (string) enum_value($driver),
             (string) ($config['url'] ?? ''),
             $this->modelName($resolved),
         ]));

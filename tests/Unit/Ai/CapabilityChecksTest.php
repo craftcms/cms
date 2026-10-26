@@ -24,36 +24,32 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Laravel\Ai\Exceptions\ProviderConnectionException;
 use Laravel\Ai\Exceptions\ProviderOverloadedException;
-use Laravel\Ai\Files\Base64Audio;
-use Laravel\Ai\Files\Base64Document;
-use Laravel\Ai\Files\Base64Image;
-use Laravel\Ai\Files\Base64Video;
 
-/** Names the color that fills a probe’s image, as a model with vision would. */
-function swatchColor(Collection $attachments): string
+/** Names the color that fills a PNG. */
+function swatchColor(string $png): string
 {
-    $image = imagecreatefromstring(base64_decode($attachments->first()->base64));
+    $image = imagecreatefromstring($png);
     $rgb = imagecolorat($image, 0, 0);
     $color = [($rgb >> 16) & 255, ($rgb >> 8) & 255, $rgb & 255];
 
     return match ($color) {
-        [220, 30, 30] => 'Red',
-        [30, 170, 60] => 'Green',
-        [30, 80, 220] => 'Blue',
-        [240, 210, 30] => 'Yellow',
-        [0, 0, 0] => 'Black',
-        [255, 255, 255] => 'White',
+        [220, 30, 30] => 'red',
+        [30, 170, 60] => 'green',
+        [30, 80, 220] => 'blue',
+        [240, 210, 30] => 'yellow',
+        [0, 0, 0] => 'black',
+        [255, 255, 255] => 'white',
+        default => 'unknown',
     };
 }
 
 /** Counts the beeps in a WAV file: runs of sound separated by at least a tenth of a second of silence. */
 function beepCount(string $wav): int
 {
-    $samples = array_values(unpack('s*', substr($wav, 44)));
     $beeps = 0;
     $quiet = PHP_INT_MAX;
 
-    foreach ($samples as $sample) {
+    foreach (unpack('s*', substr($wav, 44)) as $sample) {
         if (abs($sample) > 1000) {
             $beeps += $quiet > 800 ? 1 : 0;
             $quiet = 0;
@@ -65,18 +61,10 @@ function beepCount(string $wav): int
     return $beeps;
 }
 
-/** Answers a probe about its attachment the way a model that can read it would. */
+/** Answers a probe about its attachment the way a model that can read it would. Probe files are named after their answers. */
 function probeAnswer(Collection $attachments): string
 {
-    $attachment = $attachments->first();
-
-    return match (true) {
-        $attachment instanceof Base64Image => swatchColor($attachments),
-        $attachment instanceof Base64Document => preg_match('/\\((\\w+)\\) Tj/', base64_decode($attachment->base64), $match) ? ucfirst($match[1]) : '',
-        $attachment instanceof Base64Audio => (string) beepCount(base64_decode($attachment->base64)),
-        $attachment instanceof Base64Video => ucfirst(basename((string) collect(glob(dirname(__DIR__, 3).'/resources/ai/probes/*.mp4'))
-            ->first(fn (string $path): bool => base64_encode(file_get_contents($path)) === $attachment->base64), '.mp4')),
-    };
+    return ucfirst(pathinfo($attachments->first()->path, PATHINFO_FILENAME));
 }
 
 beforeEach(function (): void {
@@ -92,7 +80,7 @@ beforeEach(function (): void {
 });
 
 it('checks the models of tasks that need vision once, and keeps tasks whose model can see', function (): void {
-    AttachmentProbe::fake(fn (string $prompt, Collection $attachments): string => swatchColor($attachments));
+    AttachmentProbe::fake(fn (string $prompt, Collection $attachments): string => probeAnswer($attachments));
 
     app(Ai::class)->checkRequirements();
     app(Ai::class)->checkRequirements();
@@ -106,7 +94,7 @@ it('checks the models of tasks that need vision once, and keeps tasks whose mode
 });
 
 it('makes tasks unavailable when their model can’t see images, and explains why', function (): void {
-    AttachmentProbe::fake(fn (string $prompt, Collection $attachments): string => swatchColor($attachments) === 'Red' ? 'blue' : 'red');
+    AttachmentProbe::fake(fn (string $prompt, Collection $attachments): string => probeAnswer($attachments) === 'Red' ? 'blue' : 'red');
 
     app(Ai::class)->checkRequirements();
 
@@ -127,7 +115,7 @@ it('keeps tasks available when their model couldn’t be checked, reports the er
             throw new RuntimeException('Invalid image content');
         }
 
-        return swatchColor($attachments);
+        return probeAnswer($attachments);
     });
 
     app(Ai::class)->checkRequirements();
@@ -144,7 +132,7 @@ it('keeps tasks available when their model couldn’t be checked, reports the er
 });
 
 it('only checks tasks that need a capability and can run', function (): void {
-    AttachmentProbe::fake(fn (string $prompt, Collection $attachments): string => swatchColor($attachments));
+    AttachmentProbe::fake(fn (string $prompt, Collection $attachments): string => probeAnswer($attachments));
     app()->instance(Settings::class, new Settings([
         'defaults' => ['text' => ['provider' => 'openai']],
         'tasks' => ['test:altText' => ['enabled' => false]],
@@ -192,7 +180,7 @@ it('doesn’t cache errors that can be fixed right away, but checks the model ag
             throw $exception;
         }
 
-        return swatchColor($attachments);
+        return probeAnswer($attachments);
     });
 
     $failures = app(Ai::class)->checkRequirements();
@@ -211,3 +199,25 @@ it('doesn’t cache errors that can be fixed right away, but checks the model ag
     'bad API key' => fn () => new RequestException(new Response(new Psr7Response(401, [], '{"error":{"message":"Invalid API key"}}'))),
     'overloaded' => fn () => ProviderOverloadedException::forProvider('deepseek'),
 ]);
+
+it('ships probe files that contain their answers', function (): void {
+    $probes = dirname(__DIR__, 3).'/resources/ai/probes';
+    $answers = fn (string $kind): array => array_map(fn (string $path): string => pathinfo($path, PATHINFO_FILENAME), glob("$probes/$kind/*"));
+
+    foreach (glob("$probes/image/*.png") as $path) {
+        expect(swatchColor(file_get_contents($path)))->toBe(pathinfo($path, PATHINFO_FILENAME));
+    }
+
+    foreach (glob("$probes/document/*.pdf") as $path) {
+        expect(file_get_contents($path))->toStartWith('%PDF-')->toContain('('.pathinfo($path, PATHINFO_FILENAME).') Tj');
+    }
+
+    foreach (glob("$probes/audio/*.wav") as $path) {
+        expect(beepCount(file_get_contents($path)))->toBe((int) pathinfo($path, PATHINFO_FILENAME));
+    }
+
+    expect($answers('image'))->toHaveCount(6)
+        ->and($answers('document'))->toHaveCount(6)
+        ->and($answers('audio'))->toBe(['1', '2', '3', '4'])
+        ->and($answers('video'))->toEqualCanonicalizing($answers('image'));
+});
