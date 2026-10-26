@@ -418,7 +418,7 @@
                                   <LayoutSlotOutlet name="content-toolbar">
                                     <div
                                       :id="legacyIds ? 'toolbar' : undefined"
-                                      class="flex gap-2 items-center"
+                                      class="flex gap-md items-center"
                                     >
                                       <LayoutSlotOutlet
                                         name="content-toolbar-meta"
@@ -429,7 +429,7 @@
                                       </LayoutSlotOutlet>
                                     </div>
 
-                                    <div class="flex gap-2 items-center">
+                                    <div class="flex gap-md items-center">
                                       <LayoutSlotOutlet
                                         name="content-toolbar-actions"
                                       >

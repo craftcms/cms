@@ -35,10 +35,9 @@
       <craft-button
         v-bind="attributes"
         type="button"
-        variant="link"
+        variant="plain"
         size="small"
         icon="chevron-down"
-        icon-position="suffix"
       >
         {{ t('View') }}
       </craft-button>
@@ -48,7 +47,7 @@
     v-else-if="targets.length"
     :href="targets[0]!.url"
     target="_blank"
-    variant="link"
+    variant="plain"
     size="small"
     icon="arrow-up-right-from-square"
     icon-position="suffix"

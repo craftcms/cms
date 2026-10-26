@@ -359,18 +359,20 @@
         class="element-editor__toolbar-separator"
         aria-hidden="true"
       ></span>
-      <craft-button
-        v-if="canPreview"
-        ref="previewButton"
-        type="button"
-        size="small"
-        variant="link"
-        icon="eye"
-        @click="livePreview.open()"
-      >
-        {{ t('Preview') }}
-      </craft-button>
-      <ElementViewButtons :targets="payload.previewTargets" />
+      <div class="flex gap-sm items-center">
+        <craft-button
+          v-if="canPreview"
+          ref="previewButton"
+          type="button"
+          size="small"
+          variant="plain"
+          icon="eye"
+          @click="livePreview.open()"
+        >
+          {{ t('Preview') }}
+        </craft-button>
+        <ElementViewButtons :targets="payload.previewTargets" />
+      </div>
     </template>
     <ElementActivityAvatars :entries="activity.activity.value" />
     <WorkflowDraftsStatus
@@ -663,7 +665,6 @@
   .element-editor__toolbar-separator {
     align-self: stretch;
     inline-size: 1px;
-    margin-block: var(--c-spacing-2xs, 0.125rem);
     background-color: var(--c-color-border-quiet);
   }
 </style>
