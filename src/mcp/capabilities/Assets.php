@@ -11,6 +11,7 @@ use craft\mcp\Authorization;
 use craft\mcp\ElementResourceLinks;
 use craft\mcp\elements\adapters\AssetAdapter;
 use craft\mcp\McpActor;
+use craft\mcp\schema\CustomFieldSchema;
 use craft\mcp\serializers\ElementSerializer;
 use craft\services\Assets as AssetService;
 use craft\services\Elements;
@@ -153,7 +154,7 @@ readonly class Assets
         $asset->newFolderId = $folder->id;
         $asset->setVolumeId($folder->volumeId);
         $asset->uploaderId = $actor->id;
-        $asset->setFieldValues($fields);
+        $asset->setFieldValues((new CustomFieldSchema())->prepareValues($asset, $fields));
         $this->assetAdapter->authorizeAssetSave($actor, $asset);
 
         return $this->mcpAssetUploads->consumeFile($file['download_url'], $filename, function(string $path) use ($asset, $filename): array {

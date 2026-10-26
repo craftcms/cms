@@ -18,6 +18,7 @@ use craft\mcp\schema\CustomFieldSchema;
 use craft\models\FieldLayout;
 use craft\services\Config;
 use Mcp\Capability\Discovery\SchemaValidator;
+use Mcp\Exception\ToolCallException;
 use PHPUnit\Framework\TestCase;
 use yii\console\Application;
 
@@ -61,27 +62,7 @@ class CustomFieldSchemaTest extends TestCase
             $this->layoutField(new Number(['name' => 'Price', 'handle' => 'price'])),
             $this->layoutField(new SchemaPluginField(['name' => 'Coordinates', 'handle' => 'coordinates'])),
         ];
-        $layout = new class($layoutFields) extends FieldLayout {
-            public function __construct(private array $layoutFields)
-            {
-            }
-
-            public function getEditableCustomFieldElements(ElementInterface $element): array
-            {
-                return $this->layoutFields;
-            }
-        };
-        $element = new class($layout) extends Entry {
-            public function __construct(private FieldLayout $layout)
-            {
-            }
-
-            public function getFieldLayout(): ?FieldLayout
-            {
-                return $this->layout;
-            }
-        };
-        $schema = (new CustomFieldSchema())->forElement($element);
+        $schema = (new CustomFieldSchema())->forElement($this->element($layoutFields));
         $validator = new SchemaValidator();
         $values = ['email' => 'editor@example.com', 'priority' => 'high', 'regions' => ['eu'], 'price' => 12.5, 'coordinates' => ['latitude' => 50.8]];
 
@@ -102,6 +83,50 @@ class CustomFieldSchemaTest extends TestCase
 
         unset($values['email']);
         self::assertNotEmpty($validator->validateAgainstJsonSchema($values, $schema));
+    }
+
+    public function testPreparedValuesMustMatchTheSchemaExceptForRequiredFields(): void
+    {
+        $element = $this->element([
+            $this->layoutField(new Email(['name' => 'Contact email', 'handle' => 'email']), required: true),
+            $this->layoutField(new Dropdown(['name' => 'Priority', 'handle' => 'priority', 'options' => [['label' => 'High', 'value' => 'high']]])),
+        ]);
+        $schema = new CustomFieldSchema();
+
+        self::assertSame(['priority' => 'high'], $schema->prepareValues($element, ['priority' => 'high']));
+
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Invalid fields: /priority: ');
+
+        $schema->prepareValues($element, ['priority' => 'urgent']);
+    }
+
+    /**
+     * @param  list<CustomField>  $layoutFields
+     */
+    private function element(array $layoutFields): Entry
+    {
+        $layout = new class($layoutFields) extends FieldLayout {
+            public function __construct(private array $layoutFields)
+            {
+            }
+
+            public function getEditableCustomFieldElements(ElementInterface $element): array
+            {
+                return $this->layoutFields;
+            }
+        };
+
+        return new class($layout) extends Entry {
+            public function __construct(private FieldLayout $layout)
+            {
+            }
+
+            public function getFieldLayout(): ?FieldLayout
+            {
+                return $this->layout;
+            }
+        };
     }
 
     private function layoutField(FieldInterface $field, bool $required = false): CustomField

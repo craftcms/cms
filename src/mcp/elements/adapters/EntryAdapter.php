@@ -183,7 +183,7 @@ class EntryAdapter extends BaseElementAdapter
             $element->setAuthorId($actor->id);
         }
 
-        $element->setFieldValues($fields);
+        $this->setFieldValues($element, $fields);
     }
 
     /** @param Entry $element */

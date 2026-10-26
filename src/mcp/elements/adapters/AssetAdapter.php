@@ -155,7 +155,7 @@ class AssetAdapter extends BaseElementAdapter
         $this->authorizeUploaderChange($element, $attributes, $actor);
 
         Craft::configure($element, Arr::except($attributes, ['filename', 'folderId']));
-        $element->setFieldValues($fields);
+        $this->setFieldValues($element, $fields);
         $this->authorizeSave($actor, $element);
 
         if ($relocation === null) {
@@ -176,7 +176,7 @@ class AssetAdapter extends BaseElementAdapter
         $this->relocation($element, $attributes, $actor);
         $this->authorizeUploaderChange($element, $attributes, $actor);
         Craft::configure($element, $attributes);
-        $element->setFieldValues($fields);
+        $this->setFieldValues($element, $fields);
         $this->authorizeSave($actor, $element);
     }
 

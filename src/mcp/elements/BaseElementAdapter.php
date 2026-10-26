@@ -11,6 +11,7 @@ use craft\elements\User;
 use craft\mcp\Authorization;
 use craft\mcp\ElementLifecycle;
 use craft\mcp\ElementQueryCriteria;
+use craft\mcp\schema\CustomFieldSchema;
 use craft\mcp\serializers\ElementSerializer;
 use Illuminate\Support\Arr;
 use Mcp\Exception\ToolCallException;
@@ -221,7 +222,17 @@ abstract class BaseElementAdapter implements ElementAdapter
     protected function populate(ElementInterface $element, array $attributes, array $fields, User $actor): void
     {
         Craft::configure($element, $attributes);
-        $element->setFieldValues($fields);
+        $this->setFieldValues($element, $fields);
+    }
+
+    /**
+     * Sets custom field values given in the format `elements.field-schema` describes.
+     *
+     * @param  array<string, mixed>  $fields
+     */
+    protected function setFieldValues(ElementInterface $element, array $fields): void
+    {
+        $element->setFieldValues((new CustomFieldSchema())->prepareValues($element, $fields));
     }
 
     protected function authorizeSave(User $actor, ElementInterface $element): void
