@@ -10,6 +10,8 @@ Craft builds on [`laravel/ai`](https://laravel.com/docs/13.x/ai-sdk). Agents, to
 
 Customers bring their own provider keys. Craft doesn’t broker requests, store keys, or log prompts.
 
+Craft’s own AI chat in the control panel, **Ask AI**, is a task too. To extend it, see [Ask AI](ask-ai.md).
+
 ## Providers
 
 A provider is an entry in the `ai.providers` config, which belongs to the Laravel application. Keys come from environment variables, as `laravel/ai` documents:
@@ -156,6 +158,23 @@ $response = (new AltTextAgent)->prompt(prompt: 'Describe this image', provider: 
 ```
 
 Plugins may also use `laravel/ai` directly, without tasks. Those calls don’t follow Craft’s AI settings.
+
+## Craft’s tasks
+
+Craft registers tasks of its own, which plugins can use too:
+
+| Task | Handle | Use it with |
+| ---- | ------ | ----------- |
+| `CraftCms\Cms\Ai\Tasks\Assistant` | `craft:assistant` | Only the control panel’s AI chat. See [Ask AI](ask-ai.md). |
+| `CraftCms\Cms\Ai\Tasks\GenerateTitle` | `craft:generateTitle` | `GenerateTitle::generate($text)`, which returns a short title for a text, in its language, or `null` when the task is unavailable or the request fails. |
+
+```php
+use CraftCms\Cms\Ai\Tasks\GenerateTitle;
+
+$title = GenerateTitle::generate($review->body) ?? $review->defaultTitle();
+```
+
+Titles are generated with the provider and model administrators chose for the task, so use it when a short, generic title is enough. Register a task of your own when your feature needs its own instructions or model.
 
 ## Queueing
 
