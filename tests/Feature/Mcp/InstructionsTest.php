@@ -18,7 +18,7 @@ use Laravel\Passport\Passport;
 it('keeps startup instructions brief and delivers full guidance through the admin info tool only', function (Closure $config): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $siteInstructions = 'Preserve legal notices.'.str_repeat(' Keep required attribution.', 100);
     Cms::config()->mcp($config($siteInstructions));
 
@@ -65,7 +65,7 @@ it('keeps startup instructions brief and delivers full guidance through the admi
 it('includes registered plugin element references in the admin info guidance', function (): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
 
     $type = new class extends Entry
     {

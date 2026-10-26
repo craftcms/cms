@@ -3,6 +3,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {PreviewFileModal} from './preview-file-modal';
 
 const sendActionRequest = vi.fn();
+const cp = {announce: vi.fn(), displayError: vi.fn(), displayNotice: vi.fn()};
 
 function openDialogs(): HTMLElement[] {
   return [...document.body.querySelectorAll<HTMLElement>('craft-dialog')];
@@ -45,7 +46,7 @@ describe('PreviewFileModal', () => {
     vi.stubGlobal('$', $);
     vi.stubGlobal('Craft', {
       t: (_category: string, message: string) => message,
-      cp: {announce: vi.fn(), displayError: vi.fn()},
+      cp,
       sendActionRequest,
       appendHeadHtml: vi.fn(),
       appendBodyHtml: vi.fn(),
@@ -112,6 +113,80 @@ describe('PreviewFileModal', () => {
     expect(code.textContent).toBe('{"a": "<b>"}');
     expect(code.querySelector('.th-property')!.textContent).toBe('"a"');
     expect(code.querySelector('.th-string')!.textContent).toBe('"<b>"');
+  });
+
+  it('offers to copy a text preview’s text, and a button to close it', async () => {
+    const writeText = vi
+      .spyOn(navigator.clipboard, 'writeText')
+      .mockResolvedValue(undefined);
+    sendActionRequest.mockResolvedValueOnce({
+      data: {
+        requestId: 1,
+        previewHtml:
+          '<pre><code data-language="text">a &lt;b&gt; c</code></pre>',
+      },
+    });
+    const modal = new PreviewFileModal(5);
+    await settle();
+
+    const [dialog] = openDialogs();
+    const buttons = [
+      ...dialog!.querySelectorAll<HTMLElement>(':scope > [slot="footer"]'),
+    ];
+    expect(buttons.map((button) => button.textContent)).toEqual([
+      'Copy',
+      'Close',
+    ]);
+
+    buttons[0]!.click();
+    await settle();
+    expect(writeText).toHaveBeenCalledWith('a <b> c');
+    expect(cp.displayNotice).toHaveBeenCalledWith('Copied to clipboard.');
+
+    buttons[1]!.click();
+    expect(modal.visible).toBe(false);
+  });
+
+  it('reports when a text preview couldn’t be copied', async () => {
+    vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(
+      new Error('Denied')
+    );
+    sendActionRequest.mockResolvedValueOnce({
+      data: {
+        requestId: 1,
+        previewHtml: '<pre><code data-language="text">abc</code></pre>',
+      },
+    });
+    new PreviewFileModal(5);
+    await settle();
+
+    openDialogs()[0]!.querySelector<HTMLElement>('[slot="footer"]')!.click();
+    await settle();
+
+    expect(cp.displayError).toHaveBeenCalledWith(
+      'Couldn’t copy to the clipboard.'
+    );
+  });
+
+  it('drops the footer buttons for previews that aren’t text', async () => {
+    const select = elementSelect([1, 2]);
+    sendActionRequest.mockResolvedValueOnce({
+      data: {
+        requestId: 1,
+        previewHtml: '<pre><code data-language="text">abc</code></pre>',
+      },
+    });
+    PreviewFileModal.showForAsset(select.$items.eq(0), select);
+    await settle();
+
+    const [dialog] = openDialogs();
+    dialog!.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'ArrowRight', cancelable: true})
+    );
+    await settle();
+
+    expect(dialog!.querySelector('.preview')!.textContent).toBe('2');
+    expect(dialog!.querySelector('[slot="footer"]')).toBeNull();
   });
 
   it('moves between the assets of its element select in the same dialog', async () => {

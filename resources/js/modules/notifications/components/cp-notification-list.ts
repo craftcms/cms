@@ -130,6 +130,12 @@ class CpNotificationList extends LitElement {
       font-size: var(--c-text-sm);
     }
 
+    .notification-mark-read {
+      position: relative;
+      z-index: 2;
+      font-size: inherit;
+    }
+
     .notification-actions {
       position: relative;
       z-index: 2;
@@ -288,9 +294,27 @@ class CpNotificationList extends LitElement {
             <time datetime=${notification.createdAt}
               >${notification.createdAtLabel}</time
             >
+            ${notification.unread
+              ? html`
+                  <span aria-hidden="true">·</span>
+                  <craft-button
+                    class="notification-mark-read"
+                    type="button"
+                    size="small"
+                    variant="plain"
+                    flush
+                    @click=${(event: MouseEvent) => {
+                      event.stopPropagation();
+                      void markNotificationsRead([notification.id]);
+                    }}
+                  >
+                    ${t('Mark as read')}
+                  </craft-button>
+                `
+              : nothing}
           </div>
 
-          ${notification.buttons.length || notification.unread
+          ${notification.buttons.length
             ? html`
                 <div class="notification-actions">
                   ${notification.buttons.map(
@@ -306,21 +330,6 @@ class CpNotificationList extends LitElement {
                       </craft-button>
                     `
                   )}
-                  ${notification.unread
-                    ? html`
-                        <craft-button
-                          type="button"
-                          size="small"
-                          variant="plain"
-                          @click=${(event: MouseEvent) => {
-                            event.stopPropagation();
-                            void markNotificationsRead([notification.id]);
-                          }}
-                        >
-                          ${t('Mark as read')}
-                        </craft-button>
-                      `
-                    : nothing}
                 </div>
               `
             : nothing}

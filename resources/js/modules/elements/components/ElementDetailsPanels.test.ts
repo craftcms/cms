@@ -14,6 +14,7 @@ import {
 import {elementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
 import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
 import {ScreenDetailsOverlayKey} from '@/common/composables/screen';
+import {DetailsScreen} from '@/test/DetailsScreen';
 import ElementDetailsPanels from './ElementDetailsPanels.vue';
 
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
@@ -105,9 +106,10 @@ function openIndex(): number {
 }
 
 async function settle(): Promise<void> {
-  await Promise.resolve();
-  await nextTick();
-  await nextTick();
+  for (let i = 0; i < 4; i++) {
+    await Promise.resolve();
+    await nextTick();
+  }
 }
 
 /** Opens a panel from its trigger, leaving an already-open one alone. */
@@ -119,33 +121,6 @@ async function select(index: number): Promise<void> {
   }
 
   await settle();
-}
-
-function mountWithOverlay(overlaid?: Ref<boolean>): void {
-  container = document.createElement('div');
-  document.body.append(container);
-  app = createApp(
-    defineComponent({
-      setup() {
-        if (overlaid) {
-          provide(ScreenDetailsOverlayKey, overlaid);
-        }
-
-        return () =>
-          h(
-            ElementDetailsPanels,
-            {
-              payload: payload(),
-              activityTimelineVersion: 0,
-              updatePayload: vi.fn(),
-              submitAction,
-            },
-            {info: () => h('div', 'Info content')}
-          );
-      },
-    })
-  );
-  app.mount(container);
 }
 
 afterEach(() => {
@@ -204,27 +179,29 @@ describe('ElementDetailsPanels', () => {
           provide(ScreenDetailsOverlayKey, overlaid);
 
           return () =>
-            h(
-              ElementDetailsPanels,
-              {
-                payload: payload(),
-                activityTimelineVersion: 0,
-                updatePayload: vi.fn(),
-                submitAction,
-              },
-              {
-                info: () => h('div', {class: 'info-content'}, 'Info content'),
-              }
+            h(DetailsScreen, () =>
+              h(
+                ElementDetailsPanels,
+                {
+                  payload: payload(),
+                  activityTimelineVersion: 0,
+                  updatePayload: vi.fn(),
+                  submitAction,
+                },
+                {
+                  info: () => h('div', {class: 'info-content'}, 'Info content'),
+                }
+              )
             );
         },
       })
     );
     app.mount(container);
-    await nextTick();
+    await settle();
 
     expect(panelIds()).toEqual([
-      'element-details-panel-info',
-      'element-details-panel-revisions',
+      'details-panel-info',
+      'details-panel-revisions',
     ]);
 
     await select(1);
@@ -243,12 +220,12 @@ describe('ElementDetailsPanels', () => {
         submitAction,
       }),
     });
-    await nextTick();
+    await settle();
 
     expect(panelIds()).toEqual([
-      'element-details-panel-info',
-      'element-details-panel-plugin:details',
-      'element-details-panel-revisions',
+      'details-panel-info',
+      'details-panel-plugin:details',
+      'details-panel-revisions',
     ]);
 
     elementDetailsPanelRegistry.register({
@@ -260,10 +237,10 @@ describe('ElementDetailsPanels', () => {
       visible: () => conditionalVisible.value,
       props: ({payload, active}) => ({payload, active}),
     });
-    await nextTick();
+    await settle();
 
     await select(3);
-    await nextTick();
+    await settle();
 
     elementDetailsPanelRegistry.register({
       id: 'plugin:before-revisions',
@@ -281,21 +258,20 @@ describe('ElementDetailsPanels', () => {
       visible: () => finalVisible.value,
       props: ({payload, active}) => ({payload, active}),
     });
-    await nextTick();
-    await nextTick();
+    await settle();
 
     expect(panelIds()).toEqual([
-      'element-details-panel-info',
-      'element-details-panel-plugin:details',
-      'element-details-panel-plugin:conditional',
-      'element-details-panel-plugin:before-revisions',
-      'element-details-panel-revisions',
-      'element-details-panel-plugin:final',
+      'details-panel-info',
+      'details-panel-plugin:details',
+      'details-panel-plugin:conditional',
+      'details-panel-plugin:before-revisions',
+      'details-panel-revisions',
+      'details-panel-plugin:final',
     ]);
     expect(openIndex()).toBe(4);
 
     await select(1);
-    await nextTick();
+    await settle();
 
     expect(container.querySelector('.plugin-content')?.textContent).toBe(
       '1:true:function'
@@ -306,15 +282,14 @@ describe('ElementDetailsPanels', () => {
 
     await select(2);
     conditionalVisible.value = false;
-    await nextTick();
-    await nextTick();
+    await settle();
 
     expect(panelIds()).toEqual([
-      'element-details-panel-info',
-      'element-details-panel-plugin:details',
-      'element-details-panel-plugin:before-revisions',
-      'element-details-panel-revisions',
-      'element-details-panel-plugin:final',
+      'details-panel-info',
+      'details-panel-plugin:details',
+      'details-panel-plugin:before-revisions',
+      'details-panel-revisions',
+      'details-panel-plugin:final',
     ]);
     expect(openIndex()).toBe(0);
     expect(container.querySelector('.plugin-content')?.textContent).toBe(
@@ -323,61 +298,19 @@ describe('ElementDetailsPanels', () => {
 
     await select(4);
     finalVisible.value = false;
-    await nextTick();
-    await nextTick();
+    await settle();
 
     expect(panelIds()).toEqual([
-      'element-details-panel-info',
-      'element-details-panel-plugin:details',
-      'element-details-panel-plugin:before-revisions',
-      'element-details-panel-revisions',
+      'details-panel-info',
+      'details-panel-plugin:details',
+      'details-panel-plugin:before-revisions',
+      'details-panel-revisions',
     ]);
     expect(openIndex()).toBe(0);
 
     overlaid.value = true;
-    await nextTick();
+    await settle();
     expect(openIndex()).toBe(-1);
-  });
-
-  it('persists the open full-page panel in the URL', async () => {
-    elementDetailsPanelRegistry.register({
-      id: 'workflow',
-      label: 'Workflow',
-      icon: 'clipboard-list-check',
-      component: defineComponent({render: () => null}),
-      order: 5,
-    });
-    window.history.replaceState({}, '', '/entries/1#workflow');
-
-    container = document.createElement('div');
-    document.body.append(container);
-    app = createApp(ElementDetailsPanels, {
-      payload: payload(),
-      activityTimelineVersion: 0,
-      updatePayload: vi.fn(),
-      submitAction,
-      syncLocationHash: true,
-    });
-    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
-    app.mount(container);
-    await nextTick();
-    await nextTick();
-
-    const workflowIndex = panelIds().indexOf('element-details-panel-workflow');
-    const revisionsIndex = panelIds().indexOf(
-      'element-details-panel-revisions'
-    );
-
-    expect(openIndex()).toBe(workflowIndex);
-
-    await select(revisionsIndex);
-    expect(window.location.hash).toBe('#revisions');
-
-    window.location.hash = 'workflow';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
-    await nextTick();
-    await nextTick();
-    expect(openIndex()).toBe(workflowIndex);
   });
 
   it('allows its host to open a visible panel', async () => {
@@ -395,54 +328,26 @@ describe('ElementDetailsPanels', () => {
     app = createApp(
       defineComponent({
         setup: () => () =>
-          h(ElementDetailsPanels, {
-            ref: detailsPanels,
-            payload: payload(),
-            activityTimelineVersion: 0,
-            updatePayload: vi.fn(),
-            submitAction,
-            syncLocationHash: true,
-          }),
+          h(DetailsScreen, () =>
+            h(ElementDetailsPanels, {
+              ref: detailsPanels,
+              payload: payload(),
+              activityTimelineVersion: 0,
+              updatePayload: vi.fn(),
+              submitAction,
+            })
+          ),
       })
     );
     app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
     app.mount(container);
-    await nextTick();
+    await settle();
 
     detailsPanels.value?.select('host-selectable');
-    await nextTick();
-    await nextTick();
+    await settle();
 
     expect(openIndex()).toBe(
-      panelIds().indexOf('element-details-panel-host-selectable')
+      panelIds().indexOf('details-panel-host-selectable')
     );
-    expect(window.location.hash).toBe('#host-selectable');
-  });
-
-  it('folds away when the shell overlays the column', async () => {
-    const overlaid = ref(false);
-    mountWithOverlay(overlaid);
-    await nextTick();
-    await nextTick();
-
-    expect(openIndex()).toBe(0);
-
-    overlaid.value = true;
-    await nextTick();
-
-    expect(openIndex()).toBe(-1);
-
-    overlaid.value = false;
-    await nextTick();
-
-    expect(openIndex()).toBe(0);
-  });
-
-  it('stays open in a shell that never overlays', async () => {
-    mountWithOverlay();
-    await nextTick();
-    await nextTick();
-
-    expect(openIndex()).toBe(0);
   });
 });

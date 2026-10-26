@@ -58,7 +58,7 @@ beforeEach(function (): void {
     Sections::refreshSections();
 
     $this->callWorkflow = function (string $tool, array $arguments = [], ?User $actor = null): TestResponse {
-        Passport::actingAs($actor ?? $this->author, ['mcp:use'], 'craft-mcp');
+        Passport::actingAs($actor ?? $this->author, ['mcp:admin'], 'craft-mcp');
 
         return McpRequest::send($this, 'tools/call', [
             'name' => $tool,
@@ -107,7 +107,7 @@ it('reviews and publishes a draft through MCP as distinct operations', function 
 });
 
 it('saves enabled entries in a workflow section as drafts and suggests submitting them', function (string $tool, Closure $arguments, bool $unpublished): void {
-    Passport::actingAs($this->author, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($this->author, ['mcp:admin'], 'craft-mcp');
 
     $saved = McpRequest::send($this, 'tools/call', ['name' => $tool, 'arguments' => $arguments($this)])
         ->assertOk()
@@ -186,7 +186,7 @@ it('allows submission after rejection to create a new review run', function (): 
 });
 
 it('keeps workflow administration private while allowing draft-scoped review inspection', function (): void {
-    Passport::actingAs($this->author, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($this->author, ['mcp:admin'], 'craft-mcp');
     McpRequest::send($this, 'tools/call', ['name' => 'workflows.list'])
         ->assertOk()
         ->assertJsonPath('result.structuredContent.workflows.0.sections.0.id', $this->section->id)
@@ -287,7 +287,7 @@ it('requires edit permission and resets approval when MCP changes the existing d
     ($this->callWorkflow)('workflows.approve', [
         'runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid'],
     ], $this->reviewer)->assertJsonPath('result.structuredContent.review.status', 'approved');
-    Passport::actingAs($this->reviewer, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($this->reviewer, ['mcp:admin'], 'craft-mcp');
     McpRequest::send($this, 'tools/call', [
         'name' => 'drafts.get', 'arguments' => ['draftId' => $this->draft->draftId],
     ])->assertOk()->assertJsonPath('result.isError', false)
@@ -301,7 +301,7 @@ it('requires edit permission and resets approval when MCP changes the existing d
     expect(EntryElement::find()->draftId($this->draft->draftId)->status(null)->one()->title)->toBe('Reviewed title')
         ->and(WorkflowRun::find($submitted['runId'])->status)->toBe(WorkflowStatus::Approved);
 
-    Passport::actingAs($this->author, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($this->author, ['mcp:admin'], 'craft-mcp');
 
     McpRequest::send($this, 'tools/call', [
         'name' => 'drafts.update',
