@@ -196,7 +196,7 @@ export function useLivePreview(
     const willReload =
       frames.value.length === 0 || (reload ?? (resetScroll || target.refresh));
 
-    events.emit('beforeUpdateIframe', {
+    events.emit('before-update-iframe', {
       target,
       resetScroll,
       refresh: willReload,
@@ -281,7 +281,7 @@ export function useLivePreview(
       return;
     }
 
-    events.emit('beforeOpen');
+    events.emit('before-open');
     await flush();
     isOpen.value = true;
     events.emit('open');
@@ -294,7 +294,7 @@ export function useLivePreview(
     }
 
     await flush();
-    events.emit('beforeClose');
+    events.emit('before-close');
     isOpen.value = false;
     frames.value = [];
     readyFrame.value = null;
@@ -307,13 +307,13 @@ export function useLivePreview(
     }
 
     activeIndex.value = index;
-    events.emit('switchTarget', {target: activeTarget.value!});
+    events.emit('switch-target', {target: activeTarget.value!});
     void refresh({resetScroll: true});
   }
 
   /** Tells listeners about a draft the editor autosaved. */
   function draftSaved(data: unknown): void {
-    events.emit('afterSaveDraft', {data});
+    events.emit('after-save-draft', {data});
   }
 
   // A canonical element's first autosave creates the draft the token has to

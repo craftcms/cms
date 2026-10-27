@@ -214,13 +214,13 @@ describe('useLivePreview', () => {
     function record(preview: ReturnType<typeof useLivePreview>) {
       const log: Array<[string, unknown]> = [];
       for (const event of [
-        'beforeOpen',
+        'before-open',
         'open',
-        'beforeClose',
+        'before-close',
         'close',
-        'switchTarget',
-        'beforeUpdateIframe',
-        'afterSaveDraft',
+        'switch-target',
+        'before-update-iframe',
+        'after-save-draft',
       ] as const) {
         preview.on(event, (payload: unknown) => log.push([event, payload]));
       }
@@ -236,11 +236,11 @@ describe('useLivePreview', () => {
       await preview.close();
 
       expect(log.map(([event]) => event)).toEqual([
-        'beforeOpen',
+        'before-open',
         'open',
         'isOpen',
-        'beforeUpdateIframe',
-        'beforeClose',
+        'before-update-iframe',
+        'before-close',
         'close',
       ]);
       expect(log[2]![1]).toBe(true);
@@ -259,7 +259,7 @@ describe('useLivePreview', () => {
 
       expect(
         log
-          .filter(([event]) => event === 'beforeUpdateIframe')
+          .filter(([event]) => event === 'before-update-iframe')
           .map(([, payload]) => payload)
       ).toEqual([
         {target: data.value!.targets[0], resetScroll: false, refresh: true},
@@ -287,7 +287,7 @@ describe('useLivePreview', () => {
       preview.switchTarget(1);
 
       expect(log[0]).toEqual([
-        'switchTarget',
+        'switch-target',
         {target: data.value!.targets[1]},
       ]);
     });
@@ -298,13 +298,13 @@ describe('useLivePreview', () => {
 
       preview.draftSaved({draftId: 5});
 
-      expect(log).toEqual([['afterSaveDraft', {data: {draftId: 5}}]]);
+      expect(log).toEqual([['after-save-draft', {data: {draftId: 5}}]]);
     });
 
     it('stops telling a listener once it has unsubscribed', async () => {
       const preview = mount();
       const listener = vi.fn();
-      preview.on('beforeOpen', listener)();
+      preview.on('before-open', listener)();
 
       await preview.open();
 

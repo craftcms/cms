@@ -179,7 +179,10 @@ describe('Craft.Preview', () => {
     preview.on('afterUpdateIframe', listener);
     const iframe = document.createElement('iframe');
 
-    controller.emit('afterUpdateIframe', {target: payload.targets[0]!, iframe});
+    controller.emit('after-update-iframe', {
+      target: payload.targets[0]!,
+      iframe,
+    });
 
     expect(listener.mock.calls[0]![0].previewTarget).toBe(payload.targets[0]);
     expect(listener.mock.calls[0]![0].$iframe[0]).toBe(iframe);

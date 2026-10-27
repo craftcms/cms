@@ -352,7 +352,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
         }
       });
       resizeObserver.observe(previewEditor);
-      const stop = getActivePreview()!.on('beforeClose', () => {
+      const stop = getActivePreview()!.on('before-close', () => {
         resizeObserver.disconnect();
         stop();
       });

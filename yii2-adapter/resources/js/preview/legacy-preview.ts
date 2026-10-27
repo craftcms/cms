@@ -117,34 +117,34 @@ export class LegacyPreview extends Base<LegacyPreviewSettings> {
     const on = controller.on;
 
     this.#stops.push(
-      on('beforeOpen', () => this.trigger('beforeOpen')),
+      on('before-open', () => this.trigger('beforeOpen')),
       on('open', () => {
         this.trigger('slideIn');
         this.trigger('open');
       }),
-      on('beforeClose', () => this.trigger('beforeClose')),
+      on('before-close', () => this.trigger('beforeClose')),
       on('close', () => {
         this.trigger('close');
         this.trigger('slideOut');
       }),
-      on('switchTarget', ({target}) =>
+      on('switch-target', ({target}) =>
         this.trigger('switchTarget', {previewTarget: target})
       ),
-      on('beforeUpdateIframe', ({target, resetScroll, refresh}) =>
+      on('before-update-iframe', ({target, resetScroll, refresh}) =>
         this.trigger('beforeUpdateIframe', {
           previewTarget: target,
           resetScroll,
           refresh,
         })
       ),
-      on('afterUpdateIframe', ({target, iframe}) =>
+      on('after-update-iframe', ({target, iframe}) =>
         this.trigger('afterUpdateIframe', {
           previewTarget: target,
           $iframe: $(iframe),
         })
       ),
       // Craft 5 passed the request's response, with the body under `data`.
-      on('afterSaveDraft', ({data}) =>
+      on('after-save-draft', ({data}) =>
         this.trigger('afterSaveDraft', {response: {data}})
       ),
       on('drag', () => this.trigger('drag'))

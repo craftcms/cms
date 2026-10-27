@@ -2,21 +2,21 @@ import type {LivePreviewController, LivePreviewTarget} from './useLivePreview';
 
 /** What each Live Preview event passes to its listeners. */
 export interface LivePreviewEvents {
-  beforeOpen: void;
+  'before-open': void;
   open: void;
-  beforeClose: void;
+  'before-close': void;
   close: void;
-  switchTarget: {target: LivePreviewTarget};
+  'switch-target': {target: LivePreviewTarget};
   /** Every time the frame might reload; `refresh` says whether it will. */
-  beforeUpdateIframe: {
+  'before-update-iframe': {
     target: LivePreviewTarget;
     resetScroll: boolean;
     refresh: boolean;
   };
   /** A new frame was added for the target, before it has loaded. */
-  afterUpdateIframe: {target: LivePreviewTarget; iframe: HTMLIFrameElement};
+  'after-update-iframe': {target: LivePreviewTarget; iframe: HTMLIFrameElement};
   /** The editor autosaved a draft; `data` is the save's response. */
-  afterSaveDraft: {data: unknown};
+  'after-save-draft': {data: unknown};
   /** The divider between the editor and the preview moved. */
   drag: void;
 }

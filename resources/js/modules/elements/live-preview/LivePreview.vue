@@ -357,7 +357,7 @@
     el.dataset.lpFrame = String(frame.id);
 
     if (preview.activeTarget.value) {
-      preview.emit('afterUpdateIframe', {
+      preview.emit('after-update-iframe', {
         target: preview.activeTarget.value,
         iframe: el,
       });

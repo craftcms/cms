@@ -15,7 +15,7 @@ import {
 refreshPreviews();
 
 // Every preview on the page, including ones added later:
-const stop = onPreviewEvent('afterUpdateIframe', ({target, iframe}, preview) => {
+const stop = onPreviewEvent('after-update-iframe', ({target, iframe}, preview) => {
   console.log(`Loading ${target.label}`, iframe);
 });
 ```
@@ -48,14 +48,14 @@ and `reload: false` keeps the current frame.
 
 | Event | When | Payload |
 | --- | --- | --- |
-| `beforeOpen` | Opening starts | – |
+| `before-open` | Opening starts | – |
 | `open` | The preview is shown | – |
-| `beforeClose` | Closing starts | – |
+| `before-close` | Closing starts | – |
 | `close` | The preview is hidden | – |
-| `switchTarget` | Another target was chosen | `{target}` |
-| `beforeUpdateIframe` | Each time the frame might reload | `{target, resetScroll, refresh}` |
-| `afterUpdateIframe` | A new frame was added, before it loads | `{target, iframe}` |
-| `afterSaveDraft` | The editor autosaved a draft | `{data}` (the save's response) |
+| `switch-target` | Another target was chosen | `{target}` |
+| `before-update-iframe` | Each time the frame might reload | `{target, resetScroll, refresh}` |
+| `after-update-iframe` | A new frame was added, before it loads | `{target, iframe}` |
+| `after-save-draft` | The editor autosaved a draft | `{data}` (the save's response) |
 | `drag` | The divider moved | – |
 
 ## Standalone preview
@@ -72,7 +72,8 @@ With the Yii2 adapter, Craft 5's `Craft.Preview` is a shim over the above:
 - One instance mirrors each preview on the page. `Craft.Preview.getActive()`,
   `Craft.Preview.instances` and `Craft.Preview.refresh()` work as before;
   `refresh()` also refreshes classic `Craft.LivePreview` instances.
-- Events keep Craft 5's names and payloads: `previewTarget` for `target`,
+- Events keep Craft 5's camelCase names (`beforeOpen` for `before-open`, and
+  so on) and payloads: `previewTarget` for `target`,
   `$iframe` (jQuery) for `iframe`, `response.data` for `data`. `open` and
   `close` are followed by `slideIn` and `slideOut`. Listeners added with
   `.on()` or `Garnish.on(Craft.Preview, …)` are called.
