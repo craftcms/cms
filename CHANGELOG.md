@@ -588,6 +588,7 @@
 - Fixed a bug where the “No color” and Black color options had no visible edge in the dark theme. ([#20003](https://github.com/craftcms/cms/pull/20003))
 - Fixed a bug where `{placeholder}` parameters weren’t replaced in messages from translation categories without translations, such as Yii’s console error messages.
 - Fixed a bug where control panel screens that hadn’t been ported to Vue, such as plugins’ Twig-rendered pages, kept reloading when an element source had “Show count” enabled. ([#20082](https://github.com/craftcms/cms/pull/20082))
+- Fixed a bug where `withTransforms` criteria were ignored for eager-loaded assets. ([#20117](https://github.com/craftcms/cms/pull/20117))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
