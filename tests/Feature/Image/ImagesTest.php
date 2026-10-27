@@ -363,18 +363,7 @@ describe('sample', function () {
         $copyHash = $this->service->sample($copy)->hash;
 
         expect($hash)->toMatch('/^[0-9a-f]{16}$/')
-            ->and(ImageHash::distance($hash, $copyHash))->toBeLessThanOrEqual(5, sprintf(
-                '%s and %s differ in too many bits (%s %s; sampled at %s and %s)',
-                $hash,
-                $copyHash,
-                $this->service->getDriver()->value,
-                $this->service->getVersion(),
-                ...array_map(function (string $path): string {
-                    $image = $this->service->loadImage($path)->getInterventionImage()->scaleDown(100, 100);
-
-                    return $image->width().'×'.$image->height();
-                }, [$original, $copy]),
-            ))
+            ->and(ImageHash::distance($hash, $copyHash))->toBeLessThanOrEqual(5, "$hash and $copyHash differ in too many bits")
             ->and(ImageHash::distance($hash, $this->service->sample($this->fixturesPath.'/ign.jpg')->hash))->toBeGreaterThan(15);
     });
 
