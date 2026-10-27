@@ -1068,7 +1068,7 @@ class ElementEditViewModel extends ViewModel
     public function metadataHtml(): ?string
     {
         return $this->element->id
-            ? app(ContentHtml::class)->metadataHtml($this->element->getMetadata())
+            ? app(ContentHtml::class)->metadataHtml(...$this->element->getMetadataGroups())
             : null;
     }
 }

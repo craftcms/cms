@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Queries\Concerns\Asset\EagerloadsTransforms;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAlt;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetLocation;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetProperties;
+use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesImageType;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesOrientation;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesSizes;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -36,6 +37,7 @@ class AssetQuery extends ElementQuery
     use QueriesAlt;
     use QueriesAssetLocation;
     use QueriesAssetProperties;
+    use QueriesImageType;
     use QueriesOrientation;
     use QueriesSizes;
 
@@ -81,7 +83,7 @@ class AssetQuery extends ElementQuery
             'assets.height as height',
             'assets.size as size',
             'assets.focalPoint as focalPoint',
-            'assets.colors as colors',
+            'assets.analysis as analysis',
             'assets.deletedWithVolume as deletedWithVolume',
             'assets.trashedFileExists as trashedFileExists',
             'assets.dateModified as dateModified',

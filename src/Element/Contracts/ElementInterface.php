@@ -1664,6 +1664,14 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public function getMetadata(): array;
 
     /**
+     * Returns the groups of metadata that should be shown within the editor sidebar, which are separated from each
+     * other, such as {@see getMetadata()} and then what was found in an image.
+     *
+     * @return list<array<string,mixed>> The groups, each like {@see getMetadata()}’s
+     */
+    public function getMetadataGroups(): array;
+
+    /**
      * Returns the GraphQL type name for this element type.
      */
     public function getGqlTypeName(): string;
