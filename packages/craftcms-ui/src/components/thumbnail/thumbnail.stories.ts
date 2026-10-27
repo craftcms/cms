@@ -384,3 +384,47 @@ export const Presentations: Story = {
     }
   },
 };
+
+/**
+ * A portrait image in a chip at each `thumb-size`. Its `width` and `height` are
+ * set as string properties, the way a framework binding can hand them over,
+ * so the thumbnail has to compare them as numbers ("800" >= "1200" as strings)
+ * to fit the image by its height.
+ */
+export const InChipThumbSizes: Story = {
+  render: () => html`
+    <div
+      style="display: flex; flex-wrap: wrap; gap: var(--c-spacing-md); align-items: start;"
+    >
+      ${(['sm', 'md', 'lg', 'xl', '2xl'] as const).map(
+        (thumbSize) => html`
+          <craft-chip
+            thumb-size=${thumbSize}
+            prefix-placement="block-start"
+            show-thumb
+          >
+            <div slot="thumbnail">
+              <craft-thumbnail
+                src=${imageFixture(800, 1200)}
+                .width=${'800' as unknown as number}
+                .height=${'1200' as unknown as number}
+                alt=""
+                loading="eager"
+              ></craft-thumbnail>
+            </div>
+            ${thumbSize}
+          </craft-chip>
+        `
+      )}
+    </div>
+  `,
+  play: async ({canvasElement}) => {
+    for (const thumbnail of canvasElement.querySelectorAll('craft-thumbnail')) {
+      await thumbnail.updateComplete;
+      const image = thumbnail.shadowRoot!.querySelector('img')!;
+      await image.decode();
+      const box = image.getBoundingClientRect();
+      await expect(box.height).toBeGreaterThan(box.width);
+    }
+  },
+};
