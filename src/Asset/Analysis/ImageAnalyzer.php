@@ -255,9 +255,10 @@ class ImageAnalyzer
     }
 
     /**
-     * Records what the image is missing that can be read from its file: its colors, and its embedded metadata, which
-     * also fills in its alt text if it has none and its title if it’s still the one made from its filename, as an
-     * upload’s metadata does.
+     * Records what the image is missing that can be read from its file: its colors, and its embedded metadata, and
+     * what that fills in, as an upload’s does.
+     *
+     * @see Asset::valuesFromEmbeddedMetadata()
      */
     private function sample(Asset $asset, string $path, ImageAnalysisChanges $changes): void
     {
@@ -270,14 +271,9 @@ class ImageAnalyzer
         if ($analysis->metadata === null) {
             $metadata = $this->images->metadata($path);
             $analysis = $analysis->withMetadata($metadata);
-            $alt = $metadata->altText ?? $metadata->description;
 
-            if ($alt !== null && ($asset->alt === null || $asset->alt === '')) {
-                $changes->setForSite($asset->siteId, 'alt', $alt);
-            }
-
-            if ($metadata->title !== null && $asset->hasDefaultTitle()) {
-                $changes->setForSite($asset->siteId, 'title', mb_substr($metadata->title, 0, 255));
+            foreach ($asset->valuesFromEmbeddedMetadata($metadata) as $attribute => $value) {
+                $changes->setForSite($asset->siteId, $attribute, $value);
             }
         }
 

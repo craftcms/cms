@@ -2149,6 +2149,31 @@ JS, [
     }
 
     /**
+     * Returns what the metadata embedded in the image’s file fills in: its alt text, if it has none, and its title, if
+     * it’s still the one it was given from its filename.
+     *
+     * This is used when an image is uploaded, and when a queue job samples one whose metadata wasn’t read then.
+     *
+     * @return array{title?: string, alt?: string}
+     *
+     * @since 6.0.0
+     */
+    public function valuesFromEmbeddedMetadata(ImageMetadata $metadata): array
+    {
+        $values = [];
+
+        if ($metadata->title !== null && $this->hasDefaultTitle()) {
+            $values['title'] = mb_substr($metadata->title, 0, 255);
+        }
+
+        if (($this->alt === null || $this->alt === '') && ($alt = $metadata->suggestedAlt()) !== null) {
+            $values['alt'] = $alt;
+        }
+
+        return $values;
+    }
+
+    /**
      * Returns whether the asset’s title is missing, or is still the one it was given from its filename.
      *
      * @since 6.0.0
@@ -3647,12 +3672,8 @@ JS;
         ) {
             $this->_uploadMetadata = $this->uploadAnalysis->metadata ?? Images::metadata($this->tempFilePath);
 
-            if (! $this->id && $this->_uploadMetadata->title !== null && $this->hasDefaultTitle()) {
-                $this->title = mb_substr($this->_uploadMetadata->title, 0, 255);
-            }
-
-            if ($this->alt === null || $this->alt === '') {
-                $this->alt = $this->_uploadMetadata->altText ?? $this->_uploadMetadata->description ?? $this->alt;
+            foreach ($this->valuesFromEmbeddedMetadata($this->_uploadMetadata) as $attribute => $value) {
+                $this->$attribute = $value;
             }
         }
 

@@ -21,7 +21,7 @@ use InvalidArgumentException;
  * ```php
  * public function boot(AiTasks $tasks): void
  * {
- *     $tasks->register(DescribeImage::class);
+ *     $tasks->register(WriteMetaDescription::class);
  * }
  * ```
  *

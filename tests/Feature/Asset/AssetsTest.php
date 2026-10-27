@@ -713,4 +713,19 @@ describe('titles', function () {
 
         expect(Asset::find()->id($asset->id)->one()->title)->toBe('IMG 4759');
     });
+
+    it('come from a replacement file’s embedded title while they’re still the filename one', function () {
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $this->volume->id,
+            'folderId' => $this->folder->id,
+            'filename' => $filename = 'IMG_4759.jpg',
+            'kind' => FileKind::Image->value,
+        ]);
+        $asset->title = AssetsHelper::filename2Title(pathinfo($filename, PATHINFO_FILENAME));
+        app(Elements::class)->saveElement($asset);
+
+        $this->assets->replaceAssetFile($asset, metadataJpeg(xmpPacket('<dc:title><rdf:Alt><rdf:li xml:lang="x-default">Harbor at dusk</rdf:li></rdf:Alt></dc:title>')), $filename);
+
+        expect(Asset::find()->id($asset->id)->one()->title)->toBe('Harbor at dusk');
+    });
 });

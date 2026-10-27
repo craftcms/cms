@@ -136,6 +136,16 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
     }
 
     /**
+     * Returns the alt text the image’s embedded metadata suggests: its alt text, or else its description, which is
+     * often written to describe the image too.
+     */
+    #[AllowedInSandbox]
+    public function suggestedAlt(): ?string
+    {
+        return $this->altText ?? $this->description;
+    }
+
+    /**
      * Returns a value trimmed and cut to {@see MAX_LENGTH} characters, or `null` if it’s blank or isn’t text.
      */
     public static function text(mixed $value): ?string
