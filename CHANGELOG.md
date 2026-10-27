@@ -182,6 +182,7 @@
 - Fixed a bug where asset upload conflict prompts used unstyled radio buttons and checkboxes.
 - Fixed a bug where nested element fields’ “Paste” buttons and relational fields’ “Copy” menu items were missing their icons.
 - Fixed a bug where buttons didn’t show an inset shadow while pressed.
+- Fixed a bug where portrait image thumbnails in medium and large chips were letterboxed in a square, so their rounded corners didn’t show.
 
 ### Content Management
 
