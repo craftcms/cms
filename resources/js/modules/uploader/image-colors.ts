@@ -5,6 +5,8 @@
  * decoding the file to find them.
  */
 
+import {PhpRandomizer} from './php-randomizer';
+
 /** Color data sampled from an image, as `CraftCms\Cms\Image\Data\ImageColors` holds it. */
 export interface ImageColors {
   dominant: string | null;
@@ -17,6 +19,17 @@ export interface ImageColors {
    * no mostly opaque pixels.
    */
   luminance: ([number, number] | null)[][];
+  /**
+   * How much of the image each palette color covers, as a share of
+   * everything the palette covers, in the same order as `palette`.
+   */
+  weights: number[];
+}
+
+/** A cluster of the image's colors, and how many of its pixels are in it. */
+interface Cluster {
+  centroid: Oklab;
+  size: number;
 }
 
 /** What was sampled from an image, as `CraftCms\Cms\Image\Data\ImageSample` holds it. */
@@ -87,16 +100,6 @@ export async function readImageSample(file: File): Promise<ImageSample | null> {
   }
 }
 
-/**
- * Completion data for asset uploads: the file's colors and hash, so the server
- * can store them without sampling the file itself.
- */
-export async function imageSampleCompletionData(
-  file: File
-): Promise<ImageSample | null> {
-  return readImageSample(file);
-}
-
 /** Samples an image's colors and difference hash. */
 export function sampleImage(pixels: Pixels): ImageSample {
   return {colors: sampleImageColors(pixels), hash: imageHash(pixels)};
@@ -110,16 +113,29 @@ export function sampleImageColors(pixels: Pixels): ImageColors {
   const candidates = dominantCandidates(pixels);
   const dominant =
     candidates.find(
-      ([lightness]) =>
+      ({centroid: [lightness]}) =>
         lightness >= BLACK_LIGHTNESS && lightness <= WHITE_LIGHTNESS
     ) ?? candidates[0];
   const toHex = (color: Oklab) => hex(...fromOklab(color), 255);
+  // How many of the sampled pixels each color stands for, combining colors
+  // that come out as the same hex code, as the server does
+  const counts = new Map<string, number>();
+
+  for (const {centroid, size} of candidates) {
+    const color = toHex(centroid);
+    counts.set(color, (counts.get(color) ?? 0) + size);
+  }
+
+  const total = [...counts.values()].reduce((sum, count) => sum + count, 0);
 
   return {
-    dominant: dominant ? toHex(dominant) : null,
+    dominant: dominant ? toHex(dominant.centroid) : null,
     grid: colorGrid(pixels),
-    palette: [...new Set(candidates.map(toHex))],
+    palette: [...counts.keys()],
     luminance: luminanceGrid(pixels),
+    weights: total
+      ? [...counts.values()].map((count) => round(count / total, 3))
+      : [],
   };
 }
 
@@ -319,11 +335,12 @@ function round(value: number, precision: number): number {
 
 /**
  * Clusters the image's colors with k-means in Oklab, as Intervention Image's
- * dominant palette analysis does, and returns the largest clusters. The
+ * dominant palette analysis does, drawing the same seeded random numbers so
+ * both pick the same clusters, and returns the largest clusters. The
  * dominant color passes over near-black and near-white ones in favor of the
  * most dominant other one, if there is one.
  */
-function dominantCandidates({data}: Pixels): Oklab[] {
+function dominantCandidates({data}: Pixels): Cluster[] {
   const points: Oklab[] = [];
 
   for (let index = 0; index < data.length; index += 4) {
@@ -335,9 +352,9 @@ function dominantCandidates({data}: Pixels): Oklab[] {
   return clusterColors(points).slice(0, DOMINANT_CANDIDATES);
 }
 
-/** Returns the centroids of the points' clusters, largest first. */
-function clusterColors(points: Oklab[]): Oklab[] {
-  const random = seededRandom(SEED);
+/** Returns the points' clusters, largest first. */
+function clusterColors(points: Oklab[]): Cluster[] {
+  const random = new PhpRandomizer(SEED);
   let centroids = initialCentroids(
     points,
     Math.min(DOMINANT_CANDIDATES, points.length),
@@ -353,7 +370,7 @@ function clusterColors(points: Oklab[]): Oklab[] {
       );
 
       if (!members.length) {
-        return points[Math.floor(random() * points.length)]!;
+        return points[random.getInt(0, points.length - 1)]!;
       }
 
       return [0, 1, 2].map(
@@ -383,21 +400,20 @@ function clusterColors(points: Oklab[]): Oklab[] {
       size: assignments.filter((assignment) => assignment === cluster).length,
     }))
     .filter(({size}) => size >= minSize)
-    .sort((a, b) => b.size - a.size)
-    .map(({centroid}) => centroid);
+    .sort((a, b) => b.size - a.size);
 }
 
 /** Picks well-spread starting centroids with k-means++. */
 function initialCentroids(
   points: Oklab[],
   count: number,
-  random: () => number
+  random: PhpRandomizer
 ): Oklab[] {
   if (!points.length) {
     return [];
   }
 
-  const centroids = [points[Math.floor(random() * points.length)]!];
+  const centroids = [points[random.getInt(0, points.length - 1)]!];
 
   while (centroids.length < count) {
     const distances = points.map((point) =>
@@ -409,7 +425,7 @@ function initialCentroids(
       break;
     }
 
-    const target = random() * total;
+    const target = random.getFloat(0, total);
     let cumulative = 0;
     let chosen = 0;
 
@@ -446,19 +462,6 @@ function nearest(point: Oklab, centroids: Oklab[]): number {
 
 function squaredDistance(a: Oklab, b: Oklab): number {
   return (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
-}
-
-/** A small seeded PRNG (mulberry32), so the same image always samples the same way. */
-function seededRandom(seed: number): () => number {
-  let state = seed;
-
-  return () => {
-    state = (state + 0x6d2b79f5) | 0;
-    let t = Math.imul(state ^ (state >>> 15), 1 | state);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 function toOklab(red: number, green: number, blue: number): Oklab {

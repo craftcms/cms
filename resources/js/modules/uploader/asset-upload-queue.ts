@@ -1,15 +1,14 @@
-import {actionClient} from '@craftcms/ui';
+import {actionClient, t} from '@craftcms/ui';
 import {router} from '@inertiajs/vue3';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
 import ResolveUploadConflictController from '@actions/Assets/ResolveUploadConflictController';
 import {deleteAsset} from '@actions/Assets/ActionController';
 import {UploadQueue, type UploadJob, uploadErrorMessage} from './upload-queue';
-import {imageSampleCompletionData} from './image-colors';
+import {imageCompletionData} from './image-completion-data';
+import type {ConflictResolution} from '@/modules/assets/assetMover';
 import {
   type AssetUploadDestination,
-  type UploadConflictChoice,
-  showUploadConflict,
-  showUploadDuplicates,
+  createUploadConflictDetails,
   createUploadCompleteNotification,
 } from './upload-notification';
 
@@ -26,7 +25,11 @@ interface AssetUploadContext {
   destination: AssetUploadDestination;
   batch: UploadBatch;
   resolving: boolean;
-  closePrompt?: () => void;
+  /**
+   * Why the uploaded asset is waiting on a choice: its filename conflicts with
+   * another file's, or it looks like a copy of other images.
+   */
+  held?: 'conflict' | 'duplicates';
 }
 
 type QueuedAssetUpload = UploadJob<UploadResult, AssetUploadContext>;
@@ -76,7 +79,7 @@ export class AssetUploadQueue extends UploadQueue<
       {
         url: store.url(),
         parameters: {folderId: destination.folderId},
-        completionData: imageSampleCompletionData,
+        completionData: imageCompletionData,
         csrfToken: Craft.csrfTokenValue,
       },
       {destination: {...destination}, batch, resolving: false}
@@ -96,9 +99,6 @@ export class AssetUploadQueue extends UploadQueue<
   override async cancelAll(): Promise<void> {
     this.stopNavigation?.();
     this.stopNavigation = undefined;
-    for (const job of this.jobs) {
-      job.context.closePrompt?.();
-    }
     this.batches = new WeakMap();
     this.changes.clear();
     for (const batch of this.completedBatches) {
@@ -109,14 +109,6 @@ export class AssetUploadQueue extends UploadQueue<
     this.changes.clear();
   }
 
-  override retry(job: QueuedAssetUpload): void {
-    if (job.result?.conflict) {
-      this.prompt(job);
-    } else {
-      super.retry(job);
-    }
-  }
-
   protected override succeeded(
     job: QueuedAssetUpload,
     result: UploadResult
@@ -124,30 +116,60 @@ export class AssetUploadQueue extends UploadQueue<
     job.result = result;
     this.changed(job);
     if (result.conflict) {
-      job.notification.updateState('conflict', result.conflict);
+      this.hold(job, 'conflict');
+    } else {
+      this.holdIfDuplicated(job);
+    }
+  }
+
+  /** Holds an upload that looks like a copy of other images, or completes it. */
+  private holdIfDuplicated(job: QueuedAssetUpload): void {
+    if (job.result?.duplicates?.length) {
+      this.hold(job, 'duplicates');
     } else {
       this.uploaded(job);
     }
   }
 
-  private prompt(job: QueuedAssetUpload): void {
-    if (!this.jobs.has(job) || job.context.resolving || !job.result?.conflict) {
+  /** Shows the choices for a held upload, with `error` in place of its message. */
+  private hold(
+    job: QueuedAssetUpload,
+    reason: 'conflict' | 'duplicates',
+    error?: string
+  ): void {
+    job.context.held = reason;
+    const onChoice = (choice: ConflictResolution) => {
+      this.resolve(job, choice).catch((error: Error) =>
+        Craft.cp.displayError(error.message)
+      );
+    };
+    if (reason === 'conflict') {
+      job.notification.showDetails(
+        createUploadConflictDetails(error ?? job.result!.conflict!, onChoice)
+      );
       return;
     }
-    job.context.closePrompt?.();
-    job.context.closePrompt = showUploadConflict(
-      job.result.conflict,
-      (choice) => {
-        this.resolve(job, choice).catch((error: Error) =>
-          Craft.cp.displayError(error.message)
-        );
-      }
+    const duplicates = job.result!.duplicates!;
+    job.notification.showDetails(
+      createUploadConflictDetails(
+        error ??
+          t('“{filename}” looks like an image you already have.', {
+            filename: job.upload.file.name,
+          }),
+        onChoice,
+        {
+          duplicates,
+          navigate: (url) => router.visit(url),
+          // Only one image for it to replace
+          replaceable: duplicates.length === 1,
+        }
+      )
     );
   }
 
   private async resolve(
     job: QueuedAssetUpload,
-    choice: UploadConflictChoice
+    choice: ConflictResolution
   ): Promise<void> {
     if (!this.jobs.has(job) || job.context.resolving) {
       return;
@@ -156,24 +178,33 @@ export class AssetUploadQueue extends UploadQueue<
       await this.cancel(job);
       return;
     }
+    const reason = job.context.held!;
     job.context.resolving = true;
     job.notification.updateState('completing');
     try {
       if (choice === 'replace') {
         await actionClient.post(ResolveUploadConflictController.url(), {
           sourceAssetId: job.result!.assetId,
-          ...(job.result!.conflictingAssetId
-            ? {assetId: job.result!.conflictingAssetId}
-            : {targetFilename: job.result!.filename}),
+          ...(reason === 'duplicates'
+            ? {assetId: job.result!.duplicates![0]!.id}
+            : job.result!.conflictingAssetId
+              ? {assetId: job.result!.conflictingAssetId}
+              : {targetFilename: job.result!.filename}),
         });
       }
       if (this.jobs.has(job)) {
         this.changed(job);
-        this.uploaded(job);
+        job.context.held = undefined;
+        // Keeping both files still leaves the new one looking like a copy
+        if (reason === 'conflict' && choice === 'keepBoth') {
+          this.holdIfDuplicated(job);
+        } else {
+          this.uploaded(job);
+        }
       }
     } catch (error) {
       if (this.jobs.has(job)) {
-        job.notification.updateState('conflict', uploadErrorMessage(error));
+        this.hold(job, reason, uploadErrorMessage(error));
       }
     } finally {
       job.context.resolving = false;
@@ -188,24 +219,24 @@ export class AssetUploadQueue extends UploadQueue<
     ) {
       return;
     }
-    if (job.result?.conflict) {
+    const reason = job.context.held;
+    if (reason) {
       job.context.resolving = true;
       job.notification.updateState('completing');
       try {
         await actionClient.post(deleteAsset.url(), {
-          assetId: job.result.assetId,
+          assetId: job.result!.assetId,
         });
         if (this.jobs.has(job)) {
           this.changed(job);
         }
       } catch (error) {
-        job.notification.updateState('conflict', uploadErrorMessage(error));
+        this.hold(job, reason, uploadErrorMessage(error));
         throw error;
       } finally {
         job.context.resolving = false;
       }
     }
-    job.context.closePrompt?.();
     await super.cancel(job);
   }
 
@@ -221,11 +252,6 @@ export class AssetUploadQueue extends UploadQueue<
       this.completedBatches.add(batch);
     }
     batch.notification.update(batch.completed);
-    if (job.result?.duplicates?.length) {
-      showUploadDuplicates(job.upload.file.name, job.result.duplicates, (url) =>
-        router.visit(url)
-      );
-    }
     Craft.cp.runQueue();
   }
 

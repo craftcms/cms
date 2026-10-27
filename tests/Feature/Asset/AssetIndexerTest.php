@@ -675,8 +675,8 @@ it('doesn’t sample colors it has already sampled, even inconclusively', functi
         $volumeData->sourceDisk()->delete('red.png');
     }
 })->with([
-    'found' => [['dominant' => '#123456', 'grid' => [['#123456']], 'palette' => ['#123456'], 'luminance' => [[[0.039, 0.039]]]]],
-    'inconclusive' => [['dominant' => null, 'grid' => [], 'palette' => [], 'luminance' => []]],
+    'found' => [['dominant' => '#123456', 'grid' => [['#123456']], 'palette' => ['#123456'], 'luminance' => [[[0.039, 0.039]]], 'weights' => [1.0]]],
+    'inconclusive' => [['dominant' => null, 'grid' => [], 'palette' => [], 'luminance' => [], 'weights' => []]],
 ]);
 
 it('samples the colors of unchanged images that are missing them, or were sampled before palettes were, when asked to analyze images', function (?array $stored) {

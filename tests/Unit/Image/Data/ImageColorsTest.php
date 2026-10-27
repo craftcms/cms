@@ -16,6 +16,7 @@ it('round-trips stored color data', function () {
             [[0.1, 0.2], null],
             [[0.0, 1.0], [0.5, 0.5]],
         ],
+        'weights' => [0.75, 0.25],
     ];
 
     expect(ImageColors::fromArray($data)->toArray())->toBe($data)
@@ -110,4 +111,13 @@ it('drops luminance ranges that aren’t pairs of numbers', function () {
     ]]);
 
     expect($colors->luminance)->toBe([[[0.1, 0.2], null, null, [0.0, 1.0]]]);
+});
+
+it('only keeps weights that are between 0 and 1, and one for each palette color', function () {
+    $palette = ['#3a6ea5', '#123456'];
+
+    expect(ImageColors::fromArray(['palette' => $palette, 'weights' => [0.6, 0.4]])->weights)->toBe([0.6, 0.4])
+        ->and(ImageColors::fromArray(['palette' => $palette, 'weights' => [1]])->weights)->toBe([])
+        ->and(ImageColors::fromArray(['palette' => $palette, 'weights' => [1.5, 0.4]])->weights)->toBe([])
+        ->and(ImageColors::fromArray(['palette' => $palette, 'weights' => ['0.6', 0.4]])->weights)->toBe([]);
 });

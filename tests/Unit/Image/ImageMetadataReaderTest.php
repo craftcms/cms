@@ -28,7 +28,6 @@ XML, 'photoshop:Credit="Ada Park / Harbor Press" photoshop:DateCreated="2026-05-
         copyright: '© 2026 Ada Park',
         keywords: ['harbor', 'boats'],
         dateTaken: '2026-05-01T19:42:10+02:00',
-        hasLocation: true,
     ));
 });
 
@@ -37,6 +36,14 @@ it('reads alt text from either IPTC namespace', function (string $namespace) {
 
     expect(new ImageMetadataReader()->read($path)->altText)->toBe('A pier');
 })->with(['Iptc4xmpCore', 'Iptc4xmpExt']);
+
+it('reads XMP packets that end past the first 8 KB of the file', function () {
+    // Editing software often writes long packets, such as IPTC’s reference images, whose packets run to about 30 KB
+    $padding = '<!-- '.str_repeat('padding ', 2000).'-->';
+    $path = metadataJpeg(xmpPacket($padding.'<Iptc4xmpCore:AltTextAccessibility><rdf:Alt><rdf:li xml:lang="x-default">A pier</rdf:li></rdf:Alt></Iptc4xmpCore:AltTextAccessibility>'));
+
+    expect(new ImageMetadataReader()->read($path)->altText)->toBe('A pier');
+});
 
 it('reads IPTC metadata', function () {
     $path = metadataJpeg(iptc: [
@@ -77,9 +84,39 @@ it('reads EXIF metadata', function () {
         copyright: 'Copyright 2026 Ada Park',
         dateTaken: '2026-05-01T19:42:10+02:00',
         camera: 'Canon EOS R5',
-        hasLocation: true,
     ));
 })->skip(! function_exists('exif_read_data'), 'Needs the exif extension.');
+
+it('reads GPS coordinates from EXIF, south and west of zero as negative', function () {
+    $path = metadataJpeg(exif: ['gps' => [
+        'latitude' => [33, 51, 54.5],
+        'latitudeRef' => 'S',
+        'longitude' => [151, 12, 36],
+        'longitudeRef' => 'E',
+    ]]);
+    $metadata = new ImageMetadataReader()->read($path);
+
+    expect([$metadata->latitude, $metadata->longitude])->toBe([-33.865139, 151.21]);
+})->skip(! function_exists('exif_read_data'), 'Needs the exif extension.');
+
+it('reads GPS coordinates and place names from XMP, and place names from IPTC', function () {
+    $xmp = new ImageMetadataReader()->read(metadataJpeg(xmpPacket(
+        '<photoshop:City>Vienna</photoshop:City><photoshop:State>Vienna</photoshop:State><photoshop:Country>Austria</photoshop:Country>',
+        'exif:GPSLatitude="48,12.5N" exif:GPSLongitude="16,22,12W"',
+    )));
+    $iptc = new ImageMetadataReader()->read(metadataJpeg(iptc: ['2#090' => 'Sydney', '2#095' => 'New South Wales', '2#101' => 'Australia']));
+
+    expect([$xmp->latitude, $xmp->longitude, $xmp->city, $xmp->state, $xmp->country])->toBe([48.208333, -16.37, 'Vienna', 'Vienna', 'Austria'])
+        ->and([$iptc->city, $iptc->state, $iptc->country])->toBe(['Sydney', 'New South Wales', 'Australia'])
+        ->and([$iptc->latitude, $iptc->longitude])->toBe([null, null]);
+});
+
+it('only keeps coordinates that are both there and in range', function () {
+    expect(ImageMetadata::fromArray(['latitude' => 48.2, 'longitude' => 16.37])->latitude)->toBe(48.2)
+        ->and(ImageMetadata::fromArray(['latitude' => 48.2])->latitude)->toBeNull()
+        ->and(ImageMetadata::fromArray(['latitude' => 91, 'longitude' => 16.37])->latitude)->toBeNull()
+        ->and(ImageMetadata::fromArray(['latitude' => '48.2', 'longitude' => 16.37])->latitude)->toBeNull();
+});
 
 it('prefers XMP to IPTC, and IPTC to EXIF', function () {
     $path = metadataJpeg(

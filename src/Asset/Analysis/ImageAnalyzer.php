@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Asset\Analysis;
 use CraftCms\Cms\Ai\Ai;
 use CraftCms\Cms\Ai\AiTasks;
 use CraftCms\Cms\Asset\Analysis\Contracts\ImageAnalysisTaskInterface;
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\AssetTransformers;
@@ -14,6 +15,8 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageSample;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\Raster;
 use CraftCms\Cms\Support\File;
@@ -25,7 +28,8 @@ use Laravel\Ai\Responses\StructuredAgentResponse;
 use Throwable;
 
 /**
- * Runs image analysis tasks for images.
+ * Runs image analysis tasks for images, sampling anything else they’re missing from the same copy of their file, such
+ * as their colors and embedded metadata.
  *
  * Tasks that resolve to the same provider and model share one request, so most sites send one request per image no
  * matter how many tasks they enable. The image is scaled down first, since models don’t look at more detail than that.
@@ -95,14 +99,36 @@ class ImageAnalyzer
     }
 
     /**
+     * Returns whether an image is missing anything that’s read from its file: its colors, or its embedded metadata.
+     *
+     * Images sampled before palettes, luminance, or weights were are sampled again, unless they couldn’t be sampled at all.
+     */
+    public function needsSampling(Asset $asset): bool
+    {
+        if ($asset->kind !== FileKind::Image->value) {
+            return false;
+        }
+
+        return $this->colorsNeedSampling($asset->analysis?->colors)
+            || ($asset->analysis !== null && $this->hashNeedsSampling($asset->analysis))
+            || $asset->analysis?->metadata === null;
+    }
+
+    /**
      * Queues the image to be analyzed, if any tasks would run for it.
      *
      * @param  list<string>|null  $handles  The tasks to run, or `null` for every image analysis task.
+     * @param  bool  $sample  Whether to queue the image if it needs sampling, even if no tasks would run for it, such
+     *                        as for an image that was uploaded straight to a remote filesystem and couldn’t be sampled
+     *                        when it was saved.
      * @return bool Whether the image was queued.
      */
-    public function queue(Asset $asset, ?array $handles = null, bool $overwrite = false): bool
+    public function queue(Asset $asset, ?array $handles = null, bool $overwrite = false, bool $sample = false): bool
     {
-        if (! $asset->id || $this->pendingTasks($asset, $handles, $overwrite) === []) {
+        if (
+            ! $asset->id ||
+            (! ($sample && $this->needsSampling($asset)) && $this->pendingTasks($asset, $handles, $overwrite) === [])
+        ) {
             return false;
         }
 
@@ -114,7 +140,7 @@ class ImageAnalyzer
     }
 
     /**
-     * Analyzes an image and saves the results.
+     * Analyzes an image and saves the results, sampling what it’s missing from its file first.
      *
      * Each group of tasks that share a provider and model is analyzed separately. If one group’s request fails, the
      * other groups’ results are still saved, and then the first failure is thrown.
@@ -126,7 +152,7 @@ class ImageAnalyzer
      */
     public function analyze(Asset $asset, ?array $handles = null, bool $overwrite = false): array
     {
-        [$changes, $applied, $failure] = $this->run($asset, $handles, $overwrite);
+        [$changes, $applied, $failure] = $this->run($asset, $handles, $overwrite, sample: true);
 
         $this->save($asset, $changes);
 
@@ -147,7 +173,7 @@ class ImageAnalyzer
      */
     public function suggest(Asset $asset, ?array $handles = null, bool $overwrite = true): ImageAnalysisChanges
     {
-        [$changes, , $failure] = $this->run($asset, $handles, $overwrite);
+        [$changes, , $failure] = $this->run($asset, $handles, $overwrite, sample: false);
 
         if ($failure !== null) {
             throw $failure;
@@ -160,7 +186,7 @@ class ImageAnalyzer
      * @param  list<string>|null  $handles
      * @return array{ImageAnalysisChanges, list<string>, Throwable|null}
      */
-    private function run(Asset $asset, ?array $handles, bool $overwrite): array
+    private function run(Asset $asset, ?array $handles, bool $overwrite, bool $sample): array
     {
         $tasks = $this->tasks();
         $groups = [];
@@ -173,14 +199,25 @@ class ImageAnalyzer
             $groups[$resolved->provider."\0".$resolved->model][self::responseProperty($handle)] = $tasks[$handle];
         }
 
-        if ($groups === []) {
+        $sample = $sample && $this->needsSampling($asset);
+
+        if ($groups === [] && ! $sample) {
             return [$changes, $applied, $failure];
         }
 
-        $tempPaths = [];
+        $copy = $asset->getCopyOfFile();
+        $tempPaths = [$copy];
 
         try {
-            $image = $this->preparedImage($asset, $tempPaths);
+            if ($sample) {
+                $this->sample($asset, $copy, $changes);
+            }
+
+            if ($groups === []) {
+                return [$changes, $applied, $failure];
+            }
+
+            $image = $this->preparedImage($copy, $tempPaths);
 
             foreach ($groups as $group) {
                 $agent = new ImageAnalysisAgent($group, $asset);
@@ -221,14 +258,58 @@ class ImageAnalyzer
     }
 
     /**
+     * Records what the image is missing that can be read from its file: its colors and hash, and its embedded metadata,
+     * and what that fills in, as an upload’s does.
+     *
+     * @see Asset::valuesFromEmbeddedMetadata()
+     */
+    private function sample(Asset $asset, string $path, ImageAnalysisChanges $changes): void
+    {
+        $analysis = $asset->analysis ?? new ImageAnalysis;
+
+        if ($this->colorsNeedSampling($analysis->colors)) {
+            $analysis = $analysis->withSample($this->images->sample($path));
+        } elseif ($this->hashNeedsSampling($analysis)) {
+            // Its colors are kept, since only its hash is missing
+            $analysis = $analysis->withSample(new ImageSample($analysis->colors, $this->images->sample($path)->hash));
+        }
+
+        if ($analysis->metadata === null) {
+            $metadata = $this->images->metadata($path);
+            $analysis = $analysis->withMetadata($metadata);
+
+            foreach ($asset->valuesFromEmbeddedMetadata($metadata) as $attribute => $value) {
+                $changes->setForSite($asset->siteId, $attribute, $value);
+            }
+        }
+
+        $changes->set('analysis', $analysis);
+    }
+
+    /**
+     * Returns whether an image’s colors haven’t been sampled, or were sampled before palettes, luminance, or weights were.
+     * Images that couldn’t be sampled at all have an empty grid, and aren’t sampled again.
+     */
+    private function colorsNeedSampling(?ImageColors $colors): bool
+    {
+        return $colors === null || ($colors->grid !== [] && ($colors->palette === [] || $colors->luminance === [] || $colors->weights === []));
+    }
+
+    /**
+     * Returns whether an image that could be sampled was sampled before hashes were.
+     */
+    private function hashNeedsSampling(ImageAnalysis $analysis): bool
+    {
+        return $analysis->colors !== null && $analysis->colors->grid !== [] && $analysis->hash === null;
+    }
+
+    /**
      * Returns a copy of the image, scaled down to the size that’s sent to models, and rasterized if it’s an SVG.
      *
      * @param  list<string>  $tempPaths  Temporary files to delete afterward.
      */
-    private function preparedImage(Asset $asset, array &$tempPaths): Image
+    private function preparedImage(string $copy, array &$tempPaths): Image
     {
-        $copy = $asset->getCopyOfFile();
-        $tempPaths[] = $copy;
         $extension = in_array(strtolower(pathinfo($copy, PATHINFO_EXTENSION)), ['jpg', 'jpeg'], true) ? 'jpg' : 'png';
         $prepared = AssetsHelper::tempFilePath($extension);
         $tempPaths[] = $prepared;

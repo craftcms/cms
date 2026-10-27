@@ -74,13 +74,14 @@ it('can’t be set by mutations', function () {
 
 it('queries an image’s palette and the names of its colors', function () {
     $asset = Asset::factory()->createElement(['kind' => 'image']);
-    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#c81e28', 'grid' => [], 'palette' => ['#c81e28', '#1e50c8', '#e01818']]])]);
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#c81e28', 'grid' => [], 'palette' => ['#c81e28', '#1e50c8', '#e01818'], 'weights' => [0.5, 0.3, 0.2]]])]);
     gqlActivateFullAccessSchema();
 
-    graphQL("{ asset(id: {$asset->id}) { analysis { colors { palette labels } } } }")
+    graphQL("{ asset(id: {$asset->id}) { analysis { colors { palette labels weights } } } }")
         ->assertOk()
         ->assertJsonPath('data.asset.analysis.colors.palette', ['#c81e28', '#1e50c8', '#e01818'])
-        ->assertJsonPath('data.asset.analysis.colors.labels', ['red', 'blue']);
+        ->assertJsonPath('data.asset.analysis.colors.labels', ['red', 'blue'])
+        ->assertJsonPath('data.asset.analysis.colors.weights', [0.5, 0.3, 0.2]);
 });
 
 it('queries how light an image’s regions are, and which text color is legible over them', function () {
@@ -108,10 +109,24 @@ it('queries an image’s hash', function () {
 
 it('queries an image’s embedded metadata', function () {
     $asset = Asset::factory()->createElement(['kind' => 'image']);
-    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['metadata' => ['creator' => 'Ada Park', 'keywords' => ['harbor'], 'hasLocation' => true]])]);
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['metadata' => ['creator' => 'Ada Park', 'keywords' => ['harbor']]])]);
     gqlActivateFullAccessSchema();
 
-    graphQL("{ asset(id: {$asset->id}) { analysis { metadata { creator copyright keywords hasLocation } } } }")
+    graphQL("{ asset(id: {$asset->id}) { analysis { metadata { creator copyright keywords } } } }")
         ->assertOk()
-        ->assertJsonPath('data.asset.analysis.metadata', ['creator' => 'Ada Park', 'copyright' => null, 'keywords' => ['harbor'], 'hasLocation' => true]);
+        ->assertJsonPath('data.asset.analysis.metadata', ['creator' => 'Ada Park', 'copyright' => null, 'keywords' => ['harbor']]);
+});
+
+it('queries where an image was taken by place name, but not by its coordinates', function () {
+    $asset = Asset::factory()->createElement(['kind' => 'image']);
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['metadata' => [
+        'city' => 'Vienna', 'country' => 'Austria', 'latitude' => 48.2, 'longitude' => 16.37,
+    ]])]);
+    gqlActivateFullAccessSchema();
+
+    graphQL("{ asset(id: {$asset->id}) { analysis { metadata { city state country } } } }")
+        ->assertOk()
+        ->assertJsonPath('data.asset.analysis.metadata', ['city' => 'Vienna', 'state' => null, 'country' => 'Austria']);
+    graphQL("{ asset(id: {$asset->id}) { analysis { metadata { latitude } } } }")
+        ->assertJsonPath('errors.0.message', fn (string $message): bool => str_starts_with($message, 'Cannot query field "latitude"'));
 });

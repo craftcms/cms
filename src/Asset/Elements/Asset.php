@@ -46,6 +46,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
@@ -71,6 +72,7 @@ use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
 use CraftCms\Cms\Image\Blurhash;
 use CraftCms\Cms\Image\ColorGrid;
+use CraftCms\Cms\Image\ColorNames;
 use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -103,6 +105,7 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Text;
@@ -345,23 +348,23 @@ class Asset extends Element
     public ?UploadedFile $uploadSource = null;
 
     /**
-     * Colors already sampled from the incoming file, such as by the browser that uploaded it, which are stored in
-     * place of sampling the file again.
+     * What was already read from the incoming file, such as by the browser that uploaded it: its colors, difference
+     * hash, and embedded metadata, which are stored in place of reading the file again. Its hash is only used alongside
+     * its colors, and anything else in it is ignored.
      */
-    public ?ImageColors $uploadColors = null;
-
-    /**
-     * The difference hash already found for the incoming file alongside {@see $uploadColors}, such as by the browser
-     * that uploaded it.
-     *
-     * @see ImageHash
-     */
-    public ?string $uploadHash = null;
+    public ?ImageAnalysis $uploadAnalysis = null;
 
     /**
      * The metadata read from the incoming file before it was cleaned.
      */
     private ?ImageMetadata $_uploadMetadata = null;
+
+    /**
+     * The width and height of a staged image that wasn't downloaded, read from the start of its file.
+     *
+     * @var array{int, int}|null
+     */
+    private ?array $_uploadDimensions = null;
 
     /**
      * @var bool Whether the asset should avoid filename conflicts when saved.
@@ -862,8 +865,11 @@ class Asset extends Element
     protected function searchKeywords(string $attribute): string
     {
         return match ($attribute) {
-            // Along with the keywords the image was tagged with before it was uploaded
-            'keywords' => implode(' ', array_unique([...$this->analysis->keywords ?? [], ...$this->analysis->metadata->keywords ?? []])),
+            // Along with the keywords the image was tagged with before it was uploaded, and its embedded description
+            'keywords' => implode(' ', array_filter([
+                ...array_unique([...$this->analysis->keywords ?? [], ...$this->analysis->metadata->keywords ?? []]),
+                $this->analysis->metadata->description ?? null,
+            ])),
             'text' => $this->analysis->text ?? '',
             default => parent::searchKeywords($attribute),
         };
@@ -935,10 +941,18 @@ class Asset extends Element
             'width' => ['label' => t('Image Width')],
             'height' => ['label' => t('Image Height')],
             'alt' => ['label' => t('Alternative Text')],
-            'location' => ['label' => t('Location')],
+            'location' => ['label' => t('Folder')],
             'link' => ['label' => t('Link'), 'icon' => 'world'],
             'dateModified' => ['label' => t('File Modified Date')],
             'uploader' => ['label' => t('Uploaded By')],
+            'imageType' => ['label' => t('Image Type')],
+            'colors' => ['label' => t('Colors')],
+            'creator' => ['label' => t('Creator')],
+            'credit' => ['label' => t('Credit')],
+            'copyright' => ['label' => t('Copyright')],
+            'dateTaken' => ['label' => t('Date Taken')],
+            'camera' => ['label' => t('Camera')],
+            'embeddedKeywords' => ['label' => t('Embedded Keywords')],
         ]);
 
         // Hide Author from Craft Solo
@@ -1006,7 +1020,7 @@ class Asset extends Element
                 'placeholder' => fn () => '500px',
             ],
             'location' => [
-                'label' => t('Location'),
+                'label' => t('Folder'),
                 'placeholder' => fn () => t('Volume'),
             ],
             'link' => [
@@ -1020,6 +1034,38 @@ class Asset extends Element
             'uploader' => [
                 'label' => t('Uploaded By'),
                 'placeholder' => fn () => ($uploader = currentUserElement()) ? app(ElementHtml::class)->elementChipHtml($uploader) : '',
+            ],
+            'imageType' => [
+                'label' => t('Image Type'),
+                'placeholder' => fn () => ImageType::Photo->label(),
+            ],
+            'colors' => [
+                'label' => t('Colors'),
+                'placeholder' => fn () => self::colorBarHtml(['#c81e28', '#e8a33d', '#1e50c8'], [0.5, 0.3, 0.2]),
+            ],
+            'creator' => [
+                'label' => t('Creator'),
+                'placeholder' => fn () => t('Creator'),
+            ],
+            'credit' => [
+                'label' => t('Credit'),
+                'placeholder' => fn () => t('Credit'),
+            ],
+            'copyright' => [
+                'label' => t('Copyright'),
+                'placeholder' => fn () => '© '.now()->year,
+            ],
+            'dateTaken' => [
+                'label' => t('Date Taken'),
+                'placeholder' => fn () => now()->subYear(),
+            ],
+            'camera' => [
+                'label' => t('Camera'),
+                'placeholder' => fn () => t('Camera'),
+            ],
+            'embeddedKeywords' => [
+                'label' => t('Embedded Keywords'),
+                'placeholder' => fn () => t('Embedded Keywords'),
             ],
         ]);
 
@@ -1036,7 +1082,7 @@ class Asset extends Element
     public static function attributePreviewHtml(array $attribute): mixed
     {
         return match ($attribute['value']) {
-            'uploader' => $attribute['placeholder'],
+            'uploader', 'colors' => $attribute['placeholder'],
             default => parent::attributePreviewHtml($attribute),
         };
     }
@@ -2106,6 +2152,31 @@ JS, [
     }
 
     /**
+     * Returns what the metadata embedded in the image’s file fills in: its alt text, if it has none, and its title, if
+     * it’s still the one it was given from its filename.
+     *
+     * This is used when an image is uploaded, and when a queue job samples one whose metadata wasn’t read then.
+     *
+     * @return array{title?: string, alt?: string}
+     *
+     * @since 6.0.0
+     */
+    public function valuesFromEmbeddedMetadata(ImageMetadata $metadata): array
+    {
+        $values = [];
+
+        if ($metadata->title !== null && $this->hasDefaultTitle()) {
+            $values['title'] = mb_substr($metadata->title, 0, 255);
+        }
+
+        if (($this->alt === null || $this->alt === '') && ($alt = $metadata->suggestedAlt()) !== null) {
+            $values['alt'] = $alt;
+        }
+
+        return $values;
+    }
+
+    /**
      * Returns whether the asset’s title is missing, or is still the one it was given from its filename.
      *
      * @since 6.0.0
@@ -2925,6 +2996,22 @@ JS, [
 
             case 'location':
                 return $this->locationHtml();
+
+            case 'imageType':
+                return $this->imageTypeHtml();
+
+            case 'colors':
+                return $this->colorsHtml();
+
+            case 'creator':
+            case 'credit':
+            case 'copyright':
+            case 'dateTaken':
+            case 'camera':
+                return $this->embeddedMetadataHtml($attribute);
+
+            case 'embeddedKeywords':
+                return $this->embeddedMetadataHtml('keywords');
         }
 
         return parent::attributeHtml($attribute);
@@ -3164,7 +3251,7 @@ JS;
     protected function metadata(): array
     {
         return [
-            t('Location') => $this->locationHtml(...),
+            t('Folder') => $this->locationHtml(...),
             t('File size') => function () {
                 $size = $this->getFormattedSize(0);
                 if (! $size) {
@@ -3195,6 +3282,238 @@ JS;
                 ]);
             },
         ];
+    }
+
+    /** @return list<array<string, mixed>> */
+    #[Override]
+    public function getMetadataGroups(): array
+    {
+        return [...parent::getMetadataGroups(), $this->analysisMetadata()];
+    }
+
+    /**
+     * Returns what was found in the image, which is shown apart from the rest of its metadata.
+     *
+     * @return array<string, Closure(): bool|string>
+     */
+    private function analysisMetadata(): array
+    {
+        return [
+            t('Image type') => fn () => $this->imageTypeHtml() ?: false,
+            t('Colors') => fn () => $this->colorsHtml() ?: false,
+            // What the file’s own metadata says, where the asset doesn’t say the same already
+            t('Embedded title') => fn () => $this->embeddedMetadataHtml('title') ?: false,
+            t('Embedded alt text') => fn () => $this->embeddedMetadataHtml('altText') ?: false,
+            t('Creator') => fn () => $this->embeddedMetadataHtml('creator') ?: false,
+            t('Credit') => fn () => $this->embeddedMetadataHtml('credit') ?: false,
+            t('Copyright') => fn () => $this->embeddedMetadataHtml('copyright') ?: false,
+            t('Date taken') => fn () => $this->embeddedMetadataHtml('dateTaken') ?: false,
+            t('Camera') => fn () => $this->embeddedMetadataHtml('camera') ?: false,
+            t('Location') => fn () => $this->photoLocationHtml() ?: false,
+        ];
+    }
+
+    /**
+     * Returns where the image was taken, by its place name if its file has one, and a link to it in Google Maps, and a
+     * map of it below, or an empty list if its file didn’t have GPS coordinates.
+     *
+     * The map is drawn from OpenStreetMap’s tiles rather than embedded, so it has no controls or text over it, and it’s
+     * credited below. It’s hidden from assistive technology, since the place name and link say the same.
+     *
+     * @return list<string> The value, then the map, each its own `<dd>`
+     */
+    private function photoLocationHtml(): array
+    {
+        $metadata = $this->kind === FileKind::Image->value ? $this->analysis?->metadata : null;
+
+        if ($metadata?->latitude === null || $metadata->longitude === null) {
+            return [];
+        }
+
+        [$latitude, $longitude] = [$metadata->latitude, $metadata->longitude];
+        $place = self::placeName($metadata);
+        // The icon shows the link opens in a new window, which the hidden text says for assistive technology
+        $newWindow = Html::tag('span', Icons::svg('external') ?? '', [
+            'class' => ['cp-icon', 'ms-1'],
+            'style' => ['--c-icon-size' => '0.8em'],
+            'aria-hidden' => 'true',
+        ]).' '.Html::tag('span', t('Opens in a new window'), ['class' => 'sr-only']);
+
+        return [
+            ($place !== null ? Html::tag('div', Html::encode($place)) : '').
+            Html::tag('div', Html::a(
+                t('View in Google Maps').$newWindow,
+                'https://www.google.com/maps/search/?'.http_build_query(['api' => 1, 'query' => sprintf('%.6f,%.6f', $latitude, $longitude)]),
+                ['target' => '_blank', 'rel' => 'noopener'],
+            )),
+            Html::beginTag('div', ['class' => 'cp-photo-location']).
+            $this->photoLocationMapHtml($latitude, $longitude).
+            Html::tag('div', Html::a(
+                '© OpenStreetMap contributors'.$newWindow,
+                'https://www.openstreetmap.org/copyright',
+                ['target' => '_blank', 'rel' => 'noopener'],
+            ), ['class' => 'cp-photo-location__caption text-xs']).
+            Html::endTag('div'),
+        ];
+    }
+
+    /**
+     * Returns where an image was taken as a place name, from its city, state, and country, without repeating any of
+     * them, such as for a city that’s also its state, or `null` if its file didn’t say.
+     */
+    private static function placeName(ImageMetadata $metadata): ?string
+    {
+        $parts = [];
+
+        foreach ([$metadata->city, $metadata->state, $metadata->country] as $part) {
+            if ($part !== null && ! in_array(mb_strtolower($part), array_map(mb_strtolower(...), $parts), true)) {
+                $parts[] = $part;
+            }
+        }
+
+        return $parts !== [] ? implode(', ', $parts) : null;
+    }
+
+    /**
+     * Returns a map centered on a point, as the 3×3 OpenStreetMap tiles around it, which cover the map at any width the
+     * sidebar can be, with a marker on the point.
+     */
+    private function photoLocationMapHtml(float $latitude, float $longitude): string
+    {
+        $zoom = 15;
+        $count = 2 ** $zoom;
+        $latitudeRadians = deg2rad($latitude);
+        // Where the point is in the Web Mercator projection, in tiles
+        $x = ($longitude + 180) / 360 * $count;
+        $y = (1 - log(tan($latitudeRadians) + 1 / cos($latitudeRadians)) / M_PI) / 2 * $count;
+        [$tileX, $tileY] = [(int) floor($x), (int) floor($y)];
+        $tiles = '';
+
+        for ($row = -1; $row <= 1; $row++) {
+            for ($column = -1; $column <= 1; $column++) {
+                $tileRow = $tileY + $row;
+
+                // Beyond the poles, there’s nothing to show, though the column wraps around the world
+                $tiles .= $tileRow >= 0 && $tileRow < $count
+                    ? Html::tag('img', '', [
+                        'src' => sprintf('https://tile.openstreetmap.org/%d/%d/%d.png', $zoom, (($tileX + $column) % $count + $count) % $count, $tileRow),
+                        'alt' => '',
+                        'loading' => 'lazy',
+                    ])
+                    : Html::tag('span');
+            }
+        }
+
+        return Html::tag('div',
+            Html::tag('div', $tiles, [
+                'class' => 'cp-photo-location__tiles',
+                // The point is a tile in from the grid’s corner, plus where it is in its own tile
+                'style' => [
+                    'translate' => sprintf('-%.1fpx -%.1fpx', 256 + ($x - $tileX) * 256, 256 + ($y - $tileY) * 256),
+                ],
+            ]).
+            Html::tag('span', Icons::svg('location-dot') ?? '', ['class' => 'cp-photo-location__marker']),
+            [
+                'class' => 'cp-photo-location__map',
+                'aria-hidden' => 'true',
+            ],
+        );
+    }
+
+    private function imageTypeHtml(): string
+    {
+        return Html::encode($this->getImageType()?->label() ?? '');
+    }
+
+    /**
+     * Returns the image’s main colors as a bar.
+     */
+    private function colorsHtml(): string
+    {
+        $colors = $this->kind === FileKind::Image->value ? $this->analysis?->colors : null;
+
+        return self::colorBarHtml($colors->palette ?? [], $colors->weights ?? []);
+    }
+
+    /**
+     * Returns a bar of colors tiled together, each as wide as the share of the image it covers, or all the same width
+     * if that isn’t known.
+     *
+     * The bar is named for assistive technology by its colors’ names and shares, so a color is never only told by its
+     * color, and its colors’ names show when it’s hovered.
+     *
+     * @param  list<string>  $palette  Hex colors
+     * @param  list<float>  $weights  How much of the image each color covers, or none
+     */
+    private static function colorBarHtml(array $palette, array $weights): string
+    {
+        if ($palette === []) {
+            return '';
+        }
+
+        $formatter = I18N::getFormatter();
+        $segments = [];
+        $names = [];
+        $labels = [];
+
+        foreach ($palette as $index => $hex) {
+            $weight = $weights[$index] ?? null;
+            $name = ColorNames::label(ColorNames::name($hex));
+            $names[] = $name;
+            $labels[] = $weight !== null ? "$name {$formatter->asPercent($weight, 0)}" : $name;
+            $segments[] = Html::tag('span', '', [
+                'style' => [
+                    'background-color' => $hex,
+                    'flex-grow' => (string) ($weight ?? 1),
+                ],
+            ]);
+        }
+
+        return Html::tag('div', implode('', $segments), [
+            'class' => 'cp-color-bar',
+            'role' => 'img',
+            'aria-label' => implode(', ', $labels),
+            // Each name once, since several of an image’s colors often go by the same one
+            'title' => implode(', ', array_unique($names)),
+        ]);
+    }
+
+    /**
+     * Returns the HTML for a value from the image’s embedded metadata, or an empty string if it doesn’t have one. Its
+     * title and alt text are left out when the asset’s are the same.
+     */
+    private function embeddedMetadataHtml(string $attribute): string
+    {
+        $metadata = $this->kind === FileKind::Image->value ? $this->analysis?->metadata : null;
+
+        if ($metadata === null) {
+            return '';
+        }
+
+        $value = match ($attribute) {
+            'title' => $metadata->title !== $this->title ? $metadata->title : null,
+            'altText' => $metadata->altText !== $this->alt ? $metadata->altText : null,
+            'keywords' => $metadata->keywords !== [] ? implode(', ', $metadata->keywords) : null,
+            'dateTaken' => $metadata->dateTaken !== null ? $this->dateTakenText($metadata->dateTaken) : null,
+            default => $metadata->$attribute,
+        };
+
+        return Html::encode($value ?? '');
+    }
+
+    /**
+     * Formats when the image was taken in the time it was taken, rather than converting it to the system’s time zone,
+     * and as just a date when the file only gives one.
+     */
+    private function dateTakenText(string $dateTaken): string
+    {
+        // ISO 8601, so the first 19 characters are the date and time, without the UTC offset
+        $date = Date::parse(substr($dateTaken, 0, 19));
+        $formatter = I18N::getFormatter();
+
+        return $date->format('H:i:s') === '00:00:00'
+            ? $formatter->asDate($date, Formatter::FORMAT_WIDTH_SHORT)
+            : $formatter->asDateTime($date, Formatter::FORMAT_WIDTH_SHORT);
     }
 
     private function locationHtml(): string
@@ -3246,8 +3565,7 @@ JS;
             $names['keepFileOnDelete'],
             $names['previewText'],
             $names['sanitizeOnUpload'],
-            $names['uploadColors'],
-            $names['uploadHash'],
+            $names['uploadAnalysis'],
         );
 
         $names['extension'] = true;
@@ -3321,8 +3639,16 @@ JS;
             $folderId = $this->folderId;
         }
 
+        // A staged image is downloaded when it's on hand anyway, or has to be: to clean it, which would strip its
+        // metadata if it weren't read first, or to read its dimensions when they can't be read from the start of the
+        // file. Otherwise, such as for an image uploaded straight to a remote filesystem, it's left where it is, and a
+        // queue job samples its colors and metadata instead.
         if ($this->uploadSource !== null && AssetsHelper::getFileKindByExtension($this->_filename) === FileKind::Image->value) {
-            $this->tempFilePath ??= $this->uploadSource->localPath();
+            if ($this->uploadSource->isLocal() || $this->shouldSanitizeUpload()) {
+                $this->tempFilePath ??= $this->uploadSource->localPath();
+            } elseif (($this->_uploadDimensions = $this->uploadSource->imageSize()) === null) {
+                $this->tempFilePath ??= $this->uploadSource->localPath();
+            }
         }
 
         // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
@@ -3338,21 +3664,19 @@ JS;
             $this->title = AssetsHelper::filename2Title(pathinfo($this->_filename, PATHINFO_FILENAME));
         }
 
-        // Read an uploaded image’s metadata before it’s cleaned in afterSave(), which strips it, and fill in its alt
-        // text, and a new image’s title, from it
+        // Take an uploaded image’s metadata from the uploader, or read it before it’s cleaned in afterSave(), which
+        // strips it, and fill in its alt text, and a new image’s title, from it
         if (
-            isset($this->tempFilePath) &&
-            AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value &&
+            ($this->uploadAnalysis?->metadata !== null || (
+                isset($this->tempFilePath) &&
+                AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value
+            )) &&
             $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
         ) {
-            $this->_uploadMetadata = Images::metadata($this->tempFilePath);
+            $this->_uploadMetadata = $this->uploadAnalysis->metadata ?? Images::metadata($this->tempFilePath);
 
-            if (! $this->id && $this->_uploadMetadata->title !== null && $this->hasDefaultTitle()) {
-                $this->title = mb_substr($this->_uploadMetadata->title, 0, 255);
-            }
-
-            if ($this->alt === null || $this->alt === '') {
-                $this->alt = $this->_uploadMetadata->altText ?? $this->_uploadMetadata->description ?? $this->alt;
+            foreach ($this->valuesFromEmbeddedMetadata($this->_uploadMetadata) as $attribute => $value) {
+                $this->$attribute = $value;
             }
         }
 
@@ -3364,6 +3688,19 @@ JS;
         }
 
         return parent::beforeSave($isNew);
+    }
+
+    /**
+     * Returns whether an uploaded image should be sanitized, which strips its metadata, unless the `preserveExifData`
+     * config setting is enabled.
+     */
+    private function shouldSanitizeUpload(): bool
+    {
+        return $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
+            ($this->sanitizeOnUpload ?? (
+                ! request()->isCpRequest() ||
+                Cms::config()->sanitizeCpImageUploads
+            ));
     }
 
     /**
@@ -3384,25 +3721,15 @@ JS;
     {
         if (! $this->propagating) {
             $isImage = isset($this->tempFilePath) && AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value;
+            // Includes new assets for files that are already in place, such as ones uploaded straight to their filesystem
+            $hasNewFile = $isNew || isset($this->tempFilePath) || $this->uploadSource !== null;
 
             $fallbackWidth = null;
             $fallbackHeight = null;
 
             if ($isImage) {
-                // Are we uploading an image that needs to be sanitized?
-                if (
-                    $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
-                    ($this->sanitizeOnUpload ?? (
-                        ! request()->isCpRequest() ||
-                        Cms::config()->sanitizeCpImageUploads
-                    ))
-                ) {
+                if ($this->shouldSanitizeUpload()) {
                     ImageHelper::cleanImageByPath($this->tempFilePath);
-
-                    // Cleaning usually strips GPS coordinates, unless the `preserveExifData` config setting is enabled
-                    if ($this->_uploadMetadata?->hasLocation) {
-                        $this->_uploadMetadata = $this->_uploadMetadata->withHasLocation(Images::metadata($this->tempFilePath)->hasLocation);
-                    }
                 }
 
                 // if we're creating or replacing and image, get the width or height via getimagesize
@@ -3474,9 +3801,10 @@ JS;
                     'alt' => $this->alt,
                 ], ['assetId', 'siteId']);
 
-            // Uploaded and replaced images are analyzed, such as for alt text, by any AI tasks that are set up
-            if ($isImage) {
-                app(ImageAnalyzer::class)->queue($this);
+            // New images are analyzed, such as for alt text, by any AI tasks that are set up, and sampled for anything
+            // that neither the uploader nor Craft could read from their file when they were saved
+            if ($hasNewFile && $this->kind === FileKind::Image->value) {
+                app(ImageAnalyzer::class)->queue($this, sample: true);
             }
         }
 
@@ -3924,9 +4252,12 @@ JS;
         if ($this->uploadSource !== null && $tempPath === null) {
             $this->size = $this->uploadSource->size();
             $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
-            $this->_width = $this->_height = null;
-            // What was found in the old file doesn’t describe the new one
-            $this->analysis = null;
+            [$this->_width, $this->_height] = $this->_uploadDimensions ?? [null, null];
+            // What was found in the old file doesn’t describe the new one, so only what the uploader found in the new
+            // one is known. A queue job samples anything it didn’t.
+            $this->analysis = $this->uploadAnalysis?->colors !== null || $this->_uploadMetadata !== null
+                ? new ImageAnalysis(colors: $this->uploadAnalysis?->colors, hash: $this->uploadHash(), metadata: $this->_uploadMetadata)
+                : null;
             $this->previewText = $this->isTextFile($filename)
                 ? AssetsHelper::previewText($this->readFileStart($newDisk->readStream($newPath)))
                 : null;
@@ -3940,8 +4271,8 @@ JS;
             if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
                 $metadata = $this->_uploadMetadata ?? Images::metadata($tempPath);
-                $this->analysis = $this->uploadColors !== null
-                    ? new ImageAnalysis(colors: $this->uploadColors, hash: ImageHash::isHash($this->uploadHash) ? $this->uploadHash : null, metadata: $metadata)
+                $this->analysis = $this->uploadAnalysis?->colors !== null
+                    ? new ImageAnalysis(colors: $this->uploadAnalysis->colors, hash: $this->uploadHash(), metadata: $metadata)
                     : ImageAnalysis::fromSample(Images::sample($tempPath), $metadata);
             } else {
                 $this->_width = null;
@@ -3974,9 +4305,9 @@ JS;
         $this->newLocation = null;
         $this->tempFilePath = null;
         $this->uploadSource = null;
-        $this->uploadColors = null;
-        $this->uploadHash = null;
         $this->_uploadMetadata = null;
+        $this->_uploadDimensions = null;
+        $this->uploadAnalysis = null;
     }
 
     /**
@@ -4015,6 +4346,16 @@ JS;
      *
      * @see $previewText
      */
+    /**
+     * Returns the difference hash already found for the incoming file, if it’s valid and was found alongside its colors.
+     */
+    private function uploadHash(): ?string
+    {
+        $hash = $this->uploadAnalysis?->hash;
+
+        return $this->uploadAnalysis?->colors !== null && ImageHash::isHash($hash) ? $hash : null;
+    }
+
     private function isTextFile(string $filename): bool
     {
         return FileKind::tryFrom(AssetsHelper::getFileKindByExtension($filename))?->isText() ?? false;

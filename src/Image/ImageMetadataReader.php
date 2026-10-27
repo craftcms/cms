@@ -57,6 +57,7 @@ class ImageMetadataReader
 
         $make = $this->decode($exif['Make'] ?? null);
         $model = $this->decode($exif['Model'] ?? null);
+        [$latitude, $longitude] = $this->coordinates($xmp, $exif);
 
         return ImageMetadata::fromArray([
             'title' => $this->first($xmp ? $this->xmpText($xmp, 'dc:title') : null, $this->iptcText($iptc, '2#005')),
@@ -98,8 +99,70 @@ class ImageMetadataReader
                 $make === null || stripos($model, explode(' ', $make)[0]) !== false => $model,
                 default => "$make $model",
             },
-            'hasLocation' => isset($exif['GPSLatitude']) || ($xmp && $this->xmpText($xmp, 'exif:GPSLatitude') !== null),
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'city' => $this->first($xmp ? $this->xmpText($xmp, 'photoshop:City') : null, $this->iptcText($iptc, '2#090')),
+            'state' => $this->first($xmp ? $this->xmpText($xmp, 'photoshop:State') : null, $this->iptcText($iptc, '2#095')),
+            'country' => $this->first($xmp ? $this->xmpText($xmp, 'photoshop:Country') : null, $this->iptcText($iptc, '2#101')),
         ]);
+    }
+
+    /**
+     * Returns the file’s GPS coordinates in decimal degrees, from its XMP or else its EXIF data, or `null`s if it
+     * doesn’t have both.
+     *
+     * @param  array<string, mixed>  $exif
+     * @return array{float|null, float|null}
+     */
+    private function coordinates(?DOMXPath $xmp, array $exif): array
+    {
+        $latitude = ($xmp ? $this->xmpCoordinate($this->xmpText($xmp, 'exif:GPSLatitude')) : null)
+            ?? $this->exifCoordinate($exif['GPSLatitude'] ?? null, $exif['GPSLatitudeRef'] ?? null);
+        $longitude = ($xmp ? $this->xmpCoordinate($this->xmpText($xmp, 'exif:GPSLongitude')) : null)
+            ?? $this->exifCoordinate($exif['GPSLongitude'] ?? null, $exif['GPSLongitudeRef'] ?? null);
+
+        return $latitude !== null && $longitude !== null ? [$latitude, $longitude] : [null, null];
+    }
+
+    /**
+     * Converts an XMP GPS coordinate, such as `48,16.5N` or `48,16,30N`, to decimal degrees.
+     */
+    private function xmpCoordinate(?string $value): ?float
+    {
+        if ($value === null || ! preg_match('/^(\d+),(\d+(?:\.\d+)?)(?:,(\d+(?:\.\d+)?))?([NSEW])$/i', $value, $match)) {
+            return null;
+        }
+
+        $degrees = (float) $match[1] + (float) $match[2] / 60 + (float) ($match[3] ?: 0) / 3600;
+
+        return in_array(strtoupper($match[4]), ['S', 'W'], true) ? -$degrees : $degrees;
+    }
+
+    /**
+     * Converts an EXIF GPS coordinate, its degrees, minutes, and seconds as rationals such as `51/1`, to decimal
+     * degrees.
+     */
+    private function exifCoordinate(mixed $values, mixed $ref): ?float
+    {
+        if (! is_array($values) || count($values) !== 3 || ! is_string($ref)) {
+            return null;
+        }
+
+        $parts = [];
+
+        foreach (array_values($values) as $value) {
+            $fraction = is_string($value) ? explode('/', $value) : [];
+
+            if (count($fraction) !== 2 || ! is_numeric($fraction[0]) || ! is_numeric($fraction[1]) || (float) $fraction[1] === 0.0) {
+                return null;
+            }
+
+            $parts[] = (float) $fraction[0] / (float) $fraction[1];
+        }
+
+        $degrees = $parts[0] + $parts[1] / 60 + $parts[2] / 3600;
+
+        return in_array(strtoupper(trim($ref)), ['S', 'W'], true) ? -$degrees : $degrees;
     }
 
     /**
@@ -144,11 +207,10 @@ class ImageMetadataReader
         $packet = null;
 
         try {
-            $handle = fopen($filePath, 'rb');
+            // Not fread(), which can return less than it was asked for, such as one 8 KB chunk
+            $chunk = @file_get_contents($filePath, length: self::XMP_SEARCH_LENGTH);
 
-            if ($handle !== false) {
-                $chunk = (string) fread($handle, self::XMP_SEARCH_LENGTH);
-                fclose($handle);
+            if ($chunk !== false) {
                 $start = strpos($chunk, '<x:xmpmeta');
                 $end = $start !== false ? strpos($chunk, '</x:xmpmeta>', $start) : false;
 

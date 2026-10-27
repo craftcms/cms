@@ -80,10 +80,21 @@ class ImageMetadataType implements GeneratorInterface, SingleGeneratorInterface
                         'type' => Type::string(),
                         'description' => 'The camera’s make and model.',
                     ],
-                    'hasLocation' => [
-                        'name' => 'hasLocation',
-                        'type' => Type::nonNull(Type::boolean()),
-                        'description' => 'Whether the file has GPS coordinates in it, such as where a photo was taken.',
+                    // The coordinates themselves are left out, so public schemas don’t give away where images were taken
+                    'city' => [
+                        'name' => 'city',
+                        'type' => Type::string(),
+                        'description' => 'The city the image shows or was taken in.',
+                    ],
+                    'state' => [
+                        'name' => 'state',
+                        'type' => Type::string(),
+                        'description' => 'The state or province the image shows or was taken in.',
+                    ],
+                    'country' => [
+                        'name' => 'country',
+                        'type' => Type::string(),
+                        'description' => 'The country the image shows or was taken in.',
                     ],
                 ];
 

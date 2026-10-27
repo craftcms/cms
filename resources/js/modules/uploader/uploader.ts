@@ -8,8 +8,8 @@ import {
   type UploaderSettings,
 } from './base-uploader';
 import {UploadQueue} from './upload-queue';
-import {imageSampleCompletionData} from './image-colors';
 import {showUploadDuplicates} from './upload-notification';
+import {imageCompletionData} from './image-completion-data';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
 
 declare const Craft: any;
@@ -216,7 +216,7 @@ export class Uploader extends BaseUploader {
           ...this.formData,
           ...(this.settings.replace ? {operation: 'replace'} : {}),
         },
-        completionData: imageSampleCompletionData,
+        completionData: imageCompletionData,
         csrfToken: Craft.csrfTokenValue,
       },
       undefined,

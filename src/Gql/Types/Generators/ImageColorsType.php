@@ -55,6 +55,11 @@ class ImageColorsType implements GeneratorInterface, SingleGeneratorInterface
                         'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::listOf(Type::listOf(Type::nonNull(Type::float())))))),
                         'description' => 'How light the darker and lighter parts of the image’s regions are, in the same rows and order as `grid`, as each region’s 10th and 90th percentile WCAG relative luminance from 0 to 1, or null for regions with no mostly opaque pixels. Empty if the image was sampled before luminance was.',
                     ],
+                    'weights' => [
+                        'name' => 'weights',
+                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::float()))),
+                        'description' => 'How much of the image each `palette` color covers, as a share of everything the palette covers, from 0 to 1, in the same order. Empty if the image was sampled before weights were.',
+                    ],
                     'textColor' => [
                         'name' => 'textColor',
                         'type' => TextColorType::generateType(null),

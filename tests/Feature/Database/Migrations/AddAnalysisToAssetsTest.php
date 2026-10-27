@@ -49,7 +49,7 @@ it('moves images’ colors, keywords, and visible text into analysis', function 
     $analysis = fn (int $id): ?array => json_decode((string) DB::table(Table::ASSETS)->where('id', $id)->value('analysis'), true);
 
     expect($analysis($tagged->id))->toEqual([
-        'colors' => ['dominant' => '#c81e28', 'grid' => [['#c81e28']], 'palette' => ['#c81e28'], 'luminance' => []],
+        'colors' => ['dominant' => '#c81e28', 'grid' => [['#c81e28']], 'palette' => ['#c81e28'], 'luminance' => [], 'weights' => []],
         'hash' => null,
         'metadata' => null,
         'type' => null,
@@ -57,7 +57,7 @@ it('moves images’ colors, keywords, and visible text into analysis', function 
         'text' => 'Pier 9',
     ])
         ->and($analysis($sampled->id))->toEqual([
-            'colors' => ['dominant' => null, 'grid' => [], 'palette' => [], 'luminance' => []],
+            'colors' => ['dominant' => null, 'grid' => [], 'palette' => [], 'luminance' => [], 'weights' => []],
             'hash' => null,
             'metadata' => null,
             'type' => null,

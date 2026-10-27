@@ -24,7 +24,7 @@ class IndexAllAssetsCommand extends Command
         {--createMissingAssets=true : Auto-create new asset records when missing.}
         {--deleteMissingAssets=false : Delete all the asset records that have their files missing.}
         {--deleteEmptyFolders=false : Delete empty folders.}
-        {--analyzeImages=false : Sample the colors of images that are missing them, and queue images for any AI tasks that are set up, even if their files haven’t changed.}
+        {--analyzeImages=false : Sample missing image colors and metadata, and queue images for AI tasks.}
     ';
 
     #[Override]

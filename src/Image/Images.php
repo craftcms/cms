@@ -344,7 +344,8 @@ class Images
             }
 
             $intervention->scaleDown(self::COLOR_SAMPLE_SIZE, self::COLOR_SAMPLE_SIZE);
-            $candidates = iterator_to_array(new ColorExtractor($intervention)->dominant(self::DOMINANT_COLOR_CANDIDATES), false);
+            $dominantPalette = new ColorExtractor($intervention)->dominant(self::DOMINANT_COLOR_CANDIDATES);
+            $candidates = iterator_to_array($dominantPalette, false);
 
             [$columns, $rows] = $intervention->width() >= $intervention->height()
                 ? [self::COLOR_GRID_LONG_SIDE, self::COLOR_GRID_SHORT_SIDE]
@@ -380,12 +381,23 @@ class Images
 
         $dominant = Arr::first($candidates, fn (ColorInterface $color): bool => ! $this->isNearBlackOrWhite($color)) ?? $candidates[0] ?? null;
 
+        // How many of the sampled pixels each color stands for, combining colors that come out as the same hex code
+        $counts = [];
+
+        foreach ($candidates as $candidate) {
+            $hex = $this->hex($candidate);
+            $counts[$hex] = ($counts[$hex] ?? 0) + $dominantPalette->colorCount($candidate);
+        }
+
+        $total = array_sum($counts);
+
         return new ImageSample(
             colors: new ImageColors(
                 dominant: $dominant ? $this->hex($dominant) : null,
                 grid: $grid,
-                palette: array_values(array_unique(array_map($this->hex(...), $candidates))),
+                palette: array_keys($counts),
                 luminance: $luminance,
+                weights: $total > 0 ? array_values(array_map(fn (int $count): float => round($count / $total, 3), $counts)) : [],
             ),
             hash: $hash,
         );

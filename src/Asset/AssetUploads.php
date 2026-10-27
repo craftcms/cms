@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use Closure;
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\UploadHandler;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Image\ImageHash;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Http\JsonResponse;
@@ -79,35 +81,49 @@ class AssetUploads implements UploadHandler
 
     public function complete(Request $request, array $parameters, UploadedFile $file): JsonResponse
     {
-        $colors = $this->uploadedColors($request);
-        // Only trusted alongside colors, since the file is sampled on the server otherwise
-        $hash = $colors !== null ? $this->uploadedHash($request) : null;
+        $analysis = $this->uploadedAnalysis($request);
 
         $result = $parameters['operation'] === 'replace'
-            ? $this->uploads->replace((int) $parameters['assetId'], $file, $colors, $hash)
+            ? $this->uploads->replace((int) $parameters['assetId'], $file, $analysis)
             : $this->uploads->store(
                 $parameters,
                 $file,
                 authorizedGuest: ! $request->user(),
                 uploaderId: $request->craftUser()?->getCraftUserId(),
-                colors: $colors,
-                hash: $hash,
+                analysis: $analysis,
             );
 
         return new JsonResponse($result->payload(), $result->status);
     }
 
     /**
+     * Returns what the uploader read from the file, if it sent anything: its colors, difference hash, and embedded
+     * metadata.
+     *
+     * Only those parts are taken, never what AI tasks find, such as keywords, which can’t be set from a request.
+     */
+    private function uploadedAnalysis(Request $request): ?ImageAnalysis
+    {
+        $colors = $this->uploadedColors($request);
+        // Only trusted alongside colors, since the file is sampled on the server otherwise
+        $hash = $colors !== null ? $this->uploadedHash($request) : null;
+        $metadata = $request->input('analysis.metadata');
+        $metadata = is_array($metadata) ? ImageMetadata::fromArray($metadata) : null;
+
+        return $colors !== null || $metadata !== null ? new ImageAnalysis(colors: $colors, hash: $hash, metadata: $metadata) : null;
+    }
+
+    /**
      * Returns the colors the uploader sampled from the file, if it sent any.
      *
-     * They come from the client, so anything that isn't a grid of up to 4×4 hex colors, with luminance ranges from 0 to
-     * 1 if there are any, is ignored, and the file is sampled on the server instead.
+     * They come from the client, so anything that isn't a grid of up to 4×4 hex colors, with luminance ranges and
+     * palette weights from 0 to 1 if there are any, is ignored, and the file is sampled on the server instead.
      */
     private function uploadedColors(Request $request): ?ImageColors
     {
         $hexColor = 'regex:/^#[0-9a-f]{6}([0-9a-f]{2})?$/i';
-        $validator = Validator::make($request->only('colors'), [
-            'colors' => ['required', 'array:dominant,grid,palette,luminance'],
+        $validator = Validator::make(['colors' => $request->input('analysis.colors')], [
+            'colors' => ['required', 'array:dominant,grid,palette,luminance,weights'],
             'colors.dominant' => ['nullable', 'string', $hexColor],
             'colors.grid' => ['required', 'array', 'list', 'min:1', 'max:4'],
             'colors.grid.*' => ['array', 'list', 'min:1', 'max:4'],
@@ -118,6 +134,8 @@ class AssetUploads implements UploadHandler
             'colors.luminance.*' => ['array', 'list', 'max:4'],
             'colors.luminance.*.*' => ['nullable', 'array', 'list', 'size:2'],
             'colors.luminance.*.*.*' => ['numeric', 'between:0,1'],
+            'colors.weights' => ['nullable', 'array', 'list', 'max:5'],
+            'colors.weights.*' => ['numeric', 'between:0,1'],
         ]);
 
         if ($validator->fails()) {
@@ -138,7 +156,7 @@ class AssetUploads implements UploadHandler
      */
     private function uploadedHash(Request $request): ?string
     {
-        $hash = $request->input('hash');
+        $hash = $request->input('analysis.hash');
 
         return ImageHash::isHash($hash) ? $hash : null;
     }

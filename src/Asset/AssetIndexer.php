@@ -681,18 +681,13 @@ class AssetIndexer
         $fileChanged = $asset->dateModified !== null
             && $timeModified !== null
             && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
-        $colors = $asset->analysis?->colors;
         $isNew = ! $asset->id;
         // New and changed files are always sampled. Unchanged ones that are missing colors or metadata, or were sampled
-        // before palettes, luminance, or hashes were (but not inconclusively), are only sampled when asked to analyze
-        // images, since a remote file has to be downloaded to sample it.
+        // before palettes, luminance, weights, or hashes were (but not inconclusively), are only sampled when asked to
+        // analyze images, since a remote file has to be downloaded to sample it.
         $needsSampling = $isNew
             || $fileChanged
-            || ($analyzeImages && (
-                $colors === null
-                || $asset->analysis?->metadata === null
-                || ($colors->grid !== [] && ($colors->palette === [] || $colors->luminance === [] || $asset->analysis->hash === null))
-            ));
+            || ($analyzeImages && $this->imageAnalyzer->needsSampling($asset));
 
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
         $tempPath = null;

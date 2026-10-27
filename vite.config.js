@@ -1,14 +1,9 @@
 import {defineConfig, loadEnv, lazyPlugins} from 'vite-plus';
-import {playwright} from 'vite-plus/test/browser-playwright';
-import laravel from 'laravel-vite-plugin';
-import inertia from '@inertiajs/vite';
 import {exec} from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
 import vue from '@vitejs/plugin-vue';
-import tailwindcss from '@tailwindcss/vite';
-import {wayfinder} from '@laravel/vite-plugin-wayfinder';
 
 const execAsync = promisify(exec);
 
@@ -151,7 +146,12 @@ function typescriptTransformer(skip = false) {
   };
 }
 
-export default defineConfig(({mode}) => {
+export default defineConfig(async ({mode}) => {
+  // Only Vitest's browser project uses this, and loading it slows down every
+  // other `vp` command that reads this config.
+  const {playwright} = process.env.VITEST
+    ? await import('vite-plus/test/browser-playwright')
+    : {};
   const env = loadEnv(mode, process.cwd(), '');
   const publicDirectory = 'cms-assets/resources';
   const skipCodegen = skipPhpCodegen(env);
@@ -175,6 +175,61 @@ export default defineConfig(({mode}) => {
   }
 
   return {
+    // `pnpm run build` runs `frontend:build`, which builds @craftcms/ui and the
+    // CP bundle, overlapping whatever doesn't depend on something else:
+    //
+    //   generate:types, generate:wayfinder, format resources ┐
+    //   @craftcms/ui: format → clean ─┬─▶ runtime ───────────┴─▶ CP bundle ─┐
+    //                                 └─▶ declarations ─────────────────────┴─▶ done
+    //
+    // Caching is off: Vite Task tracks a cached task's file access, which this
+    // build can't rely on — it fails to start statically linked binaries like
+    // esbuild in containers whose seccomp filters already have a listener.
+    run: {
+      tasks: {
+        'frontend:build': {
+          command: 'echo Frontend build complete',
+          cache: false,
+          dependsOn: ['frontend:cp', 'frontend:ui-types'],
+        },
+        'frontend:ui-prepare': {
+          command: 'node scripts/build.js --prepare',
+          cwd: 'packages/craftcms-ui',
+          cache: false,
+          dependsOn: ['@craftcms/ui#format'],
+        },
+        'frontend:ui-runtime': {
+          command: 'node scripts/build.js --runtime',
+          cwd: 'packages/craftcms-ui',
+          cache: false,
+          dependsOn: ['frontend:ui-prepare'],
+        },
+        'frontend:ui-types': {
+          command: 'node scripts/build.js --types',
+          cwd: 'packages/craftcms-ui',
+          cache: false,
+          dependsOn: ['frontend:ui-prepare'],
+        },
+        // `fix-prettier`, holding back some cores: the CP bundle waits on both
+        // this and @craftcms/ui's build, which starts with its own formatting,
+        // and an uncapped run would hold that up.
+        'frontend:format': {
+          command: 'vp fmt --threads=6 ./resources',
+          cache: false,
+        },
+        'frontend:cp': {
+          // The codegen already ran, so the Vite plugins needn't run it again.
+          command: 'CRAFT_SKIP_PHP_CODEGEN=1 vp build',
+          cache: false,
+          dependsOn: [
+            'frontend:ui-runtime',
+            'frontend:format',
+            'generate:types',
+            'generate:wayfinder',
+          ],
+        },
+      },
+    },
     lint: {
       plugins: ['oxc', 'typescript', 'unicorn', 'react', 'vue'],
       categories: {
@@ -331,7 +386,7 @@ export default defineConfig(({mode}) => {
             browser: {
               enabled: true,
               headless: true,
-              provider: playwright(),
+              provider: playwright?.(),
               instances: [{browser: 'chromium'}],
             },
           },
@@ -361,9 +416,16 @@ export default defineConfig(({mode}) => {
       exclude: ['@awesome.me/webawesome'],
     },
 
+    // Plugins are imported where they're used so that commands that only read
+    // the lint/fmt settings above (`vp fmt` runs several times per build) skip
+    // loading them. Vite resolves the promises in place, keeping their order.
+    // Vue stays a static import: .storybook/main.ts removes it by name before
+    // Vite gets to resolve anything.
     plugins: lazyPlugins(() => [
       serveResourcesLegacy(),
-      tailwindcss(),
+      import('@tailwindcss/vite').then(({default: tailwindcss}) =>
+        tailwindcss()
+      ),
       typescriptTransformer(skipCodegen),
       // Wayfinder has no opt-out of its own, and its only hooks are buildStart
       // and handleHotUpdate — both of which shell out to PHP — so drop it
@@ -371,10 +433,12 @@ export default defineConfig(({mode}) => {
       ...(skipCodegen
         ? []
         : [
-            wayfinder({
-              path: 'resources/js',
-              command: './vendor/bin/testbench wayfinder:generate',
-            }),
+            import('@laravel/vite-plugin-wayfinder').then(({wayfinder}) =>
+              wayfinder({
+                path: 'resources/js',
+                command: './vendor/bin/testbench wayfinder:generate',
+              })
+            ),
           ]),
       vue({
         script: {
@@ -403,34 +467,38 @@ export default defineConfig(({mode}) => {
       ...(process.env.VITEST
         ? []
         : [
-            laravel({
-              input: [
-                'resources/js/cp.ts',
-                'yii2-adapter/resources/js/cp-compat.ts',
-                'yii2-adapter/resources/js/element-editor.ts',
-                'resources/js/cp-module.ts',
-                'resources/js/legacy.ts',
-                'resources/js/uploads.ts',
-                'resources/js/vue.ts',
-                'resources/css/cp.css',
-                'workbench/resources/js/cp.ts',
-              ],
-              publicDirectory,
-              hotFile: `${publicDirectory}/hot`,
-              refresh: [
-                // The defaults
-                'resources/lang/**',
-                'resources/views/**',
-                'routes/**',
-                // Plus ours
-                'resources/templates/**',
-              ],
-              detectTls: env.VITE_DETECT_TLS ?? undefined,
-            }),
+            import('laravel-vite-plugin').then(({default: laravel}) =>
+              laravel({
+                input: [
+                  'resources/js/cp.ts',
+                  'yii2-adapter/resources/js/cp-compat.ts',
+                  'yii2-adapter/resources/js/element-editor.ts',
+                  'resources/js/cp-module.ts',
+                  'resources/js/legacy.ts',
+                  'resources/js/uploads.ts',
+                  'resources/js/vue.ts',
+                  'resources/css/cp.css',
+                  'workbench/resources/js/cp.ts',
+                ],
+                publicDirectory,
+                hotFile: `${publicDirectory}/hot`,
+                refresh: [
+                  // The defaults
+                  'resources/lang/**',
+                  'resources/views/**',
+                  'routes/**',
+                  // Plus ours
+                  'resources/templates/**',
+                ],
+                detectTls: env.VITE_DETECT_TLS ?? undefined,
+              })
+            ),
           ]),
-      inertia({
-        ssr: false,
-      }),
+      import('@inertiajs/vite').then(({default: inertia}) =>
+        inertia({
+          ssr: false,
+        })
+      ),
     ]),
   };
 });

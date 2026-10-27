@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Data\AssetIngest;
 use CraftCms\Cms\Asset\Data\AssetIngestResult;
 use CraftCms\Cms\Asset\Data\UploadResult;
@@ -19,7 +20,6 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
-use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -92,16 +92,14 @@ readonly class AssetUploadHandler
 
     /**
      * @param  array<string, mixed>  $parameters
-     * @param  ImageColors|null  $colors  Colors the uploader already sampled from the file
-     * @param  string|null  $hash  The difference hash the uploader already found for the file
+     * @param  ImageAnalysis|null  $analysis  What the uploader already read from the file
      */
     public function store(
         array $parameters,
         UploadedFile $file,
         bool $authorizedGuest = false,
         ?int $uploaderId = null,
-        ?ImageColors $colors = null,
-        ?string $hash = null,
+        ?ImageAnalysis $analysis = null,
     ): UploadResult {
         [$folder, $selectionCondition] = $this->resolveTarget($parameters, $authorizedGuest);
 
@@ -121,10 +119,9 @@ readonly class AssetUploadHandler
             sanitizeOnUpload: $authorizedGuest || ! request()->isCpRequest() || Cms::config()->sanitizeCpImageUploads,
             selectionCondition: $selectionCondition,
             temporaryFolder: $selectionCondition ? $this->assets->getUserTemporaryUploadFolder() : null,
-            colors: $colors,
+            analysis: $analysis,
             uploaderId: $uploaderId,
             asset: $asset,
-            hash: $hash,
         ));
 
         return $this->uploadResult($result);
@@ -172,8 +169,7 @@ readonly class AssetUploadHandler
         }
 
         $asset->uploadSource = $ingest->source;
-        $asset->uploadColors = $ingest->colors;
-        $asset->uploadHash = $ingest->hash;
+        $asset->uploadAnalysis = $ingest->analysis;
         $asset->sanitizeOnUpload = $ingest->sanitizeOnUpload;
         $asset->setFilename($filename);
         $asset->setMimeType($ingest->mimeType);
@@ -301,18 +297,16 @@ readonly class AssetUploadHandler
     }
 
     /**
-     * @param  ImageColors|null  $colors  Colors the uploader already sampled from the file
-     * @param  string|null  $hash  The difference hash the uploader already found for the file
+     * @param  ImageAnalysis|null  $analysis  What the uploader already read from the file
      */
-    public function replace(int $assetId, UploadedFile $file, ?ImageColors $colors = null, ?string $hash = null): UploadResult
+    public function replace(int $assetId, UploadedFile $file, ?ImageAnalysis $analysis = null): UploadResult
     {
         $asset = $this->assets->getAssetById($assetId);
         abort_unless($asset !== null, 404, 'Asset not found.');
         Gate::authorize('replaceFile', $asset);
 
         $asset->uploadSource = $file;
-        $asset->uploadColors = $colors;
-        $asset->uploadHash = $hash;
+        $asset->uploadAnalysis = $analysis;
         $this->assets->replaceAssetFile($asset, $file->localPath(), $file->filename, $file->mimeType());
 
         if ($asset->errors()->isNotEmpty()) {

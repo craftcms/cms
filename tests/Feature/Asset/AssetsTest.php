@@ -553,7 +553,7 @@ describe('colors', function () {
 
         $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');
 
-        expect(AssetModel::findOrFail($this->asset->id)->analysis['colors'])->toEqual(['dominant' => null, 'grid' => [], 'palette' => [], 'luminance' => []])
+        expect(AssetModel::findOrFail($this->asset->id)->analysis['colors'])->toEqual(['dominant' => null, 'grid' => [], 'palette' => [], 'luminance' => [], 'weights' => []])
             ->and(Asset::find()->id($this->asset->id)->one()->analysis?->colors)->toEqual(new ImageColors);
     });
 
@@ -640,12 +640,18 @@ describe('metadata', function () {
         'already set' => ['A pier', 'A pier'],
     ]);
 
-    it('says whether the stored file still has GPS coordinates in it', function (bool $sanitize) {
+    it('keeps where an image was taken, even once cleaning strips its GPS coordinates from the file', function (bool $sanitize) {
         $this->asset->sanitizeOnUpload = $sanitize;
 
-        $this->assets->replaceAssetFile($this->asset, metadataJpeg(exif: ['gps' => true]), 'photo.jpg');
+        $this->assets->replaceAssetFile($this->asset, metadataJpeg(exif: ['gps' => [
+            'latitude' => [48, 12, 30],
+            'latitudeRef' => 'N',
+            'longitude' => [16, 22, 12],
+            'longitudeRef' => 'E',
+        ]]), 'photo.jpg');
+        $metadata = Asset::find()->id($this->asset->id)->one()->analysis->metadata;
 
-        expect(Asset::find()->id($this->asset->id)->one()->analysis->metadata->hasLocation)->toBe(! $sanitize);
+        expect([$metadata->latitude, $metadata->longitude])->toBe([48.208333, 16.37]);
     })->with([
         'cleaned' => [true],
         'not cleaned' => [false],
@@ -657,6 +663,14 @@ describe('metadata', function () {
         $this->assets->replaceAssetFile($this->asset, $path, 'photo.jpg');
 
         expect(Asset::find()->id($this->asset->id)->one()->getSearchKeywords('keywords'))->toBe('harbor boats');
+    });
+
+    it('makes images searchable by their embedded description, along with their keywords', function () {
+        $path = metadataJpeg(iptc: ['2#025' => ['harbor'], '2#120' => 'Boats at dusk']);
+
+        $this->assets->replaceAssetFile($this->asset, $path, 'photo.jpg');
+
+        expect(Asset::find()->id($this->asset->id)->one()->getSearchKeywords('keywords'))->toBe('harbor Boats at dusk');
     });
 });
 
@@ -699,5 +713,20 @@ describe('titles', function () {
         $this->assets->replaceAssetFile($asset, metadataJpeg(xmpPacket('<dc:title><rdf:Alt><rdf:li xml:lang="x-default">Harbor at dusk</rdf:li></rdf:Alt></dc:title>')), $filename);
 
         expect(Asset::find()->id($asset->id)->one()->title)->toBe('IMG 4759');
+    });
+
+    it('come from a replacement file’s embedded title while they’re still the filename one', function () {
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $this->volume->id,
+            'folderId' => $this->folder->id,
+            'filename' => $filename = 'IMG_4759.jpg',
+            'kind' => FileKind::Image->value,
+        ]);
+        $asset->title = AssetsHelper::filename2Title(pathinfo($filename, PATHINFO_FILENAME));
+        app(Elements::class)->saveElement($asset);
+
+        $this->assets->replaceAssetFile($asset, metadataJpeg(xmpPacket('<dc:title><rdf:Alt><rdf:li xml:lang="x-default">Harbor at dusk</rdf:li></rdf:Alt></dc:title>')), $filename);
+
+        expect(Asset::find()->id($asset->id)->one()->title)->toBe('Harbor at dusk');
     });
 });

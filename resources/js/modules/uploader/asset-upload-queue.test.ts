@@ -1,6 +1,6 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {UploadOptions, UploadState} from '@/upload-client';
-import type {UploadConflictChoice} from './upload-notification';
+import type {LitElement} from 'lit';
 import type {FileUploadNotificationElement} from './file-upload-notification.ce';
 
 const ui = vi.hoisted(() => ({on: vi.fn(), post: vi.fn(), visit: vi.fn()}));
@@ -25,9 +25,13 @@ function displayNotice(message: string, {details}: {details: HTMLElement}) {
 }
 
 async function clickNotice(index: number, label: string): Promise<void> {
-  await notices[index]!.querySelector<FileUploadNotificationElement>(
-    'craft-file-upload-notification'
-  )!.updateComplete;
+  await Promise.all(
+    [
+      ...notices[index]!.querySelectorAll<LitElement>(
+        'craft-file-upload-notification, craft-asset-conflict-resolution'
+      ),
+    ].map((element) => element.updateComplete)
+  );
   const button = [
     ...notices[index]!.querySelectorAll<HTMLElement>('craft-button'),
   ].find((button) => button.textContent?.trim() === label && !button.hidden);
@@ -96,6 +100,10 @@ const conflict = {
   filename: 'photo.png',
   conflict: 'That filename exists.',
   conflictingAssetId: 20,
+};
+const duplicated = {
+  assetId: 12,
+  duplicates: [{id: 5, title: 'Harbor at dusk', url: '/admin/assets/edit/5'}],
 };
 
 beforeEach(() => {
@@ -186,23 +194,20 @@ it('starts selections in parallel and retains their original destinations', asyn
   expect(transfers[0]!.cancel).not.toHaveBeenCalled();
 });
 
-it('warns about uploads that look like images already uploaded, linking to them', async () => {
+it('holds uploads that look like images already uploaded, linking to them', async () => {
   queue.enqueue(file(), destination, []);
   queue.enqueue(file(), destination, []);
   await vi.waitFor(() => expect(transfers[1]!.upload).toHaveBeenCalledOnce());
 
-  transfers[0]!.complete({
-    assetId: 12,
-    duplicates: [{id: 5, title: 'Harbor at dusk', url: '/admin/assets/edit/5'}],
-  });
+  transfers[0]!.complete(duplicated);
   transfers[1]!.complete({assetId: 13, duplicates: []});
-  await vi.waitFor(() => expect(queue.hasPending).toBe(false));
-
-  const warnings = notices.filter((notice) =>
-    notice.textContent?.includes('looks like an image you already have.')
+  await vi.waitFor(() =>
+    expect(notices[0]!.textContent).toContain(
+      'looks like an image you already have.'
+    )
   );
-  expect(warnings).toHaveLength(1);
-  const details = warnings[0]!.querySelector<
+  expect(queue.hasPending).toBe(true);
+  const details = notices[0]!.querySelector<
     HTMLElement & {updateComplete: Promise<boolean>}
   >('craft-upload-duplicates-notification')!;
   await details.updateComplete;
@@ -212,6 +217,66 @@ it('warns about uploads that look like images already uploaded, linking to them'
 
   link.click();
   expect(ui.visit).toHaveBeenCalledWith('/admin/assets/edit/5');
+
+  await clickNotice(0, 'Keep both');
+  await vi.waitFor(() => expect(queue.hasPending).toBe(false));
+  expect(ui.post).not.toHaveBeenCalled();
+});
+
+it('replaces the image an upload looks like a copy of, on request', async () => {
+  await uploadDuplicate();
+  await clickNotice(0, 'Replace');
+  await vi.waitFor(() => expect(queue.hasPending).toBe(false));
+  expect(ui.post).toHaveBeenCalledWith(
+    '/admin/actions/assets/resolve-upload-conflict',
+    {sourceAssetId: 12, assetId: 5}
+  );
+});
+
+it('only offers to replace an image when an upload looks like a copy of one', async () => {
+  await uploadDuplicate({
+    ...duplicated,
+    duplicates: [
+      ...duplicated.duplicates,
+      {id: 6, title: 'Harbor at night', url: '/admin/assets/edit/6'},
+    ],
+  });
+  const choices = notices[0]!.querySelector<LitElement>(
+    'craft-asset-conflict-resolution'
+  )!;
+  await choices.updateComplete;
+  expect(
+    [...choices.querySelectorAll('craft-button')].map((button) =>
+      button.textContent?.trim()
+    )
+  ).toEqual(['Cancel', 'Keep both']);
+});
+
+it('discards an upload that looks like a copy when canceled', async () => {
+  await uploadDuplicate();
+  await clickNotice(0, 'Cancel');
+  await vi.waitFor(() => expect(queue.hasPending).toBe(false));
+  expect(ui.post).toHaveBeenCalledWith('/admin/actions/assets/delete-asset', {
+    assetId: 12,
+  });
+});
+
+it('holds a copy after keeping both files for its filename conflict', async () => {
+  await uploadConflict({...conflict, duplicates: duplicated.duplicates});
+  await clickNotice(0, 'Keep both');
+  await vi.waitFor(() =>
+    expect(notices[0]!.textContent).toContain(
+      'looks like an image you already have.'
+    )
+  );
+  expect(queue.hasPending).toBe(true);
+
+  await clickNotice(0, 'Replace');
+  await vi.waitFor(() => expect(queue.hasPending).toBe(false));
+  expect(ui.post).toHaveBeenCalledWith(
+    '/admin/actions/assets/resolve-upload-conflict',
+    {sourceAssetId: 21, assetId: 5}
+  );
 });
 
 it('pauses and resumes from the notification while other files keep uploading', async () => {
@@ -254,7 +319,7 @@ it('leaves failures actionable, continues the queue, and retries the same transf
   await vi.waitFor(() => expect(queue.hasPending).toBe(false));
 });
 
-it('does not interrupt navigation with a conflict dialog or block later uploads', async () => {
+it('resolves a conflict from its notification without blocking later uploads', async () => {
   queue.enqueue(file(), destination, []);
   queue.enqueue(file(), destination, []);
   await vi.waitFor(() => expect(transfers[0]!.upload).toHaveBeenCalled());
@@ -266,11 +331,7 @@ it('does not interrupt navigation with a conflict dialog or block later uploads'
     expect(notices[0]!.textContent).toContain(conflict.conflict)
   );
 
-  await clickNotice(0, 'Action required');
-  expect(document.querySelector('craft-dialog')!.textContent).toContain(
-    conflict.conflict
-  );
-  choose('keepBoth');
+  await clickNotice(0, 'Keep both');
   transfers[1]!.complete();
   await vi.waitFor(() => expect(queue.hasPending).toBe(false));
   expect(ui.post).not.toHaveBeenCalled();
@@ -286,8 +347,7 @@ it.each([
   'resolves an indexed or unindexed filename conflict only on request',
   async (result, parameters) => {
     await uploadConflict(result);
-    await clickNotice(0, 'Action required');
-    choose('replace');
+    await clickNotice(0, 'Replace');
     await vi.waitFor(() => expect(queue.hasPending).toBe(false));
     expect(ui.post).toHaveBeenCalledWith(
       '/admin/actions/assets/resolve-upload-conflict',
@@ -299,12 +359,13 @@ it.each([
 it('retains a conflict and its error when replacement fails', async () => {
   await uploadConflict();
   ui.post.mockRejectedValue(new Error('The destination was deleted.'));
-  await clickNotice(0, 'Action required');
-  choose('replace');
+  await clickNotice(0, 'Replace');
   await vi.waitFor(() =>
     expect(notices[0]!.textContent).toContain('The destination was deleted.')
   );
   expect(queue.hasPending).toBe(true);
+  await clickNotice(0, 'Keep both');
+  await vi.waitFor(() => expect(queue.hasPending).toBe(false));
 });
 
 it('discards the uploaded copy when canceling a conflict', async () => {
@@ -385,17 +446,17 @@ async function uploadConflict(
   );
 }
 
-function choose(choice: UploadConflictChoice): void {
-  const label = {
-    keepBoth: 'Keep both',
-    replace: 'Replace',
-    cancel: 'Cancel upload',
-  }[choice];
-  const button = [
-    ...document.querySelectorAll<HTMLElement>('craft-dialog craft-button'),
-  ].find((button) => button.textContent?.trim() === label);
-  expect(button).toBeDefined();
-  button!.click();
+async function uploadDuplicate(
+  result: CraftCms.Cms.Asset.Data.UploadResult = duplicated
+): Promise<void> {
+  queue.enqueue(file(), destination, []);
+  await vi.waitFor(() => expect(transfers[0]!.upload).toHaveBeenCalled());
+  transfers[0]!.complete(result);
+  await vi.waitFor(() =>
+    expect(notices[0]!.textContent).toContain(
+      'looks like an image you already have.'
+    )
+  );
 }
 
 function deferred<T>(): {

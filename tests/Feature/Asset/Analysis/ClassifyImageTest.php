@@ -65,7 +65,7 @@ it('is a core image analysis task', function (): void {
 });
 
 it('finds what kind of image an image is, keeps what else was found, and makes it searchable', function (): void {
-    $asset = classifiableImage(['colors' => ['dominant' => '#c81e28', 'grid' => [['#c81e28']]]]);
+    $asset = classifiableImage(['colors' => ['dominant' => '#c81e28', 'grid' => [['#c81e28']], 'palette' => ['#c81e28'], 'luminance' => [[[0.134, 0.134]]], 'weights' => [1.0]]]);
     ImageAnalysisAgent::fake([['craft_imageType' => ['type' => 'screenshot']]]);
 
     app(ImageAnalyzer::class)->analyze($asset);

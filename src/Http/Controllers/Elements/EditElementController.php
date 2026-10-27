@@ -662,7 +662,7 @@ JS, [
         $components[] = $element->getSidebarHtml(! $canSave);
 
         if ($this->request->route()?->getActionName()) {
-            $components[] = app(ContentHtml::class)->metadataHtml($element->getMetadata());
+            $components[] = app(ContentHtml::class)->metadataHtml(...$element->getMetadataGroups());
         }
 
         return trim(implode("\n", $components));

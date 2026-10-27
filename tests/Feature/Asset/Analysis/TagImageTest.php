@@ -38,7 +38,7 @@ function taggableImage(): Asset
 
 it('tags images with keywords and the text in them, keeps their colors, and makes them searchable', function (): void {
     $asset = taggableImage();
-    AssetModel::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#c81e28', 'grid' => [['#c81e28']], 'palette' => ['#c81e28']]])]);
+    AssetModel::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#c81e28', 'grid' => [['#c81e28']], 'palette' => ['#c81e28'], 'luminance' => [[[0.134, 0.134]]], 'weights' => [1.0]]])]);
     $asset = Asset::find()->id($asset->id)->one();
     ImageAnalysisAgent::fake([['craft_tagImage' => [
         'keywords' => [' lighthouse ', 'coast', 'lighthouse', '', 'dusk'],

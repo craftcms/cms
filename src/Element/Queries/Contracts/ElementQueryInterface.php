@@ -14,7 +14,9 @@ use Illuminate\Support\Collection;
  * ElementQueryInterface defines the common interface to be implemented by element query classes.
  * The default implementation of this interface is provided by [[ElementQuery]].
  *
- * @mixin ElementQuery<ElementInterface>
+ * @template TElement of ElementInterface = ElementInterface
+ *
+ * @mixin ElementQuery<TElement>
  *
  * @phpstan-require-extends ElementQuery
  */
@@ -1674,8 +1676,8 @@ interface ElementQueryInterface extends Builder
     /**
      * Performs any post-population processing on elements.
      *
-     * @param  Collection<array-key, ElementInterface>  $items  the populated elements
-     * @return Collection<array-key, ElementInterface>
+     * @param  Collection<array-key, TElement>  $items  the populated elements
+     * @return Collection<array-key, TElement>
      */
     public function afterHydrate(Collection $items): Collection;
 }
