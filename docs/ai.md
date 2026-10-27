@@ -108,6 +108,8 @@ public function boot(AiTasks $tasks): void
 | `label()`      | Required. Shown to administrators. It’s called when the settings screen renders, so translations use the current user’s language. |
 | `modality()`   | `Modality::Text` by default. Also `Image`, `Audio`, `Transcription`, `Embeddings`, `Reranking`, or `Classification`. It decides which default provider applies. |
 | `description()` | Optional. Shown to administrators. Mention what the model needs, such as vision, because Craft can’t check models for it. |
+| `requirements()` | Optional. Capabilities the task needs from its model, such as `Capability::Vision`. Craft checks the model when the AI settings are saved, and the task is unavailable if the model doesn’t have one. |
+| `optionalCapabilities()` | Optional. Capabilities the task uses when its model has them. Craft checks them like requirements, but the task still runs without them. Ask `Ai::supports($handle, $capability)` before using one; it checks a model that hasn’t been checked yet. |
 
 The settings screen shows the name of the plugin that owns the task class. New tasks are enabled and use the default provider for their modality.
 
@@ -175,6 +177,17 @@ $title = GenerateTitle::generate($review->body) ?? $review->defaultTitle();
 ```
 
 Titles are generated with the provider and model administrators chose for the task, so use it when a short, generic title is enough. Register a task of your own when your feature needs its own instructions or model.
+
+## Images
+
+`CraftCms\Cms\Ai\ModelImages::forAsset()` returns an asset’s image as models should get it: scaled to fit 1,568 pixels, rasterized if it’s an SVG, and as base64, so it can be stored with a conversation. Attach it to a prompt:
+
+```php
+use CraftCms\Cms\Ai\ModelImages;
+
+$image = app(ModelImages::class)->forAsset($asset);
+$response = Ai::task('altText:describe')->prompt(agent: new AltTextAgent, prompt: 'Describe this image', attachments: [$image]);
+```
 
 ## Queueing
 

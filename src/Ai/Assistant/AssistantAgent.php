@@ -37,11 +37,13 @@ class AssistantAgent implements Agent, Conversational, HasMiddleware, HasTools
 
     /**
      * @param  list<AssistantContext>  $contexts  What’s in the message’s context, by context type.
+     * @param  string|null  $openImage  The title of the asset open in the editor, if its image is in the conversation.
      */
     public function __construct(
         private readonly McpTools $tools,
         private readonly User $user,
         private readonly array $contexts = [],
+        private readonly ?string $openImage = null,
     ) {}
 
     /**
@@ -118,6 +120,10 @@ class AssistantAgent implements Agent, Conversational, HasMiddleware, HasTools
         }
 
         $descriptions = implode("\n\n", array_map(static fn (AssistantContext $context): string => $context->description, $this->contexts));
+
+        if ($this->openImage !== null) {
+            $descriptions .= "\n\nThe image of “{$this->openImage}”, the asset open in the editor, is attached to a message in this conversation, so you can see it. Look at it rather than asking the user what it shows.";
+        }
 
         return "The user’s messages can start with a `<context>` block that lists what they sent the message with. Here’s what their latest message was sent with, followed by what earlier ones were. The element they have open in their editor is listed too, without being sent with a message. When they say “this”, “the body”, “the title”, and so on, they mean the element they have open, or the fields of it their latest message was sent with. Other elements they mention or add are what they refer to by name. If they have nothing open, “this” means what their latest message was sent with, or what they sent most recently, even if other messages were about something else.\n\n$descriptions";
     }

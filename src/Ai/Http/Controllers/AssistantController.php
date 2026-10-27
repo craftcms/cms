@@ -7,13 +7,18 @@ namespace CraftCms\Cms\Ai\Http\Controllers;
 use CraftCms\Cms\Ai\Assistant\AssistantAgent;
 use CraftCms\Cms\Ai\Assistant\AssistantStreamProtocol;
 use CraftCms\Cms\Ai\Assistant\Content\ElementContexts;
+use CraftCms\Cms\Ai\Assistant\Content\ElementContextType;
 use CraftCms\Cms\Ai\Assistant\McpTools;
 use CraftCms\Cms\Ai\Assistant\MessageContext;
 use CraftCms\Cms\Ai\Assistant\Transcript;
 use CraftCms\Cms\Ai\AssistantContextTypes;
+use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
+use CraftCms\Cms\Ai\ModelImages;
 use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Ai\Tasks\GenerateTitle;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -35,6 +40,7 @@ use Laravel\Ai\Contracts\ConversationStore;
 use Laravel\Ai\Contracts\VerifiesConversationOwnership;
 use Laravel\Ai\Exceptions\StreamErrorException;
 use Laravel\Ai\Models\Conversation;
+use Laravel\Ai\Models\ConversationMessage;
 use Mcp\Exception\ToolCallException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -70,6 +76,7 @@ readonly class AssistantController
         Request $request,
         McpTools $tools,
         AssistantContextTypes $contextTypes,
+        ModelImages $modelImages,
     ): Response {
         $request->validate([
             'threadId' => ['required', 'uuid'],
@@ -113,14 +120,21 @@ readonly class AssistantController
             static fn (array $item): bool => ! in_array($item['ref'], $refs, true),
         );
 
+        // The image of the asset open in the editor goes with the first message it’s open for, and stays in the
+        // conversation for later ones.
+        $image = $this->openImage($context, $user);
+        $imageSent = $image !== null && $this->hasImage($threadId, $image);
+        $attachImage = $image !== null && ! $imageSent && $chat->message() !== null;
+
         $agent = new AssistantAgent(
             $tools,
             $user,
             $contextTypes->resolve($request, [...$context, ...$earlier]),
+            $imageSent || $attachImage ? $image->title : null,
         );
 
         $response = Ai::task(Assistant::handle())
-            ->stream($agent->continue($threadId, as: $user), $chat)
+            ->stream($agent->continue($threadId, as: $user), $chat, $attachImage ? [$modelImages->forAsset($image)] : [])
             ->catch(fn (Throwable $exception) => $this->logProviderError($threadId, $exception));
 
         if ($firstMessage !== null) {
@@ -367,5 +381,46 @@ readonly class AssistantController
             Conversation::participantType($user),
             Conversation::participantKey($user),
         );
+    }
+
+    /**
+     * Returns the image asset open in the user’s editor, if they can view it, and the assistant’s model can see images.
+     *
+     * @param  array<mixed>  $context
+     */
+    private function openImage(array $context, User $user): ?Asset
+    {
+        $item = array_find($context, static fn (mixed $item): bool => is_array($item)
+            && ($item['type'] ?? null) === ElementContextType::handle()
+            && ($item['open'] ?? false) === true
+            && ($item['elementType'] ?? null) === Asset::class
+            && is_int($item['elementId'] ?? null));
+
+        if ($item === null || ! Ai::supports(Assistant::handle(), Capability::Vision)) {
+            return null;
+        }
+
+        $asset = Asset::find()
+            ->id($item['elementId'])
+            ->siteId(is_int($item['siteId'] ?? null) ? $item['siteId'] : null)
+            ->status(null)
+            ->one();
+
+        return $asset instanceof Asset && $asset->kind === FileKind::Image->value && $user->can('view', $asset) ? $asset : null;
+    }
+
+    /**
+     * Returns whether a message in a conversation was sent with an asset’s image, as its file is now.
+     */
+    private function hasImage(string $conversationId, Asset $asset): bool
+    {
+        return ConversationMessage::query()
+            ->where('conversation_id', $conversationId)
+            ->where('role', 'user')
+            ->pluck('attachments')
+            ->contains(static fn (mixed $attachments): bool => array_any(
+                is_array($attachments) ? $attachments : [],
+                static fn (mixed $attachment): bool => is_array($attachment) && ($attachment['name'] ?? null) === ModelImages::name($asset),
+            ));
     }
 }

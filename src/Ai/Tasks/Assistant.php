@@ -50,4 +50,12 @@ class Assistant extends Task
     {
         return [Capability::ToolCalling];
     }
+
+    /**
+     * With vision, the assistant sees the image of an asset open in the editor.
+     */
+    public static function optionalCapabilities(): array
+    {
+        return [Capability::Vision];
+    }
 }

@@ -35,6 +35,8 @@ Users can add things to the chat’s context, such as an element and some of its
 
 The element the user is editing isn’t a chip. Each request names it to the model, without its content, and the model reads it with the `read_editor_element` tool when a question is about it, including changes the user hasn’t saved.
 
+When it’s an image asset, and the assistant’s model has vision, the image goes with the first message the asset is open for, prepared with [`ModelImages`](ai.md#images), and stays in the conversation for later messages. Craft checks the model for vision when the AI settings are saved, or else the first time it’s needed.
+
 An item has two halves:
 
 - In the browser, the plugin adds the item with `Cp.$assistant.addContext()`, or offers it in the message box’s **Add** menu.

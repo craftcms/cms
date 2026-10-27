@@ -85,6 +85,7 @@
 
 #### AI
 - Added Settings → Extend → Connections, where administrators choose the providers and models that plugins’ AI features use. Providers come from the `ai.providers` config, with keys set through environment variables. AI features stay off until a provider is chosen. ([#20006](https://github.com/craftcms/cms/pull/20006))
+- The AI assistant can now see the image of an asset open in the editor, when its model supports vision.
 
 #### MCP
 - Added authenticated and configurable public Model Context Protocol (MCP) servers for inspecting and managing Craft sites, content, assets, users, plugins, and project config. ([#19846](https://github.com/craftcms/cms/pull/19846))
@@ -461,6 +462,8 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 #### AI
 - Added `CraftCms\Cms\Ai\Task` and `CraftCms\Cms\Ai\AiTasks`, for registering AI tasks. ([#20006](https://github.com/craftcms/cms/pull/20006))
+- Added `CraftCms\Cms\Ai\Task::optionalCapabilities()` and `CraftCms\Cms\Ai\Ai::supports()`, for AI tasks that use model capabilities, such as vision, when their model has them.
+- Added `CraftCms\Cms\Ai\ModelImages`, which prepares asset images for AI models.
 - Added `CraftCms\Cms\Support\Facades\Ai`, which plugins use to run `laravel/ai` agents and requests with the provider and model administrators choose for each task. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - Added `CraftCms\Cms\Ai\Events\TaskRunning`, `TaskCompleted`, and `TaskFailed`, which plugins can use to track AI usage and failures, and cancel requests. ([#20006](https://github.com/craftcms/cms/pull/20006))
 

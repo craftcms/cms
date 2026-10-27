@@ -53,4 +53,9 @@ abstract class Task implements TaskInterface
     {
         return [];
     }
+
+    public static function optionalCapabilities(): array
+    {
+        return [];
+    }
 }
