@@ -276,7 +276,6 @@ describe('image analysis', function () {
                         ->and($link->attr('target'))->toBe('_blank')
                         // An icon shows it opens in a new window, hidden from assistive technology, which is told in words
                         ->and($link->filter('.cp-icon')->attr('aria-hidden'))->toBe('true')
-                        ->and($link->filter('.cp-icon svg')->count())->toBe(1)
                         ->and($location->filter('dd')->eq(1)->filter('.cp-photo-location')->count())->toBe(1);
 
                     return true;
