@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Mcp\Elements\Adapters;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\UserInitiatedElementSave;
+use CraftCms\Cms\Mcp\EditionFeatures;
 use CraftCms\Cms\Mcp\ElementLifecycle;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\Elements\BaseElementAdapter;
@@ -40,6 +41,7 @@ class UserAdapter extends BaseElementAdapter
         UserInitiatedElementSave $userInitiatedElementSave,
         ElementLifecycle $lifecycle,
         private readonly Users $users,
+        private readonly EditionFeatures $editionFeatures,
     ) {
         parent::__construct($elementSerializer, $userInitiatedElementSave, $lifecycle);
     }
@@ -150,6 +152,10 @@ class UserAdapter extends BaseElementAdapter
     public function create(array $attributes, array $fields, CraftUser $actor): array
     {
         $this->requirePermission($actor, 'registerUsers', 'register users');
+
+        if (($reason = $this->editionFeatures->userLimitReason()) !== null) {
+            throw new ToolCallException($reason);
+        }
 
         $user = new User;
 

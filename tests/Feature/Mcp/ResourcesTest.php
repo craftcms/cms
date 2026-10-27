@@ -33,7 +33,7 @@ it('returns readable resource links alongside element list data and checks acces
 ): void {
     Edition::set(Edition::Pro);
     $actor = User::query()->firstOrFail();
-    Passport::actingAs($actor, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($actor, ['mcp:admin'], 'craft-mcp');
     $element = $createElement();
     $criteria = ['id' => $element->id, 'status' => null, 'drafts' => null, ...$criteria];
     $uri = $plural === 'users'
@@ -66,7 +66,7 @@ it('returns readable resource links alongside element list data and checks acces
     $actor->admin = false;
     $actor->save();
     app(UserPermissions::class)->saveUserPermissions($actor->id, ['accessCp', 'useCraftMcp']);
-    Passport::actingAs($actor, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($actor, ['mcp:admin'], 'craft-mcp');
 
     McpRequest::send($this, 'resources/read', ['uri' => $uri])
         ->assertBadRequest()
@@ -112,7 +112,7 @@ it('returns readable resource links alongside element list data and checks acces
 it('reads entry type field layouts through their owner identifiers and requires admin access', function (string $identifier): void {
     Edition::set(Edition::Pro);
     $actor = User::query()->firstOrFail();
-    Passport::actingAs($actor, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($actor, ['mcp:admin'], 'craft-mcp');
     $field = Field::factory()->create(['handle' => 'summary', 'type' => PlainText::class]);
     $layout = FieldLayout::factory()->forField($field)->create();
     $entryType = EntryType::factory()->withFieldLayout($layout)->create(['handle' => 'article']);
@@ -140,7 +140,7 @@ it('reads entry type field layouts through their owner identifiers and requires 
     $actor->admin = false;
     $actor->save();
     app(UserPermissions::class)->saveUserPermissions($actor->id, ['accessCp', 'useCraftMcp']);
-    Passport::actingAs($actor, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($actor, ['mcp:admin'], 'craft-mcp');
 
     McpRequest::send($this, 'resources/read', ['uri' => $uri])
         ->assertBadRequest()

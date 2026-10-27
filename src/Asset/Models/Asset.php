@@ -40,7 +40,7 @@ class Asset extends BaseModel
             'size' => 'int',
             'colors' => 'array',
             'deletedWithVolume' => 'bool',
-            'keptFile' => 'bool',
+            'trashedFileExists' => 'bool',
             'dateModified' => 'datetime',
         ];
     }

@@ -29,6 +29,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Workflows;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -42,6 +43,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 /**
  * @since 6.0.0
  */
+#[Singleton]
 class Elements
 {
     public const string REF_TAG_PATTERN = '/
@@ -53,6 +55,18 @@ class Elements
             (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
         \}                                      # Tags always close with a `}`
     /x';
+
+    /**
+     * The number of element saves currently in progress.
+     */
+    private int $saveDepth = 0;
+
+    /**
+     * Element types memoized by element ID, while element saves are in progress.
+     *
+     * @var array<int, class-string<ElementInterface>>
+     */
+    private array $elementTypesById = [];
 
     public function __construct(
         private readonly ElementPlaceholders $placeholders,
@@ -92,9 +106,58 @@ class Elements
      */
     public function getElementTypeByKey(string $property, int|string $elementId): ?string
     {
-        return DB::table(Table::ELEMENTS)
+        // Nested elements look up their owner’s type repeatedly as they’re saved and propagated,
+        // so memoize element types by ID for the duration of the outermost element save.
+        // (An element’s type can’t change, and we forget them whenever an element is hard-deleted.)
+        $memoize = $property === 'id' && $this->saveDepth > 0;
+
+        if ($memoize && isset($this->elementTypesById[$elementId])) {
+            return $this->elementTypesById[$elementId];
+        }
+
+        $class = DB::table(Table::ELEMENTS)
             ->where($property, $elementId)
             ->value('type');
+
+        if ($memoize && $class !== null) {
+            $this->elementTypesById[$elementId] = $class;
+        }
+
+        return $class;
+    }
+
+    /**
+     * Executes the given callback within an element save scope, which lasts until the outermost
+     * element save completes.
+     *
+     * @internal
+     *
+     * @template T
+     *
+     * @param  callable(): T  $callback
+     * @return T
+     */
+    public function ensureSaveScope(callable $callback): mixed
+    {
+        $this->saveDepth++;
+
+        try {
+            return $callback();
+        } finally {
+            if (--$this->saveDepth === 0) {
+                $this->elementTypesById = [];
+            }
+        }
+    }
+
+    /**
+     * Forgets any element types memoized during the current element save scope.
+     *
+     * @internal
+     */
+    public function forgetElementTypes(): void
+    {
+        $this->elementTypesById = [];
     }
 
     /**

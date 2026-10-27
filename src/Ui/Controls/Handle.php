@@ -94,6 +94,12 @@ JS, [$renderer->inputId($sourcePath), $attributes['id']]);
     }
 
     #[\Override]
+    public function inputSchema(): array
+    {
+        return Arr::whereNotNull(['type' => 'string', 'maxLength' => $this->maxLength]);
+    }
+
+    #[\Override]
     public function props(mixed $value = null): array
     {
         return Arr::whereNotNull([
