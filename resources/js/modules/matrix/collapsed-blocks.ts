@@ -15,6 +15,7 @@
  * on the way in and its collapsed state survives being materialized.
  */
 
+import {prefixedKey} from '@/common/composables/useStorage';
 import {NESTED_ELEMENT_UID_PREFIX} from '@/modules/ui/types';
 
 const STORAGE_KEY = 'MatrixInput.collapsedEntries';
@@ -22,13 +23,9 @@ const STORAGE_KEY = 'MatrixInput.collapsedEntries';
 type SiteId = number | string | null | undefined;
 
 function storageKey(siteId?: SiteId): string {
-  // Same prefix `useStorage()` applies, spelled out here because this module is
-  // used from plain classes as well as components.
-  const prefix = `Craft-${window.Craft?.systemUid ?? ''}`;
-
-  return siteId == null || siteId === ''
-    ? `${prefix}.${STORAGE_KEY}`
-    : `${prefix}.${siteId}.${STORAGE_KEY}`;
+  return prefixedKey(
+    siteId == null || siteId === '' ? STORAGE_KEY : `${siteId}.${STORAGE_KEY}`
+  );
 }
 
 /** The identity a block is remembered under, whoever minted it. */
