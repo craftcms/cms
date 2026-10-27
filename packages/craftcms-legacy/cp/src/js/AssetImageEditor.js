@@ -1835,7 +1835,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           Craft.cp.runQueue();
 
           // Refresh Live Preview
-          Craft.Preview?.refresh();
+          window.dispatchEvent(new CustomEvent('craft:refresh-previews'));
         })
         .catch(({response}) => {
           Craft.cp.displayError(response.data.message);

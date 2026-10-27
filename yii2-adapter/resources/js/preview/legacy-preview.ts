@@ -56,10 +56,7 @@ export class LegacyPreview extends Base<LegacyPreviewSettings> {
   /** Reloads every preview, and any classic `Craft.LivePreview` too. */
   static refresh(): void {
     refreshPreviews();
-
-    for (const preview of Craft.LivePreview?.instances ?? []) {
-      preview.forceUpdateIframe();
-    }
+    refreshClassicLivePreviews();
   }
 
   static getActive(): LegacyPreview | undefined {
@@ -277,6 +274,12 @@ export class LegacyPreview extends Base<LegacyPreviewSettings> {
     );
 
     return Craft.getCpUrl(`preview/${elementId}`, params);
+  }
+}
+
+export function refreshClassicLivePreviews(): void {
+  for (const preview of Craft.LivePreview?.instances ?? []) {
+    preview.forceUpdateIframe();
   }
 }
 

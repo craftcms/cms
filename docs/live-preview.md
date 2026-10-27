@@ -23,6 +23,10 @@ const stop = onPreviewEvent('afterUpdateIframe', ({target, iframe}, preview) => 
 Leave `vue` and `@craftcms/cp` out of the plugin's bundle so it shares the
 control panel's copies, and with them the page's list of previews.
 
+Code that can't import `@craftcms/cp`, such as the legacy bundles, can
+dispatch a `craft:refresh-previews` event on `window` to do the same as
+`refreshPreviews()`.
+
 ## API
 
 | Export | What it does |

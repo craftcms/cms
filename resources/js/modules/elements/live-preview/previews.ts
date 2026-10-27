@@ -135,6 +135,9 @@ export function refreshPreviews(): void {
   }
 }
 
+// How code that can't import this module, such as the legacy bundles, asks.
+window.addEventListener('craft:refresh-previews', refreshPreviews);
+
 /**
  * Listens for an event from every preview on the page, including ones added
  * later. Returns a function that stops listening.

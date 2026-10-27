@@ -264,4 +264,15 @@ describe('Craft.Preview', () => {
     expect(location.href).toBe('/admin/preview/12?siteId=2');
     expect(LegacyPreview.instances).not.toContain(preview);
   });
+
+  // Last, as the entry point leaves its own mirror running for the file.
+  it('refreshes classic Live Preview when the legacy bundles ask', async () => {
+    const classic = {forceUpdateIframe: vi.fn()};
+    vi.stubGlobal('Craft', {getCpUrl, LivePreview: {instances: [classic]}});
+    await import('./index');
+
+    window.dispatchEvent(new CustomEvent('craft:refresh-previews'));
+
+    expect(classic.forceUpdateIframe).toHaveBeenCalledOnce();
+  });
 });

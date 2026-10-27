@@ -71,12 +71,18 @@ describe('previews', () => {
     expect(getActivePreview()).toBe(preview);
   });
 
-  it('reloads open previews', async () => {
+  it.each([
+    ['when asked', () => refreshPreviews()],
+    [
+      'when the legacy bundles ask',
+      () => window.dispatchEvent(new CustomEvent('craft:refresh-previews')),
+    ],
+  ])('reloads open previews %s', async (_, ask) => {
     const {preview} = mount();
     await preview.open();
     const id = preview.frames.value.at(-1)!.id;
 
-    refreshPreviews();
+    ask();
 
     await vi.waitFor(() =>
       expect(preview.frames.value.at(-1)!.id).toBeGreaterThan(id)
