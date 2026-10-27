@@ -143,6 +143,7 @@ function mount(mode: ScreenMode): void {
               : null
           ),
           h(LayoutSlotOutlet, {name: 'content-notices'}),
+          h(LayoutSlotOutlet, {name: 'content-toolbar-meta'}),
           h(ElementEditor),
           h(ContentFooter, {
             ...screen.props,
@@ -255,3 +256,19 @@ it('titles its error summary for the element rather than for settings', async ()
   expect(summary?.textContent).toContain('The title field is required.');
   expect(summary?.textContent).not.toContain('settings');
 });
+
+it.each<ScreenMode>(['page', 'slideout'])(
+  'links to the element on the front end (%s)',
+  async (mode) => {
+    state.editor.props.previewTargets = [
+      {label: 'Entry page', url: '/actions/preview/create-token?redirect=x'},
+    ];
+
+    mount(mode);
+    await nextTick();
+
+    expect(
+      container.querySelector('craft-button[href]')?.getAttribute('href')
+    ).toBe('/actions/preview/create-token?redirect=x');
+  }
+);

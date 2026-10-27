@@ -292,6 +292,13 @@
       },
     }
   );
+  // Slideouts get View too, as Craft 5's had it in their action menu, which
+  // leaves it out once there are targets.
+  const showViewButtons = computed(
+    () =>
+      (showElementControls.value || (isSlideout && !payload.release)) &&
+      payload.previewTargets.length > 0
+  );
   const canPreview = computed(
     () => showElementControls.value && Boolean(payload.preview?.targets.length)
   );
@@ -363,11 +370,11 @@
     v-if="
       activity.activity.value.length ||
       (!isSlideout && payload.workflow.draftReviews.length) ||
-      (showElementControls && payload.previewTargets.length)
+      showViewButtons
     "
     name="content-toolbar-meta"
   >
-    <template v-if="showElementControls && payload.previewTargets.length">
+    <template v-if="showViewButtons">
       <span
         v-if="payload.isProvisionalDraft || payload.statusLabelHtml"
         class="element-editor__toolbar-separator"
