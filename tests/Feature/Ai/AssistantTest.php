@@ -16,6 +16,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Mcp\CapabilityRegistry;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
@@ -34,6 +35,12 @@ use Laravel\Ai\Prompts\AgentPrompt;
 use Laravel\Ai\Responses\Data\ToolCall;
 use Laravel\Ai\Streaming\Events\Error;
 use Laravel\Ai\Tools\Request as ToolRequest;
+use Mcp\Capability\Attribute\McpTool;
+use Mcp\Schema\Content\EmbeddedResource;
+use Mcp\Schema\Content\ImageContent;
+use Mcp\Schema\Content\ResourceLink;
+use Mcp\Schema\Content\TextContent;
+use Mcp\Schema\Result\CallToolResult;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\getJson;
@@ -264,6 +271,15 @@ it('records changes made through the assistant’s tools as the assistant’s', 
         ->and(ActivityEvent::query()->eventTypes(ElementUpdated::class)->newestFirst()->firstOrFail()->snapshots['origin'])->toBe('AI assistant');
 });
 
+it('gives the model a tool’s structured content, or describes the content it can’t read as text', function (string $tool, string $expected) {
+    app(CapabilityRegistry::class)->register(ResultContentCapability::class);
+
+    expect(app(McpTools::class)->call($tool, []))->toBe($expected);
+})->with([
+    'structured content' => ['test_result_structured', '{"url":"https://example.com/a","title":"Café"}'],
+    'content blocks' => ['test_result_blocks', "Found it\nThe readme\n[Resource: Lighthouse (craft://entries/1/sites/1)]\n[Image: image/png]"],
+]);
+
 /**
  * Stores a turn that paused for the user to approve `call_pending`, after they rejected `call_rejected`.
  */
@@ -484,3 +500,23 @@ it('won’t continue or show another user’s conversation', function () {
     chat($threadId, 'Hi')->assertNotFound();
     getJson(action([AssistantController::class, 'show'], ['threadId' => $threadId]))->assertNotFound();
 });
+
+class ResultContentCapability
+{
+    #[McpTool(name: 'test.result.structured')]
+    public function structured(): CallToolResult
+    {
+        return new CallToolResult(content: [], structuredContent: ['url' => 'https://example.com/a', 'title' => 'Café']);
+    }
+
+    #[McpTool(name: 'test.result.blocks')]
+    public function blocks(): CallToolResult
+    {
+        return new CallToolResult(content: [
+            new TextContent('Found it'),
+            EmbeddedResource::fromText('file:///readme.md', 'The readme'),
+            new ResourceLink(uri: 'craft://entries/1/sites/1', name: 'Lighthouse'),
+            new ImageContent(base64_encode('png'), 'image/png'),
+        ]);
+    }
+}

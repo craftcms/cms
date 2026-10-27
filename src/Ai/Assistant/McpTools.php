@@ -8,11 +8,18 @@ use CraftCms\Cms\Activity\ActivityEventRecorder;
 use CraftCms\Cms\Mcp\AdminInstructions;
 use CraftCms\Cms\Mcp\CapabilityContainer;
 use CraftCms\Cms\Mcp\CapabilityDiscovery;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Context;
 use Mcp\Capability\Registry;
 use Mcp\Capability\Registry\ReferenceHandler;
 use Mcp\Capability\Registry\ToolReference;
+use Mcp\Schema\Content\AudioContent;
+use Mcp\Schema\Content\Content;
+use Mcp\Schema\Content\EmbeddedResource;
+use Mcp\Schema\Content\ImageContent;
+use Mcp\Schema\Content\ResourceLink;
 use Mcp\Schema\Content\TextContent;
+use Mcp\Schema\Content\TextResourceContents;
 use Mcp\Schema\JsonRpc\Error;
 use Mcp\Schema\Request\CallToolRequest;
 use Mcp\Schema\Result\CallToolResult;
@@ -107,12 +114,30 @@ class McpTools
         $result = $response->result;
         assert($result instanceof CallToolResult);
 
-        $text = implode("\n", array_map(
-            static fn (mixed $content): string => $content instanceof TextContent ? (string) $content->text : '',
-            $result->content,
-        ));
+        return $result->isError ? "Error: {$this->text($result)}" : $this->text($result);
+    }
 
-        return $result->isError ? "Error: {$text}" : $text;
+    /**
+     * Returns a tool result as text for the model.
+     *
+     * Structured content comes first, as JSON, since tools that return it repeat it in their content blocks. Content
+     * the model can’t read as text, such as images, is described instead.
+     */
+    private function text(CallToolResult $result): string
+    {
+        if ($result->structuredContent !== null) {
+            return (string) Json::encode($result->structuredContent, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        }
+
+        return implode("\n", array_map(static fn (Content $content): string => match (true) {
+            $content instanceof TextContent => (string) $content->text,
+            $content instanceof EmbeddedResource && $content->resource instanceof TextResourceContents => $content->resource->text,
+            $content instanceof EmbeddedResource => "[Binary resource: {$content->resource->uri}]",
+            $content instanceof ResourceLink => "[Resource: {$content->name} ({$content->uri})]",
+            $content instanceof ImageContent => "[Image: {$content->mimeType}]",
+            $content instanceof AudioContent => "[Audio: {$content->mimeType}]",
+            default => '',
+        }, $result->content));
     }
 
     /**
