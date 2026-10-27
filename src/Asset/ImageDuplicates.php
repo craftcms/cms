@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Asset;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Image\ImageHash;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -88,7 +89,7 @@ class ImageDuplicates
         $distances = [];
 
         foreach ($candidates as $assetId => $analysis) {
-            $candidateHash = json_decode((string) $analysis, true)['hash'] ?? null;
+            $candidateHash = Json::decode((string) $analysis)['hash'] ?? null;
 
             if (ImageHash::isHash($candidateHash) && ($distance = ImageHash::distance($hash, $candidateHash)) <= self::MAX_DISTANCE) {
                 $distances[$assetId] = $distance;

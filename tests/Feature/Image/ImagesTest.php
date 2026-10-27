@@ -352,13 +352,13 @@ describe('sample', function () {
     it('fingerprints copies of an image alike, even once they’re resized and recompressed', function () {
         $original = $this->fixturesPath.'/background.jpg';
         $copy = $this->sandboxPath.'/copy.jpg';
-        $image = imagecreatefromjpeg($original);
-        imagejpeg(imagescale($image, intdiv(imagesx($image), 3)), $copy, 40);
+        $this->service->loadImage($original)->scaleToFit(320, null)->setQuality(40)->saveAs($copy);
 
         $hash = $this->service->sample($original)->hash;
+        $copyHash = $this->service->sample($copy)->hash;
 
         expect($hash)->toMatch('/^[0-9a-f]{16}$/')
-            ->and(ImageHash::distance($hash, $this->service->sample($copy)->hash))->toBeLessThanOrEqual(5)
+            ->and(ImageHash::distance($hash, $copyHash))->toBeLessThanOrEqual(5, "$hash and $copyHash differ in too many bits")
             ->and(ImageHash::distance($hash, $this->service->sample($this->fixturesPath.'/ign.jpg')->hash))->toBeGreaterThan(15);
     });
 

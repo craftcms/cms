@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\ImageDuplicates;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +32,7 @@ return new class extends Migration
             ->orderBy('id')
             ->chunk(500, function ($assets): void {
                 foreach ($assets as $asset) {
-                    $hash = json_decode((string) $asset->analysis, true)['hash'] ?? null;
+                    $hash = Json::decode((string) $asset->analysis)['hash'] ?? null;
 
                     if (is_string($hash)) {
                         app(ImageDuplicates::class)->index((int) $asset->id, $hash);
