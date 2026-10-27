@@ -73,14 +73,17 @@ Set `data-color` on the chip to override that. Because the attribute lands on th
 
 <Canvas of={ChipStories.Sizes} sourceState="shown" />
 
-The step shows most clearly with a prefix and a suffix in place, since the thumbnail grows with it:
+The step shows most clearly with a prefix and a suffix in place, since the thumbnail grows with it, from 26px to 32px to 40px:
 
 <Canvas of={ChipStories.SizesWithContent} sourceState="shown" />
+
+For a larger thumbnail than that, set `thumb-size` instead.
 
 ### Thumbnail Size
 
 `thumb-size` sizes the thumbnail on its own, from `sm`, which suits a table cell, through `md` and `lg`, a card's thumbnail, to `xl` and `2xl`.
 A chip without a `size` takes the one that suits its thumbnail: `small` for `sm`, `medium` for `md`, and `large` from `lg` up.
+Element indexes size their chips this way, so each step below is what an index shows at that Thumb Size:
 
 <Canvas of={ChipStories.ThumbSizes} sourceState="shown" />
 

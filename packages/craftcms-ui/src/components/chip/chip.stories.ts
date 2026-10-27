@@ -340,8 +340,8 @@ export const ThumbSizeOverride: Story = {
 };
 
 /**
- * The same sizes with a thumbnail and a suffix, where the thumbnail's size
- * steps up with the chip's.
+ * The same sizes with a thumbnail and a suffix, where the thumbnail steps up
+ * with the chip: 26px, 32px, then 40px. `thumb-size` sets a larger one.
  */
 export const SizesWithContent: Story = {
   parameters: {controls: {disable: true}},

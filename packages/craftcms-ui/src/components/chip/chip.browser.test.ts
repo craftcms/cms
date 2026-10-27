@@ -931,15 +931,11 @@ it('tints a selected colored chip’s controls from its own fill, not the accent
   ).toBe(getComputedStyle(own).backgroundColor);
 });
 
-it('makes non-plain chips as tall as a medium button, thumbnail included', async () => {
+it('makes non-plain small chips as tall as a medium button, thumbnail included', async () => {
   await import('../../styles/cp.css');
   document.body.innerHTML = `
     <div><craft-chip>Label</craft-chip></div>
     <div><craft-chip show-thumb>
-      <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
-      Label
-    </craft-chip></div>
-    <div><craft-chip size="medium" show-thumb>
       <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
       Label
     </craft-chip></div>
@@ -953,8 +949,34 @@ it('makes non-plain chips as tall as a medium button, thumbnail included', async
     (chip) => box(chip.shadowRoot!.querySelector('.cp-chip')!).height
   );
 
-  expect(heights.slice(0, 3)).toEqual([32, 32, 32]);
-  expect(heights[3]).toBeLessThan(32);
+  expect(heights.slice(0, 2)).toEqual([32, 32]);
+  expect(heights[2]).toBeLessThan(32);
+});
+
+it('steps the thumbnail up from small to medium to large', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = ['small', 'medium', 'large']
+    .map(
+      (size) => `<div><craft-chip size="${size}" show-thumb>
+        <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+        Label
+      </craft-chip></div>`
+    )
+    .join('');
+  const chips = [...document.querySelectorAll('craft-chip')];
+  for (const chip of chips) {
+    await chip.updateComplete;
+  }
+  const widths = chips.map(
+    (chip) =>
+      box(
+        chip
+          .querySelector('craft-thumbnail')!
+          .shadowRoot!.querySelector('[part="thumbnail"]')!
+      ).width
+  );
+
+  expect(widths).toEqual([26, 32, 40]);
 });
 
 it('styles the badges in a filled black chip as in the dark theme', async () => {
