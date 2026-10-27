@@ -54,7 +54,6 @@ sudo update-alternatives --set php /usr/bin/php8.5
 # Prevent Debian's unused system cluster from claiming port 5432 after restore.
 if [[ -f /etc/postgresql/15/main/start.conf ]] && ! grep -qx manual /etc/postgresql/15/main/start.conf; then
     echo manual | sudo tee /etc/postgresql/15/main/start.conf >/dev/null
-    sudo systemctl daemon-reload
 fi
 
 # Initialize private, disposable databases, but leave starting them to Amp's
