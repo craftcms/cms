@@ -3,10 +3,11 @@ import {StorageSerializers, useStorage as _useStorage} from '@vueuse/core';
 import type {RemovableRef} from '@vueuse/shared';
 import {shallowRef, type MaybeRefOrGetter} from 'vue';
 
-declare const Craft: {systemUid: string};
-
-function prefixedKey(key: string): string {
-  return `Craft-${Craft.systemUid}.${key}`;
+/**
+ * Scopes a storage key to this install, matching `Craft.getLocalStorage()`.
+ */
+export function prefixedKey(key: string): string {
+  return `Craft-${window.Craft?.systemUid ?? ''}.${key}`;
 }
 
 export function useStorage(
