@@ -474,6 +474,7 @@
             <div class="lp-editor__status">
               <slot name="status"></slot>
             </div>
+            <slot name="actions"></slot>
           </header>
           <form
             class="lp-editor__body"

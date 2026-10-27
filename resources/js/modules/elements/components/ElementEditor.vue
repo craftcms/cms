@@ -609,6 +609,13 @@
     @save="primaryAction()"
     @closed="previewButton?.focus()"
   >
+    <!-- The standalone page has no other header to reach them from. -->
+    <template v-if="payload.standalonePreview" #actions>
+      <ElementActionMenu
+        :items="payload.actionMenu"
+        :current-entry-type-id="form.typeId"
+      />
+    </template>
     <template #status>
       <AutosaveMessage
         v-if="autosave.status.value !== 'idle'"
