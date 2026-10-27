@@ -138,7 +138,11 @@
 
           <!-- No changes pending -->
           <template v-else>
-            <craft-callout variant="success" icon="circle-check" class="my-3">
+            <craft-callout
+              variant="success"
+              icon="circle-check"
+              class="block my-md"
+            >
               {{
                 t("There aren't any pending project config changes to apply.")
               }}
