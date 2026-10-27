@@ -3,9 +3,10 @@
    * Searches the Craft CMS documentation, Knowledge Base, and glossary on
    * craftcms.com, for the palette's “Search Craft CMS documentation” item.
    *
-   * Like the palette's own search, the input is a combobox over the results:
-   * the arrow keys move the selection, and Return opens it on craftcms.com in
-   * a new tab, leaving the palette open.
+   * Like the palette's own search, the input is a combobox over a listbox of
+   * results: focus stays in the input, the arrow keys move the active option,
+   * and Return or a click opens it on craftcms.com in a new tab, leaving the
+   * palette open.
    */
   import {actionClient, t} from '@craftcms/ui';
   import {docs as docsUrl} from '@actions/CommandPaletteController';
@@ -34,7 +35,7 @@
     results.value.map((item, index) => ({
       item,
       index,
-      cellId: `${id}-option-${index}`,
+      optionId: `${id}-option-${index}`,
     }))
   );
   const selectedRow = computed(() => rows.value[selectedIndex.value] ?? null);
@@ -127,8 +128,7 @@
               count) %
             count;
           document
-            .getElementById(selectedRow.value!.cellId)
-            ?.closest('[role="row"]')
+            .getElementById(selectedRow.value!.optionId)
             ?.scrollIntoView({block: 'nearest'});
         }
         break;
@@ -143,18 +143,11 @@
     }
   }
 
-  /** A plain click opens the result in a new tab too; a modified one is left to the browser. */
-  function onActivate(item: CommandPaletteItem, trigger: MouseEvent): void {
-    if (
-      trigger.metaKey ||
-      trigger.ctrlKey ||
-      trigger.shiftKey ||
-      trigger.altKey
-    ) {
-      return;
-    }
+  // The palette's keyboard instructions say what Escape does, which depends on it.
+  defineExpose({query});
 
-    trigger.preventDefault();
+  /** A click opens the result in a new tab, modified or not, as Return does. */
+  function onActivate(item: CommandPaletteItem): void {
     open(item);
   }
 </script>
@@ -169,12 +162,10 @@
         slot="input"
         type="text"
         role="combobox"
-        aria-expanded="true"
-        aria-haspopup="grid"
+        :aria-expanded="rows.length ? 'true' : 'false'"
         aria-autocomplete="list"
-        :aria-label="t('Search Craft CMS documentation')"
-        :aria-controls="`${id}-results`"
-        :aria-activedescendant="selectedRow?.cellId"
+        :aria-controls="`${id}-listbox`"
+        :aria-activedescendant="selectedRow?.optionId"
         autocapitalize="off"
         spellcheck="false"
         data-autofocus
@@ -186,17 +177,24 @@
       <div v-if="searching && !rows.length" class="command-palette-docs__note">
         <craft-spinner :label="t('Searching…')"></craft-spinner>
       </div>
-      <ResultSection
-        v-if="rows.length"
-        :grid-id="`${id}-results`"
-        :heading="t('Results')"
-        :rows="rows"
-        :selected-index="selectedIndex"
-        @activate="onActivate"
-        @select="(index) => (selectedIndex = index)"
-      />
+      <div
+        :id="`${id}-listbox`"
+        role="listbox"
+        :aria-label="t('Results')"
+        :hidden="!rows.length"
+      >
+        <ResultSection
+          v-if="rows.length"
+          :group-id="`${id}-results`"
+          :heading="t('Results')"
+          :rows="rows"
+          :selected-index="selectedIndex"
+          @activate="onActivate"
+          @select="(index) => (selectedIndex = index)"
+        />
+      </div>
       <craft-empty
-        v-else-if="statusMessage && !searching"
+        v-if="!rows.length && statusMessage && !searching"
         class="command-palette-docs__empty"
         :label="statusMessage"
       ></craft-empty>

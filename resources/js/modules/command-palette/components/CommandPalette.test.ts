@@ -146,6 +146,9 @@ describe('CommandPalette', () => {
               url: '/admin/settings/general/maintenance-mode',
               body: {enabled: true},
             },
+            actions: [
+              {label: 'Learn more', href: 'https://example.test/maintenance'},
+            ],
           }),
         ],
       },
@@ -176,12 +179,65 @@ describe('CommandPalette', () => {
     return document.querySelector<HTMLInputElement>('[role="combobox"]')!;
   }
 
-  function selected(input: HTMLInputElement): string {
-    const cell = document.getElementById(
+  /** The active option, which the search input points to. */
+  function activeOption(input: HTMLInputElement): HTMLElement | null {
+    return document.getElementById(
       input.getAttribute('aria-activedescendant') ?? ''
     );
+  }
 
-    return cell?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+  /** The active option's label. */
+  function selected(input: HTMLInputElement): string {
+    return (
+      activeOption(input)
+        ?.querySelector('.command-palette-row__label')
+        ?.textContent?.replace(/\s+/g, ' ')
+        .trim() ?? ''
+    );
+  }
+
+  function option(label: string): HTMLElement {
+    return [...document.querySelectorAll<HTMLElement>('[role="option"]')].find(
+      (element) =>
+        element
+          .querySelector('.command-palette-row__label')
+          ?.textContent?.trim() === label
+    )!;
+  }
+
+  async function type(input: HTMLInputElement, value: string): Promise<void> {
+    input.value = value;
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await flush();
+  }
+
+  /**
+   * The actions' menu button. `craft-button` isn't defined in these tests,
+   * so it's made focusable here, as the real one is.
+   */
+  /** Each keyboard instruction as a screen reader reads it: its keys' names, then what they do. */
+  function hints(): string[] {
+    return [
+      ...document.querySelectorAll(
+        'section.command-palette__hint ul[role="list"] > li'
+      ),
+    ].map((item) =>
+      [
+        ...[...item.querySelectorAll('kbd .sr-only')].map((name) =>
+          name.textContent?.trim()
+        ),
+        item.lastChild?.textContent?.trim(),
+      ].join(' ')
+    );
+  }
+
+  function actionsButton(): HTMLElement {
+    const button = document.querySelector<HTMLElement>(
+      '.command-palette-actions craft-button'
+    )!;
+    button.tabIndex = 0;
+
+    return button;
   }
 
   function press(target: Element, key: string, init: KeyboardEventInit = {}) {
@@ -198,14 +254,43 @@ describe('CommandPalette', () => {
 
   it('opens on recent pages and actions, with the first one selected', async () => {
     const input = await open();
+    const listbox = document.getElementById(
+      input.getAttribute('aria-controls')!
+    )!;
 
+    expect(listbox.getAttribute('role')).toBe('listbox');
+    expect(input.getAttribute('aria-expanded')).toBe('true');
     expect(
-      [...document.querySelectorAll('h2')].map((heading) =>
-        heading.textContent?.trim()
+      [...listbox.querySelectorAll('[role="group"]')].map((group) =>
+        document
+          .getElementById(group.getAttribute('aria-labelledby')!)
+          ?.textContent?.trim()
       )
     ).toEqual(['Recents', 'Actions']);
     expect(document.activeElement).toBe(input);
     expect(selected(input)).toBe('Entries');
+    expect(activeOption(input)?.getAttribute('role')).toBe('option');
+    expect(activeOption(input)?.getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('collapses the combobox when nothing matches', async () => {
+    const input = await open();
+    await type(input, 'zzzz');
+
+    expect(input.getAttribute('aria-expanded')).toBe('false');
+    expect(input.hasAttribute('aria-activedescendant')).toBe(false);
+  });
+
+  it('never gives the options focus, or anything in them to focus', async () => {
+    await open();
+    const listbox = document.querySelector('[role="listbox"]')!;
+
+    expect(listbox.querySelectorAll('[role="option"]').length).toBeGreaterThan(
+      0
+    );
+    expect(
+      listbox.querySelectorAll('a, button, input, [tabindex], craft-button')
+    ).toHaveLength(0);
   });
 
   it('moves the selection with the arrow keys while focus stays in the search box', async () => {
@@ -235,68 +320,123 @@ describe('CommandPalette', () => {
     ]);
   });
 
-  it('moves focus to the selected result on Tab', async () => {
+  it('leaves Tab to the browser', async () => {
     const input = await open();
 
-    press(input, 'ArrowDown');
-    await nextTick();
-    const event = press(input, 'Tab');
-
-    expect(event.defaultPrevented).toBe(true);
-    expect(document.activeElement?.textContent).toContain('Notifications');
+    expect(press(input, 'Tab').defaultPrevented).toBe(false);
   });
 
-  it('cycles Tab between the search box and the selected result, leaving the other results to the arrow keys', async () => {
+  it('offers the active result’s actions in a group after the listbox, and says Tab reaches them', async () => {
     const input = await open();
 
-    press(input, 'Tab');
-    const first = document.activeElement!;
-    expect(first.textContent).toContain('Entries');
+    expect(document.querySelector('.command-palette-actions')).toBeNull();
+    expect(hints()).not.toContain('Tab Actions');
 
-    expect(press(first, 'Tab').defaultPrevented).toBe(true);
+    while (selected(input) !== 'Enable maintenance mode') {
+      press(input, 'ArrowDown');
+      await nextTick();
+    }
+    await flush();
+
+    const group = document.querySelector('.command-palette-actions')!;
+    const listbox = document.querySelector('[role="listbox"]')!;
+    expect(group.getAttribute('role')).toBe('group');
+    expect(group.getAttribute('aria-label')).toBe(
+      'Actions for Enable maintenance mode'
+    );
+    expect(listbox.contains(group)).toBe(false);
+    expect(
+      listbox.compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(hints()).toContain('Tab Actions');
+  });
+
+  it('makes the option under the pointer the active one, unless focus is on the actions', async () => {
+    const input = await open();
+
+    option('Enable maintenance mode').dispatchEvent(
+      new Event('pointermove', {bubbles: true})
+    );
+    await flush();
+    expect(selected(input)).toBe('Enable maintenance mode');
+
+    actionsButton().focus();
+    option('Entries').dispatchEvent(new Event('pointermove', {bubbles: true}));
+    await flush();
+    expect(selected(input)).toBe('Enable maintenance mode');
+  });
+
+  it('keeps focus in the search box when an option is pressed, and follows the link it was', async () => {
+    const input = await open();
+    const entries = option('Entries');
+
+    const down = new MouseEvent('mousedown', {bubbles: true, cancelable: true});
+    entries.dispatchEvent(down);
+    expect(down.defaultPrevented).toBe(true);
     expect(document.activeElement).toBe(input);
 
-    expect(press(input, 'Tab', {shiftKey: true}).defaultPrevented).toBe(true);
-    expect(document.activeElement).toBe(first);
+    entries.click();
+    await flush();
 
-    press(first, 'ArrowDown');
-    await nextTick();
-    const second = document.activeElement!;
-    expect(second.textContent).toContain('Notifications');
+    expect(state.visit).toHaveBeenCalledWith(
+      'https://example.test/admin/entries'
+    );
+    expect(isCommandPaletteOpen.value).toBe(false);
+  });
 
-    press(second, 'Tab', {shiftKey: true});
-    expect(document.activeElement).toBe(input);
+  it('opens a link in a new tab on Command or Control click, staying open', async () => {
+    const open_ = vi.spyOn(window, 'open').mockImplementation(() => null);
+    await open();
 
-    press(input, 'Tab');
-    expect(document.activeElement).toBe(second);
+    option('Entries').dispatchEvent(
+      new MouseEvent('click', {bubbles: true, metaKey: true})
+    );
+    await flush();
+
+    expect(open_).toHaveBeenCalledWith(
+      'https://example.test/admin/entries',
+      '_blank',
+      'noopener'
+    );
+    expect(state.visit).not.toHaveBeenCalled();
+    expect(isCommandPaletteOpen.value).toBe(true);
+    open_.mockRestore();
+  });
+
+  it('gives keyboard instructions a region of their own, named by a heading', async () => {
+    await open();
+    const region = document.querySelector('section.command-palette__hint')!;
+    const heading = document.getElementById(
+      region.getAttribute('aria-labelledby')!
+    )!;
+
+    expect(heading.tagName).toBe('H2');
+    expect(heading.textContent?.trim()).toBe('Keyboard instructions');
+    expect(region.contains(heading)).toBe(true);
+    expect(hints()).toEqual([
+      'Up arrow Down arrow Choose item',
+      'Enter Open item',
+      'Escape Close',
+    ]);
   });
 
   it('says what Escape does in the footer: clear the search, or close', async () => {
     const input = await open();
-    const hint = () =>
-      [...document.querySelectorAll('.command-palette__hint-item')]
-        .at(-1)
-        ?.textContent?.replace(/\s+/g, ' ')
-        .trim();
 
-    expect(hint()).toBe('Esc Close');
+    expect(hints().at(-1)).toBe('Escape Close');
 
-    input.value = 'maintenance';
-    input.dispatchEvent(new Event('input', {bubbles: true}));
-    await flush();
+    await type(input, 'maintenance');
 
-    expect(hint()).toBe('Esc Clear search');
+    expect(hints().at(-1)).toBe('Escape Clear search');
   });
 
   it('clears the search on Escape wherever focus is, then closes', async () => {
     const input = await open();
-    input.value = 'maintenance';
-    input.dispatchEvent(new Event('input', {bubbles: true}));
-    await flush();
+    await type(input, 'maintenance');
 
-    press(input, 'Tab');
-    const focused = document.activeElement!;
-    expect(focused).not.toBe(input);
+    const focused = actionsButton();
+    focused.focus();
+    expect(document.activeElement).toBe(focused);
 
     expect(press(focused, 'Escape').defaultPrevented).toBe(true);
     await flush();
@@ -305,8 +445,7 @@ describe('CommandPalette', () => {
     expect(input.value).toBe('');
     expect(document.activeElement).toBe(input);
 
-    press(input, 'Tab');
-    press(document.activeElement!, 'Escape');
+    press(input, 'Escape');
     await flush();
 
     expect(isCommandPaletteOpen.value).toBe(false);
@@ -328,14 +467,77 @@ describe('CommandPalette', () => {
     press(input, 'Enter');
     await flush();
 
-    expect(document.activeElement?.getAttribute('aria-label')).toBe(
-      'Search Craft CMS documentation'
+    const docsInput = document.activeElement as HTMLInputElement;
+    expect(docsInput.getAttribute('role')).toBe('combobox');
+    expect(docsInput.closest('.command-palette__view')).not.toBeNull();
+    // Named "Search" by its field's own label, as the palette's input is.
+    expect(docsInput.hasAttribute('aria-label')).toBe(false);
+  });
+
+  it('keeps the keyboard instructions in docs search, where Escape clears the search, then goes back', async () => {
+    const input = await open();
+    const footer = () =>
+      document.querySelector<HTMLElement>('.command-palette__hint')!;
+
+    while (selected(input) !== 'Search Craft CMS documentation') {
+      press(input, 'ArrowDown');
+      await nextTick();
+    }
+    press(input, 'Enter');
+    await flush();
+
+    expect(footer().style.display).not.toBe('none');
+    expect(hints()).toEqual([
+      'Up arrow Down arrow Choose item',
+      'Enter Open in new tab',
+      'Escape Back',
+    ]);
+
+    await type(document.activeElement as HTMLInputElement, 'matrix');
+    expect(hints().at(-1)).toBe('Escape Clear search');
+  });
+
+  it('warns screen reader users that choosing a result changes the context', async () => {
+    const input = await open();
+    const note = () =>
+      document
+        .querySelector('.command-palette > p.sr-only')
+        ?.textContent?.trim();
+
+    expect(note()).toBe(
+      'Choosing a result opens it, which may take you to another page.'
     );
+
+    while (selected(input) !== 'Search Craft CMS documentation') {
+      press(input, 'ArrowDown');
+      await nextTick();
+    }
+    press(input, 'Enter');
+    await flush();
+
+    expect(note()).toBe('Choosing a result opens it in a new tab.');
+  });
+
+  it('hides the keyboard instructions in views without a search', async () => {
+    const input = await open();
+
+    while (selected(input) !== 'Uninstall SEO') {
+      press(input, 'ArrowDown');
+      await nextTick();
+    }
+    press(input, 'Enter');
+    await flush();
+
+    expect(
+      document.querySelector<HTMLElement>('.command-palette__hint')!.style
+        .display
+    ).toBe('none');
   });
 
   it('focuses the search box when its surrounding padding is pressed', async () => {
     const input = await open();
-    press(input, 'Tab');
+    await type(input, 'maintenance');
+    actionsButton().focus();
     expect(document.activeElement).not.toBe(input);
 
     const field = input.closest<HTMLElement>('.command-palette__field')!;

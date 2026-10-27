@@ -98,6 +98,17 @@ describe('craft-input-search', () => {
     ).toBeTruthy();
   });
 
+  it('leaves the clear button out of the Tab order', async () => {
+    const element = await createInputSearch();
+    await type(element, 'foo');
+    const button = clearButton(element)!;
+    await (button as HTMLElement & {updateComplete: Promise<unknown>})
+      .updateComplete;
+
+    expect(button.getAttribute('tabindex')).toBe('-1');
+    expect(button.tabIndex).toBe(-1);
+  });
+
   it('clears the value and focuses the input when the clear button is pressed', async () => {
     const element = await createInputSearch();
     const events: string[] = [];
