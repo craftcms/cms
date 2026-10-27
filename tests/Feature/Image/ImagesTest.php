@@ -272,6 +272,7 @@ describe('colors', function () {
             'grid' => array_fill(0, 3, array_fill(0, 4, '#c81e28')),
             'palette' => ['#c81e28'],
             'luminance' => array_fill(0, 3, array_fill(0, 4, [0.134, 0.134])),
+            'weights' => [1.0],
         ]);
     });
 
@@ -295,9 +296,10 @@ describe('colors', function () {
         imagepng($image, $path = $this->sandboxPath.'/fixture.png');
         $colors = $this->service->colors($path);
 
-        expect([$colors->dominant, $colors->palette])->toBe([
+        expect([$colors->dominant, $colors->palette, $colors->weights])->toBe([
             '#4d2336',
             ['#4d2336', '#ba373a', '#6ed64e', '#59814d', '#e38545'],
+            [0.248, 0.233, 0.217, 0.162, 0.141],
         ]);
     });
 

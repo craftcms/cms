@@ -110,8 +110,27 @@ interface ExifTags {
   copyright?: string;
   dateTimeOriginal?: string;
   offsetTimeOriginal?: string;
-  gps?: boolean;
+  /** `true` gives just a latitude. */
+  gps?: boolean | Gps;
 }
+
+interface Gps {
+  latitude: [number, number, number];
+  latitudeRef: string;
+  longitude: [number, number, number];
+  longitudeRef: string;
+}
+
+/** Degrees, minutes, and seconds as rationals, with seconds in hundredths. */
+const rationals = ([degrees, minutes, seconds]: [number, number, number]) =>
+  bytes(
+    u32le(degrees),
+    u32le(1),
+    u32le(minutes),
+    u32le(1),
+    u32le(Math.round(seconds * 100)),
+    u32le(100)
+  );
 
 type Entry = [tag: number, type: number, count: number, value: Uint8Array];
 
@@ -161,17 +180,32 @@ function exifSegment(exif: ExifTags): Uint8Array {
       ? ascii(0x9011, exif.offsetTimeOriginal)
       : null,
   ].filter((entry): entry is Entry => entry !== null);
-  const gpsIfd: Entry[] = exif.gps
-    ? [
-        ascii(0x0001, 'N'),
-        [
-          0x0002,
-          5,
-          3,
-          bytes(u32le(51), u32le(1), u32le(30), u32le(1), u32le(0), u32le(1)),
-        ],
-      ]
-    : [];
+  const gpsIfd: Entry[] =
+    typeof exif.gps === 'object'
+      ? [
+          ascii(0x0001, exif.gps.latitudeRef),
+          [0x0002, 5, 3, rationals(exif.gps.latitude)],
+          ascii(0x0003, exif.gps.longitudeRef),
+          [0x0004, 5, 3, rationals(exif.gps.longitude)],
+        ]
+      : exif.gps
+        ? [
+            ascii(0x0001, 'N'),
+            [
+              0x0002,
+              5,
+              3,
+              bytes(
+                u32le(51),
+                u32le(1),
+                u32le(30),
+                u32le(1),
+                u32le(0),
+                u32le(1)
+              ),
+            ],
+          ]
+        : [];
   const pointers = (exifOffset: number, gpsOffset: number): Entry[] => [
     ...(exifIfd.length ? [[0x8769, 4, 1, u32le(exifOffset)] as Entry] : []),
     ...(gpsIfd.length ? [[0x8825, 4, 1, u32le(gpsOffset)] as Entry] : []),
@@ -227,7 +261,11 @@ const empty = {
   keywords: [],
   dateTaken: null,
   camera: null,
-  hasLocation: false,
+  latitude: null,
+  longitude: null,
+  city: null,
+  state: null,
+  country: null,
 };
 
 describe('readImageMetadata', () => {
@@ -254,7 +292,6 @@ describe('readImageMetadata', () => {
       copyright: '© 2026 Ada Lovelace',
       keywords: ['harbor', 'boats'],
       dateTaken: '2026-05-01T14:03:22+02:00',
-      hasLocation: true,
     });
   });
 
@@ -303,7 +340,55 @@ describe('readImageMetadata', () => {
       copyright: 'Ada Lovelace',
       dateTaken: '2026-05-01T14:03:22+02:00',
       camera: 'Canon EOS R5',
-      hasLocation: true,
+    });
+  });
+
+  it('reads GPS coordinates from EXIF, south and west of zero as negative', async () => {
+    const file = jpeg({
+      exif: {
+        gps: {
+          latitude: [33, 51, 54.5],
+          latitudeRef: 'S',
+          longitude: [151, 12, 36],
+          longitudeRef: 'E',
+        },
+      },
+    });
+
+    expect(await readImageMetadata(file)).toMatchObject({
+      latitude: -33.865139,
+      longitude: 151.21,
+    });
+  });
+
+  it('reads GPS coordinates and place names from XMP, and place names from IPTC', async () => {
+    const xmp = jpeg({
+      xmp: xmpPacket(
+        '<photoshop:City>Vienna</photoshop:City><photoshop:State>Vienna</photoshop:State><photoshop:Country>Austria</photoshop:Country>',
+        'exif:GPSLatitude="48,12.5N" exif:GPSLongitude="16,22,12W"'
+      ),
+    });
+    const iptc = jpeg({
+      iptc: {
+        '2#090': ['Sydney'],
+        '2#095': ['New South Wales'],
+        '2#101': ['Australia'],
+      },
+    });
+
+    expect(await readImageMetadata(xmp)).toMatchObject({
+      latitude: 48.208333,
+      longitude: -16.37,
+      city: 'Vienna',
+      state: 'Vienna',
+      country: 'Austria',
+    });
+    expect(await readImageMetadata(iptc)).toMatchObject({
+      latitude: null,
+      longitude: null,
+      city: 'Sydney',
+      state: 'New South Wales',
+      country: 'Australia',
     });
   });
 

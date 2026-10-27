@@ -74,7 +74,8 @@ XML;
 /**
  * Builds the little-endian TIFF structure EXIF data is stored in.
  *
- * @param  array{make?: string, model?: string, artist?: string, copyright?: string, dateTimeOriginal?: string, offsetTimeOriginal?: string, gps?: bool}  $exif
+ * @param  array{make?: string, model?: string, artist?: string, copyright?: string, dateTimeOriginal?: string, offsetTimeOriginal?: string, gps?: bool|array{latitude: array{int, int, float}, latitudeRef: string, longitude: array{int, int, float}, longitudeRef: string}}  $exif
+ *                                                                                                                                                                                                                                                                                     `gps` as `true` gives just a latitude
  */
 function exifTiff(array $exif): string
 {
@@ -89,10 +90,22 @@ function exifTiff(array $exif): string
         isset($exif['dateTimeOriginal']) ? $ascii(0x9003, $exif['dateTimeOriginal']) : null,
         isset($exif['offsetTimeOriginal']) ? $ascii(0x9011, $exif['offsetTimeOriginal']) : null,
     ]));
-    $gpsIfd = ($exif['gps'] ?? false) ? [
-        $ascii(0x0001, 'N'),
-        [0x0002, 5, 3, pack('V6', 51, 1, 30, 1, 0, 1)],
-    ] : [];
+    // Degrees, minutes, and seconds as rationals, with seconds in hundredths
+    $rationals = fn (array $dms): string => pack('V6', $dms[0], 1, $dms[1], 1, (int) round($dms[2] * 100), 100);
+    $gps = $exif['gps'] ?? false;
+    $gpsIfd = match (true) {
+        is_array($gps) => [
+            $ascii(0x0001, $gps['latitudeRef']),
+            [0x0002, 5, 3, $rationals($gps['latitude'])],
+            $ascii(0x0003, $gps['longitudeRef']),
+            [0x0004, 5, 3, $rationals($gps['longitude'])],
+        ],
+        $gps => [
+            $ascii(0x0001, 'N'),
+            [0x0002, 5, 3, pack('V6', 51, 1, 30, 1, 0, 1)],
+        ],
+        default => [],
+    };
 
     // The sub-IFDs’ pointers are four bytes either way, so IFD0’s size doesn’t depend on where they point
     $pointers = fn (int $exifOffset, int $gpsOffset): array => array_merge(

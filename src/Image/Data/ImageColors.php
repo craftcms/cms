@@ -39,6 +39,9 @@ readonly class ImageColors implements Arrayable, JsonSerializable
      *                                                           1 (white). `null` for regions with no mostly opaque
      *                                                           pixels. Empty if the image couldn’t be sampled, or was
      *                                                           sampled before luminance was.
+     * @param  list<float>  $weights  How much of the image each palette color covers, as a share of everything the
+     *                                palette covers, from 0 to 1, in the same order as `palette`. Empty if the image
+     *                                was sampled before weights were.
      */
     public function __construct(
         #[AllowedInSandbox]
@@ -49,6 +52,8 @@ readonly class ImageColors implements Arrayable, JsonSerializable
         public array $palette = [],
         #[AllowedInSandbox]
         public array $luminance = [],
+        #[AllowedInSandbox]
+        public array $weights = [],
     ) {}
 
     /**
@@ -75,12 +80,36 @@ readonly class ImageColors implements Arrayable, JsonSerializable
             }
         }
 
+        $palette = array_values(array_filter(is_array($data['palette'] ?? null) ? $data['palette'] : [], self::isHexColor(...)));
+
         return new self(
             dominant: self::isHexColor($dominant) ? $dominant : null,
             grid: $grid,
-            palette: array_values(array_filter(is_array($data['palette'] ?? null) ? $data['palette'] : [], self::isHexColor(...))),
+            palette: $palette,
             luminance: self::luminanceFromArray($data['luminance'] ?? null),
+            weights: self::weightsFromArray($data['weights'] ?? null, count($palette)),
         );
+    }
+
+    /**
+     * Returns the weights if there’s one between 0 and 1 for each palette color, or else none, since they only mean
+     * anything alongside the colors they’re for.
+     *
+     * @return list<float>
+     */
+    private static function weightsFromArray(mixed $weights, int $count): array
+    {
+        if (! is_array($weights) || ! array_is_list($weights) || count($weights) !== $count) {
+            return [];
+        }
+
+        foreach ($weights as $weight) {
+            if ((! is_int($weight) && ! is_float($weight)) || $weight < 0 || $weight > 1) {
+                return [];
+            }
+        }
+
+        return array_map(floatval(...), $weights);
     }
 
     /**
@@ -230,7 +259,7 @@ readonly class ImageColors implements Arrayable, JsonSerializable
         return is_string($value) && preg_match('/^#[0-9a-f]{6}([0-9a-f]{2})?$/i', $value) === 1;
     }
 
-    /** @return array{dominant: string|null, grid: list<list<string>>, palette: list<string>, luminance: list<list<array{float, float}|null>>} */
+    /** @return array{dominant: string|null, grid: list<list<string>>, palette: list<string>, luminance: list<list<array{float, float}|null>>, weights: list<float>} */
     public function toArray(): array
     {
         return [
@@ -238,10 +267,11 @@ readonly class ImageColors implements Arrayable, JsonSerializable
             'grid' => $this->grid,
             'palette' => $this->palette,
             'luminance' => $this->luminance,
+            'weights' => $this->weights,
         ];
     }
 
-    /** @return array{dominant: string|null, grid: list<list<string>>, palette: list<string>, luminance: list<list<array{float, float}|null>>} */
+    /** @return array{dominant: string|null, grid: list<list<string>>, palette: list<string>, luminance: list<list<array{float, float}|null>>, weights: list<float>} */
     public function jsonSerialize(): array
     {
         return $this->toArray();

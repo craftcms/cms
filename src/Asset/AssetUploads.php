@@ -112,14 +112,14 @@ class AssetUploads implements UploadHandler
     /**
      * Returns the colors the uploader sampled from the file, if it sent any.
      *
-     * They come from the client, so anything that isn't a grid of up to 4×4 hex colors, with luminance ranges from 0 to
-     * 1 if there are any, is ignored, and the file is sampled on the server instead.
+     * They come from the client, so anything that isn't a grid of up to 4×4 hex colors, with luminance ranges and
+     * palette weights from 0 to 1 if there are any, is ignored, and the file is sampled on the server instead.
      */
     private function uploadedColors(Request $request): ?ImageColors
     {
         $hexColor = 'regex:/^#[0-9a-f]{6}([0-9a-f]{2})?$/i';
         $validator = Validator::make(['colors' => $request->input('analysis.colors')], [
-            'colors' => ['required', 'array:dominant,grid,palette,luminance'],
+            'colors' => ['required', 'array:dominant,grid,palette,luminance,weights'],
             'colors.dominant' => ['nullable', 'string', $hexColor],
             'colors.grid' => ['required', 'array', 'list', 'min:1', 'max:4'],
             'colors.grid.*' => ['array', 'list', 'min:1', 'max:4'],
@@ -130,6 +130,8 @@ class AssetUploads implements UploadHandler
             'colors.luminance.*' => ['array', 'list', 'max:4'],
             'colors.luminance.*.*' => ['nullable', 'array', 'list', 'size:2'],
             'colors.luminance.*.*.*' => ['numeric', 'between:0,1'],
+            'colors.weights' => ['nullable', 'array', 'list', 'max:5'],
+            'colors.weights.*' => ['numeric', 'between:0,1'],
         ]);
 
         if ($validator->fails()) {

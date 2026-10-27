@@ -57,7 +57,7 @@ function analyzableImage(?string $alt = null, string $kind = 'image', string $fi
 
     if ($sampled) {
         AssetModel::whereKey($asset->id)->update(['analysis' => json_encode([
-            'colors' => ['dominant' => '#dc1e1e', 'grid' => [['#dc1e1e']], 'palette' => ['#dc1e1e'], 'luminance' => [[[0.16, 0.16]]]],
+            'colors' => ['dominant' => '#dc1e1e', 'grid' => [['#dc1e1e']], 'palette' => ['#dc1e1e'], 'luminance' => [[[0.16, 0.16]]], 'weights' => [1.0]],
             'metadata' => [],
         ])]);
         $asset = Asset::find()->id($asset->id)->status(null)->one();

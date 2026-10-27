@@ -683,8 +683,8 @@ class AssetIndexer
             && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
         $isNew = ! $asset->id;
         // New and changed files are always sampled. Unchanged ones that are missing colors or metadata, or were sampled
-        // before palettes or luminance were (but not inconclusively), are only sampled when asked to analyze images,
-        // since a remote file has to be downloaded to sample it.
+        // before palettes, luminance, or weights were (but not inconclusively), are only sampled when asked to analyze
+        // images, since a remote file has to be downloaded to sample it.
         $needsSampling = $isNew
             || $fileChanged
             || ($analyzeImages && $this->imageAnalyzer->needsSampling($asset));

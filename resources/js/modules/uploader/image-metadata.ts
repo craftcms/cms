@@ -16,7 +16,11 @@ export interface ImageMetadata {
   keywords: string[];
   dateTaken: string | null;
   camera: string | null;
-  hasLocation: boolean;
+  latitude: number | null;
+  longitude: number | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
 }
 
 /** How much of the start of a file is searched for its XMP packet, which covers it in most images. */
@@ -40,6 +44,13 @@ const XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
 
 type Iptc = Record<string, Uint8Array[]>;
 type Exif = Record<string, Uint8Array>;
+
+/** EXIF tags, and the GPS coordinates in decimal degrees if the file has both. */
+interface ExifData {
+  tags: Exif;
+  latitude: number | null;
+  longitude: number | null;
+}
 
 /**
  * Reads an image file's metadata, or resolves to `null` if it isn't a JPEG,
@@ -94,7 +105,7 @@ function imageFormat(bytes: Uint8Array): 'jpeg' | 'other' | null {
 function parseImageMetadata(
   xmp: Document | null,
   iptcData: Iptc,
-  exifData: Exif
+  {tags: exifData, latitude: exifLatitude, longitude: exifLongitude}: ExifData
 ): ImageMetadata {
   let keywords = xmp ? xmpList(xmp, 'dc:subject') : [];
 
@@ -104,6 +115,18 @@ function parseImageMetadata(
       .filter((value): value is string => value !== null);
   }
 
+  const latitude =
+    (xmp ? xmpCoordinate(xmpText(xmp, 'exif:GPSLatitude')) : null) ??
+    exifLatitude;
+  const longitude =
+    (xmp ? xmpCoordinate(xmpText(xmp, 'exif:GPSLongitude')) : null) ??
+    exifLongitude;
+  // Only kept together, since one without the other isn't a location
+  const hasCoordinates =
+    latitude !== null &&
+    longitude !== null &&
+    Math.abs(latitude) <= 90 &&
+    Math.abs(longitude) <= 180;
   const make = decode(exifData.Make);
   const model = decode(exifData.Model);
   const iptcDate = iptcData['2#055']?.[0];
@@ -175,9 +198,20 @@ function parseImageMetadata(
             model.toLowerCase().includes(make.split(' ')[0]!.toLowerCase())
           ? model
           : `${make} ${model}`,
-    hasLocation:
-      exifData.GPSLatitude !== undefined ||
-      (xmp !== null && xmpText(xmp, 'exif:GPSLatitude') !== null),
+    latitude: hasCoordinates ? roundCoordinate(latitude) : null,
+    longitude: hasCoordinates ? roundCoordinate(longitude) : null,
+    city: first(
+      xmp && xmpText(xmp, 'photoshop:City'),
+      iptcText(iptcData, '2#090')
+    ),
+    state: first(
+      xmp && xmpText(xmp, 'photoshop:State'),
+      iptcText(iptcData, '2#095')
+    ),
+    country: first(
+      xmp && xmpText(xmp, 'photoshop:Country'),
+      iptcText(iptcData, '2#101')
+    ),
   };
 }
 
@@ -425,7 +459,10 @@ const EXIF_TAGS: Record<number, string> = {
   0x9003: 'DateTimeOriginal',
   0x9011: 'OffsetTimeOriginal',
 };
+const GPS_LATITUDE_REF = 0x0001;
 const GPS_LATITUDE = 0x0002;
+const GPS_LONGITUDE_REF = 0x0003;
+const GPS_LONGITUDE = 0x0004;
 const EXIF_IFD_POINTER = 0x8769;
 const GPS_IFD_POINTER = 0x8825;
 const TYPE_SIZES: Record<number, number> = {
@@ -444,7 +481,7 @@ const TYPE_SIZES: Record<number, number> = {
 };
 
 /** Reads the EXIF tags the server uses from a JPEG's first EXIF segment. */
-function exif(segments: Segment[]): Exif {
+function exif(segments: Segment[]): ExifData {
   const header = 'Exif\0\0';
   const data = segments
     .find(
@@ -454,9 +491,11 @@ function exif(segments: Segment[]): Exif {
     )
     ?.data.subarray(header.length);
   const tags: Exif = {};
+  const gpsValues: Record<number, number[]> = {};
+  const gpsRefs: Record<number, string> = {};
 
   if (!data || data.length < 8) {
-    return tags;
+    return {tags, latitude: null, longitude: null};
   }
 
   const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
@@ -485,8 +524,29 @@ function exif(segments: Segment[]): Exif {
         length <= 4 ? entry + 8 : view.getUint32(entry + 8, little);
 
       if (gps) {
-        if (tag === GPS_LATITUDE) {
-          tags.GPSLatitude = new Uint8Array();
+        if (
+          (tag === GPS_LATITUDE || tag === GPS_LONGITUDE) &&
+          type === 5 &&
+          view.getUint32(entry + 4, little) === 3 &&
+          valueOffset + 24 <= data.length
+        ) {
+          gpsValues[tag] = [0, 1, 2].map((part) => {
+            const denominator = view.getUint32(
+              valueOffset + part * 8 + 4,
+              little
+            );
+
+            return denominator
+              ? view.getUint32(valueOffset + part * 8, little) / denominator
+              : NaN;
+          });
+        } else if (
+          (tag === GPS_LATITUDE_REF || tag === GPS_LONGITUDE_REF) &&
+          type === 2
+        ) {
+          gpsRefs[tag] = latin1(
+            withoutNul(data.subarray(valueOffset, valueOffset + length))
+          ).trim();
         }
       } else if (tag === EXIF_IFD_POINTER || tag === GPS_IFD_POINTER) {
         readIfd(view.getUint32(entry + 8, little), tag === GPS_IFD_POINTER);
@@ -502,7 +562,45 @@ function exif(segments: Segment[]): Exif {
 
   readIfd(view.getUint32(4, little), false);
 
-  return tags;
+  const coordinate = (
+    values: number[] | undefined,
+    ref: string | undefined
+  ) => {
+    if (!values || ref === undefined || values.some(Number.isNaN)) {
+      return null;
+    }
+
+    const degrees = values[0]! + values[1]! / 60 + values[2]! / 3600;
+
+    return ['S', 'W'].includes(ref.toUpperCase()) ? -degrees : degrees;
+  };
+
+  return {
+    tags,
+    latitude: coordinate(gpsValues[GPS_LATITUDE], gpsRefs[GPS_LATITUDE_REF]),
+    longitude: coordinate(gpsValues[GPS_LONGITUDE], gpsRefs[GPS_LONGITUDE_REF]),
+  };
+}
+
+/** Converts an XMP GPS coordinate, such as `48,16.5N` or `48,16,30N`, to decimal degrees. */
+function xmpCoordinate(value: string | null): number | null {
+  const match = value?.match(
+    /^(\d+),(\d+(?:\.\d+)?)(?:,(\d+(?:\.\d+)?))?([NSEW])$/i
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  const degrees =
+    Number(match[1]) + Number(match[2]) / 60 + Number(match[3] || 0) / 3600;
+
+  return ['S', 'W'].includes(match[4]!.toUpperCase()) ? -degrees : degrees;
+}
+
+/** Rounds a coordinate to six decimal places, about 10 cm, as the server does. */
+function roundCoordinate(value: number): number {
+  return Math.round(value * 1e6) / 1e6;
 }
 
 function iptcText(iptcData: Iptc, tag: string): string | null {

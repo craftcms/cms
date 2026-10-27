@@ -55,6 +55,7 @@ describe('sampleImageColors', () => {
       grid: Array.from({length: 3}, () => Array(4).fill('#c81e28')),
       palette: ['#c81e28'],
       luminance: Array.from({length: 3}, () => Array(4).fill([0.134, 0.134])),
+      weights: [1],
     });
   });
 
@@ -109,11 +110,12 @@ describe('sampleImageColors', () => {
   });
 
   it('clusters the same main colors as the server', () => {
-    const {dominant, palette} = sampleImageColors(fixture());
+    const {dominant, palette, weights} = sampleImageColors(fixture());
 
-    expect({dominant, palette}).toEqual({
+    expect({dominant, palette, weights}).toEqual({
       dominant: '#4d2336',
       palette: ['#4d2336', '#ba373a', '#6ed64e', '#59814d', '#e38545'],
+      weights: [0.248, 0.233, 0.217, 0.162, 0.141],
     });
   });
 

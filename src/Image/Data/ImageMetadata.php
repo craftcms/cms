@@ -49,8 +49,16 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
      * @param  string|null  $dateTaken  When the image was taken or made, as an ISO 8601 date and time, with a UTC
      *                                  offset if the file has one (e.g. `2026-05-01T14:03:22+02:00`)
      * @param  string|null  $camera  The camera’s make and model (EXIF Make and Model)
-     * @param  bool  $hasLocation  Whether the file has GPS coordinates in it, such as where a photo was taken. The
-     *                             coordinates themselves aren’t kept.
+     * @param  float|null  $latitude  The latitude of the GPS coordinates the file had, in decimal degrees (XMP
+     *                                `exif:GPSLatitude`, EXIF GPSLatitude), read before it was cleaned. Not available to
+     *                                sandboxed templates or GraphQL, since it says where the image was taken.
+     * @param  float|null  $longitude  The longitude of the GPS coordinates the file had, in decimal degrees (XMP
+     *                                 `exif:GPSLongitude`, EXIF GPSLongitude), read before it was cleaned. Not
+     *                                 available to sandboxed templates or GraphQL, since it says where the image was
+     *                                 taken.
+     * @param  string|null  $city  The city the image shows or was taken in (XMP `photoshop:City`, IPTC City)
+     * @param  string|null  $state  The state or province (XMP `photoshop:State`, IPTC Province/State)
+     * @param  string|null  $country  The country (XMP `photoshop:Country`, IPTC Country)
      */
     public function __construct(
         #[AllowedInSandbox]
@@ -71,8 +79,14 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
         public ?string $dateTaken = null,
         #[AllowedInSandbox]
         public ?string $camera = null,
+        public ?float $latitude = null,
+        public ?float $longitude = null,
         #[AllowedInSandbox]
-        public bool $hasLocation = false,
+        public ?string $city = null,
+        #[AllowedInSandbox]
+        public ?string $state = null,
+        #[AllowedInSandbox]
+        public ?string $country = null,
     ) {}
 
     /**
@@ -86,6 +100,10 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
     {
         $keywords = is_array($data['keywords'] ?? null) ? $data['keywords'] : [];
         $dateTaken = $data['dateTaken'] ?? null;
+        $latitude = self::coordinate($data['latitude'] ?? null, 90);
+        $longitude = self::coordinate($data['longitude'] ?? null, 180);
+        // Only kept together, since one without the other isn’t a location
+        [$latitude, $longitude] = $latitude !== null && $longitude !== null ? [$latitude, $longitude] : [null, null];
 
         return new self(
             title: self::text($data['title'] ?? null),
@@ -97,8 +115,24 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
             keywords: array_slice(array_values(array_filter(array_map(self::text(...), $keywords))), 0, self::MAX_KEYWORDS),
             dateTaken: is_string($dateTaken) && preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}([+-]\d{2}:\d{2}|Z)?$/', $dateTaken) ? $dateTaken : null,
             camera: self::text($data['camera'] ?? null),
-            hasLocation: ($data['hasLocation'] ?? false) === true,
+            latitude: $latitude,
+            longitude: $longitude,
+            city: self::text($data['city'] ?? null),
+            state: self::text($data['state'] ?? null),
+            country: self::text($data['country'] ?? null),
         );
+    }
+
+    /**
+     * Returns a coordinate rounded to six decimal places, about 10 cm, or `null` if it isn’t a number within the limit.
+     */
+    private static function coordinate(mixed $value, int $limit): ?float
+    {
+        if (! is_int($value) && ! is_float($value)) {
+            return null;
+        }
+
+        return abs($value) <= $limit ? round((float) $value, 6) : null;
     }
 
     /**
@@ -115,27 +149,7 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
         return $value !== '' ? $value : null;
     }
 
-    /**
-     * Returns a copy that says whether the file has GPS coordinates in it, keeping everything else, such as after it’s
-     * been cleaned of them.
-     */
-    public function withHasLocation(bool $hasLocation): self
-    {
-        return new self(
-            $this->title,
-            $this->description,
-            $this->altText,
-            $this->creator,
-            $this->credit,
-            $this->copyright,
-            $this->keywords,
-            $this->dateTaken,
-            $this->camera,
-            $hasLocation,
-        );
-    }
-
-    /** @return array{title: string|null, description: string|null, altText: string|null, creator: string|null, credit: string|null, copyright: string|null, keywords: list<string>, dateTaken: string|null, camera: string|null, hasLocation: bool} */
+    /** @return array{title: string|null, description: string|null, altText: string|null, creator: string|null, credit: string|null, copyright: string|null, keywords: list<string>, dateTaken: string|null, camera: string|null, latitude: float|null, longitude: float|null, city: string|null, state: string|null, country: string|null} */
     public function toArray(): array
     {
         return [
@@ -148,11 +162,15 @@ readonly class ImageMetadata implements Arrayable, JsonSerializable
             'keywords' => $this->keywords,
             'dateTaken' => $this->dateTaken,
             'camera' => $this->camera,
-            'hasLocation' => $this->hasLocation,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
+            'city' => $this->city,
+            'state' => $this->state,
+            'country' => $this->country,
         ];
     }
 
-    /** @return array{title: string|null, description: string|null, altText: string|null, creator: string|null, credit: string|null, copyright: string|null, keywords: list<string>, dateTaken: string|null, camera: string|null, hasLocation: bool} */
+    /** @return array{title: string|null, description: string|null, altText: string|null, creator: string|null, credit: string|null, copyright: string|null, keywords: list<string>, dateTaken: string|null, camera: string|null, latitude: float|null, longitude: float|null, city: string|null, state: string|null, country: string|null} */
     public function jsonSerialize(): array
     {
         return $this->toArray();

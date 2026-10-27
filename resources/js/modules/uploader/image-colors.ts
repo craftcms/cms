@@ -19,6 +19,17 @@ export interface ImageColors {
    * no mostly opaque pixels.
    */
   luminance: ([number, number] | null)[][];
+  /**
+   * How much of the image each palette color covers, as a share of
+   * everything the palette covers, in the same order as `palette`.
+   */
+  weights: number[];
+}
+
+/** A cluster of the image's colors, and how many of its pixels are in it. */
+interface Cluster {
+  centroid: Oklab;
+  size: number;
 }
 
 export interface Pixels {
@@ -88,16 +99,29 @@ export function sampleImageColors(pixels: Pixels): ImageColors {
   const candidates = dominantCandidates(pixels);
   const dominant =
     candidates.find(
-      ([lightness]) =>
+      ({centroid: [lightness]}) =>
         lightness >= BLACK_LIGHTNESS && lightness <= WHITE_LIGHTNESS
     ) ?? candidates[0];
   const toHex = (color: Oklab) => hex(...fromOklab(color), 255);
+  // How many of the sampled pixels each color stands for, combining colors
+  // that come out as the same hex code, as the server does
+  const counts = new Map<string, number>();
+
+  for (const {centroid, size} of candidates) {
+    const color = toHex(centroid);
+    counts.set(color, (counts.get(color) ?? 0) + size);
+  }
+
+  const total = [...counts.values()].reduce((sum, count) => sum + count, 0);
 
   return {
-    dominant: dominant ? toHex(dominant) : null,
+    dominant: dominant ? toHex(dominant.centroid) : null,
     grid: colorGrid(pixels),
-    palette: [...new Set(candidates.map(toHex))],
+    palette: [...counts.keys()],
     luminance: luminanceGrid(pixels),
+    weights: total
+      ? [...counts.values()].map((count) => round(count / total, 3))
+      : [],
   };
 }
 
@@ -244,7 +268,7 @@ function round(value: number, precision: number): number {
  * dominant color passes over near-black and near-white ones in favor of the
  * most dominant other one, if there is one.
  */
-function dominantCandidates({data}: Pixels): Oklab[] {
+function dominantCandidates({data}: Pixels): Cluster[] {
   const points: Oklab[] = [];
 
   for (let index = 0; index < data.length; index += 4) {
@@ -256,8 +280,8 @@ function dominantCandidates({data}: Pixels): Oklab[] {
   return clusterColors(points).slice(0, DOMINANT_CANDIDATES);
 }
 
-/** Returns the centroids of the points' clusters, largest first. */
-function clusterColors(points: Oklab[]): Oklab[] {
+/** Returns the points' clusters, largest first. */
+function clusterColors(points: Oklab[]): Cluster[] {
   const random = new PhpRandomizer(SEED);
   let centroids = initialCentroids(
     points,
@@ -304,8 +328,7 @@ function clusterColors(points: Oklab[]): Oklab[] {
       size: assignments.filter((assignment) => assignment === cluster).length,
     }))
     .filter(({size}) => size >= minSize)
-    .sort((a, b) => b.size - a.size)
-    .map(({centroid}) => centroid);
+    .sort((a, b) => b.size - a.size);
 }
 
 /** Picks well-spread starting centroids with k-means++. */

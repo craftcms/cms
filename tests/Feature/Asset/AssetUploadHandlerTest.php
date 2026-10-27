@@ -285,7 +285,7 @@ describe('images staged on a remote filesystem', function () {
     });
 
     it('store what the uploader read from them, without being downloaded or queued', function () {
-        $colors = ImageColors::fromArray(['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5']], 'palette' => ['#3a6ea5'], 'luminance' => [[[0.1, 0.2]]]]);
+        $colors = ImageColors::fromArray(['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5']], 'palette' => ['#3a6ea5'], 'luminance' => [[[0.1, 0.2]]], 'weights' => [1.0]]);
         $metadata = new ImageMetadata(description: 'Boats at dusk');
 
         $asset = ($this->ingestImage)(sanitize: false, analysis: new ImageAnalysis(colors: $colors, metadata: $metadata));

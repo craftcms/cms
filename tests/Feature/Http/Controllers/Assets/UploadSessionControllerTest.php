@@ -315,13 +315,13 @@ describe('what the uploader read from the file', function () {
     });
 
     it('stores the colors the uploader sampled instead of sampling the image', function () {
-        $colors = ['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5', '#123456', '#abcdef']], 'palette' => ['#3a6ea5', '#123456'], 'luminance' => [[[0.1, 0.2], null, [0.0, 1.0]]]];
+        $colors = ['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5', '#123456', '#abcdef']], 'palette' => ['#3a6ea5', '#123456'], 'luminance' => [[[0.1, 0.2], null, [0.0, 1.0]]], 'weights' => [0.6, 0.4]];
         $images = Mockery::mock(ImagesFacade::getFacadeRoot())->makePartial();
         $images->shouldNotReceive('colors');
         ImagesFacade::swap($images);
 
         $original = ($this->uploadImage)(['folderId' => $this->folder->id], ['analysis' => ['colors' => $colors]]);
-        $replacementColors = ['dominant' => null, 'grid' => [['#654321']], 'palette' => ['#654321'], 'luminance' => [[[0.2, 0.3]]]];
+        $replacementColors = ['dominant' => null, 'grid' => [['#654321']], 'palette' => ['#654321'], 'luminance' => [[[0.2, 0.3]]], 'weights' => [1.0]];
         ($this->uploadImage)(['operation' => 'replace', 'assetId' => $original['assetId']], ['analysis' => ['colors' => $replacementColors]]);
 
         expect(AssetModel::findOrFail($original['assetId'])->analysis['colors'])->toEqual($replacementColors);
@@ -333,7 +333,8 @@ describe('what the uploader read from the file', function () {
             'description' => 'Boats at dusk',
             'keywords' => ['harbor', 5, ['nested']],
             'dateTaken' => 'yesterday',
-            'hasLocation' => 'yes',
+            'latitude' => 'north',
+            'longitude' => 16.37,
             'extra' => 'x',
         ]]]);
         $asset = Asset::findOne($completed['assetId']);
@@ -343,7 +344,8 @@ describe('what the uploader read from the file', function () {
             'description' => 'Boats at dusk',
             'keywords' => ['harbor', '5'],
             'dateTaken' => null,
-            'hasLocation' => false,
+            'latitude' => null,
+            'longitude' => null,
         ])
             ->and($asset->title)->toBe('Harbor at dusk')
             ->and($asset->alt)->toBe('Boats at dusk');

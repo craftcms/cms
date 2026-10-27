@@ -100,7 +100,7 @@ class ImageAnalyzer
     /**
      * Returns whether an image is missing anything that’s read from its file: its colors, or its embedded metadata.
      *
-     * Images sampled before palettes or luminance were are sampled again, unless they couldn’t be sampled at all.
+     * Images sampled before palettes, luminance, or weights were are sampled again, unless they couldn’t be sampled at all.
      */
     public function needsSampling(Asset $asset): bool
     {
@@ -285,12 +285,12 @@ class ImageAnalyzer
     }
 
     /**
-     * Returns whether an image’s colors haven’t been sampled, or were sampled before palettes or luminance were.
+     * Returns whether an image’s colors haven’t been sampled, or were sampled before palettes, luminance, or weights were.
      * Images that couldn’t be sampled at all have an empty grid, and aren’t sampled again.
      */
     private function colorsNeedSampling(?ImageColors $colors): bool
     {
-        return $colors === null || ($colors->grid !== [] && ($colors->palette === [] || $colors->luminance === []));
+        return $colors === null || ($colors->grid !== [] && ($colors->palette === [] || $colors->luminance === [] || $colors->weights === []));
     }
 
     /**
