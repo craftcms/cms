@@ -48,7 +48,7 @@ class ColorNames
     }
 
     /**
-     * Returns a color name, such as `red`, translated for display or search, such as “Rot” in German.
+     * Returns a color name, such as `red`, translated for display, such as “Rot” in German.
      */
     public static function label(string $name, ?string $locale = null): string
     {
