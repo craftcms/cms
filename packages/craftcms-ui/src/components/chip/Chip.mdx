@@ -77,6 +77,25 @@ The step shows most clearly with a prefix and a suffix in place, since the thumb
 
 <Canvas of={ChipStories.SizesWithContent} sourceState="shown" />
 
+### Thumbnail Size
+
+`thumb-size` sizes the thumbnail on its own, from `sm`, which suits a table cell, through `md` and `lg`, a card's thumbnail, to `xl` and `2xl`.
+A chip without a `size` takes the one that suits its thumbnail: `small` for `sm`, `medium` for `md`, and `large` from `lg` up.
+
+<Canvas of={ChipStories.ThumbSizes} sourceState="shown" />
+
+An explicit `size` still wins, so a large thumbnail can sit in a chip with a small chip's padding:
+
+<Canvas of={ChipStories.ThumbSizeOverride} sourceState="shown" />
+
+## Prefix Placement
+
+`prefix-placement` sets which side of the label the prefix sits on.
+The default, `inline-start`, puts it before the label. `block-start` stacks it above the label, centered, for a tile in a grid; the checkbox and suffix then share a row along the top.
+Element indexes draw their thumbnail tiles this way, at every `thumb-size`:
+
+<Canvas of={ChipStories.Stacked} sourceState="shown" />
+
 ## Alignment
 
 `align-items` sets where the prefix and suffix sit against the label. The default, `center`, suits a single-line label. When the label runs to several lines, `start` keeps them against the first line and `end` against the last:
@@ -110,6 +129,9 @@ The chip has no remove behavior of its own. When a button in the `suffix` remove
 
 Setting `selectable` renders a checkbox before the prefix, for chips within a multi-select list.
 Name it with `select-label` so a list of chips does not read as a run of identically labeled checkboxes; it falls back to a generic "Select".
+`select-disabled` disables the checkbox, such as while the list is busy or for an entity that can't be selected, and keeps its checked state:
+
+<Canvas of={ChipStories.Selectable} sourceState="shown" />
 
 ## Properties
 

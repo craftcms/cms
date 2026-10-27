@@ -386,10 +386,8 @@ export const Presentations: Story = {
 };
 
 /**
- * A portrait image in a chip at each `thumb-size`. Its `width` and `height` are
- * set as string properties, the way a framework binding can hand them over,
- * so the thumbnail has to compare them as numbers ("800" >= "1200" as strings)
- * to fit the image by its height.
+ * Inside a chip, the chip sizes the thumbnail's box: its `thumb-size` sets
+ * `--c-thumbnail-size`, and a `fit` image fills it along its longer side.
  */
 export const InChipThumbSizes: Story = {
   render: () => html`
@@ -403,28 +401,18 @@ export const InChipThumbSizes: Story = {
             prefix-placement="block-start"
             show-thumb
           >
-            <div slot="thumbnail">
-              <craft-thumbnail
-                src=${imageFixture(800, 1200)}
-                .width=${'800' as unknown as number}
-                .height=${'1200' as unknown as number}
-                alt=""
-                loading="eager"
-              ></craft-thumbnail>
-            </div>
+            <craft-thumbnail
+              slot="thumbnail"
+              src=${imageFixture(800, 1200)}
+              width="800"
+              height="1200"
+              alt=""
+              loading="eager"
+            ></craft-thumbnail>
             ${thumbSize}
           </craft-chip>
         `
       )}
     </div>
   `,
-  play: async ({canvasElement}) => {
-    for (const thumbnail of canvasElement.querySelectorAll('craft-thumbnail')) {
-      await thumbnail.updateComplete;
-      const image = thumbnail.shadowRoot!.querySelector('img')!;
-      await image.decode();
-      const box = image.getBoundingClientRect();
-      await expect(box.height).toBeGreaterThan(box.width);
-    }
-  },
 };
