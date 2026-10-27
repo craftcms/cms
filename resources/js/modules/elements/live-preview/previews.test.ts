@@ -1,4 +1,4 @@
-import {createApp, defineComponent} from 'vue';
+import {createApp, defineComponent, nextTick, shallowRef} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {
   getActivePreview,
@@ -31,13 +31,13 @@ describe('previews', () => {
     apps.splice(0).forEach((app) => app.unmount());
   });
 
-  function mount() {
+  function mount(data: () => ElementPreview | null = () => payload) {
     let preview!: ReturnType<typeof useLivePreview>;
     const app = createApp(
       defineComponent({
         setup() {
           preview = useLivePreview(
-            () => payload,
+            data,
             {save: async () => {}, hasPendingChanges: false},
             {post: async () => ({data: {token: 'token'}})}
           );
@@ -60,6 +60,18 @@ describe('previews', () => {
     first.unmount();
 
     expect(getPreviews()).toEqual([second.preview]);
+  });
+
+  it('leaves out editors with nothing to preview until they have something', async () => {
+    const data = shallowRef<ElementPreview | null>(null);
+    const {preview} = mount(() => data.value);
+
+    expect(getPreviews()).toEqual([]);
+
+    data.value = payload;
+    await nextTick();
+
+    expect(getPreviews()).toEqual([preview]);
   });
 
   it('finds the open preview', async () => {

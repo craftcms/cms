@@ -415,8 +415,24 @@ export function useLivePreview(
 
   self = controller;
 
+  // Only while there's something to preview, so editors that can't (in a
+  // slideout, without permission) don't show up among the page's previews.
   if (getCurrentScope()) {
-    onScopeDispose(registerPreview(controller));
+    let unregister: (() => void) | null = null;
+
+    watch(
+      () => preview() !== null,
+      (available) => {
+        if (available) {
+          unregister ??= registerPreview(controller);
+        } else {
+          unregister?.();
+          unregister = null;
+        }
+      },
+      {immediate: true}
+    );
+    onScopeDispose(() => unregister?.());
   }
 
   return controller;
