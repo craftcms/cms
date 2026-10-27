@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Actions\AnalyzeImages;
 use CraftCms\Cms\Asset\Analysis\ImageAnalysisAgent;
 use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
 use CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage;
+use CraftCms\Cms\Asset\Analysis\Tasks\ClassifyImage;
 use CraftCms\Cms\Asset\Analysis\Tasks\DetectFocalPoint;
 use CraftCms\Cms\Asset\Analysis\Tasks\GenerateAltText;
 use CraftCms\Cms\Asset\Analysis\Tasks\GenerateTitles;
@@ -70,7 +71,7 @@ beforeEach(function (): void {
         'anthropic' => ['driver' => 'anthropic', 'key' => 'sk-test'],
     ]]);
     // These tests are about their own tasks, not Craft’s
-    app(AiTasks::class)->remove(GenerateAltText::class, GenerateTitles::class, DetectFocalPoint::class, TagImage::class);
+    app(AiTasks::class)->remove(GenerateAltText::class, GenerateTitles::class, DetectFocalPoint::class, TagImage::class, ClassifyImage::class);
     app(AiTasks::class)->register(CaptionImageTask::class, FocusImageTask::class);
     aiImageSettings();
 });

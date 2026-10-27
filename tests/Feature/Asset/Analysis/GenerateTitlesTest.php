@@ -22,7 +22,7 @@ beforeEach(function (): void {
     config(['ai.providers' => ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]]);
     app()->instance(Settings::class, new Settings([
         'defaults' => ['text' => ['provider' => 'openai', 'model' => 'gpt-vision']],
-        'tasks' => ['craft:altText' => ['enabled' => false], 'craft:focalPoint' => ['enabled' => false], 'craft:tagImage' => ['enabled' => false]],
+        'tasks' => ['craft:imageType' => ['enabled' => false], 'craft:altText' => ['enabled' => false], 'craft:focalPoint' => ['enabled' => false], 'craft:tagImage' => ['enabled' => false]],
     ]));
     $this->primarySite = Sites::getPrimarySite();
     $this->germanSite = Site::factory()->create(['handle' => 'german', 'language' => 'de']);

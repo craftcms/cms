@@ -63,7 +63,8 @@ class TagImage extends ImageAnalysisTask
 
     public static function apply(Asset $asset, array $result, ImageAnalysisChanges $changes, bool $overwrite): void
     {
-        $analysis = $asset->analysis ?? new ImageAnalysis;
+        // Builds on what other tasks have found in the image
+        $analysis = $changes->get('analysis', $asset->analysis) ?? new ImageAnalysis;
 
         if (! $overwrite && $analysis->keywords !== null) {
             return;
@@ -77,7 +78,6 @@ class TagImage extends ImageAnalysisTask
             : $analysis->keywords;
         $text = is_string($result['text'] ?? null) ? (trim($result['text']) ?: null) : $analysis->text;
 
-        // Keeps the image's colors
         $changes->set('analysis', $analysis->withTags($keywords, $text));
     }
 }
