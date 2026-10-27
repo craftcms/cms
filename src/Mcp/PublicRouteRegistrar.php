@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Mcp;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
-use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
 use CraftCms\Cms\Mcp\Http\Middleware\SetActivityOrigin;
+use CraftCms\Cms\Mcp\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Mcp\Public\Access;
 use Illuminate\Routing\Router;
 
