@@ -21,9 +21,7 @@ use function Pest\Laravel\postJson;
 use function Pest\Laravel\travel;
 
 test('session info returns csrf token without extending the session', function () {
-    $response = getJson(action([SessionInfoController::class, 'show'], [
-        'dontExtendSession' => 1,
-    ]));
+    $response = getJson(action([SessionInfoController::class, 'show']));
 
     $response
         ->assertOk()
@@ -176,4 +174,25 @@ test('password confirmation validates its options', function () {
         'minimumRemainingSeconds' => -1,
         'force' => 'sometimes',
     ])->assertJsonValidationErrors(['minimumRemainingSeconds', 'force']);
+});
+
+test('login methods are available to a signed-out user', function () {
+    Edition::set(Edition::Pro);
+    app(GeneralConfig::class)->oauthProviders([
+        'test' => [
+            'driver' => FakeOAuthProvider::class,
+            'clientId' => 'client-id',
+            'clientSecret' => 'client-secret',
+            'label' => 'Continue with Test OAuth',
+        ],
+    ]);
+
+    getJson(action([SessionInfoController::class, 'loginMethods'], ['loginName' => 'admin@example.com']))
+        ->assertOk()
+        ->assertJsonPath('alternativeLoginMethods.html', fn (string $html): bool => str_contains($html, 'Continue with Test OAuth'));
+});
+
+test('login methods require a login name', function () {
+    getJson(action([SessionInfoController::class, 'loginMethods']))
+        ->assertJsonValidationErrors(['loginName']);
 });

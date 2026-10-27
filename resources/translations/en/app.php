@@ -2303,6 +2303,7 @@ return [
     'Your project config YAML files contain pending changes.' => 'Your project config YAML files contain pending changes.',
     'Your server doesn’t meet the following requirements to run Craft CMS:' => 'Your server doesn’t meet the following requirements to run Craft CMS:',
     'Your session has ended.' => 'Your session has ended.',
+    'Your session is about to expire' => 'Your session is about to expire',
     'Your session will expire in {time}.' => 'Your session will expire in {time}.',
     'Your system isn’t set up to save content for the site “{site}”.' => 'Your system isn’t set up to save content for the site “{site}”.',
     'Your verification session has expired. Please sign in again.' => 'Your verification session has expired. Please sign in again.',
