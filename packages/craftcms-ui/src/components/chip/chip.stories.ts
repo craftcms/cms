@@ -48,7 +48,7 @@ const chipSizes = [
   {size: 'large', label: 'Large'},
 ] as const;
 
-/** Every `thumb-size` value, for the stacked story below. */
+/** Every `thumb-size` value, for the thumb-size stories below. */
 const chipThumbSizes = [
   {thumbSize: 'sm', label: 'Small'},
   {thumbSize: 'md', label: 'Medium'},
@@ -89,7 +89,8 @@ export const SuffixOnly: Story = {
 /**
  * `selectable` adds the selection checkbox; `selected` styles the chip to match
  * a selected thumbnail tile in the element index, so a selection reads the same
- * whichever view mode the elements are shown in.
+ * whichever view mode the elements are shown in. `select-disabled` disables
+ * the checkbox while keeping the chip's selected state.
  */
 export const Selectable: Story = {
   args: {},
@@ -102,6 +103,12 @@ export const Selectable: Story = {
       >
       <craft-chip selectable selected select-label="Select About us"
         >About us</craft-chip
+      >
+      <craft-chip selectable select-disabled select-label="Select Contact"
+        >Contact</craft-chip
+      >
+      <craft-chip selectable selected select-disabled select-label="Select News"
+        >News</craft-chip
       >
     </div>
   `,
@@ -282,6 +289,52 @@ export const Stacked: Story = {
           </craft-chip>
         `
       )}
+    </div>
+  `,
+};
+
+/**
+ * Each `thumb-size`, with the thumbnail beside the label. Left without a
+ * `size`, the chip takes the one that suits its thumbnail: `small` for `sm`,
+ * `medium` for `md`, and `large` from `lg` up.
+ */
+export const ThumbSizes: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div
+      style="display: flex; flex-direction: column; gap: 0.75rem; align-items: start"
+    >
+      ${chipThumbSizes.map(
+        ({thumbSize, label}) => html`
+          <craft-chip thumb-size="${thumbSize}" show-thumb>
+            <img slot="thumbnail" src="https://picsum.photos/240/240" alt="" />
+            ${label}
+            <craft-button icon size="small" variant="plain" slot="suffix">
+              <craft-icon name="ellipsis" label="Actions"></craft-icon>
+            </craft-button>
+          </craft-chip>
+        `
+      )}
+    </div>
+  `,
+};
+
+/**
+ * An explicit `size` wins over the one `thumb-size` picks. Both chips have an
+ * `xl` thumbnail; the second keeps a small chip's padding around it.
+ */
+export const ThumbSizeOverride: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div style="display: flex; gap: 0.75rem; align-items: start">
+      <craft-chip thumb-size="xl" show-thumb>
+        <img slot="thumbnail" src="https://picsum.photos/240/240" alt="" />
+        Size from thumb-size
+      </craft-chip>
+      <craft-chip thumb-size="xl" size="small" show-thumb>
+        <img slot="thumbnail" src="https://picsum.photos/240/240" alt="" />
+        size="small"
+      </craft-chip>
     </div>
   `,
 };
