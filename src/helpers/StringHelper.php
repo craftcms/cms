@@ -10,7 +10,6 @@ namespace craft\helpers;
 use BackedEnum;
 use Craft;
 use craft\i18n\Locale;
-use HTMLPurifier_Config;
 use Illuminate\Support\Str;
 use IteratorAggregate;
 use LitEmoji\LitEmoji;
@@ -441,21 +440,11 @@ class StringHelper extends \yii\helpers\StringHelper
             return HtmlPurifier::cleanUtf8($str);
         }
 
-        // Otherwise set HTMLPurifier to the actual string encoding
-        $config = HTMLPurifier_Config::createDefault();
-        $config->set('Core.Encoding', static::encoding($str));
+        // Otherwise convert it from the encoding it's in, or Windows-1252 if that can't be detected, since it's the
+        // most common encoding for text that isn't UTF-8, and clean it after, so its characters aren't stripped first
+        $encoding = mb_detect_encoding($str, mb_detect_order(), true) ?: 'Windows-1252';
 
-        // Clean it
-        $str = HtmlPurifier::cleanUtf8($str);
-
-        // Convert it to UTF8 if possible
-        if (App::checkForValidIconv()) {
-            $str = HtmlPurifier::convertToUtf8($str, $config);
-        } else {
-            $str = mb_convert_encoding($str, self::UTF8);
-        }
-
-        return $str;
+        return HtmlPurifier::cleanUtf8(mb_convert_encoding($str, self::UTF8, $encoding));
     }
 
     /**
