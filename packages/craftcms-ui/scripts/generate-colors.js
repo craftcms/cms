@@ -1,4 +1,5 @@
-import {execFileSync} from 'child_process';
+import {spawn} from 'child_process';
+import {once} from 'events';
 import {readFileSync} from 'fs';
 import {createRequire} from 'module';
 import {dirname, resolve} from 'path';
@@ -325,26 +326,21 @@ ${variants}
 export default async function main() {
   const {paletteColors, semanticColors} = await loadColorData();
 
+  const [css, lit] = await Promise.all([
+    formatOutput(OUT_FILE, generateStyles(paletteColors, semanticColors)),
+    formatOutput(
+      OUT_LIT_FILE,
+      generateLitStyles(paletteColors, semanticColors)
+    ),
+  ]);
+
   // Only write files whose contents changed, so a running Vite dev server
   // doesn't hot-update every component that imports them
-  if (
-    writeFileIfChanged(
-      OUT_FILE,
-      formatOutput(OUT_FILE, generateStyles(paletteColors, semanticColors))
-    )
-  ) {
+  if (writeFileIfChanged(OUT_FILE, css)) {
     console.log(`Generated ${OUT_FILE}`);
   }
 
-  if (
-    writeFileIfChanged(
-      OUT_LIT_FILE,
-      formatOutput(
-        OUT_LIT_FILE,
-        generateLitStyles(paletteColors, semanticColors)
-      )
-    )
-  ) {
+  if (writeFileIfChanged(OUT_LIT_FILE, lit)) {
     console.log(`Generated ${OUT_LIT_FILE}`);
   }
 }
@@ -353,17 +349,28 @@ export default async function main() {
 Both outputs are committed, so run them through the repo formatter. Otherwise
 every build rewrites them unformatted and `vp fmt` flips them back again.
  */
-function formatOutput(file, content) {
+async function formatOutput(file, content) {
   const vpBin = resolve(
     dirname(createRequire(import.meta.url).resolve('vite-plus/package.json')),
     'bin/vp'
   );
 
-  return execFileSync(
+  const child = spawn(
     process.execPath,
     [vpBin, 'fmt', `--stdin-filepath=${file}`],
-    {input: content, encoding: 'utf8'}
+    {stdio: ['pipe', 'pipe', 'inherit']}
   );
+  child.stdin.end(content);
+
+  let output = '';
+  child.stdout.setEncoding('utf8').on('data', (chunk) => (output += chunk));
+
+  const [code] = await once(child, 'close');
+  if (code !== 0) {
+    throw new Error(`vp fmt exited with code ${code} for ${file}`);
+  }
+
+  return output;
 }
 
 // Run when invoked directly (node scripts/generate-colors.js), but not when

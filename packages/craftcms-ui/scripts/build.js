@@ -1,6 +1,7 @@
 import {build} from 'vite-plus/pack';
 import ora from 'ora';
-import {execSync} from 'node:child_process';
+import {exec} from 'node:child_process';
+import {promisify} from 'node:util';
 import {mkdir, readFile} from 'fs/promises';
 import {watch} from 'fs';
 import copy from 'recursive-copy';
@@ -13,6 +14,18 @@ import createColors from './generate-colors.js';
 
 const spinner = ora({text: '@craftcms/ui', color: 'red'}).start();
 const isDeveloping = process.argv.includes('--develop');
+
+/**
+ * The root build runs this in two halves, so the CP can bundle while the
+ * declarations generate: `--runtime` writes everything the CP imports, then
+ * `--types` adds the declarations and the manifest. Without either, it does
+ * both.
+ */
+const phase = process.argv.includes('--runtime')
+  ? 'runtime'
+  : process.argv.includes('--types')
+    ? 'types'
+    : 'all';
 
 async function cleanup() {
   // In develop mode, rebuild in place: the root Vite dev server starts
@@ -32,7 +45,11 @@ async function cleanup() {
 }
 
 async function generateBundle(config = {}) {
-  spinner.start('Building bundle');
+  const label = config.dts?.emitDtsOnly
+    ? 'Building declarations'
+    : 'Building bundle';
+
+  spinner.start(label);
   try {
     await build({
       clean: false,
@@ -56,7 +73,7 @@ async function generateBundle(config = {}) {
       ...config,
     });
   } catch (error) {
-    spinner.fail();
+    spinner.fail(label);
     console.error(error);
 
     // Nothing was emitted, so the steps after this one would only inspect a
@@ -64,7 +81,7 @@ async function generateBundle(config = {}) {
     throw error;
   }
 
-  spinner.succeed();
+  spinner.succeed(label);
   return Promise.resolve();
 }
 
@@ -205,7 +222,10 @@ async function generateManifest() {
   spinner.start('Generating CEM');
 
   try {
-    execSync('cem analyze --config "custom-elements-manifest.config.mjs"');
+    const {stderr} = await promisify(exec)(
+      'cem analyze --config "custom-elements-manifest.config.mjs"'
+    );
+    process.stderr.write(stderr);
   } catch (error) {
     console.error(`\n\n${error.message}`);
 
@@ -214,7 +234,7 @@ async function generateManifest() {
     }
   }
 
-  spinner.succeed();
+  spinner.succeed('Generating CEM');
 
   return Promise.resolve();
 }
@@ -228,7 +248,7 @@ async function generateStyles() {
     {overwrite: true}
   );
 
-  spinner.succeed();
+  spinner.succeed('Copying styles');
 
   if (isDeveloping) {
   }
@@ -239,32 +259,45 @@ async function generateStyles() {
 async function generateVueWrappers() {
   spinner.start('Generating Vue Wrappers');
   createVueWrappers();
-  spinner.succeed();
+  spinner.succeed('Generating Vue Wrappers');
   return Promise.resolve();
 }
 
 async function generateColors() {
   spinner.start('Generating Colors');
   await createColors();
-  spinner.succeed();
+  spinner.succeed('Generating Colors');
   return Promise.resolve();
 }
 
 async function buildAll() {
   try {
-    const steps = [
-      cleanup,
-      generateManifest,
-      generateStyles,
-      generateVueWrappers,
-      generateColors,
-      generateBundle,
-      pruneOrphanedChunks,
-      assertDeclarationsResolved,
-    ];
+    if (phase !== 'types') {
+      await cleanup();
 
-    for (const step of steps) {
-      await step();
+      // The bundle, its declarations, and the copied styles all include the
+      // generated color styles.
+      await generateColors();
+    }
+
+    // The JS and the declarations build separately, which writes the same
+    // files as one build with both, so neither has to wait for the other.
+    await Promise.all([
+      ...(phase !== 'types'
+        ? [
+            generateVueWrappers(),
+            generateStyles(),
+            generateBundle({dts: false}),
+          ]
+        : []),
+      ...(phase !== 'runtime'
+        ? [generateManifest(), generateBundle({dts: {emitDtsOnly: true}})]
+        : []),
+    ]);
+
+    if (phase !== 'runtime') {
+      await pruneOrphanedChunks();
+      await assertDeclarationsResolved();
     }
 
     spinner.succeed(`The build is complete`);
