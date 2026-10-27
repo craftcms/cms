@@ -9,6 +9,7 @@ import {
   onUnmounted,
   reactive,
   ref,
+  watch,
   type App,
 } from 'vue';
 import {
@@ -21,6 +22,8 @@ import CommandPalette from './CommandPalette.vue';
 const state = vi.hoisted(() => ({
   page: null as any,
   visit: vi.fn(),
+  /** Whether the palette's modal last closed giving focus back. */
+  restoreFocus: undefined as boolean | undefined,
 }));
 
 vi.mock('@inertiajs/vue3', async () => ({
@@ -52,6 +55,15 @@ vi.mock('@/common/components/Modal.vue', () => ({
     props: ['isActive', 'label', 'width', 'dismissible', 'restoreFocus'],
     emits: ['close', 'opened', 'closed'],
     setup(props, {slots, emit}) {
+      // Whether it would give focus back, read as it closes, as the real one does.
+      watch(
+        () => props.isActive,
+        (active) => {
+          if (!active) {
+            state.restoreFocus = props.restoreFocus;
+          }
+        }
+      );
       const Body = defineComponent({
         setup() {
           onMounted(() => emit('opened'));
@@ -78,6 +90,47 @@ vi.mock('@/common/components/Modal.vue', () => ({
     },
   }),
 }));
+
+/**
+ * An element's name from its content, as browsers compute it for an option:
+ * its text, less anything hidden from assistive technology, each element's
+ * text spaced from the next. Enough for the plain text options hold.
+ */
+function nameFromContent(element: Element): string {
+  const parts: string[] = [];
+
+  for (const node of element.childNodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      parts.push(node.textContent ?? '');
+    } else if (
+      node instanceof Element &&
+      node.getAttribute('aria-hidden') !== 'true'
+    ) {
+      parts.push(` ${nameFromContent(node)} `);
+    }
+  }
+
+  return parts.join('').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * An input's name, as browsers compute it: from the elements it's labelled
+ * by, else its `aria-label`, else its `<label>`s.
+ */
+function inputName(input: HTMLInputElement): string {
+  const labelledBy = (input.getAttribute('aria-labelledby') ?? '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((id) => document.getElementById(id))
+    .filter((element): element is HTMLElement => element !== null);
+  const texts = labelledBy.length
+    ? labelledBy.map(nameFromContent)
+    : input.getAttribute('aria-label')
+      ? [input.getAttribute('aria-label')!]
+      : [...(input.labels ?? [])].map(nameFromContent);
+
+  return texts.join(' ').trim();
+}
 
 function serverAction(id: string, label: string, extra = {}) {
   return {
@@ -174,6 +227,7 @@ describe('CommandPalette', () => {
     get.mockReset();
     request.mockReset();
     state.visit.mockReset();
+    state.restoreFocus = undefined;
     window.history.replaceState(null, '', '/');
   });
 
@@ -336,7 +390,7 @@ describe('CommandPalette', () => {
     expect(press(input, 'Tab').defaultPrevented).toBe(false);
   });
 
-  it('offers the active result’s actions in a group after the listbox, and says Tab reaches them', async () => {
+  it('offers the active result’s actions after the listbox, and says Tab reaches them', async () => {
     const input = await open();
 
     expect(document.querySelector('.command-palette-actions')).toBeNull();
@@ -348,15 +402,16 @@ describe('CommandPalette', () => {
     }
     await flush();
 
-    const group = document.querySelector('.command-palette-actions')!;
+    const actions = document.querySelector('.command-palette-actions')!;
     const listbox = document.querySelector('[role="listbox"]')!;
-    expect(group.getAttribute('role')).toBe('group');
-    expect(group.getAttribute('aria-label')).toBe(
+    expect(actions.getAttribute('role')).toBeNull();
+    expect(actionsButton().getAttribute('aria-label')).toBe(
       'Actions for Enable maintenance mode'
     );
-    expect(listbox.contains(group)).toBe(false);
+    expect(listbox.contains(actions)).toBe(false);
     expect(
-      listbox.compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING
+      listbox.compareDocumentPosition(actions) &
+        Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
     expect(hints()).toContain('Tab Actions');
   });
@@ -439,6 +494,23 @@ describe('CommandPalette', () => {
     expect(document.activeElement).toBe(input);
   });
 
+  it('starts each option’s name with its visible label, so it can be spoken to choose it', async () => {
+    const input = await open();
+    await type(input, 'e');
+    const options = [
+      ...document.querySelectorAll<HTMLElement>('[role="option"]'),
+    ];
+    expect(options.length).toBeGreaterThan(1);
+
+    for (const element of options) {
+      const label = element
+        .querySelector('.command-palette-row__label')!
+        .textContent!.trim();
+
+      expect(nameFromContent(element).startsWith(label)).toBe(true);
+    }
+  });
+
   it('says in an option’s name when Tab reaches its actions', async () => {
     await open();
 
@@ -461,11 +533,9 @@ describe('CommandPalette', () => {
 
     expect(input.getAttribute('aria-activedescendant')).toBe(active);
     expect(maintenance.classList).toContain('command-palette-row--hovered');
-    expect(
-      document
-        .querySelector('.command-palette-actions')
-        ?.getAttribute('aria-label')
-    ).toBe('Actions for Enable maintenance mode');
+    expect(actionsButton().getAttribute('aria-label')).toBe(
+      'Actions for Enable maintenance mode'
+    );
 
     // Not while focus is on them: the pointer may be on its way to the menu.
     actionsButton().focus();
@@ -551,6 +621,46 @@ describe('CommandPalette', () => {
     expect(hints().at(-1)).toBe('Escape Clear search');
   });
 
+  it('closes before a result’s menu action runs, leaving focus to it', async () => {
+    const input = await open();
+    await type(input, 'maintenance');
+
+    const item = document.querySelector<HTMLElement>(
+      '.command-palette-actions craft-action-item'
+    )!;
+    expect(item.textContent?.trim()).toBe('Learn more');
+    item.click();
+    await flush();
+
+    expect(isCommandPaletteOpen.value).toBe(false);
+    expect(state.restoreFocus).toBe(false);
+  });
+
+  it('closes only the menu on Escape inside it, back on its button, then clears the search', async () => {
+    const input = await open();
+    await type(input, 'maintenance');
+    const button = actionsButton();
+    const item = document.querySelector<HTMLElement>(
+      '.command-palette-actions craft-action-item'
+    )!;
+    item.tabIndex = -1;
+    item.focus();
+
+    expect(press(item, 'Escape').defaultPrevented).toBe(true);
+    await flush();
+
+    expect(isCommandPaletteOpen.value).toBe(true);
+    expect(input.value).toBe('maintenance');
+    expect(document.activeElement).toBe(button);
+
+    press(button, 'Escape');
+    await flush();
+
+    expect(isCommandPaletteOpen.value).toBe(true);
+    expect(input.value).toBe('');
+    expect(document.activeElement).toBe(input);
+  });
+
   it('clears the search on Escape wherever focus is, then closes', async () => {
     const input = await open();
     await type(input, 'maintenance');
@@ -591,8 +701,7 @@ describe('CommandPalette', () => {
     const docsInput = document.activeElement as HTMLInputElement;
     expect(docsInput.getAttribute('role')).toBe('combobox');
     expect(docsInput.closest('.command-palette__view')).not.toBeNull();
-    // Named "Search" by its field's own label, as the palette's input is.
-    expect(docsInput.hasAttribute('aria-label')).toBe(false);
+    expect(inputName(docsInput)).toBe('Search');
   });
 
   it('keeps the keyboard instructions in docs search, where Escape clears the search, then goes back', async () => {

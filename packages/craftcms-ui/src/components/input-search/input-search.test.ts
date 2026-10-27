@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vitest';
+import type CraftButton from '../button/button.js';
 import type CraftInputSearch from './input-search.js';
 import './input-search.js';
 
@@ -101,11 +102,17 @@ describe('craft-input-search', () => {
   it('leaves the clear button out of the Tab order', async () => {
     const element = await createInputSearch();
     await type(element, 'foo');
-    const button = clearButton(element)!;
-    await (button as HTMLElement & {updateComplete: Promise<unknown>})
-      .updateComplete;
+    const button = clearButton(element) as CraftButton;
+    await button.updateComplete;
 
     expect(button.getAttribute('tabindex')).toBe('-1');
+    expect(button.tabIndex).toBe(-1);
+
+    await type(element, 'foobar');
+    button.requestUpdate();
+    await button.updateComplete;
+
+    expect(clearButton(element)).toBe(button);
     expect(button.tabIndex).toBe(-1);
   });
 

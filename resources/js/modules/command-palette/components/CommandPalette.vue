@@ -12,8 +12,8 @@
    * The search box is a combobox whose popup is the results listbox, after
    * the APG's list autocomplete example: focus stays in the box, the arrow
    * keys move the active option, and Return chooses it. The options never
-   * take focus. The active result's own actions, when it has any, sit in a
-   * group after the listbox, which Tab moves to.
+   * take focus. The active result's own actions, when it has any, are a
+   * menu button after the listbox, which Tab moves to.
    */
   import {actionClient, ButtonVariant, t} from '@craftcms/ui';
   import {runAction} from '@craftcms/ui/actions.mjs';
@@ -87,7 +87,6 @@
 
   const input = useTemplateRef<HTMLInputElement>('input');
   const searchField = useTemplateRef<{$el: HTMLElement}>('searchField');
-  const hint = useTemplateRef<HTMLElement>('hint');
   const contextNote = useTemplateRef<HTMLElement>('contextNote');
 
   /** What the key that opens an item is called on this platform. */
@@ -356,26 +355,23 @@
   }
 
   function onOpened(): void {
-    describeByHint(searchField.value?.$el);
+    describeByContextNote(searchField.value?.$el);
   }
 
   /**
-   * Describes a search input by what choosing a result does, then the
-   * keyboard instructions. The search field manages its input's
-   * `aria-describedby`, ordering it as the page is, so they join through it
-   * rather than being set on the input directly.
+   * Describes a search input by what choosing a result does. The keys are
+   * the usual combobox ones, so they're left to the keyboard instructions,
+   * not read each time the input is focused. The search field manages its
+   * input's `aria-describedby`, so the note joins through it rather than
+   * being set on the input directly.
    */
-  function describeByHint(field: Element | null | undefined): void {
-    const describe = (
-      field as
-        | (Element & {addToAriaDescribedBy?: (element: HTMLElement) => void})
-        | undefined
-    )?.addToAriaDescribedBy;
-
-    for (const element of [contextNote.value, hint.value]) {
-      if (element) {
-        describe?.call(field, element);
-      }
+  function describeByContextNote(field: Element | null | undefined): void {
+    if (contextNote.value) {
+      (
+        field as
+          | (Element & {addToAriaDescribedBy?: (element: HTMLElement) => void})
+          | undefined
+      )?.addToAriaDescribedBy?.(contextNote.value);
     }
   }
 
@@ -480,7 +476,9 @@
       )?.focus();
 
       if (current.view.type === 'docs') {
-        describeByHint(viewBody.value?.querySelector('craft-input-search'));
+        describeByContextNote(
+          viewBody.value?.querySelector('craft-input-search')
+        );
       }
     } else if (previous && isCommandPaletteOpen.value) {
       input.value?.focus();
@@ -917,12 +915,7 @@
           {{ t('Keyboard instructions') }}
         </h2>
         <!-- `role="list"` keeps the list's semantics in Safari, which drops them without list styling. -->
-        <ul
-          :id="`${id}-hint`"
-          ref="hint"
-          role="list"
-          class="command-palette__hint-list"
-        >
+        <ul role="list" class="command-palette__hint-list">
           <li
             v-for="item in hints"
             :key="item.label"

@@ -1,7 +1,8 @@
 <script setup lang="ts">
   /**
-   * A result's own actions, in a group after the palette's listbox: the
-   * active result's, or the one under the pointer's.
+   * A result's own actions, in a menu after the palette's listbox: the
+   * active result's, or the one under the pointer's. Its button is named for
+   * the result, so it needs no group around it to say whose actions they are.
    *
    * A listbox option can't hold controls, so the menu lives out here instead,
    * where Tab from the search input reaches it. It's drawn over the space the
@@ -78,13 +79,11 @@
 
 <template>
   <div
-    role="group"
     class="command-palette-actions"
     :class="{
       'command-palette-actions--quiet': !props.active,
       'command-palette-actions--danger': props.item.variant === 'danger',
     }"
-    :aria-label="t('Actions for {item}', {item: props.item.label})"
   >
     <ActionMenu
       :actions="menuActions(props.item)"
