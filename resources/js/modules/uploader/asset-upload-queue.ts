@@ -1,4 +1,4 @@
-import {actionClient, t} from '@craftcms/ui';
+import {actionClient} from '@craftcms/ui';
 import {router} from '@inertiajs/vue3';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
 import ResolveUploadConflictController from '@actions/Assets/ResolveUploadConflictController';
@@ -9,6 +9,7 @@ import type {ConflictResolution} from '@/modules/assets/assetMover';
 import {
   type AssetUploadDestination,
   createUploadConflictDetails,
+  uploadDuplicatesMessage,
   createUploadCompleteNotification,
 } from './upload-notification';
 
@@ -153,15 +154,13 @@ export class AssetUploadQueue extends UploadQueue<
     job.notification.showDetails(
       createUploadConflictDetails(
         error ??
-          t('“{filename}” looks like an image you already have.', {
-            filename: job.upload.file.name,
-          }),
+          uploadDuplicatesMessage(job.upload.file.name, duplicates.length),
         onChoice,
         {
           duplicates,
           navigate: (url) => router.visit(url),
-          // Only one image for it to replace
-          replaceable: duplicates.length === 1,
+          // With several, there's no one image for it to replace
+          multiple: duplicates.length > 1,
         }
       )
     );

@@ -6,8 +6,14 @@ import type {FileUploadNotificationElement} from './file-upload-notification.ce'
 const ui = vi.hoisted(() => ({on: vi.fn(), post: vi.fn(), visit: vi.fn()}));
 vi.mock('@inertiajs/vue3', () => ({router: {on: ui.on, visit: ui.visit}}));
 vi.mock('@craftcms/ui', () => ({
-  t: (message: string, parameters?: {num: number}) =>
-    parameters?.num ? `${parameters.num} files uploaded.` : message,
+  t: (message: string, parameters?: Record<string, string | number>) =>
+    message.includes('{filename}')
+      ? message.replace(/\{(\w+)(?:, number)?\}/g, (_, key) =>
+          String(parameters?.[key])
+        )
+      : parameters?.num
+        ? `${parameters.num} files uploaded.`
+        : message,
   actionClient: {post: ui.post},
 }));
 
@@ -101,9 +107,15 @@ const conflict = {
   conflict: 'That filename exists.',
   conflictingAssetId: 20,
 };
+const chip = (id: number, title: string) => ({
+  id,
+  title,
+  url: `/admin/assets/edit/${id}`,
+  chipHtml: `<craft-chip data-id="${id}"><a class="label-link" href="/admin/assets/edit/${id}"><span>${title}</span></a></craft-chip>`,
+});
 const duplicated = {
   assetId: 12,
-  duplicates: [{id: 5, title: 'Harbor at dusk', url: '/admin/assets/edit/5'}],
+  duplicates: [chip(5, 'Harbor at dusk')],
 };
 
 beforeEach(() => {
@@ -233,14 +245,14 @@ it('replaces the image an upload looks like a copy of, on request', async () => 
   );
 });
 
-it('only offers to replace an image when an upload looks like a copy of one', async () => {
+it('offers to keep all, and not replace, when an upload looks like a copy of several', async () => {
   await uploadDuplicate({
     ...duplicated,
-    duplicates: [
-      ...duplicated.duplicates,
-      {id: 6, title: 'Harbor at night', url: '/admin/assets/edit/6'},
-    ],
+    duplicates: [...duplicated.duplicates, chip(6, 'Harbor at night')],
   });
+  expect(notices[0]!.textContent).toContain(
+    '“photo.png” looks like 2 images you already have.'
+  );
   const choices = notices[0]!.querySelector<LitElement>(
     'craft-asset-conflict-resolution'
   )!;
@@ -249,7 +261,7 @@ it('only offers to replace an image when an upload looks like a copy of one', as
     [...choices.querySelectorAll('craft-button')].map((button) =>
       button.textContent?.trim()
     )
-  ).toEqual(['Cancel', 'Keep both']);
+  ).toEqual(['Cancel', 'Keep all']);
 });
 
 it('discards an upload that looks like a copy when canceled', async () => {
@@ -453,9 +465,7 @@ async function uploadDuplicate(
   await vi.waitFor(() => expect(transfers[0]!.upload).toHaveBeenCalled());
   transfers[0]!.complete(result);
   await vi.waitFor(() =>
-    expect(notices[0]!.textContent).toContain(
-      'looks like an image you already have.'
-    )
+    expect(notices[0]!.textContent).toContain('you already have.')
   );
 }
 

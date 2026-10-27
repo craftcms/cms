@@ -14,6 +14,7 @@ use CraftCms\Cms\Asset\Enums\AssetIngestStatus;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Elements;
@@ -42,6 +43,7 @@ readonly class AssetUploadHandler
         private Fields $fields,
         private Elements $elements,
         private ImageDuplicates $imageDuplicates,
+        private ElementHtml $elementHtml,
     ) {}
 
     /**
@@ -275,7 +277,7 @@ readonly class AssetUploadHandler
      * Returns the images an uploaded one looks like a copy of, which the uploader can view, so they can be told
      * before they use it.
      *
-     * @return list<array{id: int, title: string, url: string}>
+     * @return list<array{id: int, title: string, url: string, chipHtml: string}>
      */
     private function duplicates(Asset $asset): array
     {
@@ -284,10 +286,15 @@ readonly class AssetUploadHandler
         }
 
         return array_values(array_map(
-            static fn (Asset $duplicate): array => [
+            fn (Asset $duplicate): array => [
                 'id' => $duplicate->id,
                 'title' => (string) $duplicate->title,
                 'url' => (string) $duplicate->getCpEditUrl(),
+                'chipHtml' => $this->elementHtml->elementChipHtml($duplicate, [
+                    'autoReload' => false,
+                    'hyperlink' => true,
+                    'hyperlinkUrl' => (string) $duplicate->getCpEditUrl(),
+                ]),
             ],
             array_filter(
                 $this->imageDuplicates->find($asset),

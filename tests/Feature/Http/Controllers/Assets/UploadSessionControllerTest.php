@@ -357,7 +357,9 @@ describe('what the uploader read from the file', function () {
         expect($original['duplicates'])->toBe([])
             ->and($copy['duplicates'])->toHaveCount(1)
             ->and($copy['duplicates'][0])->toMatchArray(['id' => $original['assetId']])
-            ->and($copy['duplicates'][0]['url'])->toContain((string) $original['assetId']);
+            ->and($copy['duplicates'][0]['url'])->toContain((string) $original['assetId'])
+            // Shown as the image’s chip, linked to its edit page
+            ->and($copy['duplicates'][0]['chipHtml'])->toContain('<craft-chip', 'data-id="'.$original['assetId'].'"', 'href="'.$copy['duplicates'][0]['url'].'"');
     });
 
     it('only lists copies the uploader can view', function () {

@@ -131,10 +131,23 @@ export function showUploadDuplicates(
   navigate?: (url: string) => void
 ): () => void {
   return createUploadNotice(
-    t('“{filename}” looks like an image you already have.', {filename}),
+    uploadDuplicatesMessage(filename, duplicates.length),
     createDuplicateList(duplicates, navigate),
     () => {}
   );
+}
+
+/** Says that an upload looks like a copy of `count` images that are already uploaded. */
+export function uploadDuplicatesMessage(
+  filename: string,
+  count: number
+): string {
+  return count === 1
+    ? t('“{filename}” looks like an image you already have.', {filename})
+    : t('“{filename}” looks like {num, number} images you already have.', {
+        filename,
+        num: count,
+      });
 }
 
 /** A filename conflict's message and choices, for a transfer notification's details. */
@@ -144,19 +157,20 @@ export function createUploadConflictDetails(
   {
     duplicates,
     navigate,
-    replaceable = true,
+    multiple = false,
   }: {
     /** Images the upload looks like a copy of, listed under the message. */
     duplicates?: UploadDuplicate[];
     navigate?: (url: string) => void;
-    replaceable?: boolean;
+    /** Whether it conflicts with more than one file. */
+    multiple?: boolean;
   } = {}
 ): HTMLElement {
   const details = document.createElement('div');
   details.className = 'flex flex-col items-start gap-2';
   const choices = new AssetConflictResolutionElement();
   choices.className = 'flex flex-wrap gap-2';
-  choices.replaceable = replaceable;
+  choices.multiple = multiple;
   choices.addEventListener('craft-conflict-resolve', (event) =>
     onChoice((event as CustomEvent<ConflictResolution>).detail)
   );

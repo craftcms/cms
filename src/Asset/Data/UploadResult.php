@@ -57,7 +57,7 @@ class UploadResult implements Arrayable
     /**
      * Images the uploaded one looks like a copy of, which the uploader can view.
      *
-     * @var list<array{id: int, title: string, url: string}>
+     * @var list<array{id: int, title: string, url: string, chipHtml: string}>
      */
     public private(set) array $duplicates;
 
