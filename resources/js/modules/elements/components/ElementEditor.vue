@@ -569,7 +569,7 @@
 
   <Teleport
     :to="livePreviewTarget"
-    :disabled="!livePreview.isOpen.value || !livePreviewTarget"
+    :disabled="!livePreviewPane?.shown || !livePreviewTarget"
     defer
   >
     <div ref="content" class="py-lg">

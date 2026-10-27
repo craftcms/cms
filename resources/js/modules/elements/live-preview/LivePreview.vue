@@ -63,8 +63,11 @@
   const stage = useTemplateRef<HTMLElement>('stage');
   const editorTarget = useTemplateRef<HTMLElement>('editorTarget');
 
+  /** Whether the pane is on screen, which outlasts `isOpen` while it slides out. */
+  const shown = ref(false);
+
   // An element rather than an id, so the content follows it if it's replaced.
-  defineExpose({editorTarget});
+  defineExpose({editorTarget, shown});
   const preview = props.controller;
 
   /*
@@ -395,6 +398,7 @@
       }
 
       if (open) {
+        shown.value = true;
         previouslyFocused = document.activeElement as HTMLElement | null;
         document.documentElement.classList.add('lp-open');
         addModalAttributes(el);
@@ -420,237 +424,244 @@
 
 <template>
   <Teleport to="body">
-    <div
-      v-show="preview.isOpen.value"
-      ref="root"
-      class="live-preview"
-      :class="{
-        'live-preview--dragging': handlePressed || resizer.isResizing.value,
-      }"
-      :aria-label="t('Preview')"
-      tabindex="-1"
-      :style="resizer.style.value"
-    >
-      <section
-        :id="editorId"
-        ref="editor"
-        class="lp-editor"
-        :aria-label="title"
+    <Transition name="live-preview" @after-leave="shown = false">
+      <div
+        v-show="preview.isOpen.value"
+        ref="root"
+        class="live-preview"
+        :class="{
+          'live-preview--dragging': handlePressed || resizer.isResizing.value,
+        }"
+        :aria-label="t('Preview')"
+        tabindex="-1"
+        :style="resizer.style.value"
       >
-        <header class="lp-editor__header">
+        <section
+          :id="editorId"
+          ref="editor"
+          class="lp-editor"
+          :aria-label="title"
+        >
+          <header class="lp-editor__header">
+            <a
+              :href="`#${previewPaneId}`"
+              class="skip-link lp-skip-link"
+              @click.prevent="skipToPreview"
+              >{{ t('Skip to top of preview') }}</a
+            >
+            <craft-button
+              v-if="!standalone"
+              type="button"
+              size="small"
+              icon="xmark"
+              variant="plain"
+              :aria-label="t('Close Preview')"
+              @click="preview.close()"
+            >
+            </craft-button>
+            <craft-button
+              v-else-if="standalone.editUrl"
+              size="small"
+              icon="arrow-up-right-from-square"
+              icon-position="suffix"
+              variant="plain"
+              :href="standalone.editUrl"
+              target="_blank"
+            >
+              {{ t('Edit') }}
+              <span class="sr-only">{{ t('Opens in a new window') }}</span>
+            </craft-button>
+            <div class="lp-editor__status">
+              <slot name="status"></slot>
+            </div>
+          </header>
+          <form
+            class="lp-editor__body"
+            novalidate
+            @submit.prevent="emit('save')"
+          >
+            <div ref="editorTarget"></div>
+          </form>
+          <footer class="lp-editor__footer">
+            <slot name="footer"></slot>
+          </footer>
+        </section>
+
+        <section
+          :id="previewPaneId"
+          ref="previewPane"
+          class="lp-preview"
+          :aria-label="t('Preview')"
+          tabindex="-1"
+        >
+          <ResizeHandle
+            :resizer="resizer"
+            @pointerdown="handlePressed = true"
+            :label="t('Resize editor')"
+            :controls="editorId"
+          />
+          <header class="lp-preview__toolbar">
+            <div>
+              <ActionMenu
+                v-if="preview.targets.value.length > 1"
+                :key="preview.activeIndex.value"
+                :actions="targetActions"
+                :label="preview.activeTarget.value?.label ?? null"
+                :flush="false"
+              >
+                <template #invoker="{attributes}">
+                  <craft-button
+                    v-bind="attributes"
+                    type="button"
+                    icon="chevron-down"
+                    icon-position="suffix"
+                  >
+                    {{ preview.activeTarget.value?.label }}
+                  </craft-button>
+                </template>
+              </ActionMenu>
+            </div>
+
+            <div class="flex gap-md items-center">
+              <craft-button-group
+                name="lp-device"
+                :value="preview.device.value"
+                :aria-label="t('Device type')"
+                @change="onDeviceChange"
+              >
+                <craft-button
+                  v-for="(label, type) in deviceLabels"
+                  :id="`${controlId}-${type}`"
+                  :key="type"
+                  :value="type"
+                  icon
+                >
+                  <craft-icon
+                    :name="deviceIcons[type]"
+                    :label="label"
+                  ></craft-icon>
+                </craft-button>
+              </craft-button-group>
+              <craft-tooltip
+                v-for="(label, type) in deviceLabels"
+                :key="type"
+                :for="`${controlId}-${type}`"
+              >
+                {{ label }}
+              </craft-tooltip>
+
+              <craft-button
+                :id="`${controlId}-rotate`"
+                type="button"
+                icon="rotate"
+                :disabled="preview.device.value === 'desktop'"
+                :aria-label="t('Rotate')"
+                @click="rotate"
+              ></craft-button>
+              <craft-tooltip :for="`${controlId}-rotate`">
+                {{ t('Rotate') }}
+              </craft-tooltip>
+            </div>
+
+            <div class="justify-self-end">
+              <craft-button
+                :id="`${controlId}-refresh`"
+                type="button"
+                icon="arrows-rotate"
+                :disabled="preview.isLoading.value"
+                .loading="preview.isLoading.value"
+                @click="preview.refresh({reload: true})"
+              >
+                {{ t('Refresh') }}
+              </craft-button>
+              <craft-tooltip :for="`${controlId}-refresh`">
+                {{ t('Reload the preview') }}
+              </craft-tooltip>
+
+              <template v-if="currentUrl">
+                <craft-button
+                  :id="newTabLinkId"
+                  icon
+                  :href="currentUrl"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <craft-icon
+                    name="arrow-up-right-from-square"
+                    :label="t('Open in a new tab')"
+                  ></craft-icon>
+                </craft-button>
+                <craft-tooltip :for="newTabLinkId">
+                  {{ t('Open in a new tab') }}
+                </craft-tooltip>
+              </template>
+            </div>
+          </header>
+
+          <div ref="stage" class="lp-preview__stage">
+            <craft-callout
+              v-if="preview.error.value"
+              variant="danger"
+              icon="triangle-exclamation"
+              class="lp-preview__error"
+            >
+              {{ preview.error.value }}
+            </craft-callout>
+            <div
+              class="lp-device"
+              :class="{
+                'lp-device--framed': layout,
+                'lp-device--scrolls': resizerOptions,
+              }"
+              :style="deviceStyle"
+            >
+              <div class="lp-device__viewport" :style="viewportStyle">
+                <div
+                  class="lp-progress"
+                  :class="{'lp-progress--visible': progressVisible}"
+                  aria-hidden="true"
+                >
+                  <div
+                    class="lp-progress__bar"
+                    :style="{inlineSize: `${progress * 100}%`}"
+                  ></div>
+                </div>
+                <iframe
+                  v-for="frame in preview.frames.value"
+                  :key="frame.id"
+                  :ref="
+                    (el) =>
+                      onFrameMounted(frame, el as HTMLIFrameElement | null)
+                  "
+                  class="lp-frame"
+                  :class="{'lp-frame--ready': frame.ready}"
+                  :src="frame.url"
+                  :title="t('Preview')"
+                  :scrolling="resizerOptions ? 'no' : undefined"
+                  @load="
+                    preview.frameLoaded(
+                      frame.id,
+                      $event.target as HTMLIFrameElement
+                    )
+                  "
+                ></iframe>
+              </div>
+            </div>
+          </div>
+
+          <!-- Something to tab to after the frame. Without it, tabbing out of
+          the frame's last link leaves the focus trap nowhere to go. -->
           <a
             :href="`#${previewPaneId}`"
             class="skip-link lp-skip-link"
             @click.prevent="skipToPreview"
             >{{ t('Skip to top of preview') }}</a
           >
-          <craft-button
-            v-if="!standalone"
-            type="button"
-            size="small"
-            icon="xmark"
-            variant="plain"
-            :aria-label="t('Close Preview')"
-            @click="preview.close()"
-          >
-          </craft-button>
-          <craft-button
-            v-else-if="standalone.editUrl"
-            size="small"
-            icon="arrow-up-right-from-square"
-            icon-position="suffix"
-            variant="plain"
-            :href="standalone.editUrl"
-            target="_blank"
-          >
-            {{ t('Edit') }}
-            <span class="sr-only">{{ t('Opens in a new window') }}</span>
-          </craft-button>
-          <div class="lp-editor__status">
-            <slot name="status"></slot>
-          </div>
-        </header>
-        <form class="lp-editor__body" novalidate @submit.prevent="emit('save')">
-          <div ref="editorTarget"></div>
-        </form>
-        <footer class="lp-editor__footer">
-          <slot name="footer"></slot>
-        </footer>
-      </section>
 
-      <section
-        :id="previewPaneId"
-        ref="previewPane"
-        class="lp-preview"
-        :aria-label="t('Preview')"
-        tabindex="-1"
-      >
-        <ResizeHandle
-          :resizer="resizer"
-          @pointerdown="handlePressed = true"
-          :label="t('Resize editor')"
-          :controls="editorId"
-        />
-        <header class="lp-preview__toolbar">
-          <div>
-            <ActionMenu
-              v-if="preview.targets.value.length > 1"
-              :key="preview.activeIndex.value"
-              :actions="targetActions"
-              :label="preview.activeTarget.value?.label ?? null"
-              :flush="false"
-            >
-              <template #invoker="{attributes}">
-                <craft-button
-                  v-bind="attributes"
-                  type="button"
-                  icon="chevron-down"
-                  icon-position="suffix"
-                >
-                  {{ preview.activeTarget.value?.label }}
-                </craft-button>
-              </template>
-            </ActionMenu>
-          </div>
-
-          <div class="flex gap-md items-center">
-            <craft-button-group
-              name="lp-device"
-              :value="preview.device.value"
-              :aria-label="t('Device type')"
-              @change="onDeviceChange"
-            >
-              <craft-button
-                v-for="(label, type) in deviceLabels"
-                :id="`${controlId}-${type}`"
-                :key="type"
-                :value="type"
-                icon
-              >
-                <craft-icon
-                  :name="deviceIcons[type]"
-                  :label="label"
-                ></craft-icon>
-              </craft-button>
-            </craft-button-group>
-            <craft-tooltip
-              v-for="(label, type) in deviceLabels"
-              :key="type"
-              :for="`${controlId}-${type}`"
-            >
-              {{ label }}
-            </craft-tooltip>
-
-            <craft-button
-              :id="`${controlId}-rotate`"
-              type="button"
-              icon="rotate"
-              :disabled="preview.device.value === 'desktop'"
-              :aria-label="t('Rotate')"
-              @click="rotate"
-            ></craft-button>
-            <craft-tooltip :for="`${controlId}-rotate`">
-              {{ t('Rotate') }}
-            </craft-tooltip>
-          </div>
-
-          <div class="justify-self-end">
-            <craft-button
-              :id="`${controlId}-refresh`"
-              type="button"
-              icon="arrows-rotate"
-              :disabled="preview.isLoading.value"
-              .loading="preview.isLoading.value"
-              @click="preview.refresh({reload: true})"
-            >
-              {{ t('Refresh') }}
-            </craft-button>
-            <craft-tooltip :for="`${controlId}-refresh`">
-              {{ t('Reload the preview') }}
-            </craft-tooltip>
-
-            <template v-if="currentUrl">
-              <craft-button
-                :id="newTabLinkId"
-                icon
-                :href="currentUrl"
-                target="_blank"
-                rel="noopener"
-              >
-                <craft-icon
-                  name="arrow-up-right-from-square"
-                  :label="t('Open in a new tab')"
-                ></craft-icon>
-              </craft-button>
-              <craft-tooltip :for="newTabLinkId">
-                {{ t('Open in a new tab') }}
-              </craft-tooltip>
-            </template>
-          </div>
-        </header>
-
-        <div ref="stage" class="lp-preview__stage">
-          <craft-callout
-            v-if="preview.error.value"
-            variant="danger"
-            icon="triangle-exclamation"
-            class="lp-preview__error"
-          >
-            {{ preview.error.value }}
-          </craft-callout>
-          <div
-            class="lp-device"
-            :class="{
-              'lp-device--framed': layout,
-              'lp-device--scrolls': resizerOptions,
-            }"
-            :style="deviceStyle"
-          >
-            <div class="lp-device__viewport" :style="viewportStyle">
-              <div
-                class="lp-progress"
-                :class="{'lp-progress--visible': progressVisible}"
-                aria-hidden="true"
-              >
-                <div
-                  class="lp-progress__bar"
-                  :style="{inlineSize: `${progress * 100}%`}"
-                ></div>
-              </div>
-              <iframe
-                v-for="frame in preview.frames.value"
-                :key="frame.id"
-                :ref="
-                  (el) => onFrameMounted(frame, el as HTMLIFrameElement | null)
-                "
-                class="lp-frame"
-                :class="{'lp-frame--ready': frame.ready}"
-                :src="frame.url"
-                :title="t('Preview')"
-                :scrolling="resizerOptions ? 'no' : undefined"
-                @load="
-                  preview.frameLoaded(
-                    frame.id,
-                    $event.target as HTMLIFrameElement
-                  )
-                "
-              ></iframe>
-            </div>
-          </div>
-        </div>
-
-        <!-- Something to tab to after the frame. Without it, tabbing out of
-          the frame's last link leaves the focus trap nowhere to go. -->
-        <a
-          :href="`#${previewPaneId}`"
-          class="skip-link lp-skip-link"
-          @click.prevent="skipToPreview"
-          >{{ t('Skip to top of preview') }}</a
-        >
-
-        <div class="sr-only" role="status">{{ announcement }}</div>
-      </section>
-    </div>
+          <div class="sr-only" role="status">{{ announcement }}</div>
+        </section>
+      </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -664,6 +675,46 @@
     /* Without this the row grows to fit the editor, and the preview with it. */
     grid-template-rows: minmax(0, 1fr);
     background-color: var(--c-surface-sunken);
+  }
+
+  /* The editor slides in from one side and the preview from the other, over
+     the page as the backdrop fades in. */
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .live-preview-enter-active,
+    .live-preview-leave-active {
+      transition: background-color 400ms ease;
+
+      & > .lp-editor,
+      & > .lp-preview {
+        transition: translate 400ms ease;
+      }
+    }
+
+    .live-preview-enter-from,
+    .live-preview-leave-to {
+      background-color: transparent;
+
+      & > .lp-editor {
+        translate: -100% 0;
+      }
+
+      & > .lp-preview {
+        translate: 100% 0;
+      }
+    }
+
+    [dir='rtl'] {
+      .live-preview-enter-from,
+      .live-preview-leave-to {
+        & > .lp-editor {
+          translate: 100% 0;
+        }
+
+        & > .lp-preview {
+          translate: -100% 0;
+        }
+      }
+    }
   }
 
   .lp-editor {
