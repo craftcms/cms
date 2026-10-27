@@ -13,6 +13,7 @@ function payload(overrides: Partial<ElementPreview> = {}): ElementPreview {
     createTokenUrl: '/actions/preview/create-token',
     tokenParams: {canonicalId: 1, siteId: 1, previewToken: 'enc-1'},
     token: 'token-1',
+    tokenDuration: 3600,
     tokenParam: 'token',
     paramValue: 'param-1',
     siteTokenParam: 'siteToken',
@@ -137,6 +138,25 @@ describe('useLivePreview', () => {
     expect(frameUrl(preview).searchParams.get('x-craft-live-preview')).toBe(
       'param-2'
     );
+  });
+
+  it('asks for its token again halfway through its life, which keeps it alive', async () => {
+    vi.useFakeTimers({toFake: ['Date']});
+    try {
+      const preview = mount();
+      await preview.open();
+
+      vi.setSystemTime(Date.now() + 29 * 60_000);
+      await preview.refresh({reload: true});
+      expect(post).toHaveBeenCalledOnce();
+
+      vi.setSystemTime(Date.now() + 2 * 60_000);
+      await preview.refresh({reload: true});
+      expect(post).toHaveBeenCalledTimes(2);
+      expect(frameUrl(preview).searchParams.get('token')).toBe('token-1');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('creates a new token and reloads when the element changes', async () => {

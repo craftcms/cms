@@ -29,6 +29,7 @@ use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Models\ReleaseItem;
 use CraftCms\Cms\Release\Releases;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -573,6 +574,7 @@ class ElementEditViewModel extends ViewModel
             'createTokenUrl' => Url::actionUrl('preview/create-token'),
             'tokenParams' => $this->previewTokenParams(),
             'token' => $this->previewToken(),
+            'tokenDuration' => app(RouteTokens::class)->previewTokenDuration(),
             'tokenParam' => $config->tokenParam,
             'paramValue' => Crypt::encrypt(Str::random(10)),
             'siteTokenParam' => $config->siteToken,

@@ -32,6 +32,8 @@ export interface ElementPreview {
   createTokenUrl: string;
   tokenParams: Record<string, string | number>;
   token: string;
+  /** How long the token lasts once created, in seconds. */
+  tokenDuration: number;
   tokenParam: string;
   paramValue: string;
   siteTokenParam: string;
@@ -104,6 +106,8 @@ export function useLivePreview(
     identity: string;
     value: string;
     created: Promise<unknown> | null;
+    /** When `created` was asked for. */
+    createdAt: number;
     params: ElementPreview['tokenParams'];
     url: string;
   } | null>(null);
@@ -122,6 +126,7 @@ export function useLivePreview(
           identity: identityOf(data),
           value: data.token,
           created: null,
+          createdAt: 0,
           params: data.tokenParams,
           url: data.createTokenUrl,
         };
@@ -137,12 +142,26 @@ export function useLivePreview(
       throw new Error('Missing preview token');
     }
 
-    current.created ??= dependencies
-      .post(current.url, current.params)
-      .catch((error) => {
-        current.created = null;
-        throw error;
-      });
+    // Asked for again halfway through its life, which also extends it, so a
+    // preview left open doesn't outlive it.
+    const duration = (preview()?.tokenDuration ?? 0) * 1000;
+    if (
+      current.created &&
+      duration &&
+      Date.now() - current.createdAt > duration / 2
+    ) {
+      current.created = null;
+    }
+
+    if (!current.created) {
+      current.createdAt = Date.now();
+      current.created = dependencies
+        .post(current.url, current.params)
+        .catch((error) => {
+          current.created = null;
+          throw error;
+        });
+    }
     await current.created;
 
     return current.value;

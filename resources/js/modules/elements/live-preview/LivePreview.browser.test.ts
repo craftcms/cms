@@ -25,6 +25,7 @@ const payload: ElementPreview = {
   createTokenUrl: '/actions/preview/create-token',
   tokenParams: {canonicalId: 1, siteId: 1, previewToken: 'encrypted'},
   token: 'token',
+  tokenDuration: 86400,
   tokenParam: 'token',
   paramValue: 'param',
   siteTokenParam: 'siteToken',

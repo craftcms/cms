@@ -137,6 +137,30 @@ it('reuses a pre-generated token that already exists', function () {
     expect(RouteToken::count())->toBe(1);
 });
 
+it('keeps a reused token alive, and recreates it once it has expired', function () {
+    $params = [
+        'elementType' => CraftCms\Cms\Entry\Elements\Entry::class,
+        'siteId' => Site::firstOrFail()->id,
+        'canonicalId' => $this->entry->id,
+        'previewToken' => Crypt::encrypt($token = Str::random(32)),
+    ];
+
+    postJson(action([PreviewController::class, 'createToken']), $params)->assertOk();
+    RouteToken::where('token', $token)->update(['expiryDate' => now()->addMinute()]);
+
+    postJson(action([PreviewController::class, 'createToken']), $params)->assertOk();
+    expect(RouteToken::where('token', $token)->value('expiryDate'))
+        ->toBeGreaterThan(now()->addHour());
+
+    // Expired tokens are deleted once anything resolves a token.
+    RouteToken::where('token', $token)->delete();
+
+    postJson(action([PreviewController::class, 'createToken']), $params)
+        ->assertOk()
+        ->assertJson(['token' => $token]);
+    expect(RouteToken::where('token', $token)->count())->toBe(1);
+});
+
 it('rejects a pre-generated token that routes somewhere else', function () {
     $other = Entry::factory()->create();
     SessionAuth::authorize("previewElement:{$other->id}");
