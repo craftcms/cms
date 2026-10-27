@@ -515,7 +515,13 @@ JS;
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var LinkData|null $value */
-        return (string) ($value?->getLink() ?? '');
+        $html = (string) ($value?->getLink() ?? '');
+
+        if ($html !== '' && in_array($element->viewMode, ['cards', 'table'], true)) {
+            return Html::tag('craft-link', $html);
+        }
+
+        return $html;
     }
 
     #[Override]
@@ -526,7 +532,7 @@ JS;
             $value = new LinkData($url, new UrlType);
         }
 
-        return $this->getPreviewHtml($value, new EntryElement);
+        return $this->getPreviewHtml($value, new EntryElement(['viewMode' => 'cards']));
     }
 
     #[Override]
