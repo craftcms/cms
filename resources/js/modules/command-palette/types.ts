@@ -77,7 +77,8 @@ export interface CommandPaletteProvider {
 /**
  * The props a registered view component receives. It emits `done` once its
  * work succeeded, which closes the palette, and `back` to return to the
- * search view.
+ * search view. A view with a search of its own emits `query` as it changes,
+ * so the palette's keyboard instructions say Escape clears it.
  */
 export interface CommandPaletteViewProps {
   item: CommandPaletteItem;
@@ -101,6 +102,15 @@ export interface CommandPaletteViewResult {
 }
 
 export type CommandPaletteViewComponent = Component<CommandPaletteViewProps>;
+
+/** A result as its listbox lists it. */
+export interface ResultRow {
+  item: CommandPaletteItem;
+  /** Its position across every section, which the active option is kept by. */
+  index: number;
+  /** The option's id, for `aria-activedescendant`. */
+  optionId: string;
+}
 
 /** Whether the item has a menu of its own actions. */
 export function hasActions(item: CommandPaletteItem): boolean {

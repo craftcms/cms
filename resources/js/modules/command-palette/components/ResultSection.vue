@@ -12,15 +12,7 @@
    * the space kept for it here.
    */
   import {t} from '@craftcms/ui';
-  import {hasActions, type CommandPaletteItem} from '../types';
-
-  export interface ResultRow {
-    item: CommandPaletteItem;
-    /** Its position across every section, which the active option is kept by. */
-    index: number;
-    /** The option's id, for `aria-activedescendant`. */
-    optionId: string;
-  }
+  import {hasActions, type CommandPaletteItem, type ResultRow} from '../types';
 
   withDefaults(
     defineProps<{

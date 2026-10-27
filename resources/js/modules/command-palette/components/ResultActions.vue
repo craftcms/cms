@@ -1,3 +1,10 @@
+<script lang="ts">
+  /** Whether focus is on a result's actions, or in their open menu. */
+  export function actionsHaveFocus(): boolean {
+    return Boolean(document.activeElement?.closest('.command-palette-actions'));
+  }
+</script>
+
 <script setup lang="ts">
   /**
    * A result's own actions, in a menu after the palette's listbox: the
@@ -5,11 +12,18 @@
    * the result, so it needs no group around it to say whose actions they are.
    *
    * A listbox option can't hold controls, so the menu lives out here instead,
-   * where Tab from the search input reaches it. It's drawn over the space the
-   * active option keeps for it, so it still looks like part of the row. Key it
-   * by the item: the menu's button is rendered once, label and all.
+   * where Tab from the search input reaches it. It places itself over the
+   * space its option keeps for it, so it still looks like part of the row.
+   * Key it by the item: the menu's button is rendered once, label and all.
    */
   import {t, type BaseAction} from '@craftcms/ui';
+  import {
+    onBeforeUnmount,
+    onMounted,
+    shallowRef,
+    useTemplateRef,
+    watch,
+  } from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import {createElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
@@ -17,6 +31,8 @@
 
   const props = defineProps<{
     item: CommandPaletteItem;
+    /** Its option's id, over whose space for the actions it goes. */
+    optionId: string;
     /** Whether its row is the active option, rather than just under the pointer. */
     active: boolean;
   }>();
@@ -27,6 +43,42 @@
   }>();
 
   const elementActionItems = createElementActionMenu();
+
+  const root = useTemplateRef<HTMLElement>('root');
+  const placement = shallowRef<Record<string, string>>({});
+
+  /**
+   * Goes over the space its option keeps for it, measured from the results it
+   * scrolls with. Called again by the palette when the results change.
+   */
+  function place(): void {
+    const container = root.value?.offsetParent;
+    const space = document
+      .getElementById(props.optionId)
+      ?.querySelector('[data-command-palette-actions-slot]');
+
+    if (!space || !container) {
+      return;
+    }
+
+    const box = space.getBoundingClientRect();
+    const outer = container.getBoundingClientRect();
+    placement.value = {
+      top: `${box.top - outer.top + container.scrollTop}px`,
+      left: `${box.left - outer.left + container.scrollLeft}px`,
+      width: `${box.width}px`,
+      height: `${box.height}px`,
+    };
+  }
+
+  watch(() => props.optionId, place, {flush: 'post'});
+  onMounted(() => {
+    place();
+    window.addEventListener('resize', place);
+  });
+  onBeforeUnmount(() => window.removeEventListener('resize', place));
+
+  defineExpose({place});
 
   /**
    * The item's menu: its own actions, then the element's, mapped the way
@@ -79,7 +131,9 @@
 
 <template>
   <div
+    ref="root"
     class="command-palette-actions"
+    :style="placement"
     :class="{
       'command-palette-actions--quiet': !props.active,
       'command-palette-actions--danger': props.item.variant === 'danger',

@@ -22,7 +22,6 @@
   import {
     computed,
     nextTick,
-    onBeforeUnmount,
     onMounted,
     shallowRef,
     useId,
@@ -45,6 +44,7 @@
   } from '../registry';
   import {destructiveLast, matchesWords} from '../rank';
   import {redirectAfter, runHttpAction} from '../run';
+  import {useResultsListbox} from '../useResultsListbox';
   import {
     createPageActionsProvider,
     onPageActions,
@@ -56,13 +56,14 @@
     type CommandPaletteProvider,
     type CommandPaletteView,
     type CommandPaletteViewResult,
+    type ResultRow,
   } from '../types';
   import {useCommandPaletteSearch} from '../useCommandPaletteSearch';
   import ConfirmView from './ConfirmView.vue';
   import DocsSearchView from './DocsSearchView.vue';
   import NotificationsView from './NotificationsView.vue';
-  import ResultActions from './ResultActions.vue';
-  import ResultSection, {type ResultRow} from './ResultSection.vue';
+  import ResultActions, {actionsHaveFocus} from './ResultActions.vue';
+  import ResultSection from './ResultSection.vue';
   import ShortcutsView from './ShortcutsView.vue';
   import UiFormView from './UiFormView.vue';
 
@@ -108,7 +109,7 @@
     return: {symbol: returnKey, name: returnKey},
     escape: {symbol: 'Esc', name: t('Escape')},
   } satisfies Record<string, HintKey>;
-  const results = useTemplateRef<HTMLElement>('results');
+  const actions = useTemplateRef<{place: () => void}>('actions');
   const viewHeading = useTemplateRef<HTMLElement>('viewHeading');
   const viewBody = useTemplateRef<HTMLElement>('viewBody');
 
@@ -194,8 +195,13 @@
   const rows = computed(() =>
     rowsBySection.value.flatMap((section) => section.rows)
   );
-  const selectedRow = computed(() => rows.value[selectedIndex.value] ?? null);
-  const listboxId = `${id}-listbox`;
+  const {
+    listboxId,
+    selectedRow,
+    comboboxAttributes,
+    indexAfter,
+    scrollSelectedIntoView,
+  } = useResultsListbox(id, rows, selectedIndex);
   const selectedHasActions = computed(() =>
     Boolean(selectedRow.value && hasActions(selectedRow.value.item))
   );
@@ -465,6 +471,7 @@
   }
 
   watch(activeView, async (current, previous) => {
+    viewQuery.value = '';
     await nextTick();
 
     if (current) {
@@ -572,10 +579,6 @@
     close();
   }
 
-  function actionsHaveFocus(): boolean {
-    return Boolean(document.activeElement?.closest('.command-palette-actions'));
-  }
-
   function select(index: number): void {
     selectedIndex.value = index;
     selectionMoved.value = true;
@@ -597,54 +600,19 @@
     }
   }
 
-  async function scrollSelectedIntoView(): Promise<void> {
-    await nextTick();
-    const row = selectedRow.value;
-
-    if (row) {
-      document.getElementById(row.optionId)?.scrollIntoView({block: 'nearest'});
-    }
-  }
-
-  /** Where the shown actions go: over the space their option keeps for them. */
-  const actionsStyle = shallowRef<Record<string, string>>({});
-
-  function placeActions(): void {
-    const row = actionsRow.value;
-    const container = results.value;
-    const slot = row
-      ? document
-          .getElementById(row.optionId)
-          ?.querySelector('[data-command-palette-actions-slot]')
-      : null;
-
-    if (!slot || !container) {
-      return;
-    }
-
-    const box = slot.getBoundingClientRect();
-    const outer = container.getBoundingClientRect();
-    actionsStyle.value = {
-      top: `${box.top - outer.top + container.scrollTop}px`,
-      left: `${box.left - outer.left + container.scrollLeft}px`,
-      width: `${box.width}px`,
-      height: `${box.height}px`,
-    };
-  }
-
-  watch([actionsRow, rows], placeActions, {flush: 'post'});
-  onMounted(() => window.addEventListener('resize', placeActions));
-  onBeforeUnmount(() => window.removeEventListener('resize', placeActions));
+  // Its option can move as results come in, taking the space kept for the
+  // actions with it.
+  watch(rows, () => actions.value?.place(), {flush: 'post'});
 
   function moveSelection(step: number): void {
-    const count = rows.value.length;
+    const index = indexAfter(step);
 
-    if (!count) {
+    if (index === null) {
       return;
     }
 
     hoveredId.value = null;
-    select((selectedIndex.value + step + count) % count);
+    select(index);
     void scrollSelectedIntoView();
   }
 
@@ -718,8 +686,8 @@
     event.stopPropagation();
   }
 
-  /** The open view, which may expose its own search `query`, as docs search does. */
-  const view = useTemplateRef<{query?: string} | null>('view');
+  /** The open view's own search, for one that has one, as docs search does. */
+  const viewQuery = shallowRef('');
 
   /** The keyboard instructions apply to the search, and to the docs search view's own. */
   const showsHint = computed(
@@ -733,7 +701,7 @@
   const contextNoteText = computed(() =>
     activeView.value
       ? t('Choosing a result opens it in a new tab.')
-      : t('Choosing a result opens it, which may take you to another page.')
+      : t('Choosing an item opens its page or runs its action.')
   );
 
   /**
@@ -755,7 +723,7 @@
   /** What Escape does where focus usually is: clear the search, go back, or close. */
   const escapeHint = computed(() => {
     if (activeView.value) {
-      return view.value?.query ? t('Clear search') : t('Back');
+      return viewQuery.value ? t('Clear search') : t('Back');
     }
 
     return query.value ? t('Clear search') : t('Close');
@@ -796,11 +764,7 @@
               slot="input"
               type="text"
               class="command-palette__input"
-              role="combobox"
-              :aria-expanded="rows.length ? 'true' : 'false'"
-              aria-autocomplete="list"
-              :aria-controls="listboxId"
-              :aria-activedescendant="selectedRow?.optionId"
+              v-bind="comboboxAttributes"
               autocapitalize="off"
               spellcheck="false"
               @keydown="onInputKeydown"
@@ -809,7 +773,6 @@
         </div>
 
         <div
-          ref="results"
           class="command-palette__results"
           :aria-busy="search.searching.value ? 'true' : 'false'"
           @pointerleave="onResultsPointerLeave"
@@ -842,10 +805,11 @@
           </div>
           <ResultActions
             v-if="actionsRow"
+            ref="actions"
             :key="actionsRow.item.id"
             :item="actionsRow.item"
+            :option-id="actionsRow.optionId"
             :active="actionsRow === selectedRow"
-            :style="actionsStyle"
             @focusin="selectionMoved = true"
             @dismiss="dismissForMenuAction"
           />
@@ -892,13 +856,13 @@
         </div>
         <component
           :is="activeViewComponent"
-          ref="view"
           :key="activeView.item.id"
           :item="activeView.item"
           :view="activeView.view"
           :actions-target="`#${id}-view-actions`"
           @done="finish"
           @back="back"
+          @query="(value: string) => (viewQuery = value)"
         />
       </div>
 

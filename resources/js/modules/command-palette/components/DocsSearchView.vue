@@ -12,11 +12,18 @@
   import {docs as docsUrl} from '@actions/CommandPaletteController';
   import {computed, onBeforeUnmount, shallowRef, useId, watch} from 'vue';
   import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
-  import {fromServerItem, type CommandPaletteItem} from '../types';
-  import ResultSection, {type ResultRow} from './ResultSection.vue';
+  import {
+    fromServerItem,
+    type CommandPaletteItem,
+    type ResultRow,
+  } from '../types';
+  import {useResultsListbox} from '../useResultsListbox';
+  import ResultSection from './ResultSection.vue';
 
-  defineEmits<{
+  const emit = defineEmits<{
     (event: 'back'): void;
+    /** Its search, so the palette's keyboard instructions say what Escape does. */
+    (event: 'query', query: string): void;
   }>();
 
   /** How long typing has to pause before craftcms.com is asked. */
@@ -40,7 +47,13 @@
       optionId: `${id}-option-${index}`,
     }))
   );
-  const selectedRow = computed(() => rows.value[selectedIndex.value] ?? null);
+  const {
+    listboxId,
+    selectedRow,
+    comboboxAttributes,
+    indexAfter,
+    scrollSelectedIntoView,
+  } = useResultsListbox(id, rows, selectedIndex);
   const term = computed(() => query.value.trim());
 
   const statusMessage = computed(() => {
@@ -117,25 +130,19 @@
   }
 
   function onInputKeydown(event: KeyboardEvent): void {
-    const count = rows.value.length;
-
     switch (event.key) {
       case 'ArrowDown':
-      case 'ArrowUp':
+      case 'ArrowUp': {
         event.preventDefault();
+        const index = indexAfter(event.key === 'ArrowDown' ? 1 : -1);
 
-        if (count) {
+        if (index !== null) {
           hoveredIndex.value = -1;
-          selectedIndex.value =
-            (selectedIndex.value +
-              (event.key === 'ArrowDown' ? 1 : -1) +
-              count) %
-            count;
-          document
-            .getElementById(selectedRow.value!.optionId)
-            ?.scrollIntoView({block: 'nearest'});
+          selectedIndex.value = index;
+          void scrollSelectedIntoView();
         }
         break;
+      }
       case 'Enter':
         if (event.isComposing || !selectedRow.value) {
           return;
@@ -147,8 +154,7 @@
     }
   }
 
-  // The palette's keyboard instructions say what Escape does, which depends on it.
-  defineExpose({query});
+  watch(query, (value) => emit('query', value));
 
   /** A click opens the result in a new tab, modified or not, as Return does. */
   function onActivate(item: CommandPaletteItem): void {
@@ -165,11 +171,7 @@
       <input
         slot="input"
         type="text"
-        role="combobox"
-        :aria-expanded="rows.length ? 'true' : 'false'"
-        aria-autocomplete="list"
-        :aria-controls="`${id}-listbox`"
-        :aria-activedescendant="selectedRow?.optionId"
+        v-bind="comboboxAttributes"
         autocapitalize="off"
         spellcheck="false"
         data-autofocus
@@ -182,7 +184,7 @@
         <craft-spinner :label="t('Searching…')"></craft-spinner>
       </div>
       <div
-        :id="`${id}-listbox`"
+        :id="listboxId"
         role="listbox"
         :aria-label="t('Results')"
         :hidden="!rows.length"

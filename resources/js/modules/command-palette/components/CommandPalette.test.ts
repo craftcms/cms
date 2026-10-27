@@ -734,9 +734,7 @@ describe('CommandPalette', () => {
         .querySelector('.command-palette > p.sr-only')
         ?.textContent?.trim();
 
-    expect(note()).toBe(
-      'Choosing a result opens it, which may take you to another page.'
-    );
+    expect(note()).toBe('Choosing an item opens its page or runs its action.');
 
     while (selected(input) !== 'Search Craft CMS documentation') {
       press(input, 'ArrowDown');
