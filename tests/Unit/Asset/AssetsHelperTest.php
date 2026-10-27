@@ -108,13 +108,12 @@ describe('filename2Title', function () {
         'special characters stripped' => ['file.name_is-with chars!@#$%^&*()', 'File name is with chars'],
     ]);
 
-    test('truncates titles longer than 255 characters', function () {
-        $longName = str_repeat('a', 300);
-
-        $result = AssetsHelper::filename2Title($longName);
-
-        expect(strlen($result))->toBeLessThanOrEqual(255);
-    });
+    test('truncates titles longer than 255 characters to their start', function (string $filename, string $expected) {
+        expect(AssetsHelper::filename2Title($filename))->toBe($expected);
+    })->with([
+        'words' => [str_repeat('long-', 60), 'Long'.str_repeat(' long', 50)],
+        'multibyte characters' => [str_repeat('é', 300), 'É'.str_repeat('é', 254)],
+    ]);
 });
 
 describe('getFileKindByExtension', function () {

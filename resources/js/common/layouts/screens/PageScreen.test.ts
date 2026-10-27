@@ -7,10 +7,13 @@ import PageScreen from './PageScreen.vue';
 
 type NavItem = CraftCms.Cms.Cp.Data.NavItem;
 
-const {Stub} = await vi.hoisted(async () => {
+const {Stub, pageProps} = await vi.hoisted(async () => {
   const {h} = await import('vue');
 
-  return {Stub: {render: () => h('div')}};
+  return {
+    Stub: {render: () => h('div')},
+    pageProps: {} as Record<string, unknown>,
+  };
 });
 
 vi.mock('@inertiajs/vue3', async () => ({
@@ -18,7 +21,11 @@ vi.mock('@inertiajs/vue3', async () => ({
   Head: Stub,
   usePage: () => ({
     url: '/admin/commerce/store-management',
-    props: {title: 'General', subnav: [navItem({label: 'General'})]},
+    props: {
+      title: 'General',
+      subnav: [navItem({label: 'General'})],
+      ...pageProps,
+    },
   }),
 }));
 vi.mock('@/common/composables/useCraftData', () => ({
@@ -94,6 +101,9 @@ beforeEach(() => {
 afterEach(() => {
   teardown?.();
   teardown = undefined;
+  for (const key of Object.keys(pageProps)) {
+    delete pageProps[key];
+  }
   vi.unstubAllGlobals();
   window.matchMedia = realMatchMedia;
 });
@@ -302,4 +312,46 @@ describe('PageScreen', () => {
       footer()?.closest<HTMLElement>('[style*="display: none"]')
     ).not.toBeNull();
   });
+
+  it.each([
+    {handlesReadOnly: false, notice: true, revert: false},
+    {handlesReadOnly: true, notice: false, revert: true},
+  ])(
+    'treats a read-only page by its own read-only handling (handles: $handlesReadOnly)',
+    async ({handlesReadOnly, notice, revert}) => {
+      stubViewport(true);
+      pageProps.readOnly = true;
+
+      const form = {
+        hasErrors: false,
+        errors: {},
+        processing: false,
+        isDirty: false,
+      } as unknown as InstanceType<typeof Object>;
+      const container = document.createElement('div');
+      document.body.append(container);
+
+      const app = createApp({
+        render: () =>
+          h(PageScreen, {
+            form,
+            defaultFormActions: [],
+            saveDisabled: true,
+            handlesReadOnly,
+            formAdditionalButtons: [{label: 'Revert content'}],
+          } as never),
+      });
+      app.mount(container);
+      teardown = () => {
+        app.unmount();
+        container.remove();
+      };
+      await nextTick();
+
+      expect(
+        container.textContent?.includes('permitted in this environment')
+      ).toBe(notice);
+      expect(container.textContent?.includes('Revert content')).toBe(revert);
+    }
+  );
 });

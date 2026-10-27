@@ -163,7 +163,9 @@
 
     return trail.length > 0 ? trail : null;
   });
-  const readOnly = computed(() => Boolean(page.props.readOnly));
+  const readOnly = computed(
+    () => !props.handlesReadOnly && Boolean(page.props.readOnly)
+  );
 
   const hasContextMenu = computed(() => regions.has('context-menu'));
   const hasNotices = computed(() => regions.has('content-notices'));

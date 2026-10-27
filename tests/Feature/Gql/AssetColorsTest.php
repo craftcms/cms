@@ -7,12 +7,12 @@ use CraftCms\Cms\Gql\Arguments\Mutations\Asset as AssetMutationArguments;
 
 it('queries an image’s colors', function (?array $stored, ?array $expected) {
     $asset = Asset::factory()->createElement(['kind' => 'image']);
-    Asset::whereKey($asset->id)->update(['colors' => $stored === null ? null : json_encode($stored)]);
+    Asset::whereKey($asset->id)->update(['analysis' => $stored === null ? null : json_encode(['colors' => $stored])]);
     gqlActivateFullAccessSchema();
 
-    graphQL("{ asset(id: {$asset->id}) { colors { dominant grid left right top bottom } } }")
+    graphQL("{ asset(id: {$asset->id}) { analysis { colors { dominant grid left right top bottom } } } }")
         ->assertOk()
-        ->assertJsonPath('data.asset.colors', $expected);
+        ->assertJsonPath('data.asset.analysis.colors', $expected);
 })->with([
     'sampled' => [
         ['dominant' => '#3a6ea5', 'grid' => [['#ff0000', '#3a6ea5', '#0000ff'], ['#990000', '#3a6ea5', '#000099']]],
@@ -34,7 +34,7 @@ it('queries an image’s colors', function (?array $stored, ?array $expected) {
 
 it('queries an image’s placeholder data URL', function () {
     $asset = Asset::factory()->createElement(['kind' => 'image']);
-    Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5']]])]);
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5']]]])]);
     gqlActivateFullAccessSchema();
 
     graphQL("{ asset(id: {$asset->id}) { placeholderDataUrl } }")
@@ -53,7 +53,7 @@ it('has no placeholder data URL for an image whose colors aren’t known', funct
 
 it('queries an image’s BlurHash', function (?array $stored, bool $hasHash) {
     $asset = Asset::factory()->createElement(['kind' => 'image']);
-    Asset::whereKey($asset->id)->update(['colors' => $stored === null ? null : json_encode($stored)]);
+    Asset::whereKey($asset->id)->update(['analysis' => $stored === null ? null : json_encode(['colors' => $stored])]);
     gqlActivateFullAccessSchema();
 
     graphQL("{ asset(id: {$asset->id}) { blurhash } }")
@@ -67,6 +67,56 @@ it('queries an image’s BlurHash', function (?array $stored, bool $hasHash) {
 it('can’t be set by mutations', function () {
     expect(AssetMutationArguments::getArguments())
         ->not->toHaveKey('colors')
+        ->not->toHaveKey('analysis')
         ->not->toHaveKey('placeholderDataUrl')
         ->not->toHaveKey('blurhash');
+});
+
+it('queries an image’s palette and the names of its colors', function () {
+    $asset = Asset::factory()->createElement(['kind' => 'image']);
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#c81e28', 'grid' => [], 'palette' => ['#c81e28', '#1e50c8', '#e01818'], 'weights' => [0.5, 0.3, 0.2]]])]);
+    gqlActivateFullAccessSchema();
+
+    graphQL("{ asset(id: {$asset->id}) { analysis { colors { palette labels weights } } } }")
+        ->assertOk()
+        ->assertJsonPath('data.asset.analysis.colors.palette', ['#c81e28', '#1e50c8', '#e01818'])
+        ->assertJsonPath('data.asset.analysis.colors.labels', ['red', 'blue'])
+        ->assertJsonPath('data.asset.analysis.colors.weights', [0.5, 0.3, 0.2]);
+});
+
+it('queries how light an image’s regions are, and which text color is legible over them', function () {
+    $asset = Asset::factory()->createElement(['kind' => 'image']);
+    $luminance = [[[0.0, 0.05], [0.01, 0.04]], [[0.8, 1.0], [0.9, 1.0]]];
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['grid' => [['#000000', '#000000'], ['#ffffff', '#ffffff']], 'luminance' => $luminance]])]);
+    gqlActivateFullAccessSchema();
+
+    graphQL("{ asset(id: {$asset->id}) { analysis { colors { luminance top: textColor(region: \"top\") { color contrast } anywhere: textColor { color contrast } } } } }")
+        ->assertOk()
+        ->assertJsonPath('data.asset.analysis.colors.luminance', [[[0, 0.05], [0.01, 0.04]], [[0.8, 1], [0.9, 1]]])
+        ->assertJsonPath('data.asset.analysis.colors.top', ['color' => '#ffffff', 'contrast' => 10.5])
+        ->assertJsonPath('data.asset.analysis.colors.anywhere', ['color' => '#ffffff', 'contrast' => 1]);
+});
+
+it('queries an image’s embedded metadata', function () {
+    $asset = Asset::factory()->createElement(['kind' => 'image']);
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['metadata' => ['creator' => 'Ada Park', 'keywords' => ['harbor']]])]);
+    gqlActivateFullAccessSchema();
+
+    graphQL("{ asset(id: {$asset->id}) { analysis { metadata { creator copyright keywords } } } }")
+        ->assertOk()
+        ->assertJsonPath('data.asset.analysis.metadata', ['creator' => 'Ada Park', 'copyright' => null, 'keywords' => ['harbor']]);
+});
+
+it('queries where an image was taken by place name, but not by its coordinates', function () {
+    $asset = Asset::factory()->createElement(['kind' => 'image']);
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['metadata' => [
+        'city' => 'Vienna', 'country' => 'Austria', 'latitude' => 48.2, 'longitude' => 16.37,
+    ]])]);
+    gqlActivateFullAccessSchema();
+
+    graphQL("{ asset(id: {$asset->id}) { analysis { metadata { city state country } } } }")
+        ->assertOk()
+        ->assertJsonPath('data.asset.analysis.metadata', ['city' => 'Vienna', 'state' => null, 'country' => 'Austria']);
+    graphQL("{ asset(id: {$asset->id}) { analysis { metadata { latitude } } } }")
+        ->assertJsonPath('errors.0.message', fn (string $message): bool => str_starts_with($message, 'Cannot query field "latitude"'));
 });

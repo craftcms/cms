@@ -7,6 +7,11 @@ namespace CraftCms\Cms\Ai;
 use CraftCms\Cms\Ai\Contracts\TaskInterface;
 use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Ai\Tasks\GenerateTitle;
+use CraftCms\Cms\Asset\Analysis\Tasks\ClassifyImage;
+use CraftCms\Cms\Asset\Analysis\Tasks\DetectFocalPoint;
+use CraftCms\Cms\Asset\Analysis\Tasks\GenerateAltText;
+use CraftCms\Cms\Asset\Analysis\Tasks\GenerateTitles;
+use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
 use CraftCms\Cms\Component\TypeRegistry;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
@@ -18,7 +23,7 @@ use InvalidArgumentException;
  * ```php
  * public function boot(AiTasks $tasks): void
  * {
- *     $tasks->register(DescribeImage::class);
+ *     $tasks->register(WriteMetaDescription::class);
  * }
  * ```
  *
@@ -31,7 +36,15 @@ class AiTasks extends TypeRegistry
 {
     protected const string CONTRACT = TaskInterface::class;
 
-    protected const array DEFAULT_TYPES = [Assistant::class, GenerateTitle::class];
+    protected const array DEFAULT_TYPES = [
+        Assistant::class,
+        GenerateTitle::class,
+        GenerateAltText::class,
+        GenerateTitles::class,
+        DetectFocalPoint::class,
+        TagImage::class,
+        ClassifyImage::class,
+    ];
 
     /**
      * @return Collection<string, class-string<TaskInterface>>

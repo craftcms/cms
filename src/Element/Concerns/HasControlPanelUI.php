@@ -1430,6 +1430,12 @@ JS,
         ]);
     }
 
+    /** @return list<array<string,mixed>> */
+    public function getMetadataGroups(): array
+    {
+        return [$this->getMetadata()];
+    }
+
     /**
      * Returns element metadata that should be shown within the editor sidebar.
      *

@@ -14,6 +14,11 @@ use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
 use CraftCms\Cms\Ai\Settings;
 use CraftCms\Cms\Ai\Tasks\Assistant;
+use CraftCms\Cms\Asset\Analysis\Tasks\ClassifyImage;
+use CraftCms\Cms\Asset\Analysis\Tasks\DetectFocalPoint;
+use CraftCms\Cms\Asset\Analysis\Tasks\GenerateAltText;
+use CraftCms\Cms\Asset\Analysis\Tasks\GenerateTitles;
+use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\Ai\AltTextTask;
 use CraftCms\Cms\Tests\Support\Ai\MediaTask;
@@ -73,6 +78,8 @@ beforeEach(function (): void {
         'openai' => ['driver' => 'openai', 'key' => 'sk-test'],
         'deepseek' => ['driver' => 'deepseek', 'key' => 'sk-test'],
     ]]);
+    // These tests are about their own tasks, not Craft’s
+    app(AiTasks::class)->remove(GenerateAltText::class, GenerateTitles::class, DetectFocalPoint::class, TagImage::class, ClassifyImage::class);
     app(AiTasks::class)->register(AltTextTask::class, SummarizeTask::class);
     app()->instance(Settings::class, new Settings([
         'defaults' => ['text' => ['provider' => 'openai', 'model' => 'gpt-vision']],

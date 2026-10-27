@@ -319,6 +319,7 @@ it('scopes the results to the subfolder named in the path', function () {
     $volume = Volumes::getVolumeById($volumeModel->id);
     // parent/ holds child/, so browsing parent/ should list child/ — not the
     // volume root's folders.
+    $parent = Folders::ensureFolderByFullPathAndVolume('parent', $volume);
     Folders::ensureFolderByFullPathAndVolume('parent/child', $volume);
 
     $cpTrigger = Cms::config()->cpTrigger;
@@ -326,6 +327,7 @@ it('scopes the results to the subfolder named in the path', function () {
     get("/{$cpTrigger}/assets/{$volumeModel->handle}/parent")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('source.data.folder-id', $parent->id)
             ->where('pagination.total', 1)
             ->has('data', 1)
             ->where('data.0.isFolder', true)

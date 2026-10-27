@@ -19,7 +19,7 @@ use CraftCms\Cms\Ai\Task;
 interface TaskInterface
 {
     /**
-     * Returns the task’s globally unique handle, such as `altText:describe`.
+     * Returns the task’s globally unique handle, such as `craft:altText` or `seo:metaDescription`.
      *
      * Prefix it with your plugin handle. It may only contain letters, numbers,
      * underscores, hyphens, and colons, and must start with a letter.
