@@ -147,7 +147,6 @@
 </template>
 
 <style scoped>
-  /* Placed over the active option's row by the palette, in that row's colors. */
   .command-palette-actions {
     position: absolute;
     display: flex;

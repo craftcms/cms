@@ -288,7 +288,6 @@
     color: inherit;
   }
 
-  /* The size of the small menu button that `ResultActions` puts over it. */
   .command-palette-row__actions {
     grid-column: 3;
     grid-row: 1;
