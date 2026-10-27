@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Exceptions\TemplateExitException;
@@ -18,6 +19,8 @@ use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
 
 class TemplateManagerLifecycleTestRenderer implements TemplateRendererInterface
@@ -285,9 +288,17 @@ it('renders inline strings without file lifecycle events', function () {
     Event::assertNotDispatched(PageTemplateRendered::class);
 });
 
-it('registers the iframe resizer for Live Preview page requests', function (bool $enabled, ?string $param, bool $expected) {
+it('registers the iframe resizer for Live Preview page requests', function (bool $enabled, ?string $param, bool $hasToken, bool $expected) {
     Cms::config()->useIframeResizer = $enabled;
+    $param = match ($param) {
+        'encrypted' => Crypt::encrypt('x'),
+        default => $param,
+    };
     app()->instance('request', Request::create('/', parameters: array_filter(['x-craft-live-preview' => $param])));
+
+    if ($hasToken) {
+        Context::addHidden(HandleTokenRequest::TOKEN_KEY, 'token');
+    }
 
     $registry = Mockery::spy(InternalAssetRegistry::class);
     app()->instance(InternalAssetRegistry::class, $registry);
@@ -298,7 +309,9 @@ it('registers the iframe resizer for Live Preview page requests', function (bool
         ? $registry->shouldHaveReceived('register')->with(ContentWindowAsset::class)->once()
         : $registry->shouldNotHaveReceived('register', [ContentWindowAsset::class]);
 })->with([
-    'enabled, live preview' => [true, 'x', true],
-    'disabled' => [false, 'x', false],
-    'not live preview' => [true, null, false],
+    'enabled, live preview' => [true, 'encrypted', true, true],
+    'disabled' => [false, 'encrypted', true, false],
+    'not live preview' => [true, null, true, false],
+    'param without a token' => [true, 'encrypted', false, false],
+    'param that is not encrypted' => [true, 'x', true, false],
 ]);

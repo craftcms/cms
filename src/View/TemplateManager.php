@@ -322,7 +322,8 @@ class TemplateManager extends Manager
         if (
             $templateMode === TemplateMode::Site &&
             Cms::config()->useIframeResizer &&
-            request()->query('x-craft-live-preview') !== null
+            request()->query('x-craft-live-preview') !== null &&
+            request()->isPreview()
         ) {
             app(InternalAssetRegistry::class)->register(ContentWindowAsset::class);
         }
