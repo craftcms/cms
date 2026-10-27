@@ -42,6 +42,25 @@ class AssetsHelper
     public const string INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
     /**
+     * The most characters a file’s preview text keeps, which is more than its icon shows.
+     *
+     * @see previewText()
+     *
+     * @internal
+     */
+    public const int PREVIEW_TEXT_LENGTH = 1000;
+
+    /**
+     * How many bytes to read from the start of a file for its preview text: enough for
+     * {@see PREVIEW_TEXT_LENGTH} characters of up to four bytes each.
+     *
+     * @see previewText()
+     *
+     * @internal
+     */
+    public const int PREVIEW_TEXT_SOURCE_LENGTH = self::PREVIEW_TEXT_LENGTH * 4;
+
+    /**
      * Get a temporary file path.
      *
      * @param  string  $extension  extension to use. "tmp" by default.
@@ -224,8 +243,8 @@ class AssetsHelper
     {
         $title = mb_ucfirst(implode(' ', Str::toWords($filename, false, true)));
 
-        if (strlen($title) > 255) {
-            return rtrim(substr($title, 255), ' ');
+        if (mb_strlen($title) > 255) {
+            return rtrim(mb_substr($title, 0, 255), ' ');
         }
 
         return $title;
@@ -554,6 +573,99 @@ class AssetsHelper
             'width' => '100%',
             'height' => '100%',
             'overflow' => 'visible',
+        ]);
+    }
+
+    /**
+     * Returns the start of a text file’s contents, up to {@see PREVIEW_TEXT_LENGTH} characters, for
+     * {@see Asset::$previewText}. It’s an empty string if there’s nothing to show, which still marks the file as read.
+     *
+     * @param  string  $contents  The start of the file, such as its first {@see PREVIEW_TEXT_SOURCE_LENGTH} bytes.
+     *
+     * @internal
+     */
+    public static function previewText(string $contents): string
+    {
+        $text = mb_scrub(mb_strcut($contents, 0, self::PREVIEW_TEXT_SOURCE_LENGTH, 'UTF-8'), 'UTF-8');
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        // Control characters other than line breaks and tabs have nothing to show
+        $text = (string) preg_replace('/[^\P{C}\n\t]/u', '', $text);
+
+        return rtrim(mb_substr($text, 0, self::PREVIEW_TEXT_LENGTH));
+    }
+
+    /**
+     * Returns the SVG contents for a closer look at a text file than its icon gives: the top of the page, zoomed in
+     * and cut off at the bottom, with the file’s preview text wrapping across it and fading toward the cut. It has no extension label, and fills a 240×160 box.
+     *
+     * Like {@see iconSvg()}, it comes in a light or dark variant for the control panel theme that’s showing, unless
+     * `$dark` says which.
+     *
+     * @internal
+     */
+    public static function previewTextSvg(string $previewText, ?bool $dark = null): string
+    {
+        $dark ??= Theme::resolveFor(currentUserElement()) === Theme::Dark;
+        $quietText = $dark ? '#a6b2c2' : '#5c6982';
+        // The page runs past the bottom of the box, so its bottom edge is never seen
+        $page = ['x' => 12, 'y' => 12, 'width' => 216, 'height' => 300, 'rx' => 6];
+
+        $paperNode = Html::tag('rect', '', [
+            ...$page,
+            'fill' => $dark ? '#1a2231' : '#fff',
+            'style' => sprintf(
+                '%sfilter: drop-shadow(0 2px 3px rgb(0 0 0 / %s))',
+                $dark ? 'fill: var(--c-color-black-fill-quiet, #1a2231); ' : '', $dark ? '0.6' : '0.18',
+            ),
+        ]);
+        $ringNode = Html::tag('rect', '', [
+            'x' => 11.5,
+            'y' => 11.5,
+            'width' => 217,
+            'height' => 301,
+            'rx' => 6.5,
+            'fill' => 'none',
+            'stroke' => $dark ? '#fff' : '#000',
+            'stroke-opacity' => $dark ? 0.25 : 0.18,
+        ]);
+
+        $fade = 'linear-gradient(#000 50%, rgb(0 0 0 / 30%))';
+        // Exactly this many lines fill the text area, so it's cut off between two lines rather than through one. It
+        // stops a little above the bottom of the box, leaving a gap below the last line.
+        $lines = 11;
+        $textHeight = 131;
+        $lineHeight = $textHeight / $lines;
+        $textNode = Html::tag('foreignObject', Html::tag('div', Html::encode($previewText), [
+            'xmlns' => 'http://www.w3.org/1999/xhtml',
+            'style' => [
+                'height' => '100%',
+                'overflow' => 'hidden',
+                'margin' => 0,
+                'font-family' => 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+                'font-size' => sprintf('%.2fpx', $lineHeight / 1.3),
+                'line-height' => sprintf('%.4fpx', $lineHeight),
+                'white-space' => 'pre-wrap',
+                'overflow-wrap' => 'anywhere',
+                'tab-size' => 4,
+                'color' => "var(--c-text-quiet, $quietText)",
+                '-webkit-mask-image' => $fade,
+                'mask-image' => $fade,
+            ],
+        ]), [
+            'x' => 26,
+            'y' => 26,
+            'width' => 188,
+            'height' => $textHeight,
+        ]);
+
+        return Html::tag('svg', $paperNode.$ringNode.$textNode, [
+            'xmlns' => 'http://www.w3.org/2000/svg',
+            'viewBox' => '0 0 240 160',
+            'width' => '100%',
+            'height' => '100%',
+            'overflow' => 'visible',
+            // Only the bottom is cut off, so the shadow still shows on the other sides
+            'style' => 'clip-path: inset(-20px -20px 0 -20px)',
         ]);
     }
 

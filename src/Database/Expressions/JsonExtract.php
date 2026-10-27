@@ -30,7 +30,7 @@ readonly class JsonExtract implements Expression
         $path = $this->formatPath($grammar);
 
         return match ($this->identify($grammar)) {
-            'mariadb' => "JSON_UNQUOTE(JSON_EXTRACT($expression, $path",
+            'mariadb' => "JSON_UNQUOTE(JSON_EXTRACT($expression, $path))",
             'pgsql' => "($expression#>>$path)",
             default => "($expression->>$path)",
         };
