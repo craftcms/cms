@@ -50,6 +50,8 @@
   const props = defineProps<{
     controller: LivePreviewController;
     title: string;
+    /** Set when the screen is only there for the preview, which then can't close. */
+    standalone?: {editUrl: string | null} | null;
   }>();
 
   const emit = defineEmits<{
@@ -81,6 +83,13 @@
       Math.max(MIN_PANE_WIDTH, windowWidth.value - MIN_PANE_WIDTH),
     cssVariable: '--lp-editor-width',
     storageKey: 'LivePreview.width',
+  });
+
+  watch(editor, (el) => (preview.editor.value = el), {immediate: true});
+  watch(resizer.style, () => {
+    if (resizer.isResizing.value) {
+      preview.emit('drag');
+    }
   });
 
   // The drag only starts once the pointer has moved, and by then it could be
@@ -337,6 +346,13 @@
 
     el.dataset.lpFrame = String(frame.id);
 
+    if (preview.activeTarget.value) {
+      preview.emit('afterUpdateIframe', {
+        target: preview.activeTarget.value,
+        iframe: el,
+      });
+    }
+
     if (resizerOptions.value) {
       // Starts at the height of the frame it replaces, so the swap doesn't
       // jump the scroll position.
@@ -376,9 +392,11 @@
         document.documentElement.classList.add('lp-open');
         addModalAttributes(el);
         uiLayerManager().addLayer(el);
-        uiLayerManager().registerShortcut(ESC_KEY, () => {
-          void preview.close();
-        });
+        if (!props.standalone) {
+          uiLayerManager().registerShortcut(ESC_KEY, () => {
+            void preview.close();
+          });
+        }
         trapFocusWithin(el);
         await nextTick();
         setFocusWithin(el);
@@ -414,13 +432,26 @@
       >
         <header class="lp-editor__header">
           <craft-button
+            v-if="!standalone"
             type="button"
             size="small"
             icon="xmark"
             variant="plain"
+            :aria-label="t('Close Preview')"
             @click="preview.close()"
-            aria-label="t('Close Preview')"
           >
+          </craft-button>
+          <craft-button
+            v-else-if="standalone.editUrl"
+            size="small"
+            icon="arrow-up-right-from-square"
+            icon-position="suffix"
+            variant="plain"
+            :href="standalone.editUrl"
+            target="_blank"
+          >
+            {{ t('Edit') }}
+            <span class="sr-only">{{ t('Opens in a new window') }}</span>
           </craft-button>
           <div class="lp-editor__status">
             <slot name="status"></slot>
@@ -511,7 +542,7 @@
               icon="arrows-rotate"
               :disabled="preview.isLoading.value"
               .loading="preview.isLoading.value"
-              @click="preview.refresh({force: true})"
+              @click="preview.refresh({reload: true})"
             >
               {{ t('Refresh') }}
             </craft-button>

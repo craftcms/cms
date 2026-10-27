@@ -38,6 +38,7 @@ import {
   unregisterPanel,
   type StackedPanel,
 } from '@/common/slideouts/panel-stack';
+import {getActivePreview} from '@/modules/elements/live-preview/previews';
 import {containerSlideouts} from './support';
 
 declare const Craft: any;
@@ -315,15 +316,14 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     );
     this._cancelTransitionListeners();
 
-    const activePreview =
-      Craft.Preview.getActive() || Craft.LivePreview.getActive();
-    this._inPreview = !!activePreview;
-    this.useMobileStyles = activePreview || Craft.useMobileStyles();
+    const previewEditor = getActivePreview()?.editor.value ?? null;
+    this._inPreview = !!previewEditor;
+    this.useMobileStyles = !!previewEditor || Craft.useMobileStyles();
 
     this.$outerContainer.removeClass('so-mobile so-lp');
     this.$container.removeClass('so-mobile so-lp');
 
-    if (activePreview) {
+    if (previewEditor) {
       this.$outerContainer.addClass('so-lp');
       this.$container.addClass('so-lp');
     } else if (this.useMobileStyles) {
@@ -339,22 +339,22 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
 
     this.$outerContainer.appendTo(bod).removeClass('hidden');
 
-    if (activePreview) {
+    if (previewEditor) {
       // keep the width equal to the edit pane width
-      this.updateWidthsForPreviewPane(activePreview);
-      let containerWidth = activePreview.$editorContainer.width();
+      this.updateWidthsForPreviewPane(previewEditor);
+      let containerWidth = previewEditor.clientWidth;
       const resizeObserver = new ResizeObserver(() => {
         if (
           this.isOpen &&
-          containerWidth !==
-            (containerWidth = activePreview.$editorContainer.width())
+          containerWidth !== (containerWidth = previewEditor.clientWidth)
         ) {
-          this.updateWidthsForPreviewPane(activePreview);
+          this.updateWidthsForPreviewPane(previewEditor);
         }
       });
-      resizeObserver.observe(activePreview.$editorContainer[0]);
-      activePreview.on('beforeClose', () => {
+      resizeObserver.observe(previewEditor);
+      const stop = getActivePreview()!.on('beforeClose', () => {
         resizeObserver.disconnect();
+        stop();
       });
     }
 
@@ -402,8 +402,9 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     Craft.setFocusWithin(this.$container);
   }
 
-  updateWidthsForPreviewPane(activePreview: any): void {
-    const width = activePreview.$editorContainer.width() - 1;
+  /** Sizes the slideout to Live Preview's editor pane, which it opens over. */
+  updateWidthsForPreviewPane(editor: HTMLElement): void {
+    const width = editor.clientWidth - 1;
     if (this.$shade) {
       this.$shade.width(width);
     }

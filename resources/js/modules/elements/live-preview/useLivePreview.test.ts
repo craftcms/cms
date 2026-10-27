@@ -105,7 +105,7 @@ describe('useLivePreview', () => {
     await preview.refresh();
     expect(newestId()).toBe(id);
 
-    await preview.refresh({force: true});
+    await preview.refresh({reload: true});
     expect(newestId()).toBeGreaterThan(id);
   });
 
@@ -205,8 +205,110 @@ describe('useLivePreview', () => {
     expect(preview.error.value).toBe('Nope');
     expect(preview.frames.value).toEqual([]);
 
-    await preview.refresh({force: true});
+    await preview.refresh({reload: true});
     expect(preview.error.value).toBe(null);
     expect(preview.frames.value).toHaveLength(1);
+  });
+
+  describe('events', () => {
+    function record(preview: ReturnType<typeof useLivePreview>) {
+      const log: Array<[string, unknown]> = [];
+      for (const event of [
+        'beforeOpen',
+        'open',
+        'beforeClose',
+        'close',
+        'switchTarget',
+        'beforeUpdateIframe',
+        'afterSaveDraft',
+      ] as const) {
+        preview.on(event, (payload: unknown) => log.push([event, payload]));
+      }
+      return log;
+    }
+
+    it('announces opening and closing around the change', async () => {
+      const preview = mount();
+      const log = record(preview);
+      preview.on('open', () => log.push(['isOpen', preview.isOpen.value]));
+
+      await preview.open();
+      await preview.close();
+
+      expect(log.map(([event]) => event)).toEqual([
+        'beforeOpen',
+        'open',
+        'isOpen',
+        'beforeUpdateIframe',
+        'beforeClose',
+        'close',
+      ]);
+      expect(log[2]![1]).toBe(true);
+    });
+
+    it('says whether each update will reload the frame', async () => {
+      const preview = mount();
+      await preview.open();
+      const log = record(preview);
+
+      await preview.refresh();
+      preview.switchTarget(1);
+      await vi.waitFor(() => expect(frameUrl(preview).pathname).toBe('/list'));
+      await preview.refresh();
+      await preview.refresh({reload: true});
+
+      expect(
+        log
+          .filter(([event]) => event === 'beforeUpdateIframe')
+          .map(([, payload]) => payload)
+      ).toEqual([
+        {target: data.value!.targets[0], resetScroll: false, refresh: true},
+        {target: data.value!.targets[1], resetScroll: true, refresh: true},
+        {target: data.value!.targets[1], resetScroll: false, refresh: false},
+        {target: data.value!.targets[1], resetScroll: false, refresh: true},
+      ]);
+    });
+
+    it('keeps the frame when told not to reload', async () => {
+      const preview = mount();
+      await preview.open();
+      const id = preview.frames.value.at(-1)!.id;
+
+      await preview.refresh({reload: false});
+
+      expect(preview.frames.value.at(-1)!.id).toBe(id);
+    });
+
+    it('names the target it switched to', async () => {
+      const preview = mount();
+      await preview.open();
+      const log = record(preview);
+
+      preview.switchTarget(1);
+
+      expect(log[0]).toEqual([
+        'switchTarget',
+        {target: data.value!.targets[1]},
+      ]);
+    });
+
+    it('passes on autosaved drafts', () => {
+      const preview = mount();
+      const log = record(preview);
+
+      preview.draftSaved({draftId: 5});
+
+      expect(log).toEqual([['afterSaveDraft', {data: {draftId: 5}}]]);
+    });
+
+    it('stops telling a listener once it has unsubscribed', async () => {
+      const preview = mount();
+      const listener = vi.fn();
+      preview.on('beforeOpen', listener)();
+
+      await preview.open();
+
+      expect(listener).not.toHaveBeenCalled();
+    });
   });
 });

@@ -1,7 +1,21 @@
 import {actionClient} from '@craftcms/ui';
 import {useLocalStorage} from '@vueuse/core';
-import {computed, readonly, ref, shallowRef, watch} from 'vue';
+import {
+  computed,
+  getCurrentScope,
+  onScopeDispose,
+  readonly,
+  ref,
+  shallowReadonly,
+  shallowRef,
+  watch,
+} from 'vue';
 import type {DeviceOrientation, DeviceType} from './devicePreview';
+import {
+  broadcastPreviewEvent,
+  createLivePreviewEmitter,
+  registerPreview,
+} from './previews';
 import {isSameOrigin, tokenizedPreviewUrl} from './previewUrl';
 
 /** Somewhere Live Preview can show the element. */
@@ -62,6 +76,13 @@ export function useLivePreview(
 ) {
   const isOpen = ref(false);
   const activeIndex = ref(0);
+  // Set once the controller exists; events can't fire before then.
+  let self: unknown;
+  const events = createLivePreviewEmitter((event, payload) =>
+    broadcastPreviewEvent(self as LivePreviewController, event, payload)
+  );
+  /** The editor's pane while the preview is shown, set by the pane itself. */
+  const editor = shallowRef<HTMLElement | null>(null);
   const frames = ref<Array<LivePreviewFrame>>([]);
   const device = useLocalStorage<DeviceType>('LivePreview.device', 'desktop');
   const orientation = useLocalStorage<DeviceOrientation>(
@@ -151,27 +172,37 @@ export function useLivePreview(
   );
 
   let nextFrameId = 0;
-  let readyFrame: HTMLIFrameElement | null = null;
+  const readyFrame = shallowRef<HTMLIFrameElement | null>(null);
   let pendingScroll: {x: number; y: number} | null = null;
   const error = ref<string | null>(null);
 
   /**
    * Loads the active target into a new frame.
    *
-   * Targets that don't auto-refresh only reload when asked to: a refresh
-   * button press (`force`), or a target switch (`resetScroll`).
+   * Targets that don't auto-refresh only reload when asked to: `reload: true`,
+   * as the refresh button does, or a target switch (`resetScroll`). `reload:
+   * false` keeps the current frame even for one that does.
    */
   async function refresh({
     resetScroll = false,
-    force = false,
-  }: {resetScroll?: boolean; force?: boolean} = {}): Promise<void> {
+    reload,
+  }: {resetScroll?: boolean; reload?: boolean} = {}): Promise<void> {
     const target = activeTarget.value;
 
     if (!isOpen.value || !target) {
       return;
     }
 
-    if (!force && !resetScroll && frames.value.length > 0 && !target.refresh) {
+    const willReload =
+      frames.value.length === 0 || (reload ?? (resetScroll || target.refresh));
+
+    events.emit('beforeUpdateIframe', {
+      target,
+      resetScroll,
+      refresh: willReload,
+    });
+
+    if (!willReload) {
       return;
     }
 
@@ -192,7 +223,7 @@ export function useLivePreview(
       return;
     }
 
-    pendingScroll = resetScroll ? null : readScroll(readyFrame);
+    pendingScroll = resetScroll ? null : readScroll(readyFrame.value);
 
     frames.value = [
       // Anything still loading behind the current frame is out of date.
@@ -234,7 +265,7 @@ export function useLivePreview(
     }
 
     pendingScroll = null;
-    readyFrame = el;
+    readyFrame.value = el;
     frames.value = [{...frame, ready: true}];
   }
 
@@ -250,9 +281,11 @@ export function useLivePreview(
       return;
     }
 
+    events.emit('beforeOpen');
     await flush();
     isOpen.value = true;
-    await refresh({force: true});
+    events.emit('open');
+    await refresh({reload: true});
   }
 
   async function close(): Promise<void> {
@@ -261,9 +294,11 @@ export function useLivePreview(
     }
 
     await flush();
+    events.emit('beforeClose');
     isOpen.value = false;
     frames.value = [];
-    readyFrame = null;
+    readyFrame.value = null;
+    events.emit('close');
   }
 
   function switchTarget(index: number): void {
@@ -272,7 +307,13 @@ export function useLivePreview(
     }
 
     activeIndex.value = index;
+    events.emit('switchTarget', {target: activeTarget.value!});
     void refresh({resetScroll: true});
+  }
+
+  /** Tells listeners about a draft the editor autosaved. */
+  function draftSaved(data: unknown): void {
+    events.emit('afterSaveDraft', {data});
   }
 
   // A canonical element's first autosave creates the draft the token has to
@@ -281,7 +322,7 @@ export function useLivePreview(
     () => token.value?.identity,
     (identity, previous) => {
       if (previous !== undefined && identity !== previous) {
-        void refresh({force: true});
+        void refresh({reload: true});
       }
     }
   );
@@ -298,7 +339,7 @@ export function useLivePreview(
     }
   });
 
-  return {
+  const controller = {
     isOpen: readonly(isOpen),
     targets,
     activeIndex: readonly(activeIndex),
@@ -317,7 +358,21 @@ export function useLivePreview(
     switchTarget,
     frameLoaded,
     urlFor,
+    draftSaved,
+    editor,
+    /** The frame being shown, once one has loaded. */
+    iframe: shallowReadonly(readyFrame),
+    on: events.on,
+    emit: events.emit,
   };
+
+  self = controller;
+
+  if (getCurrentScope()) {
+    onScopeDispose(registerPreview(controller));
+  }
+
+  return controller;
 }
 
 export type LivePreviewController = ReturnType<typeof useLivePreview>;

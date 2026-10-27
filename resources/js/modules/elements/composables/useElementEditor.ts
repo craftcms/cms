@@ -152,6 +152,11 @@ export interface ElementEditPayload {
   previewTargets: Array<ElementPreviewTarget>;
   /** What Live Preview needs; `null` when the element can't be previewed here. */
   preview?: ElementPreview | null;
+  /**
+   * Set when the screen is only there for Live Preview, which stays open.
+   * `redirect` is where saving leaves for, pre-encrypted by the server.
+   */
+  standalonePreview?: {redirect: string; editUrl: string | null} | null;
   elementDisplayName: string;
   activityUrl: string | null;
   activityTimelineUrl: string | null;
@@ -792,6 +797,8 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         Object.assign(transformed, action.params);
         if (action.redirect) {
           transformed.redirect = action.redirect;
+        } else if (!pendingAction.value && props.standalonePreview) {
+          transformed.redirect = props.standalonePreview.redirect;
         }
 
         return transformed;

@@ -77,7 +77,7 @@ Craft.LivePreview = Garnish.Base.extend(
         }
       });
 
-      Craft.Preview.instances.push(this);
+      Craft.LivePreview.instances.push(this);
     },
 
     get editorWidth() {
@@ -490,7 +490,7 @@ Craft.LivePreview = Garnish.Base.extend(
     },
 
     destroy: function () {
-      Craft.Preview.instances = Craft.Preview.instances.filter(
+      Craft.LivePreview.instances = Craft.LivePreview.instances.filter(
         (o) => o !== this
       );
       this.base();

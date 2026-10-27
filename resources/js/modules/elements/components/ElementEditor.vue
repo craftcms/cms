@@ -9,6 +9,7 @@
   import {
     computed,
     nextTick,
+    onMounted,
     provide,
     shallowReactive,
     useTemplateRef,
@@ -301,7 +302,17 @@
   );
   const previewButton = useTemplateRef<HTMLElement>('previewButton');
 
-  watch(autosave.saves, () => void livePreview.refresh());
+  watch(autosave.saves, () => {
+    livePreview.draftSaved(autosave.lastResponse.value);
+    void livePreview.refresh();
+  });
+
+  // The screen is only there for the preview.
+  onMounted(() => {
+    if (payload.standalonePreview && canPreview.value) {
+      void livePreview.open();
+    }
+  });
 
   useAppLayout(() => ({
     title: payload.title,
@@ -587,6 +598,7 @@
     ref="livePreviewPane"
     :controller="livePreview"
     :title="payload.title"
+    :standalone="payload.standalonePreview ?? null"
     @save="primaryAction()"
     @closed="previewButton?.focus()"
   >

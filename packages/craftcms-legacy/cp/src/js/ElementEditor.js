@@ -1403,6 +1403,24 @@ Craft.ElementEditor = Garnish.Base.extend(
         return;
       }
 
+      // Live Preview's JS API comes with the Yii2 adapter; without it, the
+      // element's standalone preview page is the way in.
+      if (typeof Craft.Preview === 'undefined') {
+        window.location.href = Craft.getCpUrl(
+          `preview/${this.settings.isProvisionalDraft ? this.settings.canonicalId : this.settings.elementId}`,
+          Object.fromEntries(
+            Object.entries({
+              siteId: this.settings.siteId,
+              draftId: this.settings.isProvisionalDraft
+                ? null
+                : this.settings.draftId,
+              revisionId: this.settings.revisionId,
+            }).filter(([, value]) => value != null)
+          )
+        );
+        return;
+      }
+
       this.$previewBtn.attr('aria-disabled', true);
 
       try {

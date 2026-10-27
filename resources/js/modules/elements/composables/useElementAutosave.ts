@@ -78,6 +78,8 @@ export function useElementAutosave<T extends object>(
   const httpStatus = ref<number | null>(null);
   /** Bumped by every save that lands, for whoever reacts to one. */
   const saves = ref(0);
+  /** What the last successful save responded with. */
+  const lastResponse = shallowRef<unknown>(null);
 
   // The three pieces of what a save returned are held in one ref rather than
   // separately, so they can only ever be read as a matched set. The host
@@ -160,6 +162,7 @@ export function useElementAutosave<T extends object>(
         modified: data.modifiedAttributes ?? [],
       };
       status.value = 'saved';
+      lastResponse.value = data;
       saves.value++;
       acknowledgedGeneration.value = Math.max(
         acknowledgedGeneration.value,
@@ -333,6 +336,7 @@ export function useElementAutosave<T extends object>(
     error: readonly(error),
     httpStatus: readonly(httpStatus),
     saves: readonly(saves),
+    lastResponse,
     modified,
     hasPendingChanges,
     ui: uiPayload,

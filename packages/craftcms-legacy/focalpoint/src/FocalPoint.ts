@@ -169,7 +169,7 @@ export class FocalPoint {
       Craft.cp.announce(Craft.t('app', 'Saved'));
 
       // Refresh Live Preview
-      Craft.Preview.refresh();
+      Craft.Preview?.refresh();
     });
   }
 

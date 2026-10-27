@@ -1980,7 +1980,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this._updateView(viewParams, response.data);
 
           // Refresh Live Preview
-          Craft.Preview.refresh();
+          Craft.Preview?.refresh();
 
           if (typeof response.data.badgeCounts !== 'undefined') {
             this._updateBadgeCounts(response.data.badgeCounts);
