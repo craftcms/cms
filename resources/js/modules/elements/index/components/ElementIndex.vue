@@ -67,6 +67,8 @@
     status,
     conditions,
     mode,
+    thumbSize,
+    thumbSizeOptions,
     sortField,
     sortDirection,
     tableColumns,
@@ -272,11 +274,13 @@
         v-model:sort-field="sortField"
         v-model:sort-direction="sortDirection"
         v-model:table-columns="tableColumns"
+        v-model:thumb-size="thumbSize"
         :processing="processing"
         :as-form="toolbarAsForm"
         :status-options="elementIndex.statusOptions"
         :view-modes="visibleViewModes"
         :column-options="columnOptions"
+        :thumb-size-options="thumbSizeOptions"
         :sort-options="elementIndex.sortOptions"
         :sites="showSites ? elementIndex.sites : undefined"
         :site-handle="showSites ? activeSiteHandle : undefined"
@@ -385,6 +389,7 @@
           :loading="loading"
           :item-behavior="itemBehavior"
           :interactions-disabled="processing"
+          :thumb-size="thumbSize"
           @edit="onThumbEdit"
         />
         <ElementTable

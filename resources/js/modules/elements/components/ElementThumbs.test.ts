@@ -51,9 +51,9 @@ describe('ElementThumbs', () => {
     const {root} = mount();
     await nextTick();
 
-    const labels = [
-      ...root.querySelectorAll('li craft-checkbox label[slot="label"]'),
-    ].map((el) => el.textContent);
+    const labels = [...root.querySelectorAll('li craft-chip')].map((el) =>
+      el.getAttribute('select-label')
+    );
 
     expect(labels).toEqual(['Select Homepage', 'Select Untitled entry']);
   });
@@ -96,7 +96,9 @@ describe('ElementThumbs', () => {
     expect(assetLink?.getAttribute('href')).toBe('/cp/assets/edit/6');
     expect(assetLink?.textContent).toBe('Report');
     // The tile around the label isn't a link.
-    expect(root.querySelector('a.thumb-tile')).toBeNull();
+    expect(
+      root.querySelector('a craft-chip, craft-chip a craft-chip')
+    ).toBeNull();
   });
 
   // Only the label navigates; the rest of the tile selects, as its checkbox
@@ -108,7 +110,7 @@ describe('ElementThumbs', () => {
     await nextTick();
 
     root
-      .querySelector<HTMLElement>('.thumb-img')!
+      .querySelector<HTMLElement>('[slot="thumbnail"]')!
       .dispatchEvent(new MouseEvent('click', {bubbles: true}));
     await nextTick();
 
