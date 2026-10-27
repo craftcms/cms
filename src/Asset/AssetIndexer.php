@@ -683,12 +683,16 @@ class AssetIndexer
             && $asset->dateModified->getTimestamp() !== $timeModified->getTimestamp();
         $colors = $asset->analysis?->colors;
         $isNew = ! $asset->id;
-        // New and changed files are always sampled. Unchanged ones that are missing colors, or were sampled before
-        // palettes or luminance were (but not inconclusively), are only sampled when asked to analyze images, since
-        // a remote file has to be downloaded to sample it.
-        $needsColors = $isNew
+        // New and changed files are always sampled. Unchanged ones that are missing colors or metadata, or were sampled
+        // before palettes or luminance were (but not inconclusively), are only sampled when asked to analyze images,
+        // since a remote file has to be downloaded to sample it.
+        $needsSampling = $isNew
             || $fileChanged
-            || ($analyzeImages && ($colors === null || ($colors->grid !== [] && ($colors->palette === [] || $colors->luminance === []))));
+            || ($analyzeImages && (
+                $colors === null
+                || $asset->analysis?->metadata === null
+                || ($colors->grid !== [] && ($colors->palette === [] || $colors->luminance === []))
+            ));
 
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
         $tempPath = null;
@@ -722,8 +726,8 @@ class AssetIndexer
                     }
 
                     // A remote image is downloaded when its dimensions couldn't be read from a stream, or
-                    // its colors need sampling
-                    if (! is_array($dimensions) || $needsColors) {
+                    // it needs sampling
+                    if (! is_array($dimensions) || $needsSampling) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
                         AssetsHelper::downloadFile($volume->sourceDisk(), $indexEntry->uri, $tempPath);
                         $dimensions = ImageHelper::imageSize($tempPath);
@@ -737,14 +741,15 @@ class AssetIndexer
                 $asset->setWidth($w);
                 $asset->setHeight($h);
 
-                // Colors that have been sampled already, even inconclusively, aren't sampled again unless the
+                // Images that have been sampled already, even inconclusively, aren't sampled again unless the
                 // file has changed
-                if ($localPath !== null && $needsColors) {
+                if ($localPath !== null && $needsSampling) {
                     $colors = Images::colors($localPath);
+                    $metadata = Images::metadata($localPath);
                     // What was found in a file that's changed doesn't describe it anymore
                     $asset->analysis = $fileChanged || $asset->analysis === null
-                        ? new ImageAnalysis(colors: $colors)
-                        : $asset->analysis->withColors($colors);
+                        ? new ImageAnalysis(colors: $colors, metadata: $metadata)
+                        : $asset->analysis->withColors($colors)->withMetadata($metadata);
                 }
                 $asset->dateModified = $timeModified;
 

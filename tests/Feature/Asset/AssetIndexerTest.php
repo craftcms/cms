@@ -733,6 +733,34 @@ it('samples unchanged images again that were sampled before luminance was, when 
     }
 });
 
+it('reads the metadata of unchanged images that are missing it, when asked to analyze images', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('harbor.jpg', file_get_contents(metadataJpeg(xmpPacket('<dc:creator><rdf:Seq><rdf:li>Ada Park</rdf:li></rdf:Seq></dc:creator>'))));
+    $index = fn (bool $analyzeImages) => $this->indexer->indexFileByListing($volumeData, new FsListing([
+        'dirname' => '',
+        'basename' => 'harbor.jpg',
+        'type' => 'file',
+        'fileSize' => $volumeData->sourceDisk()->size('harbor.jpg'),
+        'dateModified' => $volumeData->sourceDisk()->lastModified('harbor.jpg'),
+    ]), $session->id, analyzeImages: $analyzeImages);
+
+    try {
+        $asset = $index(false);
+        $colors = $asset->analysis->colors->toArray();
+        expect($asset->analysis->metadata->creator)->toBe('Ada Park');
+
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => $colors])]);
+
+        expect($index(false)->analysis->metadata)->toBeNull()
+            ->and($index(true)->analysis->metadata->creator)->toBe('Ada Park');
+    } finally {
+        $volumeData->sourceDisk()->delete('harbor.jpg');
+        deleteMetadataJpegs();
+    }
+});
+
 it('samples the colors again once the file has changed', function () {
     $volume = createIndexerTestVolume();
     $volumeData = resolveIndexerVolumeData($volume);

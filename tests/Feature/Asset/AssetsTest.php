@@ -595,3 +595,64 @@ it('dates a replaced file by where it was stored, so indexing doesn’t mistake 
     expect($asset->dateModified->getTimestamp())
         ->toBe(Storage::disk('test-disk')->lastModified($asset->getPath()));
 });
+
+describe('metadata', function () {
+    beforeEach(function () {
+        $volume = Volume::factory()->create(['fs' => 'test-disk']);
+        $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+        $this->asset = AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => 'photo.jpg',
+            'kind' => FileKind::Image->value,
+        ]);
+    });
+
+    afterEach(function () {
+        deleteMetadataJpegs();
+    });
+
+    it('is read when an image file comes in, before the file is cleaned', function () {
+        $path = metadataJpeg(xmpPacket(
+            '<dc:creator><rdf:Seq><rdf:li>Ada Park</rdf:li></rdf:Seq></dc:creator>',
+            'photoshop:DateCreated="2026-05-01T19:42:10"',
+        ));
+
+        $this->assets->replaceAssetFile($this->asset, $path, 'photo.jpg');
+
+        expect(Asset::find()->id($this->asset->id)->one()->analysis->metadata)
+            ->creator->toBe('Ada Park')
+            ->dateTaken->toBe('2026-05-01T19:42:10');
+    });
+
+    it('fills in missing alt text', function (?string $alt, string $expected) {
+        $this->asset->alt = $alt;
+        $path = metadataJpeg(xmpPacket('<dc:description><rdf:Alt><rdf:li xml:lang="x-default">Boats at dusk</rdf:li></rdf:Alt></dc:description>'));
+
+        $this->assets->replaceAssetFile($this->asset, $path, 'photo.jpg');
+
+        expect(Asset::find()->id($this->asset->id)->one()->alt)->toBe($expected);
+    })->with([
+        'missing' => [null, 'Boats at dusk'],
+        'already set' => ['A pier', 'A pier'],
+    ]);
+
+    it('says whether the stored file still has GPS coordinates in it', function (bool $sanitize) {
+        $this->asset->sanitizeOnUpload = $sanitize;
+
+        $this->assets->replaceAssetFile($this->asset, metadataJpeg(exif: ['gps' => true]), 'photo.jpg');
+
+        expect(Asset::find()->id($this->asset->id)->one()->analysis->metadata->hasLocation)->toBe(! $sanitize);
+    })->with([
+        'cleaned' => [true],
+        'not cleaned' => [false],
+    ])->skip(! function_exists('exif_read_data'), 'Needs the exif extension.');
+
+    it('makes images searchable by the keywords they were tagged with', function () {
+        $path = metadataJpeg(iptc: ['2#025' => ['harbor', 'boats']]);
+
+        $this->assets->replaceAssetFile($this->asset, $path, 'photo.jpg');
+
+        expect(Asset::find()->id($this->asset->id)->one()->getSearchKeywords('keywords'))->toBe('harbor boats');
+    });
+});

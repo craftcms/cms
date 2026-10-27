@@ -106,3 +106,13 @@ it('queries how light an image’s regions are, and which text color is legible 
         ->assertJsonPath('data.asset.analysis.colors.top', ['color' => '#ffffff', 'contrast' => 10.5])
         ->assertJsonPath('data.asset.analysis.colors.anywhere', ['color' => '#ffffff', 'contrast' => 1]);
 });
+
+it('queries an image’s embedded metadata', function () {
+    $asset = Asset::factory()->createElement(['kind' => 'image']);
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['metadata' => ['creator' => 'Ada Park', 'keywords' => ['harbor'], 'hasLocation' => true]])]);
+    gqlActivateFullAccessSchema();
+
+    graphQL("{ asset(id: {$asset->id}) { analysis { metadata { creator copyright keywords hasLocation } } } }")
+        ->assertOk()
+        ->assertJsonPath('data.asset.analysis.metadata', ['creator' => 'Ada Park', 'copyright' => null, 'keywords' => ['harbor'], 'hasLocation' => true]);
+});

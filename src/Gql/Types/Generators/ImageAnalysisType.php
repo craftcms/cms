@@ -40,6 +40,11 @@ class ImageAnalysisType implements GeneratorInterface, SingleGeneratorInterface
                         'type' => ImageColorsType::generateType(null),
                         'description' => 'Color data sampled from the image, or null if it hasn’t been sampled yet.',
                     ],
+                    'metadata' => [
+                        'name' => 'metadata',
+                        'type' => ImageMetadataType::generateType(null),
+                        'description' => 'Metadata embedded in the image’s file, such as who made it and when, or null if it hasn’t been read.',
+                    ],
                     'keywords' => [
                         'name' => 'keywords',
                         'type' => Type::listOf(Type::nonNull(Type::string())),

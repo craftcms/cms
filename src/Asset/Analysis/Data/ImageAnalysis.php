@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Analysis\Data;
 
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Illuminate\Contracts\Support\Arrayable;
 use JsonSerializable;
 
 /**
- * What was found in an image: its colors, sampled from the file, and its keywords and the text in it, found by AI.
+ * What was found in an image: its colors and embedded metadata, read from the file, and its keywords and the text in
+ * it, found by AI.
  *
  * @implements Arrayable<string, mixed>
  *
@@ -21,6 +23,7 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
 {
     /**
      * @param  ImageColors|null  $colors  Color data sampled from the image, or `null` if it hasn’t been sampled yet
+     * @param  ImageMetadata|null  $metadata  Metadata embedded in the image’s file, or `null` if it hasn’t been read
      * @param  list<string>|null  $keywords  Words and short phrases that describe the image, such as what’s in it,
      *                                       written in the primary site’s language by the “Tag images” AI task, or
      *                                       `null` if it hasn’t been tagged
@@ -30,6 +33,8 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
     public function __construct(
         #[AllowedInSandbox]
         public ?ImageColors $colors = null,
+        #[AllowedInSandbox]
+        public ?ImageMetadata $metadata = null,
         #[AllowedInSandbox]
         public ?array $keywords = null,
         #[AllowedInSandbox]
@@ -46,11 +51,13 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
     public static function fromArray(array $data): self
     {
         $colors = $data['colors'] ?? null;
+        $metadata = $data['metadata'] ?? null;
         $keywords = $data['keywords'] ?? null;
         $text = $data['text'] ?? null;
 
         return new self(
             colors: is_array($colors) ? ImageColors::fromArray($colors) : null,
+            metadata: is_array($metadata) ? ImageMetadata::fromArray($metadata) : null,
             keywords: is_array($keywords)
                 ? array_values(array_filter(array_map(
                     static fn (mixed $keyword): string => is_scalar($keyword) ? trim((string) $keyword) : '',
@@ -66,7 +73,15 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
      */
     public function withColors(?ImageColors $colors): self
     {
-        return new self($colors, $this->keywords, $this->text);
+        return new self($colors, $this->metadata, $this->keywords, $this->text);
+    }
+
+    /**
+     * Returns a copy with new metadata, keeping everything else.
+     */
+    public function withMetadata(?ImageMetadata $metadata): self
+    {
+        return new self($this->colors, $metadata, $this->keywords, $this->text);
     }
 
     /**
@@ -76,20 +91,21 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
      */
     public function withTags(?array $keywords, ?string $text): self
     {
-        return new self($this->colors, $keywords, $text);
+        return new self($this->colors, $this->metadata, $keywords, $text);
     }
 
-    /** @return array{colors: array{dominant: string|null, grid: list<list<string>>, palette: list<string>}|null, keywords: list<string>|null, text: string|null} */
+    /** @return array{colors: array<string, mixed>|null, metadata: array<string, mixed>|null, keywords: list<string>|null, text: string|null} */
     public function toArray(): array
     {
         return [
             'colors' => $this->colors?->toArray(),
+            'metadata' => $this->metadata?->toArray(),
             'keywords' => $this->keywords,
             'text' => $this->text,
         ];
     }
 
-    /** @return array{colors: array{dominant: string|null, grid: list<list<string>>, palette: list<string>}|null, keywords: list<string>|null, text: string|null} */
+    /** @return array{colors: array<string, mixed>|null, metadata: array<string, mixed>|null, keywords: list<string>|null, text: string|null} */
     public function jsonSerialize(): array
     {
         return $this->toArray();
