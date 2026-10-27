@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
 
 function runCreateImageHashesTableMigration(): void
 {
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_10_26_000004_create_imagehashes_table.php';
+    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_10_26_000005_create_imagehashes_table.php';
     $migration->up();
 }
 
