@@ -83,7 +83,7 @@ class ImageDuplicates
                 }
             })
             ->when($excludeId !== null, fn ($query) => $query->where('imagehashes.assetId', '!=', $excludeId))
-            ->distinct()
+            // Keyed by asset ID, so assets that share several bands are only checked once
             ->pluck('assets.analysis', 'imagehashes.assetId');
 
         $distances = [];
