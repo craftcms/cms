@@ -684,11 +684,11 @@ class AssetIndexer
         $colors = $asset->analysis?->colors;
         $isNew = ! $asset->id;
         // New and changed files are always sampled. Unchanged ones that are missing colors, or were sampled before
-        // palettes were (but not inconclusively), are only sampled when asked to analyze images, since a remote
-        // file has to be downloaded to sample it.
+        // palettes or luminance were (but not inconclusively), are only sampled when asked to analyze images, since
+        // a remote file has to be downloaded to sample it.
         $needsColors = $isNew
             || $fileChanged
-            || ($analyzeImages && ($colors === null || ($colors->dominant !== null && $colors->palette === [])));
+            || ($analyzeImages && ($colors === null || ($colors->grid !== [] && ($colors->palette === [] || $colors->luminance === []))));
 
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
         $tempPath = null;

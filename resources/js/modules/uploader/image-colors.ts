@@ -11,6 +11,12 @@ export interface ImageColors {
   grid: string[][];
   /** The image's main colors, most dominant first. */
   palette: string[];
+  /**
+   * How light the darker and lighter parts of each region are, as their 10th
+   * and 90th percentile WCAG relative luminance, or `null` for regions with
+   * no mostly opaque pixels.
+   */
+  luminance: ([number, number] | null)[][];
 }
 
 export interface Pixels {
@@ -101,14 +107,19 @@ export function sampleImageColors(pixels: Pixels): ImageColors {
     dominant: dominant ? toHex(dominant) : null,
     grid: colorGrid(pixels),
     palette: [...new Set(candidates.map(toHex))],
+    luminance: luminanceGrid(pixels),
   };
 }
 
-function colorGrid({data, width, height}: Pixels): string[][] {
-  const [columns, rows] =
-    width >= height
-      ? [GRID_LONG_SIDE, GRID_SHORT_SIDE]
-      : [GRID_SHORT_SIDE, GRID_LONG_SIDE];
+function gridSize({width, height}: Pixels): [number, number] {
+  return width >= height
+    ? [GRID_LONG_SIDE, GRID_SHORT_SIDE]
+    : [GRID_SHORT_SIDE, GRID_LONG_SIDE];
+}
+
+function colorGrid(pixels: Pixels): string[][] {
+  const {data, width, height} = pixels;
+  const [columns, rows] = gridSize(pixels);
   const grid: string[][] = [];
 
   for (let row = 0; row < rows; row++) {
@@ -159,6 +170,81 @@ function colorGrid({data, width, height}: Pixels): string[][] {
   }
 
   return grid;
+}
+
+/**
+ * Finds the 10th and 90th percentile relative luminance of each region's
+ * pixels. Each pixel counts toward the region its center is in, and mostly
+ * transparent pixels are left out.
+ */
+function luminanceGrid(pixels: Pixels): ([number, number] | null)[][] {
+  const {data, width, height} = pixels;
+  const [columns, rows] = gridSize(pixels);
+  const cells = Array.from({length: rows}, () =>
+    Array.from({length: columns}, (): number[] => [])
+  );
+
+  for (let index = 0; index < width * height; index++) {
+    if (data[index * 4 + 3]! / 255 < 0.5) {
+      continue;
+    }
+
+    const x = index % width;
+    const y = Math.floor(index / width);
+    const column = Math.min(
+      columns - 1,
+      Math.floor(((x + 0.5) * columns) / width)
+    );
+    const row = Math.min(rows - 1, Math.floor(((y + 0.5) * rows) / height));
+
+    cells[row]![column]!.push(
+      relativeLuminance(
+        data[index * 4]!,
+        data[index * 4 + 1]!,
+        data[index * 4 + 2]!
+      )
+    );
+  }
+
+  return cells.map((row) =>
+    row.map((values) => {
+      if (!values.length) {
+        return null;
+      }
+
+      values.sort((a, b) => a - b);
+
+      return [
+        round(percentile(values, 0.1), 3),
+        round(percentile(values, 0.9), 3),
+      ];
+    })
+  );
+}
+
+/** Returns a percentile of sorted values, interpolating between the two nearest ones. */
+function percentile(sorted: number[], fraction: number): number {
+  const position = (sorted.length - 1) * fraction;
+  const lower = Math.floor(position);
+  const upper = Math.min(sorted.length - 1, lower + 1);
+
+  return (
+    sorted[lower]! + (sorted[upper]! - sorted[lower]!) * (position - lower)
+  );
+}
+
+/** Returns the WCAG relative luminance of an sRGB color, from 0 (black) to 1 (white). */
+function relativeLuminance(red: number, green: number, blue: number): number {
+  return (
+    0.2126 * toLinear(red) + 0.7152 * toLinear(green) + 0.0722 * toLinear(blue)
+  );
+}
+
+/** Rounds half away from zero, as PHP's `round()` does. */
+function round(value: number, precision: number): number {
+  const factor = 10 ** precision;
+
+  return (Math.sign(value) * Math.round(Math.abs(value) * factor)) / factor;
 }
 
 /**

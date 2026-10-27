@@ -271,6 +271,7 @@ describe('colors', function () {
             'dominant' => '#c81e28',
             'grid' => array_fill(0, 3, array_fill(0, 4, '#c81e28')),
             'palette' => ['#c81e28'],
+            'luminance' => array_fill(0, 3, array_fill(0, 4, [0.134, 0.134])),
         ]);
     });
 

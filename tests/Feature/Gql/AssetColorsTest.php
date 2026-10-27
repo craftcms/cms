@@ -93,3 +93,16 @@ it('makes images searchable by the names of their colors', function () {
     expect(AssetElement::find()->id($image->id)->one()->getSearchKeywords('colors'))->toBe('red blue')
         ->and(AssetElement::find()->id($document->id)->one()->getSearchKeywords('colors'))->toBe('');
 });
+
+it('queries how light an image’s regions are, and which text color is legible over them', function () {
+    $asset = Asset::factory()->createElement(['kind' => 'image']);
+    $luminance = [[[0.0, 0.05], [0.01, 0.04]], [[0.8, 1.0], [0.9, 1.0]]];
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['grid' => [['#000000', '#000000'], ['#ffffff', '#ffffff']], 'luminance' => $luminance]])]);
+    gqlActivateFullAccessSchema();
+
+    graphQL("{ asset(id: {$asset->id}) { analysis { colors { luminance top: textColor(region: \"top\") { color contrast } anywhere: textColor { color contrast } } } } }")
+        ->assertOk()
+        ->assertJsonPath('data.asset.analysis.colors.luminance', [[[0, 0.05], [0.01, 0.04]], [[0.8, 1], [0.9, 1]]])
+        ->assertJsonPath('data.asset.analysis.colors.top', ['color' => '#ffffff', 'contrast' => 10.5])
+        ->assertJsonPath('data.asset.analysis.colors.anywhere', ['color' => '#ffffff', 'contrast' => 1]);
+});

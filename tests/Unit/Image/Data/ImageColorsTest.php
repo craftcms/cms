@@ -12,6 +12,10 @@ it('round-trips stored color data', function () {
             ['#abcdef80', '#000000'],
         ],
         'palette' => ['#3a6ea5', '#123456'],
+        'luminance' => [
+            [[0.1, 0.2], null],
+            [[0.0, 1.0], [0.5, 0.5]],
+        ],
     ];
 
     expect(ImageColors::fromArray($data)->toArray())->toBe($data)
@@ -63,4 +67,47 @@ it('names the image’s main colors, without repeats', function () {
     $colors = new ImageColors(palette: ['#c81e28', '#e01818', '#1e50c8', '#f5f5f5']);
 
     expect($colors->labels())->toBe(['red', 'blue', 'white']);
+});
+
+describe('textColor', function () {
+    beforeEach(function () {
+        $this->colors = new ImageColors(luminance: [
+            [[0.0, 0.05], [0.01, 0.04]],
+            [[0.8, 1.0], [0.9, 1.0]],
+        ]);
+    });
+
+    it('picks white text over the dark parts of an image, and black over the light ones', function () {
+        expect($this->colors->textColor('top'))->toBe(['color' => '#ffffff', 'contrast' => 10.5])
+            ->and($this->colors->textColor('bottom'))->toBe(['color' => '#000000', 'contrast' => 17.0]);
+    });
+
+    it('measures contrast against the hardest part to read over', function () {
+        expect($this->colors->textColor())->toBe(['color' => '#ffffff', 'contrast' => 1.0])
+            ->and($this->colors->textColor('left'))->toBe(['color' => '#ffffff', 'contrast' => 1.0]);
+    });
+
+    it('skips regions with no mostly opaque pixels', function () {
+        $colors = new ImageColors(luminance: [[null, [0.8, 1.0]]]);
+
+        expect($colors->textColor('left'))->toBeNull()
+            ->and($colors->textColor('right'))->toBe(['color' => '#000000', 'contrast' => 17.0]);
+    });
+
+    it('has no text color for images sampled before luminance was', function () {
+        expect(new ImageColors(grid: [['#000000']])->textColor())->toBeNull();
+    });
+
+    it('rejects unknown regions', function () {
+        $this->colors->textColor('middle');
+    })->throws(InvalidArgumentException::class);
+});
+
+it('drops luminance ranges that aren’t pairs of numbers', function () {
+    $colors = ImageColors::fromArray(['luminance' => [
+        [[0.2, 0.1], 'x', [0.5], [-1, 2]],
+        'not a row',
+    ]]);
+
+    expect($colors->luminance)->toBe([[[0.1, 0.2], null, null, [0.0, 1.0]]]);
 });

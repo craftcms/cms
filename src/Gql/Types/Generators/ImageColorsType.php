@@ -50,6 +50,23 @@ class ImageColorsType implements GeneratorInterface, SingleGeneratorInterface
                         'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string()))),
                         'description' => 'The image’s main colors as hex strings, most dominant first. Empty if the image couldn’t be sampled.',
                     ],
+                    'luminance' => [
+                        'name' => 'luminance',
+                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::listOf(Type::listOf(Type::nonNull(Type::float())))))),
+                        'description' => 'How light the darker and lighter parts of the image’s regions are, in the same rows and order as `grid`, as each region’s 10th and 90th percentile WCAG relative luminance from 0 to 1, or null for regions with no mostly opaque pixels. Empty if the image was sampled before luminance was.',
+                    ],
+                    'textColor' => [
+                        'name' => 'textColor',
+                        'type' => TextColorType::generateType(null),
+                        'args' => [
+                            'region' => [
+                                'name' => 'region',
+                                'type' => Type::string(),
+                                'description' => 'The edge the text sits along: `top`, `bottom`, `left`, or `right`. Leave it out for anywhere in the image.',
+                            ],
+                        ],
+                        'description' => 'Whether white or black text is more legible over part of the image, and how well it contrasts, or null if the image hasn’t been sampled for luminance.',
+                    ],
                     'labels' => [
                         'name' => 'labels',
                         'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string()))),

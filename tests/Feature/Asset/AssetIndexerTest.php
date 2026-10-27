@@ -675,8 +675,8 @@ it('doesn’t sample colors it has already sampled, even inconclusively', functi
         $volumeData->sourceDisk()->delete('red.png');
     }
 })->with([
-    'found' => [['dominant' => '#123456', 'grid' => [['#123456']], 'palette' => ['#123456']]],
-    'inconclusive' => [['dominant' => null, 'grid' => [], 'palette' => []]],
+    'found' => [['dominant' => '#123456', 'grid' => [['#123456']], 'palette' => ['#123456'], 'luminance' => [[[0.039, 0.039]]]]],
+    'inconclusive' => [['dominant' => null, 'grid' => [], 'palette' => [], 'luminance' => []]],
 ]);
 
 it('samples the colors of unchanged images that are missing them, or were sampled before palettes were, when asked to analyze images', function (?array $stored) {
@@ -705,6 +705,33 @@ it('samples the colors of unchanged images that are missing them, or were sample
     'missing' => [null],
     'sampled before palettes' => [['dominant' => '#123456', 'grid' => [['#123456']]]],
 ]);
+
+it('samples unchanged images again that were sampled before luminance was, when asked to analyze images', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('red.png', file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
+    $index = fn (bool $analyzeImages) => $this->indexer->indexFileByListing($volumeData, new FsListing([
+        'dirname' => '',
+        'basename' => 'red.png',
+        'type' => 'file',
+        'fileSize' => $volumeData->sourceDisk()->size('red.png'),
+        'dateModified' => $volumeData->sourceDisk()->lastModified('red.png'),
+    ]), $session->id, analyzeImages: $analyzeImages);
+
+    try {
+        $asset = $index(false);
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode([
+            'colors' => ['dominant' => '#dc1e1e', 'grid' => [['#dc1e1e']], 'palette' => ['#dc1e1e']],
+            'hash' => '0000000000000000',
+        ])]);
+
+        expect($index(false)->analysis->colors->luminance)->toBe([])
+            ->and($index(true)->analysis->colors->luminance)->not->toBe([]);
+    } finally {
+        $volumeData->sourceDisk()->delete('red.png');
+    }
+});
 
 it('samples the colors again once the file has changed', function () {
     $volume = createIndexerTestVolume();

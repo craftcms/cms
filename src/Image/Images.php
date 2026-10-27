@@ -350,6 +350,7 @@ class Images
             }
 
             $grid = ColorGrid::average($pixels, $width, $height, $columns, $rows);
+            $luminance = ColorGrid::luminance($pixels, $width, $height, $columns, $rows);
         } catch (Throwable $e) {
             Log::info("Couldn’t sample the colors of $filePath: {$e->getMessage()}");
 
@@ -362,6 +363,7 @@ class Images
             dominant: $dominant ? $this->hex($dominant) : null,
             grid: $grid,
             palette: array_values(array_unique(array_map($this->hex(...), $candidates))),
+            luminance: $luminance,
         );
     }
 

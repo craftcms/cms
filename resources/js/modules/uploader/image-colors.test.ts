@@ -30,13 +30,72 @@ function pixels(
 const red: Rgba = [200, 30, 40];
 const blue: Rgba = [30, 80, 200];
 
+/** The same image `ColorGridTest` samples on the server, so the two stay in step. */
+function fixture(): Pixels {
+  const width = 40;
+  const height = 30;
+  const data = new Uint8ClampedArray(width * height * 4);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      data.set(
+        [(x * 7 + y * 13) % 256, (x * y) % 256, (x + y * 3) % 256, 255],
+        (y * width + x) * 4
+      );
+    }
+  }
+
+  return {data, width, height};
+}
+
 describe('sampleImageColors', () => {
   it('samples a single-color image', () => {
     expect(sampleImageColors(pixels(100, 100, red))).toEqual({
       dominant: '#c81e28',
       grid: Array.from({length: 3}, () => Array(4).fill('#c81e28')),
       palette: ['#c81e28'],
+      luminance: Array.from({length: 3}, () => Array(4).fill([0.134, 0.134])),
     });
+  });
+
+  it('finds how light the darker and lighter parts of each region are', () => {
+    expect(sampleImageColors(fixture()).luminance).toEqual([
+      [
+        [0.004, 0.084],
+        [0.032, 0.299],
+        [0.096, 0.457],
+        [0.021, 0.512],
+      ],
+      [
+        [0.072, 0.259],
+        [0.036, 0.607],
+        [0.024, 0.597],
+        [0.11, 0.616],
+      ],
+      [
+        [0.02, 0.485],
+        [0.072, 0.651],
+        [0.119, 0.659],
+        [0.024, 0.598],
+      ],
+    ]);
+  });
+
+  it('leaves mostly transparent pixels out of the luminance ranges', () => {
+    const image = pixels(100, 75, [255, 255, 255, 100], {
+      x1: 0,
+      y1: 0,
+      x2: 24,
+      y2: 24,
+      color: [0, 0, 0],
+    });
+
+    expect(sampleImageColors(image).luminance[0]).toEqual([
+      [0, 0],
+      null,
+      null,
+      null,
+    ]);
   });
 
   it('lists the image’s main colors, most dominant first', () => {
