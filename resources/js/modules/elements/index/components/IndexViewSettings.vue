@@ -23,6 +23,8 @@
      * when there are some.
      */
     thumbSizeOptions?: Array<ThumbSize>;
+    /** Whether the active view mode has table columns to choose. */
+    showTableColumns?: boolean;
   }>();
 
   const sortField = defineModel<string>('sortField', {required: true});
@@ -201,7 +203,7 @@
           </craft-radio>
         </craft-radio-group>
       </div>
-      <div>
+      <div v-if="showTableColumns">
         <CheckboxGroup
           :label="t('Table Columns')"
           name="viewState[tableColumns][]"

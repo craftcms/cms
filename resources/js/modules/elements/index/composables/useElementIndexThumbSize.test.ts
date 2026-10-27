@@ -57,12 +57,15 @@ describe('useElementIndexThumbSize', () => {
     expect(viewState.value.thumbSizes).toEqual({thumbs: '2xl'});
     expect(merge).toHaveBeenLastCalledWith(
       {thumbSize: '2xl'},
-      {only: ['data']}
+      {only: ['data'], silent: true}
     );
 
     // Back to the default drops the param rather than naming it.
     thumbSize.value = 'lg';
-    expect(merge).toHaveBeenLastCalledWith({thumbSize: null}, {only: ['data']});
+    expect(merge).toHaveBeenLastCalledWith(
+      {thumbSize: null},
+      {only: ['data'], silent: true}
+    );
   });
 
   // A table size left in the URL would otherwise render the tiles at it.

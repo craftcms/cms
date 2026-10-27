@@ -40,10 +40,9 @@ function viewFor(mode: ViewMode['mode']): ThumbSizeView | null {
  * The size of the index's thumbnails, chosen in the View menu: one size for
  * table and structure views, another for thumbnail tiles. Their chips take a
  * size to suit. The server renders the thumbnails at their size, so changing
- * it updates the local view state and then re-requests the rows with a
- * `thumbSize` param, the same way
- * `useElementIndexViewMode` handles `viewMode`. A view's default size is left
- * out of the URL.
+ * it updates the local view state and then quietly re-requests the rows with
+ * a `thumbSize` param, the same way `useElementIndexViewMode` handles
+ * `viewMode`. A view's default size is left out of the URL.
  */
 export function useElementIndexThumbSize(
   viewState: Ref<ViewState>,
@@ -90,7 +89,9 @@ export function useElementIndexThumbSize(
       }
 
       store(view, value);
-      visitor.merge({thumbSize: param(mode())}, {only: ['data']});
+      // Silent, since the rows already on screen were resized in place (see
+      // `resizeThumbs()`); this only brings thumbnails rendered for the size.
+      visitor.merge({thumbSize: param(mode())}, {only: ['data'], silent: true});
     },
   });
 
@@ -133,4 +134,61 @@ export function useElementIndexThumbSize(
   }
 
   return {thumbSize, options, restore, modeParams};
+}
+
+type Chip = HTMLElement & {
+  thumbSize: ThumbSizeValue | null;
+  size: string | null;
+  updateComplete?: Promise<unknown>;
+};
+
+type Thumbnail = HTMLElement & {width: number | null; height: number | null};
+
+/**
+ * Resizes the index's chips already on screen to a new thumbnail size, and
+ * scales their thumbnails to fill it, until the rows rendered for that size
+ * arrive.
+ *
+ * A thumbnail's `width` and `height` are the size the server rendered it at,
+ * and it's never shown larger, so they're scaled by however much its box
+ * grew or shrank. Measuring the box, rather than looking the sizes up, holds
+ * for `sm`, whose size depends on the chip's appearance.
+ */
+export async function resizeThumbs(
+  root: ParentNode,
+  size: ThumbSizeValue
+): Promise<void> {
+  const chips = [...root.querySelectorAll<Chip>('craft-chip[thumb-size]')];
+  const thumbnails = chips.flatMap((chip) =>
+    [...chip.querySelectorAll<Thumbnail>('craft-thumbnail')]
+      .filter((thumbnail) => thumbnail.width && thumbnail.height)
+      .map((thumbnail) => ({thumbnail, before: boxWidth(thumbnail)}))
+  );
+
+  for (const chip of chips) {
+    // Properties rather than attributes, since rendered server HTML sets
+    // them that way. The server sets the size the thumbnail suited, which
+    // would now be stale.
+    chip.thumbSize = size;
+    chip.size = null;
+  }
+
+  await Promise.all(chips.map((chip) => chip.updateComplete));
+
+  for (const {thumbnail, before} of thumbnails) {
+    const scale = boxWidth(thumbnail) / before;
+
+    if (before && scale && scale !== 1) {
+      thumbnail.width = Math.round(thumbnail.width! * scale);
+      thumbnail.height = Math.round(thumbnail.height! * scale);
+    }
+  }
+}
+
+function boxWidth(thumbnail: Thumbnail): number {
+  return (
+    thumbnail.shadowRoot
+      ?.querySelector('[part="thumbnail"]')
+      ?.getBoundingClientRect().width ?? 0
+  );
 }

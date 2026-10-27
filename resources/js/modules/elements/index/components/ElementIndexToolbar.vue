@@ -245,6 +245,7 @@
             :sort-direction-locked="sortDirectionLocked"
             :disabled="processing"
             :thumb-size-options="thumbSizeOptions"
+            :show-table-columns="mode === 'table' || mode === 'structure'"
             v-model:sort-field="sortField"
             v-model:sort-direction="sortDirection"
             v-model:table-columns="tableColumns"
