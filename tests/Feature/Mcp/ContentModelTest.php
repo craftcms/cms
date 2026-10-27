@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Settings;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Mcp\Capabilities\ContentModel;
@@ -82,3 +84,15 @@ class TestContentModelCheck implements Check
         ];
     }
 }
+
+it('says how images missing alt text can be filled in', function () {
+    AssetModel::factory()->createElement(['kind' => 'image', 'filename' => 'photo.png']);
+    $note = fn (): ?string => app(ContentModel::class)->audit(['missing-alt-text'])['notes']['missing-alt-text'] ?? null;
+
+    expect($note())->toContain('isn’t set up');
+
+    config(['ai.providers' => ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]]);
+    app()->instance(Settings::class, new Settings(['defaults' => ['text' => ['provider' => 'openai']]]));
+
+    expect($note())->toContain('`assets.analyze`', 'craft:altText');
+});

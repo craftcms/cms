@@ -117,7 +117,9 @@
     () => props.value.editUrl || chrome.value.screen?.editUrl || null
   );
   const editLinkId = `slideout-edit-link-${useId()}`;
-  const readOnly = computed(() => Boolean(chrome.value.readOnly));
+  const readOnly = computed(
+    () => !props.value.handlesReadOnly && Boolean(chrome.value.readOnly)
+  );
   const form = computed(() => props.value.form ?? null);
 
   const regions = useScreenRegions(slots, registry);

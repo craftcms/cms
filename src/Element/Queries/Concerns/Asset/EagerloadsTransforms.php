@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Element\Queries\AssetQuery;
 use Illuminate\Support\Collection;
+use Override;
 
 /**
  * @internal
@@ -35,32 +35,28 @@ trait EagerloadsTransforms
      */
     public mixed $withTransforms = null;
 
-    protected function initEagerloadsTransforms(): void
+    /**
+     * Preloads the requested transforms. The element eager loader calls this too.
+     */
+    #[Override]
+    public function afterHydrate(Collection $elements): Collection
     {
-        $this->afterQuery(static function (mixed $result, AssetQuery $assetQuery) {
-            if (! $result instanceof Collection) {
-                return $result;
-            }
+        $elements = parent::afterHydrate($elements);
 
-            if (! $assetQuery->withTransforms) {
-                return $result;
-            }
+        if (! $this->withTransforms) {
+            return $elements;
+        }
 
-            if ($assetQuery->asArray) {
-                return $result;
-            }
+        $transforms = $this->withTransforms;
+        if (! is_array($transforms)) {
+            $transforms = is_string($transforms)
+                ? str($transforms)->explode(',')->all()
+                : [$transforms];
+        }
 
-            $transforms = $assetQuery->withTransforms;
-            if (! is_array($transforms)) {
-                $transforms = is_string($transforms)
-                    ? str($transforms)->explode(',')->all()
-                    : [$transforms];
-            }
+        app(AssetTransformers::class)->preload($elements->all(), $transforms);
 
-            app(AssetTransformers::class)->preload($result->all(), $transforms);
-
-            return $result;
-        });
+        return $elements;
     }
 
     /**

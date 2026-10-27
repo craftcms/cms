@@ -11,7 +11,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasColumn(Table::ASSETS, 'colors')) {
+        // Colors are stored in `analysis` once that's been added
+        if (! Schema::hasColumn(Table::ASSETS, 'colors') && ! Schema::hasColumn(Table::ASSETS, 'analysis')) {
             Schema::table(Table::ASSETS, function (Blueprint $table) {
                 $table->json('colors')->nullable()->after('focalPoint');
             });

@@ -21,6 +21,7 @@ class AssetCondition extends ElementCondition
             FilenameConditionRule::class,
             HasAltConditionRule::class,
             HeightConditionRule::class,
+            ImageTypeConditionRule::class,
             SavableConditionRule::class,
             UploaderConditionRule::class,
             ViewableConditionRule::class,
