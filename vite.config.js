@@ -175,6 +175,61 @@ export default defineConfig(async ({mode}) => {
   }
 
   return {
+    // `pnpm run build` runs `frontend:build`, which builds @craftcms/ui and the
+    // CP bundle, overlapping whatever doesn't depend on something else:
+    //
+    //   generate:types, generate:wayfinder, format resources ┐
+    //   @craftcms/ui: format → clean ─┬─▶ runtime ───────────┴─▶ CP bundle ─┐
+    //                                 └─▶ declarations ─────────────────────┴─▶ done
+    //
+    // Caching is off: Vite Task tracks a cached task's file access, which this
+    // build can't rely on — it fails to start statically linked binaries like
+    // esbuild in containers whose seccomp filters already have a listener.
+    run: {
+      tasks: {
+        'frontend:build': {
+          command: 'echo Frontend build complete',
+          cache: false,
+          dependsOn: ['frontend:cp', 'frontend:ui-types'],
+        },
+        'frontend:ui-prepare': {
+          command: 'node scripts/build.js --prepare',
+          cwd: 'packages/craftcms-ui',
+          cache: false,
+          dependsOn: ['@craftcms/ui#format'],
+        },
+        'frontend:ui-runtime': {
+          command: 'node scripts/build.js --runtime',
+          cwd: 'packages/craftcms-ui',
+          cache: false,
+          dependsOn: ['frontend:ui-prepare'],
+        },
+        'frontend:ui-types': {
+          command: 'node scripts/build.js --types',
+          cwd: 'packages/craftcms-ui',
+          cache: false,
+          dependsOn: ['frontend:ui-prepare'],
+        },
+        // `fix-prettier`, holding back some cores: the CP bundle waits on both
+        // this and @craftcms/ui's build, which starts with its own formatting,
+        // and an uncapped run would hold that up.
+        'frontend:format': {
+          command: 'vp fmt --threads=6 ./resources',
+          cache: false,
+        },
+        'frontend:cp': {
+          // The codegen already ran, so the Vite plugins needn't run it again.
+          command: 'CRAFT_SKIP_PHP_CODEGEN=1 vp build',
+          cache: false,
+          dependsOn: [
+            'frontend:ui-runtime',
+            'frontend:format',
+            'generate:types',
+            'generate:wayfinder',
+          ],
+        },
+      },
+    },
     lint: {
       plugins: ['oxc', 'typescript', 'unicorn', 'react', 'vue'],
       categories: {

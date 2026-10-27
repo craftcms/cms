@@ -7,7 +7,7 @@ import {watch} from 'fs';
 import copy from 'recursive-copy';
 import {globby} from 'globby';
 import {getDistDir, getRootDir, resolveFrom} from './utils.js';
-import {dirname, join, relative, resolve} from 'path';
+import {delimiter, dirname, join, relative, resolve} from 'path';
 import {deleteAsync} from 'del';
 import createVueWrappers from './generate-vue-wrappers.js';
 import createColors from './generate-colors.js';
@@ -222,8 +222,19 @@ async function generateManifest() {
   spinner.start('Generating CEM');
 
   try {
+    // `vp run` only puts the workspace root's binaries on PATH.
     const {stderr} = await promisify(exec)(
-      'cem analyze --config "custom-elements-manifest.config.mjs"'
+      'cem analyze --config "custom-elements-manifest.config.mjs"',
+      {
+        cwd: getRootDir(),
+        env: {
+          ...process.env,
+          PATH: [
+            join(getRootDir(), 'node_modules/.bin'),
+            process.env.PATH,
+          ].join(delimiter),
+        },
+      }
     );
     process.stderr.write(stderr);
   } catch (error) {

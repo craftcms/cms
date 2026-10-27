@@ -11,7 +11,7 @@
     "prepare": "vp config",
     "prebuild:cms": "pnpm run fix-prettier",
     "build:cms": "vp build",
-    "build": "node scripts/build.mjs",
+    "build": "vp run frontend:build",
     "build:fe": "pnpm run build",
     "predev": "node scripts/ensure-built.mjs",
     "dev": "run-p --npm-path pnpm -l dev:vite dev:ui",
