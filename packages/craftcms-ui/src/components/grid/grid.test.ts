@@ -4,7 +4,6 @@ import './grid.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
-  document.documentElement.removeAttribute('dir');
 });
 
 /** A grid of `rows` rows, each holding a link per entry in `columns`. */
@@ -197,18 +196,6 @@ describe('craft-grid', () => {
 
     press('ArrowLeft');
     expect(document.activeElement).toBe(byId('r0c1'));
-  });
-
-  it('mirrors Right and Left in a right-to-left layout', async () => {
-    document.documentElement.setAttribute('dir', 'rtl');
-    await render(linkGrid(1, 3));
-
-    byId('r0c0').focus();
-    press('ArrowLeft');
-    expect(document.activeElement).toBe(byId('r0c1'));
-
-    press('ArrowRight');
-    expect(document.activeElement).toBe(byId('r0c0'));
   });
 
   it('moves between rows with Down and Up, keeping the column where it can', async () => {

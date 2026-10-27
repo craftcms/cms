@@ -93,4 +93,20 @@ describe('cp-notification-list', () => {
       list.shadowRoot!.querySelector('.notification-item')
     );
   });
+
+  it('keeps a focused notification’s focus on it when a newer one arrives', async () => {
+    const older = notification('older', null);
+    const {list} = await markRead(older);
+    const item = list.shadowRoot!.activeElement as HTMLElement;
+
+    setNotifications([notification('newer', null), {...older, unread: false}]);
+    await list.updateComplete;
+
+    const items = [
+      ...list.shadowRoot!.querySelectorAll<HTMLElement>('.notification-item'),
+    ];
+    expect(items.indexOf(item)).toBe(1);
+    expect(item.textContent).toContain('older');
+    expect(items[0]!.hasAttribute('tabindex')).toBe(false);
+  });
 });

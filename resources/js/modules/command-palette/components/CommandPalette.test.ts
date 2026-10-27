@@ -15,6 +15,7 @@ import {
   installCommandPaletteShortcut,
   isCommandPaletteOpen,
   registerActions,
+  registerProvider,
 } from '../registry';
 import CommandPalette from './CommandPalette.vue';
 
@@ -346,6 +347,43 @@ describe('CommandPalette', () => {
       ].map((label) => label.textContent?.trim())
     ).toEqual(['Homepage', 'Homepage hero', 'Open the homepage settings']);
     expect(tabStop()).toBe('Homepage');
+  });
+
+  it('keeps focus among the results when a late search replaces the focused one', async () => {
+    // Like the page's own fields, which come back as new results each search
+    let searches = 0;
+    registerProvider({
+      handle: 'test-fields',
+      label: 'Fields',
+      search: (term) =>
+        term === 'hero'
+          ? [{id: `field-${++searches}`, label: 'Hero image', run: vi.fn()}]
+          : [],
+    });
+    let answer!: (value: unknown) => void;
+    get.mockImplementation(
+      (() =>
+        new Promise((resolve) => {
+          answer = resolve;
+        })) as never
+    );
+    const input = await open();
+
+    input.value = 'hero';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await flush();
+    const before = result('Hero image');
+    before.focus();
+
+    // The server's providers arrive, so the search runs again.
+    answer({
+      data: {providers: [{handle: 'entries', label: 'Entries'}], actions: []},
+    });
+    await flush();
+    await flush();
+
+    expect(result('Hero image')).not.toBe(before);
+    expect(document.activeElement).toBe(result('Hero image'));
   });
 
   it('lists destructive actions last', async () => {
@@ -691,6 +729,36 @@ describe('CommandPalette', () => {
     expect(writeText).toHaveBeenCalledWith('42');
     expect((window as any).Craft.cp.displayNotice).toHaveBeenCalledWith(
       'Copied!'
+    );
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('says so and gives focus back when a copy fails', async () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {writeText: vi.fn().mockRejectedValue(new Error('Denied'))},
+      configurable: true,
+    });
+    get.mockResolvedValue({
+      data: {
+        providers: [],
+        actions: [
+          serverAction('copy-id', 'Copy ID', {
+            action: {type: 'clipboard', value: '42'},
+          }),
+        ],
+      },
+    } as never);
+    const trigger = document.createElement('button');
+    document.body.append(trigger);
+    trigger.focus();
+    await open();
+
+    await choose('Copy ID');
+    await flush();
+
+    expect(isCommandPaletteOpen.value).toBe(false);
+    expect((window as any).Craft.cp.displayError).toHaveBeenCalledWith(
+      'Denied'
     );
     expect(document.activeElement).toBe(trigger);
   });

@@ -203,6 +203,10 @@ export default class CraftGrid extends LitElement {
     for (const element of all) {
       this.#manage(element, element === this.#active ? '0' : '-1');
     }
+
+    // This just matched the Tab order to the grid as it is, so the changes it
+    // made itself don't need syncing again.
+    this.#observer.takeRecords();
   }
 
   #manage(element: HTMLElement, tabindex: string): void {
@@ -249,8 +253,15 @@ export default class CraftGrid extends LitElement {
       return;
     }
 
-    this.#active = targets[position.row]![position.column]!;
+    const element = targets[position.row]![position.column]!;
     this.#position = position;
+
+    // Arrow keys move the Tab stop before moving focus, so there's nothing to sync.
+    if (element === this.#active) {
+      return;
+    }
+
+    this.#active = element;
     this.#sync();
   };
 
@@ -297,7 +308,8 @@ export default class CraftGrid extends LitElement {
       row: index,
       column: Math.min(column, lastColumn(index)),
     });
-    const rtl = this.closest('[dir]')?.getAttribute('dir') === 'rtl';
+    // Computed, so `dir="auto"` and CSS `direction` count too
+    const rtl = getComputedStyle(this).direction === 'rtl';
     /** A move along the row, toward its end for a positive `step`, stopping at both ends. */
     const along = (step: number): Position => ({
       row,

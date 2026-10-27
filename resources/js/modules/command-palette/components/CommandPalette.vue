@@ -173,13 +173,56 @@
 
   // New results start from the top, whether they come from a new query or
   // from a provider answering late — unless focus is among them already.
+  // Results that move or are replaced take focus with them, so it's put back
+  // on the same result, or the first one if it's gone, rather than lost.
   watch(sections, async () => {
+    const focusedId = focusedResultId();
     await nextTick();
 
-    if (!results.value?.contains(document.activeElement)) {
-      resetResultGrids(results.value);
+    if (results.value?.contains(document.activeElement)) {
+      return;
     }
+
+    if (focusedId !== null && isFocusLost()) {
+      const result =
+        resultElement(focusedId) ??
+        results.value?.querySelector<HTMLElement>(
+          '[data-command-palette-item]'
+        );
+
+      if (result) {
+        result.focus();
+
+        return;
+      }
+    }
+
+    resetResultGrids(results.value);
   });
+
+  /** The ID of the result that has focus, or one of whose controls does. */
+  function focusedResultId(): string | null {
+    const row = (document.activeElement as HTMLElement | null)?.closest(
+      'craft-grid-row'
+    );
+
+    return (
+      row?.querySelector<HTMLElement>('[data-command-palette-item]')?.dataset
+        .commandPaletteItem ?? null
+    );
+  }
+
+  function resultElement(id: string): HTMLElement | null {
+    return (
+      results.value?.querySelector<HTMLElement>(
+        `[data-command-palette-item="${CSS.escape(id)}"]`
+      ) ?? null
+    );
+  }
+
+  function isFocusLost(): boolean {
+    return !document.activeElement || document.activeElement === document.body;
+  }
 
   /** Which providers couldn’t be searched, if any. */
   const failedMessage = computed(() =>
@@ -345,20 +388,22 @@
     openedWithShortcut.value = false;
     activeView.value = null;
 
-    if (callback) {
-      await callback();
-    }
+    try {
+      if (callback) {
+        await callback();
+      }
+    } catch (error: any) {
+      Craft.cp?.displayError?.(error?.message || t('A server error occurred.'));
+    } finally {
+      // An item that was meant to move focus, but didn't — copying to the
+      // clipboard, say, or failing to — would otherwise leave it on the page
+      // itself.
+      if (isFocusLost() && opener?.isConnected) {
+        opener.focus();
+      }
 
-    // An item that was meant to move focus, but didn't — copying to the
-    // clipboard, say — would otherwise leave it on the page itself.
-    if (
-      (!document.activeElement || document.activeElement === document.body) &&
-      opener?.isConnected
-    ) {
-      opener.focus();
+      opener = null;
     }
-
-    opener = null;
   }
 
   /** Back to an empty search, as the palette was first opened. */

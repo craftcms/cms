@@ -1,6 +1,7 @@
 import {t} from '@craftcms/ui';
 import {css, html, LitElement, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
+import {repeat} from 'lit/directives/repeat.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {
   getNotifications,
@@ -372,8 +373,13 @@ class CpNotificationList extends LitElement {
   protected override render() {
     return html`
       <ul role="list" class="notification-list">
-        ${getNotifications().map((notification, index) =>
-          this.#renderNotification(notification, index === 0)
+        ${repeat(
+          getNotifications(),
+          // Keyed, so state left on an item, such as the tabindex that lets
+          // it take focus, stays with its notification when the list changes
+          (notification) => notification.id,
+          (notification, index) =>
+            this.#renderNotification(notification, index === 0)
         )}
       </ul>
     `;

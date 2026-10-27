@@ -11,6 +11,7 @@ import '../../styles/cp.css';
 
 beforeEach(() => {
   document.body.innerHTML = '';
+  document.body.style.direction = '';
 });
 
 async function render(): Promise<CraftGrid> {
@@ -92,6 +93,19 @@ it('moves between a link and a menu button with the arrow keys', async () => {
 
   await userEvent.keyboard('{ArrowLeft}');
   expect(document.activeElement).toBe(byId('two'));
+});
+
+it('mirrors Right and Left when the layout is right to left', async () => {
+  await render();
+  // Styled rather than given a `dir`, so only the computed direction shows it
+  document.body.style.direction = 'rtl';
+
+  byId('one').focus();
+  await userEvent.keyboard('{ArrowLeft}');
+  expect(document.activeElement).toBe(menuButton('one'));
+
+  await userEvent.keyboard('{ArrowRight}');
+  expect(document.activeElement).toBe(byId('one'));
 });
 
 it('leaves arrow keys in an open menu to the menu', async () => {
