@@ -30,6 +30,12 @@ class CpNotificationList extends LitElement {
       display: block;
     }
 
+    .notification-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
     .notification-item {
       position: relative;
       display: flex;
@@ -246,12 +252,11 @@ class CpNotificationList extends LitElement {
 
   #renderNotification(notification: NotificationData, first: boolean) {
     return html`
-      <article
+      <li
         part=${first ? 'item first-item' : 'item'}
         class="notification-item ${notification.unread
           ? ''
           : 'notification-item--read'}"
-        role="listitem"
         @click=${(event: MouseEvent) =>
           this.#handleLinkClick(notification, event)}
       >
@@ -339,7 +344,7 @@ class CpNotificationList extends LitElement {
               `
             : nothing}
         </div>
-      </article>
+      </li>
     `;
   }
 
@@ -366,11 +371,11 @@ class CpNotificationList extends LitElement {
 
   protected override render() {
     return html`
-      <div role="list">
+      <ul role="list" class="notification-list">
         ${getNotifications().map((notification, index) =>
           this.#renderNotification(notification, index === 0)
         )}
-      </div>
+      </ul>
     `;
   }
 }

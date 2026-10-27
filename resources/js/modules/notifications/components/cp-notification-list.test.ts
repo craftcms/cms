@@ -53,6 +53,26 @@ describe('cp-notification-list', () => {
     return {list};
   }
 
+  it('lists the notifications as list items', async () => {
+    setNotifications([notification('a', null), notification('b', null)]);
+    const list = document.createElement(
+      'cp-notification-list'
+    ) as HTMLElement & {updateComplete: Promise<unknown>};
+    document.body.append(list);
+    await list.updateComplete;
+
+    const items = [...list.shadowRoot!.querySelectorAll('[part~="item"]')];
+    expect(items).toHaveLength(2);
+    expect(
+      items.every(
+        (item) =>
+          item.localName === 'li' &&
+          !item.hasAttribute('role') &&
+          item.parentElement?.localName === 'ul'
+      )
+    ).toBe(true);
+  });
+
   it('moves focus to the notification’s link once Mark as read has gone', async () => {
     const {list} = await markRead(
       notification('a', `${window.location.origin}/admin/a`)
