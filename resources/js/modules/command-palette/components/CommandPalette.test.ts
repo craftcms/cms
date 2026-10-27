@@ -351,6 +351,17 @@ describe('CommandPalette', () => {
     expect(hints()).toContain('Tab Actions');
   });
 
+  it('says in an option’s name when Tab reaches its actions', async () => {
+    await open();
+
+    expect(option('Enable maintenance mode').textContent).toContain(
+      'Press Tab for actions'
+    );
+    expect(option('Uninstall SEO').textContent).not.toContain(
+      'Press Tab for actions'
+    );
+  });
+
   it('makes the option under the pointer the active one, unless focus is on the actions', async () => {
     const input = await open();
 

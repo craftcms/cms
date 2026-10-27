@@ -6,10 +6,12 @@
    * The options take no focus and hold no controls: the search input keeps
    * focus, the arrow keys move the active option, which the input points to
    * with `aria-activedescendant`, and a click chooses one. Each option's text
-   * — its label, hint and description — is its accessible name. A result's
+   * — its label, hint and description, and whether Tab reaches its actions —
+   * is its accessible name. A result's
    * own actions live outside the listbox, in `ResultActions`, which sits over
    * the space kept for it here.
    */
+  import {t} from '@craftcms/ui';
   import {hasActions, type CommandPaletteItem} from '../types';
 
   export interface ResultRow {
@@ -134,6 +136,10 @@
       >
         {{ row.item.description }}
       </span>
+      <!-- Read with the option, as the button beside it is only seen. -->
+      <span v-if="hasActions(row.item)" class="sr-only">{{
+        t('Press Tab for actions')
+      }}</span>
     </div>
   </div>
 </template>
