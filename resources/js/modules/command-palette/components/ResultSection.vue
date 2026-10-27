@@ -22,14 +22,22 @@
     optionId: string;
   }
 
-  defineProps<{
-    groupId: string;
-    heading: string;
-    rows: ResultRow[];
-    selectedIndex: number;
-    /** The row under the pointer, highlighted while its actions sit over it. */
-    hoveredIndex?: number;
-  }>();
+  withDefaults(
+    defineProps<{
+      groupId: string;
+      heading: string;
+      /**
+       * Whether it's a named group in the listbox. A lone section isn't, as the
+       * listbox's own name says the same: its heading is only seen.
+       */
+      grouped?: boolean;
+      rows: ResultRow[];
+      selectedIndex: number;
+      /** The row under the pointer, highlighted while its actions sit over it. */
+      hoveredIndex?: number;
+    }>(),
+    {grouped: true, hoveredIndex: -1}
+  );
 
   const emit = defineEmits<{
     (event: 'activate', item: CommandPaletteItem, trigger: MouseEvent): void;
@@ -58,13 +66,14 @@
 <template>
   <div
     :id="groupId"
-    role="group"
+    :role="grouped ? 'group' : undefined"
     class="command-palette-section"
-    :aria-labelledby="`${groupId}-label`"
+    :aria-labelledby="grouped ? `${groupId}-label` : undefined"
   >
     <div
       :id="`${groupId}-label`"
-      role="presentation"
+      :role="grouped ? 'presentation' : undefined"
+      :aria-hidden="grouped ? undefined : 'true'"
       class="command-palette-section__heading"
     >
       {{ heading }}

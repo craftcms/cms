@@ -192,6 +192,7 @@
           v-if="rows.length"
           :group-id="`${id}-results`"
           :heading="t('Results')"
+          :grouped="false"
           :rows="rows"
           :selected-index="selectedIndex"
           :hovered-index="hoveredIndex"
