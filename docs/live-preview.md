@@ -70,8 +70,7 @@ post-edit URL by default).
 With the Yii2 adapter, Craft 5's `Craft.Preview` is a shim over the above:
 
 - One instance mirrors each preview on the page. `Craft.Preview.getActive()`,
-  `Craft.Preview.instances` and `Craft.Preview.refresh()` work as before;
-  `refresh()` also refreshes classic `Craft.LivePreview` instances.
+  `Craft.Preview.instances` and `Craft.Preview.refresh()` work as before.
 - Events keep Craft 5's camelCase names (`beforeOpen` for `before-open`, and
   so on) and payloads: `previewTarget` for `target`,
   `$iframe` (jQuery) for `iframe`, `response.data` for `data`. `open` and
@@ -86,5 +85,5 @@ With the Yii2 adapter, Craft 5's `Craft.Preview` is a shim over the above:
 - `new Craft.Preview(settings)` no longer builds a preview. It warns, and
   `open()` goes to the element's standalone preview page.
 
-Classic (pre-3.2) `Craft.LivePreview` also ships with the adapter. Without the
-adapter, neither global exists.
+Without the adapter, `Craft.Preview` doesn't exist. Classic (pre-3.2)
+`Craft.LivePreview`, which Craft itself hasn't used since 3.2, has been removed.

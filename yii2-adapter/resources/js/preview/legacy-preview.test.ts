@@ -216,9 +216,7 @@ describe('Craft.Preview', () => {
     await vi.waitFor(() => expect(newestId()).toBeGreaterThan(id));
   });
 
-  it('refreshes every preview and classic Live Preview', async () => {
-    const classic = {forceUpdateIframe: vi.fn()};
-    vi.stubGlobal('Craft', {getCpUrl, LivePreview: {instances: [classic]}});
+  it('refreshes every preview', async () => {
     const {controller, preview} = mount();
     await preview.open();
     const id = controller.frames.value.at(-1)!.id;
@@ -228,7 +226,6 @@ describe('Craft.Preview', () => {
     await vi.waitFor(() =>
       expect(controller.frames.value.at(-1)!.id).toBeGreaterThan(id)
     );
-    expect(classic.forceUpdateIframe).toHaveBeenCalledOnce();
   });
 
   it('switches devices and orientation', () => {
@@ -266,16 +263,5 @@ describe('Craft.Preview', () => {
     expect(onBeforeLoad).toHaveBeenCalledOnce();
     expect(location.href).toBe('/admin/preview/12?siteId=2');
     expect(LegacyPreview.instances).not.toContain(preview);
-  });
-
-  // Last, as the entry point leaves its own mirror running for the file.
-  it('refreshes classic Live Preview when the legacy bundles ask', async () => {
-    const classic = {forceUpdateIframe: vi.fn()};
-    vi.stubGlobal('Craft', {getCpUrl, LivePreview: {instances: [classic]}});
-    await import('./index');
-
-    window.dispatchEvent(new CustomEvent('craft:refresh-previews'));
-
-    expect(classic.forceUpdateIframe).toHaveBeenCalledOnce();
   });
 });

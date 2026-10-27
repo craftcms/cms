@@ -13,7 +13,6 @@ module.exports = getConfig({
       ),
       'cp-compat': './cp-compat.js',
       'legacy-html-control': './legacy-html-control.js',
-      'live-preview': './live-preview.js',
     },
     output: {
       path: __dirname + '/../../../cms-assets/resources/legacy/cpcompat/dist',

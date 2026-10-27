@@ -28,9 +28,6 @@ use function CraftCms\Cms\craftAsset;
  * `jsClass` escape hatch keeps working for plugin subclasses. It defines its
  * class at top-level eval, so it is registered ahead of cp-compat.js.
  *
- * live-preview.js is the classic (pre-3.2) `Craft.LivePreview`, which core
- * never creates; it's kept here for plugins that still do.
- *
  * @internal
  */
 class CpCompatAsset implements LegacyAssetInterface
@@ -42,7 +39,6 @@ class CpCompatAsset implements LegacyAssetInterface
         $htmlStack->html(Cp::vite()(['yii2-adapter/resources/js/cp-compat.ts'])->toHtml(), Position::Head);
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/component-select-input.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/legacy-html-control.js'));
-        $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/live-preview.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/cp-compat.js'));
     }
 }

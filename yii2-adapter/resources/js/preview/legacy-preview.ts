@@ -53,10 +53,8 @@ export class LegacyPreview extends Base<LegacyPreviewSettings> {
   static minEditorWidthInPx = 320;
   static instances: LegacyPreview[] = [];
 
-  /** Reloads every preview, and any classic `Craft.LivePreview` too. */
   static refresh(): void {
     refreshPreviews();
-    refreshClassicLivePreviews();
   }
 
   static getActive(): LegacyPreview | undefined {
@@ -274,12 +272,6 @@ export class LegacyPreview extends Base<LegacyPreviewSettings> {
     );
 
     return Craft.getCpUrl(`preview/${elementId}`, params);
-  }
-}
-
-export function refreshClassicLivePreviews(): void {
-  for (const preview of Craft.LivePreview?.instances ?? []) {
-    preview.forceUpdateIframe();
   }
 }
 
