@@ -418,6 +418,19 @@
    * Opening and closing
    */
   let previouslyFocused: HTMLElement | null = null;
+  /** The element holding the page while open, until it lets go. */
+  let modalLayer: HTMLElement | null = null;
+
+  function releasePage(): void {
+    if (!modalLayer) {
+      return;
+    }
+
+    document.documentElement.classList.remove('lp-open');
+    uiLayerManager().removeLayer(modalLayer);
+    releaseFocusWithin(modalLayer);
+    modalLayer = null;
+  }
 
   watch(
     () => preview.isOpen.value,
@@ -431,6 +444,7 @@
       if (open) {
         shown.value = true;
         previouslyFocused = document.activeElement as HTMLElement | null;
+        modalLayer = el;
         document.documentElement.classList.add('lp-open');
         addModalAttributes(el);
         uiLayerManager().addLayer(el);
@@ -443,14 +457,15 @@
         await nextTick();
         setFocusWithin(el);
       } else {
-        document.documentElement.classList.remove('lp-open');
-        uiLayerManager().removeLayer(el);
-        releaseFocusWithin(el);
+        releasePage();
         previouslyFocused?.focus({preventScroll: true});
         emit('closed');
       }
     }
   );
+
+  // Leaving the page while it's open (saving redirects away, say) never closes it.
+  onBeforeUnmount(releasePage);
 </script>
 
 <template>

@@ -212,3 +212,17 @@ it('tours Live Preview: devices, targets, and a slideout in the editor', async (
   await nextTick();
   expect(host!.querySelector('#title')).not.toBeNull();
 });
+
+it('lets go of the page when it goes away while open', async () => {
+  mount();
+  await page.getByRole('button', {name: 'Preview'}).click();
+  await expect
+    .poll(() => document.documentElement.classList.contains('lp-open'))
+    .toBe(true);
+
+  app!.unmount();
+  app = undefined;
+
+  expect(document.documentElement.classList.contains('lp-open')).toBe(false);
+  expect(host!.closest('[aria-hidden="true"]')).toBeNull();
+});
