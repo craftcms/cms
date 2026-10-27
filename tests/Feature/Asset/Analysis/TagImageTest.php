@@ -17,7 +17,7 @@ beforeEach(function (): void {
     config(['ai.providers' => ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]]);
     app()->instance(Settings::class, new Settings([
         'defaults' => ['text' => ['provider' => 'openai', 'model' => 'gpt-vision']],
-        'tasks' => ['craft:altText' => ['enabled' => false], 'craft:focalPoint' => ['enabled' => false]],
+        'tasks' => ['craft:title' => ['enabled' => false], 'craft:altText' => ['enabled' => false], 'craft:focalPoint' => ['enabled' => false]],
     ]));
 });
 

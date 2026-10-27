@@ -2100,6 +2100,16 @@ JS, [
     }
 
     /**
+     * Returns whether the asset’s title is missing, or is still the one it was given from its filename.
+     *
+     * @since 6.0.0
+     */
+    public function hasDefaultTitle(): bool
+    {
+        return in_array($this->title, [null, '', AssetsHelper::filename2Title(pathinfo($this->getFilename(), PATHINFO_FILENAME))], true);
+    }
+
+    /**
      * Returns the Alternative Text field’s translation key.
      */
     public function getAltTranslationKey(): string
@@ -3321,6 +3331,24 @@ JS;
             $this->title = AssetsHelper::filename2Title(pathinfo($this->_filename, PATHINFO_FILENAME));
         }
 
+        // Read an uploaded image’s metadata before it’s cleaned in afterSave(), which strips it, and fill in its alt
+        // text, and a new image’s title, from it
+        if (
+            isset($this->tempFilePath) &&
+            AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value &&
+            $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
+        ) {
+            $this->_uploadMetadata = Images::metadata($this->tempFilePath);
+
+            if (! $this->id && $this->_uploadMetadata->title !== null && $this->hasDefaultTitle()) {
+                $this->title = mb_substr($this->_uploadMetadata->title, 0, 255);
+            }
+
+            if ($this->alt === null || $this->alt === '') {
+                $this->alt = $this->_uploadMetadata->altText ?? $this->_uploadMetadata->description ?? $this->alt;
+            }
+        }
+
         // Set the field layout
         $volume = Folders::getFolderById($folderId)->getVolume();
 
@@ -3354,15 +3382,6 @@ JS;
             $fallbackHeight = null;
 
             if ($isImage) {
-                // Read the file’s metadata on upload, before any cleaning strips it, and fill in alt text from it
-                if ($this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)) {
-                    $this->_uploadMetadata = Images::metadata($this->tempFilePath);
-
-                    if ($this->alt === null || $this->alt === '') {
-                        $this->alt = $this->_uploadMetadata->altText ?? $this->_uploadMetadata->description ?? $this->alt;
-                    }
-                }
-
                 // Are we uploading an image that needs to be sanitized?
                 if (
                     $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&

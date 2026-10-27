@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
@@ -14,6 +15,7 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\PreviewHandlers\Text;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Element\Elements;
@@ -654,5 +656,47 @@ describe('metadata', function () {
         $this->assets->replaceAssetFile($this->asset, $path, 'photo.jpg');
 
         expect(Asset::find()->id($this->asset->id)->one()->getSearchKeywords('keywords'))->toBe('harbor boats');
+    });
+});
+
+describe('titles', function () {
+    beforeEach(function () {
+        $this->volume = Volume::factory()->create(['fs' => 'test-disk']);
+        $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
+    });
+
+    afterEach(function () {
+        deleteMetadataJpegs();
+    });
+
+    it('come from the file’s embedded title when it’s uploaded', function (?string $embedded) {
+        $path = metadataJpeg($embedded === null ? null : xmpPacket("<dc:title><rdf:Alt><rdf:li xml:lang=\"x-default\">$embedded</rdf:li></rdf:Alt></dc:title>"));
+        $asset = new Asset;
+        $asset->tempFilePath = $path;
+        $asset->setFilename($filename = uniqid('IMG_').'.jpg');
+        $asset->newFolderId = $this->folder->id;
+        $asset->setVolumeId($this->volume->id);
+        $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
+
+        expect(app(Elements::class)->saveElement($asset))->toBeTrue()
+            ->and(Asset::find()->id($asset->id)->one()->title)->toBe($embedded ?? AssetsHelper::filename2Title(pathinfo($filename, PATHINFO_FILENAME)));
+    })->with([
+        'embedded' => ['Harbor at dusk'],
+        'none' => [null],
+    ]);
+
+    it('stay as they are when the file is replaced', function () {
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $this->volume->id,
+            'folderId' => $this->folder->id,
+            'filename' => $filename = uniqid('IMG_').'.jpg',
+            'kind' => FileKind::Image->value,
+        ]);
+        $asset->title = 'IMG 4759';
+        app(Elements::class)->saveElement($asset);
+
+        $this->assets->replaceAssetFile($asset, metadataJpeg(xmpPacket('<dc:title><rdf:Alt><rdf:li xml:lang="x-default">Harbor at dusk</rdf:li></rdf:Alt></dc:title>')), $filename);
+
+        expect(Asset::find()->id($asset->id)->one()->title)->toBe('IMG 4759');
     });
 });
