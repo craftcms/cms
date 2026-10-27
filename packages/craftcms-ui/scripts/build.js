@@ -16,16 +16,16 @@ const spinner = ora({text: '@craftcms/ui', color: 'red'}).start();
 const isDeveloping = process.argv.includes('--develop');
 
 /**
- * The root build runs this in two halves, so the CP can bundle while the
- * declarations generate: `--runtime` writes everything the CP imports, then
- * `--types` adds the declarations and the manifest. Without either, it does
- * both.
+ * The root build runs this in parts, so the CP can bundle while the
+ * declarations generate: `--prepare` cleans dist and generates the colors that
+ * everything else includes, then `--runtime` writes what the CP imports while
+ * `--types` writes the declarations and the manifest. Without any of these, it
+ * does all three.
  */
-const phase = process.argv.includes('--runtime')
-  ? 'runtime'
-  : process.argv.includes('--types')
-    ? 'types'
-    : 'all';
+const phases = ['prepare', 'runtime', 'types'].filter((phase) =>
+  process.argv.includes(`--${phase}`)
+);
+const runs = (phase) => !phases.length || phases.includes(phase);
 
 async function cleanup() {
   // In develop mode, rebuild in place: the root Vite dev server starts
@@ -272,7 +272,7 @@ async function generateColors() {
 
 async function buildAll() {
   try {
-    if (phase !== 'types') {
+    if (runs('prepare')) {
       await cleanup();
 
       // The bundle, its declarations, and the copied styles all include the
@@ -283,20 +283,26 @@ async function buildAll() {
     // The JS and the declarations build separately, which writes the same
     // files as one build with both, so neither has to wait for the other.
     await Promise.all([
-      ...(phase !== 'types'
+      ...(runs('runtime')
         ? [
             generateVueWrappers(),
             generateStyles(),
             generateBundle({dts: false}),
           ]
         : []),
-      ...(phase !== 'runtime'
+      ...(runs('types')
         ? [generateManifest(), generateBundle({dts: {emitDtsOnly: true}})]
         : []),
     ]);
 
-    if (phase !== 'runtime') {
-      await pruneOrphanedChunks();
+    if (runs('types')) {
+      // Split builds start from a dist that `--prepare` just emptied, so there
+      // is nothing stale to prune, and the runtime may still be writing chunks
+      // that look unreachable until its entry points land.
+      if (!phases.length) {
+        await pruneOrphanedChunks();
+      }
+
       await assertDeclarationsResolved();
     }
 

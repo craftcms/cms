@@ -22,7 +22,6 @@
     "dev": "node ./scripts/build.js --develop",
     "prebuild": "vp fmt --write ./src",
     "build": "node ./scripts/build.js",
-    "build:types": "node ./scripts/build.js --types",
     "format": "vp fmt --write ./src",
     "check:format": "vp fmt --check ./src",
     "check:exports": "attw --pack .",
