@@ -35,6 +35,9 @@
         {% endfor %}
       </ul>
     {% endif %}
+    {% if redirectUri %}
+      <p style="overflow-wrap: anywhere;">{{ 'You will be redirected to {url}'|t('app', {url: redirectUri}) }}</p>
+    {% endif %}
     <div class="buttons">
       <button class="btn submit" type="submit">{{ 'Authorize'|t('app') }}</button>
       <button class="btn" type="submit" formaction="{{ denyAction }}">{{ 'Deny'|t('app') }}</button>

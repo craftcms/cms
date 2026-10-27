@@ -200,8 +200,17 @@ class OauthController extends Controller
                 $requested = array_diff($requested, $definition->scopeLevels);
             }
 
+            $client = $authorization->getClient();
+            $redirectUri = $authorization->getRedirectUri() ?? ((array)$client->getRedirectUri())[0] ?? null;
+
+            // Keep the consent page out of frames, so it can't be used for clickjacking
+            $this->response->getHeaders()
+                ->set('X-Frame-Options', 'DENY')
+                ->add('Content-Security-Policy', "frame-ancestors 'none'");
+
             return $this->renderTemplate('oauth/authorize', [
-                'clientName' => $authorization->getClient()->getName(),
+                'clientName' => $client->getName(),
+                'redirectUri' => $redirectUri,
                 'authToken' => $authToken,
                 'consentDescription' => $definition->consentDescription,
                 'accessOptions' => array_map(fn(string $level) => [
