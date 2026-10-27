@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Queries\Concerns\Asset\EagerloadsTransforms;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAlt;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetLocation;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetProperties;
+use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesImageType;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesSizes;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
@@ -35,6 +36,7 @@ class AssetQuery extends ElementQuery
     use QueriesAlt;
     use QueriesAssetLocation;
     use QueriesAssetProperties;
+    use QueriesImageType;
     use QueriesSizes;
 
     #[Override]

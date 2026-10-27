@@ -13,6 +13,7 @@ function runAddColorsToAssetsMigration(): void
 }
 
 it('adds the colors column to installs that predate it', function () {
+    dropAssetImageTypeColumn();
     Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->dropColumn('analysis'));
 
     runAddColorsToAssetsMigration();
@@ -21,6 +22,7 @@ it('adds the colors column to installs that predate it', function () {
 });
 
 it('replaces the dominantColor column on installs that added it', function () {
+    dropAssetImageTypeColumn();
     Schema::table(Table::ASSETS, function (Blueprint $table) {
         $table->dropColumn('analysis');
         $table->string('dominantColor', 7)->nullable();

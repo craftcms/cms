@@ -28,6 +28,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Enums\FileKind;
+use CraftCms\Cms\Asset\Enums\ImageType;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
 use CraftCms\Cms\Asset\Events\AssetUrlDefined;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
@@ -855,7 +856,7 @@ class Asset extends Element
     #[Override]
     protected static function defineSearchableAttributes(): array
     {
-        return ['filename', 'extension', 'kind', 'alt', 'keywords', 'text', 'colors', 'imageType'];
+        return ['filename', 'extension', 'kind', 'alt', 'keywords', 'text', 'colors'];
     }
 
     #[Override]
@@ -867,10 +868,6 @@ class Asset extends Element
             'text' => $this->analysis->text ?? '',
             // Images can be found by the names of their colors
             'colors' => $this->kind === FileKind::Image->value ? $this->colorKeywords() : '',
-            // In English and in the site’s language, such as “logo” or “screenshot bildschirmfoto”
-            'imageType' => ($type = $this->analysis?->type)
-                ? implode(' ', array_unique([$type->value, mb_strtolower($type->label($this->getSite()->language))]))
-                : '',
             default => parent::searchKeywords($attribute),
         };
     }
@@ -2111,6 +2108,17 @@ JS, [
         $volume = $this->getVolume();
 
         return $volume->titleTranslationMethod->elementKey($this, $volume->titleTranslationKeyFormat);
+    }
+
+    /**
+     * Returns what kind of image the asset is, as found by the “Classify images” AI task, or `null` if it isn’t an image
+     * or hasn’t been classified.
+     *
+     * @since 6.0.0
+     */
+    public function getImageType(): ?ImageType
+    {
+        return $this->kind === FileKind::Image->value ? $this->analysis?->type : null;
     }
 
     /**

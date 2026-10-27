@@ -78,9 +78,10 @@ it('finds what kind of image an image is, keeps what else was found, and makes i
         ->and($saved->getSearchKeywords('keywords'))->toBe('');
 });
 
-it('makes images searchable by their type, with the imageType attribute', function (): void {
+it('makes images filterable by their type', function (): void {
     $logo = classifiableImage();
     $screenshot = classifiableImage();
+    $unclassified = classifiableImage();
     ImageAnalysisAgent::fake([
         ['craft_imageType' => ['type' => 'logo']],
         ['craft_imageType' => ['type' => 'screenshot']],
@@ -88,9 +89,25 @@ it('makes images searchable by their type, with the imageType attribute', functi
 
     app(ImageAnalyzer::class)->analyze($logo);
     app(ImageAnalyzer::class)->analyze($screenshot);
+    $ids = fn (mixed $value): array => Asset::find()->id([$logo->id, $screenshot->id, $unclassified->id])->imageType($value)->orderBy('id')->ids();
 
-    expect(Asset::find()->search('imageType:logo')->ids())->toBe([$logo->id])
-        ->and(Asset::find()->search('screenshot')->ids())->toBe([$screenshot->id]);
+    expect($ids('logo'))->toBe([$logo->id])
+        ->and($ids(ImageType::Screenshot))->toBe([$screenshot->id])
+        ->and($ids(['logo', 'screenshot']))->toBe([$logo->id, $screenshot->id])
+        ->and($ids(['not', 'logo']))->toBe([$screenshot->id])
+        ->and($ids(':empty:'))->toBe([$unclassified->id])
+        ->and(Asset::find()->id($logo->id)->one()->getImageType())->toBe(ImageType::Logo)
+        ->and(Asset::find()->id($logo->id)->one()->getSearchKeywords('keywords'))->toBe('');
+});
+
+it('filters images by their type in GraphQL', function (): void {
+    $logo = classifiableImage(['type' => 'logo']);
+    classifiableImage(['type' => 'photo']);
+    gqlActivateFullAccessSchema();
+
+    graphQL('{ assets(imageType: ["logo"]) { id } }')
+        ->assertOk()
+        ->assertJsonPath('data.assets', [['id' => (string) $logo->id]]);
 });
 
 it('ignores types it doesn’t know', function (): void {
