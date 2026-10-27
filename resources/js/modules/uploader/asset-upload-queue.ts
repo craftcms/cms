@@ -5,10 +5,10 @@ import ResolveUploadConflictController from '@actions/Assets/ResolveUploadConfli
 import {deleteAsset} from '@actions/Assets/ActionController';
 import {UploadQueue, type UploadJob, uploadErrorMessage} from './upload-queue';
 import {imageColorsCompletionData} from './image-colors';
+import type {ConflictResolution} from '@/modules/assets/assetMover';
 import {
   type AssetUploadDestination,
-  type UploadConflictChoice,
-  showUploadConflict,
+  createUploadConflictDetails,
   createUploadCompleteNotification,
 } from './upload-notification';
 
@@ -25,7 +25,6 @@ interface AssetUploadContext {
   destination: AssetUploadDestination;
   batch: UploadBatch;
   resolving: boolean;
-  closePrompt?: () => void;
 }
 
 type QueuedAssetUpload = UploadJob<UploadResult, AssetUploadContext>;
@@ -95,9 +94,6 @@ export class AssetUploadQueue extends UploadQueue<
   override async cancelAll(): Promise<void> {
     this.stopNavigation?.();
     this.stopNavigation = undefined;
-    for (const job of this.jobs) {
-      job.context.closePrompt?.();
-    }
     this.batches = new WeakMap();
     this.changes.clear();
     for (const batch of this.completedBatches) {
@@ -108,14 +104,6 @@ export class AssetUploadQueue extends UploadQueue<
     this.changes.clear();
   }
 
-  override retry(job: QueuedAssetUpload): void {
-    if (job.result?.conflict) {
-      this.prompt(job);
-    } else {
-      super.retry(job);
-    }
-  }
-
   protected override succeeded(
     job: QueuedAssetUpload,
     result: UploadResult
@@ -123,30 +111,25 @@ export class AssetUploadQueue extends UploadQueue<
     job.result = result;
     this.changed(job);
     if (result.conflict) {
-      job.notification.updateState('conflict', result.conflict);
+      this.showConflict(job, result.conflict);
     } else {
       this.uploaded(job);
     }
   }
 
-  private prompt(job: QueuedAssetUpload): void {
-    if (!this.jobs.has(job) || job.context.resolving || !job.result?.conflict) {
-      return;
-    }
-    job.context.closePrompt?.();
-    job.context.closePrompt = showUploadConflict(
-      job.result.conflict,
-      (choice) => {
+  private showConflict(job: QueuedAssetUpload, message: string): void {
+    job.notification.showDetails(
+      createUploadConflictDetails(message, (choice) => {
         this.resolve(job, choice).catch((error: Error) =>
           Craft.cp.displayError(error.message)
         );
-      }
+      })
     );
   }
 
   private async resolve(
     job: QueuedAssetUpload,
-    choice: UploadConflictChoice
+    choice: ConflictResolution
   ): Promise<void> {
     if (!this.jobs.has(job) || job.context.resolving) {
       return;
@@ -172,7 +155,7 @@ export class AssetUploadQueue extends UploadQueue<
       }
     } catch (error) {
       if (this.jobs.has(job)) {
-        job.notification.updateState('conflict', uploadErrorMessage(error));
+        this.showConflict(job, uploadErrorMessage(error));
       }
     } finally {
       job.context.resolving = false;
@@ -198,13 +181,12 @@ export class AssetUploadQueue extends UploadQueue<
           this.changed(job);
         }
       } catch (error) {
-        job.notification.updateState('conflict', uploadErrorMessage(error));
+        this.showConflict(job, uploadErrorMessage(error));
         throw error;
       } finally {
         job.context.resolving = false;
       }
     }
-    job.context.closePrompt?.();
     await super.cancel(job);
   }
 
