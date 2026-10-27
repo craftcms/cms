@@ -145,13 +145,8 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
             return '';
         }
         $value = Html::encode($value);
-        $html = "<a href=\"mailto:$value\">$value</a>";
 
-        if (in_array($element->viewMode, ['cards', 'table'], true)) {
-            return Html::tag('craft-link', $html);
-        }
-
-        return $html;
+        return Html::tag('craft-link', "<a href=\"mailto:$value\">$value</a>");
     }
 
     #[Override]
@@ -161,7 +156,7 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
             $value = currentUser()?->asElement()->email;
         }
 
-        return $this->getPreviewHtml($value, $element ?? new Entry(['viewMode' => 'cards']));
+        return $this->getPreviewHtml($value, $element ?? new Entry);
     }
 
     /** @return array<string, mixed> */

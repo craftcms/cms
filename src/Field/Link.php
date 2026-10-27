@@ -517,11 +517,7 @@ JS;
         /** @var LinkData|null $value */
         $html = (string) ($value?->getLink() ?? '');
 
-        if ($html !== '' && in_array($element->viewMode, ['cards', 'table'], true)) {
-            return Html::tag('craft-link', $html);
-        }
-
-        return $html;
+        return $html === '' ? '' : Html::tag('craft-link', $html);
     }
 
     #[Override]
@@ -532,7 +528,7 @@ JS;
             $value = new LinkData($url, new UrlType);
         }
 
-        return $this->getPreviewHtml($value, new EntryElement(['viewMode' => 'cards']));
+        return $this->getPreviewHtml($value, new EntryElement);
     }
 
     #[Override]

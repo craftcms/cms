@@ -6,8 +6,8 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Email;
 use CraftCms\Cms\Field\Link;
 
-it('shows link previews as craft-link in cards and tables', function (string $fieldType, ?string $viewMode, ?string $wrapper) {
-    $entry = new Entry(['viewMode' => $viewMode]);
+it('shows link previews as craft-link', function (string $fieldType) {
+    $entry = new Entry;
     $html = match ($fieldType) {
         'link' => ($link = new Link(['types' => ['url']]))->getPreviewHtml(
             $link->normalizeValue('https://www.example.com/a/very/long/path', null),
@@ -23,10 +23,11 @@ it('shows link previews as craft-link in cards and tables', function (string $fi
 
     $anchor = $document->getElementsByTagName('a')->item(0);
     expect($anchor)->not->toBeNull();
-    expect($anchor->parentNode instanceof DOMElement ? $anchor->parentNode->tagName : null)->toBe($wrapper);
-})->with(['link', 'email'])->with([
-    'cards' => ['cards', 'craft-link'],
-    'table' => ['table', 'craft-link'],
-    'thumbs' => ['thumbs', null],
-    'no index' => [null, null],
-]);
+    expect($anchor->parentNode instanceof DOMElement ? $anchor->parentNode->tagName : null)->toBe('craft-link');
+})->with(['link', 'email']);
+
+it('shows nothing for an empty link', function () {
+    $link = new Link(['types' => ['url']]);
+
+    expect($link->getPreviewHtml(null, new Entry))->toBe('');
+});
