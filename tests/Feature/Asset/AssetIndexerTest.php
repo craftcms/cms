@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\AiTasks;
+use CraftCms\Cms\Ai\Settings;
+use CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage;
 use CraftCms\Cms\Asset\AssetIndexer;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Enums\AssetIndexStatus;
@@ -16,10 +19,14 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Support\Facades\AssetIndexer as AssetIndexerFacade;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Tests\Support\Ai\CaptionImageTask;
+use Illuminate\Bus\UniqueLock;
+use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Database\QueryException;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Filesystem as Flysystem;
 use League\Flysystem\Local\LocalFilesystemAdapter as LocalFlysystemAdapter;
@@ -631,9 +638,9 @@ it('stores the colors of an indexed image', function () {
     try {
         $asset = $this->indexer->indexFileByListing($volumeData, $listing, $session->id);
 
-        expect($asset->colors->dominant)->toBe('#c81e28')
-            ->and($asset->colors->grid)->toBe(array_fill(0, 3, array_fill(0, 4, '#c81e28')))
-            ->and(Asset::findOrFail($asset->id)->colors)->toEqual($asset->colors->toArray());
+        expect($asset->analysis->colors->dominant)->toBe('#c81e28')
+            ->and($asset->analysis->colors->grid)->toBe(array_fill(0, 3, array_fill(0, 4, '#c81e28')))
+            ->and(Asset::findOrFail($asset->id)->analysis['colors'])->toEqual($asset->analysis->colors->toArray());
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
     }
@@ -660,17 +667,100 @@ it('doesn’t sample colors it has already sampled, even inconclusively', functi
 
     try {
         $asset = $index();
-        Asset::whereKey($asset->id)->update(['colors' => json_encode($stored)]);
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => $stored, 'metadata' => []])]);
 
-        expect($index()->colors->toArray())->toBe($stored)
-            ->and(Asset::findOrFail($asset->id)->colors)->toEqual($stored);
+        expect($index()->analysis->colors->toArray())->toBe($stored)
+            ->and(Asset::findOrFail($asset->id)->analysis['colors'])->toEqual($stored);
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
     }
 })->with([
-    'found' => [['dominant' => '#123456', 'grid' => [['#123456']]]],
-    'inconclusive' => [['dominant' => null, 'grid' => []]],
+    'found' => [['dominant' => '#123456', 'grid' => [['#123456']], 'palette' => ['#123456'], 'luminance' => [[[0.039, 0.039]]], 'weights' => [1.0]]],
+    'inconclusive' => [['dominant' => null, 'grid' => [], 'palette' => [], 'luminance' => [], 'weights' => []]],
 ]);
+
+it('samples the colors of unchanged images that are missing them, or were sampled before palettes were, when asked to analyze images', function (?array $stored) {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('red.png', file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
+    $index = fn (bool $analyzeImages) => $this->indexer->indexFileByListing($volumeData, new FsListing([
+        'dirname' => '',
+        'basename' => 'red.png',
+        'type' => 'file',
+        'fileSize' => $volumeData->sourceDisk()->size('red.png'),
+        'dateModified' => $volumeData->sourceDisk()->lastModified('red.png'),
+    ]), $session->id, analyzeImages: $analyzeImages);
+
+    try {
+        $asset = $index(false);
+        Asset::whereKey($asset->id)->update(['analysis' => $stored === null ? null : json_encode(['colors' => $stored, 'metadata' => []])]);
+
+        expect($index(false)->analysis?->colors?->palette)->toBe($stored === null ? null : [])
+            ->and($index(true)->analysis->colors->palette)->toBe(['#dc1e1e']);
+    } finally {
+        $volumeData->sourceDisk()->delete('red.png');
+    }
+})->with([
+    'missing' => [null],
+    'sampled before palettes' => [['dominant' => '#123456', 'grid' => [['#123456']]]],
+]);
+
+it('samples unchanged images again that were sampled before luminance was, when asked to analyze images', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('red.png', file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
+    $index = fn (bool $analyzeImages) => $this->indexer->indexFileByListing($volumeData, new FsListing([
+        'dirname' => '',
+        'basename' => 'red.png',
+        'type' => 'file',
+        'fileSize' => $volumeData->sourceDisk()->size('red.png'),
+        'dateModified' => $volumeData->sourceDisk()->lastModified('red.png'),
+    ]), $session->id, analyzeImages: $analyzeImages);
+
+    try {
+        $asset = $index(false);
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode([
+            'colors' => ['dominant' => '#dc1e1e', 'grid' => [['#dc1e1e']], 'palette' => ['#dc1e1e']],
+            'hash' => '0000000000000000',
+            'metadata' => [],
+        ])]);
+
+        expect($index(false)->analysis->colors->luminance)->toBe([])
+            ->and($index(true)->analysis->colors->luminance)->not->toBe([]);
+    } finally {
+        $volumeData->sourceDisk()->delete('red.png');
+    }
+});
+
+it('reads the metadata of unchanged images that are missing it, when asked to analyze images', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('harbor.jpg', file_get_contents(metadataJpeg(xmpPacket('<dc:creator><rdf:Seq><rdf:li>Ada Park</rdf:li></rdf:Seq></dc:creator>'))));
+    $index = fn (bool $analyzeImages) => $this->indexer->indexFileByListing($volumeData, new FsListing([
+        'dirname' => '',
+        'basename' => 'harbor.jpg',
+        'type' => 'file',
+        'fileSize' => $volumeData->sourceDisk()->size('harbor.jpg'),
+        'dateModified' => $volumeData->sourceDisk()->lastModified('harbor.jpg'),
+    ]), $session->id, analyzeImages: $analyzeImages);
+
+    try {
+        $asset = $index(false);
+        $colors = $asset->analysis->colors->toArray();
+        expect($asset->analysis->metadata->creator)->toBe('Ada Park');
+
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => $colors])]);
+
+        expect($index(false)->analysis->metadata)->toBeNull()
+            ->and($index(true)->analysis->metadata->creator)->toBe('Ada Park');
+    } finally {
+        $volumeData->sourceDisk()->delete('harbor.jpg');
+        deleteMetadataJpegs();
+    }
+});
 
 it('samples the colors again once the file has changed', function () {
     $volume = createIndexerTestVolume();
@@ -694,12 +784,12 @@ it('samples the colors again once the file has changed', function () {
     try {
         $asset = $index();
         Asset::whereKey($asset->id)->update([
-            'colors' => json_encode(['dominant' => '#123456', 'grid' => [['#123456']]]),
+            'analysis' => json_encode(['colors' => ['dominant' => '#123456', 'grid' => [['#123456']]]]),
             'dateModified' => now()->subDay(),
         ]);
 
-        expect($index()->colors->dominant)->toBe('#c81e28')
-            ->and(Asset::findOrFail($asset->id)->colors['dominant'])->toBe('#c81e28');
+        expect($index()->analysis->colors->dominant)->toBe('#c81e28')
+            ->and(Asset::findOrFail($asset->id)->analysis['colors']['dominant'])->toBe('#c81e28');
     } finally {
         $volumeData->sourceDisk()->delete('red.png');
     }
@@ -796,20 +886,20 @@ describe('remote images', function () {
 
         $asset = ($this->index)();
 
-        expect($asset->colors->dominant)->toBe('#c81e28')
-            ->and(Asset::findOrFail($asset->id)->colors['dominant'])->toBe('#c81e28')
+        expect($asset->analysis->colors->dominant)->toBe('#c81e28')
+            ->and(Asset::findOrFail($asset->id)->analysis['colors']['dominant'])->toBe('#c81e28')
             ->and($tempFiles())->toBe($before);
     });
 
     it('doesn’t download one whose colors came up inconclusive', function () {
         $tempFiles = fn () => glob(Path::temp('assets*')) ?: [];
         $asset = ($this->index)();
-        Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => null, 'grid' => []])]);
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => null, 'grid' => []]])]);
         $before = $tempFiles();
 
         $reindexed = ($this->index)();
 
-        expect($reindexed->colors->dominant)->toBeNull()
+        expect($reindexed->analysis->colors->dominant)->toBeNull()
             ->and($reindexed->getWidth())->toBe(100)
             ->and($tempFiles())->toBe($before);
     });
@@ -817,20 +907,88 @@ describe('remote images', function () {
     it('downloads one whose file has changed', function () {
         $asset = ($this->index)();
         Asset::whereKey($asset->id)->update([
-            'colors' => json_encode(['dominant' => '#123456', 'grid' => [['#123456']]]),
+            'analysis' => json_encode(['colors' => ['dominant' => '#123456', 'grid' => [['#123456']]]]),
             'dateModified' => now()->subDay(),
         ]);
 
-        expect(($this->index)()->colors->dominant)->toBe('#c81e28');
+        expect(($this->index)()->analysis->colors->dominant)->toBe('#c81e28');
     });
 
     it('doesn’t download one that already has colors', function () {
         $asset = ($this->index)();
-        Asset::whereKey($asset->id)->update(['colors' => json_encode(['dominant' => '#123456', 'grid' => []])]);
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => ['dominant' => '#123456', 'grid' => [], 'palette' => ['#123456']]])]);
 
         $reindexed = ($this->index)();
 
-        expect($reindexed->colors->dominant)->toBe('#123456')
+        expect($reindexed->analysis->colors->dominant)->toBe('#123456')
             ->and($reindexed->getWidth())->toBe(100);
     });
+});
+
+it('queues new and changed images to be analyzed', function () {
+    Queue::fake();
+    config(['ai.providers' => ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]]);
+    app(AiTasks::class)->register(CaptionImageTask::class);
+    app()->instance(Settings::class, new Settings(['defaults' => ['text' => ['provider' => 'openai']]]));
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('photo.png', file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
+    $listing = fn (int $time): FsListing => new FsListing([
+        'dirname' => '',
+        'basename' => 'photo.png',
+        'type' => 'file',
+        'fileSize' => 99,
+        'dateModified' => $time,
+    ]);
+
+    try {
+        $asset = $this->indexer->indexFileByListing($volumeData, $listing(1_700_000_000), $session->id);
+        $this->indexer->indexFileByListing($volumeData, $listing(1_700_000_000), $session->id);
+
+        Queue::assertPushed(AnalyzeImage::class, 1);
+
+        // Once the first job has run, a changed file is analyzed again
+        new UniqueLock(app(Cache::class))->release(new AnalyzeImage($asset->id));
+        $this->indexer->indexFileByListing($volumeData, $listing(1_700_000_500), $session->id);
+
+        Queue::assertPushed(AnalyzeImage::class, fn (AnalyzeImage $job): bool => $job->assetId === $asset->id);
+        Queue::assertPushed(AnalyzeImage::class, 2);
+    } finally {
+        $volumeData->sourceDisk()->delete('photo.png');
+    }
+});
+
+it('queues unchanged images to be analyzed when asked to', function () {
+    Queue::fake();
+    config(['ai.providers' => ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]]);
+    app(AiTasks::class)->register(CaptionImageTask::class);
+    app()->instance(Settings::class, new Settings(['defaults' => ['text' => ['provider' => 'openai']]]));
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true, analyzeImages: true);
+    $volumeData->sourceDisk()->put('photo.png', file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
+    $listing = new FsListing([
+        'dirname' => '',
+        'basename' => 'photo.png',
+        'type' => 'file',
+        'fileSize' => 99,
+        'dateModified' => 1_700_000_000,
+    ]);
+
+    try {
+        $asset = $this->indexer->indexFileByListing($volumeData, $listing, $session->id);
+        new UniqueLock(app(Cache::class))->release(new AnalyzeImage($asset->id));
+
+        $this->indexer->indexFileByListing($volumeData, $listing, $session->id);
+        Queue::assertPushed(AnalyzeImage::class, 1);
+
+        $this->indexer->indexFileByListing($volumeData, $listing, $session->id, analyzeImages: true);
+        Queue::assertPushed(AnalyzeImage::class, 2);
+
+        // The utility indexes over several requests, so the session remembers it
+        expect($session->fresh()->analyzeImages)->toBeTrue();
+    } finally {
+        $volumeData->sourceDisk()->delete('photo.png');
+    }
 });

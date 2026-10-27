@@ -298,7 +298,7 @@ it('preserves image dimensions through chunk assembly and asset processing', fun
         ->and($asset->getMimeType())->toBe('image/png');
 });
 
-describe('uploaded colors', function () {
+describe('what the uploader read from the file', function () {
     beforeEach(function () {
         Cms::config()->uploadChunkSize = 1048576;
 
@@ -315,22 +315,61 @@ describe('uploaded colors', function () {
     });
 
     it('stores the colors the uploader sampled instead of sampling the image', function () {
-        $colors = ['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5', '#123456', '#abcdef']]];
-        $images = Mockery::mock(ImagesFacade::getFacadeRoot());
+        $colors = ['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5', '#123456', '#abcdef']], 'palette' => ['#3a6ea5', '#123456'], 'luminance' => [[[0.1, 0.2], null, [0.0, 1.0]]], 'weights' => [0.6, 0.4]];
+        $images = Mockery::mock(ImagesFacade::getFacadeRoot())->makePartial();
         $images->shouldNotReceive('colors');
         ImagesFacade::swap($images);
 
-        $original = ($this->uploadImage)(['folderId' => $this->folder->id], ['colors' => $colors]);
-        $replacementColors = ['dominant' => null, 'grid' => [['#654321']]];
-        ($this->uploadImage)(['operation' => 'replace', 'assetId' => $original['assetId']], ['colors' => $replacementColors]);
+        $original = ($this->uploadImage)(['folderId' => $this->folder->id], ['analysis' => ['colors' => $colors]]);
+        $replacementColors = ['dominant' => null, 'grid' => [['#654321']], 'palette' => ['#654321'], 'luminance' => [[[0.2, 0.3]]], 'weights' => [1.0]];
+        ($this->uploadImage)(['operation' => 'replace', 'assetId' => $original['assetId']], ['analysis' => ['colors' => $replacementColors]]);
 
-        expect(AssetModel::findOrFail($original['assetId'])->colors)->toEqual($replacementColors);
+        expect(AssetModel::findOrFail($original['assetId'])->analysis['colors'])->toEqual($replacementColors);
+    });
+
+    it('stores the metadata the uploader read, dropping anything that isn’t valid', function () {
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], ['analysis' => ['metadata' => [
+            'title' => '  Harbor at dusk ',
+            'description' => 'Boats at dusk',
+            'keywords' => ['harbor', 5, ['nested']],
+            'dateTaken' => 'yesterday',
+            'latitude' => 'north',
+            'longitude' => 16.37,
+            'extra' => 'x',
+        ]]]);
+        $asset = Asset::findOne($completed['assetId']);
+
+        expect($asset->analysis->metadata->toArray())->toMatchArray([
+            'title' => 'Harbor at dusk',
+            'description' => 'Boats at dusk',
+            'keywords' => ['harbor', '5'],
+            'dateTaken' => null,
+            'latitude' => null,
+            'longitude' => null,
+        ])
+            ->and($asset->title)->toBe('Harbor at dusk')
+            ->and($asset->alt)->toBe('Boats at dusk');
+    });
+
+    it('ignores what AI tasks find, which can’t be set from a request', function () {
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], ['analysis' => [
+            'metadata' => ['title' => 'Harbor'],
+            'type' => 'logo',
+            'keywords' => ['injected'],
+            'text' => 'Injected',
+        ]]);
+        $analysis = Asset::findOne($completed['assetId'])->analysis;
+
+        expect($analysis->metadata->title)->toBe('Harbor')
+            ->and($analysis->type)->toBeNull()
+            ->and($analysis->keywords)->toBeNull()
+            ->and($analysis->text)->toBeNull();
     });
 
     it('samples the image itself without usable colors from the uploader', function (?array $colors) {
-        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], $colors === null ? [] : ['colors' => $colors]);
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], $colors === null ? [] : ['analysis' => ['colors' => $colors]]);
 
-        expect(Asset::findOne($completed['assetId'])->colors->grid)->toHaveCount(4)->each->toHaveCount(3);
+        expect(Asset::findOne($completed['assetId'])->analysis->colors->grid)->toHaveCount(4)->each->toHaveCount(3);
     })->with([
         'none sent' => [null],
         'empty grid' => [['dominant' => '#3a6ea5', 'grid' => []]],
@@ -339,6 +378,8 @@ describe('uploaded colors', function () {
         'ragged rows' => [['dominant' => null, 'grid' => [['#3a6ea5', '#3a6ea5'], ['#3a6ea5']]]],
         'not hex colors' => [['dominant' => null, 'grid' => [['red;x']]]],
         'unexpected keys' => [['dominant' => null, 'grid' => [['#3a6ea5']], 'extra' => 'x']],
+        'luminance out of range' => [['dominant' => null, 'grid' => [['#3a6ea5']], 'luminance' => [[[0.5, 2]]]]],
+        'luminance not in pairs' => [['dominant' => null, 'grid' => [['#3a6ea5']], 'luminance' => [[[0.5]]]]],
     ]);
 });
 

@@ -59,12 +59,12 @@ class NestedElementManagerCompatibilityTest extends TestCase
                 $manager = new NestedElementManager(Entry::class, fn(ElementInterface $owner) => Entry::find(), [
                     'field' => new $fieldClass(['handle' => 'blocks']),
                 ]);
-                $entries = [new Entry(['id' => 91, 'collapsed' => false]), new Entry(['id' => 92, 'collapsed' => false])];
+                $entries = [new Entry(['id' => 91, 'siteId' => 3, 'collapsed' => false]), new Entry(['id' => 92, 'siteId' => 3, 'collapsed' => false])];
 
                 Event::dispatch(new NestedElementsSaved($manager, $entries));
 
                 self::assertSame([
-                    ['Craft.MatrixInput.rememberCollapsedEntryId(91);', Position::BodyEnd->value, null],
+                    ['Craft.MatrixInput.rememberCollapsedEntryId(91, 3);', Position::BodyEnd->value, null],
                 ], session()->getJs(false));
                 self::assertSame([CpCompatAsset::class], session()->get('__ab'));
             }

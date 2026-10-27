@@ -1,6 +1,6 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {UploadOptions, UploadState} from '@/upload-client';
-import type {UploadConflictChoice} from './upload-notification';
+import type {LitElement} from 'lit';
 import type {FileUploadNotificationElement} from './file-upload-notification.ce';
 
 const ui = vi.hoisted(() => ({on: vi.fn(), post: vi.fn()}));
@@ -25,9 +25,13 @@ function displayNotice(message: string, {details}: {details: HTMLElement}) {
 }
 
 async function clickNotice(index: number, label: string): Promise<void> {
-  await notices[index]!.querySelector<FileUploadNotificationElement>(
-    'craft-file-upload-notification'
-  )!.updateComplete;
+  await Promise.all(
+    [
+      ...notices[index]!.querySelectorAll<LitElement>(
+        'craft-file-upload-notification, craft-asset-conflict-resolution'
+      ),
+    ].map((element) => element.updateComplete)
+  );
   const button = [
     ...notices[index]!.querySelectorAll<HTMLElement>('craft-button'),
   ].find((button) => button.textContent?.trim() === label && !button.hidden);
@@ -225,7 +229,7 @@ it('leaves failures actionable, continues the queue, and retries the same transf
   await vi.waitFor(() => expect(queue.hasPending).toBe(false));
 });
 
-it('does not interrupt navigation with a conflict dialog or block later uploads', async () => {
+it('resolves a conflict from its notification without blocking later uploads', async () => {
   queue.enqueue(file(), destination, []);
   queue.enqueue(file(), destination, []);
   await vi.waitFor(() => expect(transfers[0]!.upload).toHaveBeenCalled());
@@ -237,11 +241,7 @@ it('does not interrupt navigation with a conflict dialog or block later uploads'
     expect(notices[0]!.textContent).toContain(conflict.conflict)
   );
 
-  await clickNotice(0, 'Action required');
-  expect(document.querySelector('craft-dialog')!.textContent).toContain(
-    conflict.conflict
-  );
-  choose('keepBoth');
+  await clickNotice(0, 'Keep both');
   transfers[1]!.complete();
   await vi.waitFor(() => expect(queue.hasPending).toBe(false));
   expect(ui.post).not.toHaveBeenCalled();
@@ -257,8 +257,7 @@ it.each([
   'resolves an indexed or unindexed filename conflict only on request',
   async (result, parameters) => {
     await uploadConflict(result);
-    await clickNotice(0, 'Action required');
-    choose('replace');
+    await clickNotice(0, 'Replace');
     await vi.waitFor(() => expect(queue.hasPending).toBe(false));
     expect(ui.post).toHaveBeenCalledWith(
       '/admin/actions/assets/resolve-upload-conflict',
@@ -270,12 +269,13 @@ it.each([
 it('retains a conflict and its error when replacement fails', async () => {
   await uploadConflict();
   ui.post.mockRejectedValue(new Error('The destination was deleted.'));
-  await clickNotice(0, 'Action required');
-  choose('replace');
+  await clickNotice(0, 'Replace');
   await vi.waitFor(() =>
     expect(notices[0]!.textContent).toContain('The destination was deleted.')
   );
   expect(queue.hasPending).toBe(true);
+  await clickNotice(0, 'Keep both');
+  await vi.waitFor(() => expect(queue.hasPending).toBe(false));
 });
 
 it('discards the uploaded copy when canceling a conflict', async () => {
@@ -354,19 +354,6 @@ async function uploadConflict(
   await vi.waitFor(() =>
     expect(notices[0]!.textContent).toContain(result.conflict!)
   );
-}
-
-function choose(choice: UploadConflictChoice): void {
-  const label = {
-    keepBoth: 'Keep both',
-    replace: 'Replace',
-    cancel: 'Cancel upload',
-  }[choice];
-  const button = [
-    ...document.querySelectorAll<HTMLElement>('craft-dialog craft-button'),
-  ].find((button) => button.textContent?.trim() === label);
-  expect(button).toBeDefined();
-  button!.click();
 }
 
 function deferred<T>(): {
