@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\PromptTask;
+use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrations\Event\TablesCreated;
@@ -231,6 +232,11 @@ class Install extends Migration
             $table->unsignedBigInteger('size')->nullable();
             $table->string('focalPoint', 13)->nullable()->default(null);
             $table->json('analysis')->nullable();
+            // Generated from analysis, so images can be filtered by it. Postgres can only add stored generated columns.
+            $imageType = $table->string('imageType', 20)->nullable();
+            DB::getDriverName() === 'pgsql'
+                ? $imageType->storedAs(new JsonExtract('analysis', 'type'))
+                : $imageType->virtualAs(new JsonExtract('analysis', 'type'));
             $table->string('previewText', AssetsHelper::PREVIEW_TEXT_LENGTH)->nullable();
             $table->boolean('deletedWithVolume')->nullable();
             $table->boolean('trashedFileExists')->default(false);
@@ -1071,6 +1077,7 @@ class Install extends Migration
         Schema::createIndex(Table::ASSETS, ['filename', 'folderId']);
         Schema::createIndex(Table::ASSETS, ['folderId']);
         Schema::createIndex(Table::ASSETS, ['volumeId']);
+        Schema::createIndex(Table::ASSETS, ['imageType']);
         Schema::createIndex(Table::BULKOPEVENTS, ['timestamp']);
         Schema::createIndex(Table::CHANGEDATTRIBUTES, ['elementId', 'siteId', 'dateUpdated']);
         Schema::createIndex(Table::CHANGEDFIELDS, ['elementId', 'siteId', 'dateUpdated']);

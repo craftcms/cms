@@ -19,6 +19,7 @@ function runAddAnalysisToAssetsMigration(): void
  */
 function addPreAnalysisAssetColumns(): void
 {
+    dropAssetImageTypeColumn();
     Schema::table(Table::ASSETS, function (Blueprint $table) {
         $table->dropColumn('analysis');
     });

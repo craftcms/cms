@@ -49,6 +49,11 @@ class Asset extends ElementArguments
                 'type' => Type::listOf(Type::string()),
                 'description' => 'Narrows the query results based on the assets’ file kinds.',
             ],
+            'imageType' => [
+                'name' => 'imageType',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'Narrows the query results based on what kind of image the assets are: `photo`, `illustration`, `screenshot`, `diagram`, `logo`, `document`, or `pattern`.',
+            ],
             'height' => [
                 'name' => 'height',
                 'type' => Type::listOf(Type::string()),
