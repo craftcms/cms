@@ -30,6 +30,8 @@ use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
+use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
+use CraftCms\Cms\Http\Middleware\TrackSessionActivity;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Http\Middleware\UseCraftAuthGuard;
 use CraftCms\Cms\Route\Data\Route;
@@ -69,6 +71,7 @@ class RouteServiceProvider extends ServiceProvider
          * as they rewrite the incoming request.
          */
         $kernel = $this->app->get(HttpKernel::class);
+        $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartSessionWithoutPersistence::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, UseCraftAuthGuard::class);
         $kernel->addToMiddlewarePriorityBefore(SubstituteBindings::class, ResolveSite::class);
         $kernel->addToMiddlewarePriorityAfter(SubstituteBindings::class, ResolveElementRoute::class);
@@ -192,6 +195,7 @@ class RouteServiceProvider extends ServiceProvider
             UpdateLocale::class,
             CheckForUpdates::class,
             Enforce2fa::class,
+            TrackSessionActivity::class,
             SetHeaders::class,
             ShowBrokenImage::class,
             CraftMaintenanceMiddleware::class,

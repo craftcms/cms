@@ -17,7 +17,6 @@ beforeEach(() => {
   load.mockReset();
   vi.stubGlobal('$', Object.assign($, {isTouchCapable: () => false}));
   vi.stubGlobal('Craft', {
-    remainingSessionTime: 0,
     AnimationBlocker: class {},
     getLocalStorage: () => undefined,
   });

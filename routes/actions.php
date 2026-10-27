@@ -14,6 +14,7 @@ use CraftCms\Cms\Http\Controllers\App\PluginsController;
 use CraftCms\Cms\Http\Controllers\App\RenderController;
 use CraftCms\Cms\Http\Controllers\Assets\ActionController as AssetsActionController;
 use CraftCms\Cms\Http\Controllers\Assets\FolderController as AssetsFolderController;
+use CraftCms\Cms\Http\Controllers\Assets\GenerateAltTextController;
 use CraftCms\Cms\Http\Controllers\Assets\IconController as AssetsIconController;
 use CraftCms\Cms\Http\Controllers\Assets\ImageEditorController;
 use CraftCms\Cms\Http\Controllers\Assets\PreviewController as AssetsPreviewController;
@@ -150,6 +151,9 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
             Route::any('users/session-info', [SessionInfoController::class, 'show'])
                 ->middleware(StartSessionWithoutPersistence::class)
                 ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class, PreventStaleDatabaseReads::class]);
+            Route::post('users/renew-session', [SessionInfoController::class, 'renew'])
+                ->middleware('auth');
+            Route::get('users/login-methods', [SessionInfoController::class, 'loginMethods']);
             Route::middleware(
                 in_array('craft.cp', $middleware) ? null : 'throttle:password-reset'
             )->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
@@ -170,7 +174,10 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
 
         // Queue
         Route::any('queue/run', [QueueController::class, 'run']);
-        Route::middleware(['auth', 'can:accessCp'])
+        // Polled, so it reads the session without saving it, which would
+        // otherwise keep the session from ever expiring.
+        Route::middleware(['auth', 'can:accessCp', StartSessionWithoutPersistence::class])
+            ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class])
             ->get('queue/get-job-info', [QueueController::class, 'jobInfo']);
     });
 }
@@ -269,7 +276,11 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::delete('elements/activity/comments', [ActivityCommentsController::class, 'destroy']);
         });
         Route::get('elements/activity/mentions', ActivityMentionSuggestionsController::class)->middleware('throttle:120,1');
-        Route::post('elements/recent-activity', ElementActivityController::class);
+        // Polled, so it reads the session without saving it, which would
+        // otherwise keep the session from ever expiring.
+        Route::post('elements/recent-activity', ElementActivityController::class)
+            ->middleware(StartSessionWithoutPersistence::class)
+            ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class]);
         Route::post('elements/update-field-layout', UpdateFieldLayoutController::class);
         Route::post('elements/duplicate', [DuplicateElementController::class, 'duplicate']);
         Route::post('elements/bulk-duplicate', [DuplicateElementController::class, 'bulkDuplicate']);
@@ -347,6 +358,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
 
         // Assets
         Route::post('assets/resolve-upload-conflict', ResolveUploadConflictController::class);
+        Route::post('assets/generate-alt-text', GenerateAltTextController::class);
         Route::post('assets/delete-asset', [AssetsActionController::class, 'deleteAsset']);
         Route::post('assets/move-asset', [AssetsActionController::class, 'moveAsset']);
         Route::post('assets/download-asset', [AssetsActionController::class, 'downloadAsset']);

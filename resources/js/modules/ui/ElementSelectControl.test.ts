@@ -777,8 +777,11 @@ describe('ElementSelectControl', () => {
     it('draws thumbnails in thumbs mode', async () => {
       const root = await mount({props: {viewMode: 'thumbs'}, value: [5]});
 
-      expect(root.querySelector('.thumb-tile')).not.toBeNull();
-      expect(root.querySelectorAll('craft-chip')).toHaveLength(0);
+      expect(
+        root.querySelectorAll(
+          '.thumbsview craft-chip[prefix-placement="block-start"]'
+        )
+      ).toHaveLength(1);
     });
 
     // Clicking a related element selects or edits it, so its tile mustn't
@@ -798,8 +801,8 @@ describe('ElementSelectControl', () => {
         value: [5],
       });
 
-      expect(root.querySelector('.thumb-tile')).not.toBeNull();
-      expect(root.querySelector('.thumb-tile a, a.thumb-tile')).toBeNull();
+      expect(root.querySelector('.thumbsview craft-chip')).not.toBeNull();
+      expect(root.querySelector('.thumb-label a, a craft-chip')).toBeNull();
     });
 
     /** The list item a card / thumb body draws per element. */
@@ -824,23 +827,19 @@ describe('ElementSelectControl', () => {
       ).toEqual([true, false]);
     });
 
-    /**
-     * Thumb tiles wrap the element in a link to its editor, so clicking the tile
-     * navigates rather than selects — the checkbox is the selection path, as it
-     * is on the element index.
-     */
+    /** The tile's chip owns the checkbox and reports its changes. */
     it('selects a thumbnail through its checkbox', async () => {
       const root = await mount({
         props: {viewMode: 'thumbs', limit: 3},
         value: [5, 6],
       });
-      const box = root.querySelector<HTMLElement>(
-        '.thumbsview craft-checkbox'
-      )!;
+      const chip = root.querySelector<HTMLElement>('.thumbsview craft-chip')!;
 
-      Object.defineProperty(box, 'checked', {value: true, configurable: true});
-      box.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
+      chip.dispatchEvent(
+        new CustomEvent('craft-selection-change', {
+          bubbles: true,
+          detail: {selected: true, shiftKey: false},
+        })
       );
       await nextTick();
 
@@ -1684,12 +1683,13 @@ describe('ElementSelectControl', () => {
       expect(actionLabels(thumbMenu(root))).toContain('Preview file');
     });
 
-    // Tiles are a link to the element, so the actions have to sit outside it or
-    // reaching for one would navigate instead.
+    // The label links to the element, so the actions sit in the chip's suffix,
+    // apart from it, or reaching for one would navigate instead.
     it('keeps the actions outside the tile link', async () => {
       const root = await mountThumbs();
 
-      expect(thumbMenu(root)!.closest('.thumb-tile')).toBeNull();
+      expect(thumbMenu(root)!.closest('[slot="suffix"]')).not.toBeNull();
+      expect(thumbMenu(root)!.closest('a, .thumb-label')).toBeNull();
     });
 
     // Thumbs follow the chips: editing lives in the menu, not as its own button.

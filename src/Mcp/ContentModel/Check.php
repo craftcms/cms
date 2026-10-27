@@ -13,6 +13,11 @@ interface Check
 {
     public static function id(): string;
 
-    /** @return array{count: int, findings: list<mixed>} */
+    /**
+     * Runs the check.
+     *
+     * @return array{count: int, findings: list<mixed>, note?: string} A note, if given, tells the agent something about
+     *                                                                 the findings, such as how they can be resolved
+     */
     public function run(int $limit): array;
 }

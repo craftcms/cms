@@ -5,7 +5,11 @@
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
   import IndexViewSettings from '@/modules/elements/index/components/IndexViewSettings.vue';
   import type {CheckboxOption} from '@/common/types';
-  import type {SortOption, ViewMode} from '@/modules/elements/types/view-state';
+  import type {
+    ThumbSize,
+    SortOption,
+    ViewMode,
+  } from '@/modules/elements/types/view-state';
   import FilterHud from './FilterHud.vue';
   import type {ConditionConfig} from '@/modules/conditions/types';
   import type {IndexSite} from '@/modules/elements/types/sites';
@@ -17,6 +21,8 @@
       statusOptions?: Array<{label: string; value: string}>;
       viewModes?: Array<ViewMode>;
       columnOptions: Array<CheckboxOption>;
+      /** The thumbnail sizes the active view mode offers. */
+      thumbSizeOptions?: Array<ThumbSize>;
       sortOptions: Array<SortOption>;
       processing?: boolean;
       /**
@@ -44,6 +50,7 @@
   const tableColumns = defineModel<Array<string>>('tableColumns', {
     required: true,
   });
+  const thumbSize = defineModel<ThumbSize>('thumbSize', {required: true});
   const conditions = defineModel<ConditionConfig | null>('conditions', {
     required: true,
   });
@@ -237,9 +244,12 @@
             :sort-options="visibleSortOptions"
             :sort-direction-locked="sortDirectionLocked"
             :disabled="processing"
+            :thumb-size-options="thumbSizeOptions"
+            :show-table-columns="mode === 'table' || mode === 'structure'"
             v-model:sort-field="sortField"
             v-model:sort-direction="sortDirection"
             v-model:table-columns="tableColumns"
+            v-model:thumb-size="thumbSize"
             @reorder="(options) => emit('reorder', options)"
           />
         </div>

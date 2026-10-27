@@ -1,18 +1,31 @@
 import {build} from 'vite-plus/pack';
 import ora from 'ora';
-import {execSync} from 'node:child_process';
+import {exec} from 'node:child_process';
+import {promisify} from 'node:util';
 import {mkdir, readFile} from 'fs/promises';
 import {watch} from 'fs';
 import copy from 'recursive-copy';
 import {globby} from 'globby';
 import {getDistDir, getRootDir, resolveFrom} from './utils.js';
-import {dirname, join, relative, resolve} from 'path';
+import {delimiter, dirname, join, relative, resolve} from 'path';
 import {deleteAsync} from 'del';
 import createVueWrappers from './generate-vue-wrappers.js';
 import createColors from './generate-colors.js';
 
 const spinner = ora({text: '@craftcms/ui', color: 'red'}).start();
 const isDeveloping = process.argv.includes('--develop');
+
+/**
+ * The root build runs this in parts, so the CP can bundle while the
+ * declarations generate: `--prepare` cleans dist and generates the colors that
+ * everything else includes, then `--runtime` writes what the CP imports while
+ * `--types` writes the declarations and the manifest. Without any of these, it
+ * does all three.
+ */
+const phases = ['prepare', 'runtime', 'types'].filter((phase) =>
+  process.argv.includes(`--${phase}`)
+);
+const runs = (phase) => !phases.length || phases.includes(phase);
 
 async function cleanup() {
   // In develop mode, rebuild in place: the root Vite dev server starts
@@ -32,7 +45,11 @@ async function cleanup() {
 }
 
 async function generateBundle(config = {}) {
-  spinner.start('Building bundle');
+  const label = config.dts?.emitDtsOnly
+    ? 'Building declarations'
+    : 'Building bundle';
+
+  spinner.start(label);
   try {
     await build({
       clean: false,
@@ -56,7 +73,7 @@ async function generateBundle(config = {}) {
       ...config,
     });
   } catch (error) {
-    spinner.fail();
+    spinner.fail(label);
     console.error(error);
 
     // Nothing was emitted, so the steps after this one would only inspect a
@@ -64,7 +81,7 @@ async function generateBundle(config = {}) {
     throw error;
   }
 
-  spinner.succeed();
+  spinner.succeed(label);
   return Promise.resolve();
 }
 
@@ -205,7 +222,21 @@ async function generateManifest() {
   spinner.start('Generating CEM');
 
   try {
-    execSync('cem analyze --config "custom-elements-manifest.config.mjs"');
+    // `vp run` only puts the workspace root's binaries on PATH.
+    const {stderr} = await promisify(exec)(
+      'cem analyze --config "custom-elements-manifest.config.mjs"',
+      {
+        cwd: getRootDir(),
+        env: {
+          ...process.env,
+          PATH: [
+            join(getRootDir(), 'node_modules/.bin'),
+            process.env.PATH,
+          ].join(delimiter),
+        },
+      }
+    );
+    process.stderr.write(stderr);
   } catch (error) {
     console.error(`\n\n${error.message}`);
 
@@ -214,7 +245,7 @@ async function generateManifest() {
     }
   }
 
-  spinner.succeed();
+  spinner.succeed('Generating CEM');
 
   return Promise.resolve();
 }
@@ -228,7 +259,7 @@ async function generateStyles() {
     {overwrite: true}
   );
 
-  spinner.succeed();
+  spinner.succeed('Copying styles');
 
   if (isDeveloping) {
   }
@@ -239,32 +270,51 @@ async function generateStyles() {
 async function generateVueWrappers() {
   spinner.start('Generating Vue Wrappers');
   createVueWrappers();
-  spinner.succeed();
+  spinner.succeed('Generating Vue Wrappers');
   return Promise.resolve();
 }
 
 async function generateColors() {
   spinner.start('Generating Colors');
   await createColors();
-  spinner.succeed();
+  spinner.succeed('Generating Colors');
   return Promise.resolve();
 }
 
 async function buildAll() {
   try {
-    const steps = [
-      cleanup,
-      generateManifest,
-      generateStyles,
-      generateVueWrappers,
-      generateColors,
-      generateBundle,
-      pruneOrphanedChunks,
-      assertDeclarationsResolved,
-    ];
+    if (runs('prepare')) {
+      await cleanup();
 
-    for (const step of steps) {
-      await step();
+      // The bundle, its declarations, and the copied styles all include the
+      // generated color styles.
+      await generateColors();
+    }
+
+    // The JS and the declarations build separately, which writes the same
+    // files as one build with both, so neither has to wait for the other.
+    await Promise.all([
+      ...(runs('runtime')
+        ? [
+            generateVueWrappers(),
+            generateStyles(),
+            generateBundle({dts: false}),
+          ]
+        : []),
+      ...(runs('types')
+        ? [generateManifest(), generateBundle({dts: {emitDtsOnly: true}})]
+        : []),
+    ]);
+
+    if (runs('types')) {
+      // Split builds start from a dist that `--prepare` just emptied, so there
+      // is nothing stale to prune, and the runtime may still be writing chunks
+      // that look unreachable until its entry points land.
+      if (!phases.length) {
+        await pruneOrphanedChunks();
+      }
+
+      await assertDeclarationsResolved();
     }
 
     spinner.succeed(`The build is complete`);
