@@ -23,9 +23,13 @@
     (e: 'save', options?: FormSaveOptions): void;
   }>();
 
-  // Defaults belong to the shells, which each declare their own. Unset props
-  // forward as `undefined`, which is exactly what `withDefaults` fills in.
-  defineProps<ScreenProps>();
+  // Defaults belong to the shells, so unset props must forward as `undefined`.
+  // Vue casts an absent boolean to `false`, which would override what a page
+  // sets through `useAppLayout()` in a slideout.
+  withDefaults(defineProps<ScreenProps>(), {
+    saveDisabled: undefined,
+    handlesReadOnly: undefined,
+  });
 
   const slots = defineSlots<ScreenSlots>();
 
