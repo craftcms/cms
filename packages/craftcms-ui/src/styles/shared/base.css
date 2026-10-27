@@ -172,6 +172,21 @@ kbd {
   margin-block-start: var(--c-spacing-sm);
 }
 
+/*
+  A file or folder icon standing in for a chip's thumbnail is drawn at 24px,
+  which suits a small chip. In larger chips it grows with the thumbnail, which
+  the chip's thumbnail slot sizes through --c-thumbnail-size. The icon's own
+  size utility reads --c-thumb-icon-size, so the size set here wins over it.
+*/
+craft-chip > [slot='thumbnail'] {
+  --c-thumb-icon-size: max(24px, var(--c-thumbnail-size) * 0.6);
+}
+
+craft-chip > [slot='thumbnail'] > .thumb svg {
+  width: 100%;
+  height: 100%;
+}
+
 craft-chip .cp-code {
   /* Block, so the label's line height doesn't add space above it */
   display: block;

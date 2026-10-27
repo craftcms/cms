@@ -274,7 +274,9 @@ export default class CraftThumbnail extends LitElement {
       return null;
     }
 
-    return this.width >= this.height ? 'landscape' : 'portrait';
+    // A framework setting them as properties can hand over strings, which
+    // would compare by character ("80" >= "120").
+    return Number(this.width) >= Number(this.height) ? 'landscape' : 'portrait';
   }
 
   private get showsPlaceholder(): boolean {
