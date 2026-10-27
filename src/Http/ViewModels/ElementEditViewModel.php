@@ -98,6 +98,9 @@ class ElementEditViewModel extends ViewModel
     /** @var list<array<string, mixed>>|null */
     private ?array $previewTargetsCache = null;
 
+    /** @var array<string, mixed>|null */
+    private ?array $previewTokenParams = null;
+
     private bool $uiResolved = false;
 
     private ?UiPayload $sidebarUi = null;
@@ -518,8 +521,9 @@ class ElementEditViewModel extends ViewModel
 
         $isLive = $this->isLive();
         $siteToken = $this->siteToken();
+        $tokenParams = $isLive ? [] : $this->previewTokenParams();
 
-        return array_values(array_map(function (array $target) use ($isLive, $siteToken): array {
+        return array_values(array_map(function (array $target) use ($isLive, $siteToken, $tokenParams): array {
             $params = array_filter([
                 // Randomized so CDNs don't serve a cached page.
                 'x-craft-preview' => $isLive ? null : Crypt::encrypt(Str::random(10)),
@@ -538,7 +542,7 @@ class ElementEditViewModel extends ViewModel
             return [
                 'label' => (string) $target['label'],
                 'url' => Url::actionUrl('preview/create-token', [
-                    ...$this->previewTokenParams(),
+                    ...$tokenParams,
                     'redirect' => Url::url($target['url'], $params),
                 ]),
             ];
@@ -627,9 +631,9 @@ class ElementEditViewModel extends ViewModel
 
     private function siteToken(): ?string
     {
-        return (app()->isDownForMaintenance() || ! $this->element->getSite()->getEnabled())
+        return once(fn (): ?string => (app()->isDownForMaintenance() || ! $this->element->getSite()->getEnabled())
             ? Crypt::encrypt((string) $this->element->siteId)
-            : null;
+            : null);
     }
 
     /**
@@ -643,6 +647,12 @@ class ElementEditViewModel extends ViewModel
 
     /** @return array<string, mixed> */
     private function previewTokenParams(): array
+    {
+        return $this->previewTokenParams ??= $this->buildPreviewTokenParams();
+    }
+
+    /** @return array<string, mixed> */
+    private function buildPreviewTokenParams(): array
     {
         $element = $this->element;
 
