@@ -17,6 +17,9 @@ class ImageAnalysis extends ObjectType
     protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         /** @var ImageAnalysisData $source */
-        return $source->{$resolveInfo->fieldName};
+        return match ($resolveInfo->fieldName) {
+            'type' => $source->type?->value,
+            default => $source->{$resolveInfo->fieldName},
+        };
     }
 }

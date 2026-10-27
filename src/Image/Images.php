@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Image;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Image\Data\ImageSample;
 use CraftCms\Cms\Image\Enums\ExifOrientation;
 use CraftCms\Cms\Image\Enums\ImageDriver;
@@ -385,6 +386,17 @@ class Images
             ),
             hash: $hash,
         );
+    }
+
+    /**
+     * Returns the metadata embedded in an image file, such as who made it and when, from its XMP, IPTC, and EXIF data.
+     *
+     * Uploads are read before they’re cleaned, which strips metadata unless the `preserveExifData` config setting is
+     * enabled.
+     */
+    public function metadata(string $filePath): ImageMetadata
+    {
+        return new ImageMetadataReader($this->getIsImagick())->read($filePath);
     }
 
     private function hex(ColorInterface $color): string

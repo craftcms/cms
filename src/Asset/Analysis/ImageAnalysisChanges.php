@@ -26,6 +26,15 @@ class ImageAnalysisChanges
     }
 
     /**
+     * Returns an attribute that a task has set for every site, or a default if none has, so tasks that change the same
+     * attribute, such as the asset’s analysis, can build on each other’s changes.
+     */
+    public function get(string $attribute, mixed $default = null): mixed
+    {
+        return array_key_exists($attribute, $this->attributes) ? $this->attributes[$attribute] : $default;
+    }
+
+    /**
      * Sets an attribute for the asset in one site.
      */
     public function setForSite(int $siteId, string $attribute, mixed $value): void

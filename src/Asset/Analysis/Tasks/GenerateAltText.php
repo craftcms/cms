@@ -8,7 +8,6 @@ use CraftCms\Cms\Asset\Analysis\ImageAnalysisChanges;
 use CraftCms\Cms\Asset\Analysis\ImageAnalysisTask;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use WeakMap;
 
@@ -24,7 +23,7 @@ use function CraftCms\Cms\t;
  */
 class GenerateAltText extends ImageAnalysisTask
 {
-    /** @var WeakMap<Asset, array<string, AltTextSite>>|null */
+    /** @var WeakMap<Asset, array<string, TranslatedSite>>|null */
     private static ?WeakMap $groups = null;
 
     public static function handle(): string
@@ -48,13 +47,13 @@ class GenerateAltText extends ImageAnalysisTask
 
         return $overwrite
             ? $groups !== []
-            : array_any($groups, static fn (AltTextSite $group): bool => ($group->alt ?? '') === '');
+            : array_any($groups, static fn (TranslatedSite $group): bool => ($group->value ?? '') === '');
     }
 
     public static function instructions(Asset $asset): string
     {
         $languages = array_map(
-            static fn (string $property, AltTextSite $group): string => "- $property: ".I18N::getLocaleById($group->language)->getDisplayName('en')." ($group->language)",
+            static fn (string $property, TranslatedSite $group): string => "- $property: ".I18N::getLocaleById($group->language)->getDisplayName('en')." ($group->language)",
             array_keys(self::groups($asset)),
             self::groups($asset),
         );
@@ -83,7 +82,7 @@ class GenerateAltText extends ImageAnalysisTask
         foreach (self::groups($asset) as $property => $group) {
             $alt = is_string($result[$property] ?? null) ? trim($result[$property]) : '';
 
-            if ($alt !== '' && ($overwrite || ($group->alt ?? '') === '')) {
+            if ($alt !== '' && ($overwrite || ($group->value ?? '') === '')) {
                 $changes->setForSite($group->siteId, 'alt', $alt);
             }
         }
@@ -92,38 +91,16 @@ class GenerateAltText extends ImageAnalysisTask
     /**
      * Returns the asset’s sites grouped by their alt text translation key, indexed by the group’s response property.
      *
-     * @return array<string, AltTextSite>
+     * @return array<string, TranslatedSite>
      */
     private static function groups(Asset $asset): array
     {
         self::$groups ??= new WeakMap;
 
-        if (isset(self::$groups[$asset])) {
-            return self::$groups[$asset];
-        }
-
-        $instances = $asset->id
-            ? Asset::find()->id($asset->id)->site('*')->status(null)->all()
-            : [];
-        $instances = array_filter($instances, static fn (Asset $instance): bool => $instance->siteId !== $asset->siteId);
-        $groups = [];
-
-        // The asset’s own site comes first, so its group is written in its language
-        foreach ([$asset, ...$instances] as $instance) {
-            $key = $instance->getAltTranslationKey();
-            $site = Sites::getSiteById($instance->siteId, true);
-
-            if (! isset($groups[$key]) && $site !== null) {
-                $groups[$key] = new AltTextSite($instance->siteId, $site->language, $instance->alt);
-            }
-        }
-
-        $indexed = [];
-
-        foreach ($groups as $group) {
-            $indexed["site$group->siteId"] = $group;
-        }
-
-        return self::$groups[$asset] = $indexed;
+        return self::$groups[$asset] ??= TranslatedSite::groups(
+            $asset,
+            static fn (Asset $instance): string => $instance->getAltTranslationKey(),
+            static fn (Asset $instance): ?string => $instance->alt,
+        );
     }
 }

@@ -71,6 +71,7 @@ use CraftCms\Cms\Image\Blurhash;
 use CraftCms\Cms\Image\ColorGrid;
 use CraftCms\Cms\Image\ColorNames;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHash;
@@ -111,8 +112,6 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
-use DOMDocument;
-use DOMXPath;
 use Exception;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Filesystem\Filesystem;
@@ -357,6 +356,11 @@ class Asset extends Element
      * @see ImageHash
      */
     public ?string $uploadHash = null;
+
+    /**
+     * The metadata read from the incoming file before it was cleaned.
+     */
+    private ?ImageMetadata $_uploadMetadata = null;
 
     /**
      * @var bool Whether the asset should avoid filename conflicts when saved.
@@ -857,7 +861,12 @@ class Asset extends Element
     protected function searchKeywords(string $attribute): string
     {
         return match ($attribute) {
-            'keywords' => implode(' ', $this->analysis->keywords ?? []),
+            // Along with the keywords the image was tagged with before it was uploaded, and what kind of image it is
+            'keywords' => implode(' ', array_unique([
+                ...$this->analysis->keywords ?? [],
+                ...$this->analysis->metadata->keywords ?? [],
+                ...($this->analysis?->type ? [$this->analysis->type->value, mb_strtolower($this->analysis->type->label($this->getSite()->language))] : []),
+            ])),
             'text' => $this->analysis->text ?? '',
             // Images can be found by the names of their colors
             'colors' => $this->kind === FileKind::Image->value ? $this->colorKeywords() : '',
@@ -2104,6 +2113,16 @@ JS, [
     }
 
     /**
+     * Returns whether the asset’s title is missing, or is still the one it was given from its filename.
+     *
+     * @since 6.0.0
+     */
+    public function hasDefaultTitle(): bool
+    {
+        return in_array($this->title, [null, '', AssetsHelper::filename2Title(pathinfo($this->getFilename(), PATHINFO_FILENAME))], true);
+    }
+
+    /**
      * Returns the Alternative Text field’s translation key.
      */
     public function getAltTranslationKey(): string
@@ -3326,6 +3345,24 @@ JS;
             $this->title = AssetsHelper::filename2Title(pathinfo($this->_filename, PATHINFO_FILENAME));
         }
 
+        // Read an uploaded image’s metadata before it’s cleaned in afterSave(), which strips it, and fill in its alt
+        // text, and a new image’s title, from it
+        if (
+            isset($this->tempFilePath) &&
+            AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value &&
+            $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
+        ) {
+            $this->_uploadMetadata = Images::metadata($this->tempFilePath);
+
+            if (! $this->id && $this->_uploadMetadata->title !== null && $this->hasDefaultTitle()) {
+                $this->title = mb_substr($this->_uploadMetadata->title, 0, 255);
+            }
+
+            if ($this->alt === null || $this->alt === '') {
+                $this->alt = $this->_uploadMetadata->altText ?? $this->_uploadMetadata->description ?? $this->alt;
+            }
+        }
+
         // Set the field layout
         $volume = Folders::getFolderById($folderId)->getVolume();
 
@@ -3359,19 +3396,6 @@ JS;
             $fallbackHeight = null;
 
             if ($isImage) {
-                // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
-                if (
-                    ($this->alt === null || $this->alt === '') &&
-                    $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
-                ) {
-                    $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
-                    if ($alt !== null) {
-                        // ensure it's UTF-8
-                        // (see https://github.com/craftcms/cms/issues/19069)
-                        $this->alt = Str::convertToUtf8($alt);
-                    }
-                }
-
                 // Are we uploading an image that needs to be sanitized?
                 if (
                     $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
@@ -3381,6 +3405,11 @@ JS;
                     ))
                 ) {
                     ImageHelper::cleanImageByPath($this->tempFilePath);
+
+                    // Cleaning usually strips GPS coordinates, unless the `preserveExifData` config setting is enabled
+                    if ($this->_uploadMetadata?->hasLocation) {
+                        $this->_uploadMetadata = $this->_uploadMetadata->withHasLocation(Images::metadata($this->tempFilePath)->hasLocation);
+                    }
                 }
 
                 // if we're creating or replacing and image, get the width or height via getimagesize
@@ -3909,12 +3938,13 @@ JS;
         if ($tempPath && file_exists($tempPath)) {
             $this->kind = AssetsHelper::getFileKindByExtension($filename);
 
-            // What was found in the old file doesn’t describe the new one, so only its colors are known
+            // What was found in the old file doesn’t describe the new one, so only its colors and metadata are known
             if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
+                $metadata = $this->_uploadMetadata ?? Images::metadata($tempPath);
                 $this->analysis = $this->uploadColors !== null
-                    ? new ImageAnalysis(colors: $this->uploadColors, hash: ImageHash::isHash($this->uploadHash) ? $this->uploadHash : null)
-                    : ImageAnalysis::fromSample(Images::sample($tempPath));
+                    ? new ImageAnalysis(colors: $this->uploadColors, hash: ImageHash::isHash($this->uploadHash) ? $this->uploadHash : null, metadata: $metadata)
+                    : ImageAnalysis::fromSample(Images::sample($tempPath), $metadata);
             } else {
                 $this->_width = null;
                 $this->_height = null;
@@ -3948,6 +3978,7 @@ JS;
         $this->uploadSource = null;
         $this->uploadColors = null;
         $this->uploadHash = null;
+        $this->_uploadMetadata = null;
     }
 
     /**
@@ -4088,129 +4119,5 @@ JS;
         }
 
         File::delete(Path::assetSources($this->id.'.'.pathinfo($this->getFilename(), PATHINFO_EXTENSION)));
-    }
-
-    /**
-     * Attempts to extract alt text from XMP metadata embedded in an image file.
-     * Checks Iptc4xmpCore:AltTextAccessibility first, then dc:description.
-     */
-    private function _getAltFromXmpMetadata(string $filePath): ?string
-    {
-        try {
-            $xmp = null;
-
-            if (Images::getIsImagick() && class_exists(Imagick::class)) {
-                $imagick = new Imagick($filePath);
-                $xmp = $imagick->getImageProfile('xmp') ?: null;
-                $imagick->clear();
-            }
-
-            if ($xmp === null) {
-                // Fall back to scanning the raw file for the XMP packet
-                $handle = fopen($filePath, 'rb');
-                if ($handle === false) {
-                    return null;
-                }
-                $chunk = fread($handle, 131072); // 128KB covers the XMP packet in most images
-                fclose($handle);
-
-                if ($chunk !== false) {
-                    $xmpStart = strpos($chunk, '<x:xmpmeta');
-                    if ($xmpStart !== false) {
-                        $xmpEnd = strpos($chunk, '</x:xmpmeta>', $xmpStart);
-                        if ($xmpEnd !== false) {
-                            $xmp = substr($chunk, $xmpStart, $xmpEnd - $xmpStart + strlen('</x:xmpmeta>'));
-                        }
-                    }
-                }
-            }
-
-            if (empty($xmp)) {
-                return null;
-            }
-
-            $dom = new DOMDocument;
-            if (! @$dom->loadXML($xmp)) {
-                return null;
-            }
-
-            $xpath = new DOMXPath($dom);
-            $xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-            $xpath->registerNamespace('dc', 'http://purl.org/dc/elements/1.1/');
-            $xpath->registerNamespace('Iptc4xmpCore', 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/');
-            $xpath->registerNamespace('Iptc4xmpExt', 'http://iptc.org/std/Iptc4xmpExt/2008-02-29/');
-
-            // Try Iptc4xmpCore:AltTextAccessibility (LangAlt rdf:Alt/rdf:li structure)
-            foreach ([
-                '//Iptc4xmpCore:AltTextAccessibility/rdf:Alt/rdf:li',
-                '//Iptc4xmpExt:AltTextAccessibility/rdf:Alt/rdf:li',
-                '//Iptc4xmpCore:AltTextAccessibility[not(rdf:Alt)]',
-                '//Iptc4xmpExt:AltTextAccessibility[not(rdf:Alt)]',
-            ] as $query) {
-                $nodes = $xpath->query($query);
-                if ($nodes !== false) {
-                    foreach ($nodes as $node) {
-                        $value = trim($node->textContent);
-                        if ($value !== '') {
-                            return $value;
-                        }
-                    }
-                }
-            }
-
-            // Try dc:description as an rdf:Alt structure
-            $nodes = $xpath->query('//dc:description/rdf:Alt/rdf:li');
-            if ($nodes !== false) {
-                foreach ($nodes as $node) {
-                    $value = trim($node->textContent);
-                    if ($value !== '') {
-                        return $value;
-                    }
-                }
-            }
-
-            // Try dc:description as a plain string value
-            $nodes = $xpath->query('//dc:description[not(rdf:Alt)]');
-            if ($nodes !== false) {
-                foreach ($nodes as $node) {
-                    $value = trim($node->textContent);
-                    if ($value !== '') {
-                        return $value;
-                    }
-                }
-            }
-        } catch (Throwable) {
-            // Ignore errors and fall through to IPTC
-        }
-
-        return null;
-    }
-
-    /**
-     * Attempts to extract alt text from IPTC Caption/Abstract (Iptc.Application2.Caption, field 2:120).
-     */
-    private function _getAltFromIptcMetadata(string $filePath): ?string
-    {
-        try {
-            $imageInfo = [];
-            @getimagesize($filePath, $imageInfo);
-
-            if (! isset($imageInfo['APP13'])) {
-                return null;
-            }
-
-            $iptc = iptcparse($imageInfo['APP13']);
-
-            if (! empty($iptc['2#120'])) {
-                $value = trim(implode(' ', $iptc['2#120']));
-                if ($value !== '') {
-                    return $value;
-                }
-            }
-        } catch (Throwable) {
-            // Ignore errors
-        }
-
-        return null;
     }
 }

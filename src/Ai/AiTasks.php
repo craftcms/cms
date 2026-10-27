@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ai;
 
 use CraftCms\Cms\Ai\Contracts\TaskInterface;
+use CraftCms\Cms\Asset\Analysis\Tasks\ClassifyImage;
 use CraftCms\Cms\Asset\Analysis\Tasks\DetectFocalPoint;
 use CraftCms\Cms\Asset\Analysis\Tasks\GenerateAltText;
+use CraftCms\Cms\Asset\Analysis\Tasks\GenerateTitles;
 use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
 use CraftCms\Cms\Component\TypeRegistry;
 use Illuminate\Container\Attributes\Singleton;
@@ -34,8 +36,10 @@ class AiTasks extends TypeRegistry
 
     protected const array DEFAULT_TYPES = [
         GenerateAltText::class,
+        GenerateTitles::class,
         DetectFocalPoint::class,
         TagImage::class,
+        ClassifyImage::class,
     ];
 
     /**

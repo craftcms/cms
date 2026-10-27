@@ -45,6 +45,16 @@ class ImageAnalysisType implements GeneratorInterface, SingleGeneratorInterface
                         'type' => Type::string(),
                         'description' => 'The image’s difference hash, as 16 hexadecimal digits. Copies of an image, even resized or recompressed ones, have hashes that differ in only a few bits. Null if the image hasn’t been sampled.',
                     ],
+                    'metadata' => [
+                        'name' => 'metadata',
+                        'type' => ImageMetadataType::generateType(null),
+                        'description' => 'Metadata embedded in the image’s file, such as who made it and when, or null if it hasn’t been read.',
+                    ],
+                    'type' => [
+                        'name' => 'type',
+                        'type' => Type::string(),
+                        'description' => 'What kind of image it is: `photo`, `illustration`, `screenshot`, `diagram`, `logo`, `document`, or `pattern`, or null if it hasn’t been classified.',
+                    ],
                     'keywords' => [
                         'name' => 'keywords',
                         'type' => Type::listOf(Type::nonNull(Type::string())),

@@ -116,3 +116,13 @@ it('queries an image’s hash', function () {
         ->assertOk()
         ->assertJsonPath('data.asset.analysis.hash', 'fcfbf8e7ecdad4a3');
 });
+
+it('queries an image’s embedded metadata', function () {
+    $asset = Asset::factory()->createElement(['kind' => 'image']);
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['metadata' => ['creator' => 'Ada Park', 'keywords' => ['harbor'], 'hasLocation' => true]])]);
+    gqlActivateFullAccessSchema();
+
+    graphQL("{ asset(id: {$asset->id}) { analysis { metadata { creator copyright keywords hasLocation } } } }")
+        ->assertOk()
+        ->assertJsonPath('data.asset.analysis.metadata', ['creator' => 'Ada Park', 'copyright' => null, 'keywords' => ['harbor'], 'hasLocation' => true]);
+});
