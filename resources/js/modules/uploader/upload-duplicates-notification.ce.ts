@@ -47,7 +47,7 @@ export class UploadDuplicatesNotificationElement extends LitElement {
 
   protected override render() {
     return html`
-      <ul class="list-disc ps-5">
+      <ul class="list-disc ps-lg">
         ${this.duplicates.map(
           (duplicate) => html`
             <li>
