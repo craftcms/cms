@@ -346,11 +346,40 @@
     return options !== false && window.iFrameResize ? options : null;
   });
 
+  // The page inside doesn't always report a new height when the frame's width
+  // changes (a device switch, the divider, the window), so it's asked to.
+  const resizedFrames = new Map<number, HTMLIFrameElement>();
+  const frameWidths = new WeakMap<Element, number>();
+  const frameWidthObserver = new ResizeObserver((entries) => {
+    for (const {target, contentRect} of entries) {
+      const width = Math.round(contentRect.width);
+      const previous = frameWidths.get(target);
+      frameWidths.set(target, width);
+
+      if (previous !== undefined && previous !== width) {
+        (
+          target as HTMLIFrameElement & {iFrameResizer?: {resize(): void}}
+        ).iFrameResizer?.resize();
+      }
+    }
+  });
+
+  onBeforeUnmount(() => frameWidthObserver.disconnect());
+
   function onFrameMounted(
     frame: LivePreviewFrame,
     el: HTMLIFrameElement | null
   ): void {
-    if (!el || el.dataset.lpFrame === String(frame.id)) {
+    if (!el) {
+      const resized = resizedFrames.get(frame.id);
+      if (resized) {
+        frameWidthObserver.unobserve(resized);
+        resizedFrames.delete(frame.id);
+      }
+      return;
+    }
+
+    if (el.dataset.lpFrame === String(frame.id)) {
       return;
     }
 
@@ -380,6 +409,8 @@
         },
         el
       );
+      frameWidthObserver.observe(el);
+      resizedFrames.set(frame.id, el);
     }
   }
 
