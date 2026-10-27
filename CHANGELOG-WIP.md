@@ -25,6 +25,9 @@
 - Clicking anywhere on an element index table row or card (other than an interactive control) now selects it. ([#19351](https://github.com/craftcms/cms/pull/19351))
 - Element index sources can now show a count of their elements in the control panel nav, via a new “Show count” setting in the “Customize sources” modal. Entries, assets, and users support it.
 - Apps can now manage their own Eloquent models as elements in the control panel, with an element index and nav item, an element editor, permissions or model policies, search, activity history, relation fields, and Twig element queries. Elements are kept in sync with their models in both directions, and the models and their tables are left unchanged. ([#19971](https://github.com/craftcms/cms/pull/19971))
+- Live Preview no longer flickers when it reloads. The updated page loads behind the current one and is swapped in once it’s ready, keeping the scroll position. ([#19964](https://github.com/craftcms/cms/pull/19964))
+- Live Preview now fades between device sizes, rather than re-laying out the previewed page throughout the animation. ([#19964](https://github.com/craftcms/cms/pull/19964))
+- Live Preview now reloads once after a run of quick edits, rather than after every autosave. ([#19964](https://github.com/craftcms/cms/pull/19964))
 
 #### Entries
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
@@ -678,9 +681,13 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - `Craft.sendActionRequest()` and `Craft.sendApiRequest()` no longer use axios. Their errors still pass `axios.isAxiosError()` and `axios.isCancel()` checks.
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
+- Added `getActivePreview()`, `getPreviews()`, `refreshPreviews()`, `onPreviewEvent()`, and `watchPreviews()` to `@craftcms/cp`, for working with Live Preview. Its events are named in kebab-case: `before-open`, `open`, `before-close`, `close`, `switch-target`, `before-update-iframe`, `after-update-iframe`, `after-save-draft`, and `drag`. ([#19964](https://github.com/craftcms/cms/pull/19964))
+- Added the `craft:refresh-previews` window event, which refreshes any open Live Preview, for code that can’t import `@craftcms/cp`. ([#19964](https://github.com/craftcms/cms/pull/19964))
 - Deprecated the `cancelToken` request option for `Craft.sendActionRequest()` and `Craft.sendApiRequest()`. `signal` should be used instead.
 - Removed `Cp.$axios`.
+- `Craft.Preview` is now only available when `craftcms/yii2-adapter` is installed, as a shim over Live Preview that fires Craft 5’s event names. Constructing it no longer creates a preview; `open()` goes to the element’s standalone preview page instead. `getActivePreview()` from `@craftcms/cp` should be used instead. ([#19964](https://github.com/craftcms/cms/pull/19964))
 - Removed the `Craft.Accordion` and `Craft.EnvVarGenerator` control panel JavaScript classes. ([#19323](https://github.com/craftcms/cms/pull/19323))
+- Removed the classic (pre-3.2) `Craft.LivePreview` control panel JavaScript class, which Craft hasn’t used since 3.2. ([#19964](https://github.com/craftcms/cms/pull/19964))
 - Deprecated the `Craft.LightSwitch`, `Craft.InfoIcon`, `Craft.ColorInput`, `Craft.PasswordInput`, `Craft.IconPicker`, `Craft.SlidePicker`, `Craft.SlideRuleInput`, and `Craft.Tooltip` control panel JavaScript classes, along with the `.infoicon` jQuery plugin. The corresponding `@craftcms/ui` web components should be used instead. 
 - Deprecated the `Craft.SortableCheckboxSelect` control panel JavaScript class. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 
