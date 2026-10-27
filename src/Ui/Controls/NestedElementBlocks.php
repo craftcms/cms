@@ -67,6 +67,8 @@ class NestedElementBlocks extends Control
 
     private ?string $siteName = null;
 
+    private ?int $siteId = null;
+
     private ?string $addLabel = null;
 
     private ?int $minEntries = null;
@@ -202,6 +204,14 @@ class NestedElementBlocks extends Control
         return $this;
     }
 
+    /** The owner's site, which the browser remembers collapsed blocks for. */
+    public function siteId(?int $siteId): static
+    {
+        $this->siteId = $siteId;
+
+        return $this;
+    }
+
     public function addLabel(string $addLabel): static
     {
         $this->addLabel = $addLabel;
@@ -270,6 +280,7 @@ class NestedElementBlocks extends Control
             'create' => $this->create,
             'elementType' => $this->elementType,
             'siteName' => $this->siteName,
+            'siteId' => $this->siteId,
         ];
     }
 
