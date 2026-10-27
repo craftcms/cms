@@ -98,7 +98,7 @@
           <div slot="help-text">
             {{
               t(
-                'Sample the colors of images that are missing them, and queue images for any AI tasks that are set up, such as alt text, even if their files haven’t changed.'
+                'Sample missing image colors and metadata, and queue images for AI tasks.'
               )
             }}
           </div>
