@@ -250,8 +250,8 @@ class AssetsHelper
     {
         $title = mb_ucfirst(implode(' ', Str::toWords($filename, false, true)));
 
-        if (strlen($title) > 255) {
-            return rtrim(substr($title, 255), ' ');
+        if (mb_strlen($title) > 255) {
+            return rtrim(mb_substr($title, 0, 255), ' ');
         }
 
         return $title;
