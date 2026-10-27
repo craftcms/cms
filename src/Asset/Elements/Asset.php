@@ -343,16 +343,10 @@ class Asset extends Element
     public ?UploadedFile $uploadSource = null;
 
     /**
-     * Colors already sampled from the incoming file, such as by the browser that uploaded it, which are stored in
-     * place of sampling the file again.
+     * What was already read from the incoming file, such as by the browser that uploaded it: its colors and embedded
+     * metadata, which are stored in place of reading the file again. Anything else in it is ignored.
      */
-    public ?ImageColors $uploadColors = null;
-
-    /**
-     * Metadata already read from the incoming file, such as by the browser that uploaded it, which is stored in place
-     * of reading the file again.
-     */
-    public ?ImageMetadata $uploadMetadata = null;
+    public ?ImageAnalysis $uploadAnalysis = null;
 
     /**
      * The metadata read from the incoming file before it was cleaned.
@@ -3249,8 +3243,7 @@ JS;
             $names['keepFileOnDelete'],
             $names['previewText'],
             $names['sanitizeOnUpload'],
-            $names['uploadColors'],
-            $names['uploadMetadata'],
+            $names['uploadAnalysis'],
         );
 
         $names['extension'] = true;
@@ -3352,13 +3345,13 @@ JS;
         // Take an uploaded image’s metadata from the uploader, or read it before it’s cleaned in afterSave(), which
         // strips it, and fill in its alt text, and a new image’s title, from it
         if (
-            ($this->uploadMetadata !== null || (
+            ($this->uploadAnalysis?->metadata !== null || (
                 isset($this->tempFilePath) &&
                 AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value
             )) &&
             $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
         ) {
-            $this->_uploadMetadata = $this->uploadMetadata ?? Images::metadata($this->tempFilePath);
+            $this->_uploadMetadata = $this->uploadAnalysis->metadata ?? Images::metadata($this->tempFilePath);
 
             if (! $this->id && $this->_uploadMetadata->title !== null && $this->hasDefaultTitle()) {
                 $this->title = mb_substr($this->_uploadMetadata->title, 0, 255);
@@ -3944,8 +3937,8 @@ JS;
             [$this->_width, $this->_height] = $this->_uploadDimensions ?? [null, null];
             // What was found in the old file doesn’t describe the new one, so only what the uploader found in the new
             // one is known. A queue job samples anything it didn’t.
-            $this->analysis = $this->uploadColors !== null || $this->_uploadMetadata !== null
-                ? new ImageAnalysis(colors: $this->uploadColors, metadata: $this->_uploadMetadata)
+            $this->analysis = $this->uploadAnalysis?->colors !== null || $this->_uploadMetadata !== null
+                ? new ImageAnalysis(colors: $this->uploadAnalysis?->colors, metadata: $this->_uploadMetadata)
                 : null;
             $this->previewText = $this->isTextFile($filename)
                 ? AssetsHelper::previewText($this->readFileStart($newDisk->readStream($newPath)))
@@ -3960,7 +3953,7 @@ JS;
             if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
                 $this->analysis = new ImageAnalysis(
-                    colors: $this->uploadColors ?? Images::colors($tempPath),
+                    colors: $this->uploadAnalysis->colors ?? Images::colors($tempPath),
                     metadata: $this->_uploadMetadata ?? Images::metadata($tempPath),
                 );
             } else {
@@ -3996,8 +3989,7 @@ JS;
         $this->uploadSource = null;
         $this->_uploadMetadata = null;
         $this->_uploadDimensions = null;
-        $this->uploadColors = null;
-        $this->uploadMetadata = null;
+        $this->uploadAnalysis = null;
     }
 
     /**

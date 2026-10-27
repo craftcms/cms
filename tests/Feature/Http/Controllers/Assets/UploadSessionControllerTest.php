@@ -320,22 +320,22 @@ describe('what the uploader read from the file', function () {
         $images->shouldNotReceive('colors');
         ImagesFacade::swap($images);
 
-        $original = ($this->uploadImage)(['folderId' => $this->folder->id], ['colors' => $colors]);
+        $original = ($this->uploadImage)(['folderId' => $this->folder->id], ['analysis' => ['colors' => $colors]]);
         $replacementColors = ['dominant' => null, 'grid' => [['#654321']], 'palette' => ['#654321'], 'luminance' => [[[0.2, 0.3]]]];
-        ($this->uploadImage)(['operation' => 'replace', 'assetId' => $original['assetId']], ['colors' => $replacementColors]);
+        ($this->uploadImage)(['operation' => 'replace', 'assetId' => $original['assetId']], ['analysis' => ['colors' => $replacementColors]]);
 
         expect(AssetModel::findOrFail($original['assetId'])->analysis['colors'])->toEqual($replacementColors);
     });
 
     it('stores the metadata the uploader read, dropping anything that isn’t valid', function () {
-        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], ['metadata' => [
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], ['analysis' => ['metadata' => [
             'title' => '  Harbor at dusk ',
             'description' => 'Boats at dusk',
             'keywords' => ['harbor', 5, ['nested']],
             'dateTaken' => 'yesterday',
             'hasLocation' => 'yes',
             'extra' => 'x',
-        ]]);
+        ]]]);
         $asset = Asset::findOne($completed['assetId']);
 
         expect($asset->analysis->metadata->toArray())->toMatchArray([
@@ -349,8 +349,23 @@ describe('what the uploader read from the file', function () {
             ->and($asset->alt)->toBe('Boats at dusk');
     });
 
+    it('ignores what AI tasks find, which can’t be set from a request', function () {
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], ['analysis' => [
+            'metadata' => ['title' => 'Harbor'],
+            'type' => 'logo',
+            'keywords' => ['injected'],
+            'text' => 'Injected',
+        ]]);
+        $analysis = Asset::findOne($completed['assetId'])->analysis;
+
+        expect($analysis->metadata->title)->toBe('Harbor')
+            ->and($analysis->type)->toBeNull()
+            ->and($analysis->keywords)->toBeNull()
+            ->and($analysis->text)->toBeNull();
+    });
+
     it('samples the image itself without usable colors from the uploader', function (?array $colors) {
-        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], $colors === null ? [] : ['colors' => $colors]);
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], $colors === null ? [] : ['analysis' => ['colors' => $colors]]);
 
         expect(Asset::findOne($completed['assetId'])->analysis->colors->grid)->toHaveCount(4)->each->toHaveCount(3);
     })->with([

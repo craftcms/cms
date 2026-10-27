@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage;
 use CraftCms\Cms\Asset\AssetUploadHandler;
 use CraftCms\Cms\Asset\Data\AssetIngest;
@@ -264,7 +265,7 @@ describe('images staged on a remote filesystem', function () {
         });
         config()->set('filesystems.disks.asset-ingest-remote', ['driver' => 'asset-ingest-remote', 'root' => $root]);
 
-        $this->ingestImage = function (bool $sanitize, ?ImageColors $colors = null, ?ImageMetadata $metadata = null): Asset {
+        $this->ingestImage = function (bool $sanitize, ?ImageAnalysis $analysis = null): Asset {
             $disk = Storage::disk('asset-ingest-remote');
             $disk->put('staged/photo.jpg', file_get_contents(metadataJpeg(xmpPacket(
                 '<dc:description><rdf:Alt><rdf:li xml:lang="x-default">Boats at dusk</rdf:li></rdf:Alt></dc:description>'
@@ -278,8 +279,7 @@ describe('images staged on a remote filesystem', function () {
                 mimeType: 'image/jpeg',
                 folder: $this->folder,
                 sanitizeOnUpload: $sanitize,
-                colors: $colors,
-                metadata: $metadata,
+                analysis: $analysis,
             ))->asset;
         };
     });
@@ -288,7 +288,7 @@ describe('images staged on a remote filesystem', function () {
         $colors = ImageColors::fromArray(['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5']], 'palette' => ['#3a6ea5'], 'luminance' => [[[0.1, 0.2]]]]);
         $metadata = new ImageMetadata(description: 'Boats at dusk');
 
-        $asset = ($this->ingestImage)(sanitize: false, colors: $colors, metadata: $metadata);
+        $asset = ($this->ingestImage)(sanitize: false, analysis: new ImageAnalysis(colors: $colors, metadata: $metadata));
 
         $this->staged->shouldNotHaveReceived('localPath');
         expect($asset->analysis?->colors)->toEqual($colors)

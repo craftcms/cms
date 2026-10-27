@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use Closure;
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\UploadHandler;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
@@ -79,21 +80,33 @@ class AssetUploads implements UploadHandler
 
     public function complete(Request $request, array $parameters, UploadedFile $file): JsonResponse
     {
-        $colors = $this->uploadedColors($request);
-        $metadata = $this->uploadedMetadata($request);
+        $analysis = $this->uploadedAnalysis($request);
 
         $result = $parameters['operation'] === 'replace'
-            ? $this->uploads->replace((int) $parameters['assetId'], $file, $colors, $metadata)
+            ? $this->uploads->replace((int) $parameters['assetId'], $file, $analysis)
             : $this->uploads->store(
                 $parameters,
                 $file,
                 authorizedGuest: ! $request->user(),
                 uploaderId: $request->craftUser()?->getCraftUserId(),
-                colors: $colors,
-                metadata: $metadata,
+                analysis: $analysis,
             );
 
         return new JsonResponse($result->payload(), $result->status);
+    }
+
+    /**
+     * Returns what the uploader read from the file, if it sent anything: its colors and embedded metadata.
+     *
+     * Only those parts are taken, never what AI tasks find, such as keywords, which can’t be set from a request.
+     */
+    private function uploadedAnalysis(Request $request): ?ImageAnalysis
+    {
+        $colors = $this->uploadedColors($request);
+        $metadata = $request->input('analysis.metadata');
+        $metadata = is_array($metadata) ? ImageMetadata::fromArray($metadata) : null;
+
+        return $colors !== null || $metadata !== null ? new ImageAnalysis(colors: $colors, metadata: $metadata) : null;
     }
 
     /**
@@ -105,7 +118,7 @@ class AssetUploads implements UploadHandler
     private function uploadedColors(Request $request): ?ImageColors
     {
         $hexColor = 'regex:/^#[0-9a-f]{6}([0-9a-f]{2})?$/i';
-        $validator = Validator::make($request->only('colors'), [
+        $validator = Validator::make(['colors' => $request->input('analysis.colors')], [
             'colors' => ['required', 'array:dominant,grid,palette,luminance'],
             'colors.dominant' => ['nullable', 'string', $hexColor],
             'colors.grid' => ['required', 'array', 'list', 'min:1', 'max:4'],
@@ -130,16 +143,5 @@ class AssetUploads implements UploadHandler
         }
 
         return ImageColors::fromArray($colors);
-    }
-
-    /**
-     * Returns the metadata the uploader read from the file, if it sent any. Anything that isn’t valid for its part is
-     * dropped, as it is for stored metadata.
-     */
-    private function uploadedMetadata(Request $request): ?ImageMetadata
-    {
-        $metadata = $request->input('metadata');
-
-        return is_array($metadata) ? ImageMetadata::fromArray($metadata) : null;
     }
 }
