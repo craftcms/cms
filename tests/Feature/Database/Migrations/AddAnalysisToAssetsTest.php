@@ -49,11 +49,13 @@ it('moves images’ colors, keywords, and visible text into analysis', function 
 
     expect($analysis($tagged->id))->toEqual([
         'colors' => ['dominant' => '#c81e28', 'grid' => [['#c81e28']], 'palette' => ['#c81e28'], 'luminance' => []],
+        'hash' => null,
         'keywords' => ['harbor', 'dusk'],
         'text' => 'Pier 9',
     ])
         ->and($analysis($sampled->id))->toEqual([
             'colors' => ['dominant' => null, 'grid' => [], 'palette' => [], 'luminance' => []],
+            'hash' => null,
             'keywords' => null,
             'text' => null,
         ])

@@ -684,11 +684,13 @@ class AssetIndexer
         $colors = $asset->analysis?->colors;
         $isNew = ! $asset->id;
         // New and changed files are always sampled. Unchanged ones that are missing colors, or were sampled before
-        // palettes or luminance were (but not inconclusively), are only sampled when asked to analyze images, since
-        // a remote file has to be downloaded to sample it.
+        // palettes, luminance, or hashes were (but not inconclusively), are only sampled when asked to analyze
+        // images, since a remote file has to be downloaded to sample it.
         $needsColors = $isNew
             || $fileChanged
-            || ($analyzeImages && ($colors === null || ($colors->grid !== [] && ($colors->palette === [] || $colors->luminance === []))));
+            || ($analyzeImages && ($colors === null || ($colors->grid !== [] && (
+                $colors->palette === [] || $colors->luminance === [] || $asset->analysis?->hash === null
+            ))));
 
         $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
         $tempPath = null;
@@ -740,11 +742,11 @@ class AssetIndexer
                 // Colors that have been sampled already, even inconclusively, aren't sampled again unless the
                 // file has changed
                 if ($localPath !== null && $needsColors) {
-                    $colors = Images::colors($localPath);
+                    $sample = Images::sample($localPath);
                     // What was found in a file that's changed doesn't describe it anymore
                     $asset->analysis = $fileChanged || $asset->analysis === null
-                        ? new ImageAnalysis(colors: $colors)
-                        : $asset->analysis->withColors($colors);
+                        ? ImageAnalysis::fromSample($sample)
+                        : $asset->analysis->withSample($sample);
                 }
                 $asset->dateModified = $timeModified;
 

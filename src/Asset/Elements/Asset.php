@@ -73,6 +73,7 @@ use CraftCms\Cms\Image\ColorNames;
 use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Image\ImageHash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Search\SearchQuery;
@@ -348,6 +349,14 @@ class Asset extends Element
      * place of sampling the file again.
      */
     public ?ImageColors $uploadColors = null;
+
+    /**
+     * The difference hash already found for the incoming file alongside {@see $uploadColors}, such as by the browser
+     * that uploaded it.
+     *
+     * @see ImageHash
+     */
+    public ?string $uploadHash = null;
 
     /**
      * @var bool Whether the asset should avoid filename conflicts when saved.
@@ -3226,6 +3235,7 @@ JS;
             $names['previewText'],
             $names['sanitizeOnUpload'],
             $names['uploadColors'],
+            $names['uploadHash'],
         );
 
         $names['extension'] = true;
@@ -3902,7 +3912,9 @@ JS;
             // What was found in the old file doesn’t describe the new one, so only its colors are known
             if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
-                $this->analysis = new ImageAnalysis(colors: $this->uploadColors ?? Images::colors($tempPath));
+                $this->analysis = $this->uploadColors !== null
+                    ? new ImageAnalysis(colors: $this->uploadColors, hash: ImageHash::isHash($this->uploadHash) ? $this->uploadHash : null)
+                    : ImageAnalysis::fromSample(Images::sample($tempPath));
             } else {
                 $this->_width = null;
                 $this->_height = null;
@@ -3935,6 +3947,7 @@ JS;
         $this->tempFilePath = null;
         $this->uploadSource = null;
         $this->uploadColors = null;
+        $this->uploadHash = null;
     }
 
     /**

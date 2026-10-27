@@ -1,5 +1,10 @@
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
-import {readImageColors, sampleImageColors, type Pixels} from './image-colors';
+import {
+  imageHash,
+  readImageSample,
+  sampleImageColors,
+  type Pixels,
+} from './image-colors';
 
 type Rgba = [number, number, number, number?];
 
@@ -217,7 +222,19 @@ describe('sampleImageColors', () => {
   });
 });
 
-describe('readImageColors', () => {
+describe('imageHash', () => {
+  it('hashes images the same way the server does', () => {
+    expect(imageHash(fixture())).toBe('fcfbf8e7ecdad4a3');
+  });
+
+  it('treats transparent pixels as white', () => {
+    expect(imageHash(pixels(90, 80, [0, 0, 0, 0]))).toBe(
+      imageHash(pixels(90, 80, [255, 255, 255]))
+    );
+  });
+});
+
+describe('readImageSample', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
@@ -227,10 +244,10 @@ describe('readImageColors', () => {
     vi.stubGlobal('createImageBitmap', createImageBitmap);
 
     await expect(
-      readImageColors(new File(['%PDF'], 'doc.pdf', {type: 'application/pdf'}))
+      readImageSample(new File(['%PDF'], 'doc.pdf', {type: 'application/pdf'}))
     ).resolves.toBeNull();
     await expect(
-      readImageColors(new File(['<svg/>'], 'logo.svg', {type: 'image/svg+xml'}))
+      readImageSample(new File(['<svg/>'], 'logo.svg', {type: 'image/svg+xml'}))
     ).resolves.toBeNull();
     expect(createImageBitmap).not.toHaveBeenCalled();
   });
@@ -244,7 +261,7 @@ describe('readImageColors', () => {
     );
 
     await expect(
-      readImageColors(new File(['heic'], 'photo.heic', {type: 'image/heic'}))
+      readImageSample(new File(['heic'], 'photo.heic', {type: 'image/heic'}))
     ).resolves.toBeNull();
   });
 });

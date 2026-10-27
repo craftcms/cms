@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageSample;
 use CraftCms\Cms\Image\Enums\ImageDriver;
+use CraftCms\Cms\Image\ImageHash;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\Raster;
 use CraftCms\Cms\Image\Svg;
@@ -343,5 +345,24 @@ describe('colors', function () {
     it('returns empty colors for files it can’t read as images', function () {
         expect($this->service->colors($this->sandboxPath.'/empty-file.text'))->toEqual(new ImageColors)
             ->and($this->service->colors($this->sandboxPath.'/missing.png'))->toEqual(new ImageColors);
+    });
+});
+
+describe('sample', function () {
+    it('fingerprints copies of an image alike, even once they’re resized and recompressed', function () {
+        $original = $this->fixturesPath.'/background.jpg';
+        $copy = $this->sandboxPath.'/copy.jpg';
+        $image = imagecreatefromjpeg($original);
+        imagejpeg(imagescale($image, intdiv(imagesx($image), 3)), $copy, 40);
+
+        $hash = $this->service->sample($original)->hash;
+
+        expect($hash)->toMatch('/^[0-9a-f]{16}$/')
+            ->and(ImageHash::distance($hash, $this->service->sample($copy)->hash))->toBeLessThanOrEqual(5)
+            ->and(ImageHash::distance($hash, $this->service->sample($this->fixturesPath.'/ign.jpg')->hash))->toBeGreaterThan(15);
+    });
+
+    it('has no hash for files it can’t read', function () {
+        expect($this->service->sample($this->sandboxPath.'/empty-file.text'))->toEqual(new ImageSample);
     });
 });

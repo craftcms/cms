@@ -317,7 +317,7 @@ describe('uploaded colors', function () {
     it('stores the colors the uploader sampled instead of sampling the image', function () {
         $colors = ['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5', '#123456', '#abcdef']], 'palette' => ['#3a6ea5', '#123456'], 'luminance' => [[[0.1, 0.2], null, [0.0, 1.0]]]];
         $images = Mockery::mock(ImagesFacade::getFacadeRoot());
-        $images->shouldNotReceive('colors');
+        $images->shouldNotReceive('sample');
         ImagesFacade::swap($images);
 
         $original = ($this->uploadImage)(['folderId' => $this->folder->id], ['colors' => $colors]);
@@ -325,6 +325,26 @@ describe('uploaded colors', function () {
         ($this->uploadImage)(['operation' => 'replace', 'assetId' => $original['assetId']], ['colors' => $replacementColors]);
 
         expect(AssetModel::findOrFail($original['assetId'])->analysis['colors'])->toEqual($replacementColors);
+    });
+
+    it('stores the hash the uploader found along with its colors', function () {
+        $colors = ['dominant' => null, 'grid' => [['#654321']], 'palette' => ['#654321']];
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], ['colors' => $colors, 'hash' => 'fcfbf8e7ecdad4a3']);
+
+        expect(Asset::findOne($completed['assetId'])->analysis->hash)->toBe('fcfbf8e7ecdad4a3');
+    });
+
+    it('finds the hash itself when the uploader sends one without colors', function () {
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], ['hash' => 'fcfbf8e7ecdad4a3']);
+
+        expect(Asset::findOne($completed['assetId'])->analysis->hash)->toMatch('/^[0-9a-f]{16}$/')->not->toBe('fcfbf8e7ecdad4a3');
+    });
+
+    it('ignores hashes from the uploader that aren’t hashes', function () {
+        $colors = ['dominant' => null, 'grid' => [['#654321']]];
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], ['colors' => $colors, 'hash' => 'x']);
+
+        expect(Asset::findOne($completed['assetId'])->analysis->hash)->toBeNull();
     });
 
     it('samples the image itself without usable colors from the uploader', function (?array $colors) {

@@ -91,6 +91,7 @@ readonly class AssetUploadHandler
     /**
      * @param  array<string, mixed>  $parameters
      * @param  ImageColors|null  $colors  Colors the uploader already sampled from the file
+     * @param  string|null  $hash  The difference hash the uploader already found for the file
      */
     public function store(
         array $parameters,
@@ -98,6 +99,7 @@ readonly class AssetUploadHandler
         bool $authorizedGuest = false,
         ?int $uploaderId = null,
         ?ImageColors $colors = null,
+        ?string $hash = null,
     ): UploadResult {
         [$folder, $selectionCondition] = $this->resolveTarget($parameters, $authorizedGuest);
 
@@ -120,6 +122,7 @@ readonly class AssetUploadHandler
             colors: $colors,
             uploaderId: $uploaderId,
             asset: $asset,
+            hash: $hash,
         ));
 
         return $this->uploadResult($result);
@@ -168,6 +171,7 @@ readonly class AssetUploadHandler
 
         $asset->uploadSource = $ingest->source;
         $asset->uploadColors = $ingest->colors;
+        $asset->uploadHash = $ingest->hash;
         $asset->sanitizeOnUpload = $ingest->sanitizeOnUpload;
         $asset->setFilename($filename);
         $asset->setMimeType($ingest->mimeType);
@@ -269,8 +273,9 @@ readonly class AssetUploadHandler
 
     /**
      * @param  ImageColors|null  $colors  Colors the uploader already sampled from the file
+     * @param  string|null  $hash  The difference hash the uploader already found for the file
      */
-    public function replace(int $assetId, UploadedFile $file, ?ImageColors $colors = null): UploadResult
+    public function replace(int $assetId, UploadedFile $file, ?ImageColors $colors = null, ?string $hash = null): UploadResult
     {
         $asset = $this->assets->getAssetById($assetId);
         abort_unless($asset !== null, 404, 'Asset not found.');
@@ -278,6 +283,7 @@ readonly class AssetUploadHandler
 
         $asset->uploadSource = $file;
         $asset->uploadColors = $colors;
+        $asset->uploadHash = $hash;
         $this->assets->replaceAssetFile($asset, $file->localPath(), $file->filename, $file->mimeType());
 
         if ($asset->errors()->isNotEmpty()) {

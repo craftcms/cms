@@ -17,6 +17,7 @@ readonly class AssetIngest
     /**
      * @param  Asset|null  $asset  A prepared, unsaved asset. Upload source, colors, sanitization, filename, MIME type,
      *                             location, uploader, conflict behavior, and validation scenario are owned by the handler.
+     * @param  string|null  $hash  The difference hash the uploader already found for the file, alongside `$colors`
      */
     public function __construct(
         public UploadedFile $source,
@@ -29,5 +30,6 @@ readonly class AssetIngest
         public ?ImageColors $colors = null,
         public ?int $uploaderId = null,
         public ?Asset $asset = null,
+        public ?string $hash = null,
     ) {}
 }

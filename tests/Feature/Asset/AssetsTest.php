@@ -19,6 +19,7 @@ use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageSample;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
@@ -545,7 +546,7 @@ describe('colors', function () {
 
     it('are stored as inconclusive when none can be sampled', function () {
         $images = Mockery::mock(ImagesFacade::getFacadeRoot());
-        $images->shouldReceive('colors')->andReturn(new ImageColors);
+        $images->shouldReceive('sample')->andReturn(new ImageSample);
         ImagesFacade::swap($images);
 
         $this->assets->replaceAssetFile($this->asset, colorsImage(), 'photo.png');

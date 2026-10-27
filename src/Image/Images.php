@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Image;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageSample;
 use CraftCms\Cms\Image\Enums\ExifOrientation;
 use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Support\Arr;
@@ -311,11 +312,26 @@ class Images
      * The grid is 4×3 regions for landscape and square images and 3×4 for
      * portrait ones, averaged in linear light (see {@see ColorGrid::average()}).
      * Both are empty if the image can’t be read.
+     *
+     * @see sample()
      */
     public function colors(string $filePath): ImageColors
     {
+        return $this->sample($filePath)->colors;
+    }
+
+    /**
+     * Samples an image’s colors, as {@see colors()} does, along with how light
+     * each of its regions is (see {@see ColorGrid::luminance()}) and a
+     * fingerprint for finding copies of it (see {@see ImageHash}), all from the
+     * same scaled-down copy of it.
+     *
+     * The colors are empty, and the hash is `null`, if the image can’t be read.
+     */
+    public function sample(string $filePath): ImageSample
+    {
         if (File::isSvg($filePath) && ! $this->getCanRasterizeSvg()) {
-            return new ImageColors;
+            return new ImageSample;
         }
 
         try {
@@ -323,7 +339,7 @@ class Images
             $intervention = $image instanceof Raster ? $image->getInterventionImage() : null;
 
             if (! $intervention) {
-                return new ImageColors;
+                return new ImageSample;
             }
 
             $intervention->scaleDown(self::COLOR_SAMPLE_SIZE, self::COLOR_SAMPLE_SIZE);
@@ -351,19 +367,23 @@ class Images
 
             $grid = ColorGrid::average($pixels, $width, $height, $columns, $rows);
             $luminance = ColorGrid::luminance($pixels, $width, $height, $columns, $rows);
+            $hash = ImageHash::dhash($pixels, $width, $height);
         } catch (Throwable $e) {
             Log::info("Couldn’t sample the colors of $filePath: {$e->getMessage()}");
 
-            return new ImageColors;
+            return new ImageSample;
         }
 
         $dominant = Arr::first($candidates, fn (ColorInterface $color): bool => ! $this->isNearBlackOrWhite($color)) ?? $candidates[0] ?? null;
 
-        return new ImageColors(
-            dominant: $dominant ? $this->hex($dominant) : null,
-            grid: $grid,
-            palette: array_values(array_unique(array_map($this->hex(...), $candidates))),
-            luminance: $luminance,
+        return new ImageSample(
+            colors: new ImageColors(
+                dominant: $dominant ? $this->hex($dominant) : null,
+                grid: $grid,
+                palette: array_values(array_unique(array_map($this->hex(...), $candidates))),
+                luminance: $luminance,
+            ),
+            hash: $hash,
         );
     }
 

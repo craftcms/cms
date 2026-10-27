@@ -106,3 +106,13 @@ it('queries how light an image’s regions are, and which text color is legible 
         ->assertJsonPath('data.asset.analysis.colors.top', ['color' => '#ffffff', 'contrast' => 10.5])
         ->assertJsonPath('data.asset.analysis.colors.anywhere', ['color' => '#ffffff', 'contrast' => 1]);
 });
+
+it('queries an image’s hash', function () {
+    $asset = Asset::factory()->createElement(['kind' => 'image']);
+    Asset::whereKey($asset->id)->update(['analysis' => json_encode(['hash' => 'fcfbf8e7ecdad4a3'])]);
+    gqlActivateFullAccessSchema();
+
+    graphQL("{ asset(id: {$asset->id}) { analysis { hash } } }")
+        ->assertOk()
+        ->assertJsonPath('data.asset.analysis.hash', 'fcfbf8e7ecdad4a3');
+});

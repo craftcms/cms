@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\UploadHandler;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\ImageHash;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -79,15 +80,18 @@ class AssetUploads implements UploadHandler
     public function complete(Request $request, array $parameters, UploadedFile $file): JsonResponse
     {
         $colors = $this->uploadedColors($request);
+        // Only trusted alongside colors, since the file is sampled on the server otherwise
+        $hash = $colors !== null ? $this->uploadedHash($request) : null;
 
         $result = $parameters['operation'] === 'replace'
-            ? $this->uploads->replace((int) $parameters['assetId'], $file, $colors)
+            ? $this->uploads->replace((int) $parameters['assetId'], $file, $colors, $hash)
             : $this->uploads->store(
                 $parameters,
                 $file,
                 authorizedGuest: ! $request->user(),
                 uploaderId: $request->craftUser()?->getCraftUserId(),
                 colors: $colors,
+                hash: $hash,
             );
 
         return new JsonResponse($result->payload(), $result->status);
@@ -127,5 +131,15 @@ class AssetUploads implements UploadHandler
         }
 
         return ImageColors::fromArray($colors);
+    }
+
+    /**
+     * Returns the difference hash the uploader found for the file, if it sent a valid one.
+     */
+    private function uploadedHash(Request $request): ?string
+    {
+        $hash = $request->input('hash');
+
+        return ImageHash::isHash($hash) ? $hash : null;
     }
 }
