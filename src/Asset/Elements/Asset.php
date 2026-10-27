@@ -36,6 +36,7 @@ use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
+use CraftCms\Cms\Asset\ImageDuplicates;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule;
@@ -3467,6 +3468,11 @@ JS;
 
             $model->save();
             $this->previewTextChanged = false;
+
+            // Copies of the image are found by its hash
+            if ($isNew || $model->wasChanged('analysis')) {
+                app(ImageDuplicates::class)->index($this->id, $this->analysis?->hash);
+            }
 
             // we're not propagating at this point, so save the alt ONLY against the site we're saving to
             DB::table(Table::ASSETS_SITES)

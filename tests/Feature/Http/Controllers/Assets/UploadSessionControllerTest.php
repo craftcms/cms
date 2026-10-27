@@ -347,6 +347,23 @@ describe('uploaded colors', function () {
         expect(Asset::findOne($completed['assetId'])->analysis->hash)->toBeNull();
     });
 
+    it('lists images the upload looks like a copy of', function () {
+        $original = ($this->uploadImage)(['folderId' => $this->folder->id]);
+        $copy = ($this->uploadImage)(['folderId' => $this->folder->id]);
+
+        expect($original['duplicates'])->toBe([])
+            ->and($copy['duplicates'])->toHaveCount(1)
+            ->and($copy['duplicates'][0])->toMatchArray(['id' => $original['assetId']])
+            ->and($copy['duplicates'][0]['url'])->toContain((string) $original['assetId']);
+    });
+
+    it('only lists copies the uploader can view', function () {
+        ($this->uploadImage)(['folderId' => $this->folder->id]);
+        Gate::before(fn ($user, string $ability, array $arguments) => $ability === 'view' && ($arguments[0] ?? null) instanceof Asset ? false : null);
+
+        expect(($this->uploadImage)(['folderId' => $this->folder->id])['duplicates'])->toBe([]);
+    });
+
     it('samples the image itself without usable colors from the uploader', function (?array $colors) {
         $completed = ($this->uploadImage)(['folderId' => $this->folder->id], $colors === null ? [] : ['colors' => $colors]);
 
