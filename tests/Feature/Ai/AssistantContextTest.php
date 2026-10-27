@@ -272,6 +272,18 @@ it('turns away a proposed value its field can’t take, saying why', function ()
         ->and(proposeChangesResult()['message'])->toContain('/summary');
 });
 
+it('says which attributes and fields aren’t in the editor, so it can’t propose them, while proposing the rest', function () {
+    AssistantAgent::fake([
+        new ToolCall('call_1', 'propose_changes', ['id' => $this->entry->id, 'attributes' => ['slug' => 'new-slug'], 'fields' => ['summary' => 'New summary']]),
+        'Done.',
+    ]);
+
+    chatAboutEntry($this->entry)->assertOk()->streamedContent();
+
+    expect(array_column(proposeChangesResult()['proposals'], 'label'))->toBe(['Summary'])
+        ->and(proposeChangesResult()['message'])->toContain('slug isn’t in the user’s editor');
+});
+
 it('lists the fields an element can add to the context, by the paths a message’s context takes', function () {
     postJson(action([AssistantController::class, 'contextFields']), [
         'elementType' => Entry::class,

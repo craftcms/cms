@@ -45,7 +45,7 @@ readonly class ProposeChanges implements Tool
         $arguments = $request->all();
 
         try {
-            $proposals = $this->proposals->propose(
+            ['proposals' => $proposals, 'notInEditor' => $notInEditor] = $this->proposals->propose(
                 $this->contexts,
                 (int) ($arguments['id'] ?? 0),
                 is_array($arguments['attributes'] ?? null) ? $arguments['attributes'] : [],
@@ -55,10 +55,18 @@ readonly class ProposeChanges implements Tool
             return Json::encode(['message' => $exception->getMessage(), 'proposals' => []]);
         }
 
+        $one = count($notInEditor) === 1;
+        $messages = array_filter([
+            $proposals !== [] ? sprintf('Proposed %d change(s). The user can now review and apply them.', count($proposals)) : null,
+            $notInEditor !== [] ? strtr('{names} {verb} in the user’s editor, so you can’t propose {it}. To change {it}, save {it} with elements.update, which the user approves.', [
+                '{names}' => implode(', ', $notInEditor),
+                '{verb}' => $one ? 'isn’t' : 'aren’t',
+                '{it}' => $one ? 'it' : 'them',
+            ]) : null,
+        ]);
+
         return Json::encode([
-            'message' => $proposals === []
-                ? 'Nothing changed.'
-                : sprintf('Proposed %d change(s). The user can now review and apply them.', count($proposals)),
+            'message' => $messages !== [] ? implode(' ', $messages) : 'Nothing changed.',
             'proposals' => $proposals,
         ]);
     }

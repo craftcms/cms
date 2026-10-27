@@ -44,7 +44,8 @@ readonly class Proposals
      * @param  int  $id  The ID of an element in the context, or nested in one.
      * @param  array<string, mixed>  $attributes
      * @param  array<string, mixed>  $fields
-     * @return list<Proposal>
+     * @return array{proposals: list<Proposal>, notInEditor: list<string>} The changes, and the attributes and fields
+     *                                                                     that aren’t in the element’s editor, which the user couldn’t apply.
      *
      * @throws ToolCallException if the element can’t be changed, or the values aren’t valid.
      */
@@ -66,7 +67,7 @@ readonly class Proposals
      * @param  list<string>  $path  The path of the element’s fields in its editor’s form.
      * @param  array<string, mixed>  $attributes
      * @param  array<string, mixed>  $fields
-     * @return list<Proposal>
+     * @return array{proposals: list<Proposal>, notInEditor: list<string>}
      */
     private function changes(ElementContext $context, ElementInterface $element, array $path, array $attributes, array $fields): array
     {
@@ -78,8 +79,18 @@ readonly class Proposals
         $proposed = $this->compile($element, $copy, $namespace);
 
         if (! $current || ! $proposed) {
-            return [];
+            return ['proposals' => [], 'notInEditor' => [...array_keys($attributes), ...array_keys($fields)]];
         }
+
+        // What the editor has controls for, by their paths below the element’s own.
+        $controls = array_map(
+            static fn (NodePayload $node): array => array_slice($node->control->path ?? [], count($namespace)),
+            $this->fieldNodes($current->nodes),
+        );
+        $notInEditor = [
+            ...array_filter(array_keys($attributes), static fn (string $attribute): bool => ! array_any($controls, static fn (array $control): bool => ($control[0] ?? null) === $attribute)),
+            ...array_filter(array_keys($fields), static fn (string $handle): bool => ! array_any($controls, static fn (array $control): bool => $control[0] === 'fields' && ($control[1] ?? null) === $handle)),
+        ];
 
         // Unique to these proposals, so their previews’ fields don’t share IDs with others in the conversation.
         $previewNamespace = 'aiAssistant'.Str::random(8);
@@ -136,7 +147,7 @@ readonly class Proposals
             );
         }
 
-        return $proposals;
+        return ['proposals' => $proposals, 'notInEditor' => array_values($notInEditor)];
     }
 
     /**
