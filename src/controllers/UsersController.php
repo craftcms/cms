@@ -1604,6 +1604,7 @@ JS);
         $newEmail = trim($this->request->getBodyParam('email') ?? '') ?: null;
 
         $isPublicRegistration = false;
+        $isInactiveUserRegistration = false;
 
         // Are we editing an existing user?
         if ($userId) {
@@ -1640,21 +1641,19 @@ JS);
 
                 $isPublicRegistration = true;
 
-                // See if there's an inactive user with the same email
+                // See if there's an inactive (and not suspended) user with the same email
                 if ($newEmail) {
                     $user = User::find()
                         ->email(Db::escapeParam($newEmail))
                         ->status(User::STATUS_INACTIVE)
+                        ->andWhere(['users.suspended' => false])
                         ->one();
 
                     if ($user) {
+                        $isInactiveUserRegistration = true;
+
                         // ignore their previous admin status, if they had it
                         $user->admin = false;
-
-                        // clear out any existing permissions they had, if they had any
-                        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
-                            Craft::$app->getUserPermissions()->saveUserPermissions($user->id, []);
-                        }
                     }
                 }
             }
@@ -1801,6 +1800,11 @@ JS);
             $user->setScenario(User::SCENARIO_REGISTRATION);
         }
 
+        // Don't expose an existing inactive user's data in the response
+        $responseUser = $isInactiveUserRegistration
+            ? $this->_publicRegistrationResponseModel($newEmail, $fieldsLocation)
+            : $user;
+
         // Manually validate the user so we can pass $clearErrors=false
         $success = $user->validate(null, false) && Craft::$app->getElements()->saveElement($user, false);
 
@@ -1819,8 +1823,12 @@ JS);
                 $user->clearErrors('unverifiedEmail');
             }
 
+            if ($responseUser !== $user) {
+                $responseUser->addErrors($user->getErrors());
+            }
+
             return $this->asModelFailure(
-                $user,
+                $responseUser,
                 StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => User::lowerDisplayName(),
                 ])),
@@ -1846,6 +1854,11 @@ JS);
         $this->_processUserPhoto($user);
 
         if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+            // If an existing inactive user was just registered, clear out any permissions they had
+            if ($isInactiveUserRegistration) {
+                Craft::$app->getUserPermissions()->saveUserPermissions($user->id, []);
+            }
+
             // If this is public registration, assign the user to the default user group
             if ($isPublicRegistration) {
                 // Assign them to the default user group
@@ -1881,7 +1894,7 @@ JS);
 
         if ($this->request->getAcceptsJson()) {
             return $this->asModelSuccess(
-                $user,
+                $responseUser,
                 Craft::t('app', '{type} saved.', ['type' => User::displayName()]),
                 $userVariable,
                 array_filter([
@@ -2800,6 +2813,24 @@ JS);
                 throw $e;
             }
         }
+    }
+
+    /**
+     * Returns a user model for a public registration response, populated solely from the submitted values.
+     *
+     * @param string|null $email
+     * @param string $fieldsLocation
+     * @return User
+     */
+    private function _publicRegistrationResponseModel(?string $email, string $fieldsLocation): User
+    {
+        $user = new User(['email' => $email]);
+        $user->username = Craft::$app->getConfig()->getGeneral()->useEmailAsUsername
+            ? $email
+            : $this->request->getBodyParam('username', $email);
+        $this->populateNameAttributes($user);
+        $user->setFieldValuesFromRequest($fieldsLocation);
+        return $user;
     }
 
     /**
