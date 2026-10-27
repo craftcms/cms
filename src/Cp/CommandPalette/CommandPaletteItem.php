@@ -111,7 +111,7 @@ class CommandPaletteItem extends Component
      *
      * The palette knows the `ui` type – a server-built form, fetched from
      * `modalUrl` and submitted to `actionUrl` – and plugins can register more
-     * with `Craft.commandPalette.registerView()`.
+     * with `CommandPalette.registerView()` from `@craftcms/cp`.
      *
      * @var array<string, mixed>|null
      */

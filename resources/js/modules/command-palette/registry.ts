@@ -93,7 +93,7 @@ export interface CommandPaletteRegistration {
  * each time the palette opens, so it can read the page's current state.
  *
  * ```js
- * const {unregister} = Craft.commandPalette.registerActions(() => [...]);
+ * const {unregister} = CommandPalette.registerActions(() => [...]);
  * ```
  */
 export function registerActions(
@@ -144,3 +144,16 @@ export function viewComponent(
 ): CommandPaletteViewComponent | undefined {
   return views.get(type);
 }
+
+/**
+ * The palette's API for plugins, published as `CommandPalette` from
+ * `@craftcms/cp`. Server-side search providers, pages and actions are
+ * registered in PHP instead.
+ */
+export const CommandPalette = {
+  open: openCommandPalette,
+  close: closeCommandPalette,
+  registerProvider,
+  registerActions,
+  registerView,
+};

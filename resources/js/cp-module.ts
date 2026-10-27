@@ -47,6 +47,20 @@ export type {ActionItem, ActionItemLink} from './common/types';
 export {useAppLayout} from './common/composables/useAppLayout';
 
 export {
+  CommandPalette,
+  type CommandPaletteRegistration,
+} from './modules/command-palette/registry';
+
+export type {
+  CommandPaletteItem,
+  CommandPaletteProvider,
+  CommandPaletteView,
+  CommandPaletteViewComponent,
+  CommandPaletteViewProps,
+  CommandPaletteViewResult,
+} from './modules/command-palette/types';
+
+export {
   useInertiaReorder,
   type InertiaReorderOptions,
 } from './common/composables/useInertiaReorder';
