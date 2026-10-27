@@ -577,7 +577,7 @@
     const tool = mcpToolName(part.name);
 
     if ((part.approval?.approved ?? decisions.value[part.id]) === false) {
-      return t('Rejected {tool}', {tool});
+      return t('Denied {tool}', {tool});
     }
 
     if (part.output !== undefined) {
@@ -596,6 +596,37 @@
     }
 
     return own ? own.running() : t('Using {tool}…', {tool});
+  }
+
+  /**
+   * An approval request the user answered, which stays in the conversation at
+   * its tool call, with their answer. `null` for calls that didn’t need
+   * approval, and for those still waiting, which show at the end instead.
+   */
+  function answeredApproval(part: {
+    id: string;
+    name: string;
+    arguments?: string;
+    approval?: {approved?: boolean};
+  }): {approval: AssistantApproval; approved: boolean} | null {
+    const approved = part.approval?.approved ?? decisions.value[part.id];
+
+    if (
+      approved === undefined ||
+      approvals.value.some((approval) => approval.id === part.id)
+    ) {
+      return null;
+    }
+
+    return {
+      approval: {
+        id: part.id,
+        tool: mcpToolName(part.name),
+        reason: null,
+        input: resultOf(part.arguments ?? '{}') ?? {},
+      },
+      approved,
+    };
   }
 
   /** A tool call’s result, which tools return as JSON. */
@@ -790,12 +821,24 @@
             v-else
             class="assistant-chat__message assistant-chat__message--assistant assistant-chat__message--activity"
           >
-            <span class="assistant-chat__icon">
-              <craft-icon :name="toolIcon(entry.part.name)"></craft-icon>
-            </span>
-            <p class="assistant-chat__activity">
-              {{ toolActivity(entry.part) }}
-            </p>
+            <!-- An answered approval’s card says what the call was, and the answer. -->
+            <template v-if="!answeredApproval(entry.part)">
+              <span class="assistant-chat__icon">
+                <craft-icon :name="toolIcon(entry.part.name)"></craft-icon>
+              </span>
+              <p class="assistant-chat__activity">
+                {{ toolActivity(entry.part) }}
+              </p>
+            </template>
+            <AssistantApprovals
+              v-if="answeredApproval(entry.part)"
+              class="assistant-chat__cards"
+              :approvals="[answeredApproval(entry.part)!.approval]"
+              :decisions="{
+                [entry.part.id]: answeredApproval(entry.part)!.approved,
+              }"
+              :sending="false"
+            />
             <AssistantProposals
               v-if="
                 entry.part.name === 'propose_changes' &&

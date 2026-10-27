@@ -11,6 +11,7 @@
   import '@craftcms/ui/components/text-diff/text-diff';
   import {computed, nextTick, shallowReactive, useId} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';
+  import AssistantCard from './AssistantCard.vue';
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
   import {
@@ -121,59 +122,23 @@
 
 <template>
   <div class="assistant-proposals">
-    <article
+    <AssistantCard
       v-for="(proposal, index) in proposals"
       :key="proposal.key"
-      :aria-labelledby="`${idPrefix}-${index}`"
+      :heading-id="`${idPrefix}-${index}`"
+      :label="`${proposal.element} › ${proposal.label}`"
+      :expanded="isExpanded(proposal)"
+      @update:expanded="onToggle(proposal, $event)"
     >
-      <craft-card padding="md" :collapsed="!isExpanded(proposal)">
-        <h3
-          :id="`${idPrefix}-${index}`"
-          slot="label"
-          class="assistant-proposals__label"
-        >
-          <craft-disclosure
-            appearance="plain"
-            :state="isExpanded(proposal) ? 'expanded' : 'collapsed'"
-            @craft-show="onToggle(proposal, true)"
-            @craft-hide="onToggle(proposal, false)"
-          >
-            <button
-              :id="`${idPrefix}-${index}-toggle`"
-              type="button"
-              class="assistant-proposals__toggle"
-              :aria-controls="`${idPrefix}-${index}-body`"
-            >
-              <span
-                class="assistant-proposals__chevron"
-                :class="{
-                  'assistant-proposals__chevron--collapsed':
-                    !isExpanded(proposal),
-                }"
-              >
-                <craft-icon
-                  :name="
-                    isExpanded(proposal) ? 'chevron-down' : 'chevron-right'
-                  "
-                ></craft-icon>
-              </span>
-              {{ proposal.element }} › {{ proposal.label }}
-            </button>
-          </craft-disclosure>
-        </h3>
-        <craft-badge
-          v-if="isApplied(proposal)"
-          slot="badge"
-          fill="success"
-          size="small"
-        >
+      <template v-if="isApplied(proposal)" #badge>
+        <craft-badge fill="success" size="small">
           <craft-icon slot="prefix" name="check"></craft-icon>
           {{ t('Applied') }}
         </craft-badge>
+      </template>
+      <template v-else-if="assistantEditorFor(proposal)" #actions>
         <craft-button
-          v-else-if="assistantEditorFor(proposal)"
           :id="`${idPrefix}-${index}-apply`"
-          slot="actions"
           type="button"
           variant="primary"
           size="small"
@@ -182,50 +147,43 @@
         >
           {{ t('Apply') }}
         </craft-button>
-        <div
-          :id="`${idPrefix}-${index}-body`"
-          class="assistant-proposals__body"
-        >
-          <craft-text-diff
-            v-if="proposal.diff"
-            :current="proposal.diff.current"
-            :proposed="proposal.diff.proposed"
-            :label="proposal.label"
-            :collapse="true"
-          ></craft-text-diff>
-          <div
-            v-else-if="proposal.preview"
-            class="assistant-proposals__preview"
-          >
-            <div class="min-w-0">
-              <h4 class="assistant-proposals__preview-heading">
-                {{ t('Current') }}
-                <span class="sr-only">{{ proposal.label }}</span>
-              </h4>
-              <UiRenderer :payload="proposal.preview.current" />
-            </div>
-            <div class="min-w-0">
-              <h4 class="assistant-proposals__preview-heading">
-                {{ t('Proposed') }}
-                <span class="sr-only">{{ proposal.label }}</span>
-              </h4>
-              <UiRenderer :payload="proposal.preview.proposed" />
-            </div>
-          </div>
-          <p
-            v-if="!isApplied(proposal) && !assistantEditorFor(proposal)"
-            class="assistant-proposals__note"
-          >
-            <CpLink v-if="proposal.cpEditUrl" :href="proposal.cpEditUrl" bare>
-              {{ openLabel(proposal) }}
-            </CpLink>
-            <template v-else>
-              {{ openLabel(proposal) }}
-            </template>
-          </p>
+      </template>
+
+      <craft-text-diff
+        v-if="proposal.diff"
+        :current="proposal.diff.current"
+        :proposed="proposal.diff.proposed"
+        :label="proposal.label"
+        :collapse="true"
+      ></craft-text-diff>
+      <div v-else-if="proposal.preview" class="assistant-proposals__preview">
+        <div class="min-w-0">
+          <h4 class="assistant-proposals__preview-heading">
+            {{ t('Current') }}
+            <span class="sr-only">{{ proposal.label }}</span>
+          </h4>
+          <UiRenderer :payload="proposal.preview.current" />
         </div>
-      </craft-card>
-    </article>
+        <div class="min-w-0">
+          <h4 class="assistant-proposals__preview-heading">
+            {{ t('Proposed') }}
+            <span class="sr-only">{{ proposal.label }}</span>
+          </h4>
+          <UiRenderer :payload="proposal.preview.proposed" />
+        </div>
+      </div>
+      <p
+        v-if="!isApplied(proposal) && !assistantEditorFor(proposal)"
+        class="assistant-proposals__note"
+      >
+        <CpLink v-if="proposal.cpEditUrl" :href="proposal.cpEditUrl" bare>
+          {{ openLabel(proposal) }}
+        </CpLink>
+        <template v-else>
+          {{ openLabel(proposal) }}
+        </template>
+      </p>
+    </AssistantCard>
 
     <div v-if="unapplied.length > 1">
       <craft-button
@@ -243,53 +201,6 @@
 <style scoped>
   .assistant-proposals {
     container: assistant-proposals / inline-size;
-    display: flex;
-    flex-direction: column;
-    gap: var(--c-spacing-sm);
-  }
-
-  .assistant-proposals__label {
-    font-size: var(--c-text-sm);
-    font-weight: 600;
-    overflow-wrap: anywhere;
-  }
-
-  /* At least 24px tall, with its first line in the middle of the 24px. */
-  .assistant-proposals__toggle {
-    display: flex;
-    align-items: start;
-    gap: var(--c-spacing-xs);
-    padding-block: max(0px, (24px - 1lh) / 2);
-    padding-inline: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: start;
-    cursor: pointer;
-  }
-
-  .assistant-proposals__toggle:focus-visible {
-    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
-      var(--c-color-focus-outline);
-    outline-offset: var(--c-focus-outline-offset);
-  }
-
-  /* As tall as the label's first line, with the icon in its middle. The
-    icon's own font size is smaller, so it can't be lined up by itself. */
-  .assistant-proposals__chevron {
-    display: flex;
-    flex: none;
-    align-items: center;
-    block-size: 1lh;
-  }
-
-  /* Collapsed, it points toward the end of the line. */
-  .assistant-proposals__chevron--collapsed:dir(rtl) {
-    transform: scaleX(-1);
-  }
-
-  .assistant-proposals__body {
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-sm);

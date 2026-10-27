@@ -295,7 +295,7 @@ describe('AssistantChat', () => {
 
     expect(chat.resumeInterruptsUnsafe).not.toHaveBeenCalled();
 
-    button('Reject').click();
+    button('Deny').click();
     await flush();
 
     expect(chat.resumeInterruptsUnsafe).toHaveBeenCalledWith([
@@ -617,6 +617,84 @@ describe('AssistantChat', () => {
     expect(
       container.querySelector('.assistant-chat__markdown a')?.textContent
     ).toBe('Other');
+  });
+
+  it('keeps the approval requests the user answered in the conversation, with their answers', async () => {
+    chat.messages.value = [
+      {
+        id: 'm1',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'tool-call',
+            id: 'call_1',
+            name: 'elements_update',
+            arguments: '{"id":1}',
+            state: 'complete',
+            output: '{}',
+            approval: {id: 'call_1', needsApproval: true, approved: true},
+          },
+          {
+            type: 'tool-call',
+            id: 'call_2',
+            name: 'elements_delete',
+            arguments: '{"id":2}',
+            state: 'complete',
+            output: 'Denied',
+            approval: {id: 'call_2', needsApproval: true, approved: false},
+          },
+        ],
+      },
+    ];
+    await flush();
+
+    const answers = [
+      ...container.querySelectorAll('.assistant-approvals__decision'),
+    ].map((decision) => decision.textContent?.trim());
+
+    expect(container.textContent).toContain(
+      'Allow the assistant to use elements.update?'
+    );
+    expect(container.textContent).toContain(
+      'Allow the assistant to use elements.delete?'
+    );
+    expect(answers).toEqual(['Approved', 'Denied']);
+    expect(container.textContent).not.toContain('Used elements.update');
+    expect(container.textContent).not.toContain('Denied elements.delete');
+    expect(button('Approve')).toBeUndefined();
+  });
+
+  it('keeps an approval request in the conversation once it’s answered', async () => {
+    chat.resumeInterruptsUnsafe.mockResolvedValue(true);
+    chat.messages.value = [
+      {
+        id: 'm1',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'tool-call',
+            id: 'call_1',
+            name: 'elements_update',
+            arguments: '{"id":1}',
+            state: 'approval-requested',
+          },
+        ],
+      },
+    ];
+    chat.interrupts.value = [approval('call_1')];
+    await flush();
+
+    button('Approve').click();
+    await flush();
+    chat.interrupts.value = [];
+    await flush();
+
+    expect(container.textContent).toContain(
+      'Allow the assistant to use elements.update?'
+    );
+    expect(
+      container.querySelector('.assistant-approvals__decision')?.textContent
+    ).toContain('Approved');
   });
 
   it('says when a tool call never finished, rather than that it’s still running', async () => {
