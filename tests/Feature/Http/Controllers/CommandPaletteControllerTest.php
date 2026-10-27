@@ -16,6 +16,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Releases;
@@ -23,12 +24,14 @@ use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
@@ -447,13 +450,6 @@ it('searches the current Craft CMS docs on craftcms.com, linking out to what it 
                 'summaryPlain' => 'Matrix fields   manage [nested entries](/docs/entries).',
             ],
             [
-                'title' => 'Matrix Fields',
-                'url' => sprintf('https://craftcms.com/docs/%d.x/matrix', (int) Cms::VERSION - 1),
-                'type' => 'Craft CMS (older)',
-            ],
-            ['title' => 'Matrix', 'url' => 'https://craftcms.com/docs/commerce/5.x/matrix', 'type' => 'Craft Commerce'],
-            ['title' => 'Matrix', 'url' => 'https://craftcms.com/docs/getting-started-tutorial/matrix', 'type' => 'Tutorial'],
-            [
                 'title' => '`craft.sections` & <b>more</b>',
                 'url' => 'https://craftcms.com/knowledge-base/craft-sections',
                 'type' => 'Knowledge Base Article',
@@ -487,9 +483,48 @@ it('searches the current Craft CMS docs on craftcms.com, linking out to what it 
         ])
         ->and($results[2]['description'])->toBe('Glossary');
 
-    Http::assertSentCount(2);
-    Http::assertSent(fn ($request) => $request->url() === DocsSearch::ENDPOINT.'?query=matrix');
-    Http::assertSent(fn ($request) => $request->url() === DocsSearch::ENDPOINT.'?query=matrix&scopes='.urlencode(sprintf('docs/%d.x', (int) Cms::VERSION)));
+    Http::assertSentCount(1);
+    Http::assertSent(fn ($request) => $request->url() === DocsSearch::ENDPOINT.'?'.http_build_query([
+        'query' => 'matrix',
+        'product' => 'cms',
+        'version' => (int) Cms::VERSION,
+        'includeHelp' => 1,
+    ]));
+});
+
+it('searches the installed Commerce version’s docs too, taking results from each in turn', function () {
+    $plugins = app(Plugins::class);
+    new ReflectionProperty($plugins, 'plugins')->setValue($plugins, [
+        'commerce' => TestPlugin::create(['handle' => 'commerce', 'name' => 'Commerce', 'version' => '5.3.1']),
+    ]);
+    new ReflectionProperty($plugins, 'pluginsLoaded')->setValue($plugins, true);
+
+    $cms = fn (string $page) => ['id' => crc32($page), 'title' => $page, 'url' => "https://craftcms.com/docs/6.x/$page"];
+    $commerce = fn (string $page) => ['id' => crc32($page), 'title' => $page, 'url' => "https://craftcms.com/docs/commerce/5.x/$page"];
+    $commerceFails = false;
+
+    Http::fake(function ($request) use ($cms, $commerce, &$commerceFails) {
+        if ($request['product'] === 'cms') {
+            return Http::response([$cms('a'), $cms('b'), $cms('c'), $cms('d')]);
+        }
+
+        return $commerceFails
+            ? Http::response(['message' => '`version` must be numeric.'], 400)
+            : Http::response([$commerce('x'), $cms('b'), $commerce('y')]);
+    });
+
+    expect(getJson(route('craft.cp.command-palette.docs', ['query' => 'price']))->assertOk()->json('results.*.label'))
+        ->toBe(['a', 'x', 'b', 'c', 'y', 'd']);
+
+    Http::assertSent(fn ($request) => $request->url() === DocsSearch::ENDPOINT.'?query=price&product=commerce&version=5');
+
+    $commerceFails = true;
+    Log::spy();
+
+    expect(getJson(route('craft.cp.command-palette.docs', ['query' => 'tax']))->assertOk()->json('results.*.label'))
+        ->toBe(['a', 'b', 'c', 'd']);
+
+    Log::shouldHaveReceived('warning')->withArgs(fn (string $message) => str_contains($message, 'commerce'))->once();
 });
 
 it('says when the Craft CMS docs can’t be searched', function () {

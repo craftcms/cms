@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp\CommandPalette;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Markdown;
+use CraftCms\Cms\Support\Facades\Plugins;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\Client\Pool;
@@ -20,8 +21,8 @@ use function CraftCms\Cms\t;
 /**
  * Searches the Craft CMS documentation, Knowledge Base, and glossary on
  * craftcms.com, for the palette's “Search Craft CMS documentation” view.
- * Docs other than this version of Craft's, such as older versions' or
- * Commerce's, are left out.
+ * Only this major version of Craft's docs are searched, along with the
+ * installed major version of Commerce's, if Commerce is installed.
  *
  * What's typed there is sent to craftcms.com, so it's only searched from that
  * view, never as part of the palette's own search.
@@ -36,20 +37,18 @@ readonly class DocsSearch
      * The results for the query, best first, or null if craftcms.com couldn't
      * be searched.
      *
-     * Most of what an unscoped search returns is from older versions' docs,
-     * which are left out, so this version's docs are searched on their own
-     * too, and anything only that turns up follows the rest.
-     *
      * @return list<CommandPaletteItem>|null
      */
     public function search(string $query): ?array
     {
+        $versions = array_filter([
+            'cms' => (int) Cms::VERSION,
+            'commerce' => (int) Plugins::getPlugin('commerce')?->version,
+        ]);
+        $cacheKey = 'commandPalette.docs.'.md5(mb_strtolower($query).json_encode($versions));
+
         try {
-            $results = Cache::remember(
-                'commandPalette.docs.'.md5(mb_strtolower($query)),
-                now()->addHour(),
-                fn (): array => $this->fetch($query),
-            );
+            $results = Cache::get($cacheKey) ?? $this->fetch($query, $versions, $cacheKey);
         } catch (Throwable $e) {
             Log::warning('Couldn’t search the Craft CMS documentation: '.$e->getMessage(), [__METHOD__]);
 
@@ -63,7 +62,6 @@ readonly class DocsSearch
                 is_array($result)
                 && is_string($result['title'] ?? null)
                 && $this->isWebUrl($result['url'] ?? null)
-                && ! $this->isFromOtherDocs($result['url'])
             ) {
                 $items[$result['url']] ??= $this->item($result);
             }
@@ -73,32 +71,61 @@ readonly class DocsSearch
     }
 
     /**
-     * Everything the search turns up, then what it turns up in this version's
-     * docs alone.
+     * Searches each product's docs for its installed major version: Craft's,
+     * with the Knowledge Base and glossary, and Commerce's if it's installed.
      *
+     * The API ranks each product's results but doesn't score them, so they
+     * can't be sorted against each other, and are taken in turns instead.
+     * If Commerce's docs can't be searched, Craft's results are still
+     * returned, but not cached.
+     *
+     * @param  array<string, int>  $versions  Major versions, by product
      * @return array<mixed>
      */
-    private function fetch(string $query): array
+    private function fetch(string $query, array $versions, string $cacheKey): array
     {
-        $request = fn (Pool $pool, array $params) => $pool
-            ->acceptJson()
-            ->connectTimeout(3)
-            ->timeout(5)
-            ->get(self::ENDPOINT, ['query' => $query, ...$params]);
+        $responses = Http::pool(fn (Pool $pool) => array_map(
+            fn (string $product, int $version) => $pool
+                ->as($product)
+                ->acceptJson()
+                ->connectTimeout(3)
+                ->timeout(5)
+                ->get(self::ENDPOINT, array_filter([
+                    'query' => $query,
+                    'product' => $product,
+                    'version' => $version,
+                    'includeHelp' => $product === 'cms' ? 1 : null,
+                ])),
+            array_keys($versions),
+            $versions,
+        ));
 
-        $responses = Http::pool(fn (Pool $pool) => [
-            $request($pool, []),
-            $request($pool, ['scopes' => sprintf('docs/%d.x', (int) Cms::VERSION)]),
-        ]);
+        $lists = [];
+        $complete = true;
 
-        $results = [];
+        foreach ($responses as $product => $response) {
+            try {
+                if (! $response instanceof Response) {
+                    throw $response;
+                }
 
-        foreach ($responses as $response) {
-            if (! $response instanceof Response) {
-                throw $response;
+                $lists[] = array_values((array) $response->throw()->json());
+            } catch (Throwable $e) {
+                if ($product === 'cms') {
+                    throw $e;
+                }
+
+                Log::warning("Couldn’t search the $product documentation: ".$e->getMessage(), [__METHOD__]);
+                $complete = false;
             }
+        }
 
-            array_push($results, ...(array) $response->throw()->json());
+        $results = count($lists) > 1
+            ? array_values(array_filter(array_merge(...array_map(null, ...$lists))))
+            : $lists[0];
+
+        if ($complete) {
+            Cache::put($cacheKey, $results, now()->addHour());
         }
 
         return $results;
@@ -171,19 +198,6 @@ readonly class DocsSearch
             'Knowledge Base Article' => t('Knowledge Base'),
             default => is_string($type) && $type !== '' ? $type : null,
         };
-    }
-
-    /**
-     * Whether a result is from docs other than this version of Craft's, such
-     * as Craft 5's or Commerce's. The Knowledge Base and the glossary aren't
-     * docs, and apply to any version.
-     */
-    private function isFromOtherDocs(string $url): bool
-    {
-        $path = (string) parse_url($url, PHP_URL_PATH);
-
-        return str_starts_with($path, '/docs/')
-            && ! str_starts_with($path, sprintf('/docs/%d.x/', (int) Cms::VERSION));
     }
 
     /** Whether a URL from craftcms.com is safe to link to. */
