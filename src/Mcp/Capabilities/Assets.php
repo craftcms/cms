@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Capabilities;
 
+use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
 use CraftCms\Cms\Asset\Assets as AssetService;
 use CraftCms\Cms\Asset\AssetUploadHandler;
 use CraftCms\Cms\Asset\Data\AssetIngest;
@@ -89,6 +90,7 @@ readonly class Assets
         private McpAssetUploads $mcpAssetUploads,
         private Request $request,
         private CustomFieldSchema $customFieldSchema,
+        private ImageAnalyzer $imageAnalyzer,
     ) {}
 
     /**
@@ -133,6 +135,51 @@ readonly class Assets
             'mimeType' => $result->mimeType,
             'width' => $result->width,
             'height' => $result->height,
+        ];
+    }
+
+    /**
+     * @param  list<int>  $ids  IDs of the images to analyze.
+     * @param  list<string>|null  $tasks  Handles of the image analysis tasks to run. Defaults to every one that’s set up.
+     * @return array{queued: list<int>, skipped: list<int>}
+     */
+    #[McpTool(
+        name: 'assets.analyze',
+        description: 'Queues images to be analyzed by the image analysis AI tasks an administrator has set up, such as craft:altText for alt text, craft:title for titles, craft:focalPoint, craft:tagImage, and craft:imageType. It only fills in what each image is missing, without overwriting anything, so prefer it to writing alt text yourself when craft:altText is set up. Images are skipped when they aren’t images, can’t be saved by the user, or have nothing for the tasks to fill in. Results are saved by a queue job, so check the images later.',
+    )]
+    public function analyze(
+        #[Schema(items: ['type' => 'integer', 'minimum' => 1], minItems: 1, maxItems: 100, uniqueItems: true)]
+        array $ids,
+        #[Schema(items: ['type' => 'string'], minItems: 1, uniqueItems: true)]
+        ?array $tasks = null,
+    ): array {
+        $actor = $this->actor->user();
+
+        if (! $this->imageAnalyzer->available()) {
+            throw new ToolCallException('No image analysis AI tasks are set up. An administrator can set them up in Settings → AI Connections.');
+        }
+
+        $unknown = $tasks === null ? [] : array_values(array_diff($tasks, array_keys($this->imageAnalyzer->tasks())));
+
+        if ($unknown !== []) {
+            throw new ToolCallException(sprintf(
+                'Unknown image analysis tasks: %s. Image analysis tasks: %s.',
+                implode(', ', $unknown),
+                implode(', ', array_keys($this->imageAnalyzer->tasks())),
+            ));
+        }
+
+        $queued = [];
+
+        foreach (Asset::find()->id($ids)->status(null)->all() as $asset) {
+            if (Gate::forUser($actor)->allows('save', $asset) && $this->imageAnalyzer->queue($asset, $tasks)) {
+                $queued[] = $asset->id;
+            }
+        }
+
+        return [
+            'queued' => $queued,
+            'skipped' => array_values(array_diff($ids, $queued)),
         ];
     }
 

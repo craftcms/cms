@@ -5,10 +5,31 @@
  * file to find them.
  */
 
+import {PhpRandomizer} from './php-randomizer';
+
 /** Color data sampled from an image, as `CraftCms\Cms\Image\Data\ImageColors` holds it. */
 export interface ImageColors {
   dominant: string | null;
   grid: string[][];
+  /** The image's main colors, most dominant first. */
+  palette: string[];
+  /**
+   * How light the darker and lighter parts of each region are, as their 10th
+   * and 90th percentile WCAG relative luminance, or `null` for regions with
+   * no mostly opaque pixels.
+   */
+  luminance: ([number, number] | null)[][];
+  /**
+   * How much of the image each palette color covers, as a share of
+   * everything the palette covers, in the same order as `palette`.
+   */
+  weights: number[];
+}
+
+/** A cluster of the image's colors, and how many of its pixels are in it. */
+interface Cluster {
+  centroid: Oklab;
+  size: number;
 }
 
 export interface Pixels {
@@ -71,33 +92,48 @@ export async function readImageColors(file: File): Promise<ImageColors | null> {
 }
 
 /**
- * Completion data for asset uploads: the file's colors, so the server can
- * store them without sampling the file itself.
- */
-export async function imageColorsCompletionData(
-  file: File
-): Promise<{colors: ImageColors} | null> {
-  const colors = await readImageColors(file);
-
-  return colors ? {colors} : null;
-}
-
-/**
  * Samples an image's dominant color and the average colors of its regions:
  * 4×3 regions for landscape and square images, and 3×4 for portrait ones.
  */
 export function sampleImageColors(pixels: Pixels): ImageColors {
+  const candidates = dominantCandidates(pixels);
+  const dominant =
+    candidates.find(
+      ({centroid: [lightness]}) =>
+        lightness >= BLACK_LIGHTNESS && lightness <= WHITE_LIGHTNESS
+    ) ?? candidates[0];
+  const toHex = (color: Oklab) => hex(...fromOklab(color), 255);
+  // How many of the sampled pixels each color stands for, combining colors
+  // that come out as the same hex code, as the server does
+  const counts = new Map<string, number>();
+
+  for (const {centroid, size} of candidates) {
+    const color = toHex(centroid);
+    counts.set(color, (counts.get(color) ?? 0) + size);
+  }
+
+  const total = [...counts.values()].reduce((sum, count) => sum + count, 0);
+
   return {
-    dominant: dominantColor(pixels),
+    dominant: dominant ? toHex(dominant.centroid) : null,
     grid: colorGrid(pixels),
+    palette: [...counts.keys()],
+    luminance: luminanceGrid(pixels),
+    weights: total
+      ? [...counts.values()].map((count) => round(count / total, 3))
+      : [],
   };
 }
 
-function colorGrid({data, width, height}: Pixels): string[][] {
-  const [columns, rows] =
-    width >= height
-      ? [GRID_LONG_SIDE, GRID_SHORT_SIDE]
-      : [GRID_SHORT_SIDE, GRID_LONG_SIDE];
+function gridSize({width, height}: Pixels): [number, number] {
+  return width >= height
+    ? [GRID_LONG_SIDE, GRID_SHORT_SIDE]
+    : [GRID_SHORT_SIDE, GRID_LONG_SIDE];
+}
+
+function colorGrid(pixels: Pixels): string[][] {
+  const {data, width, height} = pixels;
+  const [columns, rows] = gridSize(pixels);
   const grid: string[][] = [];
 
   for (let row = 0; row < rows; row++) {
@@ -151,11 +187,88 @@ function colorGrid({data, width, height}: Pixels): string[][] {
 }
 
 /**
- * Clusters the image's colors with k-means in Oklab, as Intervention Image's
- * dominant palette analysis does, then passes over near-black and near-white
- * clusters in favor of the most dominant other one, if there is one.
+ * Finds the 10th and 90th percentile relative luminance of each region's
+ * pixels. Each pixel counts toward the region its center is in, and mostly
+ * transparent pixels are left out.
  */
-function dominantColor({data}: Pixels): string | null {
+function luminanceGrid(pixels: Pixels): ([number, number] | null)[][] {
+  const {data, width, height} = pixels;
+  const [columns, rows] = gridSize(pixels);
+  const cells = Array.from({length: rows}, () =>
+    Array.from({length: columns}, (): number[] => [])
+  );
+
+  for (let index = 0; index < width * height; index++) {
+    if (data[index * 4 + 3]! / 255 < 0.5) {
+      continue;
+    }
+
+    const x = index % width;
+    const y = Math.floor(index / width);
+    const column = Math.min(
+      columns - 1,
+      Math.floor(((x + 0.5) * columns) / width)
+    );
+    const row = Math.min(rows - 1, Math.floor(((y + 0.5) * rows) / height));
+
+    cells[row]![column]!.push(
+      relativeLuminance(
+        data[index * 4]!,
+        data[index * 4 + 1]!,
+        data[index * 4 + 2]!
+      )
+    );
+  }
+
+  return cells.map((row) =>
+    row.map((values) => {
+      if (!values.length) {
+        return null;
+      }
+
+      values.sort((a, b) => a - b);
+
+      return [
+        round(percentile(values, 0.1), 3),
+        round(percentile(values, 0.9), 3),
+      ];
+    })
+  );
+}
+
+/** Returns a percentile of sorted values, interpolating between the two nearest ones. */
+function percentile(sorted: number[], fraction: number): number {
+  const position = (sorted.length - 1) * fraction;
+  const lower = Math.floor(position);
+  const upper = Math.min(sorted.length - 1, lower + 1);
+
+  return (
+    sorted[lower]! + (sorted[upper]! - sorted[lower]!) * (position - lower)
+  );
+}
+
+/** Returns the WCAG relative luminance of an sRGB color, from 0 (black) to 1 (white). */
+function relativeLuminance(red: number, green: number, blue: number): number {
+  return (
+    0.2126 * toLinear(red) + 0.7152 * toLinear(green) + 0.0722 * toLinear(blue)
+  );
+}
+
+/** Rounds half away from zero, as PHP's `round()` does. */
+function round(value: number, precision: number): number {
+  const factor = 10 ** precision;
+
+  return (Math.sign(value) * Math.round(Math.abs(value) * factor)) / factor;
+}
+
+/**
+ * Clusters the image's colors with k-means in Oklab, as Intervention Image's
+ * dominant palette analysis does, drawing the same seeded random numbers so
+ * both pick the same clusters, and returns the largest clusters. The
+ * dominant color passes over near-black and near-white ones in favor of the
+ * most dominant other one, if there is one.
+ */
+function dominantCandidates({data}: Pixels): Cluster[] {
   const points: Oklab[] = [];
 
   for (let index = 0; index < data.length; index += 4) {
@@ -164,19 +277,12 @@ function dominantColor({data}: Pixels): string | null {
     }
   }
 
-  const candidates = clusterColors(points).slice(0, DOMINANT_CANDIDATES);
-  const dominant =
-    candidates.find(
-      ([lightness]) =>
-        lightness >= BLACK_LIGHTNESS && lightness <= WHITE_LIGHTNESS
-    ) ?? candidates[0];
-
-  return dominant ? hex(...fromOklab(dominant), 255) : null;
+  return clusterColors(points).slice(0, DOMINANT_CANDIDATES);
 }
 
-/** Returns the centroids of the points' clusters, largest first. */
-function clusterColors(points: Oklab[]): Oklab[] {
-  const random = seededRandom(SEED);
+/** Returns the points' clusters, largest first. */
+function clusterColors(points: Oklab[]): Cluster[] {
+  const random = new PhpRandomizer(SEED);
   let centroids = initialCentroids(
     points,
     Math.min(DOMINANT_CANDIDATES, points.length),
@@ -192,7 +298,7 @@ function clusterColors(points: Oklab[]): Oklab[] {
       );
 
       if (!members.length) {
-        return points[Math.floor(random() * points.length)]!;
+        return points[random.getInt(0, points.length - 1)]!;
       }
 
       return [0, 1, 2].map(
@@ -222,21 +328,20 @@ function clusterColors(points: Oklab[]): Oklab[] {
       size: assignments.filter((assignment) => assignment === cluster).length,
     }))
     .filter(({size}) => size >= minSize)
-    .sort((a, b) => b.size - a.size)
-    .map(({centroid}) => centroid);
+    .sort((a, b) => b.size - a.size);
 }
 
 /** Picks well-spread starting centroids with k-means++. */
 function initialCentroids(
   points: Oklab[],
   count: number,
-  random: () => number
+  random: PhpRandomizer
 ): Oklab[] {
   if (!points.length) {
     return [];
   }
 
-  const centroids = [points[Math.floor(random() * points.length)]!];
+  const centroids = [points[random.getInt(0, points.length - 1)]!];
 
   while (centroids.length < count) {
     const distances = points.map((point) =>
@@ -248,7 +353,7 @@ function initialCentroids(
       break;
     }
 
-    const target = random() * total;
+    const target = random.getFloat(0, total);
     let cumulative = 0;
     let chosen = 0;
 
@@ -285,19 +390,6 @@ function nearest(point: Oklab, centroids: Oklab[]): number {
 
 function squaredDistance(a: Oklab, b: Oklab): number {
   return (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
-}
-
-/** A small seeded PRNG (mulberry32), so the same image always samples the same way. */
-function seededRandom(seed: number): () => number {
-  let state = seed;
-
-  return () => {
-    state = (state + 0x6d2b79f5) | 0;
-    let t = Math.imul(state ^ (state >>> 15), 1 | state);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 function toOklab(red: number, green: number, blue: number): Oklab {

@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Settings;
+use CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Cms;
@@ -22,6 +25,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\Passport;
 use Mcp\Exception\ToolCallException;
@@ -509,5 +513,37 @@ describe('file replacement', function (): void {
 
         expect(File::files(Path::temp()))->toEqual($temporaryFiles)
             ->and(Storage::disk('upload-destination')->get($this->asset->getPath()))->toBe('Original content');
+    });
+});
+
+describe('assets.analyze', function () {
+    beforeEach(function () {
+        Queue::fake();
+        $this->image = AssetModel::factory()->createElement(['volumeId' => $this->folder->volumeId, 'folderId' => $this->folder->id, 'kind' => 'image', 'filename' => 'photo.png']);
+        $this->document = AssetModel::factory()->createElement(['volumeId' => $this->folder->volumeId, 'folderId' => $this->folder->id, 'kind' => 'pdf', 'filename' => 'doc.pdf']);
+    });
+
+    $setUpAi = function (): void {
+        config(['ai.providers' => ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]]);
+        app()->instance(Settings::class, new Settings(['defaults' => ['text' => ['provider' => 'openai']]]));
+    };
+
+    it('queues the images that have something for the tasks to fill in', function () use ($setUpAi): void {
+        $setUpAi();
+
+        expect(app(Assets::class)->analyze([$this->image->id, $this->document->id], ['craft:altText']))
+            ->toBe(['queued' => [$this->image->id], 'skipped' => [$this->document->id]]);
+        Queue::assertPushed(AnalyzeImage::class, fn (AnalyzeImage $job): bool => $job->assetId === $this->image->id && $job->tasks === ['craft:altText']);
+    });
+
+    it('says when no image analysis tasks are set up, or a task isn’t one', function () use ($setUpAi): void {
+        expect(fn () => app(Assets::class)->analyze([$this->image->id]))
+            ->toThrow(ToolCallException::class, 'No image analysis AI tasks are set up.');
+
+        $setUpAi();
+
+        expect(fn () => app(Assets::class)->analyze([$this->image->id], ['seo:metaDescription']))
+            ->toThrow(ToolCallException::class, 'Unknown image analysis tasks: seo:metaDescription.');
+        Queue::assertNothingPushed();
     });
 });
