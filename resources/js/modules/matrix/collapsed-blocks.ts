@@ -24,9 +24,11 @@ type SiteId = number | string | null | undefined;
 function storageKey(siteId?: SiteId): string {
   // Same prefix `useStorage()` applies, spelled out here because this module is
   // used from plain classes as well as components.
-  const key = `Craft-${window.Craft?.systemUid ?? ''}.${STORAGE_KEY}`;
+  const prefix = `Craft-${window.Craft?.systemUid ?? ''}`;
 
-  return siteId == null || siteId === '' ? key : `${key}.${siteId}`;
+  return siteId == null || siteId === ''
+    ? `${prefix}.${STORAGE_KEY}`
+    : `${prefix}.${siteId}.${STORAGE_KEY}`;
 }
 
 /** The identity a block is remembered under, whoever minted it. */
