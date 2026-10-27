@@ -196,6 +196,9 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
   /** Fallback timeouts scheduled by {@link _afterTransition}, in case their transitionend event never fires. */
   _transitionTimeouts: Set<ReturnType<typeof setTimeout>> = new Set();
 
+  /** Stops sizing this to Live Preview's editor pane. See {@link open}. */
+  _stopFollowingPreview: (() => void) | null = null;
+
   // --- Shared panel stack (see `@/common/slideouts/panel-stack`) -----------
 
   /** The element the stack moves, reflows, and fires lifecycle events on. */
@@ -352,10 +355,14 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
         }
       });
       resizeObserver.observe(previewEditor);
-      const stop = getActivePreview()!.on('before-close', () => {
+      const stopListening = getActivePreview()!.on('before-close', () =>
+        this._stopFollowingPreview?.()
+      );
+      this._stopFollowingPreview = () => {
         resizeObserver.disconnect();
-        stop();
-      });
+        stopListening();
+        this._stopFollowingPreview = null;
+      };
     }
 
     this.isOpening = true;
@@ -423,6 +430,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     this.trigger('beforeClose');
     this.disable();
     this.isOpen = false;
+    this._stopFollowingPreview?.();
 
     this._cancelTransitionListeners();
 
