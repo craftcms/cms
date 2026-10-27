@@ -49,6 +49,11 @@ class Asset extends ElementArguments
                 'type' => Type::listOf(Type::string()),
                 'description' => 'Narrows the query results based on the assets’ file kinds.',
             ],
+            'orientation' => [
+                'name' => 'orientation',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'Narrows the query results based on whether the images are `landscape`, `portrait`, or `square`, by their width and height.',
+            ],
             'height' => [
                 'name' => 'height',
                 'type' => Type::listOf(Type::string()),

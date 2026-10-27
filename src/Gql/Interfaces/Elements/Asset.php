@@ -120,6 +120,11 @@ class Asset extends Element
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'The file kind.',
             ],
+            'orientation' => [
+                'name' => 'orientation',
+                'type' => Type::string(),
+                'description' => 'Whether the image is `landscape`, `portrait`, or `square`, or null if its dimensions aren’t known.',
+            ],
             'size' => [
                 'name' => 'size',
                 'type' => Type::string(),
