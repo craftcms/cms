@@ -63,7 +63,7 @@ class McpTools
         $tools = [];
 
         foreach ($this->references() as $name => $reference) {
-            $tools[] = new McpTool($this, $name, $reference->tool);
+            $tools[] = new McpTool($name, $reference->tool, fn (array $arguments): string => $this->call($name, $arguments));
         }
 
         return $tools;

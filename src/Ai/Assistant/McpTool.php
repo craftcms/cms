@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ai\Assistant;
 
+use Closure;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\JsonSchema as JsonSchemaFactory;
 use Illuminate\JsonSchema\Types\Type;
@@ -18,9 +19,10 @@ use Mcp\Schema\Tool as ToolDefinition;
 use function CraftCms\Cms\t;
 
 /**
- * One of Craft’s MCP tools, as a `laravel/ai` tool for the AI assistant.
+ * An MCP tool, as a `laravel/ai` tool for the AI assistant.
  *
- * Tools that can change anything only run once the user approves the call.
+ * Tools that can change anything only run once the user approves the call. Calls go to wherever the tool is, such as
+ * {@see McpTools} for Craft’s own tools.
  *
  * @internal
  *
@@ -31,12 +33,13 @@ class McpTool implements Approvable, Tool
     use InteractsWithApprovals;
 
     /**
-     * @param  string  $name  The tool’s name for providers, from {@see McpTools}.
+     * @param  string  $name  The tool’s name for providers, which only allow letters, numbers, underscores, and hyphens.
+     * @param  Closure(array<string, mixed>): string  $call  Calls the tool with its arguments, and returns its result as text for the model.
      */
     public function __construct(
-        private readonly McpTools $tools,
         private readonly string $name,
         private readonly ToolDefinition $definition,
+        private readonly Closure $call,
     ) {}
 
     public function name(): string
@@ -67,7 +70,7 @@ class McpTool implements Approvable, Tool
 
     public function handle(Request $request): string
     {
-        return $this->tools->call($this->name, $request->all());
+        return ($this->call)($request->all());
     }
 
     protected function needsApproval(Request $request): Approval|bool
