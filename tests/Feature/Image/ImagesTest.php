@@ -282,6 +282,25 @@ describe('colors', function () {
         expect(array_slice($this->service->colors($path)->palette, 0, 2))->toBe(['#c81e28', '#1e50c8']);
     });
 
+    it('clusters the same main colors as the browser', function () {
+        // The same image the browser sampler’s tests use, so the two stay in step
+        $image = imagecreatetruecolor(40, 30);
+
+        for ($y = 0; $y < 30; $y++) {
+            for ($x = 0; $x < 40; $x++) {
+                imagesetpixel($image, $x, $y, imagecolorallocate($image, ($x * 7 + $y * 13) % 256, ($x * $y) % 256, ($x + $y * 3) % 256));
+            }
+        }
+
+        imagepng($image, $path = $this->sandboxPath.'/fixture.png');
+        $colors = $this->service->colors($path);
+
+        expect([$colors->dominant, $colors->palette])->toBe([
+            '#4d2336',
+            ['#4d2336', '#ba373a', '#6ed64e', '#59814d', '#e38545'],
+        ]);
+    });
+
     it('averages each region of the image into the grid', function () {
         $path = colorsFixture($this->sandboxPath.'/split.png', [200, 30, 40], [100, 0, 199, 149, 30, 80, 200], width: 200, height: 150);
 

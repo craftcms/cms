@@ -108,6 +108,15 @@ describe('sampleImageColors', () => {
     expect(sampleImageColors(image).palette).toEqual(['#c81e28', '#1e50c8']);
   });
 
+  it('clusters the same main colors as the server', () => {
+    const {dominant, palette} = sampleImageColors(fixture());
+
+    expect({dominant, palette}).toEqual({
+      dominant: '#4d2336',
+      palette: ['#4d2336', '#ba373a', '#6ed64e', '#59814d', '#e38545'],
+    });
+  });
+
   it('averages each region of the image into the grid', () => {
     const split = pixels(100, 75, red, {
       x1: 50,
