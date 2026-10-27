@@ -298,7 +298,7 @@ it('preserves image dimensions through chunk assembly and asset processing', fun
         ->and($asset->getMimeType())->toBe('image/png');
 });
 
-describe('uploaded colors', function () {
+describe('what the uploader read from the file', function () {
     beforeEach(function () {
         Cms::config()->uploadChunkSize = 1048576;
 
@@ -316,15 +316,37 @@ describe('uploaded colors', function () {
 
     it('stores the colors the uploader sampled instead of sampling the image', function () {
         $colors = ['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5', '#123456', '#abcdef']], 'palette' => ['#3a6ea5', '#123456'], 'luminance' => [[[0.1, 0.2], null, [0.0, 1.0]]]];
-        $images = Mockery::mock(ImagesFacade::getFacadeRoot());
+        $images = Mockery::mock(ImagesFacade::getFacadeRoot())->makePartial();
         $images->shouldNotReceive('colors');
         ImagesFacade::swap($images);
 
         $original = ($this->uploadImage)(['folderId' => $this->folder->id], ['colors' => $colors]);
-        $replacementColors = ['dominant' => null, 'grid' => [['#654321']], 'palette' => ['#654321'], 'luminance' => []];
+        $replacementColors = ['dominant' => null, 'grid' => [['#654321']], 'palette' => ['#654321'], 'luminance' => [[[0.2, 0.3]]]];
         ($this->uploadImage)(['operation' => 'replace', 'assetId' => $original['assetId']], ['colors' => $replacementColors]);
 
         expect(AssetModel::findOrFail($original['assetId'])->analysis['colors'])->toEqual($replacementColors);
+    });
+
+    it('stores the metadata the uploader read, dropping anything that isn’t valid', function () {
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], ['metadata' => [
+            'title' => '  Harbor at dusk ',
+            'description' => 'Boats at dusk',
+            'keywords' => ['harbor', 5, ['nested']],
+            'dateTaken' => 'yesterday',
+            'hasLocation' => 'yes',
+            'extra' => 'x',
+        ]]);
+        $asset = Asset::findOne($completed['assetId']);
+
+        expect($asset->analysis->metadata->toArray())->toMatchArray([
+            'title' => 'Harbor at dusk',
+            'description' => 'Boats at dusk',
+            'keywords' => ['harbor', '5'],
+            'dateTaken' => null,
+            'hasLocation' => false,
+        ])
+            ->and($asset->title)->toBe('Harbor at dusk')
+            ->and($asset->alt)->toBe('Boats at dusk');
     });
 
     it('samples the image itself without usable colors from the uploader', function (?array $colors) {

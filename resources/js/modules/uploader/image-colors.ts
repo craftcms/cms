@@ -81,18 +81,6 @@ export async function readImageColors(file: File): Promise<ImageColors | null> {
 }
 
 /**
- * Completion data for asset uploads: the file's colors, so the server can
- * store them without sampling the file itself.
- */
-export async function imageColorsCompletionData(
-  file: File
-): Promise<{colors: ImageColors} | null> {
-  const colors = await readImageColors(file);
-
-  return colors ? {colors} : null;
-}
-
-/**
  * Samples an image's dominant color and the average colors of its regions:
  * 4×3 regions for landscape and square images, and 3×4 for portrait ones.
  */

@@ -19,6 +19,8 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Validation\AssetRules;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\Ai\CaptionImageTask;
@@ -30,8 +32,12 @@ use Laravel\Ai\Files\LocalImage;
 
 use function Pest\Laravel\actingAs;
 
-/** Creates an image asset with a real PNG on its volume’s disk. */
-function analyzableImage(?string $alt = null, string $kind = 'image', string $filename = 'photo.png'): Asset
+/**
+ * Creates an image asset with a real PNG on its volume’s disk.
+ *
+ * @param  bool  $sampled  Whether the image’s colors and metadata have been sampled already, so only AI tasks are left
+ */
+function analyzableImage(?string $alt = null, string $kind = 'image', string $filename = 'photo.png', bool $sampled = true): Asset
 {
     if (! app()->bound('analysis.volume')) {
         $disk = Storage::fake('analysis-disk');
@@ -48,6 +54,14 @@ function analyzableImage(?string $alt = null, string $kind = 'image', string $fi
         'filename' => $filename,
     ]);
     Storage::disk('analysis-disk')->put($filename, file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
+
+    if ($sampled) {
+        AssetModel::whereKey($asset->id)->update(['analysis' => json_encode([
+            'colors' => ['dominant' => '#dc1e1e', 'grid' => [['#dc1e1e']], 'palette' => ['#dc1e1e'], 'luminance' => [[[0.16, 0.16]]]],
+            'metadata' => [],
+        ])]);
+        $asset = Asset::find()->id($asset->id)->status(null)->one();
+    }
 
     if ($alt !== null) {
         $asset->alt = $alt;
@@ -132,6 +146,63 @@ it('queues images that have something to analyze', function (): void {
 
     expect($analyzer->queue(analyzableImage()))->toBeFalse()
         ->and($analyzer->available())->toBeFalse();
+});
+
+it('queues images that are missing their colors or metadata when asked to, without any AI tasks', function (): void {
+    Queue::fake();
+    aiImageSettings(['test:caption' => ['enabled' => false], 'test:focus' => ['enabled' => false]]);
+    $analyzer = app(ImageAnalyzer::class);
+    $unsampled = analyzableImage(sampled: false);
+
+    expect($analyzer->needsSampling($unsampled))->toBeTrue()
+        ->and($analyzer->needsSampling(analyzableImage()))->toBeFalse()
+        ->and($analyzer->queue($unsampled))->toBeFalse()
+        ->and($analyzer->queue($unsampled, sample: true))->toBeTrue()
+        ->and($analyzer->queue(analyzableImage(), sample: true))->toBeFalse();
+
+    Queue::assertPushed(AnalyzeImage::class, 1);
+});
+
+it('samples what an image is missing from its file, filling in its alt text and title from its metadata', function (): void {
+    aiImageSettings(['test:caption' => ['enabled' => false], 'test:focus' => ['enabled' => false]]);
+    $asset = analyzableImage(filename: 'photo.jpg', sampled: false);
+    Storage::disk('analysis-disk')->put($asset->getPath(), file_get_contents(metadataJpeg(xmpPacket(
+        '<dc:title><rdf:Alt><rdf:li xml:lang="x-default">Harbor at dusk</rdf:li></rdf:Alt></dc:title>'.
+        '<dc:description><rdf:Alt><rdf:li xml:lang="x-default">Boats at dusk</rdf:li></rdf:Alt></dc:description>'
+    ))));
+    deleteMetadataJpegs();
+    $asset->title = AssetsHelper::filename2Title(pathinfo($asset->getFilename(), PATHINFO_FILENAME));
+    Elements::saveElement($asset);
+
+    app(ImageAnalyzer::class)->analyze($asset);
+    $saved = Asset::find()->id($asset->id)->one();
+
+    expect($saved->analysis->colors?->grid)->not->toBe([])
+        ->and($saved->analysis->colors?->luminance)->not->toBe([])
+        ->and($saved->analysis->metadata?->title)->toBe('Harbor at dusk')
+        ->and($saved->title)->toBe('Harbor at dusk')
+        ->and($saved->alt)->toBe('Boats at dusk')
+        ->and(app(ImageAnalyzer::class)->needsSampling($saved))->toBeFalse();
+});
+
+it('queues new images for files already in place, which couldn’t be sampled when they were saved', function (): void {
+    Queue::fake();
+    aiImageSettings(['test:caption' => ['enabled' => false], 'test:focus' => ['enabled' => false]]);
+    $volume = Volume::factory()->create(['fs' => 'analysis-disk-new']);
+    Storage::fake('analysis-disk-new')->put('placed.png', file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
+    app(Volumes::class)->reset();
+
+    // A file that's already where it belongs, as a direct upload leaves it
+    $asset = new Asset;
+    $asset->setFilename('placed.png');
+    $asset->setVolumeId($volume->id);
+    $asset->folderId = app(Folders::class)->getRootFolderByVolumeId($volume->id)->id;
+    $asset->setWidth(1);
+    $asset->setHeight(1);
+    $asset->ruleset->useScenario(AssetRules::SCENARIO_INDEX);
+
+    expect(Elements::saveElement($asset))->toBeTrue();
+    Queue::assertPushed(AnalyzeImage::class, fn (AnalyzeImage $job): bool => $job->assetId === $asset->id);
 });
 
 it('queues images to be analyzed when their file is replaced', function (): void {

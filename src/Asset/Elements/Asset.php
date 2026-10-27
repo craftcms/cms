@@ -349,9 +349,22 @@ class Asset extends Element
     public ?ImageColors $uploadColors = null;
 
     /**
+     * Metadata already read from the incoming file, such as by the browser that uploaded it, which is stored in place
+     * of reading the file again.
+     */
+    public ?ImageMetadata $uploadMetadata = null;
+
+    /**
      * The metadata read from the incoming file before it was cleaned.
      */
     private ?ImageMetadata $_uploadMetadata = null;
+
+    /**
+     * The width and height of a staged image that wasn't downloaded, read from the start of its file.
+     *
+     * @var array{int, int}|null
+     */
+    private ?array $_uploadDimensions = null;
 
     /**
      * @var bool Whether the asset should avoid filename conflicts when saved.
@@ -3237,6 +3250,7 @@ JS;
             $names['previewText'],
             $names['sanitizeOnUpload'],
             $names['uploadColors'],
+            $names['uploadMetadata'],
         );
 
         $names['extension'] = true;
@@ -3310,8 +3324,16 @@ JS;
             $folderId = $this->folderId;
         }
 
+        // A staged image is downloaded when it's on hand anyway, or has to be: to clean it, which would strip its
+        // metadata if it weren't read first, or to read its dimensions when they can't be read from the start of the
+        // file. Otherwise, such as for an image uploaded straight to a remote filesystem, it's left where it is, and a
+        // queue job samples its colors and metadata instead.
         if ($this->uploadSource !== null && AssetsHelper::getFileKindByExtension($this->_filename) === FileKind::Image->value) {
-            $this->tempFilePath ??= $this->uploadSource->localPath();
+            if ($this->uploadSource->isLocal() || $this->shouldSanitizeUpload()) {
+                $this->tempFilePath ??= $this->uploadSource->localPath();
+            } elseif (($this->_uploadDimensions = $this->uploadSource->imageSize()) === null) {
+                $this->tempFilePath ??= $this->uploadSource->localPath();
+            }
         }
 
         // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
@@ -3327,14 +3349,16 @@ JS;
             $this->title = AssetsHelper::filename2Title(pathinfo($this->_filename, PATHINFO_FILENAME));
         }
 
-        // Read an uploaded image’s metadata before it’s cleaned in afterSave(), which strips it, and fill in its alt
-        // text, and a new image’s title, from it
+        // Take an uploaded image’s metadata from the uploader, or read it before it’s cleaned in afterSave(), which
+        // strips it, and fill in its alt text, and a new image’s title, from it
         if (
-            isset($this->tempFilePath) &&
-            AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value &&
+            ($this->uploadMetadata !== null || (
+                isset($this->tempFilePath) &&
+                AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value
+            )) &&
             $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
         ) {
-            $this->_uploadMetadata = Images::metadata($this->tempFilePath);
+            $this->_uploadMetadata = $this->uploadMetadata ?? Images::metadata($this->tempFilePath);
 
             if (! $this->id && $this->_uploadMetadata->title !== null && $this->hasDefaultTitle()) {
                 $this->title = mb_substr($this->_uploadMetadata->title, 0, 255);
@@ -3356,6 +3380,19 @@ JS;
     }
 
     /**
+     * Returns whether an uploaded image should be sanitized, which strips its metadata, unless the `preserveExifData`
+     * config setting is enabled.
+     */
+    private function shouldSanitizeUpload(): bool
+    {
+        return $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
+            ($this->sanitizeOnUpload ?? (
+                ! request()->isCpRequest() ||
+                Cms::config()->sanitizeCpImageUploads
+            ));
+    }
+
+    /**
      * Sets the asset’s kind based on its filename.
      */
     private function _setKind(): void
@@ -3373,19 +3410,14 @@ JS;
     {
         if (! $this->propagating) {
             $isImage = isset($this->tempFilePath) && AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value;
+            // Includes new assets for files that are already in place, such as ones uploaded straight to their filesystem
+            $hasNewFile = $isNew || isset($this->tempFilePath) || $this->uploadSource !== null;
 
             $fallbackWidth = null;
             $fallbackHeight = null;
 
             if ($isImage) {
-                // Are we uploading an image that needs to be sanitized?
-                if (
-                    $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
-                    ($this->sanitizeOnUpload ?? (
-                        ! request()->isCpRequest() ||
-                        Cms::config()->sanitizeCpImageUploads
-                    ))
-                ) {
+                if ($this->shouldSanitizeUpload()) {
                     ImageHelper::cleanImageByPath($this->tempFilePath);
 
                     // Cleaning usually strips GPS coordinates, unless the `preserveExifData` config setting is enabled
@@ -3458,9 +3490,10 @@ JS;
                     'alt' => $this->alt,
                 ], ['assetId', 'siteId']);
 
-            // Uploaded and replaced images are analyzed, such as for alt text, by any AI tasks that are set up
-            if ($isImage) {
-                app(ImageAnalyzer::class)->queue($this);
+            // New images are analyzed, such as for alt text, by any AI tasks that are set up, and sampled for anything
+            // that neither the uploader nor Craft could read from their file when they were saved
+            if ($hasNewFile && $this->kind === FileKind::Image->value) {
+                app(ImageAnalyzer::class)->queue($this, sample: true);
             }
         }
 
@@ -3908,9 +3941,12 @@ JS;
         if ($this->uploadSource !== null && $tempPath === null) {
             $this->size = $this->uploadSource->size();
             $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
-            $this->_width = $this->_height = null;
-            // What was found in the old file doesn’t describe the new one
-            $this->analysis = null;
+            [$this->_width, $this->_height] = $this->_uploadDimensions ?? [null, null];
+            // What was found in the old file doesn’t describe the new one, so only what the uploader found in the new
+            // one is known. A queue job samples anything it didn’t.
+            $this->analysis = $this->uploadColors !== null || $this->_uploadMetadata !== null
+                ? new ImageAnalysis(colors: $this->uploadColors, metadata: $this->_uploadMetadata)
+                : null;
             $this->previewText = $this->isTextFile($filename)
                 ? AssetsHelper::previewText($this->readFileStart($newDisk->readStream($newPath)))
                 : null;
@@ -3958,8 +3994,10 @@ JS;
         $this->newLocation = null;
         $this->tempFilePath = null;
         $this->uploadSource = null;
-        $this->uploadColors = null;
         $this->_uploadMetadata = null;
+        $this->_uploadDimensions = null;
+        $this->uploadColors = null;
+        $this->uploadMetadata = null;
     }
 
     /**

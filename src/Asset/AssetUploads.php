@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\UploadHandler;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -79,15 +80,17 @@ class AssetUploads implements UploadHandler
     public function complete(Request $request, array $parameters, UploadedFile $file): JsonResponse
     {
         $colors = $this->uploadedColors($request);
+        $metadata = $this->uploadedMetadata($request);
 
         $result = $parameters['operation'] === 'replace'
-            ? $this->uploads->replace((int) $parameters['assetId'], $file, $colors)
+            ? $this->uploads->replace((int) $parameters['assetId'], $file, $colors, $metadata)
             : $this->uploads->store(
                 $parameters,
                 $file,
                 authorizedGuest: ! $request->user(),
                 uploaderId: $request->craftUser()?->getCraftUserId(),
                 colors: $colors,
+                metadata: $metadata,
             );
 
         return new JsonResponse($result->payload(), $result->status);
@@ -127,5 +130,16 @@ class AssetUploads implements UploadHandler
         }
 
         return ImageColors::fromArray($colors);
+    }
+
+    /**
+     * Returns the metadata the uploader read from the file, if it sent any. Anything that isn’t valid for its part is
+     * dropped, as it is for stored metadata.
+     */
+    private function uploadedMetadata(Request $request): ?ImageMetadata
+    {
+        $metadata = $request->input('metadata');
+
+        return is_array($metadata) ? ImageMetadata::fromArray($metadata) : null;
     }
 }

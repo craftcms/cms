@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage;
 use CraftCms\Cms\Asset\AssetUploadHandler;
 use CraftCms\Cms\Asset\Data\AssetIngest;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -16,12 +17,19 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
+use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\Filesystem as Flysystem;
+use League\Flysystem\Local\LocalFilesystemAdapter as LocalFlysystemAdapter;
 
 use function Pest\Laravel\actingAs;
 
@@ -239,4 +247,75 @@ it('ignores upload site IDs the user can’t edit', function () {
 
     expect(DB::table(Table::ELEMENTS_SITES)->where('elementId', $result->assetId)->pluck('siteId')->all())
         ->toBe([app(Sites::class)->getPrimarySite()->id]);
+});
+
+describe('images staged on a remote filesystem', function () {
+    beforeEach(function () {
+        Queue::fake();
+        $root = storage_path('framework/testing/asset-ingest-remote');
+        File::ensureDirectoryExists($root);
+        File::cleanDirectory($root);
+
+        // Anything but Laravel's local adapter counts as remote, as an S3 bucket a file was uploaded straight to does
+        Storage::extend('asset-ingest-remote', function ($app, array $config) {
+            $adapter = new LocalFlysystemAdapter($config['root']);
+
+            return new FilesystemAdapter(new Flysystem($adapter, $config), $adapter, $config);
+        });
+        config()->set('filesystems.disks.asset-ingest-remote', ['driver' => 'asset-ingest-remote', 'root' => $root]);
+
+        $this->ingestImage = function (bool $sanitize, ?ImageColors $colors = null, ?ImageMetadata $metadata = null): Asset {
+            $disk = Storage::disk('asset-ingest-remote');
+            $disk->put('staged/photo.jpg', file_get_contents(metadataJpeg(xmpPacket(
+                '<dc:description><rdf:Alt><rdf:li xml:lang="x-default">Boats at dusk</rdf:li></rdf:Alt></dc:description>'
+            ))));
+            deleteMetadataJpegs();
+            $this->staged = Mockery::mock(UploadedFile::class, [$disk, 'staged/photo.jpg', 'photo.jpg'])->makePartial();
+
+            return app(AssetUploadHandler::class)->ingest(new AssetIngest(
+                source: $this->staged,
+                filename: 'photo.jpg',
+                mimeType: 'image/jpeg',
+                folder: $this->folder,
+                sanitizeOnUpload: $sanitize,
+                colors: $colors,
+                metadata: $metadata,
+            ))->asset;
+        };
+    });
+
+    it('store what the uploader read from them, without being downloaded or queued', function () {
+        $colors = ImageColors::fromArray(['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5']], 'palette' => ['#3a6ea5'], 'luminance' => [[[0.1, 0.2]]]]);
+        $metadata = new ImageMetadata(description: 'Boats at dusk');
+
+        $asset = ($this->ingestImage)(sanitize: false, colors: $colors, metadata: $metadata);
+
+        $this->staged->shouldNotHaveReceived('localPath');
+        expect($asset->analysis?->colors)->toEqual($colors)
+            ->and($asset->analysis?->metadata)->toEqual($metadata)
+            ->and($asset->alt)->toBe('Boats at dusk')
+            ->and($asset->getWidth())->toBe(1);
+        Queue::assertNotPushed(AnalyzeImage::class);
+    });
+
+    it('aren’t downloaded without what the uploader read from them, and are sampled by a queue job instead', function () {
+        $asset = ($this->ingestImage)(sanitize: false);
+
+        $this->staged->shouldNotHaveReceived('localPath');
+        expect($asset->getWidth())->toBe(1)
+            ->and($asset->getHeight())->toBe(1)
+            ->and($asset->analysis)->toBeNull()
+            ->and(Storage::disk('asset-ingest-destination')->get($asset->getPath()))->toContain('Boats at dusk');
+        Queue::assertPushed(AnalyzeImage::class, fn (AnalyzeImage $job): bool => $job->assetId === $asset->id);
+    });
+
+    it('are sampled before they’re cleaned, and only queued for AI tasks', function () {
+        $asset = ($this->ingestImage)(sanitize: true);
+
+        $this->staged->shouldHaveReceived('localPath');
+        expect($asset->analysis?->colors?->grid)->not->toBe([])
+            ->and($asset->analysis?->metadata?->description)->toBe('Boats at dusk')
+            ->and($asset->alt)->toBe('Boats at dusk');
+        Queue::assertNotPushed(AnalyzeImage::class);
+    });
 });
