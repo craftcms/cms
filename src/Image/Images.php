@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Image;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Image\Enums\ExifOrientation;
 use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Support\Arr;
@@ -327,7 +328,8 @@ class Images
             }
 
             $intervention->scaleDown(self::COLOR_SAMPLE_SIZE, self::COLOR_SAMPLE_SIZE);
-            $candidates = iterator_to_array(new ColorExtractor($intervention)->dominant(self::DOMINANT_COLOR_CANDIDATES), false);
+            $dominantPalette = new ColorExtractor($intervention)->dominant(self::DOMINANT_COLOR_CANDIDATES);
+            $candidates = iterator_to_array($dominantPalette, false);
 
             [$columns, $rows] = $intervention->width() >= $intervention->height()
                 ? [self::COLOR_GRID_LONG_SIDE, self::COLOR_GRID_SHORT_SIDE]
@@ -353,6 +355,7 @@ class Images
             }
 
             $grid = ColorGrid::average($pixels, $width, $height, $columns, $rows);
+            $luminance = ColorGrid::luminance($pixels, $width, $height, $columns, $rows);
         } catch (Throwable $e) {
             Log::info("Couldn’t sample the colors of $filePath: {$e->getMessage()}");
 
@@ -361,10 +364,34 @@ class Images
 
         $dominant = Arr::first($candidates, fn (ColorInterface $color): bool => ! $this->isNearBlackOrWhite($color)) ?? $candidates[0] ?? null;
 
+        // How many of the sampled pixels each color stands for, combining colors that come out as the same hex code
+        $counts = [];
+
+        foreach ($candidates as $candidate) {
+            $hex = $this->hex($candidate);
+            $counts[$hex] = ($counts[$hex] ?? 0) + $dominantPalette->colorCount($candidate);
+        }
+
+        $total = array_sum($counts);
+
         return new ImageColors(
             dominant: $dominant ? $this->hex($dominant) : null,
             grid: $grid,
+            palette: array_keys($counts),
+            luminance: $luminance,
+            weights: $total > 0 ? array_values(array_map(fn (int $count): float => round($count / $total, 3), $counts)) : [],
         );
+    }
+
+    /**
+     * Returns the metadata embedded in an image file, such as who made it and when, from its XMP, IPTC, and EXIF data.
+     *
+     * Uploads are read before they’re cleaned, which strips metadata unless the `preserveExifData` config setting is
+     * enabled.
+     */
+    public function metadata(string $filePath): ImageMetadata
+    {
+        return new ImageMetadataReader($this->getIsImagick())->read($filePath);
     }
 
     private function hex(ColorInterface $color): string

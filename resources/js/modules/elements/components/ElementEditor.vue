@@ -396,6 +396,7 @@
     form,
     onSave: editorLocked.value ? undefined : primaryAction,
     saveDisabled: editorLocked.value,
+    handlesReadOnly: true,
     submitButtonLabel: payload.editorActions.primary.label,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
@@ -574,8 +575,9 @@
         </craft-button>
       </craft-callout>
 
+      <!-- A revision's notice already says why nothing is editable. -->
       <craft-callout
-        v-if="payload.readOnly"
+        v-if="payload.readOnly && !payload.notice"
         variant="neutral"
         rounded="none"
         appearance="fill"
