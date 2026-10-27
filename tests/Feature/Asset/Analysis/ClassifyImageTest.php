@@ -74,7 +74,23 @@ it('finds what kind of image an image is, keeps what else was found, and makes i
     ImageAnalysisAgent::assertPrompted(fn ($prompt): bool => str_contains($prompt->prompt, '- diagram: a chart, graph'));
     expect($saved->analysis->type)->toBe(ImageType::Screenshot)
         ->and($saved->analysis->colors?->dominant)->toBe('#c81e28')
-        ->and($saved->getSearchKeywords('keywords'))->toBe('screenshot');
+        ->and($saved->getSearchKeywords('imageType'))->toBe('screenshot')
+        ->and($saved->getSearchKeywords('keywords'))->toBe('');
+});
+
+it('makes images searchable by their type, with the imageType attribute', function (): void {
+    $logo = classifiableImage();
+    $screenshot = classifiableImage();
+    ImageAnalysisAgent::fake([
+        ['craft_imageType' => ['type' => 'logo']],
+        ['craft_imageType' => ['type' => 'screenshot']],
+    ]);
+
+    app(ImageAnalyzer::class)->analyze($logo);
+    app(ImageAnalyzer::class)->analyze($screenshot);
+
+    expect(Asset::find()->search('imageType:logo')->ids())->toBe([$logo->id])
+        ->and(Asset::find()->search('screenshot')->ids())->toBe([$screenshot->id]);
 });
 
 it('ignores types it doesn’t know', function (): void {
