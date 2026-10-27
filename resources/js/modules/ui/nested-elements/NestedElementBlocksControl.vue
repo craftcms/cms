@@ -100,6 +100,8 @@
     elementType?: string | null;
     /** Current site name when entries propagate to multiple sites. */
     siteName?: string | null;
+    /** The owner's site, which collapsed blocks are remembered for. */
+    siteId?: number | null;
     create?: {
       fieldId: number;
       ownerId: number;
@@ -380,7 +382,7 @@
   function isCollapsed(uid: string): boolean {
     void collapsedTick.value;
 
-    return isBlockCollapsed(uid);
+    return isBlockCollapsed(uid, props.control.props.siteId);
   }
 
   /**
@@ -430,7 +432,7 @@
     let posts = false;
 
     for (const uid of uids) {
-      setBlockCollapsed(uid, collapsed);
+      setBlockCollapsed(uid, collapsed, props.control.props.siteId);
       capturePreview(uid, collapsed);
 
       // A block the browser minted isn't in storage under an identity the server
@@ -523,8 +525,11 @@
       const startsCollapsed =
         props.value.entries[uid]?.collapsed || isDisabled(uid);
 
-      if (startsCollapsed && !isBlockCollapsed(uid)) {
-        setBlockCollapsed(uid, true);
+      if (
+        startsCollapsed &&
+        !isBlockCollapsed(uid, props.control.props.siteId)
+      ) {
+        setBlockCollapsed(uid, true, props.control.props.siteId);
       }
     }
     collapsedTick.value++;
@@ -534,7 +539,7 @@
     // rendered but hidden — so they're there to read once Vue has laid them out.
     void nextTick(() => {
       for (const uid of props.value.sortOrder) {
-        if (isBlockCollapsed(uid)) {
+        if (isBlockCollapsed(uid, props.control.props.siteId)) {
           capturePreview(uid, true);
         }
       }
@@ -1336,7 +1341,7 @@
           next.entries[uid].collapsed = !effective;
         }
 
-        setBlockCollapsed(uid, !effective);
+        setBlockCollapsed(uid, !effective, props.control.props.siteId);
       }
     }
     collapsedTick.value++;

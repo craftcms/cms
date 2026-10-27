@@ -586,6 +586,25 @@ class AssetIndexViewModel extends ContentIndexViewModel
     }
 
     /**
+     * Uploads land in the folder on screen, which is the subfolder named in the
+     * path rather than the volume's root.
+     *
+     * @return array<string, mixed>|null
+     */
+    #[Override]
+    public function source(): ?array
+    {
+        $source = parent::source();
+        $subfolder = $this->subfolder();
+
+        if ($source !== null && $subfolder !== null && isset($source['data']['folder-id'])) {
+            $source['data']['folder-id'] = $subfolder->id;
+        }
+
+        return $source;
+    }
+
+    /**
      * A `defaultSource` path selects the volume source (`volume:{uid}`), whose
      * criteria points at the volume root. When the path names a subfolder,
      * re-point the query's `folderId` at that subfolder so the listing (and its
