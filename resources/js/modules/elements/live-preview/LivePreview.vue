@@ -72,6 +72,13 @@
    */
   const editor = useTemplateRef<HTMLElement>('editor');
   const editorId = `lp-editor-pane-${useId()}`;
+  const previewPane = useTemplateRef<HTMLElement>('previewPane');
+  const previewPaneId = `lp-preview-pane-${useId()}`;
+
+  /** Focuses the preview without the hash change following the link would make. */
+  function skipToPreview(): void {
+    previewPane.value?.focus();
+  }
   const controlId = `lp-control-${useId()}`;
   const newTabLinkId = `${controlId}-new-tab`;
   const {width: windowWidth} = useWindowSize();
@@ -431,6 +438,12 @@
         :aria-label="title"
       >
         <header class="lp-editor__header">
+          <a
+            :href="`#${previewPaneId}`"
+            class="skip-link lp-skip-link"
+            @click.prevent="skipToPreview"
+            >{{ t('Skip to top of preview') }}</a
+          >
           <craft-button
             v-if="!standalone"
             type="button"
@@ -465,7 +478,13 @@
         </footer>
       </section>
 
-      <section class="lp-preview" :aria-label="t('Preview')">
+      <section
+        :id="previewPaneId"
+        ref="previewPane"
+        class="lp-preview"
+        :aria-label="t('Preview')"
+        tabindex="-1"
+      >
         <ResizeHandle
           :resizer="resizer"
           @pointerdown="handlePressed = true"
@@ -620,6 +639,15 @@
           </div>
         </div>
 
+        <!-- Something to tab to after the frame. Without it, tabbing out of
+          the frame's last link leaves the focus trap nowhere to go. -->
+        <a
+          :href="`#${previewPaneId}`"
+          class="skip-link lp-skip-link"
+          @click.prevent="skipToPreview"
+          >{{ t('Skip to top of preview') }}</a
+        >
+
         <div class="sr-only" role="status">{{ announcement }}</div>
       </section>
     </div>
@@ -679,6 +707,17 @@
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
     min-width: 0;
+  }
+
+  .lp-preview:focus {
+    outline: none;
+  }
+
+  .lp-skip-link {
+    --x-position: var(--c-spacing-xs);
+    --y-position: var(--c-spacing-xs);
+
+    z-index: 3;
   }
 
   .lp-preview__toolbar {
