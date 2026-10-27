@@ -71,6 +71,7 @@ class SiteScopedMutationsTest extends TestCase
     }
 
     /**
+     * @param 'entry'|'category'|'tag'|'asset' $type
      * @dataProvider deleteMutationDataProvider
      */
     public function testDeleteRequiresAllElementSites(string $type): void
@@ -150,6 +151,9 @@ class SiteScopedMutationsTest extends TestCase
         self::assertNotNull($draftId);
     }
 
+    /**
+     * @param 'entry'|'category'|'tag'|'asset' $type
+     */
     private function createElement(string $type): ElementInterface
     {
         $element = match ($type) {
@@ -190,6 +194,9 @@ class SiteScopedMutationsTest extends TestCase
         return $asset;
     }
 
+    /**
+     * @param 'entry'|'category'|'tag'|'asset' $type
+     */
     private function delete(string $type, int $id): bool
     {
         $arguments = ['id' => $id];
@@ -205,6 +212,7 @@ class SiteScopedMutationsTest extends TestCase
 
     /**
      * @param Site[] $sites
+     * @param 'entry'|'category'|'tag'|'asset' $type
      */
     private function setSchema(array $sites, string $type, string $action, array $extraScope = []): void
     {
@@ -248,7 +256,7 @@ class SiteScopedMutationsTest extends TestCase
             ->count();
     }
 
-    private function entryTitle(Entry $entry, Site $site): ?string
+    private function entryTitle(ElementInterface $entry, Site $site): ?string
     {
         return Entry::find()->id($entry->id)->siteId($site->id)->status(null)->one()?->title;
     }
