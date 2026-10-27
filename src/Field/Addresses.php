@@ -1048,7 +1048,16 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         $fieldLayout = app(\CraftCms\Cms\Address\Addresses::class)->getFieldLayout();
         $i = 0;
 
-        foreach (ElementHelper::nestedElementDelta($value)['entries'] as $address) {
+        $delta = ElementHelper::nestedElementDelta($value);
+        // if there's only one address, and it's not wrapped in its own array, do that
+        // this will happen with csv or json where we have "addresses": {"title": ...}
+        if (isset($delta['entries']['countryCode'])) {
+            $addresses = [$delta['entries']];
+        } else {
+            $addresses = $delta['entries'];
+        }
+
+        foreach ($addresses as $address) {
             if (! is_array($address)) {
                 continue;
             }
@@ -1091,7 +1100,9 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
 
             Arr::forget($address, ['matchCriteria']);
 
-            $normalizedValue[$newKey] = $this->normalizeNestedEntryForImport($address, $importer, $fieldLayout, $addressElement, $importSettings['fields'] ?? []);
+            $data = $this->normalizeNestedEntryForImport($address, $importer, $fieldLayout, $addressElement, $importSettings['fields'] ?? []);
+            Typecast::properties(Address::class, $data);
+            $normalizedValue[$newKey] = $data;
         }
 
         return $normalizedValue;
