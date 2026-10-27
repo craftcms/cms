@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fb8e02a840f53ddb2f296376b5e2ab17",
+    "content-hash": "7c4b18faff829b77c45217b0c7582f9a",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2837,16 +2837,16 @@
         },
         {
             "name": "laravel/wayfinder",
-            "version": "v0.1.21",
+            "version": "v0.1.23",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/wayfinder.git",
-                "reference": "a85a996cea189f59cac14854f8b13319a29007f3"
+                "reference": "e7b0914d194201e54ba320ef38137b47a7daca98"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/wayfinder/zipball/a85a996cea189f59cac14854f8b13319a29007f3",
-                "reference": "a85a996cea189f59cac14854f8b13319a29007f3",
+                "url": "https://api.github.com/repos/laravel/wayfinder/zipball/e7b0914d194201e54ba320ef38137b47a7daca98",
+                "reference": "e7b0914d194201e54ba320ef38137b47a7daca98",
                 "shasum": ""
             },
             "require": {
@@ -2899,7 +2899,7 @@
                 "issues": "https://github.com/laravel/wayfinder/issues",
                 "source": "https://github.com/laravel/wayfinder"
             },
-            "time": "2026-08-04T21:55:43+00:00"
+            "time": "2026-10-16T14:24:32+00:00"
         },
         {
             "name": "lcobucci/jwt",

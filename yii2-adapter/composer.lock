@@ -476,7 +476,7 @@
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "4061eef1275b47ab257d12519af7762b729c6be7"
+                "reference": "5e7fe9eb0a7e14da5962cfed21f40423ca886b0e"
             },
             "require": {
                 "bacon/bacon-qr-code": "^3.0",
@@ -507,7 +507,7 @@
                 "laravel/ai": "^1.2",
                 "laravel/framework": "^13.38",
                 "laravel/passport": "^13.0",
-                "laravel/wayfinder": "^0.1.12",
+                "laravel/wayfinder": "^0.1.23",
                 "league/commonmark": "^2.8",
                 "league/flysystem-path-prefixing": "^3.31",
                 "league/uri": "^7.0",
@@ -3250,16 +3250,16 @@
         },
         {
             "name": "laravel/wayfinder",
-            "version": "v0.1.20",
+            "version": "v0.1.23",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/wayfinder.git",
-                "reference": "91d958a6f99fe9187c6eda84e62aa93d79330be5"
+                "reference": "e7b0914d194201e54ba320ef38137b47a7daca98"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/wayfinder/zipball/91d958a6f99fe9187c6eda84e62aa93d79330be5",
-                "reference": "91d958a6f99fe9187c6eda84e62aa93d79330be5",
+                "url": "https://api.github.com/repos/laravel/wayfinder/zipball/e7b0914d194201e54ba320ef38137b47a7daca98",
+                "reference": "e7b0914d194201e54ba320ef38137b47a7daca98",
                 "shasum": ""
             },
             "require": {
@@ -3269,6 +3269,9 @@
                 "illuminate/support": "^11.0|^12.0|^13.0",
                 "php": "^8.2",
                 "phpstan/phpdoc-parser": "^2.3"
+            },
+            "conflict": {
+                "laravel/boost": "<2.5.0"
             },
             "require-dev": {
                 "laravel/pint": "^1.21",
@@ -3309,7 +3312,7 @@
                 "issues": "https://github.com/laravel/wayfinder/issues",
                 "source": "https://github.com/laravel/wayfinder"
             },
-            "time": "2026-05-12T01:44:17+00:00"
+            "time": "2026-10-16T14:24:32+00:00"
         },
         {
             "name": "lcobucci/jwt",
