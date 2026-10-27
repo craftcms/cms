@@ -51,6 +51,8 @@ const INTERACTIVE = [
  *   Defaults to a check icon while `checked` is set.
  * @slot suffix - Trailing content, shown before the shortcut.
  *
+ * @csspart control - The item's `<button>`, or `<a>` when `href` is set.
+ *
  * @fires {CustomEvent} craft-state-change - Emitted whenever the item's
  *   action moves between idle, loading, success, and error. `detail` carries
  *   the new `state`, the action's `actionType`, and any feedback data.
@@ -386,6 +388,7 @@ export default class CraftActionItem extends LitElement {
     return this.href
       ? html`
           <a
+            part="control"
             class="${classMap({
               'action-item': true,
               'action-item--checkbox': this.type === 'checkbox',
@@ -405,6 +408,7 @@ export default class CraftActionItem extends LitElement {
       : html`
           <button
             type="button"
+            part="control"
             class="${classMap({
               'action-item': true,
               'action-item--checkbox': this.type === 'checkbox',

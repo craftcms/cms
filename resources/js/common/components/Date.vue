@@ -6,8 +6,9 @@
     locale?: string;
   }>();
 
-  // @TODO this needs to respect a user's locale (props.locale is available but unused for now)
-  const displayLocale = computed<Intl.LocalesArgument>(() => 'en-US');
+  const displayLocale = computed<Intl.LocalesArgument>(
+    () => props.locale ?? window.Craft?.formattingLocale
+  );
   const options = computed<Intl.DateTimeFormatOptions>(() => {
     return {
       year: 'numeric',

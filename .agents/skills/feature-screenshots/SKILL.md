@@ -34,8 +34,17 @@ captures at the display's pixel density, so Retina shots come out at 2×.
    [screenX, screenY + outerHeight - innerHeight]
    ```
 
-3. Use the theme the person is using, normally the control panel's dark theme,
-   and keep it the same across the set.
+3. Capture every shot in both themes, light and dark, so it matches the
+   reader's own GitHub theme. Switch the page's theme without touching the
+   person's preference:
+
+   ```js
+   document.documentElement.dataset.theme = 'dark'; // dark
+   delete document.documentElement.dataset.theme;   // light
+   ```
+
+   Keep the page size, crop and padding the same in both, and name the files
+   `…-light.png` and `…-dark.png`.
 4. Show real, representative content: a seeded entry or asset, a search that
    returns a good mix of results.
 
@@ -131,7 +140,7 @@ the difference. Shadows come out as real partial transparency.
 ## Focused crop
 
 1. `__iso(bg)` with the color the feature normally sits on, e.g. the page's
-   `--c-surface-default`, read from the page.
+   `--c-surface-default`, read from the page in each theme.
 2. Add the same padding to all four sides of the feature's rect. Around 24 CSS
    pixels suits most features; use the same value across a set.
 3. Capture that region once with `capture.sh`. Nothing but the feature
@@ -144,6 +153,26 @@ the difference. Shadows come out as real partial transparency.
 2. Upload them through the PR's comment box. Open the PR in a new tab, find
    the comment box's file input, and upload with the `file_upload` tool. It
    only reads from folders this session can access, such as the scratchpad.
+
+   The input (`#fc-new_comment_field`) is hidden, so `find` may only offer the
+   "Add files" button, which `file_upload` rejects. Expose the input to the
+   accessibility tree for the upload, then put it back:
+
+   ```js
+   const input = document.getElementById('fc-new_comment_field');
+   input.dataset.shotStyle = input.getAttribute('style') ?? '';
+   input.setAttribute('aria-label', 'Screenshot upload target');
+   input.style.cssText =
+     'position:fixed;inset-block-start:0;inset-inline-start:0;width:40px;height:40px;opacity:0.01;z-index:99999;display:block';
+   ```
+
+   Then `find` "file input labeled Screenshot upload target" and upload to
+   it. Afterwards, restore it:
+
+   ```js
+   input.setAttribute('style', input.dataset.shotStyle);
+   input.removeAttribute('aria-label');
+   ```
 3. Wait a few seconds, then read each upload's
    `https://github.com/user-attachments/assets/…` URL from the comment
    textarea.
@@ -159,18 +188,56 @@ the difference. Shadows come out as real partial transparency.
    window.onbeforeunload = null;
    ```
 
-5. Put them in the description with `gh pr edit --body-file`. For more than
-   two, use a two-column table with a caption under each image. GitHub scales
-   each image to its cell and links it to the full size:
+5. Put them in the description with `gh pr edit --body-file`, as a `<picture>`
+   per shot, so GitHub shows the one matching the reader's theme:
+
+   ```html
+   <picture>
+     <source
+       media="(prefers-color-scheme: dark)"
+       srcset="https://github.com/user-attachments/assets/…"
+     >
+     <source
+       media="(prefers-color-scheme: light)"
+       srcset="https://github.com/user-attachments/assets/…"
+     >
+     <img
+       alt="The command palette, searching “image”"
+       src="https://github.com/user-attachments/assets/…"
+       width="640"
+     >
+   </picture>
+   ```
+
+   The `<img>` uses the light shot, as the fallback. Set its `width` to exactly
+   half the image file's pixel width, since `screencapture` shoots at 2× on
+   Retina displays, so it isn't shown larger than the UI it was taken from.
+   Read it from the file with `sips -g pixelWidth shot.png`, never from the
+   size GitHub happens to display it at. Leave `height` off: GitHub caps an
+   image's width to fit its container but keeps a set height, which squashes
+   it. Give it alt text that says what the shot shows.
+
+   For a gallery of more than two shots, use a two-column table with a
+   caption under each shot:
 
    ```html
    <table>
    <tr>
-   <td width="50%" valign="top"><img alt="Default state" src="https://github.com/user-attachments/assets/…" /><br />The default state on an entry.</td>
-   <td width="50%" valign="top"><img alt="Searching" src="https://github.com/user-attachments/assets/…" /><br />Searching “image”.</td>
+   <td width="50%" valign="top">
+   <picture>…</picture>
+   <br />The default state on an entry.
+   </td>
+   <td width="50%" valign="top">
+   <picture>…</picture>
+   <br />Searching “image”.
+   </td>
    </tr>
    </table>
    ```
+
+   Each shot is scaled down to fit its cell. Unlike a bare `<img>`, GitHub
+   doesn't link a `<picture>` to the full-size file, so readers can't click a
+   shot to enlarge it.
 
 6. Open the PR page to check the images render.
 

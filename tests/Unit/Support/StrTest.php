@@ -61,6 +61,8 @@ test('convertToUtf8', function (string $expected, string $string) {
     ['😂😁', '😂😁'],
     ['Foo © bar 𝌆 baz ☃ qux', 'Foo © bar 𝌆 baz ☃ qux'],
     ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±'],
+    ['Café terrace', "Caf\xe9 terrace"],
+    ['“Quoted”', "\x93Quoted\x94"],
 ]);
 
 test('convertToUtf8 accepts explicit source encoding', function () {

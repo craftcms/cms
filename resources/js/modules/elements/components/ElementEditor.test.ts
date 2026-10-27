@@ -272,3 +272,16 @@ it.each<ScreenMode>(['page', 'slideout'])(
     ).toBe('/actions/preview/create-token?redirect=x');
   }
 );
+
+it('describes a revision with its own notice alone', async () => {
+  Object.assign(state.editor.props, {
+    readOnly: true,
+    notice: 'You’re viewing a revision.',
+  });
+
+  mount('page');
+  await nextTick();
+
+  expect(container.textContent).toContain('You’re viewing a revision.');
+  expect(container.textContent).not.toContain('This is a read-only view.');
+});

@@ -11,6 +11,10 @@
  */
 
 import {
+  elementEditorParams,
+  type ElementEditorParams,
+} from './element-editor-params';
+import {
   CpScreenSlideout,
   type CpScreenSlideoutSettings,
 } from './cp-screen-slideout';
@@ -44,17 +48,6 @@ export interface ElementEditorSlideoutSettings extends CpScreenSlideoutSettings 
   expandData: unknown[];
   isStatic: boolean;
   onBeforeSubmit: () => Promise<void>;
-}
-
-interface ElementEditorParams extends UiValues {
-  elementType?: string;
-  elementId?: number;
-  draftId?: number | null;
-  revisionId?: number | null;
-  fieldId?: number | null;
-  ownerId?: number | null;
-  siteId?: number;
-  prevalidate?: 1;
 }
 
 /**
@@ -206,51 +199,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
   }
 
   override getParams(): ElementEditorParams {
-    const params: ElementEditorParams = {};
-
-    if (this.settings!.elementType) {
-      params.elementType = this.settings!.elementType;
-    }
-
-    if (this.settings!.elementId) {
-      params.elementId = this.settings!.elementId;
-    } else if (this.$element?.data('id')) {
-      params.elementId = this.$element.data('id');
-    }
-
-    if (this.settings!.draftId !== null) {
-      params.draftId = this.settings!.draftId || null; // could be false
-    } else if (this.$element?.data('draft-id')) {
-      params.draftId = this.$element.data('draft-id');
-    } else if (this.settings!.revisionId !== null) {
-      params.revisionId = this.settings!.revisionId || null; // could be false
-    } else if (this.$element?.data('revision-id')) {
-      params.revisionId = this.$element.data('revision-id');
-    }
-
-    if (this.settings!.fieldId !== null) {
-      params.fieldId = this.settings!.fieldId || null; // could be false
-    } else if (this.$element?.data('field-id')) {
-      params.fieldId = this.$element.data('field-id');
-    }
-
-    if (this.settings!.ownerId !== null) {
-      params.ownerId = this.settings!.ownerId || null; // could be false
-    } else if (this.$element?.data('owner-id')) {
-      params.ownerId = this.$element.data('owner-id');
-    }
-
-    if (this.settings!.siteId) {
-      params.siteId = this.settings!.siteId;
-    } else if (this.$element?.data('site-id')) {
-      params.siteId = this.$element.data('site-id');
-    }
-
-    if (this.settings!.prevalidate) {
-      params.prevalidate = 1;
-    }
-
-    return params;
+    return elementEditorParams(this.$element, this.settings!);
   }
 
   override reload(): void {

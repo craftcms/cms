@@ -286,6 +286,7 @@ Modify with `cp-table--compact` to reduce the vertical cell padding
 Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
 Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-container-padding`, for tables that span their container's padding
+Modify with `cp-table--aligned` to drop the outer edges' inline padding, so each row's text lines up with the content around the table
 Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
  */
 .cp-table {
@@ -353,6 +354,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
 
   /* Add a rule to the first cells, unless the header row's border already does */
   &:not(:has(> thead)) tr:first-child {
+    th,
     td {
       border-block-start: 1px solid
         color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
@@ -384,6 +386,16 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
 
   &:last-child {
     padding-inline-end: var(--cp-container-padding);
+  }
+}
+
+.cp-table--aligned tr > :is(th, td) {
+  &:first-child {
+    padding-inline-start: 0;
+  }
+
+  &:last-child {
+    padding-inline-end: 0;
   }
 }
 

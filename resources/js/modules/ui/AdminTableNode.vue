@@ -31,7 +31,6 @@
   } from '@/modules/elements/types/actions';
   import {AdminTableCreateSlideout} from '@/modules/admin-table/create-slideout';
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
-  import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
   import {UiTableFlush} from './runtime';
@@ -509,13 +508,6 @@
     }
   }
 
-  function onModalDeleted(): void {
-    const row = deletingRow.value;
-    deletingRow.value = null;
-    if (row?.id !== undefined) adminTable.value?.removeRows([row.id]);
-    refreshTable();
-  }
-
   async function deleteRow(row: TableRow): Promise<void> {
     const url = deleteUrl(row);
     if (
@@ -526,7 +518,7 @@
     )
       return;
 
-    if (props.node.props.deleteModalUrl || slots['delete-modal']) {
+    if (slots['delete-modal']) {
       deletingRow.value = row;
       return;
     }
@@ -725,16 +717,7 @@
       :row="deletingRow"
       :label="cellText(deletingRow[node.props.columns[0]?.key ?? ''] ?? null)"
       :close="() => (deletingRow = null)"
-    >
-      <AdminTableDeleteModal
-        v-if="node.props.deleteModalUrl"
-        :modal-url="node.props.deleteModalUrl"
-        :delete-url="deleteUrl(deletingRow)!"
-        :row-id="deletingRow.id!"
-        @close="deletingRow = null"
-        @deleted="onModalDeleted"
-      />
-    </slot>
+    />
     <UiModal
       v-if="menuModal"
       :modal-url="menuModal.modalUrl"

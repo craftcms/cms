@@ -153,7 +153,9 @@
 
     return trail.length > 0 ? trail : null;
   });
-  const readOnly = computed(() => Boolean(page.props.readOnly));
+  const readOnly = computed(
+    () => !props.handlesReadOnly && Boolean(page.props.readOnly)
+  );
 
   const hasContextMenu = computed(() => regions.has('context-menu'));
   const hasNotices = computed(() => regions.has('content-notices'));
@@ -774,8 +776,11 @@ Content: the secondary nav, content, and details panes
   }
 
   .cp-content--sidebar .cp-content__sidebar {
-    min-width: calc(250rem / 16);
     padding: var(--c-spacing-md);
+
+    @media (width >= var(--breakpoint-lg)) {
+      inline-size: calc(var(--cp-sidebar-width) + 1px);
+    }
 
     /* Only stacked above the content; beside it, the panel's own border
        already closes it off. */

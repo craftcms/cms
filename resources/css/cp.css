@@ -23,7 +23,7 @@ CP Styles
   --cp-rail-width: calc(var(--c-size-touch-target) + var(--c-spacing-md) * 2);
   --cp-sidebar-collapsed-width: var(--cp-rail-width);
   --cp-content-width: calc(1440rem / 16);
-  --cp-footer-height: calc(54rem / 16);
+  --cp-footer-height: var(--c-size-footer);
   --cp-header-height: calc(42rem / 16);
   --cp-sidebar-z-index: var(--c-layer-sidebar);
   --cp-body-inset: var(--c-spacing-md);

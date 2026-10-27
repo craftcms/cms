@@ -39,7 +39,6 @@
   import WorkflowEditLockCallout from '@/modules/workflows/components/WorkflowEditLockCallout.vue';
   import WorkflowDraftsStatus from '@/modules/workflows/components/WorkflowDraftsStatus.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
-  import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
   import LivePreview from '@/modules/elements/live-preview/LivePreview.vue';
@@ -330,6 +329,7 @@
     form,
     onSave: editorLocked.value ? undefined : primaryAction,
     saveDisabled: editorLocked.value,
+    handlesReadOnly: true,
     submitButtonLabel: payload.editorActions.primary.label,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
@@ -525,8 +525,9 @@
         </craft-button>
       </craft-callout>
 
+      <!-- A revision's notice already says why nothing is editable. -->
       <craft-callout
-        v-if="payload.readOnly"
+        v-if="payload.readOnly && !payload.notice"
         variant="neutral"
         rounded="none"
         appearance="fill"

@@ -26,6 +26,8 @@ use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -391,6 +393,27 @@ it('preloads requests grouped by driver', function (bool $perAsset) {
         ->and($secondDriver->requests[0]->transformer->handle)->toBe('second')
         ->and($secondDriver->requests[0]->parameters)->toBe(['width' => $perAsset ? 640 : 320]);
 })->with(['shared definitions' => false, 'asset-specific definitions' => true]);
+
+it('preloads withTransforms criteria for eager-loaded assets', function () {
+    $driver = new TestPreloadingAssetTransformDriver;
+    registerTransformer('remote', driver: $driver);
+    Cms::config()->defaultAssetTransformer('remote');
+    $photos = collect(range(1, 2))->map(fn () => Asset::factory()->createElement([
+        'kind' => 'image',
+        'width' => 320,
+        'height' => 200,
+    ]));
+    $userIds = $photos->map(fn (AssetElement $photo) => User::factory()->create(['photoId' => $photo->id])->id);
+
+    UserElement::find()
+        ->id($userIds->all())
+        ->with([['photo', ['withTransforms' => [['width' => 100]]]]])
+        ->all();
+
+    expect(collect($driver->requests)->map(fn (AssetTransformRequest $request) => $request->asset->id)->all())
+        ->toEqualCanonicalizing($photos->pluck('id')->all())
+        ->and($driver->requests[0]->parameters)->toBe(['width' => 100]);
+});
 
 it('redacts transformer settings from debug output', function () {
     $request = new AssetTransformRequest(

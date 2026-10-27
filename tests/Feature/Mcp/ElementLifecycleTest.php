@@ -7,6 +7,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
@@ -127,7 +128,11 @@ it('restores discoverable deleted elements and leaves active elements unchanged 
         ])['element']['id'])->one(),
     };
     if ($element instanceof Asset) {
-        $element->keepFileOnDelete = true;
+        config()->set('filesystems.disks.lifecycle-trashed-assets', [
+            'driver' => 'local', 'root' => storage_path('framework/testing/lifecycle-trashed-assets'),
+        ]);
+        Storage::fake('lifecycle-trashed-assets');
+        Cms::config()->trashedAssetDisk('lifecycle-trashed-assets');
     }
 
     app(Elements::class)->deleteElement($element);
