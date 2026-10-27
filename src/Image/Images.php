@@ -353,6 +353,9 @@ class Images
             $width = $intervention->width();
             $height = $intervention->height();
             $pixels = [];
+            // Some ImageMagick builds report stray alpha values for images that don’t have an alpha channel, such as JPEGs
+            $native = $intervention->core()->native();
+            $opaque = $native instanceof Imagick && ! $native->getImageAlphaChannel();
 
             for ($y = 0; $y < $height; $y++) {
                 for ($x = 0; $x < $width; $x++) {
@@ -361,7 +364,7 @@ class Images
                         (int) $color->channel(Red::class)->value(),
                         (int) $color->channel(Green::class)->value(),
                         (int) $color->channel(Blue::class)->value(),
-                        $color->channel(Alpha::class)->value() / 255,
+                        $opaque ? 1.0 : $color->channel(Alpha::class)->value() / 255,
                     ];
                 }
             }

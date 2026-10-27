@@ -63,7 +63,7 @@
         />
       </div>
     </LayoutSlot>
-    <craft-callout v-if="deleted" class="mb-4" role="status">
+    <craft-callout v-if="deleted" class="block mb-lg" role="status">
       <span>{{ t('“{name}” deleted.', {name: widgetName(deleted)}) }}</span>
       <craft-button
         slot="action"

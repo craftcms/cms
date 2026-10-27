@@ -855,22 +855,22 @@ class Asset extends Element
     #[Override]
     protected static function defineSearchableAttributes(): array
     {
-        return ['filename', 'extension', 'kind', 'alt', 'keywords', 'text', 'colors'];
+        return ['filename', 'extension', 'kind', 'alt', 'keywords', 'text', 'colors', 'imageType'];
     }
 
     #[Override]
     protected function searchKeywords(string $attribute): string
     {
         return match ($attribute) {
-            // Along with the keywords the image was tagged with before it was uploaded, and what kind of image it is
-            'keywords' => implode(' ', array_unique([
-                ...$this->analysis->keywords ?? [],
-                ...$this->analysis->metadata->keywords ?? [],
-                ...($this->analysis?->type ? [$this->analysis->type->value, mb_strtolower($this->analysis->type->label($this->getSite()->language))] : []),
-            ])),
+            // Along with the keywords the image was tagged with before it was uploaded
+            'keywords' => implode(' ', array_unique([...$this->analysis->keywords ?? [], ...$this->analysis->metadata->keywords ?? []])),
             'text' => $this->analysis->text ?? '',
             // Images can be found by the names of their colors
             'colors' => $this->kind === FileKind::Image->value ? $this->colorKeywords() : '',
+            // In English and in the site’s language, such as “logo” or “screenshot bildschirmfoto”
+            'imageType' => ($type = $this->analysis?->type)
+                ? implode(' ', array_unique([$type->value, mb_strtolower($type->label($this->getSite()->language))]))
+                : '',
             default => parent::searchKeywords($attribute),
         };
     }
