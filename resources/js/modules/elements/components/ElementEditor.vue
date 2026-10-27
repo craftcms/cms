@@ -311,7 +311,11 @@
 
   watch(autosave.saves, () => {
     livePreview.draftSaved(autosave.lastResponse.value);
-    void livePreview.refresh();
+
+    // A newer save is on its way, so this one's page would only be replaced.
+    if (!autosave.hasPendingChanges.value) {
+      void livePreview.refresh();
+    }
   });
 
   // The screen is only there for the preview.
