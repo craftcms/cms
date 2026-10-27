@@ -182,6 +182,7 @@
 - Fixed a bug where asset upload conflict prompts used unstyled radio buttons and checkboxes.
 - Fixed a bug where nested element fields’ “Paste” buttons and relational fields’ “Copy” menu items were missing their icons.
 - Fixed a bug where buttons didn’t show an inset shadow while pressed.
+- Fixed a bug where control panel error pages could be shown in a modal over the previous page, rather than as a full page. ([#20120](https://github.com/craftcms/cms/pull/20120))
 
 ### Content Management
 
