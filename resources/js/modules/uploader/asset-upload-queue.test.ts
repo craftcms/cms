@@ -3,8 +3,8 @@ import type {UploadOptions, UploadState} from '@/upload-client';
 import type {UploadConflictChoice} from './upload-notification';
 import type {FileUploadNotificationElement} from './file-upload-notification.ce';
 
-const ui = vi.hoisted(() => ({on: vi.fn(), post: vi.fn()}));
-vi.mock('@inertiajs/vue3', () => ({router: {on: ui.on}}));
+const ui = vi.hoisted(() => ({on: vi.fn(), post: vi.fn(), visit: vi.fn()}));
+vi.mock('@inertiajs/vue3', () => ({router: {on: ui.on, visit: ui.visit}}));
 vi.mock('@craftcms/ui', () => ({
   t: (message: string, parameters?: {num: number}) =>
     parameters?.num ? `${parameters.num} files uploaded.` : message,
@@ -100,6 +100,7 @@ const conflict = {
 
 beforeEach(() => {
   ui.on.mockReset().mockReturnValue(vi.fn());
+  ui.visit.mockReset();
   transfers.length = 0;
   notices.length = 0;
   ui.post.mockReset().mockResolvedValue({data: {}});
@@ -183,6 +184,34 @@ it('starts selections in parallel and retains their original destinations', asyn
   transfers[1]!.complete();
   await vi.waitFor(() => expect(queue.hasPending).toBe(false));
   expect(transfers[0]!.cancel).not.toHaveBeenCalled();
+});
+
+it('warns about uploads that look like images already uploaded, linking to them', async () => {
+  queue.enqueue(file(), destination, []);
+  queue.enqueue(file(), destination, []);
+  await vi.waitFor(() => expect(transfers[1]!.upload).toHaveBeenCalledOnce());
+
+  transfers[0]!.complete({
+    assetId: 12,
+    duplicates: [{id: 5, title: 'Harbor at dusk', url: '/admin/assets/edit/5'}],
+  });
+  transfers[1]!.complete({assetId: 13, duplicates: []});
+  await vi.waitFor(() => expect(queue.hasPending).toBe(false));
+
+  const warnings = notices.filter((notice) =>
+    notice.textContent?.includes('looks like an image you already have.')
+  );
+  expect(warnings).toHaveLength(1);
+  const details = warnings[0]!.querySelector<
+    HTMLElement & {updateComplete: Promise<boolean>}
+  >('craft-upload-duplicates-notification')!;
+  await details.updateComplete;
+  const link = details.querySelector('a')!;
+  expect(link.textContent).toBe('Harbor at dusk');
+  expect(link.getAttribute('href')).toBe('/admin/assets/edit/5');
+
+  link.click();
+  expect(ui.visit).toHaveBeenCalledWith('/admin/assets/edit/5');
 });
 
 it('pauses and resumes from the notification while other files keep uploading', async () => {

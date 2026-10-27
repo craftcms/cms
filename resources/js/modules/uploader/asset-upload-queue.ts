@@ -9,6 +9,7 @@ import {
   type AssetUploadDestination,
   type UploadConflictChoice,
   showUploadConflict,
+  showUploadDuplicates,
   createUploadCompleteNotification,
 } from './upload-notification';
 
@@ -220,6 +221,11 @@ export class AssetUploadQueue extends UploadQueue<
       this.completedBatches.add(batch);
     }
     batch.notification.update(batch.completed);
+    if (job.result?.duplicates?.length) {
+      showUploadDuplicates(job.upload.file.name, job.result.duplicates, (url) =>
+        router.visit(url)
+      );
+    }
     Craft.cp.runQueue();
   }
 

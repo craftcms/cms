@@ -5,6 +5,10 @@ import {html, nothing, render} from 'lit';
 import type {UploadState} from '@/upload-client';
 import {FileUploadNotificationElement} from './file-upload-notification.ce';
 import {UploadCompleteNotificationElement} from './upload-complete-notification.ce';
+import {
+  type UploadDuplicate,
+  UploadDuplicatesNotificationElement,
+} from './upload-duplicates-notification.ce';
 
 declare const Craft: any;
 
@@ -99,6 +103,32 @@ export function createUploadCompleteNotification(
     },
     close,
   };
+}
+
+/**
+ * Warns that an upload looks like a copy of images that are already uploaded,
+ * until it's dismissed. Links open the images' edit pages, with `navigate` if
+ * it's given, such as to visit them with Inertia.
+ */
+export function showUploadDuplicates(
+  filename: string,
+  duplicates: UploadDuplicate[],
+  navigate?: (url: string) => void
+): () => void {
+  const details = new UploadDuplicatesNotificationElement();
+  details.duplicates = duplicates;
+  if (navigate) {
+    details.addEventListener('craft-upload-navigate', (event) => {
+      event.preventDefault();
+      navigate((event as CustomEvent<string>).detail);
+    });
+  }
+
+  return createUploadNotice(
+    t('“{filename}” looks like an image you already have.', {filename}),
+    details,
+    () => {}
+  );
 }
 
 /** Opening this dialog is an explicit action; dismissing it leaves the conflict pending. */
