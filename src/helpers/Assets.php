@@ -257,8 +257,8 @@ class Assets
     {
         $title = StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename, false, true)));
 
-        if (strlen($title) > 255) {
-            $title = rtrim(substr($title, 255), ' ');
+        if (mb_strlen($title) > 255) {
+            $title = rtrim(mb_substr($title, 0, 255), ' ');
         }
 
         return $title;
