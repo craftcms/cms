@@ -667,7 +667,7 @@ it('doesn’t sample colors it has already sampled, even inconclusively', functi
 
     try {
         $asset = $index();
-        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => $stored])]);
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => $stored, 'metadata' => []])]);
 
         expect($index()->analysis->colors->toArray())->toBe($stored)
             ->and(Asset::findOrFail($asset->id)->analysis['colors'])->toEqual($stored);
@@ -694,7 +694,7 @@ it('samples the colors of unchanged images that are missing them, or were sample
 
     try {
         $asset = $index(false);
-        Asset::whereKey($asset->id)->update(['analysis' => $stored === null ? null : json_encode(['colors' => $stored])]);
+        Asset::whereKey($asset->id)->update(['analysis' => $stored === null ? null : json_encode(['colors' => $stored, 'metadata' => []])]);
 
         expect($index(false)->analysis?->colors?->palette)->toBe($stored === null ? null : [])
             ->and($index(true)->analysis->colors->palette)->toBe(['#dc1e1e']);
@@ -724,6 +724,7 @@ it('samples unchanged images again that were sampled before luminance was, when 
         Asset::whereKey($asset->id)->update(['analysis' => json_encode([
             'colors' => ['dominant' => '#dc1e1e', 'grid' => [['#dc1e1e']], 'palette' => ['#dc1e1e']],
             'hash' => '0000000000000000',
+            'metadata' => [],
         ])]);
 
         expect($index(false)->analysis->colors->luminance)->toBe([])
