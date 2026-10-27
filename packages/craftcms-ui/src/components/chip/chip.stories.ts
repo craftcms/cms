@@ -48,6 +48,15 @@ const chipSizes = [
   {size: 'large', label: 'Large'},
 ] as const;
 
+/** Every `thumb-size` value, for the stacked story below. */
+const chipThumbSizes = [
+  {thumbSize: 'sm', label: 'Small'},
+  {thumbSize: 'md', label: 'Medium'},
+  {thumbSize: 'lg', label: 'Large'},
+  {thumbSize: 'xl', label: 'XL'},
+  {thumbSize: '2xl', label: '2XL'},
+] as const;
+
 /**
  * A chip with nothing but a label renders neither the prefix nor the suffix
  * region.
@@ -237,6 +246,41 @@ export const Sizes: Story = {
       ${chipSizes.map(
         ({size, label}) =>
           html`<craft-chip size="${size || nothing}">${label}</craft-chip>`
+      )}
+    </div>
+  `,
+};
+
+/**
+ * With \`prefix-placement="block-start"\`, the thumbnail sits above the label,
+ * for a tile in a grid; the checkbox and suffix share a row along the top.
+ * Thumbnail tiles in element indexes are drawn this way, at every
+ * \`thumb-size\`; each chip takes the size that suits its thumbnail.
+ */
+export const Stacked: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div
+      style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: start"
+    >
+      ${chipThumbSizes.map(
+        ({thumbSize, label}) => html`
+          <craft-chip
+            prefix-placement="block-start"
+            appearance="outline-fill"
+            data-color="white"
+            thumb-size="${thumbSize}"
+            show-thumb
+            selectable
+            select-label="Select ${label}"
+          >
+            <img slot="thumbnail" src="https://picsum.photos/240/240" alt="" />
+            ${label}
+            <craft-button icon size="small" variant="plain" slot="suffix">
+              <craft-icon name="ellipsis" label="Actions"></craft-icon>
+            </craft-button>
+          </craft-chip>
+        `
       )}
     </div>
   `,
