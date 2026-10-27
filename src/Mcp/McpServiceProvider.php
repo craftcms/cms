@@ -23,6 +23,7 @@ use CraftCms\Cms\Mcp\Http\Controllers\OAuthMetadataController;
 use CraftCms\Cms\Mcp\Http\Controllers\OAuthRegisterController;
 use CraftCms\Cms\Mcp\Http\Middleware\AddOAuthChallenge;
 use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
+use CraftCms\Cms\Mcp\Http\Middleware\RequireAccessDuringMaintenance;
 use CraftCms\Cms\Mcp\Http\Middleware\SetActivityOrigin;
 use CraftCms\Cms\Mcp\Http\Responses\AuthorizationView;
 use CraftCms\Cms\Mcp\OAuth\Metadata;
@@ -133,6 +134,7 @@ class McpServiceProvider extends ServiceProvider
             CheckTokenForAnyScope::using(McpScope::Read->satisfyingValues()),
             'can:accessCp',
             'can:useCraftMcp',
+            RequireAccessDuringMaintenance::class,
             SetActivityOrigin::class,
             ...$config->middleware,
         ];
@@ -176,11 +178,11 @@ class McpServiceProvider extends ServiceProvider
                 $router->options($config->endpoint, [McpController::class, 'preflight'])
                     ->middleware($middleware);
 
-                $router->post($config->endpoint, [McpController::class, 'admin'])
+                $router->allowDuringMaintenance()->post($config->endpoint, [McpController::class, 'admin'])
                     ->middleware($authenticatedMiddleware)
                     ->name('mcp.server');
 
-                $router
+                $router->allowDuringMaintenance()
                     ->prefix("$config->endpoint/uploads")
                     ->name('mcp.uploads.')
                     ->middleware([...$authenticatedMiddleware, CheckTokenForAnyScope::using(McpScope::Write->satisfyingValues())])

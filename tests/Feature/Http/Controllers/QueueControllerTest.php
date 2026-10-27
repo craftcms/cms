@@ -20,6 +20,7 @@ use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\post;
+use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::findOne());
@@ -183,6 +184,28 @@ it('treats a zero job info limit as unlimited', function () {
         ->assertOk()
         ->assertJsonPath('total', 2)
         ->assertJsonCount(2, 'jobs');
+});
+
+it('pages through the Queue Manager’s jobs', function () {
+    app(JobProgress::class)->queued('job-1', 'First Job');
+    app(JobProgress::class)->queued('job-2', 'Second Job');
+    app(JobProgress::class)->queued('job-3', 'Third Job');
+
+    postJson(action([QueueController::class, 'jobs']), ['page' => 2, 'per_page' => 2])
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.uid', 'job-3')
+        ->assertJsonPath('pagination.total', 3)
+        ->assertJsonPath('pagination.current_page', 2)
+        ->assertJsonPath('pagination.last_page', 2);
+});
+
+it('requires Queue Manager utility access to page through jobs', function () {
+    $utilities = Mockery::mock(Utilities::class);
+    $utilities->shouldReceive('checkAuthorization')->with(Utilities\QueueManager::class)->andReturnFalse();
+    app()->instance(Utilities::class, $utilities);
+
+    postJson(action([QueueController::class, 'jobs']))->assertForbidden();
 });
 
 it('cancels a job', function () {

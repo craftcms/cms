@@ -331,6 +331,11 @@ describe('colors', function () {
         expect($this->service->colors($path)->dominant)->toBe('#ffffff');
     });
 
+    it('treats images without an alpha channel as opaque', function () {
+        expect(array_merge(...$this->service->colors($this->fixturesPath.'/background.jpg')->grid))
+            ->each->toMatch('/^#[0-9a-f]{6}$/');
+    });
+
     it('returns empty colors for files it can’t read as images', function () {
         expect($this->service->colors($this->sandboxPath.'/empty-file.text'))->toEqual(new ImageColors)
             ->and($this->service->colors($this->sandboxPath.'/missing.png'))->toEqual(new ImageColors);

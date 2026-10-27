@@ -177,6 +177,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     });
 
     Route::prefix('utilities/queue-manager')->group(function () {
+        Route::post('jobs', [QueueController::class, 'jobs']);
         Route::post('release-all', [QueueController::class, 'cancelAll']);
         Route::post('retry-all', [QueueController::class, 'retryAll']);
         Route::post('{id}/release', [QueueController::class, 'cancel']);

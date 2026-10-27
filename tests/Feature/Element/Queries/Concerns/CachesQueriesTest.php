@@ -4,6 +4,9 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 
 it('caches queries', function () {
+    // Live entry queries compare post dates to the current minute, which changes their cache key
+    $this->freezeTime();
+
     Entry::factory()->create();
 
     expect(entryQuery()->cache()->count())->toBe(1);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ai\Http\Controllers;
 
+use CraftCms\Cms\Ai\Ai;
 use CraftCms\Cms\Ai\Settings;
 use CraftCms\Cms\Ai\SettingsUi;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -11,6 +12,7 @@ use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\UiContext;
@@ -29,6 +31,7 @@ readonly class SettingsController
     use RespondsWithFlash;
 
     public function __construct(
+        private Ai $ai,
         private GeneralConfig $generalConfig,
         private ProjectConfig $projectConfig,
         private SettingsUi $settingsUi,
@@ -63,6 +66,7 @@ readonly class SettingsController
     public function store(Request $request, Settings $settings): Response|CpScreenResponse
     {
         $submitted = $request->validate($settings->getRules());
+        $previousMappings = $this->ai->requirementMappings();
 
         // Keep stored mappings the form doesn’t show, such as those of uninstalled plugins.
         Typecast::configure($settings, [
@@ -75,6 +79,15 @@ readonly class SettingsController
         }
 
         $this->projectConfig->set(ProjectConfig::PATH_AI, $settings->toConfig(), 'Update AI settings.');
+
+        foreach ($this->ai->checkRequirements($previousMappings) as $failure) {
+            Flash::error(t('Craft couldn’t check whether the {model} model on the {provider} provider supports {capability}: {error}', [
+                'model' => $failure->model,
+                'provider' => $failure->provider,
+                'capability' => mb_strtolower($failure->capability->label()),
+                'error' => $failure->error,
+            ]));
+        }
 
         return $this->asSuccess(t('AI settings saved.'));
     }

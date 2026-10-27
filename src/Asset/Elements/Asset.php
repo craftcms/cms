@@ -36,6 +36,7 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -109,6 +110,7 @@ use DOMDocument;
 use DOMXPath;
 use Exception;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
@@ -116,6 +118,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Imagick;
 use Intervention\Image\Encoders\PngEncoder;
 use InvalidArgumentException;
@@ -266,10 +269,36 @@ class Asset extends Element
     }
 
     /**
-     * @var bool|null Whether the file was kept around when the asset was deleted
+     * @var string|null The start of a text file’s contents, an empty string if it has nothing to show, or `null` if
+     *                  it isn’t a text file or hasn’t been read yet
+     *
+     * Read from the file whenever a new one is uploaded or indexed, so it isn’t settable from requests. Asset queries
+     * don’t load it, so it’s only known once it’s been set; it’s only saved then, too.
+     *
+     * @see AssetsHelper::previewText()
+     *
+     * @internal
+     */
+    public ?string $previewText = null {
+        set {
+            $this->previewText = $value;
+            $this->previewTextChanged = true;
+        }
+    }
+
+    /**
+     * Whether {@see $previewText} has been set since the asset was loaded, and should be saved.
+     */
+    private bool $previewTextChanged = false;
+
+    /**
+     * @var bool Whether the file was moved to the trashed asset disk when the asset was soft-deleted, so it can be put
+     *           back if the asset is restored
+     *
+     * @see GeneralConfig::$trashedAssetDisk
      */
     #[AllowedInSandbox]
-    public ?bool $keptFile = null;
+    public bool $trashedFileExists = false;
 
     /**
      * @var DateTimeInterface|null Date modified
@@ -1760,22 +1789,19 @@ JS, [
                 'label' => t('Open in Image Editor'),
             ];
 
-            HtmlStack::jsWithVars(fn ($id, $assetId) => <<<JS
+            HtmlStack::jsWithVars(fn ($id, $settings) => <<<JS
 $('#' + $id).on('activate', () => {
-  new Craft.AssetImageEditor($assetId, {
-    allowDegreeFractions: Craft.isImagick,
-    onSave: (data) => {
-      if (data.newAssetId) {
-        return;
-      }
+  Craft.openAssetImageEditor($settings, (result) => {
+    if (result.newAssetId) {
+      return;
+    }
 
-      $updatePreviewThumbJs
-    },
-  })
+    $updatePreviewThumbJs
+  });
 });
 JS, [
                 InputNamespace::namespaceId($editImageId),
-                $this->id,
+                $this->getImageEditorSettings(),
             ]);
         }
 
@@ -2236,7 +2262,7 @@ JS, [
     protected function thumbSvg(): string
     {
         if ($this->isFolder) {
-            return file_get_contents(Aliases::get('@resources/public/images/thumbs/folder.svg'));
+            return AssetsHelper::folderIconSvg();
         }
 
         return AssetsHelper::iconSvg($this->getExtension());
@@ -2791,7 +2817,7 @@ JS, [
     public function setAttributesFromRequest(array $values): void
     {
         // Determined from the file itself when one comes in, not by whoever's saving.
-        unset($values['colors']);
+        unset($values['colors'], $values['previewText']);
 
         parent::setAttributesFromRequest($values);
     }
@@ -2880,6 +2906,8 @@ JS, [
 
         // See if we can show a thumbnail
         try {
+            $showsIcon = ! in_array($this->kind, [FileKind::Video->value, FileKind::Audio->value], true)
+                && AssetsService::getThumbUrl($this, 350, 190, iconFallback: false) === null;
             $previewInner = match ($this->kind) {
                 FileKind::Video->value => Html::tag('video', Html::tag('source', '', [
                     'type' => $this->getMimeType(),
@@ -2896,9 +2924,11 @@ JS, [
                     'controls' => true,
                     'preload' => 'metadata',
                 ]),
-                default => Html::tag('div', $this->getPreviewThumbImg(350, 190), [
-                    'class' => 'preview-thumb',
-                ]),
+                default => $showsIcon
+                    ? $this->getIconPreviewHtml()
+                    : Html::tag('div', $this->getPreviewThumbImg(350, 190), [
+                        'class' => 'preview-thumb',
+                    ]),
             };
 
             $previewThumbHtml =
@@ -2908,7 +2938,9 @@ JS, [
                         'preview-thumb-container',
                         $this->hasCheckeredThumb() ? 'checkered' : null,
                     ]),
-                    ...$this->previewBackgroundStyles(),
+                    ...($showsIcon
+                        ? ['style' => ['background-image' => 'linear-gradient(color-mix(in oklab, var(--c-surface-sunken), black 5%), var(--c-surface-sunken))']]
+                        : $this->previewBackgroundStyles()),
                 ]).
                 $previewInner.
                 Html::endTag('div'); // .preview-thumb-container
@@ -3159,6 +3191,7 @@ JS;
         unset(
             $names['avoidFilenameConflicts'],
             $names['keepFileOnDelete'],
+            $names['previewText'],
             $names['sanitizeOnUpload'],
             $names['uploadColors'],
         );
@@ -3357,7 +3390,12 @@ JS;
 
             $model->colors = $this->colors?->toArray();
 
+            if ($this->previewTextChanged) {
+                $model->previewText = $this->previewText;
+            }
+
             $model->save();
+            $this->previewTextChanged = false;
 
             // we're not propagating at this point, so save the alt ONLY against the site we're saving to
             DB::table(Table::ASSETS_SITES)
@@ -3410,7 +3448,6 @@ JS;
             ->where('id', $this->id)
             ->update([
                 'deletedWithVolume' => $this->deletedWithVolume,
-                'keptFile' => $this->keepFileOnDelete,
             ]);
 
         return true;
@@ -3419,12 +3456,22 @@ JS;
     #[Override]
     public function afterDelete(): void
     {
+        $trashedAssetDisk = $this->hardDelete ? null : Cms::config()->getTrashedAssetDisk();
+
         if (! $this->keepFileOnDelete) {
-            try {
-                $this->getVolume()->sourceDisk()->delete($this->getPath());
-            } catch (UnableToDeleteFile) {
-                // NBD
+            if ($trashedAssetDisk !== null) {
+                $this->moveFileToTrash($trashedAssetDisk);
+            } else {
+                try {
+                    $this->getVolume()->sourceDisk()->delete($this->getPath());
+                } catch (UnableToDeleteFile) {
+                    // NBD
+                }
             }
+        }
+
+        if ($this->hardDelete && $this->trashedFileExists) {
+            $this->deleteTrashedFile();
         }
 
         $this->deleteTransformData();
@@ -3446,8 +3493,135 @@ JS;
     #[Override]
     public function beforeRestore(): bool
     {
-        // Only allow the asset to be restored if the file was kept on delete
-        return $this->keptFile && parent::beforeRestore();
+        // Only allow the asset to be restored if its file can be too
+        return $this->canRestoreFile() && parent::beforeRestore();
+    }
+
+    #[Override]
+    public function afterRestore(): void
+    {
+        if ($this->trashedFileExists) {
+            $this->restoreFileFromTrash();
+        }
+
+        parent::afterRestore();
+    }
+
+    /**
+     * Returns the path to the asset’s file on the trashed asset disk: its ID, followed by its extension.
+     *
+     * @see GeneralConfig::$trashedAssetDisk
+     */
+    public function getTrashedFilePath(): string
+    {
+        $extension = $this->getExtension();
+
+        return $extension !== '' ? "$this->id.$extension" : (string) $this->id;
+    }
+
+    /**
+     * Returns whether the asset’s file can be restored along with it: either it was moved to the trashed asset disk,
+     * which is still configured, or it was left in place when the asset’s volume was deleted.
+     */
+    private function canRestoreFile(): bool
+    {
+        return $this->deletedWithVolume || (
+            $this->trashedFileExists &&
+            Cms::config()->getTrashedAssetDisk() !== null
+        );
+    }
+
+    /**
+     * Moves the asset’s file to the trashed asset disk, so it can be put back if the asset is restored.
+     */
+    private function moveFileToTrash(string $trashedAssetDisk): void
+    {
+        $sourceDisk = $this->getVolume()->sourceDisk();
+        $path = $this->getPath();
+
+        if (! $sourceDisk->exists($path)) {
+            return;
+        }
+
+        $trashDisk = Storage::disk($trashedAssetDisk);
+        $trashPath = $this->getTrashedFilePath();
+        $this->copyFileBetweenDisks($sourceDisk, $path, $trashDisk, $trashPath);
+
+        // The disks aren't part of the transaction, so the original only goes once the deletion is committed, and the
+        // copy if it's rolled back
+        DB::afterCommit(fn () => $sourceDisk->delete($path));
+        DB::afterRollBack(function () use ($trashDisk, $trashPath) {
+            $trashDisk->delete($trashPath);
+            $this->trashedFileExists = false;
+        });
+
+        DB::table(Table::ASSETS)->where('id', $this->id)->update(['trashedFileExists' => true]);
+        $this->trashedFileExists = true;
+    }
+
+    /**
+     * Moves the asset’s file back from the trashed asset disk into its volume.
+     *
+     * @throws FileException if a file already exists where the asset’s file belongs
+     */
+    private function restoreFileFromTrash(): void
+    {
+        $trashedAssetDisk = Storage::disk((string) Cms::config()->getTrashedAssetDisk());
+        $volumeDisk = $this->getVolume()->sourceDisk();
+        $path = $this->getPath();
+
+        if ($volumeDisk->exists($path)) {
+            throw new FileException(t('A file with the name “{filename}” already exists.', ['filename' => $this->_filename]));
+        }
+
+        $trashPath = $this->getTrashedFilePath();
+        $this->copyFileBetweenDisks($trashedAssetDisk, $trashPath, $volumeDisk, $path);
+
+        // As with trashing it, the trashed file only goes once the restoration is committed, and the copy if it's
+        // rolled back
+        DB::afterCommit(fn () => $trashedAssetDisk->delete($trashPath));
+        DB::afterRollBack(function () use ($volumeDisk, $path) {
+            $volumeDisk->delete($path);
+            $this->trashedFileExists = true;
+        });
+
+        DB::table(Table::ASSETS)->where('id', $this->id)->update(['trashedFileExists' => false]);
+        $this->trashedFileExists = false;
+    }
+
+    private function deleteTrashedFile(): void
+    {
+        $trashedAssetDisk = Cms::config()->getTrashedAssetDisk();
+
+        if ($trashedAssetDisk !== null) {
+            $trashPath = $this->getTrashedFilePath();
+            DB::afterCommit(fn () => Storage::disk($trashedAssetDisk)->delete($trashPath));
+        }
+    }
+
+    /**
+     * Streams a file from one disk to another, so large files aren’t read into memory.
+     *
+     * @throws FilesystemException
+     */
+    private function copyFileBetweenDisks(Filesystem $from, string $fromPath, Filesystem $to, string $toPath): void
+    {
+        $stream = $from->readStream($fromPath);
+
+        if (! is_resource($stream)) {
+            throw new FilesystemException("Unable to read $fromPath.");
+        }
+
+        try {
+            if (! $to->writeStream($toPath, $stream)) {
+                throw new FilesystemException("Unable to write $toPath.");
+            }
+        } finally {
+            // Some adapters close the stream themselves
+            if (get_resource_type($stream) === 'stream') {
+                fclose($stream);
+            }
+        }
     }
 
     /** @return array<string, array<string, bool|int|string|null>> */
@@ -3526,7 +3700,7 @@ JS;
             $attributes['data']['editable-image'] = true;
         }
 
-        if ($this->dateDeleted && $this->keptFile && Gate::check('save', $this)) {
+        if ($this->dateDeleted && $this->canRestoreFile() && Gate::check('save', $this)) {
             $attributes['data']['restorable'] = true;
         }
 
@@ -3678,6 +3852,9 @@ JS;
             $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
             $this->_width = $this->_height = null;
             $this->colors = null;
+            $this->previewText = $this->isTextFile($filename)
+                ? AssetsHelper::previewText($this->readFileStart($newDisk->readStream($newPath)))
+                : null;
         }
 
         // If there was a new file involved, update file data.
@@ -3693,6 +3870,9 @@ JS;
                 $this->colors = null;
             }
 
+            $this->previewText = $this->isTextFile($filename)
+                ? AssetsHelper::previewText($this->readFileStart(fopen($tempPath, 'rb')))
+                : null;
             $this->size = filesize($tempPath);
             $mtime = filemtime($tempPath);
             $this->dateModified = $mtime ? Date::createFromTimestampUTC($mtime) : null;
@@ -3716,6 +3896,65 @@ JS;
         $this->tempFilePath = null;
         $this->uploadSource = null;
         $this->uploadColors = null;
+    }
+
+    /**
+     * Returns the preview area’s image for a file without a thumbnail: a closer look at the top of a text file that
+     * has something to show, or the file’s icon.
+     */
+    private function getIconPreviewHtml(): string
+    {
+        $previewText = $this->isTextFile($this->_filename) ? $this->getStoredPreviewText() : null;
+
+        if ($previewText !== null && $previewText !== '') {
+            return Html::tag('div', Html::svg(AssetsHelper::previewTextSvg($previewText), sanitize: false, namespace: true), [
+                'class' => ['preview-thumb', 'mx-auto', 'pt-md', 'w-[240px]', 'h-[160px]', 'box-content'],
+            ]);
+        }
+
+        return Html::tag('div', Html::svg(AssetsHelper::iconSvg($this->getExtension()), sanitize: false, namespace: true), [
+            'class' => ['preview-thumb', 'mx-auto', 'py-md', 'w-[160px]', 'h-[160px]', 'box-content'],
+        ]);
+    }
+
+    /**
+     * Returns the asset’s preview text, looking it up if it hasn’t been set since the asset was loaded.
+     */
+    private function getStoredPreviewText(): ?string
+    {
+        if ($this->previewTextChanged || ! $this->id) {
+            return $this->previewText;
+        }
+
+        return DB::table(Table::ASSETS)->where('id', $this->id)->value('previewText');
+    }
+
+    /**
+     * Returns whether a file is plain text, whose start is kept as its preview text.
+     *
+     * @see $previewText
+     */
+    private function isTextFile(string $filename): bool
+    {
+        return FileKind::tryFrom(AssetsHelper::getFileKindByExtension($filename))?->isText() ?? false;
+    }
+
+    /**
+     * Reads as much from the start of a file as its preview text could need, and closes the stream.
+     *
+     * @param  resource|false|null  $stream
+     */
+    private function readFileStart($stream): string
+    {
+        if (! is_resource($stream)) {
+            return '';
+        }
+
+        try {
+            return (string) fread($stream, AssetsHelper::PREVIEW_TEXT_SOURCE_LENGTH);
+        } finally {
+            fclose($stream);
+        }
     }
 
     /**

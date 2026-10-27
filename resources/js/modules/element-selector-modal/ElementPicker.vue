@@ -134,7 +134,7 @@
       >
         <template v-if="index.canSearchSubfolders.value" #search-options>
           <craft-checkbox
-            class="mt-md"
+            class="modal-element-index__subfolders mt-sm"
             .checked="index.includeSubfolders.value"
             @model-value-changed="onIncludeSubfoldersChange"
           >
@@ -170,7 +170,6 @@
 <style lang="scss" scoped>
   .modal-element-index {
     display: grid;
-    background-color: var(--c-color-neutral-fill-quiet);
     height: 100%;
   }
 
@@ -184,8 +183,7 @@
   }
 
   .modal-element-index__sidebar {
-    padding-block: var(--c-spacing-lg);
-    padding-inline: var(--c-spacing-sm);
+    padding: var(--c-spacing-md);
     // Long source lists scroll on their own rather than stretching the modal.
     min-height: 0;
     overflow-y: auto;
@@ -223,9 +221,26 @@
     width: 100%;
   }
 
-  // The modal has no header above the index, so the toolbar gets the same
-  // breathing room as the sidebar beside it.
+  // The modal has no header of its own, so the toolbar takes its place.
   .modal-element-index__main :deep(.element-index__header) {
-    padding-block-start: var(--c-spacing-lg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-header-height);
+    margin-block-end: 0;
+    padding-block: var(--c-spacing-sm);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .modal-element-index__main
+    :deep(.element-index__header:has(.modal-element-index__subfolders)) {
+    padding-block: var(--c-spacing-md);
+  }
+
+  .modal-element-index__main :deep(.cp-table > thead th) {
+    height: auto;
+    padding-block: var(--c-spacing-md);
+    font-size: var(--c-text-sm);
   }
 </style>

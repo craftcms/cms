@@ -2,141 +2,128 @@ import {
   focusReturnFor,
   type FocusReturnResolver,
 } from '@craftcms/ui/utilities/focus-return';
-import {
-  Modal,
-  LEFT_KEY,
-  RIGHT_KEY,
-  UP_KEY,
-  DOWN_KEY,
-  SPACE_KEY,
-  hasAttr,
-  getFocusedElement,
-  bod,
-} from '@craftcms/garnish';
+import {hasAttr} from '@craftcms/garnish';
 import {highlightCodeBlocks} from '@/common/utils/highlight-code';
 
 declare const Craft: any;
 declare const $: any;
-declare const Garnish: any;
 
-const DEFAULTS = {
-  // SAFETY: These nullable dimensions are populated with measured numbers before arithmetic.
+/** A `craft-dialog`. */
+interface PreviewDialog extends HTMLElement {
+  opened: boolean;
+  noHeader: boolean;
+  closeOnOutsideClick: boolean;
+  label: string;
+}
+
+interface PreviewFileModalSettings {
+  minGutter: number;
+  startingWidth: number | null;
+  startingHeight: number | null;
+  [key: string]: unknown;
+}
+
+const DEFAULTS: PreviewFileModalSettings = {
   minGutter: 50,
-  // SAFETY: The starting width is nullable until the preview payload supplies it.
-  startingWidth: null as number | null,
-  // SAFETY: The starting height is nullable until the preview payload supplies it.
-  startingHeight: null as number | null,
-  resizable: true,
-  shadeClass: 'modal-shade fixed inset-0 z-overlay bg-(--c-surface-shade)',
+  startingWidth: null,
+  startingHeight: null,
 };
 
 /** Centers the "No preview available" message in an otherwise empty preview. */
-const EMPTY_CLASSES = 'zilch flex items-center justify-center py-[100px]';
+const EMPTY_CLASSES = 'zilch flex items-center justify-center';
 
 /**
- * PreviewFileModal — a port of `Craft.PreviewFileModal` onto the modern
- * `@craftcms/garnish` `Modal`. Opens a full-screen asset preview via the
- * `assets/preview-file` action and supports arrow-key navigation between
- * sibling assets in an element select.
+ * PreviewFileModal — `Craft.PreviewFileModal`, on a `craft-dialog`. Opens an
+ * asset preview via the `assets/preview-file` action, sized to the image when
+ * there is one, and supports arrow-key navigation between sibling assets in an
+ * element select.
  *
- * Notes:
- * - Uses `quickShow()` to skip the fade-in animation (legacy behavior).
- * - `#$container` is the jQuery reference; `this.$container` (DOM element from
- *   `Modal`) is used only for `setContainer()`.
- * - Static methods `resizePreviewImage` and `showForAsset` are preserved for
- *   external callers (registered on `Craft.PreviewFileModal` via `registerCraftGlobals`).
+ * Preview templates reach the open preview through
+ * `Craft.PreviewFileModal.openInstance`: `$container` is the jQuery-wrapped
+ * element holding the preview HTML, and `resizePreviewImage()` fits an
+ * image preview to the viewport once it has loaded.
  */
-export class PreviewFileModal extends Modal {
+export class PreviewFileModal {
   static openInstance: PreviewFileModal | null = null;
 
-  declare settings: any;
-
+  settings: PreviewFileModalSettings;
   assetId: number | null = null;
-  $spinner: any = null;
-  override $triggerElement: any = null;
+  elementSelect: any = null;
+  $triggerElement: HTMLElement | null = null;
   $bumperButtonStart: any = null;
   $bumperButtonEnd: any = null;
-  elementSelect: any = null;
-  type: any = null;
-  loaded: boolean | null = null;
+  dialog: PreviewDialog;
+  container: HTMLElement;
+  $container: any;
+  visible = false;
   requestId = 0;
-
-  #$container: any = null;
+  /** The footer's Copy and Close buttons, while a text preview is showing. */
+  #footerButtons: HTMLElement[] = [];
 
   /** Finds the opener again, or its menu's button once the menu has closed. */
   #returnFocus: FocusReturnResolver = () => null;
+  /** Keeps the content's tab stop in step with whether it overflows. */
+  #overflowObserver = new ResizeObserver(() => {
+    this.container.tabIndex = this.#overflows() ? 0 : -1;
+  });
+  #destroyed = false;
 
-  constructor(assetId: number, elementSelectOrSettings?: any, settings?: any) {
+  constructor(
+    assetId: number,
+    elementSelectOrSettings?: any,
+    settings?: Partial<PreviewFileModalSettings>
+  ) {
     // (assetId, settings) overload
     if (settings === undefined && $.isPlainObject(elementSelectOrSettings)) {
       settings = elementSelectOrSettings;
       elementSelectOrSettings = null;
     }
 
-    // SAFETY: The legacy Modal base accepts an omitted container during deferred construction.
-    super(undefined as any, {
-      ...DEFAULTS,
-      ...settings,
-      autoShow: false,
-      resizable: true,
-    });
-
+    this.settings = {...DEFAULTS, ...settings};
     this.elementSelect = elementSelectOrSettings ?? null;
-    this.$triggerElement = getFocusedElement();
+
+    const focused = document.activeElement;
+    this.$triggerElement = focused instanceof HTMLElement ? focused : null;
     this.#returnFocus = focusReturnFor(this.$triggerElement);
 
-    if (PreviewFileModal.openInstance) {
-      PreviewFileModal.openInstance.quickHide();
-    }
+    PreviewFileModal.openInstance?.quickHide();
     PreviewFileModal.openInstance = this;
 
-    this.#$container = $('<div/>', {
-      class:
-        'modal previewmodal loading fixed z-overlay box-border overflow-hidden rounded-(--c-radius-lg) bg-overlay shadow-lg',
-    }).appendTo($(bod));
-    this.setContainer(this.#$container[0]);
+    this.dialog = document.createElement('craft-dialog') as PreviewDialog;
+    this.dialog.classList.add('previewmodal');
+    this.dialog.noHeader = true;
+    this.dialog.closeOnOutsideClick = true;
+    this.dialog.label = Craft.t('app', 'Preview file');
 
-    Craft.cp.announce(Craft.t('app', 'Loading'));
-    this.quickShow();
+    this.container = document.createElement('div');
+    this.container.className = 'previewmodal-content size-full overflow-auto';
+    this.container.tabIndex = -1;
+    this.container.setAttribute('role', 'region');
+    this.container.setAttribute('aria-label', this.dialog.label);
+    this.$container = $(this.container);
+    this.dialog.append(this.container);
 
-    Garnish.setFocusWithin(this.#$container[0]);
-
-    this.$bumperButtonStart = Craft.ui.createButton({
-      html: Craft.t('app', 'Close Preview'),
-      class: 'skip-link',
-    });
-    this.addListener(this.$bumperButtonStart[0], 'click', () => {
-      this.hide();
-    });
+    this.$bumperButtonStart = $('<button/>', {
+      type: 'button',
+      class: 'skip-link top-0 start-0',
+      text: Craft.t('app', 'Close Preview'),
+    }).on('click', () => this.hide());
     this.$bumperButtonEnd = this.$bumperButtonStart.clone(true);
+
+    this.dialog.addEventListener('keydown', this.#onKeydown);
+    this.dialog.addEventListener('craft-after-hide', this.#onAfterHide);
+    window.addEventListener('resize', this.#onWindowResize);
+
+    document.body.append(this.dialog);
+    this.dialog.opened = true;
+    this.visible = true;
+    Craft.cp.announce(Craft.t('app', 'Loading'));
 
     this.loadAsset(
       assetId,
       this.settings.startingWidth,
       this.settings.startingHeight
     );
-
-    // SAFETY: The keydown listener always receives a native KeyboardEvent.
-    this.addListener(this.#$container[0], 'keydown', ((ev: KeyboardEvent) => {
-      switch (ev.keyCode) {
-        case LEFT_KEY:
-        case UP_KEY:
-          ev.preventDefault();
-          this.previewPreviousAsset();
-          break;
-        case RIGHT_KEY:
-        case DOWN_KEY:
-          ev.preventDefault();
-          this.previewNextAsset();
-          break;
-        case SPACE_KEY:
-          ev.preventDefault();
-          if (ev.shiftKey) {
-            this.hide();
-          }
-          break;
-      }
-    }) as any);
   }
 
   getSelectItem(): any {
@@ -147,62 +134,39 @@ export class PreviewFileModal extends Modal {
   }
 
   previewPreviousAsset(): void {
-    const $element = this.getSelectItem();
-    if ($element) {
-      const index = this.elementSelect.getItemIndex($element);
-      const $prev = this.elementSelect.getPreviousItem(index);
-      if ($prev?.length) {
-        if (PreviewFileModal.showForAsset($prev, this.elementSelect)) {
-          this.elementSelect.deselectAll();
-          this.elementSelect.selectItem($prev, false, false);
-        }
-      }
-    }
+    this.#previewSibling('getPreviousItem');
   }
 
   previewNextAsset(): void {
+    this.#previewSibling('getNextItem');
+  }
+
+  #previewSibling(getter: 'getPreviousItem' | 'getNextItem'): void {
     const $element = this.getSelectItem();
-    if ($element) {
-      const index = this.elementSelect.getItemIndex($element);
-      const $next = this.elementSelect.getNextItem(index);
-      if ($next?.length) {
-        if (PreviewFileModal.showForAsset($next, this.elementSelect)) {
-          this.elementSelect.deselectAll();
-          this.elementSelect.selectItem($next, false, false);
-        }
-      }
+    if (!$element) return;
+
+    const index = this.elementSelect.getItemIndex($element);
+    const $sibling = this.elementSelect[getter](index);
+    if (
+      $sibling?.length &&
+      PreviewFileModal.showForAsset($sibling, this.elementSelect)
+    ) {
+      this.elementSelect.deselectAll();
+      this.elementSelect.selectItem($sibling, false, false);
     }
   }
 
-  override onFadeOut(): void {
-    super.onFadeOut();
-    const $element = this.getSelectItem();
-    if ($element) {
-      this.elementSelect.focusItem($element);
-    } else {
-      this.#returnFocus()?.focus();
-    }
+  /** Closes the preview, returning focus to the asset or whatever opened it. */
+  hide(): void {
+    if (!this.visible) return;
+    this.visible = false;
+    this.dialog.opened = false;
+  }
+
+  /** Closes the preview immediately, without returning focus. */
+  quickHide(): void {
+    this.visible = false;
     this.destroy();
-  }
-
-  _addBumperButtons(): void {
-    this.#$container
-      .prepend(this.$bumperButtonStart)
-      .append(this.$bumperButtonEnd);
-  }
-
-  _addModalName(): void {
-    const headingId = 'preview-heading';
-    $('<h1/>', {
-      class: 'sr-only',
-      id: headingId,
-      text: Craft.t('app', 'Preview file'),
-    }).prependTo(this.#$container);
-    this.#$container.attr('aria-labelledby', headingId);
-  }
-
-  _addLiveRegion(): void {
-    this.#$container.append(this.$liveRegion);
   }
 
   /** @deprecated */
@@ -211,12 +175,22 @@ export class PreviewFileModal extends Modal {
     return true;
   }
 
-  override destroy(): void {
-    super.destroy();
+  destroy(): void {
+    if (this.#destroyed) return;
+    this.#destroyed = true;
+    this.visible = false;
+
+    this.dialog.removeEventListener('keydown', this.#onKeydown);
+    this.dialog.removeEventListener('craft-after-hide', this.#onAfterHide);
+    window.removeEventListener('resize', this.#onWindowResize);
+    this.#overflowObserver.disconnect();
+    this.dialog.remove();
+
     if (PreviewFileModal.openInstance === this) {
       PreviewFileModal.openInstance = null;
-      Craft.focalPoint?.destruct();
-      Craft.focalPoint = null;
+      // SAFETY: The focal point bundle owns the optional imageFocalPoint global.
+      (window as any).imageFocalPoint?.destruct();
+      delete (window as any).imageFocalPoint;
     }
   }
 
@@ -226,175 +200,230 @@ export class PreviewFileModal extends Modal {
     startingHeight?: number | null
   ): void {
     this.assetId = assetId;
-    this.#$container.empty();
-    this.loaded = false;
-    this.desiredHeight = null;
-    this.desiredWidth = null;
+    this.$container.empty().removeClass(EMPTY_CLASSES);
+    this.#removeFooterButtons();
 
-    let containerHeight = $(window).height() * 0.66;
-    let containerWidth = Math.min(
-      (containerHeight / 3) * 4,
-      $(window).width() - this.settings.minGutter * 2
-    );
-    containerHeight = (containerWidth / 4) * 3;
+    const [width, height] =
+      startingWidth && startingHeight
+        ? this.#fit(startingWidth, startingHeight)
+        : this.#defaultSize();
+    this._resizeContainer(width, height);
 
-    if (startingWidth && startingHeight) {
-      const ratio = startingWidth / startingHeight;
-      containerWidth = Math.min(
-        startingWidth,
-        $(window).width() - this.settings.minGutter * 2
-      );
-      containerHeight = Math.min(
-        containerWidth / ratio,
-        $(window).height() - this.settings.minGutter * 2
-      );
-      containerWidth = containerHeight * ratio;
-
-      if (
-        containerWidth >
-        Math.min(startingWidth, $(window).width() - this.settings.minGutter * 2)
-      ) {
-        containerWidth = Math.min(
-          startingWidth,
-          $(window).width() - this.settings.minGutter * 2
-        );
-        containerHeight = containerWidth / ratio;
-      }
-    }
-
-    this._resizeContainer(containerWidth, containerHeight);
-
-    this.$spinner = $('<craft-spinner/>', {
-      class: 'absolute inset-0 m-auto size-fit',
-    }).appendTo(this.#$container);
+    const spinner = document.createElement('craft-spinner');
+    spinner.className = 'absolute inset-0 m-auto size-fit';
+    this.container.append(spinner);
 
     this.requestId++;
     const requestId = this.requestId;
 
     const onResponse = () => {
-      this.#$container.removeClass('loading');
-      this.$spinner.remove();
-      this.loaded = true;
+      spinner.remove();
     };
 
     Craft.sendActionRequest('POST', 'assets/preview-file', {
       data: {assetId, requestId},
     })
       .then(async (response: any) => {
-        onResponse();
         if (response.data.requestId !== this.requestId) return;
+        onResponse();
 
         if (!response.data.previewHtml) {
-          this.#$container.addClass(EMPTY_CLASSES);
-          this.#$container.append(
-            $('<p/>', {text: Craft.t('app', 'No preview available.')})
-          );
+          this.$container
+            .addClass(EMPTY_CLASSES)
+            .append($('<p/>', {text: Craft.t('app', 'No preview available.')}));
           this._addBumperButtons();
           return;
         }
 
-        this.#$container.removeClass(EMPTY_CLASSES);
-        this.#$container.attr('data-asset-id', this.assetId);
-        this.#$container.append(response.data.previewHtml);
-        highlightCodeBlocks(this.#$container[0]);
+        this.container.dataset.assetId = String(assetId);
+        this.$container.append(response.data.previewHtml);
+        const text = this.container.querySelector('pre > code')?.textContent;
+        highlightCodeBlocks(this.container);
+        if (text !== undefined) {
+          this.#addFooterButtons(text);
+        }
         this._addBumperButtons();
-        this._addLiveRegion();
-        this._addModalName();
+        this.#focusContent();
         await Craft.appendHeadHtml(response.data.headHtml);
         await Craft.appendBodyHtml(response.data.bodyHtml);
       })
       .catch(({response}: any) => {
+        if (requestId !== this.requestId) return;
         onResponse();
         Craft.cp.displayError(response?.data?.message);
         this.hide();
       });
   }
 
-  _resizeContainer(containerWidth: number, containerHeight: number): void {
-    this.#$container.css({
-      width: containerWidth,
-      'min-width': containerWidth,
-      'max-width': containerWidth,
-      height: containerHeight,
-      'min-height': containerHeight,
-      'max-height': containerHeight,
-      top: ($(window).height() - containerHeight) / 2,
-      left: ($(window).width() - containerWidth) / 2,
+  /** Offers to copy a text preview, and a visible way to close it. */
+  #addFooterButtons(text: string): void {
+    const copyButton = document.createElement('craft-button');
+    copyButton.setAttribute('type', 'button');
+    copyButton.setAttribute('icon', 'custom-icons/clone-dashed');
+    copyButton.textContent = Craft.t('app', 'Copy');
+    copyButton.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(text);
+        Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
+      } catch {
+        Craft.cp.displayError(
+          Craft.t('app', 'Couldn’t copy to the clipboard.')
+        );
+      }
     });
+
+    const closeButton = document.createElement('craft-button');
+    closeButton.setAttribute('type', 'button');
+    closeButton.textContent = Craft.t('app', 'Close');
+    closeButton.addEventListener('click', () => this.hide());
+
+    this.#footerButtons = [copyButton, closeButton];
+    for (const button of this.#footerButtons) {
+      button.slot = 'footer';
+      this.dialog.append(button);
+    }
   }
 
+  #removeFooterButtons(): void {
+    for (const button of this.#footerButtons) {
+      button.remove();
+    }
+    this.#footerButtons = [];
+  }
+
+  _addBumperButtons(): void {
+    this.$container
+      .prepend(this.$bumperButtonStart)
+      .append(this.$bumperButtonEnd);
+  }
+
+  _resizeContainer(width: number, height: number): void {
+    for (const prop of ['inline-size', 'min-inline-size', 'max-inline-size']) {
+      this.dialog.style.setProperty(`--c-dialog-${prop}`, `${width}px`);
+    }
+    for (const prop of ['block-size', 'max-block-size']) {
+      this.dialog.style.setProperty(`--c-dialog-${prop}`, `${height}px`);
+    }
+  }
+
+  /** A 4:3 box two thirds the viewport's height, within the gutters. */
+  #defaultSize(): [number, number] {
+    const width = Math.min(
+      ((window.innerHeight * 0.66) / 3) * 4,
+      window.innerWidth - this.settings.minGutter * 2
+    );
+    return [Math.round(width), Math.round((width / 4) * 3)];
+  }
+
+  /** Scales `width` × `height` down, never up, to fit within the gutters. */
+  #fit(width: number, height: number): [number, number] {
+    const gutter = this.settings.minGutter * 2;
+    const scale = Math.min(
+      1,
+      (window.innerWidth - gutter) / width,
+      (window.innerHeight - gutter) / height
+    );
+    return [Math.round(width * scale), Math.round(height * scale)];
+  }
+
+  #onKeydown = (ev: KeyboardEvent): void => {
+    switch (ev.key) {
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        if (
+          this.getSelectItem() &&
+          !(ev.key === 'ArrowUp' && this.#scrollsVertically())
+        ) {
+          ev.preventDefault();
+          this.previewPreviousAsset();
+        }
+        break;
+      case 'ArrowRight':
+      case 'ArrowDown':
+        if (
+          this.getSelectItem() &&
+          !(ev.key === 'ArrowDown' && this.#scrollsVertically())
+        ) {
+          ev.preventDefault();
+          this.previewNextAsset();
+        }
+        break;
+      case ' ':
+        if (ev.shiftKey) {
+          ev.preventDefault();
+          this.hide();
+        }
+        break;
+    }
+  };
+
+  #onAfterHide = (ev: Event): void => {
+    if (ev.target !== this.dialog) return;
+
+    const $element = this.getSelectItem();
+    this.destroy();
+
+    if ($element) {
+      this.elementSelect.focusItem($element);
+    } else {
+      this.#returnFocus()?.focus();
+    }
+  };
+
+  #onWindowResize = (): void => {
+    if (this.container.querySelector('img[data-maxwidth]')) {
+      PreviewFileModal.resizePreviewImage();
+    }
+  };
+
+  #overflows(): boolean {
+    const {scrollWidth, clientWidth} = this.container;
+    return this.#scrollsVertically() || scrollWidth > clientWidth;
+  }
+
+  #scrollsVertically(): boolean {
+    return this.container.scrollHeight > this.container.clientHeight;
+  }
+
+  /**
+   * Lets the keyboard reach and scroll the loaded preview. It joins the tab
+   * order when it overflows the dialog, and takes focus unless something
+   * else in the dialog already has it, since the dialog's own focus is on an
+   * element the scroll keys can't move.
+   */
+  #focusContent(): void {
+    this.#overflowObserver.disconnect();
+    for (const element of [this.container, ...this.container.children]) {
+      this.#overflowObserver.observe(element);
+    }
+    this.container.tabIndex = this.#overflows() ? 0 : -1;
+    const active = document.activeElement;
+    if (
+      active === this.dialog ||
+      active === document.body ||
+      active === this.container
+    ) {
+      this.container.focus({preventScroll: true});
+    }
+  }
+
+  /** Fits the open image preview, and the dialog around it, to the viewport. */
   static resizePreviewImage(): void {
     const instance = PreviewFileModal.openInstance;
-    if (!instance) return;
+    const img =
+      instance?.container.querySelector<HTMLImageElement>('img[data-maxwidth]');
+    if (!instance || !img) return;
 
-    let containerHeight = $(window).height() * 0.66;
-    let containerWidth = Math.min(
-      (containerHeight / 3) * 4,
-      $(window).width() - instance.settings.minGutter * 2
+    const [width, height] = instance.#fit(
+      Number(img.dataset.maxwidth),
+      Number(img.dataset.maxheight)
     );
-    containerHeight = (containerWidth / 4) * 3;
+    img.style.width = `${width}px`;
+    img.style.height = `${height}px`;
+    instance._resizeContainer(width, height);
 
-    const $img = instance.#$container.find('img');
-    $img.css({width: containerWidth, height: containerHeight});
-
-    let imageRatio: number | undefined;
-
-    if (instance.loaded && $img.length) {
-      const maxWidth = $img.data('maxwidth');
-      const maxHeight = $img.data('maxheight');
-      imageRatio = maxWidth / maxHeight;
-      const desiredWidth = instance.desiredWidth ?? instance.getWidth();
-      const desiredHeight = instance.desiredHeight ?? instance.getHeight();
-      let width = Math.min(desiredWidth, maxWidth);
-      let height = Math.round(Math.min(maxHeight, width / imageRatio));
-      if (height > desiredHeight) height = desiredHeight;
-      width = Math.round(height * imageRatio);
-      $img.css({width, height});
-      instance._resizeContainer(width, height);
-      instance.desiredWidth = width;
-      instance.desiredHeight = height;
-    }
-
-    instance.updateSizeAndPosition();
-
-    if (instance.loaded && $img.length && imageRatio !== undefined) {
-      containerWidth = Math.round(
-        Math.min(
-          Math.max($img.height() * imageRatio),
-          $(window).width() - instance.settings.minGutter * 2
-        )
-      );
-      containerHeight = Math.round(
-        Math.min(
-          Math.max(containerWidth / imageRatio),
-          $(window).height() - instance.settings.minGutter * 2
-        )
-      );
-      containerWidth = Math.round(containerHeight * imageRatio);
-
-      if (
-        containerWidth >
-        Math.min(
-          containerWidth,
-          $(window).width() - instance.settings.minGutter * 2
-        )
-      ) {
-        containerWidth = Math.min(
-          containerWidth,
-          $(window).width() - instance.settings.minGutter * 2
-        );
-        containerHeight = containerWidth / imageRatio;
-      }
-
-      instance._resizeContainer(containerWidth, containerHeight);
-      $img.css({width: containerWidth, height: containerHeight});
-
-      // SAFETY: The image editor bundle owns the optional imageFocalPoint global.
-      if ((window as any).imageFocalPoint) {
-        // SAFETY: The guarded image editor global exposes renderFocal.
-        (window as any).imageFocalPoint.renderFocal();
-      }
-    }
+    // SAFETY: The focal point bundle owns the optional imageFocalPoint global.
+    (window as any).imageFocalPoint?.renderFocal();
   }
 
   static showForAsset($element: any, elementSelect?: any): boolean {
@@ -408,11 +437,25 @@ export class PreviewFileModal extends Modal {
       return false;
     }
 
-    const settings: any = {};
+    const settings: Partial<PreviewFileModalSettings> = {};
     if ($element.data('image-width')) {
       settings.startingWidth = $element.data('image-width');
       settings.startingHeight = $element.data('image-height');
     }
+
+    const instance = PreviewFileModal.openInstance;
+    if (
+      instance?.visible &&
+      instance.elementSelect === (elementSelect ?? null)
+    ) {
+      instance.loadAsset(
+        $element.data('id'),
+        settings.startingWidth,
+        settings.startingHeight
+      );
+      return true;
+    }
+
     new PreviewFileModal($element.data('id'), elementSelect, settings);
     return true;
   }

@@ -8,16 +8,11 @@
 namespace craft\web\assets\fabric;
 
 use craft\web\AssetBundle;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Fabric asset bundle.
- * @deprecated 6.0.0
+ * @deprecated 6.0.0 It doesn’t register Fabric.js anymore. Plugins that rely on Fabric.js should bundle it themselves.
  */
 class FabricAsset extends AssetBundle
 {
-    public function registerAssetFiles($view)
-    {
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\FabricAsset::class);
-    }
 }

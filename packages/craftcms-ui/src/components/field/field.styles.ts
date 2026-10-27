@@ -61,14 +61,6 @@ export default css`
     font-size: var(--c-field-label-font-size, inherit);
     font-weight: var(--c-field-label-font-weight, bold);
     color: var(--c-field-label-color, inherit);
-    margin-block-end: var(
-      --c-field-label-margin-block-end,
-      var(--c-spacing-sm)
-    );
-
-    &:has(+ .form-field__help-text) {
-      margin-block-end: 0;
-    }
   }
 
   /* Pushes slotted label extras to the far end of the heading row. */
@@ -105,16 +97,6 @@ export default css`
     color: var(--gray-700, #3f4d5a);
     border: 1px solid var(--border-hairline, hsl(211deg 20% 44% / 25%));
     border-radius: var(--c-radius-sm, 3px);
-  }
-
-  /* Instructions (.field > .instructions in the CP) */
-  .form-field__help-text {
-    display: block;
-    margin-block-end: var(--c-spacing-sm);
-  }
-
-  .form-field__group-two .form-field__help-text {
-    margin-block: var(--c-spacing-xs, 0.3125rem) 0;
   }
 
   /* Input container (.field > .input in the CP) */
@@ -157,14 +139,6 @@ export default css`
     min-width: 0;
     margin: 0;
     font-size: 100%;
-  }
-
-  /* Tip/warning notices (field-notice.blade.php renders these with p-0 mt-1) */
-  .field-notice {
-    --c-callout-icon-padding-inline: 0;
-    --c-callout-text-padding-inline: var(--c-spacing-sm) 0;
-    padding: 0;
-    margin-block-start: var(--c-spacing-xs, 0.25rem);
   }
 
   /* Error styling hook, mirroring .field.has-errors / .input.errors */

@@ -74,6 +74,7 @@
               :aria-label="t('Close')"
               variant="plain"
               size="small"
+              flush="inline-end"
               @click="emit('close')"
             ></craft-button>
           </slot>
