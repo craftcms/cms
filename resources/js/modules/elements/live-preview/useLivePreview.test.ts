@@ -179,6 +179,29 @@ describe('useLivePreview', () => {
     expect(post).toHaveBeenCalledTimes(2);
   });
 
+  it('loads one frame when a save changes the token as it lands', async () => {
+    const preview = mount();
+    await preview.open();
+    const before = preview.frames.value.at(-1)!.id;
+
+    data.value = payload({
+      token: 'token-2',
+      tokenParams: {
+        canonicalId: 1,
+        siteId: 1,
+        draftId: 9,
+        previewToken: 'enc-2',
+      },
+    });
+    // The token watcher starts a reload; the editor's own refresh for the
+    // save comes right after it, before that reload has its URL.
+    await nextTick();
+    await preview.refresh();
+
+    expect(preview.frames.value.at(-1)!.id).toBe(before + 1);
+    expect(frameUrl(preview).searchParams.get('token')).toBe('token-2');
+  });
+
   it('closes after saving pending edits', async () => {
     const preview = mount();
     await preview.open();

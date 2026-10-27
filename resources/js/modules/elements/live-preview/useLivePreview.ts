@@ -225,11 +225,39 @@ export function useLivePreview(
       return;
     }
 
+    // Asked again while the last reload still waits on its URL, as a save
+    // that also changes the token does: the URL isn't built yet, so it'll be
+    // current for both.
+    if (pendingLoad?.target === target) {
+      pendingLoad.resetScroll ||= resetScroll;
+      return pendingLoad.done;
+    }
+
+    const load: PendingLoad = {target, resetScroll, done: Promise.resolve()};
+    pendingLoad = load;
+    load.done = loadFrame(load).finally(() => {
+      if (pendingLoad === load) {
+        pendingLoad = null;
+      }
+    });
+
+    return load.done;
+  }
+
+  interface PendingLoad {
+    target: LivePreviewTarget;
+    resetScroll: boolean;
+    done: Promise<void>;
+  }
+
+  let pendingLoad: PendingLoad | null = null;
+
+  async function loadFrame(load: PendingLoad): Promise<void> {
     let url: string;
     resolving.value++;
 
     try {
-      url = await urlFor(target);
+      url = await urlFor(load.target);
       error.value = null;
     } catch (e) {
       error.value = e instanceof Error ? e.message : String(e);
@@ -242,7 +270,7 @@ export function useLivePreview(
       return;
     }
 
-    pendingScroll = resetScroll ? null : readScroll(readyFrame.value);
+    pendingScroll = load.resetScroll ? null : readScroll(readyFrame.value);
 
     frames.value = [
       // Anything still loading behind the current frame is out of date.
@@ -335,8 +363,8 @@ export function useLivePreview(
     events.emit('after-save-draft', {data});
   }
 
-  // A canonical element's first autosave creates the draft the token has to
-  // point at instead, so the frame reloads against the new one.
+  // The token now points at another element, draft or revision, so the frame
+  // reloads even for a target that doesn't refresh automatically.
   watch(
     () => token.value?.identity,
     (identity, previous) => {
