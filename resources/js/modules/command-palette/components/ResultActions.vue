@@ -1,6 +1,7 @@
 <script setup lang="ts">
   /**
-   * The active result's own actions, in a group after the palette's listbox.
+   * A result's own actions, in a group after the palette's listbox: the
+   * active result's, or the one under the pointer's.
    *
    * A listbox option can't hold controls, so the menu lives out here instead,
    * where Tab from the search input reaches it. It's drawn over the space the
@@ -15,6 +16,8 @@
 
   const props = defineProps<{
     item: CommandPaletteItem;
+    /** Whether its row is the active option, rather than just under the pointer. */
+    active: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -78,6 +81,7 @@
     role="group"
     class="command-palette-actions"
     :class="{
+      'command-palette-actions--quiet': !props.active,
       'command-palette-actions--danger': props.item.variant === 'danger',
     }"
     :aria-label="t('Actions for {item}', {item: props.item.label})"
@@ -103,6 +107,14 @@
 
   .command-palette-actions--danger {
     color: var(--c-color-danger-on-normal);
+  }
+
+  .command-palette-actions--quiet {
+    color: var(--c-color-neutral-on-quiet);
+  }
+
+  .command-palette-actions--quiet.command-palette-actions--danger {
+    color: var(--c-color-danger-on-quiet);
   }
 
   @media (forced-colors: active) {

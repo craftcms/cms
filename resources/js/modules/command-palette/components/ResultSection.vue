@@ -27,11 +27,13 @@
     heading: string;
     rows: ResultRow[];
     selectedIndex: number;
+    /** The row under the pointer, highlighted while its actions sit over it. */
+    hoveredIndex?: number;
   }>();
 
   const emit = defineEmits<{
     (event: 'activate', item: CommandPaletteItem, trigger: MouseEvent): void;
-    (event: 'select', index: number): void;
+    (event: 'hover', index: number): void;
   }>();
 
   /**
@@ -76,12 +78,13 @@
       class="command-palette-row"
       :class="{
         'command-palette-row--selected': row.index === selectedIndex,
+        'command-palette-row--hovered': row.index === hoveredIndex,
         'command-palette-row--danger': row.item.variant === 'danger',
       }"
       :aria-selected="row.index === selectedIndex ? 'true' : 'false'"
       @mousedown.prevent
       @click="emit('activate', row.item, $event)"
-      @pointermove="emit('select', row.index)"
+      @pointermove="emit('hover', row.index)"
     >
       <span class="command-palette-row__icon" aria-hidden="true">
         <span
@@ -187,16 +190,16 @@
     margin-block-start: var(--c-spacing-xs);
   }
 
-  @media (hover: hover) {
-    .command-palette-row:hover:not(.command-palette-row--selected) {
-      background-color: var(--c-color-neutral-fill-quiet);
-      color: var(--c-color-neutral-on-quiet);
-    }
+  .command-palette-row--hovered:not(.command-palette-row--selected) {
+    background-color: var(--c-color-neutral-fill-quiet);
+    color: var(--c-color-neutral-on-quiet);
+  }
 
-    .command-palette-row--danger:hover:not(.command-palette-row--selected) {
-      background-color: var(--c-color-danger-fill-quiet);
-      color: var(--c-color-danger-on-quiet);
-    }
+  .command-palette-row--danger.command-palette-row--hovered:not(
+      .command-palette-row--selected
+    ) {
+    background-color: var(--c-color-danger-fill-quiet);
+    color: var(--c-color-danger-on-quiet);
   }
 
   .command-palette-row--selected {

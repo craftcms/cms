@@ -201,11 +201,31 @@
     Boolean(selectedRow.value && hasActions(selectedRow.value.item))
   );
 
-  // The top result is selected until the person picks another; once they
-  // have, theirs stays selected as other providers' results arrive.
+  /**
+   * The result under the pointer, by id. It's only highlighted, and shows its
+   * actions: the active option changes with the keys or a click alone, so
+   * moving the pointer doesn't make screen readers read each row it crosses.
+   */
+  const hoveredId = shallowRef<string | null>(null);
+  const hoveredRow = computed(
+    () => rows.value.find((row) => row.item.id === hoveredId.value) ?? null
+  );
+
+  /** Whose actions show: the result under the pointer's, or else the active one's. */
+  const actionsRow = computed(
+    () =>
+      [hoveredRow.value, selectedRow.value].find(
+        (row) => row && hasActions(row.item)
+      ) ?? null
+  );
+
+  // The top result is selected until the person picks another, or moves to
+  // its actions; once they have, theirs stays selected as other providers'
+  // results arrive.
   watch(query, () => {
     selectionMoved.value = false;
     selectedIndex.value = 0;
+    hoveredId.value = null;
   });
 
   watch(rows, (current, previous) => {
@@ -218,6 +238,13 @@
     const selectedId = previous?.[selectedIndex.value]?.item.id;
     const index = current.findIndex((row) => row.item.id === selectedId);
     selectedIndex.value = Math.max(index, 0);
+  });
+
+  // A result's actions go when it does, and focus on them would go with them.
+  watch(actionsRow, (current, previous) => {
+    if (current?.item.id !== previous?.item.id && actionsHaveFocus()) {
+      input.value?.focus();
+    }
   });
 
   /** Which providers couldn’t be searched, if any. */
@@ -547,25 +574,29 @@
     close();
   }
 
+  function actionsHaveFocus(): boolean {
+    return Boolean(document.activeElement?.closest('.command-palette-actions'));
+  }
+
   function select(index: number): void {
     selectedIndex.value = index;
     selectionMoved.value = true;
   }
 
   /**
-   * The pointer makes the option it moves over the active one, so the
-   * actions can be reached for any result. Not while focus is on the actions,
-   * though: the menu, and the pointer on its way to it, would lose its row.
+   * Not while focus is on the actions, though: the menu, and the pointer on
+   * its way to it, would lose its row.
    */
-  function onOptionPointer(index: number): void {
-    if (
-      index === selectedIndex.value ||
-      document.activeElement?.closest('.command-palette-actions')
-    ) {
-      return;
+  function onOptionHover(index: number): void {
+    if (!actionsHaveFocus()) {
+      hoveredId.value = rows.value[index]?.item.id ?? null;
     }
+  }
 
-    select(index);
+  function onResultsPointerLeave(): void {
+    if (!actionsHaveFocus()) {
+      hoveredId.value = null;
+    }
   }
 
   async function scrollSelectedIntoView(): Promise<void> {
@@ -577,11 +608,11 @@
     }
   }
 
-  /** Where the active result's actions go: over the space its option keeps for them. */
+  /** Where the shown actions go: over the space their option keeps for them. */
   const actionsStyle = shallowRef<Record<string, string>>({});
 
   function placeActions(): void {
-    const row = selectedRow.value;
+    const row = actionsRow.value;
     const container = results.value;
     const slot = row
       ? document
@@ -603,7 +634,7 @@
     };
   }
 
-  watch([selectedRow, rows], placeActions, {flush: 'post'});
+  watch([actionsRow, rows], placeActions, {flush: 'post'});
   onMounted(() => window.addEventListener('resize', placeActions));
   onBeforeUnmount(() => window.removeEventListener('resize', placeActions));
 
@@ -614,6 +645,7 @@
       return;
     }
 
+    hoveredId.value = null;
     select((selectedIndex.value + step + count) % count);
     void scrollSelectedIntoView();
   }
@@ -782,6 +814,7 @@
           ref="results"
           class="command-palette__results"
           :aria-busy="search.searching.value ? 'true' : 'false'"
+          @pointerleave="onResultsPointerLeave"
         >
           <div
             v-if="busy || (search.searching.value && !rows.length)"
@@ -804,15 +837,18 @@
               :heading="section.heading"
               :rows="section.rows"
               :selected-index="selectedIndex"
+              :hovered-index="hoveredRow?.index ?? -1"
               @activate="(item, trigger) => activate(item, {trigger})"
-              @select="onOptionPointer"
+              @hover="onOptionHover"
             />
           </div>
           <ResultActions
-            v-if="selectedRow && selectedHasActions"
-            :key="selectedRow.item.id"
-            :item="selectedRow.item"
+            v-if="actionsRow"
+            :key="actionsRow.item.id"
+            :item="actionsRow.item"
+            :active="actionsRow === selectedRow"
             :style="actionsStyle"
+            @focusin="selectionMoved = true"
             @dismiss="dismissForMenuAction"
           />
           <craft-empty

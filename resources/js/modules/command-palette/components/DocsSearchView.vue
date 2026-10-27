@@ -28,6 +28,8 @@
   const searching = shallowRef(false);
   const failed = shallowRef(false);
   const selectedIndex = shallowRef(0);
+  /** The row under the pointer, only highlighted: the keys and clicks choose. */
+  const hoveredIndex = shallowRef(-1);
   let timer: ReturnType<typeof setTimeout> | undefined;
   let controller: AbortController | null = null;
 
@@ -104,6 +106,7 @@
     }
 
     selectedIndex.value = 0;
+    hoveredIndex.value = -1;
     searching.value = false;
   }
 
@@ -122,6 +125,7 @@
         event.preventDefault();
 
         if (count) {
+          hoveredIndex.value = -1;
           selectedIndex.value =
             (selectedIndex.value +
               (event.key === 'ArrowDown' ? 1 : -1) +
@@ -182,6 +186,7 @@
         role="listbox"
         :aria-label="t('Results')"
         :hidden="!rows.length"
+        @pointerleave="hoveredIndex = -1"
       >
         <ResultSection
           v-if="rows.length"
@@ -189,8 +194,9 @@
           :heading="t('Results')"
           :rows="rows"
           :selected-index="selectedIndex"
+          :hovered-index="hoveredIndex"
           @activate="onActivate"
-          @select="(index) => (selectedIndex = index)"
+          @hover="(index) => (hoveredIndex = index)"
         />
       </div>
       <craft-empty

@@ -42,7 +42,9 @@ vi.mock('@/common/composables/useGlobalSidebar', () => ({
 
 vi.mock('@actions/CommandPaletteController', () => ({
   index: {url: () => '/palette'},
-  search: {url: ({provider}: {provider: string}) => `/palette/${provider}`},
+  search: {
+    url: ({provider}: {provider: string}) => `/palette/${provider}`,
+  },
 }));
 
 vi.mock('@/common/components/Modal.vue', () => ({
@@ -96,6 +98,14 @@ function serverAction(id: string, label: string, extra = {}) {
     variant: null,
     ...extra,
   };
+}
+
+/** A server answer the test gives when it chooses. */
+function deferred() {
+  let resolve!: (value: unknown) => void;
+  const promise = new Promise((done) => (resolve = done));
+
+  return {promise, resolve};
 }
 
 const flush = async () => {
@@ -351,6 +361,84 @@ describe('CommandPalette', () => {
     expect(hints()).toContain('Tab Actions');
   });
 
+  it('keeps focus on the actions when other providers’ results come in', async () => {
+    const entries = deferred();
+    get.mockImplementation(async (url: string) =>
+      url === '/palette/entries'
+        ? entries.promise
+        : ({
+            data: {
+              providers: [{handle: 'entries', label: 'Entries'}],
+              actions: [
+                serverAction(
+                  'enable-maintenance-mode',
+                  'Enable maintenance mode',
+                  {
+                    actions: [
+                      {
+                        label: 'Learn more',
+                        href: 'https://example.test/maintenance',
+                      },
+                    ],
+                  }
+                ),
+              ],
+            },
+          } as never)
+    );
+    const input = await open();
+    await type(input, 'maintenance');
+    expect(selected(input)).toBe('Enable maintenance mode');
+
+    const button = actionsButton();
+    button.focus();
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    entries.resolve({
+      data: {results: [serverAction('entry-maintenance', 'Maintenance')]},
+    });
+    await flush();
+
+    expect(option('Maintenance')).toBeTruthy();
+    expect(selected(input)).toBe('Enable maintenance mode');
+    expect(document.activeElement).toBe(button);
+  });
+
+  it('moves focus to the search box when the result whose actions have it goes', async () => {
+    const page = serverAction('entry-maintenance', 'Maintenance page', {
+      actions: [
+        {label: 'Learn more', href: 'https://example.test/maintenance'},
+      ],
+    });
+    let later = deferred();
+    get.mockImplementation(async (url: string) =>
+      url === '/palette/entries'
+        ? later.promise
+        : ({
+            data: {
+              providers: [{handle: 'entries', label: 'Entries'}],
+              actions: [],
+            },
+          } as never)
+    );
+    const input = await open();
+    await type(input, 'main');
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    later.resolve({data: {results: [page]}});
+    await flush();
+
+    // Its result stays while the next search runs, then that one drops it.
+    later = deferred();
+    await type(input, 'maintenance');
+    expect(selected(input)).toBe('Maintenance page');
+    actionsButton().focus();
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    later.resolve({data: {results: []}});
+    await flush();
+
+    expect(document.querySelector('.command-palette-actions')).toBeNull();
+    expect(document.activeElement).toBe(input);
+  });
+
   it('says in an option’s name when Tab reaches its actions', async () => {
     await open();
 
@@ -362,26 +450,48 @@ describe('CommandPalette', () => {
     );
   });
 
-  it('makes the option under the pointer the active one, unless focus is on the actions', async () => {
+  it('shows the actions of the result under the pointer, without making it the active option', async () => {
     const input = await open();
+    const active = input.getAttribute('aria-activedescendant');
+    expect(document.querySelector('.command-palette-actions')).toBeNull();
 
-    option('Enable maintenance mode').dispatchEvent(
-      new Event('pointermove', {bubbles: true})
-    );
+    const maintenance = option('Enable maintenance mode');
+    maintenance.dispatchEvent(new Event('pointermove', {bubbles: true}));
     await flush();
-    expect(selected(input)).toBe('Enable maintenance mode');
 
+    expect(input.getAttribute('aria-activedescendant')).toBe(active);
+    expect(maintenance.classList).toContain('command-palette-row--hovered');
+    expect(
+      document
+        .querySelector('.command-palette-actions')
+        ?.getAttribute('aria-label')
+    ).toBe('Actions for Enable maintenance mode');
+
+    // Not while focus is on them: the pointer may be on its way to the menu.
     actionsButton().focus();
     option('Entries').dispatchEvent(new Event('pointermove', {bubbles: true}));
+    document
+      .querySelector('.command-palette__results')!
+      .dispatchEvent(new Event('pointerleave'));
     await flush();
-    expect(selected(input)).toBe('Enable maintenance mode');
+    expect(maintenance.classList).toContain('command-palette-row--hovered');
+
+    input.focus();
+    document
+      .querySelector('.command-palette__results')!
+      .dispatchEvent(new Event('pointerleave'));
+    await flush();
+    expect(document.querySelector('.command-palette-actions')).toBeNull();
   });
 
   it('keeps focus in the search box when an option is pressed, and follows the link it was', async () => {
     const input = await open();
     const entries = option('Entries');
 
-    const down = new MouseEvent('mousedown', {bubbles: true, cancelable: true});
+    const down = new MouseEvent('mousedown', {
+      bubbles: true,
+      cancelable: true,
+    });
     entries.dispatchEvent(down);
     expect(down.defaultPrevented).toBe(true);
     expect(document.activeElement).toBe(input);
