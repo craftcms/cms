@@ -96,6 +96,44 @@ describe('craft-upload-duplicates-notification', () => {
     );
   });
 
+  it('opens the image in a new window when asked, saying so', async () => {
+    const element = new UploadDuplicatesNotificationElement();
+    element.newWindow = true;
+    element.duplicates = [duplicate(5, 'Harbor at dusk')];
+    document.body.replaceChildren(element);
+    await element.updateComplete;
+    const navigate = vi.fn((event: Event) => event.preventDefault());
+    element.addEventListener('craft-upload-navigate', navigate);
+    const link = element.querySelector('a')!;
+
+    expect(link.target).toBe('_blank');
+    expect(link.rel).toBe('noopener');
+    expect(link.querySelector('craft-icon')!.getAttribute('name')).toBe(
+      'arrow-up-right-from-square'
+    );
+    expect(link.querySelector('.sr-only')!.textContent).toBe(
+      'Opens in a new window'
+    );
+
+    // Records whether the element handled the click, then stops the test browser from opening the window
+    let prevented: boolean | undefined;
+    document.addEventListener(
+      'click',
+      (event) => {
+        prevented = event.defaultPrevented;
+        event.preventDefault();
+      },
+      {once: true}
+    );
+    click(link);
+    expect(prevented).toBe(false);
+    expect(navigate).not.toHaveBeenCalled();
+
+    element.requestUpdate();
+    await element.updateComplete;
+    expect(link.querySelectorAll('craft-icon')).toHaveLength(1);
+  });
+
   it('leaves modified clicks to the browser', async () => {
     const {element, links} = await notification(1);
     const navigate = vi.fn((event: Event) => event.preventDefault());

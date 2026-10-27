@@ -1,3 +1,4 @@
+import {t} from '@craftcms/ui';
 import {html, LitElement, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {styleMap} from 'lit/directives/style-map.js';
@@ -21,12 +22,19 @@ const STACK_OFFSET = 4;
  * front, and any others are stacked faded behind it, like copied elements.
  *
  * @fires craft-upload-navigate - Open a duplicate's edit page in the current page, with its URL as the detail. Cancel
- * the event to handle it; otherwise the link is followed.
+ * the event to handle it; otherwise the link is followed. Not fired for links that open in a new window.
  */
 @customElement('craft-upload-duplicates-notification')
 export class UploadDuplicatesNotificationElement extends LitElement {
   @property({attribute: false})
   duplicates: UploadDuplicate[] = [];
+
+  /**
+   * Whether the images open in a new window, for notices that wouldn't
+   * survive following a link, so the uploader doesn't lose them or the page.
+   */
+  @property({type: Boolean, attribute: 'new-window'})
+  newWindow = false;
 
   protected override createRenderRoot(): HTMLElement {
     return this;
@@ -39,6 +47,7 @@ export class UploadDuplicatesNotificationElement extends LitElement {
 
     if (
       !link ||
+      link.target === '_blank' ||
       event.button ||
       event.ctrlKey ||
       event.metaKey ||
@@ -59,6 +68,26 @@ export class UploadDuplicatesNotificationElement extends LitElement {
 
     if (handled) {
       event.preventDefault();
+    }
+  }
+
+  protected override updated(): void {
+    if (!this.newWindow) {
+      return;
+    }
+
+    for (const link of this.querySelectorAll<HTMLAnchorElement>(
+      '.cp-chip-stack__chip:first-child a[href]:not([target])'
+    )) {
+      link.target = '_blank';
+      link.rel = 'noopener';
+      const icon = document.createElement('craft-icon');
+      icon.setAttribute('name', 'arrow-up-right-from-square');
+      icon.className = 'ms-sm';
+      const label = document.createElement('span');
+      label.className = 'sr-only';
+      label.textContent = t('Opens in a new window');
+      link.append(icon, label);
     }
   }
 

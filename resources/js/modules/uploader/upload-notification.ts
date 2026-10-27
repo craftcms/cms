@@ -188,6 +188,8 @@ function createDuplicateList(
 ): UploadDuplicatesNotificationElement {
   const list = new UploadDuplicatesNotificationElement();
   list.duplicates = duplicates;
+  // Without a way to visit them in place, they open in a new window instead, leaving this page and its notice be
+  list.newWindow = !navigate;
   if (navigate) {
     list.addEventListener('craft-upload-navigate', (event) => {
       event.preventDefault();
