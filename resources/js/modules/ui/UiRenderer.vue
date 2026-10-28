@@ -188,6 +188,8 @@
   );
   onBeforeUnmount(() => {
     refreshTimers.forEach(clearTimeout);
+    // Abandons any refresh still in flight, so its answer isn't reconciled.
+    refreshVersions.clear();
     unregisterValueSource?.();
   });
 
