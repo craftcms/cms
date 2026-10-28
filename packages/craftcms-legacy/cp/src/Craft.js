@@ -31,7 +31,6 @@ import './js/CategoryIndex.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
 import './js/EntryIndex.js';
-import './js/ImageUpload.js';
 import './js/LivePreview.js';
 import './js/Preview.js';
 import './js/ProgressBar.js';
