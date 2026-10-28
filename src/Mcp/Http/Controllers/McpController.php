@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Mcp\Http\Controllers;
 
 use CraftCms\Cms\Mcp\HttpTransportMiddleware;
 use CraftCms\Cms\Mcp\ServerFactory;
-use Mcp\Server\Stateless\StatelessProtocol;
-use Mcp\Server\Transport\StatelessHttpTransport;
+use Mcp\Server;
+use Mcp\Server\Transport\StreamableHttpTransport;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -41,11 +41,11 @@ class McpController
         return $this->handle($this->servers->preflight());
     }
 
-    private function handle(StatelessProtocol $protocol): ResponseInterface
+    private function handle(Server $server): ResponseInterface
     {
-        return new StatelessHttpTransport(
-            protocol: $protocol,
+        return $server->run(new StreamableHttpTransport(
+            request: $this->request,
             middleware: $this->middleware->forRequest($this->request),
-        )->handle($this->request);
+        ));
     }
 }
