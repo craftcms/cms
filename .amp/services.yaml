@@ -1,6 +1,6 @@
 # Optional database engines; SQLite remains the default in tests/.env.
 # Start one with `amp orb service restart mysql` (or `pgsql`), or both with
-# `amp orb services ensure`. These services are local only: never add portals.
+# `amp orb services ensure`. The databases are local only: never add portals.
 # After starting, create a test database as needed:
 #   mysql -h 127.0.0.1 -u root -e 'CREATE DATABASE IF NOT EXISTS craft_test'
 #   createdb -h 127.0.0.1 -U root craft_test
@@ -8,6 +8,16 @@
 # alongside DB_CONNECTION=mysql or pgsql and DB_DATABASE=craft_test.
 # Durability is disabled for disposable debugging data, not production use.
 services:
+  workbench:
+    command: >-
+      php artisan package:create-sqlite-db --no-interaction &&
+      php artisan optimize:clear --no-interaction &&
+      APP_URL="$PUBLIC_URL" ASSET_URL="$PUBLIC_URL"
+      php artisan workbench:serve --port="$PORT" --url="$PUBLIC_URL" --no-interaction
+    health: /
+    portal:
+      title: Craft workbench
+      description: Opens the control panel and signs in as the seeded admin.
   mysql:
     port: 3306
     command: >-

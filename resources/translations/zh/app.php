@@ -403,7 +403,6 @@ return [
     'Continue' => '继续',
     'Control panel resources' => '控制面板资源',
     'Cooldown Time Remaining' => '冷却时间剩余',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => '已复制到剪贴板。',
     'Copied' => 'Copied',
     'Copy URL' => '复制 URL',

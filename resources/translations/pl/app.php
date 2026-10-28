@@ -403,7 +403,6 @@ return [
     'Continue' => 'Kontynuuj',
     'Control panel resources' => 'Zasoby panelu sterowania',
     'Cooldown Time Remaining' => 'Logowanie zablokowane, spróbuj ponownie za',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Skopiowano do schowka.',
     'Copied' => 'Copied',
     'Copy URL' => 'Kopiuj adres URL',
