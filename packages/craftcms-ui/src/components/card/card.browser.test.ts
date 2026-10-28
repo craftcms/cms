@@ -793,6 +793,18 @@ it('themes a cover card’s header and body, and leaves its thumbnail alone', as
   expect([theme('[slot="header"]'), theme('a')]).toEqual([null, null]);
 });
 
+it('reads a cover card’s luminance when it’s set as a JSON string', async () => {
+  const card = await coverCard();
+  const theme = () =>
+    card.querySelector('[slot="header"]')!.getAttribute('data-theme');
+
+  // Vue sets a custom element's attributes as its properties, as strings.
+  card.luminance = '[[[0.9, 0.95]]]';
+  await card.updateComplete;
+
+  expect(theme()).toBe('light');
+});
+
 it('gives a cover card’s border its color, and nothing else', async () => {
   const card = await coverCard('Photo');
   const base = card.shadowRoot!.querySelector('.card')!;

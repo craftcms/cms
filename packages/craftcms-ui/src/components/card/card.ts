@@ -1,5 +1,5 @@
 import {property} from 'lit/decorators.js';
-import type {CSSResultGroup} from 'lit';
+import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import {styleMap} from 'lit/directives/style-map.js';
 import {Paddable} from '@src/mixins/Paddable.js';
@@ -16,6 +16,20 @@ import {
   type CoverTheme,
   type Luminance,
 } from './cover.js';
+
+/** Parses luminance set as a JSON string; anything unreadable is unknown. */
+const parseLuminance = (value: Luminance | string | null): Luminance | null => {
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? (parsed as Luminance) : null;
+  } catch {
+    return null;
+  }
+};
 
 const ink = (theme: CoverTheme) =>
   theme === 'dark'
@@ -164,7 +178,13 @@ export default class CraftCard extends Paddable(LitElement, {
    * when it has a label, `backed` when its controls need a backing to stand
    * out from the image, or `bare`.
    */
-  @property({type: Array}) luminance: Luminance | null = null;
+  @property({type: Array}) luminance: Luminance | string | null = null;
+
+  /**
+   * `luminance`, parsed if it was set as a JSON string, as a framework that
+   * sets a custom element's attributes as its properties (Vue) would do.
+   */
+  private _luminance: Luminance | null = null;
 
   /** Children whose `data-theme` the card has set for its cover. */
   private _themed = new Set<Element>();
@@ -215,9 +235,15 @@ export default class CraftCard extends Paddable(LitElement, {
     );
   }
 
+  override willUpdate(changed: PropertyValues<this>) {
+    if (changed.has('luminance')) {
+      this._luminance = parseLuminance(this.luminance);
+    }
+  }
+
   private _cover(): CoverAppearance | null {
     return this.coverSrc
-      ? coverAppearance(this.luminance, this._hasLabel())
+      ? coverAppearance(this._luminance, this._hasLabel())
       : null;
   }
 
