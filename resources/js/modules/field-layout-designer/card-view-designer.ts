@@ -20,6 +20,7 @@ export class CardViewDesigner extends Base {
   $libraryContainer: CraftCheckboxSelect;
   $thumbManagementContainer: any = null;
   alwaysShowThumbAlignmentBtns = false;
+  hasThumbAlignment = false;
   abortController: AbortController | null = null;
   attribute: any = null;
 
@@ -50,10 +51,13 @@ export class CardViewDesigner extends Base {
       this.manageThumbnails(ev.target);
     });
 
-    if (this.alwaysShowThumbAlignmentBtns) {
-      // always show the thumbnail alignment buttons
-      this.showThumbAlignment();
-    }
+    const thumbSource = $thumbSelectDropdown?.value;
+    this.hasThumbAlignment =
+      this.alwaysShowThumbAlignmentBtns ||
+      (!!thumbSource &&
+        thumbSource !== '__none__' &&
+        thumbSource !== '__default__');
+    this.toggleThumbFields();
 
     // The thumb-alignment options are radios, so whichever way the selection
     // changes (clicks or arrow keys), the checked one's value is applied.
@@ -65,6 +69,18 @@ export class CardViewDesigner extends Base {
         const $radio = ev.target;
         if ($radio instanceof HTMLInputElement && $radio.checked) {
           this.manageThumbnailAlignment($radio.value);
+        }
+      });
+    }
+
+    const $thumbStyleGroup = this.$thumbManagementContainer.querySelector(
+      '[id$="thumb-style"].radio-group'
+    );
+    if ($thumbStyleGroup) {
+      this.addListener($thumbStyleGroup, 'change', (ev: any) => {
+        const $radio = ev.target;
+        if ($radio instanceof HTMLInputElement && $radio.checked) {
+          this.manageThumbnailStyle($radio.value);
         }
       });
     }
@@ -160,6 +176,7 @@ export class CardViewDesigner extends Base {
     if (name) {
       const nameElement = document.createElement('div');
       nameElement.className = 'card-titlebar-label';
+      nameElement.setAttribute('data-card-label', '');
       nameElement.textContent = name;
       label.append(nameElement);
     }
@@ -292,6 +309,17 @@ export class CardViewDesigner extends Base {
     }
   }
 
+  manageThumbnailStyle(style: string): void {
+    if (style !== this.designer.config.cardThumbStyle) {
+      this.designer.updateConfig((config: any) => {
+        config.cardThumbStyle = style;
+        return config;
+      });
+      this.toggleThumbFields();
+      this.updatePreview();
+    }
+  }
+
   manageThumbnails(target: any): void {
     const $select = target;
     let thumbFieldKey = null;
@@ -301,13 +329,11 @@ export class CardViewDesigner extends Base {
         $select.value === '__none__' &&
         !this.designer.settings!.alwaysShowThumbAlignmentBtns
       ) {
-        // hide the alignment buttons
-        this.hideThumbAlignment();
+        this.hasThumbAlignment = false;
       }
     } else {
       thumbFieldKey = $select.value;
-      // show the alignment buttons
-      this.showThumbAlignment();
+      this.hasThumbAlignment = true;
     }
 
     if (thumbFieldKey !== this.designer.config.thumbFieldKey) {
@@ -317,6 +343,8 @@ export class CardViewDesigner extends Base {
       });
       this.updatePreview();
     }
+
+    this.toggleThumbFields();
   }
 
   updateThumbnailsDropdown(element: FldElement, action: string): void {
@@ -376,16 +404,25 @@ export class CardViewDesigner extends Base {
     $option.textContent = label;
   }
 
-  showThumbAlignment(): void {
-    this.$thumbManagementContainer
-      .querySelectorAll('[data-attribute="thumb-alignment"]')
-      .forEach((el: HTMLElement) => el.classList.remove('hidden'));
-  }
+  /**
+   * Shows Thumb Style only when the thumbnail can be an asset's image (always for assets; otherwise once a
+   * relation field is the thumb source), and hides Thumb Alignment when the thumbnail covers the card.
+   */
+  toggleThumbFields(): void {
+    const thumbFieldKey = this.designer.config.thumbFieldKey as string | null;
+    const showStyle =
+      this.designer.settings!.alwaysShowThumbStyle ||
+      (!!thumbFieldKey && !thumbFieldKey.startsWith('contentBlock:'));
+    const cover = showStyle && this.designer.config.cardThumbStyle === 'cover';
 
-  hideThumbAlignment(): void {
+    this.$thumbManagementContainer
+      .querySelectorAll('[data-attribute="thumb-style"]')
+      .forEach((el: HTMLElement) => el.classList.toggle('hidden', !showStyle));
     this.$thumbManagementContainer
       .querySelectorAll('[data-attribute="thumb-alignment"]')
-      .forEach((el: HTMLElement) => el.classList.add('hidden'));
+      .forEach((el: HTMLElement) =>
+        el.classList.toggle('hidden', !this.hasThumbAlignment || cover)
+      );
   }
 
   /**

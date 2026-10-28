@@ -150,11 +150,13 @@
   background-position: right top;
 }
 
-/* Thumbnail Source starts as wide as its longest option and takes whatever
-   room Alignment leaves. When the two don't fit side by side, the row wraps and
-   Source spans the full width. */
-.thumb-management craft-field[data-attribute='thumb-source'] {
-  flex: 1 1 auto;
+/* The thumb fields are spaced like the library's other fields. */
+.thumb-management {
+  display: contents;
+}
+
+.thumb-management > * {
+  grid-column: 1 / -1;
 }
 
 .thumb-management
@@ -187,6 +189,12 @@
     var(--c-size-control-sm) + var(--c-spacing-sm) * 2 + 1px
   );
   justify-self: stretch;
+}
+
+/* Sized like a cover card in an element index, not the whole pane. */
+.cvd-preview > craft-card[cover-src] {
+  justify-self: start;
+  inline-size: min(100%, calc(360rem / 16));
 }
 
 /* Fills the chip's thumbnail box, like the card's thumbnail placeholder. */

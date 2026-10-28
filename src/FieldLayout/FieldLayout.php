@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use Closure;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\ContentBlock;
@@ -137,6 +138,12 @@ class FieldLayout extends Component
      * @see setCardThumbAlignment()
      */
     private string $_cardThumbAlignment;
+
+    /**
+     * @see getCardThumbStyle()
+     * @see setCardThumbStyle()
+     */
+    private ?string $_cardThumbStyle = null;
 
     /** @param array<string, mixed> $config */
     public function __construct(
@@ -616,6 +623,40 @@ class FieldLayout extends Component
     }
 
     /**
+     * Returns how element cards show their thumbnail: `normal`, in a column beside the card's content, or `cover`,
+     * covering the whole card with the content laid over it, when the thumbnail is an image that can fill it.
+     *
+     * Asset volumes' layouts default to `cover`, and all others to `normal`.
+     *
+     * @return string `normal` or `cover`
+     */
+    public function getCardThumbStyle(): string
+    {
+        return $this->_cardThumbStyle ?? ($this->type === Asset::class ? 'cover' : 'normal');
+    }
+
+    /**
+     * Sets how element cards show their thumbnail.
+     *
+     * @param  string|null  $style  `normal` or `cover`, or `null` for the element type's default
+     */
+    public function setCardThumbStyle(?string $style = null): void
+    {
+        $this->_cardThumbStyle = in_array($style, ['normal', 'cover'], true) ? $style : null;
+    }
+
+    public function cardThumbStyle(?string $style = null): static
+    {
+        if ($style !== null && ! in_array($style, ['normal', 'cover'], true)) {
+            throw new InvalidArgumentException("Invalid card thumbnail style: $style");
+        }
+
+        $this->setCardThumbStyle($style);
+
+        return $this;
+    }
+
+    /**
      * Returns the available fields, grouped by field group name.
      *
      * @return BaseField[][]
@@ -777,7 +818,7 @@ class FieldLayout extends Component
      * Returns the field layout’s config.
      */
     /**
-     * @return array{tabs: list<array<string, mixed>>, generatedFields: list<GeneratedField>, cardView: list<string>, thumbFieldKey: string|null, cardThumbAlignment: string}|null
+     * @return array{tabs: list<array<string, mixed>>, generatedFields: list<GeneratedField>, cardView: list<string>, thumbFieldKey: string|null, cardThumbAlignment: string, cardThumbStyle: string}|null
      */
     public function getConfig(): ?array
     {
@@ -801,6 +842,7 @@ class FieldLayout extends Component
             'cardView' => $cardViewConfig,
             'thumbFieldKey' => $this->thumbFieldKey,
             'cardThumbAlignment' => $cardThumbAlignment,
+            'cardThumbStyle' => $this->getCardThumbStyle(),
         ];
     }
 

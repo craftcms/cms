@@ -6,6 +6,8 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\User\Elements\User;
 use Symfony\Component\DomCrawler\Crawler;
@@ -88,3 +90,49 @@ it('renders the thumbnail alignment setting as radios shown as buttons', functio
         ->and($designer->filter('craft-tooltip[for="thumb-alignment-end"]')->text())->toBe('Right')
         ->and($designer->filter('craft-button-group#thumb-alignment')->count())->toBe(0);
 });
+
+it('previews cards in the thumb style, once it applies', function (?string $style, bool $thumbField, bool $cover) {
+    $layout = $thumbField
+        ? EntryModel::factory()->withField('images', Assets::class)->createElementWithFields()->element->getFieldLayout()
+        : new FieldLayout(['type' => Asset::class]);
+
+    if ($thumbField) {
+        $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    }
+
+    $layout->setCardThumbStyle($style);
+    $card = new Crawler('<div>'.app(CardDesigner::class)->previewHtml($layout).'</div>')->filter('craft-card');
+
+    expect($card->attr('cover-src') !== null)->toBe($cover)
+        ->and($card->filter('[slot="thumbnail"]')->count())->toBe($cover ? 0 : 1);
+})->with([
+    'asset volume by default' => [null, false, true],
+    'asset volume set to normal' => ['normal', false, false],
+    'entry type by default' => [null, true, false],
+    'entry type set to cover' => ['cover', true, true],
+]);
+
+it('shows the thumb style setting for asset volumes and for fields as the thumb source, and thumb alignment unless cards are covered', function (string $type, bool $thumbField, ?string $style, bool $styleShown, bool $alignmentShown) {
+    $layout = $type === Entry::class
+        ? EntryModel::factory()->withField('images', Assets::class)->createElementWithFields()->element->getFieldLayout()
+        : new FieldLayout(['type' => $type]);
+
+    if ($thumbField) {
+        $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    }
+
+    $layout->setCardThumbStyle($style);
+    $designer = new Crawler('<div>'.app(CardDesigner::class)->html($layout).'</div>');
+    $field = $designer->filter('craft-field[data-attribute="thumb-style"]');
+
+    expect($field->filter('input[type="radio"][name="thumb-style"]')->each(fn (Crawler $radio) => $radio->attr('value')))->toBe(['normal', 'cover'])
+        ->and(str_contains((string) $field->attr('class'), 'hidden'))->toBe(! $styleShown)
+        ->and(str_contains((string) $designer->filter('craft-field[data-attribute="thumb-alignment"]')->attr('class'), 'hidden'))->toBe(! $alignmentShown);
+})->with([
+    'asset volume by default' => [Asset::class, false, null, true, false],
+    'asset volume set to normal' => [Asset::class, false, 'normal', true, true],
+    'user fields without a thumb source' => [User::class, false, 'cover', false, true],
+    'entry type without a thumb source' => [Entry::class, false, 'cover', false, false],
+    'entry type with a thumb source' => [Entry::class, true, null, true, true],
+    'entry type with a thumb source set to cover' => [Entry::class, true, 'cover', true, false],
+]);

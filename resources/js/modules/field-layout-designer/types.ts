@@ -10,6 +10,7 @@ export interface FieldLayoutDesignerSettings extends GarnishBaseSettings {
   customizableUi: boolean;
   withCardViewDesigner: boolean;
   alwaysShowThumbAlignmentBtns: boolean;
+  alwaysShowThumbStyle: boolean;
   readOnly: boolean;
 }
 

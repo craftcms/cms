@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\FieldLayoutDesigner;
 
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\ContentBlock;
@@ -11,6 +13,7 @@ use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
@@ -25,6 +28,16 @@ use function CraftCms\Cms\t;
 #[Singleton]
 class CardDesigner
 {
+    /**
+     * The luminance of `images/thumb-styles/preview.svg`, the sample image cover cards are previewed with, as
+     * {@see Images::sample()} measures it.
+     */
+    private const array PREVIEW_COVER_LUMINANCE = [
+        [[0.27, 0.386], [0.27, 0.395], [0.27, 0.544], [0.27, 0.439]],
+        [[0.121, 0.474], [0.124, 0.416], [0.121, 0.432], [0.202, 0.476]],
+        [[0.053, 0.124], [0.053, 0.124], [0.053, 0.124], [0.053, 0.124]],
+    ];
+
     /** @param array<string, mixed> $config */
     public function html(FieldLayout $fieldLayout, array $config = []): string
     {
@@ -84,6 +97,7 @@ class CardDesigner
     {
         $showThumb ??= $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
+        $cover = $showThumb && $this->showThumbStyle($fieldLayout) && $fieldLayout->getCardThumbStyle() === 'cover';
         $sampleElement = $this->sampleElement($fieldLayout);
         $sampleUser = $sampleElement instanceof User ? $sampleElement : null;
         $labelText = $sampleUser?->getName() ?? t('The Quick Brown Fox');
@@ -138,6 +152,8 @@ class CardDesigner
             'bodyHtml' => $bodyHtml,
             'showThumb' => $showThumb,
             'thumbAlignment' => $thumbAlignment,
+            'coverSrc' => $cover ? Cp::publicAssetUrl('images/thumb-styles/preview.svg') : null,
+            'coverLuminance' => self::PREVIEW_COVER_LUMINANCE,
             'thumbnailHtml' => $thumbnailHtml,
             'avatarHtml' => $avatarHtml,
             'labelText' => $labelText,
@@ -145,6 +161,15 @@ class CardDesigner
             'statusIndicatorHtml' => $sampleElement ? app(StatusHtml::class)->componentStatusIndicatorHtml($sampleElement) : null,
         ])->render();
 
+    }
+
+    /**
+     * Whether the Thumb Style setting applies: for asset volumes, whose own thumbnails are images, and for other
+     * element types once a field is chosen as the thumb source, as that's the only way they get an asset's image.
+     */
+    private function showThumbStyle(FieldLayout $fieldLayout): bool
+    {
+        return $fieldLayout->type === Asset::class || $fieldLayout->hasThumbField();
     }
 
     /**
@@ -299,13 +324,21 @@ class CardDesigner
         // radio button switch that lets you choose whether the thumb alignment should be start or end
         $orientation = I18N::getLocale()->getOrientation();
         $showThumb = $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
+        $showThumbStyle = $this->showThumbStyle($fieldLayout);
+        $cover = $showThumbStyle && $fieldLayout->getCardThumbStyle() === 'cover';
 
         return view('c::forms.fld.thumb-management', [
             // dropdown field that contains all thumbable fields + the None/Default option
             'options' => $options,
             'thumbFieldKey' => $fieldLayout->thumbFieldKey,
             'thumbAlignment' => $fieldLayout->getCardThumbAlignment(),
-            'showThumb' => $showThumb,
+            'thumbStyle' => $fieldLayout->getCardThumbStyle(),
+            'showThumbAlignment' => $showThumb && ! $cover,
+            'showThumbStyle' => $showThumbStyle,
+            'styleOptions' => [
+                ['value' => 'normal', 'label' => t('Normal')],
+                ['value' => 'cover', 'label' => t('Cover')],
+            ],
             'disabled' => $config['disabled'],
             'alignmentOptions' => [
                 [

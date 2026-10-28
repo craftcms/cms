@@ -41,6 +41,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     customizableUi: true,
     withCardViewDesigner: false,
     alwaysShowThumbAlignmentBtns: false,
+    alwaysShowThumbStyle: false,
     readOnly: false,
   };
 

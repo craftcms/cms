@@ -204,7 +204,7 @@ describe('elementCardHtml', function () {
         'transparent' => ['logo.png', 800, 600, false, '#3a6ea580'],
     ]);
 
-    it('covers any element’s card with the image its thumbnail field shows', function (int $width, bool $covered) {
+    it('covers an element’s card with the image its thumbnail field shows, with the cover thumb style', function (int $width, string $style, bool $covered) {
         new ControlPanelAssetTransformDriver()->register();
         Cms::config()->defaultAssetTransformer('test');
         $luminance = [[[0.1, 0.6]], [[0.02, 0.3]]];
@@ -217,15 +217,27 @@ describe('elementCardHtml', function () {
             ->createElementWithFields()->element;
         $layout = $entry->getFieldLayout();
         $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+        $layout->setCardThumbStyle($style);
 
         $attributes = $this->elementHtml->elementCardAttributes($entry);
 
         expect($attributes['cover-src'] ?? null)->toBe($covered ? '/transforms/800x600.webp' : null)
             ->and($attributes['luminance'] ?? null)->toBe($covered ? $luminance : null);
     })->with([
-        'fills the card' => [800, true],
-        'too small' => [400, false],
+        'fills the card' => [800, 'cover', true],
+        'too small' => [400, 'cover', false],
+        'normal thumb style' => [800, 'normal', false],
     ]);
+
+    it('keeps an asset’s normal card when its volume uses the normal thumb style', function () {
+        new ControlPanelAssetTransformDriver()->register();
+        Cms::config()->defaultAssetTransformer('test');
+        $asset = Asset::factory()->createElement(['filename' => 'photo.jpg', 'width' => 800, 'height' => 600]);
+        $asset->analysis = new ImageAnalysis(colors: new ImageColors(grid: [['#3a6ea5']], luminance: [[[0.1, 0.6]]]));
+        $asset->getFieldLayout()->setCardThumbStyle('normal');
+
+        expect($this->elementHtml->elementCardAttributes($asset)['cover-src'] ?? null)->toBeNull();
+    });
 
     it('dispatches and allows overriding ElementCardHtmlResolving', function () {
         $user = User::findOne(1);

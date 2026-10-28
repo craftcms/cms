@@ -1022,16 +1022,22 @@ readonly class ElementHtml
     }
 
     /**
-     * Returns the asset whose image an element's card thumbnail shows, if the thumbnail comes straight from an asset:
-     * the element itself, or the first element related through its field layout's thumbnail field.
+     * Returns the asset whose image an element's card thumbnail shows, if its field layout's cards use the `cover`
+     * thumb style and the thumbnail comes straight from an asset: the element itself, or the first element related
+     * through its field layout's thumbnail field.
      */
     private function cardCoverAsset(ElementInterface $element): ?Asset
     {
+        $fieldLayout = $element->getFieldLayout();
+
+        if (($fieldLayout?->getCardThumbStyle() ?? ($element instanceof Asset ? 'cover' : 'normal')) !== 'cover') {
+            return null;
+        }
+
         if ($element instanceof Asset) {
             return $element;
         }
 
-        $fieldLayout = $element->getFieldLayout();
         $layoutElement = $fieldLayout?->thumbFieldKey ? $fieldLayout->getElementByKey($fieldLayout->thumbFieldKey) : null;
 
         if (! $layoutElement instanceof CustomField) {
