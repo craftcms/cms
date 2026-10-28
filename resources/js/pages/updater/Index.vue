@@ -8,6 +8,7 @@
     useUpdater,
   } from '@/modules/updater/composables/useUpdater';
   import {ConfigService} from '@craftcms/ui';
+  import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
 
   defineOptions({layout: []});
 
@@ -28,13 +29,17 @@
   } = useUpdater(props.initialState);
 
   /**
-   * Parse status text to support markdown-like formatting
+   * Escape status text, then apply markdown-like paragraph, line break, and code formatting
    */
   function parseStatus(status: string): string {
-    return status
-      .replace(/\n{2,}/g, '</p><p>')
-      .replace(/\n/g, '<br>')
-      .replace(/`(.*?)`/g, '<code>$1</code>');
+    return (
+      '<p>' +
+      escapeHtml(status)
+        .replace(/\n{2,}/g, '</p><p>')
+        .replace(/\n/g, '<br>')
+        .replace(/`(.*?)`/g, '<code>$1</code>') +
+      '</p>'
+    );
   }
 
   /**
@@ -109,14 +114,15 @@
     <!-- Status message -->
     <div class="updater-status">
       <template v-if="state.error">
-        <p class="error-message" v-html="parseStatus(state.error)"></p>
-        <div v-if="state.errorDetails" class="error-details" tabindex="0">
-          <p v-html="parseStatus(state.errorDetails)"></p>
-        </div>
+        <div class="error-message" v-html="parseStatus(state.error)"></div>
+        <div
+          v-if="state.errorDetails"
+          class="error-details"
+          tabindex="0"
+          v-html="parseStatus(state.errorDetails)"
+        ></div>
       </template>
-      <template v-else-if="state.status">
-        <p v-html="parseStatus(state.status)"></p>
-      </template>
+      <div v-else-if="state.status" v-html="parseStatus(state.status)"></div>
     </div>
 
     <!-- Options / action buttons -->
@@ -180,7 +186,7 @@
     margin-block-end: var(--c-spacing-lg);
     max-width: 600px;
 
-    p {
+    :deep(p) {
       margin: 0;
       line-height: 1.5;
     }
@@ -212,7 +218,7 @@
     text-align: start;
     margin-block-start: var(--c-spacing-md);
 
-    p {
+    :deep(p) {
       white-space: pre-wrap;
       word-break: break-word;
     }
