@@ -2,56 +2,39 @@
 /* globals module, require */
 const {test, expect} = require('../../index');
 
-test('Should show plugin details', async ({page, baseURL}) => {
+test('Should show plugin details', async ({page}) => {
   await page.goto('./plugin-store/sherlock');
 
-  // Wait plugin request to be done
-  await page.waitForResponse((response) =>
-    response
-      .url()
-      .includes('//api.craftcms.com/v1/plugin-store/plugin/sherlock')
-  );
+  await expect(page.getByRole('heading', {level: 1})).toContainText('Sherlock');
+  await expect(
+    page.getByRole('link', {name: 'PutYourLightsOn', exact: true})
+  ).toBeVisible();
 
-  // Developer name
-  const title = page.locator('.plugin-details-header h1');
-  await expect(title).toContainText('Sherlock');
-
-  // Developer name
-  const website = page.locator('.plugin-details-header .developer');
-  await expect(website).toContainText('PutYourLightsOn');
-
-  // Tabs
-  const tabsLength = await page
-    .locator('.plugin-details-header .tabs ul li')
-    .count();
-  expect(tabsLength === 4).toBeTruthy();
-
-  const tabs = page.locator('.plugin-details-header .tabs');
-  await expect(tabs).toContainText('Overview');
-  await expect(tabs).toContainText('Changelog');
+  const tabs = page.getByRole('tab', {
+    name: /^(Overview|Reviews|Editions|Changelog)$/,
+  });
+  await expect(tabs).toHaveCount(4);
+  await expect(page.getByRole('tab', {name: 'Overview'})).toBeVisible();
+  await expect(page.getByRole('tab', {name: 'Changelog'})).toBeVisible();
 });
 
-test('Plugin details should have links to categories', async ({
-  page,
-  baseURL,
-}) => {
+test('Plugin tabs should have their own URLs', async ({page}) => {
   await page.goto('./plugin-store/sherlock');
 
-  // Wait plugin request to be done
-  await page.waitForResponse((response) =>
-    response
-      .url()
-      .includes('//api.craftcms.com/v1/plugin-store/plugin/sherlock')
-  );
+  await page.getByRole('tab', {name: 'Changelog'}).click();
+  await expect(page).toHaveURL(/plugin-store\/sherlock\/changelog$/);
+  await expect(
+    page.getByRole('heading', {name: /^Version /}).first()
+  ).toBeVisible();
+});
 
-  // Click category
-  await page.click('.meta-categories a:text("Security")');
+test('Plugin details should have links to categories', async ({page}) => {
+  await page.goto('./plugin-store/sherlock');
 
-  await page.waitForResponse((response) =>
-    response.url().includes('//api.craftcms.com/v1/plugin-store/plugins')
-  );
+  await page
+    .getByRole('tabpanel')
+    .getByRole('link', {name: 'Security'})
+    .click();
 
-  // Category title
-  const title = page.locator('.ps-wrapper h1');
-  await expect(title).toHaveText('Security');
+  await expect(page.getByRole('heading', {level: 1})).toHaveText('Security');
 });
