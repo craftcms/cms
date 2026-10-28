@@ -710,9 +710,9 @@
                   id="slide-rule"
                   :label="t('Rotate')"
                   :value="straightenValue"
-                  @start="onStraightenStart"
+                  @craft-drag-start="onStraightenStart"
                   @change="onStraightenChange"
-                  @end="onStraightenEnd"
+                  @craft-drag-end="onStraightenEnd"
                 />
               </div>
             </div>
