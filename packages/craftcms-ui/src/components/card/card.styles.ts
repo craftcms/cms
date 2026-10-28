@@ -416,6 +416,19 @@ export default css`
     pointer-events: none;
   }
 
+  /* The body sits inside the card's border, but the image reaches its edges,
+     so the blur does too, or a band of the sharp image would show under the
+     border along the sides and bottom. */
+  :host .card--cover .card-body.card-body::before {
+    inset-inline: calc(-1 * var(--c-card-border-width, 1px));
+  }
+
+  :host .card--cover .card-body.card-body:last-child::before {
+    inset-block-end: calc(-1 * var(--c-card-border-width, 1px));
+    border-end-start-radius: var(--c-card-radius, var(--c-radius-md));
+    border-end-end-radius: var(--c-card-radius, var(--c-radius-md));
+  }
+
   :host .card.card--cover .card__footer.card__footer {
     --_cover-ink: var(--_body-ink);
     --_cover-solid: var(--_body-solid);
