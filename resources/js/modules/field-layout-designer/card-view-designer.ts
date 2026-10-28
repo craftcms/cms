@@ -308,7 +308,18 @@ export class CardViewDesigner extends Base {
     }
 
     if (response) {
+      // The new card keeps the old one's snapped height until it's snapped
+      // itself, so it doesn't show at its natural height for a frame first,
+      // with a cover card's content a few pixels higher.
+      const snapped = this.$previewContainer
+        .querySelector('craft-card')
+        ?.style.getPropertyValue('--cvd-card-min-block-size');
       this.$previewContainer.innerHTML = response.data.previewHtml;
+      if (snapped) {
+        this.$previewContainer
+          .querySelector('craft-card')
+          ?.style.setProperty('--cvd-card-min-block-size', snapped);
+      }
       this.syncPreviewAppearance();
       this.disablePreviewLinks();
       this.observePreviewCard();
