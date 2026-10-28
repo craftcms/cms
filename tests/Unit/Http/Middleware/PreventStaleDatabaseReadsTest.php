@@ -60,3 +60,14 @@ it('keeps read-only actions on the read connection', function () {
 
     expect($value)->toBe('read');
 });
+
+it('reads from the write connection only on unsafe requests without a session', function () {
+    $middleware = app(PreventStaleDatabaseReads::class);
+    $read = fn () => $this->db->table('markers')->value('value');
+
+    $postValue = $middleware->handle(Request::create('/mcp', 'POST'), $read);
+    $getValue = $middleware->handle(Request::create('/mcp', 'GET'), $read);
+
+    expect($postValue)->toBe('write')
+        ->and($getValue)->toBe('read');
+});

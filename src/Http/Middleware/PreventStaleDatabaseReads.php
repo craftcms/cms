@@ -40,7 +40,7 @@ class PreventStaleDatabaseReads extends BasePreventStaleDatabaseReads
      */
     public function handle($request, Closure $next, $seconds = 2): mixed
     {
-        return parent::handle($request, function (Request $request) use ($next) {
+        $readFromWriterIfUnsafe = function (Request $request) use ($next): mixed {
             $isReadOnlyAction = in_array($request->route()?->getAction('uses'), self::READ_ONLY_ACTIONS, true);
 
             if (! $request->isMethodSafe() && ! $isReadOnlyAction) {
@@ -48,6 +48,15 @@ class PreventStaleDatabaseReads extends BasePreventStaleDatabaseReads
             }
 
             return $next($request);
-        }, $seconds);
+        };
+
+        // Sessionless requests, such as MCP, can't remember earlier writes.
+        if (! $request->hasSession()) {
+            $this->manager->connection()->useWriteConnectionWhenReading(false);
+
+            return $readFromWriterIfUnsafe($request);
+        }
+
+        return parent::handle($request, $readFromWriterIfUnsafe, $seconds);
     }
 }
