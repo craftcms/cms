@@ -190,6 +190,9 @@ class CpNotificationCenter extends LitElement {
   @query('craft-popover')
   private popoverElement?: HTMLElement & {hide(): Promise<void>};
 
+  @query('.notification-heading')
+  private headingElement?: HTMLElement;
+
   get #unread(): NotificationData[] {
     return this.notifications.filter((notification) => notification.unread);
   }
@@ -219,6 +222,16 @@ class CpNotificationCenter extends LitElement {
       this.#setUnread(changedIds, true);
       Craft.cp?.displayError?.(t('Couldn’t mark notifications as read.'));
     }
+  }
+
+  async #markReadFromButton(
+    ids: string[],
+    focusTarget: () => HTMLElement | null | undefined
+  ): Promise<void> {
+    const marking = this.#markRead(ids);
+    await this.updateComplete;
+    (focusTarget() ?? this.headingElement)?.focus();
+    await marking;
   }
 
   #setUnread(ids: string[], unread: boolean): void {
@@ -302,7 +315,7 @@ class CpNotificationCenter extends LitElement {
       >
         ${notification.image
           ? html`
-              <craft-thumbnail checkered="false">
+              <craft-thumbnail>
                 <img
                   src=${notification.image}
                   alt=${notification.imageAlt ?? ''}
@@ -382,7 +395,14 @@ class CpNotificationCenter extends LitElement {
                     flush
                     @click=${(event: MouseEvent) => {
                       event.stopPropagation();
-                      void this.#markRead([notification.id]);
+                      const item = (event.currentTarget as HTMLElement).closest(
+                        'article'
+                      );
+                      void this.#markReadFromButton([notification.id], () =>
+                        item?.querySelector<HTMLElement>(
+                          '.notification-card-link'
+                        )
+                      );
                     }}
                   >
                     ${t('Mark as read')}
@@ -445,7 +465,9 @@ class CpNotificationCenter extends LitElement {
 
         <div slot="content">
           <header class="notification-header">
-            <h2 class="notification-heading">${t('Notifications')}</h2>
+            <h2 class="notification-heading" tabindex="-1">
+              ${t('Notifications')}
+            </h2>
             ${this.#unread.length
               ? html`
                   <craft-button
@@ -453,8 +475,9 @@ class CpNotificationCenter extends LitElement {
                     size="small"
                     variant="plain"
                     @click=${() =>
-                      this.#markRead(
-                        this.#unread.map((notification) => notification.id)
+                      this.#markReadFromButton(
+                        this.#unread.map((notification) => notification.id),
+                        () => this.headingElement
                       )}
                   >
                     ${t('Mark all as read')}
