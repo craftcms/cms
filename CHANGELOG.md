@@ -16,6 +16,7 @@
 - Modals now have a subtle outline instead of a border, header and footer bars that match the control panel’s, and rounder corners. Dialogs, such as confirmations and copy prompts, have a compact header with a plain close button. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Asset previews, file conflict prompts, the entry index’s “Move to” action, and the modals for reassigning or replacing relations before a delete now use the control panel’s dialog styling. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Text file previews now have “Copy” and “Close” buttons. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Text files’ previews on asset edit pages now show a close-up of the top of the file, rather than its icon. ([#20094](https://github.com/craftcms/cms/pull/20094))
 - Improved the Customize Sources modal: only its three panels scroll, each under a fixed header, and page and source items have tighter, aligned drag handles and action menus. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Element selection modals now have a header-height toolbar, table headings that match the Customize Sources modal’s, and a world icon on the site menu. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - World and earth icons now show the globe for the system time zone. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -184,12 +185,15 @@
 
 ### Content Management
 
+- Asset edit pages’ Info panels now show what was found in images, apart from the rest of their metadata: their type, a bar of their main colors, each as wide as the share of the image it covers, and embedded metadata, such as their creator, copyright notice, the date they were taken, their camera, and a map of where they were taken, with a link to Google Maps. The panels’ “Location” item, and asset indexes’ “Location” column and card attribute, which show an asset’s folder, are now “Folder”. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Asset indexes can now show “Image Type”, “Colors”, “Creator”, “Credit”, “Copyright”, “Date Taken”, “Camera”, and “Embedded Keywords” columns and card attributes. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Element edit forms now show sidebar field layout tabs as panels in the details sidebar, between Info and Activity, using the tab’s icon (or its name’s first letter) and name. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Double-clicking an element chip in an element index now opens the chip’s own element in a slideout, rather than the row’s element or the chip’s link. ([#19907](https://github.com/craftcms/cms/pull/19907))
 - In element index tables, only an element’s title now links to it, rather than its whole chip, and clicking a link or button no longer waits to rule out a double-click. ([#19932](https://github.com/craftcms/cms/pull/19932))
 - In element index thumbnail views, only an element’s label now links to it. Clicking anywhere else on a thumbnail, card, or table row selects it, including for asset folders, which now only open from their links. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Matrix fields’ blocks views now outline the block that’s being edited. ([#19974](https://github.com/craftcms/cms/pull/19974))
 - Clicking a Matrix block in blocks view no longer selects it. Blocks are selected with their checkboxes instead. ([#19974](https://github.com/craftcms/cms/pull/19974))
+- Collapsed Matrix blocks are now remembered per site, like their enabled status. Blocks that were already collapsed stay collapsed on every site until they’re expanded there. ([#20119](https://github.com/craftcms/cms/pull/20119))
 - Fields without a visible label or instructions no longer have an action menu.
 - Double-clicking an element in a relational field’s card or thumbnail view now opens its slideout, as it does in list views.
 - Relational fields now have a “Paste” button when the clipboard holds elements one of their sources would list. Pasting relates the copied elements and clears the clipboard.
@@ -212,6 +216,7 @@
 - Element editor slideouts can now be switched to other sites, by clicking on a site name within the “Sites” pane. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Sites that are added to elements within the “Sites” pane can now be removed again. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Assets are now initially saved to the site they were uploaded from. ([#20060](https://github.com/craftcms/cms/pull/20060))
+- Filename conflicts for files uploaded from asset indexes are now resolved within the upload notification, which has “Cancel”, “Keep both”, and “Replace” buttons in place of an “Action required” button. ([#20121](https://github.com/craftcms/cms/pull/20121))
 - Assets in volumes set to let each asset choose which sites it should be saved to can now be deleted for individual sites, as long as they exist in another site. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Deleting an element for the only site it exists in now soft-deletes it, unless it’s a draft or nested element. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - The “Schedule release” modal now has a single date and time input, like releases’ Target Date, in place of separate Date, Time, and Time Zone inputs. Releases’ publication and target dates are now always entered in the user’s time zone.
@@ -221,6 +226,7 @@
 - Fixed a bug where changing a field back to the value it had when the edit page loaded wasn’t autosaved, so field layout elements shown or hidden by conditions based on it didn’t update.
 - Fixed a bug where Table fields’ Date and Time cells, and their default row values, shifted by the site’s UTC offset each time they were saved from the control panel.
 - Fixed a bug where going from one element edit page to another, such as switching sites, opened the next page’s “Revisions” details panel rather than the one that was open.
+- Fixed a bug where viewing an element revision showed three read-only notices, including one about settings changes not being permitted, and no “Revert content from this revision” button. ([#20115](https://github.com/craftcms/cms/pull/20115))
 - Fixed an error that occurred on release pages if one of the release’s drafts belonged to an element that had been deleted, such as along with its section. The draft is now listed as blocked with “The entry has been deleted.”, and can be removed by anyone who can manage the release.
 
 ### Accessibility
@@ -266,6 +272,22 @@
 ### Administration
 
 - Added Settings → Extend → Connections, where administrators choose the providers and models that plugins’ AI features use. Providers come from the `ai.providers` config, with keys set through environment variables. AI features stay off until a provider is chosen. ([#20006](https://github.com/craftcms/cms/pull/20006))
+- AI Connections now checks that the models chosen for AI tasks have the capabilities the tasks need, such as vision, document, audio, or video input, structured output, or tool calling, when the settings are saved. Tasks whose model lacks one are unavailable until a different model is chosen, and the settings explain why. ([#20099](https://github.com/craftcms/cms/pull/20099))
+- Added the “Generate alt text” AI task, which writes alt text for images in each site’s language, filling in images that are missing it when they’re uploaded, replaced, indexed, or analyzed. Sites that share alt text get one. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Alternative Text fields now have a “Generate alt text” action, which fills in suggested alt text for editors to review before saving. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added the “Generate titles” AI task, which titles images that are still titled after their filename, such as “IMG 4759”, in each site’s language, when they’re uploaded, replaced, indexed, or analyzed. Sites that share titles get one. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Uploaded images, and images whose files are replaced while they’re still titled after their filename, are now titled from the title embedded in their file, if they have one. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added the “Detect focal points” AI task, which sets the focal points of images that don’t have one when they’re uploaded, replaced, indexed, or analyzed, so their crops keep the subject in view. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added the “Tag images” AI task, which tags images with keywords that describe them and the text that appears in them, so they can be found by searching. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added the “Classify images” AI task, which finds what kind of image each image is, such as a photo, an illustration, a screenshot, or a diagram, so images can be filtered by it, with the “Image Type” asset condition rule. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Images are now analyzed by AI tasks that are set up, such as for alt text, when they’re uploaded or replaced, or when asset indexing finds a new or changed file. Analysis only fills in what images are missing. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added the “Analyze images” asset action, which queues the selected images to be analyzed by AI tasks that are set up. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- The Asset Indexes utility now has an “Analyze images” option, and the `index-assets` commands an `--analyzeImages` option, which sample missing image colors and metadata, and queue images for AI tasks. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Asset indexing now only samples the colors of images whose files are new or have changed, unless the “Analyze images” option is enabled, since remote images have to be downloaded to be sampled. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Templates and GraphQL queries can now choose white or black text for legibility over an image or one of its edges, with `asset.analysis.colors.textColor()` and the `textColor` GraphQL field, which also give the text’s contrast ratio. Images sampled before are sampled again the next time they’re indexed with the “Analyze images” option. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Images now keep the metadata embedded in their files when they’re uploaded, replaced, or indexed: their title, description, alt text, creator, credit line, copyright notice, keywords, date taken, and camera, the city, state, and country it shows, and the GPS coordinates it had, read before uploads are cleaned of them. Embedded keywords and descriptions are searchable. Uploads are read before they’re cleaned, and images indexed before are read the next time they’re indexed with the “Analyze images” option. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Control panel uploads now read the metadata embedded in images in the browser, and send it along with their colors, so the server doesn’t need to read the file itself. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Images uploaded straight to a remote filesystem, such as an S3 bucket, are no longer downloaded to be sampled, unless they’re cleaned or their dimensions can’t be read from the start of the file. If the uploader didn’t send their colors and metadata, they’re sampled by a queue job instead. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Field layout tabs can now be sidebar tabs, whose fields are shown in element edit forms’ details sidebar. Sidebar tabs always come after content tabs. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Field layout tabs can now have icons, which are shown before their names in field layout designers and on element edit forms. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Field layout designers now show content tabs and sidebar tabs in separate panes. Tabs can be moved between them by dragging, or with their “Move to the sidebar” and “Move to content” actions. ([#20005](https://github.com/craftcms/cms/pull/20005))
@@ -282,6 +304,15 @@
 - The MCP server now accepts any date or time that Date and Time fields can parse, such as “2:30 PM” or a date with a UTC offset, rather than requiring ISO 8601. A value they can’t parse is rejected, rather than clearing the field, and a field’s instructions no longer replace the description of its format.
 - The MCP server’s `mcp:use` OAuth scope has been replaced with `mcp:read`, `mcp:write`, and `mcp:admin`. Users now choose an access level when they authorize an MCP client, defaulting to read only, and only administrators are offered full access. Clients that authorize again keep the earlier level without another prompt. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - The MCP server now only shows and accepts the custom fields that users can see and edit in an element’s edit form, as field layouts’ conditions allow. ([#20091](https://github.com/craftcms/cms/pull/20091))
+- Added the `assets.analyze` MCP tool, which queues images to be analyzed by the image analysis AI tasks that are set up, such as for alt text, filling in only what they’re missing. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- The MCP server’s `content-model.audit` tool now returns notes for its checks. The `missing-alt-text` check’s note says whether the “Generate alt text” AI task is set up, and if so, to queue the images with `assets.analyze`. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `caches.list`, `caches.clear`, `queue.status`, `queue.run`, `queue.retry-all`, `queue.release-all`, and `asset-indexes.update` MCP tools, which do what the Caches, Queue Manager, and Asset Indexes utilities do, for users with access to those utilities. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `maintenance-mode.get`, `maintenance-mode.enable`, `maintenance-mode.disable`, and `project-config.rebuild` MCP tools for administrators. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `preferences.get` and `preferences.update` MCP tools, which read and change the user’s preferred language and formatting locale. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- The MCP server’s `configuration.*` tools can now manage asset transformers and workflows. Managing workflows requires Craft Pro. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `component-types.list` and `component-types.get` MCP tools, which list the available field types, workflow stage types, asset transform drivers, field layout elements, and condition rules, and describe each one’s settings as JSON Schema, with their labels, instructions, accepted values, and defaults. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- The MCP server now tells clients which features need a higher Craft edition, including more users than the edition allows, so they can explain that a feature such as workflows requires Craft Pro rather than treat it as unknown. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- The MCP server now redacts sensitive values, such as API keys, passwords, and license keys, in field settings, asset transformer settings, and project config. Clients can send a redacted value back to keep the saved value. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Added the “Query for releases” GraphQL schema permission, nested under “Query for element drafts”, which adds `releases` and `release` queries, and a `release` field to drafts.
 - Added the `hasUrls` field to volumes in GraphQL queries.
 - GraphQL mutations now return an error when new Matrix entries aren’t listed in `sortOrder`, rather than ignoring them, and each Matrix entry input can only specify one entry type. ([#19965](https://github.com/craftcms/cms/pull/19965))
@@ -298,6 +329,7 @@
 - Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
 - Volumes now have a “Propagation Method” setting, which can be set to “Let each asset choose which sites it should be saved to”. New volumes default to this, as do existing volumes on single-site installs. Existing volumes on multi-site installs continue to save assets to all sites. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for login, password reset, and two-step verification requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
+- Added the `trashedAssetDisk` config setting. When it’s set, soft-deleting an asset moves its file to that disk, and restoring the asset moves it back. Otherwise, soft-deleting an asset deletes its file, and the asset can’t be restored, unless it was deleted along with its volume. ([#8745](https://github.com/craftcms/cms/discussions/8745), [#20093](https://github.com/craftcms/cms/pull/20093))
 - GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, and user groups. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Added the `sites`, `site`, `sections`, `section`, `entryTypes`, `entryType`, `volumes`, `volume`, `userGroups`, and `userGroup` GraphQL queries, which are available when the schema includes the corresponding components. ([#20055](https://github.com/craftcms/cms/pull/20055))
 - Elements now have `site` fields in GraphQL, when the schema includes the “Query for sites” component. ([#20055](https://github.com/craftcms/cms/pull/20055))
@@ -310,6 +342,7 @@
 
 - `CraftCms\Cms\Asset\AssetsHelper::iconSvg()` now has a `$dark` argument, and returns the dark variant for the control panel’s dark theme by default. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Asset\AssetsHelper::folderIconSvg()`. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Added `CraftCms\Cms\Asset\Enums\FileKind::isText()`. ([#20094](https://github.com/craftcms/cms/pull/20094))
 - Added `CraftCms\Cms\Cp\Enums\Theme::resolveFor()`. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Translation\Locale::getLanguageTag()`, and the `Craft.formattingLocale` JavaScript variable, which hold the formatting locale as a BCP 47 language tag for `Intl` APIs. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Utility\Utility::subpageTitle()`, which titles a utility’s subpages and gives them a breadcrumb back to the utility. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -319,8 +352,43 @@
 - Added `CraftCms\Cms\Ai\Task` and `CraftCms\Cms\Ai\AiTasks`, for registering AI tasks. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - Added `CraftCms\Cms\Support\Facades\Ai`, which plugins use to run `laravel/ai` agents and requests with the provider and model administrators choose for each task. ([#20006](https://github.com/craftcms/cms/pull/20006))
 - Added `CraftCms\Cms\Ai\Events\TaskRunning`, `TaskCompleted`, and `TaskFailed`, which plugins can use to track AI usage and failures, and cancel requests. ([#20006](https://github.com/craftcms/cms/pull/20006))
+- Added `CraftCms\Cms\Ai\Contracts\TaskInterface::requirements()` and `CraftCms\Cms\Ai\Enums\Capability`, which AI tasks use to say what they need from their model, such as vision or tool calling. ([#20099](https://github.com/craftcms/cms/pull/20099))
+- Added `CraftCms\Cms\Ai\CapabilityChecks`, which checks whether providers’ models have a capability. ([#20099](https://github.com/craftcms/cms/pull/20099))
+- Added `CraftCms\Cms\Ai\Enums\AiUnavailableReason::MissingCapability`. ([#20099](https://github.com/craftcms/cms/pull/20099))
+- Added `CraftCms\Cms\Asset\Analysis\ImageAnalysisTask`, which plugins can extend to analyze images with AI. Image analysis tasks that use the same provider and model share one request per image. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Analysis\ImageAnalyzer` and the `CraftCms\Cms\Asset\Analysis\Jobs\AnalyzeImage` job. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::suggest()`, which returns the changes image analysis tasks would make without saving them. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Elements\Asset::$analysis`, `CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis`, and the `analysis` GraphQL field for assets, which hold what was found in an image: its colors, and the keywords and text found by the “Tag images” AI task, which are searchable. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- `CraftCms\Cms\Asset\Elements\Asset::$colors` and the `colors` GraphQL field for assets have moved to `$analysis->colors` and `analysis { colors }`. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Image\Data\ImageColors::$palette` and `labels()`, and the `palette` and `labels` GraphQL fields for image colors, which list an image’s main colors and their names. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Image\ColorNames`, which names colors in plain words. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Image\Data\ImageColors::$luminance` and `textColor()`, `CraftCms\Cms\Image\ColorGrid::luminance()` and `relativeLuminance()`, and the `luminance` and `textColor` GraphQL fields for image colors, which say how light the darker and lighter parts of an image’s regions are, and which text color is legible over them. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Image\Data\ImageColors::$weights` and the `weights` GraphQL field for image colors, which say how much of an image each of its palette’s colors covers. Images sampled before are sampled again the next time they’re indexed with the “Analyze images” option. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Image\Data\ImageMetadata`, `CraftCms\Cms\Image\ImageMetadataReader`, `CraftCms\Cms\Image\Images::metadata()`, `CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis::$metadata`, and the `metadata` GraphQL field for image analysis, which hold the metadata embedded in an image’s file. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Image\Data\ImageMetadata::$latitude`, `$longitude`, `$city`, `$state`, and `$country`, and the `city`, `state`, and `country` GraphQL fields for image metadata. The coordinates aren’t available to GraphQL or sandboxed templates. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Element\Contracts\ElementInterface::getMetadataGroups()`, which returns groups of metadata that are shown apart from each other in the editor sidebar. Elements that implement `ElementInterface` without extending `CraftCms\Cms\Element\Element` must add it. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- `CraftCms\Cms\Cp\Html\ContentHtml::metadataHtml()` now accepts several groups of metadata, which are separated by a rule. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- `CraftCms\Cms\Asset\Elements\Asset::$uploadColors` has been replaced by `$uploadAnalysis`, which holds what was already read from the incoming file, its colors and embedded metadata. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Asset upload completion requests now take what the uploader read from the file as `analysis`, with `colors` and `metadata` keys, rather than `colors`. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::needsSampling()`, and a `$sample` argument to `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::queue()`, which also queues images that are missing their colors or metadata. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Filesystem\Data\UploadedFile::isLocal()` and `imageSize()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Elements\Asset::hasDefaultTitle()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Elements\Asset::valuesFromEmbeddedMetadata()` and `CraftCms\Cms\Image\Data\ImageMetadata::suggestedAlt()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Content-model audit checks registered with `CraftCms\Cms\Mcp\ContentModel\CheckRegistry` can now return a `note` with their findings. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Enums\ImageType`, `CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis::$type`, and the `type` GraphQL field for image analysis. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Elements\Asset::getImageType()`, `CraftCms\Cms\Element\Queries\AssetQuery::imageType()`, `CraftCms\Cms\Asset\Conditions\ImageTypeConditionRule`, and the `imageType` GraphQL argument for asset queries, which filter images by what kind of image they are. Image types are indexed through the generated `assets.imageType` column. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\Analysis\ImageAnalysisChanges::get()`, so image analysis tasks that change the same attribute, such as an asset’s analysis, can build on each other’s changes. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Field action menu items can now dispatch a `craft:generate-field-value` event with a `url` and `params`, to fill the field with a value generated on the server. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added the `craft:screen-panel` global Vue component, which plugins can use on their own Inertia pages to add panels, with an optional status and header actions, to the screen’s details pane. ([#20084](https://github.com/craftcms/cms/pull/20084))
 - `CraftCms\Cms\Mcp\Contracts\ProvidesInputSchema` has been renamed to `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`, and its `getMcpInputSchema()` method to `getInputSchema()`.
+- Added `CraftCms\Cms\Update\Maintenance`, which turns maintenance mode on and off. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Utility\Utilities\ClearCaches::clear()`. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Workflow\WorkflowDefinitions`, which validates workflow definitions. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Asset\AssetTransformDrivers::settings()`. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Ui\Controls\Control::inputSchema()`, which describes the values a control accepts as JSON Schema. Custom controls can override it so the MCP server can describe the settings they set. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Component\Kinds\ComponentKinds`, `CraftCms\Cms\Component\Kinds\ComponentKind`, and `CraftCms\Cms\Component\Kinds\TypeRegistryKind`, which plugins can use to describe their own kinds of extendable components and their settings, such as for the `component-types.list` and `component-types.get` MCP tools. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Added `CraftCms\Cms\Ui\SettingsSchema`, which describes a settings UI as JSON Schema. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- Routes outside the `craft` middleware group can now use `Route::allowDuringMaintenance()` to stay reachable during maintenance mode. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - MCP tools without `readOnlyHint: true` now require the `mcp:write` scope, and capabilities with `#[RequiresAdmin]` or `#[RequiresAdminChanges]` require `mcp:admin`. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - Plain Text, Markdown, Email, Link, Number, Money, Lightswitch, Date, Time, Color, Country, Table, and option fields now implement `CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface`.
 - Added `CraftCms\Cms\Gql\GqlInputSchema`, which describes the values GraphQL input types accept as JSON schemas.
@@ -333,6 +401,8 @@
 - Added the `<craft-text-diff>` web component, which shows two versions of a text as one word-level diff, with each rewritten phrase as one deletion and one insertion. It can collapse long unchanged stretches, and mark passages of the text.
 - Fixed a bug where `t()` from `@craftcms/ui` failed to format a message with a comma inside a plural or select option.
 - `<craft-badge-indicator>` now has a `max` property, which sets the largest count shown before it’s shortened to “99+”. Set it to `Infinity` to show the whole count. Counts are now formatted for the page’s language. ([#19967](https://github.com/craftcms/cms/pull/19967))
+- Added `CraftCms\Cms\Asset\Elements\Asset::$trashedFileExists` and `getTrashedFilePath()`. ([#20093](https://github.com/craftcms/cms/pull/20093))
+- Removed `CraftCms\Cms\Asset\Elements\Asset::$keptFile`, and the `assets` table’s `keptFile` column. `$trashedFileExists` should be used instead. ([#20093](https://github.com/craftcms/cms/pull/20093))
 - Removed `CraftCms\Cms\Element\ElementHelper::renderElements()`. `CraftCms\Cms\Support\Template::render()` should be used instead.
 - System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Admin table links and create actions can now open in a slideout with a custom width, via the `slideoutWidth` link option and new `slideout` and `slideoutWidth` arguments on `CraftCms\Cms\Ui\Nodes\Table::createAction()`. ([#19956](https://github.com/craftcms/cms/pull/19956))
@@ -475,6 +545,7 @@
 - MySQL database backups and restores now carry over SSL/TLS settings from the system’s MySQL option files (e.g. `ssl-ca` or `disable-ssl-verify-server-cert`), if the database connection doesn’t have any `PDO::MYSQL_ATTR_SSL_*` attributes set. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
+- Saving nested elements on multi-site installs now executes fewer database queries. ([#20090](https://github.com/craftcms/cms/pull/20090))
 - Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
 - Updated Twig to 3.30.
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
@@ -542,6 +613,7 @@
 - Fixed a bug where the MCP server’s `elements.create`, `elements.update`, and `elements.validate` tools silently ignored Matrix entries submitted in the format `elements.field-schema` described. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - Fixed a bug where the MCP server’s upload session endpoints couldn’t find upload sessions when a control panel trigger was set. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - Fixed a bug where updating a Matrix entry with a GraphQL mutation or the MCP server cleared its title when no title was given. ([#20091](https://github.com/craftcms/cms/pull/20091))
+- Fixed a bug where the MCP server was unavailable during maintenance mode, even to users who can access the control panel while the system is off. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Fixed a bug where asset indexes didn’t offer to undo moving assets or folders. ([#19985](https://github.com/craftcms/cms/pull/19985)))
 - Fixed a bug where input placeholder text had insufficient contrast in the dark theme.
 - Fixed a bug where the “License purchase required” screen’s Refresh button didn’t work.
@@ -562,6 +634,8 @@
 - Fixed a bug where the “No color” and Black color options had no visible edge in the dark theme. ([#20003](https://github.com/craftcms/cms/pull/20003))
 - Fixed a bug where `{placeholder}` parameters weren’t replaced in messages from translation categories without translations, such as Yii’s console error messages.
 - Fixed a bug where control panel screens that hadn’t been ported to Vue, such as plugins’ Twig-rendered pages, kept reloading when an element source had “Show count” enabled. ([#20082](https://github.com/craftcms/cms/pull/20082))
+- Uploads staged on an S3 disk are now copied into their volume within S3, rather than downloaded and uploaded again, when the volume’s disk uses the same credentials and endpoint. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Fixed a bug where `withTransforms` criteria were ignored for eager-loaded assets. ([#20117](https://github.com/craftcms/cms/pull/20117))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
@@ -705,7 +779,7 @@
 - Fixed a race condition where concurrent requests could invalidate the same workflow run and record duplicate activity. ([#19866](https://github.com/craftcms/cms/pull/19866))
 - Fixed a bug where transaction rollback errors could hide the original element save exception after the database had aborted the transaction. ([#19866](https://github.com/craftcms/cms/pull/19866))
 - Fixed a bug where multi-instance fields’ search keywords were indexed per field rather than per instance, so searching by one instance’s handle could match other instances’ values. ([#13991](https://github.com/craftcms/cms/pull/13991))
-- Fixed a bug where named image transforms saved outside the Settings controller could bypass dimension and Asset Transformer parameter validation and normalization. ([#19826](https://github.com/craftcms/cms/pull/19826))
+- Fixed a bug where named image transforms saved outside the Settings controller could bypass dimension and asset transformer parameter validation and normalization. ([#19826](https://github.com/craftcms/cms/pull/19826))
 - Fixed bugs that could allow sites saved outside the control panel to reference invalid groups, retain inconsistent primary or URL settings, or use invalid content transfer targets. ([#19825](https://github.com/craftcms/cms/pull/19825))
 - Fixed a bug where invalid route data could be saved to project config. ([#19824](https://github.com/craftcms/cms/pull/19824))
 - Fixed a bug where `CraftCms\Cms\User\UserGroups::saveGroup()` did not validate user groups, and added its `$runValidation` argument. ([#19820](https://github.com/craftcms/cms/pull/19820))
@@ -1045,8 +1119,8 @@
 - Added a control panel notification center and `CraftCms\Cms\Cp\Notifications\CpNotification`, backed by Laravel database notifications. Deprecated announcement service compatibility remains available through `craftcms/yii2-adapter`.
 - Replaced Craft’s system status with Laravel maintenance mode, including an admin-only Maintenance Mode control in General Settings.
 - Removed `CraftCms\Cms\Config\GeneralConfig::$isSystemLive`, `app()->isLive()`, and the core `craft:on` and `craft:off` commands. Deprecated compatibility remains available through `craftcms/yii2-adapter`.
-- Moved the `generateTransformsBeforePageLoad` setting to Craft Asset Transformer profiles.
-- Removed per-call immediate generation arguments from the core Asset Transform APIs and GraphQL transform arguments.
+- Moved the `generateTransformsBeforePageLoad` setting to Craft asset transformer profiles.
+- Removed per-call immediate generation arguments from the core asset transform APIs and GraphQL transform arguments.
 - Removed the core image transformer registry, contracts, fallback transformer, and execution methods from `CraftCms\Cms\Image\ImageTransforms`. Legacy equivalents remain available through `craftcms/yii2-adapter`.
 - Improved environment variable and alias settings fields to show suggestions after typing `$` or `@`, automatically bracing embedded environment variables.
 - Improved new password fields to provide the configured password rules to supported password managers. ([#19516](https://github.com/craftcms/cms/pull/19516))

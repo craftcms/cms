@@ -108,13 +108,12 @@ describe('filename2Title', function () {
         'special characters stripped' => ['file.name_is-with chars!@#$%^&*()', 'File name is with chars'],
     ]);
 
-    test('truncates titles longer than 255 characters', function () {
-        $longName = str_repeat('a', 300);
-
-        $result = AssetsHelper::filename2Title($longName);
-
-        expect(strlen($result))->toBeLessThanOrEqual(255);
-    });
+    test('truncates titles longer than 255 characters to their start', function (string $filename, string $expected) {
+        expect(AssetsHelper::filename2Title($filename))->toBe($expected);
+    })->with([
+        'words' => [str_repeat('long-', 60), 'Long'.str_repeat(' long', 50)],
+        'multibyte characters' => [str_repeat('é', 300), 'É'.str_repeat('é', 254)],
+    ]);
 });
 
 describe('getFileKindByExtension', function () {
@@ -536,6 +535,31 @@ describe('INDEX_SKIP_ITEMS_PATTERN', function () {
 
 test('icon SVGs are well-formed XML, so they can be served as images', function (bool $dark) {
     expect(simplexml_load_string(AssetsHelper::iconSvg('pdf', $dark)))->not->toBeFalse();
+})->with([false, true]);
+
+test('preview text keeps the start of a file’s visible text, with its line breaks and tabs', function () {
+    expect(AssetsHelper::previewText("one\r\n\ttwo\x07\rthree  \n\n"))->toBe("one\n\ttwo\nthree");
+});
+
+test('preview text is capped, without splitting characters', function () {
+    $text = AssetsHelper::previewText(str_repeat('é', AssetsHelper::PREVIEW_TEXT_LENGTH * 3));
+
+    expect(mb_strlen($text))->toBe(AssetsHelper::PREVIEW_TEXT_LENGTH)
+        ->and(mb_check_encoding($text, 'UTF-8'))->toBeTrue();
+});
+
+test('preview text is empty for files with nothing to show', function () {
+    expect(AssetsHelper::previewText(" \n\x07\n"))->toBe('');
+});
+
+test('preview text SVGs show the text escaped, without an extension label', function (bool $dark) {
+    $xml = simplexml_load_string(AssetsHelper::previewTextSvg("<script>alert(1)</script>\n\tindented", $dark));
+
+    expect($xml)->not->toBeFalse()
+        ->and($xml->xpath('//*[local-name()="script"]'))->toBe([])
+        ->and((string) $xml->xpath('//*[local-name()="foreignObject"]/*[local-name()="div"]')[0])
+        ->toBe("<script>alert(1)</script>\n\tindented")
+        ->and($xml->xpath('//*[local-name()="text"]'))->toBe([]);
 })->with([false, true]);
 
 test('folder icon SVGs come in light and dark blue, and are well-formed XML', function (bool $dark, string $fill) {

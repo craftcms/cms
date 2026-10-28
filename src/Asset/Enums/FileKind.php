@@ -85,6 +85,17 @@ enum FileKind: string
         };
     }
 
+    /**
+     * Returns whether files of this kind are plain text, such as source code or markup.
+     */
+    public function isText(): bool
+    {
+        return match ($this) {
+            self::Html, self::Javascript, self::Json, self::Markdown, self::Php, self::Text, self::Xml => true,
+            default => false,
+        };
+    }
+
     /** @return array{label: string, extensions: list<string>} */
     public function toArray(): array
     {

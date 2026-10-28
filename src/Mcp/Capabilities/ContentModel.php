@@ -27,7 +27,7 @@ readonly class ContentModel
 
     /**
      * @param  list<string>  $checks  Checks to run. Defaults to all checks.
-     * @return array{checks: list<string>, summary: array<string, int>, findings: array<string, list<mixed>>}
+     * @return array{checks: list<string>, summary: array<string, int>, findings: array<string, list<mixed>>, notes?: array<string, string>}
      */
     #[McpTool(
         name: 'content-model.audit',
@@ -60,6 +60,7 @@ readonly class ContentModel
         $limit = max(1, min($limit, 500));
         $findings = [];
         $summary = [];
+        $notes = [];
 
         foreach ($checks as $id) {
             $check = $this->checkRegistry->find($id);
@@ -71,12 +72,17 @@ readonly class ContentModel
             $result = $check->run($limit);
             $findings[$id] = $result['findings'];
             $summary[$id] = $result['count'];
+
+            if (isset($result['note'])) {
+                $notes[$id] = $result['note'];
+            }
         }
 
         return [
             'checks' => $checks,
             'summary' => $summary,
             'findings' => $findings,
+            ...($notes !== [] ? ['notes' => $notes] : []),
         ];
     }
 
@@ -110,7 +116,7 @@ readonly class ContentModel
                 1. Run `content-model.audit` with {$arguments}.
                 2. Cross-check each finding with `configuration.get`, selecting `fields`, `entry-types`, or `sections` as the type.
                 3. Treat unused and duplicate items as review candidates. Check templates, modules, plugins, and external integrations before recommending removal or merging.
-                4. For images without alt text, inspect their context before recommending an update with `elements.update`.
+                4. For images without alt text, follow the check’s note: queue them with `assets.analyze` when Craft’s “Generate alt text” AI task is set up, and otherwise inspect their context before recommending an update with `elements.update`.
                 5. Summarize what needs attention, why it was flagged, and the next non-destructive action.
                 6. Do not call a destructive capability unless the user explicitly confirms each action.
                 MARKDOWN)),

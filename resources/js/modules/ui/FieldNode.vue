@@ -50,6 +50,21 @@
     siteIds: number[];
   };
 
+  /**
+   * A field action that generates the field’s value on the server, such as
+   * alt text written by AI. The value fills the field without being saved.
+   */
+  type GenerateValueDetail = {
+    trigger?: unknown;
+    url: string;
+    params: Record<string, unknown>;
+  };
+
+  type GenerateValueResponse = {
+    value: UiValue;
+    message?: string;
+  };
+
   type CrossSiteCopyResponse = {
     message: string;
     field: UiNodePayload<FieldNodeProps>;
@@ -270,6 +285,49 @@
     );
   });
 
+  const generating = shallowRef(false);
+
+  useEventListener(
+    window,
+    'craft:generate-field-value',
+    async (event: Event) => {
+      const detail = (event as CustomEvent<GenerateValueDetail>).detail;
+
+      if (
+        !detail ||
+        !(detail.trigger instanceof HTMLElement) ||
+        detail.trigger.closest('craft-field') !== field.value ||
+        generating.value
+      ) {
+        return;
+      }
+
+      generating.value = true;
+
+      try {
+        const {data} = await actionClient.post<GenerateValueResponse>(
+          detail.url,
+          detail.params
+        );
+
+        setValue(data.value);
+
+        if (data.message) {
+          Craft.cp?.displayNotice?.(data.message);
+        }
+      } catch (error) {
+        const message = isHttpError<{message?: string}>(error)
+          ? error.response?.data?.message
+          : undefined;
+        Craft.cp?.displayError?.(
+          message ?? t('Couldn’t generate a value for this field.')
+        );
+      } finally {
+        generating.value = false;
+      }
+    }
+  );
+
   async function copyValue(fromSiteId: number): Promise<void> {
     const detail = copyDetail.value;
 
@@ -352,6 +410,7 @@
     :hidden="resolvedNode.props.hidden || undefined"
     :data-layout-element="resolvedNode.props.layoutUid"
     :data-icon="resolvedNode.props.icon || undefined"
+    :aria-busy="generating || undefined"
   >
     <span
       v-if="resolvedNode.props.labelHtml !== undefined"
