@@ -196,6 +196,7 @@
 
 ### Content Management
 
+- Asset conditions, such as for index filters and Assets fields’ sources, now have an “Orientation” rule, which filters images by whether they’re landscape, portrait, or square. Images whose width and height differ by up to 2% count as square. ([#20114](https://github.com/craftcms/cms/pull/20114))
 - Asset edit pages’ Info panels now show what was found in images, apart from the rest of their metadata: their type, a bar of their main colors, each as wide as the share of the image it covers, and embedded metadata, such as their creator, copyright notice, the date they were taken, their camera, and a map of where they were taken, with a link to Google Maps. The panels’ “Location” item, and asset indexes’ “Location” column and card attribute, which show an asset’s folder, are now “Folder”. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Asset indexes can now show “Image Type”, “Colors”, “Creator”, “Credit”, “Copyright”, “Date Taken”, “Camera”, and “Embedded Keywords” columns and card attributes. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Element edit forms now show sidebar field layout tabs as panels in the details sidebar, between Info and Activity, using the tab’s icon (or its name’s first letter) and name. ([#20005](https://github.com/craftcms/cms/pull/20005))
@@ -297,6 +298,7 @@
 - The Asset Indexes utility now has an “Analyze images” option, and the `index-assets` commands an `--analyzeImages` option, which sample missing image colors and metadata, and queue images for AI tasks. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Asset indexing now only samples the colors of images whose files are new or have changed, unless the “Analyze images” option is enabled, since remote images have to be downloaded to be sampled. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Templates and GraphQL queries can now choose white or black text for legibility over an image or one of its edges, with `asset.analysis.colors.textColor()` and the `textColor` GraphQL field, which also give the text’s contrast ratio. Images sampled before are sampled again the next time they’re indexed with the “Analyze images” option. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added the `orientation` asset query param and GraphQL argument, which filter images by whether they’re landscape, portrait, or square, such as `craft.assets().orientation('portrait')`. Image assets’ orientations are available via `asset.orientation` in templates and the `orientation` GraphQL field. ([#20114](https://github.com/craftcms/cms/pull/20114))
 - Images now keep the metadata embedded in their files when they’re uploaded, replaced, or indexed: their title, description, alt text, creator, credit line, copyright notice, keywords, date taken, and camera, the city, state, and country it shows, and the GPS coordinates it had, read before uploads are cleaned of them. Embedded keywords and descriptions are searchable. Uploads are read before they’re cleaned, and images indexed before are read the next time they’re indexed with the “Analyze images” option. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Control panel uploads now read the metadata embedded in images in the browser, and send it along with their colors, so the server doesn’t need to read the file itself. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Images uploaded straight to a remote filesystem, such as an S3 bucket, are no longer downloaded to be sampled, unless they’re cleaned or their dimensions can’t be read from the start of the file. If the uploader didn’t send their colors and metadata, they’re sampled by a queue job instead. ([#20103](https://github.com/craftcms/cms/pull/20103))
@@ -352,6 +354,7 @@
 
 ### Extensibility
 
+- Added `CraftCms\Cms\Asset\Elements\Asset::getOrientation()`, `CraftCms\Cms\Element\Queries\AssetQuery::orientation()`, `CraftCms\Cms\Asset\Enums\ImageOrientation`, `CraftCms\Cms\Asset\Conditions\OrientationConditionRule`, and the `orientation` GraphQL argument and field for assets, which say whether images are landscape, portrait, or square, from their width and height. ([#20114](https://github.com/craftcms/cms/pull/20114))
 - `CraftCms\Cms\Asset\AssetsHelper::iconSvg()` now has a `$dark` argument, and returns the dark variant for the control panel’s dark theme by default. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Asset\AssetsHelper::folderIconSvg()`. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Asset\Enums\FileKind::isText()`. ([#20094](https://github.com/craftcms/cms/pull/20094))
@@ -574,6 +577,8 @@
 - MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
 - Saving nested elements on multi-site installs now executes fewer database queries. ([#20090](https://github.com/craftcms/cms/pull/20090))
+- Requests now read from the database’s write connection for two seconds after the same session writes data, in addition to POST requests. ([#20122](https://github.com/craftcms/cms/pull/20122))
+- Craft now requires Laravel 13.38 or later. ([#20122](https://github.com/craftcms/cms/pull/20122))
 - Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
 - Updated Twig to 3.30.
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))

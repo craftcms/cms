@@ -40,6 +40,7 @@
 - Images uploaded from the Assets index that look like copies of images that are already uploaded, even resized or recompressed, now wait within their upload notification, which shows the existing images’ chips and offers to cancel the upload, keep both, or replace the existing image’s file, like filename conflicts. ([#20113](https://github.com/craftcms/cms/pull/20113))
 - Added Undo/Redo support and a “Revert to original” button to the image editor. ([#19600](https://github.com/craftcms/cms/pull/19600))
 - Image thumbnails and previews in the control panel now show a blurred placeholder based on the image’s colors while they load. ([#19750](https://github.com/craftcms/cms/pull/19750))
+- Asset conditions, such as for index filters and Assets fields’ sources, now have an “Orientation” rule, which filters images by whether they’re landscape, portrait, or square. Images whose width and height differ by up to 2% count as square. ([#20114](https://github.com/craftcms/cms/pull/20114))
 - Removed Craft-managed filesystems and their control panel settings. Volumes and Craft asset transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and each defines whether its assets have public URLs. Existing filesystem references are migrated to matching disks automatically, with an actionable error if a disk isn’t configured. ([#19650](https://github.com/craftcms/cms/pull/19650))
 - Added configurable asset transformers, which can be managed from Settings → Assets → Asset Transformers and assigned to asset volumes by handle.
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
@@ -51,6 +52,7 @@
 - Image assets now have [BlurHash](https://blurha.sh) strings, available via `asset.blurhash` in templates. ([#19755](https://github.com/craftcms/cms/pull/19755))
 - `<img>` tags returned by `asset.getImg()` now have a blurred placeholder as their background, unless the image has transparent regions. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Added the `blurhash`, `colors`, and `placeholderDataUrl` fields to assets in GraphQL queries. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#19755](https://github.com/craftcms/cms/pull/19755))
+- Images can now be queried by orientation via the `orientation` asset query param and GraphQL argument, and image assets’ orientations are available via `asset.orientation` in templates and the `orientation` GraphQL field. ([#20114](https://github.com/craftcms/cms/pull/20114))
 
 #### Users & Auth
 - Users can now connect their accounts to one or more Laravel Socialite providers, which are listed on the login page. ([#19202](https://github.com/craftcms/cms/pull/19202))
@@ -479,6 +481,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Added `CraftCms\Cms\Support\Facades\Assets`.
 - Added `CraftCms\Cms\Support\Facades\AssetIndexer` facade.
 - Added `CraftCms\Cms\Support\Facades\Folders`.
+- Added `CraftCms\Cms\Asset\Enums\ImageOrientation` and `CraftCms\Cms\Asset\Conditions\OrientationConditionRule`. ([#20114](https://github.com/craftcms/cms/pull/20114))
 - Deprecated `craft\helpers\Assets`. `CraftCms\Cms\Asset\AssetsHelper` should be used instead.
 - Deprecated `craft\services\Assets`. `CraftCms\Cms\Asset\Assets` and `CraftCms\Cms\Asset\Folders` should be used instead.
 - Deprecated `\craft\records\Asset`. `\CraftCms\Cms\Asset\Models\Asset` should be used instead.
