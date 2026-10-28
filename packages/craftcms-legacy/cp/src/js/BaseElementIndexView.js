@@ -419,6 +419,15 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         return false;
       }
 
+      // A hidden scroll area (e.g. a closed element selector modal) reports a height of 0,
+      // which would otherwise look like the user has reached the bottom
+      if (
+        this.$scroller[0] !== Garnish.$win[0] &&
+        !this.$scroller.is(':visible')
+      ) {
+        return false;
+      }
+
       // Check if the user has reached the bottom of the scroll area
       var containerHeight;
 

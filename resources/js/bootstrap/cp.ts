@@ -1,4 +1,5 @@
 import {createInertiaApp, router} from '@inertiajs/vue3';
+import {handleControlPanelLinks} from '@/common/inertia-links';
 import type {DefineComponent} from 'vue';
 import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {http} from '@craftcms/ui/utilities/api/http';
@@ -8,6 +9,7 @@ import AppLayout from '@/common/layouts/AppLayout.vue';
 import {registerSlideoutGlobals} from '@/common/slideouts';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
+import {installSessionTimeout} from '@/modules/auth/session-timeout';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
 import {
@@ -107,6 +109,7 @@ const Cp = {
       config.get('iconBaseUrl', '/vendor/craft/icons'),
       config.get('earthIcon', 'earth-americas')
     );
+    installSessionTimeout();
 
     setUrlDefaults(() => ({
       cpTrigger: routeSegment(String(config.get('cpTrigger') ?? '')),
@@ -153,6 +156,7 @@ const Cp = {
     });
 
     handleNonInertiaRequests();
+    handleControlPanelLinks();
     handleAccessibleRouting();
     registerSlideoutGlobals();
     registerSubmitShortcut();
@@ -188,41 +192,43 @@ function handleAccessibleRouting() {
 function handleNonInertiaRequests() {
   let fallbackUrl = '';
 
-  router.on('start', (event) => {
+  // `before` rather than `start`: a visit that reuses a prefetched response
+  // never fires `start`.
+  router.on('before', (event) => {
     const visit = event.detail.visit;
 
-    if (visit.prefetch || visit.async || visit.method !== 'get') {
+    if (visit.prefetch) {
       return;
     }
 
-    fallbackUrl = visit.url.href;
+    fallbackUrl = visit.method === 'get' && !visit.async ? visit.url.href : '';
   });
 
-  router.on('finish', (event) => {
-    const visit = event.detail.visit;
-
-    if (fallbackUrl === visit.url.href) {
-      fallbackUrl = '';
-    }
-  });
-
+  // Show non-Inertia HTML responses, including error pages, as full pages
+  // instead of Inertia's modal.
   router.on('httpException', (event) => {
     const response = event.detail.response;
 
-    const shouldReload =
-      [200, 302, 301].includes(response.status) &&
-      response.headers['content-type']?.includes('text/html');
+    if (!response.headers['content-type']?.includes('text/html')) {
+      return;
+    }
 
     if (response.headers['x-redirect']) {
       fallbackUrl = response.headers['x-redirect'];
     }
 
-    if (!fallbackUrl || !shouldReload) {
+    event.preventDefault();
+
+    if (fallbackUrl) {
+      window.location.assign(fallbackUrl);
       return;
     }
 
-    event.preventDefault();
-    window.location.assign(fallbackUrl);
+    // There's no URL to reload (e.g. a failed POST), so render the response
+    // in place of the current document.
+    document.open();
+    document.write(String(response.data));
+    document.close();
   });
 }
 

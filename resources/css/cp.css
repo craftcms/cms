@@ -3,7 +3,18 @@ CP Styles
  */
 @layer theme, base, components, cp, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
-@import 'tailwindcss/utilities.css' layer(utilities);
+/* Only scan the code that renders the CP. Scanning the whole repo also picks
+   up class names from docs, tests, agent skills, and the Tailwind lint
+   script's list of banned classes, and the scan is a large part of the
+   build. */
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@source '..';
+@source '../../src';
+@source '../../workbench';
+@source '../../yii2-adapter/src';
+@source '../../yii2-adapter/legacy';
+@source '../../yii2-adapter/resources';
+@source '../../packages/craftcms-ui/src';
 @import '@craftcms/ui/styles/cp.css' layer(cp);
 @import '@craftcms/ui/tailwind.css' layer(theme);
 
@@ -185,7 +196,7 @@ Sidebar metadata
   align-items: baseline;
 }
 
-.cp-metadata-list__item:has(> dd > craft-chip:only-child) {
+.cp-metadata-list__item:has(> dd > :is(craft-chip, .cp-color-bar):only-child) {
   align-items: center;
 }
 
@@ -201,6 +212,96 @@ Sidebar metadata
     gap: unset;
     grid-template-columns: subgrid;
   }
+}
+
+/**
+A bar of colors tiled together, such as an image's main colors, each as wide as its share. It's named for assistive
+technology, so the colors aren't the only cue.
+ */
+.cp-color-bar {
+  display: flex;
+  inline-size: 8rem;
+  max-inline-size: 100%;
+  block-size: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--c-color-neutral-border-normal);
+  border-radius: var(--c-radius-sm);
+
+  & > * {
+    flex-basis: 0;
+    min-inline-size: 2px;
+  }
+}
+
+@media (forced-colors: active) {
+  .cp-color-bar {
+    /* The colors are what's being shown */
+    forced-color-adjust: none;
+    border-color: CanvasText;
+  }
+}
+
+/**
+Where an image was taken: a map across the full width of the metadata list, below the item's label and link
+ */
+.cp-metadata-list__item > dd:has(> .cp-photo-location) {
+  grid-column: 1 / -1;
+  min-inline-size: 0;
+  margin-block-start: var(--c-spacing-md);
+}
+
+.cp-photo-location__map {
+  position: relative;
+  overflow: hidden;
+  block-size: 6.25rem;
+  border: 1px solid var(--c-color-neutral-border-normal);
+  border-radius: var(--c-radius-md);
+  background-color: var(--c-color-neutral-fill-quiet);
+  /* Map tiles are laid out physically, so the map isn't mirrored in right-to-left languages */
+  direction: ltr;
+}
+
+.cp-photo-location__tiles {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  display: grid;
+  grid-template-columns: repeat(3, 256px);
+  grid-auto-rows: 256px;
+
+  & > * {
+    display: block;
+    inline-size: 256px;
+    block-size: 256px;
+    max-inline-size: none;
+  }
+}
+
+/* OpenStreetMap only has a light style, so its tiles are inverted for the dark theme, keeping their hues */
+[data-theme='dark'] .cp-photo-location__tiles {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9);
+}
+
+.cp-photo-location__marker {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  translate: -50% -100%;
+  color: var(--c-color-red-fill-loud);
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 50%));
+
+  & svg {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    fill: currentColor;
+  }
+}
+
+.cp-photo-location__caption {
+  margin-block-start: var(--c-spacing-xs);
 }
 
 /**
