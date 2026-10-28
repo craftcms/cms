@@ -2,6 +2,7 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import Release from '@/modules/updater/components/Release.vue';
   import {computed, ref} from 'vue';
+  import {useTimeoutFn} from '@vueuse/core';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import UpdaterController from '@actions/Updates/UpdaterController';
   import {Form} from '@inertiajs/vue3';
@@ -52,14 +53,19 @@
   // Copy handle to clipboard
   const initialHandleLabel = t('Copy plugin handle');
   const copyHandleLabel = ref(initialHandleLabel);
+  const {start: resetHandleLabelLater} = useTimeoutFn(
+    () => {
+      copyHandleLabel.value = initialHandleLabel;
+    },
+    1500,
+    {immediate: false}
+  );
 
   async function copyHandle() {
     try {
       await navigator.clipboard.writeText(props.handle ?? '');
       copyHandleLabel.value = t('Copied!');
-      setTimeout(() => {
-        copyHandleLabel.value = initialHandleLabel;
-      }, 1500);
+      resetHandleLabelLater();
     } catch (error: unknown) {
       console.error(error);
       copyHandleLabel.value = t('Failed to copy');
@@ -69,14 +75,19 @@
   // Copy package name to clipboard
   const initialPackageLabel = t('Copy package name');
   const copyPackageLabel = ref(initialPackageLabel);
+  const {start: resetPackageLabelLater} = useTimeoutFn(
+    () => {
+      copyPackageLabel.value = initialPackageLabel;
+    },
+    1500,
+    {immediate: false}
+  );
 
   async function copyPackage() {
     try {
       await navigator.clipboard.writeText(props.packageName ?? '');
       copyPackageLabel.value = t('Copied!');
-      setTimeout(() => {
-        copyPackageLabel.value = initialPackageLabel;
-      }, 1500);
+      resetPackageLabelLater();
     } catch (error: unknown) {
       console.error(error);
       copyPackageLabel.value = t('Failed to copy');
