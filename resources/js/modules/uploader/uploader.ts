@@ -8,6 +8,7 @@ import {
   type UploaderSettings,
 } from './base-uploader';
 import {UploadQueue} from './upload-queue';
+import {showUploadDuplicates} from './upload-notification';
 import {imageCompletionData} from './image-completion-data';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
 
@@ -22,7 +23,7 @@ export class Uploader extends BaseUploader {
   private inputAccept = new Map<HTMLInputElement, string>();
   private dropZones: HTMLElement[] = [];
   private destroyed = false;
-  private uploads = new UploadQueue();
+  private uploads = new UploadQueue<CraftCms.Cms.Asset.Data.UploadResult>();
 
   static get defaults(): UploaderSettings {
     return {
@@ -227,7 +228,12 @@ export class Uploader extends BaseUploader {
         },
         progress: (loaded, total) =>
           this.uploadCallbacks.progress?.({loaded, total}),
-        done: (result) => this.uploadCallbacks.done?.({...upload, result}),
+        done: (result) => {
+          if (result.duplicates?.length) {
+            showUploadDuplicates(file.name, result.duplicates);
+          }
+          this.uploadCallbacks.done?.({...upload, result});
+        },
         fail: (error, canceled) => {
           if (!this.destroyed) {
             this.uploadCallbacks.fail?.({...upload, error, canceled});

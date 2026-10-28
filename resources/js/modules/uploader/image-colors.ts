@@ -1,8 +1,8 @@
 /**
- * Samples the colors of an image file in the browser, the same way
- * `CraftCms\Cms\Image\Images::colors()` does on the server, so uploads can
- * send their colors along instead of the server downloading and decoding the
- * file to find them.
+ * Samples an image file in the browser, the same way
+ * `CraftCms\Cms\Image\Images::sample()` does on the server, so uploads can
+ * send its colors and hash along instead of the server downloading and
+ * decoding the file to find them.
  */
 
 import {PhpRandomizer} from './php-randomizer';
@@ -32,6 +32,13 @@ interface Cluster {
   size: number;
 }
 
+/** What was sampled from an image, as `CraftCms\Cms\Image\Data\ImageSample` holds it. */
+export type ImageSample = {
+  colors: ImageColors;
+  /** The image's difference hash, as 16 hexadecimal digits. */
+  hash: string;
+};
+
 export interface Pixels {
   data: Uint8ClampedArray;
   width: number;
@@ -51,12 +58,14 @@ const MAX_ITERATIONS = 50;
 const CONVERGENCE_THRESHOLD = 0.001;
 const MIN_CLUSTER_SIZE_PERCENT = 1;
 const SEED = 1024;
+const HASH_COLUMNS = 9;
+const HASH_ROWS = 8;
 
 /**
- * Samples an image file's colors, or resolves to `null` if the browser can't
- * decode it, leaving the server to sample it instead.
+ * Samples an image file, or resolves to `null` if the browser can't decode it,
+ * leaving the server to sample it instead.
  */
-export async function readImageColors(file: File): Promise<ImageColors | null> {
+export async function readImageSample(file: File): Promise<ImageSample | null> {
   if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') {
     return null;
   }
@@ -82,13 +91,18 @@ export async function readImageColors(file: File): Promise<ImageColors | null> {
       context.imageSmoothingQuality = 'high';
       context.drawImage(bitmap, 0, 0, width, height);
 
-      return sampleImageColors(context.getImageData(0, 0, width, height));
+      return sampleImage(context.getImageData(0, 0, width, height));
     } finally {
       bitmap.close();
     }
   } catch {
     return null;
   }
+}
+
+/** Samples an image's colors and difference hash. */
+export function sampleImage(pixels: Pixels): ImageSample {
+  return {colors: sampleImageColors(pixels), hash: imageHash(pixels)};
 }
 
 /**
@@ -245,6 +259,64 @@ function percentile(sorted: number[], fraction: number): number {
   return (
     sorted[lower]! + (sorted[upper]! - sorted[lower]!) * (position - lower)
   );
+}
+
+/**
+ * Returns the image's difference hash, as `CraftCms\Cms\Image\ImageHash`
+ * does: the image is averaged down to 9×8 regions of lightness, with
+ * transparent pixels treated as white, and each bit says whether a region is
+ * lighter than the one to its right.
+ */
+export function imageHash({data, width, height}: Pixels): string {
+  let hash = '';
+
+  for (let row = 0; row < HASH_ROWS; row++) {
+    const top = (row * height) / HASH_ROWS;
+    const bottom = ((row + 1) * height) / HASH_ROWS;
+    const lightness: number[] = [];
+
+    for (let column = 0; column < HASH_COLUMNS; column++) {
+      const left = (column * width) / HASH_COLUMNS;
+      const right = ((column + 1) * width) / HASH_COLUMNS;
+      let weights = 0;
+      let sum = 0;
+
+      for (let y = Math.floor(top); y < Math.ceil(bottom); y++) {
+        const coverageY = Math.min(y + 1, bottom) - Math.max(y, top);
+
+        for (let x = Math.floor(left); x < Math.ceil(right); x++) {
+          const weight =
+            (Math.min(x + 1, right) - Math.max(x, left)) * coverageY;
+          const index = (y * width + x) * 4;
+          const alpha = data[index + 3]! / 255;
+          const luminance = relativeLuminance(
+            data[index]!,
+            data[index + 1]!,
+            data[index + 2]!
+          );
+
+          weights += weight;
+          sum += (luminance * alpha + 1 - alpha) * weight;
+        }
+      }
+
+      lightness.push(weights > 0 ? sum / weights : 1);
+    }
+
+    let nibble = 0;
+
+    for (let column = 0; column < HASH_COLUMNS - 1; column++) {
+      nibble =
+        (nibble << 1) | (lightness[column]! < lightness[column + 1]! ? 1 : 0);
+
+      if (column % 4 === 3) {
+        hash += nibble.toString(16);
+        nibble = 0;
+      }
+    }
+  }
+
+  return hash;
 }
 
 /** Returns the WCAG relative luminance of an sRGB color, from 0 (black) to 1 (white). */

@@ -155,7 +155,11 @@ export function createIndexVisitor(route: ElementIndexRoute): IndexVisitor {
  * composables drive a modal index without knowing they are.
  */
 export function createDetachedIndexVisitor(
-  load: (query: IndexQueryParams, isCurrent: () => boolean) => Promise<boolean>,
+  load: (
+    query: IndexQueryParams,
+    isCurrent: () => boolean,
+    silent: boolean
+  ) => Promise<boolean>,
   initialQuery: IndexQueryParams = {}
 ) {
   const query = ref<IndexQueryParams>({...initialQuery});
@@ -182,7 +186,8 @@ export function createDetachedIndexVisitor(
     try {
       const applied = await load(
         attemptedQuery,
-        () => requestId === latestRequest
+        () => requestId === latestRequest,
+        options.silent ?? false
       );
 
       if (applied) {

@@ -931,15 +931,11 @@ it('tints a selected colored chip’s controls from its own fill, not the accent
   ).toBe(getComputedStyle(own).backgroundColor);
 });
 
-it('makes non-plain chips as tall as a medium button, thumbnail included', async () => {
+it('makes non-plain small chips as tall as a medium button, thumbnail included', async () => {
   await import('../../styles/cp.css');
   document.body.innerHTML = `
     <div><craft-chip>Label</craft-chip></div>
     <div><craft-chip show-thumb>
-      <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
-      Label
-    </craft-chip></div>
-    <div><craft-chip size="medium" show-thumb>
       <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
       Label
     </craft-chip></div>
@@ -953,8 +949,34 @@ it('makes non-plain chips as tall as a medium button, thumbnail included', async
     (chip) => box(chip.shadowRoot!.querySelector('.cp-chip')!).height
   );
 
-  expect(heights.slice(0, 3)).toEqual([32, 32, 32]);
-  expect(heights[3]).toBeLessThan(32);
+  expect(heights.slice(0, 2)).toEqual([32, 32]);
+  expect(heights[2]).toBeLessThan(32);
+});
+
+it('steps the thumbnail up from small to medium to large', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = ['small', 'medium', 'large']
+    .map(
+      (size) => `<div><craft-chip size="${size}" show-thumb>
+        <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+        Label
+      </craft-chip></div>`
+    )
+    .join('');
+  const chips = [...document.querySelectorAll('craft-chip')];
+  for (const chip of chips) {
+    await chip.updateComplete;
+  }
+  const widths = chips.map(
+    (chip) =>
+      box(
+        chip
+          .querySelector('craft-thumbnail')!
+          .shadowRoot!.querySelector('[part="thumbnail"]')!
+      ).width
+  );
+
+  expect(widths).toEqual([26, 32, 40]);
 });
 
 it('styles the badges in a filled black chip as in the dark theme', async () => {
@@ -1030,4 +1052,69 @@ it('centers a chip with a thumbnail on its line, rather than sitting on the base
   expect(
     Math.abs(box.top + box.height / 2 - (cell.top + cell.height / 2))
   ).toBeLessThanOrEqual(1);
+});
+
+// A tile in a grid: the thumbnail above the label, both centered, and the
+// checkbox and suffix in a row of their own along the top, clear of the
+// thumbnail so reaching for one doesn't select the tile instead.
+it('stacks the prefix above the label, with the checkbox and suffix on top', async () => {
+  document.body.innerHTML = `
+    <div style="width: 240px; display: flex">
+      <craft-chip prefix-placement="block-start" full-width thumb-size="lg" show-thumb selectable>
+        <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+        Label
+        <div slot="suffix"><div style="width: 24px; height: 24px"></div></div>
+      </craft-chip>
+    </div>`;
+  const chip = document.querySelector('craft-chip')!;
+  await chip.updateComplete;
+  const part = (selector: string) =>
+    chip.shadowRoot!.querySelector(selector)!.getBoundingClientRect();
+
+  const outer = part('.cp-chip');
+  const select = part('.cp-chip__select');
+  const suffix = part('.cp-chip__suffix');
+  const prefix = part('.cp-chip__prefix');
+  const main = part('.cp-chip__main');
+
+  expect(outer.width).toBe(240);
+  expect(select.bottom).toBeLessThanOrEqual(prefix.top);
+  expect(suffix.bottom).toBeLessThanOrEqual(prefix.top);
+  expect(select.left).toBeLessThan(suffix.left);
+  expect(prefix.bottom).toBeLessThanOrEqual(main.top);
+  // Centered across the tile.
+  const center = outer.left + outer.width / 2;
+  expect(Math.abs(prefix.left + prefix.width / 2 - center)).toBeLessThan(1);
+});
+
+// The thumbnail size and the chip's: a thumb-size picks a chip size to suit,
+// unless the chip has one of its own.
+it('sizes the thumbnail by thumb-size, and the chip to suit it', async () => {
+  const render = async (attrs: string) => {
+    document.body.innerHTML = `
+      <craft-chip show-thumb ${attrs}>
+        <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+        Label
+      </craft-chip>`;
+    const chip = document.querySelector('craft-chip')!;
+    const thumbnail = chip.querySelector('craft-thumbnail')!;
+    await chip.updateComplete;
+    await thumbnail.updateComplete;
+    const inner = chip.shadowRoot!.querySelector('.cp-chip')!;
+
+    return {
+      thumb: box(thumbnail.shadowRoot!.querySelector('.thumbnail')!).width,
+      size: ['small', 'medium', 'large'].find((size) =>
+        inner.classList.contains(`cp-chip--${size}`)
+      ),
+    };
+  };
+
+  expect(await render('thumb-size="md"')).toEqual({thumb: 60, size: 'medium'});
+  expect(await render('thumb-size="2xl"')).toEqual({thumb: 240, size: 'large'});
+  expect(await render('thumb-size="xl" size="small"')).toEqual({
+    thumb: 180,
+    size: 'small',
+  });
+  expect((await render('')).size).toBe('small');
 });

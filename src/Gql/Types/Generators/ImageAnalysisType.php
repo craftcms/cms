@@ -40,6 +40,11 @@ class ImageAnalysisType implements GeneratorInterface, SingleGeneratorInterface
                         'type' => ImageColorsType::generateType(null),
                         'description' => 'Color data sampled from the image, or null if it hasn’t been sampled yet.',
                     ],
+                    'hash' => [
+                        'name' => 'hash',
+                        'type' => Type::string(),
+                        'description' => 'The image’s difference hash, as 16 hexadecimal digits. Copies of an image, even resized or recompressed ones, have hashes that differ in only a few bits. Null if the image hasn’t been sampled.',
+                    ],
                     'metadata' => [
                         'name' => 'metadata',
                         'type' => ImageMetadataType::generateType(null),

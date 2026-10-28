@@ -7,13 +7,15 @@ namespace CraftCms\Cms\Asset\Analysis\Data;
 use CraftCms\Cms\Asset\Enums\ImageType;
 use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageMetadata;
+use CraftCms\Cms\Image\Data\ImageSample;
+use CraftCms\Cms\Image\ImageHash;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Illuminate\Contracts\Support\Arrayable;
 use JsonSerializable;
 
 /**
- * What was found in an image: its colors and embedded metadata, read from the file, and what kind of image it is, its
- * keywords, and the text in it, found by AI.
+ * What was found in an image: its colors, a fingerprint for finding copies of it, and its embedded metadata, read from
+ * the file, and what kind of image it is, its keywords, and the text in it, found by AI.
  *
  * @implements Arrayable<string, mixed>
  *
@@ -24,6 +26,9 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
 {
     /**
      * @param  ImageColors|null  $colors  Color data sampled from the image, or `null` if it hasn’t been sampled yet
+     * @param  string|null  $hash  The image’s difference hash, as 16 hexadecimal digits, for finding copies of it, or
+     *                             `null` if it couldn’t be sampled, or was sampled before hashes were
+     *                             (see {@see ImageHash})
      * @param  ImageMetadata|null  $metadata  Metadata embedded in the image’s file, or `null` if it hasn’t been read
      * @param  ImageType|null  $type  What kind of image it is, as found by the “Classify images” AI task, or `null` if it
      *                                hasn’t been classified
@@ -36,6 +41,8 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
     public function __construct(
         #[AllowedInSandbox]
         public ?ImageColors $colors = null,
+        #[AllowedInSandbox]
+        public ?string $hash = null,
         #[AllowedInSandbox]
         public ?ImageMetadata $metadata = null,
         #[AllowedInSandbox]
@@ -56,6 +63,7 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
     public static function fromArray(array $data): self
     {
         $colors = $data['colors'] ?? null;
+        $hash = $data['hash'] ?? null;
         $metadata = $data['metadata'] ?? null;
         $type = $data['type'] ?? null;
         $keywords = $data['keywords'] ?? null;
@@ -63,6 +71,7 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
 
         return new self(
             colors: is_array($colors) ? ImageColors::fromArray($colors) : null,
+            hash: ImageHash::isHash($hash) ? $hash : null,
             metadata: is_array($metadata) ? ImageMetadata::fromArray($metadata) : null,
             type: is_string($type) ? ImageType::tryFrom($type) : null,
             keywords: is_array($keywords)
@@ -76,11 +85,19 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
     }
 
     /**
-     * Returns a copy with new colors, keeping everything else.
+     * Creates an instance from what was sampled from an image’s file.
      */
-    public function withColors(?ImageColors $colors): self
+    public static function fromSample(ImageSample $sample, ?ImageMetadata $metadata = null): self
     {
-        return new self($colors, $this->metadata, $this->type, $this->keywords, $this->text);
+        return new self(colors: $sample->colors, hash: $sample->hash, metadata: $metadata);
+    }
+
+    /**
+     * Returns a copy with what was newly sampled from the image’s file, keeping everything else.
+     */
+    public function withSample(ImageSample $sample): self
+    {
+        return new self($sample->colors, $sample->hash, $this->metadata, $this->type, $this->keywords, $this->text);
     }
 
     /**
@@ -88,7 +105,7 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
      */
     public function withMetadata(?ImageMetadata $metadata): self
     {
-        return new self($this->colors, $metadata, $this->type, $this->keywords, $this->text);
+        return new self($this->colors, $this->hash, $metadata, $this->type, $this->keywords, $this->text);
     }
 
     /**
@@ -96,7 +113,7 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
      */
     public function withType(?ImageType $type): self
     {
-        return new self($this->colors, $this->metadata, $type, $this->keywords, $this->text);
+        return new self($this->colors, $this->hash, $this->metadata, $type, $this->keywords, $this->text);
     }
 
     /**
@@ -106,14 +123,15 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
      */
     public function withTags(?array $keywords, ?string $text): self
     {
-        return new self($this->colors, $this->metadata, $this->type, $keywords, $text);
+        return new self($this->colors, $this->hash, $this->metadata, $this->type, $keywords, $text);
     }
 
-    /** @return array{colors: array<string, mixed>|null, metadata: array<string, mixed>|null, type: string|null, keywords: list<string>|null, text: string|null} */
+    /** @return array{colors: array<string, mixed>|null, hash: string|null, metadata: array<string, mixed>|null, type: string|null, keywords: list<string>|null, text: string|null} */
     public function toArray(): array
     {
         return [
             'colors' => $this->colors?->toArray(),
+            'hash' => $this->hash,
             'metadata' => $this->metadata?->toArray(),
             'type' => $this->type?->value,
             'keywords' => $this->keywords,
@@ -121,7 +139,7 @@ readonly class ImageAnalysis implements Arrayable, JsonSerializable
         ];
     }
 
-    /** @return array{colors: array<string, mixed>|null, metadata: array<string, mixed>|null, type: string|null, keywords: list<string>|null, text: string|null} */
+    /** @return array{colors: array<string, mixed>|null, hash: string|null, metadata: array<string, mixed>|null, type: string|null, keywords: list<string>|null, text: string|null} */
     public function jsonSerialize(): array
     {
         return $this->toArray();
