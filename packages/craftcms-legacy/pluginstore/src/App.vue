@@ -51,15 +51,24 @@
       onViewScroll($event) {
         this.$root.$emit('viewScroll', $event);
       },
+
+      onWindowResize($event) {
+        this.$root.$emit('windowResize', $event);
+      },
+
+      onWindowScroll($event) {
+        this.$root.$emit('windowScroll', $event);
+      },
     },
 
     mounted() {
-      window.addEventListener('resize', ($event) => {
-        this.$root.$emit('windowResize', $event);
-      });
-      window.addEventListener('scroll', ($event) => {
-        this.$root.$emit('windowScroll', $event);
-      });
+      window.addEventListener('resize', this.onWindowResize);
+      window.addEventListener('scroll', this.onWindowScroll);
+    },
+
+    beforeDestroy() {
+      window.removeEventListener('resize', this.onWindowResize);
+      window.removeEventListener('scroll', this.onWindowScroll);
     },
   };
 </script>

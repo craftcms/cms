@@ -109,6 +109,7 @@
       actions: () => [],
       source: null,
       context: 'index',
+      readOnly: undefined,
       loading: false,
       layout: 'auto',
       spacing: TableSpacing.Spacious,
@@ -189,8 +190,8 @@
   function clearSelection(): void {
     table.value.resetRowSelection();
   }
-  function refresh(): Promise<boolean> {
-    return managed?.refresh() ?? Promise.resolve(true);
+  function refresh(options?: {quiet?: boolean}): Promise<boolean> {
+    return managed?.refresh(undefined, options) ?? Promise.resolve(true);
   }
   function removeRows(ids: Array<string | number>): void {
     managed?.removeRows(ids);

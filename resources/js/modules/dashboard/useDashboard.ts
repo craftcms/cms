@@ -1,3 +1,4 @@
+import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {useMessages} from '@/modules/messages/useMessages';
 import {provideHtmlWidgets} from './htmlWidgets';
 import {jq} from '@/common/utils/jquery';
@@ -21,12 +22,14 @@ import {
   updateColspan,
 } from '@actions/Dashboard/WidgetsController';
 import type {DashboardWidget, WidgetType} from './types';
+import {widgetName} from './widgetName';
 
 export function useDashboard(props: {
   widgets: DashboardWidget[];
   widgetTypes: Record<string, WidgetType>;
 }) {
   const messages = useMessages();
+  const {announce} = useAnnouncer();
 
   provideHtmlWidgets();
 
@@ -230,6 +233,14 @@ export function useDashboard(props: {
         ...order,
         ...widgets.value.filter((widget) => widget.id < 0),
       ];
+
+      const moved = order[to]!;
+      announce(
+        t('Moved {name} to position {position}', {
+          name: widgetName(moved),
+          position: to + 1,
+        })
+      );
     } catch {
       messages.error(t('Couldn’t reorder widgets.'));
     } finally {

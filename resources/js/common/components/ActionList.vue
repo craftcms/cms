@@ -36,6 +36,11 @@
 
   /** One descriptor flattened to what the elements are actually given. */
   interface RenderedAction {
+    /**
+     * The descriptor's `id`, else its kind and link or label, numbered when
+     * repeated — so an item keeps its element when items before it change.
+     */
+    key: string;
     kind: 'hr' | 'heading' | 'display' | 'link' | 'button';
     is?: Component;
     href?: string;
@@ -50,7 +55,8 @@
      * an unset `variant` would land as `variant=""` instead of `neutral`.
      *
      * `.`-prefixed keys are set as DOM properties, which `action`, `feedback`
-     * and `shortcut` need since they're objects rather than strings.
+     * and `shortcut` need since they're objects rather than strings, and
+     * `checked` and `disabled` since Lit reads a `"false"` attribute as on.
      */
     attrs: Record<string, unknown>;
   }
@@ -103,11 +109,21 @@
    * stray rule — so it's dropped when rendering as buttons rather than asking
    * every caller to keep two lists.
    */
-  const rendered = computed<Array<RenderedAction>>(() =>
-    actions.flatMap(renderAction)
-  );
+  const rendered = computed<Array<RenderedAction>>(() => {
+    const seen = new Map<string, number>();
 
-  function renderAction(action: ActionItem): Array<RenderedAction> {
+    return actions.flatMap(renderAction).map((action) => {
+      const base = `${action.kind}:${String(action.attrs.id ?? action.href ?? action.label ?? '')}`;
+      const count = seen.get(base) ?? 0;
+      seen.set(base, count + 1);
+
+      return {...action, key: count ? `${base}#${count}` : base};
+    });
+  });
+
+  function renderAction(
+    action: ActionItem
+  ): Array<Omit<RenderedAction, 'key'>> {
     if (action.type === 'hr') {
       return as === 'craft-action-item' ? [{kind: 'hr', attrs: {}}] : [];
     }
@@ -133,7 +149,7 @@
 
   function renderControl(
     action: ActionItemButton | ActionItemLink
-  ): Array<RenderedAction> {
+  ): Array<Omit<RenderedAction, 'key'>> {
     const isItem = as === 'craft-action-item';
     const marks = isItem && selectable.value;
     const attrs = defined({
@@ -142,7 +158,7 @@
       // `craft-action-item` draws the checkmark gutter for its `checkbox`
       // type only; the others have no such notion.
       type: marks ? 'checkbox' : undefined,
-      checked: marks ? Boolean(action.selected) : undefined,
+      '.checked': marks ? Boolean(action.selected) : undefined,
       variant: action.variant,
       'icon-color': action.iconColor,
       '.action': action.action,
@@ -162,11 +178,13 @@
         {
           kind: 'link',
           href: link.href,
-          external: link.external,
+          // A link that opens elsewhere isn't an Inertia visit, which would
+          // take over this tab instead.
+          external: link.external || Boolean(link.target),
           label: action.label,
           status: isItem ? action.status : undefined,
           onClick: action.onClick,
-          attrs: defined({...attrs, size}),
+          attrs: defined({...attrs, target: link.target, size}),
         },
       ];
     }
@@ -179,7 +197,7 @@
         onClick: action.onClick,
         attrs: defined({
           ...attrs,
-          disabled: action.disabled,
+          '.disabled': action.disabled,
           size: isItem ? undefined : size,
         }),
       },
@@ -473,73 +491,75 @@
     </component>
   </template>
 
-  <template v-else v-for="(action, index) in rendered" :key="index">
-    <hr v-if="action.kind === 'hr'" class="action-list__separator" />
+  <template v-else>
+    <template v-for="action in rendered" :key="action.key">
+      <hr v-if="action.kind === 'hr'" class="action-list__separator" />
 
-    <!-- `role="presentation"`: it labels its items visually but must never
+      <!-- `role="presentation"`: it labels its items visually but must never
       take focus or be matched by the menu's item selector. -->
-    <div
-      v-else-if="action.kind === 'heading'"
-      :class="{
-        'action-list__heading': true,
-        'action-list__heading--marked': selectable,
-      }"
-      role="presentation"
-    >
-      {{ action.label }}
-    </div>
+      <div
+        v-else-if="action.kind === 'heading'"
+        :class="{
+          'action-list__heading': true,
+          'action-list__heading--marked': selectable,
+        }"
+        role="presentation"
+      >
+        {{ action.label }}
+      </div>
 
-    <component v-else-if="action.kind === 'display'" :is="action.is" />
+      <component v-else-if="action.kind === 'display'" :is="action.is" />
 
-    <!-- Routed through `CpLink` so a link action is an Inertia visit, unless
+      <!-- Routed through `CpLink` so a link action is an Inertia visit, unless
       the descriptor owns its click (see `ownsClick`). The element keeps its
       `href`, so the anchor in its shadow root still gives real link semantics;
       `CpLink` adds the handler on the host that cancels the navigation in
       favor of a visit. -->
-    <component
-      v-else-if="action.kind === 'link' && action.onClick"
-      v-bind="action.attrs"
-      :is="as"
-      :href="action.href"
-      @click="action.onClick"
-    >
-      <craft-indicator
-        v-if="action.status"
-        slot="icon"
-        :fill="action.status"
-      ></craft-indicator>
-      {{ action.label }}
-    </component>
+      <component
+        v-else-if="action.kind === 'link' && action.onClick"
+        v-bind="action.attrs"
+        :is="as"
+        :href="action.href"
+        @click="action.onClick"
+      >
+        <craft-indicator
+          v-if="action.status"
+          slot="icon"
+          :fill="action.status"
+        ></craft-indicator>
+        {{ action.label }}
+      </component>
 
-    <CpLink
-      v-else-if="action.kind === 'link'"
-      v-bind="action.attrs"
-      :as="as"
-      :href="action.href!"
-      :inertia="!action.external"
-    >
-      <craft-indicator
-        v-if="action.status"
-        slot="icon"
-        :fill="action.status"
-      ></craft-indicator>
-      {{ action.label }}
-    </CpLink>
+      <CpLink
+        v-else-if="action.kind === 'link'"
+        v-bind="action.attrs"
+        :as="as"
+        :href="action.href!"
+        :inertia="!action.external"
+      >
+        <craft-indicator
+          v-if="action.status"
+          slot="icon"
+          :fill="action.status"
+        ></craft-indicator>
+        {{ action.label }}
+      </CpLink>
 
-    <component
-      v-else
-      type="button"
-      v-bind="action.attrs"
-      :is="as"
-      @click="action.onClick"
-    >
-      <craft-indicator
-        v-if="action.status"
-        slot="icon"
-        :fill="action.status"
-      ></craft-indicator>
-      {{ action.label }}
-    </component>
+      <component
+        v-else
+        type="button"
+        v-bind="action.attrs"
+        :is="as"
+        @click="action.onClick"
+      >
+        <craft-indicator
+          v-if="action.status"
+          slot="icon"
+          :fill="action.status"
+        ></craft-indicator>
+        {{ action.label }}
+      </component>
+    </template>
   </template>
 </template>
 

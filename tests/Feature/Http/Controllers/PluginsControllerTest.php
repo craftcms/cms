@@ -360,3 +360,27 @@ test('respects read-only mode for settings UI refresh', function () {
         'scope' => ['settings'],
     ])->assertForbidden();
 });
+
+test('enableAll and disableAll toggle every installed plugin', function () {
+    $plugins = app(Plugins::class);
+    $plugins->disablePlugin('test-plugin');
+
+    postJson(action([PluginsController::class, 'enableAll']))
+        ->assertOk()
+        ->assertJsonPath('message', 'Plugins enabled.');
+
+    expect($plugins->isPluginEnabled('test-plugin'))->toBeTrue();
+
+    postJson(action([PluginsController::class, 'disableAll']))
+        ->assertOk()
+        ->assertJsonPath('message', 'Plugins disabled.');
+
+    expect($plugins->isPluginEnabled('test-plugin'))->toBeFalse();
+});
+
+test('respects read-only mode for enableAll and disableAll', function () {
+    Cms::config()->allowAdminChanges = false;
+
+    postJson(action([PluginsController::class, 'enableAll']))->assertForbidden();
+    postJson(action([PluginsController::class, 'disableAll']))->assertForbidden();
+});

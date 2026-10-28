@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\ElementSourcesResolving;
 use CraftCms\Cms\Element\Exporters\Raw;
+use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -149,7 +150,7 @@ it('selects fit for index tiles and inline cards', function (string $viewMode, s
             })
         );
 })->with([
-    'tiles' => ['thumbs', 'thumbHtml', 'fit', 200],
+    'tiles' => ['thumbs', 'thumbHtml', 'fit', 120],
     'inline cards' => ['cards', 'cardThumbHtml', 'fit', 120],
 ]);
 
@@ -519,6 +520,58 @@ it('sends a plain-text label for every row in flat table mode', function () {
         );
 });
 
+it('renders title chips at the requested thumbnail size, in a chip size to suit', function (?string $thumbSize, ?string $expectedThumbSize, string $expectedSize) {
+    EntryModel::factory()->createElement(['title' => 'Homepage']);
+
+    get(route('craft.cp.content.index', array_filter([
+        'page' => 'entries',
+        'viewMode' => 'table',
+        'thumbSize' => $thumbSize,
+    ])))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.title', function (string $html) use ($expectedThumbSize, $expectedSize) {
+                $chip = new Crawler($html)->filter('craft-chip');
+                expect([$chip->attr('thumb-size'), $chip->attr('size')])->toBe([$expectedThumbSize, $expectedSize]);
+
+                return true;
+            })
+        );
+})->with([
+    'default' => [null, 'sm', 'small'],
+    'md' => ['md', 'md', 'medium'],
+    'lg' => ['lg', 'lg', 'large'],
+    // Table rows stop at a card's thumbnail size.
+    'xl' => ['xl', 'sm', 'small'],
+    'unknown' => ['huge', 'sm', 'small'],
+]);
+
+it('renders tile thumbnails at the requested size', function (?string $thumbSize, int $size) {
+    $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')
+        ->createElementWithFields()->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    get(route('craft.cp.content.index', array_filter([
+        'page' => 'entries',
+        'viewMode' => 'thumbs',
+        'thumbSize' => $thumbSize,
+    ])))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.thumbHtml', function (string $html) use ($size) {
+                expect($html)->toContainTag('craft-thumbnail', ['sizes' => "calc({$size}rem/16)"]);
+
+                return true;
+            })
+        );
+})->with([
+    'default' => [null, 120],
+    'sm' => ['sm', 26],
+    '2xl' => ['2xl', 240],
+]);
+
 it('sends a plain-text label alongside the card HTML in cards view mode', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Homepage']);
 
@@ -791,6 +844,34 @@ it('serializes bulk action items for the active source', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->has('actions')
+        );
+});
+
+it('offers Move to as the section picker on a section source', function () {
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    Section::factory()->withEntryTypes($entryType)->create();
+    EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement();
+
+    get(route('craft.cp.content.index', [
+        'page' => 'entries',
+        'sectionHandle' => $section->handle,
+        'viewMode' => 'table',
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.capabilities.movable', true)
+            ->where('actions', function ($actions) use ($section): bool {
+                $move = collect($actions)->firstWhere('key', MoveToSection::class);
+
+                return $move !== null
+                    && ! isset($move['disabled'])
+                    && $move['selectionAttribute'] === 'movable'
+                    && $move['action']['type'] === 'event'
+                    && $move['action']['name'] === 'entries:move-to-section'
+                    && $move['action']['detail']['currentSectionUid'] === $section->uid
+                    && $move['action']['detail']['siteId'] === Sites::getPrimarySite()->id;
+            })
         );
 });
 

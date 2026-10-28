@@ -26,7 +26,7 @@ class Table implements Node
 {
     use Conditionable;
 
-    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool, wrap?: bool}> */
+    /** @var list<array{key: string, label: string, sortable?: bool, width?: string, thin?: bool, headerSrOnly?: bool, wrap?: bool}> */
     private array $columns = [];
 
     /** @var list<array<string, mixed>> */
@@ -71,8 +71,6 @@ class Table implements Node
 
     private ?string $deleteConfirmMessage = null;
 
-    private ?string $deleteModalUrl = null;
-
     private ?string $bulkDeleteUrl = null;
 
     private ?string $bulkDeleteConfirmMessage = null;
@@ -110,10 +108,11 @@ class Table implements Node
      * Columns with `sortable => true` get clickable headers that cycle ascending, descending,
      * then back to the rows' own order. See {@see rows()} for the `_sort` override.
      * `width` sets a fixed or relative column width (e.g. `34px` or `1.5fr`).
+     * `thin` makes the column as narrow as its content, which doesn't wrap.
      * `headerSrOnly` hides only the visible header text.
      * `wrap` lets long cell content wrap instead of widening the column.
      *
-     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, headerSrOnly?: bool, wrap?: bool}>  $columns
+     * @param  list<array{key: string, label: string, sortable?: bool, width?: string, thin?: bool, headerSrOnly?: bool, wrap?: bool}>  $columns
      */
     public function columns(array $columns): static
     {
@@ -334,19 +333,12 @@ class Table implements Node
      * Individual rows can opt out via `_deletable => false` in {@see rows()}.
      * For resource routes, set `_deleteUrl` on each row using `route()`.
      * The shared `$url` can then be omitted.
-     *
-     * `$modalUrl` replaces the per-row confirmation with a modal UI, for deletions that need
-     * more input (where to move a deleted record's data, say). It's requested via GET with
-     * `{id: <row id>}` and must return JSON `{ui: UiPayload, title?: string,
-     * submitLabel?: string}`; submitting sends the UI's values plus `id` to the row's
-     * deletion URL via DELETE.
      */
-    public function deletable(?string $url = null, ?string $confirmMessage = null, ?string $modalUrl = null): static
+    public function deletable(?string $url = null, ?string $confirmMessage = null): static
     {
         $this->deletable = true;
         $this->deleteUrl = $url;
         $this->deleteConfirmMessage = $confirmMessage;
-        $this->deleteModalUrl = $modalUrl;
 
         return $this;
     }
@@ -520,13 +512,17 @@ class Table implements Node
             };
 
             $head = Html::tag('tr', implode('', array_map(
-                fn (array $column) => Html::tag('th', Html::encode($column['label'])),
+                fn (array $column) => Html::tag('th', Html::encode($column['label']), [
+                    'class' => ($column['thin'] ?? false) ? ['thin'] : null,
+                ]),
                 $columns,
             )));
 
             $body = implode('', array_map(
                 fn (array $row) => Html::tag('tr', implode('', array_map(
-                    fn (array $column) => Html::tag('td', $renderCell($column, $row)),
+                    fn (array $column) => Html::tag('td', $renderCell($column, $row), [
+                        'class' => ($column['thin'] ?? false) ? ['thin'] : null,
+                    ]),
                     $columns,
                 ))),
                 $rows,
@@ -576,7 +572,6 @@ class Table implements Node
             'deleteUrl' => $this->deleteUrl,
             'deletable' => $this->deletable,
             'deleteConfirmMessage' => $this->deleteConfirmMessage,
-            'deleteModalUrl' => $this->deleteModalUrl,
             'bulkDeleteUrl' => $this->bulkDeleteUrl,
             'bulkDeleteConfirmMessage' => $this->bulkDeleteConfirmMessage,
             'bulkActions' => $this->bulkActions,

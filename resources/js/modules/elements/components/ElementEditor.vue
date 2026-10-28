@@ -9,6 +9,7 @@
   import {
     computed,
     nextTick,
+    onBeforeUnmount,
     provide,
     shallowReactive,
     useTemplateRef,
@@ -37,7 +38,6 @@
   import WorkflowEditLockCallout from '@/modules/workflows/components/WorkflowEditLockCallout.vue';
   import WorkflowDraftsStatus from '@/modules/workflows/components/WorkflowDraftsStatus.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
-  import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
   import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
@@ -46,6 +46,8 @@
   import type {ReleaseOption} from '@/modules/elements/composables/useElementEditor';
   import {create} from '@actions/ReleasesController';
   import {openSlideout} from '@/common/slideouts';
+  import {registerActions} from '@/modules/command-palette/registry';
+  import type {CommandPaletteItem} from '@/modules/command-palette/types';
   import {firstFocusableWithin} from '@/common/utils/dom';
 
   interface CreatedReleaseResponse {
@@ -278,11 +280,123 @@
     () => (isSlideout || !page.props.readOnly) && !payload.release
   );
 
+  /**
+   * What the command palette offers on this page: the Save button and its
+   * menu, discarding provisional changes, adding the draft to a release, and
+   * copying the element's ID, URL and reference tag. Read each time the
+   * palette opens; a slideout's editor leaves the palette to the page's.
+   */
+  function paletteActions(): CommandPaletteItem[] {
+    const items: CommandPaletteItem[] = [];
+    const description = t('This page');
+
+    if (!editorLocked.value) {
+      items.push(
+        {
+          id: 'editor-save',
+          label: payload.editorActions.primary.label,
+          description,
+          icon: 'floppy-disk',
+          run: () => primaryAction(),
+        },
+        ...formActionItems.value.map((action, index) => ({
+          id: `editor-save-menu-${index}`,
+          label: action.label,
+          description,
+          icon: 'floppy-disk',
+          run: action.onClick,
+        })),
+        ...saveButtons.value
+          .filter((button) => !button.disabled)
+          .map((button, index) => ({
+            id: `editor-button-${index}`,
+            label: button.label,
+            description,
+            icon: 'pen-to-square',
+            run: button.onClick,
+          }))
+      );
+
+      if (payload.notice && payload.canDiscardDraft) {
+        items.push({
+          id: 'editor-discard-changes',
+          label: t('Discard changes'),
+          description,
+          icon: 'arrow-rotate-left',
+          variant: 'danger',
+          confirm: t('Are you sure you want to discard your changes?'),
+          run: discardDraft,
+        });
+      }
+    }
+
+    if (!payload.readOnly && canChooseRelease.value) {
+      items.push(
+        ...payload.releaseOptions.map((release) => ({
+          id: `editor-add-to-release-${release.id}`,
+          label: t('Add to {release}', {release: release.name}),
+          description,
+          icon: 'rocket',
+          run: () => chooseRelease(release),
+        }))
+      );
+
+      if (payload.canCreateRelease) {
+        items.push({
+          id: 'editor-add-to-new-release',
+          label: t('Add to a new release'),
+          description,
+          icon: 'rocket',
+          run: () => createRelease(null),
+        });
+      }
+    }
+
+    const id = payload.canonicalId ?? payload.elementId;
+
+    if (id !== null) {
+      items.push({
+        id: 'editor-copy-id',
+        label: t('Copy ID'),
+        description,
+        icon: 'clipboard',
+        action: {type: 'clipboard', value: String(id)},
+      });
+
+      if (payload.refHandle) {
+        items.push({
+          id: 'editor-copy-reference-tag',
+          label: t('Copy reference tag'),
+          description,
+          icon: 'clipboard',
+          action: {type: 'clipboard', value: `{${payload.refHandle}:${id}}`},
+        });
+      }
+    }
+
+    if (payload.elementUrl) {
+      items.push({
+        id: 'editor-copy-url',
+        label: t('Copy URL'),
+        description,
+        icon: 'clipboard',
+        action: {type: 'clipboard', value: payload.elementUrl},
+      });
+    }
+
+    return items;
+  }
+
+  if (!isSlideout) {
+    onBeforeUnmount(registerActions(paletteActions).unregister);
+  }
+
   useAppLayout(() => ({
     title: payload.title,
     form,
     onSave: editorLocked.value ? undefined : primaryAction,
     saveDisabled: editorLocked.value,
+    handlesReadOnly: true,
     submitButtonLabel: payload.editorActions.primary.label,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
@@ -461,8 +575,9 @@
         </craft-button>
       </craft-callout>
 
+      <!-- A revision's notice already says why nothing is editable. -->
       <craft-callout
-        v-if="payload.readOnly"
+        v-if="payload.readOnly && !payload.notice"
         variant="neutral"
         rounded="none"
         appearance="fill"
@@ -534,57 +649,52 @@
     </CpContainer>
   </div>
 
-  <LayoutSlot
+  <ElementDetailsPanels
     v-if="hasDetails || $slots['details-header']"
-    name="content-details"
+    ref="detailsPanels"
+    :payload="payload"
+    :activity-timeline-version="activityTimelineVersion"
+    :update-payload="updatePayload"
+    :submit-action="submitAction"
+    :sidebar-tabs="sidebarTabs"
   >
-    <ElementDetailsPanels
-      ref="detailsPanels"
-      :payload="payload"
-      :activity-timeline-version="activityTimelineVersion"
-      :update-payload="updatePayload"
-      :submit-action="submitAction"
-      :sync-location-hash="!isSlideout"
-      :sidebar-tabs="sidebarTabs"
-    >
-      <template #sidebar-tab="{tab}">
-        <div
-          :ref="sidebarTabOutletRef(tab.uid)"
-          class="py-lg px-(--cp-container-padding)"
-        ></div>
-      </template>
-      <template #info>
-        <!-- Anything the element type shows above its meta fields, e.g. an
+    <template #sidebar-tab="{tab}">
+      <div
+        :ref="sidebarTabOutletRef(tab.uid)"
+        class="py-lg px-(--cp-container-padding)"
+      ></div>
+    </template>
+    <template #info>
+      <!-- Anything the element type shows above its meta fields, e.g. an
         asset's file preview. -->
-        <slot name="details-header" :payload="payload" />
+      <slot name="details-header" :payload="payload" />
 
-        <MetadataDetailsContent :html="payload.metadataHtml">
-          <!-- Only when there's something to show above the metadata: a form
+      <MetadataDetailsContent :html="payload.metadataHtml">
+        <!-- Only when there's something to show above the metadata: a form
           wrapper has nothing of its own unless it says so through showDetails. -->
-          <template
-            v-if="sidebarPayload || (formWrapper && showDetails)"
-            #default
+        <template
+          v-if="sidebarPayload || (formWrapper && showDetails)"
+          #default
+        >
+          <component
+            :is="formWrapper ?? 'div'"
+            v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
           >
-            <component
-              :is="formWrapper ?? 'div'"
-              v-bind="formWrapper ? {editor, region: 'sidebar'} : {}"
-            >
-              <craft-field-group v-if="sidebarPayload">
-                <UiRenderer
-                  ref="sidebarRenderer"
-                  :payload="sidebarPayload"
-                  :errors="sidebarErrors"
-                  :modified="autosave.modified.value"
-                  :disabled="editorLocked"
-                  @update:mutation="onSidebarMutation"
-                />
-              </craft-field-group>
-            </component>
-          </template>
-        </MetadataDetailsContent>
-      </template>
-    </ElementDetailsPanels>
-  </LayoutSlot>
+            <craft-field-group v-if="sidebarPayload">
+              <UiRenderer
+                ref="sidebarRenderer"
+                :payload="sidebarPayload"
+                :errors="sidebarErrors"
+                :modified="autosave.modified.value"
+                :disabled="editorLocked"
+                @update:mutation="onSidebarMutation"
+              />
+            </craft-field-group>
+          </component>
+        </template>
+      </MetadataDetailsContent>
+    </template>
+  </ElementDetailsPanels>
 </template>
 
 <style scoped lang="scss">

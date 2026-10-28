@@ -7,6 +7,7 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -34,4 +35,27 @@ it('rejects an incompatible bulk move before moving any entries', function () {
 
     expect($entries->getEntryById($entryA->id)->sectionId)->toBe($sourceSection->id)
         ->and($entries->getEntryById($entryB->id)->sectionId)->toBe($sourceSection->id);
+});
+
+it('lists the sections every selected entry could move to', function () {
+    actingAs(User::findOne());
+
+    $entryType = EntryType::factory()->create();
+    $otherType = EntryType::factory()->create();
+    $sourceSection = Section::factory()->withEntryTypes($entryType)->create();
+    $targetSection = Section::factory()->withEntryTypes($entryType)->create(['name' => 'Target']);
+    Section::factory()->withEntryTypes($otherType)->create();
+    $entry = Entry::factory()->forSection($sourceSection)->forEntryType($entryType)->create();
+
+    postJson(action([MoveEntryToSectionController::class, 'showModal']), [
+        'entryIds' => [$entry->id],
+        'siteId' => Sites::getPrimarySite()->id,
+        'currentSectionUid' => $sourceSection->uid,
+    ])
+        ->assertOk()
+        ->assertExactJson([
+            'sections' => [
+                ['id' => $targetSection->id, 'label' => 'Target'],
+            ],
+        ]);
 });

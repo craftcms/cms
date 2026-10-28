@@ -129,6 +129,11 @@ export default class CraftElementSelectorModal extends CraftDialog {
           this.narrow = entry.contentRect.width < NARROW_THRESHOLD;
         }
       });
+
+      // A modal moved in the DOM reconnects without another first render.
+      if (this.hasUpdated) {
+        this.#observeSurface();
+      }
     }
   }
 
@@ -217,7 +222,10 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
   protected override firstUpdated(changed: PropertyValues): void {
     super.firstUpdated(changed);
+    this.#observeSurface();
+  }
 
+  #observeSurface(): void {
     const surface = this.shadowRoot?.querySelector('.surface');
 
     if (surface) {

@@ -126,13 +126,14 @@ it('can show the edit route screen', function () {
 });
 
 it('can create a route', function (array $uriParts, ?array $expectedUriParts) {
-    post(action([RoutesController::class, 'store']), [
+    $response = post(action([RoutesController::class, 'store']), [
         'uriParts' => $uriParts,
         'template' => '_route',
         'siteUid' => null,
-    ])->assertRedirect()->assertSessionHasNoErrors();
+    ])->assertSessionHasNoErrors();
 
     $uid = $this->routes->getProjectConfigRoutes()->where('template', '_route')->first()->uid;
+    $response->assertRedirect(route('craft.cp.settings.routes.edit', ['uid' => $uid]));
     $config = $this->projectConfig->get(ProjectConfig::PATH_ROUTES.'.'.$uid);
 
     expect($config['template'])->toBe('_route')

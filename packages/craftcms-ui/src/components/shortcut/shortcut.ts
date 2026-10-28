@@ -8,6 +8,8 @@ import {property} from 'lit/decorators.js';
  * navigator.platform string.
  *
  * @slot - Non-modifier key
+ *
+ * @cssproperty [--c-shortcut-shadow=var(--c-shadow-sm)] - The keycap's shadow.
  */
 export default class CraftShortcut extends LitElement {
   static override styles = css`
@@ -22,7 +24,7 @@ export default class CraftShortcut extends LitElement {
       background-color: var(--c-color-neutral-fill-quiet);
       border: 1px solid var(--c-color-neutral-border-quiet);
       border-radius: var(--c-radius-sm);
-      box-shadow: var(--c-shadow-sm);
+      box-shadow: var(--c-shortcut-shadow, var(--c-shadow-sm));
     }
   `;
 

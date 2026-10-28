@@ -179,7 +179,7 @@ it('requires entry permissions to create and edit drafts', function (): void {
         "createEntries:{$this->section->uid}", "savePeerEntryDrafts:{$this->section->uid}",
     ])->create(['admin' => false]);
     $call = function (User $actor, string $tool, array $arguments): array {
-        Passport::actingAs($actor, ['mcp:use'], 'craft-mcp');
+        Passport::actingAs($actor, ['mcp:admin'], 'craft-mcp');
 
         return McpRequest::send($this, 'tools/call', ['name' => $tool, 'arguments' => ['type' => 'entries', ...$arguments]])
             ->assertOk()

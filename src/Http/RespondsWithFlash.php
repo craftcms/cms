@@ -182,6 +182,17 @@ trait RespondsWithFlash
         return redirect()->to($this->getPostedRedirectUrl($object) ?? $redirect);
     }
 
+    /**
+     * Where saving a newly-created record lands when no redirect was posted, as
+     * with Save and continue editing: its edit page, rather than back to the
+     * blank form that created it. JSON requests handle their own navigation.
+     */
+    protected function createdRedirectUrl(string $editUrl): ?string
+    {
+        return $this->getPostedRedirectUrl()
+            ?? (request()->expectsJson() ? null : $editUrl);
+    }
+
     protected function getPostedRedirectUrl(?object $object = null): ?string
     {
         $url = request('redirect');

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageSample;
 use CraftCms\Cms\Image\Enums\ImageDriver;
+use CraftCms\Cms\Image\ImageHash;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\Raster;
 use CraftCms\Cms\Image\Svg;
@@ -270,6 +272,36 @@ describe('colors', function () {
         expect($this->service->colors($path)->toArray())->toBe([
             'dominant' => '#c81e28',
             'grid' => array_fill(0, 3, array_fill(0, 4, '#c81e28')),
+            'palette' => ['#c81e28'],
+            'luminance' => array_fill(0, 3, array_fill(0, 4, [0.134, 0.134])),
+            'weights' => [1.0],
+        ]);
+    });
+
+    it('lists the image’s main colors, most dominant first', function () {
+        $path = colorsFixture($this->sandboxPath.'/split-palette.png', [200, 30, 40], [100, 0, 199, 149, 30, 80, 200], width: 300, height: 150);
+
+        // Blends of the two, from where they meet, may follow
+        expect(array_slice($this->service->colors($path)->palette, 0, 2))->toBe(['#c81e28', '#1e50c8']);
+    });
+
+    it('clusters the same main colors as the browser', function () {
+        // The same image the browser sampler’s tests use, so the two stay in step
+        $image = imagecreatetruecolor(40, 30);
+
+        for ($y = 0; $y < 30; $y++) {
+            for ($x = 0; $x < 40; $x++) {
+                imagesetpixel($image, $x, $y, imagecolorallocate($image, ($x * 7 + $y * 13) % 256, ($x * $y) % 256, ($x + $y * 3) % 256));
+            }
+        }
+
+        imagepng($image, $path = $this->sandboxPath.'/fixture.png');
+        $colors = $this->service->colors($path);
+
+        expect([$colors->dominant, $colors->palette, $colors->weights])->toBe([
+            '#4d2336',
+            ['#4d2336', '#ba373a', '#6ed64e', '#59814d', '#e38545'],
+            [0.248, 0.233, 0.217, 0.162, 0.141],
         ]);
     });
 
@@ -331,8 +363,32 @@ describe('colors', function () {
         expect($this->service->colors($path)->dominant)->toBe('#ffffff');
     });
 
+    it('treats images without an alpha channel as opaque', function () {
+        expect(array_merge(...$this->service->colors($this->fixturesPath.'/background.jpg')->grid))
+            ->each->toMatch('/^#[0-9a-f]{6}$/');
+    });
+
     it('returns empty colors for files it can’t read as images', function () {
         expect($this->service->colors($this->sandboxPath.'/empty-file.text'))->toEqual(new ImageColors)
             ->and($this->service->colors($this->sandboxPath.'/missing.png'))->toEqual(new ImageColors);
+    });
+});
+
+describe('sample', function () {
+    it('fingerprints copies of an image alike, even once they’re resized and recompressed', function () {
+        $original = $this->fixturesPath.'/background.jpg';
+        $copy = $this->sandboxPath.'/copy.jpg';
+        $this->service->loadImage($original)->scaleToFit(320, null)->setQuality(40)->saveAs($copy);
+
+        $hash = $this->service->sample($original)->hash;
+        $copyHash = $this->service->sample($copy)->hash;
+
+        expect($hash)->toMatch('/^[0-9a-f]{16}$/')
+            ->and(ImageHash::distance($hash, $copyHash))->toBeLessThanOrEqual(5, "$hash and $copyHash differ in too many bits")
+            ->and(ImageHash::distance($hash, $this->service->sample($this->fixturesPath.'/ign.jpg')->hash))->toBeGreaterThan(15);
+    });
+
+    it('has no hash for files it can’t read', function () {
+        expect($this->service->sample($this->sandboxPath.'/empty-file.text'))->toEqual(new ImageSample);
     });
 });

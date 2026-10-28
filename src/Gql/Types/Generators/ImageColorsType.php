@@ -45,6 +45,38 @@ class ImageColorsType implements GeneratorInterface, SingleGeneratorInterface
                         'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::listOf(Type::nonNull(Type::string()))))),
                         'description' => 'The average colors of the image’s regions, as rows of hex strings from top to bottom, each listed from left to right. Colors of regions that aren’t fully opaque include an alpha channel (e.g. `#3a6ea580`). Empty if the image couldn’t be sampled.',
                     ],
+                    'palette' => [
+                        'name' => 'palette',
+                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string()))),
+                        'description' => 'The image’s main colors as hex strings, most dominant first. Empty if the image couldn’t be sampled.',
+                    ],
+                    'luminance' => [
+                        'name' => 'luminance',
+                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::listOf(Type::listOf(Type::nonNull(Type::float())))))),
+                        'description' => 'How light the darker and lighter parts of the image’s regions are, in the same rows and order as `grid`, as each region’s 10th and 90th percentile WCAG relative luminance from 0 to 1, or null for regions with no mostly opaque pixels. Empty if the image was sampled before luminance was.',
+                    ],
+                    'weights' => [
+                        'name' => 'weights',
+                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::float()))),
+                        'description' => 'How much of the image each `palette` color covers, as a share of everything the palette covers, from 0 to 1, in the same order. Empty if the image was sampled before weights were.',
+                    ],
+                    'textColor' => [
+                        'name' => 'textColor',
+                        'type' => TextColorType::generateType(null),
+                        'args' => [
+                            'region' => [
+                                'name' => 'region',
+                                'type' => Type::string(),
+                                'description' => 'The edge the text sits along: `top`, `bottom`, `left`, or `right`. Leave it out for anywhere in the image.',
+                            ],
+                        ],
+                        'description' => 'Whether white or black text is more legible over part of the image, and how well it contrasts, or null if the image hasn’t been sampled for luminance.',
+                    ],
+                    'labels' => [
+                        'name' => 'labels',
+                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string()))),
+                        'description' => 'The names of the image’s main colors, such as `red` or `teal`, most dominant first.',
+                    ],
                     'left' => [
                         'name' => 'left',
                         'type' => Type::string(),

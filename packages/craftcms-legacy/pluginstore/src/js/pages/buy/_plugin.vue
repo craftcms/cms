@@ -26,6 +26,10 @@
     },
 
     methods: {
+      onAllDataLoaded() {
+        this.buyPlugin(this.$route.params.plugin, this.$route.params.edition);
+      },
+
       buyPlugin(pluginHandle, editionHandle) {
         pluginStoreApi
           .getPluginDetailsByHandle(pluginHandle)
@@ -117,17 +121,16 @@
         'app'
       );
 
-      const plugin = this.$route.params.plugin;
-      const edition = this.$route.params.edition;
-
       if (this.$root.allDataLoaded) {
-        this.buyPlugin(plugin, edition);
+        this.onAllDataLoaded();
       } else {
         // wait for the cart to be ready
-        this.$root.$on('allDataLoaded', () => {
-          this.buyPlugin(plugin, edition);
-        });
+        this.$root.$once('allDataLoaded', this.onAllDataLoaded);
       }
+    },
+
+    beforeDestroy() {
+      this.$root.$off('allDataLoaded', this.onAllDataLoaded);
     },
   };
 </script>

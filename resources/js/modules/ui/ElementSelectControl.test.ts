@@ -1,4 +1,4 @@
-import {createApp, h, nextTick} from 'vue';
+import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {UiControlPayload} from './types';
 
@@ -15,9 +15,30 @@ const stub = vi.hoisted(() => {
   );
 
   const openSlideout = vi.fn(async () => null);
+  const post = vi.fn(
+    async (
+      _action: string,
+      _body: Record<string, unknown>
+    ): Promise<{data: {elements: Array<{id: number; label: string}>}}> => ({
+      data: {elements: []},
+    })
+  );
 
-  return {show, destroy, createElementSelectorModal, openSlideout};
+  return {
+    show,
+    destroy,
+    createElementSelectorModal,
+    openSlideout,
+    post,
+    copy: null as ((elementInfo: unknown[]) => void) | null,
+    clearCopiedElements: vi.fn(),
+  };
 });
+
+vi.mock('@craftcms/ui', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@craftcms/ui')>()),
+  actionClient: {post: stub.post},
+}));
 
 vi.mock('@/common/slideouts', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/common/slideouts')>()),
@@ -107,7 +128,24 @@ describe('ElementSelectControl', () => {
       'fetch',
       vi.fn(async () => new Response('<svg></svg>'))
     );
-    vi.stubGlobal('Craft', {});
+    vi.stubGlobal('Craft', {
+      siteId: 1,
+      elementTypeNames: {
+        'CraftCms\\Cms\\Elements\\Entry': [
+          'Entry',
+          'Entries',
+          'entry',
+          'entries',
+        ],
+      },
+      cp: {
+        getCopiedElements: () => [],
+        onCopyElements: (callback: (elementInfo: unknown[]) => void) => {
+          stub.copy = callback;
+        },
+        clearCopiedElements: stub.clearCopiedElements,
+      },
+    });
   });
 
   afterEach(() => {
@@ -118,6 +156,10 @@ describe('ElementSelectControl', () => {
     stub.show.mockClear();
     stub.destroy.mockClear();
     stub.openSlideout.mockClear();
+    stub.copy?.([]);
+    stub.clearCopiedElements.mockClear();
+    stub.post.mockReset();
+    stub.post.mockResolvedValue({data: {elements: []}});
   });
 
   let updates: Array<number[] | number | null>;
@@ -164,6 +206,150 @@ describe('ElementSelectControl', () => {
       ...root.querySelectorAll('craft-chip [slot="suffix"] craft-action-menu'),
     ];
   }
+
+  describe('pasting', () => {
+    const entryType = 'CraftCms\\Cms\\Elements\\Entry';
+
+    function pasteButton(root: HTMLElement): HTMLElement | null {
+      return root.querySelector('[data-element-select-paste]');
+    }
+
+    async function copy(
+      root: HTMLElement,
+      elementInfo: unknown[]
+    ): Promise<void> {
+      stub.copy?.(elementInfo);
+      await vi.waitFor(async () => {
+        await nextTick();
+        expect(
+          stub.post.mock.calls.length > 0 || elementInfo.length === 0
+        ).toBe(true);
+      });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await nextTick();
+    }
+
+    it('offers to paste the copied elements the server says the field can relate, and appends them', async () => {
+      stub.post.mockResolvedValue({
+        data: {elements: [{id: 7, label: 'Copied entry'}]},
+      });
+      const root = await mount({
+        props: {sources: ['section:abc'], viewMode: 'list'},
+      });
+
+      await copy(root, [{type: entryType, id: 7, siteId: 1}]);
+
+      expect(stub.post).toHaveBeenCalledWith(
+        'element-selects/pasteable',
+        expect.objectContaining({
+          elementType: entryType,
+          sources: ['section:abc'],
+          siteId: 1,
+          elementIds: [7],
+        }),
+        expect.anything()
+      );
+      expect(pasteButton(root)?.textContent?.trim()).toBe('Paste entry');
+
+      pasteButton(root)!.click();
+      await nextTick();
+
+      expect(updates.at(-1)).toEqual([5, 7]);
+      expect(stub.clearCopiedElements).toHaveBeenCalledOnce();
+    });
+
+    it('moves focus to the pasted element, without scrolling to it', async () => {
+      stub.post.mockResolvedValue({
+        data: {elements: [{id: 7, label: 'Copied entry'}]},
+      });
+      const value = ref<number[] | number | null>([5]);
+      container = document.createElement('div');
+      document.body.append(container);
+      app = createApp({
+        render: () =>
+          h(ElementSelectControl, {
+            control: control({viewMode: 'thumbs'}),
+            value: value.value,
+            editable: true,
+            'onUpdate:value': (next: number[] | number | null) => {
+              value.value = next;
+            },
+          }),
+      });
+      app.mount(container);
+      await nextTick();
+      const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+
+      await copy(container, [{type: entryType, id: 7}]);
+      pasteButton(container)!.click();
+
+      await vi.waitFor(() =>
+        expect(document.activeElement?.getAttribute('data-id')).toBe('7')
+      );
+      expect(focus).toHaveBeenCalledWith({preventScroll: true});
+      focus.mockRestore();
+    });
+
+    it('only asks about copied elements of its type that aren’t drafts or revisions', async () => {
+      const root = await mount();
+
+      await copy(root, [
+        {type: 'CraftCms\\Cms\\Elements\\Asset', id: 8},
+        {type: entryType, id: 9, draftId: 3},
+        {type: entryType, id: 10, revisionId: 4},
+        {type: entryType, id: 11},
+      ]);
+
+      expect(stub.post.mock.calls.at(-1)?.[1]).toMatchObject({
+        elementIds: [11],
+      });
+    });
+
+    it('offers nothing to paste that’s already related', async () => {
+      stub.post.mockResolvedValue({
+        data: {elements: [{id: 5, label: 'Some entry'}]},
+      });
+      const root = await mount();
+
+      await copy(root, [{type: entryType, id: 5}]);
+
+      expect(pasteButton(root)).toBeNull();
+    });
+
+    it('pastes no more than the field’s limit allows', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 7, label: 'Seven'},
+            {id: 8, label: 'Eight'},
+          ],
+        },
+      });
+      const root = await mount({props: {limit: 2}});
+
+      await copy(root, [
+        {type: entryType, id: 7},
+        {type: entryType, id: 8},
+      ]);
+      expect(pasteButton(root)?.textContent?.trim()).toBe('Paste entries');
+
+      pasteButton(root)!.click();
+      await nextTick();
+
+      expect(updates.at(-1)).toEqual([5, 7]);
+    });
+
+    it('offers no paste on a read-only field', async () => {
+      const root = await mount({editable: false});
+
+      stub.copy?.([{type: entryType, id: 7}]);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await nextTick();
+
+      expect(stub.post).not.toHaveBeenCalled();
+      expect(pasteButton(root)).toBeNull();
+    });
+  });
 
   it('renders empty when it is handed its empty value', async () => {
     // A relation nested in a Matrix block resolves its path to undefined for a
@@ -592,8 +778,11 @@ describe('ElementSelectControl', () => {
     it('draws thumbnails in thumbs mode', async () => {
       const root = await mount({props: {viewMode: 'thumbs'}, value: [5]});
 
-      expect(root.querySelector('.thumb-tile')).not.toBeNull();
-      expect(root.querySelectorAll('craft-chip')).toHaveLength(0);
+      expect(
+        root.querySelectorAll(
+          '.thumbsview craft-chip[prefix-placement="block-start"]'
+        )
+      ).toHaveLength(1);
     });
 
     // Clicking a related element selects or edits it, so its tile mustn't
@@ -613,8 +802,8 @@ describe('ElementSelectControl', () => {
         value: [5],
       });
 
-      expect(root.querySelector('.thumb-tile')).not.toBeNull();
-      expect(root.querySelector('.thumb-tile a, a.thumb-tile')).toBeNull();
+      expect(root.querySelector('.thumbsview craft-chip')).not.toBeNull();
+      expect(root.querySelector('.thumb-label a, a craft-chip')).toBeNull();
     });
 
     /** The list item a card / thumb body draws per element. */
@@ -639,23 +828,19 @@ describe('ElementSelectControl', () => {
       ).toEqual([true, false]);
     });
 
-    /**
-     * Thumb tiles wrap the element in a link to its editor, so clicking the tile
-     * navigates rather than selects — the checkbox is the selection path, as it
-     * is on the element index.
-     */
+    /** The tile's chip owns the checkbox and reports its changes. */
     it('selects a thumbnail through its checkbox', async () => {
       const root = await mount({
         props: {viewMode: 'thumbs', limit: 3},
         value: [5, 6],
       });
-      const box = root.querySelector<HTMLElement>(
-        '.thumbsview craft-checkbox'
-      )!;
+      const chip = root.querySelector<HTMLElement>('.thumbsview craft-chip')!;
 
-      Object.defineProperty(box, 'checked', {value: true, configurable: true});
-      box.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
+      chip.dispatchEvent(
+        new CustomEvent('craft-selection-change', {
+          bubbles: true,
+          detail: {selected: true, shiftKey: false},
+        })
       );
       await nextTick();
 
@@ -1499,12 +1684,13 @@ describe('ElementSelectControl', () => {
       expect(actionLabels(thumbMenu(root))).toContain('Preview file');
     });
 
-    // Tiles are a link to the element, so the actions have to sit outside it or
-    // reaching for one would navigate instead.
+    // The label links to the element, so the actions sit in the chip's suffix,
+    // apart from it, or reaching for one would navigate instead.
     it('keeps the actions outside the tile link', async () => {
       const root = await mountThumbs();
 
-      expect(thumbMenu(root)!.closest('.thumb-tile')).toBeNull();
+      expect(thumbMenu(root)!.closest('[slot="suffix"]')).not.toBeNull();
+      expect(thumbMenu(root)!.closest('a, .thumb-label')).toBeNull();
     });
 
     // Thumbs follow the chips: editing lives in the menu, not as its own button.

@@ -69,7 +69,8 @@ export interface ChipIndicator {
 export interface BreadcrumbItem {
   /**
    * Identifies a crumb the screen owns. `site-crumb` marks a screen's own site
-   * switcher, which the shared one defers to.
+   * switcher, which the shared one defers to; `revision-crumb` marks an element
+   * editor's switcher between its current state, drafts and revisions.
    */
   id?: string | null;
   href?: string | null;
@@ -196,6 +197,8 @@ export interface ActionItemLink {
    * CP, and for the handful of places still handing off to the legacy stack.
    */
   external?: boolean;
+  /** Where the link opens, such as `_blank` for a new tab. Implies `external`. */
+  target?: string;
   /**
    * Marks this as the one currently in effect, for a list that's a choice
    * rather than a set of commands — a source switcher, say. When any item in a

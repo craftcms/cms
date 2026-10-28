@@ -33,6 +33,8 @@ trait IndexesAssets
 
     private bool $createMissingAssets;
 
+    private bool $analyzeImages;
+
     private function parseBooleanOption(string|int|bool $value): bool
     {
         return match (strtolower($value)) {
@@ -48,6 +50,7 @@ trait IndexesAssets
         $this->deleteEmptyFolders = $this->parseBooleanOption($this->option('deleteEmptyFolders'));
         $this->deleteMissingAssets = $this->parseBooleanOption($this->option('deleteMissingAssets'));
         $this->createMissingAssets = $this->parseBooleanOption($this->option('createMissingAssets'));
+        $this->analyzeImages = $this->hasOption('analyzeImages') && $this->parseBooleanOption($this->option('analyzeImages'));
 
         $this->newLine();
 
@@ -56,6 +59,7 @@ trait IndexesAssets
             cacheRemoteImages: $this->cacheRemoteImages,
             isCli: true,
             listEmptyFolders: $this->deleteEmptyFolders,
+            analyzeImages: $this->analyzeImages,
         );
 
         $missingRecordsByFilename = collect($volumes)
@@ -159,7 +163,7 @@ trait IndexesAssets
             try {
                 $item->getIsDir()
                     ? AssetIndexer::indexFolderByListing($volume, $item, $session->id, $this->createMissingAssets)
-                    : AssetIndexer::indexFileByListing($volume, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
+                    : AssetIndexer::indexFileByListing($volume, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets, $this->analyzeImages);
             } catch (MissingAssetException|MissingVolumeFolderException $e) {
                 $missingRecords->add($e);
 
@@ -283,7 +287,7 @@ trait IndexesAssets
                             'dateUpdated' => Query::prepareDateForDb(now()),
                         ]);
 
-                    AssetIndexer::indexFileByEntry($e->indexEntry, $this->cacheRemoteImages, false);
+                    AssetIndexer::indexFileByEntry($e->indexEntry, $this->cacheRemoteImages, false, $this->analyzeImages);
                 }
             );
         }

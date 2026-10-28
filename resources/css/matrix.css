@@ -35,6 +35,26 @@
   }
 }
 
+/* The block's controls sit side by side, with the drag handle pulled toward the
+   header's end — as far as it can go before the card would clip its focus
+   ring. */
+[data-matrix-block] > craft-card [data-card-actions] {
+  gap: 0;
+
+  & > [data-drag-handle] {
+    margin-inline-end: calc(
+      var(--c-focus-outline-offset) + var(--c-focus-outline-width) -
+        var(--c-card-padding-inline, var(--c-spacing-md))
+    );
+  }
+}
+
+/* A block's own focus ring follows its corners: the outline grows the block's
+   radius by its offset and width, which keeps it concentric with the card. */
+[data-matrix-block]:focus-visible {
+  border-radius: var(--c-card-radius, var(--c-radius-md));
+}
+
 /**
  * A block that has just appeared gets one pass of a highlight, so it's obvious
  * which one is new when it lands among others — and which one the page just

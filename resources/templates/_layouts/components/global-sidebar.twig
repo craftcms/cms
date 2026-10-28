@@ -54,8 +54,8 @@
 
       <cp-queue-indicator
         displayed-job="{{ JobProgress.getJobInfo(1)|first|json_encode|e('html_attr') }}"
-        has-reserved-jobs="{{ JobProgress.hasReservedJobs() }}"
-        has-waiting-jobs="{{ JobProgress.hasPendingJobs() }}"
+        {% if JobProgress.hasReservedJobs() %}has-reserved-jobs{% endif %}
+        {% if JobProgress.hasPendingJobs() %}has-waiting-jobs{% endif %}
       ></cp-queue-indicator>
     </craft-nav-list>
 

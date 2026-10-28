@@ -30,4 +30,10 @@ class FullNameField extends BaseFullNameField
             'autocomplete' => $element->getIsCurrent() ? 'name' : 'off',
         ];
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'id-card';
+    }
 }

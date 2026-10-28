@@ -15,6 +15,7 @@ use CraftCms\Cms\Image\Events\ImageEditorSaving;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,6 +33,24 @@ readonly class ImageEditorController
         private Assets $assets,
         private AssetTransformers $assetTransformers,
     ) {}
+
+    public function show(Request $request): Response
+    {
+        $request->validate([
+            'assetId' => ['required'],
+        ]);
+
+        $assetId = $request->input('assetId');
+        $asset = $this->assets->getAssetById($assetId);
+
+        abort_if(! $asset, 400, t('The asset you’re trying to edit does not exist.'));
+
+        Gate::authorize('editImage', $asset);
+
+        abort_if(! $asset->getSupportsImageEditor(), 400, 'Unsupported file format');
+
+        return new JsonResponse($asset->getImageEditorSettings());
+    }
 
     public function editImage(Request $request): Response
     {

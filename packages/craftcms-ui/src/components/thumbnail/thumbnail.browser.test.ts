@@ -131,6 +131,32 @@ it('freezes once a thumbnail becomes visible, even if it was hidden when its ima
   });
 });
 
+it('freezes once moved somewhere visible, even if it was hidden when its image loaded', async () => {
+  document.body.innerHTML = `
+    <div id="hidden-host" hidden>
+      <craft-thumbnail
+        src="${opaqueImage}"
+        alt="Animated while hidden"
+        animated
+        loading="eager"
+        style="--c-thumbnail-size: 120px;"
+      ></craft-thumbnail>
+    </div>
+  `;
+
+  const thumbnail = document.querySelector('craft-thumbnail')!;
+  await thumbnail.updateComplete;
+  const image = thumbnail.shadowRoot!.querySelector('img')!;
+  await image.decode();
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  document.body.append(thumbnail);
+
+  await vi.waitFor(() =>
+    expect(image.classList.contains('cp-visually-hidden')).toBe(true)
+  );
+});
+
 it('shows the image again when animated is turned off after freezing', async () => {
   document.body.innerHTML = `<craft-thumbnail src="${opaqueImage}" alt="Toggle" animated></craft-thumbnail>`;
   const thumbnail = document.querySelector('craft-thumbnail')!;
@@ -171,4 +197,16 @@ it('takes its size and image radius from an ancestor', async () => {
   expect(
     getComputedStyle(part(round!, '.thumbnail__image')).borderRadius
   ).not.toBe('4px');
+});
+
+it('fits a portrait image whose width and height were set as strings', async () => {
+  document.body.innerHTML = `<craft-thumbnail src="${imageFixture(800, 1200)}" alt="" loading="eager" style="--c-thumbnail-size: 120px;"></craft-thumbnail>`;
+  const thumbnail = document.querySelector('craft-thumbnail')!;
+  Object.assign(thumbnail, {width: '800', height: '1200'});
+  await thumbnail.updateComplete;
+  const image = thumbnail.shadowRoot!.querySelector('img')!;
+  await image.decode();
+
+  const box = image.getBoundingClientRect();
+  expect([box.width, box.height]).toEqual([80, 120]);
 });

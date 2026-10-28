@@ -2,6 +2,7 @@
   import {computed} from 'vue';
   import {t} from '@craftcms/ui';
   import AuthBase from '@/common/layouts/AuthBase.vue';
+  import CodeHighlight from '@/common/components/CodeHighlight.vue';
 
   const props = defineProps<{
     url: string;
@@ -43,6 +44,7 @@
         'Add this to .cursor/mcp.json in your project, or to ~/.cursor/mcp.json for all projects.'
       ),
       caption: 'mcp.json',
+      language: 'json',
       snippet: JSON.stringify(
         {mcpServers: {[props.serverName]: {url: props.url}}},
         null,
@@ -104,7 +106,11 @@
               <div slot="panel">
                 <div class="mcp-endpoint__panel">
                   <p>{{ client.instructions }}</p>
-                  <figure v-if="client.snippet" class="mcp-endpoint__snippet">
+                  <figure
+                    v-if="client.snippet"
+                    class="mcp-endpoint__snippet"
+                    data-theme="dark"
+                  >
                     <figcaption class="mcp-endpoint__snippet-header">
                       <span>{{ client.caption }}</span>
                       <craft-copy-button
@@ -112,9 +118,11 @@
                         :tooltip-label="t('Copy')"
                       ></craft-copy-button>
                     </figcaption>
-                    <pre
+                    <CodeHighlight
                       class="mcp-endpoint__snippet-code"
-                    ><code>{{ client.snippet }}</code></pre>
+                      :language="client.language ?? 'shell'"
+                      :code="client.snippet"
+                    />
                   </figure>
                 </div>
               </div>
@@ -202,8 +210,6 @@
   .mcp-endpoint__snippet {
     margin: 0;
     overflow: hidden;
-    color: var(--color-slate-50);
-    background-color: var(--color-slate-950);
     border: 1px solid transparent;
     border-radius: var(--c-radius-lg);
   }
@@ -215,11 +221,11 @@
     gap: var(--c-spacing-md);
     padding-inline: var(--c-spacing-lg) var(--c-spacing-sm);
     padding-block: var(--c-spacing-xs);
-    color: var(--color-slate-300);
+    color: var(--c-text-quiet);
     font-family: var(--c-font-mono);
     font-size: var(--text-xs);
     border-block-end: 1px solid currentColor;
-    border-block-end-color: var(--color-slate-800);
+    border-block-end-color: var(--c-color-neutral-border-quiet);
   }
 
   .mcp-endpoint__snippet-header craft-copy-button::part(button) {

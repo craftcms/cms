@@ -5,7 +5,7 @@
    * reordering, and how a row presents itself; callers describe each row
    * through the callbacks below.
    */
-  import {computed, useId} from 'vue';
+  import {computed, shallowRef, useId} from 'vue';
   import {CraftActionItem, t, type ReorderMove} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
@@ -175,6 +175,26 @@
   const labelIds = new Map<string, string>();
 
   /**
+   * The row whose item has keyboard focus. The item's button is in its shadow
+   * root, where CSS on the row can't see `:focus-visible`, so it's tracked here
+   * and the row draws the ring.
+   */
+  const focusRingRowId = shallowRef<string | null>(null);
+
+  function syncFocusRing(event: FocusEvent): void {
+    const item =
+      event.type === 'focusin'
+        ? (event.target as Element).closest('.cs-item__select')
+        : null;
+    const control = event.composedPath()[0];
+
+    focusRingRowId.value =
+      item && control instanceof Element && control.matches(':focus-visible')
+        ? (item.closest<HTMLElement>('.cs-item')?.dataset.rowId ?? null)
+        : null;
+  }
+
+  /**
    * The id of a row's label, for its menu button to be described by. Kept per
    * row rather than per position: the button is rendered once, so an id that
    * followed the index would point at another row after a reorder.
@@ -193,7 +213,7 @@
 </script>
 
 <template>
-  <ol class="cs-list">
+  <ol class="cs-list" @focusin="syncFocusRing" @focusout="syncFocusRing">
     <!-- The row is a plain list item rather than the button itself: a native
       drag can't start from inside a <button>, and the handle and menu are
       controls of their own that mustn't nest inside another. -->
@@ -209,6 +229,7 @@
         'cs-item--heading': row.type === 'heading',
         'cs-item--dragging': isDragging(row.index),
         'cs-item--drop-target': getDropIntoId() === row.id,
+        'cs-item--focus-ring': focusRingRowId === row.id,
       }"
     >
       <span class="cs-item__control">
@@ -235,7 +256,7 @@
 
       <craft-action-item
         class="cs-item__select"
-        :current="row.id === selected"
+        .current="row.id === selected"
         @click="select(row.item, row.id)"
       >
         <craft-icon v-if="row.icon" :name="row.icon" slot="icon" />
@@ -318,8 +339,37 @@
     --c-color-fill-quiet: transparent;
   }
 
+  // Likewise focus: the ring goes around the whole row, handle and menu
+  // included (see `focusRingRowId`), raised so the next row's fill doesn't
+  // cover it.
+  .cs-item__select::part(control):focus-visible {
+    outline: none;
+  }
+
+  // The row's fill and ring frame the item, so its label needn't be inset from
+  // the handle: no start padding, and pulled back over the label's own margin.
+  .cs-item__select::part(control) {
+    margin-inline-start: calc(var(--c-spacing-sm) * -1);
+    padding-inline-start: 0;
+  }
+
+  .cs-item--focus-ring {
+    z-index: 1;
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: calc(var(--c-focus-outline-width) * -1);
+  }
+
+  // The selected row's border would run into a tight ring, so it's set apart.
+  .cs-item--focus-ring.cs-item--active {
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
   @media (hover: hover) {
-    .cs-item:not(.cs-item--active, .cs-item--dragging):hover {
+    // Only over the item itself: the handle and menu show their own hover.
+    .cs-item:not(.cs-item--active, .cs-item--dragging):has(
+        .cs-item__select:hover
+      ) {
       background-color: var(--c-color-neutral-fill-quiet);
     }
   }
@@ -332,6 +382,10 @@
 
     .cs-item__label {
       font-weight: bold;
+    }
+
+    .cs-item__handle {
+      font-size: var(--c-text-base);
     }
   }
 

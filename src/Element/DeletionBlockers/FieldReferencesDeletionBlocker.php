@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\DeletionBlockers;
 
-use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Field\FieldReferences;
@@ -62,19 +61,12 @@ class FieldReferencesDeletionBlocker extends BaseDeletionBlocker
             ->map(function ($sourceIds, string $sourceElementType) {
                 /** @var class-string<ElementInterface> $sourceElementType */
                 return Html::tag('h3', $sourceElementType::pluralDisplayName()).
-                    app(ElementIndexHtml::class)->html($sourceElementType, [
-                        'context' => 'pane',
-                        'sources' => false,
-                        'jsSettings' => [
-                            'criteria' => [
-                                'id' => $sourceIds->all(),
-                                'drafts' => null,
-                                'provisionalDrafts' => null,
-                                'revisions' => false,
-                                'status' => null,
-                            ],
-                        ],
-                    ]);
+                    $this->elementChipsHtml($sourceElementType::find()
+                        ->id($sourceIds->all())
+                        ->drafts(null)
+                        ->provisionalDrafts(null)
+                        ->revisions(false)
+                        ->status(null));
             })
             ->join('');
     }
@@ -83,19 +75,22 @@ class FieldReferencesDeletionBlocker extends BaseDeletionBlocker
     public function getActions(): array
     {
         $targetElementType = $this->targetElementType();
+        $replaceLabel = t('Replace {numReferences, plural, =1{reference} other{references}}', [
+            'numReferences' => $this->referenceCount,
+        ]);
 
         return [
             [
                 'icon' => 'swap',
-                'label' => t('Replace {numReferences, plural, =1{reference} other{references}}', [
-                    'numReferences' => $this->referenceCount,
-                ]),
+                'label' => $replaceLabel,
                 'callback' => Html::jsWithVars(fn (
+                    $title,
                     $targetElementType,
                     $targetIds,
                     $hardDelete,
                 ) => <<<JS
 new Craft.CpModal('delete-elements/replace-references-modal', {
+  title: $title,
   params: {
     elementType: $targetElementType,
     elementIds: $targetIds,
@@ -109,6 +104,7 @@ new Craft.CpModal('delete-elements/replace-references-modal', {
   },
 })
 JS, [
+                    $replaceLabel,
                     $targetElementType,
                     $this->elements->ids()->all(),
                     $this->hardDelete,

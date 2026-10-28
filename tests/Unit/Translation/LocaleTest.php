@@ -58,3 +58,12 @@ it('keeps formatter customization local to each locale instance', function () {
         ->and($second->dateTimeFormats)->toBe($originalFormats)
         ->and($second->timeZone)->not->toBe('Asia/Tokyo');
 });
+
+test('language tag', function (string $expected, string $locale) {
+    expect(new Locale($locale)->getLanguageTag())->toBe($expected);
+})->with([
+    ['en-US', 'en-US'],
+    ['fa-IR', 'fa_IR'],
+    ['fa-IR-u-ca-persian', 'fa_IR@calendar=persian'],
+    ['th-TH-u-ca-buddhist-nu-thai', 'th_TH@calendar=buddhist;numbers=thai'],
+]);

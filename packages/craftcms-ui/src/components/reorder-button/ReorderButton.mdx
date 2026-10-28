@@ -36,7 +36,7 @@ The menu is also what makes a drag-and-drop list meet WCAG 2.5.7 (Dragging Movem
 A few more things the button can't do on its own:
 
 - Set `label` to name the item, such as "Reorder Blog post". The default "Reorder" is the same on every row, so a screen reader user can't tell the buttons apart.
-- After the list re-renders, return focus to the moved item's reorder button so the person can keep moving it.
+- Move the item's existing button rather than replacing it. The button keeps focus when the list moves it, but if the list destroys it and renders a new one, the list has to focus the new one so the person can keep moving the item.
 - Update `position` whenever the order changes, so the move that would go nowhere stays disabled.
 
 ## Properties

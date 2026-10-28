@@ -85,10 +85,12 @@
         this.buyAllTrials();
       } else {
         // wait for the cart to be ready
-        this.$root.$on('allDataLoaded', () => {
-          this.buyAllTrials();
-        });
+        this.$root.$once('allDataLoaded', this.buyAllTrials);
       }
+    },
+
+    beforeDestroy() {
+      this.$root.$off('allDataLoaded', this.buyAllTrials);
     },
   };
 </script>

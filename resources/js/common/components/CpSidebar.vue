@@ -91,6 +91,7 @@
         size="small"
         icon="xmark-large"
         :variant="ButtonVariant.Plain"
+        flush="inline-end"
         @click="toggleSidebar"
         :aria-label="t('Toggle menu')"
       >
@@ -182,7 +183,8 @@
     /* Level with the details tab rail, which starts below the body's inset
        and border. */
     padding-block-start: calc(
-      var(--c-spacing-md) + var(--cp-body-inset) + var(--cp-body-border-width)
+      var(--c-spacing-md) + 2px + var(--cp-body-inset) +
+        var(--cp-body-border-width)
     );
     padding-inline: var(--c-spacing-md);
     flex: 1 1 auto;
@@ -192,7 +194,7 @@
   /* Floating, there's no rail beside it to level with. */
   @media (width < var(--breakpoint-lg)) {
     .cp-sidebar__body {
-      padding-block-start: var(--c-spacing-md);
+      padding-block-start: calc(var(--c-spacing-md) + 2px);
     }
   }
 
@@ -203,7 +205,7 @@
   @media (width >= var(--breakpoint-lg)) and (width < 1158px) {
     .cp-sidebar:not(.cp-sidebar--collapsed) .cp-sidebar__body {
       padding-block-start: calc(
-        var(--c-spacing-md) + var(--cp-body-border-width)
+        var(--c-spacing-md) + 2px + var(--cp-body-border-width)
       );
     }
   }

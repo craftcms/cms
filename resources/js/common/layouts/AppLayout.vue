@@ -23,9 +23,13 @@
     (e: 'save', options?: FormSaveOptions): void;
   }>();
 
-  // Defaults belong to the shells, which each declare their own. Unset props
-  // forward as `undefined`, which is exactly what `withDefaults` fills in.
-  defineProps<ScreenProps>();
+  // Defaults belong to the shells, so unset props must forward as `undefined`.
+  // Vue casts an absent boolean to `false`, which would override what a page
+  // sets through `useAppLayout()` in a slideout.
+  withDefaults(defineProps<ScreenProps>(), {
+    saveDisabled: undefined,
+    handlesReadOnly: undefined,
+  });
 
   const slots = defineSlots<ScreenSlots>();
 
@@ -35,17 +39,18 @@
   // Forward whatever the page actually passed. Enumerating `ScreenSlots`
   // instead would hand the shell a function for every slot, defeating the
   // `Boolean(slots.details)`-style checks the shells use to decide which
-  // regions to show.
-  const slotNames = computed(() =>
-    Object.keys(slots).filter(
+  // regions to show. Slot presence isn't reactive, so the template calls this
+  // on each render rather than reading a computed.
+  function slotNames() {
+    return Object.keys(slots).filter(
       (name): name is keyof ScreenSlots => name in slots
-    )
-  );
+    );
+  }
 </script>
 
 <template>
   <component :is="shell" v-bind="$props" @save="$emit('save', $event)">
-    <template v-for="name in slotNames" #[name]="slotProps">
+    <template v-for="name in slotNames()" #[name]="slotProps">
       <slot :name="name" v-bind="slotProps ?? {}"></slot>
     </template>
   </component>

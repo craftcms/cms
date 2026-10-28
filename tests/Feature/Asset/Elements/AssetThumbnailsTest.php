@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
@@ -81,7 +82,7 @@ it('shows image thumbnails’ placeholders while they load', function (?ImageCol
     new ControlPanelAssetTransformDriver()->register();
     Cms::config()->defaultAssetTransformer('test');
     $asset = Asset::factory()->createElement(['volumeId' => $this->volume->id]);
-    $asset->colors = $colors;
+    $asset->analysis = new ImageAnalysis(colors: $colors);
 
     $placeholder = new Crawler($asset->getThumbHtml(128))->filter('craft-thumbnail')->attr('placeholder');
 

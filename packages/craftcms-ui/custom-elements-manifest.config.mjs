@@ -79,7 +79,7 @@ export default {
   // 'large'). Without this the manifest only records the alias name, and
   // Storybook renders a text box instead of a select.
   overrideModuleCreation: ({ts, globs}) => {
-    const program = getTsProgram(ts, globs, 'tsconfig.json');
+    const program = getTsProgram(ts, globs, 'tsconfig.manifest.json');
     return program
       .getSourceFiles()
       .filter((sf) => globs.find((glob) => sf.fileName.includes(glob)));

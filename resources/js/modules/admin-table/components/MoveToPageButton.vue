@@ -66,7 +66,7 @@
         type="button"
         variant="primary"
         size="small"
-        :loading="loading"
+        .loading="loading"
         @click="handleMove"
         >{{ t('Move') }}</craft-button
       >

@@ -108,13 +108,13 @@
           :options="locales"
           :disabled="loader.processing"
         />
-        <craft-spinner :visible="loader.processing" style="--size: 1rem" />
+        <craft-spinner .visible="loader.processing" style="--size: 1rem" />
       </div>
 
       <craft-field
         :label="t('Subject')"
         :help-text="t('Evaluated as a Twig template.')"
-        :has-errors="Boolean(form.errors.subject)"
+        .hasErrors="Boolean(form.errors.subject)"
         width="full"
         required
       >
@@ -123,7 +123,7 @@
           .modelValue="form.subject"
           maxlength="1000"
           required
-          :disabled="loader.processing"
+          .disabled="loader.processing"
           :aria-invalid="form.errors.subject ? 'true' : undefined"
           @model-value-changed="onSubjectChanged"
         >
@@ -146,7 +146,7 @@
       <craft-field
         :label="t('Body')"
         :help-text="t('Evaluated as a twig template, then parsed as markdown.')"
-        :has-errors="Boolean(form.errors.body)"
+        .hasErrors="Boolean(form.errors.body)"
         required
       >
         <craft-markdown-field
@@ -158,7 +158,7 @@
           .toolbarButtons="commentToolbarButtons"
           sanitize-html
           required
-          :disabled="loader.processing"
+          .disabled="loader.processing"
           :aria-invalid="form.errors.body ? 'true' : undefined"
           .value="form.body"
           @input="form.body = ($event.target as HTMLTextAreaElement).value"

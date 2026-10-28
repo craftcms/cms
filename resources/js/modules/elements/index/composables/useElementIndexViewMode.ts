@@ -1,9 +1,17 @@
 import {computed, type Ref} from 'vue';
 import type {
+  IndexQueryParams,
   IndexVisitor,
   IndexRestore,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
+
+/**
+ * The props a mode change re-renders. `viewState` comes along so its `mode`
+ * keeps naming the mode the rows were rendered for: Inertia stores the page in
+ * history, and going back to it calls `restore()` again, which trusts that mode.
+ */
+const MODE_PROPS = ['data', 'pagination', 'structure', 'viewState'];
 
 /**
  * Server-driven view mode. Switching modes updates the local view state
@@ -18,7 +26,9 @@ export function useElementIndexViewMode(
   /** The mode the current payload was rendered for, if it says. */
   renderedMode: () => ViewMode['mode'] | undefined = () => undefined,
   /** The modes the index can show, if it's limited to some. */
-  availableModes: () => ViewMode['mode'][] | undefined = () => undefined
+  availableModes: () => ViewMode['mode'][] | undefined = () => undefined,
+  /** Other params a mode's rows depend on, such as their thumbnail size. */
+  modeParams: (mode: ViewMode['mode']) => IndexQueryParams = () => ({})
 ) {
   const mode = computed<ViewMode['mode']>({
     get: () => viewState.value.mode,
@@ -36,8 +46,8 @@ export function useElementIndexViewMode(
       // mode leaves the payload's structure null until a full page load, and
       // the rows render with no reordering affordances.
       visitor.merge(
-        {viewMode: value},
-        {only: ['data', 'pagination', 'structure']}
+        {viewMode: value, ...modeParams(value)},
+        {only: MODE_PROPS}
       );
     },
   });
@@ -73,7 +83,7 @@ export function useElementIndexViewMode(
 
     return {
       params: {viewMode: persisted},
-      only: ['data', 'pagination', 'structure'],
+      only: MODE_PROPS,
     };
   }
 

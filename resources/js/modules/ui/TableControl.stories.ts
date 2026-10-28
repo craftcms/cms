@@ -81,7 +81,12 @@ const columns = {
  * `heading` and `html` have no control.
  */
 const cellControls: Array<[string, string, string, UiProperties]> = [
-  ['singleline', 'Text', 'craft:text', {placeholder: 'Text'}],
+  [
+    'singleline',
+    'Textarea',
+    'craft:textarea',
+    {rows: 1, singleLine: true, placeholder: 'Text'},
+  ],
   ['multiline', 'Textarea', 'craft:textarea', {rows: 1}],
   ['email', 'Text', 'craft:text', {inputType: 'email'}],
   ['url', 'Text', 'craft:text', {inputType: 'url'}],

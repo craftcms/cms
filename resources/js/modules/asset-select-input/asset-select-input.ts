@@ -2,6 +2,7 @@ import {Uploader} from '@/modules/uploader/uploader';
 import {UploadError} from '@/upload-client';
 import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
 import {BaseElementSelectInput} from '@/modules/element-select-input/base-element-select-input';
+import {openAssetImageEditor} from '@/modules/image-editor';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -70,17 +71,16 @@ export class AssetSelectInput extends BaseElementSelectInput {
             .attr('id', `${btn.id}-${Math.floor(Math.random() * 1000000)}`);
           // `activate` is a jQuery synthetic event, so it needs `.on()` rather than `addListener()`.
           $btn.on('activate', () => {
-            new Craft.AssetImageEditor($element.data('id'), {
-              allowDegreeFractions: Craft.isImagick,
-              onSave: (data: {newAssetId?: number}) => {
-                if (data.newAssetId) {
-                  this.replaceElement(
-                    $element.data('id'),
-                    data.newAssetId
-                  ).catch(() => {});
-                }
-              },
-            });
+            openAssetImageEditor($element.data('id'), (result) => {
+              if (result.newAssetId) {
+                this.replaceElement(
+                  $element.data('id'),
+                  result.newAssetId
+                ).catch(() => {});
+              }
+            }).catch((error) =>
+              Craft.cp.displayError(error?.response?.data?.message)
+            );
           });
         });
     }

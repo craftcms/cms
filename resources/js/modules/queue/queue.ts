@@ -84,10 +84,11 @@ export class QueueService extends EventTarget {
   /**
    * Run the queue and start tracking jobs.
    * Sends a request to execute waiting jobs.
-   * Does nothing if runAutomatically is false.
+   * Does nothing if runAutomatically is false, unless `force` is set — for
+   * someone who asked for the queue to run.
    */
-  async runQueue(): Promise<void> {
-    if (!this.#runAutomatically) {
+  async runQueue({force = false}: {force?: boolean} = {}): Promise<void> {
+    if (!this.#runAutomatically && !force) {
       // Just track progress without triggering queue execution
       this.startTracking(false, true);
       return;
@@ -226,10 +227,7 @@ export class QueueService extends EventTarget {
     try {
       const response = await http.get<QueueJobData>(
         this.#config.getActionUrl('queue/get-job-info'),
-        {
-          params: {dontExtendSession: 1},
-          signal: this.#abortController.signal,
-        }
+        {signal: this.#abortController.signal}
       );
 
       this.setJobData(response.data.jobs);

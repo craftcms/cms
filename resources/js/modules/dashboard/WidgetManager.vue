@@ -1,7 +1,9 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import type CraftSlidePicker from '@craftcms/ui/components/slide-picker/slide-picker';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import type {DashboardWidget} from './types';
+  import {widgetName} from './widgetName';
 
   const props = defineProps<{
     widgets: DashboardWidget[];
@@ -28,7 +30,7 @@
 <template>
   <craft-popover
     placement="bottom-end"
-    :opened="opened"
+    .opened="opened"
     @opened-changed="opened = $event.detail.opened"
   >
     <craft-button
@@ -63,9 +65,9 @@
               (el: Parameters<typeof setHandleRef>[0]) =>
                 setHandleRef(el, widget.id)
             "
-            :disabled="busy || widgets.length < 2"
+            :label="`${t('Reorder')} ${widgetName(widget)}`"
             :position="getRowPosition(index)"
-            @reorder="
+            @craft-reorder="
               emit(
                 'reorder',
                 index,
@@ -74,28 +76,31 @@
             "
           ></craft-reorder-button>
           <span :id="`widget-label-${widget.id}`" class="flex-1">{{
-            widget.title || widget.name
+            widgetName(widget)
           }}</span>
           <craft-slide-picker
             :min="1"
             :max="Math.min(columns, widget.maxColspan)"
             :step="1"
             :value="Math.min(widget.colspan, columns)"
-            :disabled="busy"
-            :label="t('Number of Columns')"
-            :described-by="`widget-label-${widget.id}`"
-            @value-change="emit('resize', widget, $event.detail.value)"
+            .disabled="busy"
+            :label="`${t('Number of columns')} ${widgetName(widget)}`"
+            @change="
+              emit('resize', widget, ($event.target as CraftSlidePicker).value)
+            "
           ></craft-slide-picker>
           <craft-button
+            :id="`widget-delete-${widget.id}`"
             type="button"
-            icon="trash"
             size="small"
             variant="danger-plain"
-            :aria-label="t('Delete')"
-            :aria-describedby="`widget-label-${widget.id}`"
-            :disabled="busy"
+            icon
+            :aria-labelledby="`widget-delete-${widget.id} widget-label-${widget.id}`"
+            .disabled="busy"
             @click="emit('remove', widget)"
-          ></craft-button>
+          >
+            <craft-icon name="trash" :label="t('Delete')"></craft-icon>
+          </craft-button>
         </li>
       </ul>
     </div>

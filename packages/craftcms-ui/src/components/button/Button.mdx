@@ -43,9 +43,17 @@ Add the boolean `inherit` property to a button placed inside a [Colorable](?path
 
 The `icon` attribute always renders a decorative icon, hidden from screen readers. When the icon means something the label doesn't, such as an external-link icon on a link that opens a new window, slot a `<craft-icon slot="suffix" label="…">` instead, or add hidden `sr-only` text to the label.
 
+## Shortcut
+
+`shortcut` shows a keyboard shortcut at the end of the button, as an action item does. It's either a plain key (`shortcut="K"`), with the platform's Cmd/Ctrl modifier added for you, or a JSON object naming the other modifiers (`shortcut='{"key": "S", "shift": true}'`).
+
+It's display only: the button doesn't bind the key.
+
+<Canvas of={ButtonStories.Shortcut} />
+
 ## Flush
 
-A `plain` button has no background, so the space around its label only shows on hover. Add `flush` to pull the button out by that space, so its label or icon lines up with the text beside it.
+A `plain` or `danger-plain` button has no background, so the space around its label only shows on hover. Add `flush` to pull the button out by that space, so its label or icon lines up with the text beside it.
 
 - `flush` with no value applies on every side.
 - Otherwise, pass a space-separated list of sides: `inline`, `block`, `inline-start`, `inline-end`, `block-start` or `block-end`. For example, `flush="inline-end"` for a close button at the end of a heading.
@@ -68,6 +76,7 @@ The offset follows the button's size, and an icon-only button aligns its icon ra
 - When an icon means something the label doesn't, such as "opens in a new window", slot a labeled `craft-icon` or add `sr-only` text. The `icon` attribute is always decorative.
 - Say what a `danger` button does in its label ("Delete entry"), so the color only reinforces it.
 - Anything that goes to a URL is a link: set `href` rather than navigating from a click handler.
+- A `shortcut` is hidden from screen readers. Bind the key yourself and announce it with `aria-keyshortcuts` on the button.
 - `xsmall` buttons keep a 24px hit area that reaches past their visible box. Leave room between them and other targets.
 - For an on/off setting, use `craft-switch`. A `toggle` button only reports the state it's asked to change to, so whoever owns `active` must update it.
 

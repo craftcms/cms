@@ -136,18 +136,6 @@ class Settings
             'label' => t('Fields'),
         ];
 
-        $label = t('Plugins');
-
-        foreach ($this->pluginsService->getAllPlugins() as $plugin) {
-            if ($plugin->hasCpSettings && (! $readOnly || $plugin->hasReadOnlyCpSettings)) {
-                $settings[$label][$plugin->handle] = [
-                    'url' => Url::cpUrl('settings/plugins/'.$plugin->handle),
-                    'icon' => $this->pluginsService->getPluginIconSvg($plugin->handle),
-                    'label' => $plugin->name,
-                ];
-            }
-        }
-
         $label = t('Extend');
 
         $settings[$label]['plugins'] = [
@@ -161,7 +149,21 @@ class Settings
             'label' => t('Connections'),
         ];
 
-        return $this->apply($settings, $readOnly);
+        // Reserved even if no plugin has settings yet, so sections that plugins register come after it
+        $label = t('Plugins');
+        $settings[$label] = [];
+
+        foreach ($this->pluginsService->getAllPlugins() as $plugin) {
+            if ($plugin->hasCpSettings && (! $readOnly || $plugin->hasReadOnlyCpSettings)) {
+                $settings[$label][$plugin->handle] = [
+                    'url' => Url::cpUrl('settings/plugins/'.$plugin->handle),
+                    'icon' => $this->pluginsService->getPluginIconSvg($plugin->handle),
+                    'label' => $plugin->name,
+                ];
+            }
+        }
+
+        return array_filter($this->apply($settings, $readOnly), fn (array $section): bool => $section !== []);
     }
 
     /**

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\DeletionBlockers;
 
-use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -52,36 +51,26 @@ class EntryAuthorsBlocker extends BaseDeletionBlocker
 
     public function getDetails(): ?string
     {
-        return app(ElementIndexHtml::class)->html(Entry::class, [
-            'context' => 'pane',
-            'defaultTableColumns' => [
-                ['authors'],
-                ['section'],
-            ],
-            'defaultSort' => ['section', 'asc'],
-            'sources' => false,
-            'jsSettings' => [
-                'criteria' => [
-                    'authorId' => $this->elements->ids()->all(),
-                    'status' => null,
-                ],
-            ],
-        ]);
+        return $this->elementChipsHtml(Entry::find()
+            ->authorId($this->elements->ids()->all())
+            ->status(null));
     }
 
     public function getActions(): array
     {
         $numUsers = $this->elements->count();
         $numEntries = $this->entryIds->count();
+        $reassignLabel = t('Reassign {numEntries, plural, =1{entry} other{entries}}', [
+            'numEntries' => $numEntries,
+        ]);
 
         return [
             [
                 'icon' => 'user-plus',
-                'label' => t('Reassign {numEntries, plural, =1{entry} other{entries}}', [
-                    'numEntries' => $numEntries,
-                ]),
-                'callback' => Html::jsWithVars(fn ($userIds) => <<<JS
+                'label' => $reassignLabel,
+                'callback' => Html::jsWithVars(fn ($title, $userIds) => <<<JS
 new Craft.CpModal('entries/reassign-modal', {
+  title: $title,
   params: {
     oldUserIds: $userIds,
   },
@@ -93,6 +82,7 @@ new Craft.CpModal('entries/reassign-modal', {
   },
 })
 JS, [
+                    $reassignLabel,
                     $this->elements->ids()->all(),
                 ]),
             ],

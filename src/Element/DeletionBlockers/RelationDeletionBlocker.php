@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\DeletionBlockers;
 
-use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 
 use function CraftCms\Cms\t;
@@ -17,7 +15,11 @@ use function CraftCms\Cms\t;
  */
 class RelationDeletionBlocker extends BaseDeletionBlocker
 {
-    /** @var array<string, mixed> */
+    /**
+     * @var array<string, mixed>
+     *
+     * @deprecated in 6.0.0. The details list the related elements as chips rather than in an element index.
+     */
     public array $elementIndexSettings = [];
 
     protected int $relationCount;
@@ -67,18 +69,13 @@ class RelationDeletionBlocker extends BaseDeletionBlocker
 
     public function getDetails(): ?string
     {
-        return app(ElementIndexHtml::class)->html($this->sourceElementType, Arr::merge([
-            'context' => 'pane',
-            'sources' => false,
-            'jsSettings' => [
-                'criteria' => [
-                    'relatedTo' => [
-                        'targetElement' => $this->elements->ids()->all(),
-                    ],
-                    'status' => null,
-                ],
-            ],
-        ], $this->elementIndexSettings));
+        return $this->elementChipsHtml($this->sourceElementType::find()
+            ->relatedTo([
+                'targetElement' => $this->elements->ids()->all(),
+            ])
+            ->site('*')
+            ->unique()
+            ->status(null));
     }
 
     /** @return list<array<string, mixed>> */
@@ -87,20 +84,23 @@ class RelationDeletionBlocker extends BaseDeletionBlocker
         /** @var class-string<ElementInterface> $targetElementType */
         $targetElementType = $this->elements->first()::class;
         $numTargets = $this->elements->count();
+        $replaceLabel = t('Replace {numRelations, plural, =1{relation} other{relations}}', [
+            'numRelations' => $this->relationCount,
+        ]);
 
         return [
             [
                 'icon' => 'swap',
-                'label' => t('Replace {numRelations, plural, =1{relation} other{relations}}', [
-                    'numRelations' => $this->relationCount,
-                ]),
+                'label' => $replaceLabel,
                 'callback' => Html::jsWithVars(fn (
+                    $title,
                     $targetElementType,
                     $targetIds,
                     $hardDelete,
                     $sourceElementType,
                 ) => <<<JS
 new Craft.CpModal('delete-elements/replace-relations-modal', {
+  title: $title,
   params: {
     elementType: $targetElementType,
     elementIds: $targetIds,
@@ -115,6 +115,7 @@ new Craft.CpModal('delete-elements/replace-relations-modal', {
   },
 })
 JS, [
+                    $replaceLabel,
                     $targetElementType,
                     $this->elements->ids()->all(),
                     $this->hardDelete,

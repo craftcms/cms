@@ -18,8 +18,21 @@ use function CraftCms\Cms\t;
 #[Singleton]
 readonly class ContentHtml
 {
+    /**
+     * Returns the HTML for metadata lists, with a rule between each group of metadata that has anything to show.
+     *
+     * @param  array<string, mixed>  ...$groups  The metadata, with keys representing the labels. A value can be a list
+     *                                           of values, which each get their own `<dd>`, such as a map below a link.
+     */
+    public function metadataHtml(array ...$groups): string
+    {
+        $lists = array_filter(array_map($this->metadataListHtml(...), $groups));
+
+        return implode("\n".Html::tag('hr', '', ['class' => 'my-lg'])."\n", $lists);
+    }
+
     /** @param array<string, mixed> $data */
-    public function metadataHtml(array $data): string
+    private function metadataListHtml(array $data): string
     {
         $defs = [];
 
@@ -32,7 +45,7 @@ readonly class ContentHtml
                         'class' => 'cp-metadata-list__item',
                     ]).
                     Html::tag('dt', Html::encode($label), ['class' => 'font-bold text-xs'])."\n".
-                    Html::tag('dd', $value)."\n".
+                    implode('', array_map(fn (mixed $value): string => Html::tag('dd', $value)."\n", is_array($value) ? $value : [$value])).
                     Html::endTag('div');
             }
         }

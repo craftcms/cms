@@ -20,7 +20,7 @@ use Laravel\Passport\Passport;
 beforeEach(function () {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
-    Passport::actingAs(User::query()->firstOrFail(), ['mcp:use'], 'craft-mcp');
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     config()->set('filesystems.disks.transform-preview', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/transform-preview'),
@@ -93,7 +93,7 @@ it('requires asset view permission before generating a preview', function (): vo
     $user->update(['admin' => false]);
     $permissions = ['accessCp', 'useCraftMcp'];
     app(UserPermissions::class)->saveUserPermissions($user->id, $permissions);
-    Passport::actingAs($user, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
     Cms::config()->allowAdminChanges = false;
     $params = [
         'name' => 'assets.transform-url',
@@ -127,5 +127,5 @@ it('converts transform validation failures into MCP tool errors', function (): v
     ])
         ->assertOk()
         ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Invalid Asset Transform parameter value.');
+        ->assertJsonPath('result.content.0.text', 'Invalid asset transform parameter value.');
 });

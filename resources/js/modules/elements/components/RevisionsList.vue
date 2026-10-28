@@ -21,7 +21,7 @@
 
 <template>
   <div class="py-lg px-(--cp-container-padding)">
-    <p v-if="isEmpty" class="text-sm text-neutral-text-quiet">
+    <p v-if="isEmpty" class="text-sm">
       {{ t('No drafts or revisions.') }}
     </p>
 

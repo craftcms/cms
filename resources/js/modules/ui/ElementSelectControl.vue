@@ -5,96 +5,20 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
-  import {
-    createElementActionMenu,
-    type ElementActionMenuItem,
-  } from '@/modules/elements/composables/useElementActionMenu';
-  import type {ActionItem} from '@/common/types';
-  import type {UiChangeKind, UiControlPayload, UiProperties} from './types';
+  import {createElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
+  import type {UiChangeKind, UiControlPayload} from './types';
   import {inputName} from './runtime';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
   import {openSlideout} from '@/common/slideouts';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
+  import SelectionToolbar from './element-select/SelectionToolbar.vue';
+  import {chipMenu, selectionMenu} from './element-select/chipMenu';
+  import {usePasteableElements} from './element-select/usePasteableElements';
+  import type {
+    ElementPresentation,
+    ElementSelectProps,
+  } from './element-select/types';
 
-  /**
-   * TODO: Extract the element-select markup into a reusable Vue component
-   * equivalent to `_includes/forms/elementSelect.twig`.
-   */
-  type ElementPresentation = {
-    id: number;
-    label: string;
-    siteId?: number | string | null;
-    /**
-     * What the element itself permits, decided server-side. Absent for elements
-     * learned from the selector modal, which only reports the common six —
-     * those chips get the field's own actions until the next server render
-     * fills the rest in.
-     */
-    url?: string | null;
-    /** The element's control panel edit screen, if it has one. */
-    cpEditUrl?: string | null;
-    canEdit?: boolean;
-    canCopy?: boolean;
-    draftId?: number | null;
-    revisionId?: number | null;
-    /**
-     * The chip's status dot, already resolved to a fill and a label — which
-     * status definitions exist, and what they're called, is an element-type
-     * concern. `null` for types that don't show one.
-     */
-    status?: {fill: string; label: string; draft: boolean} | null;
-    /**
-     * The element's own action menu, as the server describes it — including the
-     * extras an element type adds (an asset's Preview file, Download, Show in
-     * folder, Open in Image Editor).
-     */
-    actions?: ElementActionMenuItem[];
-    /**
-     * View-mode extras, rendered server-side for the active mode only — the
-     * control asks for card parts in card modes and a thumbnail in thumbs mode,
-     * so a list field pays for neither.
-     */
-    cardAttributes?: Record<
-      string,
-      string | number | boolean | null | undefined
-    >;
-    cardHeaderHtml?: string;
-    cardContentHtml?: string;
-    cardFooterHtml?: string;
-    thumbHtml?: string;
-  };
-
-  /** Mirrors `ElementSelect::viewModes()`, itself a mirror of the field setting. */
-  type ElementSelectViewMode =
-    | 'list'
-    | 'list-inline'
-    | 'thumbs'
-    | 'cards'
-    | 'cards-grid';
-  type ElementSelectElement =
-    | 'craft-element-select-input'
-    | 'craft-entry-select-input'
-    | 'craft-asset-select-input';
-  type ElementSelectProps = {
-    elementType: string;
-    customElement: ElementSelectElement;
-    elements: ElementPresentation[];
-    context: string;
-    sources: string[] | null;
-    criteria: UiProperties;
-    selectionCondition?: UiProperties;
-    selectionLabel: string;
-    limit: number | null;
-    single?: boolean;
-    showSiteMenu: boolean;
-    viewMode: ElementSelectViewMode;
-    /** Lower-cased, for "Edit entry" / "Copy entry". */
-    elementDisplayName: string;
-    /** `AssetSelect` only; absent for every other element type. */
-    canUpload?: boolean;
-    uploadFolderId?: number | null;
-    showFolders?: boolean;
-  };
   const props = defineProps<{
     control: UiControlPayload<ElementSelectProps>;
     value: Array<number | string> | number | string | null | undefined;
@@ -152,6 +76,13 @@
     );
   }
 
+  /** `next`, cut down to the field's limit from the start. */
+  function withinLimit(next: number[]): number[] {
+    return limit.value === null
+      ? next
+      : next.slice(0, Math.max(limit.value, 1));
+  }
+
   /** One relation can't be reordered, and a read-only field can't be either. */
   const sortable = computed(() => props.editable && ids.value.length > 1);
 
@@ -181,16 +112,12 @@
 
   /**
    * Chip selection, with the shift-range and toggle behavior of the element
-   * index — the anchor is the last individually-toggled chip, and shift selects
-   * the inclusive range between it and the clicked one.
+   * index. Selection is the input to bulk removal: "Remove" on a selected chip
+   * removes the whole selection, which is what Craft 5's
+   * `defineElementActions` does via `elementSelect.isSelected()`.
    *
-   * Selection is the input to bulk removal: "Remove" on a selected chip removes
-   * the whole selection, which is what Craft 5's `defineElementActions` does via
-   * `elementSelect.isSelected()`.
-   */
-  /**
-   * Selection is only worth offering when more than one element can be related —
-   * a single-relation field has nothing to bulk-act on. A `null` limit is
+   * It's only worth offering when more than one element can be related — a
+   * single-relation field has nothing to bulk-act on. A `null` limit is
    * unlimited, so it counts as more than one.
    */
   const selectable = computed(() => props.editable && limit.value !== 1);
@@ -223,36 +150,7 @@
     readOnly: () => !props.editable,
   });
 
-  const {
-    selectedIds,
-    hasSelection,
-    allSelected,
-    someSelected,
-    isSelected,
-    setChecked,
-    toggleAll,
-    clear: clearSelection,
-    handleClick: selectChip,
-    prune: pruneSelection,
-  } = list.selection;
-
-  /**
-   * Built here rather than inline: the ICU braces in the plural form read as
-   * nested interpolation to the template compiler.
-   */
-  const selectionCountLabel = computed(() =>
-    t('{num, number} {num, plural, =1{item} other{items}} selected', {
-      num: selectedIds.value.length,
-    })
-  );
-
-  /**
-   * `craft-checkbox` dispatches from the host rather than an inner `<input>`, so
-   * the checked state has to be read off the target as a plain property.
-   */
-  function checkboxValue(event: Event): boolean {
-    return Boolean((event.target as {checked?: boolean} | null)?.checked);
-  }
+  const {selectedIds, isSelected, prune: pruneSelection} = list.selection;
 
   // ───────────────────────────── reordering ─────────────────────────────
 
@@ -341,15 +239,12 @@
             return;
           }
 
-          const next =
-            replacing === null
-              ? [...ids.value, ...chosen]
-              : ids.value.flatMap((id) => (id === replacing ? chosen : [id]));
-
           updateValue(
-            limit.value === null
-              ? next
-              : next.slice(0, Math.max(limit.value, 1))
+            withinLimit(
+              replacing === null
+                ? [...ids.value, ...chosen]
+                : ids.value.flatMap((id) => (id === replacing ? chosen : [id]))
+            )
           );
         },
       }
@@ -358,6 +253,30 @@
     modal.on('close', () => modal.destroy());
     await modal.show();
   }
+
+  // ───────────────────────────── pasting ─────────────────────────────
+
+  const pasteable = usePasteableElements({
+    field: () => props.control.props,
+    editable: () => props.editable,
+    ids,
+    atLimit,
+    relate: (elements) => {
+      for (const element of elements) {
+        presentations.set(element.id, element);
+      }
+
+      const kept = withinLimit([
+        ...ids.value,
+        ...elements.map((element) => element.id),
+      ]);
+      updateValue(kept);
+
+      return kept;
+    },
+    container: dropZone,
+    fallbackFocus: addButton,
+  });
 
   // ───────────────────────────── chip actions ─────────────────────────────
 
@@ -370,111 +289,19 @@
   /** One dispatcher for every chip's menu, rather than one per element. */
   const toActionItems = createElementActionMenu();
 
-  /**
-   * The element's own actions.
-   *
-   * The server describes these per element, so an element type's extras arrive
-   * without the field knowing what any of them are. Elements picked since the
-   * last render have no descriptors yet — the selector reports only the common
-   * few — so those fall back to what can be derived client-side until the next
-   * server render fills them in.
-   */
-  function elementActions(value: number | string): ActionItem[] {
-    const element = presentation(value);
-    const type = props.control.props.elementDisplayName;
+  const menuField = computed(() => ({
+    elementType: props.control.props.elementType,
+    elementDisplayName: props.control.props.elementDisplayName,
+    editable: props.editable,
+    toActionItems,
+  }));
 
-    if (element.actions?.length) {
-      return toActionItems(element.actions);
-    }
+  const bulkActions = computed(() =>
+    selectionMenu(selectedIds.value.map(presentation), menuField.value, () =>
+      removeIds(new Set(selectedIds.value))
+    )
+  );
 
-    const actions: ActionItem[] = [];
-
-    if (element.url) {
-      actions.push({
-        icon: 'share',
-        label: t('View in a new tab'),
-        onClick: () => window.open(element.url!, '_blank', 'noopener'),
-      });
-    }
-
-    if (element.canCopy) {
-      actions.push({
-        icon: 'clone-dashed',
-        label: t('Copy {type}', {type}),
-        // `Craft.cp` owns the clipboard, including its confirmation toast.
-        onClick: () => Craft.cp?.copyElements?.([copyDescriptor(value)]),
-      });
-    }
-
-    return actions;
-  }
-
-  /** What `Craft.cp.copyElements()` wants for one element. */
-  type CopyDescriptor = {
-    type: string;
-    id: string | number;
-    siteId?: number | null;
-    draftId?: number | null;
-    revisionId?: number | null;
-  };
-
-  function copyDescriptor(value: number | string): CopyDescriptor {
-    const element = presentation(value);
-
-    return {
-      type: props.control.props.elementType,
-      id: element.id,
-      siteId: element.siteId === null ? null : Number(element.siteId),
-      draftId: element.draftId ?? null,
-      revisionId: element.revisionId ?? null,
-    };
-  }
-
-  /**
-   * The selection's own actions, for the toolbar menu.
-   *
-   * Copy covers only the elements the server said may be copied — a revision or
-   * one the user can't read is skipped rather than silently failing — so the item
-   * is offered whenever any of the selection is copyable. Remove needs an editable
-   * field: a read-only one can show and copy what it can't detach.
-   */
-  const bulkActions = computed<ActionItem[]>(() => {
-    if (!hasSelection.value) {
-      return [];
-    }
-
-    const actions: ActionItem[] = [];
-    const copyable = selectedIds.value.filter((id) => presentation(id).canCopy);
-
-    if (copyable.length) {
-      actions.push({
-        icon: 'clone-dashed',
-        label: t('Copy selected'),
-        onClick: () => Craft.cp?.copyElements?.(copyable.map(copyDescriptor)),
-      });
-    }
-
-    if (props.editable) {
-      actions.push({
-        icon: 'remove',
-        label: t('Remove selected'),
-        variant: 'danger',
-        onClick: () => removeIds(new Set(selectedIds.value)),
-      });
-    }
-
-    // @TODO Provide a way for plugins to register bulk actions for asset fields
-
-    return actions;
-  });
-
-  /**
-   * Opening the element's editor.
-   *
-   * The field's own affordance rather than one of the element's: the server's
-   * descriptors never include an edit item, because they're written for the
-   * editor itself, where you're already editing the thing.
-   */
   const editLabel = computed(() =>
     t('Edit {type}', {type: props.control.props.elementDisplayName})
   );
@@ -483,94 +310,30 @@
     return presentation(value).canEdit === true;
   }
 
-  function editAction(value: number | string): ActionItem | null {
-    if (!canEditElement(value)) {
-      return null;
-    }
-
-    return {
-      icon: 'edit',
-      label: editLabel.value,
-      onClick: () => openEditor(value),
-    };
-  }
-
-  /** The menu for a chip or card, with the edit item where it belongs. */
-  function menuActions(value: number | string, index: number): ActionItem[] {
-    return chipActions(value, index, {withEdit: !list.isCards.value});
-  }
-
   /**
-   * Joins menu sections with a separator between each.
-   *
-   * Empty sections drop out, so a menu never opens or closes on a rule, and two
-   * adjacent empty sections can't produce a double one.
+   * Each chip's menu, built once per render rather than per binding. Cards get
+   * a pencil straight to the editor, so their menu leaves the edit item out.
    */
-  function withSeparators(sections: ActionItem[][]): ActionItem[] {
-    return sections
-      .filter((section) => section.length > 0)
-      .flatMap((section, index) =>
-        index === 0 ? section : [{type: 'hr'} as ActionItem, ...section]
-      );
-  }
-
-  /**
-   * A chip or card's menu, in three sections: what the element itself offers,
-   * what the field offers for it, and detaching it.
-   *
-   * This is the place to regroup the menu — move an item between the arrays, or
-   * merge two sections into one, and the separators follow.
-   *
-   * `withEdit` is off in the card modes, where the pencil button beside the menu
-   * already opens the editor.
-   */
-  function chipActions(
-    value: number | string,
-    index: number,
-    {withEdit = true}: {withEdit?: boolean} = {}
-  ): ActionItem[] {
-    const id = elementId(value);
-
-    // What the element itself offers — server-described, so an element type's
-    // own actions (an asset's Preview file, Download, …) arrive here.
-    const elementSection = elementActions(value);
-
-    // What the field offers for that element.
-    const fieldSection: ActionItem[] = [];
-    const edit = withEdit ? editAction(value) : null;
-
-    if (edit) {
-      fieldSection.push(edit);
-    }
-
-    // Detaching it from the field. Separated because it's the one that changes
-    // the field's value.
-    const removeSection: ActionItem[] = [];
-
-    // A read-only field still offers the element's own actions and its editor —
-    // you can view, edit and copy what you can't detach.
-    if (props.editable) {
-      if (props.control.props.elementType) {
-        fieldSection.push({
-          icon: 'arrows-rotate',
-          label: t('Replace'),
-          onClick: () => void openSelector(id),
-        });
-      }
-
-      removeSection.push({
-        icon: 'remove',
-        label: t('Remove'),
-        variant: 'danger',
-        onClick: () =>
-          removeIds(
-            isSelected(id) ? new Set(selectedIds.value) : new Set([id])
-          ),
-      });
-    }
-
-    return withSeparators([elementSection, fieldSection, removeSection]);
-  }
+  const chipMenus = computed(
+    () =>
+      new Map(
+        listData.value.map((element) => [
+          element.id,
+          chipMenu(element, menuField.value, {
+            edit: list.isCards.value
+              ? undefined
+              : {label: editLabel.value, open: () => openEditor(element.id)},
+            replace: () => void openSelector(element.id),
+            remove: () =>
+              removeIds(
+                isSelected(element.id)
+                  ? new Set(selectedIds.value)
+                  : new Set([element.id])
+              ),
+          }),
+        ])
+      )
+  );
 
   /**
    * A freshly uploaded asset joins the selection, the way choosing one does.
@@ -647,66 +410,16 @@
     <component :is="control.props.customElement" :id="id">
       <div class="relative" v-if="ids.length > 0">
         <!--
-          Selection toolbar. The whole bar is selection-only, so a field that
-          can't be selected (a single relation) has no use for it.
+          A field that can't be selected (a single relation) has no use for
+          the selection toolbar.
         -->
-        <div
-          class="element-selections-header flex justify-between items-center"
+        <SelectionToolbar
           v-if="selectable"
-        >
-          <div class="flex items-center gap-2">
-            <craft-checkbox
-              label-sr-only
-              .checked="allSelected"
-              .indeterminate="someSelected"
-              @model-value-changed="toggleAll(checkboxValue($event))"
-            >
-              <label slot="label">{{ t('Select all') }}</label>
-            </craft-checkbox>
-
-            <template v-if="hasSelection">
-              <div class="text-xs font-bold">{{ selectionCountLabel }}</div>
-              <craft-button
-                type="button"
-                size="small"
-                variant="plain"
-                @click="clearSelection()"
-              >
-                {{ t('Clear selection') }}
-              </craft-button>
-            </template>
-          </div>
-
-          <div class="flex items-center gap-sm ms-auto">
-            <ActionMenu
-              :actions="bulkActions"
-              :class="{
-                invisible: !hasSelection || !bulkActions.length,
-              }"
-            >
-              <template #invoker="{attributes}">
-                <craft-button
-                  type="button"
-                  variant="plain"
-                  size="small"
-                  flush
-                  v-bind="attributes"
-                >
-                  {{ t('Actions') }}
-                  <craft-icon name="chevron-down" slot="suffix"></craft-icon>
-                </craft-button>
-              </template>
-            </ActionMenu>
-
-            <craft-badge
-              size="small"
-              no-prefix
-              v-if="limit !== null && (!hasSelection || !bulkActions.length)"
-            >
-              {{ ids.length }}/{{ limit }}
-            </craft-badge>
-          </div>
-        </div>
+          :selection="list.selection"
+          :actions="bulkActions"
+          :total="ids.length"
+          :limit="limit"
+        />
         <div class="elements-stage">
           <ElementList
             :data="listData"
@@ -731,7 +444,7 @@
               Cards get a pencil straight to the editor, so their menu leaves
               the edit item out; a chip keeps it in the menu.
             -->
-            <template #actions="{element, index}">
+            <template #actions="{element}">
               <craft-button
                 v-if="list.isCards.value && canEditElement(element.id)"
                 type="button"
@@ -742,8 +455,8 @@
                 @click="openEditor(element.id)"
               ></craft-button>
               <ActionMenu
-                v-if="menuActions(element.id, index).length"
-                :actions="menuActions(element.id, index)"
+                v-if="chipMenus.get(element.id)?.length"
+                :actions="chipMenus.get(element.id)!"
                 :flush="
                   list.isList.value
                     ? 'inline-start'
@@ -785,6 +498,18 @@
           :disabled="!showUpload"
           @uploaded="attachUploaded"
         />
+
+        <craft-button
+          v-if="pasteable.candidates.value.length"
+          type="button"
+          variant="outline"
+          icon="custom-icons/duplicate"
+          class="paste-btn"
+          data-element-select-paste=""
+          @click="pasteable.paste()"
+        >
+          {{ pasteable.label.value }}
+        </craft-button>
       </div>
 
       <div slot="footer">
@@ -795,14 +520,6 @@
 </template>
 
 <style lang="scss" scoped>
-  .element-selections-header {
-    margin-block-end: var(--c-spacing-md);
-    min-height: calc(var(--c-size-control-sm) + var(--c-spacing-sm) + 1px);
-    padding-block: 0 var(--c-spacing-sm);
-    padding-inline: 0;
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-  }
-
   .element-selection-footer {
     display: flex;
     justify-content: space-between;

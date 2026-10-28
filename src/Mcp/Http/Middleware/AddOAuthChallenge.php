@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Http\Middleware;
 
 use Closure;
+use CraftCms\Cms\Mcp\Enums\McpScope;
 use CraftCms\Cms\Mcp\OAuth\Metadata;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,7 +26,7 @@ readonly class AddOAuthChallenge
         $response->headers->set('WWW-Authenticate', sprintf(
             'Bearer realm="MCP Server", resource_metadata="%s", scope="%s"',
             $this->metadata->resourceMetadataUrl(),
-            Metadata::SCOPE,
+            implode(' ', McpScope::values()),
         ));
 
         return $response;

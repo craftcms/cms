@@ -40,7 +40,7 @@ ai:
   defaults:
     text: { provider: '$AI_TEXT_PROVIDER', model: null }
   tasks:
-    'altText:describe': { enabled: true, provider: null, model: null }
+    'seo:metaDescription': { enabled: true, provider: null, model: null }
 ```
 
 - **Defaults** set a provider and model for each modality that a registered task uses. A modality without a default provider is off.
@@ -59,7 +59,7 @@ When a plugin is uninstalled, its task mappings stay in project config and are i
 
 When a task with the `Embeddings` modality is registered, the settings screen warns that changing its provider or model breaks existing embeddings. Embeddings from different models can’t be compared, so if your plugin stores them, store the model that created them too (`Ai::task($handle)->resolve()->model`, or the provider’s default model when it’s `null`), and re-index when it changes.
 
-To turn a task off quickly in an environment where admin changes are disallowed, set its **Enabled** value to an environment variable, such as `$AI_ALT_TEXT_ENABLED`.
+To turn a task off quickly in an environment where admin changes are disallowed, set its **Enabled** value to an environment variable, such as `$AI_META_DESCRIPTIONS_ENABLED`.
 
 ## Registering a task
 
@@ -70,21 +70,21 @@ use CraftCms\Cms\Ai\Task;
 
 use function CraftCms\Cms\t;
 
-class DescribeImage extends Task
+class WriteMetaDescription extends Task
 {
     public static function handle(): string
     {
-        return 'altText:describe';
+        return 'seo:metaDescription';
     }
 
     public static function label(): string
     {
-        return t('Describe image', category: 'alt-text');
+        return t('Write meta descriptions', category: 'seo');
     }
 
     public static function description(): ?string
     {
-        return t('Writes alt text for an image. Needs a model with vision.', category: 'alt-text');
+        return t('Writes search engine descriptions for entries.', category: 'seo');
     }
 }
 ```
@@ -96,7 +96,7 @@ use CraftCms\Cms\Ai\AiTasks;
 
 public function boot(AiTasks $tasks): void
 {
-    $tasks->register(DescribeImage::class);
+    $tasks->register(WriteMetaDescription::class);
 }
 ```
 
@@ -109,29 +109,31 @@ public function boot(AiTasks $tasks): void
 
 The settings screen shows the name of the plugin that owns the task class. New tasks are enabled and use the default provider for their modality.
 
+## Image analysis tasks
+
+Tasks that learn something about an image, like Craft’s own alt text, title, focal point, tagging, and image type tasks, extend `CraftCms\Cms\Asset\Analysis\ImageAnalysisTask` instead. They need vision and structured output, and `CraftCms\Cms\Asset\Analysis\ImageAnalyzer` runs them when images are uploaded, replaced, or indexed, or with the “Analyze images” action. Tasks that use the same provider and model share one request per image: each adds its instructions to the prompt and its properties to the response’s JSON schema, then applies its part of the response. See `CraftCms\Cms\Asset\Analysis\Contracts\ImageAnalysisTaskInterface` for the methods to implement.
+
 ## Running a task
 
 Check availability before you show an AI feature:
 
 ```php
-if (! Ai::available('altText:describe')) {
+if (! Ai::available('seo:metaDescription')) {
     return;
 }
 ```
 
 A task is unavailable when it’s disabled, when neither it nor its modality has a provider, or when its provider isn’t in the `ai.providers` config.
-Then run `laravel/ai` agents and requests through the task. `AltTextAgent` stands for your own agent class, one that implements `Laravel\Ai\Contracts\Agent`:
-Then run `laravel/ai` agents and requests through the task:
+Then run `laravel/ai` agents and requests through the task. `MetaDescriptionAgent` stands for your own agent class, one that implements `Laravel\Ai\Contracts\Agent`:
 
 ```php
 use CraftCms\Cms\Support\Facades\Ai;
-use Laravel\Ai\Files\Image as ImageFile;
 use Laravel\Ai\Image;
 use Laravel\Ai\Reranking;
 
 // Agents (text tasks)
-$response = Ai::task('altText:describe')
-    ->prompt(agent: new AltTextAgent, prompt: 'Describe this image', attachments: [ImageFile::fromPath($path)]);
+$response = Ai::task('seo:metaDescription')
+    ->prompt(agent: new MetaDescriptionAgent, prompt: $entry->title);
 
 $stream = Ai::task('chat:reply')->stream(agent: new Assistant, prompt: $message);
 
@@ -150,9 +152,9 @@ Running an operation of another modality, such as generating an image with a tex
 To use a `laravel/ai` API that the task client doesn’t cover, resolve the task and pass the provider and model yourself:
 
 ```php
-$resolved = Ai::task('altText:describe')->resolve();
+$resolved = Ai::task('seo:metaDescription')->resolve();
 
-$response = (new AltTextAgent)->prompt(prompt: 'Describe this image', provider: $resolved->provider, model: $resolved->model);
+$response = (new MetaDescriptionAgent)->prompt(prompt: $entry->title, provider: $resolved->provider, model: $resolved->model);
 ```
 
 Plugins may also use `laravel/ai` directly, without tasks. Those calls don’t follow Craft’s AI settings.
@@ -162,9 +164,9 @@ Plugins may also use `laravel/ai` directly, without tasks. Those calls don’t f
 `queue()` prompts an agent in a queued job:
 
 ```php
-Ai::task('altText:describe')
-    ->queue(agent: new AltTextAgent, prompt: 'Describe this image', attachments: [ImageFile::fromStorage($path)])
-    ->then(fn ($response) => $asset->saveAltText($response->text));
+Ai::task('seo:metaDescription')
+    ->queue(agent: new MetaDescriptionAgent, prompt: $entry->title)
+    ->then(fn ($response) => $entry->saveMetaDescription($response->text));
 ```
 
 The job resolves the task when it runs, not when it’s dispatched. If an administrator disables the task or changes its provider in the meantime, queued jobs follow the new settings, and jobs for a disabled task fail with `AiUnavailableException`. Attachments must be serializable, such as stored files.
@@ -209,13 +211,13 @@ use CraftCms\Cms\Ai\Settings;
 app()->instance(Settings::class, new Settings([
     'defaults' => ['text' => ['provider' => 'anthropic']],
 ]));
-AltTextAgent::fake(['A lighthouse at dusk.']);
+MetaDescriptionAgent::fake(['How to choose an AI provider for Craft.']);
 
-$response = Ai::task('altText:describe')->prompt(agent: new AltTextAgent, prompt: 'Describe this image');
+$response = Ai::task('seo:metaDescription')->prompt(agent: new MetaDescriptionAgent, prompt: 'Choosing a provider');
 
-AltTextAgent::assertPrompted(fn ($prompt) => $prompt->provider->name() === 'anthropic');
+MetaDescriptionAgent::assertPrompted(fn ($prompt) => $prompt->provider->name() === 'anthropic');
 ```
 
 ## Permissions
 
-Only administrators can change AI settings. The screen is read-only when admin changes are disallowed. Craft has no general “Use AI” permission: register permissions for your own AI features, such as “Generate alt text”.
+Only administrators can change AI settings. The screen is read-only when admin changes are disallowed. Craft has no general “Use AI” permission: register permissions for your own AI features, such as “Write meta descriptions”.

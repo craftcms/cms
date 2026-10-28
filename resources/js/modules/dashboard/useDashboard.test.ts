@@ -1,5 +1,6 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, defineComponent, h, type App} from 'vue';
+import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {useDashboard} from './useDashboard';
 import type {DashboardWidget} from './types';
 
@@ -9,7 +10,8 @@ const state = vi.hoisted(() => ({
 }));
 vi.mock('@craftcms/ui', () => ({
   actionClient: {post: state.post},
-  t: (message: string) => message,
+  t: (message: string, params: Record<string, unknown> = {}) =>
+    message.replace(/\{(\w+)\}/g, (_, key: string) => String(params[key])),
 }));
 const messages = vi.hoisted(() => ({
   showMessage: vi.fn(),
@@ -98,6 +100,17 @@ it('keeps the saved layout when resizing or reordering fails', async () => {
     [2, 1],
   ]);
   expect(messages.error).toHaveBeenLastCalledWith('Couldn’t reorder widgets.');
+});
+
+it('announces where a widget moved once the new order is saved', async () => {
+  mount([widget(1), widget(2), widget(3)]);
+  state.post.mockResolvedValue({data: {}});
+
+  await dashboard.reorder(2, 0);
+
+  expect(useAnnouncer().announcement.value).toBe(
+    'Moved Widget 3 to position 1'
+  );
 });
 
 it('undo restores a deleted widget at the end', async () => {

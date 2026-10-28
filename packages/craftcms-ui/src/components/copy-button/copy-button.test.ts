@@ -2,6 +2,7 @@ import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 
 import './copy-button.js';
 import type CraftCopyButton from './copy-button.js';
+import type CraftButton from '../button/button.js';
 
 async function createCopyButton(
   attrs: Record<string, string> = {},
@@ -19,8 +20,8 @@ async function createCopyButton(
   return element;
 }
 
-function button(element: CraftCopyButton): HTMLButtonElement {
-  return element.shadowRoot!.querySelector('button')!;
+function button(element: CraftCopyButton): CraftButton {
+  return element.shadowRoot!.querySelector('craft-button')!;
 }
 
 /** happy-dom has no clipboard, so it is stubbed for what the component awaits. */
@@ -32,16 +33,6 @@ function stubClipboard(writeText = vi.fn().mockResolvedValue(undefined)) {
   });
   return writeText;
 }
-
-/**
- * happy-dom has no Web Animations either, and a copy plays its status icons in
- * and out — outside the test's own `await`, so a missing `animate()` surfaces
- * as an unhandled rejection that fails the run. Left in place for the whole
- * file: the icons animate back to rest on a timer that can outlive a test.
- */
-Element.prototype.animate ??= function () {
-  return {finished: Promise.resolve()} as unknown as Animation;
-};
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -89,6 +80,27 @@ describe('craft-copy-button', () => {
 
     expect(writeText).not.toHaveBeenCalled();
     expect(button(element).disabled).toBe(true);
+  });
+
+  /** Being moved in the DOM must not leave the outcome as the resting label. */
+  it('restores its tooltip label after showing the outcome', async () => {
+    stubClipboard();
+    const element = await createCopyButton({
+      value: 'handle',
+      'tooltip-label': 'Copy the handle',
+      'feedback-duration': '10',
+    });
+    document.body.append(element);
+    const tooltip = () =>
+      element.shadowRoot!.querySelector('craft-tooltip')!.textContent!.trim();
+
+    await element.copyValue();
+    await element.updateComplete;
+    expect(tooltip()).toBe('Copied');
+
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    await element.updateComplete;
+    expect(tooltip()).toBe('Copy the handle');
   });
 
   /** A second press mid-copy would double-fire the event and the feedback. */

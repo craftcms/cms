@@ -66,7 +66,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var bool Whether Craft image transforms should be generated before page load.
      *
-     * @deprecated in 6.0.0. Configure immediate generation on the Craft Asset Transformer instead.
+     * @deprecated in 6.0.0. Configure immediate generation on the Craft asset transformer instead.
      */
     public bool $generateTransformsBeforePageLoad = false {
         set {
@@ -700,7 +700,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         return $this;
     }
 
-    #[Deprecated(message: 'in 6.0.0. Configure immediate generation on the Craft Asset Transformer instead.')]
+    #[Deprecated(message: 'in 6.0.0. Configure immediate generation on the Craft asset transformer instead.')]
     public function generateTransformsBeforePageLoad(bool $value = true): self
     {
         $this->generateTransformsBeforePageLoad = $value;
@@ -1469,7 +1469,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         app()->booted(fn() => Deprecator::log(
             'generalConfig.generateTransformsBeforePageLoad',
-            'generateTransformsBeforePageLoad is deprecated. Configure immediate generation on the Craft Asset Transformer instead.',
+            'generateTransformsBeforePageLoad is deprecated. Configure immediate generation on the Craft asset transformer instead.',
         ));
     }
 

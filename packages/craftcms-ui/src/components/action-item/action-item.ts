@@ -10,6 +10,7 @@ import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 
 import '../shortcut/shortcut.js';
+import {HasShortcut} from '@src/mixins/HasShortcut';
 import '../icon/icon.js';
 import '../spinner/spinner.js';
 import {
@@ -51,11 +52,17 @@ const INTERACTIVE = [
  *   Defaults to a check icon while `checked` is set.
  * @slot suffix - Trailing content, shown before the shortcut.
  *
+ * @attr shortcut - A keyboard shortcut shown at the end of the item: a key
+ *   (`"S"`), or JSON naming its modifiers (`'{"key": "S", "shift": true}'`).
+ *   Display only. Supplied by the `HasShortcut` mixin.
+ *
+ * @csspart control - The item's `<button>`, or `<a>` when `href` is set.
+ *
  * @fires {CustomEvent} craft-state-change - Emitted whenever the item's
  *   action moves between idle, loading, success, and error. `detail` carries
  *   the new `state`, the action's `actionType`, and any feedback data.
  */
-export default class CraftActionItem extends LitElement {
+export default class CraftActionItem extends HasShortcut(LitElement) {
   static override styles = [
     hostStyles,
     variantsStyles,
@@ -153,54 +160,6 @@ export default class CraftActionItem extends LitElement {
   @state() private feedbackMessage: string | null = null;
 
   private _resetStateTimeout: ReturnType<typeof setTimeout> | null = null;
-
-  /**
-   * A keyboard shortcut shown at the end of the item. Either a plain string
-   * (`"S"`, `"ctrl+k"`) or an object naming the modifiers. Display only — the
-   * item does not bind the key.
-   */
-  @property({
-    converter: {
-      fromAttribute(value: string | null) {
-        if (value === null) return null;
-
-        // Try to parse as JSON object first
-        try {
-          const parsed = JSON.parse(value);
-          if (typeof parsed === 'object' && parsed !== null) {
-            return parsed;
-          }
-        } catch {
-          // Not JSON — treat as plain string shortcut
-        }
-
-        return value; // plain string like "k" or "ctrl+k"
-      },
-      toAttribute(value) {
-        if (value === null) return null;
-        if (typeof value === 'string') return value;
-        return JSON.stringify(value);
-      },
-    },
-  })
-  shortcut: string | {alt?: boolean; shift?: boolean; key: string} | null =
-    null;
-
-  protected renderShortcut() {
-    if (typeof this.shortcut === 'string') {
-      return html`<craft-shortcut>${this.shortcut}</craft-shortcut>`;
-    }
-
-    if (this.shortcut !== null) {
-      return html`<craft-shortcut
-        ?alt="${this.shortcut.alt ?? false}"
-        ?shift="${this.shortcut.shift ?? false}"
-        >${this.shortcut.key}</craft-shortcut
-      >`;
-    }
-
-    return nothing;
-  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -377,7 +336,13 @@ export default class CraftActionItem extends LitElement {
         })}"
       >
         <slot name="suffix"></slot>
-        ${this.shortcut ? this.renderShortcut() : nothing}
+        ${this.shortcutKeys
+          ? html`<craft-shortcut
+              ?alt="${this.shortcutKeys.alt}"
+              ?shift="${this.shortcutKeys.shift}"
+              >${this.shortcutKeys.key}</craft-shortcut
+            >`
+          : nothing}
       </span>
     `;
   }
@@ -386,6 +351,7 @@ export default class CraftActionItem extends LitElement {
     return this.href
       ? html`
           <a
+            part="control"
             class="${classMap({
               'action-item': true,
               'action-item--checkbox': this.type === 'checkbox',
@@ -405,6 +371,7 @@ export default class CraftActionItem extends LitElement {
       : html`
           <button
             type="button"
+            part="control"
             class="${classMap({
               'action-item': true,
               'action-item--checkbox': this.type === 'checkbox',

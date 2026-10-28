@@ -25,7 +25,7 @@ export default css`
   .input-color__control {
     display: flex;
     align-items: center;
-    gap: var(--c-spacing-md);
+    gap: var(--c-spacing-sm);
   }
 
   .input-color__swatch {
@@ -91,6 +91,7 @@ export default css`
     margin: 0;
     padding: 0;
     opacity: 0;
+    cursor: inherit;
   }
 
   .input-group__container {
@@ -98,6 +99,8 @@ export default css`
     flex: 0 0 7.25rem;
     inline-size: 7.25rem;
     max-inline-size: 100%;
+    /* The input inherits this through its slot; ::slotted() can't beat the page's input font reset */
+    font-family: var(--c-font-mono);
   }
 
   .input-group__input {
@@ -105,12 +108,37 @@ export default css`
     flex: 1 1 auto;
   }
 
+  /*
+    The # sits inside the input, as its value's first character, like the
+    search input's icon. Clicks pass through it to the input.
+  */
   .input-group__prefix {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 1;
+    padding-inline: calc(
+        var(--c-input-spacing-inline) + var(--c-input-border-width)
+      )
+      0;
+    border: none;
+    background: none;
+    pointer-events: none;
     color: var(--c-text-quiet);
     user-select: none;
     font-family: var(--c-font-mono);
     display: grid;
     place-items: center;
+  }
+
+  .input-group__prefix + .input-group__input ::slotted([slot='input']) {
+    --_input-start-start-radius: var(--c-input-radius, var(--c-radius-sm));
+    --_input-end-start-radius: var(--c-input-radius, var(--c-radius-sm));
+    --c-focus-outline-style: inherit;
+    --c-focus-outline-offset: inherit;
+    padding-inline-start: calc(
+      var(--c-input-spacing-inline) + 1ch + var(--c-spacing-xs)
+    );
   }
 
   ::slotted([slot='input']) {

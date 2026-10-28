@@ -6,6 +6,7 @@ import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
 import type {Router} from '@inertiajs/core';
 import type {HttpResponse} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
+import type {UiValueChangeDetail, uiValues} from '@/modules/ui/ui-values';
 
 type LegacySettingValue =
   | string
@@ -74,6 +75,7 @@ interface CpServices {
 
 interface CpStatic extends CpServices {
   $components: CpComponentRegistry;
+  $ui: typeof uiValues;
   $elementDetailsPanels: ElementDetailsPanelRegistry;
   /** @deprecated Use `$elementDetailsPanels`. */
   $elementDetailsTabs: ElementDetailsPanelRegistry;
@@ -155,6 +157,13 @@ interface CraftStatic {
   openCustomizeSourcesModal(
     options: import('@/modules/customize-sources').CustomizeSourcesModalOptions
   ): Promise<void>;
+  commandPalette: Pick<
+    typeof import('@/modules/command-palette/registry'),
+    'registerProvider' | 'registerActions' | 'registerView'
+  > & {
+    open: typeof import('@/modules/command-palette/registry').openCommandPalette;
+    close: typeof import('@/modules/command-palette/registry').closeCommandPalette;
+  };
   expandPostArray(arr: FormData | URLSearchParams): LegacyWidgetSettings;
   escapeHtml(str: string);
   sites: Site[];
@@ -170,6 +179,10 @@ interface CraftStatic {
   getCpUrl(path: string, params?: string | LegacyWidgetSettings): string;
   defaultIndexCriteria: LegacyWidgetSettings;
   siteId?: number;
+  /** The control panel's syntax highlighter. */
+  highlighter: import('@tanstack/highlight/core').Highlighter;
+  /** The user's formatting locale, as a BCP 47 tag for `Intl`. */
+  formattingLocale?: string;
   cp?: {
     jobInfo?: unknown[];
     displayedJobInfo?: unknown;
@@ -257,14 +270,10 @@ interface CraftStatic {
 
   // Asset editing, still served by the legacy bundle.
   isImagick?: boolean;
-  PreviewFileModal: new (
-    assetId: number,
-    settings?: LegacyWidgetSettings
-  ) => LegacyModalInstance;
-  AssetImageEditor: new (
-    assetId: number,
-    settings?: LegacyWidgetSettings
-  ) => LegacyModalInstance;
+  PreviewFileModal: typeof import('@/modules/preview-file-modal').PreviewFileModal;
+  openAssetImageEditor: typeof import('@/modules/image-editor').openAssetImageEditor;
+  /** @deprecated `openAssetImageEditor()` should be used instead. */
+  AssetImageEditor: typeof import('@/modules/image-editor').AssetImageEditor;
   Uploaders: typeof import('@/modules/uploader');
 }
 
@@ -278,6 +287,9 @@ declare global {
   let Craft: CraftStatic;
   let Garnish: GarnishStatic;
   let $: JQueryStatic;
+  interface DocumentEventMap {
+    'craft:ui-value-change': CustomEvent<UiValueChangeDetail>;
+  }
   interface Window {
     bootedCallbacks: Array<(craft: CraftStatic) => void>;
     bootingCallbacks: Array<(craft: CraftStatic) => void>;

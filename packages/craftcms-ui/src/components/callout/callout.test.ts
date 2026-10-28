@@ -206,3 +206,17 @@ describe('craft-callout icon', () => {
     expect(shadow(element, 'slot[name="icon"]')).toBeNull();
   });
 });
+
+describe('craft-callout title', () => {
+  it('shows a title slotted in after the first render', async () => {
+    const element = await createCallout();
+    expect(shadow(element, '.callout__title')).toBeNull();
+
+    element.insertAdjacentHTML('afterbegin', '<p slot="title">Heads up</p>');
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+
+    expect(shadow(element, '.callout--title')).not.toBeNull();
+    expect(shadow(element, 'slot[name="title"]')).not.toBeNull();
+  });
+});

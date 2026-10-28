@@ -41,13 +41,14 @@ body {
 
 /*
   Date and time inputs lead with their picker icon, as inputs with a prefix
-  icon do. The icon is the browser's own picker button, in the native input's
+  icon do, including a plain `craft-input` given a date or time type, as table
+  cells use. The icon is the browser's own picker button, in the native input's
   light DOM, so it's styled here rather than in the components.
 */
-:is(craft-input-date, craft-input-time)
+:is(craft-input, craft-input-date, craft-input-time)
   > input:is([type='date'], [type='time'])::-webkit-calendar-picker-indicator {
   order: -1;
-  margin-inline: 0 var(--c-spacing-sm);
+  margin-inline: calc(var(--c-spacing-xs) * -1) var(--c-spacing-sm);
   /*
     The browser draws the picker's focus ring and doesn't match focus
     pseudo-classes on it, but it does take the outline color, width, and
@@ -164,11 +165,35 @@ kbd {
   max-block-size: 2lh;
   overflow: hidden;
   text-wrap: pretty;
+  /* Long unbroken strings (URLs) wrap into the clamp, rather than being
+     clipped mid-line with no ellipsis. */
+  overflow-wrap: anywhere;
+}
+
+/* A table column grows to fit its widest content, so an uncapped link would
+   widen its column to the full address. */
+:where(td) {
+  --c-link-max-width: 200px;
 }
 
 /* The status badges after a card's attributes */
 .card-attribute-preview + ul {
   margin-block-start: var(--c-spacing-sm);
+}
+
+/*
+  A file or folder icon standing in for a chip's thumbnail is drawn at 24px,
+  which suits a small chip. In larger chips it grows with the thumbnail, which
+  the chip's thumbnail slot sizes through --c-thumbnail-size. The icon's own
+  size utility reads --c-thumb-icon-size, so the size set here wins over it.
+*/
+craft-chip > [slot='thumbnail'] {
+  --c-thumb-icon-size: max(24px, var(--c-thumbnail-size) * 0.6);
+}
+
+craft-chip > [slot='thumbnail'] > .thumb svg {
+  width: 100%;
+  height: 100%;
 }
 
 craft-chip .cp-code {
@@ -285,6 +310,7 @@ Modify with `cp-table--compact` to reduce the vertical cell padding
 Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
 Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-container-padding`, for tables that span their container's padding
+Modify with `cp-table--aligned` to drop the outer edges' inline padding, so each row's text lines up with the content around the table
 Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
  */
 .cp-table {
@@ -352,6 +378,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
 
   /* Add a rule to the first cells, unless the header row's border already does */
   &:not(:has(> thead)) tr:first-child {
+    th,
     td {
       border-block-start: 1px solid
         color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
@@ -386,25 +413,34 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
   }
 }
 
+.cp-table--aligned tr > :is(th, td) {
+  &:first-child {
+    padding-inline-start: 0;
+  }
+
+  &:last-child {
+    padding-inline-end: 0;
+  }
+}
+
 .cp-table--editable {
-  --_input-padding-inline: 10px;
+  --_input-padding-inline: var(--_cell-spacing-inline);
   table-layout: auto;
   border: 1px solid var(--c-color-border-quiet);
   border-radius: var(--c-radius-sm);
   overflow: clip;
   margin-block-end: var(--c-spacing-md);
 
-  thead,
-  th {
+  thead th {
     background-color: transparent;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--c-text-sm);
+    padding-block: var(--c-spacing-sm);
+    text-align: inherit;
   }
 
   thead {
     background-color: var(--c-surface-sunken);
-  }
-
-  thead th {
-    font-weight: var(--font-weight-semibold);
   }
 
   thead:not(:last-child):not(:has(~ :is(tbody, tfoot) > tr))
@@ -422,19 +458,13 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     border-start-end-radius: calc(var(--c-radius-sm) - 1px);
   }
 
-  th {
-    font-size: var(--c-text-sm);
-    padding-block: var(--c-spacing-sm);
-    padding-inline: var(--_input-padding-inline);
-    text-align: inherit;
-  }
-
   td {
     padding: 0;
   }
 
   /*
-    Cells without a text input or select get the same padding as `th`. Native
+    Cells without a text input or select get the regular cell padding, which
+    lines their content up with the headers and the inputs' text. Native
     controls only count as direct children (legacy markup), so the inputs
     nested inside color and icon pickers don't.
   */
@@ -442,6 +472,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     :not(
       :has(
         craft-input:not([hidden-input]),
+        craft-input-handle,
         craft-input-money,
         craft-textarea,
         craft-select,
@@ -538,28 +569,39 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     --c-input-height: var(--c-size-control-sm);
   }
 
+  /*
+    Color cells act as their text field, except for the swatch: the field loses
+    its border and padding so its value follows the swatch, and the cell draws
+    the field's focus ring. The swatch keeps its own pointer and focus ring.
+  */
+  td:has(craft-input-color) {
+    cursor: text;
+
+    craft-input-color {
+      --c-input-border-width: 0px;
+      --c-input-radius: 0px;
+      --c-input-shadow: none;
+      --c-input-spacing-inline: var(--c-spacing-xs);
+    }
+
+    craft-input-color > input[slot='input'] {
+      --c-focus-outline-style: none;
+    }
+
+    &:has(craft-input-color > input[slot='input']:focus-visible) {
+      outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+      outline-offset: calc(var(--c-focus-outline-width) * -1);
+    }
+  }
+
   td.select-cell {
     padding-inline: var(--_input-padding-inline);
-  }
-
-  /* Compat */
-  .editable-table-preview {
-    text-align: start;
-    white-space: pre-wrap;
-  }
-
-  .editable-table-preview + textarea {
-    height: 0;
-    min-height: 0;
-    opacity: 0;
-    padding-block: 0;
   }
 
   textarea,
   textarea.text,
   input.text,
-  pre,
-  .editable-table-preview {
+  pre {
     display: block;
     width: 100%;
     border: none;
@@ -610,6 +652,11 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
 
 .cp-table--auto {
   table-layout: auto;
+
+  :is(th, td).thin {
+    white-space: nowrap;
+    width: 0.01%;
+  }
 }
 
 .cp-table--loading {

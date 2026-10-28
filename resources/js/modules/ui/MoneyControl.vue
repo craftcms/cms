@@ -78,7 +78,7 @@
       .showCurrency="control.props.showCurrency"
       :required="editable && required"
       :readonly="control.mode === 'readOnly'"
-      :disabled="control.mode === 'disabled'"
+      .disabled="control.mode === 'disabled'"
       .validators="serverErrorValidators(invalid)"
       @model-value-changed="onInput"
     ></craft-input-money>

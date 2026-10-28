@@ -1,36 +1,39 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {type JobInfo} from '@/modules/queue/types';
-  import VarDump from '@/common/components/VarDump.vue';
+  import {router} from '@inertiajs/vue3';
+  import {type JobInfo, JobStatus} from '@/modules/queue/types';
+  import {jobStatusFill} from '@/modules/queue/status-fill';
+  import CodeHighlight from '@/common/components/CodeHighlight.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import RetryJobButton from '@/modules/utilities/components/queue-manager/RetryJobButton.vue';
+  import ReleaseJobButton from '@/modules/utilities/components/queue-manager/ReleaseJobButton.vue';
+  import {show} from '@routes/cp/utilities';
   import {computed} from 'vue';
 
   const props = defineProps<{
     job: JobInfo;
   }>();
 
-  const jobRecord = computed(() =>
-    Object.fromEntries(
-      Object.entries(props.job).filter(([, value]) => value !== null)
-    )
+  const isRetryable = computed(
+    () =>
+      props.job.status.value === JobStatus.Reserved ||
+      props.job.status.value === JobStatus.Failed
   );
+
+  /** A released job is gone, so its page goes with it. */
+  function released(): void {
+    router.visit(show.url({id: 'queue-manager'}));
+  }
 
   const hiddenProperties = ['delay', 'description', 'progressLabel', 'job'];
 
-  function getStatusVariant(value: number) {
-    if (value === 2 || value === 3) {
-      return 'success';
-    }
-
-    if (value === 4) {
-      return 'danger';
-    }
-
-    if (value === 5) {
-      return 'warning';
-    }
-
-    return 'default';
-  }
+  const jobRecord = computed(() =>
+    Object.fromEntries(
+      Object.entries(props.job).filter(
+        ([name, value]) => value !== null && !hiddenProperties.includes(name)
+      )
+    )
+  );
 
   /**
    * Formats a TTR value.
@@ -80,76 +83,68 @@
 
 <template>
   <div>
-    <h2 class="mb-3">{{ job.description }}</h2>
+    <LayoutSlot name="additional-buttons">
+      <RetryJobButton v-if="isRetryable" :job="job" size="default" />
+      <ReleaseJobButton
+        v-if="job.status.value !== JobStatus.Done"
+        :job="job"
+        size="default"
+        @done="released"
+      />
+    </LayoutSlot>
 
     <table class="table-fixed border-collapse w-full">
       <tbody>
         <tr v-for="(value, name) in jobRecord" :key="name">
-          <template v-if="!hiddenProperties.includes(name)">
-            <th
-              :class="{
-                'text-start': true,
-                'py-2': true,
-                'text-red-600': name === 'error',
-              }"
-            >
-              {{ jobAttributeName(name) }}
-            </th>
-            <td
-              :class="{
-                'py-2': true,
-                'text-red-600': name === 'error',
-              }"
-            >
-              <template v-if="name == 'status'">
-                <craft-badge :fill="getStatusVariant(job.status.value)">
-                  {{ job.status.label }}
-                </craft-badge>
-              </template>
-              <template v-else-if="name == 'progress'">
-                {{ job.progress }}%
-                <span v-if="job.progressLabel">({{ job.progressLabel }})</span>
-              </template>
-              <template v-else-if="name == 'ttr'">
-                {{ ttrValue(value) }}
-              </template>
-              <template v-else-if="name == 'class'">
-                <code>{{ value }}</code>
-              </template>
-              <template v-else-if="name.startsWith('date')">
-                {{
-                  new Date(value).toLocaleString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    timeZoneName: 'short',
-                  })
-                }}
-              </template>
+          <th
+            :class="{
+              'text-start': true,
+              'py-2': true,
+              'text-red-600': name === 'error',
+            }"
+          >
+            {{ jobAttributeName(name) }}
+          </th>
+          <td
+            :class="{
+              'py-2': true,
+              'text-red-600': name === 'error',
+            }"
+          >
+            <template v-if="name == 'status'">
+              <craft-badge :fill="jobStatusFill(job.status.value)">
+                {{ job.status.label }}
+              </craft-badge>
+            </template>
+            <template v-else-if="name == 'progress'">
+              {{ job.progress }}%
+              <span v-if="job.progressLabel">({{ job.progressLabel }})</span>
+            </template>
+            <template v-else-if="name == 'ttr'">
+              {{ ttrValue(value) }}
+            </template>
+            <template v-else-if="name == 'class'">
+              <code>{{ value }}</code>
+            </template>
+            <template v-else>
+              <template v-if="typeof value === 'string'">{{ value }}</template>
               <template v-else>
-                <template v-if="typeof value === 'string'">{{
-                  value
-                }}</template>
-                <template v-else>
-                  <code>
-                    {{ JSON.stringify(value, null, 2) }}
-                  </code>
-                </template>
+                <code>
+                  {{ JSON.stringify(value, null, 2) }}
+                </code>
               </template>
-            </td>
-          </template>
+            </template>
+          </td>
         </tr>
       </tbody>
     </table>
 
     <div class="mt-6">
-      <h4 class="text-lg">{{ t('Job Data') }}</h4>
-      <div class="my-2">
-        <VarDump :data="job" style="font-size: 0.8rem" />
-      </div>
+      <h2 class="text-lg">{{ t('Job Data') }}</h2>
+      <!-- craft-pane makes its own scroll container the tab stop -->
+      <craft-pane variant="code" class="my-2" :aria-label="t('Job Data')">
+        <CodeHighlight language="json" :value="job" />
+      </craft-pane>
     </div>
   </div>
 </template>

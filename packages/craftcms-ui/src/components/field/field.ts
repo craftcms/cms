@@ -12,11 +12,10 @@ import {FormControlMixin} from '@lion/ui/form-core.js';
 // Named explicitly so the emitted .d.ts can reference Lion's mixin
 // constructor by package specifier instead of a pnpm store path (TS2883).
 import type {} from '@open-wc/dedupe-mixin';
-// Registers <craft-callout> globally for the tip/warning notices.
-import '../callout/callout.js';
 import '../tooltip/tooltip.js';
 import '../button/button.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
+import {FieldNotices} from '@src/mixins/FieldNotices';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './field.styles.js';
 import {HasSlotController} from '@src/utilities/slot';
@@ -55,7 +54,9 @@ type FormControlTarget = HTMLElement & {
  * @slot actions - Field-level actions (hide-label toggles, copy-value buttons,
  *   field settings menus), rendered as a group at the end of the heading.
  */
-export default class CraftField extends FormControlMixin(LitElement) {
+export default class CraftField extends FieldNotices(
+  FormControlMixin(LitElement)
+) {
   static override get styles() {
     return [visuallyHiddenStyles, baseFieldStyles, styles];
   }
@@ -131,9 +132,7 @@ export default class CraftField extends FormControlMixin(LitElement) {
     'heading-prefix',
     'label-extra',
     'actions',
-    'heading-suffix',
-    'tip',
-    'warning'
+    'heading-suffix'
   );
 
   private __lightDomObserver = new MutationObserver(() =>
@@ -344,7 +343,6 @@ export default class CraftField extends FormControlMixin(LitElement) {
       ${this.instructionsPosition === 'after'
         ? this._helpTextTemplate()
         : nothing}
-      ${this._noticeTemplate('tip')} ${this._noticeTemplate('warning')}
       ${this._feedbackTemplate()}
     `;
   }
@@ -470,33 +468,6 @@ export default class CraftField extends FormControlMixin(LitElement) {
   }
 
   /**
-   * Tip/warning notices, mirroring `forms/field-notice.blade.php`: an info
-   * callout with a lightbulb icon for tips, a warning callout (default icon)
-   * for warnings, each with a visually hidden prefix.
-   */
-  protected _noticeTemplate(kind: 'tip' | 'warning') {
-    if (!this.__hasSlot.test(kind)) {
-      return nothing;
-    }
-
-    const isTip = kind === 'tip';
-
-    return html`
-      <craft-callout
-        class="field-notice"
-        variant=${isTip ? 'info' : 'warning'}
-        appearance="plain"
-        padding="none"
-      >
-        <craft-visually-hidden>
-          ${isTip ? t('Tip:') : t('Warning:')}
-        </craft-visually-hidden>
-        <slot name=${kind}></slot>
-      </craft-callout>
-    `;
-  }
-
-  /**
    * Whether there's a label to show. Lion's `SlotMixin` always generates a
    * light-DOM label node (empty when there's no `label`), so the node's
    * presence says nothing — its text does. `label` reads that text back when
@@ -524,13 +495,13 @@ export default class CraftField extends FormControlMixin(LitElement) {
     this.__syncLabelDecorations();
     this.__syncHasMaxlength();
     this.__syncControlWidth();
-    // Conditional templates (label, instructions, tip/warning callouts,
+    // Conditional templates (label, instructions,
     // heading spacer, action group) depend on light DOM children.
     this.requestUpdate();
   }
 
   private __wireDescribedBy(): void {
-    for (const slotName of ['help-text', 'feedback', 'tip', 'warning']) {
+    for (const slotName of ['help-text', 'feedback']) {
       const node = this.__lightChild(slotName);
       if (node) {
         // Already-registered nodes are ignored by addToAriaDescribedBy.

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Asset\Elements;
 
 use Closure;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Actions\AnalyzeImages;
 use CraftCms\Cms\Asset\Actions\CopyReferenceTag;
 use CraftCms\Cms\Asset\Actions\CopyUrl;
 use CraftCms\Cms\Asset\Actions\DeleteAssets;
@@ -16,6 +17,9 @@ use CraftCms\Cms\Asset\Actions\PreviewAsset;
 use CraftCms\Cms\Asset\Actions\RenameFile;
 use CraftCms\Cms\Asset\Actions\ReplaceFile;
 use CraftCms\Cms\Asset\Actions\ShowInFolder;
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
+use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
+use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Concerns\LegacyConstants;
@@ -24,6 +28,8 @@ use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Enums\FileKind;
+use CraftCms\Cms\Asset\Enums\ImageOrientation;
+use CraftCms\Cms\Asset\Enums\ImageType;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
 use CraftCms\Cms\Asset\Events\AssetUrlDefined;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
@@ -32,13 +38,16 @@ use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
+use CraftCms\Cms\Asset\ImageDuplicates;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\DeleteForSite;
@@ -64,9 +73,12 @@ use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\ViewModels\AssetEditViewModel;
 use CraftCms\Cms\Image\Blurhash;
 use CraftCms\Cms\Image\ColorGrid;
+use CraftCms\Cms\Image\ColorNames;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Image\ImageHash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Search\SearchQuery;
@@ -94,6 +106,7 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Text;
@@ -104,10 +117,9 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
-use DOMDocument;
-use DOMXPath;
 use Exception;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
@@ -115,6 +127,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Imagick;
 use Intervention\Image\Encoders\PngEncoder;
 use InvalidArgumentException;
@@ -240,33 +253,62 @@ class Asset extends Element
     public ?int $size = null;
 
     /**
-     * @var ImageColors|null Color data sampled from the image, or `null` if it hasn't been sampled yet
+     * @var ImageAnalysis|null What was found in the image: its colors, and its keywords and the text in it, or `null`
+     *                         if it’s not an image, or nothing has been found yet
      *
-     * Sampled from the file whenever a new one is uploaded or indexed, so it isn't settable from requests.
+     * Colors are sampled from the file whenever a new one is uploaded or indexed, and keywords and text are found by
+     * the “Tag images” AI task, so it isn’t settable from requests.
      *
      * @see Images::colors()
+     * @see TagImage
      */
     #[AllowedInSandbox]
-    public ?ImageColors $colors = null {
-        /** @param ImageColors|array<array-key, mixed>|string|null $value */
-        set(ImageColors|array|string|null $value) {
+    public ?ImageAnalysis $analysis = null {
+        /** @param ImageAnalysis|array<array-key, mixed>|string|null $value */
+        set(ImageAnalysis|array|string|null $value) {
             if (is_string($value)) {
                 $value = Json::decodeIfJson($value);
             }
 
-            $this->colors = match (true) {
-                $value instanceof ImageColors, $value === null => $value,
-                is_array($value) => ImageColors::fromArray($value),
+            $this->analysis = match (true) {
+                $value instanceof ImageAnalysis, $value === null => $value,
+                is_array($value) => ImageAnalysis::fromArray($value),
                 default => null,
             };
         }
     }
 
     /**
-     * @var bool|null Whether the file was kept around when the asset was deleted
+     * @var string|null The start of a text file’s contents, an empty string if it has nothing to show, or `null` if
+     *                  it isn’t a text file or hasn’t been read yet
+     *
+     * Read from the file whenever a new one is uploaded or indexed, so it isn’t settable from requests. Asset queries
+     * don’t load it, so it’s only known once it’s been set; it’s only saved then, too.
+     *
+     * @see AssetsHelper::previewText()
+     *
+     * @internal
+     */
+    public ?string $previewText = null {
+        set {
+            $this->previewText = $value;
+            $this->previewTextChanged = true;
+        }
+    }
+
+    /**
+     * Whether {@see $previewText} has been set since the asset was loaded, and should be saved.
+     */
+    private bool $previewTextChanged = false;
+
+    /**
+     * @var bool Whether the file was moved to the trashed asset disk when the asset was soft-deleted, so it can be put
+     *           back if the asset is restored
+     *
+     * @see GeneralConfig::$trashedAssetDisk
      */
     #[AllowedInSandbox]
-    public ?bool $keptFile = null;
+    public bool $trashedFileExists = false;
 
     /**
      * @var DateTimeInterface|null Date modified
@@ -307,10 +349,23 @@ class Asset extends Element
     public ?UploadedFile $uploadSource = null;
 
     /**
-     * Colors already sampled from the incoming file, such as by the browser that uploaded it, which are stored in
-     * place of sampling the file again.
+     * What was already read from the incoming file, such as by the browser that uploaded it: its colors, difference
+     * hash, and embedded metadata, which are stored in place of reading the file again. Its hash is only used alongside
+     * its colors, and anything else in it is ignored.
      */
-    public ?ImageColors $uploadColors = null;
+    public ?ImageAnalysis $uploadAnalysis = null;
+
+    /**
+     * The metadata read from the incoming file before it was cleaned.
+     */
+    private ?ImageMetadata $_uploadMetadata = null;
+
+    /**
+     * The width and height of a staged image that wasn't downloaded, read from the start of its file.
+     *
+     * @var array{int, int}|null
+     */
+    private ?array $_uploadDimensions = null;
 
     /**
      * @var bool Whether the asset should avoid filename conflicts when saved.
@@ -770,6 +825,10 @@ class Asset extends Element
                 $actions[] = EditImage::class;
             }
 
+            if (app(ImageAnalyzer::class)->available()) {
+                $actions[] = AnalyzeImages::class;
+            }
+
             // Move
             $actions[] = MoveAssets::class;
 
@@ -800,7 +859,21 @@ class Asset extends Element
     #[Override]
     protected static function defineSearchableAttributes(): array
     {
-        return ['filename', 'extension', 'kind', 'alt'];
+        return ['filename', 'extension', 'kind', 'alt', 'keywords', 'text'];
+    }
+
+    #[Override]
+    protected function searchKeywords(string $attribute): string
+    {
+        return match ($attribute) {
+            // Along with the keywords the image was tagged with before it was uploaded, and its embedded description
+            'keywords' => implode(' ', array_filter([
+                ...array_unique([...$this->analysis->keywords ?? [], ...$this->analysis->metadata->keywords ?? []]),
+                $this->analysis->metadata->description ?? null,
+            ])),
+            'text' => $this->analysis->text ?? '',
+            default => parent::searchKeywords($attribute),
+        };
     }
 
     /** @return array<int|string, string|array{label: string, orderBy: string, defaultDir: string}> */
@@ -869,10 +942,18 @@ class Asset extends Element
             'width' => ['label' => t('Image Width')],
             'height' => ['label' => t('Image Height')],
             'alt' => ['label' => t('Alternative Text')],
-            'location' => ['label' => t('Location')],
+            'location' => ['label' => t('Folder')],
             'link' => ['label' => t('Link'), 'icon' => 'world'],
             'dateModified' => ['label' => t('File Modified Date')],
             'uploader' => ['label' => t('Uploaded By')],
+            'imageType' => ['label' => t('Image Type')],
+            'colors' => ['label' => t('Colors')],
+            'creator' => ['label' => t('Creator')],
+            'credit' => ['label' => t('Credit')],
+            'copyright' => ['label' => t('Copyright')],
+            'dateTaken' => ['label' => t('Date Taken')],
+            'camera' => ['label' => t('Camera')],
+            'embeddedKeywords' => ['label' => t('Embedded Keywords')],
         ]);
 
         // Hide Author from Craft Solo
@@ -940,7 +1021,7 @@ class Asset extends Element
                 'placeholder' => fn () => '500px',
             ],
             'location' => [
-                'label' => t('Location'),
+                'label' => t('Folder'),
                 'placeholder' => fn () => t('Volume'),
             ],
             'link' => [
@@ -954,6 +1035,38 @@ class Asset extends Element
             'uploader' => [
                 'label' => t('Uploaded By'),
                 'placeholder' => fn () => ($uploader = currentUserElement()) ? app(ElementHtml::class)->elementChipHtml($uploader) : '',
+            ],
+            'imageType' => [
+                'label' => t('Image Type'),
+                'placeholder' => fn () => ImageType::Photo->label(),
+            ],
+            'colors' => [
+                'label' => t('Colors'),
+                'placeholder' => fn () => self::colorBarHtml(['#c81e28', '#e8a33d', '#1e50c8'], [0.5, 0.3, 0.2]),
+            ],
+            'creator' => [
+                'label' => t('Creator'),
+                'placeholder' => fn () => t('Creator'),
+            ],
+            'credit' => [
+                'label' => t('Credit'),
+                'placeholder' => fn () => t('Credit'),
+            ],
+            'copyright' => [
+                'label' => t('Copyright'),
+                'placeholder' => fn () => '© '.now()->year,
+            ],
+            'dateTaken' => [
+                'label' => t('Date Taken'),
+                'placeholder' => fn () => now()->subYear(),
+            ],
+            'camera' => [
+                'label' => t('Camera'),
+                'placeholder' => fn () => t('Camera'),
+            ],
+            'embeddedKeywords' => [
+                'label' => t('Embedded Keywords'),
+                'placeholder' => fn () => t('Embedded Keywords'),
             ],
         ]);
 
@@ -970,7 +1083,7 @@ class Asset extends Element
     public static function attributePreviewHtml(array $attribute): mixed
     {
         return match ($attribute['value']) {
-            'uploader' => $attribute['placeholder'],
+            'uploader', 'colors' => $attribute['placeholder'],
             default => parent::attributePreviewHtml($attribute),
         };
     }
@@ -1755,22 +1868,19 @@ JS, [
                 'label' => t('Open in Image Editor'),
             ];
 
-            HtmlStack::jsWithVars(fn ($id, $assetId) => <<<JS
+            HtmlStack::jsWithVars(fn ($id, $settings) => <<<JS
 $('#' + $id).on('activate', () => {
-  new Craft.AssetImageEditor($assetId, {
-    allowDegreeFractions: Craft.isImagick,
-    onSave: (data) => {
-      if (data.newAssetId) {
-        return;
-      }
+  Craft.openAssetImageEditor($settings, (result) => {
+    if (result.newAssetId) {
+      return;
+    }
 
-      $updatePreviewThumbJs
-    },
-  })
+    $updatePreviewThumbJs
+  });
 });
 JS, [
                 InputNamespace::namespaceId($editImageId),
-                $this->id,
+                $this->getImageEditorSettings(),
             ]);
         }
 
@@ -1870,11 +1980,11 @@ JS, [
 
     private function hasTransparency(): ?bool
     {
-        if (empty($this->colors->grid)) {
+        if (empty($this->analysis->colors->grid)) {
             return null;
         }
 
-        foreach ($this->colors->grid as $row) {
+        foreach ($this->analysis->colors->grid as $row) {
             foreach ($row as $color) {
                 if (strlen($color) > 7) {
                     return true;
@@ -2029,6 +2139,52 @@ JS, [
         $volume = $this->getVolume();
 
         return $volume->titleTranslationMethod->elementKey($this, $volume->titleTranslationKeyFormat);
+    }
+
+    /**
+     * Returns what kind of image the asset is, as found by the “Classify images” AI task, or `null` if it isn’t an image
+     * or hasn’t been classified.
+     *
+     * @since 6.0.0
+     */
+    public function getImageType(): ?ImageType
+    {
+        return $this->kind === FileKind::Image->value ? $this->analysis?->type : null;
+    }
+
+    /**
+     * Returns what the metadata embedded in the image’s file fills in: its alt text, if it has none, and its title, if
+     * it’s still the one it was given from its filename.
+     *
+     * This is used when an image is uploaded, and when a queue job samples one whose metadata wasn’t read then.
+     *
+     * @return array{title?: string, alt?: string}
+     *
+     * @since 6.0.0
+     */
+    public function valuesFromEmbeddedMetadata(ImageMetadata $metadata): array
+    {
+        $values = [];
+
+        if ($metadata->title !== null && $this->hasDefaultTitle()) {
+            $values['title'] = mb_substr($metadata->title, 0, 255);
+        }
+
+        if (($this->alt === null || $this->alt === '') && ($alt = $metadata->suggestedAlt()) !== null) {
+            $values['alt'] = $alt;
+        }
+
+        return $values;
+    }
+
+    /**
+     * Returns whether the asset’s title is missing, or is still the one it was given from its filename.
+     *
+     * @since 6.0.0
+     */
+    public function hasDefaultTitle(): bool
+    {
+        return in_array($this->title, [null, '', AssetsHelper::filename2Title(pathinfo($this->getFilename(), PATHINFO_FILENAME))], true);
     }
 
     /**
@@ -2231,7 +2387,7 @@ JS, [
     protected function thumbSvg(): string
     {
         if ($this->isFolder) {
-            return file_get_contents(Aliases::get('@resources/public/images/thumbs/folder.svg'));
+            return AssetsHelper::folderIconSvg();
         }
 
         return AssetsHelper::iconSvg($this->getExtension());
@@ -2524,6 +2680,23 @@ JS, [
     }
 
     /**
+     * Returns whether the image is landscape, portrait, or square, based on its width and height, or `null` if its
+     * dimensions aren’t known.
+     *
+     * Images whose width and height differ by up to 2% count as square.
+     *
+     * @since 6.0.0
+     */
+    #[AllowedInSandbox]
+    public function getOrientation(): ?ImageOrientation
+    {
+        $width = (int) $this->getWidth();
+        $height = (int) $this->getHeight();
+
+        return $width > 0 && $height > 0 ? ImageOrientation::fromDimensions($width, $height) : null;
+    }
+
+    /**
      * Returns the asset's path in the volume.
      *
      * @param  string|null  $filename  Filename to use. If not specified, the asset's filename will be used.
@@ -2621,7 +2794,7 @@ JS, [
     #[AllowedInSandbox]
     public function getPlaceholderDataUrl(): ?string
     {
-        $grid = $this->kind === FileKind::Image->value ? $this->colors?->grid : null;
+        $grid = $this->kind === FileKind::Image->value ? $this->analysis?->colors?->grid : null;
 
         if (! $grid) {
             return null;
@@ -2651,7 +2824,7 @@ JS, [
     #[AllowedInSandbox]
     public function getBlurhash(): ?string
     {
-        $grid = $this->kind === FileKind::Image->value ? $this->colors?->grid : null;
+        $grid = $this->kind === FileKind::Image->value ? $this->analysis?->colors?->grid : null;
 
         if (! $grid) {
             return null;
@@ -2786,7 +2959,7 @@ JS, [
     public function setAttributesFromRequest(array $values): void
     {
         // Determined from the file itself when one comes in, not by whoever's saving.
-        unset($values['colors']);
+        unset($values['colors'], $values['analysis'], $values['previewText']);
 
         parent::setAttributesFromRequest($values);
     }
@@ -2841,6 +3014,22 @@ JS, [
 
             case 'location':
                 return $this->locationHtml();
+
+            case 'imageType':
+                return $this->imageTypeHtml();
+
+            case 'colors':
+                return $this->colorsHtml();
+
+            case 'creator':
+            case 'credit':
+            case 'copyright':
+            case 'dateTaken':
+            case 'camera':
+                return $this->embeddedMetadataHtml($attribute);
+
+            case 'embeddedKeywords':
+                return $this->embeddedMetadataHtml('keywords');
         }
 
         return parent::attributeHtml($attribute);
@@ -2875,6 +3064,8 @@ JS, [
 
         // See if we can show a thumbnail
         try {
+            $showsIcon = ! in_array($this->kind, [FileKind::Video->value, FileKind::Audio->value], true)
+                && AssetsService::getThumbUrl($this, 350, 190, iconFallback: false) === null;
             $previewInner = match ($this->kind) {
                 FileKind::Video->value => Html::tag('video', Html::tag('source', '', [
                     'type' => $this->getMimeType(),
@@ -2891,9 +3082,11 @@ JS, [
                     'controls' => true,
                     'preload' => 'metadata',
                 ]),
-                default => Html::tag('div', $this->getPreviewThumbImg(350, 190), [
-                    'class' => 'preview-thumb',
-                ]),
+                default => $showsIcon
+                    ? $this->getIconPreviewHtml()
+                    : Html::tag('div', $this->getPreviewThumbImg(350, 190), [
+                        'class' => 'preview-thumb',
+                    ]),
             };
 
             $previewThumbHtml =
@@ -2903,7 +3096,9 @@ JS, [
                         'preview-thumb-container',
                         $this->hasCheckeredThumb() ? 'checkered' : null,
                     ]),
-                    ...$this->previewBackgroundStyles(),
+                    ...($showsIcon
+                        ? ['style' => ['background-image' => 'linear-gradient(color-mix(in oklab, var(--c-surface-sunken), black 5%), var(--c-surface-sunken))']]
+                        : $this->previewBackgroundStyles()),
                 ]).
                 $previewInner.
                 Html::endTag('div'); // .preview-thumb-container
@@ -2958,8 +3153,8 @@ CSS,
         }
 
         // ImageColors only holds hex colors, so these are safe to put in a `style` attribute.
-        $left = $this->colors?->left();
-        $right = $this->colors?->right();
+        $left = $this->analysis?->colors?->left();
+        $right = $this->analysis?->colors?->right();
 
         if ($left === null || $right === null) {
             return [];
@@ -3034,6 +3229,7 @@ JS;
     {
         return [
             Field::make(t('Filename'))
+                ->icon('file')
                 ->required()
                 ->control(
                     Text::make('newFilename')
@@ -3074,7 +3270,7 @@ JS;
     protected function metadata(): array
     {
         return [
-            t('Location') => $this->locationHtml(...),
+            t('Folder') => $this->locationHtml(...),
             t('File size') => function () {
                 $size = $this->getFormattedSize(0);
                 if (! $size) {
@@ -3105,6 +3301,238 @@ JS;
                 ]);
             },
         ];
+    }
+
+    /** @return list<array<string, mixed>> */
+    #[Override]
+    public function getMetadataGroups(): array
+    {
+        return [...parent::getMetadataGroups(), $this->analysisMetadata()];
+    }
+
+    /**
+     * Returns what was found in the image, which is shown apart from the rest of its metadata.
+     *
+     * @return array<string, Closure(): bool|string>
+     */
+    private function analysisMetadata(): array
+    {
+        return [
+            t('Image type') => fn () => $this->imageTypeHtml() ?: false,
+            t('Colors') => fn () => $this->colorsHtml() ?: false,
+            // What the file’s own metadata says, where the asset doesn’t say the same already
+            t('Embedded title') => fn () => $this->embeddedMetadataHtml('title') ?: false,
+            t('Embedded alt text') => fn () => $this->embeddedMetadataHtml('altText') ?: false,
+            t('Creator') => fn () => $this->embeddedMetadataHtml('creator') ?: false,
+            t('Credit') => fn () => $this->embeddedMetadataHtml('credit') ?: false,
+            t('Copyright') => fn () => $this->embeddedMetadataHtml('copyright') ?: false,
+            t('Date taken') => fn () => $this->embeddedMetadataHtml('dateTaken') ?: false,
+            t('Camera') => fn () => $this->embeddedMetadataHtml('camera') ?: false,
+            t('Location') => fn () => $this->photoLocationHtml() ?: false,
+        ];
+    }
+
+    /**
+     * Returns where the image was taken, by its place name if its file has one, and a link to it in Google Maps, and a
+     * map of it below, or an empty list if its file didn’t have GPS coordinates.
+     *
+     * The map is drawn from OpenStreetMap’s tiles rather than embedded, so it has no controls or text over it, and it’s
+     * credited below. It’s hidden from assistive technology, since the place name and link say the same.
+     *
+     * @return list<string> The value, then the map, each its own `<dd>`
+     */
+    private function photoLocationHtml(): array
+    {
+        $metadata = $this->kind === FileKind::Image->value ? $this->analysis?->metadata : null;
+
+        if ($metadata?->latitude === null || $metadata->longitude === null) {
+            return [];
+        }
+
+        [$latitude, $longitude] = [$metadata->latitude, $metadata->longitude];
+        $place = self::placeName($metadata);
+        // The icon shows the link opens in a new window, which the hidden text says for assistive technology
+        $newWindow = Html::tag('span', Icons::svg('external') ?? '', [
+            'class' => ['cp-icon', 'ms-1'],
+            'style' => ['--c-icon-size' => '0.8em'],
+            'aria-hidden' => 'true',
+        ]).' '.Html::tag('span', t('Opens in a new window'), ['class' => 'sr-only']);
+
+        return [
+            ($place !== null ? Html::tag('div', Html::encode($place)) : '').
+            Html::tag('div', Html::a(
+                t('View in Google Maps').$newWindow,
+                'https://www.google.com/maps/search/?'.http_build_query(['api' => 1, 'query' => sprintf('%.6f,%.6f', $latitude, $longitude)]),
+                ['target' => '_blank', 'rel' => 'noopener'],
+            )),
+            Html::beginTag('div', ['class' => 'cp-photo-location']).
+            $this->photoLocationMapHtml($latitude, $longitude).
+            Html::tag('div', Html::a(
+                '© OpenStreetMap contributors'.$newWindow,
+                'https://www.openstreetmap.org/copyright',
+                ['target' => '_blank', 'rel' => 'noopener'],
+            ), ['class' => 'cp-photo-location__caption text-xs']).
+            Html::endTag('div'),
+        ];
+    }
+
+    /**
+     * Returns where an image was taken as a place name, from its city, state, and country, without repeating any of
+     * them, such as for a city that’s also its state, or `null` if its file didn’t say.
+     */
+    private static function placeName(ImageMetadata $metadata): ?string
+    {
+        $parts = [];
+
+        foreach ([$metadata->city, $metadata->state, $metadata->country] as $part) {
+            if ($part !== null && ! in_array(mb_strtolower($part), array_map(mb_strtolower(...), $parts), true)) {
+                $parts[] = $part;
+            }
+        }
+
+        return $parts !== [] ? implode(', ', $parts) : null;
+    }
+
+    /**
+     * Returns a map centered on a point, as the 3×3 OpenStreetMap tiles around it, which cover the map at any width the
+     * sidebar can be, with a marker on the point.
+     */
+    private function photoLocationMapHtml(float $latitude, float $longitude): string
+    {
+        $zoom = 15;
+        $count = 2 ** $zoom;
+        $latitudeRadians = deg2rad($latitude);
+        // Where the point is in the Web Mercator projection, in tiles
+        $x = ($longitude + 180) / 360 * $count;
+        $y = (1 - log(tan($latitudeRadians) + 1 / cos($latitudeRadians)) / M_PI) / 2 * $count;
+        [$tileX, $tileY] = [(int) floor($x), (int) floor($y)];
+        $tiles = '';
+
+        for ($row = -1; $row <= 1; $row++) {
+            for ($column = -1; $column <= 1; $column++) {
+                $tileRow = $tileY + $row;
+
+                // Beyond the poles, there’s nothing to show, though the column wraps around the world
+                $tiles .= $tileRow >= 0 && $tileRow < $count
+                    ? Html::tag('img', '', [
+                        'src' => sprintf('https://tile.openstreetmap.org/%d/%d/%d.png', $zoom, (($tileX + $column) % $count + $count) % $count, $tileRow),
+                        'alt' => '',
+                        'loading' => 'lazy',
+                    ])
+                    : Html::tag('span');
+            }
+        }
+
+        return Html::tag('div',
+            Html::tag('div', $tiles, [
+                'class' => 'cp-photo-location__tiles',
+                // The point is a tile in from the grid’s corner, plus where it is in its own tile
+                'style' => [
+                    'translate' => sprintf('-%.1fpx -%.1fpx', 256 + ($x - $tileX) * 256, 256 + ($y - $tileY) * 256),
+                ],
+            ]).
+            Html::tag('span', Icons::svg('location-dot') ?? '', ['class' => 'cp-photo-location__marker']),
+            [
+                'class' => 'cp-photo-location__map',
+                'aria-hidden' => 'true',
+            ],
+        );
+    }
+
+    private function imageTypeHtml(): string
+    {
+        return Html::encode($this->getImageType()?->label() ?? '');
+    }
+
+    /**
+     * Returns the image’s main colors as a bar.
+     */
+    private function colorsHtml(): string
+    {
+        $colors = $this->kind === FileKind::Image->value ? $this->analysis?->colors : null;
+
+        return self::colorBarHtml($colors->palette ?? [], $colors->weights ?? []);
+    }
+
+    /**
+     * Returns a bar of colors tiled together, each as wide as the share of the image it covers, or all the same width
+     * if that isn’t known.
+     *
+     * The bar is named for assistive technology by its colors’ names and shares, so a color is never only told by its
+     * color, and its colors’ names show when it’s hovered.
+     *
+     * @param  list<string>  $palette  Hex colors
+     * @param  list<float>  $weights  How much of the image each color covers, or none
+     */
+    private static function colorBarHtml(array $palette, array $weights): string
+    {
+        if ($palette === []) {
+            return '';
+        }
+
+        $formatter = I18N::getFormatter();
+        $segments = [];
+        $names = [];
+        $labels = [];
+
+        foreach ($palette as $index => $hex) {
+            $weight = $weights[$index] ?? null;
+            $name = ColorNames::label(ColorNames::name($hex));
+            $names[] = $name;
+            $labels[] = $weight !== null ? "$name {$formatter->asPercent($weight, 0)}" : $name;
+            $segments[] = Html::tag('span', '', [
+                'style' => [
+                    'background-color' => $hex,
+                    'flex-grow' => (string) ($weight ?? 1),
+                ],
+            ]);
+        }
+
+        return Html::tag('div', implode('', $segments), [
+            'class' => 'cp-color-bar',
+            'role' => 'img',
+            'aria-label' => implode(', ', $labels),
+            // Each name once, since several of an image’s colors often go by the same one
+            'title' => implode(', ', array_unique($names)),
+        ]);
+    }
+
+    /**
+     * Returns the HTML for a value from the image’s embedded metadata, or an empty string if it doesn’t have one. Its
+     * title and alt text are left out when the asset’s are the same.
+     */
+    private function embeddedMetadataHtml(string $attribute): string
+    {
+        $metadata = $this->kind === FileKind::Image->value ? $this->analysis?->metadata : null;
+
+        if ($metadata === null) {
+            return '';
+        }
+
+        $value = match ($attribute) {
+            'title' => $metadata->title !== $this->title ? $metadata->title : null,
+            'altText' => $metadata->altText !== $this->alt ? $metadata->altText : null,
+            'keywords' => $metadata->keywords !== [] ? implode(', ', $metadata->keywords) : null,
+            'dateTaken' => $metadata->dateTaken !== null ? $this->dateTakenText($metadata->dateTaken) : null,
+            default => $metadata->$attribute,
+        };
+
+        return Html::encode($value ?? '');
+    }
+
+    /**
+     * Formats when the image was taken in the time it was taken, rather than converting it to the system’s time zone,
+     * and as just a date when the file only gives one.
+     */
+    private function dateTakenText(string $dateTaken): string
+    {
+        // ISO 8601, so the first 19 characters are the date and time, without the UTC offset
+        $date = Date::parse(substr($dateTaken, 0, 19));
+        $formatter = I18N::getFormatter();
+
+        return $date->format('H:i:s') === '00:00:00'
+            ? $formatter->asDate($date, Formatter::FORMAT_WIDTH_SHORT)
+            : $formatter->asDateTime($date, Formatter::FORMAT_WIDTH_SHORT);
     }
 
     private function locationHtml(): string
@@ -3154,8 +3582,9 @@ JS;
         unset(
             $names['avoidFilenameConflicts'],
             $names['keepFileOnDelete'],
+            $names['previewText'],
             $names['sanitizeOnUpload'],
-            $names['uploadColors'],
+            $names['uploadAnalysis'],
         );
 
         $names['extension'] = true;
@@ -3229,8 +3658,16 @@ JS;
             $folderId = $this->folderId;
         }
 
+        // A staged image is downloaded when it's on hand anyway, or has to be: to clean it, which would strip its
+        // metadata if it weren't read first, or to read its dimensions when they can't be read from the start of the
+        // file. Otherwise, such as for an image uploaded straight to a remote filesystem, it's left where it is, and a
+        // queue job samples its colors and metadata instead.
         if ($this->uploadSource !== null && AssetsHelper::getFileKindByExtension($this->_filename) === FileKind::Image->value) {
-            $this->tempFilePath ??= $this->uploadSource->localPath();
+            if ($this->uploadSource->isLocal() || $this->shouldSanitizeUpload()) {
+                $this->tempFilePath ??= $this->uploadSource->localPath();
+            } elseif (($this->_uploadDimensions = $this->uploadSource->imageSize()) === null) {
+                $this->tempFilePath ??= $this->uploadSource->localPath();
+            }
         }
 
         // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
@@ -3246,6 +3683,22 @@ JS;
             $this->title = AssetsHelper::filename2Title(pathinfo($this->_filename, PATHINFO_FILENAME));
         }
 
+        // Take an uploaded image’s metadata from the uploader, or read it before it’s cleaned in afterSave(), which
+        // strips it, and fill in its alt text, and a new image’s title, from it
+        if (
+            ($this->uploadAnalysis?->metadata !== null || (
+                isset($this->tempFilePath) &&
+                AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value
+            )) &&
+            $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
+        ) {
+            $this->_uploadMetadata = $this->uploadAnalysis->metadata ?? Images::metadata($this->tempFilePath);
+
+            foreach ($this->valuesFromEmbeddedMetadata($this->_uploadMetadata) as $attribute => $value) {
+                $this->$attribute = $value;
+            }
+        }
+
         // Set the field layout
         $volume = Folders::getFolderById($folderId)->getVolume();
 
@@ -3254,6 +3707,19 @@ JS;
         }
 
         return parent::beforeSave($isNew);
+    }
+
+    /**
+     * Returns whether an uploaded image should be sanitized, which strips its metadata, unless the `preserveExifData`
+     * config setting is enabled.
+     */
+    private function shouldSanitizeUpload(): bool
+    {
+        return $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
+            ($this->sanitizeOnUpload ?? (
+                ! request()->isCpRequest() ||
+                Cms::config()->sanitizeCpImageUploads
+            ));
     }
 
     /**
@@ -3274,32 +3740,14 @@ JS;
     {
         if (! $this->propagating) {
             $isImage = isset($this->tempFilePath) && AssetsHelper::getFileKindByExtension($this->tempFilePath) === FileKind::Image->value;
+            // Includes new assets for files that are already in place, such as ones uploaded straight to their filesystem
+            $hasNewFile = $isNew || isset($this->tempFilePath) || $this->uploadSource !== null;
 
             $fallbackWidth = null;
             $fallbackHeight = null;
 
             if ($isImage) {
-                // Auto-populate alt text from IPTC/XMP metadata on upload, before any cleaning strips it
-                if (
-                    ($this->alt === null || $this->alt === '') &&
-                    $this->ruleset->inScenarios(AssetRules::SCENARIO_CREATE, AssetRules::SCENARIO_REPLACE)
-                ) {
-                    $alt = $this->_getAltFromXmpMetadata($this->tempFilePath) ?? $this->_getAltFromIptcMetadata($this->tempFilePath);
-                    if ($alt !== null) {
-                        // ensure it's UTF-8
-                        // (see https://github.com/craftcms/cms/issues/19069)
-                        $this->alt = Str::convertToUtf8($alt);
-                    }
-                }
-
-                // Are we uploading an image that needs to be sanitized?
-                if (
-                    $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
-                    ($this->sanitizeOnUpload ?? (
-                        ! request()->isCpRequest() ||
-                        Cms::config()->sanitizeCpImageUploads
-                    ))
-                ) {
+                if ($this->shouldSanitizeUpload()) {
                     ImageHelper::cleanImageByPath($this->tempFilePath);
                 }
 
@@ -3350,9 +3798,19 @@ JS;
                 $model->focalPoint = null;
             }
 
-            $model->colors = $this->colors?->toArray();
+            $model->analysis = $this->analysis?->toArray();
+
+            if ($this->previewTextChanged) {
+                $model->previewText = $this->previewText;
+            }
 
             $model->save();
+            $this->previewTextChanged = false;
+
+            // Copies of the image are found by its hash
+            if ($isNew || $model->wasChanged('analysis')) {
+                app(ImageDuplicates::class)->index($this->id, $this->analysis?->hash);
+            }
 
             // we're not propagating at this point, so save the alt ONLY against the site we're saving to
             DB::table(Table::ASSETS_SITES)
@@ -3361,6 +3819,12 @@ JS;
                     'siteId' => $this->siteId,
                     'alt' => $this->alt,
                 ], ['assetId', 'siteId']);
+
+            // New images are analyzed, such as for alt text, by any AI tasks that are set up, and sampled for anything
+            // that neither the uploader nor Craft could read from their file when they were saved
+            if ($hasNewFile && $this->kind === FileKind::Image->value) {
+                app(ImageAnalyzer::class)->queue($this, sample: true);
+            }
         }
 
         $upsert = false;
@@ -3405,7 +3869,6 @@ JS;
             ->where('id', $this->id)
             ->update([
                 'deletedWithVolume' => $this->deletedWithVolume,
-                'keptFile' => $this->keepFileOnDelete,
             ]);
 
         return true;
@@ -3414,12 +3877,22 @@ JS;
     #[Override]
     public function afterDelete(): void
     {
+        $trashedAssetDisk = $this->hardDelete ? null : Cms::config()->getTrashedAssetDisk();
+
         if (! $this->keepFileOnDelete) {
-            try {
-                $this->getVolume()->sourceDisk()->delete($this->getPath());
-            } catch (UnableToDeleteFile) {
-                // NBD
+            if ($trashedAssetDisk !== null) {
+                $this->moveFileToTrash($trashedAssetDisk);
+            } else {
+                try {
+                    $this->getVolume()->sourceDisk()->delete($this->getPath());
+                } catch (UnableToDeleteFile) {
+                    // NBD
+                }
             }
+        }
+
+        if ($this->hardDelete && $this->trashedFileExists) {
+            $this->deleteTrashedFile();
         }
 
         $this->deleteTransformData();
@@ -3441,8 +3914,135 @@ JS;
     #[Override]
     public function beforeRestore(): bool
     {
-        // Only allow the asset to be restored if the file was kept on delete
-        return $this->keptFile && parent::beforeRestore();
+        // Only allow the asset to be restored if its file can be too
+        return $this->canRestoreFile() && parent::beforeRestore();
+    }
+
+    #[Override]
+    public function afterRestore(): void
+    {
+        if ($this->trashedFileExists) {
+            $this->restoreFileFromTrash();
+        }
+
+        parent::afterRestore();
+    }
+
+    /**
+     * Returns the path to the asset’s file on the trashed asset disk: its ID, followed by its extension.
+     *
+     * @see GeneralConfig::$trashedAssetDisk
+     */
+    public function getTrashedFilePath(): string
+    {
+        $extension = $this->getExtension();
+
+        return $extension !== '' ? "$this->id.$extension" : (string) $this->id;
+    }
+
+    /**
+     * Returns whether the asset’s file can be restored along with it: either it was moved to the trashed asset disk,
+     * which is still configured, or it was left in place when the asset’s volume was deleted.
+     */
+    private function canRestoreFile(): bool
+    {
+        return $this->deletedWithVolume || (
+            $this->trashedFileExists &&
+            Cms::config()->getTrashedAssetDisk() !== null
+        );
+    }
+
+    /**
+     * Moves the asset’s file to the trashed asset disk, so it can be put back if the asset is restored.
+     */
+    private function moveFileToTrash(string $trashedAssetDisk): void
+    {
+        $sourceDisk = $this->getVolume()->sourceDisk();
+        $path = $this->getPath();
+
+        if (! $sourceDisk->exists($path)) {
+            return;
+        }
+
+        $trashDisk = Storage::disk($trashedAssetDisk);
+        $trashPath = $this->getTrashedFilePath();
+        $this->copyFileBetweenDisks($sourceDisk, $path, $trashDisk, $trashPath);
+
+        // The disks aren't part of the transaction, so the original only goes once the deletion is committed, and the
+        // copy if it's rolled back
+        DB::afterCommit(fn () => $sourceDisk->delete($path));
+        DB::afterRollBack(function () use ($trashDisk, $trashPath) {
+            $trashDisk->delete($trashPath);
+            $this->trashedFileExists = false;
+        });
+
+        DB::table(Table::ASSETS)->where('id', $this->id)->update(['trashedFileExists' => true]);
+        $this->trashedFileExists = true;
+    }
+
+    /**
+     * Moves the asset’s file back from the trashed asset disk into its volume.
+     *
+     * @throws FileException if a file already exists where the asset’s file belongs
+     */
+    private function restoreFileFromTrash(): void
+    {
+        $trashedAssetDisk = Storage::disk((string) Cms::config()->getTrashedAssetDisk());
+        $volumeDisk = $this->getVolume()->sourceDisk();
+        $path = $this->getPath();
+
+        if ($volumeDisk->exists($path)) {
+            throw new FileException(t('A file with the name “{filename}” already exists.', ['filename' => $this->_filename]));
+        }
+
+        $trashPath = $this->getTrashedFilePath();
+        $this->copyFileBetweenDisks($trashedAssetDisk, $trashPath, $volumeDisk, $path);
+
+        // As with trashing it, the trashed file only goes once the restoration is committed, and the copy if it's
+        // rolled back
+        DB::afterCommit(fn () => $trashedAssetDisk->delete($trashPath));
+        DB::afterRollBack(function () use ($volumeDisk, $path) {
+            $volumeDisk->delete($path);
+            $this->trashedFileExists = true;
+        });
+
+        DB::table(Table::ASSETS)->where('id', $this->id)->update(['trashedFileExists' => false]);
+        $this->trashedFileExists = false;
+    }
+
+    private function deleteTrashedFile(): void
+    {
+        $trashedAssetDisk = Cms::config()->getTrashedAssetDisk();
+
+        if ($trashedAssetDisk !== null) {
+            $trashPath = $this->getTrashedFilePath();
+            DB::afterCommit(fn () => Storage::disk($trashedAssetDisk)->delete($trashPath));
+        }
+    }
+
+    /**
+     * Streams a file from one disk to another, so large files aren’t read into memory.
+     *
+     * @throws FilesystemException
+     */
+    private function copyFileBetweenDisks(Filesystem $from, string $fromPath, Filesystem $to, string $toPath): void
+    {
+        $stream = $from->readStream($fromPath);
+
+        if (! is_resource($stream)) {
+            throw new FilesystemException("Unable to read $fromPath.");
+        }
+
+        try {
+            if (! $to->writeStream($toPath, $stream)) {
+                throw new FilesystemException("Unable to write $toPath.");
+            }
+        } finally {
+            // Some adapters close the stream themselves
+            if (get_resource_type($stream) === 'stream') {
+                fclose($stream);
+            }
+        }
     }
 
     /** @return array<string, array<string, bool|int|string|null>> */
@@ -3521,7 +4121,7 @@ JS;
             $attributes['data']['editable-image'] = true;
         }
 
-        if ($this->dateDeleted && $this->keptFile && Gate::check('save', $this)) {
+        if ($this->dateDeleted && $this->canRestoreFile() && Gate::check('save', $this)) {
             $attributes['data']['restorable'] = true;
         }
 
@@ -3671,23 +4271,37 @@ JS;
         if ($this->uploadSource !== null && $tempPath === null) {
             $this->size = $this->uploadSource->size();
             $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
-            $this->_width = $this->_height = null;
-            $this->colors = null;
+            [$this->_width, $this->_height] = $this->_uploadDimensions ?? [null, null];
+            // What was found in the old file doesn’t describe the new one, so only what the uploader found in the new
+            // one is known. A queue job samples anything it didn’t.
+            $this->analysis = $this->uploadAnalysis?->colors !== null || $this->_uploadMetadata !== null
+                ? new ImageAnalysis(colors: $this->uploadAnalysis?->colors, hash: $this->uploadHash(), metadata: $this->_uploadMetadata)
+                : null;
+            $this->previewText = $this->isTextFile($filename)
+                ? AssetsHelper::previewText($this->readFileStart($newDisk->readStream($newPath)))
+                : null;
         }
 
         // If there was a new file involved, update file data.
         if ($tempPath && file_exists($tempPath)) {
             $this->kind = AssetsHelper::getFileKindByExtension($filename);
 
+            // What was found in the old file doesn’t describe the new one, so only its colors and metadata are known
             if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
-                $this->colors = $this->uploadColors ?? Images::colors($tempPath);
+                $metadata = $this->_uploadMetadata ?? Images::metadata($tempPath);
+                $this->analysis = $this->uploadAnalysis?->colors !== null
+                    ? new ImageAnalysis(colors: $this->uploadAnalysis->colors, hash: $this->uploadHash(), metadata: $metadata)
+                    : ImageAnalysis::fromSample(Images::sample($tempPath), $metadata);
             } else {
                 $this->_width = null;
                 $this->_height = null;
-                $this->colors = null;
+                $this->analysis = null;
             }
 
+            $this->previewText = $this->isTextFile($filename)
+                ? AssetsHelper::previewText($this->readFileStart(fopen($tempPath, 'rb')))
+                : null;
             $this->size = filesize($tempPath);
             $mtime = filemtime($tempPath);
             $this->dateModified = $mtime ? Date::createFromTimestampUTC($mtime) : null;
@@ -3710,7 +4324,78 @@ JS;
         $this->newLocation = null;
         $this->tempFilePath = null;
         $this->uploadSource = null;
-        $this->uploadColors = null;
+        $this->_uploadMetadata = null;
+        $this->_uploadDimensions = null;
+        $this->uploadAnalysis = null;
+    }
+
+    /**
+     * Returns the preview area’s image for a file without a thumbnail: a closer look at the top of a text file that
+     * has something to show, or the file’s icon.
+     */
+    private function getIconPreviewHtml(): string
+    {
+        $previewText = $this->isTextFile($this->_filename) ? $this->getStoredPreviewText() : null;
+
+        if ($previewText !== null && $previewText !== '') {
+            return Html::tag('div', Html::svg(AssetsHelper::previewTextSvg($previewText), sanitize: false, namespace: true), [
+                'class' => ['preview-thumb', 'mx-auto', 'pt-md', 'w-[240px]', 'h-[160px]', 'box-content'],
+            ]);
+        }
+
+        return Html::tag('div', Html::svg(AssetsHelper::iconSvg($this->getExtension()), sanitize: false, namespace: true), [
+            'class' => ['preview-thumb', 'mx-auto', 'py-md', 'w-[160px]', 'h-[160px]', 'box-content'],
+        ]);
+    }
+
+    /**
+     * Returns the asset’s preview text, looking it up if it hasn’t been set since the asset was loaded.
+     */
+    private function getStoredPreviewText(): ?string
+    {
+        if ($this->previewTextChanged || ! $this->id) {
+            return $this->previewText;
+        }
+
+        return DB::table(Table::ASSETS)->where('id', $this->id)->value('previewText');
+    }
+
+    /**
+     * Returns whether a file is plain text, whose start is kept as its preview text.
+     *
+     * @see $previewText
+     */
+    /**
+     * Returns the difference hash already found for the incoming file, if it’s valid and was found alongside its colors.
+     */
+    private function uploadHash(): ?string
+    {
+        $hash = $this->uploadAnalysis?->hash;
+
+        return $this->uploadAnalysis?->colors !== null && ImageHash::isHash($hash) ? $hash : null;
+    }
+
+    private function isTextFile(string $filename): bool
+    {
+        return FileKind::tryFrom(AssetsHelper::getFileKindByExtension($filename))?->isText() ?? false;
+    }
+
+    /**
+     * Reads as much from the start of a file as its preview text could need, and closes the stream.
+     *
+     * @param  resource|false|null  $stream
+     */
+    private function readFileStart($stream): string
+    {
+        if (! is_resource($stream)) {
+            return '';
+        }
+
+        try {
+            return (string) fread($stream, AssetsHelper::PREVIEW_TEXT_SOURCE_LENGTH);
+        } finally {
+            fclose($stream);
+        }
     }
 
     /**
@@ -3792,129 +4477,5 @@ JS;
         }
 
         File::delete(Path::assetSources($this->id.'.'.pathinfo($this->getFilename(), PATHINFO_EXTENSION)));
-    }
-
-    /**
-     * Attempts to extract alt text from XMP metadata embedded in an image file.
-     * Checks Iptc4xmpCore:AltTextAccessibility first, then dc:description.
-     */
-    private function _getAltFromXmpMetadata(string $filePath): ?string
-    {
-        try {
-            $xmp = null;
-
-            if (Images::getIsImagick() && class_exists(Imagick::class)) {
-                $imagick = new Imagick($filePath);
-                $xmp = $imagick->getImageProfile('xmp') ?: null;
-                $imagick->clear();
-            }
-
-            if ($xmp === null) {
-                // Fall back to scanning the raw file for the XMP packet
-                $handle = fopen($filePath, 'rb');
-                if ($handle === false) {
-                    return null;
-                }
-                $chunk = fread($handle, 131072); // 128KB covers the XMP packet in most images
-                fclose($handle);
-
-                if ($chunk !== false) {
-                    $xmpStart = strpos($chunk, '<x:xmpmeta');
-                    if ($xmpStart !== false) {
-                        $xmpEnd = strpos($chunk, '</x:xmpmeta>', $xmpStart);
-                        if ($xmpEnd !== false) {
-                            $xmp = substr($chunk, $xmpStart, $xmpEnd - $xmpStart + strlen('</x:xmpmeta>'));
-                        }
-                    }
-                }
-            }
-
-            if (empty($xmp)) {
-                return null;
-            }
-
-            $dom = new DOMDocument;
-            if (! @$dom->loadXML($xmp)) {
-                return null;
-            }
-
-            $xpath = new DOMXPath($dom);
-            $xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-            $xpath->registerNamespace('dc', 'http://purl.org/dc/elements/1.1/');
-            $xpath->registerNamespace('Iptc4xmpCore', 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/');
-            $xpath->registerNamespace('Iptc4xmpExt', 'http://iptc.org/std/Iptc4xmpExt/2008-02-29/');
-
-            // Try Iptc4xmpCore:AltTextAccessibility (LangAlt rdf:Alt/rdf:li structure)
-            foreach ([
-                '//Iptc4xmpCore:AltTextAccessibility/rdf:Alt/rdf:li',
-                '//Iptc4xmpExt:AltTextAccessibility/rdf:Alt/rdf:li',
-                '//Iptc4xmpCore:AltTextAccessibility[not(rdf:Alt)]',
-                '//Iptc4xmpExt:AltTextAccessibility[not(rdf:Alt)]',
-            ] as $query) {
-                $nodes = $xpath->query($query);
-                if ($nodes !== false) {
-                    foreach ($nodes as $node) {
-                        $value = trim($node->textContent);
-                        if ($value !== '') {
-                            return $value;
-                        }
-                    }
-                }
-            }
-
-            // Try dc:description as an rdf:Alt structure
-            $nodes = $xpath->query('//dc:description/rdf:Alt/rdf:li');
-            if ($nodes !== false) {
-                foreach ($nodes as $node) {
-                    $value = trim($node->textContent);
-                    if ($value !== '') {
-                        return $value;
-                    }
-                }
-            }
-
-            // Try dc:description as a plain string value
-            $nodes = $xpath->query('//dc:description[not(rdf:Alt)]');
-            if ($nodes !== false) {
-                foreach ($nodes as $node) {
-                    $value = trim($node->textContent);
-                    if ($value !== '') {
-                        return $value;
-                    }
-                }
-            }
-        } catch (Throwable) {
-            // Ignore errors and fall through to IPTC
-        }
-
-        return null;
-    }
-
-    /**
-     * Attempts to extract alt text from IPTC Caption/Abstract (Iptc.Application2.Caption, field 2:120).
-     */
-    private function _getAltFromIptcMetadata(string $filePath): ?string
-    {
-        try {
-            $imageInfo = [];
-            @getimagesize($filePath, $imageInfo);
-
-            if (! isset($imageInfo['APP13'])) {
-                return null;
-            }
-
-            $iptc = iptcparse($imageInfo['APP13']);
-
-            if (! empty($iptc['2#120'])) {
-                $value = trim(implode(' ', $iptc['2#120']));
-                if ($value !== '') {
-                    return $value;
-                }
-            }
-        } catch (Throwable) {
-            // Ignore errors
-        }
-
-        return null;
     }
 }

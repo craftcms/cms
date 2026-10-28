@@ -306,6 +306,18 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * The field's icon in edit forms: its selector icon, when that's a system
+     * icon's name rather than an SVG file or markup. Native fields, which have
+     * no field type to take one from, name their own.
+     */
+    protected function uiIcon(): ?string
+    {
+        $icon = $this->selectorIcon();
+
+        return $icon !== null && preg_match('/^[\w\-\/]+$/', $icon) ? $icon : null;
+    }
+
+    /**
      * Returns the indicators that should be shown within the selector.
      *
      * @return list<array{label: string, icon: string, iconColor: string}>
@@ -465,6 +477,7 @@ abstract class BaseField extends FieldLayoutElement
                     : null,
             )
             ->layoutUid($this->uid)
+            ->icon($this->uiIcon())
             ->width($this->width)
             ->actions(...$this->uiActionNodes($context, $control));
     }
@@ -555,13 +568,6 @@ abstract class BaseField extends FieldLayoutElement
             return null;
         }
 
-        $namespace = InputNamespace::get();
-        if (! $namespace || $namespace === 'fields') {
-            $namespace = null;
-        } elseif (str_ends_with($namespace, '[fields]')) {
-            $namespace = substr($namespace, 0, -strlen('[fields]'));
-        }
-
         $siteIds = array_values(array_filter(
             array_keys(ElementHelper::siteStatusesForElement($element, true)),
             fn (int $siteId): bool => $siteId !== $element->siteId,
@@ -582,15 +588,6 @@ abstract class BaseField extends FieldLayoutElement
                     'layoutElementUid' => $this->uid,
                     'label' => $label,
                     'siteIds' => $siteIds,
-                ],
-            ],
-            'attributes' => [
-                'data' => [
-                    'cross-site-copy' => true,
-                    'element-id' => $element->id,
-                    'layout-element' => $this->uid,
-                    'label' => $label,
-                    'namespace' => $namespace,
                 ],
             ],
         ];

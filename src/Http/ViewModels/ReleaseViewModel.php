@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
@@ -18,7 +20,9 @@ use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Models\ReleaseItem;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownParser;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Controls\Markdown;
@@ -144,6 +148,28 @@ class ReleaseViewModel extends ViewModel
             : null);
     }
 
+    /** Why the release can't be published or scheduled yet, if it can't. */
+    public function publishDisabledReason(): ?string
+    {
+        $readiness = $this->readiness();
+
+        if ($readiness === null) {
+            return $this->release->items()->exists() ? null : t('The release has no drafts.');
+        }
+
+        if ($readiness->ready) {
+            return null;
+        }
+
+        if ($readiness->errors !== []) {
+            return implode(' ', $readiness->errors);
+        }
+
+        return t('{count, plural, =1{# draft is blocking publication.} other{# drafts are blocking publication.}}', [
+            'count' => count($readiness->itemErrors),
+        ]);
+    }
+
     public function ui(): UiPayload
     {
         $readiness = $this->readiness();
@@ -161,8 +187,9 @@ class ReleaseViewModel extends ViewModel
 
             return [
                 'id' => $item->id,
-                'title' => ['label' => $item->title, 'url' => $item->url, 'slideout' => true],
-                'draftName' => $item->draftName,
+                'title' => $item->chipHtml !== null
+                    ? ['html' => $item->chipHtml]
+                    : ['label' => $item->title],
                 'status' => ['html' => Html::tag('craft-badge', Html::encode($label), ['fill' => $color->value])],
                 'issues' => ['html' => $issues === [] ? '' : (string) Html::ul($issues, ['class' => 'grid gap-1'], encode: true)],
                 'publishedAt' => $item->publishedAt === null ? '' : $this->formatDate($item->publishedAt),
@@ -176,13 +203,14 @@ class ReleaseViewModel extends ViewModel
         }, $this->items());
 
         $columns = [
-            ['key' => 'title', 'label' => t('Entry'), 'wrap' => true],
-            ['key' => 'draftName', 'label' => t('Draft')],
+            ['key' => 'title', 'label' => t('Draft'), 'wrap' => true],
             ...match (true) {
                 $published => [['key' => 'publishedAt', 'label' => t('Published')]],
                 $readiness !== null => [
-                    ['key' => 'status', 'label' => t('Status')],
-                    ['key' => 'issues', 'label' => t('Issues'), 'width' => '2fr', 'wrap' => true],
+                    ['key' => 'status', 'label' => t('Status'), 'thin' => true],
+                    ...($readiness->itemErrors !== [] || $readiness->itemWarnings !== []
+                        ? [['key' => 'issues', 'label' => t('Issues'), 'width' => '2fr', 'wrap' => true]]
+                        : []),
                 ],
                 default => [],
             },
@@ -242,8 +270,10 @@ class ReleaseViewModel extends ViewModel
 
     private function formatDate(\DateTimeInterface $date): string
     {
-        return (string) new \IntlDateFormatter(app()->getLocale(), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT, Cms::timezone())
+        $formatted = (string) new \IntlDateFormatter(I18N::getFormattingLocale()->id, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT, Cms::timezone(), \IntlDateFormatter::TRADITIONAL)
             ->format($date);
+
+        return $formatted === '' ? '' : $formatted.' '.DateTimeHelper::timeZoneAbbreviation(Cms::timezone(), $date);
     }
 
     private function itemData(ReleaseItem $item): ReleaseItemData
@@ -262,13 +292,28 @@ class ReleaseViewModel extends ViewModel
             title: $element === null ? t('Not available') : ($element->title ?? t('Untitled')),
             draftId: $item->draftId,
             canonicalId: $item->canonicalId,
-            draftName: $element?->draftName,
-            url: $viewableElement?->getCpEditUrl(),
+            chipHtml: $element === null ? null : $this->chipHtml($element, $viewableElement !== null),
             publishedAt: $item->publishedAt,
-            canDetach: $viewableElement !== null
+            canDetach: $element !== null
                 && $item->draftId !== null
-                && $this->actor->can('detach', [$this->release, $viewableElement]),
+                && $this->actor->can('detach', [$this->release, $element]),
         );
+    }
+
+    private function chipHtml(ElementInterface $element, bool $hyperlink): string
+    {
+        // A chip can't be rendered once the live element is gone along with its
+        // section, so the draft is labeled the same way, without one.
+        if (! $element->getIsUnpublishedDraft() && $element->getCanonical(true)->trashed) {
+            return Html::encode($element->title ?? t('Untitled')).
+                Html::tag('span', Html::encode($element->draftName ?? t('Draft')), ['class' => 'context-label']);
+        }
+
+        return app(ElementHtml::class)->elementChipHtml($element, [
+            'appearance' => Appearance::Plain->value,
+            'hyperlink' => $hyperlink,
+            'showStatus' => false,
+        ]);
     }
 
     /** @return list<ElementInterface> */
