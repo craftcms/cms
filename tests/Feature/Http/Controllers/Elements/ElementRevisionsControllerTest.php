@@ -98,18 +98,40 @@ describe('index', function () {
 
         Date::setTestNow();
 
-        // The screen has no Vue page of its own, so it renders through the
-        // shell's fragment page: its markup arrives as a prop rather than in
-        // the document body.
         get($route($entry))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->component('cp/Screen')
                 ->where('title', 'Revisions for “Updated Title”')
-                ->where('content', fn (string $content) => str_contains($content, 'id="revisions"')
-                    && str_contains($content, 'Revision 1')
-                    && str_contains($content, 'Initial notes')));
+                ->where('ui.nodes.0.props.rows.0.revision.label', 'Revision 1')
+                ->where('ui.nodes.0.props.rows.0.notes', 'Initial notes')
+                ->where('ui.nodes.0.props.rows.0.creator.html', fn (string $html) => str_contains($html, 'craft-chip'))
+                ->where('ui.nodes.0.props.pagination.total', 1));
     })->with('elementRevisionRoutes');
+
+    it('pages through revisions', function () {
+        $entry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->createElement([
+                'title' => 'Paged',
+                'slug' => 'paged',
+            ]);
+
+        foreach (range(1, 4) as $i) {
+            Date::setTestNow(now()->addMinutes($i));
+            $entry->title = "Version $i";
+            Elements::saveElement($entry);
+        }
+
+        Date::setTestNow();
+
+        get(cp_url("revisions/$entry->id-$entry->slug").'?per_page=2')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('ui.nodes.0.props.rows', 2)
+                ->where('ui.nodes.0.props.pagination.total', 4)
+                ->where('ui.nodes.0.props.pagination.last_page', 2));
+    });
 
     it('returns 400 when the element type does not support revisions', function () {
         $entryType = EntryType::factory()->create();

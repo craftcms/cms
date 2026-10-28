@@ -376,10 +376,16 @@ export function useAdminTable<TData extends Record<string, any>>(
     onPaginationChange,
   });
 
+  /**
+   * Reloads a page of rows. A `quiet` refresh keeps the current rows in
+   * place while it loads, and doesn't interrupt a load already underway.
+   */
   async function refresh(
-    page = pagination.value?.current_page ?? 1
+    page = pagination.value?.current_page ?? 1,
+    {quiet = false}: {quiet?: boolean} = {}
   ): Promise<boolean> {
     if (!options.loadRows) return true;
+    if (quiet && loading.value) return false;
 
     const params: AdminTableRequest = {
       page,
@@ -393,7 +399,7 @@ export function useAdminTable<TData extends Record<string, any>>(
           }))
         : undefined,
     };
-    const pending = pageData.load(params);
+    const pending = pageData.load(params, {quiet});
     const request = pageData.request.value;
     const success = await pending;
     const result = pagination.value;
@@ -401,7 +407,7 @@ export function useAdminTable<TData extends Record<string, any>>(
 
     pageSize.value = result.per_page;
     if (!pageRows.value.length && page > 1 && page > result.last_page) {
-      return refresh(Math.max(1, result.last_page));
+      return refresh(Math.max(1, result.last_page), {quiet});
     }
     return true;
   }

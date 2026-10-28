@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Mcp;
 
 use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
+use CraftCms\Cms\Http\Middleware\PreventStaleDatabaseReads;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
-use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
 use CraftCms\Cms\Mcp\Http\Middleware\SetActivityOrigin;
@@ -39,7 +39,7 @@ readonly class PublicRouteRegistrar
             EnsureInstalled::class,
             AddLogContext::class,
             ResolveSite::class,
-            UseWriteConnection::class,
+            PreventStaleDatabaseReads::class,
             'throttle:60,1',
             SetActivityOrigin::class,
         ];

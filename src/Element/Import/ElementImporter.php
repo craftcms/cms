@@ -16,20 +16,22 @@ use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Validation\Rules\SiteRule;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
-use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -40,6 +42,12 @@ use function CraftCms\Cms\t;
  */
 abstract class ElementImporter extends BaseImporter
 {
+    /**
+     * The incoming data key that decides whether an item is saved as an unpublished draft,
+     * for element types that support drafts.
+     */
+    public const string SAVE_AS_DRAFT = 'saveAsDraft';
+
     public protected(set) ?Site $site = null;
 
     public protected(set) ?string $fieldLayout = null;
@@ -47,7 +55,7 @@ abstract class ElementImporter extends BaseImporter
     /**
      * @var array<string, mixed>|null
      *
-     * array => a tree keyed by field handle, mirroring $matchCriteria's shape (including a
+     * array => a tree keyed like $map (field handles, or layout element uids until prepareForImport()), mirroring $matchCriteria's shape (including a
      *  `fields` segment and provider/entry-type handle for each level of nesting). Since a
      *  container field (Matrix, Addresses) is the only kind of node in this tree that both
      *  has its own decision *and* may contain further nested container fields, each
@@ -70,14 +78,6 @@ abstract class ElementImporter extends BaseImporter
      * e.g. `['myAssets' => ['fileConflict' => 'replace'], 'myMatrix' => ['someEntryType' => ['fields' => ['innerAssets' => [...]]]]]`.
      */
     public protected(set) ?array $fieldSettings = null;
-
-    /**
-     * Keys that are reserved for internal use by the importer.
-     * No fields or attributes should attempt to be match with those values.
-     *
-     * @var array|string[]
-     */
-    private array $reservedKeys = ['matchCriteria', 'clearableItems', 'keepMissingNestedElements'];
 
     #[Override]
     public static function getDefaultTransformer(): ?string
@@ -112,23 +112,6 @@ abstract class ElementImporter extends BaseImporter
         }
     }
 
-    #[Override]
-    public function storeSettings(array $settings): void
-    {
-        $this->site($settings['site']);
-    }
-
-    #[Override]
-    public function getSettings(): array
-    {
-        $settings['keepMissingNestedElements'] = $this->keepMissingNestedElements;
-        $settings['fieldSettings'] = $this->fieldSettings;
-        $settings['site'] = $this->site->uid;
-        $settings['fieldLayout'] = $this->fieldLayout;
-
-        return $settings;
-    }
-
     /**
      * Resolves and sets the target site from a Site instance, id, handle, or uid.
      * Defaults to the primary site if null.
@@ -137,7 +120,7 @@ abstract class ElementImporter extends BaseImporter
      */
     public function site(string|int|Site|null $site): self
     {
-        $resolved = self::normalizeSite($site);
+        $resolved = $site === null ? Sites::getPrimarySite() : Sites::resolveSite($site);
 
         if ($resolved === null) {
             throw new InvalidArgumentException(is_numeric($site)
@@ -226,16 +209,27 @@ abstract class ElementImporter extends BaseImporter
     }
 
     #[Override]
+    protected static function settingNames(): array
+    {
+        return [...parent::settingNames(), 'site', 'fieldLayout', 'keepMissingNestedElements', 'fieldSettings'];
+    }
+
+    #[Override]
     public static function getSettingsRules(): array
     {
         return array_merge(parent::getSettingsRules(), [
             'settings.fieldLayout' => fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateFieldLayout($value, $attribute, $fail, $validator),
-            'settings.site' => [
-                'required',
-                fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateSite($value, $attribute, $fail, $validator),
-            ],
+            'settings.site' => ['required', new SiteRule],
             'settings.keepMissingNestedElements' => ['nullable', 'array'],
             'settings.fieldSettings' => ['nullable', 'array'],
+        ]);
+    }
+
+    #[Override]
+    public static function getSettingsMessages(): array
+    {
+        return array_merge(parent::getSettingsMessages(), [
+            'settings.site.required' => t('Site must be provided.'),
         ]);
     }
 
@@ -249,33 +243,6 @@ abstract class ElementImporter extends BaseImporter
         $data['settings']['fieldSettings'] = $this->fieldSettings;
 
         return $data;
-    }
-
-    /**
-     * Validates that the given handle matches a known site.
-     *
-     * @param  mixed  $value  The value of the site handle being validated.
-     * @param  string  $attribute  The name of the attribute being validated.
-     * @param  Closure  $fail  The callback function to invoke when validation fails.
-     * @param  Validator  $validator  The validator instance performing the validation.
-     */
-    public static function validateSite(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
-    {
-        if (empty($value)) {
-            $fail($attribute, t('Site must be provided.'));
-
-            return false;
-        }
-
-        if (self::normalizeSite($value) === null) {
-            $fail($attribute, t('“{site}” is not a valid site handle.', [
-                'site' => $value,
-            ]));
-
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -324,6 +291,44 @@ abstract class ElementImporter extends BaseImporter
     }
 
     #[Override]
+    public function prepareForImport(): void
+    {
+        parent::prepareForImport();
+
+        if ($this->keepMissingNestedElements !== null) {
+            $this->keepMissingNestedElements = $this->resolveMappingKeys($this->keepMissingNestedElements);
+        }
+
+        if ($this->fieldSettings !== null) {
+            $this->fieldSettings = $this->resolveMappingKeys($this->fieldSettings);
+        }
+    }
+
+    #[Override]
+    public function resolveMappingKeys(array $tree): array
+    {
+        $tree = ImportHelper::resolveMappingKeys($tree, self::normalizeFieldLayout($this->fieldLayout));
+
+        // a container property (e.g. a user's addresses) has its own field layout, so its keys are resolved against that
+        $targetClass = static::targetClass();
+
+        if (! is_subclass_of($targetClass, ImportableContainerPropertiesInterface::class)) {
+            return $tree;
+        }
+
+        foreach (ImportHelper::getImportableContainerProperties($this) as $prop) {
+            if (is_array($tree[$prop['name']] ?? null)) {
+                $tree[$prop['name']] = ImportHelper::resolveMappingKeys(
+                    $tree[$prop['name']],
+                    $targetClass::getFieldLayoutForProperty($prop['name']),
+                );
+            }
+        }
+
+        return $tree;
+    }
+
+    #[Override]
     public function getDestinationCols(): array
     {
         $propertyCols = [];
@@ -364,10 +369,28 @@ abstract class ElementImporter extends BaseImporter
      */
     public function getAvailableProperties(): array
     {
-        return array_values(array_filter(
+        $props = array_values(array_filter(
             ImportHelper::getImportableProperties($this),
             $this->isPropertyAvailable(...),
         ));
+
+        // saving as an unpublished draft isn't an element property, it decides how the element gets saved
+        if (static::targetClass()::hasDrafts()) {
+            $props[] = [
+                'property' => self::SAVE_AS_DRAFT,
+                'name' => self::SAVE_AS_DRAFT,
+                'label' => t('Save as unpublished draft'),
+                'excludeFromUiMapping' => false,
+                'isContainer' => false,
+                'canBeMatchCriteria' => false,
+                'canBeCleared' => false,
+                'canBeSet' => true,
+                'defaultValue' => false,
+                'trait' => null,
+            ];
+        }
+
+        return $props;
     }
 
     /**
@@ -403,6 +426,15 @@ abstract class ElementImporter extends BaseImporter
 
         $isNew = $element->id === null;
 
+        // the draft flag only counts when it's present, so plans that don't map it never publish an unpublished draft they match
+        $draftFlag = Arr::pull($item, self::SAVE_AS_DRAFT);
+        $hasDraftFlag = $draftFlag !== null && static::targetClass()::hasDrafts();
+        $saveAsDraft = $hasDraftFlag && filter_var($draftFlag, FILTER_VALIDATE_BOOL);
+
+        // an existing non-draft element is always updated in place, regardless of the flag
+        $createDraft = $isNew && $saveAsDraft;
+        $publishDraft = $hasDraftFlag && ! $saveAsDraft && $element->getIsUnpublishedDraft();
+
         // normalization and validation of attributes happens in the transformer and in the setAttributesForImport() method
         $attributeHandles = $element->attributes();
 
@@ -412,7 +444,7 @@ abstract class ElementImporter extends BaseImporter
         $containerAttributes = collect($containerProps)->map(fn ($prop) => $prop['name'])->all();
 
         // $fieldHandles has custom and native fields - basically all field layout elements
-        $fieldHandles = array_diff(array_keys($item), $attributeHandles, $containerAttributes, $this->reservedKeys);
+        $fieldHandles = array_diff(array_keys($item), $attributeHandles, $containerAttributes, ImportHelper::RESERVED_DATA_KEYS);
 
         $attributes = array_filter($item, fn ($key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_KEY);
         $fields = array_filter($item, fn ($key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_KEY);
@@ -451,6 +483,7 @@ abstract class ElementImporter extends BaseImporter
             && $this->hasNewContainerFieldData($element, $fields, $oldFieldValues);
 
         $hasChanges = $skipChangeDetection
+            || $publishDraft
             || $hasNewContainerFieldData
             || $this->attributeValuesChanged($element, $oldAttributeValues)
             || $this->fieldValuesChanged($element, $oldFieldValues);
@@ -459,7 +492,10 @@ abstract class ElementImporter extends BaseImporter
             return $element;
         }
 
-        if ($element->enabled && $element->getEnabledForSite()) {
+        // a draft that stays a draft only needs to meet the essentials, like a draft saved from the control panel
+        $staysDraft = $createDraft || ($element->getIsUnpublishedDraft() && ! $publishDraft);
+
+        if (! $staysDraft && $element->enabled && $element->getEnabledForSite()) {
             $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         } else {
             $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
@@ -468,7 +504,11 @@ abstract class ElementImporter extends BaseImporter
         $restoreKeepFlagFields = $this->enableKeepMissingNestedElements($element);
 
         try {
-            if (! Elements::saveElement($element)) {
+            $saved = $createDraft
+                ? Drafts::saveElementAsDraft($element)
+                : Elements::saveElement($element);
+
+            if (! $saved) {
                 throw new InvalidElementException(
                     $element,
                     'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.implode(' ', $element->errors()->all()),
@@ -480,21 +520,11 @@ abstract class ElementImporter extends BaseImporter
             }
         }
 
-        return $element;
-    }
+        if ($publishDraft) {
+            $element = Drafts::applyDraft($element);
+        }
 
-    /**
-     * Resolves a Site instance, numeric ID, handle, or UID to a Site, or null if not found.
-     * A null value resolves to the primary site.
-     */
-    private static function normalizeSite(string|int|Site|null $value): ?Site
-    {
-        return match (true) {
-            $value instanceof Site => $value,
-            $value === null => Sites::getPrimarySite(),
-            is_numeric($value) => Sites::getSiteById((int) $value),
-            default => self::siteByUidOrNull($value) ?? Sites::getSiteByHandle($value),
-        };
+        return $element;
     }
 
     /**
@@ -559,19 +589,6 @@ abstract class ElementImporter extends BaseImporter
     }
 
     /**
-     * `Sites::getSiteByUid()` throws an error when the UID isn't found,
-     * so we need this method to catch it and return null in that case.
-     */
-    private static function siteByUidOrNull(string $uid): ?Site
-    {
-        try {
-            return Sites::getSiteByUid($uid);
-        } catch (Throwable) {
-            return null;
-        }
-    }
-
-    /**
      * Enables keeping missing nested elements for any container field opted in via
      * `keepMissingNestedElements`, returning the fields that should be restored after the save.
      *
@@ -579,7 +596,9 @@ abstract class ElementImporter extends BaseImporter
      */
     private function enableKeepMissingNestedElements(ElementInterface $element): array
     {
-        return $this->collectAndEnableKeepFields($element->getFieldLayout(), null, null, null);
+        $fieldLayout = $element->getFieldLayout();
+
+        return $this->collectAndEnableKeepFields($fieldLayout, $fieldLayout, null, null, null);
     }
 
     /**
@@ -594,18 +613,21 @@ abstract class ElementImporter extends BaseImporter
      * @return ImportableElementContainerFieldInterface[]
      */
     private function collectAndEnableKeepFields(
+        ?FieldLayout $rootFieldLayout,
         ?FieldLayout $fieldLayout,
         ?FieldInterface $ownerField,
         mixed $provider,
         ?string $prefix,
     ): array {
-        if (! $fieldLayout) {
+        if (! $fieldLayout || empty($this->keepMissingNestedElements)) {
             return [];
         }
 
         $restoreKeepFlagFields = [];
 
-        foreach ($fieldLayout->getCustomFields() as $field) {
+        foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+            $field = $layoutElement->getField();
+
             if (! $field instanceof ImportableElementContainerFieldInterface) {
                 continue;
             }
@@ -613,20 +635,26 @@ abstract class ElementImporter extends BaseImporter
             // The keep tree is keyed by the names the mapping screen generates, so ask the same
             // helper the UI does rather than assuming a [handle][providerHandle][fields] shape -
             // a content block is its own layout provider, which that assumption would spell twice.
+            // Those names use uids, but prepareForImport() has already replaced them with handles.
             $prefixedHandle = ImportHelper::prefixedHandleForMapping(
-                $field->handle,
+                $layoutElement->uid ?? $layoutElement->attribute(),
                 $ownerField,
                 $field,
                 $fieldLayout,
                 $provider,
                 $prefix,
             );
-            $prefixedHandleAsArray = Arr::bracketsToArray($prefixedHandle);
+            $path = self::resolveMappingPath(Arr::bracketsToArray($prefixedHandle), $rootFieldLayout);
+
+            // nothing below this field is kept, so there's no need to look any deeper
+            if (! Arr::has($this->keepMissingNestedElements, $path)) {
+                continue;
+            }
 
             if ($field->canKeepMissingNestedElements()) {
                 // loose cast: a real checkbox submission survives as int 1/0 (or even the
                 // string "1"/"0") after json_decode(), not strictly bool true/false
-                $shouldKeep = (bool) Arr::get($this->keepMissingNestedElements, implode('.', [...$prefixedHandleAsArray, '__keep__']));
+                $shouldKeep = (bool) Arr::get($this->keepMissingNestedElements, "$path.__keep__");
 
                 if ($shouldKeep) {
                     $field->setKeepMissingNestedElements(true);
@@ -637,12 +665,25 @@ abstract class ElementImporter extends BaseImporter
             foreach ($field->getFieldLayoutProviders() as $nestedProvider) {
                 $restoreKeepFlagFields = [
                     ...$restoreKeepFlagFields,
-                    ...$this->collectAndEnableKeepFields($nestedProvider->getFieldLayout(), $field, $nestedProvider, $prefixedHandle),
+                    ...$this->collectAndEnableKeepFields($rootFieldLayout, $nestedProvider->getFieldLayout(), $field, $nestedProvider, $prefixedHandle),
                 ];
             }
         }
 
         return $restoreKeepFlagFields;
+    }
+
+    /**
+     * Converts a mapping path from the mapping screen (which uses uids) into the dot-notation path the import uses (which uses handles).
+     *
+     * @param  list<string>  $path
+     */
+    private static function resolveMappingPath(array $path, ?FieldLayout $fieldLayout): string
+    {
+        $tree = [];
+        Arr::set($tree, implode('.', $path), true);
+
+        return (string) array_key_first(Arr::dot(ImportHelper::resolveMappingKeys($tree, $fieldLayout)));
     }
 
     /**
@@ -762,9 +803,14 @@ abstract class ElementImporter extends BaseImporter
         }
 
         if (is_array($data['matchCriteria'])) {
+            // only canonical elements and unpublished drafts can be imported into,
+            // preferring a canonical element when both match;
+            // drafts of an existing element are left alone
             $query = $element::find()
                 ->drafts(null)
-                ->status(null);
+                ->draftOf(false)
+                ->status(null)
+                ->orderBy(new Expression('CASE WHEN elements.draftId IS NULL THEN 0 ELSE 1 END'));
 
             // give element a chance to adjust the query
             $this->prepareRootElementImportQuery($element, $query);

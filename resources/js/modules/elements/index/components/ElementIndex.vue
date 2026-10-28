@@ -17,6 +17,8 @@
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
   import ElementIndexExportMenu from '@/modules/elements/index/components/ElementIndexExportMenu.vue';
   import {useInlineEditing} from '@/modules/elements/index/composables/useInlineEditing';
+  import {resizeThumbs} from '@/modules/elements/index/composables/useElementIndexThumbSize';
+  import type {ThumbSize} from '@/modules/elements/types/view-state';
   import {elementIndexContextKey} from '@/modules/elements/index/index-context';
 
   interface ElementIndexQuickEdit {
@@ -67,6 +69,8 @@
     status,
     conditions,
     mode,
+    thumbSize,
+    thumbSizeOptions,
     sortField,
     sortDirection,
     tableColumns,
@@ -93,6 +97,14 @@
   provide(elementIndexContextKey, filterContext);
 
   const body = useTemplateRef<HTMLElement>('body');
+
+  async function onThumbSizeChange(size: ThumbSize): Promise<void> {
+    if (body.value) {
+      await resizeThumbs(body.value, size);
+    }
+
+    thumbSize.value = size;
+  }
   const editableRows = computed(() =>
     data.value.filter((row) => row.inlineEditable)
   );
@@ -272,11 +284,14 @@
         v-model:sort-field="sortField"
         v-model:sort-direction="sortDirection"
         v-model:table-columns="tableColumns"
+        :thumb-size="thumbSize"
+        @update:thumb-size="onThumbSizeChange"
         :processing="processing"
         :as-form="toolbarAsForm"
         :status-options="elementIndex.statusOptions"
         :view-modes="visibleViewModes"
         :column-options="columnOptions"
+        :thumb-size-options="thumbSizeOptions"
         :sort-options="elementIndex.sortOptions"
         :sites="showSites ? elementIndex.sites : undefined"
         :site-handle="showSites ? activeSiteHandle : undefined"
@@ -385,6 +400,7 @@
           :loading="loading"
           :item-behavior="itemBehavior"
           :interactions-disabled="processing"
+          :thumb-size="thumbSize"
           @edit="onThumbEdit"
         />
         <ElementTable

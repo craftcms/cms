@@ -391,10 +391,13 @@ export default css`
        row's own would. Well past the 24px 2.5.8 floor either way. */
     width: var(--_rail-size);
     height: var(--_rail-size);
+    /* The row's ring offset, which the plain button would otherwise inset. */
+    --_row-focus-outline-offset: var(--c-focus-outline-offset);
 
     /* A plain button is transparent, which would leave only a bare chevron
        and its ring to show a keyboard user where they are. */
     craft-button {
+      --c-focus-outline-offset: var(--_row-focus-outline-offset);
       width: 100%;
       height: 100%;
       background-color: var(--c-color-neutral-fill-quiet);

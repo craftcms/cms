@@ -19,6 +19,7 @@ use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Nodes\Table as UiTable;
 use CraftCms\Cms\Ui\Ui;
@@ -75,7 +76,7 @@ class ReleasesController
             ->paginate($request->limit(), pageName: Cms::config()->getPageTriggerParam(), page: $request->page())
             ->appends($request->except(Cms::config()->getPageTriggerParam()));
 
-        $formatter = new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::MEDIUM, IntlDateFormatter::SHORT, Cms::timezone());
+        $formatter = new IntlDateFormatter(I18N::getFormattingLocale()->id, IntlDateFormatter::MEDIUM, IntlDateFormatter::SHORT, Cms::timezone(), IntlDateFormatter::TRADITIONAL);
         $rows = $paginator->getCollection()->map(function (Release $release) use ($formatter): array {
             $date = $release->publishedAt ?? $release->targetDate;
             $canDelete = $release->status->isMutable() && Gate::allows('manage', $release);
@@ -87,7 +88,9 @@ class ReleasesController
                     'fill' => $release->status->color()->value,
                 ])],
                 'date' => $date === null ? t('Not set') : ['html' => Html::tag('time',
-                    Html::encode($formatter->format($date) ?: t('Not set')),
+                    Html::encode(($formatted = $formatter->format($date))
+                        ? $formatted.' '.DateTimeHelper::timeZoneAbbreviation(Cms::timezone(), $date)
+                        : t('Not set')),
                     ['datetime' => $date->toIso8601String()],
                 )],
                 'itemCount' => (int) $release->items_count,
@@ -223,13 +226,11 @@ class ReleasesController
     {
         Gate::authorize('publish', $release);
 
-        $date = $release->publishedAt ?? $release->targetDate;
-        $timezone = $date?->getTimezone()->getName() ?? Cms::timezone();
         $ui = $uiResolver->resolve(Ui::make([
-            ReleaseDateGroup::make('publishAt', t('Publication date'), min: now($timezone)->format('Y-m-d'))
+            ReleaseDateGroup::dateTimeField('publishAt', t('Publication date'), min: now(Cms::timezone())->format('Y-m-d'))
                 ->required(),
         ]), new UiContext(values: [
-            'publishAt' => ReleaseDateGroup::value($date, $timezone),
+            'publishAt' => ReleaseDateGroup::dateTimeValue($release->publishedAt ?? $release->targetDate),
         ]));
 
         return new JsonResponse([
@@ -245,7 +246,6 @@ class ReleasesController
             'publishAt' => ['required', 'array'],
             'publishAt.date' => ['required', 'date_format:Y-m-d'],
             'publishAt.time' => ['required', 'date_format:H:i'],
-            'publishAt.timezone' => ['nullable', 'timezone'],
         ]);
 
         $publishAt = $this->dateTime($validated['publishAt']);
@@ -268,6 +268,28 @@ class ReleasesController
         $this->releases->unschedule($release, $request->craftUser());
 
         return $this->asSuccess(t('Release unscheduled.'));
+    }
+
+    /**
+     * The release's drafts, as listed on its page, for confirming publication.
+     */
+    public function publishModal(Release $release, Request $request): JsonResponse
+    {
+        abort_unless(Gate::check('publishReleases') && $release->status->isMutable(), Response::HTTP_FORBIDDEN);
+
+        $viewModel = app(ReleaseViewModel::class, [
+            'release' => $release,
+            'actor' => $request->craftUser(),
+            'releases' => $this->releases,
+        ]);
+
+        return new JsonResponse([
+            'ui' => $viewModel->ui(),
+            'title' => t('Publish release'),
+            'submitLabel' => t('Publish'),
+            'submitDisabled' => ! $viewModel->readiness()?->ready,
+            'submitDisabledReason' => $viewModel->publishDisabledReason(),
+        ]);
     }
 
     public function publish(Release $release, Request $request): Response
@@ -311,11 +333,15 @@ class ReleasesController
             'targetDate' => ['nullable', 'array'],
             'targetDate.date' => ['nullable', 'date_format:Y-m-d'],
             'targetDate.time' => ['nullable', 'date_format:H:i'],
-            'targetDate.timezone' => ['nullable', 'timezone'],
         ]);
     }
 
-    /** @param array{date?: string, time?: string, timezone?: string}|null $value */
+    /**
+     * Parses a submitted release date and time in the user’s time zone, which
+     * is the zone the control presents them in.
+     *
+     * @param  array{date?: string, time?: string}|null  $value
+     */
     private function dateTime(?array $value): ?\DateTimeInterface
     {
         if (($value['date'] ?? '') === '') {
@@ -324,7 +350,7 @@ class ReleasesController
 
         return DateTimeHelper::toDateTime([
             'datetime' => trim(sprintf('%s %s', $value['date'], $value['time'] ?? '00:00')),
-            'timezone' => $value['timezone'] ?? null,
+            'timezone' => Cms::timezone(),
         ]) ?: null;
     }
 

@@ -47,6 +47,8 @@ use Tpetry\QueryExpressions\Language\Alias;
 /**
  * @template TElement of ElementInterface
  *
+ * @implements ElementQueryInterface<TElement>
+ *
  * @mixin Builder
  *
  * @method static select($columns = ['*'])

@@ -780,7 +780,7 @@ class ImageTransformer
 
         $diskName = $asset->getVolume()->resolveStorageTargetKey($diskReference);
         if ($diskName === null) {
-            throw new FilesystemException('The configured Asset Transform output disk does not exist.');
+            throw new FilesystemException('The configured asset transform output disk does not exist.');
         }
 
         if ($subpath === null) {
@@ -789,7 +789,7 @@ class ImageTransformer
 
         $disk = Storage::build(['driver' => 'scoped', 'disk' => $diskName, 'prefix' => $subpath]);
         if (! $disk instanceof FilesystemAdapter) {
-            throw new FilesystemException('Unable to create the scoped Asset Transform output disk.');
+            throw new FilesystemException('Unable to create the scoped asset transform output disk.');
         }
 
         return $disk;
@@ -812,11 +812,11 @@ class ImageTransformer
         $subpath = $settings['subpath'] ?? '';
 
         if ($disk !== null && ! is_string($disk)) {
-            throw new FilesystemException('The configured Asset Transform output disk is invalid.');
+            throw new FilesystemException('The configured asset transform output disk is invalid.');
         }
 
         if (! is_string($subpath)) {
-            throw new FilesystemException('The configured Asset Transform output subpath is invalid.');
+            throw new FilesystemException('The configured asset transform output subpath is invalid.');
         }
 
         $rawDisk = $disk;
@@ -825,11 +825,11 @@ class ImageTransformer
         $subpath = Env::parse($subpath);
 
         if ($rawDisk !== null && $rawDisk !== '' && $disk === null) {
-            throw new FilesystemException('The configured Asset Transform output disk could not be resolved.');
+            throw new FilesystemException('The configured asset transform output disk could not be resolved.');
         }
 
         if ($rawSubpath !== '' && $subpath === null) {
-            throw new FilesystemException('The configured Asset Transform output subpath could not be resolved.');
+            throw new FilesystemException('The configured asset transform output subpath could not be resolved.');
         }
 
         $disk = $disk === '' ? null : $disk;
@@ -848,7 +848,7 @@ class ImageTransformer
 
     private function reportCleanupFailure(Asset $asset): void
     {
-        report(new RuntimeException("Unable to clean Asset Transform results for Asset [{$asset->id}] with driver [craft]."));
+        report(new RuntimeException("Unable to clean asset transform results for asset [{$asset->id}] with driver [craft]."));
     }
 
     private function invalidateAssetTransformer(AssetTransformer $assetTransformer): void
@@ -878,7 +878,7 @@ class ImageTransformer
         }
 
         return app(AssetTransformers::class)->getAssetTransformerByUid($index->transformer)
-            ?? throw new RuntimeException("Asset Transformer [{$index->transformer}] does not exist.");
+            ?? throw new RuntimeException("Asset transformer [{$index->transformer}] does not exist.");
     }
 
     /**

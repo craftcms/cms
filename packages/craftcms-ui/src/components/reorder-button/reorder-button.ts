@@ -91,6 +91,68 @@ export default class CraftReorderButton extends LitElement {
   /** Whether the item can move out to its parent's level. */
   @property({attribute: 'can-outdent', type: Boolean}) canOutdent = false;
 
+  /** Whether focus is inside the button. */
+  private _hasFocus = false;
+
+  /**
+   * Whether the button was taken out of the page with focus inside it, during
+   * the current task. A list moving the button takes it out and puts it back
+   * in the same task.
+   */
+  private _movedWhileFocused = false;
+
+  constructor() {
+    super();
+    this.addEventListener('focusin', () => {
+      this._hasFocus = true;
+    });
+    this.addEventListener('focusout', (event) => {
+      // Moving a focused element drops focus with no `relatedTarget` (Firefox
+      // fires no focusout at all), and so does clicking somewhere unfocusable.
+      // A move puts focus back in the same task, so check once it's over.
+      const to = event.relatedTarget;
+      if (to instanceof Node && !this.contains(to)) {
+        this._hasFocus = false;
+      } else if (!to) {
+        setTimeout(() => {
+          if (this.isConnected && !this.matches(':focus-within')) {
+            this._hasFocus = false;
+          }
+        });
+      }
+    });
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+
+    if (!this._movedWhileFocused) {
+      return;
+    }
+
+    this._movedWhileFocused = false;
+    const active = document.activeElement;
+    if (!active || active === document.body) {
+      this._focusInvoker();
+    }
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+
+    if (!this._hasFocus) {
+      return;
+    }
+
+    this._movedWhileFocused = true;
+    setTimeout(() => {
+      this._movedWhileFocused = false;
+      if (!this.isConnected) {
+        this._hasFocus = false;
+      }
+    });
+  }
+
   override updated(changed: PropertyValues<this>) {
     super.updated(changed);
     if (changed.has('disabled')) {
@@ -100,6 +162,10 @@ export default class CraftReorderButton extends LitElement {
         this.removeAttribute('aria-disabled');
       }
     }
+  }
+
+  private _focusInvoker(): void {
+    this.shadowRoot?.querySelector<HTMLElement>('craft-button')?.focus();
   }
 
   private _canMove(direction: NestedReorderDirection): boolean {
@@ -118,6 +184,12 @@ export default class CraftReorderButton extends LitElement {
   private _reorder(direction: NestedReorderDirection) {
     if (this.disabled || !this._canMove(direction)) {
       return;
+    }
+
+    // Before the list hears about the move: it can disable or hide the item
+    // that was chosen, which would take focus with it.
+    if (this.matches(':focus-within')) {
+      this._focusInvoker();
     }
 
     this.dispatchEvent(

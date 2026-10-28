@@ -65,7 +65,7 @@ it('supports moved deprecated config settings', function(): void {
     expect($config->defaultCookieDomain)->toBe('.example.test')
         ->and($config->generateTransformsBeforePageLoad)->toBeFalse()
         ->and(Context::getHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse()
-        ->and($deprecation?->message)->toBe('generateTransformsBeforePageLoad is deprecated. Configure immediate generation on the Craft Asset Transformer instead.')
+        ->and($deprecation?->message)->toBe('generateTransformsBeforePageLoad is deprecated. Configure immediate generation on the Craft asset transformer instead.')
         ->and($config->rememberedUserSessionDuration)->toBe(7200)
         ->and($config->verificationCodeDuration)->toBe(1800);
 });

@@ -1,18 +1,20 @@
 import {createApp, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {applySuggestions, cloneValues} from '@/modules/import/mapping/paths';
-import type {
-  MappingColumn,
-  MappingColumnEntry,
-  MappingValues,
-  ImportStep,
-  SuggestedMap,
+import {
+  type MappingColumn,
+  type MappingColumnEntry,
+  type MappingValues,
+  type ImportStep,
+  type SuggestedMap,
+  TEMPLATE_RULE,
 } from '@/modules/import/mapping/types';
 import StepMapping from './StepMapping.vue';
 
 const state = vi.hoisted(() => ({
   layout: vi.fn(),
   openNested: vi.fn(),
+  validateStep: vi.fn(),
   context: null as any,
 }));
 
@@ -28,6 +30,10 @@ vi.mock('@/common/slideouts', () => ({
 
 vi.mock('@/modules/import/mapping/nested-mapping', () => ({
   openNestedMapping: state.openNested,
+}));
+
+vi.mock('./step-slideout', () => ({
+  validateStep: state.validateStep,
 }));
 
 vi.mock('./step-mapping', () => ({
@@ -87,6 +93,7 @@ const step: ImportStep = {
   source: 'people.csv',
   transformer: null,
   batchSize: null,
+  enabled: true,
   settings: {},
 };
 
@@ -97,10 +104,20 @@ function emptyValues(): MappingValues {
     clearableItems: {},
     keepMissingNestedElements: {},
     fieldSettings: {},
+    templates: {},
   };
 }
 
 let applied: MappingValues | null;
+
+const templateTextExpanderTriggers = [
+  {
+    trigger: '{',
+    boundary: 'anywhere',
+    label: 'Object Template Variables',
+    options: [{label: 'Name', value: '{name}'}],
+  },
+];
 
 function mount(
   destinationCols: MappingColumnEntry[],
@@ -111,9 +128,11 @@ function mount(
     destinationCols,
     sourceDataCols: [
       {label: 'Please select', value: ''},
+      {label: 'Use template', value: TEMPLATE_RULE},
       {label: 'Name', value: 'name'},
       {label: 'Email', value: 'email'},
     ],
+    templateTextExpanderTriggers,
     values,
     suggestedMap,
     editable: true,
@@ -124,6 +143,27 @@ function mount(
   app = createApp(StepMapping, {contextId: 'ctx', title: 'Edit mapping'});
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
   app.mount(container);
+}
+
+async function applyAsync(): Promise<MappingValues | null> {
+  await state.layout.mock.calls.at(-1)![0].onSave();
+
+  return applied;
+}
+
+function templateInput(): HTMLElement & {modelValue?: string} {
+  return cells()[0]!.querySelector('craft-input') as unknown as HTMLElement & {
+    modelValue?: string;
+  };
+}
+
+function typeTemplate(value: string): void {
+  const host = templateInput();
+  host.modelValue = value;
+
+  host.dispatchEvent(
+    new CustomEvent('model-value-changed', {bubbles: true, detail: {}})
+  );
 }
 
 function apply(): MappingValues {
@@ -169,6 +209,7 @@ let container: HTMLElement;
 beforeEach(() => {
   state.layout.mockClear();
   state.openNested.mockReset();
+  state.validateStep.mockReset().mockResolvedValue(undefined);
   applied = null;
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
   container = document.createElement('div');
@@ -198,13 +239,51 @@ it('writes a chosen source column to the destination column’s path', async () 
   expect(apply().map).toEqual({title: 'name'});
 });
 
-it('keeps the Match and Clear columns on their own trees', () => {
+it('keeps the Match and Clear columns on their own trees', async () => {
   mount([body]);
 
+  chooseSource('name');
+  await nextTick();
   toggleCheckbox('match');
   toggleCheckbox('clear');
 
   expect(apply().matchCriteria).toEqual({body: '1'});
+  expect(apply().clearableItems).toEqual({body: '1'});
+});
+
+function checkbox(
+  column: 'match' | 'clear'
+): HTMLElement & {disabled: boolean} {
+  return cells()[column === 'match' ? 1 : 2]!.querySelector(
+    'craft-checkbox'
+  ) as unknown as HTMLElement & {disabled: boolean};
+}
+
+it('only lets a mapped row be matched on, while Clear works either way', async () => {
+  mount([body]);
+
+  expect(checkbox('match').disabled).toBe(true);
+  expect(checkbox('clear').disabled).toBe(false);
+
+  chooseSource('name');
+  await nextTick();
+
+  expect(checkbox('match').disabled).toBe(false);
+  expect(checkbox('clear').disabled).toBe(false);
+});
+
+it('drops a row’s match criterion when it’s unmapped, but keeps Clear', async () => {
+  mount([body]);
+
+  chooseSource('name');
+  await nextTick();
+  toggleCheckbox('match');
+  toggleCheckbox('clear');
+  chooseSource('');
+  await nextTick();
+
+  expect(checkbox('match').disabled).toBe(true);
+  expect(apply().matchCriteria).toEqual({body: ''});
   expect(apply().clearableItems).toEqual({body: '1'});
 });
 
@@ -318,6 +397,7 @@ it('hands the step’s mapping trees back on apply', () => {
     clearableItems: {},
     keepMissingNestedElements: {},
     fieldSettings: {},
+    templates: {},
   });
 });
 
@@ -401,4 +481,100 @@ it('is dirty once a column is mapped', async () => {
   await nextTick();
 
   expect(state.layout.mock.calls.at(-1)![0].form.isDirty).toBe(true);
+});
+
+it('shows a template input only once “Use template” is chosen', async () => {
+  mount([title]);
+
+  expect(templateInput()).toBeNull();
+
+  chooseSource(TEMPLATE_RULE);
+  await nextTick();
+
+  expect(templateInput()).not.toBeNull();
+  expect(
+    cells()[0]!.querySelector<HTMLElement & {triggers?: unknown}>(
+      'craft-text-expander'
+    )!.triggers
+  ).toEqual(templateTextExpanderTriggers);
+});
+
+it('explains how to insert a variable in an info icon beside the template’s label', async () => {
+  mount([title]);
+
+  chooseSource(TEMPLATE_RULE);
+  await nextTick();
+
+  const field = cells()[0]!.querySelector('craft-field')!;
+  const info = field.querySelector<HTMLElement & {label?: string}>(
+    'craft-info-icon'
+  )!;
+
+  expect(info.getAttribute('slot')).toBe('heading-suffix');
+  expect(info.label).toBe('More info about Template title');
+  expect(info.textContent!.trim()).toBe(
+    'Type { to choose an object template variable.'
+  );
+  expect(field.querySelector('[slot="tip"]')).toBeNull();
+});
+
+it('writes a column’s template to the templates tree, validated before it’s handed back', async () => {
+  mount([title]);
+
+  chooseSource(TEMPLATE_RULE);
+  await nextTick();
+  typeTemplate('{name} <{email}>');
+
+  const values = await applyAsync();
+
+  expect(values!.map).toEqual({title: TEMPLATE_RULE});
+  expect(values!.templates).toEqual({title: '{name} <{email}>'});
+  expect(state.validateStep).toHaveBeenCalledWith(
+    expect.objectContaining({
+      uid: 'step-uid',
+      settings: expect.objectContaining({
+        map: {title: TEMPLATE_RULE},
+        templates: {title: '{name} <{email}>'},
+      }),
+    })
+  );
+});
+
+it('keeps the panel open and shows the server’s template errors on the column', async () => {
+  state.validateStep.mockRejectedValue({
+    response: {
+      data: {
+        errors: {
+          'settings.templates.title': ['The template couldn’t be parsed.'],
+          source: ['Not about templates.'],
+        },
+      },
+    },
+  });
+  mount([title], {
+    ...emptyValues(),
+    map: {title: TEMPLATE_RULE},
+    templates: {title: '{{ name'},
+  });
+
+  expect(await applyAsync()).toBeNull();
+  await nextTick();
+
+  expect(
+    [...cells()[0]!.querySelectorAll('.error-list li')].map((li) =>
+      li.textContent!.trim()
+    )
+  ).toEqual(['The template couldn’t be parsed.']);
+  expect(templateInput().getAttribute('aria-invalid')).toBe('true');
+  expect(document.activeElement).toBe(
+    cells()[0]!.querySelector('craft-input input')
+  );
+});
+
+it('doesn’t validate a mapping that uses no templates before handing it back', async () => {
+  mount([title], {...emptyValues(), map: {title: 'name'}});
+
+  await applyAsync();
+
+  expect(state.validateStep).not.toHaveBeenCalled();
 });

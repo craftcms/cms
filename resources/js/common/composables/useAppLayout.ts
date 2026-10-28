@@ -11,6 +11,8 @@ import type {
 export interface UseAppLayoutOptions {
   title?: string;
   saveDisabled?: boolean;
+  /** See `ScreenProps.handlesReadOnly`. */
+  handlesReadOnly?: boolean;
   /** See `ScreenProps.hideFooter`. */
   hideFooter?: boolean;
   submitButtonLabel?: string;

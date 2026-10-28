@@ -155,6 +155,13 @@ interface CraftStatic {
   openCustomizeSourcesModal(
     options: import('@/modules/customize-sources').CustomizeSourcesModalOptions
   ): Promise<void>;
+  commandPalette: Pick<
+    typeof import('@/modules/command-palette/registry'),
+    'registerProvider' | 'registerActions' | 'registerView'
+  > & {
+    open: typeof import('@/modules/command-palette/registry').openCommandPalette;
+    close: typeof import('@/modules/command-palette/registry').closeCommandPalette;
+  };
   expandPostArray(arr: FormData | URLSearchParams): LegacyWidgetSettings;
   escapeHtml(str: string);
   sites: Site[];
@@ -170,6 +177,10 @@ interface CraftStatic {
   getCpUrl(path: string, params?: string | LegacyWidgetSettings): string;
   defaultIndexCriteria: LegacyWidgetSettings;
   siteId?: number;
+  /** The control panel's syntax highlighter. */
+  highlighter: import('@tanstack/highlight/core').Highlighter;
+  /** The user's formatting locale, as a BCP 47 tag for `Intl`. */
+  formattingLocale?: string;
   cp?: {
     jobInfo?: unknown[];
     displayedJobInfo?: unknown;
@@ -257,14 +268,10 @@ interface CraftStatic {
 
   // Asset editing, still served by the legacy bundle.
   isImagick?: boolean;
-  PreviewFileModal: new (
-    assetId: number,
-    settings?: LegacyWidgetSettings
-  ) => LegacyModalInstance;
-  AssetImageEditor: new (
-    assetId: number,
-    settings?: LegacyWidgetSettings
-  ) => LegacyModalInstance;
+  PreviewFileModal: typeof import('@/modules/preview-file-modal').PreviewFileModal;
+  openAssetImageEditor: typeof import('@/modules/image-editor').openAssetImageEditor;
+  /** @deprecated `openAssetImageEditor()` should be used instead. */
+  AssetImageEditor: typeof import('@/modules/image-editor').AssetImageEditor;
   Uploaders: typeof import('@/modules/uploader');
 }
 

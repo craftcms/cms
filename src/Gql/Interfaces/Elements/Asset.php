@@ -13,7 +13,7 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Element;
 use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Generators\AssetType;
-use CraftCms\Cms\Gql\Types\Generators\ImageColorsType;
+use CraftCms\Cms\Gql\Types\Generators\ImageAnalysisType;
 use CraftCms\Cms\Gql\Types\Volume;
 use CraftCms\Cms\Support\Facades\Gql;
 use GraphQL\Type\Definition\FieldDefinition;
@@ -100,10 +100,10 @@ class Asset extends Element
                 'type' => Type::listOf(Type::float()),
                 'description' => 'The focal point represented as an array with `x` and `y` keys, or null if it’s not an image.',
             ],
-            'colors' => [
-                'name' => 'colors',
-                'type' => ImageColorsType::generateType(null),
-                'description' => 'Color data sampled from the image, or null if it’s not an image or it hasn’t been sampled yet.',
+            'analysis' => [
+                'name' => 'analysis',
+                'type' => ImageAnalysisType::generateType(null),
+                'description' => 'What was found in the image: its colors, and its keywords and the text in it, or null if it’s not an image or nothing has been found yet.',
             ],
             'blurhash' => [
                 'name' => 'blurhash',
@@ -119,6 +119,11 @@ class Asset extends Element
                 'name' => 'kind',
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'The file kind.',
+            ],
+            'orientation' => [
+                'name' => 'orientation',
+                'type' => Type::string(),
+                'description' => 'Whether the image is `landscape`, `portrait`, or `square`, or null if its dimensions aren’t known.',
             ],
             'size' => [
                 'name' => 'size',

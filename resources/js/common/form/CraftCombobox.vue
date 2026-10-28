@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import CraftComboboxControl from '@craftcms/ui/vue/CraftCombobox.vue';
-  import InputCallout from '@/common/components/InputCallout.vue';
+  import FieldTip from '@/common/components/FieldTip.vue';
   import {envVarsDocsUrl} from '@/common/utils/docsUrls';
   import type {SelectItem} from '@/common/types';
 
@@ -45,9 +45,9 @@
     :error="error"
   >
     <slot name="after">
-      <InputCallout
+      <FieldTip
         v-if="callouts?.includes('envVars')"
-        slot="after"
+        slot="tip"
         :message="t('This can begin with an environment variable.')"
         :href="envVarsDocsUrl"
       />

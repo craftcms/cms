@@ -46,7 +46,7 @@ beforeEach(function () {
     $this->unusedFieldHandle = $unusedField->handle;
     $this->unusedMatrixHandle = $matrixField->handle;
 
-    $this->importer = EntryImporter::create()
+    $this->importer = new EntryImporter()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null)
         ->matchCriteria(['title' => 'title']);

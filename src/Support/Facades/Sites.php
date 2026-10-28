@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static int getTotalEditableSites()
  * @method static \CraftCms\Cms\Site\Data\Site|null getSiteById(int $siteId, bool|null $withDisabled = null)
  * @method static \CraftCms\Cms\Site\Data\Site|null getSiteByHandle(string $siteHandle, bool|null $withDisabled = null)
+ * @method static \CraftCms\Cms\Site\Data\Site|null resolveSite(mixed $site, \CraftCms\Cms\Shared\Enums\ModelIdentifier[]|null $by = null, bool|null $withDisabled = null)
  * @method static \Illuminate\Support\Collection getSitesByLanguage(string $language, bool|null $withDisabled = null)
  * @method static int getRemainingSites()
  * @method static bool saveSite(\CraftCms\Cms\Site\Data\Site $site, bool $runValidation = true)

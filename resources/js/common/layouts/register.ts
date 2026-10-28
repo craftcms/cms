@@ -1,16 +1,18 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import CpContainer from '@/common/components/CpContainer.vue';
 import LayoutSlot from '@/common/components/LayoutSlot.vue';
+import ScreenPanel from '@/common/components/ScreenPanel.vue';
 import AppLayout from './AppLayout.vue';
 import {ownedPageOnly} from './ownedPageOnly';
 
 /**
  * The screen layout, for plugin pages that render it inline, `LayoutSlot`,
- * for filling its regions, and `CpContainer`, which pads page content to line
- * up with the shell's. Plugins resolve them by name
+ * for filling its regions, `ScreenPanel`, for adding panels to its details
+ * column, and `CpContainer`, which pads page content to line up with the
+ * shell's. Plugins resolve them by name
  * (`resolveComponent('craft:layout-slot')`).
  *
- * The first two change the screen's chrome, so they only render on a page
+ * All but the last change the screen's chrome, so they only render on a page
  * the plugin owns.
  */
 export function registerLayoutComponents(
@@ -23,6 +25,10 @@ export function registerLayoutComponents(
   components.register(
     'craft:layout-slot',
     ownedPageOnly('craft:layout-slot', LayoutSlot)
+  );
+  components.register(
+    'craft:screen-panel',
+    ownedPageOnly('craft:screen-panel', ScreenPanel)
   );
   components.register('craft:cp-container', CpContainer);
 }

@@ -190,6 +190,15 @@ describe('flush', () => {
     expect(style.marginBlockStart).toBe('0px');
   });
 
+  it('pulls a danger-plain button out too', async () => {
+    const {button} = await mountFlush({
+      flush: 'inline-end',
+      variant: 'danger-plain',
+    });
+
+    expect(getComputedStyle(button).marginInlineEnd).toBe('-13px');
+  });
+
   it('follows the padding of a smaller button', async () => {
     const {button} = await mountFlush({flush: 'inline-start', size: 'small'});
 
@@ -475,6 +484,22 @@ describe('[disabled]', () => {
     return {enabled: enabled!, disabled: disabled!};
   }
 
+  it('keeps a focusable disabled button hoverable without letting clicks through', async () => {
+    const button = document.createElement('craft-button') as CraftButton;
+    button.setAttribute('disabled', '');
+    button.setAttribute('focusable-when-disabled', '');
+    button.textContent = 'Publish';
+    const clicked = vi.fn();
+    button.addEventListener('click', clicked);
+    document.body.append(button);
+    await button.updateComplete;
+
+    button.click();
+
+    expect(getComputedStyle(button).pointerEvents).toBe('auto');
+    expect(clicked).not.toHaveBeenCalled();
+  });
+
   it('mutes a disabled button', async () => {
     const {enabled, disabled} = await mountPair('fill');
 
@@ -721,4 +746,31 @@ describe('craft-button selected state', () => {
       expect(getComputedStyle(button).backgroundColor).toBe(before);
     }
   );
+});
+
+it('shows an inset shadow while pressed', async () => {
+  await loadTokens();
+  document.body.innerHTML = `<craft-button class="is-active">Add</craft-button>`;
+  const button = document.querySelector('craft-button') as CraftButton;
+  await button.updateComplete;
+
+  expect(getComputedStyle(button).boxShadow).toContain('inset');
+});
+
+it('draws plain buttons’ focus rings just inside their edges, and others’ outside them', async () => {
+  await loadTokens();
+  const variants = ['plain', 'danger-plain', 'outline', 'primary'];
+  document.body.innerHTML = variants
+    .map((variant) => `<craft-button variant="${variant}">Label</craft-button>`)
+    .join('');
+  const buttons = [...document.querySelectorAll<CraftButton>('craft-button')];
+  await Promise.all(buttons.map((button) => button.updateComplete));
+
+  const offsets = buttons.map((button) => {
+    button.focus({focusVisible: true});
+
+    return getComputedStyle(button).outlineOffset;
+  });
+
+  expect(offsets).toEqual(['-2px', '-2px', '2px', '2px']);
 });

@@ -1,0 +1,7 @@
+{
+  // For the Custom Elements Manifest's type parser, which loads every file a
+  // tsconfig includes. Stories and tests add nothing to the manifest but bring
+  // in Storybook's and the test libraries' types, doubling its run time.
+  "extends": "./tsconfig.json",
+  "exclude": ["src/**/*.stories.ts", "src/**/*.test.ts"]
+}

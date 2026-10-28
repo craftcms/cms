@@ -319,6 +319,8 @@ readonly class ElementDeletions
                     DB::table(Table::DRAFTS)->where('canonicalId', $element->id)->delete();
                     DB::table(Table::REVISIONS)->where('canonicalId', $element->id)->delete();
                     DB::table(Table::ELEMENTS)->delete($element->id);
+                    // Forget any memoized element types, as their elements could have been cascade-deleted
+                    $this->elements->forgetElementTypes();
                     DB::table(Table::SEARCHINDEX)
                         ->where('elementId', $element->id)
                         ->delete();

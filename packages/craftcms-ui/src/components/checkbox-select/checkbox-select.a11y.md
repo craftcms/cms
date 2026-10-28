@@ -13,7 +13,7 @@ Follows the WAI-ARIA APG [Checkbox](https://www.w3.org/WAI/ARIA/apg/patterns/che
 ### Semantics
 
 - [x] With a `label`, the options sit in a `role="group"` named by it through `aria-labelledby`. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `names its group with its label` in `checkbox-select.browser.test.ts`.
-- [x] In the `add-menu` presentation, each Remove button is named “Remove {label}”, so the buttons can be told apart. Per WCAG 2.4.6 (Headings and Labels) and 4.1.2 (Name, Role, Value). Verified by `removes an option in add-menu, moving focus to the next one` in `checkbox-select.browser.test.ts`.
+- [x] In the `add-menu` presentation, each Remove button is named “Remove {label}”, so the buttons can be told apart, and follows the option’s label when it’s renamed. Per WCAG 2.4.6 (Headings and Labels) and 4.1.2 (Name, Role, Value). Verified by `removes an option in add-menu, moving focus to the next one` and `follows a renamed option in its label and its Remove button` in `checkbox-select.browser.test.ts`.
 - [x] Disabled options can't be removed or moved, and `disabled` takes away every Remove button and the “Add item” menu. Per WCAG 4.1.2 (Name, Role, Value). Verified by `keeps disabled options checked and in place` and `drops the “Add item” menu once everything is checked, and when disabled` in `checkbox-select.browser.test.ts`.
 
 ### Keyboard and focus

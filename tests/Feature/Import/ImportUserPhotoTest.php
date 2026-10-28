@@ -38,7 +38,7 @@ beforeEach(function () {
         return $path;
     };
 
-    $this->importer = UserImporter::create()
+    $this->importer = new UserImporter()
         ->site(Sites::getPrimarySite()->handle)
         ->transformer(null);
 

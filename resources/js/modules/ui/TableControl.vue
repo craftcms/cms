@@ -309,10 +309,14 @@
     const control = cell.querySelector<HTMLElement>(cellFocusControls);
     if (!control) return;
     // Prefer the control's own input (e.g. a color picker's text input over its
-    // swatch), unless it's hidden, as with icon pickers.
-    const input = control.hasAttribute('hidden-input')
+    // swatch, or a combobox's textbox over its clear button), unless it's
+    // hidden, as with icon pickers. A combobox slots a wrapper around its input.
+    const slotted = control.hasAttribute('hidden-input')
       ? null
       : control.querySelector<HTMLElement>(':scope > [slot="input"]');
+    const input = slotted?.matches('input, textarea, select')
+      ? slotted
+      : slotted?.querySelector<HTMLElement>('input, textarea, select');
     (input && input.tabIndex >= 0
       ? input
       : firstFocusableWithin(control)
@@ -324,6 +328,10 @@
     feature: 'tsvPaste' | 'enterNavigation'
   ): boolean {
     const column = props.control.props.columns[key];
+    if (column?.html) {
+      return false;
+    }
+
     return (
       column?.[feature] === true ||
       (column?.[feature] === undefined &&
@@ -577,10 +585,10 @@
                 (editable &&
                   (control.props.allowReorder || control.props.allowDelete))
               "
-              class="thin"
+              class="thin row-actions"
             >
               <DropIndicator :edge="closestEdge(row.id)" contained />
-              <div class="flex items-center justify-end gap-2">
+              <div class="flex items-center justify-end gap-xs">
                 <slot
                   name="row-actions"
                   :row="row"
@@ -636,5 +644,10 @@
 <style scoped>
   .row--dragging {
     opacity: 0.4;
+  }
+
+  /* Row action buttons sit as close to the cell edge as the money input's clear button */
+  .row-actions {
+    padding-inline: var(--c-spacing-xs);
   }
 </style>

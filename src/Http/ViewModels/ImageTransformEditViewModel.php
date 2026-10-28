@@ -113,7 +113,7 @@ class ImageTransformEditViewModel extends ViewModel
         foreach ($this->assetTransformers->getAllAssetTransformers() as $transformer) {
             if (! $this->assetTransformDrivers->has($transformer->driver)) {
                 $ui->add(Group::make("asset-transformer-{$transformer->uid}", [
-                    Callout::make("asset-transformer-{$transformer->uid}-unavailable", t('This Asset Transformer’s driver is unavailable.')),
+                    Callout::make("asset-transformer-{$transformer->uid}-unavailable", t('This asset transformer’s driver is unavailable.')),
                 ])->label((string) $transformer->name));
 
                 continue;

@@ -52,6 +52,10 @@ class Asset extends Element
             return $source->getVolume();
         }
 
+        if ($fieldName === 'orientation') {
+            return $source->getOrientation()?->value;
+        }
+
         if ($fieldName === 'srcset') {
             return $source->getSrcset($arguments['sizes']);
         }

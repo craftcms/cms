@@ -10,17 +10,12 @@ Craft.ElementEditor = Garnish.Base.extend(
   {
     isFullPage: null,
     $container: null,
-    $activityContainer: null,
     $contentContainer: null,
     $sidebar: null,
     $spinner: null,
     $expandSiteStatusesBtn: null,
     $statusIcon: null,
     $previewBtn: null,
-
-    metaModal: null,
-    $nameTextInput: null,
-    $saveMetaBtn: null,
 
     $siteStatusPane: null,
     $globalLightswitch: null,
@@ -57,8 +52,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     previewLinks: null,
 
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
-
-    _checkActivityTimeout: null,
 
     get tipDismissBtn() {
       return this.$container.find('.tip-dismiss-btn');
@@ -184,20 +177,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           'click',
           'expandSiteStatuses'
         );
-
-        // Use event delegation so we don't have to reinitialize when markup is replaced
-        Garnish.$bod.on('activate', '[data-cross-site-copy]', (ev) => {
-          // Make sure the action menu is within this element editor container
-          const $target = $(ev.currentTarget);
-          const $field = $target
-            .closest('.menu')
-            .data('disclosureMenu')
-            ?.$trigger.closest('.field');
-          if ($field.closest(this.$container).length) {
-            ev.preventDefault();
-            this.showFieldCopyModal($target, $field);
-          }
-        });
       }
 
       if (this.settings.previewTargets.length && this.isFullPage) {
@@ -227,11 +206,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       if (this.$container.prop('tagName') !== 'FORM') {
         throw 'Element editors may only be used with forms.';
-      }
-
-      if (Craft.edition !== Craft.Solo) {
-        this.$activityContainer = this.$container.find('.activity-container');
-        this._checkActivity();
       }
 
       // Override the serializer to use our own
@@ -537,9 +511,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     initForDraft: function () {
-      // Create the edit draft button
-      this.createEditMetaAction();
-
       if (this.settings.canSaveCanonical) {
         Garnish.uiLayerManager.registerShortcut(
           {
@@ -650,101 +621,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.$globalLightswitch.on('change', this._updateSiteStatuses.bind(this));
       this._updateGlobalStatus();
-    },
-
-    showFieldCopyModal: function ($btn, $field) {
-      const headingId =
-        'cross-site-copy-heading-' + Math.floor(Math.random() * 1000000);
-
-      const $hudContent = $('<div/>', {
-        class: 'modal fitted cross-site-copy-modal',
-        'aria-labelledby': headingId,
-      });
-      const $body = $('<div/>', {
-        class: 'body',
-      }).appendTo($hudContent);
-
-      $body.append(
-        `<div class="header"><h1 id="${headingId}" class="h2">${Craft.t(
-          'app',
-          'Copy “{name}” value',
-          {
-            name: $btn.data('label'),
-          }
-        )}</h1></div>`
-      );
-
-      const $form = Craft.createForm().appendTo($body);
-      $form.append(Craft.getCsrfInput());
-
-      const $fields = $('<div/>', {
-        class: 'flex flex-end flex-nowrap',
-      }).appendTo($form);
-
-      const $siteSelectField = Craft.ui
-        .createSelectField({
-          label: Craft.t('app', 'Copy from'),
-          class: ['fullwidth'],
-          options: this._getOtherSupportedSites().map((s) => ({
-            label: s.name,
-            value: s.id,
-          })),
-        })
-        .addClass('flex-grow')
-        .appendTo($fields);
-
-      Craft.ui
-        .createSubmitButton({
-          label: Craft.t('app', 'Copy'),
-          spinner: true,
-        })
-        .appendTo($fields);
-
-      const modal = new Garnish.Modal($hudContent);
-
-      const $siteSelect = $siteSelectField.find('select').focus();
-
-      this.addListener($form, 'submit', async (ev) => {
-        ev.preventDefault();
-        const $submitBtn = $form.find('[type=submit]');
-        $submitBtn.addClass('loading');
-        Craft.cp.announce(Craft.t('app', 'Loading'));
-
-        try {
-          const response = await Craft.sendActionRequest(
-            'POST',
-            'elements/copy-values-from-site',
-            {
-              data: {
-                elementId: this.getDraftElementId($btn.data('element-id')),
-                siteId: this.settings.siteId,
-                fromSiteId: parseInt($siteSelect.val()),
-                layoutElementUid: $btn.data('layout-element'),
-                namespace: $btn.data('namespace'),
-              },
-            }
-          );
-
-          const {fieldHtml, headHtml, bodyHtml, message} = response.data;
-
-          const $newField = $(fieldHtml);
-          $field.replaceWith($newField);
-          // Execute the response JS first so any Selectize inputs, etc.,
-          // get instantiated before field toggles
-          await Craft.appendHeadHtml(headHtml);
-          await Craft.appendBodyHtml(bodyHtml);
-          Craft.initUiElements($newField);
-
-          // Set new focus target since the old one just got replaced
-          modal.$triggerElement = $newField.find('[data-disclosure-trigger]');
-
-          Craft.cp.displaySuccess(message);
-        } finally {
-          $submitBtn.removeClass('loading');
-          Craft.cp.announce(Craft.t('app', 'Loading complete'));
-          modal.hide();
-        }
-      });
     },
 
     /**
@@ -1155,25 +1031,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     statusIcons: function () {
       return this.$statusIcon;
-    },
-
-    createEditMetaAction: function () {
-      if (!this.isFullPage) {
-        return;
-      }
-
-      const menu = $('#action-menu').disclosureMenu().data('disclosureMenu');
-      const destructiveGroup = menu.getFirstDestructiveGroup();
-      const group = menu.addGroup(null, true, destructiveGroup);
-      const button = menu.addItem(
-        {
-          type: 'button',
-          icon: async () => await Craft.ui.icon('edit'),
-          label: Craft.t('app', 'Edit draft settings'),
-        },
-        group
-      );
-      this.addListener(button, 'click', 'showMetaModal');
     },
 
     createPreviewLink: function (target, label) {
@@ -1658,10 +1515,6 @@ Craft.ElementEditor = Garnish.Base.extend(
         .removeClass('hidden invisible checkmark-icon alert-icon fade-out')
         .addClass('hidden');
 
-      if (this.$saveMetaBtn) {
-        this.$saveMetaBtn.addClass('active');
-      }
-
       // Prep the data to be saved, keeping track of the first input name for each delta group
       const [modifiedDeltaNames] = Craft.findModifiedDeltaNames(
         this.$container.data('initialSerializedValue'),
@@ -1713,8 +1566,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           }
         );
       } catch (e) {
-        this._afterSaveDraft();
-
         const ignore = this.ignoreFailedRequest;
         this.ignoreFailedRequest = false;
 
@@ -1737,7 +1588,6 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       }
 
-      this._afterSaveDraft();
       this.settings.previewParamValue = response.data.previewParamValue;
       await this._afterUpdateFieldLayout(response);
       const newInitialDeltaValues = {};
@@ -1925,10 +1775,6 @@ Craft.ElementEditor = Garnish.Base.extend(
         this.trigger('createProvisionalDraft');
       }
 
-      if (this.$nameTextInput) {
-        this.checkMetaValues();
-      }
-
       if ($.isPlainObject(response.data.draftElementIds)) {
         this.draftElementIds = {
           ...this.draftElementIds,
@@ -1940,12 +1786,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.settings.updatedTimestamp = response.data.updatedTimestamp;
       this.settings.canonicalUpdatedTimestamp =
         response.data.canonicalUpdatedTimestamp;
-    },
-
-    _afterSaveDraft: function () {
-      if (this.$saveMetaBtn) {
-        this.$saveMetaBtn.removeClass('active');
-      }
     },
 
     _showFailStatus: function () {
@@ -2003,8 +1843,6 @@ Craft.ElementEditor = Garnish.Base.extend(
           }
         );
       } catch (e) {
-        this._afterSaveDraft();
-
         const ignore = this.ignoreFailedRequest;
         this.ignoreFailedRequest = false;
 
@@ -2222,102 +2060,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       Craft.cp.announce(message);
     },
 
-    showMetaModal: function () {
-      if (!this.metaModal) {
-        this.createMetaModal();
-      } else {
-        this.metaModal.show();
-      }
-
-      if (!Garnish.isMobileBrowser(true)) {
-        setTimeout(() => {
-          this.$nameTextInput.focus();
-        }, 100);
-      }
-    },
-
-    createMetaModal: function () {
-      const $modal = $('<form/>', {
-        class: 'modal fitted',
-      });
-      const $hudBody = $('<div/>', {
-        class: 'body',
-      }).appendTo($modal);
-
-      // Add the Name field
-      const $nameField = $(
-        '<div class="field"><div class="heading"><label for="draft-name">' +
-          Craft.t('app', 'Draft Name') +
-          '</label></div></div>'
-      ).appendTo($hudBody);
-      const $nameInputContainer = $('<div class="input"/>').appendTo(
-        $nameField
-      );
-      this.$nameTextInput = $(
-        '<input type="text" class="text fullwidth" id="draft-name"/>'
-      )
-        .appendTo($nameInputContainer)
-        .val(this.settings.draftName);
-
-      // HUD footer
-      const $footer = $('<div class="hud-footer flex flex-center"/>').appendTo(
-        $modal
-      );
-
-      $('<div class="flex-grow"></div>').appendTo($footer);
-      this.$saveMetaBtn = $('<button/>', {
-        type: 'submit',
-        class: 'btn submit disabled',
-        'aria-disabled': 'true',
-        text: Craft.t('app', 'Save'),
-      }).appendTo($footer);
-
-      this.metaModal = new Garnish.Modal($modal);
-
-      this.addListener(this.$nameTextInput, 'input', 'checkMetaValues');
-      this.addListener($modal, 'submit', (ev) => {
-        ev.preventDefault();
-        this.saveMeta();
-      });
-
-      this.metaModal.on('escape', () => {
-        this.$nameTextInput.val(this.settings.draftName);
-      });
-    },
-
-    checkMetaValues: function () {
-      if (
-        this.$nameTextInput.val() &&
-        this.$nameTextInput.val() !== this.settings.draftName
-      ) {
-        this.$saveMetaBtn.removeClass('disabled');
-        this.$saveMetaBtn.removeAttr('aria-disabled');
-        return true;
-      }
-
-      this.$saveMetaBtn.addClass('disabled');
-      this.$saveMetaBtn.attr('aria-disabled', 'true');
-      return false;
-    },
-
-    shakeMetaModal: function () {
-      Garnish.shake(this.metaModal.$container);
-    },
-
-    saveMeta: function () {
-      return new Promise((resolve, reject) => {
-        if (!this.checkMetaValues()) {
-          this.shakeMetaModal();
-          reject();
-          return;
-        }
-
-        this.settings.draftName = this.$nameTextInput.val();
-        this.metaModal.hide();
-        this.checkForm(true).then(resolve).catch(reject);
-      });
-    },
-
     handleSubmit: async function (ev) {
       ev.preventDefault();
       ev.stopPropagation();
@@ -2435,159 +2177,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
     },
 
-    _checkActivity: function () {
-      if (!Craft.remainingSessionTime) {
-        // Try again after login
-        Garnish.once(Craft.AuthManager, 'login', () => {
-          this._checkActivity();
-        });
-        return;
-      }
-
-      this.queue?.push(
-        () =>
-          new Promise((resolve, reject) => {
-            Craft.sendActionRequest('POST', 'elements/recent-activity', {
-              params: {
-                dontExtendSession: 1,
-              },
-              data: {
-                elementType: this.settings.elementType,
-                elementId: this.settings.canonicalId,
-                draftId: this.settings.draftId,
-                siteId: this.settings.siteId,
-                provisional: this.settings.isProvisionalDraft,
-              },
-            })
-              .then(({data}) => {
-                // Preserve keyboard focus across the re-render: which activity
-                // button (by user) is focused right now?
-                const activeEl = document.activeElement;
-                const focusedUserId =
-                  activeEl instanceof HTMLElement &&
-                  activeEl.classList.contains('activity-btn')
-                    ? activeEl.getAttribute('data-user-id')
-                    : null;
-
-                this.$activityContainer
-                  .html('')
-                  .attr('role', 'region')
-                  .attr('aria-label', Craft.t('app', 'Recent Activity'));
-
-                if (data.activity.length) {
-                  $('<h2/>', {
-                    class: 'visually-hidden',
-                    text: Craft.t('app', 'Recent Activity'),
-                  }).appendTo(this.$activityContainer);
-                  const $ul = $('<ul/>').appendTo(this.$activityContainer);
-                  for (let i = 0; i < data.activity.length; i++) {
-                    const activity = data.activity[i];
-                    const triggerId = `activity-tooltip-${activity.userId}`;
-                    const $li = $('<li/>').appendTo($ul);
-                    const $button = $('<button/>', {
-                      type: 'button',
-                      id: triggerId,
-                      class: 'activity-btn',
-                      'data-user-id': activity.userId,
-                      'aria-label': Craft.t('app', '{name} active, more info', {
-                        name: activity.userName,
-                      }),
-                    }).appendTo($li);
-                    const $thumb = $(activity.userThumb)
-                      .addClass('elementthumb')
-                      .css('z-index', data.activity.length - i)
-                      .appendTo($button);
-                    $thumb.find('img,svg').attr('role', 'presentation');
-                    Craft.cp.elementThumbLoader.load($li);
-                    $thumb.find('title').remove();
-
-                    // <craft-tooltip> replaces the legacy Craft.Tooltip
-                    // toggletip; it shows the activity message on hover/focus of
-                    // the button. Recreated alongside the button each poll.
-                    $('<craft-tooltip/>')
-                      .attr('for', triggerId)
-                      .text(activity.message)
-                      .appendTo($li);
-
-                    // Maintain keyboard focus across the re-render.
-                    if (
-                      focusedUserId !== null &&
-                      activity.userId == focusedUserId
-                    ) {
-                      $button.focus();
-                    }
-                  }
-                }
-
-                if (this.isFullPage) {
-                  // if the element has been updated upstream, show a notification about it
-                  const elementUpdated =
-                    this.settings.updatedTimestamp &&
-                    this.settings.updatedTimestamp !== data.updatedTimestamp;
-                  const canonicalUpdated =
-                    this.settings.canonicalUpdatedTimestamp &&
-                    this.settings.canonicalUpdatedTimestamp !==
-                      data.canonicalUpdatedTimestamp;
-
-                  if (elementUpdated || canonicalUpdated) {
-                    const $reloadBtn = Craft.ui.createButton({
-                      label: Craft.t('app', 'Reload'),
-                      spinner: true,
-                    });
-
-                    Craft.cp.displayNotice(
-                      Craft.uppercaseFirst(
-                        Craft.t('app', 'This {type} has been updated.', {
-                          type:
-                            elementUpdated &&
-                            this.settings.draftId &&
-                            !this.settings.isProvisionalDraft
-                              ? Craft.t('app', 'draft')
-                              : Craft.elementTypeNames[
-                                    this.settings.elementType
-                                  ]
-                                ? Craft.elementTypeNames[
-                                    this.settings.elementType
-                                  ][2]
-                                : Craft.t('app', 'element'),
-                        })
-                      ),
-                      {
-                        details: $reloadBtn,
-                      }
-                    );
-                    $reloadBtn.on('click', () => {
-                      window.location.reload();
-                    });
-                  }
-                }
-
-                this.settings.updatedTimestamp = data.updatedTimestamp;
-                this.settings.canonicalUpdatedTimestamp =
-                  data.canonicalUpdatedTimestamp;
-
-                this.trigger('checkActivity', data);
-
-                this._checkActivityTimeout = setTimeout(() => {
-                  this._checkActivity();
-                }, 15000);
-                resolve();
-              })
-              .catch((e) => {
-                if (e?.response?.status === 400) {
-                  // Try again after login
-                  Garnish.once(Craft.AuthManager, 'login', () => {
-                    this._checkActivity();
-                  });
-                  resolve();
-                } else {
-                  reject(e);
-                }
-              });
-          })
-      );
-    },
-
     destroy: function () {
       this.queue?.destroy();
       delete this.queue;
@@ -2596,7 +2185,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.preview?.destroy();
       delete this.preview;
       this.$container.removeData('elementEditor');
-      clearTimeout(this._checkActivityTimeout);
       this.base();
     },
   },

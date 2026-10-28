@@ -42,7 +42,7 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 - [x] Escape in a search input that holds text clears the filter rather than closing the menu. Per WCAG 2.1.1 (Keyboard). Verified by `clears the filter on Escape without closing the menu` in `action-menu.test.ts`, which doesn't open the menu first, so it asserts the cleared filter but not that the menu stays open.
 - [ ] Escape on an item closes the menu and returns focus to the invoker. Per WCAG 2.1.1 (Keyboard) and 2.4.3 (Focus Order). Not yet verified. The menu relies on `craft-popover` for this; see `popover.a11y.md`.
 - [ ] Space activates a link item, as Enter does, outside a searchable menu. Per WCAG 2.1.1 (Keyboard). Not yet verified. In a searchable menu, Space types into the search input instead.
-- [ ] Activating an item closes the menu and returns focus to the invoker. Per WCAG 2.4.3 (Focus Order). Closing on click is verified by `closes on a click and reports an item the consumer added later` in `action-menu.test.ts`. Where focus goes afterward isn't.
+- [x] Activating an item closes the menu and returns focus to the invoker. Per WCAG 2.4.3 (Focus Order). Verified by `closes on a click and reports an item the consumer added later` in `action-menu.test.ts` and `closes and returns focus to a craft-button invoker when an item is chosen with Enter` in `action-menu.browser.test.ts`.
 - [ ] Moving focus out of the invoker and the menu closes it, as in the example. Per WCAG 2.4.3 (Focus Order). Known gap, inherited from `craft-popover`; see `popover.a11y.md`.
 
 ## Depends on usage

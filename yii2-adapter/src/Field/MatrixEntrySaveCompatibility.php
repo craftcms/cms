@@ -42,21 +42,20 @@ class MatrixEntrySaveCompatibility
             return;
         }
 
-        $collapsedIds = [];
-        foreach ($entries as $entry) {
-            if ($entry instanceof Entry && $entry->collapsed) {
-                $collapsedIds[] = $entry->id;
-            }
-        }
+        $collapsedEntries = array_filter(
+            $entries,
+            fn(ElementInterface $entry): bool => $entry instanceof Entry && $entry->collapsed,
+        );
 
-        if ($collapsedIds === []) {
+        if ($collapsedEntries === []) {
             return;
         }
 
         app(InternalAssetRegistry::class)->flash(CpCompatAsset::class);
 
-        foreach ($collapsedIds as $id) {
-            session()->flashJs("Craft.MatrixInput.rememberCollapsedEntryId($id);", Position::BodyEnd);
+        foreach ($collapsedEntries as $entry) {
+            $siteId = $entry->siteId ?? 'null';
+            session()->flashJs("Craft.MatrixInput.rememberCollapsedEntryId($entry->id, $siteId);", Position::BodyEnd);
         }
     }
 }

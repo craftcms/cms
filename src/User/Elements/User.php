@@ -37,6 +37,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
@@ -52,7 +53,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Url;
@@ -2367,6 +2367,15 @@ JS, [
             'addresses' => ImportHelper::getDestinationColsForFieldLayout(
                 app(Fields::class)->getLayoutByType(Address::class), null, null, $property
             ),
+            default => null
+        };
+    }
+
+    #[Override]
+    public static function getFieldLayoutForProperty(string $property): ?FieldLayout
+    {
+        return match ($property) {
+            'addresses' => app(Fields::class)->getLayoutByType(Address::class),
             default => null
         };
     }

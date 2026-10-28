@@ -144,4 +144,10 @@ class CountryCodeField extends BaseNativeField implements ImportableFieldLayoutE
 
         return $items;
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'flag';
+    }
 }

@@ -40,7 +40,6 @@ These construct `new Craft.Listbox(...)` and rely on the jQuery-wrapping global:
 - `CustomizeSourcesModal` (`$selectedOption.data(...)`)
 - `BaseElementIndex`
 - `Preview` (`.switchDeviceType($opt)`)
-- `AssetImageEditor`
 
 They are unchanged; they keep working via the `CraftListboxGlobal` global.
 

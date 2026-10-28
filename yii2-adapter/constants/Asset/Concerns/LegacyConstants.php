@@ -79,6 +79,12 @@ trait LegacyConstants
     /** @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Enums\FileKind} instead. */
     public const string KIND_JSON = FileKind::Json->value;
 
+    /**
+     * @since 5.12.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Enums\FileKind} instead.
+     */
+    public const string KIND_MARKDOWN = FileKind::Markdown->value;
+
     /** @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Enums\FileKind} instead. */
     public const string KIND_PDF = FileKind::Pdf->value;
 

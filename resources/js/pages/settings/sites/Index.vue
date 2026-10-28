@@ -2,7 +2,7 @@
   import {t} from '@craftcms/ui';
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
-  import InputCallout from '@/common/components/InputCallout.vue';
+  import FieldTip from '@/common/components/FieldTip.vue';
   import {envVarsDocsUrl} from '@/common/utils/docsUrls';
   import AdminTableNode from '@/modules/ui/AdminTableNode.vue';
   import type {TableNodePayload} from '@/modules/ui/table-types';
@@ -135,10 +135,7 @@
           />
         </template>
         <template #empty-row>
-          <craft-empty
-            icon="light/earth-americas"
-            :label="t('No sites exist yet.')"
-          >
+          <craft-empty icon="light/world" :label="t('No sites exist yet.')">
             <CpButtonLink
               v-if="!readOnly"
               :href="create({}, {query: {groupId: group?.id}}).url"
@@ -171,8 +168,8 @@
               t('What this group will be called in the control panel.')
             "
           >
-            <InputCallout
-              slot="after"
+            <FieldTip
+              slot="tip"
               :message="
                 t('Type <kbd>$</kbd> to choose an environment variable.')
               "
@@ -191,8 +188,8 @@
           v-model="form.name"
           :error="form.errors?.name"
         >
-          <InputCallout
-            slot="after"
+          <FieldTip
+            slot="tip"
             :message="t('Type <kbd>$</kbd> to choose an environment variable.')"
             html
             :href="envVarsDocsUrl"

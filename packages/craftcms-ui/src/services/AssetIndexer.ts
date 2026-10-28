@@ -71,6 +71,8 @@ export interface StartIndexingParams {
   cacheImages?: boolean;
   /** Whether to list empty folders */
   listEmptyFolders?: boolean;
+  /** Whether to sample missing image colors and queue images for AI tasks, even if their files haven't changed */
+  analyzeImages?: boolean;
 }
 
 /**

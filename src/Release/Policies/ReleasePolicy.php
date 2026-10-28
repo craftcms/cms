@@ -32,7 +32,17 @@ class ReleasePolicy
 
     public function detach(CraftUser $actor, Release $release, ElementInterface $draft): bool
     {
-        return $release->status->isMutable() && $this->publishDraft($actor, $draft);
+        if (! $release->status->isMutable()) {
+            return false;
+        }
+
+        // Once the live element is gone, the draft can't be published, so anyone
+        // who manages the release needs to be able to clear it out.
+        if (! $draft->getIsUnpublishedDraft() && $draft->getCanonical(true)->trashed) {
+            return $this->manage($actor, $release);
+        }
+
+        return $this->publishDraft($actor, $draft);
     }
 
     public function publish(CraftUser $actor, Release $release): bool

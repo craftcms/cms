@@ -258,6 +258,10 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     /** @return array<string, mixed> */
     public function getInputSchema(): array
     {
-        return ['type' => 'string', 'format' => 'date-time'];
+        // Any time the field can parse, rather than a strict format, which models and clients easily miss.
+        return [
+            'type' => 'string',
+            'description' => 'A time of day, such as 14:30 or 2:30 PM.',
+        ];
     }
 }

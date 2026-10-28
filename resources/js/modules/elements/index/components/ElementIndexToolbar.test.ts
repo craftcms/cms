@@ -323,6 +323,18 @@ it('removes score without a search and locks custom ordering', () => {
   expect(descending.disabled).toBe(true);
 });
 
+it.each([
+  ['table', true],
+  ['structure', true],
+  ['thumbs', false],
+  ['cards', false],
+])('shows table columns in the %s view: %s', async (mode, shown) => {
+  mount({mode});
+  await nextTick();
+
+  expect(container!.querySelector('checkbox-group-stub') !== null).toBe(shown);
+});
+
 it('names the view mode and sort direction button groups', () => {
   mount({
     viewModes: [

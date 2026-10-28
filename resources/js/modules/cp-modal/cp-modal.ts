@@ -1,5 +1,4 @@
-import {Modal, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
-import {uiLayerManager} from '@/modules/slideout/slideout';
+import {Base, isMobileBrowser} from '@craftcms/garnish';
 import {inputName} from '@/modules/ui/runtime';
 import type {UiValues} from '@/modules/ui/types';
 import {isHttpError} from '@craftcms/ui/utilities/api/http';
@@ -8,7 +7,16 @@ import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyReques
 declare const Craft: any;
 declare const $: any;
 
+/** A `craft-dialog`. */
+interface CpModalDialog extends HTMLElement {
+  opened: boolean;
+  noHeader: boolean;
+  label: string;
+}
+
 interface CpModalSettings {
+  /** The dialog's heading. Without one, the dialog has no header. */
+  title: string | null;
   params: UiValues;
   containerElement: string;
   containerAttributes: Record<string, string>;
@@ -31,16 +39,15 @@ interface CpModalRequestError extends Error {
   };
 }
 
-// Module-level (not a `static defaults`, which would collide with the base
-// `Modal.defaults`, a differently-shaped `ModalSettings`).
 const DEFAULTS: CpModalSettings = {
+  title: null,
   params: {},
   containerElement: 'form',
   containerAttributes: {
     action: '',
     method: 'post',
     novalidate: '',
-    class: 'cpmodal modal fitted',
+    class: 'cpmodal',
   },
   requestOptions: {},
   closeOnSubmit: true,
@@ -50,24 +57,25 @@ const DEFAULTS: CpModalSettings = {
 };
 
 /**
- * CpModal — a port of `Craft.CpModal` onto the modern `@craftcms/garnish`
- * `Modal`. Loads a control-panel screen (`action`) into a modal form, then
- * submits it with delta-encoded data and renders validation errors inline.
- * Booted from PHP deletion blockers (`new Craft.CpModal('…', {…})`).
+ * CpModal — `Craft.CpModal`, on a `craft-dialog`. Loads a control-panel screen
+ * (`action`) into a form in the dialog, then submits it with delta-encoded data
+ * and renders validation errors inline. Booted from PHP deletion blockers
+ * (`new Craft.CpModal('…', {…})`).
  *
- * The modal shell is modern (`extends Modal`), but — like its sibling
- * {@link CpScreenSlideout} — it keeps the jQuery seam (`declare const $`) for
- * the container/form operations, because the delta-tracking data
+ * Like its sibling {@link CpScreenSlideout}, it keeps the jQuery seam
+ * (`declare const $`) for the form, because the delta-tracking data
  * (`.data('initialSerializedValue' | 'delta-names' | 'serializer')`) and the
  * `Craft.ui.*` field-error helpers share those jQuery conventions with the rest
- * of the CP-screen framework. `Craft` stays a page global; `uiLayerManager`
- * comes from the slideout module.
+ * of the CP-screen framework.
+ *
+ * Emits `beforeLoad`, `load`, `submit`, `close` and `cancel`.
  */
-export class CpModal extends Modal {
+export class CpModal extends Base {
   action: string | null = null;
   namespace: string | null = null;
   succeeded = false;
-  resizeObserver: ResizeObserver | null = null;
+  visible = false;
+  dialog: CpModalDialog;
 
   #cpSettings: CpModalSettings;
   #abortController: AbortController | null = null;
@@ -76,63 +84,26 @@ export class CpModal extends Modal {
 
   // jQuery refs (form-ops seam), mirroring the legacy `$`-prefixed fields.
   #$container: any = null;
-  #$body: any = null;
   #$content: any = null;
-  #$footer: any = null;
   #$loadSpinner: any = null;
   #$cancelBtn: any = null;
   #$saveBtn: any = null;
 
   constructor(action?: string, settings?: Partial<CpModalSettings>) {
-    // The parent Modal must init first (TS: no `this` before super), so it's
-    // constructed container-less and non-auto-showing; shade/esc closing is
-    // handled by CpModal itself (closeMeMaybe), so disable the built-ins.
-    super(undefined, {
-      autoShow: false,
-      hideOnShadeClick: false,
-      hideOnEsc: false,
-    });
+    super();
 
     this.#cpSettings = Object.assign({}, DEFAULTS, settings);
     this.action = action ?? null;
-    this.#fieldsWithErrors = [];
 
-    // Body / content
-    this.#$body = $('<div/>', {class: 'cpmodal-body'});
-    this.#$content = $('<div/>', {class: 'cpmodal-content'}).appendTo(
-      this.#$body
-    );
-
-    // Footer
-    this.#$footer = $('<div/>', {class: 'cpmodal-footer hidden'});
-    $('<div/>', {class: 'flex-grow'}).appendTo(this.#$footer);
-    const $btnContainer = $('<div/>', {class: 'flex flex-nowrap'}).appendTo(
-      this.#$footer
-    );
-
-    this.#$loadSpinner = $('<div/>', {
-      class: 'spinner',
-      title: Craft.t('app', 'Loading'),
-      'aria-label': Craft.t('app', 'Loading'),
-    }).prependTo($btnContainer);
-
-    this.#$cancelBtn = $('<button/>', {
-      type: 'button',
-      class: 'btn',
-      text: Craft.t('app', 'Cancel'),
-    }).appendTo($btnContainer);
-
-    if (this.#cpSettings.showSubmitButton) {
-      this.#$saveBtn = Craft.ui
-        .createSubmitButton({
-          label: Craft.t('app', 'Save'),
-          spinner: true,
-        })
-        .appendTo($btnContainer);
+    this.dialog = document.createElement('craft-dialog') as CpModalDialog;
+    this.dialog.classList.add('cpmodal-dialog');
+    if (this.#cpSettings.title) {
+      this.dialog.label = this.#cpSettings.title;
+    } else {
+      this.dialog.noHeader = true;
     }
 
-    // Container form — fresh id per instance (the legacy shared-id default was a
-    // latent bug: container ids feed the X-Craft-Container-Id header).
+    // Fresh id per instance: container ids feed the X-Craft-Container-Id header.
     const containerAttributes = Object.assign(
       {id: `cp-modal-${Math.floor(Math.random() * 100000000)}`},
       this.#cpSettings.containerAttributes
@@ -141,37 +112,63 @@ export class CpModal extends Modal {
       `<${this.#cpSettings.containerElement}/>`,
       containerAttributes
     );
-    this.#$container.append(this.#$body.add(this.#$footer));
-
-    this.setContainer(this.#$container[0]);
     this.#$container.data('cpModal', this);
 
-    // Shortcuts + events
-    uiLayerManager().registerShortcut(
-      {keyCode: S_KEY, ctrl: true},
-      (ev: Event) => {
-        this.handleSubmit(ev);
-      }
+    this.#$content = $('<div/>', {class: 'cpmodal-content'}).appendTo(
+      this.#$container
     );
-    uiLayerManager().registerShortcut(ESC_KEY, () => {
-      this.closeMeMaybe();
+
+    this.#$loadSpinner = $('<craft-spinner/>', {
+      class: 'cpmodal-spinner',
+      label: Craft.t('app', 'Loading'),
+    }).appendTo(this.#$container);
+
+    this.#$cancelBtn = $('<craft-button/>', {
+      type: 'button',
+      slot: 'footer',
+      text: Craft.t('app', 'Cancel'),
     });
+
+    if (this.#cpSettings.showSubmitButton) {
+      this.#$saveBtn = $('<craft-button/>', {
+        type: 'button',
+        slot: 'footer',
+        variant: 'primary',
+        text: Craft.t('app', 'Save'),
+      });
+    }
+
+    this.dialog.append(
+      this.#$container[0],
+      this.#$cancelBtn[0],
+      ...(this.#$saveBtn ? [this.#$saveBtn[0]] : [])
+    );
 
     this.addListener(this.#$cancelBtn[0], 'click', () => {
       this.closeMeMaybe();
     });
-    this.addListener(this.$shade, 'click', () => {
-      this.closeMeMaybe();
-    });
+    if (this.#$saveBtn) {
+      this.addListener(this.#$saveBtn[0], 'click', () => {
+        this.#$container[0].requestSubmit();
+      });
+    }
     this.addListener(this.#$container[0], 'submit', 'handleSubmit');
-
-    this.resizeObserver = new ResizeObserver(() => {
-      if (this.visible) {
-        this.updateSizeAndPosition();
+    this.dialog.addEventListener('keydown', (ev) => {
+      if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 's') {
+        this.handleSubmit(ev);
       }
     });
+    this.dialog.addEventListener('craft-before-hide', (ev) => {
+      if (ev.target !== this.dialog) return;
+      ev.preventDefault();
+      this.closeMeMaybe();
+    });
 
-    this.load();
+    document.body.append(this.dialog);
+    this.dialog.opened = true;
+    this.visible = true;
+
+    void this.load();
   }
 
   load(data?: UiValues, refreshInitialData?: boolean): Promise<void> {
@@ -233,7 +230,6 @@ export class CpModal extends Modal {
         })
         .finally(() => {
           this.hideLoadSpinner();
-          this.show();
           this.#abortController = null;
         });
     });
@@ -244,11 +240,11 @@ export class CpModal extends Modal {
   }
 
   showLoadSpinner(): void {
-    this.#$loadSpinner.removeClass('hidden');
+    this.#$loadSpinner.prop('hidden', false);
   }
 
   hideLoadSpinner(): void {
-    this.#$loadSpinner.addClass('hidden');
+    this.#$loadSpinner.prop('hidden', true);
   }
 
   update(data: any): Promise<void> {
@@ -256,7 +252,7 @@ export class CpModal extends Modal {
       this.namespace = data.namespace;
 
       if (data.bodyClass) {
-        this.#$body.addClass(data.bodyClass);
+        this.#$content.addClass(data.bodyClass);
       }
 
       this.#$content.html(data.content);
@@ -268,8 +264,6 @@ export class CpModal extends Modal {
       if (data.formAttributes) {
         Craft.setElementAttributes(this.#$container, data.formAttributes);
       }
-
-      this.#$footer.removeClass('hidden');
 
       requestAnimationFrame(() => {
         Craft.appendHeadHtml(data.headHtml);
@@ -289,11 +283,11 @@ export class CpModal extends Modal {
   }
 
   showSubmitSpinner(): void {
-    this.#$saveBtn?.addClass('loading');
+    this.#$saveBtn?.prop('loading', true);
   }
 
   hideSubmitSpinner(): void {
-    this.#$saveBtn?.removeClass('loading');
+    this.#$saveBtn?.prop('loading', false);
   }
 
   handleSubmit(ev: Event): void {
@@ -393,7 +387,6 @@ export class CpModal extends Modal {
         this.#fieldsWithErrors.push($field);
       }
     });
-    this.updateSizeAndPosition();
   }
 
   clearErrors(): void {
@@ -434,27 +427,32 @@ export class CpModal extends Modal {
   }
 
   close(): void {
+    if (!this.visible) {
+      return;
+    }
+    this.visible = false;
+
     if (this.#abortController) {
       this.#ignoreFailedRequest = true;
       this.#abortController.abort();
     }
 
-    this.hide();
-    this.trigger('close');
-    this.destroy();
-  }
+    const dialog = this.dialog;
+    dialog.addEventListener('craft-after-hide', () => dialog.remove(), {
+      once: true,
+    });
+    dialog.opened = false;
 
-  override onShow(): void {
-    super.onShow();
-    this.resizeObserver?.observe(this.#$body[0]);
-  }
-
-  override onHide(): void {
-    super.onHide();
-    this.resizeObserver?.disconnect();
     if (!this.succeeded) {
       this.trigger('cancel');
       this.#cpSettings.onCancel?.();
     }
+    this.trigger('close');
+    this.destroy();
+  }
+
+  /** @deprecated `close()` should be used instead. */
+  hide(): void {
+    this.close();
   }
 }

@@ -8,7 +8,7 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
-use CraftCms\Cms\Import\ImportPlan;
+use CraftCms\Cms\Import\ImportPlans;
 use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -30,7 +30,7 @@ it('keeps the import’s own name and handle off the step rules', function () {
 });
 
 it('validateSettings throws with settings-only errors for an ad-hoc importer missing source/site', function () {
-    $importer = EntryImporter::create();
+    $importer = new EntryImporter;
 
     try {
         $importer->validateSettings();
@@ -44,7 +44,7 @@ it('validateSettings throws with settings-only errors for an ad-hoc importer mis
 });
 
 it('validate throws for a step missing its source', function () {
-    $importer = EntryImporter::create();
+    $importer = new EntryImporter;
 
     try {
         $importer->validate();
@@ -113,7 +113,7 @@ it('validateTransformer passes for a transformer class and an empty value, and f
 });
 
 it('excludes an invalid registered import from getAllImportPlans', function () {
-    $imports = app(ImportPlan::class);
+    $imports = app(ImportPlans::class);
 
     $imports->register('invalidFileImport', fn () => new ImportPlanData()
         ->name('Invalid File Import')
@@ -126,7 +126,7 @@ it('excludes an invalid registered import from getAllImportPlans', function () {
 });
 
 it('excludes only the registered import whose source alias isn’t defined', function () {
-    $imports = app(ImportPlan::class);
+    $imports = app(ImportPlans::class);
 
     $imports->register('badAlias', fn () => new ImportPlanData()
         ->name('Bad Alias')
@@ -145,6 +145,20 @@ it('reports a step without a source instead of failing', function () {
 
     expect($importPlan->validate())->toBeFalse()
         ->and($importPlan->errors()->keys())->toContain('steps.'.$importPlan->steps[0]->uid.'.source');
+});
+
+it('reports a step’s missing site, section and entry type with the importer’s messages', function () {
+    $importPlan = new ImportPlanData()
+        ->name('No Target')
+        ->handle('noTarget')
+        ->steps([['type' => EntryImporter::class, 'source' => 'entries.csv']]);
+
+    $importPlan->validate();
+    $prefix = 'steps.'.$importPlan->steps[0]->uid.'.settings';
+
+    expect($importPlan->errors()->get("$prefix.site"))->toBe(['Site must be provided.'])
+        ->and($importPlan->errors()->get("$prefix.section"))->toBe(['Section must be provided.'])
+        ->and($importPlan->errors()->get("$prefix.entryType"))->toBe(['Entry Type must be provided.']);
 });
 
 it('leaves out a step whose importer can’t be created instead of failing', function () {

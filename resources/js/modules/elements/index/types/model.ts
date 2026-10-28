@@ -9,7 +9,7 @@ import type {
 } from '../composables/useContentIndexData';
 import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
 import type {StructureMove} from '../composables/useElementIndexStructure';
-import type {ViewMode} from '@/modules/elements/types/view-state';
+import type {ThumbSize, ViewMode} from '@/modules/elements/types/view-state';
 import type {InlineEditingSaveResult} from '../composables/useInlineEditing';
 import type {ElementIndexExportFormat} from './exporters';
 import type {ElementIndexContext} from '../index-context';
@@ -39,6 +39,9 @@ export interface ElementIndexView {
   status: Ref<string>;
   conditions: Ref<ConditionConfig | null>;
   mode: Ref<ViewMode['mode']>;
+  thumbSize: Ref<ThumbSize>;
+  /** The thumbnail sizes the current view mode offers; empty for cards. */
+  thumbSizeOptions: ComputedRef<ThumbSize[]>;
   inlineEditing?: ElementIndexInlineEditing;
   sortField: Ref<string>;
   sortDirection: Ref<'asc' | 'desc'>;

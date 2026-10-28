@@ -109,11 +109,11 @@ class AssetTransformers
         $parsedHandle = Env::parse($handle);
 
         if (! is_string($parsedHandle) || $parsedHandle === '') {
-            throw new AssetTransformerNotFoundException("Asset Transformer [{$handle}] is not configured.");
+            throw new AssetTransformerNotFoundException("Asset transformer [{$handle}] is not configured.");
         }
 
         return $this->getAssetTransformerByHandle($parsedHandle)
-            ?? throw new AssetTransformerNotFoundException("Asset Transformer [{$parsedHandle}] is not configured.");
+            ?? throw new AssetTransformerNotFoundException("Asset transformer [{$parsedHandle}] is not configured.");
     }
 
     public function saveAssetTransformer(AssetTransformer $transformer, bool $runValidation = true): bool
@@ -144,7 +144,7 @@ class AssetTransformers
         $this->projectConfig->set(
             ProjectConfig::PATH_ASSET_TRANSFORMERS.'.'.$transformer->uid,
             $config,
-            "Save the “{$transformer->handle}” Asset Transformer",
+            "Save the “{$transformer->handle}” asset transformer",
         );
 
         if ($oldHandle && $oldHandle !== $transformer->handle) {
@@ -166,7 +166,7 @@ class AssetTransformers
 
         $this->projectConfig->remove(
             ProjectConfig::PATH_ASSET_TRANSFORMERS.'.'.$transformer->uid,
-            "Delete the “{$transformer->handle}” Asset Transformer",
+            "Delete the “{$transformer->handle}” asset transformer",
         );
         $this->reset();
 
@@ -192,7 +192,7 @@ class AssetTransformers
             ($oldTransformer?->handle === 'craft' && $newTransformer->handle !== 'craft')
             || ($newTransformer->handle === 'craft' && ($newTransformer->name !== 'Craft' || $newTransformer->driver !== 'craft'))
         ) {
-            throw new AssetTransformException('The reserved [craft] Asset Transformer’s name, handle, and driver cannot be changed.');
+            throw new AssetTransformException('The reserved [craft] asset transformer’s name, handle, and driver cannot be changed.');
         }
 
         if (
@@ -229,7 +229,7 @@ class AssetTransformers
 
     public function handleAssetTransformersRemoved(): void
     {
-        throw new AssetTransformException('The Asset Transformers Project Config section cannot be removed.');
+        throw new AssetTransformException('The asset transformers project config section cannot be removed.');
     }
 
     public function transform(
@@ -281,7 +281,7 @@ class AssetTransformers
 
         foreach ($driverRules as $handle => $rules) {
             if (! is_string($handle) || $handle === '') {
-                throw new InvalidAssetTransformException('Asset Transform parameter handles must be non-empty strings.');
+                throw new InvalidAssetTransformException('Asset transform parameter handles must be non-empty strings.');
             }
 
             $parameterRules[$handle] = $rules;
@@ -307,7 +307,7 @@ class AssetTransformers
             $path = is_array($path) && count($path) === 1 ? $path[0] : $path;
 
             if (! is_string($handle) || ! isset($definition->parameterRules[$handle], $rules[$handle]) || $path !== $handle) {
-                throw new InvalidAssetTransformException('Asset Transform parameter fields must match a declared parameter handle.');
+                throw new InvalidAssetTransformException('Asset transform parameter fields must match a declared parameter handle.');
             }
         }
 
@@ -325,7 +325,7 @@ class AssetTransformers
         $rules = array_map(fn (array $rules): array => ['nullable', ...$rules], $rules);
 
         if (Validator::make($parameters, $rules)->fails()) {
-            throw new InvalidAssetTransformException('Invalid Asset Transform parameter value.');
+            throw new InvalidAssetTransformException('Invalid asset transform parameter value.');
         }
 
         ksort($parameters);
@@ -359,7 +359,7 @@ class AssetTransformers
         $craft = $transformers->firstWhere('handle', 'craft');
 
         if ($craft !== null && $craft->driver !== 'craft') {
-            throw new AssetTransformException('The reserved [craft] Asset Transformer must use the [craft] driver.');
+            throw new AssetTransformException('The reserved [craft] asset transformer must use the [craft] driver.');
         }
 
         if ($craft === null) {
@@ -399,31 +399,31 @@ class AssetTransformers
         $transformer->validate();
 
         if ($transformer->driver && ! $this->transformDrivers->has($transformer->driver)) {
-            $transformer->errors()->add('driver', t('The selected Asset Transform driver is unavailable.'));
+            $transformer->errors()->add('driver', t('The selected asset transform driver is unavailable.'));
         }
 
         $duplicate = $this->getAllAssetTransformers()
             ->first(fn (AssetTransformer $existing): bool => $existing->handle === $transformer->handle && $existing->uid !== $transformer->uid);
 
         if ($duplicate !== null) {
-            $transformer->errors()->add('handle', t('The Asset Transformer handle has already been taken.'));
+            $transformer->errors()->add('handle', t('The asset transformer handle has already been taken.'));
         }
 
         if ($transformer->handle === 'craft' && $transformer->driver !== 'craft') {
-            $transformer->errors()->add('driver', t('The reserved [craft] Asset Transformer must use the [craft] driver.'));
+            $transformer->errors()->add('driver', t('The reserved [craft] asset transformer must use the [craft] driver.'));
         }
     }
 
     public function getDeleteDisabledReason(AssetTransformer $transformer): ?string
     {
         if ($transformer->handle === 'craft') {
-            return t('The Craft Asset Transformer cannot be deleted.');
+            return t('The Craft asset transformer cannot be deleted.');
         }
 
         $default = Env::parse(Cms::config()->defaultAssetTransformer);
 
         if ($default === $transformer->handle) {
-            return t('This Asset Transformer cannot be deleted because it is configured as the default.');
+            return t('This asset transformer cannot be deleted because it is configured as the default.');
         }
 
         $volumes = $this->projectConfig->get(ProjectConfig::PATH_VOLUMES);
@@ -436,7 +436,7 @@ class AssetTransformers
             $reference = is_array($volume) ? ($volume['assetTransformer'] ?? null) : null;
 
             if (is_string($reference) && Env::parse($reference) === $transformer->handle) {
-                return t('This Asset Transformer cannot be deleted because it is assigned to a volume.');
+                return t('This asset transformer cannot be deleted because it is assigned to a volume.');
             }
         }
 

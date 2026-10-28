@@ -134,7 +134,12 @@
         />
       </div>
 
-      <craft-callout v-if="error" role="alert" variant="danger" class="mt-2">
+      <craft-callout
+        v-if="error"
+        role="alert"
+        variant="danger"
+        class="block mt-md"
+      >
         {{ error }}
       </craft-callout>
     </div>

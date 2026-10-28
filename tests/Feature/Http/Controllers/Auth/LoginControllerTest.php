@@ -306,28 +306,6 @@ test('logout clears itself as the post-login return URL', function (Closure $url
     'site' => fn (): string => '/'.Cms::config()->getLogoutPath(),
 ]);
 
-test('showLoginModal requires email parameter', function () {
-    postJson(action([LoginController::class, 'showLoginModal']), [])
-        ->assertJsonValidationErrors(['email']);
-});
-
-test('showLoginModal returns html for the login modal', function () {
-    postJson(action([LoginController::class, 'showLoginModal']), [
-        'email' => 'test@example.com',
-    ])
-        ->assertOk()
-        ->assertJsonStructure(['html', 'headHtml', 'bodyHtml']);
-});
-
-test('showLoginModal requires email even with forElevatedSession when not impersonating', function () {
-    actingAs(User::findOne());
-
-    postJson(action([LoginController::class, 'showLoginModal']), [
-        'forElevatedSession' => true,
-    ])
-        ->assertJsonValidationErrors(['email']);
-});
-
 test('attemptLogin sets the remember cookie only when rememberMe is requested', function (bool $remember) {
     $user = User::findOne();
 

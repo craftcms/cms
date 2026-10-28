@@ -111,6 +111,51 @@ readonly class PluginsController
             $this->asFailure(t('Couldn’t disable plugin.'));
     }
 
+    /**
+     * Enables every installed plugin that's disabled.
+     */
+    public function enableAll(): Response
+    {
+        $success = true;
+
+        foreach ($this->installedPluginHandles() as $handle) {
+            if (! $this->plugins->isPluginEnabled($handle) && ! $this->plugins->enablePlugin($handle)) {
+                $success = false;
+            }
+        }
+
+        return $success ?
+            $this->asSuccess(t('Plugins enabled.')) :
+            $this->asFailure(t('Couldn’t enable all plugins.'));
+    }
+
+    /**
+     * Disables every enabled plugin.
+     */
+    public function disableAll(): Response
+    {
+        $success = true;
+
+        foreach ($this->installedPluginHandles() as $handle) {
+            if ($this->plugins->isPluginEnabled($handle) && ! $this->plugins->disablePlugin($handle)) {
+                $success = false;
+            }
+        }
+
+        return $success ?
+            $this->asSuccess(t('Plugins disabled.')) :
+            $this->asFailure(t('Couldn’t disable all plugins.'));
+    }
+
+    /** @return list<string> */
+    private function installedPluginHandles(): array
+    {
+        return array_values(array_filter(
+            array_keys($this->plugins->getComposerPluginInfo() ?? []),
+            $this->plugins->isPluginInstalled(...),
+        ));
+    }
+
     public function editSettings(string $handle, ?PluginInterface $plugin = null): mixed
     {
         if ($plugin === null && ($plugin = $this->plugins->getPlugin($handle)) === null) {

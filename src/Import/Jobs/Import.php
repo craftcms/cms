@@ -10,12 +10,12 @@ use CraftCms\Cms\Import\Events\ImportChunkFinished;
 use CraftCms\Cms\Import\Events\ImportChunkStarted;
 use CraftCms\Cms\Import\Events\ImportStepStarted;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\Path;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Bus\Batchable;
@@ -26,8 +26,6 @@ use Illuminate\Validation\ValidationException;
 use Override;
 use RuntimeException;
 use Throwable;
-
-use function CraftCms\Cms\t;
 
 /**
  * @since 6.0.0
@@ -144,6 +142,9 @@ class Import extends Job
         // count how many items we have left to process
         $dataCount = max(0, $totalCount - $this->start);
 
+        // the mapping uses uids for custom fields and entry types, so replace them with handles before importing
+        $step->prepareForImport();
+
         // normalizing the UI/config-based matchCriteria only depends on the importer, so it
         // could be done once per step's chunk rather than for each root item that is being imported
         $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($step);
@@ -197,7 +198,7 @@ class Import extends Job
                 ImportLog::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), [
                     'step' => $stepLabel,
                     'data' => $data[$i],
-                    'exception' => $e,
+                    // 'exception' => $e,
                 ]);
                 Cache::put(FinishImport::hasFailuresCacheKey($this->runId), true, now()->addDay());
                 Cache::put(FinishImport::stepHasFailuresCacheKey($this->runId, $this->stepUid), true, now()->addDay());

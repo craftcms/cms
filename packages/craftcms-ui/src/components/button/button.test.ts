@@ -98,6 +98,42 @@ describe('craft-button link mode', () => {
   });
 });
 
+describe('craft-button shortcut', () => {
+  function shortcut(element: CraftButton) {
+    return element.shadowRoot?.querySelector('craft-shortcut') ?? null;
+  }
+
+  it('renders no shortcut without the attribute', async () => {
+    const element = await createButton();
+    expect(shortcut(element)).toBeNull();
+  });
+
+  it('shows a plain key, hidden from screen readers', async () => {
+    const element = await createButton({shortcut: 'K'}, 'Search');
+    expect(shortcut(element)?.textContent).toBe('K');
+    expect(shortcut(element)?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('reads modifiers from a JSON shortcut', async () => {
+    const element = await createButton(
+      {shortcut: '{"key": "S", "alt": true, "shift": true}'},
+      'Save'
+    );
+    expect(shortcut(element)?.textContent).toBe('S');
+    expect(shortcut(element)?.alt).toBe(true);
+    expect(shortcut(element)?.shift).toBe(true);
+  });
+
+  /** Vue's in-DOM compiler sets attribute values as string properties. */
+  it('reads modifiers from JSON set as a property', async () => {
+    const element = await createButton({}, 'Save');
+    element.shortcut = '{"key": "S", "alt": true}';
+    await element.updateComplete;
+    expect(shortcut(element)?.textContent).toBe('S');
+    expect(shortcut(element)?.alt).toBe(true);
+  });
+});
+
 describe('craft-button accessible name check', () => {
   // A detached button's root is itself, which can't resolve an
   // `aria-labelledby` ID, so a check that ran after removal threw.

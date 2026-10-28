@@ -136,7 +136,8 @@ class Str extends \Illuminate\Support\Str
             $encoding = mb_strtolower($encoding);
         }
 
-        $encoding ??= static::encoding($str);
+        // Text whose encoding can't be detected is usually Windows-1252, the most common encoding for text that isn't UTF-8
+        $encoding ??= mb_strtolower(mb_detect_encoding($str, mb_detect_order(), true) ?: 'windows-1252');
 
         $str = mb_convert_encoding($str, 'UTF-8', $encoding);
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Element\Queries\AssetQuery;
 use Illuminate\Support\Collection;
+use Override;
 
 /**
  * @internal
@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
 trait EagerloadsTransforms
 {
     /**
-     * @var mixed The Asset Transforms that should be preloaded, if supported by their drivers
+     * @var mixed The asset transforms that should be preloaded, if supported by their drivers
      *            ---
      *            ```php{4}
      *            // fetch images with their 'thumb' transforms preloaded
@@ -35,36 +35,32 @@ trait EagerloadsTransforms
      */
     public mixed $withTransforms = null;
 
-    protected function initEagerloadsTransforms(): void
+    /**
+     * Preloads the requested transforms. The element eager loader calls this too.
+     */
+    #[Override]
+    public function afterHydrate(Collection $elements): Collection
     {
-        $this->afterQuery(static function (mixed $result, AssetQuery $assetQuery) {
-            if (! $result instanceof Collection) {
-                return $result;
-            }
+        $elements = parent::afterHydrate($elements);
 
-            if (! $assetQuery->withTransforms) {
-                return $result;
-            }
+        if (! $this->withTransforms) {
+            return $elements;
+        }
 
-            if ($assetQuery->asArray) {
-                return $result;
-            }
+        $transforms = $this->withTransforms;
+        if (! is_array($transforms)) {
+            $transforms = is_string($transforms)
+                ? str($transforms)->explode(',')->all()
+                : [$transforms];
+        }
 
-            $transforms = $assetQuery->withTransforms;
-            if (! is_array($transforms)) {
-                $transforms = is_string($transforms)
-                    ? str($transforms)->explode(',')->all()
-                    : [$transforms];
-            }
+        app(AssetTransformers::class)->preload($elements->all(), $transforms);
 
-            app(AssetTransformers::class)->preload($result->all(), $transforms);
-
-            return $result;
-        });
+        return $elements;
     }
 
     /**
-     * Asks capable Asset Transform drivers to preload the requested transforms for matching assets.
+     * Asks capable asset transform drivers to preload the requested transforms for matching assets.
      *
      * This may improve later transform rendering performance, but does not guarantee that output has materialized.
      *

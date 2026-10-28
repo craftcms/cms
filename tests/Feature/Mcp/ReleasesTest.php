@@ -29,7 +29,7 @@ beforeEach(function (): void {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $this->actor = User::query()->firstOrFail();
-    Passport::actingAs($this->actor, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($this->actor, ['mcp:admin'], 'craft-mcp');
     $this->entry = EntryModel::factory()->title('Live title')
         ->withField('summary', PlainText::class, value: 'Live summary')
         ->createElementWithFields()->element;
@@ -135,7 +135,7 @@ it('preserves omitted metadata, clears nullable metadata, and pages release name
 it('allows a release publisher to inspect basic metadata and publish without content permissions', function (): void {
     $publisher = User::factory()->create();
     app(UserPermissions::class)->saveUserPermissions($publisher->id, ['accessCp', 'useCraftMcp', 'manageReleases', 'publishReleases']);
-    Passport::actingAs($publisher, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($publisher, ['mcp:admin'], 'craft-mcp');
 
     ($this->callRelease)('releases.get', ['id' => $this->release->id])
         ->assertJsonPath('result.isError', false)

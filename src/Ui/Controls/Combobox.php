@@ -162,6 +162,21 @@ class Combobox extends Control
     }
 
     #[\Override]
+    public function inputSchema(): array
+    {
+        // Subclasses populate their options when building props
+        $this->props();
+        $choices = self::optionsSchema($this->options);
+        $schema = match (true) {
+            $choices === [] => ['type' => 'string'],
+            $this->requireOptionMatch => ['oneOf' => $choices],
+            default => ['type' => 'string', 'examples' => array_column($choices, 'const')],
+        };
+
+        return $this->multiple ? Arr::whereNotNull(['type' => 'array', 'items' => $schema, 'maxItems' => $this->limit]) : $schema;
+    }
+
+    #[\Override]
     public function props(mixed $value = null): array
     {
         return Arr::whereNotNull([

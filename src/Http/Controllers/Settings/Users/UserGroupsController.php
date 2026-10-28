@@ -220,7 +220,7 @@ class UserGroupsController extends BaseUserSettingsController
             'name' => $group->name,
             'handle' => $group->handle,
             'description' => $group->description,
-        ]]);
+        ]], $isNewGroup ? $this->createdRedirectUrl(route('craft.cp.settings.users.groups.edit', ['userGroup' => $group->id])) : null);
     }
 
     public function destroy(Request $request, int $groupId): Response

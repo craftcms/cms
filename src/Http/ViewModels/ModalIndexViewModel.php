@@ -169,7 +169,29 @@ class ModalIndexViewModel extends ContentIndexViewModel
             $source['criteria']['folderId'] = $folder->id;
         }
 
+        if ($source !== null && $this->includeSubfolders()) {
+            $source['criteria']['includeSubfolders'] = true;
+        }
+
         return [$sourceKey, $source];
+    }
+
+    /**
+     * Whether a search reaches into the subfolders of the folder on screen, as
+     * on the assets index.
+     */
+    public function includeSubfolders(): bool
+    {
+        return $this->search() !== null
+            && $this->search() !== ''
+            && $this->request->boolean('includeSubfolders')
+            && $this->canSearchSubfolders();
+    }
+
+    /** Whether the folder on screen has subfolders for a search to reach. */
+    public function canSearchSubfolders(): bool
+    {
+        return ($this->folder() ?? $this->sourceRootFolder())?->getHasChildren() ?? false;
     }
 
     /**

@@ -3,6 +3,9 @@
     type PublishableSection,
   } from '@/modules/elements/components/NewEntryButton.vue';
   import ElementIndexPage from '@/modules/elements/index/components/ElementIndexPage.vue';
+  import {useElementIndexPage} from '@/modules/elements/index/composables/useElementIndexPage';
+  import EntryMoverModal from '@/modules/entry-mover/EntryMoverModal.vue';
+  import {useEntryMover} from '@/modules/entry-mover/useEntryMover';
   import {
     appendIndexQuery,
     type ElementIndexRoute,
@@ -33,23 +36,34 @@
   };
 
   const sourceHref = index.url({page: page.props.page ?? ''});
+  const elementIndex = useElementIndexPage({route});
+  const entryMover = useEntryMover(elementIndex);
 </script>
 
 <template>
-  <ElementIndexPage
-    :route="route"
-    :source-href="sourceHref"
-    customizable-sources
-  >
-    <template #toolbar-actions="{elementIndex}">
-      <NewEntryButton
-        :sources="elementIndex.sources"
-        :source="elementIndex.source ?? undefined"
-        :publishable-sections="publishableSections"
-        :element-display-name="elementIndex.elementDisplayName"
-      />
-    </template>
-  </ElementIndexPage>
+  <div class="contents">
+    <ElementIndexPage
+      :route="route"
+      :index="elementIndex"
+      :source-href="sourceHref"
+      customizable-sources
+    >
+      <template #toolbar-actions="{elementIndex: indexState}">
+        <NewEntryButton
+          :sources="indexState.sources"
+          :source="indexState.source ?? undefined"
+          :publishable-sections="publishableSections"
+          :element-display-name="indexState.elementDisplayName"
+        />
+      </template>
+    </ElementIndexPage>
+
+    <EntryMoverModal
+      :request="entryMover.request.value"
+      @close="entryMover.close"
+      @moved="entryMover.moved"
+    />
+  </div>
 </template>
 
 <style scoped lang="scss"></style>

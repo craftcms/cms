@@ -50,6 +50,27 @@ it.each(['earlier first', 'latest first'])(
   }
 );
 
+it('keeps the loading state off for a thumb size change', async () => {
+  vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+  const response = deferred<ContentIndexData>();
+  const fetch = vi.fn().mockReturnValueOnce(response.promise);
+  scope = effectScope();
+  const index = scope.run(() =>
+    useDetachedElementIndex({initial: indexData(), fetch})
+  )!;
+
+  index.view.thumbSize.value = 'md';
+
+  expect(fetch).toHaveBeenCalledWith(
+    expect.objectContaining({thumbSize: 'md'})
+  );
+  expect(index.view.loading.value).toBe(false);
+  response.resolve(indexData(1));
+  await response.promise;
+  await nextTick();
+  expect(index.view.loading.value).toBe(false);
+});
+
 it('uses the new source default when clearing a search without a saved sort', async () => {
   vi.useFakeTimers();
   vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});

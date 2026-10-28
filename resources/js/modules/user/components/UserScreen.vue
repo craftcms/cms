@@ -19,10 +19,7 @@
   import {usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import CpContainer from '@/common/components/CpContainer.vue';
-  import DetailsPanels, {
-    type DetailsPanel,
-  } from '@/common/components/DetailsPanels.vue';
-  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import ScreenPanel from '@/common/components/ScreenPanel.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
 
   const page = usePage<{
@@ -35,10 +32,6 @@
   const hasDetails = computed(() =>
     Boolean(detailsFragment.value || details.value)
   );
-
-  const panels: DetailsPanel[] = [
-    {id: 'info', label: t('Info'), icon: 'circle-info', slot: 'info'},
-  ];
 </script>
 
 <template>
@@ -48,17 +41,18 @@
     </CpContainer>
   </div>
 
-  <LayoutSlot v-if="hasDetails" name="content-details">
-    <DetailsPanels :panels="panels">
-      <template #info>
-        <div class="py-lg px-(--cp-container-padding)">
-          <HtmlFragmentRenderer
-            v-if="detailsFragment"
-            :fragment="detailsFragment"
-          />
-          <div v-else v-html="details"></div>
-        </div>
-      </template>
-    </DetailsPanels>
-  </LayoutSlot>
+  <ScreenPanel
+    v-if="hasDetails"
+    id="info"
+    :label="t('Info')"
+    icon="circle-info"
+  >
+    <div class="py-lg px-(--cp-container-padding)">
+      <HtmlFragmentRenderer
+        v-if="detailsFragment"
+        :fragment="detailsFragment"
+      />
+      <div v-else v-html="details"></div>
+    </div>
+  </ScreenPanel>
 </template>

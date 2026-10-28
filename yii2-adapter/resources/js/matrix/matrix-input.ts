@@ -169,7 +169,9 @@ export class MatrixInput extends Base<MatrixInputSettings> {
     }
 
     const entries = this.entryElements();
-    const collapsedEntries = MatrixInput.getCollapsedEntryIds();
+    const collapsedEntries = MatrixInput.getCollapsedEntryIds(
+      this.settings!.siteId
+    );
 
     // only initialise drag-sort if the device has mouse events
     if (craft().hasMousePointerEvents()) {

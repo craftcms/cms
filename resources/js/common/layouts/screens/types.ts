@@ -21,6 +21,12 @@ export interface ScreenProps {
   /** Hides save controls without hiding non-save element actions. */
   saveDisabled?: boolean;
   /**
+   * The page shows its own read-only notices and hides its save controls with
+   * `saveDisabled`, so the shell ignores the `readOnly` page prop: no settings
+   * notice, and the footer keeps the page's other actions.
+   */
+  handlesReadOnly?: boolean;
+  /**
    * Hides the content footer altogether, for a page that puts its save
    * controls elsewhere and has nothing else to show there.
    */

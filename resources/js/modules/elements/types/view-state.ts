@@ -1,3 +1,4 @@
+import type {ChipThumbSizeValue} from '@craftcms/ui';
 import type {SortItem} from '@/common/types';
 
 export type ViewMode = {
@@ -24,12 +25,20 @@ export type SourceViewState = {
   sort?: Array<SortItem>;
 };
 
+/** The size of an index's thumbnails: its table rows' or its tiles'. */
+export type ThumbSize = ChipThumbSizeValue;
+
 /**
  * @TODO should inlineEditing and static be a "mode"?
  */
 export type ViewState = {
   inlineEditing: boolean;
   mode: ViewMode['mode'];
+  /**
+   * The thumbnail size in each kind of view: `table` covers structure
+   * views too. Absent entries fall back to that view's default size.
+   */
+  thumbSizes?: Partial<Record<'table' | 'thumbs', ThumbSize>>;
   /**
    * Per-source view overrides (columns + sort), keyed by source key. Absent
    * entries fall back to the source's own config (`tableAttributes` /

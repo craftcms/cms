@@ -7,6 +7,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
@@ -55,7 +56,7 @@ beforeEach(function (): void {
     )['element'];
 
     $this->callLifecycle = function (string $tool, array $arguments, ?User $actor = null): TestResponse {
-        Passport::actingAs($actor ?? $this->actor, ['mcp:use'], 'craft-mcp');
+        Passport::actingAs($actor ?? $this->actor, ['mcp:admin'], 'craft-mcp');
 
         return McpRequest::send($this, 'tools/call', ['name' => $tool, 'arguments' => $arguments]);
     };
@@ -127,7 +128,11 @@ it('restores discoverable deleted elements and leaves active elements unchanged 
         ])['element']['id'])->one(),
     };
     if ($element instanceof Asset) {
-        $element->keepFileOnDelete = true;
+        config()->set('filesystems.disks.lifecycle-trashed-assets', [
+            'driver' => 'local', 'root' => storage_path('framework/testing/lifecycle-trashed-assets'),
+        ]);
+        Storage::fake('lifecycle-trashed-assets');
+        Cms::config()->trashedAssetDisk('lifecycle-trashed-assets');
     }
 
     app(Elements::class)->deleteElement($element);

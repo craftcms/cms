@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
@@ -111,6 +112,16 @@ describe('elementChipHtml', function () {
 
         expect($html)->toContain('<a class="label-link" href="')
             ->and($html)->toContain('/custom-elements/123');
+    });
+
+    it('truncates a draft’s title on its own, so its draft label can wrap below it', function () {
+        $canonical = Entry::factory()->createElement(['title' => 'Original']);
+        $draft = app(Drafts::class)->createDraft(canonical: $canonical, creatorId: 1, name: 'Spring programme');
+
+        expect($this->elementHtml->elementChipHtml($draft))
+            ->toMatch('/<span id="[^"]+" class="label"><span class="label-link"><craft-truncate>Original<\/craft-truncate><span class="context-label">Spring programme<\/span><\/span><\/span>/')
+            ->and($this->elementHtml->elementChipHtml($canonical))
+            ->toMatch('/<craft-truncate id="[^"]+" class="label"><span class="label-link">Original<\/span><\/craft-truncate>/');
     });
 
     it('lets a selectable chip render its own labelled checkbox', function () {

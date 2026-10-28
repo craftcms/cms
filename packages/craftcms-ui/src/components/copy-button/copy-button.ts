@@ -1,38 +1,33 @@
 import {t} from '@src/utilities/translate';
 import {property, query, state} from 'lit/decorators.js';
-import {html, LitElement} from 'lit';
+import {html, LitElement, nothing} from 'lit';
 import type {CSSResultGroup} from 'lit';
 import styles from './copy-button.styles.js';
 import '../tooltip/tooltip.js';
 import type CraftTooltip from '../tooltip/tooltip.js';
-import '../visually-hidden/visually-hidden.js';
+import '../button/button.js';
+import {ButtonVariant} from '../button/button.js';
+import type CraftButton from '../button/button.js';
 
-const animations = {
-  'icon.in': {
-    keyframes: [
-      {scale: 0.25, opacity: 0.25},
-      {scale: 1, opacity: 1},
-    ],
-    options: {duration: 100},
-  },
-  'icon.out': {
-    keyframes: [
-      {scale: 1, opacity: 1},
-      {scale: 0.25, opacity: 0.25},
-    ],
-    options: {duration: 100},
-  },
-};
+const STATUS_ICONS = {
+  rest: 'custom-icons/clone-dashed',
+  copying: 'custom-icons/clone-dashed',
+  success: 'check',
+  error: 'xmark-large',
+} as const;
 
 /**
  * @summary Copy values to the clipboard on click.
  *
+ * Renders a `craft-button`, small and plain by default, so it sits in an
+ * input's suffix like any other button there.
+ *
  * @event craft-copy - Emitted when the value is copied to the clipboard.
  * @event craft-error - Emitted when the value could not be copied to the clipboard.
  *
- * @slot - The default slot.
+ * @slot - The button's label. Leave it empty for an icon-only button.
  *
- * @csspart button - The main button element.
+ * @csspart button - The `craft-button`.
  */
 export default class CraftCopyButton extends LitElement {
   static override styles: CSSResultGroup = [styles];
@@ -41,9 +36,8 @@ export default class CraftCopyButton extends LitElement {
 
   @state() protected status: 'rest' | 'copying' | 'success' | 'error' = 'rest';
 
-  @query('slot[name="copy-icon"]') protected copyIconEl!: HTMLSlotElement;
-  @query('slot[name="success-icon"]') protected successIconEl!: HTMLSlotElement;
-  @query('slot[name="error-icon"]') protected errorIconEl!: HTMLSlotElement;
+  @state() protected hasLabel = false;
+
   @query('craft-tooltip') protected tooltipEl!: CraftTooltip;
 
   /** Value to copy on click */
@@ -62,13 +56,16 @@ export default class CraftCopyButton extends LitElement {
   @property({attribute: 'tooltip-label'})
   tooltipLabel: string | null = null;
 
-  /**
+  /** The button's size. */
+  @property({reflect: true}) size: CraftButton['size'] = 'small';
 
+  /** The button's visual style. */
+  @property({reflect: true}) variant: ButtonVariant = ButtonVariant.Plain;
+
+  /**
    * Copies `value` to the clipboard and shows the outcome. Resolves once the
    * status has been shown.
-
    */
-
   async copyValue() {
     if (this.status === 'copying' || this.disabled) {
       return;
@@ -78,6 +75,7 @@ export default class CraftCopyButton extends LitElement {
 
     try {
       await navigator.clipboard.writeText(this.value);
+
       this.dispatchEvent(
         new CustomEvent('craft-copy', {
           bubbles: true,
@@ -102,63 +100,24 @@ export default class CraftCopyButton extends LitElement {
   }
 
   /**
-
    * Shows the copy outcome for a moment, then returns the button to rest.
-
    */
-
   async showStatus(status: 'success' | 'error') {
-    const statusIcon =
-      status === 'success' ? this.successIconEl : this.errorIconEl;
-    this.tooltipLabel = status === 'success' ? 'Copied' : 'Copy failed';
+    clearTimeout(this.#restTimer);
+    this.status = status;
     await this.updateComplete;
     this.tooltipEl?.repositionOverlay();
 
-    // Animate the copy icon out
-    await statusIcon.animate(
-      animations['icon.out'].keyframes,
-      animations['icon.out'].options
-    );
-    this.copyIconEl.hidden = true;
-
-    // Animate the status icon in
-    statusIcon.hidden = false;
-    await statusIcon.animate(
-      animations['icon.in'].keyframes,
-      animations['icon.in'].options
-    );
-
-    this.status = status;
-
-    // Put everything back
-    setTimeout(async () => {
-      // Animate the status icon out
-      await statusIcon.animate(
-        animations['icon.out'].keyframes,
-        animations['icon.out'].options
-      );
-      statusIcon.hidden = true;
-
-      // Animate the copy icon in
-      this.copyIconEl.hidden = false;
-      await this.copyIconEl.animate(
-        animations['icon.in'].keyframes,
-        animations['icon.in'].options
-      );
-
+    this.#restTimer = setTimeout(() => {
       this.status = 'rest';
-      this.tooltipLabel = 'Copy';
       this.tooltipEl?.hide();
     }, this.feedbackDuration);
   }
-  override connectedCallback() {
-    super.connectedCallback();
 
-    this.tooltipLabel = this.getAttribute('tooltip-label') || t('Copy');
+  #restTimer?: ReturnType<typeof setTimeout>;
 
-    if (!this.id) {
-      this.id = `copy-${Math.floor(Math.random() * 100000000)}`;
-    }
+  constructor() {
+    super();
 
     this.addEventListener('craft-copy', () => {
       this.showStatus('success');
@@ -169,38 +128,60 @@ export default class CraftCopyButton extends LitElement {
     });
   }
 
+  override connectedCallback() {
+    super.connectedCallback();
+
+    if (!this.id) {
+      this.id = `copy-${Math.floor(Math.random() * 100000000)}`;
+    }
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    clearTimeout(this.#restTimer);
+    this.status = 'rest';
+  }
+
+  /** The tooltip shows the outcome while it's up, then the label again. */
+  get #tooltipText(): string {
+    if (this.status === 'success') return t('Copied');
+    if (this.status === 'error') return t('Copy failed');
+    return this.tooltipLabel || t('Copy');
+  }
+
+  /**
+   * Checks the host's own children rather than the slot that changed. The
+   * label's slot moves into the button once there's a label, and the slot it
+   * leaves fires `slotchange` with nothing in it, which would flip `hasLabel`
+   * back and forth forever.
+   */
+  #onSlotChange() {
+    this.hasLabel = [...this.childNodes].some(
+      (node) => node instanceof Element || !!node.textContent?.trim()
+    );
+  }
+
   override render() {
+    // An icon-only button is left empty, so craft-button squares it off.
     return html`
-      <craft-tooltip for="${this.id}">${this.tooltipLabel}</craft-tooltip>
-      <button
+      <craft-tooltip for="${this.id}">${this.#tooltipText}</craft-tooltip>
+      <craft-button
         type="button"
         id="${this.id}"
-        @click="${this.copyValue}"
-        ?disabled=${this.disabled}
-        class="copy-button"
         part="button"
+        size="${this.size}"
+        variant="${this.variant}"
+        icon="${STATUS_ICONS[this.status]}"
+        aria-label="${this.hasLabel ? nothing : t('Copy to clipboard')}"
+        ?disabled=${this.disabled}
+        @click="${this.copyValue}"
+        >${this.hasLabel
+          ? html`<slot @slotchange=${this.#onSlotChange}></slot>`
+          : nothing}</craft-button
       >
-        <slot></slot>
-        <slot name="copy-icon">
-          <span class="icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-              <path
-                d="M288 448H64V224h64v-64H64c-35.3 0-64 28.7-64 64v224c0 35.3 28.7 64 64 64h224c35.3 0 64-28.7 64-64v-64h-64v64zM160 130h64v92h-64v-92zm288 0h64v92h-64v-92zM290 352v-64h92v64h-92zm0-288V0h92v64h-92zM224 98V64h34V0h-34c-35.3 0-64 28.7-64 64v34M414 64h34v34h64V64c0-35.3-28.7-64-64-64h-34m34 254v34h-34v64h34c35.3 0 64-28.7 64-64v-34M258 288h-34v-34h-64v34c0 35.3 28.7 64 64 64h34"
-              />
-            </svg>
-          </span>
-        </slot>
-
-        <slot name="success-icon" part="success-icon" hidden>
-          <craft-icon name="check"></craft-icon>
-        </slot>
-
-        <slot name="error-icon" part="error-icon" hidden>
-          <craft-icon name="xmark-large"></craft-icon>
-        </slot>
-
-        <craft-visually-hidden>Copy to clipboard</craft-visually-hidden>
-      </button>
+      ${this.hasLabel
+        ? nothing
+        : html`<slot hidden @slotchange=${this.#onSlotChange}></slot>`}
     `;
   }
 }

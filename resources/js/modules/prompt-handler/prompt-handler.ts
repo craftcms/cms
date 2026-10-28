@@ -1,6 +1,19 @@
-import {Base, Modal, type ModalSettings} from '@craftcms/garnish';
+import {Base, type ModalSettings} from '@craftcms/garnish';
 
 declare const Craft: any;
+
+/** A `craft-radio-group`; its `modelValue` is the checked radio's value. */
+type ChoiceGroup = HTMLElement & {modelValue: string};
+
+/** A `craft-checkbox`. */
+type ApplyToRemainingCheckbox = HTMLElement & {checked: boolean; label: string};
+
+/** A `craft-dialog`. */
+type PromptDialog = HTMLElement & {
+  label: string;
+  noHeader: boolean;
+  opened: boolean;
+};
 
 interface PromptChoice {
   value: string;
@@ -27,27 +40,18 @@ type PromptSelectionCallback = (
 
 /**
  * PromptHandler — a port of `Craft.PromptHandler` onto `@craftcms/garnish`
- * `Base`. Shows a modal asking the user to resolve a conflict (e.g. a filename
+ * `Base`. Shows a dialog asking the user to resolve a conflict (e.g. a filename
  * clash on upload), one prompt at a time across a batch, with an optional
  * "apply to remaining" checkbox. Booted imperatively by `Craft.AssetIndex`
  * (`new Craft.PromptHandler()`), so the class is exposed on `window.Craft`.
  *
- * jQuery-free, on the modern `@craftcms/garnish` `Modal`. One adaptation from
- * the legacy version: it poked the shared static `Garnish.Modal.$shade` to make
- * a shade click cancel the prompt; the modern `$shade` is per-instance, so that
- * listener is wired once at modal creation with `hideOnShadeClick:false`.
+ * Each prompt is a `craft-dialog`. Dismissing it (Escape, a click outside)
+ * cancels the rest of the batch, as a shade click did in the legacy modal,
+ * unless the prompt's `modalSettings.hideOnEsc` is `false`.
  */
 export class PromptHandler extends Base {
-  modal: Modal | null = null;
-
-  #modalContainer: HTMLElement | null = null;
-  #prompt: HTMLElement | null = null;
-  #promptMessage: HTMLElement | null = null;
-  #promptChoices: HTMLElement | null = null;
-  #applyToRemainingContainer: HTMLElement | null = null;
-  #applyToRemainingCheckbox: HTMLInputElement | null = null;
-  #applyToRemainingLabel: HTMLElement | null = null;
-  #promptButtons: HTMLElement | null = null;
+  /** The open prompt's `craft-dialog`, if any. */
+  modal: PromptDialog | null = null;
 
   #prompts: PromptItem[] = [];
   #promptBatchCallback: PromptBatchCallback = () => {};
@@ -131,141 +135,108 @@ export class PromptHandler extends Base {
     modalSettings?: Partial<ModalSettings>
   ): void {
     this.#promptCallback = callback;
+    this.modal?.remove();
 
-    if (this.modal === null) {
-      this.modal = new Modal(
-        Object.assign(
-          {closeOtherModals: false, hideOnShadeClick: false},
-          modalSettings
-        )
-      );
+    const dialog = document.createElement('craft-dialog') as PromptDialog;
+    dialog.noHeader = true;
+    this.modal = dialog;
 
-      // Legacy poked the shared static `Garnish.Modal.$shade`; the modern shade
-      // is per-instance, so wire cancel-on-shade-click once here (paired with
-      // hideOnShadeClick:false above).
-      if (this.modal.$shade) {
-        this.addListener(this.modal.$shade, 'click', () =>
-          this._cancelPrompt()
-        );
-      }
-    }
+    // The choices are a radio group named by the prompt's message. Prompt
+    // messages are server-rendered and may contain markup (matches the legacy
+    // `.html()`).
+    const choiceGroup = document.createElement(
+      'craft-radio-group'
+    ) as ChoiceGroup;
+    choiceGroup.setAttribute('name', 'promptAction');
 
-    if (this.#modalContainer === null) {
-      this.#modalContainer = document.createElement('div');
-      this.#modalContainer.className = 'modal fitted prompt-modal';
-      document.body.append(this.#modalContainer);
-    }
-
-    this.#modalContainer.replaceChildren();
-
-    this.#prompt = document.createElement('div');
-    this.#prompt.className = 'body';
-    this.#modalContainer.append(this.#prompt);
-
-    this.#promptMessage = document.createElement('p');
-    this.#promptMessage.className = 'prompt-msg';
-    this.#prompt.append(this.#promptMessage);
-
-    this.#promptChoices = document.createElement('div');
-    this.#promptChoices.className = 'options';
-    this.#prompt.append(this.#promptChoices);
-
-    this.#applyToRemainingContainer = document.createElement('label');
-    this.#applyToRemainingContainer.className = 'assets-applytoremaining';
-    this.#applyToRemainingContainer.style.display = 'none';
-    this.#prompt.append(this.#applyToRemainingContainer);
-
-    this.#applyToRemainingCheckbox = document.createElement('input');
-    this.#applyToRemainingCheckbox.type = 'checkbox';
-    this.#applyToRemainingContainer.append(this.#applyToRemainingCheckbox);
-
-    this.#applyToRemainingLabel = document.createElement('span');
-    this.#applyToRemainingContainer.append(this.#applyToRemainingLabel);
-
-    this.#promptButtons = document.createElement('div');
-    this.#promptButtons.className = 'buttons right';
-    this.#prompt.append(this.#promptButtons);
-
-    this.modal.setContainer(this.#modalContainer);
-
-    // Prompt messages are server-rendered and may contain markup (matches the
-    // legacy `.html()`).
-    this.#promptMessage.innerHTML = message;
-
-    const cancelBtn = document.createElement('button');
-    cancelBtn.type = 'button';
-    cancelBtn.className = 'btn';
-    cancelBtn.textContent = Craft.t('app', 'Cancel');
-    this.#promptButtons.append(cancelBtn);
-
-    const submitBtn = document.createElement('button');
-    submitBtn.type = 'submit';
-    submitBtn.className = 'btn submit disabled';
-    submitBtn.textContent = Craft.t('app', 'OK');
-    this.#promptButtons.append(submitBtn);
+    const promptMessage = document.createElement('div');
+    promptMessage.slot = 'label';
+    promptMessage.innerHTML = message;
+    choiceGroup.append(promptMessage);
+    dialog.label = promptMessage.textContent?.trim() ?? '';
 
     for (const choice of choices) {
-      const wrapper = document.createElement('div');
-      const label = document.createElement('label');
-      const input = document.createElement('input');
-      input.type = 'radio';
-      input.name = 'promptAction';
-      input.value = choice.value;
-      label.append(input, ` ${choice.title}`);
-      wrapper.append(label);
-      this.#promptChoices.append(wrapper);
-
-      this.addListener(input, 'click', () => {
-        submitBtn.classList.remove('disabled');
-      });
+      const radio = document.createElement('craft-radio') as HTMLElement & {
+        label: string;
+        choiceValue: string;
+      };
+      radio.label = choice.title;
+      radio.choiceValue = choice.value;
+      choiceGroup.append(radio);
     }
 
-    this.addListener(submitBtn, 'activate', () => {
-      const checked = this.#modalContainer?.querySelector<HTMLInputElement>(
-        'input[name=promptAction]:checked'
-      );
-      const choice = checked?.value ?? '';
-      const applyToRemaining = !!this.#applyToRemainingCheckbox?.checked;
-
-      this._selectPromptChoice(choice, applyToRemaining);
-    });
-
-    this.addListener(cancelBtn, 'activate', () => {
-      const applyToRemaining = !!this.#applyToRemainingCheckbox?.checked;
-      this._selectPromptChoice('cancel', applyToRemaining);
-    });
-
+    const applyToRemaining = document.createElement(
+      'craft-checkbox'
+    ) as ApplyToRemainingCheckbox;
+    applyToRemaining.hidden = !itemsToGo;
     if (itemsToGo) {
-      this.#applyToRemainingContainer.style.display = '';
-      this.#applyToRemainingLabel.textContent =
-        ' ' +
-        Craft.t('app', 'Apply this to the {number} remaining conflicts?', {
-          number: itemsToGo,
-        });
+      applyToRemaining.label = Craft.t(
+        'app',
+        'Apply this to the {number} remaining conflicts?',
+        {number: itemsToGo}
+      );
     }
 
-    this.modal.show();
-    this.getPromptMount().append(this.#modalContainer);
+    const body = document.createElement('div');
+    body.className = 'flex flex-col gap-md';
+    body.append(choiceGroup, applyToRemaining);
+
+    const cancelBtn = document.createElement('craft-button');
+    cancelBtn.slot = 'footer';
+    cancelBtn.setAttribute('type', 'button');
+    cancelBtn.textContent = Craft.t('app', 'Cancel');
+
+    const submitBtn = document.createElement('craft-button') as HTMLElement & {
+      disabled: boolean;
+    };
+    submitBtn.slot = 'footer';
+    submitBtn.setAttribute('type', 'button');
+    submitBtn.setAttribute('variant', 'primary');
+    submitBtn.textContent = Craft.t('app', 'OK');
+    submitBtn.disabled = true;
+
+    dialog.append(body, cancelBtn, submitBtn);
+
+    this.addListener(choiceGroup, 'model-value-changed', () => {
+      submitBtn.disabled = !choiceGroup.modelValue;
+    });
+
+    this.addListener(submitBtn, 'click', () => {
+      this._selectPromptChoice(
+        choiceGroup.modelValue ?? '',
+        applyToRemaining.checked
+      );
+    });
+
+    this.addListener(cancelBtn, 'click', () => {
+      this._selectPromptChoice('cancel', applyToRemaining.checked);
+    });
+
+    dialog.addEventListener('craft-before-hide', (event) => {
+      if (event.target !== dialog) return;
+      event.preventDefault();
+
+      if (modalSettings?.hideOnEsc !== false) {
+        this._cancelPrompt();
+      }
+    });
+
+    this.getPromptMount().append(dialog);
+    dialog.opened = true;
   }
 
   _selectPromptChoice(choice: string, applyToRemaining: boolean): void {
-    const prompt = this.#prompt;
-    const done = (): void => {
-      this.modal?.hide();
-      this.#promptCallback(choice, applyToRemaining);
-    };
+    const dialog = this.modal;
+    this.modal = null;
 
-    if (!prompt) {
-      done();
-      return;
+    if (dialog) {
+      dialog.addEventListener('craft-after-hide', () => dialog.remove(), {
+        once: true,
+      });
+      dialog.opened = false;
     }
 
-    // Legacy used jQuery `.fadeOut('fast', …)` (200ms).
-    const animation = prompt.animate([{opacity: 1}, {opacity: 0}], {
-      duration: 200,
-      fill: 'forwards',
-    });
-    animation.onfinish = done;
+    this.#promptCallback(choice, applyToRemaining);
   }
 
   _cancelPrompt(): void {

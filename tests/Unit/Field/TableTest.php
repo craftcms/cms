@@ -69,6 +69,8 @@ it('resolves normalized cell values for their form inputs', function (array $col
     'date input' => [['type' => 'date'], '2026-04-17T13:45:00+00:00', '2026-04-17'],
     'time input in site timezone' => [['type' => 'time'], '2026-04-17T13:45:00+00:00', '06:45'],
     'normalized colour' => [['type' => 'color'], '#ABC', '#aabbcc'],
+    'single-line text without line breaks' => [['type' => 'singleline'], "First\r\nsecond\nthird", 'First second third'],
+    'multi-line text with line breaks' => [['type' => 'multiline'], "First\r\nsecond", "First\nsecond"],
     'configured select default' => [[
         'type' => 'select',
         'options' => [['label' => 'Draft', 'value' => 'draft'], ['label' => 'Published', 'value' => 'published', 'default' => true]],
@@ -86,6 +88,21 @@ it('resolves normalized cell values for their form inputs', function (array $col
         'options' => [['label' => 'Draft', 'value' => 'draft', 'default' => true]],
     ], '', ''],
 ]);
+
+it('edits single-line cells in one-row textareas that keep their values on one line', function () {
+    $field = new Table([
+        'handle' => 'details',
+        'columns' => ['col1' => ['heading' => 'Value', 'handle' => 'value', 'type' => 'singleline']],
+    ]);
+    $control = $field->uiControl(new FieldContext('details', value: $field->normalizeValue([['col1' => 'Ada']], null)));
+    $payload = app(UiResolver::class)->resolve(Ui::make([
+        UiField::make('Details', $control),
+    ]), new UiContext);
+    $cell = $payload->nodes[0]->control->uis[0]->nodes[0]->control;
+
+    expect($cell->component)->toBe('craft:textarea')
+        ->and($cell->props)->toMatchArray(['rows' => 1, 'singleLine' => true]);
+});
 
 it('validates optional built-in cell values and reports their table paths', function (string $type, mixed $value, bool $valid) {
     $field = new Table([

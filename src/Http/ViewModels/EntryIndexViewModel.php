@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Entry\Actions\MoveToSection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Section\Data\Section;
@@ -19,6 +21,8 @@ use Override;
  */
 class EntryIndexViewModel extends ContentIndexViewModel
 {
+    public const string MOVE_TO_SECTION_EVENT = 'entries:move-to-section';
+
     public function __construct(
         ElementIndexRequest $request,
         ?string $page = null,
@@ -30,6 +34,22 @@ class EntryIndexViewModel extends ContentIndexViewModel
     public function sectionHandle(): string
     {
         return $this->sectionHandle ?? '';
+    }
+
+    /** @return list<array<string, mixed>>|null */
+    #[Override]
+    public function actions(): ?array
+    {
+        $actions = parent::actions();
+
+        if (! $actions) {
+            return $actions;
+        }
+
+        return array_values(array_filter(array_map(
+            $this->moveToSectionAction(...),
+            $actions,
+        )));
     }
 
     /** @return list<array<string, mixed>> */
@@ -88,6 +108,54 @@ class EntryIndexViewModel extends ContentIndexViewModel
         $section = Sections::getSectionByHandle($this->sectionHandle);
 
         return $section ? "section:$section->uid" : null;
+    }
+
+    /**
+     * Whether the user can move each entry to another section, for the Move to
+     * action's `selectionAttribute`.
+     *
+     * @return array<string, bool>
+     */
+    #[Override]
+    protected function extraCapabilities(ElementInterface $element): array
+    {
+        return $element instanceof Entry ? ['movable' => $element->canMove()] : [];
+    }
+
+    /**
+     * Points the Move to action at the page's section picker. It's only offered
+     * on a section's own source, which the picker needs to leave that section
+     * out of the choices.
+     *
+     * @param  array<string, mixed>  $action
+     * @return array<string, mixed>|null
+     */
+    private function moveToSectionAction(array $action): ?array
+    {
+        if (($action['key'] ?? null) !== MoveToSection::class) {
+            return $action;
+        }
+
+        [$sourceKey] = $this->sourceState();
+
+        if (! is_string($sourceKey) || ! str_starts_with($sourceKey, 'section:')) {
+            return null;
+        }
+
+        unset($action['disabled']);
+
+        return [
+            ...$action,
+            'selectionAttribute' => 'movable',
+            'action' => [
+                'type' => 'event',
+                'name' => self::MOVE_TO_SECTION_EVENT,
+                'detail' => [
+                    'siteId' => $this->siteId(),
+                    'currentSectionUid' => substr($sourceKey, strlen('section:')),
+                ],
+            ],
+        ];
     }
 
     /**

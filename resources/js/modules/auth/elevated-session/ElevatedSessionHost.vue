@@ -94,6 +94,7 @@
       >
         <HtmlFragmentRenderer
           v-if="state.alternativeLoginMethods"
+          class="grid gap-1 pt-1"
           slot="alternative-methods"
           :fragment="state.alternativeLoginMethods"
         />

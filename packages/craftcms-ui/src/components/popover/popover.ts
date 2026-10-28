@@ -4,11 +4,67 @@ import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
 // Named explicitly so the emitted .d.ts can reference Lion's mixin
 // constructor by package specifier instead of a pnpm store path (TS2883).
 import type {} from '@open-wc/dedupe-mixin';
-import type {VirtualElement} from '@popperjs/core';
+import type {Modifier, VirtualElement} from '@popperjs/core';
+import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
+import {isFocusable} from '@src/utilities/focus-return.js';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
 import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
+import {
+  lowerOverlay,
+  raiseOverlay,
+  topLayerStyles,
+} from '@src/utilities/overlay-top-layer.js';
 import hostStyles from '@src/styles/host.styles';
 import styles from './popover.styles.js';
+
+/**
+ * How far the pane stays from the viewport's edge when it's sized to fit,
+ * matching the padding Lion gives Popper's `flip`. Any less and the fitted
+ * pane would count as overflowing, flipping it to the other side.
+ */
+const VIEWPORT_MARGIN = 16;
+
+/**
+ * Caps the pane at the room left between it and the viewport edge it opens
+ * toward, through `--_popover-available-block-size`, so a popover with room
+ * below it can use it rather than stopping at the stylesheet's `40vh`. An
+ * explicit `--popover-max-block-size` still wins.
+ *
+ * Measured from where Popper has just placed the pane, so it follows a flip.
+ * Changing the cap changes the pane's height, which a `top` placement is
+ * positioned by, so the popper updates once more when it does.
+ */
+const fitAvailableBlockSize: Partial<Modifier<'fitAvailableBlockSize', {}>> = {
+  name: 'fitAvailableBlockSize',
+  enabled: true,
+  phase: 'main',
+  requiresIfExists: ['offset', 'preventOverflow', 'flip'],
+  fn: ({state, instance}) => {
+    const top = state.modifiersData.popperOffsets?.y ?? 0;
+    const viewport = document.documentElement.clientHeight;
+    const side = state.placement.split('-')[0];
+    const available = Math.floor(
+      side === 'top'
+        ? top + state.rects.popper.height - VIEWPORT_MARGIN
+        : side === 'bottom'
+          ? viewport - VIEWPORT_MARGIN - top
+          : viewport - VIEWPORT_MARGIN * 2
+    );
+    const style = state.elements.popper.style;
+    const property = '--_popover-available-block-size';
+    const previous = style.getPropertyValue(property);
+
+    if (!viewport || available <= 0) {
+      style.removeProperty(property);
+    } else {
+      style.setProperty(property, `${available}px`);
+    }
+
+    if (style.getPropertyValue(property) !== previous) {
+      void instance.update();
+    }
+  },
+};
 
 /** Lion's own default, for pages that don't load the CP tokens. */
 const DEFAULT_POPOVER_LAYER = 9999;
@@ -60,7 +116,7 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   // `hostStyles` for its box-sizing reset, which a shadow root doesn't inherit
   // from the page: without it the pane's 1px border sits outside its width and
   // it overshoots whatever it was sized to.
-  static override styles = [hostStyles, styles];
+  static override styles = [hostStyles, topLayerStyles, styles];
 
   /**
    * Names the popup for assistive tech. Lion gives the content `role="dialog"`,
@@ -113,6 +169,9 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   /** Lion's controller while it's wired up to the top layer. */
   #layeredCtrl: EventTarget | null = null;
 
+  /** Whether focus was in the content when the popover began to close. */
+  #closingWithFocusInContent = false;
+
   constructor() {
     super();
     wireOverlayLifecycleEvents(this);
@@ -135,58 +194,94 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
 
     this.#layeredCtrl = this._overlayCtrl as unknown as EventTarget;
     this.#layeredCtrl.addEventListener('before-show', this.#raise);
+    this.#layeredCtrl.addEventListener('before-hide', swallowHeldEnterKeyup);
+    this.#layeredCtrl.addEventListener('before-hide', this.#noteFocus);
     this.#layeredCtrl.addEventListener('hide', this.#lower);
+    this.#layeredCtrl.addEventListener('hide', this.#returnFocus);
+    this.#layeredCtrl.addEventListener('hide', this.#passOnEscape);
   }
 
   override _teardownOverlayCtrl() {
+    // Removed while open, it never reaches `before-hide`, where the guard
+    // usually goes, so the Enter that chose an item can still click whatever
+    // takes focus next.
+    if (this._overlayCtrl?.isShown) {
+      swallowHeldEnterKeyup();
+    }
+
     this.#lower();
     this.#layeredCtrl?.removeEventListener('before-show', this.#raise);
+    this.#layeredCtrl?.removeEventListener(
+      'before-hide',
+      swallowHeldEnterKeyup
+    );
+    this.#layeredCtrl?.removeEventListener('before-hide', this.#noteFocus);
     this.#layeredCtrl?.removeEventListener('hide', this.#lower);
+    this.#layeredCtrl?.removeEventListener('hide', this.#returnFocus);
+    this.#layeredCtrl?.removeEventListener('hide', this.#passOnEscape);
     this.#layeredCtrl = null;
 
     super._teardownOverlayCtrl();
   }
 
-  /** The `<dialog>` Lion wraps the content in. */
-  get #dialog(): HTMLElement | null {
-    return (
-      this.shadowRoot?.querySelector<HTMLElement>(
-        'dialog[data-overlay-outer-wrapper]'
-      ) ?? null
-    );
+  /**
+   * Whether focus is in the popover's content, slotted or not. Lion only
+   * checks its own content node, in the shadow root, so it misses slotted
+   * content and leaves focus on a hidden element when the popover closes.
+   */
+  #hasFocusInContent(): boolean {
+    const active = (this.getRootNode() as Document | ShadowRoot).activeElement;
+    if (!active) {
+      return false;
+    }
+
+    const invoker = this._overlayInvokerNode;
+    if (invoker && (invoker === active || invoker.contains(active))) {
+      return false;
+    }
+
+    return active === this || this.contains(active);
   }
 
-  /**
-   * Lifts the open popover into the browser's top layer, above every stacking
-   * context. Lion's non-modal dialog otherwise stays inside its ancestors':
-   * a z-index can't raise it past a sticky footer beside, say, a
-   * `container-type` field group, which is a stacking context of its own.
-   *
-   * Before Lion positions it, since the top layer also changes what a fixed
-   * overlay is placed against. Popovers opened later stack above earlier
-   * ones, so nested menus still land on top.
-   */
-  #raise = () => {
-    const dialog = this.#dialog;
+  #noteFocus = (): void => {
+    this.#closingWithFocusInContent = this.#hasFocusInContent();
+  };
 
-    if (!dialog || typeof dialog.showPopover !== 'function') {
+  /**
+   * Returns focus to the invoker once the popover has closed, if focus was in
+   * the content and hasn't since gone somewhere that can hold it. Judged the
+   * same way as `craft-dialog`'s return, with `isFocusable()`.
+   */
+  #returnFocus = (): void => {
+    if (!this.#closingWithFocusInContent) {
       return;
     }
 
-    dialog.setAttribute('popover', 'manual');
-
-    if (!dialog.matches(':popover-open')) {
-      dialog.showPopover();
+    this.#closingWithFocusInContent = false;
+    if (isFocusable(document.activeElement) && !this.#hasFocusInContent()) {
+      return;
     }
+
+    (
+      this._overlayCtrl as unknown as {elementToFocusAfterHide?: HTMLElement}
+    ).elementToFocusAfterHide?.focus();
   };
 
-  #lower = () => {
-    const dialog = this.#dialog;
-
-    if (dialog?.matches?.(':popover-open')) {
-      dialog.hidePopover();
-    }
+  /**
+   * Lets Escape on the invoker of a closed popover reach the popover around
+   * it. Lion only skips a closed overlay's Escape handler once Escape itself
+   * closed it; closed any other way, the handler claims the next Escape, so
+   * the outer popover needs a second press.
+   */
+  #passOnEscape = (): void => {
+    (
+      this._overlayCtrl as unknown as {__escKeyHandlerCalled: boolean}
+    ).__escKeyHandlerCalled = true;
   };
+
+  #raise = () => raiseOverlay(this);
+
+  #lower = () => lowerOverlay(this);
 
   // @ts-expect-error – Lion expects this to return an OverlayConfig
   _defineOverlayConfig() {
@@ -212,6 +307,7 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
             },
           },
           ...viewportEscapingModifiers(),
+          fitAvailableBlockSize,
         ],
       },
     };

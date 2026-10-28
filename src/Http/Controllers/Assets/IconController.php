@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,7 +19,10 @@ readonly class IconController
 
     public function __invoke(Request $request, ?string $extension = null): Response
     {
-        $svg = AssetsHelper::iconSvg($request->input('extension', $extension));
+        $svg = AssetsHelper::iconSvg(
+            $request->input('extension', $extension),
+            $request->input('theme') === Theme::Dark->value,
+        );
 
         // iconSvg() may return a file path when the icon is already cached on disk
         if (is_file($svg)) {

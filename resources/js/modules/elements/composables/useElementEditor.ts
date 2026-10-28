@@ -116,6 +116,10 @@ export interface ElementEditPayload {
   elementId: number | null;
   canonicalId: number | null;
   elementType: string;
+  /** The element type's reference handle, which its reference tags start with. */
+  refHandle?: string | null;
+  /** The element's front-end URL, when it has one. */
+  elementUrl?: string | null;
   siteId: number | null;
   fieldLayoutId: number | null;
   title: string;

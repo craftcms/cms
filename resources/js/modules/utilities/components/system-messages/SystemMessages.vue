@@ -69,6 +69,7 @@
         <craft-button
           slot="actions"
           type="button"
+          variant="plain"
           icon
           size="small"
           @click="openEditor(message, $event)"

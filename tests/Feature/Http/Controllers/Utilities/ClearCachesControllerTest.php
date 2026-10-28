@@ -9,6 +9,7 @@ use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use Illuminate\Support\Facades\Cache;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -43,10 +44,23 @@ test('can clear specific caches', function () {
     postJson(action([ClearCachesController::class, 'clearCaches']), [
         'caches' => ['first'],
     ])
-        ->assertRedirectBack();
+        ->assertOk()
+        ->assertJsonPath('message', 'Caches cleared.');
 
     expect(Cache::has('first-cache'))->toBeFalse()
         ->and(Cache::has('second-cache'))->toBeTrue();
+});
+
+test('sends the utility’s form back where it came from', function () {
+    ClearCaches::add('first', [
+        'label' => 'First cache',
+        'action' => fn () => Cache::forget('first-cache'),
+    ]);
+
+    post(action([ClearCachesController::class, 'clearCaches']), [
+        'caches' => ['first'],
+    ])
+        ->assertRedirectBack();
 });
 
 test('requires caches parameter', function () {

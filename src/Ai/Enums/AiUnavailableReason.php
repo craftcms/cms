@@ -15,5 +15,6 @@ enum AiUnavailableReason: string
     case TaskDisabled = 'taskDisabled';
     case NoDefault = 'noDefault';
     case UnknownProvider = 'unknownProvider';
+    case MissingCapability = 'missingCapability';
     case Canceled = 'canceled';
 }

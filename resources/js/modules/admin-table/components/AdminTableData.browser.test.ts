@@ -121,7 +121,6 @@ function mountNode(
           reorderFailMessage: null,
           deleteUrl: null,
           deleteConfirmMessage: null,
-          deleteModalUrl: null,
           bulkDeleteUrl: null,
           bulkDeleteConfirmMessage: null,
           bulkActions: [],
@@ -173,6 +172,44 @@ it.each(['mouse', 'keyboard'])(
     expect(prefetch).not.toHaveBeenCalled();
   }
 );
+
+it('keeps thin columns, and the delete column, as narrow as their content', async () => {
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {key: 'status', label: 'Status', thin: true},
+      {key: 'notes', label: 'Notes'},
+    ],
+    rows: [{id: 1, name: 'Body', status: 'Ready with warnings', notes: 'None'}],
+    deletable: true,
+    deleteUrl: '/settings/delete',
+  });
+  host.style.width = '600px';
+  await nextTick();
+
+  const cell = page.getByRole('cell', {name: 'Ready with warnings'}).element();
+  const text = document.createRange();
+  text.selectNodeContents(cell);
+  const lines = new Set([...text.getClientRects()].map((rect) => rect.top));
+  const name = page.getByRole('cell', {name: 'Body'}).element();
+
+  expect(lines.size).toBe(1);
+  expect(cell.getBoundingClientRect().width).toBeLessThan(
+    name.getBoundingClientRect().width
+  );
+
+  const deleteCell = page
+    .getByRole('button', {name: /delete/i})
+    .element()
+    .closest('td')!;
+  const deleteButton = deleteCell.querySelector('craft-button')!;
+  const padding =
+    parseFloat(getComputedStyle(deleteCell).paddingInlineStart) +
+    parseFloat(getComputedStyle(deleteCell).paddingInlineEnd);
+  expect(deleteCell.getBoundingClientRect().width).toBeLessThanOrEqual(
+    deleteButton.getBoundingClientRect().width + padding + 1
+  );
+});
 
 it('renders HTML icon descriptions and hides only their column header text', async () => {
   mountNode({
@@ -358,7 +395,7 @@ it('explains blocked deletion on keyboard focus while keeping the row editable a
         id: 'craft',
         name: {label: 'Craft (Default)', url: '/settings/transformers/craft'},
         _deletable: false,
-        _deleteDisabledReason: 'The Craft Asset Transformer cannot be deleted.',
+        _deleteDisabledReason: 'The Craft asset transformer cannot be deleted.',
       },
       {id: 'public', name: 'Public', _deletable: false},
       {id: 'remote', name: 'Remote'},
@@ -375,7 +412,7 @@ it('explains blocked deletion on keyboard focus while keeping the row editable a
   await expect
     .element(page.elementLocator(button))
     .toHaveAccessibleDescription(
-      'The Craft Asset Transformer cannot be deleted.'
+      'The Craft asset transformer cannot be deleted.'
     );
   expect(button.getAttribute('aria-disabled')).toBe('true');
   expect(
@@ -794,6 +831,33 @@ it('ignores superseded responses and aborts an unfinished load on unmount', asyn
   teardown = undefined;
   expect(pending[2]!.signal.aborted).toBe(true);
   pending[2]!.resolve(result('Unmounted'));
+});
+
+it('refreshes quietly in place, without interrupting a load underway', async () => {
+  const pending: Array<
+    (value: AdminTablePage<(typeof records)[number]>) => void
+  > = [];
+  const loadRows = (_request: AdminTableRequest, _signal: AbortSignal) =>
+    new Promise<AdminTablePage<(typeof records)[number]>>((resolve) =>
+      pending.push(resolve)
+    );
+  const {host, handle} = mountTable({loadRows});
+  pending[0]!(result('Initial'));
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Initial']));
+
+  const quiet = handle.value!.refresh({quiet: true});
+  await nextTick();
+  expect(rowNames(host)).toEqual(['Initial']);
+  pending[1]!(result('Updated'));
+  await quiet;
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Updated']));
+
+  const loud = handle.value!.refresh();
+  await expect(handle.value!.refresh({quiet: true})).resolves.toBe(false);
+  expect(pending).toHaveLength(3);
+  pending[2]!(result('Reloaded'));
+  await loud;
+  await vi.waitFor(() => expect(rowNames(host)).toEqual(['Reloaded']));
 });
 
 it('refreshes through Inertia after deletion and returns from an emptied final page', async () => {

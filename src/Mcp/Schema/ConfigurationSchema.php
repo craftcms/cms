@@ -75,7 +75,11 @@ readonly class ConfigurationSchema
             return ['uid', 'uri'];
         }
 
-        if ($type === ConfigurationType::SiteGroups) {
+        if ($type === ConfigurationType::AssetTransformers) {
+            return ['uid', $operation === ConfigurationOperation::Update ? 'currentHandle' : 'handle'];
+        }
+
+        if (in_array($type, [ConfigurationType::SiteGroups, ConfigurationType::Workflows], true)) {
             return ['id', 'uid'];
         }
 

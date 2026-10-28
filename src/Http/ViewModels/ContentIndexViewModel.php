@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\RequestedSite;
@@ -57,9 +58,6 @@ use function Termwind\render;
 abstract class ContentIndexViewModel extends ViewModel
 {
     protected const string RENDER_CONTEXT = 'index';
-
-    /** The thumbnail edge length (px) requested for the thumbnail grid view. */
-    private const int THUMB_SIZE = 200;
 
     private ?ElementIndexSourceSettings $resolvedSourceSettings = null;
 
@@ -1357,8 +1355,27 @@ abstract class ContentIndexViewModel extends ViewModel
         return app(ElementHtml::class)->elementChipHtml($element, [
             'context' => static::RENDER_CONTEXT,
             'appearance' => 'plain',
+            'thumbSize' => $this->thumbSize(),
             ...$config,
         ]);
+    }
+
+    /**
+     * The size of the index's thumbnails, as chosen in the View menu (see the
+     * `useElementIndexThumbSize` composable); their chips take a size to suit.
+     * Tiles come in every size and default to a card's thumbnail size; table
+     * rows stop at that size and default to small.
+     */
+    protected function thumbSize(): ChipThumbSize
+    {
+        $thumbs = $this->mode() === ElementIndexViewMode::Thumbs->value;
+        $size = ChipThumbSize::tryFrom((string) $this->request->input('thumbSize'));
+
+        if ($size !== null && ($thumbs || in_array($size, [ChipThumbSize::Sm, ChipThumbSize::Md, ChipThumbSize::Lg], true))) {
+            return $size;
+        }
+
+        return $thumbs ? ChipThumbSize::Lg : ChipThumbSize::Sm;
     }
 
     /**
@@ -1412,7 +1429,7 @@ abstract class ContentIndexViewModel extends ViewModel
             'url' => static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
                 ? $this->editUrl($element)
                 : null,
-            'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit),
+            'thumbHtml' => $element->getThumbHtml($this->thumbSize()->pixels() ?? ElementHtml::CHIP_THUMB_SIZE, ImageTransformMode::Fit),
             ...$this->extraThumbData($element),
         ], $elements);
     }

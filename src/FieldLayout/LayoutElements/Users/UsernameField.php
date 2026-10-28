@@ -102,4 +102,10 @@ class UsernameField extends TextField implements ImportableFieldLayoutElementInt
     {
         return true;
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'user';
+    }
 }

@@ -1,5 +1,6 @@
 import {createApp, h, nextTick} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
+import type CraftTextarea from '@craftcms/ui/components/textarea/textarea';
 import TextareaControl from './TextareaControl.vue';
 
 describe('TextareaControl', () => {
@@ -58,5 +59,49 @@ describe('TextareaControl', () => {
     expect(container.querySelector('craft-option')?.textContent).toContain(
       'Ada Lovelace'
     );
+  });
+
+  it('keeps a single-line value on one line', async () => {
+    container = document.createElement('div');
+    document.body.append(container);
+    const values: string[] = [];
+    app = createApp({
+      render: () =>
+        h(TextareaControl, {
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Textarea',
+            component: 'craft:textarea',
+            props: {rows: 1, singleLine: true},
+            path: ['rows', '0', 'name'],
+            mode: 'editable',
+            deltaGroup: ['rows'],
+          },
+          value: '',
+          editable: true,
+          invalid: false,
+          required: false,
+          'onUpdate:value': (value: string) => values.push(value),
+        }),
+    });
+    app.mount(container);
+    await nextTick();
+    await container.querySelector<CraftTextarea>('craft-textarea')!
+      .updateComplete;
+
+    const textarea = container.querySelector('textarea')!;
+    const lineBreak = new InputEvent('beforeinput', {
+      inputType: 'insertLineBreak',
+      bubbles: true,
+      cancelable: true,
+    });
+    textarea.dispatchEvent(lineBreak);
+    expect(lineBreak.defaultPrevented).toBe(true);
+
+    textarea.value = 'First\r\nsecond\nthird';
+    textarea.dispatchEvent(new InputEvent('input', {bubbles: true}));
+    await nextTick();
+
+    expect(textarea.value).toBe('First second third');
+    expect(values.at(-1)).toBe('First second third');
   });
 });

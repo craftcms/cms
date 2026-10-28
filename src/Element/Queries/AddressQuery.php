@@ -19,6 +19,8 @@ use Override;
 /**
  * @extends ElementQuery<Address>
  *
+ * @implements NestedElementQueryInterface<Address>
+ *
  * @since 6.0.0
  */
 class AddressQuery extends ElementQuery implements NestedElementQueryInterface

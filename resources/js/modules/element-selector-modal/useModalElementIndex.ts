@@ -17,7 +17,12 @@ export interface FolderCrumb {
   url: string | null;
 }
 
-type ModalIndexData = ContentIndexData & {folderBreadcrumbs?: FolderCrumb[]};
+/** The extras `ModalIndexViewModel` adds to the shared index payload. */
+type ModalIndexData = ContentIndexData & {
+  folderBreadcrumbs?: FolderCrumb[];
+  canSearchSubfolders?: boolean;
+  includeSubfolders?: boolean;
+};
 
 /** The row keys folder handling reads; `ElementIndex` hands behaviors bare items. */
 interface IndexItem {
@@ -113,6 +118,27 @@ export function useModalElementIndex(options: Options) {
   const folderBreadcrumbs = computed(
     () => (index.payload.value as ModalIndexData).folderBreadcrumbs ?? []
   );
+
+  /**
+   * Whether a search is on screen that could reach into the subfolders of the
+   * folder being listed, as the assets index offers.
+   */
+  const canSearchSubfolders = computed(() => {
+    const payload = index.payload.value as ModalIndexData;
+
+    return Boolean(payload.search) && Boolean(payload.canSearchSubfolders);
+  });
+
+  const includeSubfolders = computed(() =>
+    Boolean((index.payload.value as ModalIndexData).includeSubfolders)
+  );
+
+  function setIncludeSubfolders(include: boolean): void {
+    index.visitor.merge(
+      {includeSubfolders: include ? 1 : undefined},
+      {resetPage: true}
+    );
+  }
 
   /**
    * Lists a folder's contents in place of the current listing.
@@ -265,6 +291,9 @@ export function useModalElementIndex(options: Options) {
   return {
     ...index,
     changeSource,
+    canSearchSubfolders,
+    includeSubfolders,
+    setIncludeSubfolders,
     folderBreadcrumbs,
     openFolder,
     itemBehavior,

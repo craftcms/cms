@@ -578,6 +578,14 @@ class Releases
                 continue;
             }
 
+            // Deleting an element, or the section it's in, leaves its drafts
+            // behind, so the draft loads but there's nothing left to apply it to.
+            if (! $draft->getIsUnpublishedDraft() && $draft->getCanonical(true)->trashed) {
+                $itemErrors[$item->id][] = t('The {type} has been deleted.', ['type' => $draft::lowerDisplayName()]);
+
+                continue;
+            }
+
             if (ElementHelper::isOutdated($draft)) {
                 if ($draft::trackChanges()) {
                     $itemWarnings[$item->id][] = t('Live changes will be merged into this draft before publication.');

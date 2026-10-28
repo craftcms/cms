@@ -349,6 +349,27 @@ it('moves focus to the new option once nothing is left to add', async () => {
   expect(shadow(element).activeElement).toBe(rows[2]!.querySelector('.remove'));
 });
 
+it('keeps the last option added with Enter, with focus on its Remove button', async () => {
+  const {element} = await create({presentation: 'add-menu'});
+  element.modelValue = ['title', 'author'];
+  await settle(element);
+  const menu = shadow(element).querySelector('craft-action-menu')!;
+  menu.querySelector<HTMLElement>('[slot="invoker"]')!.focus();
+  await userEvent.keyboard('{Enter}');
+  await vi.waitFor(() =>
+    expect(menu.querySelector('craft-action-item')).not.toBeNull()
+  );
+
+  menu.querySelector<HTMLElement>('craft-action-item')!.focus();
+  await userEvent.keyboard('{Enter}');
+  await settle(element);
+
+  expect(input(element, 'postDate').checked).toBe(true);
+  expect(shadow(element).activeElement).toBe(
+    shadow(element).querySelectorAll('.row')[2]!.querySelector('.remove')
+  );
+});
+
 it('drops the “Add item” menu once everything is checked, and when disabled', async () => {
   const {element} = await create({presentation: 'add-menu'});
   element.modelValue = ['title', 'author', 'postDate'];
@@ -372,13 +393,40 @@ it('keeps disabled options checked and in place', async () => {
     {value: 'title', label: 'Title', checked: true, disabled: true},
     ...options.slice(1),
   ]);
-  element.modelValue = ['title', 'author', 'postDate'];
+  element.modelValue = ['author', 'postDate'];
   await settle(element);
 
   expect(element.modelValue).toEqual(['title', 'author', 'postDate']);
+
   const rows = shadow(element).querySelectorAll('.row');
   expect(rows[0]!.querySelector('.remove')).toBeNull();
   expect(rows[0]!.querySelector('craft-reorder-button')!.disabled).toBe(true);
+
+  rows[1]!
+    .querySelector('craft-reorder-button')!
+    .dispatchEvent(
+      new CustomEvent('craft-reorder', {detail: {direction: 'up'}})
+    );
+  await settle(element);
+
+  expect(element.modelValue).toEqual(['title', 'author', 'postDate']);
+});
+
+it('follows a renamed option in its label and its Remove button', async () => {
+  const {element} = await create({presentation: 'add-menu'});
+  element.modelValue = ['postDate'];
+  await settle(element);
+
+  element.updateOption('postDate', {label: 'Published'});
+  await settle(element);
+
+  const row = shadow(element).querySelector('.row')!;
+  expect(row.querySelector('.row__label')!.textContent!.trim()).toBe(
+    'Published'
+  );
+  expect(row.querySelector('.remove')!.getAttribute('aria-label')).toBe(
+    'Remove Published'
+  );
 });
 
 it('names its group with its label', async () => {

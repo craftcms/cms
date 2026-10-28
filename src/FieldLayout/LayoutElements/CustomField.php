@@ -24,11 +24,11 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Import;
-use CraftCms\Cms\Support\ImportHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\FieldSelect;
@@ -1045,10 +1045,12 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
         $attribute = $this->attribute();
         $isContainer = $field instanceof ImportableElementContainerFieldInterface;
 
+        // key the mapping by the layout element’s uid, because its handle can be overridden at any time
+        // (see ImportHelper::resolveMappingKeys())
         return MappingColumn::make(
             handle: $attribute,
             label: (string) $this->label(),
-            prefixedHandle: ImportHelper::prefixedHandleForMapping($attribute, $ownerField, $field, $fieldLayout, $provider, $prefix),
+            prefixedHandle: ImportHelper::prefixedHandleForMapping($this->uid ?? $attribute, $ownerField, $field, $fieldLayout, $provider, $prefix),
             isContainer: $isContainer,
             canBeMatchCriteria: $this->canBeMatchCriteria(),
             canBeCleared: $this->canBeCleared(),

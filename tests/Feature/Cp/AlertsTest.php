@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Ai\AiTasks;
 use CraftCms\Cms\Ai\Settings as AiSettings;
+use CraftCms\Cms\Asset\Analysis\Tasks\ClassifyImage;
+use CraftCms\Cms\Asset\Analysis\Tasks\DetectFocalPoint;
+use CraftCms\Cms\Asset\Analysis\Tasks\GenerateAltText;
+use CraftCms\Cms\Asset\Analysis\Tasks\GenerateTitles;
+use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
 use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Events\CpAlertsResolving;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
@@ -22,6 +27,7 @@ it('returns no alerts for guests', function () {
 
 it('alerts admins to AI tasks that can’t run, except on the AI settings screen', function (?string $path, bool $alerted) {
     config(['ai.providers' => ['anthropic' => ['driver' => 'anthropic', 'key' => null]]]);
+    app(AiTasks::class)->remove(GenerateAltText::class, GenerateTitles::class, DetectFocalPoint::class, TagImage::class, ClassifyImage::class);
     app(AiTasks::class)->register(SummarizeTask::class);
     app()->instance(AiSettings::class, new AiSettings(['tasks' => ['test:summarize' => ['provider' => 'anthropic']]]));
     actingAs(User::findOne());

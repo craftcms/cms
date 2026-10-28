@@ -1,11 +1,111 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
 import {userEvent} from 'vite-plus/test/browser';
-import '../button/button.js';
+import type CraftButton from '../button/button.js';
 import type CraftPopover from './popover.js';
+import '../button/button.js';
 import './popover.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
+});
+
+it('returns focus to the invoker, and stays closed, when Enter inside it calls hide()', async () => {
+  document.body.innerHTML = `
+    <craft-popover>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content"><button type="button" class="pick">Pick</button></div>
+    </craft-popover>
+  `;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const invoker = popover.querySelector<CraftButton>('craft-button')!;
+  const pick = popover.querySelector<HTMLButtonElement>('.pick')!;
+  pick.addEventListener('click', () => {
+    void popover.hide();
+  });
+  await invoker.updateComplete;
+  invoker.focus();
+  await userEvent.keyboard('{Enter}');
+  await popover.updateComplete;
+
+  pick.focus();
+  await userEvent.keyboard('{Enter}');
+  await popover.updateComplete;
+
+  expect(popover.opened).toBe(false);
+  expect(document.activeElement).toBe(invoker);
+});
+
+it('returns focus to the invoker when Escape closes it from its slotted content', async () => {
+  document.body.innerHTML = `
+    <craft-popover>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content-body"><button type="button" class="pick">Pick</button></div>
+    </craft-popover>
+  `;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const invoker = popover.querySelector<CraftButton>('craft-button')!;
+  await invoker.updateComplete;
+  popover.opened = true;
+  await popover.updateComplete;
+
+  popover.querySelector<HTMLButtonElement>('.pick')!.focus();
+  await userEvent.keyboard('{Escape}');
+  await popover.updateComplete;
+
+  expect(popover.opened).toBe(false);
+  expect(document.activeElement).toBe(invoker);
+});
+
+it('closes and keeps focus on the invoker when Escape is pressed there', async () => {
+  document.body.innerHTML = `
+    <craft-popover>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content-body"><button type="button">Pick</button></div>
+    </craft-popover>
+  `;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const invoker = popover.querySelector<CraftButton>('craft-button')!;
+  await invoker.updateComplete;
+  invoker.focus();
+  await userEvent.keyboard('{Enter}');
+  await popover.updateComplete;
+
+  await userEvent.keyboard('{Escape}');
+  await popover.updateComplete;
+
+  expect(popover.opened).toBe(false);
+  expect(document.activeElement).toBe(invoker);
+});
+
+it('lets one Escape close the popover around it after it was closed another way', async () => {
+  document.body.innerHTML = `
+    <craft-popover class="outer">
+      <craft-button slot="invoker" type="button">Outer</craft-button>
+      <div slot="content-body">
+        <craft-popover class="inner">
+          <craft-button slot="invoker" type="button">Inner</craft-button>
+          <div slot="content-body"><button type="button">Pick</button></div>
+        </craft-popover>
+      </div>
+    </craft-popover>
+  `;
+  const outer = document.querySelector<CraftPopover>('.outer')!;
+  const inner = document.querySelector<CraftPopover>('.inner')!;
+  const outerInvoker = outer.querySelector<CraftButton>('craft-button')!;
+  const innerInvoker = inner.querySelector<CraftButton>('craft-button')!;
+  await outerInvoker.updateComplete;
+  outerInvoker.focus();
+  await userEvent.keyboard('{Enter}');
+  await outer.updateComplete;
+  await inner.show();
+  await inner.hide();
+
+  innerInvoker.focus();
+  await userEvent.keyboard('{Escape}');
+  await outer.updateComplete;
+
+  expect(outer.opened).toBe(false);
+  expect(document.activeElement).toBe(outerInvoker);
 });
 
 it('keeps Escape from reaching a container while it closes the popover', async () => {
@@ -37,4 +137,60 @@ it('keeps Escape from reaching a container while it closes the popover', async (
   await userEvent.keyboard('{Escape}');
 
   expect(escapes).toEqual([true, false]);
+});
+
+async function openTallPopover(
+  wrapperStyle: string,
+  popoverStyle = ''
+): Promise<{pane: DOMRect; footer: DOMRect}> {
+  document.body.innerHTML = `
+    <div style="${wrapperStyle}">
+      <craft-popover label="View" style="${popoverStyle}">
+        <craft-button slot="invoker" type="button">View</craft-button>
+        <div slot="content-body" style="block-size: 3000px">Columns</div>
+        <div slot="content-footer"><button type="button">Close</button></div>
+      </craft-popover>
+    </div>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.updateComplete;
+  await popover.show();
+
+  const pane = popover.shadowRoot!.querySelector('.popover-pane')!;
+  const footer = popover.querySelector('[slot="content-footer"]')!;
+  await expect
+    .poll(() => pane.getBoundingClientRect().height)
+    .toBeGreaterThan(0);
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  return {
+    pane: pane.getBoundingClientRect(),
+    footer: footer.getBoundingClientRect(),
+  };
+}
+
+it('grows to the room below its invoker, keeping its footer in view', async () => {
+  const {pane, footer} = await openTallPopover('padding: 8px');
+
+  expect(pane.height).toBeGreaterThan(window.innerHeight * 0.4);
+  expect(pane.bottom).toBeCloseTo(window.innerHeight - 16, -1);
+  expect(footer.bottom).toBeLessThanOrEqual(window.innerHeight);
+});
+
+it('grows to the room above its invoker when it opens upward', async () => {
+  const {pane, footer} = await openTallPopover(
+    'position: fixed; inset-block-end: 8px; inset-inline-start: 8px'
+  );
+
+  expect(pane.top).toBeCloseTo(16, -1);
+  expect(pane.height).toBeGreaterThan(window.innerHeight * 0.4);
+  expect(footer.bottom).toBeLessThanOrEqual(window.innerHeight);
+});
+
+it('keeps to an explicit --popover-max-block-size', async () => {
+  const {pane} = await openTallPopover(
+    'padding: 8px',
+    '--popover-max-block-size: 120px'
+  );
+
+  expect(pane.height).toBe(120);
 });

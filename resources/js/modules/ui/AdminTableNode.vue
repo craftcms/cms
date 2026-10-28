@@ -31,10 +31,9 @@
   } from '@/modules/elements/types/actions';
   import {AdminTableCreateSlideout} from '@/modules/admin-table/create-slideout';
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
-  import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
-  import {UiTableFlush} from './runtime';
+  import {UiTableFlush, UiTableRefresh} from './runtime';
   import type {UiValues} from './types';
 
   import type {
@@ -63,6 +62,7 @@
     onRefresh?: () => void;
   }>();
   const pageTableFlush = inject(UiTableFlush, ref(false));
+  const onRefresh = props.onRefresh ?? inject(UiTableRefresh, undefined);
   provide(UiTableFlush, ref(false));
   const quickEdit = useElementQuickEdit({refreshResults: refreshTable});
   provide(
@@ -361,6 +361,7 @@
           enableSorting: !!column.sortable,
           meta: {
             trackSize: column.width,
+            columnClass: column.thin ? 'thin' : undefined,
             headerSrOnly: column.headerSrOnly,
             wrap: column.wrap,
           },
@@ -424,7 +425,7 @@
 
             return actions;
           },
-          {meta: {trackSize: '60px'}}
+          {meta: {trackSize: '60px', columnClass: 'thin'}}
         )
       );
     }
@@ -508,13 +509,6 @@
     }
   }
 
-  function onModalDeleted(): void {
-    const row = deletingRow.value;
-    deletingRow.value = null;
-    if (row?.id !== undefined) adminTable.value?.removeRows([row.id]);
-    refreshTable();
-  }
-
   async function deleteRow(row: TableRow): Promise<void> {
     const url = deleteUrl(row);
     if (
@@ -525,7 +519,7 @@
     )
       return;
 
-    if (props.node.props.deleteModalUrl || slots['delete-modal']) {
+    if (slots['delete-modal']) {
       deletingRow.value = row;
       return;
     }
@@ -615,8 +609,8 @@
   }
 
   function refreshUi(): void {
-    if (props.onRefresh) {
-      props.onRefresh();
+    if (onRefresh) {
+      onRefresh();
 
       return;
     }
@@ -625,8 +619,8 @@
   }
 
   function refreshTable(): void {
-    if (props.onRefresh) {
-      props.onRefresh();
+    if (onRefresh) {
+      onRefresh();
 
       return;
     }
@@ -724,16 +718,7 @@
       :row="deletingRow"
       :label="cellText(deletingRow[node.props.columns[0]?.key ?? ''] ?? null)"
       :close="() => (deletingRow = null)"
-    >
-      <AdminTableDeleteModal
-        v-if="node.props.deleteModalUrl"
-        :modal-url="node.props.deleteModalUrl"
-        :delete-url="deleteUrl(deletingRow)!"
-        :row-id="deletingRow.id!"
-        @close="deletingRow = null"
-        @deleted="onModalDeleted"
-      />
-    </slot>
+    />
     <UiModal
       v-if="menuModal"
       :modal-url="menuModal.modalUrl"

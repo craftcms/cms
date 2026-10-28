@@ -29,6 +29,8 @@ The swatch is a native `<input type="color">`, made transparent and laid over a 
 - [x] The value can be entered by typing into the text field, with or without a leading `#`, so the picker is never the only way to set it. Per WCAG 2.1.1 (Keyboard). Verified by `strips a leading # from typed values` in `input-color.test.ts`.
 - [ ] When the browser doesn't support `<input type="color">`, the picker is left out and the text field still works on its own. Per WCAG 2.1.1 (Keyboard). Not yet verified.
 - [ ] Tab order is the picker, then the text field. Per WCAG 2.4.3 (Focus Order). Not yet verified.
+- [x] A focused text field shows the global focus ring outside its border, as other text inputs do. Per WCAG 2.4.7 (Focus Visible). Verified by `draws the focus ring outside the text field’s border` in `input-color.browser.test.ts`.
+- [x] A click on the `#` prefix lands on the text field, which shows a text cursor there, so the prefix isn't a dead zone in front of the value. Verified by `sends a click on the # to the text field, with a text cursor` in `input-color.browser.test.ts`.
 - [ ] A focused picker shows the global focus ring around the swatch at 3:1 against the surface, in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Not yet verified.
 
 ### Visual

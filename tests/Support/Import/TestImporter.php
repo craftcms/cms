@@ -31,12 +31,6 @@ class TestImporter extends BaseImporter
     }
 
     #[Override]
-    public static function create(): self
-    {
-        return new self;
-    }
-
-    #[Override]
     public static function displayName(): string
     {
         return 'Test';
@@ -50,15 +44,6 @@ class TestImporter extends BaseImporter
 
     #[Override]
     public function refreshSettingsUi(array $settings): void {}
-
-    #[Override]
-    public function storeSettings(array $settings): void {}
-
-    #[Override]
-    public function getSettings(): array
-    {
-        return [];
-    }
 
     #[Override]
     public static function getDefaultTransformer(): ?string

@@ -472,18 +472,23 @@ trait NestedElement
             $this->sortOrder = $max ? $max + 1 : 1;
         }
 
-        if (! $isNew) {
-            DB::table(Table::ELEMENTS_OWNERS)
-                ->where('elementId', $this->id)
-                ->where('ownerId', $ownerId)
-                ->delete();
+        if ($isNew) {
+            DB::table(Table::ELEMENTS_OWNERS)->insert([
+                'elementId' => $this->id,
+                'ownerId' => $ownerId,
+                'sortOrder' => $this->sortOrder,
+            ]);
+        } else {
+            DB::table(Table::ELEMENTS_OWNERS)->upsert(
+                values: [
+                    'elementId' => $this->id,
+                    'ownerId' => $ownerId,
+                    'sortOrder' => $this->sortOrder,
+                ],
+                uniqueBy: ['elementId', 'ownerId'],
+                update: ['sortOrder' => $this->sortOrder],
+            );
         }
-
-        DB::table(Table::ELEMENTS_OWNERS)->insert([
-            'elementId' => $this->id,
-            'ownerId' => $ownerId,
-            'sortOrder' => $this->sortOrder,
-        ]);
 
         // make sure we're also storing ownership for the primary owner
         // (see https://github.com/craftcms/cms/pull/16933)

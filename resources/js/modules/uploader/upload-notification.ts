@@ -1,10 +1,16 @@
 import {t} from '@craftcms/ui';
 import {router} from '@inertiajs/vue3';
 import {getSpeed} from '@uppy/core/utils';
-import {html, nothing, render} from 'lit';
+import {html, render} from 'lit';
 import type {UploadState} from '@/upload-client';
+import type {ConflictResolution} from '@/modules/assets/assetMover';
+import {AssetConflictResolutionElement} from '@/modules/assets/asset-conflict-resolution.ce';
 import {FileUploadNotificationElement} from './file-upload-notification.ce';
 import {UploadCompleteNotificationElement} from './upload-complete-notification.ce';
+import {
+  type UploadDuplicate,
+  UploadDuplicatesNotificationElement,
+} from './upload-duplicates-notification.ce';
 
 declare const Craft: any;
 
@@ -20,10 +26,12 @@ export function createFileUploadNotification(
 ): {
   updateProgress: (loaded: number) => void;
   updateState: (
-    state: UploadState | 'conflict',
+    state: UploadState,
     message?: string,
     canPause?: boolean
   ) => void;
+  /** Replaces the transfer controls with `content` until the next `updateState()`. */
+  showDetails: (content: HTMLElement) => void;
   close: () => void;
 } {
   const details = new FileUploadNotificationElement();
@@ -33,7 +41,21 @@ export function createFileUploadNotification(
     details.addEventListener(`craft-upload-${action}`, handler);
   }
 
-  const close = createUploadNotice(file.name, details);
+  const container = document.createElement('div');
+  container.tabIndex = -1;
+  container.append(details);
+  const swap = (content: HTMLElement) => {
+    if (container.firstElementChild === content) {
+      return;
+    }
+    const hadFocus = container.contains(document.activeElement);
+    container.replaceChildren(content);
+    if (hadFocus) {
+      container.focus();
+    }
+  };
+
+  const close = createUploadNotice(file.name, container);
 
   return {
     updateProgress(loaded: number) {
@@ -50,11 +72,8 @@ export function createFileUploadNotification(
       }
       details.loaded = loaded;
     },
-    updateState(
-      state: UploadState | 'conflict',
-      message = '',
-      canPause = false
-    ) {
+    updateState(state: UploadState, message = '', canPause = false) {
+      swap(details);
       if (state !== details.state) {
         sample = undefined;
         details.speed = 0;
@@ -67,11 +86,10 @@ export function createFileUploadNotification(
         close();
       }
     },
+    showDetails: swap,
     close,
   };
 }
-
-export type UploadConflictChoice = 'keepBoth' | 'replace' | 'cancel';
 
 export interface AssetUploadDestination {
   folderId: number;
@@ -101,44 +119,84 @@ export function createUploadCompleteNotification(
   };
 }
 
-/** Opening this dialog is an explicit action; dismissing it leaves the conflict pending. */
-export function showUploadConflict(
-  message: string,
-  onChoice: (choice: UploadConflictChoice) => void
+/**
+ * Warns that an upload looks like a copy of images that are already uploaded,
+ * until it's dismissed, for uploaders that don't hold uploads for a choice.
+ * Links open the images' edit pages, with `navigate` if it's given, such as to
+ * visit them with Inertia.
+ */
+export function showUploadDuplicates(
+  filename: string,
+  duplicates: UploadDuplicate[],
+  navigate?: (url: string) => void
 ): () => void {
-  const dialog = document.createElement('craft-dialog');
-  dialog.setAttribute('label', t('Filename Conflict'));
-
-  const choices: Array<[UploadConflictChoice, string]> = [
-    ['cancel', t('Cancel upload')],
-    ['keepBoth', t('Keep both')],
-    ['replace', t('Replace')],
-  ];
-  render(
-    html`
-      <p>${message}</p>
-      <div slot="footer" class="flex justify-end gap-2">
-        ${choices.map(
-          ([choice, label]) => html`
-            <craft-button
-              variant=${choice === 'replace' ? 'danger' : nothing}
-              @click=${() => {
-                dialog.remove();
-                onChoice(choice);
-              }}
-              >${label}</craft-button
-            >
-          `
-        )}
-      </div>
-    `,
-    dialog
+  return createUploadNotice(
+    uploadDuplicatesMessage(filename, duplicates.length),
+    createDuplicateList(duplicates, navigate),
+    () => {}
   );
-  dialog.addEventListener('craft-after-hide', () => dialog.remove());
-  document.body.append(dialog);
-  dialog.setAttribute('open', '');
+}
 
-  return () => dialog.remove();
+/** Says that an upload looks like a copy of `count` images that are already uploaded. */
+export function uploadDuplicatesMessage(
+  filename: string,
+  count: number
+): string {
+  return count === 1
+    ? t('“{filename}” looks like an image you already have.', {filename})
+    : t('“{filename}” looks like {num, number} images you already have.', {
+        filename,
+        num: count,
+      });
+}
+
+/** A filename conflict's message and choices, for a transfer notification's details. */
+export function createUploadConflictDetails(
+  message: string,
+  onChoice: (choice: ConflictResolution) => void,
+  {
+    duplicates,
+    navigate,
+    multiple = false,
+  }: {
+    /** Images the upload looks like a copy of, listed under the message. */
+    duplicates?: UploadDuplicate[];
+    navigate?: (url: string) => void;
+    /** Whether it conflicts with more than one file. */
+    multiple?: boolean;
+  } = {}
+): HTMLElement {
+  const details = document.createElement('div');
+  details.className = 'flex flex-col items-start gap-2';
+  const choices = new AssetConflictResolutionElement();
+  choices.className = 'flex flex-wrap gap-2';
+  choices.multiple = multiple;
+  choices.addEventListener('craft-conflict-resolve', (event) =>
+    onChoice((event as CustomEvent<ConflictResolution>).detail)
+  );
+  render(html`<span class="wrap-anywhere">${message}</span>`, details);
+  if (duplicates?.length) {
+    details.append(createDuplicateList(duplicates, navigate));
+  }
+  details.append(choices);
+  return details;
+}
+
+function createDuplicateList(
+  duplicates: UploadDuplicate[],
+  navigate?: (url: string) => void
+): UploadDuplicatesNotificationElement {
+  const list = new UploadDuplicatesNotificationElement();
+  list.duplicates = duplicates;
+  // Without a way to visit them in place, they open in a new window instead, leaving this page and its notice be
+  list.newWindow = !navigate;
+  if (navigate) {
+    list.addEventListener('craft-upload-navigate', (event) => {
+      event.preventDefault();
+      navigate((event as CustomEvent<string>).detail);
+    });
+  }
+  return list;
 }
 
 /** CP notices appear asynchronously, so a close request may precede the show event. */

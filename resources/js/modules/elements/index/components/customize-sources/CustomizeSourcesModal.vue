@@ -823,119 +823,121 @@
     @close="emit('close')"
     @submit="save"
   >
-    <craft-spinner v-if="loading" />
+    <div ref="body" class="cs-body">
+      <craft-spinner v-if="loading" class="cs-spinner" />
 
-    <div v-else ref="body" class="cs-body">
-      <CustomizeSourcesColumn
-        v-if="multiPage"
-        data-screen="pages"
-        nav
-        :heading="t('Pages')"
-        :selected="screen === 'pages'"
-      >
-        <CustomSourceList
-          :items="pages"
-          :item-id="(page) => page.name"
-          :label="(page) => page.name"
-          :icon="(page) => page.icon"
-          :selected="selectedPage"
-          :actions="pageActions"
-          accepts="source"
-          :can-drop-into="(page) => page.name !== selectedPage"
-          @select="openPage"
-          @reorder="reorderPages"
-          @drop-into="(page, key) => moveToPage(key, page)"
-        />
+      <template v-else>
+        <CustomizeSourcesColumn
+          v-if="multiPage"
+          data-screen="pages"
+          nav
+          :heading="t('Pages')"
+          :selected="screen === 'pages'"
+        >
+          <CustomSourceList
+            :items="pages"
+            :item-id="(page) => page.name"
+            :label="(page) => page.name"
+            :icon="(page) => page.icon"
+            :selected="selectedPage"
+            :actions="pageActions"
+            accepts="source"
+            :can-drop-into="(page) => page.name !== selectedPage"
+            @select="openPage"
+            @reorder="reorderPages"
+            @drop-into="(page, key) => moveToPage(key, page)"
+          />
 
-        <template #footer>
-          <craft-button
-            type="button"
-            icon="plus"
-            variant="dashed"
-            @click="openPageSettings(null)"
-          >
-            {{ t('New page') }}
-          </craft-button>
-        </template>
-      </CustomizeSourcesColumn>
-
-      <CustomizeSourcesColumn
-        data-screen="sources"
-        nav
-        :heading="t('Sources')"
-        :selected="screen === 'sources'"
-        :back="multiPage ? t('Back to pages') : undefined"
-        @back="showScreen('pages')"
-      >
-        <CustomSourceList
-          :items="visibleSources"
-          :item-id="sourceId"
-          :label="(source) => source.label"
-          :sublabel="(source) => source.handle"
-          :item-type="(source) => source.type"
-          :selected="selectedKey"
-          :disabled="(source) => !source.key"
-          :actions="sourceActions"
-          :moves="sourceMoves"
-          :span="sourceSpan"
-          drag-type="source"
-          @select="openSource"
-          @reorder="reorderSources"
-          @move-to="(key, page) => moveToPage(key, page)"
-        />
-
-        <template #footer>
-          <ActionMenu
-            :label="t('Source actions')"
-            :actions="[
-              {label: t('New heading'), onClick: () => add('heading')},
-              {label: t('New custom source'), onClick: () => add('custom')},
-            ]"
-          >
-            <template #invoker>
-              <craft-button
-                slot="invoker"
-                type="button"
-                icon="plus"
-                variant="dashed"
-                :aria-label="t('Source actions')"
-              ></craft-button>
-            </template>
-          </ActionMenu>
-        </template>
-      </CustomizeSourcesColumn>
-
-      <CustomizeSourcesColumn
-        fill
-        data-screen="settings"
-        :heading="selected?.ui ? selected.label : undefined"
-        :selected="screen === 'settings'"
-        :back="t('Back to sources')"
-        @back="showScreen('sources')"
-      >
-        <div ref="settingsPane">
-          <template v-for="source in sources" :key="source.key">
-            <craft-field-group
-              v-if="source.mounted && source.ui && source.key"
-              v-show="source.key === selectedKey"
+          <template #footer>
+            <craft-button
+              type="button"
+              icon="plus"
+              variant="dashed"
+              @click="openPageSettings(null)"
             >
-              <UiRenderer
-                :ref="(el) => setRenderer(source.key!, el)"
-                :payload="source.ui"
-                :errors="errors[source.key!] ?? []"
-                :refresh="
-                  source.ui.refreshable
-                    ? (values, scope) => refresh(source, values, scope)
-                    : undefined
-                "
-                @change="(change, values) => onChange(source, change, values)"
-              />
-            </craft-field-group>
+              {{ t('New page') }}
+            </craft-button>
           </template>
+        </CustomizeSourcesColumn>
 
-          <craft-spinner v-if="selected && !selected.ui" />
-        </div>
-      </CustomizeSourcesColumn>
+        <CustomizeSourcesColumn
+          data-screen="sources"
+          nav
+          :heading="t('Sources')"
+          :selected="screen === 'sources'"
+          :back="multiPage ? t('Back to pages') : undefined"
+          @back="showScreen('pages')"
+        >
+          <CustomSourceList
+            :items="visibleSources"
+            :item-id="sourceId"
+            :label="(source) => source.label"
+            :sublabel="(source) => source.handle"
+            :item-type="(source) => source.type"
+            :selected="selectedKey"
+            :disabled="(source) => !source.key"
+            :actions="sourceActions"
+            :moves="sourceMoves"
+            :span="sourceSpan"
+            drag-type="source"
+            @select="openSource"
+            @reorder="reorderSources"
+            @move-to="(key, page) => moveToPage(key, page)"
+          />
+
+          <template #footer>
+            <ActionMenu
+              :label="t('Source actions')"
+              :actions="[
+                {label: t('New heading'), onClick: () => add('heading')},
+                {label: t('New custom source'), onClick: () => add('custom')},
+              ]"
+            >
+              <template #invoker>
+                <craft-button
+                  slot="invoker"
+                  type="button"
+                  icon="plus"
+                  variant="dashed"
+                  :aria-label="t('Source actions')"
+                ></craft-button>
+              </template>
+            </ActionMenu>
+          </template>
+        </CustomizeSourcesColumn>
+
+        <CustomizeSourcesColumn
+          fill
+          data-screen="settings"
+          :heading="selected?.ui ? selected.label : undefined"
+          :selected="screen === 'settings'"
+          :back="t('Back to sources')"
+          @back="showScreen('sources')"
+        >
+          <div ref="settingsPane">
+            <template v-for="source in sources" :key="source.key">
+              <craft-field-group
+                v-if="source.mounted && source.ui && source.key"
+                v-show="source.key === selectedKey"
+              >
+                <UiRenderer
+                  :ref="(el) => setRenderer(source.key!, el)"
+                  :payload="source.ui"
+                  :errors="errors[source.key!] ?? []"
+                  :refresh="
+                    source.ui.refreshable
+                      ? (values, scope) => refresh(source, values, scope)
+                      : undefined
+                  "
+                  @change="(change, values) => onChange(source, change, values)"
+                />
+              </craft-field-group>
+            </template>
+
+            <craft-spinner v-if="selected && !selected.ui" />
+          </div>
+        </CustomizeSourcesColumn>
+      </template>
     </div>
 
     <PageSettingsModal
@@ -959,15 +961,30 @@
     align-items: stretch;
     container-type: inline-size;
     flex: 1 1 0;
-    min-height: calc(400rem / 16);
+    min-height: 0;
   }
 
-  // The pane's body grows to the modal's height, but as a block, so it has to
-  // become a flex column for the body above to fill it. Global, because the pane
-  // is ModalForm's, not this component's; scoped to the pane holding this body
-  // so no other modal changes.
+  .cs-spinner {
+    margin: auto;
+  }
+
+  // Global, since these are Modal's and ModalForm's; `:has()` keeps them to this modal.
+  :global(.content:has(> form > craft-pane > div.cs-body)) {
+    overflow-y: hidden;
+  }
+
+  :global(form:has(> craft-pane > div.cs-body)),
+  :global(craft-pane:has(> div.cs-body)),
+  :global(craft-pane:has(> div.cs-body)::part(base)) {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
   :global(craft-pane:has(> div.cs-body)::part(body)) {
     display: flex;
     flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    padding: 0;
   }
 </style>

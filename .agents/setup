@@ -35,9 +35,10 @@ if [[ ! -f /etc/apt/sources.list.d/craft-mysql.list ]]; then
         sudo tee /etc/apt/sources.list.d/craft-mysql.list >/dev/null
 fi
 
-packages=(php8.5-cli php8.5-bcmath php8.5-curl php8.5-gd php8.5-intl
+# Backups shell out to the sqlite3 CLI. intl is installed below instead.
+packages=(php8.5-cli php8.5-bcmath php8.5-curl php8.5-gd
     php8.5-mbstring php8.5-mysql php8.5-pgsql php8.5-sqlite3 php8.5-xml
-    php8.5-zip php8.5-soap php8.5-imagick libvips42 unzip
+    php8.5-zip php8.5-soap php8.5-imagick libvips42 unzip sqlite3 zstd
     mysql-community-server-core mysql-community-client-core postgresql-15)
 missing=()
 for package in "${packages[@]}"; do
@@ -51,10 +52,36 @@ if ((${#missing[@]})); then
 fi
 sudo update-alternatives --set php /usr/bin/php8.5
 
+# CI's ubuntu-24.04 PHP links intl against ICU 74.2, and date formats differ
+# across ICU versions. Debian's php8.5-intl uses ICU 72, so install the same
+# prebuilt ICU/intl pair setup-php uses. The ICU libraries find each other
+# through the loader path; their .74 sonames don't clash with Debian's ICU.
+icu_version=74.2
+if [[ $(php -r 'echo defined("INTL_ICU_VERSION") ? INTL_ICU_VERSION : "";') != "$icu_version" ]]; then
+    if dpkg-query -W php8.5-intl >/dev/null 2>&1; then
+        sudo env DEBIAN_FRONTEND=noninteractive apt-get purge -y php8.5-intl
+    fi
+    case $(uname -m) in
+        x86_64) icu_arch= ;;
+        aarch64) icu_arch=-arm64 ;;
+        *) echo 'Unsupported ICU architecture' >&2; exit 1 ;;
+    esac
+    icu_url=https://github.com/shivammathur/icu-intl/releases/download
+    curl -fsSL "$icu_url/icu4c/icu4c-$icu_version$icu_arch.tar.zst" -o "$scratch/icu.tar.zst"
+    curl -fsSL "$icu_url/intl-$icu_version/php8.5-intl-$icu_version$icu_arch.so" -o "$scratch/intl.so"
+    sudo rm -rf /usr/local/icu
+    sudo tar -I zstd -xf "$scratch/icu.tar.zst" -C /usr/local
+    echo /usr/local/icu/lib | sudo tee /etc/ld.so.conf.d/icu.conf >/dev/null
+    sudo ldconfig
+    intl_extension="$(php -r 'echo PHP_EXTENSION_DIR;')/intl-icu$icu_version.so"
+    sudo install -m 644 "$scratch/intl.so" "$intl_extension"
+    echo "extension=$intl_extension" | sudo tee /etc/php/8.5/mods-available/intl-icu.ini >/dev/null
+    sudo phpenmod -v 8.5 intl-icu
+fi
+
 # Prevent Debian's unused system cluster from claiming port 5432 after restore.
 if [[ -f /etc/postgresql/15/main/start.conf ]] && ! grep -qx manual /etc/postgresql/15/main/start.conf; then
     echo manual | sudo tee /etc/postgresql/15/main/start.conf >/dev/null
-    sudo systemctl daemon-reload
 fi
 
 # Initialize private, disposable databases, but leave starting them to Amp's
@@ -68,8 +95,12 @@ if [[ ! -f .amp/databases/pgsql/PG_VERSION ]]; then
 fi
 
 # Install to the standard PATH so later non-interactive shells see the same tools.
+# Unpacking over the base image's Node used to leave its older npm modules
+# behind, which crashes npm commands that touch the cache (npx included);
+# `npm ls` detects such a tree.
 node_major=$(tr -d '[:space:]' < .node-version)
-if [[ $(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || true) != "$node_major" ]]; then
+if [[ $(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || true) != "$node_major" ]] ||
+    ! npm ls --global --depth=0 >/dev/null 2>&1; then
     case $(uname -m) in
         x86_64) node_arch=x64 ;;
         aarch64) node_arch=arm64 ;;
@@ -79,6 +110,7 @@ if [[ $(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || true) != "$
     archive=$(awk -v arch="linux-$node_arch.tar.xz" '$2 ~ arch "$" {print $2}' "$scratch/SHASUMS256.txt")
     curl -fsSL "https://nodejs.org/dist/latest-v${node_major}.x/$archive" -o "$scratch/$archive"
     (cd "$scratch"; grep " $archive$" SHASUMS256.txt | sha256sum --check)
+    sudo rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack
     sudo tar -xJf "$scratch/$archive" -C /usr/local --strip-components=1
 fi
 pnpm_version=$(node -p 'require("./package.json").packageManager.split("@")[1]')
@@ -118,13 +150,32 @@ if [[ ! -f node_modules/@awesome.me/kit-ddaed3f5c5/icons/metadata/icons.json ]];
     exit 1
 fi
 step 'Copy icons' composer copy-icons
-# Build hooks format tracked source; setup should only generate build artifacts.
-# Keep the same order as build:all, invoking packages directly to disable hooks.
-for package in @craftcms/garnish @craftcms/ui @craftcms/legacy; do
-    step "Build $package" pnpm --config.enablePrePostScripts=false --filter "$package" run build
-done
-step 'Build control panel' pnpm --config.enablePrePostScripts=false run build
-step 'Generate Custom Elements Manifest' pnpm --filter @craftcms/ui run build:manifest
-step 'Install test browser' pnpm exec playwright install --with-deps --only-shell chromium
+
+# Snapshots from before the Craft 5 worktree was dropped still carry it and its
+# agent guidance; remove both so agents don't use a stale 5.x checkout.
+if [[ -d ../cms-5.x ]]; then
+    git worktree remove --force ../cms-5.x
+fi
+if [[ -f ~/.config/amp/AGENTS.md ]]; then
+    sed -i '/^# Craft 5 worktree$/,$d' ~/.config/amp/AGENTS.md
+fi
+
+# The browser download is network-bound, so overlap it with the CPU-bound
+# builds below. Its output is printed once it finishes.
+step 'Install test browser' pnpm exec playwright install --with-deps --only-shell chromium > "$scratch/browser.log" 2>&1 &
+browser_pid=$!
+
+# Build hooks format tracked source; setup should only generate build artifacts,
+# so invoke packages directly to disable hooks. `pnpm run build` builds
+# @craftcms/ui (including its manifest) and the CP; the legacy bundles import
+# @craftcms/ui's dist, so they come last.
+step 'Build @craftcms/garnish' pnpm --config.enablePrePostScripts=false --filter @craftcms/garnish run build
+step 'Build @craftcms/ui and control panel' pnpm --config.enablePrePostScripts=false run build
+step 'Build @craftcms/legacy' pnpm --config.enablePrePostScripts=false --filter @craftcms/legacy run build
+
+browser_status=0
+wait "$browser_pid" || browser_status=$?
+cat "$scratch/browser.log"
+((browser_status == 0))
 
 printf '\nOrb toolchain, dependencies, and assets are ready.\n'

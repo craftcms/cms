@@ -32,7 +32,7 @@ beforeEach(function () {
     $this->section = $seed->section;
     $this->entryType = $seed->entryType;
 
-    $this->importer = EntryImporter::create()
+    $this->importer = new EntryImporter()
         ->site(Sites::getPrimarySite()->handle)
         ->matchCriteria(['title' => 'title'])
         ->transformer(null);
@@ -99,7 +99,7 @@ it('leaves a provided non-empty value alone even when the field is marked cleara
 });
 
 it('normalizes a flat list of dot-notation handles into the nested truthy-leaf shape', function () {
-    $importer = EntryImporter::create()->clearableItems(['myPlainText', 'some.nested.handle']);
+    $importer = new EntryImporter()->clearableItems(['myPlainText', 'some.nested.handle']);
 
     expect($importer->clearableItems)->toBe([
         'myPlainText' => true,
@@ -108,7 +108,7 @@ it('normalizes a flat list of dot-notation handles into the nested truthy-leaf s
 });
 
 it('accepts an already-nested truthy-leaf shape as-is', function () {
-    $importer = EntryImporter::create()->clearableItems(['myPlainText' => 1]);
+    $importer = new EntryImporter()->clearableItems(['myPlainText' => 1]);
 
     expect($importer->clearableItems)->toBe(['myPlainText' => 1]);
 });
@@ -128,7 +128,7 @@ describe('nested matrix clearing', function () {
         $this->matrixSection = $seed->section;
         $this->matrixEntryType = $seed->entryType;
 
-        $this->matrixImporter = EntryImporter::create()
+        $this->matrixImporter = new EntryImporter()
             ->site(Sites::getPrimarySite()->handle)
             ->matchCriteria(['title' => 'title'])
             ->clearableItems(['myMatrix' => ['blockEt' => ['fields' => ['plainText' => true]]]])

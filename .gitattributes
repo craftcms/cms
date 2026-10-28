@@ -63,3 +63,6 @@
 /resources/translations/*/app.php linguist-generated=true
 /resources/translations/en/app.php -linguist-generated
 /packages/craftcms-graphiql/dist/** linguist-generated=true
+
+# Capability probe files must stay byte-for-byte
+/resources/ai/probes/** binary

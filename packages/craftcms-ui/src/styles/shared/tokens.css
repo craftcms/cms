@@ -1,37 +1,15 @@
 /*
   [data-theme] re-resolves these var()-based tokens against a themed subtree's
-  palette; a var() is substituted where it's declared. What's in a light or dark
-  surface (a white or black card, chip, or badge) is themed too
-  (see scripts/utils.js).
+  palette; a var() is substituted where it's declared. What's in a black card,
+  chip, or badge is themed dark too (see scripts/utils.js).
 */
 :root,
 :host,
 [data-theme],
 :where(
-  craft-card[data-color='black']:not([data-theme='dark'] *) > *,
-  craft-chip[data-color='black']:not([appearance~='plain']):not(
-      [data-theme='dark'] *
-    )
-    > *,
-  craft-badge[fill='black']:not([data-theme='dark'] *) > *,
-  [data-theme='dark'] craft-card[data-color='white'] > *,
-  [data-theme='dark']
-    craft-chip[data-color='white']:not([appearance~='plain'])
-    > *,
-  [data-theme='dark'] craft-badge[fill='white'] > *
-),
-:where(
-  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
-  craft-chip[data-color='white']:not([appearance~='plain']):not(
-      [data-theme='dark'] *
-    )
-    > *,
-  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
-  [data-theme='dark'] craft-card[data-color='black'] > *,
-  [data-theme='dark']
-    craft-chip[data-color='black']:not([appearance~='plain'])
-    > *,
-  [data-theme='dark'] craft-badge[fill='black'] > *
+  craft-card[data-color='black'] > *,
+  craft-chip[data-color='black']:not([appearance~='plain']) > *,
+  craft-badge[fill='black'] > *
 ) {
   --c-text-lg: calc(16rem / 16);
   --c-text-base: calc(14rem / 16);
@@ -39,6 +17,12 @@
   --c-text-xs: calc(9rem / 16);
 
   --c-leading-normal: 1.42;
+
+  /* White cards, chips, badges, and Matrix blocks. */
+  --c-surface-white: var(--c-surface-raised);
+
+  /* A white dot's ring, so it stands off a white surface. */
+  --c-indicator-white-ring: rgb(0 0 0 / 50%);
 
   /* Focus outline tokens */
   --c-color-focus-outline: var(--color-blue-500);
@@ -142,6 +126,7 @@
     small padding above and below. Add a header's own border widths to it.
   */
   --c-size-header: calc(var(--c-size-control-sm) + var(--c-spacing-sm) * 2);
+  --c-size-footer: calc(54rem / 16);
 
   /*
     Craft's box shadows scale their opacity by this, so each theme can deepen
@@ -267,7 +252,7 @@
   /* Checkbox */
   --c-checkbox-size: var(--c-size-control-xs);
   --c-checkbox-radius: var(--c-radius-sm);
-  --c-checkbox-group-spacing: calc(24px - var(--c-checkbox-size));
+  --c-checkbox-group-spacing: calc(20px - var(--c-checkbox-size));
 
   /* Slide rule */
   --c-slide-rule-height: var(--c-size-touch-target);
@@ -319,10 +304,12 @@
   --c-modal-text: var(--c-text-default);
   --c-modal-radius: var(--c-radius-lg);
   /* A hairline, on top of the shadow, so modals keep an edge in either theme. */
-  --c-modal-border-width: 1px;
-  --c-modal-border-style: solid;
-  --c-modal-border-color: var(--c-color-border-quiet);
+  --c-modal-ring: 0 0 0 1px rgb(0 0 0 / 18%);
   --c-modal-padding: var(--c-pane-padding);
+  --c-modal-header-height: calc(
+    var(--c-size-control-sm) + var(--c-modal-padding) * 2 + 1px
+  );
+  --c-modal-footer-height: var(--c-size-footer);
 
   /* Slideouts */
   --c-slideout-shadow:
@@ -348,56 +335,15 @@
    images (which follow their embedding element's color scheme) would follow
    the OS instead, coming out dark on a dark OS. */
 :root,
-[data-theme='light'],
-:where(
-  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
-  craft-chip[data-color='white']:not([appearance~='plain']):not(
-      [data-theme='dark'] *
-    )
-    > *,
-  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
-  [data-theme='dark'] craft-card[data-color='black'] > *,
-  [data-theme='dark']
-    craft-chip[data-color='black']:not([appearance~='plain'])
-    > *,
-  [data-theme='dark'] craft-badge[fill='black'] > *
-) {
+[data-theme='light'] {
   color-scheme: light;
-}
-
-/* What's in a light surface on a dark page undoes the dark theme's own values
-   below, which it would otherwise inherit. */
-:where(
-  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
-  craft-chip[data-color='white']:not([appearance~='plain']):not(
-      [data-theme='dark'] *
-    )
-    > *,
-  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
-  [data-theme='dark'] craft-card[data-color='black'] > *,
-  [data-theme='dark']
-    craft-chip[data-color='black']:not([appearance~='plain'])
-    > *,
-  [data-theme='dark'] craft-badge[fill='black'] > *
-) {
-  --c-color-border-quiet-transparency: 60%;
-  --c-select-color-swatch-edge: initial;
-  --c-select-color-swatch-ring: initial;
 }
 
 [data-theme='dark'],
 :where(
-  craft-card[data-color='black']:not([data-theme='dark'] *) > *,
-  craft-chip[data-color='black']:not([appearance~='plain']):not(
-      [data-theme='dark'] *
-    )
-    > *,
-  craft-badge[fill='black']:not([data-theme='dark'] *) > *,
-  [data-theme='dark'] craft-card[data-color='white'] > *,
-  [data-theme='dark']
-    craft-chip[data-color='white']:not([appearance~='plain'])
-    > *,
-  [data-theme='dark'] craft-badge[fill='white'] > *
+  craft-card[data-color='black'] > *,
+  craft-chip[data-color='black']:not([appearance~='plain']) > *,
+  craft-badge[fill='black'] > *
 ) {
   color-scheme: dark;
   /* Like other hairlines here, so the no-color swatch keeps an edge. */
@@ -419,12 +365,22 @@
 
   /* Shadows read fainter against dark surfaces. */
   --c-shadow-multiplier: 1.5;
+  --c-modal-ring: 0 0 0 1px rgb(255 255 255 / 25%);
 
   --c-border-raised-selected: var(--color-base-500);
   --c-card-fill-selected: var(--color-base-300);
   --c-card-border-selected: var(--color-base-500);
   --c-card-text-selected: var(--c-text-default);
   --c-color-border-quiet-transparency: 40%;
+  /* As light as white surfaces can get with quiet text at 4.5:1 and form
+     controls' borders at 3:1 on them. */
+  --c-surface-white: color-mix(
+    in oklab,
+    var(--c-surface-raised),
+    var(--color-white) 10%
+  );
+  /* White is a shade of gray here, so a white dot is solid, like a gray one. */
+  --c-indicator-white-ring: var(--c-color-white-fill-loud);
 }
 
 .underline-links {

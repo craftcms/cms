@@ -1,13 +1,17 @@
 <script setup lang="ts">
+  /**
+   * An element editor's details panels: Info, the field layout's sidebar
+   * tabs, Activity, Revisions, and any registered with
+   * `Cp.$elementDetailsPanels`, each added to the screen with `ScreenPanel`.
+   */
   import {t} from '@craftcms/ui';
-  import {computed, useTemplateRef} from 'vue';
+  import {computed} from 'vue';
   import {
     elementDetailsPanelRegistry,
     type ElementDetailsPanelDescriptor,
   } from '@/bootstrap/element-details-panels';
-  import DetailsPanels, {
-    type DetailsPanel,
-  } from '@/common/components/DetailsPanels.vue';
+  import ScreenPanel from '@/common/components/ScreenPanel.vue';
+  import {useScreenPanels} from '@/common/composables/screenPanels';
   import ElementActivityTimeline from '@/modules/elements/components/ElementActivityTimeline.vue';
   import ElementActivityTimelineActions from '@/modules/elements/components/ElementActivityTimelineActions.vue';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
@@ -19,47 +23,18 @@
   } from '@/modules/elements/composables/useElementEditor';
   import type {SidebarTabNode} from '@/modules/ui/sidebarTabs';
 
-  type ElementDetailsPanel = DetailsPanel &
-    Pick<
-      ElementDetailsPanelDescriptor,
-      'visible' | 'status' | 'props' | 'headerActionsComponent'
-    >;
-
   const props = defineProps<{
     payload: ElementEditPayload;
     activityTimelineVersion: number;
     updatePayload: ElementEditPayloadUpdater;
     submitAction: ElementFormActionSubmitter;
-    syncLocationHash?: boolean;
     /** Field layout tabs shown as panels, after Info. */
     sidebarTabs?: SidebarTabNode[];
   }>();
 
-  function sidebarTabPanelId(tab: SidebarTabNode): string {
-    return `layout-tab-${tab.uid}`;
-  }
+  const screenPanels = useScreenPanels();
 
-  const sidebarTabPanels = computed<ElementDetailsPanel[]>(() =>
-    (props.sidebarTabs ?? []).map((tab, index) => ({
-      id: sidebarTabPanelId(tab),
-      label: tab.props.label,
-      icon: tab.props.icon ?? 'sidebar-flip',
-      // Without an icon of its own, the tab shows its name's first letter.
-      initialIcon: !tab.props.icon,
-      // Between Info (0) and Activity (10), in layout order.
-      order: 1 + index / 100,
-      slot: sidebarTabPanelId(tab),
-    }))
-  );
-
-  const corePanels: ElementDetailsPanel[] = [
-    {
-      id: 'info',
-      label: t('Info'),
-      icon: 'circle-info',
-      order: 0,
-      slot: 'info',
-    },
+  const corePanels: ElementDetailsPanelDescriptor[] = [
     {
       id: 'activity',
       label: t('Activity'),
@@ -85,64 +60,73 @@
     },
   ];
 
-  const visiblePanels = computed<ElementDetailsPanel[]>(() =>
-    (
-      [
-        ...corePanels,
-        ...sidebarTabPanels.value,
-        ...elementDetailsPanelRegistry.panels,
-      ] as ElementDetailsPanel[]
+  /** The panels rendered from a component: Craft's and registered ones. */
+  const componentPanels = computed(() =>
+    [...corePanels, ...elementDetailsPanelRegistry.panels].filter(
+      (panel) => panel.visible?.(props.payload) ?? true
     )
-      .filter((panel) => panel.visible?.(props.payload) ?? true)
-      .map((panel) => ({
-        ...panel,
-        statusData: panel.status?.(props.payload) ?? null,
-      }))
-  );
-
-  const detailsPanels = useTemplateRef<{select(panelId: string): void}>(
-    'detailsPanels'
   );
 
   function componentProps(
-    panel: DetailsPanel,
-    activePanelId: string | null
+    panel: ElementDetailsPanelDescriptor
   ): Record<string, unknown> {
-    const context = {
-      payload: props.payload,
-      active: activePanelId === panel.id,
-      refreshToken: props.activityTimelineVersion,
-      updatePayload: props.updatePayload,
-      submitAction: props.submitAction,
-    };
-
-    return (panel as ElementDetailsPanel).props?.(context) ?? {};
+    return (
+      panel.props?.({
+        payload: props.payload,
+        active: screenPanels?.openPanelId.value === panel.id,
+        refreshToken: props.activityTimelineVersion,
+        updatePayload: props.updatePayload,
+        submitAction: props.submitAction,
+      }) ?? {}
+    );
   }
 
+  function sidebarTabPanelId(tab: SidebarTabNode): string {
+    return `layout-tab-${tab.uid}`;
+  }
+
+  /** Opens a panel, moving focus into it. */
   function select(panelId: string): void {
-    detailsPanels.value?.select(panelId);
+    screenPanels?.open(panelId);
   }
 
   defineExpose({select});
 </script>
 
 <template>
-  <DetailsPanels
-    ref="detailsPanels"
-    :panels="visiblePanels"
-    :component-props="componentProps"
-    id-prefix="element-details-panel"
-    :sync-location-hash="syncLocationHash"
+  <ScreenPanel id="info" :label="t('Info')" icon="circle-info" :order="0">
+    <slot name="info" />
+  </ScreenPanel>
+
+  <!-- Between Info (0) and Activity (10), in layout order. Without an icon
+       of its own, a tab shows its name's first letter. -->
+  <ScreenPanel
+    v-for="(tab, index) in sidebarTabs ?? []"
+    :id="sidebarTabPanelId(tab)"
+    :key="tab.uid"
+    :label="tab.props.label"
+    :icon="tab.props.icon ?? 'sidebar-flip'"
+    :initial-icon="!tab.props.icon"
+    :order="1 + index / 100"
   >
-    <template #info>
-      <slot name="info" />
+    <slot name="sidebar-tab" :tab="tab" />
+  </ScreenPanel>
+
+  <ScreenPanel
+    v-for="panel in componentPanels"
+    :id="panel.id"
+    :key="panel.id"
+    :label="panel.label"
+    :icon="panel.icon"
+    :order="panel.order"
+    :status="panel.status?.(payload) ?? null"
+  >
+    <component :is="panel.component" v-bind="componentProps(panel)" />
+    <template v-if="panel.headerActionsComponent" #header-actions>
+      <component
+        :is="panel.headerActionsComponent"
+        v-bind="componentProps(panel)"
+      />
     </template>
-    <template
-      v-for="tab in sidebarTabs ?? []"
-      :key="tab.uid"
-      #[sidebarTabPanelId(tab)]
-    >
-      <slot name="sidebar-tab" :tab="tab" />
-    </template>
-  </DetailsPanels>
+  </ScreenPanel>
 </template>

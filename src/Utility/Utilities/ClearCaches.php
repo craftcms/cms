@@ -15,9 +15,11 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Filesystem\Path;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -133,6 +135,43 @@ class ClearCaches extends Utility
         usort($options, fn (array $a, array $b) => $a['label'] <=> $b['label']);
 
         return $options;
+    }
+
+    /**
+     * Clears the caches with the given keys, or all of them when `$keys` is `'*'`.
+     *
+     * @param  list<string>|'*'  $keys
+     * @return list<string> The keys of the caches that were cleared.
+     */
+    public static function clear(array|string $keys): array
+    {
+        $cleared = [];
+
+        foreach (self::cacheOptions() as $cacheOption) {
+            if (is_array($keys) && ! in_array($cacheOption['key'], $keys, true)) {
+                continue;
+            }
+
+            $action = $cacheOption['action'];
+
+            if (is_string($action)) {
+                try {
+                    File::cleanDirectory($action);
+                } catch (InvalidArgumentException) {
+                    // the directory doesn't exist
+                } catch (Throwable $e) {
+                    Log::warning("Could not clear the directory $action: ".$e->getMessage(), [__METHOD__]);
+                }
+            } elseif (isset($cacheOption['params'])) {
+                app()->call($action, $cacheOption['params']);
+            } else {
+                $action();
+            }
+
+            $cleared[] = $cacheOption['key'];
+        }
+
+        return $cleared;
     }
 
     /**

@@ -601,9 +601,11 @@
   :deep(.cp-table-cell) {
     width: min-content;
   }
-  // Selection column hugs its checkbox rather than claiming a data-column share.
-  // Doubled class so it outranks wrappers that restate the `min-content` width.
-  :deep(.cp-table-cell.cp-table-cell--select) {
+  // Selection and thin columns hug their content rather than claiming a
+  // data-column share. Doubled class so it outranks wrappers that restate the
+  // `min-content` width.
+  :deep(.cp-table-cell.cp-table-cell--select),
+  :deep(.cp-table-cell.thin) {
     width: 1px;
     white-space: nowrap;
   }

@@ -7,6 +7,7 @@
   import WidgetManager from '@/modules/dashboard/WidgetManager.vue';
   import {useDashboard} from '@/modules/dashboard/useDashboard';
   import type {DashboardWidget, WidgetType} from '@/modules/dashboard/types';
+  import {widgetName} from '@/modules/dashboard/widgetName';
   import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
@@ -62,10 +63,8 @@
         />
       </div>
     </LayoutSlot>
-    <craft-callout v-if="deleted" class="mb-4" role="status">
-      <span>{{
-        t('“{name}” deleted.', {name: deleted.title || deleted.name})
-      }}</span>
+    <craft-callout v-if="deleted" class="block mb-lg" role="status">
+      <span>{{ t('“{name}” deleted.', {name: widgetName(deleted)}) }}</span>
       <craft-button
         slot="action"
         type="button"

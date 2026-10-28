@@ -35,44 +35,16 @@ export async function resolveFrom(pattern) {
   }, {});
 }
 
-/** The cards, filled chips, and badges in a color, which have a surface of their own. */
-function surfaces(color) {
-  return [
-    `craft-card[data-color='${color}']`,
-    `craft-chip[data-color='${color}']:not([appearance~='plain'])`,
-    `craft-badge[fill='${color}']`,
-  ];
-}
-
-const inLightTheme = (selector) => `${selector}:not([data-theme='dark'] *)`;
-const inDarkTheme = (selector) => `[data-theme='dark'] ${selector}`;
-
-function contentsSelector(selectors) {
-  return `:where(\n  ${selectors.map((selector) => `${selector} > *`).join(',\n  ')}\n)`;
-}
-
 /**
- * What's in a surface that looks dark: a black card, badge, or (filled) chip in
- * the light theme, and a white one in the dark theme, where white and black
- * swap. It's themed dark, so it holds up against the dark fill wherever the
- * surface is nested. Zero specificity, so the contents' own colors still win.
- * Matches the copies in tokens.css and variables.css.
+ * What's in a black card, badge, or (filled) chip, which is themed dark so it
+ * holds up against the dark fill. Zero specificity, so the contents' own colors
+ * still win. Matches the copies in tokens.css and variables.css.
  */
-export const DARK_SURFACE_CONTENTS_SELECTOR = contentsSelector([
-  ...surfaces('black').map(inLightTheme),
-  ...surfaces('white').map(inDarkTheme),
-]);
-
-/**
- * What's in a surface that looks light: a white card, badge, or (filled) chip
- * in the light theme, and a black one in the dark theme. It's themed light, so
- * a light surface nested in a dark one doesn't take its dark theme. Matches the
- * copies in tokens.css and variables.css.
- */
-export const LIGHT_SURFACE_CONTENTS_SELECTOR = contentsSelector([
-  ...surfaces('white').map(inLightTheme),
-  ...surfaces('black').map(inDarkTheme),
-]);
+export const BLACK_CONTENTS_SELECTOR = `:where(
+  craft-card[data-color='black'] > *,
+  craft-chip[data-color='black']:not([appearance~='plain']) > *,
+  craft-badge[fill='black'] > *
+)`;
 
 /**
  * A white, gray, or slate card, which takes the page's colors rather than a

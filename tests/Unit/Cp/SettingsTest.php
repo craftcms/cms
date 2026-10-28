@@ -72,3 +72,14 @@ it('resolves section labels for the current locale', function () {
         app()->setLocale($locale);
     }
 });
+
+it('lists sections that plugins register after Craft’s own', function () {
+    $settings = app(Settings::class);
+    $settings->registerSetting('Modules', 'module', fn () => ['label' => 'Module']);
+
+    expect(array_keys($settings->all()))->toBe([t('System'), t('Content'), t('Extend'), 'Modules']);
+
+    $settings->registerSetting('Plugins', 'plugin', fn () => ['label' => 'Plugin']);
+
+    expect(array_keys($settings->all()))->toBe([t('System'), t('Content'), t('Extend'), t('Plugins'), 'Modules']);
+});

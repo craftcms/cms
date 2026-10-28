@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\DeletionBlockers\BaseDeletionBlocker;
 use CraftCms\Cms\Element\DeletionBlockers\EntryAuthorsBlocker;
@@ -22,7 +21,6 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
-use Mockery\MockInterface;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -65,25 +63,12 @@ it('reports entry author blockers with details and actions', function () {
         ->hasAttached(UserModel::query()->find($author->id), ['sortOrder' => 0], 'authors')
         ->create();
 
-    $this->mock(ElementIndexHtml::class, function (MockInterface $mock) use ($author) {
-        $mock
-            ->shouldReceive('html')
-            ->once()
-            ->with(Entry::class, Mockery::on(fn (array $config) => $config['context'] === 'pane' &&
-                $config['sources'] === false &&
-                $config['defaultTableColumns'] === [['authors'], ['section']] &&
-                $config['defaultSort'] === ['section', 'asc'] &&
-                $config['jsSettings']['criteria']['authorId'] === [$author->id] &&
-                $config['jsSettings']['criteria']['status'] === null))
-            ->andReturn('<div>author details</div>');
-    });
-
     $blocker = new EntryAuthorsBlocker(ElementCollection::make([$author]), false);
     $actions = $blocker->getActions();
 
     expect($blocker->isActive())->toBeTrue()
         ->and($blocker->getSummary())->toBe('1 entry has the user assigned as an author.')
-        ->and($blocker->getDetails())->toBe('<div>author details</div>')
+        ->and(deletionBlockerChipIds($blocker->getDetails()))->toBe([$entry->id])
         ->and($actions)->toHaveCount(3)
         ->and(array_column($actions, 'label'))->toBe(['Reassign entry', 'Remove author from entry', 'Delete entry'])
         ->and($actions[0]['callback'])->toContain('entries/reassign-modal')
@@ -148,31 +133,44 @@ it('reports relation blockers with details and actions', function () {
         'uid' => fake()->uuid(),
     ]);
 
-    $this->mock(ElementIndexHtml::class, function (MockInterface $mock) {
-        $mock
-            ->shouldReceive('html')
-            ->once()
-            ->andReturn('<div>relation details</div>');
-    });
-
-    $blocker = new RelationDeletionBlocker(Entry::class, ElementCollection::make([$target]), true, [
-        'elementIndexSettings' => [
-            'defaultTableColumns' => [
-                ['section'],
-            ],
-            'defaultSort' => ['section', 'asc'],
-        ],
-    ]);
+    $blocker = new RelationDeletionBlocker(Entry::class, ElementCollection::make([$target]), true);
     $actions = $blocker->getActions();
 
     expect($blocker->isActive())->toBeTrue()
         ->and($blocker->getSummary())->toBe('The entry is related by 1 other entry.')
-        ->and($blocker->getDetails())->toBe('<div>relation details</div>')
+        ->and(deletionBlockerChipIds($blocker->getDetails()))->toBe([$source->id])
         ->and($actions)->toHaveCount(2)
         ->and(array_column($actions, 'label'))->toBe(['Replace relation', 'Remove relation'])
         ->and($actions[0]['callback'])->toContain('delete-elements/replace-relations-modal')
         ->and($actions[0]['callback'])->toContain((string) $target->id)
         ->and($actions[1]['callback'])->toContain('The relation will be removed once the entry is deleted.');
+});
+
+it('lists the first related elements and counts the rest', function () {
+    $field = Field::factory()->create([
+        'handle' => 'relatedEntries',
+        'type' => Entries::class,
+    ]);
+    $target = EntryModel::factory()->createElement();
+
+    foreach (range(1, 21) as $sortOrder) {
+        $source = EntryModel::factory()->createElement();
+        DB::table(Table::RELATIONS)->insert([
+            'fieldId' => $field->id,
+            'sourceId' => $source->id,
+            'sourceSiteId' => $source->siteId,
+            'targetId' => $target->id,
+            'sortOrder' => $sortOrder,
+            'dateCreated' => now(),
+            'dateUpdated' => now(),
+            'uid' => fake()->uuid(),
+        ]);
+    }
+
+    $details = new RelationDeletionBlocker(Entry::class, ElementCollection::make([$target]), true)->getDetails();
+
+    expect(deletionBlockerChipIds($details))->toHaveCount(20)
+        ->and($details)->toContain('and 1 more');
 });
 
 it('does not activate relation blockers when there are no relations', function () {
@@ -276,4 +274,18 @@ class TestDeletionBlocker extends BaseDeletionBlocker
     {
         return $this->actions;
     }
+}
+
+/** @return list<int> */
+function deletionBlockerChipIds(?string $html): array
+{
+    $document = new DOMDocument;
+    @$document->loadHTML('<?xml encoding="UTF-8">'.($html ?? ''));
+
+    $ids = [];
+    foreach ($document->getElementsByTagName('craft-chip') as $chip) {
+        $ids[] = (int) $chip->getAttribute('data-id');
+    }
+
+    return $ids;
 }

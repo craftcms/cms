@@ -180,7 +180,12 @@
   --c-size-control-md: calc(32rem / 16 + 1px);
 }
 
+/* A pixel taller header, so its bottom border lands on the grid, as the
+   chip's edges do. */
 .cvd-preview > craft-card {
+  --c-size-header: calc(
+    var(--c-size-control-sm) + var(--c-spacing-sm) * 2 + 1px
+  );
   justify-self: stretch;
 }
 

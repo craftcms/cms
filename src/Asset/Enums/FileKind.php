@@ -19,6 +19,7 @@ enum FileKind: string
     case Image = 'image';
     case Javascript = 'javascript';
     case Json = 'json';
+    case Markdown = 'markdown';
     case Pdf = 'pdf';
     case Photoshop = 'photoshop';
     case Php = 'php';
@@ -43,6 +44,7 @@ enum FileKind: string
             self::Image => t('Image'),
             self::Javascript => 'JavaScript',
             self::Json => 'JSON',
+            self::Markdown => 'Markdown',
             self::Pdf => 'PDF',
             self::Photoshop => 'Photoshop',
             self::Php => 'PHP',
@@ -70,6 +72,7 @@ enum FileKind: string
             self::Image => ['avif', 'bmp', 'gif', 'heic', 'heif', 'ico', 'j2c', 'j2k', 'jfif', 'jp2', 'jp2k', 'jpc', 'jpe', 'jpeg', 'jpf', 'jpg', 'jpg2', 'jpm', 'jpx', 'jxl', 'pam', 'pfm', 'pgm', 'pjpeg', 'pjpg', 'png', 'pnm', 'ppm', 'svg', 'tif', 'tiff', 'webp'],
             self::Javascript => ['js'],
             self::Json => ['json'],
+            self::Markdown => ['markdown', 'md'],
             self::Pdf => ['pdf'],
             self::Photoshop => ['psb', 'psd'],
             self::Php => ['php'],
@@ -79,6 +82,17 @@ enum FileKind: string
             self::Word => ['doc', 'docm', 'docx', 'dot', 'dotm', 'dotx'],
             self::Xml => ['xml'],
             self::Unknown => [],
+        };
+    }
+
+    /**
+     * Returns whether files of this kind are plain text, such as source code or markup.
+     */
+    public function isText(): bool
+    {
+        return match ($this) {
+            self::Html, self::Javascript, self::Json, self::Markdown, self::Php, self::Text, self::Xml => true,
+            default => false,
         };
     }
 

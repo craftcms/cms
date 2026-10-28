@@ -116,9 +116,19 @@ The authenticated server uses OAuth 2.1 through Laravel Passport. Craft publishe
 - **Dynamic client registration** at `{cpTrigger}/mcp/oauth/register`.
 - **Authorization** at `{cpTrigger}/mcp/oauth/authorize`, using the authorization code grant with PKCE (`S256`).
 
-Tokens must carry the `mcp:use` scope and are checked by the `craft-mcp` auth guard. An unauthenticated request receives a `401` response with a `WWW-Authenticate` header pointing at the protected resource metadata.
+Tokens are checked by the `craft-mcp` auth guard. An unauthenticated request receives a `401` response with a `WWW-Authenticate` header pointing at the protected resource metadata and requesting every MCP scope.
 
-Craft adds its scope and guard alongside the host application's Passport configuration. It does not replace existing scopes, the default scope, or the authorization guard.
+Each token carries one of three access levels. A broader scope includes the narrower ones:
+
+| Scope       | Grants                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| `mcp:read`  | Resources, prompts, and tools with `readOnlyHint: true`.                                    |
+| `mcp:write` | Also tools without `readOnlyHint: true`.                                                   |
+| `mcp:admin` | Also capabilities marked `#[RequiresAdmin]` or `#[RequiresAdminChanges]`, including reads. |
+
+The user chooses the access level on the consent screen. It defaults to read only, and administrators are the only users offered full access. When a client authorizes again while the user still has an active token for it, Craft skips the consent screen and keeps the level the user chose before. Clients can send `prompt=consent` to show the screen anyway. Scopes only narrow access: the user's Craft permissions still apply. Upload sessions require `mcp:write`. The stdio server is not scoped.
+
+Craft adds its scopes and guard alongside the host application's Passport configuration. It does not replace existing scopes, the default scope, or the authorization guard.
 
 After authentication, the user also needs the `accessCp` and `useCraftMcp` permissions. Individual capabilities can require more.
 
@@ -324,7 +334,7 @@ Follow core's conventions where they apply:
 - Name tools `{plugin-or-resource}.{action}`, and choose names that will not collide with core.
 - Accept exactly one of `id`, `uid`, or `handle` when looking up a record, and reject ambiguous input.
 - Return list results as `['count' => ..., '{items}' => [...]]`.
-- Set `readOnlyHint` on reads and `destructiveHint` on deletes and replacements.
+- Set `readOnlyHint` on reads and `destructiveHint` on deletes and replacements. Tools without `readOnlyHint: true` require the `mcp:write` scope.
 - Report missing and unauthorized records with the same message, so a tool does not reveal records the user cannot view.
 
 ### Resources, resource templates, and prompts
@@ -384,7 +394,7 @@ Every capability on the authenticated server already requires `accessCp` and `us
 | `#[RequiresAdminChanges]`         | The user is an administrator and `allowAdminChanges` is enabled. Use it for tools that write project config. |
 | `#[RequiresHttp]`                 | The request arrived over HTTP. Use it for capabilities that return URLs authenticated by the MCP access token, which a stdio client does not have. |
 
-These attributes decide whether a capability is listed at all. They do not check access to individual records. Inside the method, authorize each element with Laravel's gate, as the `reviews.list` example does. `McpActor::user()` returns the authenticated user and throws a `ToolCallException` when there is none.
+These attributes decide whether a capability is listed at all. `#[RequiresAdmin]` and `#[RequiresAdminChanges]` also require the `mcp:admin` scope. They do not check access to individual records. Inside the method, authorize each element with Laravel's gate, as the `reviews.list` example does. `McpActor::user()` returns the authenticated user and throws a `ToolCallException` when there is none.
 
 Register plugin permissions with `UserPermissions` as usual. The permission handle in `#[RequiresPermission]` is the same handle `$user->can()` checks.
 
@@ -596,7 +606,7 @@ public function boot(CheckRegistry $checks): void
 
 ## Testing plugin capabilities
 
-Register the capability class in the test, act as a user with the `mcp:use` scope on the `craft-mcp` guard, and post a JSON-RPC message to the authenticated server:
+Register the capability class in the test, act as a user with an MCP scope on the `craft-mcp` guard, and post a JSON-RPC message to the authenticated server:
 
 ```php
 use CraftCms\Cms\Mcp\CapabilityRegistry;
@@ -604,7 +614,7 @@ use Laravel\Passport\Passport;
 
 it('lists reviews for an entry', function (): void {
     app(CapabilityRegistry::class)->register(ReviewCapabilities::class);
-    Passport::actingAs($user, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($user, ['mcp:read'], 'craft-mcp');
 
     postJson(route('craft.cp.mcp.server'), [
         'jsonrpc' => '2.0',

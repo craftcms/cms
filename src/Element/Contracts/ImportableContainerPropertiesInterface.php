@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Contracts;
 
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Importers\BaseImporter;
@@ -22,6 +23,11 @@ interface ImportableContainerPropertiesInterface
      * @return list<MappingColumn|CompoundMappingColumn>|null
      */
     public static function getDestinationColsForProperty(BaseImporter $importer, string $property): ?array;
+
+    /**
+     * Returns the field layout used by an importable container property, or null if it doesn’t have one.
+     */
+    public static function getFieldLayoutForProperty(string $property): ?FieldLayout;
 
     /**
      * Imports the incoming data for a container property, normalizing it and saving whatever it needs to.

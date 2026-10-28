@@ -20,7 +20,7 @@
     "test:dev": "vp test",
     "test:coverage": "vp test run --coverage",
     "dev": "node ./scripts/build.js --develop",
-    "prebuild": "pnpm run format",
+    "prebuild": "vp fmt --write ./src",
     "build": "node ./scripts/build.js",
     "format": "vp fmt --write ./src",
     "check:format": "vp fmt --check ./src",

@@ -63,24 +63,33 @@ const LEGACY_NAMES = new Map(
   })
 );
 
-function normalizeIconName(name: string): string {
+/** Names that resolve to the globe for the system's time zone, as `Icons::earth()` picks it. */
+const EARTH_ALIASES = new Set(['world', 'earth']);
+
+function normalizeIconName(name: string, earthIcon: string): string {
   const suffix = name.endsWith('.svg') ? '.svg' : '';
   const baseName = suffix ? name.slice(0, -suffix.length) : name;
+  const resolve = (iconName: string) =>
+    EARTH_ALIASES.has(iconName)
+      ? earthIcon
+      : (LEGACY_NAMES.get(iconName) ?? iconName);
 
   if (baseName.includes('/')) {
     const [variant, ...iconName] = baseName.split('/');
-    const resolvedIconName = iconName.join('/');
 
-    return `${variant}/${LEGACY_NAMES.get(resolvedIconName) ?? resolvedIconName}${suffix}`;
+    return `${variant}/${resolve(iconName.join('/'))}${suffix}`;
   }
 
-  return `${LEGACY_NAMES.get(baseName) ?? baseName}${suffix}`;
+  return `${resolve(baseName)}${suffix}`;
 }
 
-export function configureIcons(baseUrl: string = '/vendor/craft/icons') {
+export function configureIcons(
+  baseUrl: string = '/vendor/craft/icons',
+  earthIcon: string = 'earth-americas'
+) {
   setIconResolver(
     createUrlIconResolver((name, family, variant) =>
-      getIconUrl(normalizeIconName(name), family, variant, baseUrl)
+      getIconUrl(normalizeIconName(name, earthIcon), family, variant, baseUrl)
     )
   );
 }

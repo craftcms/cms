@@ -13,6 +13,8 @@ use Override;
  * @method static array problems()
  * @method static bool available(string $handle)
  * @method static \CraftCms\Cms\Ai\Data\ResolvedProvider resolve(string $handle)
+ * @method static array requirementMappings()
+ * @method static array checkRequirements(array|null $previous = null)
  * @method static \CraftCms\Cms\Ai\TaskClient task(string $handle)
  *
  * @see \CraftCms\Cms\Ai\Ai

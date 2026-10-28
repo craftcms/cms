@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
+use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
@@ -29,6 +30,31 @@ it('gives a utility screen breadcrumbs the Vue breadcrumbs can follow', function
                 ->every(fn (array $crumb): bool => ! array_key_exists('url', $crumb))
             )
             ->where('crumbs.0.href', fn (?string $href): bool => is_string($href) && str_ends_with($href, '/utilities'))
+            ->etc()
+        );
+});
+
+it('titles a utility subpage, with a breadcrumb back to the utility', function () {
+    app(JobProgress::class)->queued('job-1', 'Updating search indexes');
+
+    get('/admin/utilities/queue-manager/job-1')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('utilities/Show')
+            ->where('title', 'Updating search indexes')
+            ->has('crumbs', 3)
+            ->where('crumbs.1.label', 'Queue Manager')
+            ->where('crumbs.1.href', fn (?string $href): bool => is_string($href) && str_ends_with($href, '/utilities/queue-manager'))
+            ->where('crumbs.2.label', 'Updating search indexes')
+            ->where('crumbs.2.href', null)
+            ->etc()
+        );
+
+    get('/admin/utilities/queue-manager')
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('title', 'Queue Manager')
+            ->has('crumbs', 2)
+            ->where('crumbs.1.href', null)
             ->etc()
         );
 });

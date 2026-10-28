@@ -95,7 +95,7 @@ class AssetAdapter extends BaseElementAdapter
     {
         return [
             'Create assets with assets.create and replace their files with assets.replace; both accept the file to upload.',
-            'Restoring an asset only succeeds if its file was kept when it was deleted.',
+            'Restoring an asset only succeeds if its file was moved to the trashed asset disk when it was deleted.',
             'Validation does not move or rename files.',
         ];
     }

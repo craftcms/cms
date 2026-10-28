@@ -313,7 +313,7 @@ describe('store', function () {
         ])->assertUnprocessable();
     });
 
-    test('store validates the Asset Transformer reference shape', function () {
+    test('store validates the asset transformer reference shape', function () {
         postJson(action([VolumesController::class, 'store']), [
             'name' => 'Invalid Transform Volume',
             'handle' => 'invalidTransformVolume',

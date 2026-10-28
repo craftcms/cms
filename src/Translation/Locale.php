@@ -162,6 +162,31 @@ class Locale implements Stringable
         return strtolower($lang);
     }
 
+    /**
+     * Returns the locale's BCP 47 language tag, for JavaScript's `Intl` APIs,
+     * with its calendar and numbering system as Unicode extensions (e.g.
+     * `fa-IR-u-ca-persian` for `fa_IR@calendar=persian`).
+     */
+    public function getLanguageTag(): string
+    {
+        $tag = str_replace('_', '-', strtok($this->id, '@'));
+        $extensions = [];
+
+        foreach (IntlLocale::getKeywords($this->id) ?: [] as $keyword => $value) {
+            $key = match ($keyword) {
+                'calendar' => 'ca',
+                'numbers' => 'nu',
+                default => null,
+            };
+
+            if ($key !== null) {
+                $extensions[] = "$key-$value";
+            }
+        }
+
+        return $extensions ? "$tag-u-".implode('-', $extensions) : $tag;
+    }
+
     #[AllowedInSandbox]
     public function getLanguageID(): string
     {

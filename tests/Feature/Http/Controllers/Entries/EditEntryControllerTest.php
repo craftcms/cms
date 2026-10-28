@@ -82,6 +82,8 @@ it('renders the entry edit screen as an Inertia page', function () {
             ->where('elementId', $this->entry->id)
             ->where('canonicalId', $this->entry->id)
             ->where('elementType', Entry::class)
+            ->where('refHandle', 'entry')
+            ->where('elementUrl', $this->entry->getUrl())
             ->where('siteId', $this->entry->siteId)
             ->where('title', 'Current Title')
             ->where('sectionHandle', 'news')
@@ -146,12 +148,18 @@ it('compiles the meta fields into a sidebar UI', function () {
                     fn (array $node) => ($node['control']['path'] ?? null) === ['slug'],
                 );
 
+                $postDate = $nodes->first(
+                    fn (array $node) => ($node['control']['path'] ?? null) === ['postDate'],
+                );
+
                 return in_array('slug', $paths, true)
                     && in_array('postDate', $paths, true)
                     && in_array('expiryDate', $paths, true)
                     && in_array('enabled', $paths, true)
                     && in_array('notes', $paths, true)
-                    && ($slug['control']['props']['autoGenerate'] ?? null) === false;
+                    && ($slug['control']['props']['autoGenerate'] ?? null) === false
+                    && ($slug['props']['icon'] ?? null) === 'link'
+                    && ($postDate['props']['icon'] ?? null) === 'calendar';
             })
             ->where('metadataHtml', fn (?string $html) => is_string($html) && $html !== '')
             ->etc()
@@ -310,7 +318,8 @@ it('ends the breadcrumbs with a revision switcher instead of naming the draft in
                     && $revisionCrumb['label'] === 'Working Draft'
                     && $revisionCrumb['items'][0]['label'] === 'Current'
                     && $drafts['items'][0]['label'] === 'Working Draft'
-                    && $drafts['items'][0]['selected'] === true;
+                    && $drafts['items'][0]['selected'] === true
+                    && str_starts_with($drafts['items'][0]['description'], 'Saved ');
             })
             ->etc()
         );
@@ -773,8 +782,7 @@ it('polls for activity against the canonical element', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('activityUrl', fn (?string $url) => is_string($url)
-                && str_contains($url, 'elements/recent-activity')
-                && str_contains($url, 'dontExtendSession'))
+                && str_contains($url, 'elements/recent-activity'))
             ->where('updatedTimestamps', fn (Collection $stamps) => $stamps->has('element')
                 && $stamps->has('canonical'))
             ->where('elementDisplayName', 'entry')

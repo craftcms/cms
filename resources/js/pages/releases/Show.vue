@@ -29,6 +29,7 @@
     ui: UiPayload;
     editUi: UiPayload | null;
     metadataHtml: string | null;
+    publishDisabledReason: ReleaseViewModel['publishDisabledReason'];
   }>();
 
   const canPublishNow = computed(
@@ -45,7 +46,7 @@
     const blocked = Object.keys(readiness.itemErrors).length;
     if (blocked) {
       return t(
-        '{count, plural, =1{# entry is blocking publication.} other{# entries are blocking publication.}}',
+        '{count, plural, =1{# draft is blocking publication.} other{# drafts are blocking publication.}}',
         {count: blocked}
       );
     }
@@ -53,7 +54,7 @@
     const withWarnings = Object.keys(readiness.itemWarnings).length;
     if (withWarnings) {
       return t(
-        'Ready to publish. {count, plural, =1{# entry has warnings.} other{# entries have warnings.}}',
+        'Ready to publish. {count, plural, =1{# draft has warnings.} other{# drafts have warnings.}}',
         {count: withWarnings}
       );
     }
@@ -62,6 +63,10 @@
   });
 
   function scheduleRelease(): void {
+    if (!props.readiness?.ready) {
+      return;
+    }
+
     void openUiModal({
       modalUrl: scheduleModal.url({release: props.release.id}),
       actionUrl: schedule.url({release: props.release.id}),
@@ -71,6 +76,7 @@
 
   function publishRelease(): void {
     if (
+      !props.readiness?.ready ||
       !window.confirm(
         t('Publish this release now? Every entry will be published together.')
       )
@@ -132,21 +138,31 @@
     >
       <div v-if="canPublishNow" class="flex flex-wrap gap-md">
         <craft-button
+          id="release-publish-now"
           type="button"
           variant="primary"
           .disabled="!readiness?.ready"
+          :focusable-when-disabled="publishDisabledReason ? true : undefined"
           @click="publishRelease"
         >
           {{ t('Publish now') }}
         </craft-button>
+        <craft-tooltip v-if="publishDisabledReason" for="release-publish-now">
+          {{ publishDisabledReason }}
+        </craft-tooltip>
         <craft-button
+          id="release-schedule"
           type="button"
           variant="outline"
           .disabled="!readiness?.ready"
+          :focusable-when-disabled="publishDisabledReason ? true : undefined"
           @click="scheduleRelease"
         >
           {{ t('Schedule') }}
         </craft-button>
+        <craft-tooltip v-if="publishDisabledReason" for="release-schedule">
+          {{ publishDisabledReason }}
+        </craft-tooltip>
       </div>
     </LayoutSlot>
 

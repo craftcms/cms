@@ -68,6 +68,7 @@
           type="button"
           aria-label="User menu"
           variant="none"
+          class="user-menu__button"
         >
           <UserThumbnail />
         </craft-button>
@@ -75,3 +76,9 @@
     </ActionMenu>
   </div>
 </template>
+
+<style scoped>
+  .user-menu__button {
+    --c-button-radius: var(--c-radius-full);
+  }
+</style>

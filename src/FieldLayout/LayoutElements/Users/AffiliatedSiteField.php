@@ -127,4 +127,10 @@ class AffiliatedSiteField extends BaseNativeField implements ImportableFieldLayo
 
         return $items;
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'earth-americas';
+    }
 }

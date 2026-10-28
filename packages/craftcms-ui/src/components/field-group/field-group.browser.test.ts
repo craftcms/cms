@@ -164,6 +164,33 @@ it('draws a hairline between separated fields that share a row, and only there',
   expect(follows()).toEqual([false, false, false]);
 });
 
+it('centers the hairline in the gap before a narrow field', async () => {
+  const fieldGroup = document.createElement('craft-field-group');
+  fieldGroup.separated = true;
+  fieldGroup.style.width = '900px';
+  fieldGroup.style.setProperty('--c-field-group-separator-spacing', '16px');
+  fieldGroup.innerHTML = `
+    <div class="width-25">Artist</div>
+    <div class="width-25">Year</div>
+    <div class="width-50">Medium</div>
+  `;
+  document.body.append(fieldGroup);
+  await fieldGroup.updateComplete;
+  await new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))
+  );
+  const [artist, year] = fieldGroup.querySelectorAll<HTMLElement>('div');
+  const hairline = getComputedStyle(year!, '::before');
+  const gapMiddle =
+    (artist!.getBoundingClientRect().right +
+      year!.getBoundingClientRect().left) /
+    2;
+
+  expect(
+    year!.getBoundingClientRect().left + parseFloat(hairline.left)
+  ).toBeCloseTo(gapMiddle, 0);
+});
+
 it('keeps separated fields within a group too narrow for its full column gap', async () => {
   const fieldGroup = document.createElement('craft-field-group');
   fieldGroup.separated = true;

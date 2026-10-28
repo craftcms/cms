@@ -1,9 +1,23 @@
 import '../../../../../css/cp.css';
 import {setIconResolver} from '@craftcms/ui/utilities/icons';
 import {nothing} from 'lit';
-import {createApp, defineComponent, h, type App, type VNode} from 'vue';
-import {afterEach, beforeAll, expect, it} from 'vite-plus/test';
+import {
+  createApp,
+  defineComponent,
+  h,
+  nextTick,
+  provide,
+  type App,
+  type VNode,
+} from 'vue';
+import {afterEach, beforeAll, expect, it, vi} from 'vite-plus/test';
 import DetailsPanels from '@/common/components/DetailsPanels.vue';
+import ScreenPanel from '@/common/components/ScreenPanel.vue';
+import {
+  ScreenPanelsKey,
+  createScreenPanels,
+  type ScreenPanels,
+} from '@/common/composables/screenPanels';
 import {useResizable} from '@/common/composables/useResizable';
 import ContentDetails from './ContentDetails.vue';
 
@@ -34,7 +48,9 @@ const SelfScrollingPanel = defineComponent({
     ),
 });
 
-function mount(content: () => VNode): HTMLElement {
+function mount(
+  content: (registry: ScreenPanels) => VNode | VNode[]
+): HTMLElement {
   const host = document.createElement('div');
   host.style.height = '400px';
   host.style.width = '350px';
@@ -47,7 +63,10 @@ function mount(content: () => VNode): HTMLElement {
           minWidth: 200,
           maxWidth: 600,
         });
-        return () => h(ContentDetails, {resizer}, {'content-details': content});
+        const registry = createScreenPanels();
+        provide(ScreenPanelsKey, registry);
+
+        return () => h(ContentDetails, {resizer}, () => content(registry));
       },
     })
   );
@@ -55,35 +74,21 @@ function mount(content: () => VNode): HTMLElement {
   return host;
 }
 
-const infoPanel = {
-  id: 'info',
-  label: 'Info',
-  icon: 'info',
-  slot: 'info',
-};
-const timelinePanel = {
-  id: 'timeline',
-  label: 'Timeline',
-  icon: 'clock',
-  component: SelfScrollingPanel,
-};
+/** Shows one panel, as a page adds it, in the column. */
+async function mountPanel(content: () => VNode): Promise<HTMLElement> {
+  const host = mount((registry) => [
+    h(DetailsPanels, {registry}),
+    h(ScreenPanel, {id: 'panel', label: 'Panel', icon: 'info'}, content),
+  ]);
 
-function mountPanels(
-  panels: (typeof infoPanel | typeof timelinePanel)[]
-): HTMLElement {
-  return mount(() =>
-    h(
-      DetailsPanels,
-      {panels},
-      {
-        info: () => h('div', {style: 'height: 2000px'}),
-      }
-    )
-  );
+  await vi.waitFor(() => expect(host.querySelector('h3')).not.toBeNull());
+  await nextTick();
+
+  return host;
 }
 
-it('keeps the panel header in place while its content scrolls', () => {
-  const host = mountPanels([infoPanel]);
+it('keeps the panel header in place while its content scrolls', async () => {
+  const host = await mountPanel(() => h('div', {style: 'height: 2000px'}));
   const column = host.querySelector<HTMLElement>('.cp-details')!;
   const heading = host.querySelector<HTMLElement>('h3')!;
   const body = host.querySelector<HTMLElement>('section > :last-child')!;
@@ -97,8 +102,8 @@ it('keeps the panel header in place while its content scrolls', () => {
   expect(column.scrollHeight).toBe(column.clientHeight);
 });
 
-it('gives a self-scrolling panel the height left under the header', () => {
-  const host = mountPanels([timelinePanel]);
+it('gives a self-scrolling panel the height left under the header', async () => {
+  const host = await mountPanel(() => h(SelfScrollingPanel));
   const body = host.querySelector<HTMLElement>('section > :last-child')!;
   const footer = host.querySelector<HTMLElement>('[data-footer]')!;
 

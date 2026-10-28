@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * @since 6.0.0
@@ -50,12 +49,7 @@ readonly class ImageEditorController
 
         abort_if(! $asset->getSupportsImageEditor(), 400, 'Unsupported file format');
 
-        $focal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
-
-        return new JsonResponse([
-            'html' => template('_special/image_editor'),
-            'focalPoint' => $focal,
-        ]);
+        return new JsonResponse($asset->getImageEditorSettings());
     }
 
     public function editImage(Request $request): Response

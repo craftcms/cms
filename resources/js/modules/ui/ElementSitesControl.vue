@@ -75,8 +75,8 @@
     ...otherSites.value,
   ]);
 
-  // If the element is saved to 2+ other sites, list them within a disclosure
-  const collapsible = computed(() => otherSites.value.length > 1);
+  // If there are more than 10 sites, list the other sites within a disclosure
+  const collapsible = computed(() => orderedSites.value.length > 10);
   // Like craft-disclosure's invoker: down while open, toward the end of the line while closed
   const toggleIcon = computed(() => {
     if (expanded.value) {

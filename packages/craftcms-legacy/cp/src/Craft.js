@@ -23,10 +23,8 @@ import './js/BaseElementIndexView.js';
 
 // Finally load the remaining files
 import './js/AdminTable.js';
-import './js/AssetImageEditor.js';
 import './js/AssetIndex.js';
 import './js/AssetsFieldSettings';
-import './js/AuthManager.js';
 import './js/CP.js';
 import './js/CardsElementIndexView.js';
 import './js/CategoryIndex.js';

@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {userEvent} from 'vite-plus/test/browser';
+import {page, userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
 import type CraftDialog from './dialog.js';
 import '../../styles/cp.css';
@@ -90,6 +90,19 @@ it('moves focus into the dialog on open', async () => {
   expect(deepActiveElement()).toBe(shadow(dialog, '.close'));
 });
 
+it('draws no focus ring around the dialog when it takes focus itself', async () => {
+  const dialog = await openDialog((dialog) => {
+    dialog.noHeader = true;
+  });
+  const native = shadow<HTMLDialogElement>(dialog, 'dialog');
+
+  await userEvent.keyboard('{Shift}');
+  native.focus();
+
+  expect(native.matches(':focus-visible')).toBe(true);
+  expect(getComputedStyle(native).outlineStyle).toBe('none');
+});
+
 it('focuses an autofocus element on open', async () => {
   const target = button('Autofocus');
   target.autofocus = true;
@@ -99,7 +112,6 @@ it('focuses an autofocus element on open', async () => {
 });
 
 it('keeps Tab and Shift+Tab inside a modal dialog', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   document.body.append(button('Before'));
   const inside = button('Inside');
   const footer = button('Footer', 'footer');
@@ -125,7 +137,6 @@ it('keeps Tab and Shift+Tab inside a modal dialog', async () => {
 });
 
 it('returns focus to the invoker on close', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const invoker = button('Open');
   document.body.append(invoker);
   const dialog = document.createElement('craft-dialog') as CraftDialog;
@@ -143,7 +154,6 @@ it('returns focus to the invoker on close', async () => {
 });
 
 it('focuses the element returnFocus returns on close', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const invoker = button('Open');
   const target = button('Target');
   document.body.append(invoker, target);
@@ -228,7 +238,6 @@ it('leaves focus on the opener when a non-modal dialog closes natively with focu
 });
 
 it('keeps the native return target when returnFocus returns nothing', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const invoker = button('Open');
   document.body.append(invoker);
   const dialog = document.createElement('craft-dialog') as CraftDialog;
@@ -249,7 +258,6 @@ async function openFromMenuItem(): Promise<{
   dialog: CraftDialog;
   menuInvoker: HTMLButtonElement;
 }> {
-  const {userEvent} = await import('@vitest/browser/context');
   await import('../action-menu/action-menu.js');
   const template = document.createElement('template');
   template.innerHTML = `
@@ -289,7 +297,6 @@ async function openFromMenuItem(): Promise<{
 }
 
 it('returns focus to the action menu invoker after a menu item opens it', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const {dialog, menuInvoker} = await openFromMenuItem();
 
   await userEvent.keyboard('{Escape}');
@@ -326,7 +333,6 @@ it('returns focus to the action menu invoker when the native dialog closes by it
 });
 
 it('closes on Escape through craft-before-hide', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const dialog = await openDialog();
   let asked = 0;
   dialog.addEventListener('craft-before-hide', () => asked++);
@@ -339,7 +345,6 @@ it('closes on Escape through craft-before-hide', async () => {
 });
 
 it('stays open on Escape when craft-before-hide is canceled', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const invoker = button('Open');
   document.body.append(invoker);
   const dialog = document.createElement('craft-dialog') as CraftDialog;
@@ -359,8 +364,45 @@ it('stays open on Escape when craft-before-hide is canceled', async () => {
   expect(shadow<HTMLDialogElement>(dialog, 'dialog').open).toBe(true);
 });
 
+it('handles Escape itself in modal mode, not through the platform', async () => {
+  // Dispatched rather than typed: an untrusted key never reaches the
+  // platform's close watchers, which can stop delivering Escape to a dialog
+  // beneath one that closed itself asynchronously.
+  const inside = button('Inside');
+  const dialog = await openDialog((dialog) => dialog.append(inside));
+  const escape = new KeyboardEvent('keydown', {
+    key: 'Escape',
+    bubbles: true,
+    composed: true,
+    cancelable: true,
+  });
+
+  inside.dispatchEvent(escape);
+  await dialog.updateComplete;
+
+  expect(escape.defaultPrevented).toBe(true);
+  expect(dialog.opened).toBe(false);
+});
+
+it('leaves Escape to content that claims it', async () => {
+  const inside = button('Inside');
+  inside.addEventListener('keydown', (event) => event.preventDefault());
+  const dialog = await openDialog((dialog) => dialog.append(inside));
+
+  inside.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    })
+  );
+  await dialog.updateComplete;
+
+  expect(dialog.opened).toBe(true);
+});
+
 it('lets the keyboard reach a scrolling body with nothing focusable', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const dialog = await openDialog((dialog) => {
     dialog.noClose = true;
     dialog.textContent = longText();
@@ -374,7 +416,6 @@ it('lets the keyboard reach a scrolling body with nothing focusable', async () =
 });
 
 it('contains Tab in a non-modal dialog and releases it on close', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const after = button('After');
   const inside = button('Inside');
   const dialog = await openDialog((dialog) => {
@@ -396,7 +437,6 @@ it('contains Tab in a non-modal dialog and releases it on close', async () => {
 });
 
 it('scrolls a focused control clear of the footer', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const first = button('First');
   const last = button('Last');
   const dialog = await openDialog((dialog) => {
@@ -417,7 +457,6 @@ it('scrolls a focused control clear of the footer', async () => {
 });
 
 it('scrolls a focused control clear of the header', async () => {
-  const {userEvent} = await import('@vitest/browser/context');
   const first = button('First');
   const last = button('Last');
   const dialog = await openDialog((dialog) => {
@@ -465,12 +504,11 @@ it('outlines the surface when it overlays the page', async () => {
   const dialog = await openDialog();
   const style = getComputedStyle(shadow(dialog, '.surface'));
 
-  expect(style.borderTopStyle).toBe('solid');
-  expect(parseFloat(style.borderTopWidth)).toBeGreaterThanOrEqual(1);
+  expect(style.outlineStyle).toBe('solid');
+  expect(parseFloat(style.outlineWidth)).toBeGreaterThanOrEqual(1);
 });
 
 it('fits a 320px viewport without horizontal scroll', async () => {
-  const {page} = await import('@vitest/browser/context');
   await page.viewport(320, 640);
   try {
     const dialog = await openDialog((dialog) => {
@@ -585,8 +623,12 @@ describe('closing with a held key', () => {
 
   it('gives up waiting for the keyup once the window loses focus', async () => {
     const {dialog, openCount} = await fixture();
+    const pick = dialog.querySelector<HTMLButtonElement>('.pick')!;
+    pick.addEventListener('click', () => {
+      dialog.opened = false;
+    });
 
-    closeButton(dialog).focus();
+    pick.focus();
     await userEvent.keyboard('{Enter>}');
     await dialog.updateComplete;
     window.dispatchEvent(new Event('blur'));
@@ -597,8 +639,12 @@ describe('closing with a held key', () => {
 
   it('gives up waiting for the keyup once the same key is pressed again', async () => {
     const {dialog, openCount} = await fixture();
+    const pick = dialog.querySelector<HTMLButtonElement>('.pick')!;
+    pick.addEventListener('click', () => {
+      dialog.opened = false;
+    });
 
-    closeButton(dialog).focus();
+    pick.focus();
     await userEvent.keyboard('{Enter>}');
     await dialog.updateComplete;
     window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));

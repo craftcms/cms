@@ -106,3 +106,17 @@ it('follows the preference from page to page', async () => {
 
   scope.stop();
 });
+
+it('reports the theme it shows to the server', async () => {
+  systemIsDark = true;
+  const scope = run('system');
+
+  expect(document.cookie).toContain('CraftTheme=dark');
+
+  setSystemDark(false);
+  await nextTick();
+
+  expect(document.cookie).toContain('CraftTheme=light');
+
+  scope.stop();
+});

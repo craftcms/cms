@@ -132,7 +132,7 @@ export default class CraftFieldGroup extends LitElement {
         craft-field-group {
           display: grid;
           grid-template-columns: repeat(12, minmax(0, 1fr));
-          gap: var(--gap, calc(var(--c-spacing) * 6)) var(--c-spacing-sm);
+          gap: var(--gap, calc(var(--c-spacing) * 6)) var(--c-spacing-md);
           container-type: inline-size;
         }
 
@@ -157,11 +157,21 @@ export default class CraftFieldGroup extends LitElement {
           position: relative;
         }
 
+        /* Matches the column gap, but in cqi: a percentage here would resolve against the field, not the group. */
         craft-field-group[separated] > [data-follows-column]::before {
           content: '';
           position: absolute;
           inset-block: 0;
-          inset-inline-start: calc(var(--_column-gap) / -2);
+          inset-inline-start: calc(
+            min(
+                calc(
+                  var(--c-field-group-separator-spacing, var(--c-spacing-lg)) *
+                    2
+                ),
+                100cqi / 12
+              ) /
+              -2
+          );
           border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
           pointer-events: none;
         }

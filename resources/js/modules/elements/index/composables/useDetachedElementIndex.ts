@@ -65,9 +65,10 @@ export function useDetachedElementIndex<
   /** Returns whether this response became the current payload. */
   async function load(
     query: IndexQueryParams,
-    isCurrent: () => boolean
+    isCurrent: () => boolean,
+    silent: boolean
   ): Promise<boolean> {
-    loading.value = true;
+    loading.value = !silent;
 
     try {
       const response = await options.fetch(query);

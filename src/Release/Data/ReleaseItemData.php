@@ -17,8 +17,8 @@ readonly class ReleaseItemData
         public string $title,
         public ?int $draftId,
         public ?int $canonicalId,
-        public ?string $draftName,
-        public ?string $url,
+        /** The item’s chip, labeled with the draft name while it’s still a draft. */
+        public ?string $chipHtml,
         public ?DateTimeInterface $publishedAt,
         public bool $canDetach,
     ) {}

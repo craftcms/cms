@@ -172,3 +172,15 @@ it('takes its size and image radius from an ancestor', async () => {
     getComputedStyle(part(round!, '.thumbnail__image')).borderRadius
   ).not.toBe('4px');
 });
+
+it('fits a portrait image whose width and height were set as strings', async () => {
+  document.body.innerHTML = `<craft-thumbnail src="${imageFixture(800, 1200)}" alt="" loading="eager" style="--c-thumbnail-size: 120px;"></craft-thumbnail>`;
+  const thumbnail = document.querySelector('craft-thumbnail')!;
+  Object.assign(thumbnail, {width: '800', height: '1200'});
+  await thumbnail.updateComplete;
+  const image = thumbnail.shadowRoot!.querySelector('img')!;
+  await image.decode();
+
+  const box = image.getBoundingClientRect();
+  expect([box.width, box.height]).toEqual([80, 120]);
+});
