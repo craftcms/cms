@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Middleware\AuthenticateCraftSession;
+use CraftCms\Cms\Http\Middleware\PreventStaleDatabaseReads;
 use CraftCms\Cms\Http\Middleware\UseCraftAuthGuard;
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Foundation\Http\Middleware\PreventStaleDatabaseReads;
 use Illuminate\Routing\Router;
 
 it('only prevents stale database reads on Craft routes', function () {

@@ -100,7 +100,6 @@ use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
-use Illuminate\Foundation\Http\Middleware\PreventStaleDatabaseReads;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -150,7 +149,7 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
             Route::post('users/verify-email', [VerifyEmailController::class, 'store']);
             Route::any('users/session-info', [SessionInfoController::class, 'show'])
                 ->middleware(StartSessionWithoutPersistence::class)
-                ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class, PreventStaleDatabaseReads::class]);
+                ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
             Route::post('users/renew-session', [SessionInfoController::class, 'renew'])
                 ->middleware('auth');
             Route::get('users/login-methods', [SessionInfoController::class, 'loginMethods']);
@@ -160,7 +159,7 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         });
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout'])
             ->middleware(StartSessionWithoutPersistence::class)
-            ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class, PreventStaleDatabaseReads::class]);
+            ->withoutMiddleware([StartSession::class, ShareErrorsFromSession::class, PreventRequestForgery::class]);
         Route::post('users/confirm-password', [SessionInfoController::class, 'confirmPassword'])
             ->middleware(['auth', 'can:accessCp'])
             ->block();

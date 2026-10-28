@@ -564,7 +564,7 @@
 - MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
 - Saving nested elements on multi-site installs now executes fewer database queries. ([#20090](https://github.com/craftcms/cms/pull/20090))
-- Requests now read from the database’s write connection for two seconds after the same session writes data, via Laravel’s `Illuminate\Foundation\Http\Middleware\PreventStaleDatabaseReads` middleware, rather than on every POST request. MCP requests still read from the write connection on every POST request. ([#20122](https://github.com/craftcms/cms/pull/20122))
+- Requests now read from the database’s write connection for two seconds after the same session writes data, in addition to POST requests. ([#20122](https://github.com/craftcms/cms/pull/20122))
 - Craft now requires Laravel 13.38 or later. ([#20122](https://github.com/craftcms/cms/pull/20122))
 - Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
 - Updated Twig to 3.30.

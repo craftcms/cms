@@ -22,6 +22,7 @@ use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
+use CraftCms\Cms\Http\Middleware\PreventStaleDatabaseReads;
 use CraftCms\Cms\Http\Middleware\RenderBridgedScreen;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
@@ -43,7 +44,6 @@ use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as LaravelMaintenanceMiddleware;
-use Illuminate\Foundation\Http\Middleware\PreventStaleDatabaseReads;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Events\RouteMatched;
@@ -75,7 +75,7 @@ class RouteServiceProvider extends ServiceProvider
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, UseCraftAuthGuard::class);
         $kernel->addToMiddlewarePriorityBefore(SubstituteBindings::class, ResolveSite::class);
         $kernel->addToMiddlewarePriorityAfter(SubstituteBindings::class, ResolveElementRoute::class);
-        $kernel->addToMiddlewarePriorityAfter(StartSession::class, PreventStaleDatabaseReads::class);
+        $kernel->addToMiddlewarePriorityAfter([StartSession::class, StartSessionWithoutPersistence::class], PreventStaleDatabaseReads::class);
         $globalMiddleware = array_map(
             fn (string $middleware): string => $middleware === LaravelMaintenanceMiddleware::class
                 ? CraftMaintenanceMiddleware::class
