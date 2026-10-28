@@ -53,19 +53,25 @@
     id: string;
   }>();
   const providedContext = inject(elementIndexContextKey);
-  const context = providedContext?.value;
 
-  const http = useHttp<FilterHudRequest, FilterHudResponse>({
-    ...context?.extraParams,
-    elementType: context?.elementType ?? page.props.elementType,
-    context: context?.context ?? page.props.context ?? 'index',
-    source: context?.source ?? page.props.source,
-    id: `filters`,
-  } as FilterHudRequest);
+  /** Read when the request is sent, so it reflects the index's current context. */
+  function requestData(): FilterHudRequest {
+    const context = providedContext?.value;
 
-  http.transform((data) => ({
-    ...data,
-    fieldLayouts: context?.fieldLayouts,
+    return {
+      ...context?.extraParams,
+      elementType: context?.elementType ?? page.props.elementType,
+      context: context?.context ?? page.props.context ?? 'index',
+      source: context?.source ?? page.props.source,
+      id: `filters`,
+    } as FilterHudRequest;
+  }
+
+  const http = useHttp<FilterHudRequest, FilterHudResponse>(requestData());
+
+  http.transform(() => ({
+    ...requestData(),
+    fieldLayouts: providedContext?.value?.fieldLayouts,
     conditionConfig: conditions.value ?? undefined,
   }));
 
