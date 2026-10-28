@@ -2,9 +2,9 @@
   import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
   import {
     UiFailure,
+    UiValueWriter,
     uiChangeFromEvent,
     pathsMatch,
-    setValue as setPathValue,
     controlValueAt,
   } from './runtime';
   import type {
@@ -27,6 +27,7 @@
     (event: 'change', change: UiChange): void;
   }>();
   const invalidate = inject(UiFailure)!;
+  const writeValue = inject(UiValueWriter)!;
   const components = getCurrentInstance()!.appContext.components;
   const control = computed(() => props.node.control!);
   const component = computed(() => {
@@ -65,7 +66,7 @@
     kind: UiChangeKind = 'discrete',
     change?: UiChange
   ): void {
-    setPathValue(props.values, control.value.path, value);
+    writeValue(control.value.path, value);
 
     emit(
       'change',

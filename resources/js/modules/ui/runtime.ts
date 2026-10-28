@@ -41,6 +41,14 @@ export const UiControlStructure: InjectionKey<
   (control: Pick<UiControlPayload, 'path'>, uis: NestedUiPayload[]) => void
 > = Symbol('UiControlStructure');
 
+/**
+ * Writes a value into the values the nearest UiRenderer owns. Nodes write
+ * through it, then report the change, rather than mutating the values prop.
+ */
+export const UiValueWriter: InjectionKey<
+  (path: string[], value: UiValue) => void
+> = Symbol('UiValueWriter');
+
 export const UiControlOverrides: InjectionKey<Readonly<Slots>> =
   Symbol('UiControlOverrides');
 

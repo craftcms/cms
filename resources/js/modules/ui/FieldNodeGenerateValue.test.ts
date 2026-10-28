@@ -1,7 +1,7 @@
 import {actionClient} from '@craftcms/ui';
 import {createApp, defineComponent, h, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {UiFailure} from './runtime';
+import {UiFailure, UiValueWriter, setValue} from './runtime';
 import ActionMenuNode from './ActionMenuNode.vue';
 import FieldNode from './FieldNode.vue';
 import type {UiChange, UiNodePayload, UiValues} from './types';
@@ -74,6 +74,7 @@ describe('FieldNode generated values', () => {
     app.component('craft:textarea', TextControl);
     app.component('craft:action-menu', ActionMenuNode);
     app.provide(UiFailure, vi.fn());
+    app.provide(UiValueWriter, (path, value) => setValue(values, path, value));
     app.mount(container);
   }
 

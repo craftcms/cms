@@ -26,6 +26,7 @@
     UiChangedPaths,
     UiModifiedGroups,
     UiRefreshingFields,
+    UiValueWriter,
     isRecord,
     pathsMatch,
     setValue as setPathValue,
@@ -123,6 +124,7 @@
   rememberControls(props.payload.nodes);
   provide(UiFailure, invalidate);
   provide(UiControlStructure, synchronizeStructure);
+  provide(UiValueWriter, (path, value) => setPathValue(values, path, value));
   provide(UiControlBehaviors, registerControlBehavior);
   provide(
     UiPending,

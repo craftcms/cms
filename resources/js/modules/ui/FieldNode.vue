@@ -24,10 +24,10 @@
     UiFailure,
     UiChangedPaths,
     UiModifiedGroups,
+    UiValueWriter,
     uiChangeFromEvent,
     fieldId,
     pathsMatch,
-    setValue as setPathValue,
     controlValueAt,
   } from './runtime';
   import type {
@@ -120,6 +120,7 @@
     (node) => (resolvedNode.value = node)
   );
   const invalidate = inject(UiFailure)!;
+  const writeValue = inject(UiValueWriter)!;
   provide(
     FieldLabelSrOnly,
     computed(() => Boolean(resolvedNode.value.props.labelSrOnly))
@@ -222,7 +223,7 @@
      */
     detail?: UiControlPayload<object> | UiChange
   ): void {
-    setPathValue(props.values, control.value.path, value);
+    writeValue(control.value.path, value);
 
     if (detail && !('component' in detail)) {
       emit('change', detail);
