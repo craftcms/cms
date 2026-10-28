@@ -172,6 +172,8 @@ export interface ScreenSlots {
   'footer-meta'?: () => any;
   /** Right details column beside the content. Craft 5: `details`. */
   'content-details'?: () => any;
+  /** Atop the panel, spanning the secondary nav and the content. */
+  'page-header'?: () => any;
   /** Global page footer. */
   'page-footer'?: () => any;
 }
