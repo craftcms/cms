@@ -37,7 +37,7 @@
     .presets="control.props.presets"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
-    :disabled="!editable"
+    .disabled="!editable"
     .validators="serverErrorValidators(invalid)"
     @model-value-changed="onModelValueChanged"
   ></craft-input-color>

@@ -64,7 +64,6 @@
     renderer: sidebarRenderer,
   } = useInertiaUiRenderer(inertiaForm, () => props.sidebarUi ?? null);
   const elevatedBaseline = shallowRef(structuredClone(currentValues()));
-  const elevatedFields = props.elevatedFields;
 
   const save = props.submit
     ? useSettingsSave(inertiaForm, () => props.submit!, {
@@ -89,28 +88,32 @@
           advanceBaseline();
           advanceSidebarBaseline();
         },
-        passwordConfirmation: elevatedFields
-          ? {
-              required: () => {
-                const values = currentValues();
-                const fields =
-                  elevatedFields === '*'
-                    ? [
-                        ...new Set([
-                          ...Object.keys(elevatedBaseline.value),
-                          ...Object.keys(values),
-                        ]),
-                      ]
-                    : elevatedFields;
+        passwordConfirmation: {
+          required: () => {
+            const elevatedFields = props.elevatedFields;
 
-                return fields.some(
-                  (field) =>
-                    normalize(values[field]) !==
-                    normalize(elevatedBaseline.value[field])
-                );
-              },
+            if (!elevatedFields) {
+              return false;
             }
-          : undefined,
+
+            const values = currentValues();
+            const fields =
+              elevatedFields === '*'
+                ? [
+                    ...new Set([
+                      ...Object.keys(elevatedBaseline.value),
+                      ...Object.keys(values),
+                    ]),
+                  ]
+                : elevatedFields;
+
+            return fields.some(
+              (field) =>
+                normalize(values[field]) !==
+                normalize(elevatedBaseline.value[field])
+            );
+          },
+        },
       }).save
     : undefined;
 

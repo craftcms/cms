@@ -195,7 +195,7 @@
         show-toolbar
         .toolbarButtons="commentToolbarButtons"
         .value="message"
-        :disabled="processing"
+        .disabled="processing"
         @input="message = ($event.target as HTMLTextAreaElement).value"
         @keydown="onMessageKeydown"
       />

@@ -8,7 +8,6 @@
     ref,
     shallowRef,
     shallowReactive,
-    triggerRef,
     watch,
   } from 'vue';
   import {useEventListener} from '@vueuse/core';
@@ -91,9 +90,33 @@
     rules,
     errors: () => errors.value,
     editable: () => props.editable && !validation.isLoading.value,
-    changed: () => {
-      triggerRef(group);
-      emit('change', value.value);
+    addRule: (parent, rule) => {
+      rules[rule.config.uid] = rule;
+      parent.rules.push({kind: 'rule', id: rule.config.uid});
+      changed();
+    },
+    addGroup: (parent) => {
+      parent.rules.push(
+        shallowReactive({
+          kind: 'group',
+          id: crypto.randomUUID(),
+          operator: 'and',
+          rules: shallowReactive([]),
+        })
+      );
+      changed();
+    },
+    removeChild: (parent, index) => {
+      parent.rules.splice(index, 1);
+      changed();
+    },
+    setOperator: (parent, operator) => {
+      parent.operator = operator;
+      changed();
+    },
+    updateRule: (id, rule) => {
+      rules[id] = rule;
+      changed();
     },
     status: (id, valid) => (valid ? invalid.delete(id) : invalid.add(id)),
     registerRule: (id, rule) =>
@@ -155,6 +178,10 @@
         ?.querySelector<HTMLElement>('craft-action-menu craft-button')
         ?.focus();
   });
+
+  function changed(): void {
+    emit('change', value.value);
+  }
 
   async function validate(): Promise<boolean> {
     if (

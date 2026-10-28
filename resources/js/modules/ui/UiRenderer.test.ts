@@ -2868,6 +2868,47 @@ describe('UiRenderer', () => {
     ).not.toBe('true');
   });
 
+  it('renders an updated control definition without changing the host’s payload', async () => {
+    const probe = defineComponent({
+      props: {
+        control: {type: Object, required: true},
+        value: {type: null, default: undefined},
+      },
+      emits: ['update:value'],
+      setup(props, {emit}) {
+        return () =>
+          h(
+            'button',
+            {
+              type: 'button',
+              'data-probe': '',
+              onClick: () =>
+                emit('update:value', props.value, 'discrete', {
+                  ...props.control,
+                  props: {label: 'Redefined'},
+                }),
+            },
+            props.control.props.label
+          );
+      },
+    });
+    const probePayload = clonePayload();
+    Object.assign(
+      required(probePayload.nodes[1]?.control, 'Expected a field control.'),
+      {component: 'test:probe', props: {label: 'Original'}}
+    );
+    app.unmount();
+    await mount(probePayload, {components: {'test:probe': probe}});
+
+    container.querySelector<HTMLElement>('[data-probe]')!.click();
+    await nextTick();
+
+    expect(container.querySelector('[data-probe]')?.textContent).toBe(
+      'Redefined'
+    );
+    expect(probePayload.nodes[1]?.control?.props).toEqual({label: 'Original'});
+  });
+
   it('drops unsaved values inside nested UI definitions when the host resets', async () => {
     let mutation: UiPayload['values'] = {};
     const nested = clonePayload();

@@ -74,7 +74,7 @@
         :name="editable ? inputName(control.path) : ''"
         :aria-label="label"
         .modelValue="require2faValues(value)"
-        :disabled="!editable"
+        .disabled="!editable"
         :aria-invalid="invalid ? 'true' : undefined"
         @model-value-changed="updateRequire2fa($event, setValue)"
       >
@@ -82,7 +82,7 @@
           v-for="option in options(control)"
           :key="option.value"
           .choiceValue="option.value"
-          :disabled="!editable || (value === 'all' && option.value !== 'all')"
+          .disabled="!editable || (value === 'all' && option.value !== 'all')"
         >
           <label slot="label" :class="{'font-bold': option.value === 'all'}">
             {{ option.label }}

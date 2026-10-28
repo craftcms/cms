@@ -63,7 +63,7 @@
         <craft-button
           type="button"
           icon="arrows-rotate"
-          :disabled="checking"
+          .disabled="checking"
           @click="check()"
           >{{ t('Check again') }}</craft-button
         ></template

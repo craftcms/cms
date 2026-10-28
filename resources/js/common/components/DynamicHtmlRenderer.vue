@@ -29,8 +29,20 @@
     props.html.replace(PROCESSING_INSTRUCTION_RE, '')
   );
 
+  /**
+   * Text interpolation is switched off by delimiters that HTML-encoded text
+   * can never contain: the server escapes every `"` in user content to
+   * `&quot;`, so a title like `{{ constructor.constructor('…')() }}` renders
+   * as text instead of running as a template expression. The markup still
+   * compiles, so registered components and their bound props keep working.
+   */
+  const DELIMITERS: [string, string] = ['{{"', '"}}'];
+
   const dynamicComponent = computed(() =>
-    defineComponent({template: template.value})
+    defineComponent({
+      template: template.value,
+      compilerOptions: {delimiters: DELIMITERS},
+    })
   );
 </script>
 <template>
