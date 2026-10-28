@@ -1,0 +1,107 @@
+{% import '_includes/forms.twig' as forms %}
+
+<h2>{{ 'GraphQL Tokens'|t('app') }}</h2>
+<p>{{ 'Tokens let apps and scripts query the GraphQL API as you, limited to the content you have access to.'|t('app')|widont }}</p>
+
+{% if newToken %}
+  <div class="readable">
+    {% embed '_includes/forms/field.twig' with {
+      label: 'New token'|t('app'),
+      instructions: 'Copy this token now. You won’t be able to see it again.'|t('app'),
+      id: 'new-token',
+    } %}
+      {% block input %}
+        {% include '_includes/forms/copytext.twig' with {
+          id: 'new-token',
+          value: newToken,
+          class: ['code', 'fullwidth'],
+        } %}
+      {% endblock %}
+    {% endembed %}
+    <p class="light">{{ 'Send it with GraphQL API requests in an `Authorization: Bearer` header.'|t('app')|md(inlineOnly=true) }}</p>
+  </div>
+  <hr>
+{% endif %}
+
+<div class="pane tablepane hairline">
+  {% if grants is empty %}
+    <p class="zilch">{{ 'You haven’t created or authorized any tokens yet.'|t('app') }}</p>
+  {% else %}
+    <div class="tableview">
+      <table class="data fullwidth">
+        <thead>
+        <tr>
+          <th scope="col">{{ 'Name'|t('app') }}</th>
+          <th scope="col">{{ 'Access'|t('app') }}</th>
+          <th scope="col">{{ 'Expires'|t('app') }}</th>
+          <th scope="col"><span class="visually-hidden">{{ 'Actions'|t('app') }}</span></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for grant in grants %}
+          {% set level = resource.highestLevel(grant.scopes) %}
+          <tr>
+            <th scope="row">
+              {{ grant.name }}
+              <div class="smalltext light">{{ grant.personal ? 'Personal token'|t('app') : 'Authorized app'|t('app') }}</div>
+            </th>
+            <td>{{ level ? (resource.scopeLabels[level] ?? level) : grant.scopes|join(', ') }}</td>
+            <td>{{ grant.expiresAt|date('short') }}</td>
+            <td class="thin">
+              {{ tag('button', {
+                type: 'button',
+                class: ['btn', 'small', 'formsubmit'],
+                text: 'Revoke'|t('app'),
+                aria: {label: 'Revoke {name}'|t('app', {name: grant.name})},
+                data: {
+                  form: 'false',
+                  action: 'users/revoke-graphql-token',
+                  param: 'clientId',
+                  value: grant.clientId,
+                  confirm: 'Are you sure you want to revoke “{name}”? Anything using it will lose access.'|t('app', {name: grant.name}),
+                  redirect: 'myaccount/graphql-tokens'|hash,
+                },
+              }) }}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+
+<hr>
+
+<h2>{{ 'Create a token'|t('app') }}</h2>
+
+{{ forms.textField({
+  label: 'Name'|t('app'),
+  instructions: 'What this token will be used for.'|t('app'),
+  id: 'name',
+  name: 'name',
+  maxlength: 255,
+  required: true,
+  value: craft.app.request.getBodyParam('name'),
+  errors: errors.name ?? null,
+}) }}
+
+{{ forms.selectField({
+  label: 'Access'|t('app'),
+  id: 'level',
+  name: 'level',
+  options: levels|map(level => {label: resource.scopeLabels[level] ?? level, value: level}),
+}) }}
+
+{{ forms.selectField({
+  label: 'Expiration'|t('app'),
+  id: 'expiresIn',
+  name: 'expiresIn',
+  options: [
+    {label: '7 days'|t('app'), value: 7},
+    {label: '30 days'|t('app'), value: 30},
+    {label: '90 days'|t('app'), value: 90},
+    {label: '1 year'|t('app'), value: 365},
+  ],
+  value: 30,
+}) }}

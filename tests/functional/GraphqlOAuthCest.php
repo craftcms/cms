@@ -11,10 +11,12 @@ use Craft;
 use craft\db\Table;
 use craft\elements\User;
 use craft\enums\CmsEdition;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\oauth\User as OAuthUser;
 use craft\services\Gql;
+use DateTimeImmutable;
 use FunctionalTester;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -54,6 +56,29 @@ class GraphqlOAuthCest
 
         $data = $this->graphql($I, $query, $this->token($this->user([])));
         $I->assertSame('Cannot query field "users" on type "Query".', $data['errors'][0]['message']);
+    }
+
+    public function testPersonalAccessTokens(FunctionalTester $I): void
+    {
+        $oauth = Craft::$app->getOAuth();
+        $user = $this->user(['viewUsers']);
+        $token = $oauth->createPersonalAccessToken('graphql', $user, 'Build script', Gql::SCOPE_READ, new DateTimeImmutable('+7 days'));
+        $this->token($user);
+
+        $data = $this->graphql($I, '{ users(email: "nobody@example.com") { id } }', $token);
+        $I->assertSame(['users' => []], $data['data']);
+
+        $grants = ArrayHelper::index($oauth->getUserGrants('graphql', $user), 'name');
+        $I->assertEqualsCanonicalizing(['Build script', 'Test GraphQL client'], array_keys($grants));
+        $I->assertTrue($grants['Build script']['personal']);
+        $I->assertSame([Gql::SCOPE_READ], $grants['Build script']['scopes']);
+        $I->assertFalse($grants['Test GraphQL client']['personal']);
+
+        $oauth->revokeUserGrant('graphql', $user, $grants['Build script']['clientId']);
+        $I->assertSame(['Test GraphQL client'], array_column($oauth->getUserGrants('graphql', $user), 'name'));
+        $I->haveHttpHeader('Authorization', "Bearer $token");
+        $I->amOnPage('/actions/graphql/api?' . http_build_query(['query' => '{ ping }']));
+        $I->seeResponseCodeIs(401);
     }
 
     public function testInvalidTokensAreRejected(FunctionalTester $I): void

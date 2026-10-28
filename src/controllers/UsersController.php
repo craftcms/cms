@@ -53,6 +53,7 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
+use DateTimeImmutable;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -1549,6 +1550,94 @@ JS);
         ]);
 
         return $response;
+    }
+
+    /**
+     * GraphQL tokens screen
+     *
+     * @param array $errors Validation errors for a token that couldn’t be created
+     * @return Response
+     * @since 5.12.0
+     */
+    public function actionGraphqlTokens(array $errors = []): Response
+    {
+        $this->requireCpRequest();
+        $user = static::currentUser();
+        /**
+         * @var Response|CpScreenResponseBehavior $response
+         * @phpstan-ignore varTag.nativeType
+         */
+        $response = $this->asEditUserScreen($user, self::SCREEN_GRAPHQL_TOKENS);
+
+        $oauth = Craft::$app->getOAuth();
+        $resource = $oauth->getResource('graphql');
+        $response->action('users/create-graphql-token');
+        $response->submitButtonLabel(Craft::t('app', 'Create token'));
+        $response->contentTemplate('users/_graphql-tokens', [
+            'grants' => $oauth->getUserGrants('graphql', $user),
+            'resource' => $resource,
+            'levels' => $resource->levelChoices($resource->scopeLevels, $user),
+            'newToken' => Craft::$app->getSession()->getFlash('graphqlToken'),
+            'errors' => $errors,
+        ]);
+
+        return $response;
+    }
+
+    /**
+     * Creates a GraphQL personal access token for the current user.
+     *
+     * @return Response|null
+     * @since 5.12.0
+     */
+    public function actionCreateGraphqlToken(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requireCpRequest();
+        $user = static::currentUser();
+
+        $name = trim($this->request->getBodyParam('name', ''));
+        if ($name === '' || mb_strlen($name) > 255) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t create the token.'), routeParams: [
+                'errors' => ['name' => [Craft::t('yii', '{attribute} cannot be blank.', ['attribute' => Craft::t('app', 'Name')])]],
+            ]);
+        }
+
+        $days = (int)$this->request->getRequiredBodyParam('expiresIn');
+        if (!in_array($days, [7, 30, 90, 365], true)) {
+            throw new BadRequestHttpException('Invalid expiration.');
+        }
+
+        try {
+            $token = Craft::$app->getOAuth()->createPersonalAccessToken(
+                'graphql',
+                $user,
+                $name,
+                $this->request->getRequiredBodyParam('level'),
+                new DateTimeImmutable("+$days days"),
+            );
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), previous: $e);
+        }
+        Craft::$app->getSession()->setFlash('graphqlToken', $token);
+
+        return $this->asSuccess(Craft::t('app', 'Token created.'), redirect: UrlHelper::cpUrl('myaccount/graphql-tokens'));
+    }
+
+    /**
+     * Revokes the current user’s GraphQL tokens for a client.
+     *
+     * @return Response|null
+     * @since 5.12.0
+     */
+    public function actionRevokeGraphqlToken(): ?Response
+    {
+        $this->requirePostRequest();
+        $this->requireCpRequest();
+
+        Craft::$app->getOAuth()->revokeUserGrant('graphql', static::currentUser(), $this->request->getRequiredBodyParam('clientId'));
+
+        return $this->asSuccess(Craft::t('app', 'Access revoked.'), redirect: UrlHelper::cpUrl('myaccount/graphql-tokens'));
     }
 
     /**

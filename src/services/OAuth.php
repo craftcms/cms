@@ -8,13 +8,16 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\events\RegisterOAuthResourcesEvent;
 use craft\helpers\App;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\oauth\Repositories;
 use craft\oauth\Resource;
 use DateInterval;
 use DateTime;
+use DateTimeImmutable;
 use GuzzleHttp\Psr7\Uri;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
@@ -26,6 +29,7 @@ use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use League\OAuth2\Server\ResourceServer;
 use Psr\Http\Message\ServerRequestInterface;
 use yii\base\Component;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /** Shared OAuth authorization and resource authentication. @since 5.12.0 */
@@ -209,6 +213,113 @@ class OAuth extends Component
         }
 
         return $user;
+    }
+
+    /**
+     * Creates a personal access token for a user, without an OAuth client flow. The token gets its own client, named
+     * after the token, so it can be listed and revoked like any other grant.
+     *
+     * @param string $level The access level to grant, which must be one of the resource’s scope levels.
+     * @return string The signed access token. It isn’t stored, so it can’t be retrieved again.
+     */
+    public function createPersonalAccessToken(string $resource, User $user, string $name, string $level, DateTimeImmutable $expiresAt): string
+    {
+        $definition = $this->getResource($resource);
+        $this->authorizedUser((string)$user->id, $resource);
+        if (!in_array($level, $definition->levelChoices($definition->scopeLevels, $user), true)) {
+            throw new InvalidArgumentException("Invalid access level: $level");
+        }
+
+        $clientId = StringHelper::UUID();
+        Db::insert(Table::OAUTH_CLIENTS, [
+            'resourceId' => $resource,
+            'id' => $clientId,
+            'name' => $name,
+            // Without redirect URIs, the client can’t be used for authorization requests.
+            'redirectUris' => '[]',
+        ]);
+
+        $repository = new Repositories($definition);
+        $scopes = array_map(fn(string $scope) => $repository->getScopeEntityByIdentifier($scope), $definition->grantedLevels($level));
+        $token = $repository->getNewToken($repository->getClientEntity($clientId), $scopes, (string)$user->id);
+        $token->setIdentifier(bin2hex(random_bytes(40)));
+        $token->setExpiryDateTime($expiresAt);
+        $token->setPrivateKey($this->key('private'));
+        $repository->persistNewAccessToken($token);
+
+        return $token->toString();
+    }
+
+    /**
+     * Returns the clients a user has active grants for, including personal access tokens.
+     *
+     * @return array{clientId:string,name:string,scopes:string[],expiresAt:DateTime,personal:bool}[]
+     */
+    public function getUserGrants(string $resource, User $user): array
+    {
+        $now = Db::prepareDateForDb(new DateTime());
+        $rows = (new Query())
+            ->select([
+                'access.clientId',
+                'access.scopes',
+                'access.expiresAt',
+                'refreshExpiresAt' => 'refresh.expiresAt',
+                'clients.name',
+                'clients.redirectUris',
+            ])
+            ->from(['access' => Table::OAUTH_ACCESS_TOKENS])
+            ->innerJoin(['clients' => Table::OAUTH_CLIENTS], '[[clients.id]] = [[access.clientId]]')
+            ->leftJoin(['refresh' => Table::OAUTH_REFRESH_TOKENS], [
+                'and',
+                '[[refresh.accessTokenId]] = [[access.id]]',
+                ['refresh.revoked' => false],
+                ['>', 'refresh.expiresAt', $now],
+            ])
+            ->where([
+                'access.resourceId' => $resource,
+                'access.userId' => $user->id,
+                'access.revoked' => false,
+                'clients.revoked' => false,
+            ])
+            ->andWhere([
+                'or',
+                ['>', 'access.expiresAt', $now],
+                ['not', ['refresh.id' => null]],
+            ])
+            ->orderBy(['clients.dateCreated' => SORT_DESC])
+            ->all();
+
+        $grants = [];
+        foreach ($rows as $row) {
+            $expiresAt = DateTimeHelper::toDateTime(max($row['expiresAt'], $row['refreshExpiresAt'] ?? ''));
+            $scopes = json_decode($row['scopes'], true);
+            $grant = $grants[$row['clientId']] ?? null;
+            $grants[$row['clientId']] = [
+                'clientId' => $row['clientId'],
+                'name' => $row['name'],
+                'scopes' => array_values(array_unique(array_merge($grant['scopes'] ?? [], $scopes))),
+                'expiresAt' => $grant ? max($grant['expiresAt'], $expiresAt) : $expiresAt,
+                'personal' => $row['redirectUris'] === '[]',
+            ];
+        }
+
+        return array_values($grants);
+    }
+
+    /**
+     * Revokes a user’s access and refresh tokens for a client. Personal access token clients are revoked as well.
+     */
+    public function revokeUserGrant(string $resource, User $user, string $clientId): void
+    {
+        $condition = ['resourceId' => $resource, 'userId' => $user->id, 'clientId' => $clientId];
+        $accessTokenIds = (new Query())->select('id')->from(Table::OAUTH_ACCESS_TOKENS)->where($condition);
+        Db::update(Table::OAUTH_REFRESH_TOKENS, ['revoked' => true], ['accessTokenId' => $accessTokenIds], updateTimestamp: false);
+        Db::update(Table::OAUTH_ACCESS_TOKENS, ['revoked' => true], $condition, updateTimestamp: false);
+        Db::update(Table::OAUTH_CLIENTS, ['revoked' => true], [
+            'resourceId' => $resource,
+            'id' => $clientId,
+            'redirectUris' => '[]',
+        ], updateTimestamp: false);
     }
 
     /** Generate the default keys explicitly, without replacing existing keys. */
