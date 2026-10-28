@@ -338,6 +338,30 @@ describe('craft-button action feedback', () => {
     }
   });
 
+  it('returns to idle without scheduling a reset when its action settles after removal', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const element = await createButton({
+        action: '{"type":"event","name":"craft:test-feedback"}',
+      });
+      const states: string[] = [];
+      element.addEventListener('craft-state-change', (event) => {
+        states.push((event as CustomEvent<{state: string}>).detail.state);
+      });
+
+      const run = element.triggerAction();
+      element.remove();
+      await run;
+      vi.advanceTimersByTime(element.feedbackDuration * 2);
+
+      expect(states).toEqual(['success']);
+      expect(element.actionState).toBe('idle');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('keeps a new run’s feedback for its full duration', async () => {
     vi.useFakeTimers();
 
