@@ -498,7 +498,6 @@
         initTableData: [],
         isEmpty: false,
         isLoading: true,
-        searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
         searchTerm:
           new URL(window.location.href).searchParams.get('search') || '',
         selectAll: null,
