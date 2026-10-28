@@ -66,7 +66,7 @@ export interface ElementCapabilities {
   copyable: boolean;
   duplicatable: boolean;
   deletable: boolean;
-  /** Asset rows: the file can be renamed or moved. */
+  /** Asset rows: the file can be renamed or moved. Entry rows: the entry can be moved to another section. */
   movable?: boolean;
   /** Asset rows: the file can be replaced with an upload. */
   replaceable?: boolean;

@@ -19,6 +19,7 @@ use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Components\Icon;
 use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Icons;
@@ -57,6 +58,8 @@ readonly class ElementHtml
 {
     public const string CHIP_SIZE_SMALL = 'small';
 
+    public const string CHIP_SIZE_MEDIUM = 'medium';
+
     public const string CHIP_SIZE_LARGE = 'large';
 
     /** The thumbnail size for small chips, other than plain ones. */
@@ -89,9 +92,16 @@ readonly class ElementHtml
             'showLabel' => true,
             'showStatus' => true,
             'showThumb' => true,
-            'size' => self::CHIP_SIZE_SMALL,
+            'size' => null,
             'sortable' => false,
+            'thumbSize' => null,
         ];
+
+        // Without a size of its own, a chip takes the one its thumbnail suits.
+        $thumbSize = $config['thumbSize'] instanceof ChipThumbSize
+            ? $config['thumbSize']
+            : ChipThumbSize::tryFrom((string) $config['thumbSize']);
+        $config['size'] ??= $thumbSize?->chipSize() ?? self::CHIP_SIZE_SMALL;
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
         $config['showHandle'] = $config['showHandle'] && $component instanceof Grippable;
@@ -101,12 +111,13 @@ readonly class ElementHtml
         $config['showDescription'] = $config['showDescription'] && $component instanceof Describable;
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
-        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size'], $config['appearance'] ?? null) : null;
+        $thumbHtml = $config['showThumb'] ? $this->chipThumbHtml($component, $config['size'], $thumbSize, $config['appearance'] ?? null) : null;
         $icon = $config['showThumb'] ? $this->chipIcon($component) : null;
 
         $attributes = Arr::merge([
             'id' => $config['id'],
             'size' => $config['size'],
+            'thumb-size' => $thumbSize?->value,
             'class' => [
                 ...($color ? ["cp-color-$color->value"] : []),
                 $config['size'],
@@ -136,6 +147,7 @@ readonly class ElementHtml
                     'showDescription' => $config['showDescription'],
                     'overrides' => $config['overrides'],
                     'size' => $config['size'],
+                    'thumbSize' => $thumbSize?->value,
                     'ui' => 'chip',
                 ] : false,
             ]),
@@ -237,7 +249,7 @@ readonly class ElementHtml
     /**
      * Returns a chip’s thumbnail HTML, or `null` if the component doesn’t have one.
      */
-    private function chipThumbHtml(Chippable $component, string $size, ?string $appearance = null): ?string
+    private function chipThumbHtml(Chippable $component, string $size, ?ChipThumbSize $thumbSize, ?string $appearance = null): ?string
     {
         if (! $component instanceof Thumbable) {
             return null;
@@ -245,13 +257,13 @@ readonly class ElementHtml
 
         // A small chip's thumbnail fits within its 32px height, inside its
         // border and padding, unless the chip is plain, without either.
-        $thumbSize = match (true) {
+        $pixels = $thumbSize?->pixels() ?? match (true) {
             $size !== self::CHIP_SIZE_SMALL => 120,
             $appearance === Appearance::Plain->value => 30,
             default => self::CHIP_THUMB_SIZE,
         };
 
-        return $component->getThumbHtml($thumbSize, ImageTransformMode::Fit) ?: null;
+        return $component->getThumbHtml($pixels, ImageTransformMode::Fit) ?: null;
     }
 
     /**
@@ -299,8 +311,9 @@ readonly class ElementHtml
      * - `showProvisionalDraftLabel` – Whether an “Edited” badge should be added to the label if the element is a provisional draft
      * - `showStatus` – Whether the element’s status should be shown
      * - `showThumb` – Whether the element’s thumbnail should be shown
-     * - `size` – The size of the chip (`small` or `large`)
+     * - `size` – The size of the chip (`small`, `medium`, or `large`). Defaults to the size that suits `thumbSize`, or `small`.
      * - `sortable` – Whether the chip should include a drag handle
+     * - `thumbSize` – The size of the thumbnail (`sm`, `md`, `lg`, `xl`, or `2xl`, or a {@see ChipThumbSize}), if not the one `size` gives it
      */
     /** @param array<string, mixed> $config */
     public function elementChipHtml(ElementInterface $element, array $config = []): string
@@ -319,7 +332,7 @@ readonly class ElementHtml
             'showProvisionalDraftLabel' => null,
             'showStatus' => true,
             'showThumb' => true,
-            'size' => self::CHIP_SIZE_SMALL,
+            'size' => null,
             'sortable' => false,
         ];
 

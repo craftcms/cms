@@ -7,9 +7,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Migrations;
 
 use Closure;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\PromptTask;
+use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrations\Event\TablesCreated;
@@ -207,6 +209,7 @@ class Install extends Migration
             $table->integer('processedEntries')->default(0);
             $table->boolean('cacheRemoteImages')->nullable();
             $table->boolean('listEmptyFolders')->default(false)->nullable();
+            $table->boolean('analyzeImages')->default(false);
             $table->boolean('isCli')->default(false)->nullable();
             $table->boolean('actionRequired')->nullable()->default(false);
             $table->boolean('processIfRootEmpty')->default(false)->nullable();
@@ -228,7 +231,13 @@ class Install extends Migration
             $table->unsignedInteger('height')->nullable();
             $table->unsignedBigInteger('size')->nullable();
             $table->string('focalPoint', 13)->nullable()->default(null);
-            $table->json('colors')->nullable();
+            $table->json('analysis')->nullable();
+            // Generated from analysis, so images can be filtered by it. Postgres can only add stored generated columns.
+            $imageType = $table->string('imageType', 20)->nullable();
+            DB::getDriverName() === 'pgsql'
+                ? $imageType->storedAs(new JsonExtract('analysis', 'type'))
+                : $imageType->virtualAs(new JsonExtract('analysis', 'type'));
+            $table->string('previewText', AssetsHelper::PREVIEW_TEXT_LENGTH)->nullable();
             $table->boolean('deletedWithVolume')->nullable();
             $table->boolean('trashedFileExists')->default(false);
             $table->dateTime('dateModified')->nullable();
@@ -260,6 +269,14 @@ class Install extends Migration
             $table->integer('siteId');
             $table->text('alt')->nullable();
             $table->primary(['assetId', 'siteId']);
+        });
+
+        $logger?->subLabel('imagehashes');
+        Schema::create(Table::IMAGEHASHES, function (Blueprint $table) {
+            $table->integer('assetId');
+            $table->tinyInteger('band');
+            $table->char('value', 4);
+            $table->primary(['assetId', 'band']);
         });
 
         $logger?->subLabel('imagetransformindex');
@@ -1068,6 +1085,7 @@ class Install extends Migration
         Schema::createIndex(Table::ASSETS, ['filename', 'folderId']);
         Schema::createIndex(Table::ASSETS, ['folderId']);
         Schema::createIndex(Table::ASSETS, ['volumeId']);
+        Schema::createIndex(Table::ASSETS, ['imageType']);
         Schema::createIndex(Table::BULKOPEVENTS, ['timestamp']);
         Schema::createIndex(Table::CHANGEDATTRIBUTES, ['elementId', 'siteId', 'dateUpdated']);
         Schema::createIndex(Table::CHANGEDFIELDS, ['elementId', 'siteId', 'dateUpdated']);
@@ -1122,6 +1140,7 @@ class Install extends Migration
         Schema::createIndex(Table::FIELDS, ['dateDeleted']);
         Schema::createIndex(Table::GQLTOKENS, ['accessToken'], unique: true);
         Schema::createIndex(Table::GQLTOKENS, ['name'], unique: true);
+        Schema::createIndex(Table::IMAGEHASHES, ['band', 'value']);
         Schema::createIndex(Table::IMAGETRANSFORMINDEX, ['assetId', 'transformString']);
         Schema::createIndex(Table::IMAGETRANSFORMS, ['name']);
         Schema::createIndex(Table::IMAGETRANSFORMS, ['handle']);
@@ -1225,6 +1244,7 @@ class Install extends Migration
         Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('uploaderId')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('volumeId')->references('id')->on(Table::VOLUMES)->cascadeOnDelete());
         Schema::table(Table::ASSETS_SITES, fn (Blueprint $table) => $table->foreign('assetId')->references('id')->on(Table::ASSETS)->cascadeOnDelete());
+        Schema::table(Table::IMAGEHASHES, fn (Blueprint $table) => $table->foreign('assetId')->references('id')->on(Table::ASSETS)->cascadeOnDelete());
         Schema::table(Table::ASSETS_SITES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::AUTHENTICATOR, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::CHANGEDATTRIBUTES, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete()->cascadeOnUpdate());

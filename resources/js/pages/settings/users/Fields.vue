@@ -4,7 +4,7 @@
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import {store} from '@actions/Settings/Users/UserFieldsController';
-  import AppLayout from '@/common/layouts/AppLayout.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
   import CpContainer from '@/common/components/CpContainer.vue';
 
   defineProps<{
@@ -36,14 +36,14 @@
           ?.serialize() ?? [],
     }),
   });
+
+  useAppLayout({form, defaultFormActions: [], onSave: save});
 </script>
 
 <template>
-  <AppLayout :form="form" :default-form-actions="[]" @save="save">
-    <CpContainer>
-      <div ref="fldHost">
-        <DynamicHtmlRenderer :html="fieldLayoutDesigner.html" />
-      </div>
-    </CpContainer>
-  </AppLayout>
+  <CpContainer>
+    <div ref="fldHost">
+      <DynamicHtmlRenderer :html="fieldLayoutDesigner.html" />
+    </div>
+  </CpContainer>
 </template>

@@ -10,6 +10,7 @@ use CraftCms\Cms\Ai\Data\ResolvedProvider;
 use CraftCms\Cms\Ai\Enums\AiUnavailableReason;
 use CraftCms\Cms\Ai\Enums\Modality;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
+use CraftCms\Cms\Asset\Analysis\ImageAnalyzer;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Container\Attributes\Singleton;
 use Laravel\Ai\AiManager;
@@ -28,10 +29,13 @@ use function CraftCms\Cms\t;
  * ```php
  * use CraftCms\Cms\Support\Facades\Ai;
  *
- * if (Ai::available('altText:describe')) {
- *     $response = Ai::task('altText:describe')->prompt(agent: new AltTextAgent, prompt: 'Describe this image');
+ * if (Ai::available('seo:metaDescription')) {
+ *     $response = Ai::task('seo:metaDescription')->prompt(agent: new MetaDescriptionAgent, prompt: $entry->title);
  * }
  * ```
+ *
+ * Image tasks, such as Craft’s own `craft:altText`, are run by {@see ImageAnalyzer}
+ * instead, which sends one request for every task that shares a provider and model.
  *
  * @since 6.0.0
  */

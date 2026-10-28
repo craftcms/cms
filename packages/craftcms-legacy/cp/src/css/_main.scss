@@ -55,6 +55,15 @@ body:has(.menu.visible) {
   overflow: hidden;
 }
 
+html.noscroll,
+html.noscroll body {
+  height: 100%;
+}
+
+#cropping-canvas {
+  --focus-ring: none;
+}
+
 body {
   width: 100vw;
   overflow-x: hidden;
@@ -5871,48 +5880,6 @@ $min2ColWidth: 400px;
   }
 }
 
-/* recent activity container */
-.activity-container {
-  margin-inline: var(--s);
-
-  ul {
-    display: flex;
-    flex-flow: row wrap;
-    gap: var(--xs);
-
-    li {
-      .activity-btn {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: block;
-
-        .elementthumb {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          border-radius: 50px;
-          background: var(--gray-050);
-          overflow: hidden;
-          border: 2px solid var(--white);
-          box-shadow: 0 1px 2px 1px color.adjust(mixins.$grey900, $alpha: -0.9);
-
-          img,
-          svg {
-            display: block;
-            width: 100%;
-            height: 100%;
-          }
-        }
-      }
-
-      &:not(:last-child) {
-        margin-inline-end: -10px;
-      }
-    }
-  }
-}
-
 /* element index view menu */
 .element-index-view-menu {
   width: 400px;
@@ -6078,45 +6045,6 @@ $min2ColWidth: 400px;
   margin-inline-end: 0.5rem;
 }
 
-/* logout warning/login/elevated session modals */
-.logoutwarningmodalshade,
-.login-modal-shade,
-#logoutwarningmodal,
-.login-modal,
-#elevatedsessionmodal,
-.prompt {
-  z-index: 1001;
-}
-
-#logoutwarningmodal,
-#elevatedsessionmodal,
-.prompt {
-  width: 500px;
-}
-
-.prompt {
-  height: auto;
-  min-height: auto;
-}
-
-.cpmodal {
-  & > .cpmodal-body {
-    padding: var(--padding);
-  }
-
-  & > .cpmodal-footer {
-    position: relative;
-    display: flex;
-    gap: 8px;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    @include mixins.pane;
-    padding-block: var(--s);
-    padding-inline: var(--padding);
-    background-color: var(--gray-050);
-  }
-}
-
 /* element deletion modal */
 .element-deletion-modal {
   width: 500px;
@@ -6198,16 +6126,6 @@ $min2ColWidth: 400px;
   .body {
     max-height: 100%;
     overflow-y: auto;
-  }
-}
-
-.previewmodal {
-  &.zilch {
-    padding-block: 100px;
-    padding-inline: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 }
 
@@ -6689,10 +6607,6 @@ table.editable {
   p {
     margin-block: 0.25em;
   }
-}
-
-.cross-site-copy-modal {
-  max-width: 380px;
 }
 
 .expand-status-btn {

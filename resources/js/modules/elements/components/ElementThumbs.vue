@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
-  import {computed, ref} from 'vue';
+  import {t, type ChipThumbSizeValue} from '@craftcms/ui';
+  import {computed} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import DragShadow from '@/common/components/DragShadow.vue';
   import {
@@ -47,6 +47,11 @@
       interactionsDisabled?: boolean;
       loading?: boolean;
       itemBehavior?: ElementIndexItemBehavior<ThumbElement>;
+      /**
+       * The tiles' thumbnail size; `lg` matches a card's. The chips take a
+       * size to suit it.
+       */
+      thumbSize?: ChipThumbSizeValue;
     }>(),
     {
       data: () => [],
@@ -54,6 +59,7 @@
       selectAll: true,
       sortable: false,
       loading: false,
+      thumbSize: 'lg',
     }
   );
 
@@ -96,9 +102,12 @@
     emit('reorder', index, target);
   }
 
-  const pendingShiftKey = ref(false);
-  function rememberShift(event: MouseEvent) {
-    pendingShiftKey.value = event.shiftKey;
+  function onSelectionChange(id: string | number, event: Event) {
+    const {selected, shiftKey} = (
+      event as CustomEvent<{selected: boolean; shiftKey: boolean}>
+    ).detail;
+
+    props.selection.setChecked(id, selected, {shiftKey});
   }
 
   // Only the label's link navigates. A click anywhere else on the tile selects
@@ -212,7 +221,7 @@
       </craft-checkbox>
     </div>
 
-    <ul class="thumbsview">
+    <ul class="thumbsview" :data-thumb-size="thumbSize">
       <li
         v-for="(element, thumbIdx) in data"
         :key="element.id"
@@ -223,7 +232,6 @@
         @keydown="onTileKeydown(element.id, thumbIdx, $event)"
         @click="onTileClick(element, $event)"
         @dblclick="onTileDblclick(element, $event)"
-        data-color="white"
         :class="{
           element: true,
           'element--selectable': selectable,
@@ -233,35 +241,56 @@
             getDragState(element.id).type === 'is-dragging-and-left-self',
         }"
       >
-        <div class="element__header">
-          <craft-checkbox
-            v-if="selectable"
-            label-sr-only
-            class="thumb-check"
-            .checked="selection.isSelected(element.id)"
-            .disabled="
-              readOnly ||
-              interactionsDisabled ||
-              !selection.canSelect(element.id)
-            "
-            @click="rememberShift($event)"
-            @model-value-changed="
-              selection.setChecked(element.id, checkboxValue($event), {
-                shiftKey: pendingShiftKey,
-              })
-            "
-          >
-            <label slot="label">{{
-              t('Select {label}', {label: element.label})
-            }}</label>
-          </craft-checkbox>
-
-          <div class="thumb-actions">
-            <slot name="actions" :element="element" :index="thumbIdx"></slot>
-            <!--
-            Kept outside the tile below, so reaching for an action never
-            selects the element instead.
+        <DragShadow
+          v-if="overDropState(element.id)?.closestEdge === 'top'"
+          :height="overDropState(element.id)?.draggingRect?.height"
+        />
+        <craft-chip
+          prefix-placement="block-start"
+          appearance="outline-fill"
+          data-color="white"
+          full-width
+          show-thumb
+          :thumb-size="thumbSize"
+          :selectable="selectable"
+          :select-label="t('Select {label}', {label: element.label})"
+          .selected="selection.isSelected(element.id)"
+          .selectDisabled="
+            readOnly || interactionsDisabled || !selection.canSelect(element.id)
+          "
+          @craft-selection-change="onSelectionChange(element.id, $event)"
+        >
+          <div slot="thumbnail">
+            <DynamicHtmlRenderer
+              v-if="element.thumbHtml"
+              :html="element.thumbHtml"
+            />
+            <craft-icon v-else name="asset" class="thumb-fallback"></craft-icon>
+          </div>
+          <craft-truncate class="thumb-label">
+            <a v-if="element.url" :href="element.url" class="label-link">{{
+              element.label
+            }}</a>
+            <a
+              v-else-if="element.labelUrl"
+              v-bind="element.labelLinkAttributes"
+              :href="element.labelUrl"
+              class="label-link"
+              >{{ element.label }}</a
+            >
+            <template v-else>{{ element.label }}</template>
+          </craft-truncate>
+          <!--
+            The chip keeps its suffix in the row along its top, away from
+            the thumbnail, so reaching for an action never selects the
+            element instead.
           -->
+          <div
+            v-if="$slots.actions || sortable"
+            slot="suffix"
+            class="thumb-actions"
+          >
+            <slot name="actions" :element="element" :index="thumbIdx"></slot>
             <span
               v-if="sortable"
               :ref="(el) => setHandleRef(el as HTMLElement, element.id)"
@@ -278,35 +307,7 @@
               ></craft-reorder-button>
             </span>
           </div>
-        </div>
-
-        <DragShadow
-          v-if="overDropState(element.id)?.closestEdge === 'top'"
-          :height="overDropState(element.id)?.draggingRect?.height"
-        />
-
-        <div class="thumb-tile">
-          <span class="thumb-img">
-            <DynamicHtmlRenderer
-              v-if="element.thumbHtml"
-              :html="element.thumbHtml"
-            />
-            <craft-icon v-else name="asset" class="thumb-fallback"></craft-icon>
-          </span>
-          <craft-truncate class="thumb-label">
-            <a v-if="element.url" :href="element.url" class="label-link">{{
-              element.label
-            }}</a>
-            <a
-              v-else-if="element.labelUrl"
-              v-bind="element.labelLinkAttributes"
-              :href="element.labelUrl"
-              class="label-link"
-              >{{ element.label }}</a
-            >
-            <template v-else>{{ element.label }}</template>
-          </craft-truncate>
-        </div>
+        </craft-chip>
         <DragShadow
           v-if="overDropState(element.id)?.closestEdge === 'bottom'"
           :height="overDropState(element.id)?.draggingRect?.height"
@@ -333,21 +334,48 @@
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 
+  // Columns widen with the tiles' thumbnails, leaving room for the label.
   .thumbsview {
+    --_column-width: 180px;
     display: grid;
     gap: var(--c-spacing-md);
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--_column-width), 1fr));
+
+    &[data-thumb-size='sm'] {
+      --_column-width: 120px;
+    }
+
+    &[data-thumb-size='md'] {
+      --_column-width: 140px;
+    }
+
+    &[data-thumb-size='xl'] {
+      --_column-width: 240px;
+    }
+
+    &[data-thumb-size='2xl'] {
+      --_column-width: 300px;
+    }
   }
 
+  // The chip draws the tile; the item only holds it, so its focus ring
+  // follows the tile's corners.
   .thumbsview > li {
     position: relative;
+    display: flex;
     border-radius: var(--c-radius-lg);
-    border-width: 1px;
-    border-style: solid;
-    box-shadow: var(--c-chip-shadow, var(--c-shadow-xs));
+  }
+
+  .thumbsview[data-thumb-size='sm'] > li,
+  .thumbsview[data-thumb-size='md'] > li {
+    border-radius: var(--c-radius-md);
   }
 
   // Only the label links; the rest of the tile selects it.
+  .thumb-label {
+    font-weight: 500;
+  }
+
   .thumb-label a {
     color: var(--c-text-link);
     text-decoration-line: var(--c-link-decoration);
@@ -357,23 +385,17 @@
     }
   }
 
-  .thumb-check {
-    // position: absolute;
-    // inset-block-start: var(--c-spacing-sm);
-    // inset-inline-start: var(--c-spacing-sm);
-    z-index: 1;
+  .thumb-actions {
+    display: flex;
+    flex-direction: row;
+    gap: var(--c-spacing-xs);
+    align-items: center;
   }
 
-  // Opposite corner from the checkbox, above the tile so it stays reachable.
-  .thumb-actions {
-    // position: absolute;
-    // inset-block-start: var(--c-spacing-sm);
-    // inset-inline-end: var(--c-spacing-sm);
-    z-index: 1;
-    display: flex;
-    gap: var(--c-spacing-xs);
-    margin-inline-start: auto;
-    align-items: center;
+  // An element without a thumbnail of its own, sized like a file icon's.
+  .thumb-fallback {
+    font-size: max(24px, var(--c-thumbnail-size) * 0.4);
+    color: var(--c-text-quiet);
   }
 
   // Dragging, but still over itself — dim rather than remove, so the grid
@@ -386,94 +408,5 @@
   // doesn't reshuffle around the gap.
   .thumbsview > li.element--hidden {
     visibility: hidden;
-  }
-
-  .thumb-tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    // gap: var(--c-spacing-sm);
-    padding: var(--c-spacing-md);
-    border-radius: var(--c-radius-lg);
-    text-decoration: none;
-    color: inherit;
-  }
-
-  // `data-color="white"` hands its static white palette to inheriting
-  // controls, like the action menu's button, whose hover and pressed states
-  // tint from it. As white cards do, point it at the tile's own surface, border
-  // and text instead.
-  .element {
-    --c-color-fill-quiet: var(--c-surface-white);
-    --c-color-fill-loud: var(--c-surface-white);
-    --c-color-border-loud: var(--c-border-raised-selected);
-    --c-color-on-quiet: var(--c-text-default);
-    --c-color-on-loud: var(--c-text-default);
-    background-color: var(--c-color-fill-quiet);
-    border-color: var(--c-border-raised);
-    color: var(--c-text-default);
-  }
-
-  // Clicking a selectable tile selects it, so its label doesn't get a text
-  // cursor, as if it were text to select. Links within it keep theirs.
-  .element--selectable {
-    cursor: default;
-  }
-
-  .element--selected {
-    --c-color-fill-quiet: var(--c-color-accent-fill-quiet);
-    border-color: var(--c-color-accent-border-normal);
-  }
-
-  .thumb-img {
-    display: grid;
-    place-items: center;
-    width: 100%;
-    height: 128px;
-  }
-
-  // craft-thumbnail defaults its own size via :host, so the override has to land
-  // on the element itself (an inherited value from the parent loses to :host).
-  // 120px matches the cards view (and Craft 5's thumbnail size).
-  .thumb-img :deep(craft-thumbnail) {
-    --c-thumbnail-size: 120px;
-    --c-thumbnail-image-radius: var(--c-radius-md);
-  }
-
-  // Non-image thumbs (folder/file-kind SVGs) render at a fixed small size; scale
-  // them up to fill the tile.
-  .thumb-img :deep(.thumb) {
-    width: 72px;
-    height: 72px;
-  }
-
-  .thumb-img :deep(.thumb svg) {
-    width: 100%;
-    height: 100%;
-  }
-
-  .thumb-fallback {
-    font-size: 48px;
-    color: var(--c-text-quiet);
-  }
-
-  .thumb-label {
-    // craft-truncate handles the ellipsis + overflow tooltip internally; cap the
-    // width so it truncates within the tile.
-    max-width: 100%;
-    font-weight: 500;
-    text-align: center;
-    height: 1lh;
-  }
-
-  // Padded like a chip, so its checkbox and buttons sit as far from the
-  // tile's edges as a chip's do from its own.
-  .element__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-block: calc(3rem / 16);
-    padding-inline: var(--c-spacing-md) calc(3.5rem / 16);
   }
 </style>

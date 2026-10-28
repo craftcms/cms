@@ -459,7 +459,7 @@ class ElementEditViewModel extends ViewModel
     public function activityUrl(): ?string
     {
         return $this->element->id && ! $this->element->getIsRevision()
-            ? Url::actionUrl('elements/recent-activity', ['dontExtendSession' => 1])
+            ? Url::actionUrl('elements/recent-activity')
             : null;
     }
 
@@ -1068,7 +1068,7 @@ class ElementEditViewModel extends ViewModel
     public function metadataHtml(): ?string
     {
         return $this->element->id
-            ? app(ContentHtml::class)->metadataHtml($this->element->getMetadata())
+            ? app(ContentHtml::class)->metadataHtml(...$this->element->getMetadataGroups())
             : null;
     }
 }

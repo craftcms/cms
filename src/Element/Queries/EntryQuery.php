@@ -34,6 +34,8 @@ use function CraftCms\Cms\currentUser;
  *
  * @extends ElementQuery<T>
  *
+ * @implements NestedElementQueryInterface<T>
+ *
  * @since 6.0.0
  */
 class EntryQuery extends ElementQuery implements NestedElementQueryInterface

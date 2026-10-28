@@ -1,5 +1,6 @@
 import {computed, type Ref} from 'vue';
 import type {
+  IndexQueryParams,
   IndexVisitor,
   IndexRestore,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
@@ -18,7 +19,9 @@ export function useElementIndexViewMode(
   /** The mode the current payload was rendered for, if it says. */
   renderedMode: () => ViewMode['mode'] | undefined = () => undefined,
   /** The modes the index can show, if it's limited to some. */
-  availableModes: () => ViewMode['mode'][] | undefined = () => undefined
+  availableModes: () => ViewMode['mode'][] | undefined = () => undefined,
+  /** Other params a mode's rows depend on, such as their thumbnail size. */
+  modeParams: (mode: ViewMode['mode']) => IndexQueryParams = () => ({})
 ) {
   const mode = computed<ViewMode['mode']>({
     get: () => viewState.value.mode,
@@ -36,7 +39,7 @@ export function useElementIndexViewMode(
       // mode leaves the payload's structure null until a full page load, and
       // the rows render with no reordering affordances.
       visitor.merge(
-        {viewMode: value},
+        {viewMode: value, ...modeParams(value)},
         {only: ['data', 'pagination', 'structure']}
       );
     },

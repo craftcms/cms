@@ -75,7 +75,8 @@ export default css`
     }
   }
 
-  :host([data-color]:not([data-color='white'])[active]) .card {
+  :host([data-color]:not([data-color='white'])[active]) .card,
+  :host(:not([data-color])[active]) .card {
     .card__header,
     .card__footer {
       --c-checkbox-checked-fill: var(--c-color-on-loud);

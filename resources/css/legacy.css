@@ -22,7 +22,7 @@ Legacy compat styles
     width: 100%;
   }
 
-  /* Tables — `_elements/revisions.twig` and any other legacy `table.data`.
+  /* Tables — any legacy `table.data`.
      Ported from the legacy stylesheet onto current tokens, because the vars it
      used (`--gray-050`, `--light-text-color`, `--padding`) aren't loaded here. */
 

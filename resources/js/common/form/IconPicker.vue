@@ -177,7 +177,7 @@
           slot="header"
           role="search"
           @submit.prevent="loadIcons()"
-          class="sticky top-0 pt-lg px-lg pb-md bg-(--c-surface-raised)"
+          class="sticky top-0 pt-lg px-lg pb-sm bg-(--c-surface-raised)"
         >
           <CraftInputSearch v-model="query">
             <craft-spinner
@@ -247,14 +247,13 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    padding-block-start: var(--c-spacing-sm);
   }
 
   .icon-grid {
     display: grid;
-    grid-template-columns: repeat(
-      auto-fill,
-      minmax(var(--c-size-control-md), 1fr)
-    );
+    grid-template-columns: repeat(auto-fill, var(--c-size-control-md));
+    justify-content: center;
     gap: var(--c-spacing-sm);
   }
 
@@ -262,8 +261,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--ui-control-height);
-    height: var(--ui-control-height);
+    box-sizing: border-box;
+    width: var(--c-size-control-md);
+    height: var(--c-size-control-md);
     border-radius: var(--c-radius-sm);
     background-color: var(--c-color-fill-quiet);
     border: 1px solid var(--c-color-border-quiet);

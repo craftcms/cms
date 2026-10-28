@@ -172,6 +172,21 @@ kbd {
   margin-block-start: var(--c-spacing-sm);
 }
 
+/*
+  A file or folder icon standing in for a chip's thumbnail is drawn at 24px,
+  which suits a small chip. In larger chips it grows with the thumbnail, which
+  the chip's thumbnail slot sizes through --c-thumbnail-size. The icon's own
+  size utility reads --c-thumb-icon-size, so the size set here wins over it.
+*/
+craft-chip > [slot='thumbnail'] {
+  --c-thumb-icon-size: max(24px, var(--c-thumbnail-size) * 0.6);
+}
+
+craft-chip > [slot='thumbnail'] > .thumb svg {
+  width: 100%;
+  height: 100%;
+}
+
 craft-chip .cp-code {
   /* Block, so the label's line height doesn't add space above it */
   display: block;
@@ -286,6 +301,7 @@ Modify with `cp-table--compact` to reduce the vertical cell padding
 Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
 Modify with `cp-table--flush` to pad the outer edges of each row by `--cp-container-padding`, for tables that span their container's padding
+Modify with `cp-table--aligned` to drop the outer edges' inline padding, so each row's text lines up with the content around the table
 Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
  */
 .cp-table {
@@ -353,6 +369,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
 
   /* Add a rule to the first cells, unless the header row's border already does */
   &:not(:has(> thead)) tr:first-child {
+    th,
     td {
       border-block-start: 1px solid
         color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
@@ -384,6 +401,16 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
 
   &:last-child {
     padding-inline-end: var(--cp-container-padding);
+  }
+}
+
+.cp-table--aligned tr > :is(th, td) {
+  &:first-child {
+    padding-inline-start: 0;
+  }
+
+  &:last-child {
+    padding-inline-end: 0;
   }
 }
 

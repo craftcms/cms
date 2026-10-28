@@ -16,6 +16,7 @@ import type {
   useContentIndexData,
   ElementIndexRow,
 } from '@/modules/elements/index/composables/useContentIndexData';
+import {useElementIndexThumbSize} from '@/modules/elements/index/composables/useElementIndexThumbSize';
 import {useElementIndexColumns} from '@/modules/elements/index/composables/useElementIndexColumns';
 import {useElementIndexFilters} from '@/modules/elements/index/composables/useElementIndexFilters';
 import {useElementIndexPagination} from '@/modules/elements/index/composables/useElementIndexPagination';
@@ -140,7 +141,8 @@ export function useElementIndex(options: UseElementIndexOptions) {
     viewState,
     visitor,
     () => elementIndex.viewState?.mode,
-    () => visibleViewModes.value.map(({mode}) => mode)
+    () => visibleViewModes.value.map(({mode}) => mode),
+    (mode) => thumbSizeModeParams(mode)
   );
   const visibleViewModes = computed(() =>
     elementIndex.viewModes.filter(
@@ -157,6 +159,12 @@ export function useElementIndex(options: UseElementIndexOptions) {
       savedMode.value = value;
     },
   });
+  const {
+    thumbSize,
+    options: thumbSizeOptions,
+    restore: restoreThumbSize,
+    modeParams: thumbSizeModeParams,
+  } = useElementIndexThumbSize(viewState, visitor, () => mode.value);
   const inlineEditingActive = computed({
     get: () => viewState.value.inlineEditing,
     set: (value: boolean) => {
@@ -248,6 +256,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
       restoreColumns(),
       restoreSort(),
       restoreViewMode(),
+      restoreThumbSize(),
       ...(options.structure ? [structureView.restore()] : []),
     ].filter((restore): restore is IndexRestore => restore !== null);
 
@@ -347,6 +356,8 @@ export function useElementIndex(options: UseElementIndexOptions) {
     sortField,
     sortDirection,
     mode,
+    thumbSize,
+    thumbSizeOptions,
     loading,
     processing,
     filterContext,

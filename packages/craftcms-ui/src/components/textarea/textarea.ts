@@ -22,6 +22,13 @@ export default class CraftTextarea extends HasLabel(LionTextarea) {
     return [...super.styles, inputStyles, styles];
   }
 
+  /**
+   * Visually hides the label, keeping it available to screen readers.
+   * `FormControlMixin` declares this property (`label-sr-only`), but its
+   * types leave it out.
+   */
+  declare labelSrOnly: boolean;
+
   /** Renders the value in a monospace font, for code or structured text. */
   @property({type: Boolean, reflect: true})
   monospace: boolean = false;
