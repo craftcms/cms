@@ -3,7 +3,6 @@
 ## Unreleased
 
 - Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
-- Fixed a bug where moving assets and replacing existing files with the same name could fail. ([#20128](https://github.com/craftcms/cms/issues/20128))
 - Fixed a bug where default titles of assets with long filenames were taken from the end of the filename. ([#20112](https://github.com/craftcms/cms/pull/20112))
 - Fixed a bug where characters were stripped from text that wasn’t UTF-8 when it was converted to UTF-8, such as alt text read from images’ IPTC captions. ([#20111](https://github.com/craftcms/cms/pull/20111))
 - Fixed a bug where the `fields/merge` and `fields/auto-merge` commands weren’t updating field condition rules that referenced the merged fields. ([#19901](https://github.com/craftcms/cms/issues/19901))
@@ -20,6 +19,7 @@
 - Fixed a bug where pruning revisions could delete nested element revisions in other sites that newer revisions still referenced. ([#20042](https://github.com/craftcms/cms/issues/20042))
 - Fixed an error that occurred when logging in with a passkey that was registered with an older version of Craft. ([#20052](https://github.com/craftcms/cms/issues/20052))
 - Fixed a bug where closing an element selector modal while it was loading caused it to keep loading all of the source’s elements in the background. ([#20100](https://github.com/craftcms/cms/issues/20100))
+- Fixed a bug where moving assets and replacing existing files with the same name could fail. ([#20128](https://github.com/craftcms/cms/issues/20128))
 
 ## 5.11.5.1 - 2026-10-08
 
