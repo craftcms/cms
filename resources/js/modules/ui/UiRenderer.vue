@@ -99,7 +99,7 @@
     ],
   ]);
   const knownControls = new Map<string, UiControlPayload>();
-  const touchedPaths = new Set<string>();
+  const touchedPaths = reactive(new Set<string>());
   /**
    * Dotted paths changed since the last explicit save or reset. Nested fields
    * use these to mark changes not yet reported by the server.
@@ -211,8 +211,6 @@
       emit('update:payload', payload.value);
     }
 
-    touchedPaths.add(JSON.stringify(change.path));
-
     // A control can report a change that leaves its value where it started —
     // rewriting an input's value on reset makes it re-emit, for one. That isn't
     // a change, and recording it would badge a field nobody touched.
@@ -220,6 +218,7 @@
       canonical(valueAt(values, change.path)) !==
       canonical(valueAt(baseline, change.path))
     ) {
+      touchedPaths.add(JSON.stringify(change.path));
       changedPaths.value.add(change.path.join('.'));
     }
     emitMutation(change.kind);
