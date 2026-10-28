@@ -11,8 +11,8 @@ use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
 use CraftCms\Cms\Http\Middleware\ForgetTriggerParameters;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
+use CraftCms\Cms\Http\Middleware\PreventStaleDatabaseReads;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
-use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Mcp\Commands\ServeCommand;
 use CraftCms\Cms\Mcp\Enums\McpScope;
 use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
@@ -124,7 +124,7 @@ class McpServiceProvider extends ServiceProvider
             EnsureInstalled::class,
             AddLogContext::class,
             ResolveSite::class,
-            UseWriteConnection::class,
+            PreventStaleDatabaseReads::class,
         ];
         $authenticatedMiddleware = [
             ...$middleware,
@@ -157,7 +157,7 @@ class McpServiceProvider extends ServiceProvider
             ->group(function (Router $router) use ($authenticatedMiddleware, $config, $middleware): void {
                 $router->prefix($config->endpoint.'/oauth')->name('mcp.oauth.')->group(function (Router $router): void {
                     $router->post('register', OAuthRegisterController::class)
-                        ->middleware([EnsureInstalled::class, UseWriteConnection::class, 'throttle:60,1'])
+                        ->middleware([EnsureInstalled::class, PreventStaleDatabaseReads::class, 'throttle:60,1'])
                         ->name('register');
 
                     $router->middleware(['web', 'craft', HandleInertiaRequests::class, 'throttle:60,1'])->group(function (Router $router): void {
