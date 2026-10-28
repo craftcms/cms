@@ -159,4 +159,32 @@ step 'Build control panel' pnpm --config.enablePrePostScripts=false run build
 step 'Generate Custom Elements Manifest' pnpm --filter @craftcms/ui run build:manifest
 step 'Install test browser' pnpm exec playwright install --with-deps --only-shell chromium
 
+# Orbs start from 6.x, so Craft 5 threads would otherwise spend a minute or more
+# installing 5.x's npm/webpack toolchain. Keep a ready 5.x worktree beside this
+# checkout. HUSKY=0 stops 5.x's prepare script from pointing the shared
+# core.hooksPath at .husky/_, which would disable this checkout's hooks.
+craft5=$(realpath -m ../cms-5.x)
+step 'Fetch 5.x' git fetch --quiet --depth=1 origin 5.x
+if [[ ! -d $craft5 ]]; then
+    git worktree add --quiet --detach "$craft5" origin/5.x
+else
+    git -C "$craft5" checkout --quiet --force --detach origin/5.x
+fi
+step 'Install Craft 5 PHP dependencies' env COMPOSER_ROOT_VERSION=5.x-dev composer --working-dir="$craft5" install --prefer-dist --no-interaction --no-progress
+# npm ci always reinstalls from scratch, so skip it while the lockfile is unchanged.
+if [[ ! -f $craft5/node_modules/.package-lock.json || $craft5/package-lock.json -nt $craft5/node_modules/.package-lock.json ]]; then
+    step 'Install Craft 5 frontend dependencies' env HUSKY=0 npm --prefix "$craft5" ci --no-audit --no-fund
+fi
+guidance_marker='# Craft 5 worktree'
+if ! grep -Fqx "$guidance_marker" ~/.config/amp/AGENTS.md 2>/dev/null; then
+    mkdir -p ~/.config/amp
+    cat >> ~/.config/amp/AGENTS.md <<EOF
+
+$guidance_marker
+
+- For Craft 5 work (the 5.x branch or PRs against it), use the worktree at $craft5 instead of switching this checkout. Its Composer and npm dependencies are already installed. Run \`git fetch origin 5.x\` there and create your branch from \`origin/5.x\`. Rerun \`HUSKY=0 npm ci\` only if package-lock.json changed.
+- 5.x commits compiled assets. After changing a bundle's \`src/\`, rebuild only that bundle, for example \`npx webpack --node-env=production --config-name=cp\`, and commit its \`dist/\` changes.
+EOF
+fi
+
 printf '\nOrb toolchain, dependencies, and assets are ready.\n'
