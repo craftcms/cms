@@ -387,37 +387,52 @@
    * paste bypasses the selector's sources, criteria and condition.
    */
   const pasteable = ref<ElementPresentation[]>([]);
-  let pasteCheck = 0;
 
   watch(
-    () => (props.editable ? copiedIds.value.join(',') : ''),
-    async (key) => {
-      const check = ++pasteCheck;
-
+    () =>
+      props.editable && copiedIds.value.length
+        ? JSON.stringify({
+            elementType: props.control.props.elementType,
+            context: props.control.props.context,
+            sources: props.control.props.sources,
+            criteria: props.control.props.criteria,
+            condition: props.control.props.selectionCondition,
+            viewMode: props.control.props.viewMode,
+            elementIds: copiedIds.value,
+          })
+        : '',
+    async (key, _previous, onCleanup) => {
       if (key === '') {
         pasteable.value = [];
         return;
       }
 
+      const controller = new AbortController();
+      onCleanup(() => controller.abort());
+
       try {
         const {data} = await actionClient.post<{
           elements?: ElementPresentation[];
-        }>('element-selects/pasteable', {
-          elementType: props.control.props.elementType,
-          context: props.control.props.context,
-          sources: props.control.props.sources,
-          criteria: props.control.props.criteria,
-          condition: props.control.props.selectionCondition,
-          siteId: Craft.siteId ?? null,
-          viewMode: props.control.props.viewMode,
-          elementIds: copiedIds.value,
-        });
+        }>(
+          'element-selects/pasteable',
+          {
+            elementType: props.control.props.elementType,
+            context: props.control.props.context,
+            sources: props.control.props.sources,
+            criteria: props.control.props.criteria,
+            condition: props.control.props.selectionCondition,
+            siteId: Craft.siteId ?? null,
+            viewMode: props.control.props.viewMode,
+            elementIds: copiedIds.value,
+          },
+          {signal: controller.signal}
+        );
 
-        if (check === pasteCheck) {
+        if (!controller.signal.aborted) {
           pasteable.value = data.elements ?? [];
         }
       } catch {
-        if (check === pasteCheck) {
+        if (!controller.signal.aborted) {
           pasteable.value = [];
         }
       }
@@ -631,6 +646,17 @@
   function menuActions(value: number | string, index: number): ActionItem[] {
     return chipActions(value, index, {withEdit: !list.isCards.value});
   }
+
+  /** Each chip's menu, built once per render rather than per binding. */
+  const chipMenus = computed(
+    () =>
+      new Map(
+        listData.value.map((element, index) => [
+          element.id,
+          menuActions(element.id, index),
+        ])
+      )
+  );
 
   /**
    * Joins menu sections with a separator between each.
@@ -863,7 +889,7 @@
               Cards get a pencil straight to the editor, so their menu leaves
               the edit item out; a chip keeps it in the menu.
             -->
-            <template #actions="{element, index}">
+            <template #actions="{element}">
               <craft-button
                 v-if="list.isCards.value && canEditElement(element.id)"
                 type="button"
@@ -874,8 +900,8 @@
                 @click="openEditor(element.id)"
               ></craft-button>
               <ActionMenu
-                v-if="menuActions(element.id, index).length"
-                :actions="menuActions(element.id, index)"
+                v-if="chipMenus.get(element.id)?.length"
+                :actions="chipMenus.get(element.id)!"
                 :flush="
                   list.isList.value
                     ? 'inline-start'

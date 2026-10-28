@@ -246,7 +246,8 @@ describe('ElementSelectControl', () => {
           sources: ['section:abc'],
           siteId: 1,
           elementIds: [7],
-        })
+        }),
+        expect.anything()
       );
       expect(pasteButton(root)?.textContent?.trim()).toBe('Paste entry');
 
