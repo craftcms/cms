@@ -7,7 +7,7 @@
    * `ElementSourcesController::show()` and namespaced at `sources.<key>`, so a
    * UiRenderer per source produces exactly the shape `store()` reads back.
    */
-  import {computed, nextTick, ref, watch} from 'vue';
+  import {computed, nextTick, ref, shallowRef, watch} from 'vue';
   import {actionClient, t, type ReorderMove} from '@craftcms/ui';
   import ElementSourcesController from '@actions/Elements/ElementSourcesController';
   import ModalForm from '@/common/components/ModalForm.vue';
@@ -77,6 +77,8 @@
    */
   const lastEdited = ref<string | null>(null);
   const errors = ref<Record<string, UiPayload['errors']>>({});
+  /** The source whose settings failed to load, so its spinner stops. */
+  const failedUiKey = shallowRef<string | null>(null);
   const renderers = new Map<string, Renderer>();
 
   /**
@@ -90,6 +92,13 @@
 
   const selected = computed(() =>
     sources.value.find((source) => source.key === selectedKey.value)
+  );
+
+  const settingsLoading = computed(
+    () =>
+      !!selected.value &&
+      !selected.value.ui &&
+      selected.value.key !== failedUiKey.value
   );
 
   watch(
@@ -193,7 +202,16 @@
     if (source.type !== 'heading') lastEdited.value = source.key;
 
     if (!source.ui) {
-      const ui = await fetchUi(source.key, source.type);
+      failedUiKey.value = null;
+
+      let ui: UiPayload;
+      try {
+        ui = await fetchUi(source.key, source.type);
+      } catch (error: any) {
+        failedUiKey.value = source.key;
+        Craft.cp?.displayError?.(error?.response?.data?.message);
+        return;
+      }
 
       // A heading keyed on load isn't in project config yet, so the server
       // builds it blank; the text it already had comes from the list.
@@ -396,22 +414,31 @@
   }
 
   /**
-   * The sources that move with `source`: a heading brings every source beneath
-   * it, up to the next heading; anything else moves alone.
+   * The sources that move with each source: a heading brings every source
+   * beneath it on its page, up to the next heading; anything else moves alone.
    */
+  const sourceBlocks = computed(() => {
+    const blocks = new Map<SourceRow, SourceRow[]>();
+    const headings = new Map<string, SourceRow[]>();
+
+    for (const row of sources.value) {
+      const page = multiPage.value ? row.page : '';
+
+      if (row.type === 'heading') {
+        const block = [row];
+        blocks.set(row, block);
+        headings.set(page, block);
+      } else {
+        blocks.set(row, [row]);
+        headings.get(page)?.push(row);
+      }
+    }
+
+    return blocks;
+  });
+
   function blockOf(source: SourceRow): SourceRow[] {
-    const onPage = sources.value.filter(
-      (row) => !multiPage.value || row.page === source.page
-    );
-    const start = onPage.indexOf(source);
-    if (start === -1) return [];
-    if (source.type !== 'heading') return [source];
-
-    const next = onPage.findIndex(
-      (row, index) => index > start && row.type === 'heading'
-    );
-
-    return onPage.slice(start, next === -1 ? undefined : next);
+    return sourceBlocks.value.get(source) ?? [];
   }
 
   /** How many visible rows move with the one at `index`. */
@@ -934,7 +961,7 @@
               </craft-field-group>
             </template>
 
-            <craft-spinner v-if="selected && !selected.ui" />
+            <craft-spinner v-if="settingsLoading" />
           </div>
         </CustomizeSourcesColumn>
       </template>
