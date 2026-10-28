@@ -42,7 +42,7 @@
     :label="control.props.label ?? (fieldLabelSrOnly ? undefined : label)"
     .checked="Boolean(value)"
     .choiceValue="String(control.props.checkedValue ?? '1')"
-    :disabled="!editable"
+    .disabled="!editable"
     :required="editable && required"
     .validators="serverErrorValidators(invalid)"
     @model-value-changed="onModelValueChanged"

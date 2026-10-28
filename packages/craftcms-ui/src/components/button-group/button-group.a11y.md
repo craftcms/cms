@@ -18,6 +18,7 @@ Without `name`, the group only joins its buttons visually; each one follows `but
 - [x] In single-select mode, each button's `aria-pressed` follows the selected `value`, including a selection given in markup with `active`. Per WCAG 4.1.2 (Name, Role, Value). Verified by `adopts its value from a child marked active in markup` in `button-group.test.ts` and the `SelectionFromMarkup` story.
 - [ ] In `multiple` mode, each button's `aria-pressed` follows its `active` state. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified. `toggles multiple selected values` in `button-group.test.ts` checks `active` but not `aria-pressed`.
 - [ ] In selection mode, only the group's own options get `aria-pressed`. Per WCAG 4.1.2 (Name, Role, Value). Known gap: every `craft-button` descendant gets it, including a nested action menu's invoker, which is then announced as an unpressed toggle.
+- [x] Inside a disabled `<fieldset>`, the buttons are disabled, and the ones it disabled are enabled again when the fieldset is. Per WCAG 4.1.2 (Name, Role, Value). Verified by `disables its buttons inside a disabled fieldset, and re-enables only those` in `button-group.browser.test.ts`.
 - [ ] The group has an accessible name in selection mode. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Known gap: there's no `label` property; the name comes only from `aria-label` or `aria-labelledby` on the host.
 
 ### Keyboard and focus

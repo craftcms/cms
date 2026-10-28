@@ -403,7 +403,6 @@ return [
     'Continue' => 'המשך',
     'Control panel resources' => 'משאבי לוח בקרה',
     'Cooldown Time Remaining' => 'יתרת זמן צינון',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'הועתק ללוח גזירים.',
     'Copied' => 'Copied',
     'Copy URL' => 'העתק את כתובת ה-URL',

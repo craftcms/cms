@@ -31,7 +31,6 @@
   });
 
   const form = useForm({
-    id: props.site.id,
     contentDestination: 'transfer',
     transferContentTo: null,
   });
@@ -39,12 +38,15 @@
   function deleteSite() {
     if (form.processing) return;
 
-    form.clearErrors().delete(destroy({site: props.site.id}).url, {
-      onSuccess: () => {
-        emit('close');
-        form.reset();
-      },
-    });
+    form
+      .clearErrors()
+      .transform((data) => ({...data, id: props.site.id}))
+      .delete(destroy({site: props.site.id}).url, {
+        onSuccess: () => {
+          emit('close');
+          form.reset();
+        },
+      });
   }
 
   function handleModalClose() {

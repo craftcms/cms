@@ -403,7 +403,6 @@ return [
     'Continue' => 'Fortsätt',
     'Control panel resources' => 'Resurser på kontrollpanelen',
     'Cooldown Time Remaining' => 'Återstående tid för Cooldown',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Kopierat till urklipp.',
     'Copied' => 'Copied',
     'Copy URL' => 'Kopiera URL',

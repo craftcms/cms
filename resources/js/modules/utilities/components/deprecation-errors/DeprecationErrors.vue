@@ -31,7 +31,7 @@
       }),
       columnHelper.accessor('origin', {
         header: t('Origin'),
-        cell: (info) => h('code', {innerHTML: info.getValue()}),
+        cell: (info) => h('code', {class: 'break-all'}, info.getValue()),
         meta: {
           wrap: true,
         },

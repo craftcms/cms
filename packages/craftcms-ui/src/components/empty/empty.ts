@@ -45,7 +45,7 @@ export default class CraftEmpty extends LitElement {
         color: var(--c-text-quiet);
       }
 
-      :host([appearance~='outline']) {
+      :host([appearance~='outline']) .cp-empty {
         border-color: var(--c-color-border-quiet);
       }
     `,

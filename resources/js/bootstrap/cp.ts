@@ -20,6 +20,7 @@ import type {ScreenPageProps} from '@/common/composables/screen';
 import {setUpInertiaMessages} from '@/modules/messages/inertia';
 import {trackScrollbarWidth} from '@/common/utils/scrollbarWidth';
 import {registerSubmitShortcut} from '@/common/utils/submitShortcut';
+import {uiValues} from '@/modules/ui/ui-values';
 
 type TranslationStore = Record<string, Record<string, string>>;
 
@@ -75,6 +76,10 @@ const Cp = {
     return cpComponentRegistry;
   },
 
+  get $ui() {
+    return uiValues;
+  },
+
   // Plugin bundles must use the mounted app's router, not their own module copy.
   get $router() {
     return router;
@@ -121,6 +126,11 @@ const Cp = {
       enabled: true,
       appId: config.get('systemUid', ''),
       canAccessQueueManager: config.get('canAccessQueueManager', false),
+    });
+
+    // The command palette's “Run pending queue jobs”.
+    window.addEventListener('craft:run-queue', () => {
+      void queue.runQueue({force: true});
     });
 
     setTranslations(this.initialConfig.translations ?? {});

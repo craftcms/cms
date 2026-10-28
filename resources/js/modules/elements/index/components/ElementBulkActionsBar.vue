@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {computed, shallowRef, useTemplateRef} from 'vue';
-  import {useEventListener} from '@vueuse/core';
   import {t} from '@craftcms/ui';
   import {
     elementActionRequest,
@@ -15,9 +14,8 @@
     PerformBulkAction,
   } from '@/modules/elements/types/actions';
   import type {ActionItem} from '@/common/types';
-  import Text from '@/common/components/Text.vue';
-  import ActionMenu from '@/common/components/ActionMenu.vue';
-  import {copyElements} from '@/modules/elements/index/copy-elements';
+  import BulkActionsBarShell from '@/modules/elements/components/BulkActionsBarShell.vue';
+  import {useBulkActionSelection} from '@/modules/elements/composables/useBulkActionSelection';
 
   const props = withDefaults(
     defineProps<{
@@ -60,26 +58,21 @@
   // action), so it's pulled out of the menu list below.
   const SET_STATUS_KEY = 'CraftCms\\Cms\\Element\\Actions\\SetStatus';
 
-  const selectedCount = computed(() => props.selectedIds.length);
-  const root = useTemplateRef<HTMLElement>('root');
+  const bar = useTemplateRef('bar');
   const performing = shallowRef(false);
 
-  const selectionType = computed<'elements' | 'folders' | 'mixed'>(() => {
-    const folderCount = props.selectedIds.filter((id) =>
-      String(id).startsWith('folder:')
-    ).length;
-
-    if (folderCount === 0) {
-      return 'elements';
-    }
-
-    return folderCount === selectedCount.value ? 'folders' : 'mixed';
-  });
+  const {selectedCount, appliesToSelection, onOwnedEvent, invokerFor} =
+    useBulkActionSelection({
+      selectedIds: () => props.selectedIds,
+      root: () => bar.value?.root,
+      elementType: () => props.elementType,
+      selectedElements: () => props.selectedElements,
+    });
 
   const availableActions = computed(() =>
     (props.actions ?? []).filter(
       (item) =>
-        (!item.appliesTo || item.appliesTo === selectionType.value) &&
+        appliesToSelection(item) &&
         selectionAllows(item, props.selectedElements)
     )
   );
@@ -92,8 +85,6 @@
     availableActions.value.filter((item) => item.key !== SET_STATUS_KEY)
   );
 
-  const hasMenu = computed(() => menuItems.value.length > 0);
-
   /**
    * Map the server descriptors to `ActionItem`s for `ActionMenu` /
    * `craft-action-item`. The server bakes the action class + its settings into
@@ -103,7 +94,7 @@
    * spinner, and feedback — no bespoke code here.
    *
    * `event` actions run client-side instead: the selection merges into the
-   * event detail, and a listener (e.g. `craft:copy-elements` below) handles it.
+   * event detail, and a listener (e.g. `craft:copy-elements`) handles it.
    */
   const menuActions = computed<Array<ActionItem>>(() =>
     menuItems.value.map((item): ActionItem => {
@@ -143,7 +134,7 @@
             emit(type, {
               elementIds: props.selectedIds,
               elementType: props.elementType,
-              trigger: eventTrigger(event.currentTarget),
+              trigger: invokerFor(event.currentTarget),
             });
           },
         };
@@ -258,80 +249,15 @@
   }
 
   /**
-   * Copy mirrors Craft 5: the selection is handed to the legacy
-   * `Craft.cp.copyElements()`, which stores it in localStorage (for paste
-   * targets like nested element managers), shows the persistent "copied"
-   * notification, and broadcasts to other tabs. Nothing changes server-side,
-   * so no refresh/`performed` is emitted.
-   */
-  function onCopyElements(event: Event) {
-    if (!owns(event)) {
-      return;
-    }
-    const detail = event.detail ?? {};
-    const ids: ReadonlyArray<string | number> =
-      detail.elementIds ?? props.selectedIds;
-
-    copyElements(
-      detail.elementType ?? props.elementType,
-      ids,
-      detail.elements ?? props.selectedElements
-    );
-  }
-
-  /**
    * Preview file is single-element, so it previews the one selected asset.
    */
-  function onPreviewFile(event: Event) {
-    if (!owns(event)) {
-      return;
-    }
+  onOwnedEvent('craft:preview-file', (event) => {
     const [id] = event.detail.elementIds ?? props.selectedIds;
 
     if (id !== undefined) {
       new Craft.PreviewFileModal(Number(id));
     }
-  }
-
-  function owns(event: Event): event is CustomEvent<{
-    trigger: HTMLElement;
-    elementIds?: ReadonlyArray<string | number>;
-    elementType?: string;
-    elements?: ReadonlyArray<ElementActionSelection>;
-  }> {
-    if (!(event instanceof CustomEvent)) {
-      return false;
-    }
-
-    const trigger = event.detail?.trigger;
-
-    return (
-      trigger instanceof HTMLElement && Boolean(root.value?.contains(trigger))
-    );
-  }
-
-  function eventTrigger(trigger: HTMLElement): HTMLElement {
-    const menu = trigger.closest('craft-action-menu');
-
-    return menu?.querySelector<HTMLElement>('[slot="invoker"]') ?? trigger;
-  }
-
-  useEventListener(window, 'craft:copy-elements', onCopyElements);
-  useEventListener(window, 'craft:preview-file', onPreviewFile);
-  /**
-   * `craft-action-item` bubbles `craft-state-change` through its lifecycle. A
-   * successful `http` action means the selection was acted on, so refresh the
-   * table + clear selection. (Other states drive the item's own spinner/feedback.)
-   */
-  function onChangeState(event: Event) {
-    if (!(event instanceof CustomEvent)) {
-      return;
-    }
-    const detail = event.detail;
-    if (detail?.state === 'success' && detail?.actionType === 'http') {
-      emit('performed');
-    }
-  }
+  });
 
   function setStatus(status: 'enabled' | 'disabled') {
     const item = setStatusAction.value;
@@ -347,30 +273,14 @@
 </script>
 
 <template>
-  <div
-    ref="root"
-    class="bulk-actions-bar"
-    v-if="selectedCount > 0"
-    @craft-state-change="onChangeState"
+  <BulkActionsBarShell
+    ref="bar"
+    :selected-count="selectedCount"
+    :actions="menuActions"
+    @performed="emit('performed')"
+    @clear="emit('clear')"
   >
-    <div class="bulk-actions-bar__selection">
-      <Text
-        as="span"
-        class="bulk-actions-bar__count"
-        template="{count, plural, =1{# selected} other{# selected}}"
-        :params="{count: selectedCount}"
-      />
-      <craft-button
-        type="button"
-        size="small"
-        variant="plain"
-        @click="emit('clear')"
-      >
-        {{ t('Clear selection') }}
-      </craft-button>
-    </div>
-
-    <div class="bulk-actions-bar__actions">
+    <template #status>
       <craft-action-menu
         v-if="setStatusAction"
         .disabled="setStatusAction.disabled || performing"
@@ -396,44 +306,8 @@
           </craft-action-item>
         </div>
       </craft-action-menu>
+    </template>
 
-      <ActionMenu v-if="hasMenu" :actions="menuActions">
-        <template #invoker="{attributes}">
-          <craft-button type="button" size="small" v-bind="attributes">
-            {{ t('Actions') }}
-            <craft-icon name="chevron-down" slot="suffix"></craft-icon>
-          </craft-button>
-        </template>
-      </ActionMenu>
-      <slot />
-    </div>
-  </div>
+    <slot />
+  </BulkActionsBarShell>
 </template>
-
-<style scoped lang="scss">
-  .bulk-actions-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--c-spacing-md);
-    flex-wrap: wrap;
-    width: 100%;
-  }
-
-  .bulk-actions-bar__selection {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-sm);
-  }
-
-  .bulk-actions-bar__count {
-    font-weight: 600;
-  }
-
-  .bulk-actions-bar__actions {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-sm);
-    flex-wrap: wrap;
-  }
-</style>

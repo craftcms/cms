@@ -226,7 +226,7 @@
         <craft-button
           type="button"
           variant="accent"
-          :loading="isUpdatingAll"
+          .loading="isUpdatingAll"
           @click="startUpdateAll"
         >
           {{ t('Update all') }}
@@ -258,7 +258,7 @@
     <craft-spinner
       slot="graphic"
       style="--size: 3rem"
-      :visible="true"
+      .visible="true"
     ></craft-spinner>
   </craft-empty>
 </template>

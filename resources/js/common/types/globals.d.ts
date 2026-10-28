@@ -6,6 +6,7 @@ import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
 import type {Router} from '@inertiajs/core';
 import type {HttpResponse} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
+import type {UiValueChangeDetail, uiValues} from '@/modules/ui/ui-values';
 
 type LegacySettingValue =
   | string
@@ -74,6 +75,7 @@ interface CpServices {
 
 interface CpStatic extends CpServices {
   $components: CpComponentRegistry;
+  $ui: typeof uiValues;
   $elementDetailsPanels: ElementDetailsPanelRegistry;
   /** @deprecated Use `$elementDetailsPanels`. */
   $elementDetailsTabs: ElementDetailsPanelRegistry;
@@ -155,6 +157,13 @@ interface CraftStatic {
   openCustomizeSourcesModal(
     options: import('@/modules/customize-sources').CustomizeSourcesModalOptions
   ): Promise<void>;
+  commandPalette: Pick<
+    typeof import('@/modules/command-palette/registry'),
+    'registerProvider' | 'registerActions' | 'registerView'
+  > & {
+    open: typeof import('@/modules/command-palette/registry').openCommandPalette;
+    close: typeof import('@/modules/command-palette/registry').closeCommandPalette;
+  };
   expandPostArray(arr: FormData | URLSearchParams): LegacyWidgetSettings;
   escapeHtml(str: string);
   sites: Site[];
@@ -278,6 +287,9 @@ declare global {
   let Craft: CraftStatic;
   let Garnish: GarnishStatic;
   let $: JQueryStatic;
+  interface DocumentEventMap {
+    'craft:ui-value-change': CustomEvent<UiValueChangeDetail>;
+  }
   interface Window {
     bootedCallbacks: Array<(craft: CraftStatic) => void>;
     bootingCallbacks: Array<(craft: CraftStatic) => void>;

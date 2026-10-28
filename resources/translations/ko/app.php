@@ -403,7 +403,6 @@ return [
     'Continue' => '계속',
     'Control panel resources' => '제어판 리소스',
     'Cooldown Time Remaining' => '쿨다운 시간이 남았습니다',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => '클립보드에 복사했습니다.',
     'Copied' => 'Copied',
     'Copy URL' => 'URL 복사',

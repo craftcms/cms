@@ -151,4 +151,10 @@ JS, [
 
         return array_merge($element->errors()->get('email'), $element->errors()->get('unverifiedEmail'));
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'at';
+    }
 }

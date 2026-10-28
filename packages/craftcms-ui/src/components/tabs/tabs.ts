@@ -292,6 +292,9 @@ export default class CraftTabs extends LionTabs {
   /** Indexes of the tabs currently collapsed into the overflow menu. */
   #overflowed: number[] = [];
 
+  /** What the overflow menu's actions were last built from. */
+  #overflowSignature: string | null = null;
+
   /**
    * The selection the last `craft-tab-show` reported, so moving an invalid
    * selection onto a real tab isn't announced as a change.
@@ -356,13 +359,11 @@ export default class CraftTabs extends LionTabs {
 
     if (this.syncLocationHash) {
       this.#selectFromHash();
-      window.addEventListener('hashchange', this.#selectFromHash);
     }
 
     // Overflow is independent of the mode: the strip is the same either way.
     tabSlot?.addEventListener('slotchange', this.#queueMeasure);
-    this.#resizeObserver = new ResizeObserver(this.#queueMeasure);
-    this.#resizeObserver.observe(this);
+    this.#connectListeners();
     this.#measureOverflow();
 
     if (!this.label) {
@@ -371,6 +372,30 @@ export default class CraftTabs extends LionTabs {
         this
       );
     }
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+
+    // A strip moved in the DOM is disconnected and reconnected without
+    // another first render, so what the disconnect tore down is rebuilt here.
+    if (this.hasUpdated) {
+      if (this.#external) {
+        this.#setupExternal();
+      }
+
+      this.#connectListeners();
+    }
+  }
+
+  /** The listeners and observer `disconnectedCallback` tears down. */
+  #connectListeners() {
+    if (this.syncLocationHash) {
+      window.addEventListener('hashchange', this.#selectFromHash);
+    }
+
+    this.#resizeObserver = new ResizeObserver(this.#queueMeasure);
+    this.#resizeObserver.observe(this);
   }
 
   override disconnectedCallback() {
@@ -728,8 +753,24 @@ export default class CraftTabs extends LionTabs {
 
     this.#overflowed = overflowed;
 
-    if (menu) {
-      menu.hidden = overflowed.length === 0;
+    if (!menu) {
+      return;
+    }
+
+    menu.hidden = overflowed.length === 0;
+
+    // New actions rebuild the menu's items, which drops focus out of an open
+    // menu, so a measurement that collapsed the same tabs leaves them alone.
+    const signature = JSON.stringify(
+      overflowed.map((index) => {
+        const tab = this.#tabs[index]!;
+
+        return [index, tab.textContent?.trim() ?? '', tab.disabled];
+      })
+    );
+
+    if (signature !== this.#overflowSignature) {
+      this.#overflowSignature = signature;
       menu.actions = this.#overflowActions();
     }
   }
@@ -772,6 +813,16 @@ export default class CraftTabs extends LionTabs {
     this.#measureOverflow();
     tab.focus();
   }
+
+  /**
+   * The overflow menu is part of the strip, so its own events stay inside it:
+   * leaving the shadow root, they'd read as the strip's.
+   */
+  #stopOverflowMenuEvent = (event: Event) => {
+    if (event.target === event.currentTarget) {
+      event.stopPropagation();
+    }
+  };
 
   #select(index: number, withFocus: boolean) {
     const tab = this.#tabs[index];
@@ -871,6 +922,11 @@ export default class CraftTabs extends LionTabs {
             part="overflow-menu"
             placement="bottom-end"
             hidden
+            @craft-show=${this.#stopOverflowMenuEvent}
+            @craft-hide=${this.#stopOverflowMenuEvent}
+            @craft-after-show=${this.#stopOverflowMenuEvent}
+            @craft-after-hide=${this.#stopOverflowMenuEvent}
+            @craft-select=${this.#stopOverflowMenuEvent}
           >
             <!--
               Slotted rather than left to the menu's generated default, which

@@ -403,7 +403,6 @@ return [
     'Continue' => 'Pokračovat',
     'Control panel resources' => 'Zdroje ovládacího panelu',
     'Cooldown Time Remaining' => 'Zbývající časový limit',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Zkopírováno do schránky.',
     'Copied' => 'Copied',
     'Copy URL' => 'Kopírovat URL',

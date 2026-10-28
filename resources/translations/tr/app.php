@@ -403,7 +403,6 @@ return [
     'Continue' => 'Devam',
     'Control panel resources' => 'Kontrol paneli kaynakları',
     'Cooldown Time Remaining' => 'Geriye Kalan Zaman',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Panoya kopyalandı.',
     'Copied' => 'Copied',
     'Copy URL' => 'URL\'yi kopyala',

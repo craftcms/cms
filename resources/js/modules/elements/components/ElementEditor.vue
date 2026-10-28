@@ -9,6 +9,7 @@
   import {
     computed,
     nextTick,
+    onBeforeUnmount,
     provide,
     shallowReactive,
     useTemplateRef,
@@ -45,6 +46,8 @@
   import type {ReleaseOption} from '@/modules/elements/composables/useElementEditor';
   import {create} from '@actions/ReleasesController';
   import {openSlideout} from '@/common/slideouts';
+  import {registerActions} from '@/modules/command-palette/registry';
+  import type {CommandPaletteItem} from '@/modules/command-palette/types';
   import {firstFocusableWithin} from '@/common/utils/dom';
 
   interface CreatedReleaseResponse {
@@ -276,6 +279,117 @@
   const showActionMenu = computed(
     () => (isSlideout || !page.props.readOnly) && !payload.release
   );
+
+  /**
+   * What the command palette offers on this page: the Save button and its
+   * menu, discarding provisional changes, adding the draft to a release, and
+   * copying the element's ID, URL and reference tag. Read each time the
+   * palette opens; a slideout's editor leaves the palette to the page's.
+   */
+  function paletteActions(): CommandPaletteItem[] {
+    const items: CommandPaletteItem[] = [];
+    const description = t('This page');
+
+    if (!editorLocked.value) {
+      items.push(
+        {
+          id: 'editor-save',
+          label: payload.editorActions.primary.label,
+          description,
+          icon: 'floppy-disk',
+          run: () => primaryAction(),
+        },
+        ...formActionItems.value.map((action, index) => ({
+          id: `editor-save-menu-${index}`,
+          label: action.label,
+          description,
+          icon: 'floppy-disk',
+          run: action.onClick,
+        })),
+        ...saveButtons.value
+          .filter((button) => !button.disabled)
+          .map((button, index) => ({
+            id: `editor-button-${index}`,
+            label: button.label,
+            description,
+            icon: 'pen-to-square',
+            run: button.onClick,
+          }))
+      );
+
+      if (payload.notice && payload.canDiscardDraft) {
+        items.push({
+          id: 'editor-discard-changes',
+          label: t('Discard changes'),
+          description,
+          icon: 'arrow-rotate-left',
+          variant: 'danger',
+          confirm: t('Are you sure you want to discard your changes?'),
+          run: discardDraft,
+        });
+      }
+    }
+
+    if (!payload.readOnly && canChooseRelease.value) {
+      items.push(
+        ...payload.releaseOptions.map((release) => ({
+          id: `editor-add-to-release-${release.id}`,
+          label: t('Add to {release}', {release: release.name}),
+          description,
+          icon: 'rocket',
+          run: () => chooseRelease(release),
+        }))
+      );
+
+      if (payload.canCreateRelease) {
+        items.push({
+          id: 'editor-add-to-new-release',
+          label: t('Add to a new release'),
+          description,
+          icon: 'rocket',
+          run: () => createRelease(null),
+        });
+      }
+    }
+
+    const id = payload.canonicalId ?? payload.elementId;
+
+    if (id !== null) {
+      items.push({
+        id: 'editor-copy-id',
+        label: t('Copy ID'),
+        description,
+        icon: 'clipboard',
+        action: {type: 'clipboard', value: String(id)},
+      });
+
+      if (payload.refHandle) {
+        items.push({
+          id: 'editor-copy-reference-tag',
+          label: t('Copy reference tag'),
+          description,
+          icon: 'clipboard',
+          action: {type: 'clipboard', value: `{${payload.refHandle}:${id}}`},
+        });
+      }
+    }
+
+    if (payload.elementUrl) {
+      items.push({
+        id: 'editor-copy-url',
+        label: t('Copy URL'),
+        description,
+        icon: 'clipboard',
+        action: {type: 'clipboard', value: payload.elementUrl},
+      });
+    }
+
+    return items;
+  }
+
+  if (!isSlideout) {
+    onBeforeUnmount(registerActions(paletteActions).unregister);
+  }
 
   useAppLayout(() => ({
     title: payload.title,

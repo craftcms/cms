@@ -39,7 +39,6 @@
   }>();
 
   const copyButton = ref<CopyButtonElement | null>(null);
-  const visibleAccessToken = ref(props.accessToken);
   const tokenRequest = useHttp<Record<string, never>, TokenResponse>({});
   const loadingToken = computed(() => tokenRequest.processing);
 
@@ -50,6 +49,8 @@
     expiryDate: props.token.expiryDate ?? '',
     accessToken: props.accessToken ?? '',
   });
+
+  const visibleAccessToken = computed(() => form.accessToken || null);
 
   const authorizationHeader = computed(
     () => `Authorization: Bearer ${visibleAccessToken.value ?? maskedToken}`
@@ -66,7 +67,8 @@
 
   async function revealToken(tokenId: number) {
     const data = await tokenRequest.post(revealAccessToken({tokenId}).url);
-    visibleAccessToken.value = data.accessToken;
+    form.defaults({accessToken: data.accessToken});
+    form.accessToken = data.accessToken;
 
     return data.accessToken;
   }
@@ -85,7 +87,6 @@
 
   async function regenerateToken() {
     const data = await tokenRequest.post(generate().url);
-    visibleAccessToken.value = data.accessToken;
     form.accessToken = data.accessToken;
   }
 </script>
@@ -146,7 +147,7 @@
             type="button"
             size="small"
             variant="plain"
-            :disabled="loadingToken"
+            .disabled="loadingToken"
             @click="copyHeader"
           >
             <craft-icon name="copy" slot="prefix"></craft-icon>
@@ -158,15 +159,15 @@
             slot="suffix"
             ref="copyButton"
             :value="authorizationHeader"
-            :disabled="loadingToken"
+            .disabled="loadingToken"
           />
         </CraftInput>
 
         <craft-button
           type="button"
           variant="neutral"
-          :loading="loadingToken"
-          :disabled="readOnly || loadingToken"
+          .loading="loadingToken"
+          .disabled="readOnly || loadingToken"
           @click="regenerateToken"
         >
           {{ t('Regenerate') }}
