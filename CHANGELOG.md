@@ -12,6 +12,7 @@
 
 - HUD tips now match their HUD’s colors, and HUDs have a light outline in dark mode. ([#20005](https://github.com/craftcms/cms/pull/20005))
 - Added a “Theme” user preference, with “Light”, “Dark”, and “System” options. “System” is the default. Pages shown to logged-out users, such as the login page, always follow the system’s light or dark setting. ([#19966](https://github.com/craftcms/cms/pull/19966))
+- The control panel now warns users a couple of minutes before their session expires, with options to stay signed in or sign out, and lets them sign back in without leaving the page once it has. ([#20086](https://github.com/craftcms/cms/pull/20086))
 - Improved chip styling. ([#19902](https://github.com/craftcms/cms/pull/19902))
 - Modals now have a subtle outline instead of a border, header and footer bars that match the control panel’s, and rounder corners. Dialogs, such as confirmations and copy prompts, have a compact header with a plain close button. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Asset previews, file conflict prompts, the entry index’s “Move to” action, and the modals for reassigning or replacing relations before a delete now use the control panel’s dialog styling. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -41,6 +42,10 @@
 - Link fields now show their Link Type and destination inputs side by side, with their other settings nested under an “Advanced” section, within an outlined pane. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Asset folders’ labels are now links in thumbnail and card views. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Element index view mode buttons now have tooltips. ([#19942](https://github.com/craftcms/cms/pull/19942))
+- Element index View menus now have a “Thumb Size” setting in table, structure, and thumbnail views, with “Small”, “Medium”, and “Large” options, plus “XL” and “2XL” in thumbnail view. Each view remembers its own size, and chips take a size to suit their thumbnails. Changing it resizes the results in place, scaling their current thumbnails until sharper ones load. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
+- Thumbnail views in element indexes and relational fields now show each element as a chip, with its thumbnail above its label. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
+- Element index View menus now only show “Table Columns” in table and structure views. ([#20124](https://github.com/craftcms/cms/pull/20124))
+- Popovers, such as element index View menus, now grow into the room below or above them, rather than stopping at 40% of the window’s height. ([#20124](https://github.com/craftcms/cms/pull/20124))
 - The control panel’s navigation and details panes now have thin scrollbars, and scrolling past their ends no longer scrolls the page. ([#20011](https://github.com/craftcms/cms/issues/20011))
 - Empty states’ messages and icons are now lighter. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - User preference screens now have “General”, “Accessibility”, and “Development” tabs. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -182,6 +187,8 @@
 - Fixed a bug where asset upload conflict prompts used unstyled radio buttons and checkboxes.
 - Fixed a bug where nested element fields’ “Paste” buttons and relational fields’ “Copy” menu items were missing their icons.
 - Fixed a bug where buttons didn’t show an inset shadow while pressed.
+- Fixed a bug where medium chips’ thumbnails were smaller than small chips’. They’re now 32px, between small and large chips’. ([#20124](https://github.com/craftcms/cms/pull/20124))
+- Fixed a bug where portrait image thumbnails in medium and large chips were letterboxed in a square, so their rounded corners didn’t show. ([#20124](https://github.com/craftcms/cms/pull/20124))
 
 ### Content Management
 
@@ -495,6 +502,11 @@
 - Labeled `@craftcms/ui` form controls (`<craft-input>`, `<craft-textarea>`, `<craft-select>`, `<craft-combobox>`, etc.) now lay out their label and help text the same way `<craft-field>` does, and support `tip` and `warning` slots. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added the `control` CSS part to `<craft-action-item>`. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - `Craft.createElementEditor()` now opens the element editor in a Vue slideout on control panel pages that have them, rather than in the legacy `Craft.ElementEditorSlideout`. It returns an object with the legacy slideout’s `submit`, `load` and `close` events, `close()` method, and `elementEditor` `update` event. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Added `CraftCms\Cms\Auth\SessionTimeout`. ([#20086](https://github.com/craftcms/cms/pull/20086))
+- Control panel responses that extend a signed-in user’s session now include an `X-Craft-Session-Expires` header with the session’s expiry, as a Unix time. ([#20086](https://github.com/craftcms/cms/pull/20086))
+- The `users/session-info` action now returns `sessionExpiresAt`. ([#20086](https://github.com/craftcms/cms/pull/20086))
+- Added the `users/renew-session` and `users/login-methods` actions. ([#20086](https://github.com/craftcms/cms/pull/20086))
+- The `elements/recent-activity` and `queue/get-job-info` actions no longer extend the session, and the `dontExtendSession` parameter is no longer used. ([#20086](https://github.com/craftcms/cms/pull/20086))
 - Removed `CraftCms\Cms\Cp\Components\CheckboxSelect::allCheckbox()`. `allOption()` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Removed the `<craft-sortable-checkbox-select>` web component. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `<craft-resize-grips>` web component. ([#20008](https://github.com/craftcms/cms/pull/20008))
@@ -505,6 +517,11 @@
 - Added the `--c-field-label-font-size`, `--c-field-label-font-weight`, `--c-field-label-color`, and `--c-field-label-line-height` CSS custom properties to `<craft-field>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `--c-slide-picker-segment-fill`, `--c-slide-picker-segment-active-fill`, and `--c-slide-picker-segment-hover-fill` CSS custom properties to `<craft-slide-picker>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `--c-thumbnail-height` CSS custom property to `<craft-thumbnail>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Added the `thumb-size` attribute to `<craft-chip>`, which sizes its thumbnail independently of the chip (`sm`, `md`, `lg`, `xl`, or `2xl`). Chips without a `size` now take the size that suits their `thumb-size`. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
+- Added the `prefix-placement` attribute to `<craft-chip>`. Set to `block-start`, a chip stacks its thumbnail or icon above its label, with its checkbox and suffix along the top. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
+- Added the `select-disabled` attribute to `<craft-chip>`. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
+- Added `CraftCms\Cms\Cp\Enums\ChipThumbSize` and `CraftCms\Cms\Cp\Html\ElementHtml::CHIP_SIZE_MEDIUM`. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
+- Added the `thumbSize` config option to `CraftCms\Cms\Cp\Html\ElementHtml::chipHtml()` and `elementChipHtml()`. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Added `CraftCms\Cms\Ui\Nodes\Group::outlet()`, which renders a group in a named outlet elsewhere in the form when the form is rendered by Vue, such as the field layout designer’s Appearance tab (`field-layout-designer.appearance`). ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `labelSrOnly` config option to `CraftCms\Cms\Cp\FormFields::fieldHtml()`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - The `--c-size-control-md` and `--c-size-touch-target` CSS custom properties are now 32px. ([#20001](https://github.com/craftcms/cms/pull/20001))
@@ -546,6 +563,7 @@
 
 ### System
 
+- An element editor or queue indicator left open no longer keeps the user’s session from expiring. ([#20086](https://github.com/craftcms/cms/pull/20086))
 - MySQL database backups and restores now carry over SSL/TLS settings from the system’s MySQL option files (e.g. `ssl-ca` or `disable-ssl-verify-server-cert`), if the database connection doesn’t have any `PDO::MYSQL_ATTR_SSL_*` attributes set. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.

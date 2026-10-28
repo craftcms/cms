@@ -459,7 +459,7 @@ class ElementEditViewModel extends ViewModel
     public function activityUrl(): ?string
     {
         return $this->element->id && ! $this->element->getIsRevision()
-            ? Url::actionUrl('elements/recent-activity', ['dontExtendSession' => 1])
+            ? Url::actionUrl('elements/recent-activity')
             : null;
     }
 

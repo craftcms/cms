@@ -1,10 +1,13 @@
 <script setup lang="ts">
-  import {ref, watch} from 'vue';
+  import {computed, ref, useId, watch} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
   import Select from '@/common/form/Select.vue';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
   import type {CheckboxOption} from '@/common/types';
-  import type {SortOption} from '@/modules/elements/types/view-state';
+  import type {
+    ThumbSize,
+    SortOption,
+  } from '@/modules/elements/types/view-state';
 
   const props = defineProps<{
     /** The toggleable/reorderable table columns. */
@@ -14,6 +17,14 @@
     /** Whether the active sort has an intrinsic direction. */
     sortDirectionLocked?: boolean;
     disabled?: boolean;
+    /**
+     * The thumbnail sizes the active view mode offers. The Thumb Size setting
+     * only shows
+     * when there are some.
+     */
+    thumbSizeOptions?: Array<ThumbSize>;
+    /** Whether the active view mode has table columns to choose. */
+    showTableColumns?: boolean;
   }>();
 
   const sortField = defineModel<string>('sortField', {required: true});
@@ -23,6 +34,38 @@
   const tableColumns = defineModel<Array<string>>('tableColumns', {
     required: true,
   });
+
+  const thumbSize = defineModel<ThumbSize>('thumbSize', {default: 'sm'});
+
+  // Unique per popover, since an index can share the page with another (e.g.
+  // an element selection modal).
+  const thumbSizeIdPrefix = `thumb-size-${useId()}`;
+
+  const thumbSizeLabels: Record<ThumbSize, string> = {
+    sm: t('Small'),
+    md: t('Medium'),
+    lg: t('Large'),
+    xl: t('XL'),
+    '2xl': t('2XL'),
+  };
+
+  const thumbSizeChoices = computed(() =>
+    (props.thumbSizeOptions ?? []).map((value) => ({
+      label: thumbSizeLabels[value],
+      value,
+    }))
+  );
+
+  // The group also announces its initial value once it mounts, which can be
+  // a stale one from before the URL's size was restored. Only the user's own
+  // choices change the size.
+  function onThumbSizeChanged(event: Event) {
+    if (event instanceof CustomEvent && event.detail?.isTriggeredByUser) {
+      thumbSize.value = (
+        event.target as HTMLElement & {modelValue: ThumbSize}
+      ).modelValue;
+    }
+  }
 
   const emit = defineEmits<{
     (e: 'reorder', options: Array<CheckboxOption>): void;
@@ -132,7 +175,35 @@
           </craft-button-group>
         </div>
       </div>
-      <div>
+      <div v-if="thumbSizeChoices.length">
+        <craft-radio-group
+          buttons
+          :name="thumbSizeIdPrefix"
+          :label="t('Thumb Size')"
+          .modelValue="thumbSize"
+          @model-value-changed="onThumbSizeChanged"
+        >
+          <craft-radio
+            v-for="option in thumbSizeChoices"
+            :key="option.value"
+            .choiceValue="option.value"
+            .checked="thumbSize === option.value"
+          >
+            <input
+              slot="input"
+              :id="`${thumbSizeIdPrefix}-${option.value}`"
+              type="radio"
+              :name="thumbSizeIdPrefix"
+              :value="option.value"
+              :checked="thumbSize === option.value"
+            />
+            <label slot="label" :for="`${thumbSizeIdPrefix}-${option.value}`">
+              {{ option.label }}
+            </label>
+          </craft-radio>
+        </craft-radio-group>
+      </div>
+      <div v-if="showTableColumns">
         <CheckboxGroup
           :label="t('Table Columns')"
           name="viewState[tableColumns][]"
