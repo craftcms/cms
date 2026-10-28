@@ -203,13 +203,29 @@ export default css`
   /*
   Flush
    */
+  /*
+  A popover has no box of its own, so as its invoker, the button takes the
+  button group's overlap the popover would have had, on top of any flush
+  margin.
+  */
+  :host {
+    --_group-overlap: 0px;
+  }
+
+  :host([slot='invoker']) {
+    --_group-overlap: var(--c-button-group-overlap, 0px);
+    margin-inline-start: var(--_group-overlap);
+  }
+
   :host([variant~='plain'][flush='']),
   :host([variant~='danger-plain'][flush='']),
   :host([variant~='plain'][flush~='inline']),
   :host([variant~='danger-plain'][flush~='inline']),
   :host([variant~='plain'][flush~='inline-start']),
   :host([variant~='danger-plain'][flush~='inline-start']) {
-    margin-inline-start: calc(var(--_flush-inline) * -1);
+    margin-inline-start: calc(
+      var(--_flush-inline) * -1 + var(--_group-overlap)
+    );
   }
 
   :host([variant~='plain'][flush='']),
