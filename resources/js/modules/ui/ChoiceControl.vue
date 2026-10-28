@@ -127,13 +127,21 @@
     return value === true ? '1' : value === false ? '' : String(value);
   }
 
-  function selected(value: ChoiceValue): boolean {
+  const selectedValues = computed(() => {
     const values =
       props.control.props.multiple && Array.isArray(props.value)
         ? props.value
         : [props.value];
 
-    return (values ?? []).map(inputValue).includes(inputValue(value));
+    return new Set(values.map(inputValue));
+  });
+
+  const selectedOptions = computed(() =>
+    props.control.props.options.filter((option) => selected(option.value))
+  );
+
+  function selected(value: ChoiceValue): boolean {
+    return selectedValues.value.has(inputValue(value));
   }
 
   function onSelect(event: Event): void {
@@ -355,9 +363,7 @@
       value=""
     />
     <input
-      v-for="option in control.props.options.filter((option) =>
-        selected(option.value)
-      )"
+      v-for="option in selectedOptions"
       :key="inputValue(option.value)"
       type="hidden"
       :name="`${inputName(control.path)}[]`"

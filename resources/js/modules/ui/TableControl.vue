@@ -116,11 +116,22 @@
   const effectiveTouched = computed(
     () => props.touchedPaths ?? new Set<string>()
   );
+  const hiddenRows = computed(() => new Set(props.control.props.hiddenRows));
   const renderedRows = computed(() =>
-    rows.value.map((row, index) => ({
-      row,
-      fields: rowFields(rowUi(index)?.nodes ?? []),
-    }))
+    rows.value.map((row, index) => {
+      const fields = rowFields(rowUi(index)?.nodes ?? []);
+      const cells = new Map<string, UiNodePayload>();
+
+      for (const field of fields) {
+        const column = field.control?.path.at(-1);
+
+        if (column !== undefined && !cells.has(column)) {
+          cells.set(column, field);
+        }
+      }
+
+      return {row, cells, hidden: hiddenRows.value.has(rowKey(index))};
+    })
   );
 
   onMounted(() => {
@@ -170,13 +181,6 @@
       scope: props.uiScope,
       refreshable: Boolean(props.uiRefreshable),
     });
-  }
-
-  function fieldFor(
-    fields: UiNodePayload[],
-    column: string
-  ): UiNodePayload | undefined {
-    return fields.find((field) => field.control?.path.at(-1) === column);
   }
 
   function disabledCell(row: TableRow, key: string): boolean {
@@ -416,8 +420,7 @@
       const row = rows.value[index + offset]!;
       for (const [cellIndex, value] of cells.entries()) {
         const column = visibleColumns.value[start + cellIndex]?.[0];
-        const field = fieldFor(
-          renderedRows.value[index + offset]!.fields,
+        const field = renderedRows.value[index + offset]!.cells.get(
           column ?? ''
         );
         if (
@@ -499,17 +502,17 @@
         </thead>
         <tbody>
           <tr
-            v-for="({row, fields}, index) in renderedRows"
+            v-for="({row, cells, hidden}, index) in renderedRows"
             :key="row.id"
             :ref="
               (element) =>
                 setRowRef(element as HTMLTableRowElement | null, row.id)
             "
             :class="{
-              hidden: control.props.hiddenRows?.includes(rowKey(index)),
+              hidden,
               'row--dragging': getDragState(row.id).type === 'is-dragging',
             }"
-            :hidden="control.props.hiddenRows?.includes(rowKey(index))"
+            :hidden="hidden"
             :data-row-id="row.id"
           >
             <component
@@ -545,8 +548,8 @@
                 :value="row.value[rowIdField] ?? row.key"
               />
               <TableCell
-                v-if="fieldFor(fields, key)"
-                :node="fieldFor(fields, key)!"
+                v-if="cells.has(key)"
+                :node="cells.get(key)!"
                 :invalid="
                   Boolean(
                     !errorsCleared &&
