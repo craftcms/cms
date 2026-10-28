@@ -839,6 +839,7 @@ return [
     'Partner Profile' => 'Partner Profile',
     'Previous' => 'Previous',
     'Resaving {name} assets' => 'Resaving {name} assets',
+    'Resources' => 'Resources',
     'Sample missing image colors and metadata, and queue images for AI tasks.' => 'Sample missing image colors and metadata, and queue images for AI tasks.',
     'Save assets to all sites' => 'Save assets to all sites',
     'Screenshot {num} of {total}' => 'Screenshot {num} of {total}',

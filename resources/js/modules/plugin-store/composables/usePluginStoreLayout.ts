@@ -68,8 +68,8 @@ function canUpgradeCraft(context: PluginStoreContext): boolean {
 }
 
 /**
- * Puts the store's own navigation beside the page: Discover, the Craft upgrade
- * and every plugin category.
+ * Puts the store's own navigation beside the page: Discover, the Craft upgrade,
+ * every plugin category, and links out to craftcms.com and Craft Console.
  */
 export function usePluginStoreLayout(
   options: {title?: MaybeRefOrGetter<string | null | undefined>} = {}
@@ -110,6 +110,25 @@ export function usePluginStoreLayout(
             url: category.iconUrl,
           })
         ),
+      }),
+      navItem({
+        label: t('Resources'),
+        href: '#',
+        group: true,
+        subnav: [
+          navItem({
+            label: 'craftcms.com',
+            href: 'https://craftcms.com/',
+            external: true,
+            icon: 'earth-americas',
+          }),
+          navItem({
+            label: 'Craft Console',
+            href: 'https://console.craftcms.com/',
+            external: true,
+            icon: 'earth-americas',
+          }),
+        ],
       }),
     ];
   });
