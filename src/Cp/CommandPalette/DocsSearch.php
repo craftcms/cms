@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Plugins;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Client\Response;
@@ -45,7 +46,7 @@ readonly class DocsSearch
             'cms' => (int) Cms::VERSION,
             'commerce' => (int) Plugins::getPlugin('commerce')?->version,
         ]);
-        $cacheKey = 'commandPalette.docs.'.md5(mb_strtolower($query).json_encode($versions));
+        $cacheKey = 'commandPalette.docs.'.md5(mb_strtolower($query).Json::encode($versions));
 
         try {
             $results = Cache::get($cacheKey) ?? $this->fetch($query, $versions, $cacheKey);

@@ -288,10 +288,11 @@ describe('images staged on a remote filesystem', function () {
         $colors = ImageColors::fromArray(['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5']], 'palette' => ['#3a6ea5'], 'luminance' => [[[0.1, 0.2]]], 'weights' => [1.0]]);
         $metadata = new ImageMetadata(description: 'Boats at dusk');
 
-        $asset = ($this->ingestImage)(sanitize: false, analysis: new ImageAnalysis(colors: $colors, metadata: $metadata));
+        $asset = ($this->ingestImage)(sanitize: false, analysis: new ImageAnalysis(colors: $colors, hash: 'fcfbf8e7ecdad4a3', metadata: $metadata));
 
         $this->staged->shouldNotHaveReceived('localPath');
         expect($asset->analysis?->colors)->toEqual($colors)
+            ->and($asset->analysis?->hash)->toBe('fcfbf8e7ecdad4a3')
             ->and($asset->analysis?->metadata)->toEqual($metadata)
             ->and($asset->alt)->toBe('Boats at dusk')
             ->and($asset->getWidth())->toBe(1);

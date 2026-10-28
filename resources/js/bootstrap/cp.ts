@@ -1,4 +1,5 @@
 import {createInertiaApp, router} from '@inertiajs/vue3';
+import {handleControlPanelLinks} from '@/common/inertia-links';
 import type {DefineComponent} from 'vue';
 import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {http} from '@craftcms/ui/utilities/api/http';
@@ -8,6 +9,7 @@ import AppLayout from '@/common/layouts/AppLayout.vue';
 import {registerSlideoutGlobals} from '@/common/slideouts';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
+import {installSessionTimeout} from '@/modules/auth/session-timeout';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
 import {
@@ -107,6 +109,7 @@ const Cp = {
       config.get('iconBaseUrl', '/vendor/craft/icons'),
       config.get('earthIcon', 'earth-americas')
     );
+    installSessionTimeout();
 
     setUrlDefaults(() => ({
       cpTrigger: routeSegment(String(config.get('cpTrigger') ?? '')),
@@ -158,6 +161,7 @@ const Cp = {
     });
 
     handleNonInertiaRequests();
+    handleControlPanelLinks();
     handleAccessibleRouting();
     registerSlideoutGlobals();
     registerSubmitShortcut();

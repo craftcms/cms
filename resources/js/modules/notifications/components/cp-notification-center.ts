@@ -24,19 +24,16 @@ class CpNotificationCenter extends LitElement {
     }
 
     .notification-trigger {
+      --c-icon-size: 1em;
       position: relative;
-    }
-
-    .notification-trigger__icon {
-      font-size: 1.1em;
     }
 
     .notification-trigger__badge {
       --badge-border-width: 2px;
       display: inline-flex;
       position: absolute;
-      inset-block-start: -0.125rem;
-      inset-inline-end: -0.125rem;
+      inset-block-start: 0;
+      inset-inline-end: 0;
     }
 
     .notification-trigger__badge::part(badge) {
@@ -119,20 +116,23 @@ class CpNotificationCenter extends LitElement {
           class="notification-trigger"
           type="button"
           size="small"
-          variant="none"
+          variant="plain"
+          icon
           aria-label=${this.#triggerLabel}
         >
-          <craft-icon
-            class="notification-trigger__icon"
-            name="bell"
-          ></craft-icon>
-          ${this.#unread.length
-            ? html`
-                <craft-badge-indicator
-                  class="notification-trigger__badge"
-                ></craft-badge-indicator>
-              `
-            : nothing}
+          <span slot="prefix">
+            <craft-icon
+              class="notification-trigger__icon"
+              name="bell"
+            ></craft-icon>
+            ${this.#unread.length
+              ? html`
+                  <craft-badge-indicator
+                    class="notification-trigger__badge"
+                  ></craft-badge-indicator>
+                `
+              : nothing}
+          </span>
         </craft-button>
 
         <div slot="content">

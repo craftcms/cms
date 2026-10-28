@@ -13,7 +13,8 @@
 <template>
   <craft-button
     id="command-palette-button"
-    icon
+    class="command-palette-trigger"
+    icon="search"
     :variant="ButtonVariant.Plain"
     type="button"
     size="small"
@@ -21,7 +22,6 @@
     :aria-keyshortcuts="shortcut"
     @click="openCommandPalette"
   >
-    <craft-icon name="search"></craft-icon>
   </craft-button>
   <!-- Labels the icon-only button rather than describing it, so the
     name isn't announced twice. The keys are left out of the name;
@@ -33,3 +33,10 @@
     </div>
   </craft-tooltip>
 </template>
+
+<style scoped>
+  /* Matches the notification bell beside it. */
+  .command-palette-trigger {
+    --c-icon-size: 1em;
+  }
+</style>

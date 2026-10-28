@@ -146,7 +146,7 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
         }
         $value = Html::encode($value);
 
-        return "<a href=\"mailto:$value\">$value</a>";
+        return Html::tag('craft-link', "<a href=\"mailto:$value\">$value</a>");
     }
 
     #[Override]

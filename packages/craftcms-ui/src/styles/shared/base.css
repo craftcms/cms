@@ -165,6 +165,15 @@ kbd {
   max-block-size: 2lh;
   overflow: hidden;
   text-wrap: pretty;
+  /* Long unbroken strings (URLs) wrap into the clamp, rather than being
+     clipped mid-line with no ellipsis. */
+  overflow-wrap: anywhere;
+}
+
+/* A table column grows to fit its widest content, so an uncapped link would
+   widen its column to the full address. */
+:where(td) {
+  --c-link-max-width: 200px;
 }
 
 /* The status badges after a card's attributes */
