@@ -70,6 +70,9 @@ class Button extends ViewComponent
     /** @var array<string, mixed>|null */
     protected ?array $action = null;
 
+    /** @var string|array<string, mixed>|null */
+    protected string|array|null $shortcut = null;
+
     protected function tagName(): string
     {
         return 'craft-button';
@@ -259,6 +262,20 @@ class Button extends ViewComponent
         return $this;
     }
 
+    /**
+     * A keyboard shortcut shown at the end of the button, as a key or
+     * `{key, alt, shift}`. Display only: bind the key yourself and announce it
+     * with `aria-keyshortcuts`.
+     *
+     * @param  string|array<string, mixed>|null  $shortcut
+     */
+    public function shortcut(string|array|null $shortcut): static
+    {
+        $this->shortcut = $shortcut;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -296,6 +313,9 @@ class Button extends ViewComponent
             'action' => $this->action !== null
                 ? Json::encode($this->action, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
                 : null,
+            'shortcut' => is_array($this->shortcut)
+                ? Json::encode($this->shortcut, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                : $this->shortcut,
         ];
     }
 
