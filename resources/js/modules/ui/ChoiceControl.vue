@@ -104,11 +104,12 @@
 
   /**
    * The select's options in runs, one per `group` in the order they appear;
-   * an ungrouped run has no label and renders without an `<optgroup>`.
+   * an ungrouped run has no label and renders without an `<optgroup>`. A run
+   * is keyed by its label and first option rather than its position.
    */
   const selectGroups = computed(() =>
     selectOptions.value.reduce<
-      Array<{label: string | null; options: ChoiceOption[]}>
+      Array<{key: string; label: string | null; options: ChoiceOption[]}>
     >((groups, option) => {
       const label = option.group ?? null;
       const last = groups.at(-1);
@@ -116,7 +117,11 @@
       if (last && last.label === label) {
         last.options.push(option);
       } else {
-        groups.push({label, options: [option]});
+        groups.push({
+          key: JSON.stringify([label, inputValue(option.value)]),
+          label,
+          options: [option],
+        });
       }
 
       return groups;
@@ -392,8 +397,8 @@
     v-else-if="useCheckboxSelect"
     role="group"
     :name="editable ? inputName(control.path) : undefined"
-    :disabled="!editable"
-    :sortable="control.props.sortable === true"
+    .disabled="!editable"
+    .sortable="control.props.sortable === true"
     :presentation="
       control.props.presentation === 'add-menu' ? 'add-menu' : 'checkboxes'
     "
