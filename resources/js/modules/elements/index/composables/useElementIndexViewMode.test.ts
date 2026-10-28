@@ -33,7 +33,9 @@ describe('useElementIndexViewMode', () => {
     expect(viewState.value.mode).toBe('structure');
     expect(merge).toHaveBeenCalledWith(
       {viewMode: 'structure'},
-      expect.objectContaining({only: ['data', 'pagination', 'structure']})
+      expect.objectContaining({
+        only: ['data', 'pagination', 'structure', 'viewState'],
+      })
     );
   });
 
@@ -45,7 +47,7 @@ describe('useElementIndexViewMode', () => {
 
     expect(restore()).toEqual({
       params: {viewMode: 'structure'},
-      only: ['data', 'pagination', 'structure'],
+      only: ['data', 'pagination', 'structure', 'viewState'],
     });
   });
 
@@ -72,7 +74,7 @@ describe('useElementIndexViewMode', () => {
 
     expect(restore()).toEqual({
       params: {viewMode: 'table'},
-      only: ['data', 'pagination', 'structure'],
+      only: ['data', 'pagination', 'structure', 'viewState'],
     });
   });
 

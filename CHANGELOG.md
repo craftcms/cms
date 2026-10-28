@@ -195,6 +195,7 @@
 - Fixed a bug where medium chips’ thumbnails were smaller than small chips’. They’re now 32px, between small and large chips’. ([#20124](https://github.com/craftcms/cms/pull/20124))
 - Fixed a bug where portrait image thumbnails in medium and large chips were letterboxed in a square, so their rounded corners didn’t show. ([#20124](https://github.com/craftcms/cms/pull/20124))
 - Fixed a bug where the checkmark in enabled lightswitches was slightly off-center. ([#20107](https://github.com/craftcms/cms/pull/20107))
+- Fixed a bug where going back to an element index page, such as a volume’s root after opening a subfolder, could switch it from thumbs or cards view to table view with blank rows. ([#20137](https://github.com/craftcms/cms/issues/20137))
 
 ### Content Management
 
