@@ -196,12 +196,14 @@
 
   function recordChange(change: UiChange): void {
     if (change.control && pathsMatch(change.control.path, change.path)) {
-      visitControls(payload.value.nodes, (control) => {
+      const current = cloneRaw(payload.value);
+      visitControls(current.nodes, (control) => {
         if (pathsMatch(control.path, change.path)) {
           Object.assign(control, change.control);
         }
       });
-      rememberControls(payload.value.nodes);
+      payload.value = current;
+      rememberControls(current.nodes);
       emit('update:payload', payload.value);
     }
 
