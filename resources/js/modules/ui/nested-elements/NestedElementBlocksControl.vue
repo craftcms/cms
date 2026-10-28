@@ -10,6 +10,7 @@
   import '@craftcms/ui/components/spinner/spinner';
   import '@craftcms/ui/components/tooltip/tooltip';
   import {actionClient, t} from '@craftcms/ui';
+  import {useEventListener} from '@vueuse/core';
   import {
     createEntry,
     renderBlocks,
@@ -1559,16 +1560,10 @@
       );
   }
 
-  onMounted(() => {
-    window.addEventListener('craft:matrix-block-action', onBlockAction);
-    window.addEventListener('craft:matrix-toggle-all', onToggleAll);
-    window.addEventListener(MATRIX_SELECTION_ACTION, onSelectionAction);
-  });
+  useEventListener(window, 'craft:matrix-block-action', onBlockAction);
+  useEventListener(window, 'craft:matrix-toggle-all', onToggleAll);
+  useEventListener(window, MATRIX_SELECTION_ACTION, onSelectionAction);
   onBeforeUnmount(() => {
-    window.removeEventListener('craft:matrix-block-action', onBlockAction);
-    window.removeEventListener('craft:matrix-toggle-all', onToggleAll);
-    window.removeEventListener(MATRIX_SELECTION_ACTION, onSelectionAction);
-
     if (fieldActionItems) {
       fieldActionItems.value = undefined;
     }
