@@ -8,7 +8,9 @@ Craft exposes content and configuration through the Model Context Protocol. It u
 - **Public HTTP:** a configurable site route, `/mcp` by default. It is disabled until an administrator enables it and approves capabilities and content sources under **Settings → MCP**.
 - **Stdio:** `php craft mcp/serve --user=…`. The argument accepts a user ID, username, or email. That user must be active and have **Use Craft MCP** permission. The process acts as that user.
 
-HTTP requests use the stateless transport for protocol version `2026-07-28`. Send JSON-RPC messages with POST. Opening an HTTP endpoint in a browser shows its URL and setup instructions for common AI assistants; other GET requests receive a `405` response. Stdio uses the SDK's session-based transport. It omits capabilities marked `RequiresHttp`; restart the process after changing permissions, instruction configuration, or the content model externally.
+HTTP endpoints support both the `initialize` handshake used by protocol versions through `2025-11-25` and the per-request metadata used by `2026-07-28`. Send JSON-RPC messages with POST. Handshake clients must return the `Mcp-Session-Id` response header on subsequent requests and can end their session with DELETE. Opening an HTTP endpoint in a browser shows its URL and setup instructions for common AI assistants; other GET requests receive a `405` response. Stdio uses the SDK's session-based transport. It omits capabilities marked `RequiresHttp`; restart the process after changing permissions, instruction configuration, or the content model externally.
+
+HTTP handshake sessions use Craft's configured cache and expire after an hour without a write. Sessions are isolated between the public and authenticated endpoints, users, and token scopes. Multi-instance deployments must use a shared cache backend or route each session to the same instance. Clearing the cache requires handshake clients to initialize again. MCP sessions do not replace OAuth authentication or current permission checks.
 
 ## Authenticated HTTP setup
 
