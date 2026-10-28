@@ -1,4 +1,5 @@
 import {defineAsyncComponent} from 'vue';
+import {FileUpload, UploadError, registerTransport} from './upload-client';
 
 /**
  * The CP's element index and editor, its admin table, and the shared components
@@ -96,3 +97,30 @@ export type {
   Table,
   Updater,
 } from '@tanstack/vue-table';
+
+export {highlighter} from './common/utils/highlight-code';
+
+export {CraftAuthChallengeForm as AuthChallengeForm} from './modules/auth/components/auth-challenge-form';
+
+export {
+  AssetSelectorController,
+  ElementSelectorController,
+  registerElementSelectorController,
+} from '@craftcms/ui';
+
+export {
+  createElementSelectorModal,
+  type ElementSelectorModalHandle,
+  type ElementSelectorModalSettings,
+} from './modules/element-selector-modal/create-element-selector-modal';
+
+/** File uploads and the transport registry the control panel's uploader uses. */
+export const Uploads = {FileUpload, UploadError, registerTransport};
+
+export type {
+  PrepareUpload,
+  UploadOptions,
+  UploadState,
+  UploadTransport,
+  UploadTransportContext,
+} from './upload-client';

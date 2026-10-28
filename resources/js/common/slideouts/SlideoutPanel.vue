@@ -81,8 +81,8 @@
    * panels slide in from, so `Craft.slideoutPosition` flips it.
    */
   const positionProp = computed(() =>
-    Object.getOwnPropertyDescriptor(window.Craft, 'slideoutPosition')?.value ===
-    'start'
+    Object.getOwnPropertyDescriptor(window.Craft ?? {}, 'slideoutPosition')
+      ?.value === 'start'
       ? 'inset-inline-end'
       : 'inset-inline-start'
   );

@@ -5,6 +5,8 @@ import './element-editor';
 import './native-field-refresh';
 import '@/modules/auth-method-setup/compat';
 import '@/modules/element-select-input/compat';
+import '@/modules/element-selector-modal/compat';
 import '@/modules/grouped-entry-type-manager/compat';
+import '@/modules/highlight/compat';
 import '@/modules/image-editor/compat';
 import '@/modules/sortable-checkbox-select/compat';
