@@ -4,6 +4,7 @@
     nextTick,
     onErrorCaptured,
     onBeforeUnmount,
+    onMounted,
     provide,
     reactive,
     ref,
@@ -35,6 +36,11 @@
   } from './runtime';
   import {useUiValueGroup} from './uiValueGroup';
   import type {SidebarTabOutlets} from './sidebarTabs';
+  import {
+    registerUiValueSource,
+    type UiValueChangeDetail,
+    type UiValueSource,
+  } from './ui-values';
   import type {
     UiChange,
     UiChangeKind,
@@ -82,6 +88,8 @@
   });
 
   const root = ref<HTMLElement>();
+  let uiValueSource: UiValueSource | undefined;
+  let unregisterUiValueSource: (() => void) | undefined;
   const renderError = ref<string>();
   const hostForm = computed(() => root.value?.closest('form'));
   const values = reactive(cloneRaw(props.payload.values));
@@ -98,6 +106,7 @@
     ],
   ]);
   const knownControls = new Map<string, UiControlPayload>();
+  const observedValues = new Map<string, string>();
   const touchedPaths = new Set<string>();
   /**
    * Dotted paths changed since the last explicit save or reset. Nested fields
@@ -121,6 +130,7 @@
     )
   );
   rememberControls(props.payload.nodes);
+  rememberObservedValues(props.payload.nodes);
   provide(UiFailure, invalidate);
   provide(UiControlStructure, synchronizeStructure);
   provide(UiControlBehaviors, registerControlBehavior);
@@ -184,14 +194,59 @@
     () => props.disabled,
     () => emitMutation()
   );
+  onMounted(() => {
+    uiValueSource = {
+      root: root.value!,
+      getValue: (path) => cloneRaw(valueAt(currentValues(), [...path])),
+    };
+    unregisterUiValueSource = registerUiValueSource(uiValueSource);
+  });
   onBeforeUnmount(() => {
     refreshTimers.forEach(clearTimeout);
     unregisterValueSource?.();
+    unregisterUiValueSource?.();
   });
 
   function onControlChange(change: UiChange): void {
     recordChange(change);
+    publishValueChange(change);
     emit('change', change, currentValues());
+  }
+
+  function publishValueChange(change: UiChange): void {
+    const key = JSON.stringify(change.path);
+    const value = valueAt(values, change.path);
+    const next = canonical(value);
+
+    if (observedValues.get(key) === next) {
+      return;
+    }
+
+    observedValues.set(key, next);
+
+    const scope = change.scope ?? payload.value.scope;
+
+    if (
+      props.disabled ||
+      knownControls.get(key)?.mode !== 'editable' ||
+      !uiValueSource
+    ) {
+      return;
+    }
+
+    uiValueSource.root.dispatchEvent(
+      new CustomEvent<UiValueChangeDetail>('craft:ui-value-change', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          ui: uiValueSource,
+          path: [...change.path],
+          scope: [...scope],
+          value: cloneRaw(value),
+          kind: change.kind,
+        },
+      })
+    );
   }
 
   function recordChange(change: UiChange): void {
@@ -348,6 +403,7 @@
     }
     emit('update:payload', payload.value);
     emitMutation();
+    resetObservedValues(payload.value.nodes);
 
     if (focusedPath) {
       nextTick(() => {
@@ -412,6 +468,7 @@
     baseline = cloneRaw(source.values);
     payload.value = source;
     rememberControls(source.nodes);
+    resetObservedValues(source.nodes);
     emit('update:payload', payload.value);
     emitMutation();
   }
@@ -527,7 +584,9 @@
     kind: UiChange['kind'] = 'discrete'
   ): void {
     setPathValue(values, path, value);
-    recordChange({kind, path});
+    const change = {kind, path};
+    recordChange(change);
+    publishValueChange(change);
   }
 
   /**
@@ -557,6 +616,10 @@
         path: refreshing.path,
         refreshable: true,
       });
+    }
+
+    for (const change of changes) {
+      publishValueChange({kind: 'discrete', path: change.path});
     }
   }
 
@@ -603,6 +666,7 @@
         isWithin(known.path, control.path)
       ) {
         knownControls.delete(key);
+        observedValues.delete(key);
       }
     }
     const current = cloneRaw(payload.value);
@@ -611,6 +675,7 @@
     });
     payload.value = current;
     rememberControls(current.nodes);
+    rememberObservedValues(current.nodes);
   }
 
   function groupCanonical(value: UiValue, path: string[]): string {
@@ -632,6 +697,21 @@
     visitControls(nodes, (control) =>
       knownControls.set(JSON.stringify(control.path), control)
     );
+  }
+
+  function rememberObservedValues(nodes: UiNodePayload[]): void {
+    visitControls(nodes, (control) => {
+      const key = JSON.stringify(control.path);
+
+      if (!observedValues.has(key)) {
+        observedValues.set(key, canonical(valueAt(values, control.path)));
+      }
+    });
+  }
+
+  function resetObservedValues(nodes: UiNodePayload[]): void {
+    observedValues.clear();
+    rememberObservedValues(nodes);
   }
 
   function findNestedUi(
