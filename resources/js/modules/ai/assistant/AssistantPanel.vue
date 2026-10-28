@@ -111,9 +111,9 @@
         @new="newChat"
       />
       <AssistantConversationMenu
-        v-if="history?.stored"
         :thread-id="threadId"
-        :title="history.title"
+        :title="history?.title ?? ''"
+        :stored="!!history?.stored"
         @renamed="history?.refresh()"
         @deleted="onDeleted"
       />

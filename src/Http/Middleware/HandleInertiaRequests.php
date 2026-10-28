@@ -24,7 +24,11 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\User\EditUserScreens;
+use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\AiGuidance;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
@@ -222,6 +226,12 @@ class HandleInertiaRequests extends Middleware
                         ?? $generalConfig->accessibilityDefaults['underlineLinks']
                         ?? false),
                     'aiAssistant' => Assistant::isAvailable(),
+                    // Where the AI assistant’s guidance and skills are edited, for its chat to link to.
+                    'personalGuidanceUrl' => Assistant::isAvailable() ? Url::cpUrl('myaccount/'.EditUserScreens::AI_ASSISTANT) : null,
+                    ...app(Utilities::class)->checkAuthorization(AiGuidance::class) ? [
+                        'aiGuidanceUrl' => Url::cpUrl('utilities/'.AiGuidance::id()),
+                        'aiSkillsUrl' => AiGuidance::skillsUrl(),
+                    ] : ['aiGuidanceUrl' => null, 'aiSkillsUrl' => null],
                 ] : null,
                 // Outside `currentUser`, so logged-out pages (login, the
                 // updater) follow the system theme too.

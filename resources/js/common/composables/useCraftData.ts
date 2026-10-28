@@ -14,6 +14,12 @@ export interface CpUser {
   underlineLinks: boolean;
   /** Whether the user can use the AI assistant, and it can run. */
   aiAssistant: boolean;
+  /** The account screen for the user’s own AI guidance, while they can use the assistant. */
+  personalGuidanceUrl: string | null;
+  /** The AI Guidance & Skills utility’s Guidance page, if the user can use it. */
+  aiGuidanceUrl: string | null;
+  /** The same utility’s Skills page, if the user can use it. */
+  aiSkillsUrl: string | null;
 }
 
 export interface CraftData {
