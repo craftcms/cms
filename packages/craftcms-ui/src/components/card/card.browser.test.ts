@@ -6,6 +6,7 @@ import '../chip/chip.js';
 import '../button/button.js';
 import '../checkbox/checkbox.js';
 import '../badge/badge.js';
+import '../truncate/truncate.js';
 import {contrast} from '../../../test/contrast';
 import type CraftCard from './card.js';
 import type {Luminance} from './cover.js';
@@ -707,6 +708,26 @@ it('themes a cover card’s header and body, and leaves its thumbnail alone', as
   await card.updateComplete;
 
   expect([theme('[slot="header"]'), theme('a')]).toEqual([null, null]);
+});
+
+it('keeps a cover card within its width when its content has a long title', async () => {
+  const card = await coverCard();
+  // In a card grid's column, as element indexes lay cards out, with a title
+  // that's cut off with an ellipsis rather than wrapped, as element cards' are.
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display: grid; grid-template-columns: 279px';
+  card.style.removeProperty('inline-size');
+  card.before(grid);
+  grid.append(card);
+  card.querySelector('a')!.outerHTML =
+    `<craft-truncate><a href="#" style="white-space: nowrap">${'The Course of Empire: '.repeat(6)}</a></craft-truncate>`;
+  await customElements.whenDefined('craft-truncate');
+  await card.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  expect(
+    card.shadowRoot!.querySelector('.card')!.getBoundingClientRect().width
+  ).toBeCloseTo(279, 0);
 });
 
 it('gives a cover card’s label and backed controls 4.5:1 over the image', async () => {

@@ -70,7 +70,7 @@ When the header has a label, from the `label` attribute or slot, or a `[data-car
 <Canvas of={CardStories.Cover} sourceState="shown" />
 
 Without a label, the header's controls sit on the image.
-Where the image would let them fade into it, the checkbox and plain buttons get a backing:
+Where the image would let them fade into it, the checkbox and plain buttons get a backing, blurred like a label bar:
 
 <Canvas of={CardStories.CoverBackedControls} />
 
@@ -78,7 +78,7 @@ Where the image is already dark or light enough, they're left bare:
 
 <Canvas of={CardStories.CoverBareControls} />
 
-The body's scrim fades in above the content, in black or white, whichever the bottom of the image needs:
+The body's scrim fades in above the content, in black or white, whichever the bottom of the image needs, and the image blurs in under it, crisp at the top of the fade and fully blurred behind the text, so busy detail doesn't show through:
 
 <Canvas of={CardStories.CoverScrim} />
 

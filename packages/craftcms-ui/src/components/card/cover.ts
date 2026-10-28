@@ -63,19 +63,21 @@ interface Target {
 
 /**
  * Text needs 4.5:1. The bar's blur evens out bright and dark spots behind it,
- * so 4.5:1 against the P10/P90 holds; the content's scrim isn't blurred, so it
- * aims for 7:1, and is never fainter than 55%, as a thin bright line (a road,
- * a sunlit edge) can be missing from the luminance entirely.
+ * so 4.5:1 against the P10/P90 holds. The image is blurred behind the
+ * content too, more lightly, so its scrim aims a little higher, for 5:1, and
+ * is never fainter than 40%, as a thin bright line (a road, a sunlit edge) can
+ * be missing from the luminance entirely.
  */
 const BAR: Target = {contrast: 4.5, min: 0.15, unknown: 0.75};
-const SCRIM: Target = {contrast: 7, min: 0.55, unknown: 0.8};
+const SCRIM: Target = {contrast: 5, min: 0.4, unknown: 0.8};
 
 /**
  * Controls need 3:1 against what's next to them. Their backing aims for 4.5:1
- * against the P10/P90 for the same reason, and they're only left bare when
- * the image itself reaches 4.5:1.
+ * against the P10/P90 for the same reason, is blurred like the bar, and is
+ * never fainter than 65%, so a busy image doesn't show through it. They're
+ * only left bare when the image itself reaches 4.5:1.
  */
-const BACKING: Target = {contrast: 4.5, min: 0.5, unknown: 0.6};
+const BACKING: Target = {contrast: 4.5, min: 0.65, unknown: 0.7};
 
 const toLinear = (channel: number) =>
   channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;

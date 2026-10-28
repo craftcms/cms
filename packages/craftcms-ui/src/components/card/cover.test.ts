@@ -65,7 +65,7 @@ describe('coverAppearance', () => {
       ).toBeGreaterThanOrEqual(4.5);
       expect(
         inkContrast(body.theme, body.opacity, worst(body.theme))
-      ).toBeGreaterThanOrEqual(7);
+      ).toBeGreaterThanOrEqual(5);
     }
   );
 
@@ -103,6 +103,15 @@ describe('coverAppearance', () => {
     expect(body.theme).toBe('dark');
   });
 
+  it('keeps the backing at least 65%, and the scrim 40%, so a busy image doesn’t show through', () => {
+    // A region that runs from dark to light, like a pattern: its P10 alone
+    // needs only about 30% white behind black ink, and 36% for the content.
+    expect(coverAppearance([[[0.1, 0.8]]], false)).toEqual({
+      header: {theme: 'light', treatment: 'backed', opacity: 0.65},
+      body: {theme: 'light', opacity: 0.4},
+    });
+  });
+
   it.each([
     ['unknown', null],
     ['not sampled for luminance', []],
@@ -111,7 +120,7 @@ describe('coverAppearance', () => {
     'lays heavy black under white when the luminance is %s',
     (_, luminance) => {
       expect(coverAppearance(luminance, false)).toEqual({
-        header: {theme: 'dark', treatment: 'backed', opacity: 0.6},
+        header: {theme: 'dark', treatment: 'backed', opacity: 0.7},
         body: {theme: 'dark', opacity: 0.8},
       });
       expect(coverAppearance(luminance, true).header).toEqual({

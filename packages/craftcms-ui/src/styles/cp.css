@@ -188,6 +188,15 @@ craft-card > [data-cover]:not([data-cover='body']) {
   }
 }
 
+/* Blurred like a label bar, which a backed header doesn't have, so a busy
+   image doesn't show through the backing. */
+craft-card > [data-cover='backed'] {
+  :is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'],
+  craft-button[variant~='plain'] {
+    backdrop-filter: blur(var(--blur-md, 12px));
+  }
+}
+
 craft-card > [data-cover='backed'] craft-button[variant~='plain'] {
   background-color: var(--_cover-backing);
 

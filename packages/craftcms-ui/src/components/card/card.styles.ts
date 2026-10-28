@@ -317,6 +317,9 @@ export default css`
     flex-direction: column;
     justify-content: space-between;
     aspect-ratio: 4 / 3;
+    /* An aspect ratio gives the card a minimum width from its content, so a
+       long title would otherwise widen it past its column. */
+    min-inline-size: 0;
     color: var(--_body-ink);
     background-color: var(--c-color-neutral-fill-quiet);
     border: 0;
@@ -372,6 +375,9 @@ export default css`
     --_cover-ink: var(--_body-ink);
     --_cover-solid: var(--_body-solid);
     --_fade: 4.5rem;
+    /* Positioned, without a z-index, so its blur layer sits between the image
+       and its scrim, in the card's stacking context. */
+    position: relative;
     display: block;
     color: var(--_body-ink);
     padding-block-start: calc(var(--_body-padding-block) + var(--_fade));
@@ -387,6 +393,26 @@ export default css`
         calc(100% - var(--_fade) * 0.2),
       transparent
     );
+  }
+
+  /*
+  The image blurs in very slightly under the scrim, from halfway down its fade, so
+  it's crisp until just above the content, and busy detail doesn't show
+  through behind it. A blurred copy faded in with a mask, rather than a blur
+  that grows, but it reads the same.
+  */
+  :host .card--cover .card-body.card-body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    backdrop-filter: blur(1px);
+    mask-image: linear-gradient(
+      to top,
+      #000 calc(100% - var(--_fade)),
+      transparent calc(100% - var(--_fade) * 0.5)
+    );
+    pointer-events: none;
   }
 
   :host .card.card--cover .card__footer.card__footer {
@@ -411,6 +437,10 @@ export default css`
     :host .card--cover .card-body.card-body,
     :host .card.card--cover .card__footer.card__footer {
       background: Canvas;
+    }
+
+    :host .card--cover .card-body.card-body::before {
+      display: none;
     }
   }
 `;
