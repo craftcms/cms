@@ -92,7 +92,7 @@
           :data="data"
           :screen="screen"
         />
-        <craft-button type="button" :disabled="sending" @click="cancel">{{
+        <craft-button type="button" .disabled="sending" @click="cancel">{{
           t('Cancel')
         }}</craft-button>
       </div>

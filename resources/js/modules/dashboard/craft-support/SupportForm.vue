@@ -138,8 +138,8 @@
       <craft-button
         type="submit"
         variant="primary"
-        :loading="sending"
-        :disabled="sending || !message"
+        .loading="sending"
+        .disabled="sending || !message"
         >{{ t('Send') }}</craft-button
       >
     </form>

@@ -51,7 +51,7 @@
     @submit="submit"
   >
     <craft-field-group>
-      <craft-field :label="t('Page Name')" required :has-errors="!!error">
+      <craft-field :label="t('Page Name')" required .hasErrors="!!error">
         <craft-input slot="input">
           <input slot="input" v-model="name" type="text" required />
         </craft-input>

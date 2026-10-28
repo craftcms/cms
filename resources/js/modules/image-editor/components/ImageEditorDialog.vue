@@ -488,7 +488,7 @@
                     icon="crosshairs"
                     align="start"
                     toggle
-                    :active="focalPointActive"
+                    .active="focalPointActive"
                     data-fabric-element="focalpoint"
                     @click="
                       editor.onEditButtonClick(
@@ -728,7 +728,7 @@
           icon="arrow-turn-left"
           :aria-label="undoLabel"
           :title="undoLabel"
-          :disabled="!editor.canUndo.value || undefined"
+          .disabled="!editor.canUndo.value"
           @click="editor.undo"
         ></craft-button>
         <craft-button
@@ -736,13 +736,13 @@
           icon="arrow-turn-right"
           :aria-label="redoLabel"
           :title="redoLabel"
-          :disabled="!editor.canRedo.value || undefined"
+          .disabled="!editor.canRedo.value"
           @click="editor.redo"
         ></craft-button>
         <craft-button
           type="button"
           icon="arrow-rotate-left"
-          :disabled="!editor.isDirty.value || undefined"
+          .disabled="!editor.isDirty.value"
           @click="onReset"
         >
           {{ t('Reset to original') }}
@@ -751,8 +751,8 @@
       <div class="flex gap-2 items-center">
         <craft-button
           type="button"
-          :loading="editor.savingAs.value === 'copy'"
-          :disabled="editor.isSaving.value"
+          .loading="editor.savingAs.value === 'copy'"
+          .disabled="editor.isSaving.value"
           @click="onSave('copy')"
         >
           {{ t('Save as a new asset') }}
@@ -760,8 +760,8 @@
         <craft-button
           type="button"
           variant="primary"
-          :loading="editor.savingAs.value === 'replace'"
-          :disabled="editor.isSaving.value"
+          .loading="editor.savingAs.value === 'replace'"
+          .disabled="editor.isSaving.value"
           @click="onSave('replace')"
         >
           {{ t('Save') }}

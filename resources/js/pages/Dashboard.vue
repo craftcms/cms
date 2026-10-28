@@ -64,7 +64,7 @@
               slot="invoker"
               type="button"
               icon="plus"
-              :disabled="busy"
+              .disabled="busy"
               >{{ t('New widget') }}</craft-button
             ></template
           ></ActionMenu
@@ -85,7 +85,7 @@
       <craft-button
         slot="action"
         type="button"
-        :disabled="busy"
+        .disabled="busy"
         @click="undo"
         >{{ t('Undo') }}</craft-button
       >

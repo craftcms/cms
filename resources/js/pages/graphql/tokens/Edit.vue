@@ -147,7 +147,7 @@
             type="button"
             size="small"
             variant="plain"
-            :disabled="loadingToken"
+            .disabled="loadingToken"
             @click="copyHeader"
           >
             <craft-icon name="copy" slot="prefix"></craft-icon>
@@ -159,15 +159,15 @@
             slot="suffix"
             ref="copyButton"
             :value="authorizationHeader"
-            :disabled="loadingToken"
+            .disabled="loadingToken"
           />
         </CraftInput>
 
         <craft-button
           type="button"
           variant="neutral"
-          :loading="loadingToken"
-          :disabled="readOnly || loadingToken"
+          .loading="loadingToken"
+          .disabled="readOnly || loadingToken"
           @click="regenerateToken"
         >
           {{ t('Regenerate') }}

@@ -1704,8 +1704,8 @@
           variant="outline"
           icon="custom-icons/duplicate"
           class="paste-btn mt-sm"
-          :loading="pasting"
-          :disabled="busy"
+          .loading="pasting"
+          .disabled="busy"
           @click.stop.prevent="pasteBlocks()"
         >
           {{

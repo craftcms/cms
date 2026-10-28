@@ -304,13 +304,13 @@
 <template>
   <craft-select
     v-if="control.props.presentation === 'select'"
-    :label-sr-only="fieldLabelSrOnly || undefined"
+    .labelSrOnly="fieldLabelSrOnly"
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
         : ''
     "
-    :disabled="!editable"
+    .disabled="!editable"
     :required="editable && required"
     .validators="serverErrorValidators(invalid)"
   >
@@ -327,7 +327,7 @@
       :aria-invalid="invalid ? 'true' : undefined"
       @change="onSelect"
     >
-      <template v-for="(group, index) in selectGroups" :key="index">
+      <template v-for="group in selectGroups" :key="group.key">
         <optgroup v-if="group.label !== null" :label="group.label">
           <option
             v-for="option in group.options"
@@ -381,8 +381,8 @@
       :key="inputValue(option.value)"
       type="button"
       :value="inputValue(option.value)"
-      :active="selected(option.value)"
-      :disabled="!editable || option.disabled"
+      .active="selected(option.value)"
+      .disabled="!editable || option.disabled"
       :icon.attr="option.icon"
       :aria-label="option.icon || option.labelHtml ? option.label : undefined"
       @click="onButtonClicked(option.value)"
@@ -422,7 +422,7 @@
         : ''
     "
     :required="editable && required"
-    :disabled="!editable"
+    .disabled="!editable"
     :aria-invalid="invalid ? 'true' : undefined"
     :aria-required="required ? 'true' : undefined"
     .validators="serverErrorValidators(invalid)"
@@ -461,7 +461,7 @@
             ? option.label
             : undefined
         "
-        :disabled="!editable || option.disabled"
+        .disabled="!editable || option.disabled"
         .choiceValue="inputValue(option.value)"
         .checked="selected(option.value)"
       >

@@ -256,7 +256,7 @@
 
       <craft-action-item
         class="cs-item__select"
-        :current="row.id === selected"
+        .current="row.id === selected"
         @click="select(row.item, row.id)"
       >
         <craft-icon v-if="row.icon" :name="row.icon" slot="icon" />

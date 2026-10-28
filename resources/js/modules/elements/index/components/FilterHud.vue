@@ -160,7 +160,7 @@
           <craft-button
             slot="primary-action"
             type="submit"
-            :disabled="!valid"
+            .disabled="!valid"
             :variant="ButtonVariant.Primary"
             >{{ t('Apply') }}</craft-button
           >

@@ -320,7 +320,7 @@
           <craft-button
             type="button"
             size="small"
-            :loading="statusProcessing"
+            .loading="statusProcessing"
             v-bind="attributes"
           >
             {{ t('Set status') }}

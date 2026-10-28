@@ -301,7 +301,7 @@
                 class="justify-self-end"
                 type="submit"
                 variant="accent"
-                :loading="formData.processing"
+                .loading="formData.processing"
               >
                 {{ current.submitLabel ?? t('Next') }}
                 <craft-icon name="arrow-right" slot="suffix"></craft-icon>

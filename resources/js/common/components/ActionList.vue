@@ -55,7 +55,8 @@
      * an unset `variant` would land as `variant=""` instead of `neutral`.
      *
      * `.`-prefixed keys are set as DOM properties, which `action`, `feedback`
-     * and `shortcut` need since they're objects rather than strings.
+     * and `shortcut` need since they're objects rather than strings, and
+     * `checked` and `disabled` since Lit reads a `"false"` attribute as on.
      */
     attrs: Record<string, unknown>;
   }
@@ -157,7 +158,7 @@
       // `craft-action-item` draws the checkmark gutter for its `checkbox`
       // type only; the others have no such notion.
       type: marks ? 'checkbox' : undefined,
-      checked: marks ? Boolean(action.selected) : undefined,
+      '.checked': marks ? Boolean(action.selected) : undefined,
       variant: action.variant,
       'icon-color': action.iconColor,
       '.action': action.action,
@@ -196,7 +197,7 @@
         onClick: action.onClick,
         attrs: defined({
           ...attrs,
-          disabled: action.disabled,
+          '.disabled': action.disabled,
           size: isItem ? undefined : size,
         }),
       },

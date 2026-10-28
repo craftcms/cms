@@ -130,7 +130,7 @@
               :name="`packageNames[${handle}]`"
               :value="packageName"
             />
-            <craft-button type="submit" variant="accent" :loading="processing">
+            <craft-button type="submit" variant="accent" .loading="processing">
               {{ ctaButtonText }}
             </craft-button>
           </Form>

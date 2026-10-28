@@ -253,7 +253,7 @@
           full-width
           show-thumb
           :thumb-size="thumbSize"
-          :selectable="selectable"
+          .selectable="selectable"
           :select-label="t('Select {label}', {label: element.label})"
           .selected="selection.isSelected(element.id)"
           .selectDisabled="

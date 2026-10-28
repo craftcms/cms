@@ -384,10 +384,10 @@
     "
     :instructions-position="resolvedNode.props.instructionsPosition"
     :instructions-sr-only="resolvedNode.props.instructionsSrOnly || undefined"
-    :required="Boolean(resolvedNode.props.required)"
-    :readonly="control.mode === 'readOnly'"
-    :disabled="control.mode === 'disabled'"
-    :has-errors="controlErrors.length > 0"
+    .required="Boolean(resolvedNode.props.required)"
+    .readOnly="control.mode === 'readOnly'"
+    .disabled="control.mode === 'disabled'"
+    .hasErrors="controlErrors.length > 0"
     :status="
       showStatus
         ? modified

@@ -44,7 +44,7 @@
   >
     <!-- Loading state -->
     <div v-if="isLoading" class="diff-loading">
-      <craft-spinner :visible="true" class="spinner"></craft-spinner>
+      <craft-spinner .visible="true" class="spinner"></craft-spinner>
     </div>
 
     <!-- Diff content -->

@@ -141,7 +141,7 @@
               v-for="group in selectableGroups"
               :key="group.id"
               type="checkbox"
-              :checked="isSelected(group.id)"
+              .checked="isSelected(group.id)"
               @click="selectGroup(group)"
             >
               <div class="user-group-option">
