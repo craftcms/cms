@@ -83,6 +83,7 @@
 - Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
 - Saving nested elements on multi-site installs now executes fewer database queries. ([#20090](https://github.com/craftcms/cms/pull/20090))
 - Search indexing now executes fewer database queries. ([#20090](https://github.com/craftcms/cms/pull/20090))
+- User permission checks are now faster for users with many permissions. ([#20149](https://github.com/craftcms/cms/pull/20149))
 - Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
 - Updated Axios to 1.20.0. 
 - Updated Twig to 3.30.
