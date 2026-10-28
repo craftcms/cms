@@ -1,5 +1,12 @@
 import {defineAsyncComponent} from 'vue';
 import {FileUpload, UploadError, registerTransport} from './upload-client';
+import {
+  closeCommandPalette,
+  openCommandPalette,
+  registerActions,
+  registerProvider,
+  registerView,
+} from './modules/command-palette/registry';
 
 /**
  * The CP's element index and editor, its admin table, and the shared components
@@ -124,3 +131,19 @@ export type {
   UploadTransport,
   UploadTransportContext,
 } from './upload-client';
+
+/**
+ * Opens or closes the command palette, and adds client-side search providers,
+ * page actions and views to it. Server-side providers, pages and actions are
+ * registered in PHP.
+ */
+export const CommandPalette = {
+  open: openCommandPalette,
+  close: closeCommandPalette,
+  registerProvider,
+  registerActions,
+  registerView,
+};
+
+export type * from './modules/command-palette/types';
+export type {CommandPaletteRegistration} from './modules/command-palette/registry';
