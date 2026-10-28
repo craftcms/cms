@@ -1,7 +1,12 @@
 /** global: Craft */
 /** global: Garnish */
 /**
- * Live Preview
+ * Backwards-compatibility implementation of the legacy `Craft.LivePreview`
+ * class, superseded by `Craft.Preview`. Core never instantiates it, but plugins
+ * still boot it with `Craft.LivePreview.init()` from their edit pages, so it
+ * must be defined before their inline JS runs.
+ *
+ * Loaded CP-wide via CraftCms\Yii2Adapter\View\LegacyAssets\CpCompatAsset.
  */
 Craft.LivePreview = Garnish.Base.extend(
   {

@@ -315,8 +315,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     );
     this._cancelTransitionListeners();
 
-    const activePreview =
-      Craft.Preview.getActive() || Craft.LivePreview.getActive();
+    const activePreview = Craft.Preview.getActive();
     this._inPreview = !!activePreview;
     this.useMobileStyles = activePreview || Craft.useMobileStyles();
 
