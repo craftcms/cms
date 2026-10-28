@@ -114,7 +114,7 @@
     @close="renaming = false"
     @submit="rename"
   >
-    <craft-field :label="t('Name')" required :has-errors="!!error">
+    <craft-field :label="t('Name')" required .hasErrors="!!error">
       <craft-input slot="input">
         <input slot="input" v-model="name" type="text" required />
       </craft-input>

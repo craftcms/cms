@@ -452,7 +452,7 @@
     :required="Boolean(resolvedNode.props.required)"
     :readonly="control.mode === 'readOnly'"
     :disabled="control.mode === 'disabled'"
-    :has-errors="controlErrors.length > 0"
+    .hasErrors="controlErrors.length > 0"
     :status="
       showStatus
         ? modified

@@ -114,7 +114,7 @@
       <craft-field
         :label="t('Subject')"
         :help-text="t('Evaluated as a Twig template.')"
-        :has-errors="Boolean(form.errors.subject)"
+        .hasErrors="Boolean(form.errors.subject)"
         width="full"
         required
       >
@@ -146,7 +146,7 @@
       <craft-field
         :label="t('Body')"
         :help-text="t('Evaluated as a twig template, then parsed as markdown.')"
-        :has-errors="Boolean(form.errors.body)"
+        .hasErrors="Boolean(form.errors.body)"
         required
       >
         <craft-markdown-field
