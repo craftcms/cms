@@ -11,8 +11,8 @@ use craft\web\Controller;
 use craft\web\View;
 use GuzzleHttp\Psr7\ServerRequest;
 use League\OAuth2\Server\Exception\OAuthServerException;
-use Mcp\Server\Stateless\StatelessProtocol;
-use Mcp\Server\Transport\StatelessHttpTransport;
+use Mcp\Server;
+use Mcp\Server\Transport\StreamableHttpTransport;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -121,17 +121,25 @@ class McpController extends Controller
         ], View::TEMPLATE_MODE_CP);
     }
 
-    private function handle(StatelessProtocol $protocol): Response
+    private function handle(Server $server): Response
     {
-        if (!$this->request->getIsPost() && !$this->request->getIsOptions()) {
-            throw new MethodNotAllowedHttpException('MCP accepts POST and OPTIONS requests.');
+        if (!$this->request->getIsPost() && !$this->request->getIsOptions() && !$this->request->getIsDelete()) {
+            throw new MethodNotAllowedHttpException('MCP accepts POST, DELETE, and OPTIONS requests.');
         }
 
         $request = ServerRequest::fromGlobals();
-        $response = (new StatelessHttpTransport(
-            protocol: $protocol,
+
+        // Validate the host Craft resolved (which respects trusted proxies’ X-Forwarded-Host) rather than the raw
+        // Host header, which reverse proxies like Craft Cloud’s gateway may rewrite.
+        $hostName = $this->request->getHostName();
+        if ($hostName !== null) {
+            $request = $request->withHeader('Host', $hostName);
+        }
+
+        $response = $server->run(new StreamableHttpTransport(
+            request: $request,
             middleware: Craft::$app->get('mcp')->getCapabilityContainer()->get(HttpTransportMiddleware::class)->forRequest($request),
-        ))->handle($request);
+        ));
 
         $this->response->format = Response::FORMAT_RAW;
         $this->response->setStatusCode($response->getStatusCode());

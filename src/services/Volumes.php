@@ -350,8 +350,18 @@ class Volumes extends Component
             $volumeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $volumeRecord->altTranslationMethod = $data['altTranslationMethod'] ?? Field::TRANSLATION_METHOD_NONE;
             $volumeRecord->altTranslationKeyFormat = $data['altTranslationKeyFormat'] ?? null;
-            // (volumes saved before the setting existed should keep propagating to all sites)
-            $volumeRecord->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
+            if (isset($data['propagationMethod'])) {
+                $volumeRecord->propagationMethod = $data['propagationMethod'];
+            } elseif ($isNewVolume) {
+                // The config was saved before the setting existed, so follow m261022_000000_volume_propagation_method:
+                // keep saving assets to all sites on multi-site installs
+                $isMultiSite = (new Query())
+                    ->from(Table::SITES)
+                    ->where(['dateDeleted' => null])
+                    ->count() > 1;
+                $volumeRecord->propagationMethod = ($isMultiSite ? PropagationMethod::All : PropagationMethod::Custom)->value;
+            }
+            // Otherwise keep the existing volume's value, which m261022_000000_volume_propagation_method set
             $volumeRecord->uid = $volumeUid;
 
             // If assets are now saved to all sites, existing assets will need to be propagated to any sites they're missing from
