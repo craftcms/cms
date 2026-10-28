@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+export CI=true COMPOSER_NO_INTERACTION=1 COMPOSER_ROOT_VERSION=5.x-dev
+TIMEFORMAT='Finished in %3R seconds'
+
+step() {
+    printf '\n==> %s\n' "$1"
+    shift
+    time "$@"
+}
+
+scratch=$(mktemp -d)
+trap 'rm -rf -- "$scratch"' EXIT
+
+# Debian's default PHP is too old. Use the upstream Sury Debian packages.
+if [[ ! -f /usr/share/keyrings/debsuryorg-archive-keyring.gpg ]]; then
+    curl -fsSL https://packages.sury.org/debsuryorg-archive-keyring.deb -o "$scratch/sury.deb"
+    sudo dpkg -i "$scratch/sury.deb"
+fi
+if [[ ! -f /etc/apt/sources.list.d/php.list ]]; then
+    . /etc/os-release
+    echo "deb [signed-by=/usr/share/keyrings/debsuryorg-archive-keyring.gpg] https://packages.sury.org/php/ $VERSION_CODENAME main" |
+        sudo tee /etc/apt/sources.list.d/php.list >/dev/null
+fi
+
+# CI tests against MySQL 8 and PostgreSQL. Use Oracle MySQL, not Debian's
+# MariaDB substitute, for MySQL-specific bugs.
+if [[ ! -f /usr/share/keyrings/craft-mysql.asc ]]; then
+    curl -fsSL https://repo.mysql.com/RPM-GPG-KEY-mysql-2025 -o "$scratch/mysql.asc"
+    sudo install -m 644 "$scratch/mysql.asc" /usr/share/keyrings/craft-mysql.asc
+fi
+if [[ ! -f /etc/apt/sources.list.d/craft-mysql.list ]]; then
+    echo 'deb [signed-by=/usr/share/keyrings/craft-mysql.asc] https://repo.mysql.com/apt/debian/ bookworm mysql-8.4-lts' |
+        sudo tee /etc/apt/sources.list.d/craft-mysql.list >/dev/null
+fi
+
+# PHP 8.2 matches composer.json's platform and CI's lowest version.
+# intl is installed below instead.
+packages=(php8.2-cli php8.2-bcmath php8.2-curl php8.2-gd php8.2-imagick
+    php8.2-mbstring php8.2-mysql php8.2-pgsql php8.2-xml php8.2-zip
+    unzip zstd mysql-community-server-core mysql-community-client-core postgresql-15)
+missing=()
+for package in "${packages[@]}"; do
+    if [[ $(dpkg-query -W -f='${Status}' "$package" 2>/dev/null || true) != 'install ok installed' ]]; then
+        missing+=("$package")
+    fi
+done
+if ((${#missing[@]})); then
+    step 'Refresh apt indexes' sudo apt-get update -qq
+    step 'Install PHP and database engines' sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
+fi
+sudo update-alternatives --set php /usr/bin/php8.2
+
+# CI's setup-php links intl against ICU 74.2, and date formats differ across
+# ICU versions. Debian's php8.2-intl uses ICU 72, so install the same prebuilt
+# ICU/intl pair setup-php uses. Their .74 sonames don't clash with Debian's ICU.
+icu_version=74.2
+if [[ $(php -r 'echo defined("INTL_ICU_VERSION") ? INTL_ICU_VERSION : "";') != "$icu_version" ]]; then
+    if dpkg-query -W php8.2-intl >/dev/null 2>&1; then
+        sudo env DEBIAN_FRONTEND=noninteractive apt-get purge -y php8.2-intl
+    fi
+    case $(uname -m) in
+        x86_64) icu_arch= ;;
+        aarch64) icu_arch=-arm64 ;;
+        *) echo 'Unsupported ICU architecture' >&2; exit 1 ;;
+    esac
+    icu_url=https://github.com/shivammathur/icu-intl/releases/download
+    curl -fsSL "$icu_url/icu4c/icu4c-$icu_version$icu_arch.tar.zst" -o "$scratch/icu.tar.zst"
+    curl -fsSL "$icu_url/intl-$icu_version/php8.2-intl-$icu_version$icu_arch.so" -o "$scratch/intl.so"
+    sudo rm -rf /usr/local/icu
+    sudo tar -I zstd -xf "$scratch/icu.tar.zst" -C /usr/local
+    echo /usr/local/icu/lib | sudo tee /etc/ld.so.conf.d/icu.conf >/dev/null
+    sudo ldconfig
+    intl_extension="$(php -r 'echo PHP_EXTENSION_DIR;')/intl-icu$icu_version.so"
+    sudo install -m 644 "$scratch/intl.so" "$intl_extension"
+    echo "extension=$intl_extension" | sudo tee /etc/php/8.2/mods-available/intl-icu.ini >/dev/null
+    sudo phpenmod -v 8.2 intl-icu
+fi
+
+if ! command -v composer >/dev/null; then
+    curl -fsSL https://getcomposer.org/installer -o "$scratch/composer-setup.php"
+    expected=$(curl -fsSL https://composer.github.io/installer.sig)
+    actual=$(php -r 'echo hash_file("sha384", $argv[1]);' "$scratch/composer-setup.php")
+    [[ "$actual" == "$expected" ]] || { echo 'Composer installer checksum mismatch' >&2; exit 1; }
+    php "$scratch/composer-setup.php" --2 --install-dir="$scratch" --filename=composer
+    sudo install -m 755 "$scratch/composer" /usr/local/bin/composer
+fi
+
+# Install the Node major pinned in .nvmrc to the standard PATH so later
+# non-interactive shells see it. Unpacking over the base image's Node leaves
+# its npm modules behind unless they are removed first; `npm ls` detects that.
+node_major=$(tr -d '[:space:]v' < .nvmrc)
+if [[ $(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || true) != "$node_major" ]] ||
+    ! npm ls --global --depth=0 >/dev/null 2>&1; then
+    case $(uname -m) in
+        x86_64) node_arch=x64 ;;
+        aarch64) node_arch=arm64 ;;
+        *) echo 'Unsupported Node architecture' >&2; exit 1 ;;
+    esac
+    curl -fsSL "https://nodejs.org/dist/latest-v${node_major}.x/SHASUMS256.txt" -o "$scratch/SHASUMS256.txt"
+    archive=$(awk -v arch="linux-$node_arch.tar.xz" '$2 ~ arch "$" {print $2}' "$scratch/SHASUMS256.txt")
+    curl -fsSL "https://nodejs.org/dist/latest-v${node_major}.x/$archive" -o "$scratch/$archive"
+    (cd "$scratch"; grep " $archive$" SHASUMS256.txt | sha256sum --check)
+    sudo rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack
+    sudo tar -xJf "$scratch/$archive" -C /usr/local --strip-components=1
+fi
+
+step 'Install PHP dependencies' composer install --prefer-dist --no-interaction --no-progress
+
+# npm ci always reinstalls from scratch, so skip it while the lockfile is unchanged,
+# unless the optional Font Awesome kit (needed by `composer copy-icons`) is missing
+# and CRAFT_FONTAWESOME_TOKEN from the project environment can now install it.
+if [[ ! -f node_modules/.package-lock.json || package-lock.json -nt node_modules/.package-lock.json ]] ||
+    [[ -n ${CRAFT_FONTAWESOME_TOKEN:-} && ! -d node_modules/@awesome.me/kit-ddaed3f5c5 ]]; then
+    step 'Install frontend dependencies' env CRAFT_FONTAWESOME_TOKEN="${CRAFT_FONTAWESOME_TOKEN:-}" npm ci --no-audit --no-fund
+fi
+
+# Prevent Debian's unused system cluster from claiming port 5432.
+if [[ -f /etc/postgresql/15/main/start.conf ]] && ! grep -qx manual /etc/postgresql/15/main/start.conf; then
+    echo manual | sudo tee /etc/postgresql/15/main/start.conf >/dev/null
+fi
+
+# Initialize private, disposable databases with craft_test created, then stop
+# them; .amp/services.yaml starts them. Never reinitialize restored data.
+db_dir=$PWD/.amp/databases
+mkdir -p "$db_dir"
+if [[ ! -d $db_dir/mysql/mysql ]]; then
+    step 'Initialize MySQL' /usr/sbin/mysqld --no-defaults --initialize-insecure --datadir="$db_dir/mysql"
+fi
+if [[ ! -f $db_dir/mysql-ready ]]; then
+    /usr/sbin/mysqld --no-defaults --datadir="$db_dir/mysql" --socket="$db_dir/mysql.sock" \
+        --pid-file="$db_dir/mysql.pid" --secure-file-priv="$db_dir" \
+        --skip-networking --mysqlx=OFF --skip-log-bin &
+    for _ in {1..60}; do
+        mysql --socket="$db_dir/mysql.sock" -u root -e "SELECT 1" >/dev/null 2>&1 && break
+        sleep 1
+    done
+    mysql --socket="$db_dir/mysql.sock" -u root -e 'CREATE DATABASE IF NOT EXISTS craft_test'
+    # CI imports zone info so CONVERT_TZ() works.
+    mysql_tzinfo_to_sql /usr/share/zoneinfo 2>/dev/null | mysql --socket="$db_dir/mysql.sock" -u root mysql
+    mysql --socket="$db_dir/mysql.sock" -u root -e SHUTDOWN
+    wait
+    touch "$db_dir/mysql-ready"
+fi
+pg_bin=/usr/lib/postgresql/15/bin
+if [[ ! -f $db_dir/pgsql/PG_VERSION ]]; then
+    step 'Initialize PostgreSQL' "$pg_bin/initdb" -D "$db_dir/pgsql" --username=root --auth=trust --encoding=UTF8 --locale=C.UTF-8
+fi
+if [[ ! -f $db_dir/pgsql-ready ]]; then
+    "$pg_bin/pg_ctl" -D "$db_dir/pgsql" -o "-k $db_dir -c listen_addresses=''" -w start >/dev/null
+    "$pg_bin/psql" -h "$db_dir" -U root -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = 'craft_test'" | grep -q 1 ||
+        "$pg_bin/createdb" -h "$db_dir" -U root craft_test
+    "$pg_bin/pg_ctl" -D "$db_dir/pgsql" -w stop >/dev/null
+    touch "$db_dir/pgsql-ready"
+fi
+
+[[ -f tests/.env ]] || cp tests/.env.example.pgsql tests/.env
+
+guidance_marker='# Craft 5 orb'
+if ! grep -Fqx "$guidance_marker" ~/.config/amp/AGENTS.md 2>/dev/null; then
+    mkdir -p ~/.config/amp
+    cat >> ~/.config/amp/AGENTS.md <<EOF
+
+$guidance_marker
+
+- PHP 8.2, Composer, and Node $node_major are installed; Composer and npm dependencies are ready.
+- Codeception tests need a database. Run \`amp orb services ensure\` to start the local MySQL and PostgreSQL services (both have an empty \`craft_test\` database, user \`root\`, no password). \`tests/.env\` uses PostgreSQL; copy \`tests/.env.example.mysql\` over it to test MySQL.
+- Run tests with \`vendor/bin/codecept run unit,functional\`.
+EOF
+fi
+
+printf '\nOrb toolchain, dependencies, and databases are ready.\n'
