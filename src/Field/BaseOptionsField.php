@@ -189,6 +189,9 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     ];
                 } else {
                     unset($option['isOptgroup']);
+                    // Blank cells are posted as null (ConvertEmptyStringsToNull), and null keys don't survive saving
+                    $option['label'] = (string) ($option['label'] ?? '');
+                    $option['value'] = (string) ($option['value'] ?? '');
                     $options[] = $option;
                 }
             }
