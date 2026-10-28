@@ -77,7 +77,9 @@ class AssetPropagationTest extends TestCase
         self::assertSame(PropagationMethod::Custom, (new Volume())->propagationMethod);
         self::assertSame(PropagationMethod::All, Craft::$app->getVolumes()->getTemporaryVolume()->propagationMethod);
 
-        $volume = new Volume(['propagationMethod' => 'custom']);
+        // Project config stores the enum value as a string, which the model typecasts when loaded.
+        $config = ['propagationMethod' => 'custom'];
+        $volume = new Volume($config);
         self::assertSame(PropagationMethod::Custom, $volume->propagationMethod);
         self::assertSame('custom', $volume->getConfig()['propagationMethod']);
     }
