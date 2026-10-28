@@ -22,7 +22,9 @@ it('describes the base URL field with its environment variable and alias hint', 
   document.body.append(host);
   const app = createApp(SiteFields, {
     localeOptions: [],
-    modelValue: {name: '', baseUrl: '', language: 'en-US'},
+    name: '',
+    baseUrl: '',
+    language: 'en-US',
   });
   app.mount(host);
   teardown = () => app.unmount();
