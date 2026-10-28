@@ -677,6 +677,6 @@ export default css`
   /* Ellipsis (action menu) icons read small at craft-icon's 0.8em */
   craft-icon[name='ellipsis'],
   ::slotted(craft-icon[name='ellipsis']) {
-    font-size: 1em;
+    --c-icon-size: 1em;
   }
 `;
