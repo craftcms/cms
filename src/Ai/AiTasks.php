@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Ai;
 
 use CraftCms\Cms\Ai\Contracts\TaskInterface;
 use CraftCms\Cms\Ai\Tasks\Assistant;
-use CraftCms\Cms\Ai\Tasks\GenerateTitle;
+use CraftCms\Cms\Ai\Tasks\GenerateChatTitle;
 use CraftCms\Cms\Asset\Analysis\Tasks\ClassifyImage;
 use CraftCms\Cms\Asset\Analysis\Tasks\DetectFocalPoint;
 use CraftCms\Cms\Asset\Analysis\Tasks\GenerateAltText;
@@ -38,7 +38,7 @@ class AiTasks extends TypeRegistry
 
     protected const array DEFAULT_TYPES = [
         Assistant::class,
-        GenerateTitle::class,
+        GenerateChatTitle::class,
         GenerateAltText::class,
         GenerateTitles::class,
         DetectFocalPoint::class,

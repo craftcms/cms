@@ -10,7 +10,7 @@ use CraftCms\Cms\Ai\Assistant\ShowElements;
 use CraftCms\Cms\Ai\Http\Controllers\AssistantController;
 use CraftCms\Cms\Ai\Settings;
 use CraftCms\Cms\Ai\Tasks\Assistant;
-use CraftCms\Cms\Ai\Tasks\GenerateTitle;
+use CraftCms\Cms\Ai\Tasks\GenerateChatTitle;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -410,7 +410,7 @@ it('keeps the title the user gave a conversation when its generated title arrive
 it('names a new conversation from its first message’s text once its first reply is done, with the chat titles task’s model', function () {
     app()->instance(Settings::class, new Settings([
         'defaults' => ['text' => ['provider' => 'anthropic']],
-        'tasks' => [GenerateTitle::handle() => ['model' => 'claude-title-model']],
+        'tasks' => [GenerateChatTitle::handle() => ['model' => 'claude-title-model']],
     ]));
     AssistantAgent::fake(['There are four lighthouses.', 'Two of them are live.']);
     AnonymousAgent::fake(['Lighthouse lookup', 'Another title']);

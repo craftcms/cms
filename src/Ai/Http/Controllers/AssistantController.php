@@ -16,7 +16,7 @@ use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
 use CraftCms\Cms\Ai\ModelImages;
 use CraftCms\Cms\Ai\Tasks\Assistant;
-use CraftCms\Cms\Ai\Tasks\GenerateTitle;
+use CraftCms\Cms\Ai\Tasks\GenerateChatTitle;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
@@ -340,7 +340,7 @@ readonly class AssistantController
      */
     private function nameConversation(string $threadId, string $message): void
     {
-        $title = GenerateTitle::generate($message);
+        $title = GenerateChatTitle::generate($message);
 
         if ($title !== null) {
             Conversation::query()

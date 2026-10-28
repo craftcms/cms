@@ -165,20 +165,12 @@ Plugins may also use `laravel/ai` directly, without tasks. Those calls don’t f
 
 ## Craft’s tasks
 
-Craft registers tasks of its own, which plugins can use too:
+Besides its image analysis tasks, Craft registers these tasks for the control panel’s AI chat. They’re for the chat only, so register a task of your own for your feature, with its own instructions and model:
 
-| Task | Handle | Use it with |
-| ---- | ------ | ----------- |
-| `CraftCms\Cms\Ai\Tasks\Assistant` | `craft:assistant` | Only the control panel’s AI chat. See [Ask AI](ask-ai.md). |
-| `CraftCms\Cms\Ai\Tasks\GenerateTitle` | `craft:generateTitle` | `GenerateTitle::generate($text)`, which returns a short title for a text, in its language, or `null` when the task is unavailable or the request fails. |
-
-```php
-use CraftCms\Cms\Ai\Tasks\GenerateTitle;
-
-$title = GenerateTitle::generate($review->body) ?? $review->defaultTitle();
-```
-
-Titles are generated with the provider and model administrators chose for the task, so use it when a short, generic title is enough. Register a task of your own when your feature needs its own instructions or model.
+| Task | Handle | Used for |
+| ---- | ------ | -------- |
+| `CraftCms\Cms\Ai\Tasks\Assistant` | `craft:assistant` | The chat’s replies. See [Ask AI](ask-ai.md). |
+| `CraftCms\Cms\Ai\Tasks\GenerateChatTitle` | `craft:chatTitle` | Naming conversations after their first message. |
 
 ## Images
 
