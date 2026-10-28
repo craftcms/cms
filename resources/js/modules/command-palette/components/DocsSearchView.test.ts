@@ -101,6 +101,30 @@ describe('DocsSearchView', () => {
     );
   });
 
+  it('lists its results straight in the listbox, which already says they’re results', async () => {
+    get.mockResolvedValue({
+      data: {
+        results: [
+          {id: 'docs-1', label: 'Matrix Fields', href: 'https://craftcms.com'},
+        ],
+      },
+    } as never);
+    const input = mount();
+
+    await type(input, 'matrix');
+
+    const listbox = container.querySelector('[role="listbox"]')!;
+    expect(input.getAttribute('aria-controls')).toBe(listbox.id);
+    expect(listbox.getAttribute('aria-label')).toBe('Results');
+    expect(listbox.querySelector('[role="group"]')).toBeNull();
+    expect(listbox.querySelectorAll('[role="option"]')).toHaveLength(1);
+    expect(
+      listbox
+        .querySelector('.command-palette-section__heading')!
+        .getAttribute('aria-hidden')
+    ).toBe('true');
+  });
+
   it('keeps the latest results when an earlier search answers late', async () => {
     let answerEarlier!: (value: unknown) => void;
     get

@@ -9,10 +9,11 @@
    * for an item with a view — swaps the results for that view until it's done
    * or the person goes back.
    *
-   * The search box is a combobox whose popup is the results grid: the arrow
-   * keys move the selection while focus stays in the box, Return chooses the
-   * selected item, and Tab moves into the results themselves, starting at the
-   * selected one.
+   * The search box is a combobox whose popup is the results listbox, after
+   * the APG's list autocomplete example: focus stays in the box, the arrow
+   * keys move the active option, and Return chooses it. The options never
+   * take focus. The active result's own actions, when it has any, are a
+   * menu button after the listbox, which Tab moves to.
    */
   import {actionClient, ButtonVariant, t} from '@craftcms/ui';
   import {runAction} from '@craftcms/ui/actions.mjs';
@@ -43,22 +44,26 @@
   } from '../registry';
   import {destructiveLast, matchesWords} from '../rank';
   import {redirectAfter, runHttpAction} from '../run';
+  import {useResultsListbox} from '../useResultsListbox';
   import {
     createPageActionsProvider,
     onPageActions,
   } from '../sources/on-page-actions';
   import {
     fromServerItem,
+    hasActions,
     type CommandPaletteItem,
     type CommandPaletteProvider,
     type CommandPaletteView,
     type CommandPaletteViewResult,
+    type ResultRow,
   } from '../types';
   import {useCommandPaletteSearch} from '../useCommandPaletteSearch';
   import ConfirmView from './ConfirmView.vue';
   import DocsSearchView from './DocsSearchView.vue';
   import NotificationsView from './NotificationsView.vue';
-  import ResultSection, {type ResultRow} from './ResultSection.vue';
+  import ResultActions, {actionsHaveFocus} from './ResultActions.vue';
+  import ResultSection from './ResultSection.vue';
   import ShortcutsView from './ShortcutsView.vue';
   import UiFormView from './UiFormView.vue';
 
@@ -83,13 +88,28 @@
 
   const input = useTemplateRef<HTMLInputElement>('input');
   const searchField = useTemplateRef<{$el: HTMLElement}>('searchField');
-  const hint = useTemplateRef<HTMLElement>('hint');
+  const contextNote = useTemplateRef<HTMLElement>('contextNote');
 
   /** What the key that opens an item is called on this platform. */
   const returnKey = /Mac|iPhone|iPad/.test(navigator.platform)
     ? t('Return')
     : t('Enter');
-  const results = useTemplateRef<HTMLElement>('results');
+
+  interface HintKey {
+    /** What's shown, hidden from screen readers. */
+    symbol: string;
+    /** What screen readers say instead. */
+    name: string;
+  }
+
+  const KEYS = {
+    tab: {symbol: 'Tab', name: t('Tab')},
+    up: {symbol: '↑', name: t('Up arrow')},
+    down: {symbol: '↓', name: t('Down arrow')},
+    return: {symbol: returnKey, name: returnKey},
+    escape: {symbol: 'Esc', name: t('Escape')},
+  } satisfies Record<string, HintKey>;
+  const actions = useTemplateRef<{place: () => void}>('actions');
   const viewHeading = useTemplateRef<HTMLElement>('viewHeading');
   const viewBody = useTemplateRef<HTMLElement>('viewBody');
 
@@ -162,30 +182,55 @@
 
     return sections.value.map((section) => ({
       ...section,
-      gridId: `${id}-${section.key}`,
-      rows: section.items.map(
-        (item): ResultRow => ({
-          item,
-          index: index++,
-          cellId: `${id}-option-${index}`,
-        })
-      ),
+      groupId: `${id}-${section.key}`,
+      rows: section.items.map((item): ResultRow => {
+        const row = {item, index, optionId: `${id}-option-${index}`};
+        index++;
+
+        return row;
+      }),
     }));
   });
 
   const rows = computed(() =>
     rowsBySection.value.flatMap((section) => section.rows)
   );
-  const selectedRow = computed(() => rows.value[selectedIndex.value] ?? null);
-  const gridIds = computed(() =>
-    rowsBySection.value.map((section) => section.gridId).join(' ')
+  const {
+    listboxId,
+    selectedRow,
+    comboboxAttributes,
+    indexAfter,
+    scrollSelectedIntoView,
+  } = useResultsListbox(id, rows, selectedIndex);
+  const selectedHasActions = computed(() =>
+    Boolean(selectedRow.value && hasActions(selectedRow.value.item))
   );
 
-  // The top result is selected until the person picks another; once they
-  // have, theirs stays selected as other providers' results arrive.
+  /**
+   * The result under the pointer, by id. It's only highlighted, and shows its
+   * actions: the active option changes with the keys or a click alone, so
+   * moving the pointer doesn't make screen readers read each row it crosses.
+   */
+  const hoveredId = shallowRef<string | null>(null);
+  const hoveredRow = computed(
+    () => rows.value.find((row) => row.item.id === hoveredId.value) ?? null
+  );
+
+  /** Whose actions show: the result under the pointer's, or else the active one's. */
+  const actionsRow = computed(
+    () =>
+      [hoveredRow.value, selectedRow.value].find(
+        (row) => row && hasActions(row.item)
+      ) ?? null
+  );
+
+  // The top result is selected until the person picks another, or moves to
+  // its actions; once they have, theirs stays selected as other providers'
+  // results arrive.
   watch(query, () => {
     selectionMoved.value = false;
     selectedIndex.value = 0;
+    hoveredId.value = null;
   });
 
   watch(rows, (current, previous) => {
@@ -198,6 +243,13 @@
     const selectedId = previous?.[selectedIndex.value]?.item.id;
     const index = current.findIndex((row) => row.item.id === selectedId);
     selectedIndex.value = Math.max(index, 0);
+  });
+
+  // A result's actions go when it does, and focus on them would go with them.
+  watch(actionsRow, (current, previous) => {
+    if (current?.item.id !== previous?.item.id && actionsHaveFocus()) {
+      input.value?.focus();
+    }
   });
 
   /** Which providers couldn’t be searched, if any. */
@@ -309,13 +361,23 @@
   }
 
   function onOpened(): void {
-    // The search field manages its input's `aria-describedby`, so the hint
-    // joins through it rather than being set on the input directly.
-    const field = searchField.value?.$el as
-      | (HTMLElement & {addToAriaDescribedBy?: (element: HTMLElement) => void})
-      | undefined;
-    if (hint.value) {
-      field?.addToAriaDescribedBy?.(hint.value);
+    describeByContextNote(searchField.value?.$el);
+  }
+
+  /**
+   * Describes a search input by what choosing a result does. The keys are
+   * the usual combobox ones, so they're left to the keyboard instructions,
+   * not read each time the input is focused. The search field manages its
+   * input's `aria-describedby`, so the note joins through it rather than
+   * being set on the input directly.
+   */
+  function describeByContextNote(field: Element | null | undefined): void {
+    if (contextNote.value) {
+      (
+        field as
+          | (Element & {addToAriaDescribedBy?: (element: HTMLElement) => void})
+          | undefined
+      )?.addToAriaDescribedBy?.(contextNote.value);
     }
   }
 
@@ -409,6 +471,7 @@
   }
 
   watch(activeView, async (current, previous) => {
+    viewQuery.value = '';
     await nextTick();
 
     if (current) {
@@ -418,6 +481,12 @@
         viewBody.value?.querySelector<HTMLElement>('[data-autofocus]') ??
         viewHeading.value
       )?.focus();
+
+      if (current.view.type === 'docs') {
+        describeByContextNote(
+          viewBody.value?.querySelector('craft-input-search')
+        );
+      }
     } else if (previous && isCommandPaletteOpen.value) {
       input.value?.focus();
     }
@@ -472,9 +541,8 @@
   }
 
   /**
-   * Chooses an item. `trigger` is the click that chose it, when it was a
-   * click on a link: the link then does the navigating itself, so a modified
-   * click can still open it in a new tab.
+   * Chooses an item. `trigger` is the click that chose it, when it was
+   * clicked: Command or Control opens a link in a new tab, as Return does.
    */
   function activate(
     item: CommandPaletteItem,
@@ -496,19 +564,8 @@
       closeThen(item.run);
     } else if (item.action) {
       void runServerAction(item);
-    } else if (trigger) {
-      const modified =
-        trigger.metaKey ||
-        trigger.ctrlKey ||
-        trigger.shiftKey ||
-        trigger.altKey;
-
-      if (!modified) {
-        reset();
-        close();
-      }
     } else {
-      navigate(item, newTab);
+      navigate(item, trigger ? trigger.metaKey || trigger.ctrlKey : newTab);
     }
   }
 
@@ -527,37 +584,36 @@
     selectionMoved.value = true;
   }
 
-  async function scrollSelectedIntoView(): Promise<void> {
-    await nextTick();
-    const row = selectedRow.value;
-
-    if (row) {
-      scrollRowIntoView(document.getElementById(row.cellId));
+  /**
+   * Not while focus is on the actions, though: the menu, and the pointer on
+   * its way to it, would lose its row.
+   */
+  function onOptionHover(index: number): void {
+    if (!actionsHaveFocus()) {
+      hoveredId.value = rows.value[index]?.item.id ?? null;
     }
   }
 
-  /** Scrolls to the whole row, since the highlight is painted on it rather than on the cell or item. */
-  function scrollRowIntoView(el: HTMLElement | null): void {
-    el?.closest('[role="row"]')?.scrollIntoView({block: 'nearest'});
+  function onResultsPointerLeave(): void {
+    if (!actionsHaveFocus()) {
+      hoveredId.value = null;
+    }
   }
 
-  function moveSelection(step: number): void {
-    const count = rows.value.length;
+  // Its option can move as results come in, taking the space kept for the
+  // actions with it.
+  watch(rows, () => actions.value?.place(), {flush: 'post'});
 
-    if (!count) {
+  function moveSelection(step: number): void {
+    const index = indexAfter(step);
+
+    if (index === null) {
       return;
     }
 
-    select((selectedIndex.value + step + count) % count);
+    hoveredId.value = null;
+    select(index);
     void scrollSelectedIntoView();
-  }
-
-  function itemElement(index: number): HTMLElement | null {
-    return (
-      results.value?.querySelector<HTMLElement>(
-        `[data-command-palette-index="${index}"]`
-      ) ?? null
-    );
   }
 
   function onInputKeydown(event: KeyboardEvent): void {
@@ -581,76 +637,39 @@
         }
         break;
       case 'Tab':
-        cycleTabFocus(event);
+        if (
+          !event.shiftKey &&
+          actionsRow.value &&
+          actionsRow.value !== selectedRow.value
+        ) {
+          tabPastHoveredActions(event);
+        }
         break;
     }
   }
 
   /**
-   * Tab and Shift+Tab cycle through the search box, the selected result, and
-   * its menu button; the arrow keys move between results. Moved by hand
-   * because Safari leaves links out of the Tab order by default, and because
-   * Tab back would otherwise land on the search field rather than its input.
+   * Tab reaches the active result's actions, as its option and the keyboard
+   * instructions say, not those of the result under the pointer. Without
+   * any, Tab moves on past the pointer's, which `inert` takes out of its way
+   * until they go.
    */
-  function cycleTabFocus(event: KeyboardEvent): void {
-    if (event.altKey || event.ctrlKey || event.metaKey || !input.value) {
-      return;
+  function tabPastHoveredActions(event: KeyboardEvent): void {
+    document
+      .querySelector('.command-palette-actions')
+      ?.setAttribute('inert', '');
+    hoveredId.value = null;
+
+    if (selectedHasActions.value) {
+      event.preventDefault();
+      void nextTick(() =>
+        document
+          .querySelector<HTMLElement>(
+            '.command-palette-actions [slot="invoker"]'
+          )
+          ?.focus()
+      );
     }
-
-    const target = event.target as HTMLElement | null;
-    const row = (
-      target === input.value && selectedRow.value
-        ? itemElement(selectedRow.value.index)
-        : target
-    )?.closest<HTMLElement>('.command-palette-row');
-    const item = row?.querySelector<HTMLElement>(
-      '[data-command-palette-index]'
-    );
-
-    if (!item) {
-      return;
-    }
-
-    const menuButton = row!.querySelector<HTMLElement>(
-      '.command-palette-row__actions [slot="invoker"]'
-    );
-    const stops = [input.value, item, ...(menuButton ? [menuButton] : [])];
-    const index = stops.findIndex(
-      (stop) => stop === target || (target && stop.contains(target))
-    );
-
-    if (index === -1) {
-      return;
-    }
-
-    event.preventDefault();
-    stops.at((index + (event.shiftKey ? -1 : 1)) % stops.length)!.focus();
-  }
-
-  /** Up and down move between the results once focus is among them. */
-  function onResultsKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Tab') {
-      cycleTabFocus(event);
-
-      return;
-    }
-
-    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
-      return;
-    }
-
-    const index = Number(
-      (event.target as HTMLElement | null)?.dataset?.commandPaletteIndex ?? NaN
-    );
-
-    if (Number.isNaN(index)) {
-      return;
-    }
-
-    event.preventDefault();
-    const target = itemElement(index + (event.key === 'ArrowDown' ? 1 : -1));
-    target?.focus();
-    scrollRowIntoView(target);
   }
 
   /**
@@ -700,6 +719,49 @@
     event.stopPropagation();
   }
 
+  /** The open view's own search, for one that has one, as docs search does. */
+  const viewQuery = shallowRef('');
+
+  /** The keyboard instructions apply to the search, and to the docs search view's own. */
+  const showsHint = computed(
+    () => !activeView.value || activeView.value.view.type === 'docs'
+  );
+
+  /**
+   * Warns that choosing a result changes the context, before anyone does, per
+   * WCAG 3.2.2 (On Input): it goes somewhere, runs something, or opens a tab.
+   */
+  const contextNoteText = computed(() =>
+    activeView.value
+      ? t('Choosing a result opens it in a new tab.')
+      : t('Choosing an item opens its page or runs its action.')
+  );
+
+  /**
+   * The keyboard instructions in the footer. Tab only reaches the active
+   * result's actions, so it's listed only while that result has some.
+   */
+  const hints = computed(() => [
+    {keys: [KEYS.up, KEYS.down], label: t('Choose item')},
+    {
+      keys: [KEYS.return],
+      label: activeView.value ? t('Open in new tab') : t('Open item'),
+    },
+    ...(!activeView.value && selectedHasActions.value
+      ? [{keys: [KEYS.tab], label: t('Actions')}]
+      : []),
+    {keys: [KEYS.escape], label: escapeHint.value},
+  ]);
+
+  /** What Escape does where focus usually is: clear the search, go back, or close. */
+  const escapeHint = computed(() => {
+    if (activeView.value) {
+      return viewQuery.value ? t('Clear search') : t('Back');
+    }
+
+    return query.value ? t('Clear search') : t('Close');
+  });
+
   const activeViewComponent = computed(() =>
     activeView.value
       ? (BUILT_IN_VIEWS[activeView.value.view.type] ??
@@ -735,12 +797,7 @@
               slot="input"
               type="text"
               class="command-palette__input"
-              role="combobox"
-              aria-expanded="true"
-              aria-haspopup="grid"
-              aria-autocomplete="list"
-              :aria-controls="gridIds || undefined"
-              :aria-activedescendant="selectedRow?.cellId"
+              v-bind="comboboxAttributes"
               autocapitalize="off"
               spellcheck="false"
               @keydown="onInputKeydown"
@@ -749,10 +806,9 @@
         </div>
 
         <div
-          ref="results"
           class="command-palette__results"
           :aria-busy="search.searching.value ? 'true' : 'false'"
-          @keydown="onResultsKeydown"
+          @pointerleave="onResultsPointerLeave"
         >
           <div
             v-if="busy || (search.searching.value && !rows.length)"
@@ -762,15 +818,32 @@
               :label="busy ? t('Working') : t('Searching…')"
             ></craft-spinner>
           </div>
-          <ResultSection
-            v-for="section in rowsBySection"
-            :key="section.key"
-            :grid-id="section.gridId"
-            :heading="section.heading"
-            :rows="section.rows"
-            :selected-index="selectedIndex"
-            @activate="(item, trigger) => activate(item, {trigger})"
-            @select="select"
+          <div
+            :id="listboxId"
+            role="listbox"
+            :aria-label="isSearching ? t('Results') : t('Suggestions')"
+            :hidden="!rows.length"
+          >
+            <ResultSection
+              v-for="section in rowsBySection"
+              :key="section.key"
+              :group-id="section.groupId"
+              :heading="section.heading"
+              :rows="section.rows"
+              :selected-index="selectedIndex"
+              :hovered-index="hoveredRow?.index ?? -1"
+              @activate="(item, trigger) => activate(item, {trigger})"
+              @hover="onOptionHover"
+            />
+          </div>
+          <ResultActions
+            v-if="actionsRow"
+            ref="actions"
+            :key="actionsRow.item.id"
+            :item="actionsRow.item"
+            :option-id="actionsRow.optionId"
+            :active="actionsRow === selectedRow"
+            @focusin="selectionMoved = true"
             @dismiss="dismissForMenuAction"
           />
           <craft-empty
@@ -791,20 +864,6 @@
           </p>
         </div>
 
-        <p :id="`${id}-hint`" ref="hint" class="command-palette__hint">
-          <span class="command-palette__hint-item">
-            <kbd>↑</kbd> <kbd>↓</kbd> {{ t('Choose item') }}
-          </span>
-          <span class="command-palette__hint-item">
-            <kbd>{{ returnKey }}</kbd> {{ t('Open item') }}
-          </span>
-          <span class="command-palette__hint-item">
-            <kbd>Tab</kbd> {{ t('Focus item') }}
-          </span>
-          <span class="command-palette__hint-item">
-            <kbd>Esc</kbd> {{ query ? t('Clear search') : t('Close') }}
-          </span>
-        </p>
         <div class="sr-only" role="status">{{ statusMessage }}</div>
       </div>
 
@@ -836,8 +895,39 @@
           :actions-target="`#${id}-view-actions`"
           @done="finish"
           @back="back"
+          @query="(value: string) => (viewQuery = value)"
         />
       </div>
+
+      <p :id="`${id}-context`" ref="contextNote" class="sr-only">
+        {{ contextNoteText }}
+      </p>
+      <!-- A region of its own, so the instructions can be found by heading or landmark. -->
+      <section
+        v-show="showsHint"
+        class="command-palette__hint"
+        :aria-labelledby="`${id}-keys-heading`"
+      >
+        <h2 :id="`${id}-keys-heading`" class="sr-only">
+          {{ t('Keyboard instructions') }}
+        </h2>
+        <!-- `role="list"` keeps the list's semantics in Safari, which drops them without list styling. -->
+        <ul role="list" class="command-palette__hint-list">
+          <li
+            v-for="item in hints"
+            :key="item.label"
+            class="command-palette__hint-item"
+          >
+            <span class="command-palette__hint-keys">
+              <kbd v-for="key in item.keys" :key="key.name">
+                <span aria-hidden="true">{{ key.symbol }}</span>
+                <span class="sr-only">{{ key.name }}</span>
+              </kbd>
+            </span>
+            {{ item.label }}
+          </li>
+        </ul>
+      </section>
     </div>
   </Modal>
 </template>
@@ -888,7 +978,6 @@
     --c-input-fill: transparent;
     --c-input-height: var(--_bar-block-size);
     --c-input-spacing-inline: var(--c-spacing-sm);
-    --c-focus-outline-style: none;
     /* Overrides the field's private clear-button inset, so its icon lines up with the result types' right edge. */
     --_clear-inset: 0px;
     flex: 1;
@@ -896,7 +985,9 @@
     font-size: var(--c-text-lg);
   }
 
+  /* The bar draws the input's ring, so the clear button keeps its own. */
   .command-palette__input {
+    --c-focus-outline-style: none;
     font: inherit;
   }
 
@@ -905,7 +996,7 @@
     opacity: 1;
   }
 
-  .command-palette__field:focus-within {
+  .command-palette__field:has(.command-palette__input:focus) {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: calc(var(--c-focus-outline-width) * -1);
@@ -948,11 +1039,6 @@
   }
 
   .command-palette__hint {
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: var(--c-spacing-lg);
-    row-gap: var(--c-spacing-xs);
-    margin: 0;
     padding-block: var(--c-spacing-sm);
     padding-inline: var(--c-modal-padding);
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
@@ -960,10 +1046,25 @@
     color: var(--c-text-quiet);
   }
 
+  .command-palette__hint-list {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: var(--c-spacing-lg);
+    row-gap: var(--c-spacing-xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
   .command-palette__hint-item {
     display: inline-flex;
     align-items: center;
     gap: var(--c-spacing-sm);
+  }
+
+  .command-palette__hint-keys {
+    display: inline-flex;
+    gap: var(--c-spacing-xs);
   }
 
   .command-palette__view {
@@ -1002,7 +1103,7 @@
   }
 
   @media (forced-colors: active) {
-    .command-palette__field:focus-within {
+    .command-palette__field:has(.command-palette__input:focus) {
       outline-color: Highlight;
     }
   }

@@ -3,19 +3,27 @@
    * Searches the Craft CMS documentation, Knowledge Base, and glossary on
    * craftcms.com, for the palette's “Search Craft CMS documentation” item.
    *
-   * Like the palette's own search, the input is a combobox over the results:
-   * the arrow keys move the selection, and Return opens it on craftcms.com in
-   * a new tab, leaving the palette open.
+   * Like the palette's own search, the input is a combobox over a listbox of
+   * results: focus stays in the input, the arrow keys move the active option,
+   * and Return or a click opens it on craftcms.com in a new tab, leaving the
+   * palette open.
    */
   import {actionClient, t} from '@craftcms/ui';
   import {docs as docsUrl} from '@actions/CommandPaletteController';
   import {computed, onBeforeUnmount, shallowRef, useId, watch} from 'vue';
   import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
-  import {fromServerItem, type CommandPaletteItem} from '../types';
-  import ResultSection, {type ResultRow} from './ResultSection.vue';
+  import {
+    fromServerItem,
+    type CommandPaletteItem,
+    type ResultRow,
+  } from '../types';
+  import {useResultsListbox} from '../useResultsListbox';
+  import ResultSection from './ResultSection.vue';
 
-  defineEmits<{
+  const emit = defineEmits<{
     (event: 'back'): void;
+    /** Its search, so the palette's keyboard instructions say what Escape does. */
+    (event: 'query', query: string): void;
   }>();
 
   /** How long typing has to pause before craftcms.com is asked. */
@@ -27,6 +35,8 @@
   const searching = shallowRef(false);
   const failed = shallowRef(false);
   const selectedIndex = shallowRef(0);
+  /** The row under the pointer, only highlighted: the keys and clicks choose. */
+  const hoveredIndex = shallowRef(-1);
   let timer: ReturnType<typeof setTimeout> | undefined;
   let controller: AbortController | null = null;
 
@@ -34,10 +44,16 @@
     results.value.map((item, index) => ({
       item,
       index,
-      cellId: `${id}-option-${index}`,
+      optionId: `${id}-option-${index}`,
     }))
   );
-  const selectedRow = computed(() => rows.value[selectedIndex.value] ?? null);
+  const {
+    listboxId,
+    selectedRow,
+    comboboxAttributes,
+    indexAfter,
+    scrollSelectedIntoView,
+  } = useResultsListbox(id, rows, selectedIndex);
   const term = computed(() => query.value.trim());
 
   const statusMessage = computed(() => {
@@ -103,6 +119,7 @@
     }
 
     selectedIndex.value = 0;
+    hoveredIndex.value = -1;
     searching.value = false;
   }
 
@@ -113,25 +130,19 @@
   }
 
   function onInputKeydown(event: KeyboardEvent): void {
-    const count = rows.value.length;
-
     switch (event.key) {
       case 'ArrowDown':
-      case 'ArrowUp':
+      case 'ArrowUp': {
         event.preventDefault();
+        const index = indexAfter(event.key === 'ArrowDown' ? 1 : -1);
 
-        if (count) {
-          selectedIndex.value =
-            (selectedIndex.value +
-              (event.key === 'ArrowDown' ? 1 : -1) +
-              count) %
-            count;
-          document
-            .getElementById(selectedRow.value!.cellId)
-            ?.closest('[role="row"]')
-            ?.scrollIntoView({block: 'nearest'});
+        if (index !== null) {
+          hoveredIndex.value = -1;
+          selectedIndex.value = index;
+          void scrollSelectedIntoView();
         }
         break;
+      }
       case 'Enter':
         if (event.isComposing || !selectedRow.value) {
           return;
@@ -143,18 +154,10 @@
     }
   }
 
-  /** A plain click opens the result in a new tab too; a modified one is left to the browser. */
-  function onActivate(item: CommandPaletteItem, trigger: MouseEvent): void {
-    if (
-      trigger.metaKey ||
-      trigger.ctrlKey ||
-      trigger.shiftKey ||
-      trigger.altKey
-    ) {
-      return;
-    }
+  watch(query, (value) => emit('query', value));
 
-    trigger.preventDefault();
+  /** A click opens the result in a new tab, modified or not, as Return does. */
+  function onActivate(item: CommandPaletteItem): void {
     open(item);
   }
 </script>
@@ -168,13 +171,7 @@
       <input
         slot="input"
         type="text"
-        role="combobox"
-        aria-expanded="true"
-        aria-haspopup="grid"
-        aria-autocomplete="list"
-        :aria-label="t('Search Craft CMS documentation')"
-        :aria-controls="`${id}-results`"
-        :aria-activedescendant="selectedRow?.cellId"
+        v-bind="comboboxAttributes"
         autocapitalize="off"
         spellcheck="false"
         data-autofocus
@@ -186,17 +183,27 @@
       <div v-if="searching && !rows.length" class="command-palette-docs__note">
         <craft-spinner :label="t('Searching…')"></craft-spinner>
       </div>
-      <ResultSection
-        v-if="rows.length"
-        :grid-id="`${id}-results`"
-        :heading="t('Results')"
-        :rows="rows"
-        :selected-index="selectedIndex"
-        @activate="onActivate"
-        @select="(index) => (selectedIndex = index)"
-      />
+      <div
+        :id="listboxId"
+        role="listbox"
+        :aria-label="t('Results')"
+        :hidden="!rows.length"
+        @pointerleave="hoveredIndex = -1"
+      >
+        <ResultSection
+          v-if="rows.length"
+          :group-id="`${id}-results`"
+          :heading="t('Results')"
+          :grouped="false"
+          :rows="rows"
+          :selected-index="selectedIndex"
+          :hovered-index="hoveredIndex"
+          @activate="onActivate"
+          @hover="(index) => (hoveredIndex = index)"
+        />
+      </div>
       <craft-empty
-        v-else-if="statusMessage && !searching"
+        v-if="!rows.length && statusMessage && !searching"
         class="command-palette-docs__empty"
         :label="statusMessage"
       ></craft-empty>
