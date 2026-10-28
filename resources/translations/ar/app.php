@@ -403,7 +403,6 @@ return [
     'Continue' => 'متابعة',
     'Control panel resources' => 'مصادر لوحة التحكم',
     'Cooldown Time Remaining' => 'وقت التهدئة المتبقي',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'تم النسخ إلى الحافظة.',
     'Copied' => 'Copied',
     'Copy URL' => 'نسخ عنوان URL',

@@ -144,4 +144,10 @@ class AltField extends TextareaField implements ImportableFieldLayoutElementInte
     {
         return true;
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'universal-access';
+    }
 }

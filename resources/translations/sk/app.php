@@ -403,7 +403,6 @@ return [
     'Continue' => 'Pokračovať',
     'Control panel resources' => 'Prostriedky ovládacieho panela',
     'Cooldown Time Remaining' => 'Zostávajúci Čas Cooldown',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Skopírované do schránky.',
     'Copied' => 'Copied',
     'Copy URL' => 'Kopírovať URL',

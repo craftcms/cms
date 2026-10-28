@@ -403,7 +403,6 @@ return [
     'Continue' => 'Doorgaan',
     'Control panel resources' => 'Bronnen van configuratiescherm',
     'Cooldown Time Remaining' => 'Resterende afkoeltijd',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Gekopieerd naar klembord.',
     'Copied' => 'Copied',
     'Copy URL' => 'URL kopiëren',

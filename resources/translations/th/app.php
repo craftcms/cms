@@ -403,7 +403,6 @@ return [
     'Continue' => 'ดำเนินการต่อ',
     'Control panel resources' => 'ทรัพยากรแผงควบคุม',
     'Cooldown Time Remaining' => 'เวลาคูลดาวน์ที่เหลืออยู่',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'คัดลอกไปยังคลิปบอร์ด',
     'Copied' => 'Copied',
     'Copy URL' => 'คัดลอก URL',

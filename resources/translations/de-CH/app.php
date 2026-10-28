@@ -403,7 +403,6 @@ return [
     'Continue' => 'Weiter',
     'Control panel resources' => 'Control Panel Ressourcen',
     'Cooldown Time Remaining' => 'Verbleibende Abkühlzeit',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'In die Zwischenablage kopiert.',
     'Copied' => 'Copied',
     'Copy URL' => 'URL kopieren',

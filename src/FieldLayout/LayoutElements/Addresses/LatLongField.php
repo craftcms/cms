@@ -205,4 +205,10 @@ class LatLongField extends BaseNativeField implements ImportableFieldLayoutEleme
             ), $parts),
         );
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'location-dot';
+    }
 }

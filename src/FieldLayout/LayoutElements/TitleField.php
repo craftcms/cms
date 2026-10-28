@@ -99,4 +99,10 @@ class TitleField extends TextField implements ImportableFieldLayoutElementInterf
     {
         return true;
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'heading';
+    }
 }

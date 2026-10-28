@@ -403,7 +403,6 @@ return [
     'Continue' => 'Fortsæt',
     'Control panel resources' => 'Kontrolpanelressourcer',
     'Cooldown Time Remaining' => 'Tilbageværende Nedkølingstid',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Kopieret til udklipsholder.',
     'Copied' => 'Copied',
     'Copy URL' => 'Kopier url',

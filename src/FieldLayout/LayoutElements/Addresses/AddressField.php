@@ -150,4 +150,10 @@ class AddressField extends BaseField implements ImportableFieldLayoutElementInte
             ), $parts),
         );
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'map-location';
+    }
 }

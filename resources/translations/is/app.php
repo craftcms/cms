@@ -403,7 +403,6 @@ return [
     'Continue' => 'Halda áfram',
     'Control panel resources' => 'Tilföng stjórnborðs',
     'Cooldown Time Remaining' => 'Kælingartími sem eftir er',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Afritað á klippiborð.',
     'Copied' => 'Copied',
     'Copy URL' => 'Afritaðu vefslóð',

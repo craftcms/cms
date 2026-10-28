@@ -161,4 +161,10 @@ JS, [
     {
         return true;
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'at';
+    }
 }

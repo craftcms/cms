@@ -95,6 +95,8 @@
     warning?: string;
     warningHtml?: string;
     layoutUid?: string;
+    /** The field type's icon, for places that list fields by name. */
+    icon?: string;
     width?: number;
     status?: string;
     statusLabel?: string;
@@ -407,6 +409,7 @@
     }"
     :hidden="resolvedNode.props.hidden || undefined"
     :data-layout-element="resolvedNode.props.layoutUid"
+    :data-icon="resolvedNode.props.icon || undefined"
     :aria-busy="generating || undefined"
   >
     <span

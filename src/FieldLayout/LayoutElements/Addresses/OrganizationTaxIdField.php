@@ -57,4 +57,10 @@ class OrganizationTaxIdField extends TextField implements ImportableFieldLayoutE
     {
         return t('Organization Tax ID');
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'receipt';
+    }
 }

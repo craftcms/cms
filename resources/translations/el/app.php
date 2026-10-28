@@ -403,7 +403,6 @@ return [
     'Continue' => 'Συνέχεια',
     'Control panel resources' => 'Πόροι πίνακα ελέγχου',
     'Cooldown Time Remaining' => 'Εναπομείναντας χρόνος αναμονής',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Αντιγράφηκε στο πρόχειρο.',
     'Copied' => 'Copied',
     'Copy URL' => 'Αντιγραφή URL',

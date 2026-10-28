@@ -137,4 +137,10 @@ class FullNameField extends TextField implements ImportableFieldLayoutElementInt
             ), $parts),
         );
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'id-card';
+    }
 }
