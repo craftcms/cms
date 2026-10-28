@@ -87,6 +87,7 @@
     "craftcms/ecs": "dev-main",
     "fakerphp/faker": "^1.19.0",
     "league/factory-muffin": "^3.3.0",
+    "mspirkov/yii2-phpstan": "^0.16.1",
     "phpstan/phpstan": "^2.1",
     "rector/rector": "^2.0",
     "vlucas/phpdotenv": "^5.4.1",

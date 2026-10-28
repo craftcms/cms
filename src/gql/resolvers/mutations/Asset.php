@@ -137,6 +137,7 @@ class Asset extends ElementMutationResolver
 
         if ($triggerReplaceEvents) {
             $assetService->trigger(Assets::EVENT_AFTER_REPLACE_ASSET, new ReplaceAssetEvent([
+                // @phpstan-ignore mspirkovYii2.baseObjectInstantiationValidation (Object option "asset" for craft\events\ReplaceAssetEvent must be craft\elements\Asset, craft\base\ElementInterface given.)
                 'asset' => $asset,
                 'filename' => $this->filename,
             ]));
@@ -241,6 +242,7 @@ class Asset extends ElementMutationResolver
                     $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
                 }
 
+                // @phpstan-ignore function.alreadyNarrowedType (Call to function is_array() with array will always evaluate to true.)
                 if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
                     throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
                         'extension' => $extension,
@@ -262,6 +264,7 @@ class Asset extends ElementMutationResolver
             }
 
             $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            // @phpstan-ignore function.alreadyNarrowedType (Call to function is_array() with array will always evaluate to true.)
             if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
                 throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
                     'extension' => $extension,

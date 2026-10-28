@@ -598,7 +598,7 @@ class AssetIndexer extends Component
     {
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
-            'sessionId' => $sessionId,
+            'sessionId' => (string)$sessionId,
             'uri' => $listing->getAdjustedUri($volume->getSubpath()),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
@@ -626,7 +626,7 @@ class AssetIndexer extends Component
     {
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
-            'sessionId' => $sessionId,
+            'sessionId' => (string)$sessionId,
             'uri' => $listing->getAdjustedUri($volume->getSubpath()),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
