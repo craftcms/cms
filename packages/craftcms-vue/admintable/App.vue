@@ -511,6 +511,12 @@
       init() {
         let tableBody = this.$el.querySelector(this.tableBodySelector);
 
+        // init() runs on every vuetable:loaded, so tear down the previous instance first
+        if (this.sortable) {
+          this.sortable.destroy();
+          this.sortable = null;
+        }
+
         if (this.canReorder) {
           this.sortable = Sortable.create(tableBody, {
             animation: 150,
@@ -1043,19 +1049,17 @@
           });
         }
 
+        // Copy each column so the caller’s objects aren’t mutated (and titles aren’t re-escaped on every recompute)
         let customColumns = map(this.columns, (item) => {
+          // Escape Title
+          let column = {...item, title: Craft.escapeHtml(item.title)};
+
           // Do not allow sorting for if you can manually reorder items
-          if (
-            (this.reorderAction || this.paginatedReorderAction) &&
-            item.hasOwnProperty('sortField')
-          ) {
-            delete item.sortField;
+          if (this.reorderAction || this.paginatedReorderAction) {
+            delete column.sortField;
           }
 
-          // Escape Title
-          item.title = Craft.escapeHtml(item.title);
-
-          return item;
+          return column;
         });
 
         columns = [...columns, ...customColumns];
