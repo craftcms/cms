@@ -6,7 +6,6 @@ namespace Workbench\App\Console\Commands;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
@@ -42,7 +41,7 @@ final class ServeCommand extends Command
             return self::FAILURE;
         }
 
-        Env::writeVariable('APP_URL', $url, app()->environmentFilePath(), overwrite: true);
+        $_ENV['APP_URL'] = $_SERVER['APP_URL'] = $url;
         Config::set('app.url', $url);
 
         if ($this->call('package:create-sqlite-db') !== self::SUCCESS) {

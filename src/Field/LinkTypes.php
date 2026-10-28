@@ -48,10 +48,9 @@ class LinkTypes extends TypeRegistry
     /** @return Collection<string, class-string<BaseLinkType>> */
     public function typesById(): Collection
     {
-        $types = $this->typesByIdentity();
-        $types->forget(Url::id());
-
-        return $types->put(Url::id(), Url::class);
+        return $this->typesByIdentity()
+            ->forget(Url::id())
+            ->union([Url::id() => Url::class]);
     }
 
     /** @param class-string<BaseLinkType> $type */
