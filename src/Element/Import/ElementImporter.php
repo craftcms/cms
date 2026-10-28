@@ -20,6 +20,7 @@ use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Validation\Rules\SiteRule;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Import;
@@ -27,6 +28,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
@@ -40,6 +42,12 @@ use function CraftCms\Cms\t;
  */
 abstract class ElementImporter extends BaseImporter
 {
+    /**
+     * The incoming data key that decides whether an item is saved as an unpublished draft,
+     * for element types that support drafts.
+     */
+    public const string SAVE_AS_DRAFT = 'saveAsDraft';
+
     public protected(set) ?Site $site = null;
 
     public protected(set) ?string $fieldLayout = null;
@@ -361,10 +369,28 @@ abstract class ElementImporter extends BaseImporter
      */
     public function getAvailableProperties(): array
     {
-        return array_values(array_filter(
+        $props = array_values(array_filter(
             ImportHelper::getImportableProperties($this),
             $this->isPropertyAvailable(...),
         ));
+
+        // saving as an unpublished draft isn't an element property, it decides how the element gets saved
+        if (static::targetClass()::hasDrafts()) {
+            $props[] = [
+                'property' => self::SAVE_AS_DRAFT,
+                'name' => self::SAVE_AS_DRAFT,
+                'label' => t('Save as unpublished draft'),
+                'excludeFromUiMapping' => false,
+                'isContainer' => false,
+                'canBeMatchCriteria' => false,
+                'canBeCleared' => false,
+                'canBeSet' => true,
+                'defaultValue' => false,
+                'trait' => null,
+            ];
+        }
+
+        return $props;
     }
 
     /**
@@ -399,6 +425,15 @@ abstract class ElementImporter extends BaseImporter
         $item = Import::processData($this, $data, $element);
 
         $isNew = $element->id === null;
+
+        // the draft flag only counts when it's present, so plans that don't map it never publish an unpublished draft they match
+        $draftFlag = Arr::pull($item, self::SAVE_AS_DRAFT);
+        $hasDraftFlag = $draftFlag !== null && static::targetClass()::hasDrafts();
+        $saveAsDraft = $hasDraftFlag && filter_var($draftFlag, FILTER_VALIDATE_BOOL);
+
+        // an existing non-draft element is always updated in place, regardless of the flag
+        $createDraft = $isNew && $saveAsDraft;
+        $publishDraft = $hasDraftFlag && ! $saveAsDraft && $element->getIsUnpublishedDraft();
 
         // normalization and validation of attributes happens in the transformer and in the setAttributesForImport() method
         $attributeHandles = $element->attributes();
@@ -448,6 +483,7 @@ abstract class ElementImporter extends BaseImporter
             && $this->hasNewContainerFieldData($element, $fields, $oldFieldValues);
 
         $hasChanges = $skipChangeDetection
+            || $publishDraft
             || $hasNewContainerFieldData
             || $this->attributeValuesChanged($element, $oldAttributeValues)
             || $this->fieldValuesChanged($element, $oldFieldValues);
@@ -456,7 +492,10 @@ abstract class ElementImporter extends BaseImporter
             return $element;
         }
 
-        if ($element->enabled && $element->getEnabledForSite()) {
+        // a draft that stays a draft only needs to meet the essentials, like a draft saved from the control panel
+        $staysDraft = $createDraft || ($element->getIsUnpublishedDraft() && ! $publishDraft);
+
+        if (! $staysDraft && $element->enabled && $element->getEnabledForSite()) {
             $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         } else {
             $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
@@ -465,7 +504,11 @@ abstract class ElementImporter extends BaseImporter
         $restoreKeepFlagFields = $this->enableKeepMissingNestedElements($element);
 
         try {
-            if (! Elements::saveElement($element)) {
+            $saved = $createDraft
+                ? Drafts::saveElementAsDraft($element)
+                : Elements::saveElement($element);
+
+            if (! $saved) {
                 throw new InvalidElementException(
                     $element,
                     'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.implode(' ', $element->errors()->all()),
@@ -475,6 +518,10 @@ abstract class ElementImporter extends BaseImporter
             foreach ($restoreKeepFlagFields as $field) {
                 $field->setKeepMissingNestedElements(false);
             }
+        }
+
+        if ($publishDraft) {
+            $element = Drafts::applyDraft($element);
         }
 
         return $element;
@@ -756,9 +803,14 @@ abstract class ElementImporter extends BaseImporter
         }
 
         if (is_array($data['matchCriteria'])) {
+            // only canonical elements and unpublished drafts can be imported into,
+            // preferring a canonical element when both match;
+            // drafts of an existing element are left alone
             $query = $element::find()
                 ->drafts(null)
-                ->status(null);
+                ->draftOf(false)
+                ->status(null)
+                ->orderBy(new Expression('CASE WHEN elements.draftId IS NULL THEN 0 ELSE 1 END'));
 
             // give element a chance to adjust the query
             $this->prepareRootElementImportQuery($element, $query);

@@ -279,14 +279,17 @@ is accepted and expanded). Behavior:
    a new element instance (per-type subclasses like `EntryImporter`/`AssetImporter` resolve the
    entry type/volume here; `EntryImporter` also sets a Structure section's `structureId`, so
    `parentId` can be applied). If there are match criteria, it then queries with
-   `->drafts(null)->status(null)`, lets the importer adjust the query
+   `->drafts(null)->draftOf(false)->status(null)` (canonical elements and unpublished drafts only,
+   so a draft *of* an existing element is never matched; a canonical element is preferred when both
+   match), lets the importer adjust the query
    (`$this->prepareRootElementImportQuery($element, $query)`) — scoping it by type/volume, for
    example — typecasts criteria, and **forces the step's siteId** so it always wins over
    anything in the criteria. The match is returned as is, falling back to the new element
    (`$query->one() ?? $element`).
 2. `markAsImporting()` — for existing and new elements alike.
 3. Transformer runs *after* the element is resolved, so it can see the existing element
-   via its `$element` argument.
+   via its `$element` argument. The `saveAsDraft` flag (see [Importing as drafts](#importing-as-drafts))
+   is pulled out of the result here, so it's never treated as a field.
 4. Split the result into native attributes, custom fields, and container properties. The
    reserved keys (`ImportHelper::RESERVED_DATA_KEYS`: `matchCriteria`, `clearableItems`,
    `keepMissingNestedElements`) are never treated as fields. They're also left out of the mapping
@@ -298,12 +301,36 @@ is accepted and expanded). Behavior:
    overrides it to resolve filename/folder/temp-file handling and download).
 5. **Skip-unchanged optimization**: snapshots attribute values and serialized field
    values (only for handles in the field layout); if nothing changed, the element is never saved. Skipped for new elements or
-   when container data is present. A special case catches content blocks, whose
-   `serializeValue()` returns null while the block has no id.
-6. Validation scenario: `SCENARIO_LIVE` when `enabled && getEnabledForSite()`,
-   otherwise `SCENARIO_ESSENTIALS`.
-7. Enable keep-flags, save, restore flags in a `finally`.
-8. Return the element.
+   when container data is present, or when an unpublished draft is about to be published. A special
+   case catches content blocks, whose `serializeValue()` returns null while the block has no id.
+6. Validation scenario: `SCENARIO_ESSENTIALS` for an element that stays an unpublished draft;
+   otherwise `SCENARIO_LIVE` when `enabled && getEnabledForSite()`, else `SCENARIO_ESSENTIALS`.
+7. Enable keep-flags, save (`Drafts::saveElementAsDraft()` for a new draft, `Elements::saveElement()`
+   otherwise), restore flags in a `finally`.
+8. Publish the element with `Drafts::applyDraft()` if it's an unpublished draft being published.
+9. Return the element.
+
+### Importing as drafts
+
+For element types whose `hasDrafts()` is true (entries), `ElementImporter::getAvailableProperties()`
+adds a synthetic `saveAsDraft` property (`ElementImporter::SAVE_AS_DRAFT`), shown on the mapping
+screen as "Save as draft". It isn't an element attribute; it decides how the item is saved. Its value
+is read with `FILTER_VALIDATE_BOOL` (`1`, `true`, `yes` and `on` mean a draft; anything else, including
+blank, doesn't), so it can come from a source column or from a template, e.g.
+`{% if object.status == 'draft' %}1{% endif %}`.
+
+| `saveAsDraft` | Matched element | Result |
+| --- | --- | --- |
+| true | none | new unpublished draft |
+| true | unpublished draft | draft updated, stays a draft |
+| any | canonical element | updated in place (enabled or not) |
+| false | none | new element |
+| false | unpublished draft | draft updated, then published |
+| absent | unpublished draft | draft updated, stays a draft |
+
+The flag only takes effect when it's present in the item, so plans that don't map it never publish
+a draft they match. Publishing goes through `Drafts::applyDraft()`, so a section that requires
+workflow approval can refuse it, which fails the item. Drafts are created without a creator.
 
 Container *properties* (as opposed to fields) go through `ImportableContainerPropertiesInterface`:
 `getDestinationColsForProperty()` supplies the mapping panel's columns, and `importIntoContainerAttribute()`
