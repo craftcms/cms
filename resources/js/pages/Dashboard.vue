@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {computed} from 'vue';
   import {t} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
@@ -35,6 +36,22 @@
     resize,
     refreshGrid,
   } = useDashboard(props);
+
+  /** Remounts a widget whenever its settings, data, or markup change. */
+  const widgetKeys = computed(
+    () =>
+      new Map(
+        widgets.value.map((widget) => [
+          widget.id,
+          JSON.stringify([
+            widget.id,
+            widget.settings,
+            widget.data,
+            widget.fragment,
+          ]),
+        ])
+      )
+  );
 </script>
 
 <template>
@@ -47,7 +64,7 @@
               slot="invoker"
               type="button"
               icon="plus"
-              :disabled="busy"
+              .disabled="busy"
               >{{ t('New widget') }}</craft-button
             ></template
           ></ActionMenu
@@ -68,7 +85,7 @@
       <craft-button
         slot="action"
         type="button"
-        :disabled="busy"
+        .disabled="busy"
         @click="undo"
         >{{ t('Undo') }}</craft-button
       >
@@ -80,14 +97,7 @@
     <div id="dashboard-grid" ref="container" class="dashboard-grid">
       <Widget
         v-for="widget in widgets"
-        :key="
-          JSON.stringify([
-            widget.id,
-            widget.settings,
-            widget.data,
-            widget.fragment,
-          ])
-        "
+        :key="widgetKeys.get(widget.id)"
         class="item"
         :data-colspan="widget.colspan"
         :widget="widget"

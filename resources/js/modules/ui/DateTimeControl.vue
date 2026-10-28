@@ -94,9 +94,9 @@
     .max="control.props.max"
     .minuteIncrement="control.props.minuteIncrement"
     :width.attr="control.props.fullWidth ? 'full' : 'auto'"
-    :required="editable && required"
+    .required="editable && required"
     :readonly="control.mode === 'readOnly'"
-    :disabled="control.mode === 'disabled'"
+    .disabled="control.mode === 'disabled'"
     @model-value-changed="update"
   >
     <!-- Hidden rather than removed while there's nothing to clear, so it keeps

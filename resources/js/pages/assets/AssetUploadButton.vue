@@ -232,7 +232,7 @@
   <input ref="fileInput" type="file" name="assets-upload" multiple hidden />
   <craft-button
     icon="upload"
-    :disabled="!enabled"
+    .disabled="!enabled"
     @click="fileInput?.click()"
     v-bind="$attrs"
   >

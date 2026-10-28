@@ -40,7 +40,7 @@
     </div>
     <div class="mt-4">
       <div class="flex gap-2 items-center">
-        <craft-button type="submit" :loading="form.processing" variant="accent">
+        <craft-button type="submit" .loading="form.processing" variant="accent">
           {{ t('Find and Replace') }}
         </craft-button>
         <InlineFlash target="find-replace" :busy="form.processing" />

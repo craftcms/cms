@@ -29,7 +29,7 @@
     :data-activity-event="event.id"
     class="activity-timeline__event"
   >
-    <craft-timeline-item :last="last">
+    <craft-timeline-item .last="last">
       <craft-icon slot="marker" :name="event.icon ?? 'wave-pulse'" />
       <ActivityCommentCard
         :actor="event.actor"

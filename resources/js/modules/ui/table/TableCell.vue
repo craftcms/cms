@@ -1,12 +1,8 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field/field';
-  import {computed, getCurrentInstance, inject, provide} from 'vue';
-  import {
-    FieldLabelSrOnly,
-    UiFailure,
-    uiChangeFromEvent,
-    pathsMatch,
-  } from '../runtime';
+  import {computed, getCurrentInstance, provide} from 'vue';
+  import {FieldLabelSrOnly, uiChangeFromEvent, pathsMatch} from '../runtime';
+  import {useOptionalUiRenderer} from '../renderer/context';
   import type {
     UiChange,
     UiChangeKind,
@@ -32,7 +28,7 @@
     (event: 'change', change: UiChange): void;
   }>();
   const components = getCurrentInstance()!.appContext.components;
-  const failure = inject(UiFailure, undefined);
+  const failure = useOptionalUiRenderer()?.fail;
   provide(
     FieldLabelSrOnly,
     computed(() => true)

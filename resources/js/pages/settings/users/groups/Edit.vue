@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import type {UrlMethodPair} from '@inertiajs/core';
   import {router} from '@inertiajs/vue3';
+  import {computed} from 'vue';
   import type {ActionItem} from '@/common/types';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import UiPage from '@/pages/Ui.vue';
@@ -17,22 +18,27 @@
     };
   }>();
 
-  const deleteAction = props.deleteAction;
-  const actions: ActionItem[] = deleteAction
-    ? [
-        {
-          variant: 'danger',
-          label: deleteAction.label,
-          onClick: () => {
-            if (confirm(deleteAction.confirm)) {
-              router.delete(deleteAction.url);
-            }
-          },
-        },
-      ]
-    : [];
+  const actions = computed<ActionItem[]>(() => {
+    const deleteAction = props.deleteAction;
 
-  useAppLayout({formActions: actions});
+    if (!deleteAction) {
+      return [];
+    }
+
+    return [
+      {
+        variant: 'danger',
+        label: deleteAction.label,
+        onClick: () => {
+          if (confirm(deleteAction.confirm)) {
+            router.delete(deleteAction.url);
+          }
+        },
+      },
+    ];
+  });
+
+  useAppLayout(() => ({formActions: actions.value}));
 </script>
 
 <template>

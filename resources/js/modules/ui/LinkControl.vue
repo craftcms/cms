@@ -245,7 +245,7 @@
       :name="editable ? inputName(control.path) : ''"
       .showLabelField="control.props.showLabelField"
       .advancedFields="control.props.advancedFields"
-      :disabled="!editable"
+      .disabled="!editable"
       @link-change="change"
     />
   </div>

@@ -1,4 +1,4 @@
-import {computed, ref} from 'vue';
+import {computed, toValue, type MaybeRefOrGetter} from 'vue';
 import {useStepper} from '@vueuse/core';
 import {t} from '@craftcms/ui';
 import {
@@ -13,13 +13,16 @@ interface InstallStep {
   action?: string;
   heading?: string;
   submitLabel?: string;
-  hidden?: boolean;
 }
 
 type InstallSteps = Record<string, InstallStep>;
 
-export const useInstall = () => {
-  const possibleSteps = ref<InstallSteps>({
+export const useInstall = ({
+  showDbScreen,
+}: {
+  showDbScreen: MaybeRefOrGetter<boolean>;
+}) => {
+  const possibleSteps: InstallSteps = {
     start: {},
     license: {
       id: 'license',
@@ -48,14 +51,14 @@ export const useInstall = () => {
       label: 'Installing',
       id: 'installing',
     },
-  });
+  };
 
   const steps = computed(() => {
-    return Object.entries(possibleSteps.value).reduce<InstallSteps>(
-      (acc, [key, step]) => {
-        const hidden = step.hidden ?? false;
+    const hideDbScreen = !toValue(showDbScreen);
 
-        if (!hidden) {
+    return Object.entries(possibleSteps).reduce<InstallSteps>(
+      (acc, [key, step]) => {
+        if (!(key === 'db' && hideDbScreen)) {
           acc[key] = step;
         }
 
@@ -85,7 +88,6 @@ export const useInstall = () => {
 
   return {
     ...stepper,
-    possibleSteps,
     currentId,
     dotSteps,
   };
