@@ -6,8 +6,6 @@ namespace CraftCms\Cms\View\LegacyAssets;
 
 use CraftCms\Cms\View\HtmlStack;
 
-use function CraftCms\Cms\craftAsset;
-
 /**
  * @deprecated
  *
@@ -21,9 +19,5 @@ class GeneralSettingsAsset implements LegacyAssetInterface
         CpAsset::class,
     ];
 
-    public function register(HtmlStack $htmlStack): void
-    {
-        // $htmlStack->jsFile(craftAsset('legacy/generalsettings/dist/rebrand.js'));
-        // $htmlStack->cssFile(craftAsset('legacy/generalsettings/dist/css/rebrand.css'));
-    }
+    public function register(HtmlStack $htmlStack): void {}
 }

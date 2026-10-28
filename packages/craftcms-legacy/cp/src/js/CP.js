@@ -2714,7 +2714,7 @@ var JobProgressIcon = Garnish.Base.extend({
       .hide();
 
     // If the sidebar is collapsed, make sure to add a tooltip.
-    // CraftGlobalSidebar.js will handle removing it and adding it back on expand/contract
+    // <cp-global-sidebar> removes it and adds it back on expand/contract
     if (Garnish.$bod.data('sidebar') === 'collapsed') {
       this.$tooltip = $('<craft-tooltip/>', {
         placement: 'right',
