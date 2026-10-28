@@ -301,14 +301,20 @@ it("gives the panel's buttons at least a 24px target", async () => {
   }
 });
 
+// Warm-ups long enough that a slow hover on a busy runner can't use them up
+// before the test checks that the details are still closed.
+const slowWarmUp = 1500;
+
 it('opens the details once the pointer rests on the link for the warm-up', async () => {
-  setHoverTiming({warmUpDelay: 300});
+  setHoverTiming({warmUpDelay: slowWarmUp});
   await userEvent.hover(link().querySelector('a')!);
   await wait(150);
 
   expect(popover().opened).toBe(false);
 
-  await vi.waitFor(() => expect(popover().opened).toBe(true));
+  await vi.waitFor(() => expect(popover().opened).toBe(true), {
+    timeout: slowWarmUp + 1000,
+  });
   expect(document.activeElement).toBe(document.body);
 });
 
@@ -320,10 +326,10 @@ it('opens the details when the link fits, too', async () => {
 });
 
 it('leaves the details closed when the pointer moves off before the warm-up', async () => {
-  setHoverTiming({warmUpDelay: 300});
+  setHoverTiming({warmUpDelay: slowWarmUp});
   await userEvent.hover(link().querySelector('a')!);
   await userEvent.hover(document.querySelector('.before')!);
-  await wait(400);
+  await wait(slowWarmUp + 100);
 
   expect(popover().opened).toBe(false);
 });
@@ -393,7 +399,7 @@ it('waits out the warm-up again once the cool-down passes', async () => {
   await userEvent.hover(document.querySelector('.before')!);
   await vi.waitFor(() => expect(popover().opened).toBe(false));
   await wait(200);
-  setHoverTiming({warmUpDelay: 300});
+  setHoverTiming({warmUpDelay: slowWarmUp});
   await hoverSecondLink();
   await wait(150);
 
