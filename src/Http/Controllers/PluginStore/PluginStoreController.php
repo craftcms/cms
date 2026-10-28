@@ -19,9 +19,12 @@ use CraftCms\Cms\View\LegacyAssets\PluginStoreAsset;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\craftAsset;
+use function CraftCms\Cms\t;
 
 /**
  * @internal
@@ -30,7 +33,40 @@ use function CraftCms\Cms\craftAsset;
  */
 readonly class PluginStoreController
 {
-    public function index(License $license, Composer $composer, GeneralConfig $generalConfig): View
+    public function index(): InertiaResponse
+    {
+        return $this->render('plugin-store/Index');
+    }
+
+    public function category(int $id): InertiaResponse
+    {
+        return $this->render('plugin-store/Category', ['categoryId' => $id]);
+    }
+
+    public function featured(string $handle): InertiaResponse
+    {
+        return $this->render('plugin-store/Featured', ['handle' => $handle]);
+    }
+
+    public function developer(int $id): InertiaResponse
+    {
+        return $this->render('plugin-store/Developer', ['developerId' => $id]);
+    }
+
+    public function search(Request $request): InertiaResponse
+    {
+        return $this->render('plugin-store/Search', ['query' => trim((string) $request->query('q', ''))]);
+    }
+
+    public function plugin(string $handle, string $tab = 'overview'): InertiaResponse
+    {
+        return $this->render('plugin-store/Plugin', ['handle' => $handle, 'tab' => $tab]);
+    }
+
+    /**
+     * Serves the screens that haven't moved out of the standalone Plugin Store app yet.
+     */
+    public function legacy(License $license, Composer $composer, GeneralConfig $generalConfig): View
     {
         HtmlStack::jsFile('https://js.stripe.com/v2/');
 
@@ -57,6 +93,37 @@ readonly class PluginStoreController
         app(InternalAssetRegistry::class)->register(PluginStoreAsset::class);
 
         return view('plugin-store/_index');
+    }
+
+    /**
+     * @param  array<string, mixed>  $props
+     */
+    private function render(string $component, array $props = []): InertiaResponse
+    {
+        return Inertia::render($component, [
+            'title' => t('Plugin Store'),
+            'context' => $this->context(),
+            ...$props,
+        ]);
+    }
+
+    /**
+     * What the store needs to know about this install to decide which plugins it can offer.
+     *
+     * @return array{edition: string, licensedEdition: string|null, editions: list<string>, phpVersion: string, composerPhpVersion: string|null, allowUpdates: bool}
+     */
+    private function context(): array
+    {
+        $generalConfig = app(GeneralConfig::class);
+
+        return [
+            'edition' => Edition::get()->handle(),
+            'licensedEdition' => Edition::getLicensed()?->handle(),
+            'editions' => array_map(fn (Edition $edition) => $edition->handle(), Edition::cases()),
+            'phpVersion' => PHP::version(),
+            'composerPhpVersion' => app(Composer::class)->getConfig()['config']['platform']['php'] ?? null,
+            'allowUpdates' => $generalConfig->allowUpdates && $generalConfig->allowAdminChanges,
+        ];
     }
 
     public function craftData(Request $request): Response
