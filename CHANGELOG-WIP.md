@@ -12,6 +12,7 @@
 - Slideouts’ details panes that were folded away for lack of room now reopen once the slideout is wide enough again. ([#19978](https://github.com/craftcms/cms/pull/19978))
 - Content within black cards, chips, and badges, such as buttons, badges, and links, is now styled as in the dark theme.
 - Card view designers now preview users with a sample user’s name, default avatar, and active status.
+- Link and Email field values in element indexes and cards now stay on one line, cut off with an ellipsis, after a button that shows the full address with options to open or copy it. Hovering over the link shows the same details. ([#20123](https://github.com/craftcms/cms/pull/20123))
 
 ### Workflows
 - Added publishing workflows, which control when drafts may be applied to entries. Workflows are configured from Settings → Workflows and assigned to sections. (Craft Pro and Enterprise only.) ([#19667](https://github.com/craftcms/cms/pull/19667))
@@ -23,6 +24,8 @@
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, and email notifications.
 - Element index searches now update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Clicking anywhere on an element index table row or card (other than an interactive control) now selects it. ([#19351](https://github.com/craftcms/cms/pull/19351))
+- Element index View menus now have a “Thumb Size” setting in table, structure, and thumbnail views, with “Small”, “Medium”, and “Large” options, plus “XL” and “2XL” in thumbnail view. Each view remembers its own size, and chips take a size to suit their thumbnails. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
+- Thumbnail views in element indexes and relational fields now show each element as a chip, with its thumbnail above its label. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Element index sources can now show a count of their elements in the control panel nav, via a new “Show count” setting in the “Customize sources” modal. Entries, assets, and users support it.
 - Apps can now manage their own Eloquent models as elements in the control panel, with an element index and nav item, an element editor, permissions or model policies, search, activity history, relation fields, and Twig element queries. Elements are kept in sync with their models in both directions, and the models and their tables are left unchanged. ([#19971](https://github.com/craftcms/cms/pull/19971))
 
@@ -33,6 +36,7 @@
 
 ### Assets
 - Added background uploads in the Assets index, which continue during control panel navigation, with persistent progress, retry, cancellation, and filename-conflict controls.
+- Images uploaded from the Assets index that look like copies of images that are already uploaded, even resized or recompressed, now wait within their upload notification, which shows the existing images’ chips and offers to cancel the upload, keep both, or replace the existing image’s file, like filename conflicts. ([#20113](https://github.com/craftcms/cms/pull/20113))
 - Added Undo/Redo support and a “Revert to original” button to the image editor. ([#19600](https://github.com/craftcms/cms/pull/19600))
 - Image thumbnails and previews in the control panel now show a blurred placeholder based on the image’s colors while they load. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Removed Craft-managed filesystems and their control panel settings. Volumes and Craft asset transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and each defines whether its assets have public URLs. Existing filesystem references are migrated to matching disks automatically, with an actionable error if a disk isn’t configured. ([#19650](https://github.com/craftcms/cms/pull/19650))
@@ -159,6 +163,7 @@
 - Added `CraftCms\Cms\Element\Contracts\ElementInterface::supportsSourceBadgeCounts()`, `sourceSupportsBadgeCount()`, and `sourceBadgeCount()`, and the `defaultBadgeCount` source key, for element types whose sources can show a count of their elements.
 - Added `CraftCms\Cms\Cp\Data\ActionItem::$badgeLabel`. Element sources’ `badgeLabel` keys are now passed to screen readers in the control panel nav.
 - `<craft-badge-indicator>` now has a `max` property, which sets the largest count shown before it’s shortened to “99+”. Set it to `Infinity` to show the whole count. Counts are now formatted for the page’s language.
+- Added the `thumbSize` config option to `CraftCms\Cms\Cp\Html\ElementHtml::chipHtml()` and `elementChipHtml()`, which sizes a chip’s thumbnail independently of the chip (`sm`, `md`, `lg`, `xl`, or `2xl`), and a `medium` chip size (`ElementHtml::CHIP_SIZE_MEDIUM`). Chips without a `size` take the one that suits their thumbnail. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Plugins can now make their element types available through the `elements.*` MCP tools.
 - Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are only shown in the Inertia element editor and element chips if they define a `url` or `action`. ([#19783](https://github.com/craftcms/cms/pull/19783))
 - Plugins can no longer register custom Craft filesystem types. Filesystem types registered through `craft\base\Fs` remain supported for legacy plugins via the Yii adapter. ([#19650](https://github.com/craftcms/cms/pull/19650))
@@ -678,6 +683,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - `Craft.sendActionRequest()` and `Craft.sendApiRequest()` no longer use axios. Their errors still pass `axios.isAxiosError()` and `axios.isCancel()` checks.
 - Added `createHttpClient()`, `http`, `isHttpError()`, and `isCancel()` to `@craftcms/ui`.
 - Added `Craft.isCancel()`.
+- Added the `<craft-link>` web component, which shows a link on one line with a details button, and the `--c-link-max-width` CSS custom property, which caps its width. ([#20123](https://github.com/craftcms/cms/pull/20123))
 - Deprecated the `cancelToken` request option for `Craft.sendActionRequest()` and `Craft.sendApiRequest()`. `signal` should be used instead.
 - Removed `Cp.$axios`.
 - Removed the `Craft.Accordion` and `Craft.EnvVarGenerator` control panel JavaScript classes. ([#19323](https://github.com/craftcms/cms/pull/19323))

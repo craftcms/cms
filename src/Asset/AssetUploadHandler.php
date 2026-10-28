@@ -11,8 +11,10 @@ use CraftCms\Cms\Asset\Data\UploadResult;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\AssetIngestStatus;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Elements;
@@ -40,6 +42,8 @@ readonly class AssetUploadHandler
         private Folders $folders,
         private Fields $fields,
         private Elements $elements,
+        private ImageDuplicates $imageDuplicates,
+        private ElementHtml $elementHtml,
     ) {}
 
     /**
@@ -257,6 +261,7 @@ readonly class AssetUploadHandler
                 'suggestedFilename' => $asset->suggestedFilename,
                 'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->sourceHasUrls()) ? $conflictingAsset->getUrl() : null,
                 'url' => $url,
+                'duplicates' => $this->duplicates($asset),
             ]);
         }
 
@@ -264,7 +269,38 @@ readonly class AssetUploadHandler
             'filename' => $asset->getFilename(),
             'assetId' => $asset->id,
             'url' => $url,
+            'duplicates' => $this->duplicates($asset),
         ]);
+    }
+
+    /**
+     * Returns the images an uploaded one looks like a copy of, which the uploader can view, so they can be told
+     * before they use it.
+     *
+     * @return list<array{id: int, title: string, url: string, chipHtml: string}>
+     */
+    private function duplicates(Asset $asset): array
+    {
+        if ($asset->kind !== FileKind::Image->value) {
+            return [];
+        }
+
+        return array_values(array_map(
+            fn (Asset $duplicate): array => [
+                'id' => $duplicate->id,
+                'title' => (string) $duplicate->title,
+                'url' => (string) $duplicate->getCpEditUrl(),
+                'chipHtml' => $this->elementHtml->elementChipHtml($duplicate, [
+                    'autoReload' => false,
+                    'hyperlink' => true,
+                    'hyperlinkUrl' => (string) $duplicate->getCpEditUrl(),
+                ]),
+            ],
+            array_filter(
+                $this->imageDuplicates->find($asset),
+                static fn (Asset $duplicate): bool => Gate::check('view', $duplicate),
+            ),
+        ));
     }
 
     /**

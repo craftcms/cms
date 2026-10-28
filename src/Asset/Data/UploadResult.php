@@ -54,6 +54,13 @@ class UploadResult implements Arrayable
     /** @var array<string, list<string>> */
     public private(set) array $errors;
 
+    /**
+     * Images the uploaded one looks like a copy of, which the uploader can view.
+     *
+     * @var list<array{id: int, title: string, url: string, chipHtml: string}>
+     */
+    public private(set) array $duplicates;
+
     /** @param array<string, mixed> $data */
     public function __construct(array $data, public private(set) int $status = 200)
     {

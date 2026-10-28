@@ -752,13 +752,40 @@ it('reads the metadata of unchanged images that are missing it, when asked to an
         $colors = $asset->analysis->colors->toArray();
         expect($asset->analysis->metadata->creator)->toBe('Ada Park');
 
-        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => $colors])]);
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode(['colors' => $colors, 'hash' => $asset->analysis->hash])]);
 
         expect($index(false)->analysis->metadata)->toBeNull()
             ->and($index(true)->analysis->metadata->creator)->toBe('Ada Park');
     } finally {
         $volumeData->sourceDisk()->delete('harbor.jpg');
         deleteMetadataJpegs();
+    }
+});
+
+it('fingerprints unchanged images that were sampled before hashes were, when asked to analyze images', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData], isCli: true);
+    $volumeData->sourceDisk()->put('red.png', file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
+    $index = fn (bool $analyzeImages) => $this->indexer->indexFileByListing($volumeData, new FsListing([
+        'dirname' => '',
+        'basename' => 'red.png',
+        'type' => 'file',
+        'fileSize' => $volumeData->sourceDisk()->size('red.png'),
+        'dateModified' => $volumeData->sourceDisk()->lastModified('red.png'),
+    ]), $session->id, analyzeImages: $analyzeImages);
+
+    try {
+        $asset = $index(false);
+        Asset::whereKey($asset->id)->update(['analysis' => json_encode([
+            'colors' => ['dominant' => '#dc1e1e', 'grid' => [['#dc1e1e']], 'palette' => ['#dc1e1e'], 'luminance' => [[[0.2, 0.2]]]],
+            'metadata' => [],
+        ])]);
+
+        expect($index(false)->analysis->hash)->toBeNull()
+            ->and($index(true)->analysis->hash)->toMatch('/^[0-9a-f]{16}$/');
+    } finally {
+        $volumeData->sourceDisk()->delete('red.png');
     }
 });
 

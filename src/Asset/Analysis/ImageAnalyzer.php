@@ -16,6 +16,7 @@ use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Image\Data\ImageSample;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\Raster;
 use CraftCms\Cms\Support\File;
@@ -108,7 +109,9 @@ class ImageAnalyzer
             return false;
         }
 
-        return $this->colorsNeedSampling($asset->analysis?->colors) || $asset->analysis?->metadata === null;
+        return $this->colorsNeedSampling($asset->analysis?->colors)
+            || ($asset->analysis !== null && $this->hashNeedsSampling($asset->analysis))
+            || $asset->analysis?->metadata === null;
     }
 
     /**
@@ -255,8 +258,8 @@ class ImageAnalyzer
     }
 
     /**
-     * Records what the image is missing that can be read from its file: its colors, and its embedded metadata, and
-     * what that fills in, as an upload’s does.
+     * Records what the image is missing that can be read from its file: its colors and hash, and its embedded metadata,
+     * and what that fills in, as an upload’s does.
      *
      * @see Asset::valuesFromEmbeddedMetadata()
      */
@@ -265,7 +268,10 @@ class ImageAnalyzer
         $analysis = $asset->analysis ?? new ImageAnalysis;
 
         if ($this->colorsNeedSampling($analysis->colors)) {
-            $analysis = $analysis->withColors($this->images->colors($path));
+            $analysis = $analysis->withSample($this->images->sample($path));
+        } elseif ($this->hashNeedsSampling($analysis)) {
+            // Its colors are kept, since only its hash is missing
+            $analysis = $analysis->withSample(new ImageSample($analysis->colors, $this->images->sample($path)->hash));
         }
 
         if ($analysis->metadata === null) {
@@ -287,6 +293,14 @@ class ImageAnalyzer
     private function colorsNeedSampling(?ImageColors $colors): bool
     {
         return $colors === null || ($colors->grid !== [] && ($colors->palette === [] || $colors->luminance === [] || $colors->weights === []));
+    }
+
+    /**
+     * Returns whether an image that could be sampled was sampled before hashes were.
+     */
+    private function hashNeedsSampling(ImageAnalysis $analysis): bool
+    {
+        return $analysis->colors !== null && $analysis->colors->grid !== [] && $analysis->hash === null;
     }
 
     /**

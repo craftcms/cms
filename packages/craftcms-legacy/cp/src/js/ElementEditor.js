@@ -10,7 +10,6 @@ Craft.ElementEditor = Garnish.Base.extend(
   {
     isFullPage: null,
     $container: null,
-    $activityContainer: null,
     $contentContainer: null,
     $sidebar: null,
     $spinner: null,
@@ -53,8 +52,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     previewLinks: null,
 
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
-
-    _checkActivityTimeout: null,
 
     get tipDismissBtn() {
       return this.$container.find('.tip-dismiss-btn');
@@ -209,11 +206,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       if (this.$container.prop('tagName') !== 'FORM') {
         throw 'Element editors may only be used with forms.';
-      }
-
-      if (Craft.edition !== Craft.Solo) {
-        this.$activityContainer = this.$container.find('.activity-container');
-        this._checkActivity();
       }
 
       // Override the serializer to use our own
@@ -2185,151 +2177,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
     },
 
-    _checkActivity: function () {
-      if (!Craft.remainingSessionTime) {
-        return;
-      }
-
-      this.queue?.push(
-        () =>
-          new Promise((resolve, reject) => {
-            Craft.sendActionRequest('POST', 'elements/recent-activity', {
-              params: {
-                dontExtendSession: 1,
-              },
-              data: {
-                elementType: this.settings.elementType,
-                elementId: this.settings.canonicalId,
-                draftId: this.settings.draftId,
-                siteId: this.settings.siteId,
-                provisional: this.settings.isProvisionalDraft,
-              },
-            })
-              .then(({data}) => {
-                // Preserve keyboard focus across the re-render: which activity
-                // button (by user) is focused right now?
-                const activeEl = document.activeElement;
-                const focusedUserId =
-                  activeEl instanceof HTMLElement &&
-                  activeEl.classList.contains('activity-btn')
-                    ? activeEl.getAttribute('data-user-id')
-                    : null;
-
-                this.$activityContainer
-                  .html('')
-                  .attr('role', 'region')
-                  .attr('aria-label', Craft.t('app', 'Recent Activity'));
-
-                if (data.activity.length) {
-                  $('<h2/>', {
-                    class: 'visually-hidden',
-                    text: Craft.t('app', 'Recent Activity'),
-                  }).appendTo(this.$activityContainer);
-                  const $ul = $('<ul/>').appendTo(this.$activityContainer);
-                  for (let i = 0; i < data.activity.length; i++) {
-                    const activity = data.activity[i];
-                    const triggerId = `activity-tooltip-${activity.userId}`;
-                    const $li = $('<li/>').appendTo($ul);
-                    const $button = $('<button/>', {
-                      type: 'button',
-                      id: triggerId,
-                      class: 'activity-btn',
-                      'data-user-id': activity.userId,
-                      'aria-label': Craft.t('app', '{name} active, more info', {
-                        name: activity.userName,
-                      }),
-                    }).appendTo($li);
-                    const $thumb = $(activity.userThumb)
-                      .addClass('elementthumb')
-                      .css('z-index', data.activity.length - i)
-                      .appendTo($button);
-                    $thumb.find('img,svg').attr('role', 'presentation');
-                    Craft.cp.elementThumbLoader.load($li);
-                    $thumb.find('title').remove();
-
-                    // <craft-tooltip> replaces the legacy Craft.Tooltip
-                    // toggletip; it shows the activity message on hover/focus of
-                    // the button. Recreated alongside the button each poll.
-                    $('<craft-tooltip/>')
-                      .attr('for', triggerId)
-                      .text(activity.message)
-                      .appendTo($li);
-
-                    // Maintain keyboard focus across the re-render.
-                    if (
-                      focusedUserId !== null &&
-                      activity.userId == focusedUserId
-                    ) {
-                      $button.focus();
-                    }
-                  }
-                }
-
-                if (this.isFullPage) {
-                  // if the element has been updated upstream, show a notification about it
-                  const elementUpdated =
-                    this.settings.updatedTimestamp &&
-                    this.settings.updatedTimestamp !== data.updatedTimestamp;
-                  const canonicalUpdated =
-                    this.settings.canonicalUpdatedTimestamp &&
-                    this.settings.canonicalUpdatedTimestamp !==
-                      data.canonicalUpdatedTimestamp;
-
-                  if (elementUpdated || canonicalUpdated) {
-                    const $reloadBtn = Craft.ui.createButton({
-                      label: Craft.t('app', 'Reload'),
-                      spinner: true,
-                    });
-
-                    Craft.cp.displayNotice(
-                      Craft.uppercaseFirst(
-                        Craft.t('app', 'This {type} has been updated.', {
-                          type:
-                            elementUpdated &&
-                            this.settings.draftId &&
-                            !this.settings.isProvisionalDraft
-                              ? Craft.t('app', 'draft')
-                              : Craft.elementTypeNames[
-                                    this.settings.elementType
-                                  ]
-                                ? Craft.elementTypeNames[
-                                    this.settings.elementType
-                                  ][2]
-                                : Craft.t('app', 'element'),
-                        })
-                      ),
-                      {
-                        details: $reloadBtn,
-                      }
-                    );
-                    $reloadBtn.on('click', () => {
-                      window.location.reload();
-                    });
-                  }
-                }
-
-                this.settings.updatedTimestamp = data.updatedTimestamp;
-                this.settings.canonicalUpdatedTimestamp =
-                  data.canonicalUpdatedTimestamp;
-
-                this.trigger('checkActivity', data);
-
-                this._checkActivityTimeout = setTimeout(() => {
-                  this._checkActivity();
-                }, 15000);
-                resolve();
-              })
-              .catch((e) => {
-                if (e?.response?.status === 400) {
-                  resolve();
-                } else {
-                  reject(e);
-                }
-              });
-          })
-      );
-    },
-
     destroy: function () {
       this.queue?.destroy();
       delete this.queue;
@@ -2338,7 +2185,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.preview?.destroy();
       delete this.preview;
       this.$container.removeData('elementEditor');
-      clearTimeout(this._checkActivityTimeout);
       this.base();
     },
   },

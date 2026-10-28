@@ -227,10 +227,7 @@ export class QueueService extends EventTarget {
     try {
       const response = await http.get<QueueJobData>(
         this.#config.getActionUrl('queue/get-job-info'),
-        {
-          params: {dontExtendSession: 1},
-          signal: this.#abortController.signal,
-        }
+        {signal: this.#abortController.signal}
       );
 
       this.setJobData(response.data.jobs);

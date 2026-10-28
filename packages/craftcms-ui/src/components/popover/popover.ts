@@ -4,7 +4,7 @@ import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
 // Named explicitly so the emitted .d.ts can reference Lion's mixin
 // constructor by package specifier instead of a pnpm store path (TS2883).
 import type {} from '@open-wc/dedupe-mixin';
-import type {VirtualElement} from '@popperjs/core';
+import type {Modifier, VirtualElement} from '@popperjs/core';
 import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import {isFocusable} from '@src/utilities/focus-return.js';
 import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
@@ -16,6 +16,55 @@ import {
 } from '@src/utilities/overlay-top-layer.js';
 import hostStyles from '@src/styles/host.styles';
 import styles from './popover.styles.js';
+
+/**
+ * How far the pane stays from the viewport's edge when it's sized to fit,
+ * matching the padding Lion gives Popper's `flip`. Any less and the fitted
+ * pane would count as overflowing, flipping it to the other side.
+ */
+const VIEWPORT_MARGIN = 16;
+
+/**
+ * Caps the pane at the room left between it and the viewport edge it opens
+ * toward, through `--_popover-available-block-size`, so a popover with room
+ * below it can use it rather than stopping at the stylesheet's `40vh`. An
+ * explicit `--popover-max-block-size` still wins.
+ *
+ * Measured from where Popper has just placed the pane, so it follows a flip.
+ * Changing the cap changes the pane's height, which a `top` placement is
+ * positioned by, so the popper updates once more when it does.
+ */
+const fitAvailableBlockSize: Partial<Modifier<'fitAvailableBlockSize', {}>> = {
+  name: 'fitAvailableBlockSize',
+  enabled: true,
+  phase: 'main',
+  requiresIfExists: ['offset', 'preventOverflow', 'flip'],
+  fn: ({state, instance}) => {
+    const top = state.modifiersData.popperOffsets?.y ?? 0;
+    const viewport = document.documentElement.clientHeight;
+    const side = state.placement.split('-')[0];
+    const available = Math.floor(
+      side === 'top'
+        ? top + state.rects.popper.height - VIEWPORT_MARGIN
+        : side === 'bottom'
+          ? viewport - VIEWPORT_MARGIN - top
+          : viewport - VIEWPORT_MARGIN * 2
+    );
+    const style = state.elements.popper.style;
+    const property = '--_popover-available-block-size';
+    const previous = style.getPropertyValue(property);
+
+    if (!viewport || available <= 0) {
+      style.removeProperty(property);
+    } else {
+      style.setProperty(property, `${available}px`);
+    }
+
+    if (style.getPropertyValue(property) !== previous) {
+      void instance.update();
+    }
+  },
+};
 
 /** Lion's own default, for pages that don't load the CP tokens. */
 const DEFAULT_POPOVER_LAYER = 9999;
@@ -258,6 +307,7 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
             },
           },
           ...viewportEscapingModifiers(),
+          fitAvailableBlockSize,
         ],
       },
     };
