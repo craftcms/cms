@@ -7,6 +7,8 @@ import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import '../spinner/spinner.js';
 import '../icon/icon.js';
+import '../shortcut/shortcut.js';
+import {HasShortcut} from '@src/mixins/HasShortcut';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
 import {Actionable} from '@src/mixins/Actionable';
@@ -32,10 +34,16 @@ export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
  * @since 1.0
  *
  * @dependency craft-spinner
+ * @dependency craft-shortcut
  *
  * @slot - The button's label.
  * @slot prefix - Content to display before the label (typically an icon).
  * @slot suffix - Content to display after the label (typically an icon).
+ *
+ * @attr shortcut - A keyboard shortcut shown at the end of the button: a key
+ *   (`"K"`), or JSON naming its modifiers (`'{"key": "S", "shift": true}'`).
+ *   Display only, and hidden from screen readers. Supplied by the
+ *   `HasShortcut` mixin.
  *
  * @csspart content - The button's content wrapper.
  * @csspart prefix - The button's prefix slot.
@@ -48,7 +56,9 @@ export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
  *   is the state being asked for. Cancelable — `active` is owned by whoever set
  *   it, and the button never changes it itself.
  */
-export default class CraftButton extends Actionable(LionButtonSubmit) {
+export default class CraftButton extends HasShortcut(
+  Actionable(LionButtonSubmit)
+) {
   static override get styles() {
     return [...super.styles, visuallyHiddenStyles, a11yErrorStyles, styles];
   }
@@ -541,6 +551,15 @@ export default class CraftButton extends Actionable(LionButtonSubmit) {
             ? html`<craft-icon name="${this.icon}"></craft-icon>`
             : nothing}
         </slot>
+        ${this.shortcutKeys
+          ? html`<craft-shortcut
+              class="shortcut"
+              aria-hidden="true"
+              ?alt="${this.shortcutKeys.alt}"
+              ?shift="${this.shortcutKeys.shift}"
+              >${this.shortcutKeys.key}</craft-shortcut
+            >`
+          : nothing}
       </div>
       ${this.loading
         ? html`<craft-spinner part="spinner"></craft-spinner>`

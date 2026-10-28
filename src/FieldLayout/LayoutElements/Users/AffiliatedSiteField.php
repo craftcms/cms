@@ -123,4 +123,10 @@ class AffiliatedSiteField extends BaseNativeField
 
         return $items;
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'earth-americas';
+    }
 }
