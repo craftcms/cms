@@ -16,7 +16,7 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 ### Semantics
 
 - [ ] The content carries `role="tooltip"`, and the invoker references it with `aria-describedby` (or `aria-labelledby` when `invoker-relation="label"`). Per WCAG 4.1.2 (Name, Role, Value). Lion's `OverlayController` sets both; not yet verified by a test.
-- [ ] The wiring follows a `for` change to a new invoker, and is removed from the old one. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
+- [x] The wiring follows a `for` change to a new invoker, and is removed from the old one. Per WCAG 4.1.2 (Name, Role, Value). Verified by `moves its wiring and click toggle to the new invoker when for changes` in `tooltip.browser.test.ts`.
 
 ### Keyboard and pointer
 
