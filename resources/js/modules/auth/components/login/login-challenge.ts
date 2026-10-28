@@ -49,6 +49,8 @@ export default class CraftLoginChallenge extends LitElement {
 
   #initialized = false;
 
+  #assetsAppendedFor: TwoFactorData | null = null;
+
   override async updated(changed: Map<string, unknown>) {
     super.updated(changed);
 
@@ -82,8 +84,11 @@ export default class CraftLoginChallenge extends LitElement {
       return;
     }
 
-    await Craft.appendHeadHtml(this.data.headHtml);
-    await Craft.appendBodyHtml(this.data.bodyHtml);
+    if (this.#assetsAppendedFor !== this.data) {
+      this.#assetsAppendedFor = this.data;
+      await Craft.appendHeadHtml(this.data.headHtml);
+      await Craft.appendBodyHtml(this.data.bodyHtml);
+    }
     Craft.initUiElements($authForm);
 
     Craft.createAuthFormHandler(
@@ -98,15 +103,7 @@ export default class CraftLoginChallenge extends LitElement {
           })
         );
       },
-      (message) => {
-        this.dispatchEvent(
-          new CustomEvent('login-failed', {
-            bubbles: true,
-            composed: true,
-            detail: {message},
-          })
-        );
-      }
+      (message) => this.#dispatchLoginFailed(message)
     );
 
     // defer injecting the form until after the form handlers are loaded
@@ -118,9 +115,20 @@ export default class CraftLoginChallenge extends LitElement {
       ?.focus();
   }
 
+  #dispatchLoginFailed(message: string) {
+    this.dispatchEvent(
+      new CustomEvent('login-failed', {
+        bubbles: true,
+        composed: true,
+        detail: {message},
+      })
+    );
+  }
+
   async #switchMethod(method: {name: string; handle: string; url: string}) {
     this._switching = true;
     this.#initialized = false;
+    let failureMessage: string | null = null;
 
     try {
       const response = await fetch(method.url, {
@@ -129,14 +137,21 @@ export default class CraftLoginChallenge extends LitElement {
           'Content-Type': 'application/json',
         },
       });
+      const data = await response.json().catch(() => null);
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch challenge data.');
+      if (response.ok && data) {
+        this.data = data;
+      } else {
+        failureMessage = data?.message ?? t('A server error occurred.');
       }
-
-      this.data = await response.json();
+    } catch {
+      failureMessage = t('A server error occurred.');
     } finally {
       this._switching = false;
+    }
+
+    if (failureMessage !== null) {
+      this.#dispatchLoginFailed(failureMessage);
     }
   }
 
