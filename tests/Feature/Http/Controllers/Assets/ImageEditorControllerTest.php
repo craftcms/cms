@@ -24,36 +24,6 @@ beforeEach(function () {
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
 });
 
-describe('show', function () {
-    it('requires authentication', function () {
-        auth()->logout();
-
-        postJson(action([ImageEditorController::class, 'show']), [
-            'assetId' => 1,
-        ])->assertUnauthorized();
-    });
-
-    it('validates input', function () {
-        postJson(action([ImageEditorController::class, 'show']))
-            ->assertJsonValidationErrors(['assetId']);
-    });
-
-    it('can show the image editor', function () {
-        $asset = AssetModel::factory()->createElement([
-            'volumeId' => $this->volume->id,
-            'folderId' => $this->folder->id,
-            'filename' => 'editor-test.jpg',
-            'kind' => 'image',
-        ]);
-
-        postJson(action([ImageEditorController::class, 'show']), [
-            'assetId' => $asset->id,
-        ])
-            ->assertOk()
-            ->assertJsonStructure(['html']);
-    });
-});
-
 describe('editImage', function () {
     it('requires authentication', function () {
         auth()->logout();

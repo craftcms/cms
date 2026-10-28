@@ -142,7 +142,6 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
                 ->middleware('throttle:'.LoginRateLimiter::NAME);
             Route::post('users/login-with-passkey', [PasskeyController::class, 'login'])
                 ->middleware('throttle:'.LoginRateLimiter::NAME);
-            Route::post('users/login-modal', [LoginController::class, 'showLoginModal']);
             Route::any('users/redirect', [LoginController::class, 'redirect']);
             Route::post('users/set-password', [SetPasswordController::class, 'store']);
             Route::post('users/verify-email', [VerifyEmailController::class, 'store']);
@@ -356,7 +355,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('assets/delete-folder', [AssetsFolderController::class, 'delete']);
         Route::post('assets/rename-folder', [AssetsFolderController::class, 'rename']);
         Route::post('assets/move-folder', [AssetsFolderController::class, 'move']);
-        Route::post('assets/image-editor', [ImageEditorController::class, 'show']);
         Route::get('assets/edit-image', [ImageEditorController::class, 'editImage']);
         Route::post('assets/save-image', [ImageEditorController::class, 'save']);
         Route::post('assets/update-focal-position', [ImageEditorController::class, 'updateFocalPoint']);

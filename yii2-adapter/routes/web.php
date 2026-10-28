@@ -8,7 +8,9 @@ use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
 use CraftCms\Yii2Adapter\Http\ExcludeCsrfValidationForLegacyController;
 use CraftCms\Yii2Adapter\Http\FallbackTransformController;
+use CraftCms\Yii2Adapter\Http\ImageEditorModalController;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
+use CraftCms\Yii2Adapter\Http\LoginModalController;
 use CraftCms\Yii2Adapter\Http\SavePluginSettingsController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,7 +26,16 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
     Route::middleware(['web', 'craft', ...$middleware])
         ->prefix($prefix)
         ->get('assets/generate-fallback-transform', FallbackTransformController::class);
+
+    Route::allowDuringMaintenance()
+        ->middleware(['web', 'craft', ...$middleware])
+        ->prefix($prefix)
+        ->post('users/login-modal', LoginModalController::class);
 }
+
+Route::middleware(['web', 'craft', 'craft.cp', 'auth', 'can:accessCp'])
+    ->prefix($routes->cpActionTriggerRoutePrefix())
+    ->post('assets/image-editor', ImageEditorModalController::class);
 
 Route::middleware([
     'web',
