@@ -636,6 +636,39 @@
           });
         }
         break;
+      case 'Tab':
+        if (
+          !event.shiftKey &&
+          actionsRow.value &&
+          actionsRow.value !== selectedRow.value
+        ) {
+          tabPastHoveredActions(event);
+        }
+        break;
+    }
+  }
+
+  /**
+   * Tab reaches the active result's actions, as its option and the keyboard
+   * instructions say, not those of the result under the pointer. Without
+   * any, Tab moves on past the pointer's, which `inert` takes out of its way
+   * until they go.
+   */
+  function tabPastHoveredActions(event: KeyboardEvent): void {
+    document
+      .querySelector('.command-palette-actions')
+      ?.setAttribute('inert', '');
+    hoveredId.value = null;
+
+    if (selectedHasActions.value) {
+      event.preventDefault();
+      void nextTick(() =>
+        document
+          .querySelector<HTMLElement>(
+            '.command-palette-actions [slot="invoker"]'
+          )
+          ?.focus()
+      );
     }
   }
 

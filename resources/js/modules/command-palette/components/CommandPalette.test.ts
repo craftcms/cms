@@ -554,6 +554,64 @@ describe('CommandPalette', () => {
     expect(document.querySelector('.command-palette-actions')).toBeNull();
   });
 
+  it('tabs to the active result’s actions, not those of the result under the pointer', async () => {
+    get.mockResolvedValue({
+      data: {
+        providers: [],
+        actions: [
+          serverAction('create-section', 'Create section', {
+            href: '/admin/settings/sections/new',
+          }),
+          serverAction('enable-maintenance-mode', 'Enable maintenance mode', {
+            action: {type: 'http', url: '/admin/maintenance-mode'},
+            actions: [{label: 'Learn more', href: 'https://example.test/m'}],
+          }),
+          serverAction('clear-caches', 'Clear caches', {
+            action: {type: 'http', url: '/admin/clear-caches'},
+            actions: [{label: 'Learn more', href: 'https://example.test/c'}],
+          }),
+        ],
+      },
+    } as never);
+    const input = await open();
+    const hoverCaches = async () => {
+      option('Clear caches').dispatchEvent(
+        new Event('pointermove', {bubbles: true})
+      );
+      await flush();
+      expect(actionsButton().getAttribute('aria-label')).toBe(
+        'Actions for Clear caches'
+      );
+    };
+
+    // The active result has no actions: Tab moves on, past the pointer's.
+    await hoverCaches();
+    const pastThem = press(input, 'Tab');
+    expect(pastThem.defaultPrevented).toBe(false);
+    expect(
+      document.querySelector('.command-palette-actions')!.hasAttribute('inert')
+    ).toBe(true);
+    await flush();
+    expect(document.querySelector('.command-palette-actions')).toBeNull();
+
+    // The active result has actions: Tab goes to them.
+    while (selected(input) !== 'Enable maintenance mode') {
+      press(input, 'ArrowDown');
+      await nextTick();
+    }
+    await hoverCaches();
+    const focused: Element[] = [];
+    document.addEventListener('focusin', (event) =>
+      focused.push(event.target as Element)
+    );
+    expect(press(input, 'Tab').defaultPrevented).toBe(true);
+    await flush();
+    expect(focused.at(-1)?.getAttribute('aria-label')).toBe(
+      'Actions for Enable maintenance mode'
+    );
+    expect(selected(input)).toBe('Enable maintenance mode');
+  });
+
   it('keeps focus in the search box when an option is pressed, and follows the link it was', async () => {
     const input = await open();
     const entries = option('Entries');
