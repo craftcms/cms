@@ -8,6 +8,7 @@
 namespace crafttests\unit\gql;
 
 use Craft;
+use craft\behaviors\DraftBehavior;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
@@ -135,6 +136,38 @@ class AuthenticatedSchemaTest extends TestCase
         $result = $this->execute($schema, "mutation { deleteEntry(id: {$this->ownEntry->id}) }");
         self::assertTrue($result['data']['deleteEntry']);
         self::assertNull(Entry::find()->id($this->ownEntry->id)->one());
+    }
+
+    public function testDraftsAreLimitedToUserPermissions(): void
+    {
+        Craft::$app->getUserPermissions()->saveUserPermissions($this->user->id, [
+            'accessCp',
+            'editSite:' . Craft::$app->getSites()->getPrimarySite()->uid,
+            'viewEntries:' . self::OWN_ONLY_SECTION,
+            'saveEntries:' . self::OWN_ONLY_SECTION,
+            'viewEntries:' . self::PEER_SECTION,
+            'viewPeerEntries:' . self::PEER_SECTION,
+        ]);
+        $admin = User::find()->admin()->one();
+        $drafts = Craft::$app->getDrafts();
+        $drafts->createDraft($this->ownEntry, $this->user->id, 'My draft');
+        $peerEntry = Entry::find()->section('withUri1')->title('With URL 1')->one();
+        $drafts->createDraft($peerEntry, $admin->id, 'Peer draft');
+        $schema = Craft::$app->getGql()->getSchemaForUser($this->user);
+
+        $result = $this->execute($schema, '{ entries(drafts: true, limit: 100) { draftName } }');
+        self::assertSame(['My draft'], array_column($result['data']['entries'], 'draftName'));
+
+        $result = $this->execute($schema, '{ entries(section: "withUri1", title: "With URL 1") { drafts { draftName } } }');
+        self::assertSame([], $result['data']['entries'][0]['drafts']);
+
+        // Drafts are created for the authenticated user, regardless of creatorId
+        $result = $this->execute($schema, "mutation { createDraft(id: {$this->ownEntry->id}, name: \"New\", creatorId: $admin->id) }");
+        $draft = Entry::find()->draftId($result['data']['createDraft'])->status(null)->one();
+        self::assertInstanceOf(Entry::class, $draft);
+        /** @var DraftBehavior $behavior */
+        $behavior = $draft->getBehavior('draft');
+        self::assertSame($this->user->id, $behavior->creatorId);
     }
 
     public function testCachedResultsAreLimitedToTheUsersPermissions(): void

@@ -197,7 +197,8 @@ class Entry extends ElementMutationResolver
         $draftName = $arguments['name'] ?? '';
         $draftNotes = $arguments['notes'] ?? '';
         $provisional = $arguments['provisional'] ?? false;
-        $creatorId = $arguments['creatorId'] ?? null;
+        // Authenticated users can only create drafts for themselves
+        $creatorId = Gql::getSchemaUser()->id ?? $arguments['creatorId'] ?? null;
 
         $draft = Craft::$app->getDrafts()->createDraft($entry, $creatorId ?? $entry->getAuthorId(), $draftName, $draftNotes, [], $provisional);
 

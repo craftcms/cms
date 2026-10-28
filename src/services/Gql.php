@@ -1829,9 +1829,11 @@ class Gql extends Component
         $queryComponents = [
             'elements.drafts:read' => [
                 'label' => Craft::t('app', 'Query for element drafts'),
+                'authenticated' => fn(User $user) => $user->can('accessCp'),
             ],
             'elements.revisions:read' => [
                 'label' => Craft::t('app', 'Query for element revisions'),
+                'authenticated' => fn(User $user) => $user->can('accessCp'),
             ],
             'elements.inactive:read' => [
                 'label' => Craft::t('app', 'Query for non-enabled elements'),
