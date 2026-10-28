@@ -130,7 +130,6 @@ class Sections
             'name' => $name,
             'handle' => $handle,
             'type' => $type,
-            'entryTypes' => $entryTypes,
             'siteSettings' => $this->siteSettings($siteSettings),
             'minAuthors' => $minAuthors,
             'maxAuthors' => $maxAuthors,
@@ -140,6 +139,7 @@ class Sections
             'defaultPlacement' => $defaultPlacement,
             'previewTargets' => $previewTargets,
         ]);
+        $section->setEntryTypes($entryTypes);
 
         if (!$this->sections->saveSection($section)) {
             throw new ToolCallException($this->validationErrors($section));
