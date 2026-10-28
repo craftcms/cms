@@ -1,14 +1,14 @@
 <script setup lang="ts">
   import {Head} from '@inertiajs/vue3';
   // Watch for finished state to trigger redirect
-  import {onMounted, watch} from 'vue';
+  import {onBeforeUnmount, onMounted, watch} from 'vue';
   import {
     type UpdaterOption,
     type UpdaterState,
     useUpdater,
   } from '@/modules/updater/composables/useUpdater';
-  import {ConfigService} from '@craftcms/ui';
   import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
+  import {dashboard} from '@/routes/craft/cp';
 
   defineOptions({layout: []});
 
@@ -42,15 +42,15 @@
     );
   }
 
+  let redirectTimer: ReturnType<typeof setTimeout> | undefined;
+
   /**
    * Handle successful completion - redirect after a short delay
    */
   function handleFinish(): void {
-    setTimeout(() => {
+    redirectTimer = setTimeout(() => {
       window.location.href =
-        state.value.returnUrl ||
-        props.returnUrl ||
-        ConfigService.getInstance().getCpUrl('dashboard');
+        state.value.returnUrl || props.returnUrl || dashboard.url();
     }, 750);
   }
 
@@ -86,6 +86,8 @@
       handleFinish();
     }
   });
+
+  onBeforeUnmount(() => clearTimeout(redirectTimer));
 </script>
 
 <template>
