@@ -9,6 +9,7 @@ import {computed} from 'vue';
 import {screenPanels} from '@/common/composables/screenPanels';
 import type {CraftData} from '@/common/composables/useCraftData';
 import {useSessionStorage} from '@/common/composables/useStorage';
+import {noteHeaders, noteStatus} from '@/modules/auth/session-timeout/manager';
 import AssistantController from '@/actions/CraftCms/Cms/Ai/Http/Controllers/AssistantController';
 
 /**
@@ -123,8 +124,9 @@ export const useAssistantThread = createGlobalState(() => {
 });
 
 /**
- * Sends a request as Craft’s action client does: with its headers, and once
- * more with a fresh CSRF token if the first is rejected. A failed response
+ * Sends a request as Craft’s action client does: with its headers, once more
+ * with a fresh CSRF token if the first is rejected, and telling the session
+ * timeout when the session now expires. A failed response
  * throws an {@link AssistantRequestError} with the server’s message.
  */
 export async function actionFetch(
@@ -151,6 +153,9 @@ export async function actionFetch(
     csrf.clearToken();
     response = await send(await csrf.refreshToken());
   }
+
+  noteHeaders(Object.fromEntries(response.headers));
+  noteStatus(response.status);
 
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as {

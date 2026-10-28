@@ -1,5 +1,6 @@
 import {csrf} from '@craftcms/ui';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
+import {sessionTimeoutManager} from '@/modules/auth/session-timeout/manager';
 import {actionFetch, AssistantRequestError, renderMarkdown} from './assistant';
 
 vi.mock('@craftcms/ui', () => ({
@@ -11,6 +12,7 @@ vi.mock('@craftcms/ui', () => ({
 describe('actionFetch', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
     vi.clearAllMocks();
   });
 
@@ -27,6 +29,25 @@ describe('actionFetch', () => {
     expect(response.ok).toBe(true);
     expect(fetch).toHaveBeenCalledTimes(2);
     expect(fetch.mock.calls[1]![1].headers['X-CSRF-Token']).toBe('fresh-token');
+  });
+
+  it('tells the session timeout when the session now expires', async () => {
+    const update = vi
+      .spyOn(sessionTimeoutManager, 'update')
+      .mockImplementation(() => {});
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response('data: {}\n\n', {
+            headers: {'X-Craft-Session-Expires': '1900000000'},
+          })
+      )
+    );
+
+    await actionFetch('ai/assistant', {method: 'POST'});
+
+    expect(update).toHaveBeenCalledWith(1900000000);
   });
 
   it('fails with the server’s message', async () => {
