@@ -116,6 +116,24 @@ describe('craft-input-search', () => {
     expect(clearButton(element)).toBeNull();
   });
 
+  it('fires clear and input past a shadow root it is rendered in', async () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    host.attachShadow({mode: 'open'}).innerHTML =
+      '<craft-input-search></craft-input-search>';
+    const element = host.shadowRoot!.querySelector('craft-input-search')!;
+    await element.updateComplete;
+    const events: string[] = [];
+    host.addEventListener('clear', () => events.push('clear'));
+    host.addEventListener('input', () => events.push('input'));
+    await type(element, 'foo');
+    events.length = 0;
+
+    element.clear();
+
+    expect(events).toEqual(['input', 'clear']);
+  });
+
   it('clears the value on Escape', async () => {
     const element = await createInputSearch();
     let reachedParent = false;
