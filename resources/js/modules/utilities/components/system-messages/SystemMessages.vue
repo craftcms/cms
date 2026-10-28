@@ -17,7 +17,14 @@
 
   useAppLayout({contentMaxWidth: true});
 
-  const localMessages = ref([...props.messages]);
+  /**
+   * Utility content is server-rendered HTML compiled by DynamicHtmlRenderer, so
+   * `messages` is a static literal that never updates. Reloading the
+   * `contentHtml` prop would remount this component and drop focus from the
+   * editor's opener, so saved copies are applied to this local list instead.
+   * Copy each message so saving never writes through to the prop objects.
+   */
+  const localMessages = ref(props.messages.map((message) => ({...message})));
 
   function openEditor(
     message: Omit<SystemMessageData, 'language'>,
