@@ -101,9 +101,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-sm);
-    max-block-size: 20rem;
     max-inline-size: 18rem;
-    overflow-y: auto;
     padding: var(--c-spacing-sm);
     white-space: normal;
   }
