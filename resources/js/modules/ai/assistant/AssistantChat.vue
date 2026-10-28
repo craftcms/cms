@@ -10,7 +10,6 @@
   import '@craftcms/ui/components/textarea/textarea';
   import type CraftTextarea from '@craftcms/ui/components/textarea/textarea';
   import {useChat, type UIMessage} from '@tanstack/ai-vue';
-  import {router} from '@inertiajs/vue3';
   import {useElementSize} from '@vueuse/core';
   import type {
     TextExpanderSelectDetail,
@@ -462,30 +461,20 @@
   }
 
   /**
-   * Shows a field: in its element’s open editor, or else by opening the
-   * editor at it. Modified clicks are left to the browser.
+   * Shows a field in its element’s open editor. Otherwise the link opens the
+   * editor at it, as plain links to control panel pages do. Modified clicks
+   * are left to the browser.
    */
   function showField(event: MouseEvent, target: AssistantFieldTarget): void {
     if (
-      event.button !== 0 ||
-      event.altKey ||
-      event.ctrlKey ||
-      event.metaKey ||
-      event.shiftKey
+      event.button === 0 &&
+      !event.altKey &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.shiftKey &&
+      revealAssistantField(target)
     ) {
-      return;
-    }
-
-    event.preventDefault();
-
-    if (revealAssistantField(target)) {
-      return;
-    }
-
-    const url = assistantFieldUrl(target);
-
-    if (url) {
-      router.visit(url);
+      event.preventDefault();
     }
   }
 
