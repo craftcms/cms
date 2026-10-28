@@ -793,17 +793,30 @@ it('themes a cover card’s header and body, and leaves its thumbnail alone', as
   expect([theme('[slot="header"]'), theme('a')]).toEqual([null, null]);
 });
 
-it('ignores a cover card’s color', async () => {
-  const card = await coverCard();
-  const border = () =>
-    getComputedStyle(card.shadowRoot!.querySelector('.card')!, '::after')
-      .boxShadow;
-  const neutral = border();
+it('gives a cover card’s border its color, and nothing else', async () => {
+  const card = await coverCard('Photo');
+  const base = card.shadowRoot!.querySelector('.card')!;
+  const header = card.shadowRoot!.querySelector('.card__header')!;
+  const inside = () =>
+    [
+      getComputedStyle(header).borderBottomColor,
+      ...[...card.children].map((child) => getComputedStyle(child).color),
+    ].join();
+  const neutral = inside();
 
   card.setAttribute('data-color', 'violet');
   await card.updateComplete;
 
-  expect(border()).toBe(neutral);
+  const normal = document.createElement('craft-card');
+  normal.setAttribute('data-color', 'violet');
+  document.body.append(normal);
+  await normal.updateComplete;
+  const violet = getComputedStyle(
+    normal.shadowRoot!.querySelector('.card')!
+  ).borderTopColor;
+
+  expect(getComputedStyle(base, '::after').boxShadow).toContain(violet);
+  expect(inside()).toBe(neutral);
 });
 
 it('grows a cover card past 4:3 when its content needs more room', async () => {
