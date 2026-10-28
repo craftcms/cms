@@ -50,7 +50,7 @@ class OAuthTest extends TestCase
         $key = openssl_pkey_new(['private_key_bits' => 2048]);
         openssl_pkey_export($key, $config->privateKey);
         $config->publicKey = openssl_pkey_get_details($key)['key'];
-        $generalConfig = new GeneralConfig(['securityKey' => 'oauth-integration-test-security-key', 'baseCpUrl' => 'https://cms.example', 'cpTrigger' => 'admin', 'omitScriptNameInUrls' => true]);
+        $generalConfig = new GeneralConfig(['securityKey' => 'oauth-integration-test-security-key', 'enableGql' => false, 'baseCpUrl' => 'https://cms.example', 'cpTrigger' => 'admin', 'omitScriptNameInUrls' => true]);
         $db = Craft::$app->getDb();
         $userId = (new Query())->select('id')->from(Table::USERS)->scalar($db);
         $this->transaction = $db->beginTransaction();

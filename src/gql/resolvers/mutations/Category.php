@@ -101,6 +101,7 @@ class Category extends ElementMutationResolver
 
         $categoryGroupUid = Db::uidById(Table::CATEGORYGROUPS, $category->groupId);
         $this->requireSchemaAction('categorygroups.' . $categoryGroupUid, 'delete');
+        $this->requireUserAuthorization($category, 'delete');
 
         return $elementService->deleteElementById($categoryId, hardDelete: $hardDelete);
     }

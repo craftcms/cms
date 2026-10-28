@@ -42,6 +42,9 @@ class OAuth extends Component
         if ($this->resources === null) {
             $definitions = Craft::$app->getConfig()->getOAuth()->resources;
             $definitions['mcp'] ??= Craft::$app->get('mcp')->getOAuthResource();
+            if (Craft::$app->getConfig()->getGeneral()->enableGql) {
+                $definitions['graphql'] ??= Craft::$app->getGql()->getOAuthResource();
+            }
             $event = new RegisterOAuthResourcesEvent(['resources' => $definitions]);
             $this->trigger(self::EVENT_REGISTER_RESOURCES, $event);
             $resources = [];

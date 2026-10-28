@@ -223,3 +223,17 @@ Scopes listed in `scopeLevels` are ordered access levels, and each level include
 Consent is reused when the requested levels overlap the levels granted by the broadest level the user chose before. Craft then grants that earlier level, so a client that requests every level keeps the level the user chose. To require a level, check that the token holds it or a broader one.
 
 `userScopes` limits the levels offered to each user, and the scopes granted when a token is issued or refreshed. For example, MCP offers `mcp:admin` only to administrators, and refreshing an `mcp:admin` token after the user loses admin status drops that scope.
+
+## GraphQL
+
+When the GraphQL API is enabled, Craft registers a `graphql` resource. Its URL is the primary site’s `actions/graphql/api` endpoint, so discovery metadata is served at `/.well-known/oauth-protected-resource/actions/graphql/api`. If your GraphQL API is routed elsewhere, change the resource’s `resourceUrl` from an `EVENT_REGISTER_RESOURCES` handler.
+
+`graphql:read` and `graphql:write` are access levels. A read token can only run queries; a write token can also run mutations. Any active user may authorize a client, so resources don’t require control panel access.
+
+Send the access token in `Authorization: Bearer …` to the GraphQL API. Instead of a schema token, Craft builds a schema from the GraphQL schema components that support authenticated requests and are available to the user, and sets the user as the request’s identity. Expired or invalid access tokens return HTTP 401 with a `WWW-Authenticate` header that points to the discovery metadata. GraphQL schema tokens keep working as before.
+
+Schema components opt in with an `authenticated` key: `true` to make them available to every authenticated user, or a callable that receives the user and returns whether it’s available to them. Craft’s built-in components check the corresponding user permissions. For example, `sections.<uid>:read` requires `viewEntries:<uid>`, and `volumes.<uid>:save` requires `saveAssets:<uid>`. Components are responsible for limiting their own results to what `craft\models\GqlSchema::$user` may access:
+
+- Entry and asset queries, including related entries and assets, use the `editable` query param, so peer entries, drafts, and assets are hidden unless the user can view them. Root entry queries don’t return nested entries; those are available through their owners.
+- Mutations check `craft\services\Elements::canSave()`, `canDelete()`, and `canCreateDrafts()` for the user before changing an element, and existing elements are checked before and after they’re populated.
+- Results for authenticated requests aren’t cached.
