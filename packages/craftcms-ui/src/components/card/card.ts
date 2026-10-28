@@ -1,5 +1,5 @@
-import {property} from 'lit/decorators.js';
-import type {CSSResultGroup} from 'lit';
+import {property, state} from 'lit/decorators.js';
+import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import {styleMap} from 'lit/directives/style-map.js';
 import {Paddable} from '@src/mixins/Paddable.js';
@@ -11,6 +11,7 @@ import {
 } from '@src/controllers/LightDomController';
 import {
   coverAppearance,
+  COVER_BACKING_HOVER,
   COVER_INK_OPACITY,
   type CoverAppearance,
   type CoverTheme,
@@ -23,6 +24,8 @@ const ink = (theme: CoverTheme) =>
     : `rgb(0 0 0 / ${COVER_INK_OPACITY.light})`;
 
 const solid = (theme: CoverTheme) => (theme === 'dark' ? '#000' : '#fff');
+
+const inkSolid = (theme: CoverTheme) => (theme === 'dark' ? '#fff' : '#000');
 
 const surface = (theme: CoverTheme, opacity: number) =>
   theme === 'dark'
@@ -141,23 +144,26 @@ export default class CraftCard extends Paddable(LitElement, {
   /**
    * URL of an image that covers the whole card, with the header and body laid
    * over it, in place of a thumbnail. The image is decorative: the card's
-   * content should say what it shows.
+   * content should say what it shows. If it fails to load, the card falls back
+   * to a normal one, with its thumbnail.
    */
   @property({attribute: 'cover-src'}) coverSrc = '';
+
+  /** Whether the cover image failed to load. */
+  @state() private _coverFailed = false;
 
   /**
    * A cover image's luminance, as rows of regions from top to bottom, each a
    * `[P10, P90]` pair of relative luminances, or `null` for a transparent
    * region (an asset's `analysis.colors.luminance`). The card picks white or
-   * black text and controls for its header and body from it, and lays just
-   * enough black or white behind them to meet contrast. Without it, both are
-   * white over a heavier black.
+   * black text and controls for its header and body from it. The black or
+   * white behind them is fixed, and meets contrast over any image, so the
+   * luminance only decides which looks better. Without it, both are white.
    *
    * The card sets `data-theme` on the children it lays over the image, so
    * their controls take the matching theme, and `data-cover`: `body` on the
    * body's and footer's, and the header's treatment on the header's: `bar`
-   * when it has a label, `backed` when its controls need a backing to stand
-   * out from the image, or `bare`.
+   * when it has text, or `backed` when it has only controls.
    */
   @property({type: Array}) luminance: Luminance | null = null;
 
@@ -174,13 +180,13 @@ export default class CraftCard extends Paddable(LitElement, {
   private _lightDom = new LightDomController(this);
 
   /**
-   * Whether the header has a label: the `label` attribute or slot, or a
-   * `[data-card-label]` element in the `header` slot.
+   * Whether the header has text: the `label` attribute, the `label` or `badge`
+   * slot, or a `[data-card-label]` element in the `header` slot.
    */
-  private _hasLabel(): boolean {
+  private _hasHeaderText(): boolean {
     return (
       !!this.label ||
-      hasSlotted(this, 'label') ||
+      hasSlotted(this, 'label', 'badge') ||
       Array.from(this.children).some(
         (child) =>
           child.slot === 'header' && !!child.querySelector('[data-card-label]')
@@ -189,9 +195,21 @@ export default class CraftCard extends Paddable(LitElement, {
   }
 
   private _cover(): CoverAppearance | null {
-    return this.coverSrc
-      ? coverAppearance(this.luminance, this._hasLabel())
+    return this.coverSrc && !this._coverFailed
+      ? coverAppearance(this.luminance, this._hasHeaderText())
       : null;
+  }
+
+  private _onCoverError = () => {
+    this._coverFailed = true;
+  };
+
+  override willUpdate(changed: PropertyValues<this>) {
+    super.willUpdate(changed);
+
+    if (changed.has('coverSrc')) {
+      this._coverFailed = false;
+    }
   }
 
   private _coverStyles(cover: CoverAppearance | null) {
@@ -203,14 +221,20 @@ export default class CraftCard extends Paddable(LitElement, {
 
     return {
       '--_header-ink': ink(header.theme),
+      '--_header-ink-solid': inkSolid(header.theme),
       '--_header-solid': solid(header.theme),
       '--_header-fill': surface(header.theme, header.opacity),
       '--_header-backing':
         header.treatment === 'backed'
           ? surface(header.theme, header.opacity)
           : undefined,
+      '--_header-backing-hover':
+        header.treatment === 'backed'
+          ? surface(header.theme, COVER_BACKING_HOVER)
+          : undefined,
       '--_header-rule': rule(header.theme),
       '--_body-ink': ink(body.theme),
+      '--_body-ink-solid': inkSolid(body.theme),
       '--_body-solid': solid(body.theme),
       '--_body-scrim': String(body.opacity),
       '--_body-rule': rule(body.theme),
@@ -281,6 +305,7 @@ export default class CraftCard extends Paddable(LitElement, {
               alt=""
               loading="lazy"
               decoding="async"
+              @error="${this._onCoverError}"
             />`
           : nothing}
         ${hasSlottedHeader

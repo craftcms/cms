@@ -180,7 +180,7 @@ craft-card > [data-cover] {
 
 craft-card > [data-cover]:not([data-cover='body']) {
   craft-button {
-    margin-inline: 0;
+    margin: 0;
   }
 
   :is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'] {
@@ -200,11 +200,18 @@ craft-card > [data-cover='backed'] {
 craft-card > [data-cover='backed'] craft-button[variant~='plain'] {
   background-color: var(--_cover-backing);
 
-  &:hover:not([disabled]) {
-    background-color: color-mix(
-      in srgb,
-      var(--_cover-backing),
-      var(--_cover-ink) 15%
-    );
+  &:is(:hover, :active):not([disabled]) {
+    color: var(--_cover-ink);
+    background-color: var(--_cover-backing-hover);
   }
+}
+
+/* Repeated attributes outrank the checkbox's backing shadow above. */
+craft-card
+  > [data-cover][data-cover]
+  :is(*, input[type='checkbox']):focus-visible,
+craft-card > [data-cover][data-cover]:focus-visible {
+  outline: var(--c-focus-outline-width) solid var(--_cover-ink-solid);
+  outline-offset: var(--c-focus-outline-width);
+  box-shadow: 0 0 0 var(--c-focus-outline-width) var(--_cover-solid);
 }

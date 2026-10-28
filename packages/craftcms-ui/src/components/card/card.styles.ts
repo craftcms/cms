@@ -327,6 +327,10 @@ export default css`
     isolation: isolate;
   }
 
+  :host .card--cover :is(.card__header, .card-body, .card__footer) {
+    flex-shrink: 0;
+  }
+
   .card__cover {
     position: absolute;
     inset: 0;
@@ -361,6 +365,8 @@ export default css`
     --_cover-ink: var(--_header-ink);
     --_cover-solid: var(--_header-solid);
     --_cover-backing: var(--_header-backing);
+    --_cover-backing-hover: var(--_header-backing-hover);
+    --_cover-ink-solid: var(--_header-ink-solid);
     color: var(--_header-ink);
     background-color: transparent;
     border-color: transparent;
@@ -375,6 +381,7 @@ export default css`
   :host .card--cover .card-body.card-body {
     --_cover-ink: var(--_body-ink);
     --_cover-solid: var(--_body-solid);
+    --_cover-ink-solid: var(--_body-ink-solid);
     --_fade: 4.5rem;
     /* Positioned, without a z-index, so its blur layer sits between the image
        and its scrim, in the card's stacking context. */
@@ -432,6 +439,7 @@ export default css`
   :host .card.card--cover .card__footer.card__footer {
     --_cover-ink: var(--_body-ink);
     --_cover-solid: var(--_body-solid);
+    --_cover-ink-solid: var(--_body-ink-solid);
     color: var(--_body-ink);
     background-color: rgb(from var(--_body-solid) r g b / var(--_body-scrim));
     border-color: var(--_body-rule);

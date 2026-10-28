@@ -11,6 +11,7 @@ import '../button/button.js';
 import '../checkbox/checkbox.js';
 import '../icon/icon.js';
 import type {Luminance} from './cover.js';
+import {HARD_IMAGES} from '../../../test/cover-images';
 
 /**
  * `args` and `argTypes` are derived from the custom elements manifest, so the
@@ -215,7 +216,9 @@ const LUMINANCE: Record<number, Luminance> = {
 const photo = (id: number) => `https://picsum.photos/id/${id}/800/600`;
 
 interface CoverCardOptions {
-  id: number;
+  id?: number;
+  src?: string;
+  name?: string;
   label?: string;
   luminance?: Luminance | null;
   active?: boolean;
@@ -223,16 +226,14 @@ interface CoverCardOptions {
 
 /** A cover card laid out like an element index's. */
 const coverCard = ({
-  id,
+  id = 0,
+  src = photo(id),
+  name = `Photo ${id}`,
   label,
   luminance = LUMINANCE[id],
   active = false,
 }: CoverCardOptions) => html`
-  <craft-card
-    cover-src="${photo(id)}"
-    .luminance="${luminance}"
-    ?active="${active}"
-  >
+  <craft-card cover-src="${src}" .luminance="${luminance}" ?active="${active}">
     <div
       slot="header"
       style="display: flex; align-items: center; justify-content: space-between; gap: var(--c-spacing-sm); inline-size: 100%;"
@@ -241,7 +242,7 @@ const coverCard = ({
         style="display: flex; align-items: center; gap: var(--c-spacing-sm);"
       >
         <craft-checkbox label-sr-only .checked="${active}">
-          <label slot="label">Select Photo ${id}</label>
+          <label slot="label">Select ${name}</label>
         </craft-checkbox>
         ${label ? html`<span data-card-label>${label}</span>` : nothing}
       </div>
@@ -254,8 +255,8 @@ const coverCard = ({
         aria-label="Actions"
       ></craft-button>
     </div>
-    <a href="#">Photo ${id}</a>
-    <div>photo-${id}.jpg · 800×600</div>
+    <a href="#">${name}</a>
+    <div>${name.toLowerCase().replaceAll(' ', '-')}.jpg · 800×600</div>
   </craft-card>
 `;
 
@@ -452,8 +453,8 @@ export const KitchenSink: Story = {
 /**
  * `cover-src` makes a cover card: the image fills the card, and the header and
  * body are laid over it, in white or black picked from `luminance`. A header
- * with a label gets a blurred bar of its own, in white or black, filled just
- * enough for the label to reach 4.5:1.
+ * with text gets a blurred bar of its own, in black or white, strong enough
+ * for the text to reach 4.5:1 over any image.
  */
 export const Cover: Story = {
   parameters: coverParameters,
@@ -465,24 +466,22 @@ export const Cover: Story = {
 };
 
 /**
- * Without a label, the header's controls sit on the image. Where they wouldn't
- * reach 4.5:1 against it, the checkbox and plain buttons get a backing, opposite
- * their border, that does.
+ * Without text in the header, its checkbox and plain buttons get a blurred
+ * backing, opposite their border, so they hold up over any image.
  */
 export const CoverBackedControls: Story = {
   parameters: coverParameters,
-  render: () => coverGrid(coverCard({id: 1025}), coverCard({id: 1018})),
-};
-
-/** Controls stay bare where the image alone gives them 4.5:1. */
-export const CoverBareControls: Story = {
-  parameters: coverParameters,
-  render: () => coverGrid(coverCard({id: 1015})),
+  render: () =>
+    coverGrid(
+      coverCard({id: 1025}),
+      coverCard({id: 1018}),
+      coverCard({id: 1015})
+    ),
 };
 
 /**
  * The body's scrim fades in above the content and is at full strength behind
- * it, in black or white, whichever the bottom of the image needs.
+ * it, in black or white, whichever suits the bottom of the image.
  */
 export const CoverScrim: Story = {
   parameters: coverParameters,
@@ -490,9 +489,23 @@ export const CoverScrim: Story = {
 };
 
 /**
- * Without `luminance`, before an image has been sampled, the header and body
- * are white over a heavier black.
+ * The fills don't depend on the image, so text and controls hold up even over
+ * images the luminance describes badly: pure white or black, detail too thin
+ * to show in it, or a portrait whose top and bottom are cropped out of the
+ * card.
  */
+export const CoverAnyImage: Story = {
+  parameters: coverParameters,
+  render: () =>
+    coverGrid(
+      ...HARD_IMAGES.flatMap(({name, src, luminance}) => [
+        coverCard({src, name, luminance}),
+        coverCard({src, name, luminance, label: name}),
+      ])
+    ),
+};
+
+/** Without `luminance`, before an image has been sampled, both are white. */
 export const CoverUnknownLuminance: Story = {
   parameters: coverParameters,
   render: () =>
