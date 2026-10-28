@@ -8,7 +8,7 @@
    * UiRenderer per source produces exactly the shape `store()` reads back.
    */
   import {computed, nextTick, ref, shallowRef, watch} from 'vue';
-  import {actionClient, t, type ReorderMove} from '@craftcms/ui';
+  import {actionClient, t} from '@craftcms/ui';
   import ElementSourcesController from '@actions/Elements/ElementSourcesController';
   import ModalForm from '@/common/components/ModalForm.vue';
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
@@ -17,6 +17,13 @@
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
+  import {useSourceOrdering} from '@/modules/elements/index/composables/useSourceOrdering';
+  import {useSourcePages} from '@/modules/elements/index/composables/useSourcePages';
+  import {
+    FOCUSABLE,
+    focusElement,
+    useSourceScreens,
+  } from '@/modules/elements/index/composables/useSourceScreens';
   import CustomizeSourcesColumn from './CustomizeSourcesColumn.vue';
   import CustomSourceList from './CustomSourceList.vue';
   import PageSettingsModal from './PageSettingsModal.vue';
@@ -67,7 +74,6 @@
   const saving = ref(false);
   const multiPage = ref(false);
   const sources = ref<SourceRow[]>([]);
-  const pages = ref<PageRow[]>([]);
   const selectedKey = ref<string | null>(null);
   const selectedPage = ref<string | null>(null);
   /**
@@ -81,14 +87,36 @@
   const failedUiKey = shallowRef<string | null>(null);
   const renderers = new Map<string, Renderer>();
 
-  /**
-   * The pane shown when the modal is too narrow for all three side by side:
-   * pages lead to their sources, and a source to its settings.
-   */
-  type Screen = 'pages' | 'sources' | 'settings';
-
-  const screen = ref<Screen>('sources');
   const body = ref<HTMLElement | null>(null);
+  const settingsPane = ref<HTMLElement | null>(null);
+
+  const {screen, rowElement, focusRow, showScreen} = useSourceScreens(body);
+
+  const {
+    visibleSources,
+    sourceSpan,
+    reorderSources,
+    moveRows,
+    moveToPage: moveSourcesToPage,
+  } = useSourceOrdering({sources, multiPage, selectedPage});
+
+  const {
+    pages,
+    editingPage,
+    pageModalActive,
+    resetPages,
+    openPageSettings,
+    savePage,
+    validatePageName,
+    pageActions,
+    sourceMoves,
+    reorderPages,
+  } = useSourcePages({
+    sources,
+    selectedPage,
+    moveRows,
+    onRemoved: (page, neighbor) => void onPageRemoved(page, neighbor),
+  });
 
   const selected = computed(() =>
     sources.value.find((source) => source.key === selectedKey.value)
@@ -142,7 +170,7 @@
         ui: source.ui,
         mounted: false,
       }));
-      pages.value = pageRows(data);
+      resetPages(data);
       selectedPage.value = initialPage();
       loaded.value = true;
       void select(initialSource());
@@ -157,20 +185,6 @@
       await nextTick();
       focusRow('sources', selectedKey.value);
     }
-  }
-
-  function pageRows(data: SourcesResponse): PageRow[] {
-    if (!data.multiPage) return [];
-
-    const names: string[] = [];
-    for (const source of data.sources) {
-      if (source.page && !names.includes(source.page)) names.push(source.page);
-    }
-
-    return names.map((name) => ({
-      name,
-      icon: data.pageSettings?.[name]?.icon ?? null,
-    }));
   }
 
   function initialPage(): string | null {
@@ -353,34 +367,6 @@
       ?.focus();
   }
 
-  const FOCUSABLE =
-    'button, [href], input, select, textarea, craft-button, [tabindex]:not([tabindex="-1"])';
-
-  /** Focuses `el`, or the control inside it when it's a component host. */
-  function focusElement(el: Element | null | undefined): void {
-    const target =
-      el?.shadowRoot?.querySelector<HTMLElement>(FOCUSABLE) ??
-      (el as HTMLElement | null);
-    target?.focus();
-  }
-
-  function rowElement(screen: Screen, id: string | null): HTMLElement | null {
-    return id === null
-      ? null
-      : (body.value?.querySelector<HTMLElement>(
-          `[data-screen="${screen}"] [data-row-id="${CSS.escape(id)}"]`
-        ) ?? null);
-  }
-
-  /** Focuses a row's select button, or the list's first when it isn't there. */
-  function focusRow(screen: Screen, id: string | null): void {
-    const row =
-      rowElement(screen, id) ??
-      body.value?.querySelector(`[data-screen="${screen}"] [data-row-id]`);
-
-    focusElement(row?.querySelector('craft-action-item'));
-  }
-
   /** Removes a source, moving selection to its nearest neighbor as Craft 5 did. */
   async function remove(key: string): Promise<void> {
     const source = sources.value.find((row) => row.key === key);
@@ -401,83 +387,9 @@
     }
   }
 
-  /** The sources on the page being viewed — all of them, on a single page. */
-  const visibleSources = computed(() =>
-    sources.value.filter(
-      (source) => !multiPage.value || source.page === selectedPage.value
-    )
-  );
-
   /** A source with no key can't be addressed; fall back to its position. */
   function sourceId(source: SourceRow, index: number): string {
     return source.key ?? `unkeyed-${index}`;
-  }
-
-  /**
-   * The sources that move with each source: a heading brings every source
-   * beneath it on its page, up to the next heading; anything else moves alone.
-   */
-  const sourceBlocks = computed(() => {
-    const blocks = new Map<SourceRow, SourceRow[]>();
-    const headings = new Map<string, SourceRow[]>();
-
-    for (const row of sources.value) {
-      const page = multiPage.value ? row.page : '';
-
-      if (row.type === 'heading') {
-        const block = [row];
-        blocks.set(row, block);
-        headings.set(page, block);
-      } else {
-        blocks.set(row, [row]);
-        headings.get(page)?.push(row);
-      }
-    }
-
-    return blocks;
-  });
-
-  function blockOf(source: SourceRow): SourceRow[] {
-    return sourceBlocks.value.get(source) ?? [];
-  }
-
-  /** How many visible rows move with the one at `index`. */
-  function sourceSpan(index: number): number {
-    const source = visibleSources.value[index];
-
-    return source ? blockOf(source).length : 1;
-  }
-
-  /**
-   * Moves the visible rows starting at `from` (a heading carries its sources) so
-   * the first of them lands at `to`. Only the visible sources are listed, but
-   * order is kept in the full list, so the reordered page is written back into
-   * the slots its sources already occupy there.
-   */
-  function reorderSources(from: number, to: number): void {
-    const visible = [...visibleSources.value];
-    const block = visible.splice(from, sourceSpan(from));
-    visible.splice(to, 0, ...block);
-
-    let next = 0;
-    sources.value = sources.value.map((source) =>
-      !multiPage.value || source.page === selectedPage.value
-        ? visible[next++]!
-        : source
-    );
-  }
-
-  /** The other pages a source can move to, offered in its reorder menu. */
-  function sourceMoves(source: SourceRow): ReorderMove[] {
-    if (!source.key) return [];
-
-    return pages.value
-      .filter((page) => page.name !== source.page)
-      .map((page) => ({
-        value: page.name,
-        label: t('Move to {page}', {page: page.name}),
-        icon: page.icon,
-      }));
   }
 
   function sourceActions(source: SourceRow): ActionItem[] {
@@ -507,134 +419,20 @@
    * another page.
    */
   function moveToPage(key: string, page: string): void {
-    const source = sources.value.find((row) => row.key === key);
-    if (!source || source.page === page) return;
-
-    const block = blockOf(source);
-    const rest = sources.value.filter((row) => !block.includes(row));
-    let last = -1;
-    rest.forEach((row, index) => {
-      if (row.page === page) last = index;
-    });
-
-    for (const row of block) row.page = page;
-    rest.splice(last === -1 ? rest.length : last + 1, 0, ...block);
-    sources.value = rest;
+    const moved = moveSourcesToPage(key, page);
 
     // They're no longer on the page being viewed, so nothing is selected.
-    if (block.some((row) => row.key === selectedKey.value)) void select(null);
-  }
-
-  /** The page being edited in the settings modal, or null when adding one. */
-  const editingPage = ref<PageRow | null>(null);
-  const pageModalActive = ref(false);
-
-  function openPageSettings(page: PageRow | null): void {
-    editingPage.value = page;
-    pageModalActive.value = true;
-  }
-
-  function savePage(name: string, icon: string | null): void {
-    if (editingPage.value) {
-      updatePage(editingPage.value, name, icon);
-    } else {
-      addPage(name, icon);
-    }
-
-    pageModalActive.value = false;
-  }
-
-  function validatePageName(name: string, page: PageRow | null): string | null {
-    const id = pageNameId(name);
-
-    if (id === '') {
-      return t('{attribute} cannot be blank.', {attribute: t('Page Name')});
-    }
-
-    const clash = pages.value.some(
-      (p) => p !== page && pageNameId(p.name) === id
-    );
-
-    return clash ? t('Another page already has that name.') : null;
-  }
-
-  function pageActions(page: PageRow): ActionItem[] {
-    return [
-      {label: t('Page settings'), onClick: () => openPageSettings(page)},
-      // Removing the last page would leave its sources homeless.
-      ...(pages.value.length > 1
-        ? [
-            {
-              label: t('Remove page'),
-              variant: 'danger',
-              onClick: () => void removePage(page),
-            } satisfies ActionItem,
-          ]
-        : []),
-    ];
-  }
-
-  function reorderPages(from: number, to: number): void {
-    const [moved] = pages.value.splice(from, 1);
-    if (moved) pages.value.splice(to, 0, moved);
-  }
-
-  /** Adds a page, leaving the one being viewed selected, as Craft 5 did. */
-  function addPage(name: string, icon: string | null): void {
-    pages.value.push({name, icon});
-    announce(t('Success'));
-  }
-
-  function updatePage(page: PageRow, name: string, icon: string | null): void {
-    const previous = page.name;
-    page.icon = icon;
-    page.name = name;
-
-    // A page's name is its identity, so every source on it has to follow.
-    for (const source of sources.value) {
-      if (source.page === previous) source.page = name;
-    }
-
-    if (selectedPage.value === previous) selectedPage.value = name;
+    if (moved.some((row) => row.key === selectedKey.value)) void select(null);
   }
 
   /**
-   * Removes a page once confirmed. Its sources go to the end of the page before
-   * it (or after, for the first), which takes over the selection if the removed
-   * page had it — Craft 5's behavior.
+   * A removed page's sources went to `neighbor`, which takes over the selection
+   * if the removed page had it — Craft 5's behavior.
    */
-  async function removePage(page: PageRow): Promise<void> {
-    if (
-      !window.confirm(
-        t('Are you sure you want to remove the page “{name}”?', {
-          name: page.name,
-        })
-      )
-    ) {
-      return;
-    }
-
-    const index = pages.value.indexOf(page);
-    if (index === -1) return;
-
-    const neighbor = pages.value[index - 1] ?? pages.value[index + 1];
-    pages.value.splice(index, 1);
-
-    if (neighbor) {
-      const moving = sources.value.filter(
-        (source) => source.page === page.name
-      );
-      const rest = sources.value.filter((source) => source.page !== page.name);
-      let last = -1;
-      rest.forEach((source, i) => {
-        if (source.page === neighbor.name) last = i;
-      });
-
-      for (const source of moving) source.page = neighbor.name;
-      rest.splice(last === -1 ? rest.length : last + 1, 0, ...moving);
-      sources.value = rest;
-    }
-
+  async function onPageRemoved(
+    page: PageRow,
+    neighbor: PageRow | undefined
+  ): Promise<void> {
     if (selectedPage.value === page.name) {
       selectPage(neighbor?.name ?? null);
     }
@@ -654,27 +452,6 @@
 
     selectedPage.value = name;
     void select(null);
-  }
-
-  /**
-   * Shows `next`, and — when that hid the pane focus was in — moves focus into
-   * it. Side by side, nothing is hidden, so focus stays put.
-   */
-  async function showScreen(next: Screen): Promise<void> {
-    const previous = body.value?.querySelector<HTMLElement>(
-      `[data-screen="${screen.value}"]`
-    );
-    screen.value = next;
-    await nextTick();
-
-    if (previous && !previous.checkVisibility()) {
-      body.value
-        ?.querySelector<HTMLElement>(`[data-screen="${next}"]`)
-        ?.querySelector<HTMLElement>(
-          'button, [href], input, select, textarea, craft-button, craft-action-item, [tabindex]:not([tabindex="-1"])'
-        )
-        ?.focus();
-    }
   }
 
   function openPage(name: string): void {
@@ -833,8 +610,6 @@
       void showScreen('settings');
     }
   }
-
-  const settingsPane = ref<HTMLElement | null>(null);
 </script>
 
 <template>
