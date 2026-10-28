@@ -3,8 +3,9 @@
   import '@craftcms/ui/components/info-icon/info-icon';
   import '@craftcms/ui/components/reorder-button/reorder-button';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, inject, nextTick, onMounted, ref} from 'vue';
-  import {UiControlStructure, inputName} from './runtime';
+  import {computed, nextTick, onMounted, ref} from 'vue';
+  import {inputName} from './runtime';
+  import {useOptionalUiRenderer} from './renderer/context';
   import type {
     UiChange,
     UiChangeKind,
@@ -50,7 +51,7 @@
   }>();
   const host = ref<HTMLElement>();
   const status = ref('');
-  const structure = inject(UiControlStructure, undefined);
+  const structure = useOptionalUiRenderer()?.synchronizeStructure;
   const {rows, uis, keyed, externalValue, createRow, rowUi} =
     useTableRows(props);
   const {pending, errorsCleared, clearErrors} = useTableBehavior(

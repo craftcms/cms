@@ -7,7 +7,6 @@
   import {
     computed,
     getCurrentInstance,
-    inject,
     onErrorCaptured,
     provide,
     shallowRef,
@@ -20,16 +19,12 @@
   import {
     FieldActionItems,
     FieldLabelSrOnly,
-    UiControlOverrides,
-    UiFailure,
-    UiChangedPaths,
-    UiModifiedGroups,
-    UiValueWriter,
     uiChangeFromEvent,
     fieldId,
     pathsMatch,
     controlValueAt,
   } from './runtime';
+  import {useUiRenderer} from './renderer/context';
   import type {
     UiChange,
     UiChangeKind,
@@ -119,13 +114,17 @@
     () => props.node,
     (node) => (resolvedNode.value = node)
   );
-  const invalidate = inject(UiFailure)!;
-  const writeValue = inject(UiValueWriter)!;
+  const {
+    fail: invalidate,
+    setValue: writeValue,
+    overrides,
+    modifiedGroups,
+    changedPaths,
+  } = useUiRenderer();
   provide(
     FieldLabelSrOnly,
     computed(() => Boolean(resolvedNode.value.props.labelSrOnly))
   );
-  const overrides = inject(UiControlOverrides, {});
   const components = getCurrentInstance()!.appContext.components;
   const control = computed(() => resolvedNode.value.control!);
   const component = computed(() => {
@@ -163,8 +162,6 @@
     () => props.refreshable && Boolean(control.value.reactive)
   );
 
-  const modifiedGroups = inject(UiModifiedGroups, undefined);
-  const changedPaths = inject(UiChangedPaths, undefined);
   const showStatus = computed(
     () => resolvedNode.value.props.showStatus !== false
   );
@@ -184,7 +181,7 @@
    * own, the block's field says it.
    */
   function holdsChange(): boolean {
-    if (!control.value.nestsUis || !changedPaths) {
+    if (!control.value.nestsUis) {
       return false;
     }
 
@@ -209,9 +206,7 @@
       return false;
     }
 
-    return (
-      modifiedGroups?.value.has(control.value.deltaGroup.join('.')) ?? false
-    );
+    return modifiedGroups.value.has(control.value.deltaGroup.join('.'));
   }
 
   function setValue(

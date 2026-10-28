@@ -1,12 +1,7 @@
 <script setup lang="ts">
-  import {computed, getCurrentInstance, inject, onErrorCaptured} from 'vue';
-  import {
-    UiFailure,
-    UiValueWriter,
-    uiChangeFromEvent,
-    pathsMatch,
-    controlValueAt,
-  } from './runtime';
+  import {computed, getCurrentInstance, onErrorCaptured} from 'vue';
+  import {uiChangeFromEvent, pathsMatch, controlValueAt} from './runtime';
+  import {useUiRenderer} from './renderer/context';
   import type {
     UiChange,
     UiChangeKind,
@@ -26,8 +21,7 @@
   const emit = defineEmits<{
     (event: 'change', change: UiChange): void;
   }>();
-  const invalidate = inject(UiFailure)!;
-  const writeValue = inject(UiValueWriter)!;
+  const {fail: invalidate, setValue: writeValue} = useUiRenderer();
   const components = getCurrentInstance()!.appContext.components;
   const control = computed(() => props.node.control!);
   const component = computed(() => {
