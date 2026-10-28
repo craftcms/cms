@@ -74,23 +74,15 @@ With only controls in the header, the checkbox and plain buttons sit on the imag
 
 <Canvas of={CardStories.CoverBackedControls} />
 
-The body's scrim fades in above the content, in black or white, and the image blurs in under it, crisp at the top of the fade and fully blurred behind the text:
-
-<Canvas of={CardStories.CoverScrim} />
-
-Because the fills don't depend on the image, the text and controls hold up even over images the luminance describes badly, such as detail too thin to show in it, or a portrait whose top and bottom are cropped out of the card:
-
-<Canvas of={CardStories.CoverAnyImage} />
-
-Before an image is sampled, there's no luminance, so the header and body are white:
-
-<Canvas of={CardStories.CoverUnknownLuminance} />
+Every cover card's body sits on a scrim of the same black or white, which fades in above the content, and the image blurs in under it, crisp at the top of the fade and fully blurred behind the text.
+Without luminance, as for an image sampled before luminance was, the header and body are white.
 
 A selected cover card gets an accent border and ring:
 
 <Canvas of={CardStories.CoverActive} />
 
-Small images, and narrow or wide ones, would be scaled up or cropped too far to fill a card, so Craft gives them a normal card with a thumbnail:
+Cover cards share a grid with normal cards, with the same column widths, headers of the same height, and controls that line up.
+Craft gives small images, and narrow or wide ones, a normal card with a thumbnail, since they would be scaled up or cropped too far to fill a card:
 
 <Canvas of={CardStories.CoverAlongsideNormalCards} />
 

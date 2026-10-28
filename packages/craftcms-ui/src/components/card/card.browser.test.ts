@@ -8,7 +8,11 @@ import '../checkbox/checkbox.js';
 import '../badge/badge.js';
 import '../truncate/truncate.js';
 import {contrast} from '../../../test/contrast';
-import {HARD_IMAGES} from '../../../test/cover-images';
+import {
+  HARD_IMAGES,
+  MANY_ATTRIBUTES,
+  type CoverImage,
+} from '../../../test/cover-fixtures';
 import type CraftCard from './card.js';
 import type {Luminance} from './cover.js';
 
@@ -838,6 +842,7 @@ const COVER_CONTENTS = [
   `<craft-badge slot="badge">Live</craft-badge>
     <craft-button slot="actions" icon="ellipsis" variant="plain" inherit size="small" aria-label="Actions"></craft-button>
     <a href="#">Photo</a>`,
+  coverHeader('Photo') + '<a href="#">Photo</a>' + MANY_ATTRIBUTES,
 ];
 
 const TEXT_SPACING = `
@@ -857,7 +862,8 @@ function inject(css: string) {
   injected.push(style);
 }
 
-afterEach(() => {
+afterEach(async () => {
+  await page.viewport(414, 896);
   injected.splice(0).forEach((style) => style.remove());
   document.documentElement.style.removeProperty('font-size');
 });
@@ -1036,72 +1042,166 @@ const worst = (ink: string, colors: string[]) =>
 const HIDE_INK = `
   craft-card > *, craft-card > * * {
     color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
     text-decoration-color: transparent !important;
     --c-checkbox-border-color: transparent !important;
     transition: none !important;
   }`;
 
+interface Shortfall {
+  text: string;
+  ratio: number;
+}
+
+/**
+ * Screenshots a cover card with its ink hidden, and returns every line of text
+ * under 4.5:1 and every header control under 3:1 against the pixels behind it.
+ * Only what's visible is measured, and lines the card cuts off entirely are
+ * listed as `clipped`. Badges are left out: they have their own fill, and
+ * their own tests.
+ */
+async function coverContrast(
+  card: CraftCard
+): Promise<{shortfalls: Shortfall[]; clipped: string[]}> {
+  const bounds = card
+    .shadowRoot!.querySelector('.card')!
+    .getBoundingClientRect();
+  const visible = (rect: DOMRect) => {
+    const left = Math.max(rect.left, bounds.left + 1);
+    const top = Math.max(rect.top, bounds.top + 1);
+    const right = Math.min(rect.right, bounds.right - 1);
+    const bottom = Math.min(rect.bottom, bounds.bottom - 1);
+
+    return right > left && bottom > top
+      ? new DOMRect(left, top, right - left, bottom - top)
+      : null;
+  };
+
+  const clipped: string[] = [];
+  const text = Array.from(card.children).flatMap((child) =>
+    lines(child).flatMap(({rect, node}) => {
+      if (node.parentElement!.closest('craft-badge')) {
+        return [];
+      }
+
+      const shown = visible(rect);
+
+      if (!shown) {
+        clipped.push(node.textContent!.trim());
+      }
+
+      return shown
+        ? [
+            {
+              rect: shown,
+              text: node.textContent!.trim(),
+              // Text slotted into a component inherits from its slot, not its host.
+              ink: getComputedStyle(node.assignedSlot ?? node.parentElement!)
+                .color,
+            },
+          ]
+        : [];
+    })
+  );
+  const controls = Array.from(
+    card.querySelectorAll(
+      ':is([slot="header"], [slot="actions"]) :is(craft-checkbox > input, craft-button), [slot="actions"]:is(craft-button)'
+    )
+  ).map((control) => {
+    const style = getComputedStyle(control);
+    const checkbox = control.matches('input');
+
+    // A pixel in from its edge, past the anti-aliasing against the image.
+    return {
+      rect: control.getBoundingClientRect(),
+      text: checkbox ? 'checkbox' : 'action menu',
+      ink: checkbox ? style.borderTopColor : style.color,
+      radius: parseFloat(style.borderTopLeftRadius),
+    };
+  });
+
+  inject(HIDE_INK);
+  await Promise.all(
+    document.getAnimations().map((animation) => animation.finished)
+  );
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  const pixels = await screenshot(card);
+
+  expect(text.length).toBeGreaterThan(0);
+
+  const shortfalls = [
+    ...text.map(({rect, text, ink}) => ({
+      text,
+      ratio: worst(ink, pixels(rect)),
+      target: 4.5,
+    })),
+    ...controls.map(({rect, text, ink, radius}) => ({
+      text,
+      ratio: worst(ink, pixels(rect, -1, radius)),
+      target: 3,
+    })),
+  ]
+    .filter(({ratio, target}) => ratio < target)
+    .map(({text, ratio}) => ({text, ratio: Math.round(ratio * 100) / 100}));
+
+  return {shortfalls, clipped};
+}
+
+async function renderCover(
+  image: CoverImage,
+  content: string,
+  width = 279
+): Promise<CraftCard> {
+  if (image.name === 'Not loaded') {
+    inject('craft-card::part(cover) { visibility: hidden; }');
+  }
+
+  document.body.innerHTML = `
+    <div style="inline-size: ${width}px">
+      <craft-card cover-src="${image.src}">${content}</craft-card>
+    </div>`;
+  const card = document.querySelector<CraftCard>('craft-card')!;
+  card.luminance = image.luminance;
+  await settle([card]);
+  await card
+    .shadowRoot!.querySelector<HTMLImageElement>('.card__cover')!
+    .decode();
+
+  return card;
+}
+
+const COVER_IMAGES = [...HARD_IMAGES, {...HARD_IMAGES[3]!, name: 'Not loaded'}];
+
 it.each(
-  [...HARD_IMAGES, {...HARD_IMAGES[3]!, name: 'Not loaded'}].flatMap((image) =>
+  COVER_IMAGES.flatMap((image) =>
     [false, true].map((labeled) => [image.name, labeled, image] as const)
   )
 )(
   'gives every pixel behind a cover card’s text 4.5:1, and behind its controls 3:1 (%s, label %s)',
-  async (name, labeled, image) => {
-    if (name === 'Not loaded') {
-      inject('craft-card::part(cover) { visibility: hidden; }');
-    }
-
-    document.body.innerHTML = `
-      <div style="inline-size: 279px">
-        <craft-card cover-src="${image.src}">
-          ${coverHeader(labeled ? LONG_TEXT : '')}
-          <a href="#">${LONG_TEXT}</a>
-          <div>photo.jpg · 800×600</div>
-        </craft-card>
-      </div>`;
-    const card = document.querySelector<CraftCard>('craft-card')!;
-    card.luminance = image.luminance;
-    await settle([card]);
-    await card
-      .shadowRoot!.querySelector<HTMLImageElement>('.card__cover')!
-      .decode();
-
-    const text = Array.from(card.children).flatMap((child) =>
-      lines(child).map(({rect, node}) => ({
-        rect,
-        ink: getComputedStyle(node.parentElement!).color,
-      }))
+  async (_, labeled, image) => {
+    const card = await renderCover(
+      image,
+      `${coverHeader(labeled ? LONG_TEXT : '')}
+        <a href="#">${LONG_TEXT}</a>
+        <div>photo.jpg · 800×600</div>`
     );
-    const checkbox = card.querySelector('craft-checkbox > input')!;
-    const button = card.querySelector('craft-button')!;
-    const controls = [checkbox, button].map((control) => {
-      const style = getComputedStyle(control);
 
-      // A pixel in from its edge, past the anti-aliasing against the image.
-      return {
-        rect: control.getBoundingClientRect(),
-        ink: control === checkbox ? style.borderTopColor : style.color,
-        inflate: -1,
-        radius: parseFloat(style.borderTopLeftRadius),
-      };
-    });
+    expect((await coverContrast(card)).shortfalls).toEqual([]);
+  }
+);
 
-    inject(HIDE_INK);
-    await Promise.all(
-      document.getAnimations().map((animation) => animation.finished)
+it.each(COVER_IMAGES.map((image) => [image.name, image] as const))(
+  'gives every pixel behind a cover card’s attributes 4.5:1 (%s)',
+  async (_, image) => {
+    await page.viewport(1024, 900);
+    const card = await renderCover(
+      image,
+      `${coverHeader('The Quick Brown Fox')}
+        <a href="#">The Quick Brown Fox</a>
+        ${MANY_ATTRIBUTES}`,
+      600
     );
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    const pixels = await screenshot(card);
 
-    expect(text.length).toBeGreaterThan(0);
-    for (const {rect, ink} of text) {
-      expect(worst(ink, pixels(rect))).toBeGreaterThanOrEqual(4.5);
-    }
-    for (const {rect, ink, inflate, radius} of controls) {
-      expect(worst(ink, pixels(rect, inflate, radius))).toBeGreaterThanOrEqual(
-        3
-      );
-    }
+    expect(await coverContrast(card)).toEqual({shortfalls: [], clipped: []});
   }
 );

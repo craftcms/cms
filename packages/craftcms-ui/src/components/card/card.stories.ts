@@ -11,7 +11,6 @@ import '../button/button.js';
 import '../checkbox/checkbox.js';
 import '../icon/icon.js';
 import type {Luminance} from './cover.js';
-import {HARD_IMAGES} from '../../../test/cover-images';
 
 /**
  * `args` and `argTypes` are derived from the custom elements manifest, so the
@@ -131,26 +130,6 @@ const LUMINANCE: Record<number, Luminance> = {
       [0.093, 0.355],
     ],
   ],
-  1043: [
-    [
-      [0.022, 0.353],
-      [0.088, 0.521],
-      [0.092, 0.645],
-      [0.047, 0.546],
-    ],
-    [
-      [0.014, 0.091],
-      [0.042, 0.281],
-      [0.07, 0.333],
-      [0.031, 0.225],
-    ],
-    [
-      [0.01, 0.224],
-      [0.012, 0.129],
-      [0.026, 0.245],
-      [0.015, 0.23],
-    ],
-  ],
   1069: [
     [
       [0.063, 0.125],
@@ -216,9 +195,7 @@ const LUMINANCE: Record<number, Luminance> = {
 const photo = (id: number) => `https://picsum.photos/id/${id}/800/600`;
 
 interface CoverCardOptions {
-  id?: number;
-  src?: string;
-  name?: string;
+  id: number;
   label?: string;
   luminance?: Luminance | null;
   active?: boolean;
@@ -226,14 +203,16 @@ interface CoverCardOptions {
 
 /** A cover card laid out like an element index's. */
 const coverCard = ({
-  id = 0,
-  src = photo(id),
-  name = `Photo ${id}`,
+  id,
   label,
   luminance = LUMINANCE[id],
   active = false,
 }: CoverCardOptions) => html`
-  <craft-card cover-src="${src}" .luminance="${luminance}" ?active="${active}">
+  <craft-card
+    cover-src="${photo(id)}"
+    .luminance="${luminance}"
+    ?active="${active}"
+  >
     <div
       slot="header"
       style="display: flex; align-items: center; justify-content: space-between; gap: var(--c-spacing-sm); inline-size: 100%;"
@@ -242,7 +221,7 @@ const coverCard = ({
         style="display: flex; align-items: center; gap: var(--c-spacing-sm);"
       >
         <craft-checkbox label-sr-only .checked="${active}">
-          <label slot="label">Select ${name}</label>
+          <label slot="label">Select Photo ${id}</label>
         </craft-checkbox>
         ${label ? html`<span data-card-label>${label}</span>` : nothing}
       </div>
@@ -255,8 +234,8 @@ const coverCard = ({
         aria-label="Actions"
       ></craft-button>
     </div>
-    <a href="#">${name}</a>
-    <div>${name.toLowerCase().replaceAll(' ', '-')}.jpg · 800×600</div>
+    <a href="#">Photo ${id}</a>
+    <div>photo-${id}.jpg · 800×600</div>
   </craft-card>
 `;
 
@@ -454,7 +433,9 @@ export const KitchenSink: Story = {
  * `cover-src` makes a cover card: the image fills the card, and the header and
  * body are laid over it, in white or black picked from `luminance`. A header
  * with text gets a blurred bar of its own, in black or white, strong enough
- * for the text to reach 4.5:1 over any image.
+ * for the text to reach 4.5:1 over any image. The body sits on a scrim of the
+ * same black or white, which fades in above the content and blurs the image
+ * behind it.
  */
 export const Cover: Story = {
   parameters: coverParameters,
@@ -475,43 +456,8 @@ export const CoverBackedControls: Story = {
     coverGrid(
       coverCard({id: 1025}),
       coverCard({id: 1018}),
-      coverCard({id: 1015})
-    ),
-};
-
-/**
- * The body's scrim fades in above the content and is at full strength behind
- * it, in black or white, whichever suits the bottom of the image.
- */
-export const CoverScrim: Story = {
-  parameters: coverParameters,
-  render: () => coverGrid(coverCard({id: 1018}), coverCard({id: 1084})),
-};
-
-/**
- * The fills don't depend on the image, so text and controls hold up even over
- * images the luminance describes badly: pure white or black, detail too thin
- * to show in it, or a portrait whose top and bottom are cropped out of the
- * card.
- */
-export const CoverAnyImage: Story = {
-  parameters: coverParameters,
-  render: () =>
-    coverGrid(
-      ...HARD_IMAGES.flatMap(({name, src, luminance}) => [
-        coverCard({src, name, luminance}),
-        coverCard({src, name, luminance, label: name}),
-      ])
-    ),
-};
-
-/** Without `luminance`, before an image has been sampled, both are white. */
-export const CoverUnknownLuminance: Story = {
-  parameters: coverParameters,
-  render: () =>
-    coverGrid(
-      coverCard({id: 1043, luminance: null}),
-      coverCard({id: 1043, label: 'Yosemite', luminance: null})
+      coverCard({id: 1015}),
+      coverCard({id: 1084})
     ),
 };
 
@@ -526,15 +472,23 @@ export const CoverActive: Story = {
 };
 
 /**
- * Small images, and narrow or wide ones, keep a normal card with a thumbnail:
- * Craft only sets `cover-src` for images that can fill a card.
+ * Cover cards and normal cards share a grid: the same column widths, headers
+ * of the same height, and controls that line up.
  */
 export const CoverAlongsideNormalCards: Story = {
   parameters: coverParameters,
   render: () =>
     coverGrid(
       coverCard({id: 1015}),
+      coverCard({id: 1036, label: 'Base camp'}),
       html`<craft-card label="Icon 48">
+        <craft-button
+          slot="actions"
+          icon="ellipsis"
+          variant="plain"
+          size="small"
+          aria-label="Actions"
+        ></craft-button>
         <img
           slot="thumbnail"
           src="https://picsum.photos/id/1062/48/48"

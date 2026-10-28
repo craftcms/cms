@@ -1,4 +1,5 @@
 import type {Luminance} from '../src/components/card/cover.js';
+import {colors} from '../src/constants/colors.js';
 
 const svg = (width: number, height: number, shapes: string) =>
   `data:image/svg+xml,${encodeURIComponent(
@@ -64,3 +65,39 @@ export const HARD_IMAGES: CoverImage[] = [
     luminance: rows(3, [1, 1], [0, 0], [0, 0], [1, 1]),
   },
 ];
+
+const attribute = (html: string) =>
+  `<div class="card-attribute-preview">${html}</div>`;
+
+/**
+ * A cover card body full of card attributes, as an element card renders them
+ * below its title: text that wraps, a link, option and color field previews, status
+ * badges in every palette color with and without icons, and an element's
+ * status labels.
+ */
+export const MANY_ATTRIBUTES = [
+  '<div class="card-content">',
+  attribute(
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.'
+  ),
+  attribute('Oct 28 – Nov 30, 2026'),
+  attribute('Gallery 3, North Wing'),
+  attribute('<a href="#">example.com/exhibits/the-quick-brown-fox</a>'),
+  attribute('Painting, Sculpture, Photography'),
+  attribute(
+    '<div class="color small static"><div class="color-preview" style="background-color: #e11d48"></div></div><span class="colorhex">Crimson</span>'
+  ),
+  attribute(
+    '<craft-badge fill="teal"><craft-icon slot="prefix" name="check"></craft-icon>Featured</craft-badge>'
+  ),
+  attribute(
+    '<craft-badge fill="gray"><craft-icon slot="prefix" name="xmark-large"></craft-icon>Archived</craft-badge>'
+  ),
+  attribute(
+    colors
+      .map((color) => `<craft-badge fill="${color}">${color}</craft-badge>`)
+      .join(' ')
+  ),
+  '<ul class="flex gap-xs"><li><craft-badge fill="green">Live</craft-badge></li><li><craft-badge fill="blue"><craft-icon slot="prefix" name="pen-circle"></craft-icon>Edited</craft-badge></li></ul>',
+  '</div>',
+].join('');

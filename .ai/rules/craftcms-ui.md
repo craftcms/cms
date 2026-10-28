@@ -17,7 +17,22 @@ Playwright execution (the `components-browser` vitest project), same
 Litmus test: would someone browsing Storybook to learn the component's API
 benefit from seeing this as a named example? If not, it's a browser test,
 not a story — don't reach for the nearest existing `play()`-based story to
-copy its pattern without applying that test first.
+copy its pattern without applying that test first. Give each thing a
+consumer can vary its own story. Describe behavior every instance shares in
+a story that already shows it, rather than a story of its own.
+
+Edge cases a reviewer needs to see — hard inputs, stress content, failure
+states, and fallbacks for missing data — go in
+`<component>.edge-cases.stories.ts`, titled `Components/<Name>/Edge Cases`
+with `tags: ['!autodocs']`, so they sit beside the component in the sidebar
+but stay off its docs page. Name each after the mode it exercises
+(`CoverHardImages`), and size its canvas so the whole case is visible.
+They're published with the rest of Storybook, so they can be reviewed with
+or without a PR.
+Share their fixtures with the browser tests from `packages/craftcms-ui/test/`,
+so reviewers see what the tests measure. The story shows the case; the
+browser test verifies it, so an edge-case story never counts as verification
+in a `.a11y.md`.
 
 ## Document a11y requirements for new components and a11y-relevant changes
 Create or update a `<component>.a11y.md` file next to a component (see `button/button.a11y.md`, `thumbnail/thumbnail.a11y.md`) whenever you create a component, or add or change behavior that could affect accessibility — even if the change isn't accessibility-motivated. That covers keyboard navigation, focus order, and screen-reader behavior (accessible names, announcements) same as it covers motion, contrast, target size, cognitive load, zoom/reflow, and anything else in `.ai/rules/accessibility.md`'s scope — none of these is the sole trigger, and none is excluded. The file is a `## Requirements` checklist, one requirement per line, each noting what verifies it — a `.test.ts`/`.browser.test.ts` case, or a Storybook `play()` assertion only when that requirement is itself a documented example (see the story-vs-browser-test rule above). Write the checklist first, unchecked, then use it as the spec for the tests/story you add; check an item off only once something actually verifies it. This is in addition to, not instead of, the automated axe-core pass every story already gets — the checklist covers what axe can't catch.
