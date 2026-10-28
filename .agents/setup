@@ -108,6 +108,7 @@ if [[ $(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || true) != "$
 fi
 
 step 'Install PHP dependencies' composer install --prefer-dist --no-interaction --no-progress
+[[ -f tests/.env ]] || cp tests/.env.example.pgsql tests/.env
 step 'Build Codeception testers' vendor/bin/codecept build
 
 # npm ci always reinstalls from scratch, so skip it while the lockfile is unchanged,
@@ -156,8 +157,6 @@ if [[ ! -f $db_dir/pgsql-ready ]]; then
     "$pg_bin/pg_ctl" -D "$db_dir/pgsql" -w stop >/dev/null
     touch "$db_dir/pgsql-ready"
 fi
-
-[[ -f tests/.env ]] || cp tests/.env.example.pgsql tests/.env
 
 guidance_marker='# Craft 5 orb'
 if ! grep -Fqx "$guidance_marker" ~/.config/amp/AGENTS.md 2>/dev/null; then
