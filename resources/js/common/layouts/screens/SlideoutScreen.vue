@@ -21,17 +21,13 @@
   import {
     computed,
     onBeforeUnmount,
-    onMounted,
     provide,
     ref,
     useId,
     useTemplateRef,
   } from 'vue';
-  import {useElementSize, useEventListener} from '@vueuse/core';
+  import {useElementSize} from '@vueuse/core';
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
-  import {router} from '@inertiajs/vue3';
-  import {submitScreenForm} from '@/common/slideouts/submitScreenForm';
-  import {setSlideoutDirtyCheck} from '@/common/slideouts/store';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import PassthroughScreen from './PassthroughScreen.vue';
@@ -49,14 +45,15 @@
   } from '@/common/composables/screen';
   import {useSlideout} from '@/common/slideouts/useSlideout';
   import {useElementEditor} from '@/common/slideouts/useElementEditor';
-  import {firstMessages} from '@/common/slideouts/errors';
-  import {showMessagesFromResponse} from '@/modules/messages';
   import type {FormSaveOptions} from '@/common/types';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
   import CpContainer from '@/common/components/CpContainer.vue';
   import ContentFooter from './page/ContentFooter.vue';
   import {DEFAULT_FORM_ACTIONS} from './formActionItems';
+  import {useHtmlScreenSubmit} from './slideout/useHtmlScreenSubmit';
+  import {useSlideoutDirtyCheck} from './slideout/useSlideoutDirtyCheck';
+  import {useSlideoutSaveHandlers} from './slideout/useSlideoutSaveHandlers';
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -122,33 +119,13 @@
   );
   const form = computed(() => props.value.form ?? null);
 
-  // Slot presence isn't reactive, so the region and footer slot checks are
-  // functions the template calls on each render rather than computeds, which
-  // would keep the first answer.
-  const regions = useScreenRegions(slots, registry);
-  const hasTabs = () => regions.has('content-tabs');
-  const hasNotices = () => regions.has('content-notices');
-  // The details column: the panels the page adds with `ScreenPanel`, or
-  // whatever it puts in `content-details`. With panels as well, that becomes
-  // a panel of its own.
-  const hasDetailsContent = () => regions.has('content-details');
-  const hasPanels = computed(() => panels.panels.value.length > 0);
-  const hasOtherPanels = computed(() =>
-    panels.panels.value.some((panel) => panel.id !== DETAILS_PANEL_ID)
-  );
-  const hasDetails = () => hasDetailsContent() || hasPanels.value;
+  // A slideout has panels of its own; the page's stay on the page.
+  const panels = createScreenPanels();
+  provide(ScreenPanelsKey, panels);
+  const panelIdPrefix = `slideout-details-${useId()}`;
 
-  // The same footer slots a full page forwards, only when the page filled them
-  // so the footer's own fallbacks still apply.
-  const FOOTER_SLOTS = [
-    'content-footer',
-    'footer-meta',
-    'additional-buttons',
-    'primary-action',
-  ] as const;
-  function footerSlots() {
-    return FOOTER_SLOTS.filter((name) => slots[name]);
-  }
+  // Slot presence isn't reactive, so the template calls these on each render.
+  const regions = useScreenRegions(slots, registry, panels);
 
   // The Save menu's entries. "Save and continue editing" keeps the panel open:
   // in a slideout that's what `redirect: false` means.
@@ -188,13 +165,13 @@
   // A slideout keeps its details rail beside its panels, even when it
   // opens over a page that has a rail of its own.
   provide(ScreenDetailsRailKey, null);
-  // A slideout has panels of its own; the page's stay on the page.
-  const panels = createScreenPanels();
-  provide(ScreenPanelsKey, panels);
-  const panelIdPrefix = `slideout-details-${useId()}`;
 
-  const submittingHtml = ref(false);
+  /** Errors for a screen with no Vue form to hang them off. */
   const screenErrors = ref<Record<string, string> | null>(null);
+  const saveHandlers = useSlideoutSaveHandlers({
+    slideout,
+    errors: screenErrors,
+  });
 
   /**
    * The element-edit screen brings its own controller: drafts, autosaving and
@@ -211,9 +188,9 @@
       toolbar: toolbarEl,
       tabs: tabsEl,
     },
-    onSaved: handleElementSaved,
-    onDraftSaved: handleElementDraftSaved,
-    onError: handleElementSaveError,
+    onSaved: saveHandlers.onElementSaved,
+    onDraftSaved: saveHandlers.onElementDraftSaved,
+    onError: saveHandlers.onElementSaveError,
   });
 
   // The editor snapshots the form to detect changes, so it can't be built
@@ -240,146 +217,21 @@
       (elementEditor.isStatic.value ? t('Close') : t('Cancel'))
   );
 
-  const craft = () => window.Craft;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleElementSaved(response: any): void {
-    const data = response?.data ?? {};
-
-    if (data.message) {
-      craft()?.cp?.displaySuccess(data.message, data.notificationSettings);
-    }
-
-    if (data.modelClass && data.modelId) {
-      craft()?.refreshComponentInstances?.(data.modelClass, data.modelId);
-    }
-
-    // Tell other tabs — and the legacy element index behind this panel — that
-    // the element changed, exactly as `ElementEditorSlideout` does.
-    if (data.element?.id) {
-      craft()?.broadcaster?.postMessage({
-        event: 'saveElement',
-        id: data.element.id,
-      });
-    }
-
-    craft()?.Preview?.refresh?.();
-
-    const handled = slideout?.saved({data});
-
-    slideout?.close({force: true});
-
-    if (!handled) {
-      router.reload();
-    }
-  }
-
-  /**
-   * An autosaved draft. The panel stays open — this only lets the opener show
-   * the provisional changes, the way the legacy index picks up a `saveDraft`
-   * broadcast.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleElementDraftSaved(response: any): void {
-    slideout?.saved({draft: true, data: response?.data});
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleElementSaveError(error: any): void {
-    const data = error?.response?.data;
-
-    if (!data) {
-      throw error;
-    }
-
-    craft()?.cp?.displayError(data.message);
-
-    // The server's own summary gets drawn into the screen HTML, split across
-    // its tabs. Only stand in for it when there wasn't one.
-    screenErrors.value = data.errorSummary
-      ? null
-      : data.errors
-        ? firstMessages(data.errors)
-        : {error: data.message ?? t('Couldn’t save.')};
-  }
-
-  /**
-   * Whether the panel holds unsaved changes, so the store can prompt before
-   * discarding it.
-   *
-   * A Vue page has Inertia's own precise `isDirty`. A server-rendered screen
-   * has no such tracking, and snapshot-diffing its markup isn't reliable —
-   * `Craft.initUiElements()` rewrites inputs after load, which would read as
-   * user edits. So that path tracks whether the user has interacted at all:
-   * more conservative (undoing an edit still counts), but never wrong in the
-   * direction that loses work.
-   */
-  const touched = ref(false);
-  useEventListener(formEl, 'input', () => (touched.value = true));
-  useEventListener(formEl, 'change', () => (touched.value = true));
-
-  const isDirty = () => {
-    // Autosaved drafts persist every edit as it's made, so there's nothing to
-    // warn about — and warning anyway would make every element slideout
-    // prompt on close.
-    if (elementEditor.autosaves.value) {
-      return false;
-    }
-
-    return form.value ? Boolean(form.value.isDirty) : touched.value;
-  };
-
-  onMounted(() => {
-    if (slideout) {
-      setSlideoutDirtyCheck(slideout.instance.id, isDirty);
-    }
+  useSlideoutDirtyCheck({
+    slideout,
+    formEl,
+    form,
+    autosaves: elementEditor.autosaves,
   });
 
-  onBeforeUnmount(() => {
-    if (slideout) {
-      setSlideoutDirtyCheck(slideout.instance.id, null);
-    }
+  const htmlScreen = useHtmlScreenSubmit({
+    form: formEl,
+    action: screenAction,
+    namespace: () => chrome.value.screen?.namespace,
+    containerId: () => slideout?.instance.containerId,
+    errors: screenErrors,
+    onSaved: saveHandlers.closeAfterSave,
   });
-
-  async function saveHtmlScreen(): Promise<void> {
-    if (!formEl.value || !screenAction.value) {
-      return;
-    }
-
-    submittingHtml.value = true;
-    screenErrors.value = null;
-
-    const result = await submitScreenForm(formEl.value, {
-      action: screenAction.value,
-      namespace: chrome.value.screen?.namespace,
-      containerId: slideout?.instance.containerId,
-    });
-
-    submittingHtml.value = false;
-
-    if (!result.ok) {
-      if (result.fatal) {
-        throw result.fatal;
-      }
-
-      screenErrors.value = result.errors ?? {
-        error: result.message ?? t('Couldn’t save.'),
-      };
-
-      return;
-    }
-
-    showMessagesFromResponse(result.data);
-
-    const handled = slideout?.saved({data: result.data});
-
-    slideout?.close({force: true});
-
-    if (!handled) {
-      // Refresh the page behind to pick up whatever changed.
-      router.reload();
-    }
-  }
 
   function save(event: Event) {
     if (props.value.saveDisabled) {
@@ -393,7 +245,7 @@
     }
 
     if (!form.value && screenAction.value) {
-      void saveHtmlScreen();
+      void htmlScreen.submit();
 
       return;
     }
@@ -487,7 +339,11 @@
       </CpContainer>
     </header>
 
-    <div v-show="hasTabs()" ref="tabsEl" class="slideout-screen__tabs">
+    <div
+      v-show="regions.has('content-tabs')"
+      ref="tabsEl"
+      class="slideout-screen__tabs"
+    >
       <LayoutSlotOutlet name="content-tabs">
         <slot name="content-tabs"></slot>
       </LayoutSlotOutlet>
@@ -496,7 +352,7 @@
     <div class="slideout-screen__body">
       <div ref="contentEl" class="slideout-screen__content">
         <div
-          v-show="hasNotices()"
+          v-show="regions.has('content-notices')"
           class="slideout-screen__notices"
           role="status"
         >
@@ -525,12 +381,12 @@
       <!-- v-show, not v-if: the outlet is a teleport target and must stay in
         the DOM so page content can mount before registration flips hasDetails. -->
       <aside
-        v-show="hasDetails()"
+        v-show="regions.hasDetails()"
         ref="detailsEl"
         class="slideout-screen__details"
       >
         <DetailsPanels
-          v-if="hasPanels"
+          v-if="regions.hasPanels()"
           :registry="panels"
           :id-prefix="panelIdPrefix"
         />
@@ -539,7 +395,7 @@
         </LayoutSlotOutlet>
       </aside>
       <ScreenPanel
-        v-if="hasDetailsContent() && hasOtherPanels"
+        v-if="regions.detailsContentIsPanel()"
         :id="DETAILS_PANEL_ID"
         :label="t('Details')"
         icon="circle-info"
@@ -561,11 +417,11 @@
         :full-page-form="canSave && !props.saveDisabled"
         :submit-button-label="submitLabel"
         :primary-action-html="chrome.primaryAction"
-        :submitting="submittingHtml || elementEditor.saving.value"
+        :submitting="htmlScreen.submitting.value || elementEditor.saving.value"
         :save-disabled="props.saveDisabled"
         @save="saveWithOptions"
       >
-        <template v-for="name in footerSlots()" :key="name" #[name]>
+        <template v-for="name in regions.footerSlots()" :key="name" #[name]>
           <slot :name="name"></slot>
         </template>
         <template #shell-actions>
