@@ -182,14 +182,16 @@ Titles are generated with the provider and model administrators chose for the ta
 
 ## Images
 
-`CraftCms\Cms\Ai\ModelImages::forAsset()` returns an asset’s image as models should get it: scaled to fit 1,568 pixels, rasterized if it’s an SVG, and as base64, so it can be stored with a conversation. Attach it to a prompt:
+`CraftCms\Cms\Ai\ModelImages::forAsset()` returns an asset’s image as models should get it: scaled to fit 1,568 pixels, rasterized if it’s an SVG, and as base64, so it can be stored with a conversation. `forFile()` does the same for an image file you already have a copy of. Attach it to a prompt:
 
 ```php
 use CraftCms\Cms\Ai\ModelImages;
 
 $image = app(ModelImages::class)->forAsset($asset);
-$response = Ai::task('altText:describe')->prompt(agent: new AltTextAgent, prompt: 'Describe this image', attachments: [$image]);
+$response = Ai::task('gallery:caption')->prompt(agent: new CaptionAgent, prompt: 'Write a caption for this image', attachments: [$image]);
 ```
+
+Tasks that extend `ImageAnalysisTask` don’t need it, as Craft sends them the image itself.
 
 ## Queueing
 

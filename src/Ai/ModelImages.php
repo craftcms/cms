@@ -36,11 +36,24 @@ readonly class ModelImages
     public function forAsset(Asset $asset): Base64Image
     {
         $copy = $asset->getCopyOfFile();
-        $isJpeg = in_array(strtolower(pathinfo($copy, PATHINFO_EXTENSION)), ['jpg', 'jpeg'], true);
+
+        try {
+            return $this->forFile($copy)->as(self::name($asset));
+        } finally {
+            File::delete($copy);
+        }
+    }
+
+    /**
+     * Returns the image at a path as models get it. The file is left in place.
+     */
+    public function forFile(string $path): Base64Image
+    {
+        $isJpeg = in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), ['jpg', 'jpeg'], true);
         $prepared = AssetsHelper::tempFilePath($isJpeg ? 'jpg' : 'png');
 
         try {
-            $image = $this->images->loadImage($copy, rasterize: true);
+            $image = $this->images->loadImage($path, rasterize: true);
 
             if ($image instanceof Raster) {
                 $image->scaleToFit(self::MAX_SIZE, self::MAX_SIZE, false);
@@ -48,14 +61,12 @@ readonly class ModelImages
                 $path = $prepared;
                 $mimeType = $isJpeg ? 'image/jpeg' : 'image/png';
             } else {
-                $path = $copy;
-                $mimeType = File::mimeType($copy) ?: null;
+                $mimeType = File::mimeType($path) ?: null;
             }
 
-            return Image::fromBase64(base64_encode((string) file_get_contents($path)), $mimeType)
-                ->as(self::name($asset));
+            return Image::fromBase64(base64_encode((string) file_get_contents($path)), $mimeType);
         } finally {
-            File::delete([$copy, $prepared]);
+            File::delete($prepared);
         }
     }
 
