@@ -17,5 +17,6 @@ vendor/
 cpresources/*
 .ddev/
 test-results/
-.claude/settings.local.json.amp/portals/*
+.claude/settings.local.json
+.amp/portals/*
 .amp/databases/
