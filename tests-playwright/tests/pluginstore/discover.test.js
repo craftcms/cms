@@ -4,9 +4,7 @@ const {test, expect} = require('../../index');
 
 test('Shoud show the Discover page', async ({page}) => {
   await page.goto('./plugin-store');
-  await expect(page.getByRole('heading', {level: 1})).toHaveText(
-    'Plugin Store'
-  );
+  await expect(page.getByRole('heading', {level: 1})).toHaveText('Discover');
 });
 
 test('Should show featured plugins', async ({page}) => {

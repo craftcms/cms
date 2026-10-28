@@ -11,7 +11,7 @@
   import {usePluginStoreLayout} from '@/modules/plugin-store/composables/usePluginStoreLayout';
   import type {FeaturedSection} from '@/modules/plugin-store/types';
 
-  usePluginStoreLayout();
+  usePluginStoreLayout({title: t('Discover')});
 
   const {trials, failed: trialsFailed} = useActiveTrials();
 

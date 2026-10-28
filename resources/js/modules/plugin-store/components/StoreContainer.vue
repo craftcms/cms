@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import {index} from '@actions/PluginStore/PluginStoreController';
   import CpContainer from '@/common/components/CpContainer.vue';
+  import CpLink from '@/common/components/CpLink.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import PluginSearch from './PluginSearch.vue';
   import CartButton from './cart/CartButton.vue';
@@ -10,10 +12,15 @@
 </script>
 
 <template>
-  <LayoutSlot name="content-actions">
-    <div class="flex items-center gap-sm">
-      <PluginSearch />
-      <CartButton />
+  <LayoutSlot name="page-header">
+    <div class="store-header">
+      <CpLink :href="index()" class="store-header__title text-xl font-bold">
+        {{ t('Plugin Store') }}
+      </CpLink>
+      <div class="flex items-center gap-sm">
+        <PluginSearch />
+        <CartButton />
+      </div>
     </div>
   </LayoutSlot>
   <CpContainer class="py-lg">
@@ -23,3 +30,18 @@
     <slot v-else></slot>
   </CpContainer>
 </template>
+
+<style scoped>
+  .store-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--c-spacing-md);
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .store-header__title {
+    color: var(--c-text-default);
+    text-decoration: none;
+  }
+</style>
