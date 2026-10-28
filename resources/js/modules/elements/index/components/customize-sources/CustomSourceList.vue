@@ -175,11 +175,6 @@
   const labelIds = new Map<string, string>();
 
   /**
-   * The id of a row's label, for its menu button to be described by. Kept per
-   * row rather than per position: the button is rendered once, so an id that
-   * followed the index would point at another row after a reorder.
-   */
-  /**
    * The row whose item has keyboard focus. The item's button is in its shadow
    * root, where CSS on the row can't see `:focus-visible`, so it's tracked here
    * and the row draws the ring.
@@ -199,6 +194,11 @@
         : null;
   }
 
+  /**
+   * The id of a row's label, for its menu button to be described by. Kept per
+   * row rather than per position: the button is rendered once, so an id that
+   * followed the index would point at another row after a reorder.
+   */
   function labelId(id: string): string {
     if (!labelIds.has(id)) labelIds.set(id, `${uid}-label-${labelIds.size}`);
 
