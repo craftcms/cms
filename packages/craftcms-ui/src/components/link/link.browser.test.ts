@@ -16,6 +16,11 @@ document.addEventListener('craft-copy', (event) => {
 });
 
 beforeEach(async () => {
+  // A pointer left resting on a link would open the new one in its place
+  const before = document.querySelector<HTMLElement>('.before');
+  if (before) {
+    await userEvent.hover(before);
+  }
   copied = [];
   linkHoverIntent.reset();
   linkHoverIntent.options = {...hoverTiming, warmUpDelay: 100};
