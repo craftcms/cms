@@ -69,6 +69,7 @@
     loadElementFields,
     openElementRequest,
   } from './element-context';
+  import './skill-context';
 
   const props = defineProps<{
     /** The conversation’s id, which the server stores it under. */
@@ -410,6 +411,23 @@
       icon: 'message-question',
       done: () => t('Asked a question'),
       running: () => t('Asking a question…'),
+    },
+    // `laravel/ai`’s tool, which the server shows as the skill’s title.
+    LoadSkill: {
+      icon: 'layer-group',
+      done: (output) => {
+        const result = resultOf(output) as {skill?: unknown} | null;
+
+        // Anything but `{"skill": …}` is laravel/ai’s error, such as for a skill that was deleted.
+        if (!result || !('skill' in result)) {
+          return t('Couldn’t load a skill');
+        }
+
+        return typeof result.skill === 'string'
+          ? t('Loaded skill: {name}', {name: result.skill})
+          : t('Loaded a skill');
+      },
+      running: () => t('Loading a skill…'),
     },
   };
 

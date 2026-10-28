@@ -94,3 +94,75 @@ it('only lets users who can use the utility manage skills', function () {
 
     expect(AgentSkill::query()->pluck('title')->all())->toBe(['Voice']);
 });
+
+it('offers the skills whose titles match what the user typed after /', function () {
+    skill('Teaser');
+    skill('Alt text');
+    skill('Translation');
+
+    getJson(action([AssistantController::class, 'skills'], ['query' => '/te']))
+        ->assertOk()
+        ->assertJsonPath('*.label', ['Alt text', 'Teaser']);
+});
+
+it('offers the assistant every skill to load, and follows the skills the user chose', function () {
+    $loadable = skill('Voice');
+    $chosen = skill('Teaser');
+    AssistantAgent::fake(['Done.']);
+
+    postJson(action([AssistantController::class, 'run']), [
+        'threadId' => (string) Str::uuid(),
+        'runId' => (string) Str::uuid(),
+        'messages' => [['id' => (string) Str::uuid(), 'role' => 'user', 'content' => 'Write a teaser']],
+        'forwardedProps' => ['context' => [
+            ['type' => 'craft:skill', 'ref' => 'ref-1', 'skillId' => $chosen->id],
+        ]],
+    ])->assertOk()->streamedContent();
+
+    AssistantAgent::assertPrompted(function (AgentPrompt $prompt) use ($loadable, $chosen): bool {
+        $descriptions = collect($prompt->agent->skills())->mapWithKeys(fn (Skill $skill): array => [$skill->name => $skill->description]);
+        $instructions = $prompt->agent->instructions();
+
+        return $descriptions->all() == [$loadable->name() => $loadable->description, $chosen->name() => $chosen->description]
+            && str_contains($instructions, "<skill_content name=\"{$chosen->name()}\">\n{$chosen->body}")
+            && ! str_contains($instructions, $loadable->body);
+    });
+});
+
+it('shows the chat which skill the model loaded, by its title, while the model gets its instructions', function () {
+    $skill = skill('Voice');
+    $threadId = (string) Str::uuid();
+    AssistantAgent::fake([new ToolCall('call_1', 'LoadSkill', ['name' => $skill->name()]), 'Done.']);
+
+    $content = postJson(action([AssistantController::class, 'run']), [
+        'threadId' => $threadId,
+        'runId' => (string) Str::uuid(),
+        'messages' => [['id' => (string) Str::uuid(), 'role' => 'user', 'content' => 'Write a teaser']],
+    ])->assertOk()->streamedContent();
+
+    preg_match_all('/^data: (.+)$/m', $content, $lines);
+    $result = collect($lines[1])->map(fn (string $line): mixed => Json::decode($line))->firstWhere('type', 'TOOL_CALL_RESULT');
+    $stored = ConversationMessage::query()->where('role', 'assistant')->sole()->tool_results[0]['result'];
+    $reloaded = getJson(action([AssistantController::class, 'show'], ['threadId' => $threadId]))->json('messages.1.parts.0.output');
+
+    expect(Json::decode($result['content']))->toBe(['skill' => 'Voice'])
+        ->and(Json::decode($reloaded))->toBe(['skill' => 'Voice'])
+        ->and($stored)->toContain($skill->body);
+});
+
+it('shows the chat the error when the model loads a skill that doesn’t exist, rather than a loaded skill', function () {
+    skill('Voice');
+    AssistantAgent::fake([new ToolCall('call_1', 'LoadSkill', ['name' => 'deleted-999']), 'Done.']);
+
+    $content = postJson(action([AssistantController::class, 'run']), [
+        'threadId' => (string) Str::uuid(),
+        'runId' => (string) Str::uuid(),
+        'messages' => [['id' => (string) Str::uuid(), 'role' => 'user', 'content' => 'Write a teaser']],
+    ])->assertOk()->streamedContent();
+
+    preg_match_all('/^data: (.+)$/m', $content, $lines);
+    $result = collect($lines[1])->map(fn (string $line): mixed => Json::decode($line))->firstWhere('type', 'TOOL_CALL_RESULT');
+
+    expect($result['content'])->toContain('deleted-999')
+        ->and(json_decode($result['content'], true))->not->toHaveKey('skill');
+});

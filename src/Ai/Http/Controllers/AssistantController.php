@@ -15,6 +15,8 @@ use CraftCms\Cms\Ai\AssistantContextTypes;
 use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
 use CraftCms\Cms\Ai\ModelImages;
+use CraftCms\Cms\Ai\Models\AgentSkill;
+use CraftCms\Cms\Ai\Skills\AgentSkills;
 use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Ai\Tasks\GenerateChatTitle;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -67,6 +69,12 @@ readonly class AssistantController
      */
     private const int MENTION_LIMIT = 10;
 
+    /**
+     * The type of the context items for skills the user chose with `/`. Their skills go in the model’s instructions,
+     * rather than being described as data, as context types’ items are.
+     */
+    public const string SKILL_CONTEXT_TYPE = 'craft:skill';
+
     public function __construct(
         private ConversationStore $conversations,
     ) {}
@@ -78,6 +86,7 @@ readonly class AssistantController
         Request $request,
         McpTools $tools,
         AssistantContextTypes $contextTypes,
+        AgentSkills $skills,
         ModelImages $modelImages,
     ): Response {
         $request->validate([
@@ -123,6 +132,8 @@ readonly class AssistantController
             static fn (array $item): bool => ! in_array($item['ref'], $refs, true),
         );
 
+        $items = [...$context, ...$earlier];
+
         // The image of the asset open in the editor goes with the first message it’s open for, and stays in the
         // conversation for later ones.
         $image = $this->openImage($context, $user);
@@ -132,8 +143,10 @@ readonly class AssistantController
         $agent = new AssistantAgent(
             $tools,
             $user,
-            $contextTypes->resolve($request, [...$context, ...$earlier]),
+            $contextTypes->resolve($request, $items),
             $this->site($context, $request->integer('forwardedProps.siteId') ?: null),
+            $skills->all(),
+            $this->chosenSkills($items, $skills),
             $imageSent || $attachImage ? $image->title : null,
         );
 
@@ -165,6 +178,32 @@ readonly class AssistantController
         abort_unless($this->belongsTo($threadId, $user), 404);
 
         return new JsonResponse([...$transcript->load($threadId), 'activeRun' => null]);
+    }
+
+    /**
+     * Returns the skills a `/` in the message box offers: those whose titles match what the user typed.
+     */
+    public function skills(Request $request, AgentSkills $skills): JsonResponse
+    {
+        $search = mb_strtolower(trim(Str::after($request->string('query')->value(), '/')));
+        $limit = min(max($request->integer('limit', self::MENTION_LIMIT), 1), self::MENTION_LIMIT);
+
+        $options = $skills->all()
+            ->filter(fn (AgentSkill $skill): bool => $search === '' || str_contains(mb_strtolower($skill->title), $search))
+            ->take($limit)
+            ->map(fn (AgentSkill $skill): array => [
+                'label' => $skill->title,
+                // Keeps the `/`, so the message shows which skill was chosen.
+                'value' => '/'.$skill->title,
+                'data' => [
+                    'skillId' => $skill->id,
+                    'hint' => t('Skill'),
+                ],
+            ])
+            ->values()
+            ->all();
+
+        return new JsonResponse($options);
     }
 
     /**
@@ -453,4 +492,22 @@ readonly class AssistantController
         return $siteId !== null && Sites::getEditableSiteIds()->contains($siteId) ? Sites::getSiteById($siteId) : null;
     }
 
+    /**
+     * Returns the skills the user chose with `/`, in this message or earlier ones, that still exist.
+     *
+     * @param  array<mixed>  $items
+     * @return list<AgentSkill>
+     */
+    private function chosenSkills(array $items, AgentSkills $skills): array
+    {
+        $chosen = [];
+
+        foreach ($items as $item) {
+            if (is_array($item) && ($item['type'] ?? null) === self::SKILL_CONTEXT_TYPE && is_int($item['skillId'] ?? null)) {
+                $chosen[$item['skillId']] ??= $skills->find($item['skillId']);
+            }
+        }
+
+        return array_values(array_filter($chosen));
+    }
 }
