@@ -24,12 +24,10 @@ import './js/BaseElementIndexView.js';
 // Finally load the remaining files
 import './js/AdminTable.js';
 import './js/AssetIndex.js';
-import './js/AssetsFieldSettings';
 import './js/CP.js';
 import './js/CardsElementIndexView.js';
 import './js/CategoryIndex.js';
 import './js/ElementEditor.js';
-import './js/ElementFieldSettings.js';
 import './js/EntryIndex.js';
 import './js/Preview.js';
 import './js/ProgressBar.js';

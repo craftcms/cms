@@ -1,7 +1,10 @@
 /** global: Craft */
 /** global: Garnish */
 /**
- * Assets field settings
+ * Assets field settings for the legacy relation field settings template, which
+ * only the Yii2 adapter renders. Core builds these settings with `settingsUi()`.
+ *
+ * Loaded CP-wide via CraftCms\Yii2Adapter\View\LegacyAssets\CpCompatAsset.
  */
 Craft.AssetsFieldSettings = Garnish.Base.extend({
   $useSingleFolderInput: null,
