@@ -48,7 +48,8 @@
     .showLinkLabelField="control.props.showLabelField ?? false"
     .linkAdvancedFields="control.props.advancedFields ?? []"
     sanitize-html
-    :disabled="!editable"
+    :readonly="control.mode === 'readOnly'"
+    :disabled="!editable && control.mode !== 'readOnly'"
     :required="editable && required"
     :aria-invalid="invalid ? 'true' : undefined"
     .value="value ?? ''"
