@@ -12,7 +12,7 @@
    * The document scrolls, not the main column, so `CpSidebar` is a sticky,
    * viewport-tall flex child of `.cp__main`.
    */
-  import {computed, provide, useTemplateRef} from 'vue';
+  import {computed, defineAsyncComponent, provide, useTemplateRef} from 'vue';
   import {Head, usePage} from '@inertiajs/vue3';
   import {
     useElementBounding,
@@ -64,6 +64,13 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import {navItemActions} from '@/common/composables/navActions';
   import SecondaryNav from '@/common/components/SecondaryNav.vue';
+
+  // Loaded on its own: the palette reaches the slideouts (through element
+  // action menus), which reach this screen, so a static import would make a
+  // cycle — one that deadlocks a test mocking the slideouts module.
+  const CommandPalette = defineAsyncComponent(
+    () => import('@/modules/command-palette/components/CommandPalette.vue')
+  );
 
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
@@ -506,6 +513,7 @@
   </div>
 
   <ScreenOverlays :debug="debug" />
+  <CommandPalette />
 </template>
 
 <style scoped lang="postcss">

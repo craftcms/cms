@@ -34,7 +34,7 @@
           </LayoutSlotOutlet>
         </div>
 
-        <div class="flex gap-2 items-center">
+        <div class="flex gap-2 items-center" data-command-palette-actions>
           <LayoutSlotOutlet name="content-toolbar-actions">
             <slot name="actions"></slot>
           </LayoutSlotOutlet>

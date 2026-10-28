@@ -2214,11 +2214,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             }
 
             $nodes[] = Field::make(t('Slug'))
+                ->icon('link')
                 ->control($slug);
         }
 
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
             $nodes[] = Field::make(t('Parent'))
+                ->icon('sitemap')
                 ->control(
                     ElementSelect::make('parentId')
                         ->elementType(self::class)
@@ -2237,6 +2239,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 $nodes[] = Field::make(t('{max, plural, =1{Author} other {Authors}}', [
                     'max' => $section->maxAuthors ?? PHP_INT_MAX,
                 ]))
+                    ->icon('user')
                     ->control(
                         ElementSelect::make('authorIds')
                             ->elementType(User::class)
@@ -2252,6 +2255,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
             if ($this->getType()->showPostDateField) {
                 $nodes[] = Field::make(t('Post Date'))
+                    ->icon('calendar')
                     ->control(
                         DateTime::make('postDate')
                             ->showTime()
@@ -2268,6 +2272,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
             if ($this->getType()->showExpiryDateField) {
                 $nodes[] = Field::make(t('Expiry Date'))
+                    ->icon('calendar-xmark')
                     ->control(
                         DateTime::make('expiryDate')
                             ->showTime()

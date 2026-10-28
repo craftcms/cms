@@ -38,6 +38,13 @@ export const FieldActionItems: InjectionKey<
 export const FieldLabelSrOnly: InjectionKey<Readonly<Ref<boolean>>> =
   Symbol('FieldLabelSrOnly');
 
+/**
+ * Reloads the UI an admin table belongs to after the table changes, when that
+ * UI isn't the page's own — such as a form fetched for a modal.
+ */
+export const UiTableRefresh: InjectionKey<() => void> =
+  Symbol('UiTableRefresh');
+
 class ServerError extends Validator {
   static override validatorName = 'ServerError';
 

@@ -99,4 +99,10 @@ class PhotoField extends BaseNativeField
 
         return $items;
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'circle-user';
+    }
 }

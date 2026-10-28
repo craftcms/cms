@@ -28,6 +28,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Enums\FileKind;
+use CraftCms\Cms\Asset\Enums\ImageOrientation;
 use CraftCms\Cms\Asset\Enums\ImageType;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
 use CraftCms\Cms\Asset\Events\AssetUrlDefined;
@@ -2679,6 +2680,23 @@ JS, [
     }
 
     /**
+     * Returns whether the image is landscape, portrait, or square, based on its width and height, or `null` if its
+     * dimensions aren’t known.
+     *
+     * Images whose width and height differ by up to 2% count as square.
+     *
+     * @since 6.0.0
+     */
+    #[AllowedInSandbox]
+    public function getOrientation(): ?ImageOrientation
+    {
+        $width = (int) $this->getWidth();
+        $height = (int) $this->getHeight();
+
+        return $width > 0 && $height > 0 ? ImageOrientation::fromDimensions($width, $height) : null;
+    }
+
+    /**
      * Returns the asset's path in the volume.
      *
      * @param  string|null  $filename  Filename to use. If not specified, the asset's filename will be used.
@@ -3211,6 +3229,7 @@ JS;
     {
         return [
             Field::make(t('Filename'))
+                ->icon('file')
                 ->required()
                 ->control(
                     Text::make('newFilename')

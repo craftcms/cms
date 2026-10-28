@@ -9,6 +9,7 @@ Shares `HasLabel` with `craft-input`; see `input.a11y.md` for label, help text a
 - Picking from a short, fixed list without typing. Use `craft-select`, or `craft-select-rich` when the options need markup.
 - Inserting suggestions into free text after a trigger character such as `@`. Use `craft-text-expander`.
 - A list of actions or links. Use `craft-action-menu`.
+- Search results that go somewhere or run an action when chosen. Build the [Editable Combobox With List Autocomplete](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/) pattern in place, with any per-result actions after the listbox.
 
 A change that needs any of these is a different pattern. Don't add a mode to `craft-combobox` for it.
 
