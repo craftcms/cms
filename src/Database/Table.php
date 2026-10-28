@@ -75,6 +75,8 @@ readonly class Table
 
     public const string GQLTOKENS = 'gqltokens';
 
+    public const string IMAGEHASHES = 'imagehashes';
+
     public const string IMAGETRANSFORMINDEX = 'imagetransformindex';
 
     public const string IMAGETRANSFORMS = 'imagetransforms';

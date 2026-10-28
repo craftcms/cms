@@ -150,7 +150,7 @@ it('selects fit for index tiles and inline cards', function (string $viewMode, s
             })
         );
 })->with([
-    'tiles' => ['thumbs', 'thumbHtml', 'fit', 200],
+    'tiles' => ['thumbs', 'thumbHtml', 'fit', 120],
     'inline cards' => ['cards', 'cardThumbHtml', 'fit', 120],
 ]);
 
@@ -519,6 +519,58 @@ it('sends a plain-text label for every row in flat table mode', function () {
             ->where('data.0.label', $entry->getUiLabel())
         );
 });
+
+it('renders title chips at the requested thumbnail size, in a chip size to suit', function (?string $thumbSize, ?string $expectedThumbSize, string $expectedSize) {
+    EntryModel::factory()->createElement(['title' => 'Homepage']);
+
+    get(route('craft.cp.content.index', array_filter([
+        'page' => 'entries',
+        'viewMode' => 'table',
+        'thumbSize' => $thumbSize,
+    ])))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.title', function (string $html) use ($expectedThumbSize, $expectedSize) {
+                $chip = new Crawler($html)->filter('craft-chip');
+                expect([$chip->attr('thumb-size'), $chip->attr('size')])->toBe([$expectedThumbSize, $expectedSize]);
+
+                return true;
+            })
+        );
+})->with([
+    'default' => [null, 'sm', 'small'],
+    'md' => ['md', 'md', 'medium'],
+    'lg' => ['lg', 'lg', 'large'],
+    // Table rows stop at a card's thumbnail size.
+    'xl' => ['xl', 'sm', 'small'],
+    'unknown' => ['huge', 'sm', 'small'],
+]);
+
+it('renders tile thumbnails at the requested size', function (?string $thumbSize, int $size) {
+    $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')
+        ->createElementWithFields()->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    get(route('craft.cp.content.index', array_filter([
+        'page' => 'entries',
+        'viewMode' => 'thumbs',
+        'thumbSize' => $thumbSize,
+    ])))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.thumbHtml', function (string $html) use ($size) {
+                expect($html)->toContainTag('craft-thumbnail', ['sizes' => "calc({$size}rem/16)"]);
+
+                return true;
+            })
+        );
+})->with([
+    'default' => [null, 120],
+    'sm' => ['sm', 26],
+    '2xl' => ['2xl', 240],
+]);
 
 it('sends a plain-text label alongside the card HTML in cards view mode', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Homepage']);

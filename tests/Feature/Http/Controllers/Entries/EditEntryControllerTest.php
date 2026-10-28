@@ -773,8 +773,7 @@ it('polls for activity against the canonical element', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('activityUrl', fn (?string $url) => is_string($url)
-                && str_contains($url, 'elements/recent-activity')
-                && str_contains($url, 'dontExtendSession'))
+                && str_contains($url, 'elements/recent-activity'))
             ->where('updatedTimestamps', fn (Collection $stamps) => $stamps->has('element')
                 && $stamps->has('canonical'))
             ->where('elementDisplayName', 'entry')

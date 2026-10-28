@@ -229,7 +229,8 @@
         <CodeHighlight language="yaml" :code="entireConfig" />
       </craft-pane>
       <div class="buttons">
-        <craft-button :href="download().url">
+        <!-- A file, which an Inertia visit can’t download. -->
+        <craft-button :href="download().url" data-inertia="false">
           <craft-icon name="download" slot="prefix"></craft-icon>
           {{ t('Download') }}
         </craft-button>

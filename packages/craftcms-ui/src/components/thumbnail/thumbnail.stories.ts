@@ -384,3 +384,35 @@ export const Presentations: Story = {
     }
   },
 };
+
+/**
+ * Inside a chip, the chip sizes the thumbnail's box: its `thumb-size` sets
+ * `--c-thumbnail-size`, and a `fit` image fills it along its longer side.
+ */
+export const InChipThumbSizes: Story = {
+  render: () => html`
+    <div
+      style="display: flex; flex-wrap: wrap; gap: var(--c-spacing-md); align-items: start;"
+    >
+      ${(['sm', 'md', 'lg', 'xl', '2xl'] as const).map(
+        (thumbSize) => html`
+          <craft-chip
+            thumb-size=${thumbSize}
+            prefix-placement="block-start"
+            show-thumb
+          >
+            <craft-thumbnail
+              slot="thumbnail"
+              src=${imageFixture(800, 1200)}
+              width="800"
+              height="1200"
+              alt=""
+              loading="eager"
+            ></craft-thumbnail>
+            ${thumbSize}
+          </craft-chip>
+        `
+      )}
+    </div>
+  `,
+};

@@ -11,6 +11,7 @@ use CraftCms\Cms\Filesystem\Contracts\UploadHandler;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageMetadata;
+use CraftCms\Cms\Image\ImageHash;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -96,17 +97,20 @@ class AssetUploads implements UploadHandler
     }
 
     /**
-     * Returns what the uploader read from the file, if it sent anything: its colors and embedded metadata.
+     * Returns what the uploader read from the file, if it sent anything: its colors, difference hash, and embedded
+     * metadata.
      *
      * Only those parts are taken, never what AI tasks find, such as keywords, which can’t be set from a request.
      */
     private function uploadedAnalysis(Request $request): ?ImageAnalysis
     {
         $colors = $this->uploadedColors($request);
+        // Only trusted alongside colors, since the file is sampled on the server otherwise
+        $hash = $colors !== null ? $this->uploadedHash($request) : null;
         $metadata = $request->input('analysis.metadata');
         $metadata = is_array($metadata) ? ImageMetadata::fromArray($metadata) : null;
 
-        return $colors !== null || $metadata !== null ? new ImageAnalysis(colors: $colors, metadata: $metadata) : null;
+        return $colors !== null || $metadata !== null ? new ImageAnalysis(colors: $colors, hash: $hash, metadata: $metadata) : null;
     }
 
     /**
@@ -145,5 +149,15 @@ class AssetUploads implements UploadHandler
         }
 
         return ImageColors::fromArray($colors);
+    }
+
+    /**
+     * Returns the difference hash the uploader found for the file, if it sent a valid one.
+     */
+    private function uploadedHash(Request $request): ?string
+    {
+        $hash = $request->input('analysis.hash');
+
+        return ImageHash::isHash($hash) ? $hash : null;
     }
 }

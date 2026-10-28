@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
+use CraftCms\Cms\Auth\SessionTimeout;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\CpDataResolving;
@@ -280,6 +281,7 @@ readonly class Cp
             'sites' => self::sites(),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
+            'sessionExpiresAt' => app(SessionTimeout::class)->expiresAt(request())?->getTimestamp(),
             'userEmail' => $currentUser->email,
             'userHasPasskeys' => app(Passkeys::class)->hasPasskeys(app(Impersonation::class)->getImpersonator() ?? $currentUser),
             'userId' => $currentUser->id,
