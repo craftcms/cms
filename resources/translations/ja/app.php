@@ -403,7 +403,6 @@ return [
     'Continue' => '続ける',
     'Control panel resources' => 'コントロールパネルのリソース',
     'Cooldown Time Remaining' => '残りのクールダウン時間',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'クリップボードにコピーしました。',
     'Copied' => 'Copied',
     'Copy URL' => 'URLをコピー',

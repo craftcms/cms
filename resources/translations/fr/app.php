@@ -403,7 +403,6 @@ return [
     'Continue' => 'Continuer',
     'Control panel resources' => 'Ressources du panneau de contrôle',
     'Cooldown Time Remaining' => 'Délai de sécurité restant',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Copié dans le presse-papiers.',
     'Copied' => 'Copied',
     'Copy URL' => 'Copier l\'URL',

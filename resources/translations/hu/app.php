@@ -403,7 +403,6 @@ return [
     'Continue' => 'Tovább',
     'Control panel resources' => 'Vezérlőpult erőforrások',
     'Cooldown Time Remaining' => 'Fennmaradó hűlési idő',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Vágólapra másolva.',
     'Copied' => 'Copied',
     'Copy URL' => 'URL-cím másolása',

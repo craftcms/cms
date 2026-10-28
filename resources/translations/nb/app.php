@@ -403,7 +403,6 @@ return [
     'Continue' => 'Fortsett',
     'Control panel resources' => 'Kontrollpanelressurser',
     'Cooldown Time Remaining' => 'Nedtelling: gjenstående tid er',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Kopiert til utklippstavlen.',
     'Copied' => 'Copied',
     'Copy URL' => 'Kopier URL',

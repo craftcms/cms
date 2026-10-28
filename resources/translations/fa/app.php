@@ -403,7 +403,6 @@ return [
     'Continue' => 'ادامه دادن',
     'Control panel resources' => 'منابع صفحه کنترل',
     'Cooldown Time Remaining' => 'زمان باقی مانده انتظار',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'به کلیپ‌برد کپی شد.',
     'Copied' => 'Copied',
     'Copy URL' => 'کپی آدرس اینترنتی',

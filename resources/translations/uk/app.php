@@ -403,7 +403,6 @@ return [
     'Continue' => 'Продовжити',
     'Control panel resources' => 'Ресурси панелі керування',
     'Cooldown Time Remaining' => 'Час до наступної спроби входу',
-    'Copied' => 'Copied',
     'Copied to clipboard.' => 'Скопійовано до буфера обміну.',
     'Copied' => 'Copied',
     'Copy URL' => 'Копіювати URL-адресу',
