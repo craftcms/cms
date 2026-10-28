@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -110,6 +111,22 @@ it('previews cards in the thumb style, once it applies', function (?string $styl
     'asset volume set to normal' => ['normal', false, false],
     'entry type by default' => [null, true, false],
     'entry type set to cover' => ['cover', true, true],
+]);
+
+it('previews cards with the sample image for the theme being shown', function (?string $cookie, string $theme, string $luminance) {
+    if ($cookie !== null) {
+        request()->cookies->set(Theme::COOKIE, $cookie);
+    }
+
+    $preview = cardPreview(Asset::class);
+    $card = $preview->filter('craft-card');
+
+    expect($card->attr('cover-src'))->toEndWith("bachelor-$theme.jpg")
+        ->and($card->attr('luminance'))->toStartWith($luminance)
+        ->and($preview->filter('craft-chip.cvd-chip img')->attr('src'))->toEndWith("bachelor-$theme.jpg");
+})->with([
+    'light by default' => [null, 'light', '[[[0.389,'],
+    'dark' => ['dark', 'dark', '[[[0.01,'],
 ]);
 
 it('shows the thumb style setting for asset volumes and for fields as the thumb source, and thumb alignment unless cards are covered', function (string $type, bool $thumbField, ?string $style, bool $styleShown, bool $alignmentShown) {

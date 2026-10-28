@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp\FieldLayoutDesigner;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -21,6 +22,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Throwable;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
@@ -30,16 +32,21 @@ use function CraftCms\Cms\t;
 class CardDesigner
 {
     /**
-     * The luminance of `images/thumb-styles/preview.jpg`, the sample image cards are previewed with, as
+     * The luminance of the sample images cards are previewed with, Mt. Bachelor at sunset for the light theme
+     * (`images/thumb-styles/bachelor-light.jpg`) and under the stars for the dark theme (`bachelor-dark.jpg`), as
      * {@see Images::sample()} measures it.
-     *
-     * The image is “Mt. Bachelor, Oregon, early morning” by Bonnie Moreland, in the public domain:
-     * https://commons.wikimedia.org/wiki/File:Mt._Bachelor,_Oregon,_early_morning.jpg
      */
     private const array PREVIEW_COVER_LUMINANCE = [
-        [[0.045, 0.121], [0.048, 0.132], [0.049, 0.138], [0.047, 0.133]],
-        [[0.043, 0.12], [0.013, 0.135], [0.037, 0.138], [0.042, 0.128]],
-        [[0.001, 0.2], [0.001, 0.263], [0.001, 0.299], [0.001, 0.268]],
+        'light' => [
+            [[0.389, 0.676], [0.294, 0.592], [0.171, 0.454], [0.116, 0.378]],
+            [[0.038, 0.65], [0.025, 0.435], [0.021, 0.198], [0.021, 0.4]],
+            [[0.004, 0.04], [0.004, 0.028], [0.004, 0.023], [0.004, 0.024]],
+        ],
+        'dark' => [
+            [[0.01, 0.029], [0.009, 0.027], [0.009, 0.027], [0.009, 0.026]],
+            [[0.007, 0.065], [0.007, 0.111], [0.007, 0.095], [0.008, 0.07]],
+            [[0.002, 0.02], [0.002, 0.012], [0.002, 0.011], [0.003, 0.014]],
+        ],
     ];
 
     /** @param array<string, mixed> $config */
@@ -145,7 +152,8 @@ class CardDesigner
 
         $bodyHtml .= Html::endTag('div');
 
-        $previewSrc = Cp::publicAssetUrl('images/thumb-styles/preview.jpg');
+        $theme = Theme::resolveFor(currentUserElement())->value;
+        $previewSrc = Cp::publicAssetUrl("images/thumb-styles/bachelor-$theme.jpg");
         $thumbnailHtml = $showThumb ? Html::tag('img', '', ['src' => $previewSrc, 'alt' => '']) : '';
 
         return view('c::forms.fld.card-preview', [
@@ -155,7 +163,7 @@ class CardDesigner
             'showThumb' => $showThumb,
             'thumbAlignment' => $thumbAlignment,
             'coverSrc' => $cover ? $previewSrc : null,
-            'coverLuminance' => self::PREVIEW_COVER_LUMINANCE,
+            'coverLuminance' => self::PREVIEW_COVER_LUMINANCE[$theme],
             'thumbnailHtml' => $thumbnailHtml,
             'avatarHtml' => $avatarHtml,
             'labelText' => $labelText,

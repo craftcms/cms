@@ -24,6 +24,12 @@ export class CardViewDesigner extends Base {
   abortController: AbortController | null = null;
   attribute: any = null;
   previewCardObserver = new ResizeObserver(() => this.snapPreviewCard());
+  /**
+   * The preview's sample image depends on the theme, so it's rendered again
+   * when the theme changes without a page load (System following the
+   * operating system, say).
+   */
+  themeObserver = new MutationObserver(() => void this.updatePreview());
 
   constructor(designer: FieldLayoutDesigner, container: HTMLElement) {
     super();
@@ -91,6 +97,9 @@ export class CardViewDesigner extends Base {
     this.disablePreviewLinks();
     this.syncPreviewAppearance();
     this.observePreviewCard();
+    this.themeObserver.observe(document.documentElement, {
+      attributeFilter: ['data-theme'],
+    });
   }
 
   /**
@@ -481,6 +490,7 @@ export class CardViewDesigner extends Base {
   override destroy(): void {
     this.abortController?.abort();
     this.previewCardObserver.disconnect();
+    this.themeObserver.disconnect();
     document.removeEventListener(
       'model-value-changed',
       this.onAppearanceChange
