@@ -839,12 +839,42 @@ class Gql extends Component
      * Returns a schema for authenticated requests made on behalf of a user, made up of the schema components that
      * support authenticated requests and are available to that user.
      *
+     * The schema’s scope is cached per user, and varies by the project config version and the user’s permissions.
+     * Components whose `authenticated` callbacks depend on anything else should be available whenever the user
+     * might need them, and limit their results instead.
+     *
      * @param User $user The user the request is authenticated as
      * @param bool $includeMutations Whether mutation components should be included
      * @return GqlSchema
      * @since 5.12.0
      */
     public function getSchemaForUser(User $user, bool $includeMutations = true): GqlSchema
+    {
+        $cacheKey = sprintf(
+            'gql-user-scope::%s::%s::%s::%s::%s',
+            $user->id,
+            (int)$includeMutations,
+            Craft::$app->edition->value,
+            Craft::$app->getInfo()->configVersion,
+            $this->_userPermissionsHash($user),
+        );
+
+        return new GqlSchema([
+            'name' => 'Authenticated Schema',
+            'uid' => "user:$user->uid",
+            'scope' => Craft::$app->getCache()->getOrSet($cacheKey, fn() => $this->_userScope($user, $includeMutations)),
+            'user' => $user,
+        ]);
+    }
+
+    /**
+     * Returns the schema components that are available to a user.
+     *
+     * @param User $user
+     * @param bool $includeMutations
+     * @return string[]
+     */
+    private function _userScope(User $user, bool $includeMutations): array
     {
         $components = $this->getAllSchemaComponents();
         $scope = [];
@@ -870,12 +900,20 @@ class Gql extends Component
         $scope[] = 'directive:parseRefs';
         $scope[] = 'directive:transform';
 
-        return new GqlSchema([
-            'name' => 'Authenticated Schema',
-            'uid' => "user:$user->uid",
-            'scope' => $scope,
-            'user' => $user,
-        ]);
+        return $scope;
+    }
+
+    /**
+     * Returns a hash of a user’s current permissions.
+     *
+     * @param User $user
+     * @return string
+     */
+    private function _userPermissionsHash(User $user): string
+    {
+        $permissions = $user->admin ? ['*'] : Craft::$app->getUserPermissions()->getPermissionsByUserId($user->id);
+        sort($permissions);
+        return md5(implode(',', $permissions));
     }
 
     /**
@@ -1569,8 +1607,8 @@ class Gql extends Component
             return null;
         }
 
-        // Do not cache mutations, or results limited to a user’s permissions
-        if ($schema->user || GqlHelper::isMutation($query, $operationName)) {
+        // Do not cache mutations
+        if (GqlHelper::isMutation($query, $operationName)) {
             return null;
         }
 
@@ -1588,6 +1626,12 @@ class Gql extends Component
                 '::' . Craft::$app->getInfo()->configVersion .
                 '::' . serialize($variables) .
                 ($operationName ? "::$operationName" : '');
+
+            // Results for authenticated requests are limited to what the user can access, so vary them by the
+            // user’s current permissions as well
+            if ($schema->user) {
+                $cacheKey .= '::' . $this->_userPermissionsHash($schema->user);
+            }
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $cacheKey = null;

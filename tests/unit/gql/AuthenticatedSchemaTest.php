@@ -92,6 +92,17 @@ class AuthenticatedSchemaTest extends TestCase
 
         $schema = Craft::$app->getGql()->getSchemaForUser($this->user, false);
         self::assertNotContains('sections.' . self::OWN_ONLY_SECTION . ':delete', $schema->scope);
+
+        // Cached scopes reflect permission changes
+        Craft::$app->getUserPermissions()->saveUserPermissions($this->user->id, [
+            'editSite:' . Craft::$app->getSites()->getPrimarySite()->uid,
+            'viewEntries:' . self::OWN_ONLY_SECTION,
+            'saveEntries:' . self::OWN_ONLY_SECTION,
+        ]);
+        $schema = Craft::$app->getGql()->getSchemaForUser($this->user);
+        self::assertContains('sections.' . self::OWN_ONLY_SECTION . ':save', $schema->scope);
+        self::assertNotContains('sections.' . self::OWN_ONLY_SECTION . ':delete', $schema->scope);
+        self::assertNotContains('sections.' . self::PEER_SECTION . ':read', $schema->scope);
     }
 
     public function testQueriesOnlyReturnEntriesTheUserCanView(): void
@@ -124,6 +135,42 @@ class AuthenticatedSchemaTest extends TestCase
         $result = $this->execute($schema, "mutation { deleteEntry(id: {$this->ownEntry->id}) }");
         self::assertTrue($result['data']['deleteEntry']);
         self::assertNull(Entry::find()->id($this->ownEntry->id)->one());
+    }
+
+    public function testCachedResultsAreLimitedToTheUsersPermissions(): void
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $enableGraphqlCaching = $generalConfig->enableGraphqlCaching;
+        $generalConfig->enableGraphqlCaching = true;
+        $query = '{ entries(section: "test1", limit: 100) { title } }';
+
+        try {
+            $gql = Craft::$app->getGql();
+            $titles = fn(array $result) => array_column($result['data']['entries'], 'title');
+
+            self::assertSame(['Mine'], $titles($gql->executeQuery($gql->getSchemaForUser($this->user), $query)));
+
+            // Another user with peer access to the section gets their own results, not the cached ones
+            $peer = new User(['username' => 'gql-' . StringHelper::randomString(6), 'email' => StringHelper::randomString(6) . '@example.com', 'active' => true]);
+            Craft::$app->getElements()->saveElement($peer, false);
+            Craft::$app->getUserPermissions()->saveUserPermissions($peer->id, [
+                'editSite:' . Craft::$app->getSites()->getPrimarySite()->uid,
+                'viewEntries:' . self::OWN_ONLY_SECTION,
+                'viewPeerEntries:' . self::OWN_ONLY_SECTION,
+            ]);
+            $peer = Craft::$app->getUsers()->getUserById($peer->id);
+            Craft::$app->getUser()->setIdentity($peer);
+            self::assertContains('Theories of life', $titles($gql->executeQuery($gql->getSchemaForUser($peer), $query)));
+
+            // Losing peer access isn't masked by the cached result
+            Craft::$app->getUserPermissions()->saveUserPermissions($peer->id, [
+                'editSite:' . Craft::$app->getSites()->getPrimarySite()->uid,
+                'viewEntries:' . self::OWN_ONLY_SECTION,
+            ]);
+            self::assertSame([], $titles($gql->executeQuery($gql->getSchemaForUser($peer), $query)));
+        } finally {
+            $generalConfig->enableGraphqlCaching = $enableGraphqlCaching;
+        }
     }
 
     private function execute(GqlSchema $schema, string $query): array
