@@ -196,7 +196,7 @@ Sidebar metadata
   align-items: baseline;
 }
 
-.cp-metadata-list__item:has(> dd > craft-chip:only-child) {
+.cp-metadata-list__item:has(> dd > :is(craft-chip, .cp-color-bar):only-child) {
   align-items: center;
 }
 

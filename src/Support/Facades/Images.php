@@ -26,6 +26,7 @@ use Override;
  * @method static bool canDecodeFormat(\Intervention\Image\Format|\Intervention\Image\FileExtension|string $format)
  * @method static \CraftCms\Cms\Image\Image loadImage(string $path, bool $rasterize = false, int $svgSize = 1000)
  * @method static \CraftCms\Cms\Image\Data\ImageColors colors(string $filePath)
+ * @method static \CraftCms\Cms\Image\Data\ImageSample sample(string $filePath)
  * @method static \CraftCms\Cms\Image\Data\ImageMetadata metadata(string $filePath)
  * @method static bool checkMemoryForImage(string $filePath, bool $toTheMax = false)
  * @method static void cleanImage(string $filePath)
