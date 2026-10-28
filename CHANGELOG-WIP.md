@@ -35,6 +35,7 @@
 
 ### Assets
 - Added background uploads in the Assets index, which continue during control panel navigation, with persistent progress, retry, cancellation, and filename-conflict controls.
+- Images uploaded from the Assets index that look like copies of images that are already uploaded, even resized or recompressed, now wait within their upload notification, which shows the existing images’ chips and offers to cancel the upload, keep both, or replace the existing image’s file, like filename conflicts. ([#20113](https://github.com/craftcms/cms/pull/20113))
 - Added Undo/Redo support and a “Revert to original” button to the image editor. ([#19600](https://github.com/craftcms/cms/pull/19600))
 - Image thumbnails and previews in the control panel now show a blurred placeholder based on the image’s colors while they load. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Removed Craft-managed filesystems and their control panel settings. Volumes and Craft asset transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and each defines whether its assets have public URLs. Existing filesystem references are migrated to matching disks automatically, with an actionable error if a disk isn’t configured. ([#19650](https://github.com/craftcms/cms/pull/19650))
