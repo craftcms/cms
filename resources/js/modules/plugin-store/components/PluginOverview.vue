@@ -89,7 +89,7 @@
     margin-block: 0 1em;
   }
 
-  @media (min-width: 1280px) {
+  @media (width >= var(--breakpoint-xl)) {
     .plugin-overview {
       grid-template-columns: minmax(0, 1fr) 16rem;
     }

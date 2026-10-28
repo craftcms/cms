@@ -65,7 +65,7 @@
     border-block-end: 1px solid var(--c-color-border-quiet);
   }
 
-  @media (min-width: 768px) {
+  @media (width >= var(--breakpoint-md)) {
     .changelog__release {
       grid-template-columns: 12rem minmax(0, 1fr);
     }

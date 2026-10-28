@@ -203,7 +203,7 @@
     list-style: none;
   }
 
-  @media (min-width: 768px) {
+  @media (width >= var(--breakpoint-md)) {
     .plugin-reviews {
       grid-template-columns: 1fr 1fr;
     }

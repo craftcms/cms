@@ -49,7 +49,7 @@
     align-items: end;
   }
 
-  @media (min-width: 1280px) {
+  @media (width >= var(--breakpoint-xl)) {
     .reviews-summary {
       grid-template-columns: 1fr 1fr;
     }

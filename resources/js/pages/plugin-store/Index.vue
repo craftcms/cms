@@ -1,9 +1,9 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {useMediaQuery} from '@vueuse/core';
   import {computed, onScopeDispose, shallowRef} from 'vue';
   import {featured} from '@actions/PluginStore/PluginStoreController';
   import CpLink from '@/common/components/CpLink.vue';
+  import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
   import PluginGrid from '@/modules/plugin-store/components/PluginGrid.vue';
   import StoreContainer from '@/modules/plugin-store/components/StoreContainer.vue';
   import {getFeaturedSections} from '@/modules/plugin-store/api';
@@ -24,7 +24,7 @@
     .catch(() => (sections.value = []));
 
   // Two full rows of the grid, whichever width it's at.
-  const wide = useMediaQuery('(min-width: 1536px)');
+  const wide = cpBreakpoints.greaterOrEqual('2xl');
   const sectionLimit = computed(() => (wide.value ? 8 : 6));
 </script>
 
