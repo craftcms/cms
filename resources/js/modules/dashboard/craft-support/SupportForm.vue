@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed, nextTick, ref, shallowRef, watch} from 'vue';
+  import {nextTick, ref, shallowRef, watch} from 'vue';
   import {t} from '@craftcms/ui';
   import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
@@ -28,9 +28,14 @@
   });
 
   const attachments = shallowRef<InputFileElement['modelValue']>([]);
-  const sending = computed(() => form.processing);
+  const sending = defineModel<boolean>('sending', {default: false});
 
-  defineExpose({sending});
+  watch(
+    () => form.processing,
+    (processing) => {
+      sending.value = processing;
+    }
+  );
 
   watch(
     () => props.active,
@@ -125,7 +130,9 @@
         variant="danger"
         role="alert"
         ><ul>
-          <li v-for="error in form.errors" :key="error">{{ error }}</li>
+          <li v-for="(error, field) in form.errors" :key="field">
+            {{ error }}
+          </li>
         </ul></craft-callout
       >
       <craft-button

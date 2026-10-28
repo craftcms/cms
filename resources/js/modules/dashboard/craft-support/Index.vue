@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed, nextTick, ref} from 'vue';
+  import {computed, nextTick, ref, shallowRef} from 'vue';
   import {t} from '@craftcms/ui';
   import SupportSearch from './SupportSearch.vue';
   import SupportForm from './SupportForm.vue';
@@ -14,8 +14,7 @@
   const support = ref(false);
   const message = ref('');
   const home = ref<HTMLElement>();
-  const supportForm = ref<InstanceType<typeof SupportForm>>();
-  const sending = computed(() => supportForm.value?.sending ?? false);
+  const sending = shallowRef(false);
   const cardHeading = computed(() => {
     if (support.value) return t('Contact Developer Support');
 
@@ -86,8 +85,8 @@
         />
         <SupportForm
           v-show="support"
-          ref="supportForm"
           v-model="message"
+          v-model:sending="sending"
           :active="screen !== 'home' && support"
           :id="id"
           :data="data"
