@@ -40,6 +40,37 @@
         'disabled' => $disabled,
     ]) !!}
 
+    {{-- Illustrated radios, like a Matrix field's View Mode setting --}}
+    {!! \CraftCms\Cms\Cp\FormFields::fieldHtml(
+        function () use ($styleOptions, $thumbStyle, $disabled): string {
+            return \CraftCms\Cms\Cp\Components\RadioGroup::make()
+                ->id('thumb-style')
+                ->options(array_map(
+                    fn (array $option) => \CraftCms\Cms\Cp\Components\Radio::make()
+                        ->id("thumb-style-{$option['value']}")
+                        ->name('thumb-style')
+                        ->value($option['value'])
+                        ->checked($option['value'] === $thumbStyle)
+                        ->disabled($disabled)
+                        ->label($option['label'])
+                        ->thumbnail([
+                            'src' => \CraftCms\Cms\Cp\Cp::publicAssetUrl("images/thumb-styles/{$option['value']}.svg"),
+                            'width' => 80,
+                            'height' => 60,
+                            'aspectRatio' => '80 / 60',
+                        ]),
+                    $styleOptions,
+                ))
+                ->toHtml();
+        },
+        [
+            'label' => \CraftCms\Cms\t('Thumb Style'),
+            'instructions' => \CraftCms\Cms\t('Choose whether image thumbnails should sit beside the card’s content, or cover the whole card. Images too small or too narrow or wide to cover a card keep the normal style.'),
+            'id' => 'thumb-style',
+            'fieldset' => true,
+            'fieldClass' => $showThumbStyle ? false : 'hidden',
+        ],
+    ) !!}
     {{-- Radios shown as buttons, choosing whether the thumbnail is aligned to
          the start or the end: one tab stop, with the arrow keys moving the
          selection. The options are icon-only, so their names also show in
@@ -78,35 +109,4 @@
         ],
     ) !!}
 
-    {{-- Illustrated radios, like a Matrix field's View Mode setting --}}
-    {!! \CraftCms\Cms\Cp\FormFields::fieldHtml(
-        function () use ($styleOptions, $thumbStyle, $disabled): string {
-            return \CraftCms\Cms\Cp\Components\RadioGroup::make()
-                ->id('thumb-style')
-                ->options(array_map(
-                    fn (array $option) => \CraftCms\Cms\Cp\Components\Radio::make()
-                        ->id("thumb-style-{$option['value']}")
-                        ->name('thumb-style')
-                        ->value($option['value'])
-                        ->checked($option['value'] === $thumbStyle)
-                        ->disabled($disabled)
-                        ->label($option['label'])
-                        ->thumbnail([
-                            'src' => \CraftCms\Cms\Cp\Cp::publicAssetUrl("images/thumb-styles/{$option['value']}.svg"),
-                            'width' => 80,
-                            'height' => 60,
-                            'aspectRatio' => '80 / 60',
-                        ]),
-                    $styleOptions,
-                ))
-                ->toHtml();
-        },
-        [
-            'label' => \CraftCms\Cms\t('Thumb Style'),
-            'instructions' => \CraftCms\Cms\t('Choose whether image thumbnails should sit beside the card’s content, or cover the whole card. Images too small or too narrow or wide to cover a card keep the normal style.'),
-            'id' => 'thumb-style',
-            'fieldset' => true,
-            'fieldClass' => $showThumbStyle ? false : 'hidden',
-        ],
-    ) !!}
 </div>

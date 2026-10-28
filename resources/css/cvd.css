@@ -197,17 +197,11 @@
   inline-size: min(100%, calc(360rem / 16));
 }
 
-/* Fills the chip's thumbnail box, like the card's thumbnail placeholder. */
 .cvd-chip-thumbnail {
-  display: grid;
-  place-items: center;
   inline-size: 100%;
   block-size: 100%;
-  box-sizing: border-box;
-  border: 1px solid var(--c-color-border-quiet);
-  background-color: var(--c-color-fill-quiet);
   border-radius: var(--c-radius-sm);
-  font-size: 0.75em;
+  overflow: clip;
 }
 
 /* Both previews get a ring just darker than the page outside their outlines
@@ -245,20 +239,15 @@
 .cvd-thumbnail {
   width: 100%;
   aspect-ratio: 4/3;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  border: 1px solid var(--c-color-border-quiet);
-  background-color: var(--c-color-fill-quiet);
   border-radius: var(--c-radius-md);
+  overflow: clip;
 }
 
-/* White's quiet fill is the card's own white, so a white card's thumbnail
-   takes the neutral tint instead, as it has without a color. */
-craft-card[data-color='white'] .cvd-thumbnail {
-  border-color: var(--c-color-neutral-border-quiet);
-  background-color: var(--c-color-neutral-fill-quiet);
+:is(.cvd-thumbnail, .cvd-chip-thumbnail) > img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
 }
 
 .card-placeholder {

@@ -25,9 +25,7 @@
     @if ($avatarHtml)
         <div slot="thumbnail">{!! $avatarHtml !!}</div>
     @elseif ($showThumb)
-        <div slot="thumbnail" class="cvd-chip-thumbnail">
-            <craft-icon name="image"></craft-icon>
-        </div>
+        <div slot="thumbnail" class="cvd-chip-thumbnail">{!! $thumbnailHtml !!}</div>
     @endif
     <div><a class="label-link" href="#" aria-disabled="true">{{ $labelText }}</a></div>
 </craft-chip>
@@ -47,9 +45,7 @@
         @if ($avatarHtml)
             <div slot="thumbnail" class="card-thumb">{!! $avatarHtml !!}</div>
         @elseif ($showThumb)
-            <div slot="thumbnail" class="cvd-thumbnail">
-                {!! $thumbnailHtml !!}
-            </div>
+            <div slot="thumbnail" class="cvd-thumbnail">{!! $thumbnailHtml !!}</div>
         @endif
     @endunless
 

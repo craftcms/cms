@@ -29,13 +29,16 @@ use function CraftCms\Cms\t;
 class CardDesigner
 {
     /**
-     * The luminance of `images/thumb-styles/preview.svg`, the sample image cover cards are previewed with, as
+     * The luminance of `images/thumb-styles/preview.jpg`, the sample image cards are previewed with, as
      * {@see Images::sample()} measures it.
+     *
+     * The image is “Mt. Bachelor, Oregon, early morning” by Bonnie Moreland, in the public domain:
+     * https://commons.wikimedia.org/wiki/File:Mt._Bachelor,_Oregon,_early_morning.jpg
      */
     private const array PREVIEW_COVER_LUMINANCE = [
-        [[0.27, 0.386], [0.27, 0.395], [0.27, 0.544], [0.27, 0.439]],
-        [[0.121, 0.474], [0.124, 0.416], [0.121, 0.432], [0.202, 0.476]],
-        [[0.053, 0.124], [0.053, 0.124], [0.053, 0.124], [0.053, 0.124]],
+        [[0.045, 0.121], [0.048, 0.132], [0.049, 0.138], [0.047, 0.133]],
+        [[0.043, 0.12], [0.013, 0.135], [0.037, 0.138], [0.042, 0.128]],
+        [[0.001, 0.2], [0.001, 0.263], [0.001, 0.299], [0.001, 0.268]],
     ];
 
     /** @param array<string, mixed> $config */
@@ -141,10 +144,8 @@ class CardDesigner
 
         $bodyHtml .= Html::endTag('div');
 
-        // get thumb placeholder
-        $thumbnailHtml = $showThumb ? Html::tag('div',
-            Html::tag('craft-icon', '', ['name' => 'image']),
-        ) : '';
+        $previewSrc = Cp::publicAssetUrl('images/thumb-styles/preview.jpg');
+        $thumbnailHtml = $showThumb ? Html::tag('img', '', ['src' => $previewSrc, 'alt' => '']) : '';
 
         return view('c::forms.fld.card-preview', [
             'cvd' => $this,
@@ -152,7 +153,7 @@ class CardDesigner
             'bodyHtml' => $bodyHtml,
             'showThumb' => $showThumb,
             'thumbAlignment' => $thumbAlignment,
-            'coverSrc' => $cover ? Cp::publicAssetUrl('images/thumb-styles/preview.svg') : null,
+            'coverSrc' => $cover ? $previewSrc : null,
             'coverLuminance' => self::PREVIEW_COVER_LUMINANCE,
             'thumbnailHtml' => $thumbnailHtml,
             'avatarHtml' => $avatarHtml,
