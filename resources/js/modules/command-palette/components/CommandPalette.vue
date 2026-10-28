@@ -739,7 +739,8 @@
 
   /**
    * The keyboard instructions in the footer. Tab only reaches the active
-   * result's actions, so it's listed only while that result has some.
+   * result's actions, so it's listed only while that result has some, after
+   * the instructions that always apply.
    */
   const hints = computed(() => [
     {keys: [KEYS.up, KEYS.down], label: t('Choose item')},
@@ -747,10 +748,10 @@
       keys: [KEYS.return],
       label: activeView.value ? t('Open in new tab') : t('Open item'),
     },
+    {keys: [KEYS.escape], label: escapeHint.value},
     ...(!activeView.value && selectedHasActions.value
       ? [{keys: [KEYS.tab], label: t('Actions')}]
       : []),
-    {keys: [KEYS.escape], label: escapeHint.value},
   ]);
 
   /** What Escape does where focus usually is: clear the search, go back, or close. */
@@ -832,6 +833,7 @@
               :rows="section.rows"
               :selected-index="selectedIndex"
               :hovered-index="hoveredRow?.index ?? -1"
+              :actions-index="actionsRow?.index ?? -1"
               @activate="(item, trigger) => activate(item, {trigger})"
               @hover="onOptionHover"
             />

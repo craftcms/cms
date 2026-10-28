@@ -157,8 +157,31 @@
     --c-color-focus-outline: currentColor;
   }
 
+  /*
+   * Over the active row's loud fill, the plain button's hover and press fills
+   * are a tint of that row's colors, rather than the quiet fill meant for the
+   * page, which would bury the icon.
+   */
+  .command-palette-actions:not(.command-palette-actions--quiet) {
+    --c-color-fill-quiet: color-mix(
+      in oklab,
+      var(--c-color-neutral-on-loud) 15%,
+      var(--c-color-neutral-fill-loud)
+    );
+    --c-color-on-quiet: var(--c-color-neutral-on-loud);
+  }
+
   .command-palette-actions--danger {
     color: var(--c-color-danger-on-normal);
+  }
+
+  .command-palette-actions--danger:not(.command-palette-actions--quiet) {
+    --c-color-fill-quiet: color-mix(
+      in oklab,
+      var(--c-color-danger-on-normal) 15%,
+      var(--c-color-danger-fill-normal)
+    );
+    --c-color-on-quiet: var(--c-color-danger-on-normal);
   }
 
   .command-palette-actions--quiet {

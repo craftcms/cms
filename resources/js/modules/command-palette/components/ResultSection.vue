@@ -27,8 +27,10 @@
       selectedIndex: number;
       /** The row under the pointer, highlighted while its actions sit over it. */
       hoveredIndex?: number;
+      /** The row whose actions sit over its space for them, rather than a stand-in. */
+      actionsIndex?: number;
     }>(),
-    {grouped: true, hoveredIndex: -1}
+    {grouped: true, hoveredIndex: -1, actionsIndex: -1}
   );
 
   const emit = defineEmits<{
@@ -116,12 +118,21 @@
       <span v-else class="command-palette-row__label">{{
         row.item.label
       }}</span>
-      <!-- Room for the result's actions, which sit over it from outside the listbox. -->
+      <!--
+        Room for the result's actions, which sit over it from outside the
+        listbox. Until they do, it shows their button's icon, so every result
+        with actions looks like it has them.
+      -->
       <span
         v-if="hasActions(row.item)"
         class="command-palette-row__actions"
         data-command-palette-actions-slot
-      ></span>
+      >
+        <craft-icon
+          v-if="row.index !== actionsIndex"
+          name="ellipsis"
+        ></craft-icon>
+      </span>
       <span
         v-if="row.item.hintHtml"
         class="command-palette-row__hint"
@@ -288,11 +299,29 @@
     color: inherit;
   }
 
+  /* Sized and colored like the small plain button that goes over it. */
   .command-palette-row__actions {
     grid-column: 3;
     grid-row: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     inline-size: var(--c-size-control-sm);
     block-size: var(--c-size-control-sm);
+    font-size: 0.9em;
+    color: var(--c-color-neutral-on-quiet);
+  }
+
+  .command-palette-row__actions craft-icon {
+    font-size: 1em;
+  }
+
+  .command-palette-row--danger .command-palette-row__actions {
+    color: var(--c-color-danger-on-quiet);
+  }
+
+  .command-palette-row--selected .command-palette-row__actions {
+    color: inherit;
   }
 
   @media (forced-colors: active) {

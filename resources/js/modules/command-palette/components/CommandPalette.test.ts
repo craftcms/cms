@@ -413,7 +413,31 @@ describe('CommandPalette', () => {
       listbox.compareDocumentPosition(actions) &
         Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
-    expect(hints()).toContain('Tab Actions');
+    expect(hints().slice(-2)).toEqual(['Escape Close', 'Tab Actions']);
+  });
+
+  it('shows a result’s actions button until its actions sit over it', async () => {
+    const input = await open();
+    const standIn = () =>
+      [...document.querySelectorAll('[role="option"]')]
+        .find((option) =>
+          option.textContent?.includes('Enable maintenance mode')
+        )!
+        .querySelector('[data-command-palette-actions-slot] craft-icon');
+
+    expect(document.querySelector('.command-palette-actions')).toBeNull();
+    expect(standIn()?.getAttribute('name')).toBe('ellipsis');
+
+    while (selected(input) !== 'Enable maintenance mode') {
+      press(input, 'ArrowDown');
+      await nextTick();
+    }
+    await flush();
+
+    expect(actionsButton().getAttribute('aria-label')).toBe(
+      'Actions for Enable maintenance mode'
+    );
+    expect(standIn()).toBeNull();
   });
 
   it('keeps focus on the actions when other providers’ results come in', async () => {
@@ -672,11 +696,12 @@ describe('CommandPalette', () => {
   it('says what Escape does in the footer: clear the search, or close', async () => {
     const input = await open();
 
-    expect(hints().at(-1)).toBe('Escape Close');
+    expect(hints()).toContain('Escape Close');
 
     await type(input, 'maintenance');
 
-    expect(hints().at(-1)).toBe('Escape Clear search');
+    expect(hints()).toContain('Escape Clear search');
+    expect(hints()).not.toContain('Escape Close');
   });
 
   it('closes before a result’s menu action runs, leaving focus to it', async () => {
