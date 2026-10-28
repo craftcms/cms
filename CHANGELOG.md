@@ -129,6 +129,8 @@
 - “Paste” buttons now echo Craft 5’s, with a fuchsia duplicate icon and a fuchsia-to-indigo gradient border and tint.
 - Details for the issues that block an element’s deletion now list the related elements as chips, rather than an embedded element index.
 - Draft name labels in element chips now drop below the element’s title when they don’t fit beside it.
+- Plain links to control panel pages, such as those in elements’ metadata and other server-rendered HTML, now open with Inertia rather than reloading the page. ([#20118](https://github.com/craftcms/cms/pull/20118))
+- Link and Email field values in element indexes and cards now stay on one line, cut off with an ellipsis, after a button that shows the full address with options to open or copy it. Hovering over the link shows the same details. ([#20123](https://github.com/craftcms/cms/pull/20123))
 - Fixed a bug where release dates were formatted for the control panel’s language rather than the user’s formatting locale. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Fixed a bug where the User Profile Fields and Address Fields settings pages had no Save button. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Fixed a bug where some status badges and dots had no color, including “Pending” jobs in the Queue Manager utility, disabled sites on the Sites settings page, and options in legacy select menus, such as the “Yes” option of `forms.booleanMenu()`. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -187,8 +189,10 @@
 - Fixed a bug where asset upload conflict prompts used unstyled radio buttons and checkboxes.
 - Fixed a bug where nested element fields’ “Paste” buttons and relational fields’ “Copy” menu items were missing their icons.
 - Fixed a bug where buttons didn’t show an inset shadow while pressed.
+- Fixed a bug where control panel error pages could be shown in a modal over the previous page, rather than as a full page. ([#20120](https://github.com/craftcms/cms/pull/20120))
 - Fixed a bug where medium chips’ thumbnails were smaller than small chips’. They’re now 32px, between small and large chips’. ([#20124](https://github.com/craftcms/cms/pull/20124))
 - Fixed a bug where portrait image thumbnails in medium and large chips were letterboxed in a square, so their rounded corners didn’t show. ([#20124](https://github.com/craftcms/cms/pull/20124))
+- Fixed a bug where the checkmark in enabled lightswitches was slightly off-center. ([#20107](https://github.com/craftcms/cms/pull/20107))
 
 ### Content Management
 
@@ -224,6 +228,7 @@
 - Sites that are added to elements within the “Sites” pane can now be removed again. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Assets are now initially saved to the site they were uploaded from. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Filename conflicts for files uploaded from asset indexes are now resolved within the upload notification, which has “Cancel”, “Keep both”, and “Replace” buttons in place of an “Action required” button. ([#20121](https://github.com/craftcms/cms/pull/20121))
+- Images uploaded from asset indexes that look like copies of images that are already uploaded, even resized or recompressed, now wait within their upload notification, which shows the existing images as chips and has “Cancel”, “Keep both”, and “Replace” buttons, like filename conflicts. Copies of several images show the closest one’s chip with the others stacked behind it, and have “Keep all” in place of “Keep both” and “Replace”. Images uploaded elsewhere, such as to Assets fields, show a notice with the existing images’ chips instead, which open in a new window. ([#20113](https://github.com/craftcms/cms/pull/20113))
 - Assets in volumes set to let each asset choose which sites it should be saved to can now be deleted for individual sites, as long as they exist in another site. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Deleting an element for the only site it exists in now soft-deletes it, unless it’s a draft or nested element. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - The “Schedule release” modal now has a single date and time input, like releases’ Target Date, in place of separate Date, Time, and Time Zone inputs. Releases’ publication and target dates are now always entered in the user’s time zone.
@@ -377,11 +382,14 @@
 - `CraftCms\Cms\Cp\Html\ContentHtml::metadataHtml()` now accepts several groups of metadata, which are separated by a rule. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - `CraftCms\Cms\Asset\Elements\Asset::$uploadColors` has been replaced by `$uploadAnalysis`, which holds what was already read from the incoming file, its colors and embedded metadata. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Asset upload completion requests now take what the uploader read from the file as `analysis`, with `colors` and `metadata` keys, rather than `colors`. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Asset upload completion requests now take the difference hash the uploader found for an image as `analysis.hash`, alongside `analysis.colors`. ([#20113](https://github.com/craftcms/cms/pull/20113))
 - Added `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::needsSampling()`, and a `$sample` argument to `CraftCms\Cms\Asset\Analysis\ImageAnalyzer::queue()`, which also queues images that are missing their colors or metadata. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Filesystem\Data\UploadedFile::isLocal()` and `imageSize()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Asset\Elements\Asset::hasDefaultTitle()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Asset\Elements\Asset::valuesFromEmbeddedMetadata()` and `CraftCms\Cms\Image\Data\ImageMetadata::suggestedAlt()`. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Content-model audit checks registered with `CraftCms\Cms\Mcp\ContentModel\CheckRegistry` can now return a `note` with their findings. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `CraftCms\Cms\Asset\ImageDuplicates`, which finds images that look like copies of each other. ([#20113](https://github.com/craftcms/cms/pull/20113))
+- Added `CraftCms\Cms\Image\ImageHash`, `CraftCms\Cms\Image\Data\ImageSample`, `CraftCms\Cms\Image\Images::sample()`, `CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis::$hash`, and the `hash` GraphQL field for image analysis, which hold an image’s difference hash. ([#20113](https://github.com/craftcms/cms/pull/20113))
 - Added `CraftCms\Cms\Asset\Enums\ImageType`, `CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis::$type`, and the `type` GraphQL field for image analysis. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Asset\Elements\Asset::getImageType()`, `CraftCms\Cms\Element\Queries\AssetQuery::imageType()`, `CraftCms\Cms\Asset\Conditions\ImageTypeConditionRule`, and the `imageType` GraphQL argument for asset queries, which filter images by what kind of image they are. Image types are indexed through the generated `assets.imageType` column. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Asset\Analysis\ImageAnalysisChanges::get()`, so image analysis tasks that change the same attribute, such as an asset’s analysis, can build on each other’s changes. ([#20103](https://github.com/craftcms/cms/pull/20103))
@@ -507,6 +515,8 @@
 - Removed the `<craft-sortable-checkbox-select>` web component. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `<craft-resize-grips>` web component. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Added the `resizable` property to `<craft-dialog>`. ([#20008](https://github.com/craftcms/cms/pull/20008))
+- Added the `<craft-link>` web component, which shows a link on one line with a details button, and the `--c-link-max-width` CSS custom property, which caps its width. Table cells cap links at 200px by default. ([#20123](https://github.com/craftcms/cms/pull/20123))
+- Links to control panel pages in plugins’ server-rendered HTML now open with Inertia. Pages that aren’t Inertia pages still load in full, after an Inertia request. Links to files or other responses that aren’t HTML need `download` or `data-inertia="false"`, on the link or an element around it, as Inertia can’t open them. ([#20118](https://github.com/craftcms/cms/pull/20118))
 - Added the `inline-suffix` attribute to `<craft-input>`, and `CraftCms\Cms\Cp\Components\Input::inlineSuffix()`, which draw suffix buttons within the input’s border. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `suffix` slot to `<craft-tab>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `--c-callout-icon-padding-inline` and `--c-callout-text-padding-inline` CSS custom properties to `<craft-callout>`. ([#20001](https://github.com/craftcms/cms/pull/20001))

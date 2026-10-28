@@ -271,6 +271,14 @@ class Install extends Migration
             $table->primary(['assetId', 'siteId']);
         });
 
+        $logger?->subLabel('imagehashes');
+        Schema::create(Table::IMAGEHASHES, function (Blueprint $table) {
+            $table->integer('assetId');
+            $table->tinyInteger('band');
+            $table->char('value', 4);
+            $table->primary(['assetId', 'band']);
+        });
+
         $logger?->subLabel('imagetransformindex');
         Schema::create(Table::IMAGETRANSFORMINDEX, function (Blueprint $table) {
             $table->integer('id', true);
@@ -1132,6 +1140,7 @@ class Install extends Migration
         Schema::createIndex(Table::FIELDS, ['dateDeleted']);
         Schema::createIndex(Table::GQLTOKENS, ['accessToken'], unique: true);
         Schema::createIndex(Table::GQLTOKENS, ['name'], unique: true);
+        Schema::createIndex(Table::IMAGEHASHES, ['band', 'value']);
         Schema::createIndex(Table::IMAGETRANSFORMINDEX, ['assetId', 'transformString']);
         Schema::createIndex(Table::IMAGETRANSFORMS, ['name']);
         Schema::createIndex(Table::IMAGETRANSFORMS, ['handle']);
@@ -1235,6 +1244,7 @@ class Install extends Migration
         Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('uploaderId')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('volumeId')->references('id')->on(Table::VOLUMES)->cascadeOnDelete());
         Schema::table(Table::ASSETS_SITES, fn (Blueprint $table) => $table->foreign('assetId')->references('id')->on(Table::ASSETS)->cascadeOnDelete());
+        Schema::table(Table::IMAGEHASHES, fn (Blueprint $table) => $table->foreign('assetId')->references('id')->on(Table::ASSETS)->cascadeOnDelete());
         Schema::table(Table::ASSETS_SITES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::AUTHENTICATOR, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::CHANGEDATTRIBUTES, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete()->cascadeOnUpdate());

@@ -37,6 +37,7 @@ use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Exceptions\FileException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
+use CraftCms\Cms\Asset\ImageDuplicates;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule;
@@ -76,6 +77,7 @@ use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Image\ImageHash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Search\SearchQuery;
@@ -346,8 +348,9 @@ class Asset extends Element
     public ?UploadedFile $uploadSource = null;
 
     /**
-     * What was already read from the incoming file, such as by the browser that uploaded it: its colors and embedded
-     * metadata, which are stored in place of reading the file again. Anything else in it is ignored.
+     * What was already read from the incoming file, such as by the browser that uploaded it: its colors, difference
+     * hash, and embedded metadata, which are stored in place of reading the file again. Its hash is only used alongside
+     * its colors, and anything else in it is ignored.
      */
     public ?ImageAnalysis $uploadAnalysis = null;
 
@@ -3785,6 +3788,11 @@ JS;
             $model->save();
             $this->previewTextChanged = false;
 
+            // Copies of the image are found by its hash
+            if ($isNew || $model->wasChanged('analysis')) {
+                app(ImageDuplicates::class)->index($this->id, $this->analysis?->hash);
+            }
+
             // we're not propagating at this point, so save the alt ONLY against the site we're saving to
             DB::table(Table::ASSETS_SITES)
                 ->upsert([
@@ -4248,7 +4256,7 @@ JS;
             // What was found in the old file doesn’t describe the new one, so only what the uploader found in the new
             // one is known. A queue job samples anything it didn’t.
             $this->analysis = $this->uploadAnalysis?->colors !== null || $this->_uploadMetadata !== null
-                ? new ImageAnalysis(colors: $this->uploadAnalysis?->colors, metadata: $this->_uploadMetadata)
+                ? new ImageAnalysis(colors: $this->uploadAnalysis?->colors, hash: $this->uploadHash(), metadata: $this->_uploadMetadata)
                 : null;
             $this->previewText = $this->isTextFile($filename)
                 ? AssetsHelper::previewText($this->readFileStart($newDisk->readStream($newPath)))
@@ -4262,10 +4270,10 @@ JS;
             // What was found in the old file doesn’t describe the new one, so only its colors and metadata are known
             if ($this->kind === FileKind::Image->value) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
-                $this->analysis = new ImageAnalysis(
-                    colors: $this->uploadAnalysis->colors ?? Images::colors($tempPath),
-                    metadata: $this->_uploadMetadata ?? Images::metadata($tempPath),
-                );
+                $metadata = $this->_uploadMetadata ?? Images::metadata($tempPath);
+                $this->analysis = $this->uploadAnalysis?->colors !== null
+                    ? new ImageAnalysis(colors: $this->uploadAnalysis->colors, hash: $this->uploadHash(), metadata: $metadata)
+                    : ImageAnalysis::fromSample(Images::sample($tempPath), $metadata);
             } else {
                 $this->_width = null;
                 $this->_height = null;
@@ -4338,6 +4346,16 @@ JS;
      *
      * @see $previewText
      */
+    /**
+     * Returns the difference hash already found for the incoming file, if it’s valid and was found alongside its colors.
+     */
+    private function uploadHash(): ?string
+    {
+        $hash = $this->uploadAnalysis?->hash;
+
+        return $this->uploadAnalysis?->colors !== null && ImageHash::isHash($hash) ? $hash : null;
+    }
+
     private function isTextFile(string $filename): bool
     {
         return FileKind::tryFrom(AssetsHelper::getFileKindByExtension($filename))?->isText() ?? false;

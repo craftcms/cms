@@ -317,14 +317,56 @@ describe('what the uploader read from the file', function () {
     it('stores the colors the uploader sampled instead of sampling the image', function () {
         $colors = ['dominant' => '#3a6ea5', 'grid' => [['#3a6ea5', '#123456', '#abcdef']], 'palette' => ['#3a6ea5', '#123456'], 'luminance' => [[[0.1, 0.2], null, [0.0, 1.0]]], 'weights' => [0.6, 0.4]];
         $images = Mockery::mock(ImagesFacade::getFacadeRoot())->makePartial();
-        $images->shouldNotReceive('colors');
+        $images->shouldNotReceive('sample');
         ImagesFacade::swap($images);
 
-        $original = ($this->uploadImage)(['folderId' => $this->folder->id], ['analysis' => ['colors' => $colors]]);
+        $original = ($this->uploadImage)(['folderId' => $this->folder->id], ['analysis' => ['colors' => $colors, 'hash' => 'fcfbf8e7ecdad4a3']]);
         $replacementColors = ['dominant' => null, 'grid' => [['#654321']], 'palette' => ['#654321'], 'luminance' => [[[0.2, 0.3]]], 'weights' => [1.0]];
-        ($this->uploadImage)(['operation' => 'replace', 'assetId' => $original['assetId']], ['analysis' => ['colors' => $replacementColors]]);
+        ($this->uploadImage)(['operation' => 'replace', 'assetId' => $original['assetId']], ['analysis' => ['colors' => $replacementColors, 'hash' => '0f0f0f0f0f0f0f0f']]);
 
         expect(AssetModel::findOrFail($original['assetId'])->analysis['colors'])->toEqual($replacementColors);
+    });
+
+    it('stores the hash the uploader found along with its colors', function () {
+        $colors = ['dominant' => null, 'grid' => [['#654321']], 'palette' => ['#654321'], 'luminance' => [[[0.2, 0.3]]], 'weights' => [1.0]];
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], ['analysis' => ['colors' => $colors, 'hash' => 'fcfbf8e7ecdad4a3']]);
+
+        expect(Asset::findOne($completed['assetId'])->analysis->hash)->toBe('fcfbf8e7ecdad4a3');
+    });
+
+    it('finds the hash itself when the uploader sends one without colors', function () {
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], ['analysis' => ['hash' => 'fcfbf8e7ecdad4a3']]);
+
+        expect(Asset::findOne($completed['assetId'])->analysis->hash)->toMatch('/^[0-9a-f]{16}$/')->not->toBe('fcfbf8e7ecdad4a3');
+    });
+
+    it('finds the hash itself when the uploader sends one that isn’t a hash', function () {
+        $colors = ['dominant' => null, 'grid' => [['#654321']], 'palette' => ['#654321'], 'luminance' => [[[0.2, 0.3]]], 'weights' => [1.0]];
+        $completed = ($this->uploadImage)(['folderId' => $this->folder->id], ['analysis' => ['colors' => $colors, 'hash' => 'x']]);
+        $analysis = Asset::findOne($completed['assetId'])->analysis;
+
+        // Its colors are kept, since only its hash was missing
+        expect($analysis->hash)->toMatch('/^[0-9a-f]{16}$/')
+            ->and($analysis->colors->grid)->toBe([['#654321']]);
+    });
+
+    it('lists images the upload looks like a copy of', function () {
+        $original = ($this->uploadImage)(['folderId' => $this->folder->id]);
+        $copy = ($this->uploadImage)(['folderId' => $this->folder->id]);
+
+        expect($original['duplicates'])->toBe([])
+            ->and($copy['duplicates'])->toHaveCount(1)
+            ->and($copy['duplicates'][0])->toMatchArray(['id' => $original['assetId']])
+            ->and($copy['duplicates'][0]['url'])->toContain((string) $original['assetId'])
+            // Shown as the image’s chip, linked to its edit page
+            ->and($copy['duplicates'][0]['chipHtml'])->toContain('<craft-chip', 'data-id="'.$original['assetId'].'"', 'href="'.$copy['duplicates'][0]['url'].'"');
+    });
+
+    it('only lists copies the uploader can view', function () {
+        ($this->uploadImage)(['folderId' => $this->folder->id]);
+        Gate::before(fn ($user, string $ability, array $arguments) => $ability === 'view' && ($arguments[0] ?? null) instanceof Asset ? false : null);
+
+        expect(($this->uploadImage)(['folderId' => $this->folder->id])['duplicates'])->toBe([]);
     });
 
     it('stores the metadata the uploader read, dropping anything that isn’t valid', function () {
