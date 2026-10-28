@@ -926,6 +926,8 @@ class Gql extends Component
     {
         return new OAuthResource([
             'id' => 'graphql',
+            'label' => Craft::t('app', 'GraphQL API'),
+            'personalTokens' => true,
             'scopes' => [
                 self::SCOPE_READ => Craft::t('app', 'Query content you have access to.'),
                 self::SCOPE_WRITE => Craft::t('app', 'Query, create, edit, and delete content you have access to.'),

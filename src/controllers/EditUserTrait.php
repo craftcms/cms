@@ -36,7 +36,7 @@ trait EditUserTrait
     private const SCREEN_PREFERENCES = 'preferences';
     private const SCREEN_PASSWORD = 'password';
     private const SCREEN_PASSKEYS = 'passkeys';
-    private const SCREEN_GRAPHQL_TOKENS = 'graphql-tokens';
+    private const SCREEN_TOKENS = 'tokens';
 
     /**
      * Returns the user being edited.
@@ -113,8 +113,8 @@ trait EditUserTrait
             $screens[self::SCREEN_PASSKEYS] = ['label' => Craft::t('app', 'Passkeys')];
         }
 
-        if ($user->getIsCurrent() && Craft::$app->getConfig()->getGeneral()->enableGql) {
-            $screens[self::SCREEN_GRAPHQL_TOKENS] = ['label' => Craft::t('app', 'GraphQL Tokens')];
+        if ($user->getIsCurrent() && Craft::$app->getOAuth()->getPersonalTokenResources($user)) {
+            $screens[self::SCREEN_TOKENS] = ['label' => Craft::t('app', 'Tokens')];
         }
 
         if (!isset($screens[$screen])) {

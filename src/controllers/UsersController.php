@@ -41,6 +41,7 @@ use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
+use craft\oauth\Resource as OAuthResource;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\services\Users;
 use craft\web\Application;
@@ -1553,13 +1554,12 @@ JS);
     }
 
     /**
-     * GraphQL tokens screen
+     * Personal access tokens screen
      *
-     * @param array $errors Validation errors for a token that couldn’t be created
      * @return Response
      * @since 5.12.0
      */
-    public function actionGraphqlTokens(array $errors = []): Response
+    public function actionTokens(): Response
     {
         $this->requireCpRequest();
         $user = static::currentUser();
@@ -1567,40 +1567,90 @@ JS);
          * @var Response|CpScreenResponseBehavior $response
          * @phpstan-ignore varTag.nativeType
          */
-        $response = $this->asEditUserScreen($user, self::SCREEN_GRAPHQL_TOKENS);
+        $response = $this->asEditUserScreen($user, self::SCREEN_TOKENS);
 
         $oauth = Craft::$app->getOAuth();
-        $resource = $oauth->getResource('graphql');
-        $response->action('users/create-graphql-token');
-        $response->submitButtonLabel(Craft::t('app', 'Create token'));
-        $response->contentTemplate('users/_graphql-tokens', [
-            'grants' => $oauth->getUserGrants('graphql', $user),
-            'resource' => $resource,
-            'levels' => $resource->levelChoices($resource->scopeLevels, $user),
-            'newToken' => Craft::$app->getSession()->getFlash('graphqlToken'),
-            'errors' => $errors,
+        $resources = $oauth->getPersonalTokenResources($user);
+        $grants = [];
+        foreach ($resources as $resource) {
+            array_push($grants, ...$oauth->getUserGrants($resource->id, $user));
+        }
+
+        $this->getView()->registerJsWithVars(fn($action) => <<<JS
+$('#new-token-btn').on('activate', () => {
+  Craft.elevatedSessionManager.requireElevatedSession(
+    () => {
+      const slideout = new Craft.CpScreenSlideout($action);
+      slideout.on('submit', () => window.location.reload());
+    },
+    null,
+    Math.min(Craft.elevatedSessionDuration, 300)
+  );
+});
+JS, ['users/new-access-token']);
+
+        $response->contentTemplate('users/_tokens', [
+            'resources' => $resources,
+            'grants' => $grants,
+            'newToken' => Craft::$app->getSession()->getFlash('accessToken'),
         ]);
 
         return $response;
     }
 
     /**
-     * Creates a GraphQL personal access token for the current user.
+     * Returns the slideout for creating a personal access token.
+     *
+     * @return Response
+     * @since 5.12.0
+     */
+    public function actionNewAccessToken(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireElevatedSession();
+        $user = static::currentUser();
+        $resources = Craft::$app->getOAuth()->getPersonalTokenResources($user);
+
+        return $this->asCpScreen()
+            ->title(Craft::t('app', 'New token'))
+            ->action('users/create-access-token')
+            ->submitButtonLabel(Craft::t('app', 'Create'))
+            ->contentTemplate('users/_new-token', [
+                'resources' => $resources,
+                'scopes' => array_map(fn(OAuthResource $resource) => $resource->scopesForUser($user, array_keys($resource->scopes)), $resources),
+            ]);
+    }
+
+    /**
+     * Creates a personal access token for the current user.
      *
      * @return Response|null
      * @since 5.12.0
      */
-    public function actionCreateGraphqlToken(): ?Response
+    public function actionCreateAccessToken(): ?Response
     {
         $this->requirePostRequest();
         $this->requireCpRequest();
+        $this->requireElevatedSession();
         $user = static::currentUser();
 
+        $resource = $this->request->getRequiredBodyParam('resource');
         $name = trim($this->request->getBodyParam('name', ''));
-        if ($name === '' || mb_strlen($name) > 255) {
-            return $this->asFailure(Craft::t('app', 'Couldn’t create the token.'), routeParams: [
-                'errors' => ['name' => [Craft::t('yii', '{attribute} cannot be blank.', ['attribute' => Craft::t('app', 'Name')])]],
+        $scopes = array_values(array_filter((array)($this->request->getBodyParam("scopes.$resource") ?: [])));
+        $errors = [];
+        if ($name === '') {
+            $errors['name'][] = Craft::t('yii', '{attribute} cannot be blank.', ['attribute' => Craft::t('app', 'Name')]);
+        } elseif (mb_strlen($name) > 255) {
+            $errors['name'][] = Craft::t('yii', '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
+                'attribute' => Craft::t('app', 'Name'),
+                'max' => 255,
             ]);
+        }
+        if (!$scopes) {
+            $errors['scopes'][] = Craft::t('app', 'Choose at least one scope.');
+        }
+        if ($errors) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t create the token.'), ['errors' => $errors]);
         }
 
         $days = (int)$this->request->getRequiredBodyParam('expiresIn');
@@ -1609,35 +1659,33 @@ JS);
         }
 
         try {
-            $token = Craft::$app->getOAuth()->createPersonalAccessToken(
-                'graphql',
-                $user,
-                $name,
-                $this->request->getRequiredBodyParam('level'),
-                new DateTimeImmutable("+$days days"),
-            );
+            $token = Craft::$app->getOAuth()->createPersonalAccessToken($resource, $user, $name, $scopes, new DateTimeImmutable("+$days days"));
         } catch (InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), previous: $e);
         }
-        Craft::$app->getSession()->setFlash('graphqlToken', $token);
+        Craft::$app->getSession()->setFlash('accessToken', $token);
 
-        return $this->asSuccess(Craft::t('app', 'Token created.'), redirect: UrlHelper::cpUrl('myaccount/graphql-tokens'));
+        return $this->asSuccess(Craft::t('app', 'Token created.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));
     }
 
     /**
-     * Revokes the current user’s GraphQL tokens for a client.
+     * Revokes the current user’s tokens for an OAuth client.
      *
      * @return Response|null
      * @since 5.12.0
      */
-    public function actionRevokeGraphqlToken(): ?Response
+    public function actionRevokeAccessToken(): ?Response
     {
         $this->requirePostRequest();
         $this->requireCpRequest();
 
-        Craft::$app->getOAuth()->revokeUserGrant('graphql', static::currentUser(), $this->request->getRequiredBodyParam('clientId'));
+        Craft::$app->getOAuth()->revokeUserGrant(
+            $this->request->getRequiredBodyParam('resource'),
+            static::currentUser(),
+            $this->request->getRequiredBodyParam('clientId'),
+        );
 
-        return $this->asSuccess(Craft::t('app', 'Access revoked.'), redirect: UrlHelper::cpUrl('myaccount/graphql-tokens'));
+        return $this->asSuccess(Craft::t('app', 'Access revoked.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));
     }
 
     /**

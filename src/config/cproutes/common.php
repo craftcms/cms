@@ -45,7 +45,7 @@ return [
     'myaccount/preferences' => 'users/preferences',
     'myaccount/password' => 'users/password',
     'myaccount/passkeys' => 'users/passkeys',
-    'myaccount/graphql-tokens' => 'users/graphql-tokens',
+    'myaccount/tokens' => 'users/tokens',
     'update' => 'updater',
     'settings/addresses' => ['template' => 'settings/addresses/_fields'],
     'settings/assets' => 'volumes/volume-index',

@@ -16,10 +16,12 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\oauth\User as OAuthUser;
 use craft\services\Gql;
+use craft\services\OAuth;
 use DateTimeImmutable;
 use FunctionalTester;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
+use yii\base\InvalidArgumentException;
 
 /**
  * Tests GraphQL API requests authenticated with OAuth access tokens.
@@ -62,7 +64,7 @@ class GraphqlOAuthCest
     {
         $oauth = Craft::$app->getOAuth();
         $user = $this->user(['viewUsers']);
-        $token = $oauth->createPersonalAccessToken('graphql', $user, 'Build script', Gql::SCOPE_READ, new DateTimeImmutable('+7 days'));
+        $token = $oauth->createPersonalAccessToken('graphql', $user, 'Build script', [Gql::SCOPE_READ], new DateTimeImmutable('+7 days'));
         $this->token($user);
 
         $data = $this->graphql($I, '{ users(email: "nobody@example.com") { id } }', $token);
@@ -79,6 +81,29 @@ class GraphqlOAuthCest
         $I->haveHttpHeader('Authorization', "Bearer $token");
         $I->amOnPage('/actions/graphql/api?' . http_build_query(['query' => '{ ping }']));
         $I->seeResponseCodeIs(401);
+    }
+
+    public function testPersonalAccessTokenScopes(FunctionalTester $I): void
+    {
+        $oauth = Craft::$app->getOAuth();
+        $user = $this->user([]);
+        $I->assertSame(['graphql'], array_keys($oauth->getPersonalTokenResources($user)));
+
+        // Choosing an access level grants the narrower levels too
+        $oauth->createPersonalAccessToken('graphql', $user, 'Write', [Gql::SCOPE_WRITE], new DateTimeImmutable('+7 days'));
+        $I->assertSame([Gql::SCOPE_READ, Gql::SCOPE_WRITE], $oauth->getUserGrants('graphql', $user)[0]['scopes']);
+
+        // MCP tokens come from MCP clients, not the Tokens screen
+        $I->expectThrowable(InvalidArgumentException::class, fn() => $oauth->createPersonalAccessToken('mcp', $user, 'MCP', ['mcp:read'], new DateTimeImmutable('+7 days')));
+        $I->expectThrowable(InvalidArgumentException::class, fn() => $oauth->createPersonalAccessToken('graphql', $user, 'Bad', ['mcp:read'], new DateTimeImmutable('+7 days')));
+
+        // Without GraphQL, nothing offers personal access tokens
+        Craft::$app->getConfig()->getGeneral()->enableGql = false;
+        try {
+            $I->assertSame([], (new OAuth())->getPersonalTokenResources($user));
+        } finally {
+            Craft::$app->getConfig()->getGeneral()->enableGql = true;
+        }
     }
 
     public function testInvalidTokensAreRejected(FunctionalTester $I): void

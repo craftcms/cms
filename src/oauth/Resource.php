@@ -11,6 +11,13 @@ use yii\base\BaseObject;
 class Resource extends BaseObject
 {
     public string $id;
+    /** @var string|null The resource’s name, shown to users. Defaults to its ID. */
+    public ?string $label = null;
+    /**
+     * @var bool Whether users can create personal access tokens for this resource from My Account → Tokens, for
+     * apps and scripts that can’t complete an OAuth authorization flow.
+     */
+    public bool $personalTokens = false;
     /** @var array<string,string> Allowed scope IDs mapped to consent descriptions. */
     public array $scopes = [];
     /** @var string[] Scopes requested when the client omits scope. */
@@ -131,6 +138,11 @@ class Resource extends BaseObject
         }
 
         return $level !== null && array_intersect($requestedLevels, $this->grantedLevels($level));
+    }
+
+    public function getLabel(): string
+    {
+        return $this->label ?? $this->id;
     }
 
     public function getResourceUrl(): string

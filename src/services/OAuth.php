@@ -216,19 +216,57 @@ class OAuth extends Component
     }
 
     /**
+     * Returns the resources a user can create personal access tokens for: those that allow them, which the user is
+     * permitted to access, and which have scopes the user may be granted.
+     *
+     * @return array<string,Resource>
+     */
+    public function getPersonalTokenResources(User $user): array
+    {
+        return array_filter($this->getResources(), function(Resource $resource) use ($user) {
+            if (!$resource->personalTokens || !$this->personalTokenScopes($resource, $user)) {
+                return false;
+            }
+            try {
+                $this->authorizedUser((string)$user->id, $resource->id);
+            } catch (OAuthServerException) {
+                return false;
+            }
+            return true;
+        });
+    }
+
+    /**
+     * @return string[]
+     */
+    private function personalTokenScopes(Resource $resource, User $user): array
+    {
+        return $resource->scopesForUser($user, array_keys($resource->scopes));
+    }
+
+    /**
      * Creates a personal access token for a user, without an OAuth client flow. The token gets its own client, named
      * after the token, so it can be listed and revoked like any other grant.
      *
-     * @param string $level The access level to grant, which must be one of the resource’s scope levels.
+     * @param string[] $scopes The scope IDs to grant. Access levels include the narrower levels.
      * @return string The signed access token. It isn’t stored, so it can’t be retrieved again.
+     * @throws InvalidArgumentException if the resource doesn’t allow personal access tokens for the user, or the
+     * scopes aren’t ones the user may be granted
      */
-    public function createPersonalAccessToken(string $resource, User $user, string $name, string $level, DateTimeImmutable $expiresAt): string
+    public function createPersonalAccessToken(string $resource, User $user, string $name, array $scopes, DateTimeImmutable $expiresAt): string
     {
-        $definition = $this->getResource($resource);
-        $this->authorizedUser((string)$user->id, $resource);
-        if (!in_array($level, $definition->levelChoices($definition->scopeLevels, $user), true)) {
-            throw new InvalidArgumentException("Invalid access level: $level");
+        if (!isset($this->getPersonalTokenResources($user)[$resource])) {
+            throw new InvalidArgumentException("Personal access tokens aren’t available for $resource.");
         }
+        $definition = $this->getResource($resource);
+        if (!$scopes || array_diff($scopes, $this->personalTokenScopes($definition, $user))) {
+            throw new InvalidArgumentException('Invalid scopes.');
+        }
+        $level = $definition->highestLevel($scopes);
+        if ($level !== null) {
+            $scopes = array_merge($scopes, $definition->grantedLevels($level));
+        }
+        $scopes = array_values(array_intersect(array_keys($definition->scopes), $scopes));
 
         $clientId = StringHelper::UUID();
         Db::insert(Table::OAUTH_CLIENTS, [
@@ -240,7 +278,7 @@ class OAuth extends Component
         ]);
 
         $repository = new Repositories($definition);
-        $scopes = array_map(fn(string $scope) => $repository->getScopeEntityByIdentifier($scope), $definition->grantedLevels($level));
+        $scopes = array_map(fn(string $scope) => $repository->getScopeEntityByIdentifier($scope), $scopes);
         $token = $repository->getNewToken($repository->getClientEntity($clientId), $scopes, (string)$user->id);
         $token->setIdentifier(bin2hex(random_bytes(40)));
         $token->setExpiryDateTime($expiresAt);
@@ -253,7 +291,7 @@ class OAuth extends Component
     /**
      * Returns the clients a user has active grants for, including personal access tokens.
      *
-     * @return array{clientId:string,name:string,scopes:string[],expiresAt:DateTime,personal:bool}[]
+     * @return array{resourceId:string,clientId:string,name:string,scopes:string[],expiresAt:DateTime,personal:bool}[]
      */
     public function getUserGrants(string $resource, User $user): array
     {
@@ -295,6 +333,7 @@ class OAuth extends Component
             $scopes = json_decode($row['scopes'], true);
             $grant = $grants[$row['clientId']] ?? null;
             $grants[$row['clientId']] = [
+                'resourceId' => $resource,
                 'clientId' => $row['clientId'],
                 'name' => $row['name'],
                 'scopes' => array_values(array_unique(array_merge($grant['scopes'] ?? [], $scopes))),
