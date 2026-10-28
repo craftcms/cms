@@ -34,6 +34,15 @@ const DEFAULT_GRADUATION_WIDTH = 10;
  * @fires {CustomEvent<{value:number}>} craft-drag-end - A drag ended.
  */
 export default class CraftSlideRule extends FormAssociated(LitElement) {
+  /**
+   * Delegate focus into the shadow root, so `host.focus()` and a `<label for>`
+   * pointing at the host land on the slider.
+   */
+  static override shadowRootOptions: ShadowRootInit = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+
   static override styles = [styles];
 
   /** Minimum selectable value (the slide range floor). */
