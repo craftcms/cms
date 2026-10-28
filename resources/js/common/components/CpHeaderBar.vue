@@ -15,6 +15,7 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+  import CommandPaletteTrigger from '@/modules/command-palette/components/CommandPaletteTrigger.vue';
 
   // Passed in rather than read here: `crumbs` is a page prop, but whether there's
   // a context menu depends on the shell's own slots, which a child can't see.
@@ -121,18 +122,13 @@
       </div>
 
       <div class="cp-header-bar__end" v-else-if="section === 'end'">
-        <div class="flex gap-md items-center">
-          <craft-button
-            icon
-            :variant="ButtonVariant.Plain"
-            type="button"
-            size="small"
-          >
-            <craft-icon name="search" :label="t('Search')"></craft-icon>
-          </craft-button>
-          <cp-notification-center
-            :notifications.prop="notifications"
-          ></cp-notification-center>
+        <div class="flex gap-lg items-center">
+          <div class="flex gap-sm items-center">
+            <CommandPaletteTrigger />
+            <cp-notification-center
+              :notifications.prop="notifications"
+            ></cp-notification-center>
+          </div>
           <UserMenu />
         </div>
       </div>
@@ -151,7 +147,11 @@
               >/</span
             >
             <Breadcrumbs v-if="crumbs" :items="crumbs" class="gap-md" />
-            <div v-show="hasContextMenu" class="context-menu-container">
+            <div
+              v-show="hasContextMenu"
+              class="context-menu-container"
+              data-command-palette-actions
+            >
               <LayoutSlotOutlet name="context-menu">
                 <slot name="context-menu"></slot>
               </LayoutSlotOutlet>
@@ -183,7 +183,7 @@
     );
     min-height: calc(42rem / 16);
     display: grid;
-    gap: var(--spacing);
+    gap: var(--c-spacing-sm);
     grid-template-areas: 'start . indicators end' 'breadcrumbs breadcrumbs breadcrumbs breadcrumbs';
     grid-template-columns:
       var(--c-size-touch-target)

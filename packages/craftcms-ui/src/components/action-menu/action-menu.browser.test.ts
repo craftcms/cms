@@ -60,3 +60,17 @@ it('closes and returns focus to a craft-button invoker when an item is chosen wi
   expect(menu.opened).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
+
+it('leaves a flush craft-button invoker pulled in on both sides, outside a button group', async () => {
+  document.body.innerHTML = `
+    <craft-action-menu>
+      <craft-button slot="invoker" variant="plain" size="small" icon="ellipsis" flush aria-label="Actions"></craft-button>
+    </craft-action-menu>
+  `;
+  const invoker = document.querySelector<CraftButton>('craft-button')!;
+  await invoker.updateComplete;
+  const style = getComputedStyle(invoker);
+
+  expect(parseFloat(style.marginInlineEnd)).toBeLessThan(0);
+  expect(style.marginInlineStart).toBe(style.marginInlineEnd);
+});

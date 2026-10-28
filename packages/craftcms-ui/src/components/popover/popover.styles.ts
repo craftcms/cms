@@ -7,8 +7,9 @@ export default css`
   }
 
   /* With no box of its own, the popover can't take a button group's overlap,
-     so its invoker does. */
-  ::slotted([slot='invoker']) {
+     so its invoker does. A craft-button invoker takes it itself, along with
+     its own flush margin, which a margin set here would replace. */
+  ::slotted([slot='invoker']:not(craft-button)) {
     margin-inline-start: var(--c-button-group-overlap);
   }
 
