@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Support\Html;
 
 describe('metadataHtml', function () {
     it('renders metadata rows and omits false values', function () {
@@ -24,6 +25,13 @@ describe('metadataHtml', function () {
 
         expect(substr_count($html, '<dd>'))->toBe(2)
             ->and($html)->toContain('<dd><a href="#">Link</a></dd>', '<dd><div>Map</div></dd>');
+    });
+
+    it('renders a Stringable value in a single dd', function () {
+        $html = app(ContentHtml::class)->metadataHtml(['Used by' => fn () => Html::ul(['<b>One</b>'], encode: false)]);
+
+        expect(substr_count($html, '<dd>'))->toBe(1)
+            ->and($html)->toContain('<dd><ul>', '<b>One</b>');
     });
 
     it('separates groups of metadata with a rule, leaving out groups with nothing to show', function () {
