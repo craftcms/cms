@@ -713,7 +713,7 @@ class AssetsController extends Controller
             // Check for a conflicting asset
             /** @var Asset|null $conflictingAsset */
             $conflictingAsset = Asset::find()
-                ->select(['elements.id'])
+                ->select(['elements.id', 'assets.volumeId', 'assets.uploaderId'])
                 ->folderId($folderId)
                 ->filename(Db::escapeParam($asset->getFilename()))
                 ->one();
