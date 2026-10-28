@@ -243,6 +243,8 @@
 
 ### Accessibility
 
+- The command palette’s search is now a combobox with a listbox of results, which keeps focus in the search box while the arrow keys move between results. Each result’s actions are in a menu that <kbd>Tab</kbd> reaches from the search box. ([#20127](https://github.com/craftcms/cms/pull/20127))
+- Search fields’ clear buttons are no longer in the <kbd>Tab</kbd> order. <kbd>Esc</kbd> clears the field from the keyboard. ([#20127](https://github.com/craftcms/cms/pull/20127))
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Added the `returnFocus` property to `<craft-dialog>`, and the `returnFocus` option to `Craft.openSlideout()`, for deciding where focus goes when they close.
 - Added `focusReturnFor()` to `@craftcms/ui/utilities/focus-return`. `event` actions now include a `returnFocus` resolver in their event’s `detail`, which finds the action menu’s button again after the menu closes or re-renders when it has a `data-focus-key` attribute.
