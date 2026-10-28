@@ -930,7 +930,7 @@ class Gql extends Component
             'personalTokens' => true,
             'scopes' => [
                 self::SCOPE_READ => Craft::t('app', 'Query content you have access to.'),
-                self::SCOPE_WRITE => Craft::t('app', 'Query, create, edit, and delete content you have access to.'),
+                self::SCOPE_WRITE => Craft::t('app', 'Create, edit, and delete content you have access to.'),
             ],
             'defaultScopes' => [self::SCOPE_READ, self::SCOPE_WRITE],
             'scopeLevels' => [self::SCOPE_READ, self::SCOPE_WRITE],
