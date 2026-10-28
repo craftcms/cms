@@ -18,8 +18,8 @@ class CpGlobalSidebar extends LitElement {
     super.connectedCallback();
 
     if (this.trigger) {
-      this.trigger.addEventListener('craft-show', this.expand.bind(this));
-      this.trigger.addEventListener('craft-hide', this.collapse.bind(this));
+      this.trigger.addEventListener('craft-show', this.#handleShow);
+      this.trigger.addEventListener('craft-hide', this.#handleHide);
     }
 
     if (this.state === 'expanded') {
@@ -30,15 +30,19 @@ class CpGlobalSidebar extends LitElement {
   }
 
   override disconnectedCallback() {
-    super.disconnectedCallback();
-
     if (this.trigger) {
-      this.trigger.removeEventListener('craft-show', this.expand.bind(this));
-      this.trigger.removeEventListener('craft-hide', this.collapse.bind(this));
+      this.trigger.removeEventListener('craft-show', this.#handleShow);
+      this.trigger.removeEventListener('craft-hide', this.#handleHide);
     }
 
     this.state = 'expanded';
+
+    super.disconnectedCallback();
   }
+
+  #handleShow = () => this.expand();
+
+  #handleHide = () => this.collapse();
 
   itemHasTooltip(item: HTMLElement) {
     return item.querySelector('craft-tooltip');
