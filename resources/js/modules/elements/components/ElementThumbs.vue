@@ -58,6 +58,7 @@
       selectable: false,
       selectAll: true,
       sortable: false,
+      readOnly: undefined,
       loading: false,
       thumbSize: 'lg',
     }
