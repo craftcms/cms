@@ -16,7 +16,7 @@ A static marker, with an optional count, that sits beside or inside the thing it
 - [x] Each instance has a unique `id`, so the element it marks can reference it with `aria-describedby`. Per WCAG 1.3.1 (Info and Relationships). Verified by `gives each instance an id, so its label can be referenced` in `badge-indicator.test.ts`.
 - [ ] A count is followed by `badge-count-suffix` as visually hidden text, so it's read with its units ("3 unread messages") rather than as a bare number. Per WCAG 1.3.1 (Info and Relationships). Not yet verified: no test asserts the hidden text.
 - [ ] A count isn't lost when `alt-text` is also set. Per WCAG 1.3.1 (Info and Relationships). Known gap: `role="img"` makes the count and suffix presentational, and the name comes from `alt-text` alone, so the number isn't announced.
-- [ ] An `aria-describedby` on the marked element that points at the host's `id` yields the marker's text: the count, its suffix or `alt-text`. Per WCAG 1.3.1 (Info and Relationships). Not yet verified. That text lives in the shadow root, and the same `id` is repeated on the inner `part="badge"` element, whose label `id` a light-DOM reference can't reach.
+- [ ] An `aria-describedby` on the marked element that points at the host's `id` yields the marker's text: the count, its suffix or `alt-text`. Per WCAG 1.3.1 (Info and Relationships). Not yet verified. That text lives in the shadow root, and the `alt-text` label is tied to the inner `part="badge"` element by an `id` that a light-DOM reference can't reach.
 
 ### Counts
 

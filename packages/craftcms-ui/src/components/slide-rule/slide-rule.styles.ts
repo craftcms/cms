@@ -64,6 +64,7 @@ export default css`
       var(--_graduation-main-height) + var(--_label-gap) + var(--_label-space)
     );
     position: relative;
+    touch-action: pan-y;
     /*
       The window the strip slides behind. Clipped so it stays the rule's width,
       which the positioning maths centers the strip against.

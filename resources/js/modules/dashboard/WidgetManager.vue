@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import type CraftSlidePicker from '@craftcms/ui/components/slide-picker/slide-picker';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import type {DashboardWidget} from './types';
   import {widgetName} from './widgetName';
@@ -84,7 +85,9 @@
             :value="Math.min(widget.colspan, columns)"
             .disabled="busy"
             :label="`${t('Number of columns')} ${widgetName(widget)}`"
-            @value-change="emit('resize', widget, $event.detail.value)"
+            @change="
+              emit('resize', widget, ($event.target as CraftSlidePicker).value)
+            "
           ></craft-slide-picker>
           <craft-button
             :id="`widget-delete-${widget.id}`"

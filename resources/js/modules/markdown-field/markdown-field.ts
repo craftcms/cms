@@ -128,7 +128,7 @@ class MarkdownField extends LitElement {
   toolbarButtons: string[] = [];
 
   /** Reflected, so the stylesheet can space the text without a toolbar above it. */
-  @property({attribute: 'show-toolbar', type: Boolean, reflect: true})
+  @property({attribute: 'show-toolbar', type: Boolean})
   showToolbar = false;
 
   @property({attribute: 'upload-folder-id', type: Number})
@@ -525,6 +525,7 @@ class MarkdownField extends LitElement {
   }
 
   protected override shouldUpdate(): boolean {
+    this.toggleAttribute('show-toolbar', this.showToolbar);
     this.syncEditorState();
 
     return false;
