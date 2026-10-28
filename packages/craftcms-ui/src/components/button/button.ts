@@ -176,6 +176,22 @@ export default class CraftButton extends HasShortcut(
     );
   };
 
+  override willUpdate(changedProperties: Map<string, unknown>) {
+    super.willUpdate(changedProperties);
+
+    // The spinner is this button's rendering of the mixin's state. `loading`
+    // stays public and settable on its own, for a caller showing one without
+    // a declarative action behind it — so this follows transitions only.
+    // On the first update `actionState` is "changed" from nothing to idle,
+    // and mirroring that would switch off a spinner the caller had asked for.
+    if (
+      changedProperties.has('actionState') &&
+      changedProperties.get('actionState') !== undefined
+    ) {
+      this.loading = this.actionState === AsyncStates.Loading;
+    }
+  }
+
   override updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
     if (changedProperties.has('href') || changedProperties.has('disabled')) {
@@ -191,18 +207,6 @@ export default class CraftButton extends HasShortcut(
       } else if (!this.isLink) {
         this.tabIndex = 0;
       }
-    }
-
-    // The spinner is this button's rendering of the mixin's state. `loading`
-    // stays public and settable on its own, for a caller showing one without
-    // a declarative action behind it — so this follows transitions only.
-    // On the first update `actionState` is "changed" from nothing to idle,
-    // and mirroring that would switch off a spinner the caller had asked for.
-    if (
-      changedProperties.has('actionState') &&
-      changedProperties.get('actionState') !== undefined
-    ) {
-      this.loading = this.actionState === AsyncStates.Loading;
     }
 
     // Only while `toggle` is set: a plain button may carry an `aria-pressed`

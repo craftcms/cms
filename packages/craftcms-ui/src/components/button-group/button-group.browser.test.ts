@@ -298,3 +298,94 @@ it('draws lighter borders between outline buttons than around the group', async 
     style(first!).borderInlineStartColor
   );
 });
+
+async function renderInForm(markup: string): Promise<{
+  form: HTMLFormElement;
+  group: HTMLElement & {value: string; updateComplete: Promise<unknown>};
+  buttons: CraftButton[];
+}> {
+  document.body.innerHTML = `<form><fieldset>${markup}</fieldset></form>`;
+  const group = document.querySelector('craft-button-group')!;
+  const buttons = Array.from(document.querySelectorAll('craft-button'));
+  await Promise.all([
+    group.updateComplete,
+    ...buttons.map((button) => button.updateComplete),
+  ]);
+  await settle();
+
+  return {form: document.querySelector('form')!, group, buttons};
+}
+
+const pressed = (buttons: CraftButton[]) =>
+  buttons.map((button) => button.getAttribute('aria-pressed'));
+
+it('changes the selection after the group is moved in the document', async () => {
+  const {form, group, buttons} = await renderInForm(`
+    <craft-button-group name="size">
+      <craft-button value="s" active>Small</craft-button>
+      <craft-button value="l">Large</craft-button>
+    </craft-button-group>`);
+  const target = document.createElement('div');
+  form.append(target);
+  target.append(group);
+  await group.updateComplete;
+
+  await userEvent.click(buttons[1]!);
+
+  expect(group.value).toBe('l');
+  expect(pressed(buttons)).toEqual(['false', 'true']);
+});
+
+it.each([
+  {
+    mode: 'single',
+    attributes: '',
+    expected: {value: 's', form: [['size', 's']]},
+  },
+  {
+    mode: 'multiple',
+    attributes: 'multiple',
+    expected: {
+      value: undefined,
+      form: [
+        ['size', ''],
+        ['size[]', 's'],
+      ],
+    },
+  },
+])(
+  'restores its initial $mode selection when its form is reset',
+  async ({attributes, expected}) => {
+    const {form, group, buttons} = await renderInForm(`
+      <craft-button-group name="size" ${attributes}>
+        <craft-button value="s" active>Small</craft-button>
+        <craft-button value="l">Large</craft-button>
+      </craft-button-group>`);
+
+    await userEvent.click(buttons[1]!);
+    expect(pressed(buttons)).not.toEqual(['true', 'false']);
+
+    form.reset();
+    await group.updateComplete;
+
+    expect(group.value).toBe(expected.value);
+    expect(pressed(buttons)).toEqual(['true', 'false']);
+    expect([...new FormData(form)]).toEqual(expected.form);
+  }
+);
+
+it('disables its buttons inside a disabled fieldset, and re-enables only those', async () => {
+  const {buttons} = await renderInForm(`
+    <craft-button-group name="size">
+      <craft-button value="s">Small</craft-button>
+      <craft-button value="l" disabled>Large</craft-button>
+    </craft-button-group>`);
+  const fieldset = document.querySelector('fieldset')!;
+  const disabled = () => buttons.map((button) => button.disabled);
+
+  fieldset.disabled = true;
+  await expect.poll(disabled).toEqual([true, true]);
+
+  fieldset.disabled = false;
+  await expect.poll(disabled).toEqual([false, true]);
+});

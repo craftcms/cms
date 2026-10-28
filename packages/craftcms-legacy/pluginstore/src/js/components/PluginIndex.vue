@@ -147,6 +147,11 @@
             appendData: !dontAppendData,
           })
           .then((responseData) => {
+            // Don’t re-register $root listeners or request more pages after the component is gone
+            if (this.isBeingDestroyed) {
+              return;
+            }
+
             if (responseData && responseData.error) {
               throw responseData.error;
             }
@@ -251,6 +256,7 @@
     },
 
     beforeDestroy() {
+      this.isBeingDestroyed = true;
       this.error = null;
       this.$root.$off('viewScroll', this.onScroll);
       this.$root.$off('windowScroll', this.onScroll);

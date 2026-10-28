@@ -74,9 +74,7 @@
 
   // The modal's Select button and its enabled state live outside Vue, so the
   // selection is pushed out rather than read in.
-  watch(selectedElements, (elements) => emit('selection-change', elements), {
-    deep: true,
-  });
+  watch(selectedElements, (elements) => emit('selection-change', elements));
 
   // Published rather than read, for the same reason the selection is: what the
   // footer can offer depends on where the index is — uploading needs the folder

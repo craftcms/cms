@@ -11,6 +11,9 @@ import '@shoelace-style/shoelace/dist/components/visually-hidden/visually-hidden
  * It attaches to whatever it sits beside — a nav item, a tab, a button — and
  * says only "there is something here". What that something is has to come from
  * the text around it or from `alt-text`.
+ *
+ * A host without an `id` is given one when it connects, so the element it
+ * marks can reference it.
  */
 
 export default class CraftBadgeIndicator extends LitElement {
@@ -37,17 +40,11 @@ export default class CraftBadgeIndicator extends LitElement {
   /** Theme variant of the badge indicator. Defaults to "primary" */
   @property() variant: 'primary' | 'secondary' | 'inverse' = 'primary';
 
-  /**
-   * Id of the badge, so the element it marks can reference it. Generated when
-   * not supplied.
-   */
-  @property()
-  override id: string;
+  #labelId = `badge-label-${Math.floor(Math.random() * 1000000000).toString()}`;
 
-  constructor() {
-    super();
-    this.id =
-      this.id || `badge-${Math.floor(Math.random() * 1000000000).toString()}`;
+  override connectedCallback() {
+    super.connectedCallback();
+    this.id ||= `badge-${Math.floor(Math.random() * 1000000000).toString()}`;
   }
 
   private showCount() {
@@ -68,10 +65,6 @@ export default class CraftBadgeIndicator extends LitElement {
     return this.altText ? 'img' : nothing;
   }
 
-  private getLabelId() {
-    return `${this.id}-label`;
-  }
-
   private renderBadgeContents() {
     return html`
       ${this.showCount()
@@ -82,7 +75,7 @@ export default class CraftBadgeIndicator extends LitElement {
         : nothing}
       ${this.altText
         ? html`
-            <sl-visually-hidden id=${this.getLabelId()}
+            <sl-visually-hidden id=${this.#labelId}
               >${this.altText}</sl-visually-hidden
             >
           `
@@ -94,7 +87,6 @@ export default class CraftBadgeIndicator extends LitElement {
     return html`
       <div
         part="badge"
-        id=${this.id}
         class="${classMap({
           'badge-indicator': true,
           'badge-indicator--with-number': this.showCount(),
@@ -102,7 +94,7 @@ export default class CraftBadgeIndicator extends LitElement {
           'badge-indicator--inverse': this.variant === 'inverse',
         })}"
         role="${this.getBadgeRole()}"
-        aria-labelledby="${this.altText ? this.getLabelId() : nothing}"
+        aria-labelledby="${this.altText ? this.#labelId : nothing}"
       >
         ${this.renderBadgeContents()}
       </div>

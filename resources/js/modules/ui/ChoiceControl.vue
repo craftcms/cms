@@ -104,11 +104,12 @@
 
   /**
    * The select's options in runs, one per `group` in the order they appear;
-   * an ungrouped run has no label and renders without an `<optgroup>`.
+   * an ungrouped run has no label and renders without an `<optgroup>`. A run
+   * is keyed by its label and first option rather than its position.
    */
   const selectGroups = computed(() =>
     selectOptions.value.reduce<
-      Array<{label: string | null; options: ChoiceOption[]}>
+      Array<{key: string; label: string | null; options: ChoiceOption[]}>
     >((groups, option) => {
       const label = option.group ?? null;
       const last = groups.at(-1);
@@ -116,7 +117,11 @@
       if (last && last.label === label) {
         last.options.push(option);
       } else {
-        groups.push({label, options: [option]});
+        groups.push({
+          key: JSON.stringify([label, inputValue(option.value)]),
+          label,
+          options: [option],
+        });
       }
 
       return groups;
@@ -127,13 +132,21 @@
     return value === true ? '1' : value === false ? '' : String(value);
   }
 
-  function selected(value: ChoiceValue): boolean {
+  const selectedValues = computed(() => {
     const values =
       props.control.props.multiple && Array.isArray(props.value)
         ? props.value
         : [props.value];
 
-    return (values ?? []).map(inputValue).includes(inputValue(value));
+    return new Set(values.map(inputValue));
+  });
+
+  const selectedOptions = computed(() =>
+    props.control.props.options.filter((option) => selected(option.value))
+  );
+
+  function selected(value: ChoiceValue): boolean {
+    return selectedValues.value.has(inputValue(value));
   }
 
   function onSelect(event: Event): void {
@@ -291,13 +304,13 @@
 <template>
   <craft-select
     v-if="control.props.presentation === 'select'"
-    :label-sr-only="fieldLabelSrOnly || undefined"
+    .labelSrOnly="fieldLabelSrOnly"
     :name="
       editable
         ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
         : ''
     "
-    :disabled="!editable"
+    .disabled="!editable"
     :required="editable && required"
     .validators="serverErrorValidators(invalid)"
   >
@@ -314,7 +327,7 @@
       :aria-invalid="invalid ? 'true' : undefined"
       @change="onSelect"
     >
-      <template v-for="(group, index) in selectGroups" :key="index">
+      <template v-for="group in selectGroups" :key="group.key">
         <optgroup v-if="group.label !== null" :label="group.label">
           <option
             v-for="option in group.options"
@@ -355,9 +368,7 @@
       value=""
     />
     <input
-      v-for="option in control.props.options.filter((option) =>
-        selected(option.value)
-      )"
+      v-for="option in selectedOptions"
       :key="inputValue(option.value)"
       type="hidden"
       :name="`${inputName(control.path)}[]`"
@@ -370,8 +381,8 @@
       :key="inputValue(option.value)"
       type="button"
       :value="inputValue(option.value)"
-      :active="selected(option.value)"
-      :disabled="!editable || option.disabled"
+      .active="selected(option.value)"
+      .disabled="!editable || option.disabled"
       :icon.attr="option.icon"
       :aria-label="option.icon || option.labelHtml ? option.label : undefined"
       @click="onButtonClicked(option.value)"
@@ -386,8 +397,8 @@
     v-else-if="useCheckboxSelect"
     role="group"
     :name="editable ? inputName(control.path) : undefined"
-    :disabled="!editable"
-    :sortable="control.props.sortable === true"
+    .disabled="!editable"
+    .sortable="control.props.sortable === true"
     :presentation="
       control.props.presentation === 'add-menu' ? 'add-menu' : 'checkboxes'
     "
@@ -411,7 +422,7 @@
         : ''
     "
     :required="editable && required"
-    :disabled="!editable"
+    .disabled="!editable"
     :aria-invalid="invalid ? 'true' : undefined"
     :aria-required="required ? 'true' : undefined"
     .validators="serverErrorValidators(invalid)"
@@ -450,7 +461,7 @@
             ? option.label
             : undefined
         "
-        :disabled="!editable || option.disabled"
+        .disabled="!editable || option.disabled"
         .choiceValue="inputValue(option.value)"
         .checked="selected(option.value)"
       >

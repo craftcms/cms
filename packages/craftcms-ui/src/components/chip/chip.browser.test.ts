@@ -1,4 +1,5 @@
-import {beforeEach, expect, it} from 'vite-plus/test';
+import {beforeEach, expect, it, vi} from 'vite-plus/test';
+import {ThumbnailLoader} from '@src/utilities/thumbnail-loader';
 import '../icon/icon.js';
 import '../thumbnail/thumbnail.js';
 import '../truncate/truncate.js';
@@ -1117,4 +1118,44 @@ it('sizes the thumbnail by thumb-size, and the chip to suit it', async () => {
     size: 'small',
   });
   expect((await render('')).size).toBe('small');
+});
+
+function hiddenThumbChip() {
+  document.body.innerHTML = `
+    <craft-chip show-thumb>
+      <div slot="thumbnail">
+        <div data-sizes="20px" data-src="${image}" hidden></div>
+      </div>
+      Label
+    </craft-chip>`;
+  const chip = document.querySelector('craft-chip')!;
+
+  return {chip, thumb: chip.querySelector<HTMLElement>('[data-sizes]')!};
+}
+
+function watchedThumbs(): HTMLElement[] {
+  return Object.values(ThumbnailLoader.invisibleThumbs).map(
+    ([, thumb]) => thumb
+  );
+}
+
+it('stops watching a hidden thumb once the chip is removed', async () => {
+  const {chip, thumb} = hiddenThumbChip();
+  await chip.updateComplete;
+  expect(watchedThumbs()).toContain(thumb);
+
+  chip.remove();
+
+  expect(watchedThumbs()).not.toContain(thumb);
+});
+
+it('loads a thumb shown while the chip was detached, once it is added back', async () => {
+  const {chip, thumb} = hiddenThumbChip();
+  await chip.updateComplete;
+
+  chip.remove();
+  thumb.hidden = false;
+  document.body.append(chip);
+
+  await vi.waitFor(() => expect(thumb.querySelector('img')).not.toBeNull());
 });

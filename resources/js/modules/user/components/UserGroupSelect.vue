@@ -13,13 +13,13 @@
   > & {uid?: string};
 
   const emit = defineEmits<{
-    (e: 'update:modelValue', value: Array<number>): void;
     (e: 'created', group: UserGroupOption): void;
   }>();
 
+  const selectedGroupIds = defineModel<Array<number>>({required: true});
+
   const props = withDefaults(
     defineProps<{
-      modelValue: Array<number>;
       groups: Array<UserGroupOption>;
       canCreate?: boolean;
       editable?: boolean;
@@ -38,7 +38,7 @@
   }
 
   const selectedGroups = computed(() => {
-    return props.modelValue
+    return selectedGroupIds.value
       .map((groupId) => props.groups.find((group) => group.id === groupId))
       .filter((group): group is UserGroupOption => Boolean(group));
   });
@@ -58,7 +58,7 @@
   });
 
   function isSelected(groupId: number) {
-    return props.modelValue.includes(groupId);
+    return selectedGroupIds.value.includes(groupId);
   }
 
   function selectGroup(group: UserGroupOption) {
@@ -67,13 +67,12 @@
       return;
     }
 
-    emit('update:modelValue', [...props.modelValue, group.id]);
+    selectedGroupIds.value = [...selectedGroupIds.value, group.id];
   }
 
   function removeGroup(groupId: number) {
-    emit(
-      'update:modelValue',
-      props.modelValue.filter((selectedGroupId) => selectedGroupId !== groupId)
+    selectedGroupIds.value = selectedGroupIds.value.filter(
+      (selectedGroupId) => selectedGroupId !== groupId
     );
   }
 
@@ -142,7 +141,7 @@
               v-for="group in selectableGroups"
               :key="group.id"
               type="checkbox"
-              :checked="isSelected(group.id)"
+              .checked="isSelected(group.id)"
               @click="selectGroup(group)"
             >
               <div class="user-group-option">

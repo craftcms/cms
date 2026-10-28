@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {useMessages} from '@/modules/messages/useMessages';
-  import {computed, ref} from 'vue';
+  import {computed, ref, watch} from 'vue';
   import {useHttp} from '@inertiajs/vue3';
   import '@craftcms/ui/components/field-group/field-group';
   import {actionClient, t} from '@craftcms/ui';
@@ -25,7 +25,13 @@
   const form = useHttp<Record<string, never>, {info: DashboardWidget | false}>(
     {}
   ).withAllErrors();
-  defineExpose({sending: computed(() => form.processing)});
+  const sending = defineModel<boolean>('sending', {default: false});
+  watch(
+    () => form.processing,
+    (processing) => {
+      sending.value = processing;
+    }
+  );
   const errors = computed(() =>
     Object.fromEntries(
       Object.entries(form.errors).map(([path, messages]) => [
@@ -97,7 +103,7 @@
       role="alert"
       ><ul>
         <template v-for="(messages, field) in errors" :key="field"
-          ><li v-for="message in messages" :key="message">
+          ><li v-for="(message, index) in messages" :key="index">
             {{ message }}
           </li></template
         >

@@ -21,7 +21,7 @@
       icon
       type="button"
       variant="danger-plain"
-      :disabled="site.primary"
+      .disabled="site.primary"
       @click="modalActive = true"
     >
       <craft-icon name="xmark-large" :label="t('Delete site')"></craft-icon>

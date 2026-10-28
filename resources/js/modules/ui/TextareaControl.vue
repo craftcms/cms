@@ -70,10 +70,10 @@
     :rows="control.props.rows ?? 2"
     :maxlength="control.props.maxLength"
     :placeholder="control.props.placeholder"
-    :monospace="control.props.monospace"
+    .monospace="control.props.monospace === true"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
-    :disabled="control.mode === 'disabled'"
+    .disabled="control.mode === 'disabled'"
     .validators="serverErrorValidators(invalid)"
     @model-value-changed="onModelValueChanged"
   >
