@@ -26,7 +26,8 @@ use function CraftCms\Cms\craftAsset;
  * stubbed) legacy `Craft.ComponentSelectInput` implementation, relocated into
  * that bundle so the core CP bundle can drop it while the `componentSelect.twig`
  * `jsClass` escape hatch keeps working for plugin subclasses. It defines its
- * class at top-level eval, so it is registered ahead of cp-compat.js.
+ * class at top-level eval, so it is registered ahead of cp-compat.js. So are
+ * the relation field settings scripts for the legacy settings templates.
  *
  * @internal
  */
@@ -39,6 +40,8 @@ class CpCompatAsset implements LegacyAssetInterface
         $htmlStack->html(Cp::viteTags(['yii2-adapter/resources/js/cp-compat.ts']), Position::Head);
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/component-select-input.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/legacy-html-control.js'));
+        $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/assets-field-settings.js'));
+        $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/element-field-settings.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/cp-compat.js'));
     }
 }
