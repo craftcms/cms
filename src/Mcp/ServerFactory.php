@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Mcp;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Mcp\Enums\McpScope;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Http\Request;
 use Laravel\Passport\Contracts\OAuthenticatable;
@@ -35,7 +36,7 @@ readonly class ServerFactory
         $user = $this->request->user('craft-mcp');
         assert($user instanceof OAuthenticatable);
         $scopes = array_filter(McpScope::values(), $user->tokenCan(...));
-        $identity = hash('sha256', json_encode([$user->getAuthIdentifier(), $scopes], JSON_THROW_ON_ERROR));
+        $identity = hash('sha256', Json::encode([$user->getAuthIdentifier(), $scopes], JSON_THROW_ON_ERROR));
 
         return $this->builder($this->capabilities, AdminInstructions::Brief)
             ->setSession(new Psr16SessionStore($this->cache, "craft-mcp-admin-$identity-"))
