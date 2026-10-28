@@ -191,6 +191,13 @@
   justify-self: stretch;
 }
 
+/* Its height is snapped to the grid (see CardViewDesigner::snapPreviewCard()).
+   Set on the card's base, as the host's percentage height wouldn't pass a
+   minimum on to it. */
+.cvd-preview > craft-card::part(base) {
+  min-block-size: var(--cvd-card-min-block-size, auto);
+}
+
 /* Sized like a cover card in an element index, not the whole pane. */
 .cvd-preview > craft-card[cover-src] {
   justify-self: start;

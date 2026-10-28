@@ -65,7 +65,7 @@
         },
         [
             'label' => \CraftCms\Cms\t('Thumb Style'),
-            'instructions' => \CraftCms\Cms\t('Choose whether image thumbnails should sit beside the card’s content, or cover the whole card. Images too small or too narrow or wide to cover a card keep the normal style.'),
+            'instructions' => \CraftCms\Cms\t('Choose whether image thumbnails should sit beside the card’s content, or cover the whole card.'),
             'id' => 'thumb-style',
             'fieldset' => true,
             'fieldClass' => $showThumbStyle ? false : 'hidden',

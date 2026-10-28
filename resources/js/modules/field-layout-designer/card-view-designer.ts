@@ -23,6 +23,7 @@ export class CardViewDesigner extends Base {
   hasThumbAlignment = false;
   abortController: AbortController | null = null;
   attribute: any = null;
+  previewCardObserver = new ResizeObserver(() => this.snapPreviewCard());
 
   constructor(designer: FieldLayoutDesigner, container: HTMLElement) {
     super();
@@ -89,6 +90,52 @@ export class CardViewDesigner extends Base {
     this.listenToAppearanceControls();
     this.disablePreviewLinks();
     this.syncPreviewAppearance();
+    this.observePreviewCard();
+  }
+
+  /**
+   * Watches the preview card, and what's in it, for size changes, so it can
+   * be snapped to the workspace grid.
+   */
+  observePreviewCard(): void {
+    this.previewCardObserver.disconnect();
+    const card = this.$previewContainer?.querySelector('craft-card');
+
+    if (!card) {
+      return;
+    }
+
+    this.previewCardObserver.observe(card);
+    for (const child of Array.from(card.children) as Element[]) {
+      this.previewCardObserver.observe(child);
+    }
+  }
+
+  /**
+   * Rounds the preview card's height up to a whole number of the workspace
+   * grid's cells, plus its bottom border, so both of its outer edges land on a
+   * row of dots, as the chip's do.
+   */
+  snapPreviewCard(): void {
+    const card = this.$previewContainer?.querySelector('craft-card');
+
+    if (!card) {
+      return;
+    }
+
+    const cell = parseFloat(
+      getComputedStyle(this.$previewContainer, '::before').backgroundSize
+    );
+
+    card.style.removeProperty('--cvd-card-min-block-size');
+
+    if (!cell) {
+      return;
+    }
+
+    const height = card.getBoundingClientRect().height;
+    const snapped = Math.ceil((height - 1) / cell) * cell + 1;
+    card.style.setProperty('--cvd-card-min-block-size', `${snapped}px`);
   }
 
   /**
@@ -255,6 +302,7 @@ export class CardViewDesigner extends Base {
       this.$previewContainer.innerHTML = response.data.previewHtml;
       this.syncPreviewAppearance();
       this.disablePreviewLinks();
+      this.observePreviewCard();
     }
   }
 
@@ -432,6 +480,7 @@ export class CardViewDesigner extends Base {
    */
   override destroy(): void {
     this.abortController?.abort();
+    this.previewCardObserver.disconnect();
     document.removeEventListener(
       'model-value-changed',
       this.onAppearanceChange

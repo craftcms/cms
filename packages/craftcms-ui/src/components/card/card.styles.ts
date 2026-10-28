@@ -313,18 +313,38 @@ export default css`
 
   /* Classes are repeated to outrank the color and selection rules above. */
   :host .card.card--cover.card--cover {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    aspect-ratio: 4 / 3;
-    /* An aspect ratio gives the card a minimum width from its content, so a
-       long title would otherwise widen it past its column. */
-    min-inline-size: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
     color: var(--_body-ink);
     background-color: var(--c-color-neutral-fill-quiet);
     border: 0;
     padding: var(--c-card-border-width, 1px);
     isolation: isolate;
+  }
+
+  /* Makes the card at least 4:3, and lets it grow taller when there's more
+     content than that fits. An aspect ratio on the card itself wouldn't, as
+     the card clips its overflow. It spans the whole card, under the border. */
+  .card--cover::before {
+    content: '';
+    grid-area: 1 / 1 / -1 / -1;
+    aspect-ratio: 4 / 3;
+    margin: calc(-1 * var(--c-card-border-width, 1px));
+    pointer-events: none;
+  }
+
+  .card--cover .card__header {
+    grid-area: 1 / 1;
+  }
+
+  .card--cover .card-body {
+    grid-area: 2 / 1;
+    align-self: end;
+  }
+
+  .card--cover .card__footer {
+    grid-area: 3 / 1;
   }
 
   .card__cover {

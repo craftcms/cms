@@ -723,6 +723,24 @@ it('ignores a cover card’s color', async () => {
   expect(border()).toBe(neutral);
 });
 
+it('grows a cover card past 4:3 when its content needs more room', async () => {
+  const card = await coverCard('Photo');
+  const base = () => card.shadowRoot!.querySelector('.card')!;
+  const {width, height} = base().getBoundingClientRect();
+  expect(height).toBeCloseTo((width * 3) / 4, 0);
+
+  card
+    .querySelector('a')!
+    .insertAdjacentHTML('afterend', '<p>Line</p>'.repeat(12));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const body = card.shadowRoot!.querySelector('.card-body')!;
+  expect(base().getBoundingClientRect().height).toBeGreaterThan(height);
+  expect(body.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+    base().getBoundingClientRect().bottom
+  );
+});
+
 it('keeps a cover card within its width when its content has a long title', async () => {
   const card = await coverCard();
   // In a card grid's column, as element indexes lay cards out, with a title
