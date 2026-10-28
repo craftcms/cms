@@ -41,6 +41,15 @@
   padding-block: var(--c-spacing-lg);
 }
 
+/* Beside the preview, the settings scroll rather than stretching the
+   designer taller than the preview needs. */
+@container cvd (width > 37.5rem) {
+  .cvd-library {
+    max-block-size: calc(500rem / 16);
+    overflow-y: auto;
+  }
+}
+
 .cvd-library .draggable {
   display: flex;
 }
