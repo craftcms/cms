@@ -452,8 +452,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::get('search', [PluginStoreController::class, 'search']);
             Route::get('buy-all-trials', [PluginStoreController::class, 'buyAllTrials']);
             Route::get('buy/{handle}/{edition?}', [PluginStoreController::class, 'buy']);
-            Route::get('{path}', [PluginStoreController::class, 'legacy'])
-                ->where('path', 'upgrade-craft(/.*)?');
+            Route::get('upgrade-craft', [PluginStoreController::class, 'upgradeCraft']);
             Route::get('{handle}/{tab?}', [PluginStoreController::class, 'plugin'])
                 ->where('tab', 'reviews|editions|changelog');
         });

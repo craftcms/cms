@@ -65,6 +65,7 @@ const context: PluginStoreContext = {
   edition: 'solo',
   licensedEdition: 'solo',
   editions: ['solo', 'team', 'pro', 'enterprise'],
+  canTestEditions: true,
   phpVersion: '8.4.0',
   composerPhpVersion: '8.2.0',
   allowUpdates: true,

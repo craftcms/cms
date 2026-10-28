@@ -5,6 +5,8 @@ export interface PluginStoreContext {
   edition: CmsEditionHandle;
   licensedEdition: CmsEditionHandle | null;
   editions: CmsEditionHandle[];
+  /** Whether this install may run editions it isn't licensed for. */
+  canTestEditions: boolean;
   phpVersion: string;
   composerPhpVersion: string | null;
   allowUpdates: boolean;

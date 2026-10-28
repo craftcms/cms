@@ -71,6 +71,11 @@ readonly class PluginStoreController
         return $this->render('plugin-store/Buy', ['handle' => $handle, 'edition' => $edition]);
     }
 
+    public function upgradeCraft(): InertiaResponse
+    {
+        return $this->render('plugin-store/UpgradeCraft', ['title' => t('Upgrade Craft CMS')]);
+    }
+
     public function buyAllTrials(): InertiaResponse
     {
         return $this->render('plugin-store/Buy', ['handle' => null, 'edition' => null]);
@@ -123,7 +128,7 @@ readonly class PluginStoreController
     /**
      * What the store needs to know about this install to decide which plugins it can offer.
      *
-     * @return array{edition: string, licensedEdition: string|null, editions: list<string>, phpVersion: string, composerPhpVersion: string|null, allowUpdates: bool, cmsLicenseKey: string|null, craftIdEndpoint: string}
+     * @return array{edition: string, licensedEdition: string|null, editions: list<string>, canTestEditions: bool, phpVersion: string, composerPhpVersion: string|null, allowUpdates: bool, cmsLicenseKey: string|null, craftIdEndpoint: string}
      */
     private function context(): array
     {
@@ -133,6 +138,7 @@ readonly class PluginStoreController
             'edition' => Edition::get()->handle(),
             'licensedEdition' => Edition::getLicensed()?->handle(),
             'editions' => array_map(fn (Edition $edition) => $edition->handle(), Edition::cases()),
+            'canTestEditions' => Edition::canTest(),
             'phpVersion' => PHP::version(),
             'composerPhpVersion' => app(Composer::class)->getConfig()['config']['platform']['php'] ?? null,
             'allowUpdates' => $generalConfig->allowUpdates && $generalConfig->allowAdminChanges,

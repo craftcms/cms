@@ -59,17 +59,11 @@ it('routes plugin store pages to their screens', function (string $uri, string $
     'buy' => ['buy/seomatic', 'plugin-store/Buy', ['handle' => 'seomatic', 'edition' => null]],
     'buy edition' => ['buy/seomatic/pro', 'plugin-store/Buy', ['handle' => 'seomatic', 'edition' => 'pro']],
     'buy all trials' => ['buy-all-trials', 'plugin-store/Buy', ['handle' => null, 'edition' => null]],
+    'upgrade craft' => ['upgrade-craft', 'plugin-store/UpgradeCraft', ['title' => 'Upgrade Craft CMS']],
 ]);
 
 it('doesn’t take unknown plugin tabs', function () {
     get(Cms::config()->cpTrigger.'/plugin-store/seomatic/settings')->assertNotFound();
-});
-
-it('leaves upgrading Craft to the standalone app', function () {
-    get(Cms::config()->cpTrigger.'/plugin-store/upgrade-craft')
-        ->assertOk()
-        ->assertSee('legacy/pluginstore/dist/js/app.js')
-        ->assertSee('legacy/axios/dist/axios.js');
 });
 
 it('can return craft data', function () {

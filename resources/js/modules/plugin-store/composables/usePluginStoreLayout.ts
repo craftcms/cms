@@ -6,7 +6,7 @@ import {useAppLayout} from '@/common/composables/useAppLayout';
 import {
   category as categoryRoute,
   index,
-  legacy,
+  upgradeCraft,
 } from '@actions/PluginStore/PluginStoreController';
 import {useCoreData} from './usePluginStoreData';
 import craftIconUrl from '../images/craft.svg?url';
@@ -96,7 +96,7 @@ export function usePluginStoreLayout(
       item(t('Discover'), index().url, {name: 'star'}),
       ...(canUpgradeCraft(page.props.context)
         ? [
-            item(t('Upgrade Craft CMS'), legacy({path: 'upgrade-craft'}).url, {
+            item(t('Upgrade Craft CMS'), upgradeCraft().url, {
               url: craftIconUrl,
             }),
           ]
