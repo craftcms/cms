@@ -108,6 +108,7 @@ if [[ $(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || true) != "$
 fi
 
 step 'Install PHP dependencies' composer install --prefer-dist --no-interaction --no-progress
+step 'Build Codeception testers' vendor/bin/codecept build
 
 # npm ci always reinstalls from scratch, so skip it while the lockfile is unchanged,
 # unless the optional Font Awesome kit (needed by `composer copy-icons`) is missing
