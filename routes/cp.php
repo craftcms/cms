@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Ai\Http\Controllers\AccountController as AiAccountController;
+use CraftCms\Cms\Ai\Http\Controllers\GuidanceController as AiGuidanceController;
 use CraftCms\Cms\Ai\Http\Controllers\SettingsController as AiSettingsController;
+use CraftCms\Cms\Ai\Http\Controllers\SkillsController as AiSkillsController;
 use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\LoginRateLimiter;
@@ -193,6 +195,15 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     // SystemMessages
     Route::get('system-messages/{key}', [SystemMessagesController::class, 'show']);
     Route::post('system-messages', [SystemMessagesController::class, 'store']);
+
+    // AI Guidance
+    Route::post('ai-guidance', [AiGuidanceController::class, 'store']);
+    Route::get('ai-skills', [AiSkillsController::class, 'index']);
+    Route::get('ai-skills/new', [AiSkillsController::class, 'create']);
+    Route::get('ai-skills/{skillId}', [AiSkillsController::class, 'edit'])->whereNumber('skillId');
+    Route::post('ai-skills', [AiSkillsController::class, 'store']);
+    Route::patch('ai-skills/{skillId}', [AiSkillsController::class, 'update'])->whereNumber('skillId');
+    Route::delete('ai-skills/{skillId}', [AiSkillsController::class, 'destroy'])->whereNumber('skillId');
 
     Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::get('settings/addresses', [AddressSettingsController::class, 'index']);

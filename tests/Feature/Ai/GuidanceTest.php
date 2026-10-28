@@ -39,6 +39,62 @@ beforeEach(function () {
     $this->siteId = Sites::getPrimarySite()->id;
 });
 
+it('saves the guidance for every site and for each site from the utility, and removes emptied guidance', function () {
+    postJson(action([GuidanceController::class, 'store']), ['guidance' => [
+        ['siteId' => null, 'body' => ' Write plainly. '],
+        ['siteId' => $this->siteId, 'body' => 'Use US spelling.'],
+    ]])->assertOk();
+
+    expect(app(Guidance::class))
+        ->forAllSites()->toBe('Write plainly.')
+        ->forSite($this->siteId)->toBe('Use US spelling.');
+
+    postJson(action([GuidanceController::class, 'store']), ['guidance' => [
+        ['siteId' => null, 'body' => 'Write plainly.'],
+        ['siteId' => $this->siteId, 'body' => ''],
+    ]])->assertOk();
+
+    expect(AgentGuidance::query()->pluck('body')->all())->toBe(['Write plainly.']);
+});
+
+it('only saves the guidance for sites the user can edit, and for every site if they can edit every site', function () {
+    $other = Site::factory()->create();
+    Sites::refreshSites();
+    $user = UserModel::factory()->withPermissions([
+        'accessCp',
+        'accessUtilities',
+        'utility:ai-guidance',
+        'editSite:'.Sites::getPrimarySite()->uid,
+    ])->create(['admin' => false]);
+    actingAs($user->asElement());
+
+    postJson(action([GuidanceController::class, 'store']), ['guidance' => [
+        ['siteId' => $this->siteId, 'body' => 'Use US spelling.'],
+        ['siteId' => $other->id, 'body' => 'Use British spelling.'],
+        ['siteId' => null, 'body' => 'Write plainly.'],
+    ]])->assertJsonValidationErrors(['guidance.1.siteId', 'guidance.2.siteId']);
+
+    expect(AgentGuidance::query()->exists())->toBeFalse()
+        ->and(array_column(AiGuidance::scopes(), 'editable', 'siteId'))->toBe(['' => false, $this->siteId => true, $other->id => false]);
+});
+
+it('only lets users who can use the utility save site guidance', function () {
+    $user = UserModel::factory()->withPermissions(['accessCp', 'accessUtilities'])->create(['admin' => false]);
+    actingAs($user->asElement());
+
+    postJson(action([GuidanceController::class, 'store']), ['guidance' => [['siteId' => null, 'body' => 'Write plainly.']]])->assertForbidden();
+
+    expect(AgentGuidance::query()->exists())->toBeFalse();
+});
+
+it('keeps showing a single site’s own guidance, which the assistant still follows', function () {
+    expect(array_column(AiGuidance::scopes(), 'heading'))->toBe(['Guidance']);
+
+    app(Guidance::class)->save(siteId: $this->siteId, userId: null, body: 'Use US spelling.');
+
+    expect(array_column(AiGuidance::scopes(), 'siteId'))->toBe([null, $this->siteId]);
+});
+
 it('only gives users who can use the assistant the account screen for their own guidance', function () {
     actingAs(UserModel::factory()->withPermissions(['accessCp'])->create(['admin' => false])->asElement());
 
