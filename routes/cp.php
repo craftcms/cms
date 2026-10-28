@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Http\Controllers\AccountController as AiAccountController;
 use CraftCms\Cms\Ai\Http\Controllers\SettingsController as AiSettingsController;
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Edition;
@@ -261,6 +263,10 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('myaccount/password', [PasswordController::class, 'index']);
     Route::get('myaccount/preferences', [PreferencesController::class, 'index']);
     Route::patch('myaccount/preferences', [PreferencesController::class, 'update']);
+    Route::middleware('can:'.Assistant::PERMISSION)->group(function () {
+        Route::get('myaccount/ai-assistant', [AiAccountController::class, 'index']);
+        Route::patch('myaccount/ai-assistant', [AiAccountController::class, 'update']);
+    });
     Route::get('myaccount/sign-in-providers', [SignInProvidersController::class, 'index']);
     Route::post('myaccount/sign-in-providers/{provider}/connect', [SignInProvidersController::class, 'connect']);
     Route::delete('myaccount/sign-in-providers/{provider}', [SignInProvidersController::class, 'destroy']);

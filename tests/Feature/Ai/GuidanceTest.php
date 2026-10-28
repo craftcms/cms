@@ -39,6 +39,25 @@ beforeEach(function () {
     $this->siteId = Sites::getPrimarySite()->id;
 });
 
+it('only gives users who can use the assistant the account screen for their own guidance', function () {
+    actingAs(UserModel::factory()->withPermissions(['accessCp'])->create(['admin' => false])->asElement());
+
+    getJson(action([AccountController::class, 'index']))->assertForbidden();
+    patchJson(action([AccountController::class, 'update']), ['guidance' => 'Reply in Dutch.'])->assertForbidden();
+
+    expect(AgentGuidance::query()->exists())->toBeFalse();
+});
+
+it('saves a user’s own guidance on their account', function () {
+    $user = UserModel::factory()->withPermissions(['accessCp', Assistant::PERMISSION])->create(['admin' => false]);
+    actingAs($user->asElement());
+
+    patchJson(action([AccountController::class, 'update']), ['guidance' => 'Reply in Dutch.'])->assertOk();
+
+    expect(app(Guidance::class)->forUser($user->id))->toBe('Reply in Dutch.')
+        ->and(app(Guidance::class)->forAllSites())->toBeNull();
+});
+
 it('returns the guidance to MCP clients, for a site the user can edit', function () {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
