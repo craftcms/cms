@@ -67,6 +67,13 @@
   import {navItemActions} from '@/common/composables/navActions';
   import SecondaryNav from '@/common/components/SecondaryNav.vue';
 
+  // Loaded on its own: the palette reaches the slideouts (through element
+  // action menus), which reach this screen, so a static import would make a
+  // cycle — one that deadlocks a test mocking the slideouts module.
+  const CommandPalette = defineAsyncComponent(
+    () => import('@/modules/command-palette/components/CommandPalette.vue')
+  );
+
   const emit = defineEmits<{
     (e: 'save', options?: FormSaveOptions): void;
   }>();
@@ -441,7 +448,10 @@
                                       </LayoutSlotOutlet>
                                     </div>
 
-                                    <div class="flex gap-2 items-center">
+                                    <div
+                                      class="flex gap-2 items-center"
+                                      data-command-palette-actions
+                                    >
                                       <LayoutSlotOutlet
                                         name="content-toolbar-actions"
                                       >
@@ -607,6 +617,7 @@
   </div>
 
   <ScreenOverlays :debug="debug" />
+  <CommandPalette />
 </template>
 
 <style scoped lang="postcss">

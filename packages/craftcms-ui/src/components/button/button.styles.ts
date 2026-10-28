@@ -203,13 +203,29 @@ export default css`
   /*
   Flush
    */
+  /*
+  A popover has no box of its own, so as its invoker, the button takes the
+  button group's overlap the popover would have had, on top of any flush
+  margin.
+  */
+  :host {
+    --_group-overlap: 0px;
+  }
+
+  :host([slot='invoker']) {
+    --_group-overlap: var(--c-button-group-overlap, 0px);
+    margin-inline-start: var(--_group-overlap);
+  }
+
   :host([variant~='plain'][flush='']),
   :host([variant~='danger-plain'][flush='']),
   :host([variant~='plain'][flush~='inline']),
   :host([variant~='danger-plain'][flush~='inline']),
   :host([variant~='plain'][flush~='inline-start']),
   :host([variant~='danger-plain'][flush~='inline-start']) {
-    margin-inline-start: calc(var(--_flush-inline) * -1);
+    margin-inline-start: calc(
+      var(--_flush-inline) * -1 + var(--_group-overlap)
+    );
   }
 
   :host([variant~='plain'][flush='']),
@@ -550,6 +566,12 @@ export default css`
     margin-inline-start: var(--c-spacing-sm);
   }
 
+  .shortcut {
+    --c-shortcut-shadow: none;
+    margin-inline-start: var(--c-spacing-md);
+    margin-inline-end: calc(var(--c-spacing) / -2);
+  }
+
   .button-content--start {
     justify-content: start;
   }
@@ -671,6 +693,6 @@ export default css`
   /* Ellipsis (action menu) icons read small at craft-icon's 0.8em */
   craft-icon[name='ellipsis'],
   ::slotted(craft-icon[name='ellipsis']) {
-    font-size: 1em;
+    --c-icon-size: 1em;
   }
 `;

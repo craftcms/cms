@@ -103,3 +103,17 @@ it('spaces separators in slotted content, including ones added later, as it does
   expect(spacing(slotted.querySelector('hr')!)).toEqual(expected);
   expect(spacing(later)).toEqual(expected);
 });
+
+it('leaves a flush craft-button invoker pulled in on both sides, outside a button group', async () => {
+  document.body.innerHTML = `
+    <craft-action-menu>
+      <craft-button slot="invoker" variant="plain" size="small" icon="ellipsis" flush aria-label="Actions"></craft-button>
+    </craft-action-menu>
+  `;
+  const invoker = document.querySelector<CraftButton>('craft-button')!;
+  await invoker.updateComplete;
+  const style = getComputedStyle(invoker);
+
+  expect(parseFloat(style.marginInlineEnd)).toBeLessThan(0);
+  expect(style.marginInlineStart).toBe(style.marginInlineEnd);
+});

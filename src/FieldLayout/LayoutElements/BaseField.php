@@ -308,6 +308,18 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * The field's icon in edit forms: its selector icon, when that's a system
+     * icon's name rather than an SVG file or markup. Native fields, which have
+     * no field type to take one from, name their own.
+     */
+    protected function uiIcon(): ?string
+    {
+        $icon = $this->selectorIcon();
+
+        return $icon !== null && preg_match('/^[\w\-\/]+$/', $icon) ? $icon : null;
+    }
+
+    /**
      * Returns the indicators that should be shown within the selector.
      *
      * @return list<array{label: string, icon: string, iconColor: string}>
@@ -467,6 +479,7 @@ abstract class BaseField extends FieldLayoutElement
                     : null,
             )
             ->layoutUid($this->uid)
+            ->icon($this->uiIcon())
             ->width($this->width)
             ->actions(...$this->uiActionNodes($context, $control));
     }
