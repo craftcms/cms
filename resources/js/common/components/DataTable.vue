@@ -259,35 +259,6 @@
     return columnCount + leadingColumnTracks.value.length;
   });
 
-  const tableStyles = computed(() => {
-    const columns = props.table.getAllColumns();
-    const visibleColumns = columns.filter(
-      (column: Column<CraftTableFeatures, TData>) => column.getIsVisible()
-    );
-
-    const columnCount = visibleColumnCount.value;
-
-    const gridDef = visibleColumns.reduce(
-      (acc: Array<string>, column: Column<CraftTableFeatures, TData>) => {
-        acc.push(column.columnDef.meta?.trackSize ?? `minmax(0, 1fr)`);
-        return acc;
-      },
-      []
-    );
-
-    if (props.reorderable) {
-      gridDef.unshift('44px');
-    }
-
-    return {
-      '--table-column-count': columnCount,
-      '--table-template-columns': [
-        ...leadingColumnTracks.value,
-        ...gridDef,
-      ].join(' '),
-    };
-  });
-
   function hideBottomBorder(rowIdx: number) {
     return (
       !props.withBottomBorder &&
@@ -369,13 +340,11 @@
       v-else
       :class="{
         'cp-table': true,
-        'cp-table--grid': false,
         'cp-table--compact': spacing === TableSpacing.Compact,
         'cp-table--spacious': spacing === TableSpacing.Spacious,
         'cp-table--auto': layout === 'auto',
         'cp-table--flush': appearance === TableAppearance.Flush,
       }"
-      :style="tableStyles"
     >
       <caption class="sr-only">
         {{
@@ -562,13 +531,7 @@
           </tr>
         </template>
         <template v-else-if="emptyRow">
-          <tr
-            style="
-              --table-template-columns: 1fr;
-              --_cell-spacing-inline: 0;
-              --_cell-spacing-block: 0;
-            "
-          >
+          <tr style="--_cell-spacing-inline: 0; --_cell-spacing-block: 0">
             <td :colspan="visibleColumnCount">
               <slot name="empty-row">
                 <craft-empty

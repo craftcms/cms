@@ -59,3 +59,23 @@ it('still renders markup that has no declaration to strip', async () => {
 
   teardown();
 });
+
+it('renders template interpolation in server HTML as text', async () => {
+  const {container, teardown} = await render(
+    '<span class="title">{{ 7 * 6 }}</span>'
+  );
+
+  expect(container.querySelector('span.title')?.textContent).toBe(
+    '{{ 7 * 6 }}'
+  );
+
+  teardown();
+});
+
+it('still compiles bound attributes', async () => {
+  const {container, teardown} = await render('<span :data-n="7 * 6"></span>');
+
+  expect(container.querySelector('span')?.dataset.n).toBe('42');
+
+  teardown();
+});

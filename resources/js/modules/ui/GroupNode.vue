@@ -4,10 +4,10 @@
   import '@craftcms/ui/components/disclosure/disclosure';
   import '@craftcms/ui/components/spinner/spinner';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, inject} from 'vue';
+  import {computed} from 'vue';
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
   import UiNodeList from './UiNodeList.vue';
-  import {UiRefreshingFields} from './runtime';
+  import {useOptionalUiRenderer} from './renderer/context';
   import {useOutlet} from './outlets';
   import type {UiChange, UiNodePayload, UiPayload} from './types';
 
@@ -57,7 +57,7 @@
   const emit = defineEmits<{
     (event: 'change', change: UiChange): void;
   }>();
-  const refreshingFields = inject(UiRefreshingFields, undefined);
+  const refreshingFields = useOptionalUiRenderer()?.refreshingFields;
   const loading = computed(() => {
     if (!props.node.props.dependsOn) {
       return false;

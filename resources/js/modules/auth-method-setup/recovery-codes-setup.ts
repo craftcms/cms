@@ -61,9 +61,15 @@ export class RecoveryCodesSetup extends LitElement {
       });
 
       const data = await response.json();
+
+      if (!response.ok) {
+        Craft.cp.displayError(data?.message);
+        return;
+      }
+
       this.handleSuccess(data);
     } catch (error) {
-      // Craft.cp.displayError(error?.response?.data?.message);
+      Craft.cp.displayError();
       console.error({error});
     } finally {
       this.submitButton?.removeAttribute('loading');
@@ -74,6 +80,9 @@ export class RecoveryCodesSetup extends LitElement {
   handleSuccess(data: RecoveryCodeResponseData) {
     this.form?.remove();
     render(this.successTemplate(data), this);
+    this.querySelector<HTMLElement>(
+      '.auth-method-setup-success-message'
+    )?.focus();
   }
 
   successTemplate = ({codes, message}: RecoveryCodeResponseData) => {

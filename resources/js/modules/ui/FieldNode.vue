@@ -7,7 +7,6 @@
   import {
     computed,
     getCurrentInstance,
-    inject,
     onErrorCaptured,
     provide,
     shallowRef,
@@ -28,16 +27,12 @@
   import {
     FieldActionItems,
     FieldLabelSrOnly,
-    UiControlOverrides,
-    UiFailure,
-    UiChangedPaths,
-    UiModifiedGroups,
     uiChangeFromEvent,
     fieldId,
     pathsMatch,
-    setValue as setPathValue,
     controlValueAt,
   } from './runtime';
+  import {useUiRenderer} from './renderer/context';
   import type {
     UiChange,
     UiChangeKind,
@@ -129,12 +124,17 @@
     () => props.node,
     (node) => (resolvedNode.value = node)
   );
-  const invalidate = inject(UiFailure)!;
+  const {
+    fail: invalidate,
+    setValue: writeValue,
+    overrides,
+    modifiedGroups,
+    changedPaths,
+  } = useUiRenderer();
   provide(
     FieldLabelSrOnly,
     computed(() => Boolean(resolvedNode.value.props.labelSrOnly))
   );
-  const overrides = inject(UiControlOverrides, {});
   const components = getCurrentInstance()!.appContext.components;
   const control = computed(() => resolvedNode.value.control!);
   const component = computed(() => {
@@ -172,8 +172,6 @@
     () => props.refreshable && Boolean(control.value.reactive)
   );
 
-  const modifiedGroups = inject(UiModifiedGroups, undefined);
-  const changedPaths = inject(UiChangedPaths, undefined);
   const showStatus = computed(
     () => resolvedNode.value.props.showStatus !== false
   );
@@ -193,7 +191,7 @@
    * own, the block's field says it.
    */
   function holdsChange(): boolean {
-    if (!control.value.nestsUis || !changedPaths) {
+    if (!control.value.nestsUis) {
       return false;
     }
 
@@ -218,9 +216,7 @@
       return false;
     }
 
-    return (
-      modifiedGroups?.value.has(control.value.deltaGroup.join('.')) ?? false
-    );
+    return modifiedGroups.value.has(control.value.deltaGroup.join('.'));
   }
 
   function setValue(
@@ -232,7 +228,7 @@
      */
     detail?: UiControlPayload<object> | UiChange
   ): void {
-    setPathValue(props.values, control.value.path, value);
+    writeValue(control.value.path, value);
 
     if (detail && !('component' in detail)) {
       emit('change', detail);
@@ -451,10 +447,10 @@
     "
     :instructions-position="resolvedNode.props.instructionsPosition"
     :instructions-sr-only="resolvedNode.props.instructionsSrOnly || undefined"
-    :required="Boolean(resolvedNode.props.required)"
-    :readonly="control.mode === 'readOnly'"
-    :disabled="control.mode === 'disabled'"
-    :has-errors="controlErrors.length > 0"
+    .required="Boolean(resolvedNode.props.required)"
+    .readOnly="control.mode === 'readOnly'"
+    .disabled="control.mode === 'disabled'"
+    .hasErrors="controlErrors.length > 0"
     :status="
       showStatus
         ? modified

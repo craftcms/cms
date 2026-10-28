@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed, shallowRef, watch} from 'vue';
+  import {computed} from 'vue';
   import type {ElementEditorActions} from '@/modules/elements/composables/useElementEditor';
   import type {WorkflowReleaseState} from '../composables/useWorkflowTransition';
   import WorkflowDefaultActions from './WorkflowDefaultActions.vue';
@@ -23,23 +23,14 @@
     ];
   }>();
 
-  const review = shallowRef(props.review);
-  const actionComponent = computed(() => review.value.actionComponent ?? null);
-  const actionProps = computed(() => review.value.actionProps ?? {});
-
-  watch(
-    () => props.review,
-    (value) => {
-      review.value = value;
-    }
-  );
+  const actionComponent = computed(() => props.review.actionComponent ?? null);
+  const actionProps = computed(() => props.review.actionProps ?? {});
 
   function updateReview(
     value: WorkflowReviewData,
     editorActions: ElementEditorActions,
     release: WorkflowReleaseState | null | undefined
   ): void {
-    review.value = value;
     emit('reviewUpdated', value, editorActions, release);
   }
 </script>

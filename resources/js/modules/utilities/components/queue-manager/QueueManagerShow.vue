@@ -25,13 +25,15 @@
     router.visit(show.url({id: 'queue-manager'}));
   }
 
+  const hiddenProperties = ['delay', 'description', 'progressLabel', 'job'];
+
   const jobRecord = computed(() =>
     Object.fromEntries(
-      Object.entries(props.job).filter(([, value]) => value !== null)
+      Object.entries(props.job).filter(
+        ([name, value]) => value !== null && !hiddenProperties.includes(name)
+      )
     )
   );
-
-  const hiddenProperties = ['delay', 'description', 'progressLabel', 'job'];
 
   /**
    * Formats a TTR value.
@@ -94,49 +96,45 @@
     <table class="table-fixed border-collapse w-full">
       <tbody>
         <tr v-for="(value, name) in jobRecord" :key="name">
-          <template v-if="!hiddenProperties.includes(name)">
-            <th
-              :class="{
-                'text-start': true,
-                'py-2': true,
-                'text-red-600': name === 'error',
-              }"
-            >
-              {{ jobAttributeName(name) }}
-            </th>
-            <td
-              :class="{
-                'py-2': true,
-                'text-red-600': name === 'error',
-              }"
-            >
-              <template v-if="name == 'status'">
-                <craft-badge :fill="jobStatusFill(job.status.value)">
-                  {{ job.status.label }}
-                </craft-badge>
-              </template>
-              <template v-else-if="name == 'progress'">
-                {{ job.progress }}%
-                <span v-if="job.progressLabel">({{ job.progressLabel }})</span>
-              </template>
-              <template v-else-if="name == 'ttr'">
-                {{ ttrValue(value) }}
-              </template>
-              <template v-else-if="name == 'class'">
-                <code>{{ value }}</code>
-              </template>
+          <th
+            :class="{
+              'text-start': true,
+              'py-2': true,
+              'text-red-600': name === 'error',
+            }"
+          >
+            {{ jobAttributeName(name) }}
+          </th>
+          <td
+            :class="{
+              'py-2': true,
+              'text-red-600': name === 'error',
+            }"
+          >
+            <template v-if="name == 'status'">
+              <craft-badge :fill="jobStatusFill(job.status.value)">
+                {{ job.status.label }}
+              </craft-badge>
+            </template>
+            <template v-else-if="name == 'progress'">
+              {{ job.progress }}%
+              <span v-if="job.progressLabel">({{ job.progressLabel }})</span>
+            </template>
+            <template v-else-if="name == 'ttr'">
+              {{ ttrValue(value) }}
+            </template>
+            <template v-else-if="name == 'class'">
+              <code>{{ value }}</code>
+            </template>
+            <template v-else>
+              <template v-if="typeof value === 'string'">{{ value }}</template>
               <template v-else>
-                <template v-if="typeof value === 'string'">{{
-                  value
-                }}</template>
-                <template v-else>
-                  <code>
-                    {{ JSON.stringify(value, null, 2) }}
-                  </code>
-                </template>
+                <code>
+                  {{ JSON.stringify(value, null, 2) }}
+                </code>
               </template>
-            </td>
-          </template>
+            </template>
+          </td>
         </tr>
       </tbody>
     </table>

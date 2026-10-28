@@ -71,6 +71,35 @@ describe('craft-input-money', () => {
     expect(button?.hidden).toBe(true);
   });
 
+  it('keeps its mask after being moved', async () => {
+    const element = await createInputMoney();
+    const container = document.createElement('div');
+    document.body.append(container);
+    container.append(element);
+    await element.updateComplete;
+
+    const input = element.querySelector(
+      'input[slot="input"]'
+    ) as HTMLInputElement & {inputmask?: {opts: Record<string, unknown>}};
+
+    expect(input.inputmask?.opts).toMatchObject({radixPoint: ','});
+  });
+
+  it('falls back to a two-decimal amount for a currency code Intl rejects', async () => {
+    const element = await createInputMoney();
+    element.currency = 'EURO';
+    await element.updateComplete;
+
+    const input = element.querySelector(
+      'input[slot="input"]'
+    ) as HTMLInputElement & {inputmask: {opts: Record<string, unknown>}};
+
+    expect(element.shadowRoot?.querySelector('.currency')?.textContent).toBe(
+      '(EURO) '
+    );
+    expect(input.inputmask.opts).toMatchObject({digits: 2, radixPoint: ','});
+  });
+
   it('accepts false for default-true HTML attributes', async () => {
     const element = await createInputMoney();
     element.setAttribute('show-currency', 'false');
