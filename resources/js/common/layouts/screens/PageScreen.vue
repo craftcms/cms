@@ -81,26 +81,20 @@
 
   const slots = defineSlots<ScreenSlots>();
 
-  // The slots each region renders, forwarded only when the page filled them
-  // so the regions' own fallbacks still apply.
-  const HEADER_SLOTS = ['title'] as const;
+  // The footer's slots, forwarded only when the page filled them so the
+  // footer's own fallbacks still apply. Slot presence isn't reactive, so this
+  // and the region checks below are functions the template calls on each
+  // render rather than computeds, which would keep the first answer.
   const FOOTER_SLOTS = [
     'content-footer',
     'footer-meta',
     'additional-buttons',
     'primary-action',
   ] as const;
-  const SIDEBAR_SLOTS = ['content-sidebar', 'subnav-actions'] as const;
 
-  const headerSlots = computed(() =>
-    HEADER_SLOTS.filter((name) => slots[name])
-  );
-  const footerSlots = computed(() =>
-    FOOTER_SLOTS.filter((name) => slots[name])
-  );
-  const sidebarSlots = computed(() =>
-    SIDEBAR_SLOTS.filter((name) => slots[name])
-  );
+  function footerSlots() {
+    return FOOTER_SLOTS.filter((name) => slots[name]);
+  }
 
   const registry = provideLayoutSlotRegistry();
   const regions = useScreenRegions(slots, registry);
@@ -157,60 +151,52 @@
     () => !props.handlesReadOnly && Boolean(page.props.readOnly)
   );
 
-  const hasContextMenu = computed(() => regions.has('context-menu'));
-  const hasNotices = computed(() => regions.has('content-notices'));
+  const hasContextMenu = () => regions.has('context-menu');
+  const hasNotices = () => regions.has('content-notices');
   // Hidden rather than removed while empty, so its outlets stay in the DOM for
   // page content to teleport into.
-  const hasToolbar = computed(
-    () =>
-      regions.has('content-toolbar') ||
-      regions.has('content-toolbar-meta') ||
-      regions.has('content-toolbar-actions')
-  );
+  const hasToolbar = () =>
+    regions.has('content-toolbar') ||
+    regions.has('content-toolbar-meta') ||
+    regions.has('content-toolbar-actions');
   // Hidden while it has nothing to show, such as an untitled nested entry's
   // edit page, so its padding doesn't leave a gap above the content.
-  const hasHeader = computed(
-    () =>
-      Boolean(pageTitle.value) ||
-      regions.has('title') ||
-      regions.has('content-actions')
-  );
+  const hasHeader = () =>
+    Boolean(pageTitle.value) ||
+    regions.has('title') ||
+    regions.has('content-actions');
   // The details column: the panels pages and the shell add with
   // `ScreenPanel`, or whatever a page puts in `content-details`. With panels
   // as well, that becomes a panel of its own.
   provide(ScreenPanelsKey, screenPanels);
-  const hasDetailsContent = computed(() => regions.has('content-details'));
+  const hasDetailsContent = () => regions.has('content-details');
   const hasPanels = computed(() => screenPanels.panels.value.length > 0);
   const hasOtherPanels = computed(() =>
     screenPanels.panels.value.some((panel) => panel.id !== DETAILS_PANEL_ID)
   );
-  const hasDetails = computed(() => hasDetailsContent.value || hasPanels.value);
-  const hasTabs = computed(() => regions.has('content-tabs'));
+  const hasDetails = () => hasDetailsContent() || hasPanels.value;
+  const hasTabs = () => regions.has('content-tabs');
   // Decided here rather than inside `ContentFooter`, so the sticky wrapper
   // around it and the notices can be hidden together rather than left
   // standing empty.
-  const hasFooter = computed(
-    () =>
-      !props.hideFooter &&
-      (Boolean(props.form) ||
-        Boolean(props.fullPageForm) ||
-        regions.has('content-footer') ||
-        regions.has('footer-meta') ||
-        regions.has('additional-buttons'))
-  );
+  const hasFooter = () =>
+    !props.hideFooter &&
+    (Boolean(props.form) ||
+      Boolean(props.fullPageForm) ||
+      regions.has('content-footer') ||
+      regions.has('footer-meta') ||
+      regions.has('additional-buttons'));
   const contentConstrained = computed(() => Boolean(props.contentMaxWidth));
   const contentMainStyle = computed(() =>
     typeof props.contentMaxWidth === 'string'
       ? {'--cp-content-max-width': props.contentMaxWidth}
       : undefined
   );
-  const hasSidebar = computed(
-    () =>
-      regions.has('content-sidebar') ||
-      regions.has('subnav-actions') ||
-      (props.subnavActions?.length ?? 0) > 0 ||
-      subnav.value.length > 0
-  );
+  const hasSidebar = () =>
+    regions.has('content-sidebar') ||
+    regions.has('subnav-actions') ||
+    (props.subnavActions?.length ?? 0) > 0 ||
+    subnav.value.length > 0;
 
   // The top bar scrolls away with the page, so the sidebar and the details
   // pane are only as tall as the viewport below whatever's still showing of it.
@@ -303,7 +289,7 @@
 <template>
   <Head :title="pageTitle" />
   <ScreenSkipLinks
-    :has-sidebar="hasSidebar"
+    :has-sidebar="hasSidebar()"
     :additional-skip-links="additionalSkipLinks"
   />
   <div
@@ -317,7 +303,7 @@
     <CpTopBar
       ref="topBar"
       :crumbs="crumbs"
-      :has-context-menu="hasContextMenu"
+      :has-context-menu="hasContextMenu()"
     />
     <div class="cp">
       <div class="cp__sidebar">
@@ -332,8 +318,8 @@
             <div
               class="cp-body"
               :class="{
-                'cp-body--sidebar': hasSidebar,
-                'cp-body--details': hasDetails,
+                'cp-body--sidebar': hasSidebar(),
+                'cp-body--details': hasDetails(),
               }"
             >
               <!-- Wraps the `page-main` slot, so a page that takes it over still
@@ -354,13 +340,13 @@
                         :id="legacyIds ? 'page-container' : undefined"
                         class="cp-content"
                         :class="{
-                          'cp-content--sidebar': hasSidebar,
-                          'cp-content--details': hasDetails,
+                          'cp-content--sidebar': hasSidebar(),
+                          'cp-content--details': hasDetails(),
                         }"
                         :style="detailsResizer.style.value"
                       >
                         <div
-                          v-show="hasSidebar"
+                          v-show="hasSidebar()"
                           id="content-sidebar"
                           tabindex="-1"
                           class="cp-content__sidebar"
@@ -413,7 +399,7 @@
                             }"
                           >
                             <slot name="content-toolbar">
-                              <CpContainer v-show="hasToolbar">
+                              <CpContainer v-show="hasToolbar()">
                                 <div
                                   class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-(--cp-header-height)"
                                 >
@@ -447,7 +433,7 @@
 
                             <slot name="content-header">
                               <div
-                                v-show="hasHeader"
+                                v-show="hasHeader()"
                                 id="cp-content-header"
                                 class="pt-lg pb-md"
                               >
@@ -471,7 +457,7 @@
                               </div>
                             </slot>
 
-                            <CpContainer v-show="hasTabs">
+                            <CpContainer v-show="hasTabs()">
                               <div>
                                 <LayoutSlotOutlet name="content-tabs">
                                   <slot name="content-tabs"></slot>
@@ -492,13 +478,13 @@
                           the view is constrained; the row itself keeps to the content's
                           column through `contained`. -->
                           <div
-                            v-show="hasNotices || hasFooter"
+                            v-show="hasNotices() || hasFooter()"
                             class="sticky bottom-0 z-sticky bg-default/70 backdrop-blur-md mt-lg"
                           >
                             <!-- `#content-notice` is where legacy `Craft.cp.$noticeContainer`
                             puts its notices, the legacy element editor's included. -->
                             <div
-                              v-show="hasNotices"
+                              v-show="hasNotices()"
                               id="content-notice"
                               class="cp-content__notices"
                               role="status"
@@ -509,7 +495,7 @@
                             </div>
                             <div class="cp-content__footer">
                               <ContentFooter
-                                v-show="hasFooter"
+                                v-show="hasFooter()"
                                 :read-only="readOnly"
                                 :form="form"
                                 :default-form-actions="defaultFormActions"
@@ -524,7 +510,7 @@
                                 @save="save"
                               >
                                 <template
-                                  v-for="name in footerSlots"
+                                  v-for="name in footerSlots()"
                                   :key="name"
                                   #[name]
                                 >
@@ -537,7 +523,7 @@
                         <!-- Paired ids for the legacy editor's `$('#details .details')`. -->
                         <aside
                           ref="detailsAside"
-                          v-show="hasDetails"
+                          v-show="hasDetails()"
                           :id="legacyIds ? 'details' : undefined"
                           class="cp-content__details"
                         >
@@ -559,7 +545,7 @@
                               </LayoutSlotOutlet>
                             </ContentDetails>
                             <ScreenPanel
-                              v-if="hasDetailsContent && hasOtherPanels"
+                              v-if="hasDetailsContent() && hasOtherPanels"
                               :id="DETAILS_PANEL_ID"
                               :label="t('Details')"
                               icon="circle-info"
@@ -576,7 +562,7 @@
                 </slot>
               </div>
               <div
-                v-show="hasDetails"
+                v-show="hasDetails()"
                 id="cp-details-rail"
                 class="cp-details-rail"
               ></div>

@@ -8,7 +8,8 @@ import {
  * page-side `<LayoutSlot>` teleport.
  *
  * Shells may only toggle visibility (`v-show`) and classes from this —
- * removing an outlet's wrapper would break the teleport.
+ * removing an outlet's wrapper would break the teleport. Call `has` from the
+ * template, not a computed: slot presence isn't reactive.
  *
  * A shell passes the registry it just provided, since `inject` can't see a
  * component's own `provide`. Components inside a shell can let it default.

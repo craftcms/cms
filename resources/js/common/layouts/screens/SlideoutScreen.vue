@@ -122,19 +122,21 @@
   );
   const form = computed(() => props.value.form ?? null);
 
+  // Slot presence isn't reactive, so the region and footer slot checks are
+  // functions the template calls on each render rather than computeds, which
+  // would keep the first answer.
   const regions = useScreenRegions(slots, registry);
-  const hasToolbarMeta = computed(() => regions.has('content-toolbar-meta'));
-  const hasTabs = computed(() => regions.has('content-tabs'));
-  const hasNotices = computed(() => regions.has('content-notices'));
+  const hasTabs = () => regions.has('content-tabs');
+  const hasNotices = () => regions.has('content-notices');
   // The details column: the panels the page adds with `ScreenPanel`, or
   // whatever it puts in `content-details`. With panels as well, that becomes
   // a panel of its own.
-  const hasDetailsContent = computed(() => regions.has('content-details'));
+  const hasDetailsContent = () => regions.has('content-details');
   const hasPanels = computed(() => panels.panels.value.length > 0);
   const hasOtherPanels = computed(() =>
     panels.panels.value.some((panel) => panel.id !== DETAILS_PANEL_ID)
   );
-  const hasDetails = computed(() => hasDetailsContent.value || hasPanels.value);
+  const hasDetails = () => hasDetailsContent() || hasPanels.value;
 
   // The same footer slots a full page forwards, only when the page filled them
   // so the footer's own fallbacks still apply.
@@ -144,9 +146,9 @@
     'additional-buttons',
     'primary-action',
   ] as const;
-  const footerSlots = computed(() =>
-    FOOTER_SLOTS.filter((name) => slots[name])
-  );
+  function footerSlots() {
+    return FOOTER_SLOTS.filter((name) => slots[name]);
+  }
 
   // The Save menu's entries. "Save and continue editing" keeps the panel open:
   // in a slideout that's what `redirect: false` means.
@@ -485,7 +487,7 @@
       </CpContainer>
     </header>
 
-    <div v-show="hasTabs" ref="tabsEl" class="slideout-screen__tabs">
+    <div v-show="hasTabs()" ref="tabsEl" class="slideout-screen__tabs">
       <LayoutSlotOutlet name="content-tabs">
         <slot name="content-tabs"></slot>
       </LayoutSlotOutlet>
@@ -493,7 +495,11 @@
 
     <div class="slideout-screen__body">
       <div ref="contentEl" class="slideout-screen__content">
-        <div v-show="hasNotices" class="slideout-screen__notices" role="status">
+        <div
+          v-show="hasNotices()"
+          class="slideout-screen__notices"
+          role="status"
+        >
           <LayoutSlotOutlet name="content-notices">
             <slot name="content-notices"></slot>
           </LayoutSlotOutlet>
@@ -519,7 +525,7 @@
       <!-- v-show, not v-if: the outlet is a teleport target and must stay in
         the DOM so page content can mount before registration flips hasDetails. -->
       <aside
-        v-show="hasDetails"
+        v-show="hasDetails()"
         ref="detailsEl"
         class="slideout-screen__details"
       >
@@ -533,7 +539,7 @@
         </LayoutSlotOutlet>
       </aside>
       <ScreenPanel
-        v-if="hasDetailsContent && hasOtherPanels"
+        v-if="hasDetailsContent() && hasOtherPanels"
         :id="DETAILS_PANEL_ID"
         :label="t('Details')"
         icon="circle-info"
@@ -559,7 +565,7 @@
         :save-disabled="props.saveDisabled"
         @save="saveWithOptions"
       >
-        <template v-for="name in footerSlots" :key="name" #[name]>
+        <template v-for="name in footerSlots()" :key="name" #[name]>
           <slot :name="name"></slot>
         </template>
         <template #shell-actions>
