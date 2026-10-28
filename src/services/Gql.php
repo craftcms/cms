@@ -2063,11 +2063,9 @@ class Gql extends Component
                 $prefix = "globalsets.$globalSet->uid";
                 $queryComponents["$prefix:read"] = [
                     'label' => Craft::t('app', 'Query for the “{name}” global set', ['name' => $name]),
-                    'authenticated' => fn(User $user) => $user->can("editGlobalSet:$globalSet->uid"),
                 ];
                 $mutationComponents["$prefix:edit"] = [
                     'label' => Craft::t('app', 'Edit the “{globalSet}” global set.', ['globalSet' => $name]),
-                    'authenticated' => fn(User $user) => $user->can("editGlobalSet:$globalSet->uid"),
                 ];
             }
         }
@@ -2137,7 +2135,6 @@ class Gql extends Component
         if (!empty($categoryGroups)) {
             $queryComponents['settings.categorygroups:read'] = [
                 'label' => Craft::t('app', 'Query for category groups'),
-                'authenticated' => fn(User $user) => $user->can('accessCp'),
                 'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to categories.', [
                     'plural' => 'categoryGroups',
                     'singular' => 'categoryGroup',
@@ -2150,22 +2147,15 @@ class Gql extends Component
                 $prefix = "categorygroups.$categoryGroup->uid";
                 $queryComponents["$prefix:read"] = [
                     'label' => Craft::t('app', 'Query for categories in the “{name}” category group', ['name' => $name]),
-                    'authenticated' => fn(User $user) => $user->can("viewCategories:$categoryGroup->uid"),
                 ];
                 $mutationComponents["$prefix:edit"] = [
                     'label' => Craft::t('app', 'Edit categories in the “{categoryGroup}” category group', ['categoryGroup' => $name]),
-                    'authenticated' => fn(User $user) => (
-                        $user->can("saveCategories:$categoryGroup->uid") ||
-                        $user->can("deleteCategories:$categoryGroup->uid")
-                    ),
                     'nested' => [
                         "$prefix:save" => [
                             'label' => Craft::t('app', 'Save categories in the “{categoryGroup}” category group', ['categoryGroup' => $name]),
-                            'authenticated' => fn(User $user) => $user->can("saveCategories:$categoryGroup->uid"),
                         ],
                         "$prefix:delete" => [
                             'label' => Craft::t('app', 'Delete categories from the “{categoryGroup}” category group', ['categoryGroup' => $name]),
-                            'authenticated' => fn(User $user) => $user->can("deleteCategories:$categoryGroup->uid"),
                         ],
                     ],
                 ];
@@ -2190,7 +2180,6 @@ class Gql extends Component
         if (!empty($tagGroups)) {
             $queryComponents['settings.taggroups:read'] = [
                 'label' => Craft::t('app', 'Query for tag groups'),
-                'authenticated' => fn(User $user) => $user->can('accessCp'),
                 'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to tags.', [
                     'plural' => 'tagGroups',
                     'singular' => 'tagGroup',
@@ -2203,7 +2192,6 @@ class Gql extends Component
                 $prefix = "taggroups.$tagGroup->uid";
                 $queryComponents["$prefix:read"] = [
                     'label' => Craft::t('app', 'Query for tags in the “{name}” tag group', ['name' => $name]),
-                    'authenticated' => true,
                 ];
                 $mutationComponents["$prefix:edit"] = [
                     'label' => Craft::t('app', 'Edit tags in the “{tagGroup}” tag group', ['tagGroup' => $name]),

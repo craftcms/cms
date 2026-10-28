@@ -95,7 +95,6 @@ class Tag extends ElementMutationResolver
 
         $tagGroupUid = Db::uidById(Table::TAGGROUPS, $tag->groupId);
         $this->requireSchemaAction('taggroups.' . $tagGroupUid, 'delete');
-        $this->requireUserAuthorization($tag, 'delete');
 
         return $elementService->deleteElementById($tagId, hardDelete: $hardDelete);
     }
