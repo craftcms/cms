@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
@@ -201,6 +202,29 @@ describe('elementCardHtml', function () {
         'too tall' => ['photo.jpg', 599, 800, false],
         'opaque png' => ['logo.png', 800, 600, true],
         'transparent' => ['logo.png', 800, 600, false, '#3a6ea580'],
+    ]);
+
+    it('covers any element’s card with the image its thumbnail field shows', function (int $width, bool $covered) {
+        new ControlPanelAssetTransformDriver()->register();
+        Cms::config()->defaultAssetTransformer('test');
+        $luminance = [[[0.1, 0.6]], [[0.02, 0.3]]];
+        $asset = Asset::factory()->createElement([
+            'width' => $width,
+            'height' => 600,
+            'analysis' => ['colors' => ['grid' => [['#3a6ea5']], 'luminance' => $luminance]],
+        ]);
+        $entry = Entry::factory()->withField('images', Assets::class, value: [$asset->id])
+            ->createElementWithFields()->element;
+        $layout = $entry->getFieldLayout();
+        $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+
+        $attributes = $this->elementHtml->elementCardAttributes($entry);
+
+        expect($attributes['cover-src'] ?? null)->toBe($covered ? '/transforms/800x600.webp' : null)
+            ->and($attributes['luminance'] ?? null)->toBe($covered ? $luminance : null);
+    })->with([
+        'fills the card' => [800, true],
+        'too small' => [400, false],
     ]);
 
     it('dispatches and allows overriding ElementCardHtmlResolving', function () {

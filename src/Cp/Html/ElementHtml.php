@@ -35,7 +35,11 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\NestedElementManager;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -974,8 +978,9 @@ readonly class ElementHtml
             $classes[] = 'error';
         }
 
-        $coverUrl = $element instanceof Asset ? $element->getCardCoverUrl() : null;
-        $luminance = $coverUrl !== null ? $element->analysis?->colors?->luminance : null;
+        $coverAsset = $this->cardCoverAsset($element);
+        $coverUrl = $coverAsset?->getCardCoverUrl();
+        $luminance = $coverUrl !== null ? $coverAsset->analysis?->colors?->luminance : null;
 
         $thumb = $element->getThumbHtml(120, ImageTransformMode::Fit);
         $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
@@ -1014,6 +1019,39 @@ readonly class ElementHtml
             ],
             $config['attributes'],
         );
+    }
+
+    /**
+     * Returns the asset whose image an element's card thumbnail shows, if the thumbnail comes straight from an asset:
+     * the element itself, or the first element related through its field layout's thumbnail field.
+     */
+    private function cardCoverAsset(ElementInterface $element): ?Asset
+    {
+        if ($element instanceof Asset) {
+            return $element;
+        }
+
+        $fieldLayout = $element->getFieldLayout();
+        $layoutElement = $fieldLayout?->thumbFieldKey ? $fieldLayout->getElementByKey($fieldLayout->thumbFieldKey) : null;
+
+        if (! $layoutElement instanceof CustomField) {
+            return null;
+        }
+
+        try {
+            $field = $layoutElement->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        if (! $field instanceof BaseRelationField) {
+            return null;
+        }
+
+        $value = $element->getFieldValue($field->handle);
+        $related = $value instanceof ElementQueryInterface ? (clone $value)->eagerly()->one() : $value->first();
+
+        return $related instanceof Asset ? $related : null;
     }
 
     /**
