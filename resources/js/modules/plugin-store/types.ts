@@ -8,6 +8,8 @@ export interface PluginStoreContext {
   phpVersion: string;
   composerPhpVersion: string | null;
   allowUpdates: boolean;
+  cmsLicenseKey: string | null;
+  craftIdEndpoint: string;
 }
 
 export interface PluginEditionFeature {
@@ -98,9 +100,13 @@ export type SortDirection = 'asc' | 'desc';
 /** Attribute → its default direction. */
 export type SortOptions = Record<string, SortDirection>;
 
+/** How long a license's updates run for, and the date that lands on. */
+export type ExpiryDateOption = [value: string, date: string];
+
 export interface CoreData {
   categories: PluginCategory[];
   sortOptions: SortOptions;
+  expiryDateOptions: ExpiryDateOption[];
 }
 
 export interface FeaturedSection {
@@ -181,4 +187,55 @@ export interface PluginLicenseInfo {
   licenseKey: string | null;
   licenseKeyStatus: LicenseKeyStatus;
   licenseIssues: string[];
+}
+
+export interface CmsEdition {
+  handle: CmsEditionHandle;
+  name: string;
+  price: string | null;
+  renewalPrice: string | null;
+}
+
+export interface CartAdjustment {
+  name: string;
+  amount: number;
+  sourceSnapshot: {type: string; expiryDate?: string};
+}
+
+export interface CartLineItem {
+  price: number;
+  purchasable: {
+    type: 'plugin-edition' | 'cms-edition';
+    handle: string;
+    name: string;
+    renewalPrice: string;
+    pluginId?: number;
+    plugin?: {id: number; handle: string};
+  };
+  options: {
+    expiryDate: string;
+    autoRenew: boolean;
+    /** `new:…` until a license exists. */
+    licenseKey: string;
+  };
+  adjustments: CartAdjustment[];
+}
+
+export interface Cart {
+  number: string;
+  email: string;
+  totalPrice: number;
+  totalQty: number;
+  lineItems: CartLineItem[];
+}
+
+/** What the API takes to describe a cart's contents. */
+export interface CartItemData {
+  type: 'plugin-edition' | 'cms-edition';
+  edition: string;
+  plugin?: string;
+  licenseKey?: string;
+  cmsLicenseKey?: string | null;
+  expiryDate: string;
+  autoRenew: boolean;
 }

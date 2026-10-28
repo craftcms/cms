@@ -56,23 +56,21 @@ it('routes plugin store pages to their screens', function (string $uri, string $
     'search' => ['search?q=+seo+', 'plugin-store/Search', ['query' => 'seo']],
     'plugin' => ['seomatic', 'plugin-store/Plugin', ['handle' => 'seomatic', 'tab' => 'overview']],
     'plugin tab' => ['seomatic/changelog', 'plugin-store/Plugin', ['handle' => 'seomatic', 'tab' => 'changelog']],
+    'buy' => ['buy/seomatic', 'plugin-store/Buy', ['handle' => 'seomatic', 'edition' => null]],
+    'buy edition' => ['buy/seomatic/pro', 'plugin-store/Buy', ['handle' => 'seomatic', 'edition' => 'pro']],
+    'buy all trials' => ['buy-all-trials', 'plugin-store/Buy', ['handle' => null, 'edition' => null]],
 ]);
 
 it('doesn’t take unknown plugin tabs', function () {
     get(Cms::config()->cpTrigger.'/plugin-store/seomatic/settings')->assertNotFound();
 });
 
-it('leaves buying and upgrading to the standalone app', function (string $uri) {
-    get(Cms::config()->cpTrigger.'/plugin-store/'.$uri)
+it('leaves upgrading Craft to the standalone app', function () {
+    get(Cms::config()->cpTrigger.'/plugin-store/upgrade-craft')
         ->assertOk()
         ->assertSee('legacy/pluginstore/dist/js/app.js')
         ->assertSee('legacy/axios/dist/axios.js');
-})->with([
-    'upgrade-craft',
-    'buy/seomatic',
-    'buy/seomatic/pro',
-    'buy-all-trials',
-]);
+});
 
 it('can return craft data', function () {
     getJson(action([PluginStoreController::class, 'craftData']))

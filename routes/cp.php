@@ -450,8 +450,10 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::get('featured/{handle}', [PluginStoreController::class, 'featured']);
             Route::get('developer/{id}', [PluginStoreController::class, 'developer'])->whereNumber('id');
             Route::get('search', [PluginStoreController::class, 'search']);
+            Route::get('buy-all-trials', [PluginStoreController::class, 'buyAllTrials']);
+            Route::get('buy/{handle}/{edition?}', [PluginStoreController::class, 'buy']);
             Route::get('{path}', [PluginStoreController::class, 'legacy'])
-                ->where('path', '(buy|buy-all-trials|upgrade-craft)(/.*)?');
+                ->where('path', 'upgrade-craft(/.*)?');
             Route::get('{handle}/{tab?}', [PluginStoreController::class, 'plugin'])
                 ->where('tab', 'reviews|editions|changelog');
         });

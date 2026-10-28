@@ -4,9 +4,10 @@
   import {computed, shallowRef} from 'vue';
   import InstallController from '@actions/PluginStore/InstallController';
   import PluginsController from '@actions/PluginsController';
-  import {legacy} from '@actions/PluginStore/PluginStoreController';
   import useCraftData from '@/common/composables/useCraftData';
+  import {useCart} from '../composables/useCart';
   import {usePluginLicenseInfo} from '../composables/usePluginStoreData';
+  import {isPluginInCart, showError} from '../cart';
   import {resolveEditionActions} from '../editionActions';
   import {formatPrice} from '../pricing';
   import type {Plugin, PluginEdition, PluginStoreContext} from '../types';
@@ -20,6 +21,8 @@
   const {csrfTokenName, csrfTokenValue} = useCraftData();
   const {licenseInfoFor, refresh} = usePluginLicenseInfo();
 
+  const {cart, opened: cartOpened, add} = useCart();
+
   const licenseInfo = computed(() => licenseInfoFor(plugin.handle));
 
   const actions = computed(() =>
@@ -28,8 +31,7 @@
       edition,
       licenseInfo: licenseInfo.value,
       context: page.props.context,
-      // The cart still lives in the standalone app, which adds the edition when it's handed one.
-      inCart: false,
+      inCart: isPluginInCart(cart.value, plugin.id, edition.handle),
     })
   );
 
@@ -109,6 +111,31 @@
     }
   });
 
+  function openCart(): void {
+    cartOpened.value = true;
+  }
+
+  const addingToCart = shallowRef(false);
+
+  async function addToCart(): Promise<void> {
+    addingToCart.value = true;
+
+    try {
+      await add([
+        {
+          type: 'plugin-edition',
+          plugin: plugin.handle,
+          edition: edition.handle,
+        },
+      ]);
+      openCart();
+    } catch (error) {
+      showError(error, t('Couldn’t add item to cart.'));
+    } finally {
+      addingToCart.value = false;
+    }
+  }
+
   const switching = shallowRef(false);
   const installing = shallowRef(false);
 
@@ -135,18 +162,16 @@
       <craft-button
         v-if="actions.purchase.kind === 'add-to-cart'"
         variant="primary"
-        :href="
-          actions.purchase.disabled
-            ? null
-            : legacy({path: `buy/${plugin.handle}/${edition.handle}`}).url
-        "
         .disabled="actions.purchase.disabled"
+        .loading="addingToCart"
+        @click="addToCart"
       >
         <template v-if="upgradePrice !== null">
           <del>{{ formatPrice(edition.price) }}</del>
           {{ formatPrice(upgradePrice) }}
         </template>
         <template v-else>{{ formatPrice(edition.price) }}</template>
+        <span class="sr-only">{{ t('Add to cart') }}</span>
       </craft-button>
       <craft-button
         v-else-if="actions.purchase.kind === 'licensed'"
@@ -155,7 +180,7 @@
       >
         {{ t('Licensed') }}
       </craft-button>
-      <craft-button v-else variant="primary" icon="check" disabled>
+      <craft-button v-else variant="primary" icon="check" @click="openCart">
         {{ t('Already in your cart') }}
       </craft-button>
     </template>

@@ -2,7 +2,10 @@ import {sendApiRequest} from '@craftcms/ui/utilities/api/apiClient';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import PluginsController from '@actions/App/PluginsController';
 import type {
+  Cart,
+  CartItemData,
   ChangelogRelease,
+  CmsEdition,
   CoreData,
   Developer,
   FeaturedSection,
@@ -122,6 +125,45 @@ export function getPluginReviews(
   signal?: AbortSignal
 ) {
   return get<PluginReviewsPage>(`plugin/${handle}/reviews`, {...query}, signal);
+}
+
+export function getPluginsByIds(ids: number[], signal?: AbortSignal) {
+  return get<PluginSummary[]>('plugins', {ids: ids.join(',')}, signal);
+}
+
+export function getCmsEditions(signal?: AbortSignal) {
+  return get<{editions: CmsEdition[]}>('cms-editions', undefined, signal);
+}
+
+export async function createCart(email: string | null): Promise<Cart> {
+  const {data} = await sendApiRequest('POST', 'carts', {data: {email}});
+  return data.cart;
+}
+
+export async function getCart(number: string): Promise<Cart> {
+  return (await get<{cart: Cart}>(`carts/${number}`)).cart;
+}
+
+/** Replaces the cart's contents. Rejects with the API's errors when it won't take them. */
+export async function updateCart(
+  number: string,
+  items: CartItemData[]
+): Promise<Cart> {
+  const {data} = await sendApiRequest('POST', `carts/${number}`, {
+    data: {items},
+  });
+
+  if (data?.errors) {
+    throw new CartError(data.errors);
+  }
+
+  return data.cart;
+}
+
+export class CartError extends Error {
+  constructor(readonly errors: Array<{message?: string}>) {
+    super(errors[0]?.message ?? 'Couldn’t update the cart.');
+  }
 }
 
 export function getDeveloper(developerId: number, signal?: AbortSignal) {

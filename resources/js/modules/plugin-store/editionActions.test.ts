@@ -68,6 +68,8 @@ const context: PluginStoreContext = {
   phpVersion: '8.4.0',
   composerPhpVersion: '8.2.0',
   allowUpdates: true,
+  cmsLicenseKey: null,
+  craftIdEndpoint: 'https://console.craftcms.com',
 };
 
 function resolve(overrides: Partial<EditionActionsInput>) {

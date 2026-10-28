@@ -3,6 +3,7 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import PluginSearch from './PluginSearch.vue';
+  import CartButton from './cart/CartButton.vue';
   import {useCoreData} from '../composables/usePluginStoreData';
 
   const {failed} = useCoreData();
@@ -10,7 +11,10 @@
 
 <template>
   <LayoutSlot name="content-actions">
-    <PluginSearch />
+    <div class="flex items-center gap-sm">
+      <PluginSearch />
+      <CartButton />
+    </div>
   </LayoutSlot>
   <CpContainer class="py-lg">
     <craft-callout v-if="failed" variant="danger" icon="triangle-exclamation">

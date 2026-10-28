@@ -64,6 +64,19 @@ readonly class PluginStoreController
     }
 
     /**
+     * Adds a plugin edition to the cart, for links from license notices.
+     */
+    public function buy(string $handle, ?string $edition = null): InertiaResponse
+    {
+        return $this->render('plugin-store/Buy', ['handle' => $handle, 'edition' => $edition]);
+    }
+
+    public function buyAllTrials(): InertiaResponse
+    {
+        return $this->render('plugin-store/Buy', ['handle' => null, 'edition' => null]);
+    }
+
+    /**
      * Serves the screens that haven't moved out of the standalone Plugin Store app yet.
      */
     public function legacy(License $license, Composer $composer, GeneralConfig $generalConfig): View
@@ -110,7 +123,7 @@ readonly class PluginStoreController
     /**
      * What the store needs to know about this install to decide which plugins it can offer.
      *
-     * @return array{edition: string, licensedEdition: string|null, editions: list<string>, phpVersion: string, composerPhpVersion: string|null, allowUpdates: bool}
+     * @return array{edition: string, licensedEdition: string|null, editions: list<string>, phpVersion: string, composerPhpVersion: string|null, allowUpdates: bool, cmsLicenseKey: string|null, craftIdEndpoint: string}
      */
     private function context(): array
     {
@@ -123,6 +136,9 @@ readonly class PluginStoreController
             'phpVersion' => PHP::version(),
             'composerPhpVersion' => app(Composer::class)->getConfig()['config']['platform']['php'] ?? null,
             'allowUpdates' => $generalConfig->allowUpdates && $generalConfig->allowAdminChanges,
+            // Ties cart items to this install's license, and checkout hands the cart to Craft Console.
+            'cmsLicenseKey' => app(License::class)->key(),
+            'craftIdEndpoint' => Api::craftIdEndpoint(),
         ];
     }
 
