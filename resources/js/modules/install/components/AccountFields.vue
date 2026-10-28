@@ -5,19 +5,8 @@
   import CraftInputPassword from '@craftcms/ui/vue/CraftInputPassword.vue';
   import {usePage} from '@inertiajs/vue3';
 
-  const emit = defineEmits<{
-    (e: 'success'): void;
-    (e: 'click:back'): void;
-    (e: 'update:modelValue', value: any): void;
-  }>();
-
-  const props = withDefaults(
+  withDefaults(
     defineProps<{
-      modelValue?: {
-        email?: string;
-        username?: string;
-        password?: string;
-      };
       errors?: {
         email?: string;
         username?: string;
@@ -25,11 +14,6 @@
       };
     }>(),
     {
-      modelValue: () => ({
-        email: '',
-        username: '',
-        password: '',
-      }),
       errors: () => ({
         email: '',
         username: '',
@@ -43,14 +27,9 @@
   }>();
   const showUsername = computed(() => !page.props.useEmailAsUsername);
 
-  const model = computed({
-    get() {
-      return props.modelValue;
-    },
-    set(value) {
-      emit('update:modelValue', value);
-    },
-  });
+  const username = defineModel<string>('username', {default: ''});
+  const email = defineModel<string>('email', {default: ''});
+  const password = defineModel<string>('password', {default: ''});
 </script>
 
 <template>
@@ -59,7 +38,7 @@
     :label="t('Username')"
     id="account-username"
     name="username"
-    v-model="model.username"
+    v-model="username"
     :error="errors?.username"
     maxlength="255"
     required
@@ -68,7 +47,7 @@
     :label="t('Email')"
     id="account-email"
     name="email"
-    v-model="model.email"
+    v-model="email"
     maxlength="255"
     autocomplete="email"
     :error="errors?.email"
@@ -79,7 +58,7 @@
     :label="t('Password')"
     id="account-password"
     name="password"
-    v-model="model.password"
+    v-model="password"
     :error="errors?.password"
     required
     autocomplete="new-password"

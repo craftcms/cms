@@ -219,7 +219,7 @@
             type="button"
             variant="primary"
             size="small"
-            :disabled="draft.trim() === '' || mutating || overage > 0"
+            .disabled="draft.trim() === '' || mutating || overage > 0"
             @click="saveComment"
           >
             {{ t('Comment') }}
@@ -248,7 +248,7 @@
           type="button"
           variant="primary"
           size="small"
-          :disabled="draft.trim() === '' || mutating || overage > 0"
+          .disabled="draft.trim() === '' || mutating || overage > 0"
           @click="saveComment"
         >
           {{ t('Save') }}

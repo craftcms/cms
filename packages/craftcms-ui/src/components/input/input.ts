@@ -112,11 +112,6 @@ export default class CraftInput extends HasLabel(LionInput) {
 
   override connectedCallback() {
     super.connectedCallback();
-
-    if (this._inputNode && this.maxlength && this.maxlength > 0) {
-      this._inputNode.maxLength = this.maxlength;
-    }
-
     this.syncNativeAttributes();
     this.syncAriaInvalid();
   }
@@ -163,6 +158,8 @@ export default class CraftInput extends HasLabel(LionInput) {
   private syncNativeAttributes() {
     const attributes = {
       size: this.inputSize ?? this.maxlengthSize,
+      maxlength:
+        this.maxlength && this.maxlength > 0 ? this.maxlength : undefined,
       min: this.min,
       max: this.max,
       step: this.step,

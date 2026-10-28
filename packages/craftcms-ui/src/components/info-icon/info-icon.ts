@@ -38,15 +38,11 @@ export default class CraftInfoIcon extends LitElement {
   /** Prevents the tooltip from being opened. */
   @property({type: Boolean, reflect: true}) disabled = false;
 
-  /**
-   * Id of the host, used to tie the tooltip to its button. Generated when not
-   * supplied, so a page can hold many info icons without collisions.
-   */
-  @property() override id: string;
-
   @query('craft-tooltip') protected tooltip!: HTMLElement;
 
   #eventController = new AbortController();
+
+  #buttonId = `info-icon-${Math.random().toString(36).slice(2, 8)}`;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -54,10 +50,6 @@ export default class CraftInfoIcon extends LitElement {
     // Recreate event controller if it was aborted
     if (this.#eventController.signal.aborted) {
       this.#eventController = new AbortController();
-    }
-
-    if (!this.id) {
-      this.id = `info-icon-${Math.random().toString(36).slice(2, 8)}`;
     }
 
     const {signal} = this.#eventController;
@@ -107,12 +99,12 @@ export default class CraftInfoIcon extends LitElement {
           icon
           size="zero"
           variant="plain"
-          id="${this.id}"
+          id="${this.#buttonId}"
         >
           <craft-icon name="${this.icon}" label="${this.label}"></craft-icon>
         </craft-button>
 
-        <craft-tooltip trigger="click" for="${this.id}"
+        <craft-tooltip trigger="click" for="${this.#buttonId}"
           ><slot></slot
         ></craft-tooltip>
       </div>

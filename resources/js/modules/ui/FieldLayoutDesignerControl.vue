@@ -122,8 +122,7 @@
       if (host.value) {
         syncTabErrors(host.value);
       }
-    },
-    {deep: true}
+    }
   );
 </script>
 

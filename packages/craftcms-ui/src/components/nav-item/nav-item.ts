@@ -10,6 +10,10 @@ import '../popover/popover.js';
 import '../tooltip/tooltip.js';
 import styles from './nav-item.styles';
 import {t} from '@src/utilities/translate.js';
+import {
+  hasSlotted,
+  LightDomController,
+} from '@src/controllers/LightDomController.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {Appearance} from '@src/constants/appearances';
 import {
@@ -90,7 +94,7 @@ export default class CraftNavItem extends LitElement {
   iconOnly: boolean = false;
 
   /** Compensate for padding with a negative margin for better visual alignment */
-  @property()
+  @property({type: Boolean})
   flush: boolean = false;
 
   /** Whether the subnav starts open or closed. Active items always start open. */
@@ -156,6 +160,13 @@ export default class CraftNavItem extends LitElement {
   };
 
   #hoverListeners?: AbortController;
+
+  /**
+   * Render reads the light DOM: whether there's a subnav, an icon or a prefix,
+   * and the label's text. A framework can add or remove any of them, or edit
+   * the label in place, without the default slot reporting it.
+   */
+  private _lightDom = new LightDomController(this, {characterData: true});
 
   /** Torn down when the flyout closes; see {@link fitFlyout}. */
   #flyoutFitListeners?: AbortController;
@@ -369,6 +380,17 @@ export default class CraftNavItem extends LitElement {
     }
   };
 
+  /**
+   * The flyout and the tooltip are part of the item, so their own events stay
+   * inside it: leaving the shadow root, they'd read as the item's. Events from
+   * slotted content, such as a subnav item's menu, pass through.
+   */
+  #stopOverlayEvent = (event: Event) => {
+    if (event.target === event.currentTarget) {
+      event.stopPropagation();
+    }
+  };
+
   /** Expands or collapses the subnav. */
   toggleSubnav(event: Event) {
     event.preventDefault();
@@ -488,7 +510,13 @@ export default class CraftNavItem extends LitElement {
       ${
         useFlyout
           ? this.renderFlyout(true)
-          : html`<craft-tooltip for="${this.itemId}" placement="right"
+          : html`<craft-tooltip
+              for="${this.itemId}"
+              placement="right"
+              @craft-show=${this.#stopOverlayEvent}
+              @craft-hide=${this.#stopOverlayEvent}
+              @craft-after-show=${this.#stopOverlayEvent}
+              @craft-after-hide=${this.#stopOverlayEvent}
               ><slot></slot
             ></craft-tooltip>`
       }
@@ -511,6 +539,10 @@ export default class CraftNavItem extends LitElement {
         without-invoker-aria
         .opened="${this.flyoutOpen}"
         @opened-changed="${this.#onFlyoutOpenedChanged}"
+        @craft-show=${this.#stopOverlayEvent}
+        @craft-hide=${this.#stopOverlayEvent}
+        @craft-after-show=${this.#stopOverlayEvent}
+        @craft-after-hide=${this.#stopOverlayEvent}
       >
         <div class="flyout" id="${this.subnavId}">
           ${withLabel
@@ -701,16 +733,13 @@ export default class CraftNavItem extends LitElement {
         aria-controls="${useFlyout ? this.subnavId : nothing}"
         @click="${useFlyout && !this.href ? this.#toggleFlyout : nothing}"
       >
-        <slot
-          id="${this.id}-label"
-          @slotchange="${() => this.requestUpdate()}"
-        ></slot>
+        <slot id="${this.id}-label"></slot>
       </${tag}>
     `;
   }
 
   override render() {
-    const hasSubnav = !!this.querySelector(':scope > [slot="subnav"]');
+    const hasSubnav = hasSlotted(this, 'subnav');
     // A `slot` can only project its content in one place, so the subnav is
     // either indented below or in the flyout, never both.
     const display = this.subnavDisplay ?? (this.iconOnly ? 'flyout' : 'inline');
@@ -731,8 +760,7 @@ export default class CraftNavItem extends LitElement {
       toggleInPrefix ||
       !!this.icon ||
       this.indicator ||
-      !!this.querySelector(':scope > [slot="prefix"]') ||
-      !!this.querySelector(':scope > [slot="icon"]');
+      hasSlotted(this, 'prefix', 'icon');
     const subnavOpen = showToggle ? this.subnavState === 'open' : true;
 
     // Collapsed, a heading has no room for its name and nothing to sit above

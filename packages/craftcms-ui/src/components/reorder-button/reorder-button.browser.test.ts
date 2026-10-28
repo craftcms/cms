@@ -121,6 +121,33 @@ it('keeps focus on the invoker after a move is chosen with Enter', async () => {
   expect(button.shadowRoot!.activeElement).toBe(invokerOf(button));
 });
 
+it('keeps its menu’s events inside the button, and reports the move', async () => {
+  const button = await renderButton(
+    '<craft-reorder-button position="middle"></craft-reorder-button>'
+  );
+  const reached: string[] = [];
+  const events = [
+    'craft-show',
+    'craft-hide',
+    'craft-after-show',
+    'craft-after-hide',
+    'craft-select',
+    'craft-reorder',
+  ];
+  const record = (event: Event) => reached.push(event.type);
+  events.forEach((type) => document.addEventListener(type, record));
+
+  try {
+    await openMenu(button);
+    await chooseMoveDown(button);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(reached).toEqual(['craft-reorder']);
+  } finally {
+    events.forEach((type) => document.removeEventListener(type, record));
+  }
+});
+
 it('keeps focus on the invoker when its list disables the chosen move', async () => {
   const button = await renderButton(
     '<craft-reorder-button position="first"></craft-reorder-button>'

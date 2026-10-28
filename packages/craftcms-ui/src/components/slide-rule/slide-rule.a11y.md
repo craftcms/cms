@@ -23,6 +23,7 @@ Follows the WAI-ARIA APG [Slider](https://www.w3.org/WAI/ARIA/apg/patterns/slide
 
 - [x] The slider is one Tab stop. Right Arrow raises the value by 1, Page Up by 10, and Home and End set the minimum and maximum. Each key press commits the value. Per WCAG 2.1.1 (Keyboard). Verified by `moves the value with the keyboard, emitting input and change per step` in `slide-rule.test.ts`.
 - [x] Down Arrow lowers the value by 1, and a key that can't move the value past the range is clamped and emits nothing. Per WCAG 2.1.1 (Keyboard). Verified by `stays quiet when a move lands on the value already showing` and `clamps to the slide range even when pushed past it` in `slide-rule.test.ts`.
+- [x] Focusing the host moves focus to the slider. Per WCAG 2.4.3 (Focus Order). Verified by `moves focus to the slider when the host is focused` in `slide-rule.browser.test.ts`.
 - [ ] Left Arrow and Page Down lower the value by 1 and 10. Per WCAG 2.1.1 (Keyboard). Not yet verified.
 - [ ] Right and Left Arrow are reversed in a right-to-left context. Per WCAG 2.1.1 (Keyboard). Known gap: Right Arrow always raises the value.
 - [ ] A keyboard-focused slider shows the focus ring around the cursor, at 3:1 against the surface in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Not yet verified.

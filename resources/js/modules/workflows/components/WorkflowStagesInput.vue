@@ -203,7 +203,7 @@
             type="button"
             variant="dashed"
             icon="plus"
-            :disabled="!stageTypes.length"
+            .disabled="!stageTypes.length"
           >
             {{ t('Add stage') }}
           </craft-button>
