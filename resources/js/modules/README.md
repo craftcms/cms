@@ -12,14 +12,16 @@ Reference implementations, simplest to richest:
 
 ## The port pattern
 
-A ported module is a folder of (usually) five files:
+A ported module is a folder of (usually) five files, plus one or two for its `Craft.*` globals:
 
 | File | Role |
 | --- | --- |
 | `<name>.ts` | **The logic class.** A plain class extending `@craftcms/garnish` `Base`. This is the port of the legacy `Craft.Thing` — all behavior lives here. Constructed with `(container, settings)`; no custom-element or attribute concerns. |
 | `<name>.ce.ts` | **The custom element.** A thin `ControllerElement` subclass (`resources/js/common/web-components/`) that boots the logic class around the server-rendered markup it wraps, and tears it down on disconnect. `.ce` = "custom element". |
 | `support.ts` | **The instance registry.** A module-scoped `WeakMap<Element, Thing>` replacing the legacy jQuery `$el.data('thing')` back-reference, so other code can find the instance for an element. |
-| `index.ts` | **The shim + barrel.** Registers the element (`defineElement`), assigns the legacy `window.Craft.*` global (or deliberately doesn't — see below), and re-exports the class, element, types, and registry. This is the file `cp.ts` / `legacy.ts` imports. |
+| `index.ts` | **The barrel.** Registers the element (`defineElement`) and re-exports the class, element, types, and registry. This is the file `cp.ts` / `legacy.ts` imports. |
+| `globals.ts` | **Globals core still calls.** Assigns the `window.Craft.*` globals that core PHP, Twig, or the legacy bundle still use. `index.ts` imports it first. |
+| `compat.ts` | **Globals only plugins call.** Assigns `window.Craft.*` globals kept for backwards compatibility. Only the yii2-adapter imports it (`yii2-adapter/resources/js/cp-compat.ts`). |
 | `README.md` | What legacy file it replaces, what changed, what stayed jQuery, and any deferred work. Mirror the existing ones. |
 
 ### The logic class (`<name>.ts`)
@@ -62,12 +64,15 @@ state on it (e.g. `component-select`, whose `getInputValue` hook may be assigned
 before the instance has booted; there the element owns the hook and the class
 reads it back through a settings callback).
 
-### The shim (`index.ts`)
+### The globals (`globals.ts` / `compat.ts`)
 
-- `defineElement('craft-thing', CraftThing)` registers the element (guarded, so
-  double-import is safe).
-- Assign the legacy global so any remaining `new Craft.Thing(...)` boots keep
-  working: `window.Craft.Thing = Thing`. Assign the **plain modern ES class** —
+- `index.ts` calls `defineElement('craft-thing', CraftThing)` to register the
+  element (guarded, so double-import is safe).
+- Assign the legacy global with `registerCraftGlobals({Thing})` so remaining
+  `new Craft.Thing(...)` boots keep working. Put it in `globals.ts` while core
+  still calls it, and in `compat.ts` once only plugins do. Moving a global to the
+  adapter means moving its line from one file to the other. Delete a module's
+  `globals.ts` (and its import) once it's empty. Assign the **plain modern ES class** —
   **no `compatify`** — unless something still subclasses it via the legacy
   `Garnish.Base.extend()` (nothing in core does). Re-attach static members the
   legacy bundle exposed (`Thing.Item`, `Thing.Group`).
@@ -81,12 +86,15 @@ reads it back through a settings callback).
 
 1. Import the module for its side effects from the right entry point —
    `resources/js/cp.ts` (Inertia/modern surfaces) and/or `resources/js/legacy.ts`
-   (legacy Twig surfaces). Importing `index.ts` is what registers the element and
-   assigns the global.
+   (legacy Twig surfaces). Importing `index.ts` registers the element and the
+   `globals.ts` globals. Import a `compat.ts` from
+   `yii2-adapter/resources/js/cp-compat.ts`.
 2. Update the Twig/PHP that rendered the legacy markup to emit `<craft-thing>`
    (with settings as attributes) instead of a manual `new Craft.Thing(...)`
    `{% js %}` boot.
-3. Delete the legacy `cp/src/js/Thing.js`, remove its `import` from
+3. Once core no longer calls `Craft.Thing`, move it from `globals.ts` to
+   `compat.ts`.
+4. Delete the legacy `cp/src/js/Thing.js`, remove its `import` from
    `packages/craftcms-legacy/cp/src/Craft.js`, and **rebuild the legacy bundle**
    (`cd packages/craftcms-legacy && pnpm run build`) — confirm the built
    `cms-assets/resources/legacy/cp/dist/cp.js` no longer references it.
