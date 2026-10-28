@@ -1,6 +1,7 @@
 import {computed, type MaybeRefOrGetter, toValue} from 'vue';
 import {usePage} from '@inertiajs/vue3';
 import {t} from '@craftcms/ui';
+import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
 import {useAppLayout} from '@/common/composables/useAppLayout';
 import {
   category as categoryRoute,
@@ -8,6 +9,7 @@ import {
   legacy,
 } from '@actions/PluginStore/PluginStoreController';
 import {useCoreData} from './usePluginStoreData';
+import craftIconUrl from '../images/craft.svg?url';
 import type {PluginStoreContext} from '../types';
 
 type NavItem = CraftCms.Cms.Cp.Data.NavItem;
@@ -45,6 +47,15 @@ function navItem(item: Partial<NavItem>): NavItem {
   };
 }
 
+/**
+ * Draws an icon image as nav icon markup. An SVG `<image>` loads it as an
+ * image, so nothing in it runs. Artwork icons are padded, so they're drawn
+ * larger than the glyph size.
+ */
+function imageIconSvg(url: string): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1" style="block-size: 1.25rem; inline-size: 1.25rem"><image href="${escapeHtml(url)}" width="1" height="1"/></svg>`;
+}
+
 /** Whether the install can still move up to Craft Pro. */
 function canUpgradeCraft(context: PluginStoreContext): boolean {
   const pro = context.editions.indexOf('pro');
@@ -68,24 +79,26 @@ export function usePluginStoreLayout(
 
   const subnav = computed<NavItem[]>(() => {
     const path = new URL(page.url, window.location.origin).pathname;
-    const item = (label: string, href: string, icon: string | null = null) => {
-      return navItem({
+    const item = (
+      label: string,
+      href: string,
+      icon: {name?: string; url?: string | null} = {}
+    ) =>
+      navItem({
         label,
         href,
-        icon,
+        icon: icon.name ?? null,
+        iconSvg: icon.url ? imageIconSvg(icon.url) : null,
         selected: new URL(href, window.location.origin).pathname === path,
       });
-    };
 
     return [
-      item(t('Discover'), index().url, 'star'),
+      item(t('Discover'), index().url, {name: 'star'}),
       ...(canUpgradeCraft(page.props.context)
         ? [
-            item(
-              t('Upgrade Craft CMS'),
-              legacy({path: 'upgrade-craft'}).url,
-              'arrow-up'
-            ),
+            item(t('Upgrade Craft CMS'), legacy({path: 'upgrade-craft'}).url, {
+              url: craftIconUrl,
+            }),
           ]
         : []),
       navItem({
@@ -93,7 +106,9 @@ export function usePluginStoreLayout(
         href: '#',
         group: true,
         subnav: categories.value.map((category) =>
-          item(category.title, categoryRoute({id: category.id}).url)
+          item(category.title, categoryRoute({id: category.id}).url, {
+            url: category.iconUrl,
+          })
         ),
       }),
     ];
