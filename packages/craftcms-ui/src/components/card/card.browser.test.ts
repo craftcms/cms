@@ -387,6 +387,7 @@ it.each(['light', 'dark'])(
         <craft-card data-color="indigo">
           <div slot="header">
             <craft-checkbox label-sr-only><label slot="label">Select</label></craft-checkbox>
+            <span data-card-label>Card</span>
             <craft-button variant="plain" inherit icon="edit" aria-label="Edit"></craft-button>
           </div>
         </craft-card>
@@ -668,6 +669,88 @@ async function coverCard(label = ''): Promise<CraftCard> {
 
   return card;
 }
+
+it('drops a card’s header bar when it has no label, keeping its controls in place', async () => {
+  document.body.innerHTML = `
+    <craft-card data-color="indigo">
+      <div slot="header" style="display: flex; gap: 8px; align-items: center">
+        <craft-checkbox label-sr-only><label slot="label">Select</label></craft-checkbox>
+        <span data-card-label>Card</span>
+        <craft-button variant="plain" inherit icon="edit" aria-label="Edit"></craft-button>
+      </div>
+      Body
+    </craft-card>`;
+  const card = document.querySelector<CraftCard>('craft-card')!;
+  await card.updateComplete;
+  const label = card.querySelector('[data-card-label]')!;
+  const header = () => card.shadowRoot!.querySelector('.card__header')!;
+  const positions = () =>
+    [
+      header(),
+      card.querySelector('craft-checkbox > input')!,
+      card.querySelector('craft-button')!,
+    ].map((element) => {
+      const {x, y, width, height} = element.getBoundingClientRect();
+      return [x, y, width, height];
+    });
+  const chrome = () => {
+    const style = getComputedStyle(header());
+    return [style.backgroundColor, style.borderBottomColor];
+  };
+
+  const bar = positions();
+  expect(chrome()).not.toContain('rgba(0, 0, 0, 0)');
+
+  label.removeAttribute('data-card-label');
+  card.requestUpdate();
+  await card.updateComplete;
+
+  expect(positions()).toEqual(bar);
+  expect(chrome()).toEqual(['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)']);
+});
+
+it('keeps a selected card’s bare header controls legible against its body', async () => {
+  document.body.innerHTML = `
+    <craft-card data-color="indigo" active>
+      <div slot="header">
+        <craft-checkbox label-sr-only><label slot="label">Select</label></craft-checkbox>
+      </div>
+      Body
+    </craft-card>`;
+  const card = document.querySelector<CraftCard>('craft-card')!;
+  await card.updateComplete;
+  const input = card.querySelector<HTMLInputElement>('craft-checkbox > input')!;
+  const body = getComputedStyle(card.shadowRoot!.querySelector('.card')!);
+
+  expect(getComputedStyle(input).borderTopColor).toBe(body.color);
+
+  input.checked = true;
+  expect(getComputedStyle(input).backgroundColor).toBe(body.color);
+  expect(
+    contrast(
+      getComputedStyle(input, '::before').backgroundColor,
+      getComputedStyle(input).backgroundColor
+    )
+  ).toBeGreaterThanOrEqual(3);
+});
+
+it('leaves out a header with nothing to show, so the body starts at the card’s top', async () => {
+  document.body.innerHTML = `
+    <craft-card>
+      <div slot="header"><div class="flex"><span></span></div></div>
+      Body
+    </craft-card>`;
+  const card = document.querySelector<CraftCard>('craft-card')!;
+  await card.updateComplete;
+
+  expect(card.shadowRoot!.querySelector('.card__header')).toBeNull();
+
+  card.querySelector('.flex')!.append(document.createElement('craft-checkbox'));
+  await new Promise(requestAnimationFrame);
+  await card.updateComplete;
+
+  expect(card.shadowRoot!.querySelector('.card__header')).not.toBeNull();
+});
 
 it('keeps a cover card’s header controls in place when its header gets a label bar', async () => {
   const card = await coverCard('Photo');

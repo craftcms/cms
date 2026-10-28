@@ -235,6 +235,34 @@ export default css`
     box-sizing: border-box;
   }
 
+  /* Without a label, a header is just its controls, floating over the card, as
+     a cover card's are. Its border stays, transparent, so nothing moves. In a
+     selected card its controls match the body, rather than a selected bar. */
+  :host .card.card--bare-header .card__header.card__header {
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  :host([active]) .card.card--bare-header .card__header.card__header {
+    color: inherit;
+    --c-color-fill-quiet: inherit;
+    --c-color-border-quiet: inherit;
+    --c-color-on-quiet: inherit;
+    --c-checkbox-border-color: var(
+      --c-color-on-quiet,
+      var(--c-color-neutral-on-quiet)
+    );
+    --c-checkbox-checked-fill: initial;
+    --c-checkbox-checked-mark: initial;
+  }
+
+  :host([data-color]:not([data-color='white'])[active])
+    .card.card--bare-header
+    .card__header.card__header {
+    --c-checkbox-checked-fill: var(--c-color-on-quiet);
+    --c-checkbox-checked-mark: var(--c-color-fill-quiet);
+  }
+
   .card__label-text,
   .card__label::slotted(:is(h1, h2, h3, h4, h5, h6, label)) {
     text-box: trim-both cap alphabetic;

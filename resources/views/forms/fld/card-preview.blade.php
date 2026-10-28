@@ -9,6 +9,7 @@
      * @var string|null $statusIndicatorHtml
      * @var string|null $avatarHtml
      * @var string $labelText
+     * @var bool $showHeader
      */
 @endphp
 
@@ -39,7 +40,9 @@
         luminance="{{ json_encode($coverLuminance) }}"
     @endif
 >
-    <div slot="header"></div>
+    @if ($showHeader)
+        <div slot="header"></div>
+    @endif
 
     @unless ($coverSrc)
         @if ($avatarHtml)

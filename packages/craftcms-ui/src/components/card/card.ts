@@ -38,9 +38,14 @@ const rule = (theme: CoverTheme) =>
  * index views and other standalone content blocks.
  *
  * The header region is only rendered when the `label` attribute is set or the
- * `header`, `label`, `badge`, or `actions` slot is filled. When no `header`
+ * `header`, `label`, `badge`, or `actions` slot has something to show, rather
+ * than only empty `div`s and `span`s, so the body is flush with the card's top
+ * otherwise. When no `header`
  * slot is provided, the header falls back to showing the `label`, `badge`, and
  * `actions` slots (with the `label` attribute as the default label content).
+ * A header without a label (see `_hasLabel()`) has no fill or rule of its own,
+ * so its controls float over the card, as a cover card's do. Its controls stay
+ * where they'd be with a label.
  * The footer region is only rendered when the `footer` slot is filled.
  *
  * The card renders its own chrome, so attributes set on the host are left
@@ -171,7 +176,7 @@ export default class CraftCard extends Paddable(LitElement, {
    * card whenever its light DOM moves, which is how a thumbnail swapped in
    * by the element index shows up.
    */
-  private _lightDom = new LightDomController(this);
+  private _lightDom = new LightDomController(this, {characterData: true});
 
   /**
    * Whether the header has a label: the `label` attribute or slot, or a
@@ -184,6 +189,28 @@ export default class CraftCard extends Paddable(LitElement, {
       Array.from(this.children).some(
         (child) =>
           child.slot === 'header' && !!child.querySelector('[data-card-label]')
+      )
+    );
+  }
+
+  /**
+   * Whether anything shows in the header: the `label` attribute, or slotted
+   * content with text or anything other than empty wrappers, such as a
+   * checkbox, button, or icon.
+   */
+  private _hasHeaderContent(): boolean {
+    const isWrapper = (el: Element) =>
+      el.tagName === 'DIV' || el.tagName === 'SPAN';
+    return (
+      !!this.label ||
+      Array.from(this.children).some(
+        (child) =>
+          ['header', 'label', 'badge', 'actions'].includes(child.slot) &&
+          (!!child.textContent?.trim() ||
+            !isWrapper(child) ||
+            Array.from(child.querySelectorAll('*')).some(
+              (el) => !isWrapper(el)
+            ))
       )
     );
   }
@@ -252,12 +279,12 @@ export default class CraftCard extends Paddable(LitElement, {
   }
 
   override render() {
-    const hasSlottedHeader =
-      !!this.label || hasSlotted(this, 'header', 'label', 'badge', 'actions');
+    const hasSlottedHeader = this._hasHeaderContent();
     const hasSlottedFooter = hasSlotted(this, 'footer');
     const cover = this._cover();
     const showThumbnail =
       !cover && this.showThumb && hasSlotted(this, 'thumbnail');
+    const bareHeader = !cover && hasSlottedHeader && !this._hasLabel();
 
     return html`
       <div
@@ -267,6 +294,7 @@ export default class CraftCard extends Paddable(LitElement, {
           'card--has-thumbnail': showThumbnail,
           'card--cover': !!cover,
           'card--cover-bar': cover?.header.treatment === 'bar',
+          'card--bare-header': bareHeader,
         })}"
         style="${styleMap({
           ...this.paddingStyles,

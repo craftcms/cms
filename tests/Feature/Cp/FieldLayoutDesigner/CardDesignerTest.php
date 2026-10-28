@@ -136,3 +136,13 @@ it('shows the thumb style setting for asset volumes and for fields as the thumb 
     'entry type with a thumb source' => [Entry::class, true, null, true, true],
     'entry type with a thumb source set to cover' => [Entry::class, true, 'cover', true, false],
 ]);
+
+it('gives only entry cards a header in the preview, for their entry type’s label', function (string $type, bool $header) {
+    $card = new Crawler('<div>'.app(CardDesigner::class)->previewHtml(new FieldLayout(['type' => $type])).'</div>')->filter('craft-card');
+
+    expect($card->filter('[slot="header"]')->count())->toBe($header ? 1 : 0);
+})->with([
+    'entry type' => [Entry::class, true],
+    'asset volume' => [Asset::class, false],
+    'user fields' => [User::class, false],
+]);

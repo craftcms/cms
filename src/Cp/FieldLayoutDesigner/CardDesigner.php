@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -158,6 +159,8 @@ class CardDesigner
             'thumbnailHtml' => $thumbnailHtml,
             'avatarHtml' => $avatarHtml,
             'labelText' => $labelText,
+            // Only entry cards have a label in their header (their entry type's), which the preview shows as it's set.
+            'showHeader' => $fieldLayout->type === Entry::class,
             // The sample chip shows a status indicator, rather than a label.
             'statusIndicatorHtml' => $sampleElement ? app(StatusHtml::class)->componentStatusIndicatorHtml($sampleElement) : null,
         ])->render();

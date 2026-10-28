@@ -411,6 +411,7 @@
           <div
             class="flex flex-nowrap gap-sm items-center"
             data-matrix-block-titlebar
+            data-card-label
           >
             <craft-icon v-if="blockIcon(uid)" v-bind="blockIcon(uid)!" />
             {{ entryType(uid)?.label ?? uid }}
