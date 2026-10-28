@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
@@ -16,6 +17,8 @@ use CraftCms\Cms\Field\RadioButtons;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\Field\TableCells\TableCell;
 use CraftCms\Cms\Field\TableCellTypes;
+use CraftCms\Cms\FieldLayout\LayoutElements\Assets\AltField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Assets\AssetTitleField;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Route\CurrentElement;
 use CraftCms\Cms\Site\Models\Site;
@@ -443,6 +446,32 @@ it('renders generated fields in the Content tab, when there are tabs', function 
             ->and($crawler->filter('craft-generated-fields-table')->count())->toBe(1);
     }
 })->with(['with tabs' => true, 'without tabs' => false]);
+
+it('offers the native alternative text field in asset layout designers', function (array $value) {
+    $html = $this->postJson(action([FieldsController::class, 'renderFieldLayoutDesigner']), [
+        'value' => $value,
+        'elementType' => Asset::class,
+        'name' => 'fieldLayout',
+        'disabled' => false,
+        'customizableTabs' => true,
+        'withGeneratedFields' => true,
+        'withCardViewDesigner' => true,
+    ])->assertOk()->json('html');
+    $crawler = new Crawler($html);
+    $availableFields = $crawler->filter('.fld-field-group:not(.hidden) .fld-element:not(.hidden)')
+        ->each(fn (Crawler $field): string => json_decode($field->attr('data-config'), true)['type']);
+
+    expect($availableFields)->toContain(AltField::class)
+        ->and(json_decode($crawler->filter('[data-config-input]')->attr('value'), true))->not->toHaveKey('type');
+})->with([
+    'new layout' => [[]],
+    'existing layout' => [[
+        'tabs' => [[
+            'name' => 'Content',
+            'elements' => [['type' => AssetTitleField::class]],
+        ]],
+    ]],
+]);
 
 it('renders field layout and generated field values at their root submission paths', function () {
     $response = $this->postJson(action([FieldsController::class, 'renderFieldLayoutDesigner']), [
