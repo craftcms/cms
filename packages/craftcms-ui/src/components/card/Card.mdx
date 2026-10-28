@@ -64,6 +64,7 @@ Asset cards do this for images that can fill a card.
 The text and controls are white or black, a little transparent.
 Which one comes from the luminance, separately for the header (the top of the image) and the body (the bottom).
 Whatever's laid behind them is as light as it can be while keeping them legible.
+A cover card ignores `data-color`: the image stands in for the color, and its border stays neutral.
 
 When the header has a label, from the `label` attribute or slot, or a `[data-card-label]` element in the `header` slot, it gets a bar of its own, the height of a normal card's header, blurred and filled with just enough black or white for the label:
 

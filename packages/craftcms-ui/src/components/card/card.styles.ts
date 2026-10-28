@@ -336,6 +336,7 @@ export default css`
     object-fit: cover;
   }
 
+  /* Neutral whatever the card's color, as the image stands in for it. */
   .card--cover::after {
     content: '';
     position: absolute;
@@ -343,7 +344,7 @@ export default css`
     z-index: 1;
     border-radius: inherit;
     box-shadow: inset 0 0 0 var(--c-card-border-width, 1px)
-      var(--c-color-border-quiet, var(--c-color-neutral-border-quiet));
+      var(--c-color-neutral-border-quiet);
     pointer-events: none;
   }
 

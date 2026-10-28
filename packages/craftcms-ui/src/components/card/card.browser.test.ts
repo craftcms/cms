@@ -710,6 +710,19 @@ it('themes a cover card’s header and body, and leaves its thumbnail alone', as
   expect([theme('[slot="header"]'), theme('a')]).toEqual([null, null]);
 });
 
+it('ignores a cover card’s color', async () => {
+  const card = await coverCard();
+  const border = () =>
+    getComputedStyle(card.shadowRoot!.querySelector('.card')!, '::after')
+      .boxShadow;
+  const neutral = border();
+
+  card.setAttribute('data-color', 'violet');
+  await card.updateComplete;
+
+  expect(border()).toBe(neutral);
+});
+
 it('keeps a cover card within its width when its content has a long title', async () => {
   const card = await coverCard();
   // In a card grid's column, as element indexes lay cards out, with a title
