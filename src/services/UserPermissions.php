@@ -321,9 +321,8 @@ class UserPermissions extends Component
             return true;
         }
 
-        if (!isset($this->_permissionMapsByUserId[$userId])) {
-            $this->getPermissionsByUserId($userId);
-        }
+        // Build the map from getPermissionsByUserId(), in case it's been overridden
+        $this->_permissionMapsByUserId[$userId] ??= array_fill_keys($this->getPermissionsByUserId($userId), true);
 
         return isset($this->_permissionMapsByUserId[$userId][strtolower($checkPermission)]);
     }
