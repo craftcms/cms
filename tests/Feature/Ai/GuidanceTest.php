@@ -114,6 +114,53 @@ it('saves a user’s own guidance on their account', function () {
         ->and(app(Guidance::class)->forAllSites())->toBeNull();
 });
 
+it('gives the assistant the guidance for every site, for the site the user is working in, and the user’s', function (bool $editorOpen, bool $controlPanelSite, ?string $siteGuidance) {
+    $other = Site::factory()->create();
+    Sites::refreshSites();
+    $guidance = app(Guidance::class);
+    $guidance->save(siteId: null, userId: null, body: 'Write plainly.');
+    $guidance->save(siteId: $this->siteId, userId: null, body: 'Use US spelling.');
+    $guidance->save(siteId: $other->id, userId: null, body: 'Use British spelling.');
+    $guidance->save(siteId: null, userId: $this->admin->id, body: 'Reply in Dutch.');
+    $entry = EntryModel::factory()->createElement(['title' => 'Lighthouses']);
+    AssistantAgent::fake(['Done.']);
+
+    postJson(action([AssistantController::class, 'run']), [
+        'threadId' => (string) Str::uuid(),
+        'runId' => (string) Str::uuid(),
+        'messages' => [['id' => (string) Str::uuid(), 'role' => 'user', 'content' => 'Write a teaser']],
+        'forwardedProps' => [
+            'context' => $editorOpen ? [[
+                'type' => 'craft:element',
+                'ref' => 'editor-1',
+                'open' => true,
+                'elementType' => Entry::class,
+                'elementId' => $entry->id,
+                'siteId' => $entry->siteId,
+                'namespace' => [],
+            ]] : [],
+            'siteId' => $controlPanelSite ? $other->id : null,
+        ],
+    ])->assertOk()->streamedContent();
+
+    AssistantAgent::assertPrompted(function (AgentPrompt $prompt) use ($siteGuidance): bool {
+        $instructions = $prompt->agent->instructions();
+        $included = array_values(array_filter(
+            ['Use US spelling.', 'Use British spelling.'],
+            static fn (string $body): bool => str_contains($instructions, $body),
+        ));
+
+        return str_contains($instructions, 'Write plainly.')
+            && str_contains($instructions, 'Reply in Dutch.')
+            && $included === array_filter([$siteGuidance])
+            && ! str_contains($instructions, 'Before writing or editing content, read guidance');
+    });
+})->with([
+    'the open element’s site, over the control panel’s' => [true, true, 'Use US spelling.'],
+    'the control panel’s site, without an element open' => [false, true, 'Use British spelling.'],
+    'no site' => [false, false, null],
+]);
+
 it('returns the guidance to MCP clients, for a site the user can edit', function () {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);

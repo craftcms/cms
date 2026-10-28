@@ -24,8 +24,10 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Mcp\Elements\ElementAdapterRegistry;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Ai;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Ui\Controls\ElementSelect;
 use CraftCms\Cms\User\Elements\User;
@@ -81,6 +83,7 @@ readonly class AssistantController
         $request->validate([
             'threadId' => ['required', 'uuid'],
             'forwardedProps.context' => ['array'],
+            'forwardedProps.siteId' => ['nullable', 'integer'],
         ]);
 
         $chat = AgentUserInteraction::chat($request);
@@ -130,6 +133,7 @@ readonly class AssistantController
             $tools,
             $user,
             $contextTypes->resolve($request, [...$context, ...$earlier]),
+            $this->site($context, $request->integer('forwardedProps.siteId') ?: null),
             $imageSent || $attachImage ? $image->title : null,
         );
 
@@ -423,4 +427,30 @@ readonly class AssistantController
                 static fn (mixed $attachment): bool => is_array($attachment) && ($attachment['name'] ?? null) === ModelImages::name($asset),
             ));
     }
+
+    /**
+     * Returns the site the user is working in, whose guidance applies: the site of the element open in their editor,
+     * or else the site the control panel is working in. Only sites they can edit count.
+     *
+     * @param  array<mixed>  $context
+     */
+    private function site(array $context, ?int $controlPanelSiteId): ?Site
+    {
+        $siteId = $controlPanelSiteId;
+
+        foreach ($context as $item) {
+            if (
+                is_array($item)
+                && ($item['type'] ?? null) === ElementContextType::handle()
+                && ($item['open'] ?? false) === true
+                && is_int($item['siteId'] ?? null)
+            ) {
+                $siteId = $item['siteId'];
+                break;
+            }
+        }
+
+        return $siteId !== null && Sites::getEditableSiteIds()->contains($siteId) ? Sites::getSiteById($siteId) : null;
+    }
+
 }

@@ -70,7 +70,8 @@ class McpTools
     }
 
     /**
-     * Returns the admin MCP server’s instructions, with tool names as the assistant knows them.
+     * Returns the admin MCP server’s instructions, with tool names as the assistant knows them, and without the line about
+     * guidance and skills, which the assistant gets in its own instructions.
      */
     public function instructions(): string
     {
@@ -80,7 +81,7 @@ class McpTools
             $names[$reference->tool->name] = $name;
         }
 
-        return strtr($this->instructions->get(), $names);
+        return strtr($this->instructions->get(withGuidance: false), $names);
     }
 
     /**

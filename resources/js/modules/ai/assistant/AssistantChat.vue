@@ -10,6 +10,8 @@
   import '@craftcms/ui/components/textarea/textarea';
   import type CraftTextarea from '@craftcms/ui/components/textarea/textarea';
   import {useChat, type UIMessage} from '@tanstack/ai-vue';
+  import {usePage} from '@inertiajs/vue3';
+  import type {CraftData} from '@/common/composables/useCraftData';
   import {useElementSize} from '@vueuse/core';
   import type {
     TextExpanderSelectDetail,
@@ -92,6 +94,7 @@
   const idPrefix = useId();
   const historyScroll = usePinnedScroll(history, thread);
   const context = useAssistantContext();
+  const page = usePage<{craft?: CraftData}>();
 
   const {
     messages,
@@ -104,6 +107,8 @@
   } = useChat({
     connection: assistantConnection(() => ({
       context: [...context.request(), ...openElementRequest()],
+      // The site the control panel is working in, whose guidance applies when no element is open.
+      siteId: page.props?.craft?.site?.id ?? null,
     })),
     threadId: props.threadId,
     persistence: true,
