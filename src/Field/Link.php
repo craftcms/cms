@@ -515,7 +515,9 @@ JS;
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var LinkData|null $value */
-        return (string) ($value?->getLink() ?? '');
+        $html = (string) ($value?->getLink() ?? '');
+
+        return $html === '' ? '' : Html::tag('craft-link', $html);
     }
 
     #[Override]
