@@ -155,8 +155,10 @@
     </Link>
   </template>
   <template v-else>
+    <!-- Marked, so the control panel's handling of plain links leaves it to the browser too. -->
     <component
       v-bind="{...$attrs, ...customElementAttributes}"
+      data-inertia="false"
       :is="as || 'a'"
       :href="hrefString"
       :class="customElement ? undefined : classes"
