@@ -607,12 +607,6 @@ importers:
       '@types/jquery':
         specifier: ^3.5.34
         version: 3.5.34
-      accounting:
-        specifier: ^0.4.1
-        version: 0.4.1
-      apexcharts:
-        specifier: ^5.10.6
-        version: 5.10.6
       axios:
         specifier: 'catalog:'
         version: 1.17.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
@@ -646,9 +640,6 @@ importers:
       punycode:
         specifier: 'catalog:'
         version: 2.3.1
-      swiper:
-        specifier: ^8.4.7
-        version: 8.4.7
       timepicker:
         specifier: ^1.14.1
         version: 1.14.1
@@ -658,9 +649,6 @@ importers:
       typescript:
         specifier: catalog:legacy
         version: 5.9.3
-      v-tooltip:
-        specifier: ^2.1.3
-        version: 2.1.3(vue@2.7.16)
       velocity-animate:
         specifier: ^1.5.2
         version: 1.5.2
@@ -670,15 +658,6 @@ importers:
       vue-autosuggest:
         specifier: ^2.2.0
         version: 2.2.0(vue@2.7.16)
-      vue-awesome-swiper:
-        specifier: ^4.1.1
-        version: 4.1.1(swiper@8.4.7)(vue@2.7.16)
-      vue-cleave:
-        specifier: ^1.2.2
-        version: 1.2.2(vue@2.7.16)
-      vue-lodash:
-        specifier: ^1.0.4
-        version: 1.0.4(vue@2.7.16)
       vue-router:
         specifier: ^3.6.5
         version: 3.6.5(vue@2.7.16)
@@ -719,9 +698,6 @@ importers:
       vite-plus:
         specifier: 'catalog:'
         version: 0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@1.21.7)(sass@1.94.0)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.3))(esbuild@0.28.1)(happy-dom@20.9.0)(jiti@1.21.7)(jsdom@26.1.0(canvas@3.2.3)(supports-color@10.2.2))(sass@1.94.0)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.3)
-      vue-apexcharts:
-        specifier: ^1.7.0
-        version: 1.7.0(apexcharts@5.10.6)(vue@2.7.16)
       webpack:
         specifier: 'catalog:'
         version: 5.102.1(esbuild@0.28.1)(uglify-js@3.19.3)(webpack-cli@5.1.4)
@@ -4551,9 +4527,6 @@ packages:
     resolution: {integrity: sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==}
     engines: {node: '>= 0.6'}
 
-  accounting@0.4.1:
-    resolution: {integrity: sha512-RU6KY9Y5wllyaCNBo1W11ZOTnTHMMgOZkIwdOOs6W5ibMTp72i4xIbEA48djxVGqMNTUNbvrP/1nWg5Af5m2gQ==}
-
   acorn-import-phases@1.0.4:
     resolution: {integrity: sha512-wKmbr/DDiIXzEOiWrTTUcDm24kQ2vGfZQvM2fwg2vXqR5uW6aapr7ObPtj1th32b9u90/Pf4AItvdTh42fBmVQ==}
     engines: {node: '>=10.13.0'}
@@ -4659,9 +4632,6 @@ packages:
 
   apca-w3@0.1.9:
     resolution: {integrity: sha512-Zrf6AeBeQjNe/fxK7U1jCo5zfdjDl6T4/kdw5Xlky3G7u+EJTZkyItjMYQGtwf9pkftsINxcYyOpuLkzKf1ITQ==}
-
-  apexcharts@5.10.6:
-    resolution: {integrity: sha512-FJQGbso3iRuOwUYnj0yUhkWeKeJE6aboVol+ae09lsc+lbLMWZqSRbrAWVa/qishLiaeG2icxdvmVkm+9n6kOQ==}
 
   aproba@2.1.0:
     resolution: {integrity: sha512-tLIEcj5GuR2RSTnxNKdkK0dJ/GrC7P38sUkiDmDuHfsHmbagTFAxDVIBltoklXEVIQ/f14IL8IMJ5pn9Hez1Ew==}
@@ -5082,9 +5052,6 @@ packages:
     engines: {node: '>=10.0.0'}
     peerDependencies:
       webpack: '>=4.0.0 <6.0.0'
-
-  cleave.js@0.7.23:
-    resolution: {integrity: sha512-GLFPaDBQazEWOKEYd+IXgy/XHcF3xL2BJ0YpfEBETUlTFj+WTKEt8eXWcPqEiR5nYSjZAXqBTsk1zV1pcNVg2Q==}
 
   cli-cursor@3.1.0:
     resolution: {integrity: sha512-I/zHAwsKf9FqGoXM4WWRACob9+SNukZTd94DWF57E4toouRulbCxcUh6RKUEOQlYTHJnzkPMySvPNaaSLNfLZw==}
@@ -5897,9 +5864,6 @@ packages:
 
   dom-serializer@2.0.0:
     resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
-
-  dom7@4.0.6:
-    resolution: {integrity: sha512-emjdpPLhpNubapLFdjNL9tP06Sr+GZkrIHEXLWvOGsytACUrkbeIdjO5g77m00BrHTznnlcNqgmn7pCN192TBA==}
 
   domelementtype@2.3.0:
     resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
@@ -8432,10 +8396,6 @@ packages:
     resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
     engines: {node: '>=14.19.0'}
 
-  popper.js@1.16.1:
-    resolution: {integrity: sha512-Wb4p1J4zyFTbM+u6WuO4XstYx4Ky9Cewe4DWrel7B0w6VVICvPwdOpotjzcf6eD8TsckVnIMNONQyPIUFOUbCQ==}
-    deprecated: You can find the new Popper v2 at @popperjs/core, this package is dedicated to the legacy v1
-
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
@@ -9372,9 +9332,6 @@ packages:
     resolution: {integrity: sha512-r46gZQZQV+Kl9oItvl1JZZqJKGr+oEkB08A6BzkiR7593/7IbtuncXHd2YoYeTsG4157ZssMu9KYvUHLcjcDoA==}
     engines: {node: '>=6.0.0'}
 
-  ssr-window@4.0.2:
-    resolution: {integrity: sha512-ISv/Ch+ig7SOtw7G2+qkwfVASzazUnvlDTwypdLoPoySv+6MqlOV10VwPSE6EWkGjhW50lUmghPmpYZXMu/+AQ==}
-
   ssri@9.0.1:
     resolution: {integrity: sha512-o57Wcn66jMQvfHG1FlYbWeZWW/dHZhJXjpIcTfXldXEk5nz5lStPo3mK0OJQfGR3RbZUlbISexbljkJzuEj/8Q==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
@@ -9587,10 +9544,6 @@ packages:
     resolution: {integrity: sha512-OoohrmuUlBs8B8o6MB2Aevn+pRIH9zDALSR+6hhqVfa6fRwG/Qw9VUMSMW9VNg2CFc/MTIfabtdOVl9ODIJjpw==}
     engines: {node: '>=14.0.0'}
     hasBin: true
-
-  swiper@8.4.7:
-    resolution: {integrity: sha512-VwO/KU3i9IV2Sf+W2NqyzwWob4yX9Qdedq6vBtS0rFqJ6Fa5iLUJwxQkuD4I38w0WDJwmFl8ojkdcRFPHWD+2g==}
-    engines: {node: '>= 4.7.0'}
 
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
@@ -9996,9 +9949,6 @@ packages:
     deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
-  v-tooltip@2.1.3:
-    resolution: {integrity: sha512-xXngyxLQTOx/yUEy50thb8te7Qo4XU6h4LZB6cvEfVd9mnysUxLEoYwGWDdqR+l69liKsy3IPkdYff3J1gAJ5w==}
-
   v8flags@4.0.1:
     resolution: {integrity: sha512-fcRLaS4H/hrZk9hYwbdRM35D0U8IYMfEClhXxCivOojl+yTRAZH3Zy2sSy6qVCiGbV9YAtPssP6jaChqC9vPCg==}
     engines: {node: '>= 10.13.0'}
@@ -10109,29 +10059,11 @@ packages:
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
 
-  vue-apexcharts@1.7.0:
-    resolution: {integrity: sha512-QMpvBllJ1XvFsK4dwcbyxKalVpHfJnoqsNWszY55HJk/Sn7WP1f5YUv4JIzugqu4GTQB6gLcCVwwPDQFtwr0oQ==}
-    peerDependencies:
-      apexcharts: '>=4.0.0'
-      vue: ^2.5.17
-
   vue-autosuggest@2.2.0:
     resolution: {integrity: sha512-cHgEakpoRUOaqXXEo8RcRrbSTM3eAaCu9b55ZXiKbaS6IUD8ewqffQrMy/A1DXqHSQbyEEGui4oAsCbRge29Jg==}
     engines: {node: '> 4', npm: '> 3'}
     peerDependencies:
       vue: '>= 2.5.0'
-
-  vue-awesome-swiper@4.1.1:
-    resolution: {integrity: sha512-50um10t6N+lJaORkpwSi1wWuMmBI1sgFc9Znsi5oUykw2cO5DzLaBHcO2JNX21R+Ue4TGoIJDhhxjBHtkFrTEQ==}
-    engines: {node: '>=8'}
-    peerDependencies:
-      swiper: ^5.2.0
-      vue: 2.x
-
-  vue-cleave@1.2.2:
-    resolution: {integrity: sha512-7+zxwqgiPPhyQYIK3zn7g4KOXv9lYBsQ5kNbbUtY7yHFE86U8reUKIHtSBLv4+yVplum4hlm7mnv36Ir1HdbjA==}
-    peerDependencies:
-      vue: '>=2'
 
   vue-component-meta@3.3.11:
     resolution: {integrity: sha512-fskQZaIFOifwB4x+/J24795yvezOJ1TKaqn97/4PHybyvXpDNdcKn3oTcPrw6HnNoZWe343A+TiCFOcFv1/SuQ==}
@@ -10175,16 +10107,6 @@ packages:
         optional: true
       vue-template-compiler:
         optional: true
-
-  vue-lodash@1.0.4:
-    resolution: {integrity: sha512-vnqhFYRjT8dwe14//3LefC6BcWX2i1w1p4n4EQfGgs+IBVl+aAc5CxHNe+Z9PIy3Qwi9c3f+d6eNzkulenxY9A==}
-    peerDependencies:
-      vue: '>= 2.0.0'
-
-  vue-resize@1.0.1:
-    resolution: {integrity: sha512-z5M7lJs0QluJnaoMFTIeGx6dIkYxOwHThlZDeQnWZBizKblb99GSejPnK37ZbNE/rVwDcYcHY+Io+AxdpY952w==}
-    peerDependencies:
-      vue: ^2.6.0
 
   vue-router@3.6.5:
     resolution: {integrity: sha512-VYXZQLtjuvKxxcshuRAwjHnciqZVoXAjTjcqBTz4rKc8qih9g9pI3hbDjmqXaHdgL3v8pV6P8Z335XvHzESxLQ==}
@@ -14096,8 +14018,6 @@ snapshots:
       mime-types: 2.1.35
       negotiator: 0.6.3
 
-  accounting@0.4.1: {}
-
   acorn-import-phases@1.0.4(acorn@8.15.0):
     dependencies:
       acorn: 8.15.0
@@ -14189,8 +14109,6 @@ snapshots:
   apca-w3@0.1.9:
     dependencies:
       colorparsley: 0.1.8
-
-  apexcharts@5.10.6: {}
 
   aproba@2.1.0: {}
 
@@ -14636,8 +14554,6 @@ snapshots:
     dependencies:
       del: 4.1.1
       webpack: 5.102.1(esbuild@0.28.1)(uglify-js@3.19.3)(webpack-cli@5.1.4)
-
-  cleave.js@0.7.23: {}
 
   cli-cursor@3.1.0:
     dependencies:
@@ -15322,10 +15238,6 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
       entities: 4.5.0
-
-  dom7@4.0.6:
-    dependencies:
-      ssr-window: 4.0.2
 
   domelementtype@2.3.0: {}
 
@@ -18253,8 +18165,6 @@ snapshots:
 
   pngjs@7.0.0: {}
 
-  popper.js@1.16.1: {}
-
   possible-typed-array-names@1.1.0: {}
 
   postcss-calc@9.0.1(postcss@8.5.12):
@@ -19305,8 +19215,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ssr-window@4.0.2: {}
-
   ssri@9.0.1:
     dependencies:
       minipass: 3.3.6
@@ -19623,11 +19531,6 @@ snapshots:
       css-what: 6.2.2
       csso: 5.0.5
       picocolors: 1.1.1
-
-  swiper@8.4.7:
-    dependencies:
-      dom7: 4.0.6
-      ssr-window: 4.0.2
 
   symbol-tree@3.2.4:
     optional: true
@@ -20034,15 +19937,6 @@ snapshots:
 
   uuid@8.3.2: {}
 
-  v-tooltip@2.1.3(vue@2.7.16):
-    dependencies:
-      '@babel/runtime': 7.28.4
-      lodash: 4.17.21
-      popper.js: 1.16.1
-      vue-resize: 1.0.1(vue@2.7.16)
-    transitivePeerDependencies:
-      - vue
-
   v8flags@4.0.1: {}
 
   validate-npm-package-license@3.0.4:
@@ -20283,23 +20177,8 @@ snapshots:
 
   vscode-uri@3.1.0: {}
 
-  vue-apexcharts@1.7.0(apexcharts@5.10.6)(vue@2.7.16):
-    dependencies:
-      apexcharts: 5.10.6
-      vue: 2.7.16
-
   vue-autosuggest@2.2.0(vue@2.7.16):
     dependencies:
-      vue: 2.7.16
-
-  vue-awesome-swiper@4.1.1(swiper@8.4.7)(vue@2.7.16):
-    dependencies:
-      swiper: 8.4.7
-      vue: 2.7.16
-
-  vue-cleave@1.2.2(vue@2.7.16):
-    dependencies:
-      cleave.js: 0.7.23
       vue: 2.7.16
 
   vue-component-meta@3.3.11(typescript@6.0.3):
@@ -20400,15 +20279,6 @@ snapshots:
       - velocityjs
       - walrus
       - whiskers
-
-  vue-lodash@1.0.4(vue@2.7.16):
-    dependencies:
-      vue: 2.7.16
-
-  vue-resize@1.0.1(vue@2.7.16):
-    dependencies:
-      '@babel/runtime': 7.28.4
-      vue: 2.7.16
 
   vue-router@3.6.5(vue@2.7.16):
     dependencies:
