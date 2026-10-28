@@ -129,6 +129,7 @@
 - “Paste” buttons now echo Craft 5’s, with a fuchsia duplicate icon and a fuchsia-to-indigo gradient border and tint.
 - Details for the issues that block an element’s deletion now list the related elements as chips, rather than an embedded element index.
 - Draft name labels in element chips now drop below the element’s title when they don’t fit beside it.
+- Link and Email field values in element indexes and cards now stay on one line, cut off with an ellipsis, after a button that shows the full address with options to open or copy it. Hovering over the link shows the same details. ([#20123](https://github.com/craftcms/cms/pull/20123))
 - Fixed a bug where release dates were formatted for the control panel’s language rather than the user’s formatting locale. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Fixed a bug where the User Profile Fields and Address Fields settings pages had no Save button. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Fixed a bug where some status badges and dots had no color, including “Pending” jobs in the Queue Manager utility, disabled sites on the Sites settings page, and options in legacy select menus, such as the “Yes” option of `forms.booleanMenu()`. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -189,6 +190,7 @@
 - Fixed a bug where buttons didn’t show an inset shadow while pressed.
 - Fixed a bug where medium chips’ thumbnails were smaller than small chips’. They’re now 32px, between small and large chips’. ([#20124](https://github.com/craftcms/cms/pull/20124))
 - Fixed a bug where portrait image thumbnails in medium and large chips were letterboxed in a square, so their rounded corners didn’t show. ([#20124](https://github.com/craftcms/cms/pull/20124))
+- Fixed a bug where the checkmark in enabled lightswitches was slightly off-center. ([#20107](https://github.com/craftcms/cms/pull/20107))
 
 ### Content Management
 
@@ -511,6 +513,7 @@
 - Removed the `<craft-sortable-checkbox-select>` web component. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `<craft-resize-grips>` web component. ([#20008](https://github.com/craftcms/cms/pull/20008))
 - Added the `resizable` property to `<craft-dialog>`. ([#20008](https://github.com/craftcms/cms/pull/20008))
+- Added the `<craft-link>` web component, which shows a link on one line with a details button, and the `--c-link-max-width` CSS custom property, which caps its width. Table cells cap links at 200px by default. ([#20123](https://github.com/craftcms/cms/pull/20123))
 - Added the `inline-suffix` attribute to `<craft-input>`, and `CraftCms\Cms\Cp\Components\Input::inlineSuffix()`, which draw suffix buttons within the input’s border. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `suffix` slot to `<craft-tab>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Added the `--c-callout-icon-padding-inline` and `--c-callout-text-padding-inline` CSS custom properties to `<craft-callout>`. ([#20001](https://github.com/craftcms/cms/pull/20001))
