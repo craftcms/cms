@@ -27,11 +27,17 @@ class RecordingCommand extends Command
     private static array $executed = [];
 
     /**
+     * @var string[] The SQL of each statement executed or queried since recording began.
+     */
+    private static array $statements = [];
+
+    /**
      * Discards anything recorded so far.
      */
     public static function startRecording(): void
     {
         self::$executed = [];
+        self::$statements = [];
     }
 
     /**
@@ -43,7 +49,21 @@ class RecordingCommand extends Command
     {
         $executed = self::$executed;
         self::$executed = [];
+        self::$statements = [];
         return $executed;
+    }
+
+    /**
+     * Returns the SQL of each statement executed or queried since [[startRecording()]], and resets.
+     *
+     * @return string[]
+     */
+    public static function stopRecordingStatements(): array
+    {
+        $statements = self::$statements;
+        self::$executed = [];
+        self::$statements = [];
+        return $statements;
     }
 
     /**
@@ -52,6 +72,16 @@ class RecordingCommand extends Command
     public function execute()
     {
         self::$executed[] = $this->getSql();
+        self::$statements[] = $this->getSql();
         return parent::execute();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function queryInternal($method, $fetchMode = null)
+    {
+        self::$statements[] = $this->getSql();
+        return parent::queryInternal($method, $fetchMode);
     }
 }

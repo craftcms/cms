@@ -8,6 +8,7 @@
 namespace crafttests\unit\services;
 
 use Craft;
+use craft\db\Table;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\errors\WrongEditionException;
@@ -15,6 +16,7 @@ use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\services\UserPermissions;
 use craft\test\TestCase;
 use crafttests\fixtures\GlobalSetFixture;
@@ -166,7 +168,20 @@ class UserPermissionsTest extends TestCase
             $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
         );
         self::assertTrue(
+            $this->userPermissions->doesUserHavePermission($user->id, 'EDITUSERS')
+        );
+        self::assertTrue(
             $this->userPermissions->doesUserHavePermission($user->id, 'accessCp')
+        );
+
+        // Permissions removed outside the service are picked up after a reset
+        Db::delete(Table::USERPERMISSIONS_USERS, ['userId' => $user->id]);
+        self::assertTrue(
+            $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
+        );
+        $this->userPermissions->reset();
+        self::assertFalse(
+            $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
         );
     }
 

@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use Craft;
+use craft\db\Query;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\AttributeStatus;
@@ -930,6 +931,24 @@ JS, [
     public function afterMergeFrom(FieldInterface $outgoingField)
     {
         if ($this instanceof RelationalFieldInterface) {
+            // find the outgoing field's relations that would collide with the persisting field's relations
+            $conflictingIds = (new Query())
+                ->select(['outgoing.id'])
+                ->from(['outgoing' => DbTable::RELATIONS])
+                ->innerJoin(['persisting' => DbTable::RELATIONS], [
+                    'and',
+                    '[[persisting.sourceId]] = [[outgoing.sourceId]]',
+                    '[[persisting.sourceSiteId]] = [[outgoing.sourceSiteId]]',
+                    '[[persisting.targetId]] = [[outgoing.targetId]]',
+                ])
+                ->where(['outgoing.fieldId' => $outgoingField->id])
+                ->andWhere(['persisting.fieldId' => $this->id])
+                ->column();
+
+            if (!empty($conflictingIds)) {
+                Db::delete(DbTable::RELATIONS, ['id' => $conflictingIds]);
+            }
+
             Db::update(DbTable::RELATIONS, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
         }
 

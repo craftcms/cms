@@ -239,6 +239,17 @@ class StringHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider containsNewlinesDataProvider
+     * @param bool $expected
+     * @param string $str
+     */
+    public function testContainsNewlines(bool $expected, string $str): void
+    {
+        $actual = StringHelper::containsNewlines($str);
+        self::assertSame($expected, $actual);
+    }
+
+    /**
      * @dataProvider convertToUtf8DataProvider
      * @param string $expected
      * @param string $string
@@ -1354,10 +1365,11 @@ class StringHelperTest extends TestCase
      * @dataProvider toLowerCaseDataProvider
      * @param string $expected
      * @param string $string
+     * @param string|null $language
      */
-    public function testToLowerCase(string $expected, string $string): void
+    public function testToLowerCase(string $expected, string $string, ?string $language = null): void
     {
-        $actual = StringHelper::toLowerCase($string);
+        $actual = StringHelper::toLowerCase($string, $language);
         self::assertSame($expected, $actual);
     }
 
@@ -1423,10 +1435,11 @@ class StringHelperTest extends TestCase
      * @dataProvider toTitleCaseDataProvider
      * @param string $expected
      * @param string $string
+     * @param string|null $language
      */
-    public function testToTitleCase(string $expected, string $string): void
+    public function testToTitleCase(string $expected, string $string, ?string $language = null): void
     {
-        $actual = StringHelper::toTitleCase($string);
+        $actual = StringHelper::toTitleCase($string, $language);
         self::assertSame($expected, $actual);
     }
 
@@ -1445,10 +1458,11 @@ class StringHelperTest extends TestCase
      * @dataProvider toUppercaseDataProvider
      * @param string $expected
      * @param string $string
+     * @param string|null $language
      */
-    public function testToUppercase(string $expected, string $string): void
+    public function testToUppercase(string $expected, string $string, ?string $language = null): void
     {
-        $actual = StringHelper::toUpperCase($string);
+        $actual = StringHelper::toUpperCase($string, $language);
         self::assertSame($expected, $actual);
     }
 
@@ -1657,6 +1671,10 @@ class StringHelperTest extends TestCase
             ['😘', '😘'],
             ['22 Alphan Numeric', '22 AlphaN Numeric'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+            // Dutch "ij" is treated as a single letter, so title-casing it capitalizes both characters
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['IJsselmeer', 'ijsselmeer', 'nl'],
+            ['Ijsselmeer', 'ijsselmeer'],
         ];
     }
 
@@ -1676,6 +1694,10 @@ class StringHelperTest extends TestCase
             ['😘', '😘'],
             ['22 alphan numeric', '22 AlphaN Numeric'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+            // Turkish lowercases a dotless "I" to a dotless "ı", not "i"
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['ıstanbul', 'Istanbul', 'tr'],
+            ['istanbul', 'Istanbul'],
         ];
     }
 
@@ -1984,6 +2006,8 @@ class StringHelperTest extends TestCase
             ['😂😁', '😂😁'],
             ['Foo © bar 𝌆 baz ☃ qux', 'Foo © bar 𝌆 baz ☃ qux'],
             ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±'],
+            ['Café terrace', "Caf\xe9 terrace"],
+            ['“Quoted”', "\x93Quoted\x94"],
         ];
     }
 
@@ -2249,6 +2273,14 @@ class StringHelperTest extends TestCase
             ['😘', '😘'],
             ['22 ALPHAN NUMERIC', '22 AlphaN Numeric'],
             ['!@#$%  ^&*()', '!@#$%  ^&*()'],
+            // Turkish uppercases a dotted "i" to a dotted "İ", not "I"
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['İSTANBUL', 'istanbul', 'tr'],
+            ['ISTANBUL', 'istanbul'],
+            // Greek strips accents when uppercasing
+            // (https://github.com/craftcms/cms/discussions/19555)
+            ['ΑΝΘΡΩΠΟΣ', 'άνθρωπος', 'el'],
+            ['ΆΝΘΡΩΠΟΣ', 'άνθρωπος'],
         ];
     }
 
@@ -2465,6 +2497,24 @@ class StringHelperTest extends TestCase
         ];
 
         return array_merge($singleNeedle, $provider);
+    }
+
+    /**
+     * @return array
+     */
+    public static function containsNewlinesDataProvider(): array
+    {
+        return [
+            [false, 'Str contains no newlines'],
+            [false, ''],
+            [false, 'Str contains a tab	and spaces'],
+            [true, "Str contains a\nnewline"],
+            [true, "Str contains a\rcarriage return"],
+            [true, "Str contains a\r\nCRLF"],
+            [true, "\nStarts with a newline"],
+            [true, "Ends with a newline\n"],
+            [true, "Multiple\nnewlines\nhere"],
+        ];
     }
 
     /**

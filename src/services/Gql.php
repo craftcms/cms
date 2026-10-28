@@ -59,6 +59,7 @@ use craft\gql\queries\Category as CategoryQuery;
 use craft\gql\queries\Entry as EntryQuery;
 use craft\gql\queries\GlobalSet as GlobalSetQuery;
 use craft\gql\queries\Ping as PingQuery;
+use craft\gql\queries\Settings as SettingsQuery;
 use craft\gql\queries\Tag as TagQuery;
 use craft\gql\queries\User as UserQuery;
 use craft\gql\TypeLoader;
@@ -623,7 +624,22 @@ class Gql extends Component
      */
     public function getCachedResult(string $cacheKey): ?array
     {
-        return Craft::$app->getCache()->get($cacheKey) ?: null;
+        $data = Craft::$app->getCache()->get($cacheKey);
+
+        if (!isset($data['result'], $data['cacheInfo']['tags'])) {
+            return null;
+        }
+
+        // If we're actively collecting element cache info, register this cache's tags and duration
+        $elementsService = Craft::$app->getElements();
+        if ($elementsService->getIsCollectingCacheInfo()) {
+            $elementsService->collectCacheTags($data['cacheInfo']['tags']);
+            if (isset($data['cacheInfo']['expiryDate'])) {
+                $elementsService->setCacheExpiryDate(DateTimeHelper::toDateTime($data['cacheInfo']['expiryDate']));
+            }
+        }
+
+        return $data['result'];
     }
 
     /**
@@ -644,7 +660,19 @@ class Gql extends Component
         // Add the global graphql cache tag
         $dependency->tags[] = self::CACHE_TAG;
 
-        Craft::$app->getCache()->set($cacheKey, $result, $duration, $dependency);
+        $cacheInfo = [
+            'tags' => $dependency->tags,
+        ];
+
+        if ($duration) {
+            $expiryDate = DateTimeHelper::now()->modify("+$duration seconds");
+            $cacheInfo['expiryDate'] = DateTimeHelper::toIso8601($expiryDate);
+        }
+
+        Craft::$app->getCache()->set($cacheKey, [
+            'result' => $result,
+            'cacheInfo' => $cacheInfo,
+        ], $duration, $dependency);
     }
 
     /**
@@ -1513,6 +1541,7 @@ class Gql extends Component
             GlobalSetQuery::getQueries(),
             CategoryQuery::getQueries(),
             TagQuery::getQueries(),
+            SettingsQuery::getQueries(),
         ];
 
         // Flatten them
@@ -1612,7 +1641,16 @@ class Gql extends Component
     private function siteSchemaComponents(): array
     {
         $sites = Craft::$app->getSites()->getAllSites(true);
-        $queryComponents = [];
+        $queryComponents = [
+            'settings.sites:read' => [
+                'label' => Craft::t('app', 'Query for sites'),
+                'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to elements.', [
+                    'plural' => 'sites',
+                    'singular' => 'site',
+                    'field' => 'site',
+                ]),
+            ],
+        ];
 
         foreach ($sites as $site) {
             $queryComponents["sites.{$site->uid}:read"] = [
@@ -1658,6 +1696,29 @@ class Gql extends Component
         $mutationComponents = [];
 
         $entriesService = Craft::$app->getEntries();
+
+        if (!empty($entriesService->getAllSections())) {
+            $queryComponents['settings.sections:read'] = [
+                'label' => Craft::t('app', 'Query for sections'),
+                'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to entries.', [
+                    'plural' => 'sections',
+                    'singular' => 'section',
+                    'field' => 'section',
+                ]),
+            ];
+        }
+
+        if (!empty($entriesService->getAllEntryTypes())) {
+            $queryComponents['settings.entrytypes:read'] = [
+                'label' => Craft::t('app', 'Query for entry types'),
+                'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to entries.', [
+                    'plural' => 'entryTypes',
+                    'singular' => 'entryType',
+                    'field' => 'type',
+                ]),
+            ];
+        }
+
         $singles = $entriesService->getSectionsByType(Section::TYPE_SINGLE);
 
         foreach ($singles as $section) {
@@ -1765,6 +1826,15 @@ class Gql extends Component
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
 
         if (!empty($volumes)) {
+            $queryComponents['settings.volumes:read'] = [
+                'label' => Craft::t('app', 'Query for volumes'),
+                'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to assets.', [
+                    'plural' => 'volumes',
+                    'singular' => 'volume',
+                    'field' => 'volume',
+                ]),
+            ];
+
             foreach ($volumes as $volume) {
                 $name = Craft::t('site', $volume->name);
                 $prefix = "volumes.$volume->uid";
@@ -1835,6 +1905,17 @@ class Gql extends Component
         } else {
             $userGroups = Craft::$app->getUserGroups()->getAllGroups();
 
+            if (!empty($userGroups)) {
+                $queryComponents['settings.usergroups:read'] = [
+                    'label' => Craft::t('app', 'Query for user groups'),
+                    'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to users.', [
+                        'plural' => 'userGroups',
+                        'singular' => 'userGroup',
+                        'field' => 'groups',
+                    ]),
+                ];
+            }
+
             $queryComponents['usergroups.everyone:read'] = [
                 'label' => Craft::t('app', 'Query for users'),
             ];
@@ -1864,6 +1945,15 @@ class Gql extends Component
         $categoryGroups = Craft::$app->getCategories()->getAllGroups();
 
         if (!empty($categoryGroups)) {
+            $queryComponents['settings.categorygroups:read'] = [
+                'label' => Craft::t('app', 'Query for category groups'),
+                'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to categories.', [
+                    'plural' => 'categoryGroups',
+                    'singular' => 'categoryGroup',
+                    'field' => 'group',
+                ]),
+            ];
+
             foreach ($categoryGroups as $categoryGroup) {
                 $name = Craft::t('site', $categoryGroup->name);
                 $prefix = "categorygroups.$categoryGroup->uid";
@@ -1900,6 +1990,15 @@ class Gql extends Component
         $tagGroups = Craft::$app->getTags()->getAllTagGroups();
 
         if (!empty($tagGroups)) {
+            $queryComponents['settings.taggroups:read'] = [
+                'label' => Craft::t('app', 'Query for tag groups'),
+                'info' => Craft::t('app', 'Adds “{plural}” and “{singular}” queries, and a “{field}” field to tags.', [
+                    'plural' => 'tagGroups',
+                    'singular' => 'tagGroup',
+                    'field' => 'group',
+                ]),
+            ];
+
             foreach ($tagGroups as $tagGroup) {
                 $name = Craft::t('site', $tagGroup->name);
                 $prefix = "taggroups.$tagGroup->uid";

@@ -43,6 +43,8 @@ class Matrix extends InputObjectType
                 $entryTypeContainerName = $context->handle . '_MatrixEntryContainerInput';
                 $entryContainerInputType = GqlEntityRegistry::createEntity($entryTypeContainerName, new InputObjectType([
                     'name' => $entryTypeContainerName,
+                    // Not enforced by GraphQL; tells GqlInputSchema the container accepts one entry type.
+                    'isOneOf' => true,
                     'fields' => function() use ($context) {
                         $entryInputTypes = [];
                         foreach ($context->getEntryTypes() as $entryType) {

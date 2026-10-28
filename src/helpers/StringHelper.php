@@ -9,12 +9,13 @@ namespace craft\helpers;
 
 use BackedEnum;
 use Craft;
-use HTMLPurifier_Config;
+use craft\i18n\Locale;
 use Illuminate\Support\Str;
 use IteratorAggregate;
 use LitEmoji\LitEmoji;
 use Normalizer;
 use Throwable;
+use Transliterator;
 use voku\helper\ASCII;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -372,6 +373,17 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
+     * Returns true if the string contains any newlines.
+     *
+     * @param string $str
+     * @since 5.11.2
+     */
+    public static function containsNewlines(string $str): bool
+    {
+        return (bool)preg_match('/[\r\n]/', $str);
+    }
+
+    /**
      * Returns true if the string contains all $needles, false otherwise. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
@@ -428,21 +440,11 @@ class StringHelper extends \yii\helpers\StringHelper
             return HtmlPurifier::cleanUtf8($str);
         }
 
-        // Otherwise set HTMLPurifier to the actual string encoding
-        $config = HTMLPurifier_Config::createDefault();
-        $config->set('Core.Encoding', static::encoding($str));
+        // Otherwise convert it from the encoding it's in, or Windows-1252 if that can't be detected, since it's the
+        // most common encoding for text that isn't UTF-8, and clean it after, so its characters aren't stripped first
+        $encoding = mb_detect_encoding($str, mb_detect_order(), true) ?: 'Windows-1252';
 
-        // Clean it
-        $str = HtmlPurifier::cleanUtf8($str);
-
-        // Convert it to UTF8 if possible
-        if (App::checkForValidIconv()) {
-            $str = HtmlPurifier::convertToUtf8($str, $config);
-        } else {
-            $str = mb_convert_encoding($str, self::UTF8);
-        }
-
-        return $str;
+        return HtmlPurifier::cleanUtf8(mb_convert_encoding($str, self::UTF8, $encoding));
     }
 
     /**
@@ -2313,11 +2315,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * Converts all characters in the string to lowercase. An alias for PHP's mb_strtolower().
      *
      * @param string $str The string to convert to lowercase.
+     * @param string|null $language The string’s langauge
      * @return string The lowercase string.
      */
-    public static function toLowerCase(string $str): string
+    public static function toLowerCase(string $str, ?string $language = null): string
     {
-        return Str::lower($str);
+        return self::modifyCase($str, $language, 'Lower') ?? Str::lower($str);
     }
 
     /**
@@ -2414,11 +2417,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * Converts the first character of each word in the string to uppercase.
      *
      * @param string $str The string to convert case.
+     * @param string|null $language The string’s langauge
      * @return string The title-cased string.
      */
-    public static function toTitleCase(string $str): string
+    public static function toTitleCase(string $str, ?string $language = null): string
     {
-        return Str::title($str);
+        return self::modifyCase($str, $language, 'Title') ?? Str::title($str);
     }
 
     /**
@@ -2440,11 +2444,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * Converts all characters in the string to uppercase. An alias for PHP's mb_strtoupper().
      *
      * @param string $str The string to convert to uppercase.
+     * @param string|null $language The string’s langauge
      * @return string The uppercase string.
      */
-    public static function toUpperCase(string $str): string
+    public static function toUpperCase(string $str, ?string $language = null): string
     {
-        return Str::upper($str);
+        return self::modifyCase($str, $language, 'Upper') ?? Str::upper($str);
     }
 
     /**
@@ -2802,5 +2807,20 @@ class StringHelper extends \yii\helpers\StringHelper
         );
 
         return sprintf('/%s/iu', implode('|', $invisibleCharCodes));
+    }
+
+    private static function modifyCase(string $str, ?string $language, string $case): ?string
+    {
+        $language ??= Craft::$app->language;
+        $transliterator = Transliterator::create(sprintf('%s-%s', Locale::languageId($language), $case));
+
+        if (!$transliterator) {
+            return null;
+        }
+
+        // Normalize NFD chars to NFC
+        $str = Normalizer::normalize($str, Normalizer::FORM_C);
+
+        return $transliterator->transliterate($str);
     }
 }

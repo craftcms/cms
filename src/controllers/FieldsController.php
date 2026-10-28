@@ -428,6 +428,8 @@ JS, [
             'handle' => $this->request->getBodyParam('handle'),
             'columnSuffix' => $oldField->columnSuffix ?? null,
             'instructions' => $this->request->getBodyParam('instructions'),
+            'tip' => $this->request->getBodyParam('tip'),
+            'warning' => $this->request->getBodyParam('warning'),
             'searchable' => (bool)$this->request->getBodyParam('searchable', true),
             'translationMethod' => $this->request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $this->request->getBodyParam('translationKeyFormat'),
@@ -665,6 +667,9 @@ JS, [
                     // If fieldId is set, we're replacing the selected field
                     if ($elementConfig['type'] === CustomField::class && isset($elementConfig['fieldId'])) {
                         if (!empty($elementConfig['fieldId'])) {
+                            // Keep track of the old field's UUID so we can update any conditions referencing it on save
+                            $elementConfig['oldFieldUid'] ??= $elementConfig['fieldUid'] ?? null;
+
                             unset($elementConfig['fieldUid']);
                         } else {
                             unset($elementConfig['fieldId']);

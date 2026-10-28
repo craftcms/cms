@@ -20,6 +20,7 @@ use craft\elements\actions\ChangeSortOrder;
 use craft\elements\actions\MoveDown;
 use craft\elements\actions\MoveUp;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\NestedElementQueryInterface;
 use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\BulkElementsEvent;
@@ -857,7 +858,17 @@ JS, [
                     // Only set $resaving=true if the element isn’t new.
                     // Otherwise NestedElementTrait::saveOwnership() won’t do its thing.
                     $element->resaving = $owner->resaving && $element->id;
+                    // $owner is already being saved, so it (and its own ancestors, if any) will get its
+                    // `dateUpdated` timestamp updated on its own; no need to do that here as well.
+                    // see https://github.com/craftcms/cms/issues/19594
+                    $touchOwnersOnSave = property_exists($element, 'touchOwnersOnSave');
+                    if ($touchOwnersOnSave) {
+                        $element->touchOwnersOnSave = false;
+                    }
                     $elementsService->saveElement($element, false);
+                    if ($touchOwnersOnSave) {
+                        $element->touchOwnersOnSave = true;
+                    }
 
                     // If this element's primary owner is $owner, and it’s a draft of another element whose owner is
                     // $owner's canonical (e.g. a draft entry created by Matrix::_createEntriesFromSerializedData()),
@@ -929,13 +940,26 @@ JS, [
 
                 if (!empty($otherSiteIds)) {
                     // Get the owner element across each of those sites
-                    $localizedOwners = $owner::find()
+                    $ownerQuery = $owner::find()
                         ->drafts($owner->getIsDraft())
                         ->provisionalDrafts($owner->isProvisionalDraft)
                         ->revisions($owner->getIsRevision())
                         ->id($owner->id)
+                        ->status(null);
+
+                    // If the owner is nested too, retain its own owner, so it doesn't fall back to its primary owner
+                    // (e.g. the canonical element when it's shared with a draft), which may not support the other sites
+                    // (see https://github.com/craftcms/cms/issues/18281)
+                    if (
+                        $owner instanceof NestedElementInterface &&
+                        $ownerQuery instanceof NestedElementQueryInterface &&
+                        $ownerId = $owner->getOwnerId()
+                    ) {
+                        $ownerQuery->ownerId($ownerId);
+                    }
+
+                    $localizedOwners = (clone $ownerQuery)
                         ->siteId($otherSiteIds)
-                        ->status(null)
                         ->all();
 
                     // Duplicate elements, ensuring we don't process the same elements more than once
@@ -960,13 +984,8 @@ JS, [
                         if (
                             !empty($preexistingOtherSiteIds) &&
                             !empty($sharedPreexistingOtherSiteIds = array_intersect($preexistingOtherSiteIds, $sourceSupportedSiteIds)) &&
-                            $preexistingLocalizedOwner = $owner::find()
-                                ->drafts($owner->getIsDraft())
-                                ->provisionalDrafts($owner->isProvisionalDraft)
-                                ->revisions($owner->getIsRevision())
-                                ->id($owner->id)
+                            $preexistingLocalizedOwner = (clone $ownerQuery)
                                 ->siteId($sharedPreexistingOtherSiteIds)
-                                ->status(null)
                                 ->one()
                         ) {
                             // Just resave elements for that one site, and let them propagate over to the new site(s) from there
@@ -1409,9 +1428,31 @@ JS, [
      */
     public function deleteNestedElements(ElementInterface $owner, bool $hardDelete = false): void
     {
-        foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-            $elementsService = Craft::$app->getElements();
-            $query = $this->nestedElementQuery($owner)
+        $elementsService = Craft::$app->getElements();
+        $allSiteIds = Craft::$app->getSites()->getAllSiteIds();
+        $siteOwners = [];
+
+        if (count($allSiteIds) > 1) {
+            $siteOwners = $owner::find()
+                ->id($owner->id)
+                ->siteId(['not', $owner->siteId])
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->revisions(null)
+                ->trashed(null)
+                ->status(null)
+                ->indexBy('siteId')
+                ->all();
+        }
+
+        foreach ($allSiteIds as $siteId) {
+            // The query factory may scope the query to the owner's site, so load the owner in this site
+            $siteOwner = $siteId === $owner->siteId ? $owner : ($siteOwners[$siteId] ?? null);
+            if (!$siteOwner) {
+                continue;
+            }
+
+            $query = $this->nestedElementQuery($siteOwner)
                 ->status(null)
                 ->siteId($siteId);
             if ($hardDelete) {

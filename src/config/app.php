@@ -3,14 +3,16 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '5.10.14',
-    'schemaVersion' => '5.11.0.0',
+    'version' => '5.11.5.1',
+    'schemaVersion' => '5.12.0.1',
     'minVersionRequired' => '4.5.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
 
     'components' => [
+        'oauth' => ['class' => craft\services\OAuth::class],
+        'mcp' => ['class' => craft\services\Mcp::class],
         'addresses' => [
             'class' => craft\services\Addresses::class,
         ],

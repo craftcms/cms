@@ -36,6 +36,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\caching\ExpressionDependency;
+use yii\db\Expression;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -1872,7 +1873,9 @@ class ProjectConfig extends Component
         $data = Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
             $data = [];
             // Load the project config data
-            $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
+            // Paths only need parent-before-child ordering, not locale-aware sorting.
+            $orderBy = Craft::$app->getDb()->getIsPgsql() ? new Expression('[[path]] COLLATE "C"') : 'path';
+            $rows = $this->_createProjectConfigQuery()->orderBy($orderBy)->pairs();
             foreach ($rows as $path => $value) {
                 $current = &$data;
                 $segments = ProjectConfigHelper::pathSegments($path);

@@ -23,6 +23,7 @@ use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\CopyUrl;
 use craft\elements\actions\DeleteAssets;
+use craft\elements\actions\DeleteForSite;
 use craft\elements\actions\DownloadAssetFile;
 use craft\elements\actions\EditImage;
 use craft\elements\actions\MoveAssets;
@@ -38,6 +39,7 @@ use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\CmsEdition;
 use craft\enums\MenuItemType;
+use craft\enums\PropagationMethod;
 use craft\errors\AssetException;
 use craft\errors\FileException;
 use craft\errors\FsException;
@@ -197,6 +199,10 @@ class Asset extends Element
     public const KIND_IMAGE = 'image';
     public const KIND_JAVASCRIPT = 'javascript';
     public const KIND_JSON = 'json';
+    /**
+     * @since 5.12.0
+     */
+    public const KIND_MARKDOWN = 'markdown';
     public const KIND_PDF = 'pdf';
     public const KIND_PHOTOSHOP = 'photoshop';
     public const KIND_PHP = 'php';
@@ -330,12 +336,14 @@ class Asset extends Element
      */
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        if ($plan->handle === 'uploader') {
-            /** @var User|null $uploader */
-            $uploader = $elements[0] ?? null;
-            $this->setUploader($uploader);
-        } else {
-            parent::setEagerLoadedElements($handle, $elements, $plan);
+        switch ($plan->handle) {
+            case 'uploader':
+                /** @var User|null $uploader */
+                $uploader = $elements[0] ?? null;
+                $this->setUploader($uploader);
+                break;
+            default:
+                parent::setEagerLoadedElements($handle, $elements, $plan);
         }
     }
 
@@ -373,7 +381,7 @@ class Asset extends Element
     {
         $sources = [];
 
-        if ($context === ElementSources::CONTEXT_INDEX) {
+        if (in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL])) {
             $volumeIds = Craft::$app->getVolumes()->getViewableVolumeIds();
         } else {
             $volumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
@@ -540,6 +548,15 @@ class Asset extends Element
             // Delete
             if ($userSession->checkPermission("deletePeerAssets:$volume->uid")) {
                 $actions[] = DeleteAssets::class;
+            }
+
+            // Delete for site
+            if (
+                $volume->propagationMethod === PropagationMethod::Custom &&
+                Craft::$app->getIsMultiSite() &&
+                $userSession->checkPermission("deleteAssets:$volume->uid")
+            ) {
+                $actions[] = DeleteForSite::class;
             }
         }
 
@@ -1522,6 +1539,60 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     */
+    public function canDeleteForSite(User $user): bool
+    {
+        if ($this->isFolder || $this->getVolume()->propagationMethod !== PropagationMethod::Custom) {
+            return parent::canDeleteForSite($user);
+        }
+
+        // Assets that only exist in this site will be deleted normally, so require normal delete permissions
+        if (!ElementHelper::isMultiSite($this)) {
+            return $this->canDelete($user);
+        }
+
+        return parent::canDeleteForSite($user) || $this->canDelete($user);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getSupportedSites(): array
+    {
+        $siteIds = parent::getSupportedSites();
+
+        if ($this->getVolume()->propagationMethod !== PropagationMethod::Custom) {
+            return $siteIds;
+        }
+
+        // Figure out which sites the asset is currently saved in
+        $currentSites = [];
+        $sourceIds = array_filter([$this->id, $this->duplicateOf->id ?? null]);
+
+        if (!empty($sourceIds)) {
+            $currentSites = array_flip(self::find()
+                ->status(null)
+                ->id($sourceIds)
+                ->site('*')
+                ->select('elements_sites.siteId')
+                ->column());
+        }
+
+        return array_map(fn(int $siteId) => [
+            'siteId' => $siteId,
+            // Only actually propagate to this site if it's the current site, or the asset has been assigned
+            // a status for this site, or the asset already exists for this site
+            'propagate' => (
+                $siteId === $this->siteId ||
+                $this->getEnabledForSite($siteId) !== null ||
+                isset($currentSites[$siteId])
+            ),
+        ], $siteIds);
+    }
+
+    /**
+     * @inheritdoc
      * ---
      * ```php
      * $url = $asset->cpEditUrl;
@@ -1800,9 +1871,14 @@ $('#' + $id).on('activate', () => {
   new Craft.AssetImageEditor($assetId, {
     allowDegreeFractions: Craft.isImagick,
     onSave: (data) => {
-      if (!data.newAssetId) {
-        $updatePreviewThumbJs
+      if (data.newAssetId) {
+        // The menu gets moved to the <body> when shown, so look for the slideout from its trigger
+        const \$trigger = $('#' + $id).closest('.menu').data('disclosureMenu')?.\$trigger;
+        {$this->_replaceSlideoutAssetJs('$trigger')}
+        return;
       }
+
+      $updatePreviewThumbJs
     },
   });
 });
@@ -2891,6 +2967,27 @@ JS, [
     }
 
     /**
+     * Returns JavaScript that will replace this asset with `data.newAssetId`, if the given element is within an
+     * Assets field’s editor slideout.
+     *
+     * @param string $elementJs JavaScript expression for a jQuery object within the slideout
+     * @return string
+     */
+    private function _replaceSlideoutAssetJs(string $elementJs): string
+    {
+        return <<<JS
+// If this is within an Assets field’s editor slideout, replace the selected asset and close the slideout,
+// since it's still editing the old asset
+const slideout = $elementJs?.closest('[data-slideout]').data('slideout');
+if (slideout && slideout.settings.elementSelectInput) {
+    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
+        .then(() => slideout.closeMeMaybe())
+        .catch(() => {});
+}
+JS;
+    }
+
+    /**
      * Returns the HTML for asset previews.
      *
      * @return string
@@ -3003,12 +3100,7 @@ $('#$editBtnId').on('activate', () => {
         allowDegreeFractions: Craft.isImagick,
         onSave: data => {
             if (data.newAssetId) {
-                // If this is within an Assets field’s editor slideout, replace the selected asset 
-                const slideout = $('#$editBtnId').closest('[data-slideout]').data('slideout');
-                if (slideout && slideout.settings.elementSelectInput) {
-                    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
-                        .catch(() => {});
-                }
+                {$this->_replaceSlideoutAssetJs("$('#$editBtnId')")}
                 return;
             }
 
@@ -3239,6 +3331,19 @@ JS;
             }
         }
 
+        // If the file is being renamed without an extension, keep the current one
+        if (
+            isset($this->newFilename, $this->_filename) &&
+            $this->newFilename !== '' &&
+            !isset($this->tempFilePath) &&
+            pathinfo($this->newFilename, PATHINFO_EXTENSION) === ''
+        ) {
+            $extension = pathinfo($this->_filename, PATHINFO_EXTENSION);
+            if ($extension !== '') {
+                $this->newFilename = rtrim($this->newFilename, '.') . ".$extension";
+            }
+        }
+
         if ($this->newFilename === '' || $this->newFilename === $this->getFilename()) {
             $this->newFilename = null;
         }
@@ -3459,6 +3564,20 @@ JS;
 
         Craft::$app->getImageTransforms()->deleteAllTransformData($this);
         parent::afterDelete();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDeleteForSite(): void
+    {
+        // Delete the site-specific asset data
+        Db::delete(Table::ASSETS_SITES, [
+            'assetId' => $this->id,
+            'siteId' => $this->siteId,
+        ]);
+
+        parent::afterDeleteForSite();
     }
 
     /**

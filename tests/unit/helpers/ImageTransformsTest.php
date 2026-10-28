@@ -13,6 +13,8 @@ use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\test\mockclasses\fs\MockNonLocalFs;
 use ReflectionProperty;
+use stdClass;
+use yii\base\InvalidArgumentException;
 
 class ImageTransformsTest extends Unit
 {
@@ -195,6 +197,27 @@ class ImageTransformsTest extends Unit
                 ],
                 '_1280x600_crop_center-center',
             ],
+        ];
+    }
+
+    /**
+     * @dataProvider normalizeTransformInvalidClassProvider
+     */
+    public function testNormalizeTransformInvalidClass(array $input): void
+    {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() use ($input) {
+            ImageTransforms::normalizeTransform($input);
+        });
+    }
+
+    public function normalizeTransformInvalidClassProvider(): array
+    {
+        return [
+            'class' => [['class' => stdClass::class, 'width' => 100]],
+            'null class' => [['class' => null, 'width' => 100]],
+            '__class' => [['__class' => stdClass::class, 'width' => 100]],
+            'null class with __class' => [['class' => null, '__class' => stdClass::class, 'width' => 100]],
+            'nested transform with __class' => [['width' => 100, 'transform' => ['class' => null, '__class' => stdClass::class]]],
         ];
     }
 

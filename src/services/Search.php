@@ -189,10 +189,12 @@ class Search extends Component
         }
         Db::delete(Table::SEARCHINDEX, $deleteCondition);
 
+        $rows = [];
+
         // Update the element attributes' keywords
         foreach (ElementHelper::searchableAttributes($element) as $attribute) {
             $value = $element->getSearchKeywords($attribute);
-            $this->_indexKeywords($element, $value, attribute: $attribute);
+            $rows[] = $this->_keywordsRow($element, $value, attribute: $attribute);
         }
 
         // Update the custom fields' keywords
@@ -204,8 +206,11 @@ class Search extends Component
             }
         }
         foreach ($keywords as $fieldId => $instanceKeywords) {
-            $this->_indexKeywords($element, implode(' ', $instanceKeywords), fieldId: $fieldId);
+            $rows[] = $this->_keywordsRow($element, implode(' ', $instanceKeywords), fieldId: $fieldId);
         }
+
+        // Save 'em
+        $this->_insertKeywordsRows(array_filter($rows));
 
         // Release the lock
         $mutex->release($lockKey);
@@ -631,14 +636,15 @@ SQL;
     }
 
     /**
-     * Indexes keywords for a specific element attribute/field.
+     * Returns the `searchindex` row data for a specific element attribute/field’s keywords.
      *
      * @param ElementInterface $element
      * @param string $keywords
      * @param string|null $attribute
      * @param int|null $fieldId
+     * @return array|null The row data, or `null` if a `beforeIndexKeywords` event handler cancelled it
      */
-    private function _indexKeywords(ElementInterface $element, string $keywords, ?string $attribute = null, ?int $fieldId = null): void
+    private function _keywordsRow(ElementInterface $element, string $keywords, ?string $attribute = null, ?int $fieldId = null): ?array
     {
         if ($attribute !== null) {
             $attribute = strtolower($attribute);
@@ -659,13 +665,12 @@ SQL;
             $this->trigger(self::EVENT_BEFORE_INDEX_KEYWORDS, $event);
 
             if (!$event->isValid) {
-                return;
+                return null;
             }
 
             $keywords = $event->keywords;
         }
 
-        // Save 'em
         $columns = [
             'elementId' => $element->id,
             'attribute' => $attribute ?? 'field',
@@ -695,10 +700,47 @@ SQL;
             $columns['keywords_vector'] = $keywords;
         }
 
-        // Insert/update the row in searchindex
+        return $columns;
+    }
+
+    /**
+     * Inserts rows into the `searchindex` table, in as few queries as possible.
+     *
+     * @param array[] $rows The row data, as returned by [[_keywordsRow()]]
+     */
+    private function _insertKeywordsRows(array $rows): void
+    {
+        // Keep each query well below max_allowed_packet
+        $batch = [];
+        $batchSize = 0;
+
+        foreach ($rows as $row) {
+            $rowSize = strlen($row['keywords']);
+            if ($batch && $batchSize + $rowSize > 1024 * 1024) {
+                $this->_insertKeywordsBatch($batch);
+                $batch = [];
+                $batchSize = 0;
+            }
+            $batch[] = $row;
+            $batchSize += $rowSize;
+        }
+
+        if ($batch) {
+            $this->_insertKeywordsBatch($batch);
+        }
+    }
+
+    /**
+     * @param array[] $rows
+     */
+    private function _insertKeywordsBatch(array $rows): void
+    {
+        $columns = array_keys($rows[0]);
+        $values = array_map(fn(array $row) => array_values($row), $rows);
+
         for ($try = 0; $try < 3; $try++) {
             try {
-                Db::insert(Table::SEARCHINDEX, $columns);
+                Db::batchInsert(Table::SEARCHINDEX, $columns, $values);
                 return;
             } catch (DbException $e) {
                 if (str_contains($e->getPrevious()?->getMessage(), 'deadlock')) {
@@ -1067,9 +1109,11 @@ SQL;
      */
     private function _sqlWhere(string $key, string $oper, string|int $val): string
     {
-        $key = Craft::$app->getDb()->quoteColumnName($key);
+        $db = Craft::$app->getDb();
+        $key = $db->quoteColumnName($key);
+        $val = $db->quoteValue($val);
 
-        return sprintf("(%s %s '%s')", $key, $oper, $val);
+        return "($key $oper $val)";
     }
 
     /**

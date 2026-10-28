@@ -78,6 +78,7 @@ use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -102,9 +103,10 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ReflectionClass;
+use ReflectionMethod;
 use Traversable;
-use Twig\Extension\SandboxExtension;
 use Twig\Markup;
+use Twig\Sandbox\SecurityChecker;
 use UnitEnum;
 use yii\base\ArrayableTrait;
 use yii\base\Event;
@@ -2937,11 +2939,11 @@ abstract class Element extends Component implements ElementInterface, AllowableI
     {
         $attributes = $this->getAttributes();
 
-        // Include custom fields, unless this is coming from Twig’s SandboxExtension
+        // Include custom fields, unless this is coming from Twig’s sandbox
         // (see https://github.com/craftcms/cms/issues/19004)
         $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, limit: 3);
         if (!(
-            ($backtrace[2]['class'] ?? null) === SandboxExtension::class &&
+            ($backtrace[2]['class'] ?? null) === SecurityChecker::class &&
             $backtrace[2]['function'] === 'doEnsureToStringAllowed'
         )) {
             $fieldLayout = $this->getFieldLayout();
@@ -5742,7 +5744,7 @@ JS,
      */
     public function getInvalidNestedElementIds(): array
     {
-        return $this->_invalidNestedElementIds;
+        return array_keys($this->_invalidNestedElementIds);
     }
 
     /**
@@ -5750,7 +5752,9 @@ JS,
      */
     public function addInvalidNestedElementIds(array $ids): void
     {
-        array_push($this->_invalidNestedElementIds, ...$ids);
+        foreach ($ids as $id) {
+            $this->_invalidNestedElementIds[$id] = true;
+        }
     }
 
     /**
@@ -6236,6 +6240,15 @@ JS,
 
     private function contentBlockAttributeHtml(string $attribute): string
     {
+        [$block, , $nestedAttribute] = $this->contentBlockFromAttribute($attribute);
+        return $block?->getAttributeHtml($nestedAttribute) ?? '';
+    }
+
+    /**
+     * @return array{0:ContentBlock|null,1:ContentBlockField|null,2:string|null}
+     */
+    private function contentBlockFromAttribute(string $attribute): array
+    {
         $parts = explode('.', $attribute);
         $uid = StringHelper::removeLeft(array_shift($parts), 'contentBlock:');
 
@@ -6253,11 +6266,13 @@ JS,
         }
 
         if (!$field instanceof ContentBlockField) {
-            return '';
+            return [null, null, null];
         }
 
         $block = $this->getFieldValue($field->handle);
-        return $block?->getAttributeHtml(implode('.', $parts)) ?? '';
+        $nestedAttribute = implode('.', $parts);
+
+        return [$block, $field, $nestedAttribute];
     }
 
     /**
@@ -6389,6 +6404,12 @@ JS,
             }
 
             $field ??= $this->_getFieldFromAlternativeLayouts($instanceUid) ?? null;
+        } elseif (str_starts_with($attribute, 'contentBlock:')) {
+            [$block, $field, $nestedAttribute] = $this->contentBlockFromAttribute($attribute);
+            if (!$block) {
+                return '';
+            }
+            return Craft::$app->getView()->namespaceInputs(fn() => $block->getInlineAttributeInputHtml($nestedAttribute), "$field->handle[fields]");
         }
 
         if ($field !== null) {
@@ -6434,9 +6455,13 @@ JS,
                 Html::tag('h2', Craft::t('app', 'Metadata'), ['class' => 'visually-hidden']);
         }
 
-        if (!$static && static::hasStatuses() && $this->showStatusField()) {
-            // Is this a multi-site element?
-            $components[] = $this->statusFieldHtml();
+        if (!$static) {
+            $sitesFieldHtml = $this->showSitesField() ? $this->sitesFieldHtml() : '';
+            if ($sitesFieldHtml !== '') {
+                $components[] = $sitesFieldHtml;
+            } elseif (static::hasStatuses() && $this->showStatusField()) {
+                $components[] = $this->statusFieldHtml();
+            }
         }
 
         if ($this->hasRevisions() && !$this->getIsRevision()) {
@@ -6565,6 +6590,147 @@ JS,
         return Html::beginTag('fieldset') .
             Html::tag('legend', Craft::t('app', 'Status'), ['class' => 'h6']) .
             Html::tag('div', $statusField, ['class' => 'meta']) .
+            Html::endTag('fieldset');
+    }
+
+    /**
+     * Returns whether the sidebar should include a Sites pane, rather than a Status pane.
+     *
+     * The Sites pane lists the sites the element is saved in, lets authors add the element to other sites,
+     * and includes status toggles for each site, if the element type has per-site statuses.
+     *
+     * By default, it’s shown for localized elements that support multiple sites, unless the element type has
+     * statuses and provides its own [[statusFieldHtml()]] implementation.
+     *
+     * If this returns `true` but [[sitesFieldHtml()]] doesn’t return anything, the Status pane will be shown
+     * instead, if the element type has statuses.
+     *
+     * @return bool
+     * @since 5.12.0
+     */
+    protected function showSitesField(): bool
+    {
+        // Element types that customize the Status pane should keep it
+        if (
+            static::hasStatuses() &&
+            (new ReflectionMethod($this, 'statusFieldHtml'))->getDeclaringClass()->getName() !== self::class
+        ) {
+            return false;
+        }
+
+        return static::isLocalized() && count(ElementHelper::supportedSitesForElement($this, true)) > 1;
+    }
+
+    /**
+     * Returns the Sites pane HTML for the sidebar.
+     *
+     * It lists the sites the element is saved in, and lets authors add the element to other sites
+     * that it supports but hasn’t been propagated to. If the element type has per-site statuses,
+     * each site gets a status toggle.
+     *
+     * @return string
+     * @since 5.12.0
+     */
+    protected function sitesFieldHtml(): string
+    {
+        if (!$this->id || $this->getIsRevision() || !Craft::$app->getIsMultiSite()) {
+            return '';
+        }
+
+        $supportedSites = Collection::make(ElementHelper::supportedSitesForElement($this, true));
+        $allEditableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        // Only list the sites the user can edit
+        $propSites = $supportedSites->filter(fn(array $site) => (
+            $site['propagate'] &&
+            in_array($site['siteId'], $allEditableSiteIds)
+        ));
+
+        // Include status toggles for each site, if the element type has per-site statuses
+        $withStatuses = static::hasStatuses() && $this->showStatusField();
+        $siteStatuses = $withStatuses ? ElementHelper::siteStatusesForElement($this, true) : [];
+
+        $sitesService = Craft::$app->getSites();
+        $cpEditUrl = $this->getCpEditUrl();
+        $sites = $propSites
+            ->map(fn(array $site) => $sitesService->getSiteById($site['siteId'], true))
+            ->filter();
+        [$currentSites, $otherSites] = $sites->partition(fn(Site $site) => $site->id === $this->siteId);
+
+        // If there are more than 10 sites, list the other sites within a disclosure
+        $idPrefix = sprintf('element-sites-%s', StringHelper::randomString(10));
+        $collapsible = $sites->count() > 10;
+
+        $siteField = fn(Site $site) => Html::tag('div', implode('', [
+            Html::tag('div', Html::tag('label', implode('', [
+                Html::tag('span', (
+                    // Link to the element in the other sites
+                    $cpEditUrl && $site->id !== $this->siteId
+                        ? Html::a(Html::encode(Craft::t('site', $site->getName())), UrlHelper::urlWithParams($cpEditUrl, [
+                            'site' => $site->handle,
+                        ]), [
+                            'data' => ['site-id' => $site->id],
+                        ])
+                        : Html::encode(Craft::t('site', $site->getName()))
+                ), [
+                    'id' => "$idPrefix-$site->id-name",
+                ]),
+                $site->id === $this->siteId
+                    ? Html::tag('span', ', selected', ['class' => 'visually-hidden'])
+                    : '',
+            ])), [
+                'class' => 'heading',
+            ]),
+            $withStatuses
+                ? Html::tag('div', Cp::lightswitchHtml([
+                    'id' => "$idPrefix-$site->id-status",
+                    'name' => "enabledForSite[$site->id]",
+                    'on' => $site->id === $this->siteId
+                        ? $this->enabled && $this->getEnabledForSite()
+                        : ($siteStatuses[$site->id] ?? false),
+                    'labelledBy' => "$idPrefix-$site->id-name",
+                    'small' => true,
+                ]), [
+                    'class' => 'input',
+                ])
+                : '',
+        ]), [
+            'id' => "$idPrefix-$site->id",
+            'class' => array_filter([
+                'field',
+                'element-site-field',
+                "site-$site->id-field",
+                $site->id === $this->siteId ? 'sel' : null,
+                $withStatuses ? 'lightswitch-field' : null,
+                $collapsible && $site->id !== $this->siteId ? 'hidden' : null,
+            ]),
+        ]);
+
+        $siteFields = $currentSites->map($siteField)->implode('');
+
+        if ($collapsible) {
+            $siteFields .= Html::tag('div', Html::tag('div', Html::button(Craft::t('app', '{num, number} other {num, plural, =1{site} other{sites}}', [
+                'num' => $otherSites->count(),
+            ]), [
+                'class' => ['toggle', 'element-sites-toggle'],
+                'aria' => [
+                    'expanded' => 'false',
+                    'controls' => $otherSites->map(fn(Site $site) => "$idPrefix-$site->id")->implode(' '),
+                ],
+            ]), [
+                'class' => 'heading',
+            ]), [
+                'class' => ['field', 'element-site-field', 'element-sites-toggle-field'],
+            ]);
+        }
+
+        $siteFields .= $otherSites->map($siteField)->implode('');
+
+        return Html::beginTag('fieldset') .
+            Html::tag('legend', Craft::t('app', 'Sites'), ['class' => 'h6']) .
+            Html::tag('div', $siteFields, [
+                'class' => ['meta', 'element-sites-pane'],
+                'data' => ['statuses' => $withStatuses],
+            ]) .
             Html::endTag('fieldset');
     }
 
@@ -7217,7 +7383,7 @@ JS,
                 ->siteId($this->siteId);
 
             if ($criteria) {
-                Craft::configure($query, $criteria);
+                Craft::configure($query, ComponentHelper::cleanseConfig(ElementHelper::cleanseQueryCriteria($criteria)));
             }
         }
 
@@ -7235,7 +7401,15 @@ JS,
     }
 
     /**
-     * @inheritdoc
+     * Renders the element using its partial template.
+     *
+     * If no partial template exists for the element, its string representation will be output instead.
+     *
+     * @param array $variables
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @since 5.8.0
      */
     public function render(array $variables = []): Markup
     {

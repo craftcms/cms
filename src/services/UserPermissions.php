@@ -82,6 +82,11 @@ class UserPermissions extends Component
     private array $_permissionsByUserId = [];
 
     /**
+     * @var array<int,array<string,true>> Users’ permissions, indexed by user ID and permission name
+     */
+    private array $_permissionMapsByUserId = [];
+
+    /**
      * Returns all of the known permissions, divided into groups.
      *
      * Each group will have two keys:
@@ -104,6 +109,11 @@ class UserPermissions extends Component
     {
         if (!isset($this->_allPermissions)) {
             $this->_allPermissions = [];
+
+            $this->_allPermissions[] = [
+                'heading' => Craft::t('app', 'MCP'),
+                'permissions' => ['useCraftMcp' => ['label' => Craft::t('app', 'Use Craft MCP')]],
+            ];
 
             $this->_generalPermissions($this->_allPermissions);
             $this->_userPermissions($this->_allPermissions);
@@ -269,7 +279,7 @@ class UserPermissions extends Component
                 $userPermissions = [];
             }
 
-            $this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $userPermissions));
+            $this->_setUserPermissions($userId, array_merge($groupPermissions, $userPermissions));
         }
 
         return $this->_permissionsByUserId[$userId];
@@ -316,10 +326,10 @@ class UserPermissions extends Component
             return true;
         }
 
-        $allPermissions = $this->getPermissionsByUserId($userId);
-        $checkPermission = strtolower($checkPermission);
+        // Build the map from getPermissionsByUserId(), in case it's been overridden
+        $this->_permissionMapsByUserId[$userId] ??= array_fill_keys($this->getPermissionsByUserId($userId), true);
 
-        return in_array($checkPermission, $allPermissions, true);
+        return isset($this->_permissionMapsByUserId[$userId][strtolower($checkPermission)]);
     }
 
     /**
@@ -360,7 +370,7 @@ class UserPermissions extends Component
         }
 
         // Cache the new permissions
-        $this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $permissions));
+        $this->_setUserPermissions($userId, array_merge($groupPermissions, $permissions));
 
         // Fire an 'afterSaveUserPermissions' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_PERMISSIONS)) {
@@ -956,5 +966,18 @@ class UserPermissions extends Component
         $this->_allPermissionNames = null;
         $this->_permissionsByGroupId = [];
         $this->_permissionsByUserId = [];
+        $this->_permissionMapsByUserId = [];
+    }
+
+    /**
+     * Caches a user’s permissions, along with a map for quick lookups.
+     *
+     * @param int $userId
+     * @param string[] $permissions
+     */
+    private function _setUserPermissions(int $userId, array $permissions): void
+    {
+        $this->_permissionsByUserId[$userId] = array_unique($permissions);
+        $this->_permissionMapsByUserId[$userId] = array_fill_keys($this->_permissionsByUserId[$userId], true);
     }
 }

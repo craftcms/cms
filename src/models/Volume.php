@@ -17,6 +17,7 @@ use craft\base\FsInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
+use craft\enums\PropagationMethod;
 use craft\fs\MissingFs;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -91,6 +92,21 @@ class Volume extends Model implements
      * @since 5.0.0
      */
     public ?string $altTranslationKeyFormat = null;
+
+    /**
+     * @var PropagationMethod Propagation method
+     *
+     * This will be set to one of the following:
+     *
+     *  - [[PropagationMethod::All]] – Save assets to all sites
+     *  - [[PropagationMethod::Custom]] – Let each asset choose which sites it should be saved to
+     *
+     * New volumes use [[PropagationMethod::Custom]] by default. Volumes that existed on multi-site installs before
+     * this setting was introduced use [[PropagationMethod::All]].
+     *
+     * @since 5.12.0
+     */
+    public PropagationMethod $propagationMethod = PropagationMethod::Custom;
 
     /**
      * @var int|null Sort order
@@ -230,6 +246,7 @@ class Volume extends Model implements
             'subpath' => Craft::t('app', 'Subpath'),
             'transformFsHandle' => Craft::t('app', 'Transform Filesystem'),
             'transformSubpath' => Craft::t('app', 'Transform Subpath'),
+            'propagationMethod' => Craft::t('app', 'Propagation Method'),
         ];
     }
 
@@ -242,7 +259,8 @@ class Volume extends Model implements
         $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class];
-        $rules[] = [['name', 'handle', 'fsHandle'], 'required'];
+        $rules[] = [['name', 'handle', 'fsHandle', 'propagationMethod'], 'required'];
+        $rules[] = [['propagationMethod'], 'in', 'range' => [PropagationMethod::All, PropagationMethod::Custom]];
         $rules[] = [
             ['handle'],
             HandleValidator::class,
@@ -500,6 +518,7 @@ class Volume extends Model implements
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'altTranslationMethod' => $this->altTranslationMethod,
             'altTranslationKeyFormat' => $this->altTranslationKeyFormat ?: null,
+            'propagationMethod' => $this->propagationMethod->value,
             'sortOrder' => $this->sortOrder,
         ];
 

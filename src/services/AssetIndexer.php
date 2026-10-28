@@ -598,7 +598,7 @@ class AssetIndexer extends Component
     {
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
-            'sessionId' => $sessionId,
+            'sessionId' => (string)$sessionId,
             'uri' => $listing->getAdjustedUri($volume->getSubpath()),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
@@ -626,7 +626,7 @@ class AssetIndexer extends Component
     {
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
-            'sessionId' => $sessionId,
+            'sessionId' => (string)$sessionId,
             'uri' => $listing->getAdjustedUri($volume->getSubpath()),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
@@ -737,6 +737,9 @@ class AssetIndexer extends Component
         $asset = Asset::find()
             ->filename(Db::escapeParam($filename))
             ->folderId($folderId)
+            ->site('*')
+            ->preferSites([Craft::$app->getSites()->getCurrentSite()->id])
+            ->unique()
             ->one();
 
         // Create an asset if there is none.

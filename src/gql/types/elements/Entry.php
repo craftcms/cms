@@ -10,6 +10,7 @@ namespace craft\gql\types\elements;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Entry as EntryElement;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
+use craft\gql\resolvers\elements\Entry as EntryResolver;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -46,6 +47,8 @@ class Entry extends Element
             'ownerId' => $source->ownerId,
             'sortOrder' => $source->sortOrder,
             'typeId' => $source->getTypeId(),
+            'section' => $source->getSection(),
+            'type' => $source->getType(),
             'sectionHandle' => $source->getSection()?->handle,
             'fieldHandle' => $source->getField()?->handle,
             'typeHandle' => $source->getType()->handle,
@@ -54,5 +57,13 @@ class Entry extends Element
             'revisionCreator' => $source->getIsRevision() ? $source->getCreator() : null,
             default => parent::resolve($source, $arguments, $context, $resolveInfo),
         };
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function elementResolverClass(): ?string
+    {
+        return EntryResolver::class;
     }
 }

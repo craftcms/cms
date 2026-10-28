@@ -19,7 +19,6 @@ use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\Volume;
-use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 
 /**
@@ -450,10 +449,10 @@ class AssetQuery extends ElementQuery
     {
         if ($value instanceof User) {
             $this->uploaderId = $value->id;
-        } elseif (is_numeric($value)) {
-            $this->uploaderId = $value;
         } else {
-            throw new InvalidArgumentException('Invalid uploader value');
+            // the only remaining possibilities are int|null
+            // and neither should lead to an exception
+            $this->uploaderId = $value;
         }
         return $this;
     }

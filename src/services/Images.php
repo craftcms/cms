@@ -124,12 +124,20 @@ class Images extends Component
             $supportedFormats[] = Format::ID_WEBP;
         }
 
+        if ($this->getSupportsBmp()) {
+            $supportedFormats[] = Format::ID_BMP;
+        }
+
         if ($this->getSupportsAvif()) {
             $supportedFormats[] = Format::ID_AVIF;
         }
 
         if ($this->getSupportsHeic()) {
             $supportedFormats[] = Format::ID_HEIC;
+        }
+
+        if ($this->getSupportsJxl()) {
+            $supportedFormats[] = Format::ID_JXL;
         }
 
         return $supportedFormats;
@@ -184,9 +192,22 @@ class Images extends Component
     }
 
     /**
+     * Returns whether the BMP image format is supported.
+     *
+     * @return bool
+     * @since 5.12.0
+     */
+    public function getSupportsBmp(): bool
+    {
+        $info = $this->getIsImagick() ? ImagickImagine::getDriverInfo() : GdImagine::getDriverInfo();
+        return $info->isFormatSupported(Format::ID_BMP);
+    }
+
+    /**
      * Returns whether the WebP image format is supported.
      *
      * @return bool
+     * @since 3.5.0
      */
     public function getSupportsWebP(): bool
     {
@@ -198,6 +219,7 @@ class Images extends Component
      * Returns whether the AVIF image format is supported.
      *
      * @return bool
+     * @since 3.7.26
      */
     public function getSupportsAvif(): bool
     {
@@ -215,6 +237,18 @@ class Images extends Component
     {
         $info = $this->getIsImagick() ? ImagickImagine::getDriverInfo() : GdImagine::getDriverInfo();
         return $info->isFormatSupported(Format::ID_HEIC);
+    }
+
+    /**
+     * Returns whether the JPEG XL image format is supported.
+     *
+     * @return bool
+     * @since 5.12.0
+     */
+    public function getSupportsJxl(): bool
+    {
+        $info = $this->getIsImagick() ? ImagickImagine::getDriverInfo() : GdImagine::getDriverInfo();
+        return $info->isFormatSupported(Format::ID_JXL);
     }
 
     /**

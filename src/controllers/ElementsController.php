@@ -467,6 +467,7 @@ class ElementsController extends Controller
                         'canSaveCanonical' => $canSaveCanonical,
                         'elementId' => $element->id,
                         'canonicalId' => $canonical->id,
+                        'cpEditUrl' => $element->getCpEditUrl(),
                         'draftId' => $element->draftId,
                         'draftName' => $isDraft ? $element->draftName : null,
                         'elementType' => get_class($element),
@@ -2057,6 +2058,11 @@ JS, [
             }
 
             $transaction->commit();
+        } catch (InvalidElementException $e) {
+            $transaction->rollBack();
+            return $this->_asFailure($e->element, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => Craft::t('app', 'draft'),
+            ])));
         } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
@@ -2077,6 +2083,7 @@ JS, [
             'modifiedAttributes' => $element->getModifiedAttributes(),
             'draftElementIds' => $draftElementIds,
             'draftElementUids' => $draftElementUids,
+            'canDeleteForSite' => $elementsService->canDeleteForSite($element, $user),
         ];
 
         if ($this->request->getIsCpRequest()) {

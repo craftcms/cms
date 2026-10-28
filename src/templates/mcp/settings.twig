@@ -1,0 +1,38 @@
+{% extends '_layouts/cp' %}
+{% import '_includes/forms' as forms %}
+{% set title = 'MCP'|t('app') %}
+{% set selectedSubnavItem = 'settings' %}
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+{% set fullPageForm = not readOnly %}
+{% set crumbs = [{label: 'Settings'|t('app'), url: url('settings')}] %}
+
+{% block content %}
+    {% if readOnly %}{% set contentNotice = readOnlyNotice() %}{% endif %}
+    {% if not readOnly %}
+        {{ actionInput('mcp-settings/save') }}
+        {{ redirectInput('settings/mcp') }}
+    {% endif %}
+
+    <p>{{ 'Authenticated clients connect to {endpoint}. Users need permission to access the control panel and use Craft MCP.'|t('app', {endpoint: cpUrl(craft.app.config.mcp.endpoint)}) }}</p>
+    <p>{{ 'Local clients can connect through php craft mcp/serve --user=….'|t('app') }}</p>
+
+    {{ forms.lightswitchField({label: 'Enable public MCP'|t('app'), name: 'settings[publicEnabled]', on: settings.publicEnabled, disabled: readOnly, errors: settings.getErrors('publicEnabled')}) }}
+    {{ forms.textField({label: 'Public MCP endpoint'|t('app'), instructions: 'Public clients can access only the capabilities and content sources selected below.'|t('app'), name: 'settings[publicRoute]', value: settings.publicRoute, required: true, disabled: readOnly, errors: settings.getErrors('publicRoute')}) }}
+
+    {% set labels = {
+        publicSiteHandles: 'Sites', publicSectionHandles: 'Sections', publicNestedEntryFieldHandles: 'Nested entry fields', publicVolumeHandles: 'Volumes', publicUserGroupHandles: 'User groups', publicElementTypes: 'Other element types',
+        publicTools: 'Tools', publicResources: 'Resources', publicResourceTemplates: 'Resource templates', publicPrompts: 'Prompts'
+    } %}
+    <h2>{{ 'Public content sources'|t('app') }}</h2>
+    {% for attribute, options in scopes %}
+        {{ forms.checkboxGroupField({label: labels[attribute]|t('app'), name: 'settings['~attribute~']', options: options, values: attribute(settings, attribute), disabled: readOnly, errors: settings.getErrors(attribute)}) }}
+    {% endfor %}
+    {% for attribute, label in {publicAllowDrafts: 'Allow drafts', publicAllowRevisions: 'Allow revisions', publicAllowInactive: 'Allow inactive content'} %}
+        {{ forms.lightswitchField({label: label|t('app'), name: 'settings['~attribute~']', on: attribute(settings, attribute), disabled: readOnly}) }}
+    {% endfor %}
+
+    <h2>{{ 'Public capabilities'|t('app') }}</h2>
+    {% for attribute, options in capabilities %}
+        {{ forms.checkboxGroupField({label: labels[attribute]|t('app'), name: 'settings['~attribute~']', options: options, values: attribute(settings, attribute), disabled: readOnly, errors: settings.getErrors(attribute)}) }}
+    {% endfor %}
+{% endblock %}

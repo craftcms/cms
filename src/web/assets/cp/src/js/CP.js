@@ -1441,6 +1441,20 @@ Craft.CP = Garnish.Base.extend(
       }
     },
 
+    hideSiteCrumbMenuItem: function (siteId) {
+      const menuItem = document.querySelector(
+        `#site-crumb-menu a[data-site-id="${siteId}"]`
+      );
+      if (menuItem) {
+        const li = menuItem.closest('li');
+        li.classList.add('hidden');
+        const group = li.closest('.menu-group');
+        if (group && !group.querySelector('li:not(.hidden)')) {
+          group.classList.add('hidden');
+        }
+      }
+    },
+
     setSiteCrumbMenuItemStatus: function (siteId, status) {
       const menuItem = document.querySelector(
         `#site-crumb-menu a[data-site-id="${siteId}"]`

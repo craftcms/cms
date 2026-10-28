@@ -13,6 +13,7 @@ use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
@@ -36,7 +37,8 @@ class Lightswitch extends Field implements
     SortableFieldInterface,
     MergeableFieldInterface,
     CrossSiteCopyableFieldInterface,
-    DefaultableFieldInterface
+    DefaultableFieldInterface,
+    InputSchemaFieldInterface
 {
     /**
      * @inheritdoc
@@ -340,5 +342,14 @@ class Lightswitch extends Field implements
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry(['viewMode' => 'cards']));
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'boolean'];
     }
 }

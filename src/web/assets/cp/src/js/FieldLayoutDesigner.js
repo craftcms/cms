@@ -1482,9 +1482,10 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
         continue;
       }
 
+      // (relative to the scroll container's mousedown scroll position)
       $item.data('midpoint', {
-        left: offset.left + $item.outerWidth() / 2,
-        top: offset.top + $item.outerHeight() / 2,
+        left: offset.left + this.scrollDeltaX + $item.outerWidth() / 2,
+        top: offset.top + this.scrollDeltaY + $item.outerHeight() / 2,
       });
     }
   },
@@ -1512,8 +1513,8 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
       this.getClosestItem._mouseDiff = Garnish.getDist(
         this.getClosestItem._midpoint.left,
         this.getClosestItem._midpoint.top,
-        this.mouseX,
-        this.mouseY
+        this.mouseX + this.scrollDeltaX,
+        this.mouseY + this.scrollDeltaY
       );
 
       if (
@@ -1974,6 +1975,9 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
 
     this.cancelToken = axios.CancelToken.source();
 
+    const $form = this.designer.$container.closest('form');
+    const postData = Craft.expandPostArray(Garnish.getPostData($form));
+
     let response;
     try {
       response = await Craft.sendActionRequest(
@@ -1982,7 +1986,10 @@ Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
         {
           cancelToken: this.cancelToken.token,
           data: {
-            fieldLayoutConfig: this.designer.config,
+            fieldLayoutConfig: {
+              ...JSON.parse(this.designer.$configInput.val()),
+              generatedFields: postData.generatedFields || null,
+            },
           },
         }
       );

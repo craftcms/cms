@@ -8,29 +8,34 @@
 namespace craft\web\assets\prismjs;
 
 use craft\web\AssetBundle;
+use craft\web\assets\highlight\HighlightAsset;
 
 /**
  * PrismJs asset bundle.
  *
- * Prism JS files are manually added to the `dist` directory.
+ * Prism is no longer bundled with Craft. This registers a `Prism` shim backed by TanStack Highlight,
+ * which supports Prism’s commonly-used APIs, but not grammar customization, hooks, or plugins.
+ *
+ * @deprecated in 5.12.0. [[HighlightAsset]] should be used instead.
  */
 class PrismJsAsset extends AssetBundle
 {
     /**
      * @inheritdoc
      */
-    public function init(): void
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->js = [
-            'prism.js',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        HighlightAsset::class,
+    ];
 
-        $this->css = [
-            'prism.css',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'prism.js',
+    ];
 }

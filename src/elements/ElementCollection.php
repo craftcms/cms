@@ -10,13 +10,11 @@ namespace craft\elements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ArrayHelper;
-use craft\helpers\ElementHelper;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Enumerable;
 use Twig\Markup;
-use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 
 /**
@@ -27,6 +25,7 @@ use yii\base\NotSupportedException;
  * @extends Collection<TKey,TElement>
  *
  * @method TElement one(callable|null $callback, mixed $default)
+ * @method Markup render(array $variables = [])
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.3.0
  */
@@ -363,23 +362,6 @@ class ElementCollection extends Collection
         $elements = array_filter($this->items, fn(ElementInterface $element) => !isset($keys[$element->id]));
         /** @phpstan-ignore-next-line */
         return new static(array_values($elements));
-    }
-
-    /**
-     * Renders the elements using their partial templates.
-     *
-     * If no partial template exists for an element, its string representation will be output instead.
-     *
-     * @param array $variables
-     * @return Markup
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     * @see ElementHelper::renderElements()
-     * @since 5.0.0
-     */
-    public function render(array $variables = []): Markup
-    {
-        return ElementHelper::renderElements($this->items, $variables);
     }
 
     // The following methods are intercepted to always return base collections.

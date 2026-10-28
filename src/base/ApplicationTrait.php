@@ -49,6 +49,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Markdown as MarkdownHelper;
 use craft\helpers\Session;
+use craft\helpers\Template as TemplateHelper;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
@@ -1348,6 +1349,12 @@ trait ApplicationTrait
         return $this->get('mutex');
     }
 
+    /** Returns the shared OAuth authorization service. @since 5.12.0 */
+    public function getOAuth(): \craft\services\OAuth
+    {
+        return $this->get('oauth');
+    }
+
     /**
      * Returns the path service.
      *
@@ -1600,6 +1607,12 @@ trait ApplicationTrait
         Collection::macro('one', function() {
             assert($this instanceof Collection);
             return $this->first(...func_get_args());
+        });
+
+        // Register Collection::render() for rendering collections of Renderable objects
+        Collection::macro('render', function(array $variables = []) {
+            assert($this instanceof Collection);
+            return TemplateHelper::render($this, $variables);
         });
 
         // Set the Craft edition

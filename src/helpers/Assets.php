@@ -257,8 +257,8 @@ class Assets
     {
         $title = StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename, false, true)));
 
-        if (strlen($title) > 255) {
-            $title = rtrim(substr($title, 255), ' ');
+        if (mb_strlen($title) > 255) {
+            $title = rtrim(mb_substr($title, 0, 255), ' ');
         }
 
         return $title;
@@ -577,6 +577,7 @@ class Assets
                         'jpeg',
                         'jpg',
                         'jpx',
+                        'jxl',
                         'pam',
                         'pfm',
                         'pgm',
@@ -599,6 +600,13 @@ class Assets
                     'label' => 'JSON',
                     'extensions' => [
                         'json',
+                    ],
+                ],
+                Asset::KIND_MARKDOWN => [
+                    'label' => 'Markdown',
+                    'extensions' => [
+                        'markdown',
+                        'md',
                     ],
                 ],
                 Asset::KIND_PDF => [

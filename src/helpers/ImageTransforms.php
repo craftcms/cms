@@ -301,7 +301,9 @@ class ImageTransforms
         }
 
         if (is_array($transform)) {
-            if (isset($transform['class'])) {
+            $transform = Component::cleanseConfig($transform);
+
+            if (array_key_exists('class', $transform) || array_key_exists('__class', $transform)) {
                 throw new InvalidArgumentException('Invalid transform config.');
             }
 
@@ -331,8 +333,8 @@ class ImageTransforms
             }
 
             return Craft::createObject([
-                'class' => ImageTransform::class,
                 ...$transform,
+                'class' => ImageTransform::class,
             ]);
         }
 
@@ -409,9 +411,11 @@ class ImageTransforms
         $imagesService = Craft::$app->getImages();
 
         $supported = match ($format) {
+            Format::ID_BMP => $imagesService->getSupportsBmp(),
             Format::ID_WEBP => $imagesService->getSupportsWebP(),
             Format::ID_AVIF => $imagesService->getSupportsAvif(),
             Format::ID_HEIC => $imagesService->getSupportsHeic(),
+            Format::ID_JXL => $imagesService->getSupportsJxl(),
             default => true,
         };
 

@@ -40,6 +40,7 @@ use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\records\User as UserRecord;
 use craft\web\Request;
+use craft\web\User as WebUser;
 use DateTime;
 use DateTimeZone;
 use Throwable;
@@ -888,7 +889,9 @@ class Users extends Component
             $userRecord->save();
 
             // If they have an unverified email address, now is the time to set it to their primary email address
-            $this->verifyEmailForUser($user);
+            if ($user->unverifiedEmail) {
+                $this->verifyEmailForUser($user);
+            }
 
             $transaction->commit();
         } catch (Throwable $e) {
@@ -981,18 +984,21 @@ class Users extends Component
      */
     public function verifyEmailForUser(User $user): void
     {
-        // Bail if they don't have an unverified email to begin with
-        if (!$user->unverifiedEmail) {
-            return;
-        }
-
         $userRecord = $this->_getUserRecordById($user->id);
-        $userRecord->email = $user->unverifiedEmail;
-        $userRecord->unverifiedEmail = null;
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
-            $userRecord->username = $user->unverifiedEmail;
+        if ($user->unverifiedEmail) {
+            $userRecord->email = $user->unverifiedEmail;
+            $userRecord->unverifiedEmail = null;
+
+            if ($generalConfig->useEmailAsUsername) {
+                $userRecord->username = $user->unverifiedEmail;
+            }
         }
+
+        // Clear out the verification code
+        $userRecord->verificationCode = null;
+        $userRecord->verificationCodeIssuedDate = null;
 
         $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
 
@@ -1000,6 +1006,18 @@ class Users extends Component
             $user->addErrors($userRecord->getErrors());
             throw new InvalidElementException($user);
         }
+
+        if ($user->unverifiedEmail) {
+            $user->email = $user->unverifiedEmail;
+            $user->unverifiedEmail = null;
+
+            if ($generalConfig->useEmailAsUsername) {
+                $user->username = $user->email;
+            }
+        }
+
+        $user->verificationCode = null;
+        $user->verificationCodeIssuedDate = null;
 
         // If the user status is pending, let's activate them.
         if ($userRecord->pending) {
@@ -1058,6 +1076,34 @@ class Users extends Component
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
         }
+    }
+
+    /**
+     * Destroys all of a user’s sessions, besides the one the current request was made from
+     * (if it belongs to the same user).
+     *
+     * This should be called whenever a security-sensitive change is made to a user’s account, such as
+     * enabling a new authentication method, so that any sessions which were established beforehand
+     * are no longer trusted.
+     *
+     * @param User $user The user.
+     * @since 5.11.4
+     */
+    public function destroyOtherSessions(User $user): void
+    {
+        $condition = ['userId' => $user->id];
+
+        // Leave the current request’s session alone, if it belongs to the same user
+        $userSession = Craft::$app->getUser();
+        if (
+            $userSession instanceof WebUser &&
+            $user->getIsCurrent() &&
+            $token = $userSession->getToken()
+        ) {
+            $condition = ['and', $condition, ['not', ['token' => $token]]];
+        }
+
+        Db::delete(Table::SESSIONS, $condition);
     }
 
     /**

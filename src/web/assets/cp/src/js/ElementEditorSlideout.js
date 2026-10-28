@@ -151,6 +151,48 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       this.base();
     },
 
+    /**
+     * Reloads the slideout for the element in a different site.
+     *
+     * @param {number} siteId
+     * @returns {Promise}
+     */
+    switchSite: async function (siteId) {
+      if (siteId == this.settings.siteId) {
+        return;
+      }
+
+      if (this.elementEditor) {
+        if (
+          this.elementEditor.settings.canCreateDrafts &&
+          this.elementEditor.enableAutosave
+        ) {
+          // Make sure any pending changes have been saved to the draft
+          await this.elementEditor.checkForm();
+        } else if (
+          this.isDirty() &&
+          !confirm(
+            Craft.t(
+              'app',
+              'Are you sure you want to switch sites? Any changes will be lost.'
+            )
+          )
+        ) {
+          return;
+        }
+      }
+
+      // Keep the sidebar open, so the site change is visible
+      if (this.showingSidebar) {
+        this.once('load', () => {
+          this.showSidebar(false);
+        });
+      }
+
+      this.settings.siteId = siteId;
+      this.reload();
+    },
+
     handleSubmit: async function (ev) {
       if (ev.type !== 'submit' && this.elementEditor.settings.canCreateDrafts) {
         // first, we have to save the draft and then fully save;
@@ -173,20 +215,24 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
 
       // update the `error` class in nested cards
       if (e?.response?.data?.invalidNestedElementIds) {
-        const $cards = this.$content.find('.element.card').removeClass('error');
-        $cards
+        const $cardsAndChips = this.$content
+          .find('.element.card, .element.chip')
+          .removeClass('error');
+        $cardsAndChips
           .find('craft-element-label > span[data-icon="triangle-exclamation"]')
           .remove();
         if (e.response.data.invalidNestedElementIds.length) {
-          const $errorCards = $cards
+          const $errorCardsAndChips = $cardsAndChips
             .filter(
               e.response.data.invalidNestedElementIds
                 .map((id) => `[data-id=${id}]`)
                 .join(',')
             )
             .addClass('error');
-          for (let i = 0; i < $errorCards.length; i++) {
-            const $label = $errorCards.eq(i).find('craft-element-label');
+          for (let i = 0; i < $errorCardsAndChips.length; i++) {
+            const $label = $errorCardsAndChips
+              .eq(i)
+              .find('craft-element-label');
             $('<span/>', {
               'data-icon': 'triangle-exclamation',
               'aria-label': Craft.t('app', 'Error'),
