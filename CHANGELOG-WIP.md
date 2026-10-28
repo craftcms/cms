@@ -746,6 +746,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Removed the `Craft.Accordion` and `Craft.EnvVarGenerator` control panel JavaScript classes. ([#19323](https://github.com/craftcms/cms/pull/19323))
 - Removed the `Craft.ImageUpload` control panel JavaScript class.
 - `Craft.LivePreview` is now provided by the Yii2 adapter.
+- `Craft.AssetImageEditor`, `Craft.GroupedEntryTypeManager`, `Craft.RecoveryCodesSetup`, `Craft.SortableCheckboxSelect`, and `Craft.TagSelectInput` are now provided by the Yii2 adapter.
 - Deprecated the `Craft.LightSwitch`, `Craft.InfoIcon`, `Craft.ColorInput`, `Craft.PasswordInput`, `Craft.IconPicker`, `Craft.SlidePicker`, `Craft.SlideRuleInput`, and `Craft.Tooltip` control panel JavaScript classes, along with the `.infoicon` jQuery plugin. The corresponding `@craftcms/ui` web components should be used instead. 
 - Deprecated the `Craft.SortableCheckboxSelect` control panel JavaScript class. `<craft-checkbox-select>` should be used instead. ([#20036](https://github.com/craftcms/cms/pull/20036))
 
