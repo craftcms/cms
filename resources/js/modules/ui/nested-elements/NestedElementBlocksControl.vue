@@ -368,10 +368,9 @@
   /**
    * Collapsed blocks live in localStorage, not the value — it's a view
    * preference, and posting it would mark the ui dirty just for collapsing
-   * something. Craft 5 did the same. `collapsedTick` re-reads storage after a
-   * write, since a plain module read isn't reactive.
+   * something. Craft 5 did the same. Reads through `collapsed-blocks` are
+   * reactive, so any write to it re-renders the blocks it affects.
    */
-  const collapsedTick = ref(0);
   /**
    * What each folded-up block says about itself when it has no UI label, taken
    * off its inputs as it folds — the same moment Craft 5 took it, and the only
@@ -380,8 +379,6 @@
   const previews = ref(new Map<string, string[]>());
 
   function isCollapsed(uid: string): boolean {
-    void collapsedTick.value;
-
     return isBlockCollapsed(uid, props.control.props.siteId);
   }
 
@@ -443,8 +440,6 @@
         posts = true;
       }
     }
-
-    collapsedTick.value++;
 
     if (posts) {
       emit('update:value', next, 'discrete');
@@ -532,7 +527,6 @@
         setBlockCollapsed(uid, true, props.control.props.siteId);
       }
     }
-    collapsedTick.value++;
     void initializeMinimumEntries();
 
     // A block that opens folded up still needs its summary, and its fields are
@@ -543,7 +537,6 @@
           capturePreview(uid, true);
         }
       }
-      collapsedTick.value++;
     });
   });
 
@@ -1178,8 +1171,6 @@
    * fell back.
    */
   function previewText(uid: string): string {
-    void collapsedTick.value;
-
     return uiLabel(uid) || (previews.value.get(uid) ?? []).join(' | ');
   }
 
@@ -1344,7 +1335,6 @@
         setBlockCollapsed(uid, !effective, props.control.props.siteId);
       }
     }
-    collapsedTick.value++;
 
     emit('update:value', next, 'discrete');
   }
