@@ -51,7 +51,7 @@ readonly class PublicRouteRegistrar
         $this->router->options($this->access->route(), [McpController::class, 'preflight'])
             ->middleware($middleware)
             ->defaults('publicMcp', true);
-        $this->router->post($this->access->route(), [McpController::class, 'public'])
+        $this->router->match(['POST', 'DELETE'], $this->access->route(), [McpController::class, 'public'])
             ->middleware($middleware)
             ->defaults('publicMcp', true)
             ->name('craft.mcp.public');
