@@ -128,6 +128,14 @@ class McpController extends Controller
         }
 
         $request = ServerRequest::fromGlobals();
+
+        // Validate the host Craft resolved (which respects trusted proxies’ X-Forwarded-Host) rather than the raw
+        // Host header, which reverse proxies like Craft Cloud’s gateway may rewrite.
+        $hostName = $this->request->getHostName();
+        if ($hostName !== null) {
+            $request = $request->withHeader('Host', $hostName);
+        }
+
         $response = (new StatelessHttpTransport(
             protocol: $protocol,
             middleware: Craft::$app->get('mcp')->getCapabilityContainer()->get(HttpTransportMiddleware::class)->forRequest($request),
