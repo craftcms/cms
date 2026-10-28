@@ -272,7 +272,7 @@ Craft.AssetMover = Garnish.Base.extend(
 
           // Loop through all the responses
           for (const response of responses) {
-            if (response.success) {
+            if (response.success && !response.conflict) {
               if (response.newFolderId) {
                 this.undoMovedFolders.folderIds.push(response.newFolderId);
                 if (this.undoMovedFolders.targetFolderId === null) {

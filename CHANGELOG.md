@@ -19,6 +19,8 @@
 - Fixed a bug where pruning revisions could delete nested element revisions in other sites that newer revisions still referenced. ([#20042](https://github.com/craftcms/cms/issues/20042))
 - Fixed an error that occurred when logging in with a passkey that was registered with an older version of Craft. ([#20052](https://github.com/craftcms/cms/issues/20052))
 - Fixed a bug where closing an element selector modal while it was loading caused it to keep loading all of the source’s elements in the background. ([#20100](https://github.com/craftcms/cms/issues/20100))
+- Fixed an error that occurred when moving an asset and choosing to replace an existing asset with the same filename. ([#20128](https://github.com/craftcms/cms/issues/20128))
+- Fixed a bug where moving assets or folders could report that items had been moved when a conflict prevented them from moving. ([#20128](https://github.com/craftcms/cms/issues/20128))
 
 ## 5.11.5.1 - 2026-10-08
 
