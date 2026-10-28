@@ -164,7 +164,12 @@ step 'Install test browser' pnpm exec playwright install --with-deps --only-shel
 # checkout. HUSKY=0 stops 5.x's prepare script from pointing the shared
 # core.hooksPath at .husky/_, which would disable this checkout's hooks.
 craft5=$(realpath -m ../cms-5.x)
-step 'Fetch 5.x' git fetch --quiet --depth=1 origin 5.x
+# Fetch shallowly only into a shallow checkout; --depth would re-shallow full history.
+fetch_depth=()
+if [[ $(git rev-parse --is-shallow-repository) == true ]]; then
+    fetch_depth=(--depth=1)
+fi
+step 'Fetch 5.x' git fetch --quiet "${fetch_depth[@]}" origin +5.x:refs/remotes/origin/5.x
 if [[ ! -d $craft5 ]]; then
     git worktree add --quiet --detach "$craft5" origin/5.x
 else
