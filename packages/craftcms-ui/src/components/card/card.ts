@@ -9,6 +9,28 @@ import {
   hasSlotted,
   LightDomController,
 } from '@src/controllers/LightDomController';
+import {
+  coverAppearance,
+  COVER_INK_OPACITY,
+  type CoverAppearance,
+  type CoverTheme,
+  type Luminance,
+} from './cover.js';
+
+const ink = (theme: CoverTheme) =>
+  theme === 'dark'
+    ? `rgb(255 255 255 / ${COVER_INK_OPACITY.dark})`
+    : `rgb(0 0 0 / ${COVER_INK_OPACITY.light})`;
+
+const solid = (theme: CoverTheme) => (theme === 'dark' ? '#000' : '#fff');
+
+const surface = (theme: CoverTheme, opacity: number) =>
+  theme === 'dark'
+    ? `rgb(0 0 0 / ${opacity})`
+    : `rgb(255 255 255 / ${opacity})`;
+
+const rule = (theme: CoverTheme) =>
+  theme === 'dark' ? 'rgb(255 255 255 / 20%)' : 'rgb(0 0 0 / 15%)';
 
 /**
  * @summary A surface that groups related content into a bordered, rounded
@@ -37,7 +59,7 @@ import {
  *   filled.
  * @slot thumbnail - Artwork shown in a fixed column beside the body. Rendered
  *   only while `show-thumb` is set; `thumb-alignment` puts the column at the
- *   start or the end of the body.
+ *   start or the end of the body. Not shown on a cover card.
  *
  * @csspart base - The card's outermost element, which carries the surface and
  *   the border.
@@ -48,8 +70,11 @@ import {
  * @csspart body - The region holding the thumbnail column and the content.
  * @csspart thumbnail - The fixed column the `thumbnail` slot renders into.
  * @csspart footer - The default footer region.
+ * @csspart cover - A cover card's image.
  *
  * @attr collapsed - Collapses the card to its header.
+ * @attr cover-src - Makes this a cover card: the image fills the card, and the
+ *   header and body are laid over it. See `luminance`.
  *
  * @cssproperty --c-card-border-width - Border width. Defaults to `1px`.
  * @cssproperty --c-card-radius - Corner radius. Defaults to `--c-radius-md`.
@@ -114,6 +139,32 @@ export default class CraftCard extends Paddable(LitElement, {
     'start';
 
   /**
+   * URL of an image that covers the whole card, with the header and body laid
+   * over it, in place of a thumbnail. The image is decorative: the card's
+   * content should say what it shows.
+   */
+  @property({attribute: 'cover-src'}) coverSrc = '';
+
+  /**
+   * A cover image's luminance, as rows of regions from top to bottom, each a
+   * `[P10, P90]` pair of relative luminances, or `null` for a transparent
+   * region (an asset's `analysis.colors.luminance`). The card picks white or
+   * black text and controls for its header and body from it, and lays just
+   * enough black or white behind them to meet contrast. Without it, both are
+   * white over a heavier black.
+   *
+   * The card sets `data-theme` on the children it lays over the image, so
+   * their controls take the matching theme, and `data-cover`: `body` on the
+   * body's and footer's, and the header's treatment on the header's: `bar`
+   * when it has a label, `backed` when its controls need a backing to stand
+   * out from the image, or `bare`.
+   */
+  @property({type: Array}) luminance: Luminance | null = null;
+
+  /** Children whose `data-theme` the card has set for its cover. */
+  private _themed = new Set<Element>();
+
+  /**
    * The header, footer, and thumbnail regions only render when they have
    * something in them, so their slots can't report their own changes — an
    * unrendered slot never fires `slotchange`. The controller re-renders the
@@ -122,11 +173,91 @@ export default class CraftCard extends Paddable(LitElement, {
    */
   private _lightDom = new LightDomController(this);
 
+  /**
+   * Whether the header has a label: the `label` attribute or slot, or a
+   * `[data-card-label]` element in the `header` slot.
+   */
+  private _hasLabel(): boolean {
+    return (
+      !!this.label ||
+      hasSlotted(this, 'label') ||
+      Array.from(this.children).some(
+        (child) =>
+          child.slot === 'header' && !!child.querySelector('[data-card-label]')
+      )
+    );
+  }
+
+  private _cover(): CoverAppearance | null {
+    return this.coverSrc
+      ? coverAppearance(this.luminance, this._hasLabel())
+      : null;
+  }
+
+  private _coverStyles(cover: CoverAppearance | null) {
+    if (!cover) {
+      return {};
+    }
+
+    const {header, body} = cover;
+
+    return {
+      '--_header-ink': ink(header.theme),
+      '--_header-solid': solid(header.theme),
+      '--_header-fill': surface(header.theme, header.opacity),
+      '--_header-backing':
+        header.treatment === 'backed'
+          ? surface(header.theme, header.opacity)
+          : undefined,
+      '--_header-rule': rule(header.theme),
+      '--_body-ink': ink(body.theme),
+      '--_body-solid': solid(body.theme),
+      '--_body-scrim': String(body.opacity),
+      '--_body-rule': rule(body.theme),
+    };
+  }
+
+  override updated() {
+    const cover = this._cover();
+    const themed = new Set<Element>();
+
+    if (cover) {
+      for (const child of Array.from(this.children)) {
+        if (child.slot === 'thumbnail') {
+          continue;
+        }
+
+        const inBody = child.slot === '' || child.slot === 'footer';
+        child.setAttribute(
+          'data-theme',
+          inBody ? cover.body.theme : cover.header.theme
+        );
+        child.setAttribute(
+          'data-cover',
+          inBody ? 'body' : cover.header.treatment
+        );
+
+        themed.add(child);
+      }
+    }
+
+    for (const child of this._themed) {
+      if (!themed.has(child)) {
+        child.removeAttribute('data-theme');
+        child.removeAttribute('data-cover');
+      }
+    }
+
+    this._themed = themed;
+  }
+
   override render() {
     const hasSlottedHeader =
       !!this.label || hasSlotted(this, 'header', 'label', 'badge', 'actions');
     const hasSlottedFooter = hasSlotted(this, 'footer');
-    const showThumbnail = this.showThumb && hasSlotted(this, 'thumbnail');
+    const cover = this._cover();
+    const showThumbnail =
+      !cover && this.showThumb && hasSlotted(this, 'thumbnail');
 
     return html`
       <div
@@ -134,9 +265,24 @@ export default class CraftCard extends Paddable(LitElement, {
         class="${classMap({
           card: true,
           'card--has-thumbnail': showThumbnail,
+          'card--cover': !!cover,
+          'card--cover-bar': cover?.header.treatment === 'bar',
         })}"
-        style="${styleMap(this.paddingStyles)}"
+        style="${styleMap({
+          ...this.paddingStyles,
+          ...this._coverStyles(cover),
+        })}"
       >
+        ${cover
+          ? html`<img
+              class="card__cover"
+              part="cover"
+              src="${this.coverSrc}"
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />`
+          : nothing}
         ${hasSlottedHeader
           ? html`<div class="card__header" part="header">
               <slot name="header">

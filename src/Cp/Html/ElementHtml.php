@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Html;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -573,7 +574,7 @@ readonly class ElementHtml
             'class' => ['flex', 'flex-nowrap', 'gap-1', 'grow-1', 'items-center'],
         ]).
             ($icon ? Html::tag('craft-icon', '', ['name' => $icon]) : '').
-            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label']) : '').
+            ($title ? Html::tag('div', Html::encode($title), ['class' => 'card-titlebar-label', 'data-card-label' => true]) : '').
             Html::endTag('div'). // .flex
             $this->cardModifiedStatusHtml($element);
     }
@@ -973,6 +974,9 @@ readonly class ElementHtml
             $classes[] = 'error';
         }
 
+        $coverUrl = $element instanceof Asset ? $element->getCardCoverUrl() : null;
+        $luminance = $coverUrl !== null ? $element->analysis?->colors?->luminance : null;
+
         $thumb = $element->getThumbHtml(120, ImageTransformMode::Fit);
         $thumbAlignment = $element->getFieldLayout()?->getCardThumbAlignment() ?? 'end';
 
@@ -986,6 +990,8 @@ readonly class ElementHtml
             $this->baseElementAttributes($element, $config),
             [
                 'class' => $classes,
+                'cover-src' => $coverUrl,
+                'luminance' => $luminance ?: null,
                 'style' => array_filter([
                     '--custom-border-color' => $color?->cssVar(200),
                     '--custom-titlebar-bg-color' => $color?->cssVar(100),

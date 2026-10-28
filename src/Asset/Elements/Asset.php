@@ -2781,6 +2781,29 @@ JS, [
     }
 
     /**
+     * Returns the URL of a 4:3 thumbnail that can cover the asset's card, or `null` if the asset should keep a normal
+     * card.
+     *
+     * Only images that could be transparent are left out, along with images smaller than 480×360, which would be scaled
+     * up, and images narrower than 3:4 or wider than 2:1, which would be cropped too far to tell what they show.
+     */
+    public function getCardCoverUrl(): ?string
+    {
+        if ($this->kind !== FileKind::Image->value || $this->hasCheckeredThumb()) {
+            return null;
+        }
+
+        $width = (int) $this->getWidth();
+        $height = (int) $this->getHeight();
+
+        if ($width < 480 || $height < 360 || $width * 4 < $height * 3 || $width > $height * 2) {
+            return null;
+        }
+
+        return AssetsService::getThumbUrl($this, 800, 600, false, ImageTransformMode::Crop);
+    }
+
+    /**
      * Returns a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs)
      * of a small PNG blurred from the image's color grid, or `null` if its colors aren't known.
      *

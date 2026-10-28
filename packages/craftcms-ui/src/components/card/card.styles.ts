@@ -310,4 +310,107 @@ export default css`
   .card-body__main {
     grid-area: main;
   }
+
+  /* Classes are repeated to outrank the color and selection rules above. */
+  :host .card.card--cover.card--cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    aspect-ratio: 4 / 3;
+    color: var(--_body-ink);
+    background-color: var(--c-color-neutral-fill-quiet);
+    border: 0;
+    padding: var(--c-card-border-width, 1px);
+    isolation: isolate;
+  }
+
+  .card__cover {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .card--cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 var(--c-card-border-width, 1px)
+      var(--c-color-border-quiet, var(--c-color-neutral-border-quiet));
+    pointer-events: none;
+  }
+
+  :host([active]) .card.card--cover.card--cover {
+    box-shadow: 0 0 0 2px var(--c-color-accent-border-normal);
+  }
+
+  :host([active]) .card--cover::after {
+    box-shadow: inset 0 0 0 var(--c-card-border-width, 1px)
+      var(--c-color-accent-border-normal);
+  }
+
+  :host .card.card--cover .card__header.card__header {
+    --_cover-ink: var(--_header-ink);
+    --_cover-solid: var(--_header-solid);
+    --_cover-backing: var(--_header-backing);
+    color: var(--_header-ink);
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  :host .card.card--cover-bar .card__header.card__header {
+    background-color: var(--_header-fill);
+    backdrop-filter: blur(var(--blur-md, 12px));
+    border-color: var(--_header-rule);
+  }
+
+  :host .card--cover .card-body.card-body {
+    --_cover-ink: var(--_body-ink);
+    --_cover-solid: var(--_body-solid);
+    --_fade: 4.5rem;
+    display: block;
+    color: var(--_body-ink);
+    padding-block-start: calc(var(--_body-padding-block) + var(--_fade));
+    background: linear-gradient(
+      to top,
+      rgb(from var(--_body-solid) r g b / var(--_body-scrim))
+        calc(100% - var(--_fade)),
+      rgb(from var(--_body-solid) r g b / calc(var(--_body-scrim) * 0.7))
+        calc(100% - var(--_fade) * 0.7),
+      rgb(from var(--_body-solid) r g b / calc(var(--_body-scrim) * 0.4))
+        calc(100% - var(--_fade) * 0.45),
+      rgb(from var(--_body-solid) r g b / calc(var(--_body-scrim) * 0.15))
+        calc(100% - var(--_fade) * 0.2),
+      transparent
+    );
+  }
+
+  :host .card.card--cover .card__footer.card__footer {
+    --_cover-ink: var(--_body-ink);
+    --_cover-solid: var(--_body-solid);
+    color: var(--_body-ink);
+    background-color: rgb(from var(--_body-solid) r g b / var(--_body-scrim));
+    border-color: var(--_body-rule);
+  }
+
+  @media (forced-colors: active) {
+    :host .card.card--cover.card--cover {
+      border: var(--c-card-border-width, 1px) solid CanvasText;
+      padding: 0;
+    }
+
+    :host([active]) .card.card--cover.card--cover {
+      border-color: Highlight;
+    }
+
+    :host .card.card--cover .card__header.card__header,
+    :host .card--cover .card-body.card-body,
+    :host .card.card--cover .card__footer.card__footer {
+      background: Canvas;
+    }
+  }
 `;

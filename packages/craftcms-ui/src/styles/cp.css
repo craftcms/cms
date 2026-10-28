@@ -158,3 +158,44 @@ craft-button.paste-btn {
     }
   }
 }
+
+craft-card > [data-cover] {
+  --c-text-default: var(--_cover-ink);
+  --c-text-quiet: var(--_cover-ink);
+  --c-text-link: currentColor;
+  --c-link-decoration: underline;
+  --c-link-decoration-hover: none;
+  --c-color-on-quiet: var(--_cover-ink);
+  --c-checkbox-border-color: var(--_cover-ink);
+  --c-checkbox-checked-fill: var(--_cover-ink);
+  --c-checkbox-checked-mark: var(--_cover-solid);
+  --c-input-fill: var(--_cover-backing, transparent);
+  color: var(--_cover-ink);
+  background-color: transparent;
+
+  craft-button:is([variant~='plain'], [variant~='danger-plain']) {
+    --c-color-on-quiet: var(--_cover-ink);
+  }
+}
+
+craft-card > [data-cover]:not([data-cover='body']) {
+  craft-button {
+    margin-inline: 0;
+  }
+
+  :is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'] {
+    box-shadow: 0 0 0 1px var(--_cover-backing, transparent);
+  }
+}
+
+craft-card > [data-cover='backed'] craft-button[variant~='plain'] {
+  background-color: var(--_cover-backing);
+
+  &:hover:not([disabled]) {
+    background-color: color-mix(
+      in srgb,
+      var(--_cover-backing),
+      var(--_cover-ink) 15%
+    );
+  }
+}

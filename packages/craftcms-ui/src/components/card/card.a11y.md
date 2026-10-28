@@ -19,6 +19,17 @@
 - [ ] The text in the header, body, and footer reaches 4.5:1 against its fill in the default and `active` states, in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Not yet verified for every color. A black card's body, whose quiet fill is dark, is covered by `keeps a black card’s body text readable on a light page, selected or not` in `card.browser.test.ts`.
 - [ ] The `active` state stays distinguishable in forced colors mode. Known gap: it's drawn with fill and border colors only, which forced colors mode replaces, so an active card looks the same as any other.
 
+### Cover cards
+
+- [x] A cover card's label reaches 4.5:1 against its header bar, and the checkbox and plain buttons in a header without a label reach 4.5:1 against their backing, over the image. Per WCAG 1.4.3 (Contrast (Minimum)) and 1.4.11 (Non-text Contrast). Verified by `gives a cover card’s label and backed controls 4.5:1 over the image` in `card.browser.test.ts`.
+- [x] The header bar, the controls' backing, and the content's scrim are as light as they can be while bringing the semi-transparent white or black text up to 4.5:1 (the bar and backing) or 7:1 (the scrim) against the region's 10th or 90th luminance percentile, with floors for detail too small to show in the luminance. Per WCAG 1.4.3 (Contrast (Minimum)) and 1.4.11 (Non-text Contrast). Verified by `brings the label and content up to their targets over %s`, `backs the controls up to 4.5:1 where the image alone falls short`, and `leaves the controls bare only where the image alone gives them 4.5:1` in `cover.test.ts`.
+- [x] White or black is picked for the header from the top of the image, and for the content from the bottom. Per WCAG 1.4.3 (Contrast (Minimum)). Verified by `reads the header from the top row and the content from the bottom row` in `cover.test.ts`.
+- [x] Without luminance, the header and content are white over a heavier black. Per WCAG 1.4.3 (Contrast (Minimum)). Verified by `lays heavy black under white when the luminance is %s` in `cover.test.ts`.
+- [x] The header's content and controls take a `data-theme` that matches the ink, and the thumbnail doesn't. Per WCAG 1.4.11 (Non-text Contrast). Verified by `themes a cover card’s header and body, and leaves its thumbnail alone` in `card.browser.test.ts`.
+- [x] A label bar doesn't move anything in the header, so the controls stay where they are from card to card. Not a WCAG requirement. Verified by `keeps a cover card’s header controls in place when its header gets a label bar` in `card.browser.test.ts`.
+- [ ] In forced colors mode, the header, body, and footer take the `Canvas` color over the image, and the card a `CanvasText` border. Per WCAG 1.4.3 (Contrast (Minimum)). Not yet verified in a forced colors browser.
+- [ ] Thin, bright, or dark detail (a road, a sunlit edge) can be too small to show in the luminance, so text over it can fall below 4.5:1 in places. The floors keep this to small areas: across the workbench's photos, measured pixel by pixel behind the content's text, the worst photo still gave 99% of it at least 4:1, and none of it less than 2.8:1. Known gap.
+
 ### Scrolling and reflow
 
 - [ ] At 320 CSS px, the body and the thumbnail column fit without horizontal scrolling. Per WCAG 1.4.10 (Reflow). Not yet verified: the thumbnail column is a fixed 120px.
@@ -31,3 +42,4 @@
 - 4.1.2 (Name, Role, Value): `active` and `collapsed` aren't exposed, so the control that sets them exposes the state. See [Accessibility](./Card.mdx#accessibility).
 - 4.1.2 (Name, Role, Value): name icon-only buttons in the `actions` slot. See [Accessibility](./Card.mdx#accessibility).
 - 1.1.1 (Non-text Content): give a thumbnail that carries meaning a name, and hide one that doesn't. See [Accessibility](./Card.mdx#accessibility).
+- 1.1.1 (Non-text Content): a cover image is decorative, so the card's content says what the image shows. See [Accessibility](./Card.mdx#accessibility).

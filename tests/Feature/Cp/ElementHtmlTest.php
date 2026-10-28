@@ -2,12 +2,17 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
+use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Events\ElementCardHtmlResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Image\Data\ImageColors;
+use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
@@ -174,6 +179,29 @@ describe('elementCardHtml', function () {
         expect($html)->toContain('class="card')
             ->and($html)->toContain('name="myFieldName[]"');
     });
+
+    it('covers an asset’s card only with an opaque image that can fill it', function (string $filename, int $width, int $height, bool $covered, string $color = '#3a6ea5') {
+        new ControlPanelAssetTransformDriver()->register();
+        Cms::config()->defaultAssetTransformer('test');
+        $asset = Asset::factory()->createElement(['filename' => $filename, 'width' => $width, 'height' => $height]);
+        $luminance = [[[0.1, 0.6], null], [[0.02, 0.3], [0.05, 0.4]]];
+        $asset->analysis = new ImageAnalysis(colors: new ImageColors(grid: [[$color]], luminance: $luminance));
+
+        $attributes = $this->elementHtml->elementCardAttributes($asset);
+
+        expect($attributes['cover-src'] ?? null)->toBe($covered ? '/transforms/800x600.webp' : null)
+            ->and($attributes['luminance'] ?? null)->toBe($covered ? $luminance : null);
+    })->with([
+        'smallest' => ['photo.jpg', 480, 360, true],
+        'too narrow' => ['photo.jpg', 479, 360, false],
+        'too short' => ['photo.jpg', 480, 359, false],
+        'widest' => ['photo.jpg', 1200, 600, true],
+        'too wide' => ['photo.jpg', 1201, 600, false],
+        'tallest' => ['photo.jpg', 600, 800, true],
+        'too tall' => ['photo.jpg', 599, 800, false],
+        'opaque png' => ['logo.png', 800, 600, true],
+        'transparent' => ['logo.png', 800, 600, false, '#3a6ea580'],
+    ]);
 
     it('dispatches and allows overriding ElementCardHtmlResolving', function () {
         $user = User::findOne(1);

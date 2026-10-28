@@ -8,6 +8,7 @@ import '../checkbox/checkbox.js';
 import '../badge/badge.js';
 import {contrast} from '../../../test/contrast';
 import type CraftCard from './card.js';
+import type {Luminance} from './cover.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -637,4 +638,101 @@ it('keeps quiet text and form controls legible on a white card in the dark theme
 
   expect(contrast(colorOf('.quiet'), fill)).toBeGreaterThanOrEqual(4.5);
   expect(contrast(colorOf('.control'), fill)).toBeGreaterThanOrEqual(3);
+});
+
+const GRAY_IMAGE = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="6"><rect width="8" height="6" fill="#777"/></svg>'
+)}`;
+
+const GRAY_LUMINANCE: Luminance = [[[0.184, 0.184]]];
+
+async function coverCard(label = ''): Promise<CraftCard> {
+  document.body.innerHTML = `
+    <craft-card cover-src="${GRAY_IMAGE}" style="inline-size: 320px">
+      <div slot="header" style="display: flex; justify-content: space-between; inline-size: 100%">
+        <div class="start" style="display: flex; gap: 8px">
+          <craft-checkbox label-sr-only><label slot="label">Select</label></craft-checkbox>
+          ${label ? `<span data-card-label>${label}</span>` : ''}
+        </div>
+        <craft-button icon="ellipsis" variant="plain" inherit size="small" flush aria-label="Actions"></craft-button>
+      </div>
+      <a href="#">Photo</a>
+      <div slot="thumbnail">Thumbnail</div>
+    </craft-card>`;
+  const card = document.querySelector<CraftCard>('craft-card')!;
+  card.luminance = GRAY_LUMINANCE;
+  await card.updateComplete;
+  await new Promise((resolve) => setTimeout(resolve));
+  await card.updateComplete;
+
+  return card;
+}
+
+it('keeps a cover card’s header controls in place when its header gets a label bar', async () => {
+  const card = await coverCard('Photo');
+  const header = card.querySelector('[slot="header"]')!;
+  const label = card.querySelector('[data-card-label]')!;
+  const positions = () =>
+    [
+      card.shadowRoot!.querySelector('.card__header')!,
+      card.querySelector('craft-checkbox > input')!,
+      label,
+      card.querySelector('craft-button')!,
+    ].map((element) => {
+      const {x, y, width, height} = element.getBoundingClientRect();
+      return [x, y, width, height];
+    });
+
+  const bar = positions();
+  label.removeAttribute('data-card-label');
+  card.requestUpdate();
+  await card.updateComplete;
+
+  expect(header.getAttribute('data-cover')).toBe('backed');
+  expect(positions()).toEqual(bar);
+});
+
+it('themes a cover card’s header and body, and leaves its thumbnail alone', async () => {
+  const card = await coverCard();
+  const theme = (selector: string) =>
+    card.querySelector(selector)!.getAttribute('data-theme');
+
+  expect([
+    theme('[slot="header"]'),
+    theme('a'),
+    theme('[slot="thumbnail"]'),
+  ]).toEqual(['dark', 'dark', null]);
+
+  card.removeAttribute('cover-src');
+  await card.updateComplete;
+
+  expect([theme('[slot="header"]'), theme('a')]).toEqual([null, null]);
+});
+
+it('gives a cover card’s label and backed controls 4.5:1 over the image', async () => {
+  const labeled = await coverCard('Photo');
+  const bar = getComputedStyle(
+    labeled.shadowRoot!.querySelector('.card__header')!
+  ).backgroundColor;
+  const label = getComputedStyle(
+    labeled.querySelector('[data-card-label]')!
+  ).color;
+
+  expect(contrast(label, bar, '#777')).toBeGreaterThanOrEqual(4.5);
+
+  const backed = await coverCard();
+  const checkbox = getComputedStyle(
+    backed.querySelector('craft-checkbox > input')!
+  );
+  const button = getComputedStyle(backed.querySelector('craft-button')!);
+
+  expect(
+    backed.querySelector('[slot="header"]')!.getAttribute('data-cover')
+  ).toBe('backed');
+  expect(
+    contrast(checkbox.borderTopColor, checkbox.backgroundColor, '#777')
+  ).toBeGreaterThanOrEqual(4.5);
+  expect(
+    contrast(button.color, button.backgroundColor, '#777')
+  ).toBeGreaterThanOrEqual(4.5);
 });
