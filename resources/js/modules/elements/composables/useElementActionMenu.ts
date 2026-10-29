@@ -12,6 +12,7 @@ import {
   openImageEditorDialog,
   type ImageEditorSettings,
 } from '@/modules/image-editor/open-image-editor-dialog';
+import {getCpUrl} from '@/common/craft/url';
 
 /** Identifies an element for the CP clipboard. */
 interface ElementCopyRef {
@@ -196,7 +197,7 @@ export function createElementActionDispatcher({
         const entryTypeId = currentEntryTypeId?.();
         const url =
           behavior.entryTypeFromField && entryTypeId
-            ? Craft.getCpUrl(`settings/entry-types/${entryTypeId}`)
+            ? getCpUrl(`settings/entry-types/${entryTypeId}`)
             : behavior.url;
         // The store sends focus to the menu's button once the item is hidden.
         void openSlideout(url, trigger ? {opener: trigger} : {});

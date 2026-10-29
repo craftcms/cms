@@ -138,9 +138,7 @@ it('adds a field returned by the field editor slideout', () => {
   designer.initLibraryElements = vi.fn();
   designer.addLibraryElementToActiveTab = addLibraryElementToActiveTab;
   designer.getActiveHud = vi.fn(() => undefined);
-  window.Craft = Object.assign(Object.create(null), {
-    getCpUrl: vi.fn(() => '/admin/settings/fields/edit'),
-  });
+  window.Craft = Object.assign(Object.create(null), {baseCpUrl: '/admin'});
 
   designer.createField();
 
@@ -185,9 +183,7 @@ it('opens the field editor from the library HUD trigger and closes the HUD', () 
   designer.initLibraryElements = vi.fn();
   designer.addLibraryElementToActiveTab = vi.fn();
   designer.getActiveHud = vi.fn(() => ({$trigger, hide}));
-  window.Craft = Object.assign(Object.create(null), {
-    getCpUrl: vi.fn(() => '/admin/settings/fields/edit'),
-  });
+  window.Craft = Object.assign(Object.create(null), {baseCpUrl: '/admin'});
 
   designer.createField();
 

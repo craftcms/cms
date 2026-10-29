@@ -21,6 +21,7 @@ import {
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
 import {ButtonVariant, t} from '@craftcms/ui';
 import {openSlideout} from '@/common/slideouts';
+import {getCpUrl} from '@/common/craft/url';
 
 // `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
 // used ONLY at the Craft-interop seams (Craft.ui/Grid/listbox/Slideout return or
@@ -615,7 +616,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     // place to send focus back to, since the HUD closes below.
     const hud = this.getActiveHud();
 
-    void openSlideout(Craft.getCpUrl('settings/fields/edit'), {
+    void openSlideout(getCpUrl('settings/fields/edit'), {
       opener: hud?.$trigger ?? this.$createFieldBtn,
       onSaved: ({data}) => {
         // add the library selector

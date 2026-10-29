@@ -16,10 +16,7 @@ function lastOptions(): OpenSlideoutOptions {
 describe('createElementEditor', () => {
   beforeEach(() => {
     vi.stubGlobal('$', $);
-    vi.stubGlobal('Craft', {
-      getActionUrl: (path: string, params: Record<string, unknown>) =>
-        `/actions/${path}?${new URLSearchParams(params as Record<string, string>)}`,
-    });
+    vi.stubGlobal('Craft', {actionUrl: '/actions'});
     openSlideout.mockResolvedValue({id: 'slideout-1'});
   });
 

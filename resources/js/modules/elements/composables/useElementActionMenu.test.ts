@@ -137,7 +137,7 @@ describe('useElementActionMenu', () => {
   });
 
   it("opens the sidebar's entry type rather than the saved one", () => {
-    window.Craft!.getCpUrl = vi.fn((path: string) => `/admin/${path}`);
+    window.Craft!.baseCpUrl = '/admin';
     const toActionItems = createElementActionMenu({
       currentEntryTypeId: () => 7,
     });

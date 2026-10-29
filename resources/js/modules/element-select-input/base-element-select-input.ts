@@ -15,6 +15,7 @@ import {
   type GarnishBaseSettings,
 } from '@craftcms/garnish';
 import {elementSelectInputData} from './support';
+import {getActionUrl} from '@/common/craft/url';
 
 declare const Craft: any;
 declare const $: any;
@@ -876,7 +877,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       }).filter(([, value]) => value !== null && value !== undefined)
     );
 
-    void Craft.openSlideout(Craft.getActionUrl('elements/edit', params), {
+    void Craft.openSlideout(getActionUrl('elements/edit', params), {
       opener: $element[0],
       onSaved: ({data}: {data?: Record<string, any>}) => {
         // An image saved as a new asset takes the edited asset's place.
