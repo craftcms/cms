@@ -93,6 +93,15 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
     public function __construct(
         array|object $config = [],
     ) {
+        $config = (array) $config;
+
+        // Craft 5 stored empty translation methods, which it treated as per-site translation
+        foreach (['titleTranslationMethod', 'slugTranslationMethod'] as $attribute) {
+            if (is_string($config[$attribute] ?? null)) {
+                $config[$attribute] = TranslationMethod::tryFrom($config[$attribute]) ?? TranslationMethod::Site;
+            }
+        }
+
         parent::__construct($config);
 
         if ($this->titleFormat === '') {
