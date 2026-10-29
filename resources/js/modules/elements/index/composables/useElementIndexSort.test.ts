@@ -6,7 +6,6 @@ import {useElementIndexSort} from './useElementIndexSort';
 
 function viewState(sort?: Array<SortItem>) {
   return ref<ViewState>({
-    inlineEditing: false,
     showHeaderColumn: false,
     static: false,
     sources: sort ? {'*': {sort}} : {},

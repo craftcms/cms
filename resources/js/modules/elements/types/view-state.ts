@@ -42,10 +42,9 @@ export type SourceViewState = {
 export type ThumbSize = ChipThumbSizeValue;
 
 /**
- * @TODO should inlineEditing and static be a "mode"?
+ * @TODO should static be a "mode"?
  */
 export type ViewState = {
-  inlineEditing: boolean;
   /**
    * Per-source view overrides (view mode, columns, sort, and thumbnail sizes), keyed by source key. Absent
    * entries fall back to the source's own config (`tableAttributes` /

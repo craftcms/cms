@@ -10,7 +10,6 @@ const sourceA = () => 'section:a';
 
 function viewStateRef(mode?: ViewMode['mode']) {
   return ref<ViewState>({
-    inlineEditing: false,
     showHeaderColumn: true,
     static: false,
     ...(mode ? {sources: {'section:a': {mode}}} : {}),

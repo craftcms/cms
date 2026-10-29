@@ -22,7 +22,6 @@ export function useElementIndexViewState(
   storageKey = `elementindex.${props.elementType}.${props.context}`
 ) {
   const initialViewState: ViewState = {
-    inlineEditing: false,
     nestedInputNamespace: null,
     showHeaderColumn: true,
     static: false,

@@ -170,12 +170,8 @@ export function useElementIndex(options: UseElementIndexOptions) {
     restore: restoreThumbSize,
     modeParams: thumbSizeModeParams,
   } = useElementIndexThumbSize(viewState, visitor, () => mode.value, sourceKey);
-  const inlineEditingActive = computed({
-    get: () => viewState.value.inlineEditing,
-    set: (value: boolean) => {
-      viewState.value.inlineEditing = value;
-    },
-  });
+  // Not persisted: inline editing ends with the page.
+  const inlineEditingActive = shallowRef(false);
   const structureView = useElementIndexStructure(
     elementIndex,
     viewState,

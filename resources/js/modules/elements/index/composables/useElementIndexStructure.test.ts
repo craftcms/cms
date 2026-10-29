@@ -206,7 +206,6 @@ describe('loadedBranchDepth', () => {
 describe('useElementIndexStructure', () => {
   const visitor = {merge: vi.fn(), visit: vi.fn(), currentQuery: () => ({})};
   const viewState = ref<ViewState>({
-    inlineEditing: false,
     showHeaderColumn: true,
     static: false,
   });
