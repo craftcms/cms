@@ -2,6 +2,7 @@
   import '@craftcms/ui/components/field/field';
   import '@craftcms/ui/components/field-group/field-group';
   import '@craftcms/ui/components/disclosure/disclosure';
+  import '@craftcms/ui/components/pane/pane';
   import '@craftcms/ui/components/spinner/spinner';
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed} from 'vue';
@@ -26,6 +27,8 @@
     showStatus?: boolean;
     collapsible?: boolean;
     expanded?: boolean;
+    /** Renders the section in a hairline pane — see `Nodes\Group::pane()`. */
+    pane?: boolean;
     /** Renders the group as one field rather than a section — see `Nodes\Group`. */
     asField?: boolean;
     required?: boolean;
@@ -159,7 +162,13 @@
     </craft-field>
     <component
       v-else
-      :is="node.props.collapsible ? 'craft-disclosure' : 'fieldset'"
+      :is="
+        node.props.pane
+          ? 'craft-pane'
+          : node.props.collapsible
+            ? 'craft-disclosure'
+            : 'fieldset'
+      "
       :label="node.props.collapsible ? node.props.label : undefined"
       .opened="
         node.props.collapsible ? (node.props.expanded ?? false) : undefined
@@ -169,11 +178,15 @@
         hidden: Boolean(node.props.hidden),
         'group-container': true,
       }"
+      :appearance="node.props.pane ? 'outline' : undefined"
       :hidden="node.props.hidden || undefined"
       :data-ui-node="node.uid"
       :aria-busy="showLoading || undefined"
     >
-      <legend v-if="!node.props.collapsible && node.props.label">
+      <h2 v-if="node.props.pane && node.props.label">{{ node.props.label }}</h2>
+      <legend
+        v-if="!node.props.pane && !node.props.collapsible && node.props.label"
+      >
         {{ node.props.label }}
       </legend>
       <craft-field-group

@@ -59,7 +59,7 @@ it('notes control panel endpoints and endpoints both servers share', function (a
         ->assertOk()
         ->json('ui.nodes');
 
-    expect(collect($nodes)->where('component', 'craft:callout')->pluck('uid')->values()->all())->toBe($notices);
+    expect(collect($nodes)->flatMap(fn (array $node): array => $node['children'] ?? [])->where('component', 'craft:callout')->pluck('uid')->values()->all())->toBe($notices);
 })->with([
     'separate site endpoints' => [['enabled' => true, 'route' => '/mcp', 'publicEnabled' => true, 'publicRoute' => '/public-mcp'], []],
     'control panel endpoint' => [['enabled' => true, 'route' => '/{cp}/mcp', 'publicEnabled' => false, 'publicRoute' => '/mcp'], ['mcp-route-cp-notice']],
@@ -177,7 +177,7 @@ it('discovers plugin capabilities in settings and requires approval before servi
     get(route('craft.cp.settings.mcp.index'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes', function ($nodes) use ($property, $identity, $label): bool {
-                $field = collect($nodes)->firstWhere('control.path', [$property]);
+                $field = collect($nodes)->flatMap(fn (array $node): array => $node['children'] ?? [])->firstWhere('control.path', [$property]);
                 $permissions = $field['control']['props']['groups'][0]['permissions'] ?? [];
 
                 return ($permissions[$identity]['label'] ?? null) === $label

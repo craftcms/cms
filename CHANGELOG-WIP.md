@@ -259,6 +259,7 @@
 - Added `CraftCms\Cms\FieldLayout\FieldLayoutComponent::conditionalSettingsNodes()`.
 - Added `CraftCms\Cms\Ui\Nodes\Action`.
 - Added `CraftCms\Cms\Ui\Nodes\Field::actions()`.
+- Added `CraftCms\Cms\Ui\Nodes\Group::pane()`, which renders a group in a bordered pane.
 - Added `CraftCms\Cms\Ui\Controls\Checkbox`.
 - Added `CraftCms\Cms\Ui\Controls\FieldSelect`.
 - Added `CraftCms\Cms\Ui\Controls\ConditionBuilder::fieldLayouts()`.

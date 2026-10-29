@@ -54,6 +54,8 @@ class Group extends Container
 
     private bool $asField = false;
 
+    private bool $pane = false;
+
     private ?int $width = null;
 
     /** @var list<string>|null */
@@ -79,6 +81,13 @@ class Group extends Container
 
         if (isset($node->props['width'])) {
             $attributes['class'] = trim(($attributes['class'] ?? '')." width-{$node->props['width']}");
+        }
+
+        if ($node->props['pane'] ?? false) {
+            return Html::tag('craft-pane', ($label ? Html::tag('h2', Html::encode($label)) : '').$children->toHtml(), [
+                'appearance' => 'outline',
+                ...$attributes,
+            ]);
         }
 
         if ($node->props['collapsible'] ?? false) {
@@ -121,6 +130,17 @@ class Group extends Container
     public function asField(bool $asField = true): static
     {
         $this->asField = $asField;
+
+        return $this;
+    }
+
+    /**
+     * Section appearance only: renders the group in a hairline `<craft-pane>`
+     * instead of a bare fieldset. Takes precedence over {@see self::collapsible()}.
+     */
+    public function pane(bool $pane = true): static
+    {
+        $this->pane = $pane;
 
         return $this;
     }
@@ -175,6 +195,7 @@ class Group extends Container
     {
         return [
             'label' => $this->label,
+            ...($this->pane && ! $this->asField ? ['pane' => true] : []),
             ...($this->collapsible && ! $this->asField ? ['collapsible' => true] : []),
             ...($this->collapsible && ! $this->asField && $this->expanded ? ['expanded' => true] : []),
             ...($this->asField ? ['asField' => true] : []),

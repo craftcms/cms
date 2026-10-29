@@ -16,6 +16,7 @@ use CraftCms\Cms\Ui\Controls\PermissionTree;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Nodes\Callout;
 use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\Heading;
 use CraftCms\Cms\Ui\Nodes\Separator;
 use CraftCms\Cms\Ui\Ui;
@@ -55,47 +56,50 @@ readonly class SettingsUi
         $shared = ($values['enabled'] ?? false) && ($values['publicEnabled'] ?? false) && trim($route, '/') === trim($publicRoute, '/');
 
         return Ui::make([
-            Heading::make('mcp-authenticated-heading', t('Authenticated MCP Server'))
-                ->description(t('Lets MCP clients act as a Craft user after the user signs in and approves access. Any active user can sign in. Tools still check their permissions.')),
-            Field::make(t('Enable the Authenticated MCP Server'), Lightswitch::make('enabled')->reactive()),
-            Field::make(t('Endpoint'), Text::make('route')->monospace()->reactive())
-                ->instructions(t('The app-relative path MCP clients connect to, such as `/mcp`.'))
-                ->required(),
-            ...($settings->isCpRoute($route) ? [
-                Callout::make('mcp-route-cp-notice', t('This endpoint is in the control panel, so only users with control panel access can use it.')),
-            ] : []),
-            Field::make(t('Authorization Endpoint'), Text::make('authorizationRoute')->monospace())
-                ->instructions(t('The app-relative path to give MCP clients that sign in with OAuth. It always requires an access token, so clients can discover how to sign in.'))
-                ->required(),
-            Separator::make('public-mcp-separator'),
-            Heading::make('public-mcp-heading', t('Public MCP Server'))
-                ->description(t('Lets anyone use the tools and content you approve below, without signing in.')),
-            Field::make(t('Enable the Public MCP Server'), Lightswitch::make('publicEnabled')->reactive()),
-            Field::make(t('Endpoint'), Text::make('publicRoute')->monospace()->reactive())
-                ->instructions(t('The app-relative path public MCP clients connect to, such as `/mcp`.'))
-                ->required(),
-            ...($shared ? [
-                Callout::make('mcp-shared-endpoint-warning', t('The authenticated server uses this endpoint too. Requests without an access token go to the public server, so MCP clients can’t discover how to sign in at this endpoint.'))
-                    ->variant('warning'),
-            ] : []),
-            Separator::make('public-capabilities-separator'),
-            Heading::make('public-capabilities-heading', t('Public Capabilities'))
-                ->description(t('Approve each capability that unauthenticated MCP clients may discover and execute.')),
-            ...$this->capabilityFields(),
-            Separator::make('public-content-separator'),
-            Heading::make('public-content-heading', t('Public Content'))
-                ->description(t('Choose the content that approved public capabilities may expose.')),
-            $this->permissionTreeField(t('Sites'), 'publicSiteHandles', $this->sitePermissions()),
-            $this->permissionTreeField(t('Sections'), 'publicSectionHandles', $this->sectionPermissions()),
-            $this->permissionTreeField(t('Nested Entry Fields'), 'publicNestedEntryFieldHandles', $this->nestedEntryFieldPermissions()),
-            $this->permissionTreeField(t('Volumes'), 'publicVolumeHandles', $this->volumePermissions()),
-            $this->permissionTreeField(t('Element Types'), 'publicElementTypes', $this->elementTypePermissions()),
-            $this->permissionTreeField(t('User Groups'), 'publicUserGroupHandles', $this->userGroupPermissions()),
-            Separator::make('element-states-separator'),
-            Heading::make('element-states-heading', t('Element States')),
-            $this->booleanField(t('Allow Drafts'), 'publicAllowDrafts', t('Allow public queries to include drafts.')),
-            $this->booleanField(t('Allow Revisions'), 'publicAllowRevisions', t('Allow public queries to include revisions.')),
-            $this->booleanField(t('Allow Inactive Elements'), 'publicAllowInactive', t('Allow public queries to include elements that are not enabled.')),
+            Group::make('mcp-authenticated', [
+                Heading::make('mcp-authenticated-heading', t('Authenticated MCP Server'))
+                    ->description(t('Lets MCP clients act as a Craft user after the user signs in and approves access. Any active user can sign in. Tools still check their permissions.')),
+                Field::make(t('Enable the Authenticated MCP Server'), Lightswitch::make('enabled')->reactive()),
+                Field::make(t('Endpoint'), Text::make('route')->monospace()->reactive())
+                    ->instructions(t('The app-relative path MCP clients connect to, such as `/mcp`.'))
+                    ->required(),
+                ...($settings->isCpRoute($route) ? [
+                    Callout::make('mcp-route-cp-notice', t('This endpoint is in the control panel, so only users with control panel access can use it.')),
+                ] : []),
+                Field::make(t('Authorization Endpoint'), Text::make('authorizationRoute')->monospace())
+                    ->instructions(t('The app-relative path to give MCP clients that sign in with OAuth. It always requires an access token, so clients can discover how to sign in.'))
+                    ->required(),
+            ])->pane(),
+            Group::make('mcp-public', [
+                Heading::make('public-mcp-heading', t('Public MCP Server'))
+                    ->description(t('Lets anyone use the tools and content you approve below, without signing in.')),
+                Field::make(t('Enable the Public MCP Server'), Lightswitch::make('publicEnabled')->reactive()),
+                Field::make(t('Endpoint'), Text::make('publicRoute')->monospace()->reactive())
+                    ->instructions(t('The app-relative path public MCP clients connect to, such as `/mcp`.'))
+                    ->required(),
+                ...($shared ? [
+                    Callout::make('mcp-shared-endpoint-warning', t('The authenticated server uses this endpoint too. Requests without an access token go to the public server, so MCP clients can’t discover how to sign in at this endpoint.'))
+                        ->variant('warning'),
+                ] : []),
+                Separator::make('public-capabilities-separator'),
+                Heading::make('public-capabilities-heading', t('Capabilities'))->level(3)
+                    ->description(t('Approve each capability that unauthenticated MCP clients may discover and execute.')),
+                ...$this->capabilityFields(),
+                Separator::make('public-content-separator'),
+                Heading::make('public-content-heading', t('Content'))->level(3)
+                    ->description(t('Choose the content that approved public capabilities may expose.')),
+                $this->permissionTreeField(t('Sites'), 'publicSiteHandles', $this->sitePermissions()),
+                $this->permissionTreeField(t('Sections'), 'publicSectionHandles', $this->sectionPermissions()),
+                $this->permissionTreeField(t('Nested Entry Fields'), 'publicNestedEntryFieldHandles', $this->nestedEntryFieldPermissions()),
+                $this->permissionTreeField(t('Volumes'), 'publicVolumeHandles', $this->volumePermissions()),
+                $this->permissionTreeField(t('Element Types'), 'publicElementTypes', $this->elementTypePermissions()),
+                $this->permissionTreeField(t('User Groups'), 'publicUserGroupHandles', $this->userGroupPermissions()),
+                Separator::make('element-states-separator'),
+                Heading::make('element-states-heading', t('Element States'))->level(3),
+                $this->booleanField(t('Allow Drafts'), 'publicAllowDrafts', t('Allow public queries to include drafts.')),
+                $this->booleanField(t('Allow Revisions'), 'publicAllowRevisions', t('Allow public queries to include revisions.')),
+                $this->booleanField(t('Allow Inactive Elements'), 'publicAllowInactive', t('Allow public queries to include elements that are not enabled.')),
+            ])->pane(),
         ]);
     }
 
