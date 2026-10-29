@@ -17,6 +17,7 @@ module.exports = getConfig({
       'assets-field-settings': './assets-field-settings.js',
       'element-field-settings': './element-field-settings.js',
       'element-index': './element-index/index.js',
+      'admin-table': './admin-table.js',
     },
     output: {
       path: __dirname + '/../../../cms-assets/resources/legacy/cpcompat/dist',

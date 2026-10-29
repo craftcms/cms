@@ -20,6 +20,7 @@ import type {
 } from './types';
 import {type ReorderDirection} from '@craftcms/ui';
 import {trim, uuid} from '@/common/craft/strings';
+import {DataTableSorter} from '@/modules/data-table-sorter/data-table-sorter';
 
 // `Craft`, `$` (jQuery), and `Garnish` remain page globals. This class extends the
 // modern `@craftcms/garnish` `Base` but still orchestrates jQuery Craft/Garnish
@@ -162,7 +163,7 @@ export class EditableTable extends Base<EditableTableSettings> {
     }
 
     if (Craft.hasMousePointerEvents()) {
-      this.sorter = new Craft.DataTableSorter(this.$table, {
+      this.sorter = new DataTableSorter(this.$table, {
         handle: 'craft-reorder-button',
         helperClass: 'editabletablesorthelper',
         copyDraggeeInputValuesToHelper: true,
