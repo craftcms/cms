@@ -13,6 +13,7 @@ use craft\mcp\attributes\RequiresAdmin;
 use craft\mcp\attributes\RequiresAdminChanges;
 use craft\mcp\attributes\RequiresHttp;
 use craft\mcp\attributes\RequiresPermission;
+use craft\mcp\events\DiscoveringCapability;
 use craft\services\Mcp as McpService;
 use LogicException;
 use Mcp\Capability\Discovery\Discoverer;
@@ -50,7 +51,8 @@ readonly class CapabilityDiscovery implements DiscovererInterface
             $discovered,
             fn(ElementReference $reference): bool => !$this->isPublic($reference)
                 && $this->allows($reference)
-                && $this->tokenAllows($reference),
+                && $this->tokenAllows($reference)
+                && $this->pluginsAllow($reference),
         );
     }
 
@@ -90,7 +92,8 @@ readonly class CapabilityDiscovery implements DiscovererInterface
             $discovered,
             fn(ElementReference $reference): bool => !$this->isPublic($reference)
                 && $this->allows($reference)
-                && ($this->reflection($reference->handler)?->getAttributes(RequiresHttp::class) ?? []) === [],
+                && ($this->reflection($reference->handler)?->getAttributes(RequiresHttp::class) ?? []) === []
+                && $this->pluginsAllow($reference),
         );
     }
 
@@ -179,6 +182,24 @@ readonly class CapabilityDiscovery implements DiscovererInterface
         }
 
         return true;
+    }
+
+    private function pluginsAllow(ElementReference $reference): bool
+    {
+        $mcp = Craft::$app->get('mcp');
+
+        if (!$mcp->hasEventHandlers(McpService::EVENT_DISCOVERING_CAPABILITY)) {
+            return true;
+        }
+
+        $user = Craft::$app->getUser()->getIdentity();
+        $event = new DiscoveringCapability([
+            'reference' => $reference,
+            'user' => $user instanceof User ? $user : null,
+        ]);
+        $mcp->trigger(McpService::EVENT_DISCOVERING_CAPABILITY, $event);
+
+        return $event->allowed;
     }
 
     /** Whether the access token that authenticated the request grants the scope the capability requires. */

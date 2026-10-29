@@ -22,6 +22,13 @@ class Mcp extends Component
      */
     public const EVENT_REGISTER_CAPABILITY_TYPES = 'registerCapabilityTypes';
 
+    /**
+     * @event \craft\mcp\events\DiscoveringCapability The event that is triggered for each capability the authenticated or
+     * stdio server would expose to the current user. Set `$event->allowed = false` to hide it.
+     * @since 5.12.0
+     */
+    public const EVENT_DISCOVERING_CAPABILITY = 'discoveringCapability';
+
     /** @since 5.12.0 */
     public const SCOPE_READ = 'mcp:read';
     /** @since 5.12.0 */
