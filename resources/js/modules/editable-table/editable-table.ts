@@ -21,6 +21,7 @@ import type {
 import {type ReorderDirection} from '@craftcms/ui';
 import {trim, uuid} from '@/common/craft/strings';
 import {DataTableSorter} from '@/modules/data-table-sorter/data-table-sorter';
+import {t} from '@craftcms/ui/utilities/translate';
 
 // `Craft`, `$` (jQuery), and `Garnish` remain page globals. This class extends the
 // modern `@craftcms/garnish` `Base` but still orchestrates jQuery Craft/Garnish
@@ -332,7 +333,7 @@ export class EditableTable extends Base<EditableTableSettings> {
     if ($deleteBtn.length) {
       $deleteBtn.attr(
         'aria-label',
-        Craft.t('app', 'Delete row {index}', {
+        t('Delete row {index}', {
           index: $row.index() + 1,
         })
       );
@@ -344,9 +345,9 @@ export class EditableTable extends Base<EditableTableSettings> {
     }
 
     if ($actionsBtn.length) {
-      const name = `${Craft.t('app', 'Row {index}', {
+      const name = `${t('Row {index}', {
         index: $row.index() + 1,
-      })} ${Craft.t('app', 'Actions')}`;
+      })} ${t('Actions')}`;
       $actionsBtn.attr('aria-label', name);
 
       if (this.rowCount === 1) {
@@ -369,15 +370,9 @@ export class EditableTable extends Base<EditableTableSettings> {
     let message;
 
     if (!this.canAddRow()) {
-      message = Craft.t(
-        'app',
-        'Row could not be added. Maximum number of rows reached.'
-      );
+      message = t('Row could not be added. Maximum number of rows reached.');
     } else {
-      message = Craft.t(
-        'app',
-        'Row could not be deleted. Minimum number of rows reached.'
-      );
+      message = t('Row could not be deleted. Minimum number of rows reached.');
     }
 
     setTimeout(() => {
@@ -906,7 +901,7 @@ export class EditableTable extends Base<EditableTableSettings> {
             icon: 'xmark-large',
             size: 'small',
             variant: 'danger-plain',
-            'aria-label': Craft.t('app', 'Delete'),
+            'aria-label': t('Delete'),
             command: '--delete-row',
           })
         )

@@ -1,4 +1,5 @@
 import {DragSort} from '@craftcms/garnish';
+import {t} from '@craftcms/ui/utilities/translate';
 
 // Keeps the `declare const $` / `declare const Craft` seams: the structural
 // row logic is jQuery-heavy and interops with the still-legacy table view
@@ -239,7 +240,7 @@ export class ElementTableSorter extends DragSort {
         const newLevel = oldLevel + levelDiff;
         const padding = 24 + this._getLevelIndent(newLevel);
         const $structureTextAlternative = $row.find('[data-text-alternative]');
-        const altText = Craft.t('app', 'Level {num}', {num: newLevel});
+        const altText = t('Level {num}', {num: newLevel});
 
         $row.data('level', newLevel);
         $row.find('.element').data('level', newLevel);
@@ -303,7 +304,7 @@ export class ElementTableSorter extends DragSort {
 
       Craft.sendActionRequest('POST', 'structures/move-element', {data})
         .then(() => {
-          Craft.cp.displaySuccess(Craft.t('app', 'New position saved.'));
+          Craft.cp.displaySuccess(t('New position saved.'));
           this.onPositionChange();
 
           // Were we waiting on this to complete so we can expand the new parent?
@@ -573,8 +574,8 @@ export class ElementTableSorter extends DragSort {
           class: 'toggle expanded',
           type: 'button',
           'aria-expanded': 'true',
-          title: Craft.t('app', 'Show/hide children'),
-          'aria-label': Craft.t('app', 'Show {title} children', {
+          title: t('Show/hide children'),
+          'aria-label': t('Show {title} children', {
             title: ancestorTitle,
           }),
         }).insertAfter($ancestor.find('> th .move:first'));

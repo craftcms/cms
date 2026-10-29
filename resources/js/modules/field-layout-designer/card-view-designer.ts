@@ -4,6 +4,7 @@ import {Base} from '@craftcms/garnish';
 import {cvdData} from './support';
 import type {FieldLayoutDesigner} from './field-layout-designer';
 import type {Element as FldElement} from './element';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 
@@ -192,7 +193,7 @@ export class CardViewDesigner extends Base {
 
   async updatePreview(): Promise<void> {
     this.$previewContainer.classList.add('loading');
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    Craft.cp.announce(t('Loading'));
 
     if (this.abortController) {
       this.abortController.abort();
@@ -230,7 +231,7 @@ export class CardViewDesigner extends Base {
       // otherwise the request was canceled by a newer preview — ignore.
     } finally {
       this.$previewContainer.classList.remove('loading');
-      Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      Craft.cp.announce(t('Loading complete'));
       this.abortController = null;
     }
 

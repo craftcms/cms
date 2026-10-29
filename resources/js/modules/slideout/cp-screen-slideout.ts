@@ -35,6 +35,7 @@ import {
   type LegacyRequestOptions,
 } from '@craftcms/ui/utilities/api/legacyRequest';
 import {findDeltaData} from '@/common/craft/delta';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 declare const $: any;
@@ -194,21 +195,21 @@ export class CpScreenSlideout extends Slideout {
     );
     this.$loadSpinner = $('<div/>', {
       class: 'spinner',
-      title: Craft.t('app', 'Loading'),
-      'aria-label': Craft.t('app', 'Loading'),
+      title: t('Loading'),
+      'aria-label': t('Loading'),
     }).appendTo(this.$toolbar);
     this.$editLink = $('<a/>', {
       target: '_blank',
       class: 'btn header-btn hidden',
-      title: Craft.t('app', 'Open in a new tab'),
-      'aria-label': Craft.t('app', 'Open in a new tab'),
+      title: t('Open in a new tab'),
+      'aria-label': t('Open in a new tab'),
       html: '<craft-icon name="external"></craft-icon>',
     }).appendTo(this.$toolbar);
     this.$sidebarBtn = $('<button/>', {
       type: 'button',
       class: 'btn header-btn hidden sidebar-btn',
-      title: Craft.t('app', 'Show sidebar'),
-      'aria-label': Craft.t('app', 'Show sidebar'),
+      title: t('Show sidebar'),
+      'aria-label': t('Show sidebar'),
       html: `<craft-icon name="sidebar-${Garnish.ltr ? 'right' : 'left'}"></craft-icon>`,
       'aria-expanded': 'false',
     }).appendTo(this.$toolbar);
@@ -251,12 +252,12 @@ export class CpScreenSlideout extends Slideout {
     this.$cancelBtn = $('<button/>', {
       type: 'button',
       class: 'btn',
-      text: isForm ? Craft.t('app', 'Cancel') : Craft.t('app', 'Close'),
+      text: isForm ? t('Cancel') : t('Close'),
     }).appendTo($btnContainer);
     if (isForm) {
       this.$saveBtn = Craft.ui
         .createSubmitButton({
-          label: Craft.t('app', 'Save'),
+          label: t('Save'),
           spinner: true,
         })
         .appendTo($btnContainer);
@@ -804,8 +805,7 @@ export class CpScreenSlideout extends Slideout {
           });
 
           if (tabErrorCount > 0) {
-            headingText = Craft.t(
-              'app',
+            headingText = t(
               'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.',
               {num: tabErrorCount}
             );
@@ -814,8 +814,7 @@ export class CpScreenSlideout extends Slideout {
             if ($tabsWithErrors.length - 1 > 0) {
               headingText +=
                 '<span class="visually-hidden">' +
-                Craft.t(
-                  'app',
+                t(
                   '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
                   {
                     total: errorCount,
@@ -825,7 +824,7 @@ export class CpScreenSlideout extends Slideout {
                 '</span>';
             }
           } else {
-            headingText = Craft.t('app', 'Found errors in other tabs.');
+            headingText = t('Found errors in other tabs.');
           }
 
           $tabErrorSummary.find('h2').html(headingText);
@@ -848,7 +847,7 @@ export class CpScreenSlideout extends Slideout {
     const tabErrorIndicator =
       '<craft-icon name="alert" data-tab-error>' +
       '<span class="sr-only">' +
-      Craft.t('app', 'This tab contains errors') +
+      t('This tab contains errors') +
       '</span>' +
       '</craft-icon>';
 
@@ -935,8 +934,7 @@ export class CpScreenSlideout extends Slideout {
     if (
       !this.isDirty() ||
       confirm(
-        Craft.t(
-          'app',
+        t(
           'Are you sure you want to close this screen? Any changes will be lost.'
         )
       )

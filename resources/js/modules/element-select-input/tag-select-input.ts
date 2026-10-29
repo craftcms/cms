@@ -1,5 +1,6 @@
 import {bod, DOWN_KEY, RETURN_KEY, UP_KEY} from '@craftcms/garnish';
 import {BaseElementSelectInput} from './base-element-select-input';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -183,7 +184,7 @@ export class TagSelectInput extends BaseElementSelectInput {
     }
 
     this.$spinner.removeClass('hidden');
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    Craft.cp.announce(t('Loading'));
 
     const excludeIds: number[] = [];
     for (let i = 0; i < this.$elements.length; i++) {
@@ -210,7 +211,7 @@ export class TagSelectInput extends BaseElementSelectInput {
 
       if (this.searchMenu) this.killSearchMenu();
       this.$spinner.addClass('hidden');
-      Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      Craft.cp.announce(t('Loading complete'));
 
       const fieldName = this.fieldName;
       const $menu = $('<div class="menu tagmenu"/>');
@@ -220,7 +221,7 @@ export class TagSelectInput extends BaseElementSelectInput {
 
       for (const tag of response.data.tags) {
         const $li = $('<li/>').appendTo($ul);
-        const label = `${Craft.t('app', 'Existing {type}', {type: Craft.t('app', 'Tag')})}: ${tag.title}`;
+        const label = `${t('Existing {type}', {type: t('Tag')})}: ${tag.title}`;
         $li.attr('aria-label', label);
 
         $('<div class="menu-item"/>')
@@ -233,7 +234,7 @@ export class TagSelectInput extends BaseElementSelectInput {
 
       if (!response.data.exactMatch) {
         const $li = $('<li/>').appendTo($ul);
-        const label = `${Craft.t('app', 'Create {type}', {type: Craft.t('app', 'Tag')})}: ${val}`;
+        const label = `${t('Create {type}', {type: t('Tag')})}: ${val}`;
         $li.attr('aria-label', label);
 
         $('<div class="menu-item"/>')
@@ -270,7 +271,7 @@ export class TagSelectInput extends BaseElementSelectInput {
     } catch {
       if (this.searchMenu) this.killSearchMenu();
       this.$spinner.addClass('hidden');
-      Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      Craft.cp.announce(t('Loading complete'));
     }
   }
 

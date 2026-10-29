@@ -7,8 +7,7 @@
  */
 
 import {Slideout} from '@/modules/slideout';
-
-declare const Craft: any;
+import {t} from '@craftcms/ui/utilities/translate';
 
 export interface AuthMethodSetupSlideoutData {
   /** The auth method's display name, used in the success message. */
@@ -37,10 +36,7 @@ export class AuthMethodSetupSlideout extends Slideout {
 <div class="slideout__footer">
   <div class="flex-grow"></div>
   <div class="flex flex-nowrap">
-    <craft-button type="button" class="auth-method-close-btn">${Craft.t(
-      'app',
-      'Cancel'
-    )}</craft-button>
+    <craft-button type="button" class="auth-method-close-btn">${t('Cancel')}</craft-button>
   </div>
 </div>
 `;
@@ -57,7 +53,7 @@ export class AuthMethodSetupSlideout extends Slideout {
     if ($qrCodeImg.length) {
       $qrCodeImg.attr({
         role: 'img',
-        'aria-label': Craft.t('app', 'QR Code'),
+        'aria-label': t('QR Code'),
       });
     }
   }
@@ -67,7 +63,7 @@ export class AuthMethodSetupSlideout extends Slideout {
    * the Cancel button into a Close button.
    */
   showSuccess(): void {
-    const message = Craft.t('app', '{name} added successfully.', {
+    const message = t('{name} added successfully.', {
       name: this.methodName,
     });
     this.$container.find('.so-body').addClass('auth-method-setup-success')
@@ -77,9 +73,7 @@ export class AuthMethodSetupSlideout extends Slideout {
       `);
 
     this.$container.find('.auth-method-setup-success-message').focus();
-    this.$container
-      .find('.auth-method-close-btn')
-      .text(Craft.t('app', 'Close'));
+    this.$container.find('.auth-method-close-btn').text(t('Close'));
   }
 }
 

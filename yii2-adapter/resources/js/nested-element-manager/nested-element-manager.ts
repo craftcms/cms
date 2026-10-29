@@ -10,6 +10,7 @@ import {
 } from '@craftcms/garnish';
 import {nestedElementManagerData} from './support';
 import type {UiProperties, UiValues} from '@/modules/ui/types';
+import {t} from '@craftcms/ui/utilities/translate';
 
 // `Craft`, `Garnish` (legacy), and `$` (jQuery) remain page globals. This
 // class is an orchestrator of still-jQuery Craft widgets, so jQuery survives
@@ -28,7 +29,7 @@ declare const $: any;
  * (display name, handle, lower display name, plural lower display name).
  */
 const typeName = (elementType: string, index: number): string =>
-  Craft.elementTypeNames[elementType]?.[index] ?? Craft.t('app', 'element');
+  Craft.elementTypeNames[elementType]?.[index] ?? t('element');
 
 /**
  * A `createAttributes` entry: one "New X" menu option.
@@ -214,7 +215,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
 
     this.setSettings(settings, {
       ...NestedElementManager.defaults,
-      createButtonLabel: Craft.t('app', 'Create'),
+      createButtonLabel: t('Create'),
     });
     this.elementType = this.settings.elementType;
 
@@ -327,7 +328,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       const groupedCreateAttributes: Record<string, CreateAttributes[]> = {};
       const groupOrder: string[] = [];
       for (const attributes of this.settings.createAttributes) {
-        const group = attributes.group || Craft.t('app', 'General');
+        const group = attributes.group || t('General');
         if (!groupedCreateAttributes[group]) {
           groupedCreateAttributes[group] = [];
           groupOrder.push(group);
@@ -372,7 +373,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
         const $btngroupDescription = $('<span>', {
           id: btngroupDescriptionId,
           hidden: true,
-          html: Craft.t('app', 'Create {type}', {
+          html: t('Create {type}', {
             type: typeName(this.elementType, 2),
           }),
         });
@@ -828,7 +829,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
     }
     this.creatingElement = true;
 
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    Craft.cp.announce(t('Loading'));
 
     try {
       await this.markAsDirty();
@@ -895,14 +896,14 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       Craft.cp.displayError(e?.response?.data?.message);
     } finally {
       this.creatingElement = false;
-      Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      Craft.cp.announce(t('Loading complete'));
     }
   }
 
   async duplicateElement(element: HTMLElement): Promise<void> {
     const $element = $(element);
 
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    Craft.cp.announce(t('Loading'));
     await this.markAsDirty();
 
     let data;
@@ -942,7 +943,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
   }
 
   async pasteElements($before: any = null): Promise<void> {
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    Craft.cp.announce(t('Loading'));
     this.$pasteBtn.addClass('loading');
 
     try {
@@ -1041,7 +1042,7 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
       return null;
     }
 
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    Craft.cp.announce(t('Loading'));
 
     let data;
     try {
@@ -1269,10 +1270,10 @@ export class NestedElementManager extends Base<NestedElementManagerSettings> {
     const nameIndex = copiedElements.length === 1 ? 2 : 3;
 
     return this.settings.showInGrid
-      ? Craft.t('app', 'Paste {type} before', {
+      ? t('Paste {type} before', {
           type: typeName(this.elementType, nameIndex),
         })
-      : Craft.t('app', 'Paste {type} above', {
+      : t('Paste {type} above', {
           type: typeName(this.elementType, nameIndex),
         });
   }

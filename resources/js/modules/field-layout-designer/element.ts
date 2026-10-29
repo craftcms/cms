@@ -95,7 +95,7 @@ export class Element extends Base {
 
     if (this.hasCustomWidth) {
       const widthSlider = document.createElement('craft-slide-picker');
-      widthSlider.setAttribute('label', Craft.t('app', 'Number of Columns'));
+      widthSlider.setAttribute('label', t('Number of Columns'));
       widthSlider.setAttribute('value-unit', '%');
       widthSlider.setAttribute('min', '25');
       widthSlider.setAttribute('max', '100');
@@ -122,7 +122,7 @@ export class Element extends Base {
     this.hasSettings = hasAttr(this.$container, 'data-has-settings');
 
     const menu = document.createElement('craft-action-menu');
-    menu.label = Craft.t('app', 'Actions');
+    menu.label = t('Actions');
     // Disable the generated (default ellipsis) invoker when read-only.
     menu.disabled = readOnly;
     // Anchor the settings slideout (focus return) to the menu element, since the
@@ -143,7 +143,7 @@ export class Element extends Base {
 
       if (this.hasSettings && !readOnly) {
         items.push({
-          label: Craft.t('app', 'Settings'),
+          label: t('Settings'),
           icon: 'gear',
           onClick: () => {
             this.createSettings();
@@ -159,7 +159,7 @@ export class Element extends Base {
         }
         if (!this.config.required) {
           items.push({
-            label: Craft.t('app', 'Make required'),
+            label: t('Make required'),
             icon: 'asterisk',
             iconColor: 'rose',
             onClick: () => {
@@ -168,7 +168,7 @@ export class Element extends Base {
           });
         } else {
           items.push({
-            label: Craft.t('app', 'Make optional'),
+            label: t('Make optional'),
             icon: 'custom-icons/asterisk-slash',
             iconColor: 'gray',
             onClick: () => {
@@ -189,7 +189,7 @@ export class Element extends Base {
         }
         if (hasPrev) {
           items.push({
-            label: Craft.t('app', 'Move up'),
+            label: t('Move up'),
             icon: 'arrow-up',
             onClick: () => {
               this.moveUp();
@@ -198,7 +198,7 @@ export class Element extends Base {
         }
         if (hasNext) {
           items.push({
-            label: Craft.t('app', 'Move down'),
+            label: t('Move down'),
             icon: 'arrow-down',
             onClick: () => {
               this.moveDown();
@@ -212,7 +212,7 @@ export class Element extends Base {
           items.push({type: 'hr'});
         }
         items.push({
-          label: Craft.t('app', 'Remove'),
+          label: t('Remove'),
           icon: 'xmark-large',
           variant: 'danger',
           onClick: () => {

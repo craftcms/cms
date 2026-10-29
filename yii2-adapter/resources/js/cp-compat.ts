@@ -1,3 +1,4 @@
+import '@/bootstrap/seed-translations';
 import './matrix';
 import './matrix/field-actions';
 import './nested-element-manager';

@@ -4,6 +4,7 @@ import {
 } from '@craftcms/ui/utilities/focus-return';
 import {hasAttr} from '@craftcms/garnish';
 import {highlightCodeBlocks} from '@/common/utils/highlight-code';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 declare const $: any;
@@ -93,7 +94,7 @@ export class PreviewFileModal {
     this.dialog.classList.add('previewmodal');
     this.dialog.noHeader = true;
     this.dialog.closeOnOutsideClick = true;
-    this.dialog.label = Craft.t('app', 'Preview file');
+    this.dialog.label = t('Preview file');
 
     this.container = document.createElement('div');
     this.container.className = 'previewmodal-content size-full overflow-auto';
@@ -106,7 +107,7 @@ export class PreviewFileModal {
     this.$bumperButtonStart = $('<button/>', {
       type: 'button',
       class: 'skip-link top-0 start-0',
-      text: Craft.t('app', 'Close Preview'),
+      text: t('Close Preview'),
     }).on('click', () => this.hide());
     this.$bumperButtonEnd = this.$bumperButtonStart.clone(true);
 
@@ -117,7 +118,7 @@ export class PreviewFileModal {
     document.body.append(this.dialog);
     this.dialog.opened = true;
     this.visible = true;
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    Craft.cp.announce(t('Loading'));
 
     this.loadAsset(
       assetId,
@@ -230,7 +231,7 @@ export class PreviewFileModal {
         if (!response.data.previewHtml) {
           this.$container
             .addClass(EMPTY_CLASSES)
-            .append($('<p/>', {text: Craft.t('app', 'No preview available.')}));
+            .append($('<p/>', {text: t('No preview available.')}));
           this._addBumperButtons();
           return;
         }
@@ -260,21 +261,19 @@ export class PreviewFileModal {
     const copyButton = document.createElement('craft-button');
     copyButton.setAttribute('type', 'button');
     copyButton.setAttribute('icon', 'custom-icons/clone-dashed');
-    copyButton.textContent = Craft.t('app', 'Copy');
+    copyButton.textContent = t('Copy');
     copyButton.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(text);
-        Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
+        Craft.cp.displayNotice(t('Copied to clipboard.'));
       } catch {
-        Craft.cp.displayError(
-          Craft.t('app', 'Couldn’t copy to the clipboard.')
-        );
+        Craft.cp.displayError(t('Couldn’t copy to the clipboard.'));
       }
     });
 
     const closeButton = document.createElement('craft-button');
     closeButton.setAttribute('type', 'button');
-    closeButton.textContent = Craft.t('app', 'Close');
+    closeButton.textContent = t('Close');
     closeButton.addEventListener('click', () => this.hide());
 
     this.#footerButtons = [copyButton, closeButton];

@@ -19,6 +19,7 @@ import {
   type CpScreenSlideoutSettings,
 } from './cp-screen-slideout';
 import type {UiValues} from '@/modules/ui/types';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 declare const $: any;
@@ -151,7 +152,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
       // the save button, and change the wording on the cancel one.
       if (this.elementEditor.settings.isStatic) {
         this.$saveBtn.remove();
-        this.$cancelBtn[0].innerText = Craft.t('app', 'Close');
+        this.$cancelBtn[0].innerText = t('Close');
       }
 
       this.elementEditor.on('beforeSubmit', () => {
@@ -226,10 +227,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
       } else if (
         this.isDirty() &&
         !confirm(
-          Craft.t(
-            'app',
-            'Are you sure you want to switch sites? Any changes will be lost.'
-          )
+          t('Are you sure you want to switch sites? Any changes will be lost.')
         )
       ) {
         return;
@@ -289,7 +287,7 @@ export class ElementEditorSlideout extends CpScreenSlideout {
           const $label = $item.find('craft-truncate');
           $('<craft-icon/>', {
             name: 'triangle-exclamation',
-            label: Craft.t('app', 'Error'),
+            label: t('Error'),
             'data-element-error': '',
           }).appendTo($label.length ? $label : $item);
         }

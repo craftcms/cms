@@ -1,4 +1,5 @@
 import {Base, Modal} from '@craftcms/garnish';
+import {t} from '@craftcms/ui/utilities/translate';
 
 /** A `craft-button`, whose `disabled` and `loading` states are properties. */
 type SelectButton = HTMLElement & {disabled: boolean; loading: boolean};
@@ -87,7 +88,7 @@ export class EntryMover extends Base {
     )}`;
     const heading = document.createElement('h1');
     heading.id = headingId;
-    heading.textContent = Craft.t('app', 'Move to');
+    heading.textContent = t('Move to');
     header.append(heading);
 
     const body = document.createElement('div');
@@ -108,7 +109,7 @@ export class EntryMover extends Base {
     this.#sectionsList = document.createElement(
       'craft-radio-group'
     ) as SectionGroup;
-    this.#sectionsList.setAttribute('label', Craft.t('app', 'Move to'));
+    this.#sectionsList.setAttribute('label', t('Move to'));
     this.#sectionsList.setAttribute('label-sr-only', '');
     this.#sectionsList.setAttribute('name', 'sectionId');
     listContainer.append(this.#sectionsList);
@@ -123,13 +124,13 @@ export class EntryMover extends Base {
 
     const cancelBtn = document.createElement('craft-button');
     cancelBtn.setAttribute('type', 'button');
-    cancelBtn.textContent = Craft.t('app', 'Cancel');
+    cancelBtn.textContent = t('Cancel');
     primaryButtons.append(cancelBtn);
 
     this.#selectBtn = document.createElement('craft-button') as SelectButton;
     this.#selectBtn.setAttribute('type', 'button');
     this.#selectBtn.setAttribute('variant', 'primary');
-    this.#selectBtn.textContent = Craft.t('app', 'Move');
+    this.#selectBtn.textContent = t('Move');
     this.#selectBtn.disabled = true;
     primaryButtons.append(this.#selectBtn);
 
@@ -169,8 +170,7 @@ export class EntryMover extends Base {
         if (!sections.length) {
           const message = document.createElement('p');
           message.className = 'zilch';
-          message.textContent = Craft.t(
-            'app',
+          message.textContent = t(
             'Couldn’t find any sections that all selected elements could be moved to.'
           );
           list.replaceWith(message);
@@ -211,7 +211,7 @@ export class EntryMover extends Base {
     }
 
     this.#selectBtn.loading = true;
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    Craft.cp.announce(t('Loading'));
 
     const data = {
       sectionId: this.#sectionsList?.modelValue,

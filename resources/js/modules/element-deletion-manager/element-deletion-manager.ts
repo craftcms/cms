@@ -2,6 +2,7 @@ import {Base} from '@craftcms/garnish';
 import type CraftButton from '@craftcms/ui/components/button/button';
 import type CraftDialog from '@craftcms/ui/components/dialog/dialog';
 import './element-deletion-manager.css';
+import {t} from '@craftcms/ui/utilities/translate';
 
 // jQuery-built blocker markup + Craft.ui/Craft.cp seams, shown in a
 // `craft-dialog`.
@@ -182,15 +183,13 @@ export class ElementDeletionManager extends Base {
         : Craft.elementTypeNames[this.elementType][3];
 
     if (this.settings.hardDelete) {
-      return Craft.t(
-        'app',
+      return t(
         'Are you sure you want to permanently delete {numElements, plural, =1{this} other{these}} {type}?',
         {type: elementTypeName, numElements: totalElements}
       );
     }
 
-    return Craft.t(
-      'app',
+    return t(
       'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
       {type: elementTypeName, numElements: totalElements}
     );
@@ -211,8 +210,7 @@ export class ElementDeletionManager extends Base {
 
     const $heading = $('<h1/>', {
       class: 'edm-heading',
-      html: Craft.t(
-        'app',
+      html: t(
         'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:',
         {numBlockers: data.blockers.length, label: data.elementPreview}
       ),
@@ -226,9 +224,9 @@ export class ElementDeletionManager extends Base {
     const footer = document.createElement('div');
     footer.slot = 'footer';
     footer.className = 'edm-footer';
-    const closeButton = createButton({label: Craft.t('app', 'Close')});
+    const closeButton = createButton({label: t('Close')});
     this.submitButton = createButton({
-      label: Craft.t('app', 'Delete {type}', {
+      label: t('Delete {type}', {
         type:
           this.elementIds.length === 1
             ? Craft.elementTypeNames[this.elementType][2]
@@ -474,9 +472,7 @@ class Blocker extends Base {
       class: 'edm-blocker-resolved-message',
     }).appendTo(this.$container);
     $('<craft-icon/>', {name: 'check'}).appendTo($messageContainer);
-    $('<p/>', {text: message ?? Craft.t('app', 'Resolved')}).appendTo(
-      $messageContainer
-    );
+    $('<p/>', {text: message ?? t('Resolved')}).appendTo($messageContainer);
     this.manager.resolveBlocker(this);
   }
 }

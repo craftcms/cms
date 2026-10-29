@@ -7,6 +7,7 @@ import {IntervalManager} from '@/modules/interval-manager/interval-manager';
 import '@craftcms/ui/components/progress-bar/progress-bar';
 import type CraftProgressBar from '@craftcms/ui/components/progress-bar/progress-bar';
 import './asset-select-input.css';
+import {t} from '@craftcms/ui/utilities/translate';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -123,7 +124,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
     const shade = document.createElement('div');
     shade.className = 'progress-shade';
     this.progressBar = document.createElement('craft-progress-bar');
-    this.progressBar.label = Craft.t('app', 'Upload progress');
+    this.progressBar.label = t('Upload progress');
     this.progressBar.hidden = true;
     shade.append(this.progressBar);
     this.$container[0].append(shade);
@@ -139,14 +140,9 @@ export class AssetSelectInput extends BaseElementSelectInput {
         type: 'button',
         class: 'btn dashed',
         'aria-label':
-          this.settings.limit == 1
-            ? Craft.t('app', 'Upload a file')
-            : Craft.t('app', 'Upload files'),
+          this.settings.limit == 1 ? t('Upload a file') : t('Upload files'),
         'aria-describedby': this.settings.describedBy,
-        text:
-          this.settings.limit == 1
-            ? Craft.t('app', 'Upload a file')
-            : Craft.t('app', 'Upload files'),
+        text: this.settings.limit == 1 ? t('Upload a file') : t('Upload files'),
       })
         .prepend('<craft-icon name="upload"></craft-icon>')
         .insertAfter(this.$addElementBtn);
@@ -246,10 +242,10 @@ export class AssetSelectInput extends BaseElementSelectInput {
   #progressMessage(): string {
     const bar = this.progressBar;
     if (!bar || bar.pending || bar.progress === 100) {
-      return Craft.t('app', 'Processing');
+      return t('Processing');
     }
 
-    return Craft.t('app', '{num} percent complete', {num: bar.progress});
+    return t('{num} percent complete', {num: bar.progress});
   }
 
   _onUploadProgress(
@@ -340,9 +336,9 @@ export class AssetSelectInput extends BaseElementSelectInput {
       if (errorMessages.length) {
         message = errorMessages.join('\n');
       } else if (filename) {
-        message = Craft.t('app', 'Upload failed for “{filename}”.', {filename});
+        message = t('Upload failed for “{filename}”.', {filename});
       } else {
-        message = Craft.t('app', 'Upload failed.');
+        message = t('Upload failed.');
       }
     }
 
