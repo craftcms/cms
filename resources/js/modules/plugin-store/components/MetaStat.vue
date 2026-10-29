@@ -4,7 +4,7 @@
 
 <template>
   <div class="meta-stat">
-    <dt>
+    <dt class="cp-group-heading">
       <slot name="label">{{ label }}</slot>
     </dt>
     <dd>
@@ -17,10 +17,6 @@
   .meta-stat {
     padding-block: var(--c-spacing-md);
     border-block-end: 1px solid var(--c-color-border-quiet);
-  }
-
-  dt {
-    color: var(--c-text-quiet);
   }
 
   dd {

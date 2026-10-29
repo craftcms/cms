@@ -298,6 +298,11 @@ Previously `.readable`
   }
 }
 
+.cp-group-heading {
+  font-size: var(--c-text-sm);
+  font-weight: bold;
+}
+
 /**
 CP Table
 
