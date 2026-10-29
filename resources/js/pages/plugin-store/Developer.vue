@@ -53,7 +53,10 @@
         />
         <div class="grid gap-xs">
           <h1 class="text-xl">{{ developer.developerName }}</h1>
-          <div class="flex flex-wrap items-center gap-md">
+          <div
+            v-if="developer.location || badges.length"
+            class="flex items-center gap-md whitespace-nowrap"
+          >
             <span v-if="developer.location">{{ developer.location }}</span>
             <span
               v-for="badge in badges"
@@ -63,6 +66,11 @@
               <PartnerBadge :kind="badge.kind" />
               {{ badge.label }}
             </span>
+          </div>
+          <div
+            v-if="developer.developerUrl || developer.partnerInfo?.profileUrl"
+            class="flex flex-wrap items-center gap-md"
+          >
             <a
               v-if="developer.developerUrl"
               :href="developer.developerUrl"
