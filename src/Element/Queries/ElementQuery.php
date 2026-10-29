@@ -260,14 +260,14 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         if ($this->table !== Table::ELEMENTS) {
             $this->when(
                 DB::isMysql(),
-                fn (self $query) => $this->straightJoin(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', "{$this->table}.id"),
-                fn (self $query) => $this->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', "{$this->table}.id"),
+                fn (self $query) => $this->straightJoin(Table::ELEMENTS.' as elements', 'elements.id', '=', "{$this->table}.id"),
+                fn (self $query) => $this->join(Table::ELEMENTS.' as elements', 'elements.id', '=', "{$this->table}.id"),
             );
 
             $this->hasElementSourceTable = true;
         }
 
-        $this->query->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', '=', 'elements.id');
+        $this->query->join(Table::ELEMENTS_SITES.' as elements_sites', 'elements_sites.elementId', '=', 'elements.id');
 
         // Prepare a new column mapping
         // (for use in SELECT and ORDER BY clauses)

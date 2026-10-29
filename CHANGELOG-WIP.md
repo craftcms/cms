@@ -182,8 +182,10 @@
 - Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
 - Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.
 - Deprecated `craft.app.userPermissions`. `craft.userPermissions` should be used instead.
+- Deprecated `asset.setTransform()`. `asset.transform()` should be used instead. With the Yii adapter installed, `setTransform()` still works on assets returned by Assets fields and asset queries, but the transform only applies to the asset’s URL, not its width, height, or `getImg()` output. ([#20191](https://github.com/craftcms/cms/pull/20191))
 
 ### System
+- The database table prefix is now set with the `DB_PREFIX` environment variable. When `craftcms/yii2-adapter` is installed, Craft 5’s `CRAFT_DB_TABLE_PREFIX` and `DB_TABLE_PREFIX` environment variables are still applied, with a trailing underscore. ([#20192](https://github.com/craftcms/cms/pull/20192))
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Image assets now store color data sampled from their file when it’s uploaded, replaced, or indexed, including the image’s dominant color, a grid of the average colors of its regions, its main colors and how much of the image each covers, and how light its regions are. Control panel uploads sample it in the browser. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#20103](https://github.com/craftcms/cms/pull/20103))
 - Control panel resources are now provided by a `craftcms/cms-assets` package. ([#19162](https://github.com/craftcms/cms/pull/19162))
