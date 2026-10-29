@@ -68,6 +68,10 @@ it('notes control panel endpoints and endpoints both servers share', function (a
 ]);
 
 it('sends requests to a shared endpoint by whether they carry a bearer token', function (): void {
+    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    openssl_pkey_export($key, $privateKey);
+    config()->set('passport.private_key', $privateKey);
+    config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     enableMcp(['publicEnabled' => true, 'publicRoute' => '/mcp', 'publicTools' => ['craft-context-get']]);
     $tools = fn (array $headers = []): array => array_column(
         postJson('/mcp', McpRequest::payload('tools/list'), [...McpRequest::headers('tools/list'), ...$headers])->assertOk()->json('result.tools'),
