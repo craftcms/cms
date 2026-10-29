@@ -1,5 +1,6 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, type App} from 'vue';
+import {actionClient} from '@craftcms/ui';
 import LegacyAdminTable from './LegacyAdminTable.vue';
 import type {Table} from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/common/table/craftTable';
@@ -24,12 +25,13 @@ vi.mock('@/modules/admin-table/components/AdminTable.vue', () => ({
 }));
 
 let app: App | null = null;
+let post: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
   captured.table = null;
   document.body.innerHTML = '';
+  post = vi.spyOn(actionClient, 'post').mockResolvedValue({data: {}} as any);
   (window as any).Craft = {
-    sendActionRequest: vi.fn().mockResolvedValue({data: {}}),
     cp: {displayNotice: vi.fn(), displayError: vi.fn()},
   };
 });
@@ -38,6 +40,7 @@ afterEach(() => {
   app?.unmount();
   app = null;
   delete (window as any).Craft;
+  vi.restoreAllMocks();
 });
 
 async function mount(props: Record<string, unknown>) {
@@ -149,19 +152,15 @@ it('posts the delete and drops the row', async () => {
   await vnode.children[0].props.onClick();
   await new Promise((resolve) => setTimeout(resolve, 0));
 
-  expect(window.Craft.sendActionRequest).toHaveBeenCalledWith(
-    'POST',
-    'plugin/sync/delete',
-    {data: {id: 7}}
-  );
+  expect(post).toHaveBeenCalledWith('plugin/sync/delete', {
+    id: 7,
+  });
   expect(window.Craft.cp!.displayNotice).toHaveBeenCalledWith('Sync deleted');
   expect(captured.table!.getRowModel().rows).toHaveLength(0);
 });
 
 it('reports a failed delete and keeps the row', async () => {
-  (window as any).Craft.sendActionRequest = vi
-    .fn()
-    .mockRejectedValue(new Error('nope'));
+  post.mockRejectedValue(new Error('nope'));
 
   await mount({
     columns,

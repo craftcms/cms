@@ -4,11 +4,11 @@ import {
 } from '@actions/Settings/EntryTypesController';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 // `Craft` and `$` (jQuery) remain page globals; the settings form is
 // server-rendered HTML, so the legacy seams the rest of the manager leans on
-// survive here (`Craft.sendActionRequest`, `Craft.initUiElements`,
-// `Craft.cp.displayError`).
+// survive here (`Craft.initUiElements`, `Craft.cp.displayError`).
 declare const Craft: any;
 declare const $: any;
 
@@ -45,10 +45,9 @@ export async function editEntryTypeOverrides(chip: HTMLElement): Promise<void> {
 
   let data;
   try {
-    const response = await Craft.sendActionRequest(
-      'POST',
+    const response = await actionClient.post(
       renderOverrideSettings().url,
-      {data: config}
+      config
     );
     data = response.data;
   } catch (e: any) {
@@ -132,11 +131,11 @@ async function requestOverrides(
   settingsNamespace: string,
   settings: string
 ): Promise<any> {
-  const response = await Craft.sendActionRequest(
-    'POST',
-    applyOverrideSettings().url,
-    {data: {id: chip.dataset.id, settingsNamespace, settings}}
-  );
+  const response = await actionClient.post(applyOverrideSettings().url, {
+    id: chip.dataset.id,
+    settingsNamespace,
+    settings,
+  });
   return response.data;
 }
 

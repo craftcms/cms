@@ -1,5 +1,6 @@
 import jquery from 'jquery';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {
   BaseElementSelectInput,
   type BaseElementSelectInputSettings,
@@ -61,6 +62,7 @@ it('preserves legacy element select input extension points', () => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 /**
@@ -202,11 +204,11 @@ function replaceFlowInput() {
   input.updateDisabledElementsInModal = vi.fn();
 
   vi.stubGlobal('$', (value: unknown) => ({rendered: value}));
+  vi.spyOn(actionClient, 'post').mockImplementation(async () => {
+    log.push('render-elements');
+    return {data: {elements: {7: ['<div/>']}, headHtml: '', bodyHtml: ''}};
+  });
   vi.stubGlobal('Craft', {
-    sendActionRequest: vi.fn(async () => {
-      log.push('render-elements');
-      return {data: {elements: {7: ['<div/>']}, headHtml: '', bodyHtml: ''}};
-    }),
     appendHeadHtml: vi.fn(),
     appendBodyHtml: vi.fn(),
     setElementSize: vi.fn(),

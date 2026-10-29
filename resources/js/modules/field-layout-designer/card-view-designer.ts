@@ -5,6 +5,7 @@ import {cvdData} from './support';
 import type {FieldLayoutDesigner} from './field-layout-designer';
 import type {Element as FldElement} from './element';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 declare const Craft: any;
 
@@ -203,25 +204,22 @@ export class CardViewDesigner extends Base {
 
     let response;
     try {
-      response = await Craft.sendActionRequest(
-        'POST',
+      response = await actionClient.post(
         'fields/render-card-preview',
         {
-          signal: this.abortController.signal,
-          data: {
-            fieldLayoutConfig: {
-              ...this.designer.config,
-              // Not part of `this.designer.config` (that lives at
-              // `designer.settings.elementType` instead), but `CardDesigner::previewHtml()`
-              // needs a `type` on the layout config to instantiate a sample element.
-              type: this.designer.settings!.elementType,
-              generatedFields:
-                document
-                  .querySelector('craft-generated-fields-table')
-                  ?.serialize() ?? [],
-            },
+          fieldLayoutConfig: {
+            ...this.designer.config,
+            // Not part of `this.designer.config` (that lives at
+            // `designer.settings.elementType` instead), but `CardDesigner::previewHtml()`
+            // needs a `type` on the layout config to instantiate a sample element.
+            type: this.designer.settings!.elementType,
+            generatedFields:
+              document
+                .querySelector('craft-generated-fields-table')
+                ?.serialize() ?? [],
           },
-        }
+        },
+        {signal: this.abortController.signal}
       );
     } catch (e: any) {
       if (!isCancel(e)) {

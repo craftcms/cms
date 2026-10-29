@@ -8,6 +8,7 @@ import '@craftcms/ui/components/progress-bar/progress-bar';
 import type CraftProgressBar from '@craftcms/ui/components/progress-bar/progress-bar';
 import './asset-select-input.css';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 declare const Craft: any;
 declare const Garnish: any;
@@ -260,8 +261,8 @@ export class AssetSelectInput extends BaseElementSelectInput {
   _onUploadComplete({
     result,
   }: Parameters<NonNullable<UploaderCallbacks['done']>>[0]): void {
-    Craft.sendActionRequest('POST', 'app/render-elements', {
-      data: {
+    actionClient
+      .post('app/render-elements', {
         elements: [
           {
             type: 'CraftCms\\Cms\\Asset\\Elements\\Asset',
@@ -283,8 +284,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
             ],
           },
         ],
-      },
-    })
+      })
       .then(async ({data}: any) => {
         const elementInfo = Craft.getElementInfo(
           data.elements[result.assetId][0]

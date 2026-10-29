@@ -17,6 +17,7 @@ import {
 import {elementSelectInputData} from './support';
 import {getActionUrl} from '@/common/craft/url';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 declare const Craft: any;
 declare const $: any;
@@ -899,8 +900,8 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
       this.showSpinner();
 
-      Craft.sendActionRequest('POST', 'app/render-elements', {
-        data: {
+      actionClient
+        .post('app/render-elements', {
           elements: [
             {
               type: this.settings.elementType,
@@ -922,8 +923,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
               ],
             },
           ],
-        },
-      })
+        })
         .then(async ({data}: any) => {
           this.removeElement($existing);
           const elementInfo = Craft.getElementInfo(
@@ -1204,29 +1204,23 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       }
     })();
 
-    const {data} = await Craft.sendActionRequest(
-      'POST',
-      'app/render-elements',
-      {
-        data: {
-          elements: [
+    const {data} = await actionClient.post('app/render-elements', {
+      elements: [
+        {
+          type: this.settings.elementType,
+          id: elements.map((e) => e.id),
+          siteId: elements[0].siteId,
+          instances: [
             {
-              type: this.settings.elementType,
-              id: elements.map((e) => e.id),
-              siteId: elements[0].siteId,
-              instances: [
-                {
-                  context: 'field',
-                  ui: inputUiType,
-                  size: inputUiSize,
-                  showActionMenu: this.settings.showActionMenu,
-                },
-              ],
+              context: 'field',
+              ui: inputUiType,
+              size: inputUiSize,
+              showActionMenu: this.settings.showActionMenu,
             },
           ],
         },
-      }
-    );
+      ],
+    });
 
     for (let i = 0; i < elements.length; i++) {
       if (data.elements[elements[i].id] !== undefined) {
@@ -1329,10 +1323,9 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       elementType: this.settings.elementType,
     };
 
-    const response = await Craft.sendActionRequest(
-      'POST',
+    const response = await actionClient.post(
       'relational-fields/structured-input-html',
-      {data}
+      data
     );
 
     const $newInput = $(response.data.html);
@@ -1622,31 +1615,25 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       let response: any;
 
       try {
-        response = await Craft.sendActionRequest(
-          'POST',
-          'element-search/search',
-          {
-            data: {
-              elementType: this.settings.elementType,
-              siteId: this.settings.criteria.siteId,
-              search: val,
-              criteria: this.settings.searchCriteria,
-              condition: this.settings.condition,
-              referenceElementId: this.settings.referenceElementId
-                ? this.elementEditor?.getDraftElementId(
-                    this.settings.referenceElementId
-                  ) || this.settings.referenceElementId
-                : null,
-              referenceElementOwnerId: this.settings.referenceElementOwnerId
-                ? this.elementEditor?.getDraftElementId(
-                    this.settings.referenceElementOwnerId
-                  ) || this.settings.referenceElementOwnerId
-                : null,
-              referenceElementSiteId: this.settings.referenceElementSiteId,
-              excludeIds,
-            },
-          }
-        );
+        response = await actionClient.post('element-search/search', {
+          elementType: this.settings.elementType,
+          siteId: this.settings.criteria.siteId,
+          search: val,
+          criteria: this.settings.searchCriteria,
+          condition: this.settings.condition,
+          referenceElementId: this.settings.referenceElementId
+            ? this.elementEditor?.getDraftElementId(
+                this.settings.referenceElementId
+              ) || this.settings.referenceElementId
+            : null,
+          referenceElementOwnerId: this.settings.referenceElementOwnerId
+            ? this.elementEditor?.getDraftElementId(
+                this.settings.referenceElementOwnerId
+              ) || this.settings.referenceElementOwnerId
+            : null,
+          referenceElementSiteId: this.settings.referenceElementSiteId,
+          excludeIds,
+        });
       } finally {
         if (this.searchMenu) {
           this.killSearchMenu();

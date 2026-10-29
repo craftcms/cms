@@ -1,10 +1,11 @@
 import $ from 'jquery';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {CpModal} from './cp-modal';
 
 type Dialog = HTMLElement & {opened: boolean; label: string};
 
-const sendActionRequest = vi.fn();
+let request: ReturnType<typeof vi.spyOn>;
 
 function dialog(): Dialog {
   return document.body.querySelector('craft-dialog') as Dialog;
@@ -33,7 +34,7 @@ describe('CpModal', () => {
         displaySuccess: vi.fn(),
         elementThumbLoader: {load: vi.fn()},
       },
-      sendActionRequest,
+      baseCpUrl: 'https://example.test/admin',
       setElementAttributes: vi.fn(),
       appendHeadHtml: vi.fn(),
       appendBodyHtml: vi.fn(),
@@ -42,23 +43,25 @@ describe('CpModal', () => {
       findDeltaData: (_initial: string, current: string) => current,
       refreshComponentInstances: vi.fn(),
     });
-    sendActionRequest.mockImplementation(async (method: string) =>
-      method === 'GET'
-        ? {
-            data: {
-              namespace: 'ns',
-              submitButtonLabel: 'Reassign',
-              content: '<input name="ns[newOwner]" value="1">',
-            },
-          }
-        : {data: {message: 'Entries reassigned.'}}
-    );
+    request = vi
+      .spyOn(actionClient, 'request')
+      .mockImplementation(async ({method}) =>
+        method === 'get'
+          ? {
+              data: {
+                namespace: 'ns',
+                submitButtonLabel: 'Reassign',
+                content: '<input name="ns[newOwner]" value="1">',
+              },
+            }
+          : {data: {message: 'Entries reassigned.'}}
+      );
   });
 
   afterEach(() => {
     document.body.replaceChildren();
     vi.unstubAllGlobals();
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('loads the screen into a titled dialog, and submits it', async () => {
@@ -71,10 +74,12 @@ describe('CpModal', () => {
     await loaded();
 
     expect(dialog().label).toBe('Reassign entries');
-    expect(sendActionRequest).toHaveBeenCalledWith(
-      'GET',
-      'entries/reassign-modal',
-      expect.objectContaining({params: {oldUserIds: [5]}})
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'get',
+        url: 'entries/reassign-modal',
+        params: {oldUserIds: [5]},
+      })
     );
 
     const save = button('Reassign');
@@ -82,7 +87,9 @@ describe('CpModal', () => {
     save.click();
     await vi.waitFor(() => expect(onSubmit).toHaveBeenCalled());
 
-    expect(sendActionRequest).toHaveBeenLastCalledWith('POST', null, {
+    expect(request).toHaveBeenLastCalledWith({
+      method: 'post',
+      url: 'https://example.test/admin',
       data: 'ns%5BnewOwner%5D=1',
       headers: {'X-Craft-Namespace': 'ns'},
     });

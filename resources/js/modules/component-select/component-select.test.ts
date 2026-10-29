@@ -1,4 +1,5 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {
   ComponentSelect,
   type ComponentSelectSettings,
@@ -37,14 +38,14 @@ describe('ComponentSelect', () => {
       hasMousePointerEvents: () => false,
       appendHeadHtml: vi.fn(),
       appendBodyHtml: vi.fn(),
-      sendActionRequest: vi.fn(async () => ({
-        data: {
-          components: {EntryType: {3: [chip('3', 'Gallery')]}},
-          headHtml: '',
-          bodyHtml: '',
-        },
-      })),
     };
+    vi.spyOn(actionClient, 'post').mockResolvedValue({
+      data: {
+        components: {EntryType: {3: [chip('3', 'Gallery')]}},
+        headHtml: '',
+        bodyHtml: '',
+      },
+    } as any);
 
     container = document.createElement('div');
     container.innerHTML = `
@@ -62,6 +63,7 @@ describe('ComponentSelect', () => {
 
   afterEach(() => {
     container.remove();
+    vi.restoreAllMocks();
   });
 
   function selectedIds(): string[] {

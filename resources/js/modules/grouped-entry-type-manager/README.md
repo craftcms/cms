@@ -64,8 +64,7 @@ that replaced the legacy `Craft.ComponentSelectInput` chain.
 
 ## What deliberately stays jQuery / legacy seams
 
-`Craft.t`, `Craft.ui.icon`, `Craft.namespaceId` / `namespaceInputName`,
-`Craft.hasMousePointerEvents`, `Craft.sendActionRequest`, and the
+`Craft.hasMousePointerEvents`, `Craft.initUiElements`, and the
 jQuery-returning `Craft.ui.createSortableCheckboxSelect` (the Default Table
 Columns rebuild) — accessed via the page globals (`declare const Craft/$`).
 

@@ -14,6 +14,7 @@ import type {UiValues} from '@/modules/ui/types';
 import {createInitialIcon} from '@/common/utils/initialIcon';
 import {uuid} from '@/common/craft/strings';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 declare const Craft: any;
 declare const $: any;
@@ -222,13 +223,10 @@ export class Tab extends Base {
   async createSettings(): Promise<void> {
     let data;
     try {
-      const response = await Craft.sendActionRequest(
-        'POST',
+      const response = await actionClient.post(
         'fields/render-layout-component-settings',
         {
-          data: {
-            ...this.settingsRequestData(),
-          },
+          ...this.settingsRequestData(),
         }
       );
       data = response.data;
@@ -264,15 +262,12 @@ export class Tab extends Base {
     const config = Object.assign({}, this.config);
     delete config.elements;
 
-    const response = await Craft.sendActionRequest(
-      'POST',
+    const response = await actionClient.post(
       'fields/apply-layout-tab-settings',
       {
-        data: {
-          ...this.settingsRequestData(),
-          config,
-          settings,
-        },
+        ...this.settingsRequestData(),
+        config,
+        settings,
       }
     );
 

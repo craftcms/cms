@@ -1,5 +1,6 @@
 import {Base} from '@craftcms/garnish';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 // Mostly Craft.* runtime seams (the still-legacy element index + prompt handler
 // + progress bar); the only jQuery is via the objects Craft.ui/Craft.cp return
@@ -47,8 +48,9 @@ export class AssetMover extends Base {
 
     try {
       // get total size of elements that should be moved
-      response = await Craft.sendActionRequest('POST', 'assets/move-info', {
-        data: {folderIds, assetIds},
+      response = await actionClient.post('assets/move-info', {
+        folderIds,
+        assetIds,
       });
     } catch (e: any) {
       Craft.cp.displayError(e?.response?.data?.message);
@@ -344,9 +346,8 @@ export class AssetMover extends Base {
       let activeRequests = requests.length;
 
       for (const request of requests) {
-        Craft.sendActionRequest('POST', request.action, {
-          data: request.params,
-        })
+        actionClient
+          .post(request.action, request.params)
           .then((response: any) => {
             responses.push(
               Object.assign({success: true}, response.data, {request})

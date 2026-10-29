@@ -1,5 +1,6 @@
 import {Base, Modal} from '@craftcms/garnish';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 /** A `craft-button`, whose `disabled` and `loading` states are properties. */
 type SelectButton = HTMLElement & {disabled: boolean; loading: boolean};
@@ -151,14 +152,16 @@ export class EntryMover extends Base {
     }
     this.#abortController = new AbortController();
 
-    Craft.sendActionRequest('POST', 'entries/move-to-section-modal-data', {
-      data: {
-        entryIds: this.entryIds,
-        siteId: this.elementIndex?.siteId,
-        currentSectionUid: this.currentSectionUid,
-      },
-      signal: this.#abortController.signal,
-    })
+    actionClient
+      .post(
+        'entries/move-to-section-modal-data',
+        {
+          entryIds: this.entryIds,
+          siteId: this.elementIndex?.siteId,
+          currentSectionUid: this.currentSectionUid,
+        },
+        {signal: this.#abortController.signal}
+      )
       .then(({data}: {data?: {sections?: MoveTargetSection[]}}) => {
         const list = this.#sectionsList;
         if (!list) {
@@ -218,7 +221,8 @@ export class EntryMover extends Base {
       entryIds: this.entryIds,
     };
 
-    Craft.sendActionRequest('POST', 'entries/move-to-section', {data})
+    actionClient
+      .post('entries/move-to-section', data)
       .then((response: {data: {message: string}}) => {
         Craft.cp.displaySuccess(response.data.message);
         Craft.cp.announce(response.data.message);

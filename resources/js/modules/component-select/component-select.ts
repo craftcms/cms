@@ -12,13 +12,14 @@ import {openSlideout, type SlideoutSaveResult} from '@/common/slideouts';
 import {componentSelectData} from './support';
 import {getActionUrl} from '@/common/craft/url';
 import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 // `Craft` and `$` (jQuery) remain page globals. The Choose menu and the
 // *chip* action menus are both modern, self-booting `craft-action-menu`s
 // now, but the controller still pairs `@craftcms/garnish` `DragSort` with
 // still-jQuery Craft seams — `Craft.addActionsToChip` (which also carries a
-// jQuery `disclosureMenu()` fallback for old/plugin-rendered chip markup)
-// and `Craft.sendActionRequest` — so jQuery survives there.
+// jQuery `disclosureMenu()` fallback for old/plugin-rendered chip markup) —
+// so jQuery survives there.
 declare const Craft: any;
 declare const $: any;
 
@@ -431,21 +432,15 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     addToMenu = false,
     replace: HTMLElement | null = null
   ): Promise<void> {
-    const {data} = await Craft.sendActionRequest(
-      'POST',
-      'app/render-components',
-      {
-        data: {
-          components: [
-            {
-              type,
-              id,
-              instances: [this.#renderSettings(id)],
-            },
-          ],
+    const {data} = await actionClient.post('app/render-components', {
+      components: [
+        {
+          type,
+          id,
+          instances: [this.#renderSettings(id)],
         },
-      }
-    );
+      ],
+    });
 
     const replacedLi = replace?.closest<HTMLElement>('li') ?? null;
 
