@@ -61,6 +61,10 @@
     color: var(--c-color-neutral-fill-normal);
   }
 
+  .rating-stars__track craft-icon {
+    flex-shrink: 0;
+  }
+
   .rating-stars__track--filled {
     position: absolute;
     inset-block-start: 0;
