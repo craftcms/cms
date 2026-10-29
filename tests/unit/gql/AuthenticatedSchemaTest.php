@@ -106,6 +106,28 @@ class AuthenticatedSchemaTest extends TestCase
         self::assertNotContains('sections.' . self::PEER_SECTION . ':read', $schema->scope);
     }
 
+    public function testCurrentUser(): void
+    {
+        $query = '{ currentUser { id email } }';
+        $expected = ['id' => (string)$this->user->id, 'email' => $this->user->email];
+
+        // Available without “Query for users”
+        $schema = Craft::$app->getGql()->getSchemaForUser($this->user);
+        self::assertNotContains('usergroups.everyone:read', $schema->scope);
+        self::assertSame($expected, $this->execute($schema, $query)['data']['currentUser']);
+
+        // Same data as the `user` query
+        Craft::$app->getUserPermissions()->saveUserPermissions($this->user->id, ['viewUsers']);
+        $schema = Craft::$app->getGql()->getSchemaForUser($this->user);
+        $result = $this->execute($schema, '{ currentUser { id email fullName } user(id: ' . $this->user->id . ') { id email fullName } }');
+        self::assertSame($result['data']['user'], $result['data']['currentUser']);
+        self::assertSame($expected['email'], $result['data']['currentUser']['email']);
+
+        // Schema tokens have no current user
+        $result = $this->execute(new GqlSchema(['name' => 'Token', 'uid' => StringHelper::UUID(), 'scope' => ['usergroups.everyone:read']]), $query);
+        self::assertArrayNotHasKey('currentUser', $result['data']);
+    }
+
     public function testQueriesOnlyReturnEntriesTheUserCanView(): void
     {
         $result = $this->execute(Craft::$app->getGql()->getSchemaForUser($this->user), '{ entries(limit: 100) { title } }');

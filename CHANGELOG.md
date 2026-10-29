@@ -5,6 +5,7 @@
 - Added authenticated HTTP, public HTTP, and stdio MCP servers, with OAuth authorization, public content approvals, and plugin extension points.
 - GraphQL API requests can now be authenticated with OAuth access tokens, granting access to the content the authorizing user has permission to access.
 - GraphQL schema components can now support authenticated requests via an `authenticated` key on their config.
+- Added the `currentUser` GraphQL query, which returns the user that authenticated the request.
 - Added the My Account → Tokens screen, where users can create personal access tokens for OAuth resources that allow them (such as the GraphQL API), and revoke tokens and the apps they’ve authorized.
 - Added `craft\gql\base\ElementMutationResolver::requireUserAuthorization()`.
 - Added `craft\helpers\Gql::getSchemaUser()`.
