@@ -6,9 +6,9 @@ namespace craft\mcp;
 
 use craft\base\ElementInterface;
 use craft\elements\Category;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
-use craft\elements\db\ElementQueryInterface;
 use craft\services\Elements;
 use Mcp\Exception\ToolCallException;
 use yii\helpers\Inflector;
