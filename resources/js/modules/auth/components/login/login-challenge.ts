@@ -8,6 +8,7 @@ import componentStyles from './login-form.styles.js';
 // before isNative() is ever queried.
 import '../totp/totp-form.js';
 import '../recovery-codes/recovery-code-form.js';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 
 export interface TwoFactorData {
   authForm: string;
@@ -19,8 +20,6 @@ export interface TwoFactorData {
 }
 
 declare const Craft: {
-  appendHeadHtml: (html: string) => Promise<void>;
-  appendBodyHtml: (html: string) => Promise<void>;
   initUiElements: (container: Element) => void;
   createAuthFormHandler: (
     method: string,
@@ -86,8 +85,8 @@ export default class CraftLoginChallenge extends LitElement {
 
     if (this.#assetsAppendedFor !== this.data) {
       this.#assetsAppendedFor = this.data;
-      await Craft.appendHeadHtml(this.data.headHtml);
-      await Craft.appendBodyHtml(this.data.bodyHtml);
+      await appendHeadHtml(this.data.headHtml);
+      await appendBodyHtml(this.data.bodyHtml);
     }
     Craft.initUiElements($authForm);
 

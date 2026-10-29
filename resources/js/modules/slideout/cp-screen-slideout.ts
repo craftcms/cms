@@ -41,6 +41,7 @@ import {
 import {findDeltaData} from '@/common/craft/delta';
 import {getCpUrl} from '@/common/craft/url';
 import {t} from '@craftcms/ui/utilities/translate';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 
 declare const Craft: any;
 declare const $: any;
@@ -494,8 +495,8 @@ export class CpScreenSlideout extends Slideout {
       requestAnimationFrame(async () => {
         // Execute the response JS first so any Selectize inputs, etc.,
         // get instantiated before field toggles
-        await Craft.appendHeadHtml(data.headHtml);
-        await Craft.appendBodyHtml(data.bodyHtml);
+        await appendHeadHtml(data.headHtml);
+        await appendBodyHtml(data.bodyHtml);
 
         if (data.inertiaPage) {
           const inertiaPage = await resolveInertiaPage(data.inertiaPage);

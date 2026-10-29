@@ -13,6 +13,7 @@ import {componentSelectData} from './support';
 import {getActionUrl} from '@/common/craft/url';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 
 // `Craft` and `$` (jQuery) remain page globals. The Choose menu and the
 // *chip* action menus are both modern, self-booting `craft-action-menu`s
@@ -469,8 +470,8 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
       this.#addMenuOption(type, id, li.querySelector('craft-chip'));
     }
 
-    await Craft.appendHeadHtml(data.headHtml);
-    await Craft.appendBodyHtml(data.bodyHtml);
+    await appendHeadHtml(data.headHtml);
+    await appendBodyHtml(data.bodyHtml);
 
     if (this.settings.showDescription) {
       // Descriptions render an info icon that needs a UI-elements boot.

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {h, ref} from 'vue';
   import {router, useHttp} from '@inertiajs/vue3';
-  import {actionClient, t} from '@craftcms/ui';
+  import {actionClient, appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
   import {useCraftTable} from '@/common/table/craftTable';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
@@ -113,8 +113,8 @@
     });
 
     const slideout = new craft.AuthMethodSetup.Slideout(data);
-    await craft.appendHeadHtml(data.headHtml);
-    await craft.appendBodyHtml(data.bodyHtml);
+    await appendHeadHtml(data.headHtml);
+    await appendBodyHtml(data.bodyHtml);
     slideout.$container
       .find('.auth-method-close-btn')
       .on('click', () => slideout.close());

@@ -11,6 +11,7 @@ import {Base, type GarnishBaseSettings} from '@craftcms/garnish';
 import {AuthMethodSetupSlideout} from './auth-method-setup-slideout';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 
 declare const Craft: any;
 declare const $: any;
@@ -107,8 +108,8 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
             slideout.on('close', () => {
               this.showingSlideout = false;
             });
-            await Craft.appendHeadHtml(data.headHtml);
-            await Craft.appendBodyHtml(data.bodyHtml);
+            await appendHeadHtml(data.headHtml);
+            await appendBodyHtml(data.bodyHtml);
             this.addListener(
               slideout.$container.find('.auth-method-close-btn'),
               'activate',
@@ -159,8 +160,8 @@ export class AuthMethodSetup extends Base<AuthMethodSetupSettings> {
           $(data.html).children()
         );
         Craft.initUiElements($container);
-        await Craft.appendHeadHtml(data.headHtml);
-        await Craft.appendBodyHtml(data.bodyHtml);
+        await appendHeadHtml(data.headHtml);
+        await appendBodyHtml(data.bodyHtml);
         this.initUi();
         this.settings!.onRefresh();
         this.trigger('refresh');

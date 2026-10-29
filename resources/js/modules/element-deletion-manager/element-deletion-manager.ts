@@ -4,6 +4,7 @@ import type CraftDialog from '@craftcms/ui/components/dialog/dialog';
 import './element-deletion-manager.css';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 
 // jQuery-built blocker markup + Craft.ui/Craft.cp seams, shown in a
 // `craft-dialog`.
@@ -103,8 +104,8 @@ export class ElementDeletionManager extends Base {
       this.blockers.push(new Blocker(this, blocker));
     }
 
-    await Craft.appendHeadHtml(data.headHtml);
-    await Craft.appendBodyHtml(data.bodyHtml);
+    await appendHeadHtml(data.headHtml);
+    await appendBodyHtml(data.bodyHtml);
   }
 
   getParams(): any {

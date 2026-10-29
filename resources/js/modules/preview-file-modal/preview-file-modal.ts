@@ -6,6 +6,7 @@ import {hasAttr} from '@craftcms/garnish';
 import {highlightCodeBlocks} from '@/common/utils/highlight-code';
 import {t} from '@craftcms/ui/utilities/translate';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 
 declare const Craft: any;
 declare const $: any;
@@ -245,8 +246,8 @@ export class PreviewFileModal {
         }
         this._addBumperButtons();
         this.#focusContent();
-        await Craft.appendHeadHtml(response.data.headHtml);
-        await Craft.appendBodyHtml(response.data.bodyHtml);
+        await appendHeadHtml(response.data.headHtml);
+        await appendBodyHtml(response.data.bodyHtml);
       })
       .catch(({response}: any) => {
         if (requestId !== this.requestId) return;
