@@ -5,6 +5,7 @@ import {isHttpError} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
 import {commandShortcut} from '@/common/utils/keyShortcuts';
 import {registerShortcut, type ShortcutRegistration} from '@/common/shortcuts';
+import {findDeltaData} from '@/common/craft/delta';
 
 declare const Craft: any;
 declare const $: any;
@@ -303,7 +304,7 @@ export class CpModal extends Base {
   submit(): void {
     this.showSubmitSpinner();
 
-    const data = Craft.findDeltaData(
+    const data = findDeltaData(
       this.#$container.data('initialSerializedValue'),
       this.#$container.serialize(),
       this.#$container.data('delta-names'),

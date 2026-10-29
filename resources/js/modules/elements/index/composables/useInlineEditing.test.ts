@@ -40,13 +40,7 @@ describe('useInlineEditing', () => {
     const load = vi.fn(async () => {});
     const displayNotice = vi.fn();
     const displayError = vi.fn();
-    vi.stubGlobal('Craft', {
-      findDeltaData: vi.fn(
-        (_before: string, after: string) =>
-          `${after}&modifiedDeltaNames[]=inline%5Belement-11%5D`
-      ),
-      cp: {displayNotice, displayError},
-    });
+    vi.stubGlobal('Craft', {cp: {displayNotice, displayError}});
     const state = useInlineEditing({
       container: ref(container),
       editableRows: [
@@ -77,7 +71,6 @@ describe('useInlineEditing', () => {
   it('closes without a request when no inputs changed', async () => {
     const {state, save, displayNotice} = setup();
     await state.start();
-    window.Craft.findDeltaData = vi.fn(() => '');
 
     await state.save();
 

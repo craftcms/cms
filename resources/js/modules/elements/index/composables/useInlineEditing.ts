@@ -6,6 +6,7 @@ import {h, nextTick, ref, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
 import {useShortcut} from '@/common/shortcuts';
 import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 import type {InlineAttributeUiHost} from '@/modules/ui/inline-attribute-ui-host';
+import {findDeltaData} from '@/common/craft/delta';
 
 export type InlineEditingErrors = Record<
   string | number,
@@ -131,7 +132,7 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
 
     const submittedInputs = serializeFormInputs(container);
     const body = new URLSearchParams(
-      window.Craft.findDeltaData(
+      findDeltaData(
         initialInputs.replaceAll('+', '%20'),
         submittedInputs.replaceAll('+', '%20'),
         editingIds.value.map((id) => `inline[element-${id}]`)
