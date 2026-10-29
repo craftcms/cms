@@ -7,11 +7,13 @@
   } from '@actions/PluginStore/PluginStoreController';
   import CpLink from '@/common/components/CpLink.vue';
   import EditionPurchase from './EditionPurchase.vue';
+  import InstallCommands from './InstallCommands.vue';
   import PartnerBadge from './PartnerBadge.vue';
   import PluginBand from './PluginBand.vue';
   import PluginIcon from './PluginIcon.vue';
   import {usePluginLicenseInfo} from '../composables/usePluginStoreData';
   import {formatDate} from '../dates';
+  import {hasSingleFreeEdition} from '../pricing';
   import type {Plugin} from '../types';
 
   const {plugin} = defineProps<{plugin: Plugin}>();
@@ -145,6 +147,10 @@
             </craft-button-group>
           </div>
           <EditionPurchase :plugin="plugin" :edition="edition" />
+          <InstallCommands
+            v-if="hasSingleFreeEdition(plugin)"
+            :plugin="plugin"
+          />
         </div>
       </div>
     </div>

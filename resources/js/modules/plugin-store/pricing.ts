@@ -22,6 +22,13 @@ export function isPluginFree(plugin: Pick<PluginSummary, 'editions'>): boolean {
   return plugin.editions.every(isEditionFree);
 }
 
+/** Nothing to choose or pay for, so its page leads with how to install it. */
+export function hasSingleFreeEdition(
+  plugin: Pick<PluginSummary, 'editions'>
+): boolean {
+  return plugin.editions.length === 1 && isPluginFree(plugin);
+}
+
 export function priceRangeLabel(
   plugin: Pick<PluginSummary, 'editions'>
 ): string {
