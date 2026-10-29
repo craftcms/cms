@@ -9,7 +9,6 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Contracts\Database\Query\Builder;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @internal
@@ -179,7 +178,7 @@ trait QueriesFields
         }
 
         $query
-            ->join(new Alias(Table::ELEMENTS_BULKOPS, 'elements_bulkops'), 'elements_bulkops.elementId', 'elements.id')
+            ->join(Table::ELEMENTS_BULKOPS.' as elements_bulkops', 'elements_bulkops.elementId', 'elements.id')
             ->where('elements_bulkops.key', $value);
     }
 

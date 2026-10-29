@@ -24,7 +24,6 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Tpetry\QueryExpressions\Function\String\Lower;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
@@ -866,7 +865,7 @@ class ElementHelper
     {
         $rows = DB::table(Table::ELEMENTS_SITES, 'elements_sites')
             ->select(['elements.id', 'elements.type'])
-            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
+            ->join(Table::ELEMENTS.' as elements', 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $element->siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
             ->when(

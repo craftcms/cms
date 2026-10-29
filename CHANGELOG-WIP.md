@@ -2,6 +2,8 @@
 
 ### Control Panel
 - Added a command palette, opened from the search button in the global header or with <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>K</kbd>. It finds fields, tabs, and Matrix blocks on the current page, control panel pages and settings, entries, assets, users, and releases, and runs actions such as creating entries and settings, publishing releases, clearing caches, and changing preferences, with the same permission checks as the screens they stand in for. It also searches the Craft CMS documentation, and lists recently visited pages when nothing has been typed. ([#20081](https://github.com/craftcms/cms/pull/20081))
+- Element cards can now be cover cards, where the thumbnail image fills the card, with the header and content laid over it on a blurred bar, backing, or scrim that keeps them legible over any image: white on black, or black on white over light images. Cover cards’ attribute previews are limited to one line. Card view designers have a new “Thumb Style” setting, with “Normal” and “Cover” options, which defaults to “Cover” for asset volumes. Other element types’ cards can be covered too, when their thumbnail is an asset’s image, such as a user’s photo, or an image from the first of their “Thumb Sources” that has a thumbnail, including fields within Content Blocks and related elements’ own thumbnails. Only images from assets can cover a card, and images smaller than 480×360, narrower than 3:4, wider than 2:1, or possibly transparent keep the normal card. ([#20148](https://github.com/craftcms/cms/pull/20148), [#20152](https://github.com/craftcms/cms/pull/20152), [#20181](https://github.com/craftcms/cms/pull/20181))
+- Element cards whose header has no label, such as asset cards, now show just their checkbox and action button over the card, without a header bar, and cards whose header has nothing in it no longer show one at all. Entry cards keep their header bar, with their entry type’s label and icon. ([#20148](https://github.com/craftcms/cms/pull/20148))
 - Plain links to control panel pages, such as those in elements’ metadata and other server-rendered HTML, now open with Inertia rather than reloading the page. ([#20118](https://github.com/craftcms/cms/pull/20118))
 - Added a “Theme” user preference, with “Light”, “Dark”, and “System” options. “System” is the default. Pages shown to logged-out users, such as the login page, always follow the system’s light or dark setting. ([#19966](https://github.com/craftcms/cms/pull/19966))
 - Added a control panel notification center.
@@ -75,6 +77,7 @@
 - Users can now connect their accounts to one or more Laravel Socialite providers, which are listed on the login page. ([#19202](https://github.com/craftcms/cms/pull/19202))
 - Added the `authGuard` and `authPasswordBroker` config settings, allowing Craft authentication to use a dedicated Laravel guard, provider, and password broker. ([#19598](https://github.com/craftcms/cms/issues/19598))
 - The `loginPath` config setting is now `false` by default.
+- Added a **My Account → Tokens** screen, where users can create Laravel Passport personal access tokens with the scopes they choose from any of the APIs offered, behind an elevated session, rename them, and revoke them along with the apps they’ve authorized. It’s shown when an API offers personal access token scopes the user may grant.
 
 ### Conditions
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
@@ -97,6 +100,7 @@
 - Entry type and user group descriptions, fields’ default instructions, tips, and warnings, and field layout elements’ instructions, tips, and warnings now have Markdown inputs. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Removed the “Show unpermitted entries” setting from Entries, Link, and Markdown fields, in favor of the “Viewable” condition rule in the “Selectable Entries Condition” setting. ([#19611](https://github.com/craftcms/cms/pull/19611), [#19622](https://github.com/craftcms/cms/pull/19622))
 - Removed the “Show unpermitted files” and “Allowed File Types” settings from Assets, Link, and Markdown fields, in favor of “Viewable” and “File Type” condition rules in the “Selectable Assets Condition” setting. ([#19611](https://github.com/craftcms/cms/pull/19611), [#19622](https://github.com/craftcms/cms/pull/19622))
+- Card view designers’ “Thumbnail Source” setting is now “Thumb Sources”, where several fields can be chosen and ordered. Chips and cards show the thumbnail from the first one that has one. ([#20156](https://github.com/craftcms/cms/discussions/20156), [#20181](https://github.com/craftcms/cms/pull/20181))
 - Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
 - Relational fields now have a “Paste” button when the clipboard holds elements they could relate.
 
@@ -119,7 +123,7 @@
 - Assets can now be filtered by what kind of image they are, as found by the “Classify images” AI task, with the “Image Type” asset condition rule. ([#20103](https://github.com/craftcms/cms/pull/20103))
 
 #### MCP
-- Added authenticated and configurable public Model Context Protocol (MCP) servers for inspecting and managing Craft sites, content, assets, users, plugins, and project config. ([#19846](https://github.com/craftcms/cms/pull/19846))
+- Added authenticated and public Model Context Protocol (MCP) servers for inspecting and managing Craft sites, content, assets, users, plugins, and project config. Each can be enabled and given its own endpoint in Settings → MCP, and any active user can use the authenticated server. ([#19846](https://github.com/craftcms/cms/pull/19846))
 - Added the `mcp:read`, `mcp:write`, and `mcp:admin` OAuth scopes for the authenticated MCP server. Users choose an access level when they authorize an MCP client, and it defaults to read only. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - The OAuth authorization page now shows where the user will be redirected, and can no longer be displayed in a frame. ([#20105](https://github.com/craftcms/cms/pull/20105))
 - Added the `mcp:serve` command, which serves the authenticated MCP server over stdio as a named user. ([#19846](https://github.com/craftcms/cms/pull/19846))
@@ -152,6 +156,7 @@
 - Improved Twig attribute access on Eloquent models to resolve missing and null attributes, casts, accessors, and relations through Eloquent property access, while preserving explicit method calls. ([#20165](https://github.com/craftcms/cms/pull/20165))
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
 - Elements no longer include custom field values when iterated over. ([#19004](https://github.com/craftcms/cms/issues/19004))
+- Element queries’ `orderBy()`, `select()`, and `groupBy()` now quote strings as column names, except `rand()` and `random()`, which use the database’s random function on MySQL, PostgreSQL, and SQLite alike. Any other SQL expression must be passed with `expression()` in Twig or `DB::raw()` in PHP; strings containing `(` throw an exception explaining this. ([#20190](https://github.com/craftcms/cms/pull/20190))
 - Element save requests no longer enable the element when no status is posted. Craft 5 resolved the status as `enabled ?? (setEnabled ? true : null)`, so a POST carrying none of `enabled`, `setEnabled`, or `enabledForSite` force-enabled the element, and posting `setEnabled=0` was how a request opted out of that. A posted status now decides on its own, and a save that doesn’t carry one leaves the element’s status untouched — which is what lets partial/delta saves keep a disabled element disabled. The `setEnabled` param has nothing left to suppress and is ignored.
 - Updated Twig `{% paginate %}` queries to use Laravel paginators and generate query-string pagination URLs based on the `pageTrigger` general config setting.
 - Added `|sanitize` Twig filter for sanitizing HTML with `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers`.
@@ -182,8 +187,10 @@
 - Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
 - Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.
 - Deprecated `craft.app.userPermissions`. `craft.userPermissions` should be used instead.
+- Deprecated `asset.setTransform()`. `asset.transform()` should be used instead. With the Yii adapter installed, `setTransform()` still works on assets returned by Assets fields and asset queries, but the transform only applies to the asset’s URL, not its width, height, or `getImg()` output. ([#20191](https://github.com/craftcms/cms/pull/20191))
 
 ### System
+- The database table prefix is now set with the `DB_PREFIX` environment variable. When `craftcms/yii2-adapter` is installed, Craft 5’s `CRAFT_DB_TABLE_PREFIX` and `DB_TABLE_PREFIX` environment variables are still applied, with a trailing underscore. ([#20192](https://github.com/craftcms/cms/pull/20192))
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Image assets now store color data sampled from their file when it’s uploaded, replaced, or indexed, including the image’s dominant color, a grid of the average colors of its regions, its main colors and how much of the image each covers, and how light its regions are. Control panel uploads sample it in the browser. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#20103](https://github.com/craftcms/cms/pull/20103))
 - Control panel resources are now provided by a `craftcms/cms-assets` package. ([#19162](https://github.com/craftcms/cms/pull/19162))
@@ -210,6 +217,7 @@
 - `<craft-badge-indicator>` now has a `max` property, which sets the largest count shown before it’s shortened to “99+”. Set it to `Infinity` to show the whole count. Counts are now formatted for the page’s language.
 - Added the `thumbSize` config option to `CraftCms\Cms\Cp\Html\ElementHtml::chipHtml()` and `elementChipHtml()`, which sizes a chip’s thumbnail independently of the chip (`sm`, `md`, `lg`, `xl`, or `2xl`), and a `medium` chip size (`ElementHtml::CHIP_SIZE_MEDIUM`). Chips without a `size` take the one that suits their thumbnail. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Plugins can now make their element types available through the `elements.*` MCP tools.
+- Plugins can offer Passport scopes for personal access tokens on the Tokens screen by registering a `CraftCms\Cms\Auth\PersonalAccessTokens\ScopeGroup` with `CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens::registerScopeGroup()`. Registered scopes are added to `Passport::tokensCan()`.
 - Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are only shown in the Inertia element editor and element chips if they define a `url` or `action`. ([#19783](https://github.com/craftcms/cms/pull/19783))
 - Plugins can no longer register custom Craft filesystem types. Filesystem types registered through `craft\base\Fs` remain supported for legacy plugins via the Yii adapter. ([#19650](https://github.com/craftcms/cms/pull/19650))
 
@@ -270,7 +278,10 @@
 - Added the `presentation` option to the `forms.checkboxSelect` and `forms.checkboxSelectField` macros and `Craft.ui.createCheckboxSelect()`. Set it to `checkboxes` to make a sortable checkbox select list every option rather than an “Add item” menu. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - While a checkbox select's “All” option is checked, its other options are now left checked but unnamed, rather than disabled. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - The `storageKey` checkbox select option no longer has any effect. The order of a sortable checkbox select's options is posted with its value. ([#20036](https://github.com/craftcms/cms/pull/20036))
+- Added `CraftCms\Cms\FieldLayout\FieldLayout::$thumbSources` and `thumbSources()`, and the `thumbSources` field layout config key, which replaces `thumbFieldKey`. ([#20156](https://github.com/craftcms/cms/discussions/20156), [#20181](https://github.com/craftcms/cms/pull/20181))
+- Added `CraftCms\Cms\Element\Data\Thumb`, `CraftCms\Cms\Element\Contracts\ElementInterface::getThumb()`, `CraftCms\Cms\FieldLayout\FieldLayout::getThumbForElement()`, `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::thumb()`, `CraftCms\Cms\Field\BaseRelationField::getThumb()`, and `CraftCms\Cms\Asset\Elements\Asset::canCoverCard()`. Element types with their own thumbnails can override the protected `thumb()` method, and native layout fields can override `thumb()`, so their thumbnails are known without being rendered. ([#20181](https://github.com/craftcms/cms/pull/20181))
 - Deprecated `CraftCms\Cms\Cp\Components\Field::labelExtra()`. `actions()` should be used instead.
+- Deprecated `CraftCms\Cms\FieldLayout\FieldLayout::$thumbFieldKey` and `thumbFieldKey()`. `$thumbSources` and `thumbSources()` should be used instead. ([#20156](https://github.com/craftcms/cms/discussions/20156), [#20181](https://github.com/craftcms/cms/pull/20181))
 - Deprecated the `labelExtra` field config option. `actions` should be used instead.
 - Deprecated `<craft-field>`’s `label-extra` slot. The `actions` slot should be used instead.
 - Removed `CraftCms\Cms\FieldLayout\FieldLayoutComponent::settingsHtml()`.

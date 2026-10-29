@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Policies\AssetPolicy;
 use CraftCms\Cms\Asset\Policies\VolumeFolderPolicy;
+use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
@@ -86,6 +87,8 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->bootRedirects();
         $this->registerElementPolicies();
+
+        $this->app->booted(fn () => $this->app->make(PersonalAccessTokens::class)->registerPassportScopes());
     }
 
     private function bootRedirects(): void

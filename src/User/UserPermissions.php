@@ -40,7 +40,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -168,7 +167,7 @@ class UserPermissions
         return $this->permissionsByGroupId->getOrPut(
             $groupId,
             fn () => $this->createUserPermissionsQuery()
-                ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
+                ->join(Table::USERPERMISSIONS_USERGROUPS.' as p_g', 'p_g.permissionId', 'p.id')
                 ->where('p_g.groupId', $groupId)
                 ->pluck('p.name')
                 ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all()))),
@@ -189,8 +188,8 @@ class UserPermissions
         }
 
         return $this->createUserPermissionsQuery()
-            ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
-            ->join(new Alias(Table::USERGROUPS_USERS, 'g_u'), 'g_u.groupId', 'p_g.groupId')
+            ->join(Table::USERPERMISSIONS_USERGROUPS.' as p_g', 'p_g.permissionId', 'p.id')
+            ->join(Table::USERGROUPS_USERS.' as g_u', 'g_u.groupId', 'p_g.groupId')
             ->where('g_u.userId', $userId)
             ->pluck('p.name')
             ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));
@@ -265,7 +264,7 @@ class UserPermissions
         }
 
         return $this->createUserPermissionsQuery()
-            ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
+            ->join(Table::USERPERMISSIONS_USERS.' as p_u', 'p_u.permissionId', 'p.id')
             ->where('p_u.userId', $userId)
             ->pluck('p.name')
             ->pipe(fn (Collection $permissions) => collect($this->canonicalPermissionNames($permissions->all())));

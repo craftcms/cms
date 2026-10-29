@@ -7,7 +7,6 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @since 6.0.0
@@ -24,9 +23,9 @@ class HardDeleteStructures extends GarbageCollectionAction
         $revisionsTable = Table::REVISIONS;
 
         $structureIds = $this->hardDeleteQuery(DB::table($structuresTable, 's'), 's')
-            ->leftJoin(new Alias($structureElementsTable, 'se'), 's.id', 'se.structureId')
-            ->leftJoin(new Alias($elementsTable, 'e'), 'e.id', 'se.elementId')
-            ->leftJoin(new Alias($revisionsTable, 'r'), 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
+            ->leftJoin($structureElementsTable.' as se', 's.id', 'se.structureId')
+            ->leftJoin($elementsTable.' as e', 'e.id', 'se.elementId')
+            ->leftJoin($revisionsTable.' as r', 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
             ->whereNotNull('se.elementId')
             ->whereNull('r.canonicalId')
             ->distinct()

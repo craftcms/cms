@@ -6,6 +6,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Fields;
 
 test('relation fields with maintainHierarchy can serialize an ElementCollection value directly', function () {
@@ -21,4 +22,19 @@ test('relation fields with maintainHierarchy can serialize an ElementCollection 
     $serialized = $field->serializeValue(new ElementCollection([$relatedEntry]), $result->element);
 
     expect($serialized)->toBe([$relatedEntry->id]);
+});
+
+test('eager-loading relation fields with maintainHierarchy does not log deprecations', function () {
+    $relatedModel = EntryModel::factory()->create();
+
+    $result = EntryModel::factory()
+        ->withField('relatedEntries', Entries::class, ['maintainHierarchy' => true], value: [$relatedModel->id])
+        ->createElementWithFields();
+
+    $entry = EntryElement::find()->id($result->element->id)->with(['relatedEntries'])->one();
+
+    expect($entry->relatedEntries->ids()->all())->toBe([$relatedModel->id])
+        ->and(collect(array_keys(Deprecator::getRequestLogs()))
+            ->filter(fn (string $key) => str_contains($key, '::orderBy'))
+            ->all())->toBe([]);
 });

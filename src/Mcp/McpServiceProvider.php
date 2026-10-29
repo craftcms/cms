@@ -6,39 +6,16 @@ namespace CraftCms\Cms\Mcp;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Settings as CpSettings;
-use CraftCms\Cms\Http\Controllers\UploadSessionController;
-use CraftCms\Cms\Http\Middleware\AddLogContext;
-use CraftCms\Cms\Http\Middleware\EnsureInstalled;
-use CraftCms\Cms\Http\Middleware\ForgetTriggerParameters;
-use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
-use CraftCms\Cms\Http\Middleware\PreventStaleDatabaseReads;
-use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Mcp\Commands\ServeCommand;
 use CraftCms\Cms\Mcp\Enums\McpScope;
-use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
-use CraftCms\Cms\Mcp\Http\Controllers\McpController;
-use CraftCms\Cms\Mcp\Http\Controllers\OAuthApproveController;
-use CraftCms\Cms\Mcp\Http\Controllers\OAuthAuthorizationController;
-use CraftCms\Cms\Mcp\Http\Controllers\OAuthMetadataController;
-use CraftCms\Cms\Mcp\Http\Controllers\OAuthRegisterController;
 use CraftCms\Cms\Mcp\Http\Middleware\AddOAuthChallenge;
 use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
-use CraftCms\Cms\Mcp\Http\Middleware\RequireAccessDuringMaintenance;
-use CraftCms\Cms\Mcp\Http\Middleware\SetActivityOrigin;
 use CraftCms\Cms\Mcp\Http\Responses\AuthorizationView;
-use CraftCms\Cms\Mcp\OAuth\Metadata;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Route\Routes;
-use CraftCms\Cms\User\Data\Permission;
-use CraftCms\Cms\User\Data\PermissionGroup;
-use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Contracts\AuthorizationViewResponse;
-use Laravel\Passport\Http\Controllers\DenyAuthorizationController;
-use Laravel\Passport\Http\Middleware\CheckTokenForAnyScope;
 use Laravel\Passport\Passport;
 use Laravel\Passport\Scope;
 use Symfony\Component\HttpFoundation\Response;
@@ -56,9 +33,17 @@ class McpServiceProvider extends ServiceProvider
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, AddOAuthChallenge::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, ReorderJsonAccept::class);
 
-        $this->app->scoped(Settings::class, fn (): Settings => new Settings(
-            $this->app->make(ProjectConfig::class)->get('mcp') ?? [],
-        ));
+        $this->app->scoped(Settings::class, function (): Settings {
+            $projectConfig = $this->app->make(ProjectConfig::class);
+            $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+            // Without public registration, the authenticated server defaults to the control panel, so the public
+            // server can have `/mcp`.
+            $defaults = $cpTrigger !== '' && ! $projectConfig->get('users.allowPublicRegistration')
+                ? ['route' => "/{$cpTrigger}/mcp", 'authorizationRoute' => "/{$cpTrigger}/mcp/auth"]
+                : [];
+
+            return new Settings([...$defaults, ...($projectConfig->get('mcp') ?? [])]);
+        });
 
         if ($this->app->bound(AuthorizationViewResponse::class)) {
             return;
@@ -71,11 +56,7 @@ class McpServiceProvider extends ServiceProvider
 
     public function boot(
         CpSettings $cpSettings,
-        PublicRouteRegistrar $publicRoutes,
-        UserPermissions $userPermissions,
-        Router $router,
-        Routes $routes,
-        Metadata $metadata,
+        RouteRegistrar $mcpRoutes,
     ): void {
         $this->commands([
             ServeCommand::class,
@@ -94,14 +75,6 @@ class McpServiceProvider extends ServiceProvider
             ]);
         });
 
-        $userPermissions->registerPermissionGroup('mcp', static fn (): PermissionGroup => new PermissionGroup(
-            handle: 'mcp',
-            heading: t('MCP'),
-            permissions: collect([
-                new Permission('useCraftMcp', t('Use Craft MCP')),
-            ]),
-        ));
-
         $settings = static fn (): array => [
             'label' => t('MCP'),
             'url' => route('craft.cp.settings.mcp.index'),
@@ -111,92 +84,7 @@ class McpServiceProvider extends ServiceProvider
         $cpSettings->registerReadOnlySetting('Extend', 'mcp', $settings);
 
         if (! $this->app->routesAreCached()) {
-            $this->registerRoutes($router, $routes, $metadata);
-            $publicRoutes->register();
+            $mcpRoutes->register();
         }
-    }
-
-    private function registerRoutes(Router $router, Routes $routes, Metadata $metadata): void
-    {
-        $config = Cms::config()->mcp;
-        $middleware = [
-            ForgetTriggerParameters::class,
-            EnsureInstalled::class,
-            AddLogContext::class,
-            ResolveSite::class,
-            PreventStaleDatabaseReads::class,
-        ];
-        $authenticatedMiddleware = [
-            ...$middleware,
-            AddOAuthChallenge::class,
-            ReorderJsonAccept::class,
-            'auth:craft-mcp',
-            CheckTokenForAnyScope::using(McpScope::Read->satisfyingValues()),
-            'can:accessCp',
-            'can:useCraftMcp',
-            RequireAccessDuringMaintenance::class,
-            SetActivityOrigin::class,
-            ...$config->middleware,
-        ];
-
-        $resourcePath = $routes->joinRoutePrefix([
-            trim((string) parse_url($metadata->baseUrl(), PHP_URL_PATH), '/'),
-            $routes->cpTriggerRoutePrefix(),
-            trim($config->endpoint, '/'),
-        ]);
-        $router->get('/.well-known/oauth-protected-resource/'.$resourcePath, [OAuthMetadataController::class, 'resource'])
-            ->middleware(EnsureInstalled::class)
-            ->name('craft.mcp.oauth.resource');
-        $router->get('/.well-known/oauth-authorization-server/'.$resourcePath, [OAuthMetadataController::class, 'authorizationServer'])
-            ->middleware(EnsureInstalled::class)
-            ->name('craft.mcp.oauth.authorization-server');
-
-        $router
-            ->prefix($routes->cpTriggerRoutePrefix())
-            ->name('craft.cp.')
-            ->group(function (Router $router) use ($authenticatedMiddleware, $config, $middleware): void {
-                $router->prefix($config->endpoint.'/oauth')->name('mcp.oauth.')->group(function (Router $router): void {
-                    $router->post('register', OAuthRegisterController::class)
-                        ->middleware([EnsureInstalled::class, PreventStaleDatabaseReads::class, 'throttle:60,1'])
-                        ->name('register');
-
-                    $router->middleware(['web', 'craft', HandleInertiaRequests::class, 'throttle:60,1'])->group(function (Router $router): void {
-                        $router->get('authorize', OAuthAuthorizationController::class)
-                            ->name('authorize');
-
-                        $router->middleware(['auth:'.Cms::config()->getAuthGuard(), 'can:accessCp', 'can:useCraftMcp'])->group(function (Router $router): void {
-                            $router->post('authorize', [OAuthApproveController::class, 'approve'])->name('approve');
-                            $router->delete('authorize', [DenyAuthorizationController::class, 'deny'])->name('deny');
-                        });
-                    });
-                });
-
-                $router->get($config->endpoint, [EndpointPageController::class, 'admin'])
-                    ->middleware(['web', 'craft', HandleInertiaRequests::class])
-                    ->name('mcp.page');
-
-                $router->options($config->endpoint, [McpController::class, 'preflight'])
-                    ->middleware($middleware);
-
-                $router->allowDuringMaintenance()->match(['POST', 'DELETE'], $config->endpoint, [McpController::class, 'admin'])
-                    ->middleware($authenticatedMiddleware)
-                    ->name('mcp.server');
-
-                $router->allowDuringMaintenance()
-                    ->prefix("$config->endpoint/uploads")
-                    ->name('mcp.uploads.')
-                    ->middleware([...$authenticatedMiddleware, CheckTokenForAnyScope::using(McpScope::Write->satisfyingValues())])
-                    ->group(function (Router $router): void {
-                        $router->any('{upload}/transfer', [UploadSessionController::class, 'transfer'])
-                            ->whereUuid('upload')
-                            ->name('transfer');
-                        $router->get('{upload}', [UploadSessionController::class, 'status'])
-                            ->whereUuid('upload')
-                            ->name('status');
-                        $router->delete('{upload}', [UploadSessionController::class, 'destroy'])
-                            ->whereUuid('upload')
-                            ->name('destroy');
-                    });
-            });
     }
 }

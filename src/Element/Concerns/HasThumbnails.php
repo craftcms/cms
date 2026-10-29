@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Html;
 
@@ -30,25 +32,60 @@ trait HasThumbnails
      */
     public function getThumbHtml(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
+        return $this->getThumb()?->getHtml($size, $mode);
+    }
+
+    /**
+     * Returns the element's thumbnail: the first one provided by its field layout's thumb sources, or else its own.
+     */
+    public function getThumb(): ?Thumb
+    {
         $fieldLayout = $this->getFieldLayout();
 
-        if ($fieldLayout?->thumbFieldKey) {
-            $thumbHtml = $fieldLayout->getThumbHtmlForElement($fieldLayout->thumbFieldKey, $this, $size, $mode);
+        foreach ($fieldLayout->thumbSources ?? [] as $key) {
+            $thumb = $fieldLayout->getThumbForElement($key, $this);
 
-            if ($thumbHtml) {
-                return $thumbHtml;
+            if ($thumb) {
+                return $thumb;
             }
         }
 
-        if ($thumbUrl = $this->thumbUrl($size, $mode)) {
-            return $this->renderImageThumb($size, $thumbUrl, $mode);
+        return $this->thumb();
+    }
+
+    /**
+     * Returns the element's own thumbnail, if it has one.
+     *
+     * Element types that return `true` from [[hasThumbs()]] are assumed to have one, and other element types are checked
+     * for one. Element types can override this to know without rendering one.
+     */
+    protected function thumb(): ?Thumb
+    {
+        if (! static::hasThumbs() && $this->thumbSvg() === null && $this->thumbUrl(120) === null) {
+            return null;
         }
 
-        if ($thumbSvg = $this->thumbSvg()) {
-            return $this->renderSvgThumb($thumbSvg);
-        }
+        return $this->ownThumb();
+    }
 
-        return null;
+    /**
+     * Returns a thumbnail rendered from the element's [[thumbUrl()]] or [[thumbSvg()]].
+     *
+     * @param  Asset|null  $asset  The asset whose image the thumbnail shows, if any.
+     */
+    protected function ownThumb(?Asset $asset = null): Thumb
+    {
+        return new Thumb(function (int $size, ImageTransformMode $mode): ?string {
+            if ($thumbUrl = $this->thumbUrl($size, $mode)) {
+                return $this->renderImageThumb($size, $thumbUrl, $mode);
+            }
+
+            if ($thumbSvg = $this->thumbSvg()) {
+                return $this->renderSvgThumb($thumbSvg);
+            }
+
+            return null;
+        }, $asset);
     }
 
     private function renderImageThumb(int $size, string $thumbUrl, ImageTransformMode $mode): string

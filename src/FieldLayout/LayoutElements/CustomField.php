@@ -8,6 +8,8 @@ use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Data\Thumb;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -386,6 +388,32 @@ class CustomField extends BaseField
         }
 
         return $field->getThumbHtml($element->getFieldValue($field->handle), $element, $size, $mode);
+    }
+
+    #[Override]
+    public function thumb(ElementInterface $element): ?Thumb
+    {
+        try {
+            $field = $this->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
+
+        if (! $field instanceof ThumbableFieldInterface) {
+            return null;
+        }
+
+        $value = $element->getFieldValue($field->handle);
+
+        if ($field instanceof BaseRelationField) {
+            return $field->getThumb($value);
+        }
+
+        if ($field->isValueEmpty($value, $element)) {
+            return null;
+        }
+
+        return new Thumb(fn (int $size, ImageTransformMode $mode) => $field->getThumbHtml($value, $element, $size, $mode));
     }
 
     #[Override]

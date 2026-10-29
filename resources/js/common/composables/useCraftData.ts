@@ -14,6 +14,8 @@ export interface CpUser {
   underlineLinks: boolean;
   /** Whether the user can use the AI assistant, and it can run. */
   aiAssistant: boolean;
+  /** Whether the user's account has a Tokens screen. */
+  showTokens: boolean;
 }
 
 export interface CraftData {

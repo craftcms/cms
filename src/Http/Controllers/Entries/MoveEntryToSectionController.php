@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\t;
 
@@ -53,7 +52,7 @@ readonly class MoveEntryToSectionController
         // get entry types by entry IDs
         $entryTypes = DB::table(Table::ENTRYTYPES, 'et')
             ->distinct()
-            ->leftJoin(new Alias(Table::ENTRIES, 'e'), 'e.typeId', 'et.id')
+            ->leftJoin(Table::ENTRIES.' as e', 'e.typeId', 'et.id')
             ->whereIn('e.id', $entryIds)
             ->pluck('et.id')
             ->all();

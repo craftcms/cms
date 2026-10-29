@@ -49,7 +49,7 @@ class UserQuery extends ElementQuery
         parent::__construct(User::class, $config);
 
         $this->defaultOrderBy = [
-            new Expression('CASE WHEN users.username IS NULL THEN 1 ELSE 0 END ASC'),
+            new Expression(sprintf('CASE WHEN %s IS NULL THEN 1 ELSE 0 END ASC', $this->query->getGrammar()->wrap('users.username'))),
             'users.username' => SORT_ASC,
             'users.active' => SORT_DESC,
             'users.pending' => SORT_DESC,

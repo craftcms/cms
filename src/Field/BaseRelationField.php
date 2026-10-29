@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -72,7 +73,6 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use Override;
 use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
@@ -239,8 +239,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         $ns = sprintf('%s_%s', $field->handle, Str::random(5));
 
         $query = DB::table(Table::RELATIONS, "relations_$ns")
-            ->join(new Alias(Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "relations_$ns.targetId")
-            ->leftJoin(new Alias(Table::ELEMENTS_SITES, "elements_sites_$ns"), "elements_sites_$ns.elementId", '=', "elements_$ns.id")
+            ->join(Table::ELEMENTS." as elements_$ns", "elements_$ns.id", '=', "relations_$ns.targetId")
+            ->leftJoin(Table::ELEMENTS_SITES." as elements_sites_$ns", "elements_sites_$ns.elementId", '=', "elements_$ns.id")
             ->whereColumn("relations_$ns.sourceId", 'elements.id')
             ->where("relations_$ns.fieldId", $field->id)
             ->whereNull("elements_$ns.dateDeleted")
@@ -255,7 +255,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if ($inTargetSiteOnly) {
-            $query->where("elements_sites_$ns.siteId", $field->_targetSiteId() ?? DB::raw('elements_sites.siteId'));
+            $query->where("elements_sites_$ns.siteId", $field->_targetSiteId() ?? DB::raw($query->getGrammar()->wrap('elements_sites.siteId')));
         }
 
         return $query;
@@ -1087,7 +1087,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 $query = $elementQuery->getQuery();
 
                 $query->join(
-                    new Alias(Table::RELATIONS, $relationsAlias),
+                    Table::RELATIONS." as $relationsAlias",
                     function (JoinClause $join) use ($element, $relationsAlias) {
                         $join->whereColumn("$relationsAlias.targetId", 'elements.id')
                             ->where("$relationsAlias.sourceId", $element->id)
@@ -1333,13 +1333,20 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
+        return $this->getThumb($value)?->getHtml($size, $mode);
+    }
+
+    /**
+     * Returns the field’s thumbnail for a value: the first related element’s thumbnail.
+     */
+    public function getThumb(mixed $value): ?Thumb
+    {
         /** @var ElementQueryInterface|ElementCollection<int, ElementInterface> $value */
         if ($value instanceof ElementQueryInterface) {
-            $handle = sprintf('%s-%s-%s', preg_replace('/:+/', '-', __METHOD__), $this->id, $size);
-            $value = (clone $value)->eagerly($handle);
+            $value = (clone $value)->eagerly(sprintf('%s-%s', preg_replace('/:+/', '-', __METHOD__), $this->id));
         }
 
-        return $value->one()?->getThumbHtml($size, $mode);
+        return $value->one()?->getThumb();
     }
 
     /**
@@ -1411,7 +1418,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if ($this->maintainHierarchy) {
-            $criteria['orderBy'] = ['structureelements.lft' => SORT_ASC];
+            $criteria['orderBy'] = 'structureelements.lft';
         }
 
         return [
