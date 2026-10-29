@@ -56,53 +56,6 @@ class MultiSelect extends BaseOptionsField
             ->value($this->encodeValue($context->value));
     }
 
-    /**
-     * Returns the field's options for a combobox, with each optgroup's options nested in it.
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function comboboxOptions(FieldContext $context): array
-    {
-        $options = [];
-        $group = null;
-
-        foreach ($this->translatedOptions(true, $context->value, $context->element) as $option) {
-            if (isset($option['optgroup'])) {
-                if ($group !== null) {
-                    $options[] = $group;
-                }
-
-                $group = ['type' => 'optgroup', 'label' => $option['optgroup'], 'options' => []];
-
-                continue;
-            }
-
-            $data = match (true) {
-                isset($option['icon']) => array_filter(['icon' => $option['icon'], 'color' => $option['color'] ?? null]),
-                isset($option['color']) => ['indicator' => ['fill' => $option['color']]],
-                default => null,
-            };
-
-            $comboboxOption = array_filter([
-                'label' => $option['label'],
-                'value' => $option['value'],
-                'data' => $data,
-            ], fn (mixed $value): bool => $value !== null);
-
-            if ($group !== null) {
-                $group['options'][] = $comboboxOption;
-            } else {
-                $options[] = $comboboxOption;
-            }
-        }
-
-        if ($group !== null) {
-            $options[] = $group;
-        }
-
-        return $options;
-    }
-
     #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
