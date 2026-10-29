@@ -3,6 +3,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\elements\User;
 use craft\mcp\CapabilityDiscovery;
 use craft\mcp\PublicElementTypes;
 use craft\mcp\Settings;
@@ -17,31 +18,39 @@ class McpSettingsController extends Controller
         $this->requireAdmin(false);
         $settings ??= Craft::$app->get('mcp')->getSettings();
         $definitions = Craft::$app->get('mcp')->getCapabilityContainer()->get(CapabilityDiscovery::class)->discoverPublic(dirname(__DIR__) . '/mcp/capabilities', ['.']);
+        $option = static fn(string $attribute, string $value, string $label) => compact('attribute', 'value', 'label');
+        $group = static fn(string $label, array $options) => ['label' => Craft::t('app', $label), 'options' => $options];
+        $models = static fn(string $attribute, array $models, string $message) => array_map(static fn($model) => $option(
+            $attribute,
+            $model->handle,
+            Craft::t('app', $message, ['name' => Craft::t('site', $model->name)]),
+        ), $models);
+
         $capabilities = [
-            'publicTools' => array_map(static fn($ref) => ['label' => $ref->tool->title ?? $ref->tool->name, 'value' => $ref->tool->name], array_values($definitions->getTools())),
-            'publicResources' => array_map(static fn($ref) => ['label' => $ref->resource->name, 'value' => $ref->resource->uri], array_values($definitions->getResources())),
-            'publicResourceTemplates' => array_map(static fn($ref) => ['label' => $ref->resourceTemplate->name, 'value' => $ref->resourceTemplate->uriTemplate], array_values($definitions->getResourceTemplates())),
-            'publicPrompts' => array_map(static fn($ref) => ['label' => $ref->prompt->name, 'value' => $ref->prompt->name], array_values($definitions->getPrompts())),
-        ];
-        $options = static fn(array $models, string $message) => array_map(static fn($model) => [
-            'label' => Craft::t('app', $message, ['name' => Craft::t('site', $model->name)]),
-            'value' => $model->handle,
-        ], $models);
-        $elementTypes = Craft::$app->get('mcp')->getCapabilityContainer()->get(PublicElementTypes::class);
-        $additionalTypes = array_filter($elementTypes->all(), static fn($name) => !$elementTypes->make($name)->isScopeControlled(), ARRAY_FILTER_USE_KEY);
-        $scopes = [
-            'publicSiteHandles' => $options(Craft::$app->getSites()->getAllSites(withDisabled: true), 'Query elements in the “{name}” site'),
-            'publicSectionHandles' => $options(Craft::$app->getEntries()->getAllSections(), 'Query entries in the “{name}” section'),
-            'publicNestedEntryFieldHandles' => $options(array_values(array_filter(Craft::$app->getFields()->getAllFields(), static fn($field) => in_array($field::class, Craft::$app->getFields()->getNestedEntryFieldTypes(), true))), 'Query entries in the “{name}” field'),
-            'publicVolumeHandles' => $options(Craft::$app->getVolumes()->getAllVolumes(), 'Query assets in the “{name}” volume'),
-            'publicElementTypes' => array_map(static fn($name, $class) => [
-                'label' => Craft::t('app', 'Query {type}', ['type' => $class::pluralLowerDisplayName()]),
-                'value' => $name,
-            ], array_keys($additionalTypes), array_values($additionalTypes)),
-            'publicUserGroupHandles' => $options(Craft::$app->getUserGroups()->getAllGroups(), 'Query users in the “{name}” user group'),
+            $group('Tools', array_map(static fn($ref) => $option('publicTools', $ref->tool->name, $ref->tool->title ?? $ref->tool->name), array_values($definitions->getTools()))),
+            $group('Resources', array_map(static fn($ref) => $option('publicResources', $ref->resource->uri, $ref->resource->name), array_values($definitions->getResources()))),
+            $group('Resource Templates', array_map(static fn($ref) => $option('publicResourceTemplates', $ref->resourceTemplate->uriTemplate, $ref->resourceTemplate->name), array_values($definitions->getResourceTemplates()))),
+            $group('Prompts', array_map(static fn($ref) => $option('publicPrompts', $ref->prompt->name, $ref->prompt->name), array_values($definitions->getPrompts()))),
         ];
 
-        return $this->renderTemplate('mcp/settings', compact('settings', 'capabilities', 'scopes'), View::TEMPLATE_MODE_CP);
+        $elementTypes = Craft::$app->get('mcp')->getCapabilityContainer()->get(PublicElementTypes::class);
+        $otherTypes = array_filter($elementTypes->all(), static fn($class, $name) => !$elementTypes->make($name)->isScopeControlled() && !is_a($class, User::class, true), ARRAY_FILTER_USE_BOTH);
+        $content = [
+            $group('Sites', $models('publicSiteHandles', Craft::$app->getSites()->getAllSites(withDisabled: true), 'Query elements in the “{name}” site')),
+            $group('Entries', $models('publicSectionHandles', Craft::$app->getEntries()->getAllSections(), 'Query entries in the “{name}” section')),
+            $group('Nested Entry Fields', $models('publicNestedEntryFieldHandles', array_values(array_filter(Craft::$app->getFields()->getAllFields(), static fn($field) => in_array($field::class, Craft::$app->getFields()->getNestedEntryFieldTypes(), true))), 'Query entries in the “{name}” field')),
+            $group('Assets', $models('publicVolumeHandles', Craft::$app->getVolumes()->getAllVolumes(), 'Query assets in the “{name}” volume')),
+            // Each other element type gets its own group, such as Addresses
+            ...array_map(static fn($name, $class) => ['label' => $class::pluralDisplayName(), 'options' => [
+                $option('publicElementTypes', $name, Craft::t('app', 'Query {type}', ['type' => $class::pluralLowerDisplayName()])),
+            ]], array_keys($otherTypes), array_values($otherTypes)),
+            $group('Users', [
+                $option('publicElementTypes', $elementTypes->name(User::class), Craft::t('app', 'Query all users')),
+                ...$models('publicUserGroupHandles', Craft::$app->getUserGroups()->getAllGroups(), 'Query users in the “{name}” user group'),
+            ]),
+        ];
+
+        return $this->renderTemplate('mcp/settings', compact('settings', 'capabilities', 'content'), View::TEMPLATE_MODE_CP);
     }
 
     public function actionSave(): ?Response
