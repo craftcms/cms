@@ -353,13 +353,13 @@ class EntryTypes
             $entryTypeModel->icon = $data['icon'] ?? null;
             $entryTypeModel->color = $data['color'] ?? null;
             $entryTypeModel->hasTitleField = $data['hasTitleField'];
-            $entryTypeModel->titleTranslationMethod = (TranslationMethod::tryFrom($data['titleTranslationMethod'] ?? '') ?? TranslationMethod::Site)->value;
+            $entryTypeModel->titleTranslationMethod = TranslationMethod::fromStored($data['titleTranslationMethod'] ?? null, $data['titleTranslationKeyFormat'] ?? null)->value;
             $entryTypeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeModel->titleFormat = $data['titleFormat'];
             $entryTypeModel->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
             $entryTypeModel->uiLabelFormat = ($data['uiLabelFormat'] ?? null) ?: '{title}';
             $entryTypeModel->showSlugField = $data['showSlugField'] ?? true;
-            $entryTypeModel->slugTranslationMethod = (TranslationMethod::tryFrom($data['slugTranslationMethod'] ?? '') ?? TranslationMethod::Site)->value;
+            $entryTypeModel->slugTranslationMethod = TranslationMethod::fromStored($data['slugTranslationMethod'] ?? null, $data['slugTranslationKeyFormat'] ?? null)->value;
             $entryTypeModel->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
             $entryTypeModel->showStatusField = $data['showStatusField'] ?? true;
             $entryTypeModel->showPostDateField = $data['showPostDateField'] ?? true;
