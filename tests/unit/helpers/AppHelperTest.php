@@ -397,6 +397,46 @@ class AppHelperTest extends TestCase
         self::assertSame(250, strlen(App::licenseKey()));
     }
 
+    public function testLicensingIssuesEncodesLicensedDomain(): void
+    {
+        $cache = Craft::$app->getCache();
+        $updatesCacheKey = Craft::$app->getUpdates()->cacheKey;
+        $hadUpdatesCache = $cache->exists($updatesCacheKey);
+        $payload = 'poison.test"><img src=x onerror=alert(document.domain)>';
+
+        // Simulate a poisoned cache that predates validation of the header
+        $cache->set(App::CACHE_KEY_LICENSE_INFO, [
+            'craft' => ['id' => '1', 'edition' => 'pro', 'status' => 'mismatched', 'timestamp' => time()],
+        ]);
+        $request = Craft::$app->getRequest();
+        $originalHostInfo = $request->getHostInfo();
+        $originalIsConsoleRequest = $request->getIsConsoleRequest();
+        $request->setIsConsoleRequest(false);
+        $request->setHostInfo('https://craft.test');
+        $cache->set(App::CACHE_KEY_LICENSE_INFO_HOST, 'craft.test');
+        $cache->set('licensedDomain', $payload);
+        if (!$hadUpdatesCache) {
+            $cache->set($updatesCacheKey, []);
+        }
+
+        try {
+            $issues = App::licensingIssues(['mismatched']);
+            self::assertCount(1, $issues);
+            $message = $issues[0][1];
+            self::assertStringNotContainsString('<img', $message);
+            self::assertStringContainsString('&lt;img src=x onerror=alert(document.domain)&gt;', $message);
+        } finally {
+            $request->setIsConsoleRequest($originalIsConsoleRequest);
+            $request->setHostInfo($originalHostInfo);
+            $cache->delete(App::CACHE_KEY_LICENSE_INFO);
+            $cache->delete(App::CACHE_KEY_LICENSE_INFO_HOST);
+            $cache->delete('licensedDomain');
+            if (!$hadUpdatesCache) {
+                $cache->delete($updatesCacheKey);
+            }
+        }
+    }
+
     /**
      * @dataProvider configsDataProvider
      * @param string $method

@@ -22,6 +22,7 @@ use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\queue\jobs\ReplaceRelations;
+use craft\services\ElementSources;
 use craft\web\Controller;
 use Illuminate\Support\Collection;
 use yii\web\BadRequestHttpException;
@@ -246,6 +247,9 @@ class DeleteElementsController extends Controller
         $sourceElementType = $this->request->getRequiredParam('sourceElementType');
         $targetElementIds = $this->elements->ids();
 
+        $query = $this->elementType::find();
+        $supportsEditable = property_exists($query, 'editable');
+
         return $this->asCpModal()
             ->action('delete-elements/replace-relations')
             ->contentHtml(fn() =>
@@ -255,9 +259,11 @@ class DeleteElementsController extends Controller
                     ]),
                     'name' => 'newTargetId',
                     'elementType' => $this->elementType,
-                    'criteria' => [
+                    'context' => ElementSources::CONTEXT_RESTRICTED_MODAL,
+                    'criteria' => array_filter([
                         'id' => $targetElementIds->map(fn(int $id) => "not $id")->all(),
-                    ],
+                        'editable' => $supportsEditable ?: null,
+                    ]),
                     'single' => true,
                 ]) .
                 Html::hiddenInput('elementType', $this->elementType) .

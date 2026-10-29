@@ -343,6 +343,12 @@ class View extends \yii\web\View
     private ?string $_renderingTemplate = null;
 
     /**
+     * @var int The number of string/object templates currently being rendered
+     * @see getIsRenderingStringTemplate()
+     */
+    private int $_stringTemplateDepth = 0;
+
+    /**
      * @var bool
      */
     private bool $_isRenderingPageTemplate = false;
@@ -627,6 +633,21 @@ class View extends \yii\web\View
     }
 
     /**
+     * Returns whether a string or object template is currently being rendered.
+     *
+     * This will also return `true` for any templates that are included from a string or object template.
+     *
+     * @return bool
+     * @see renderString()
+     * @see renderObjectTemplate()
+     * @since 5.11.4
+     */
+    public function getIsRenderingStringTemplate(): bool
+    {
+        return $this->_stringTemplateDepth > 0;
+    }
+
+    /**
      * Renders a Twig template that represents an entire web page.
      *
      * @param string $template The name of the template to load
@@ -698,10 +719,12 @@ class View extends \yii\web\View
         }
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
+        $this->_stringTemplateDepth++;
 
         try {
             return $twig->createTemplate($template)->render($variables);
         } finally {
+            $this->_stringTemplateDepth--;
             $this->_renderingTemplate = $lastRenderingTemplate;
             if (!$escapeHtml) {
                 $twig->setDefaultEscaperStrategy();
@@ -774,6 +797,7 @@ class View extends \yii\web\View
         $twig->setDefaultEscaperStrategy($escaperStrategy);
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
+        $this->_stringTemplateDepth++;
 
         try {
             // Is this the first time we've parsed this template?
@@ -820,6 +844,7 @@ class View extends \yii\web\View
             $templateObj = $this->_objectTemplates[$cacheKey];
             return trim($templateObj->render($variables));
         } finally {
+            $this->_stringTemplateDepth--;
             $this->_renderingTemplate = $lastRenderingTemplate;
             $twig->setDefaultEscaperStrategy();
             $this->setTemplateMode($oldTemplateMode);

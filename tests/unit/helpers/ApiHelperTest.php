@@ -12,34 +12,77 @@ use craft\helpers\Api;
 use craft\helpers\App;
 use craft\services\Plugins;
 use craft\test\TestCase;
-use craft\test\TestSetup;
-use Yii;
 
+/**
+ * Unit tests for the Api Helper class.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 5.11.4
+ */
 class ApiHelperTest extends TestCase
 {
-    private bool $_craftWasWarmed = false;
-
-    protected function setUp(): void
+    /**
+     * @dataProvider licensedDomainDataProvider
+     */
+    public function testLicensedDomain(string $domain, bool $expectCached): void
     {
-        if (Craft::$app === null) {
-            $app = TestSetup::warmCraft();
-            Craft::$app = $app;
-            Yii::$app = $app;
-            $this->_craftWasWarmed = true;
+        Api::processResponseHeaders([
+            'X-Craft-License-Domain' => $domain,
+        ]);
+
+        $cached = Craft::$app->getCache()->get('licensedDomain');
+        if ($expectCached) {
+            self::assertSame($domain, $cached);
+        } else {
+            self::assertFalse($cached);
         }
     }
 
-    protected function tearDown(): void
+    public static function licensedDomainDataProvider(): array
     {
-        if ($this->_craftWasWarmed) {
-            TestSetup::tearDownCraft();
-        }
+        return [
+            'domain' => ['example.com', true],
+            'subdomain' => ['www.example.co.uk', true],
+            'localhost' => ['localhost', true],
+            'html' => ['poison.test"><img src=x onerror=alert(document.domain)>', false],
+            'space' => ['example .com', false],
+            'empty' => ['', false],
+        ];
+    }
+
+    public function testLicenseInfo(): void
+    {
+        Api::processResponseHeaders([
+            'x-craft-license-info' => implode(',', [
+                'craft:1;pro;mismatched',
+                'plugin-foo-bar:2;standard;valid',
+                'plugin-trial:;;trial',
+                'plugin-invalid:invalid',
+                // invalid entries
+                'plugin-bad-id:1"><img src=x>;standard;valid',
+                'plugin-bad-edition:3;<img src=x>;valid',
+                'plugin-bad-status:4;standard;bogus',
+                'plugin-missing-values:5;standard',
+                'plugin-<img src=x>:6;standard;valid',
+                'notaplugin:7;standard;valid',
+                'nocolon',
+            ]),
+        ]);
+
+        $licenseInfo = Craft::$app->getCache()->get(App::CACHE_KEY_LICENSE_INFO);
+        self::assertIsArray($licenseInfo);
+        self::assertSame(['craft', 'plugin-foo-bar', 'plugin-trial', 'plugin-invalid'], array_keys($licenseInfo));
+
+        self::assertSame('1', $licenseInfo['craft']['id']);
+        self::assertSame('pro', $licenseInfo['craft']['edition']);
+        self::assertSame('mismatched', $licenseInfo['craft']['status']);
+        self::assertSame('invalid', $licenseInfo['plugin-invalid']['status']);
+        self::assertNull($licenseInfo['plugin-invalid']['id']);
     }
 
     public function testPluginLicenseWriteIsSkippedWhenProjectConfigIsReadOnly(): void
     {
         $cache = Craft::$app->getCache();
-        $cache->delete(App::CACHE_KEY_LICENSE_INFO);
 
         $projectConfig = Craft::$app->getProjectConfig();
         $readOnly = $projectConfig->readOnly;
@@ -54,13 +97,13 @@ class ApiHelperTest extends TestCase
 
             Api::processResponseHeaders([
                 'X-Craft-Plugin-Licenses' => 'example-plugin:license-key',
-                'X-Craft-License-Info' => 'example-plugin:123;standard;valid',
+                'X-Craft-License-Info' => 'plugin-example-plugin:123;standard;valid',
             ]);
 
             $licenseInfo = $cache->get(App::CACHE_KEY_LICENSE_INFO);
-            self::assertSame('123', $licenseInfo['example-plugin']['id']);
-            self::assertSame('standard', $licenseInfo['example-plugin']['edition']);
-            self::assertSame('valid', $licenseInfo['example-plugin']['status']);
+            self::assertSame('123', $licenseInfo['plugin-example-plugin']['id']);
+            self::assertSame('standard', $licenseInfo['plugin-example-plugin']['edition']);
+            self::assertSame('valid', $licenseInfo['plugin-example-plugin']['status']);
         } finally {
             Craft::$app->set('plugins', $plugins);
             $projectConfig->readOnly = $readOnly;
@@ -97,7 +140,6 @@ class ApiHelperTest extends TestCase
     public function testResponseWithoutPluginLicensesDoesNotWritePluginLicense(bool $readOnly): void
     {
         $cache = Craft::$app->getCache();
-        $cache->delete('licensedDomain');
 
         $projectConfig = Craft::$app->getProjectConfig();
         $originalReadOnly = $projectConfig->readOnly;
@@ -127,5 +169,25 @@ class ApiHelperTest extends TestCase
             [false],
             [true],
         ];
+    }
+
+    protected function _before(): void
+    {
+        parent::_before();
+        $this->clearCache();
+    }
+
+    protected function _after(): void
+    {
+        $this->clearCache();
+        parent::_after();
+    }
+
+    private function clearCache(): void
+    {
+        $cache = Craft::$app->getCache();
+        $cache->delete('licensedDomain');
+        $cache->delete(App::CACHE_KEY_LICENSE_INFO);
+        $cache->delete(App::CACHE_KEY_LICENSE_INFO_HOST);
     }
 }

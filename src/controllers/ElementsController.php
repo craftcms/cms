@@ -2057,6 +2057,11 @@ JS, [
             }
 
             $transaction->commit();
+        } catch (InvalidElementException $e) {
+            $transaction->rollBack();
+            return $this->_asFailure($e->element, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => Craft::t('app', 'draft'),
+            ])));
         } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;

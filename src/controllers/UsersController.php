@@ -1650,6 +1650,11 @@ JS);
                     if ($user) {
                         // ignore their previous admin status, if they had it
                         $user->admin = false;
+
+                        // clear out any existing permissions they had, if they had any
+                        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+                            Craft::$app->getUserPermissions()->saveUserPermissions($user->id, []);
+                        }
                     }
                 }
             }
@@ -1851,9 +1856,9 @@ JS);
         // Do we need to send a verification email out?
         if ($sendActivationEmail) {
             // Temporarily set the unverified email on the User so the verification email goes to the
-            // right place
+            // right place (unless it was already verified when the user was activated)
             $originalEmail = $user->email;
-            $user->email = $user->unverifiedEmail;
+            $user->email = $user->unverifiedEmail ?? $user->email;
 
             try {
                 if ($isNewUser) {
@@ -2343,7 +2348,11 @@ JS);
         $addressId = $this->request->getBodyParam('addressId');
 
         if ($addressId) {
-            $address = Address::findOne($addressId);
+            if (!is_numeric($addressId)) {
+                throw new BadRequestHttpException('Invalid address ID.');
+            }
+
+            $address = Address::findOne((int)$addressId);
 
             if (!$address) {
                 throw new BadRequestHttpException("Invalid address ID: $addressId");
@@ -2404,7 +2413,11 @@ JS);
     public function actionDeleteAddress(): ?Response
     {
         $addressId = $this->request->getRequiredBodyParam('addressId');
-        $address = Address::findOne($addressId);
+        if (!is_numeric($addressId)) {
+            throw new BadRequestHttpException('Invalid address ID.');
+        }
+
+        $address = Address::findOne((int)$addressId);
 
         if (!$address) {
             throw new BadRequestHttpException("Invalid address ID: $addressId");

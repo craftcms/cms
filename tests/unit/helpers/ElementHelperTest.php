@@ -153,9 +153,9 @@ class ElementHelperTest extends TestCase
     public function testSetNextOnPrevElement(): void
     {
         $editable = [
-            $one = new ExampleElement(['id' => '1']),
-            $two = new ExampleElement(['id' => '2']),
-            $three = new ExampleElement(['id' => '3']),
+            $one = new ExampleElement(['id' => 1]),
+            $two = new ExampleElement(['id' => 2]),
+            $three = new ExampleElement(['id' => 3]),
         ];
 
         ElementHelper::setNextPrevOnElements($editable);

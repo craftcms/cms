@@ -613,7 +613,7 @@ class ElementHelper
         }
 
         // try again with the owner's canonical element, in case it is also a derivative
-        return static::belongsToCanonicalOwner($element, $owner->getCanonical());
+        return static::belongsToCanonicalOwner($element, $owner->getCanonical(true));
     }
 
     /**
@@ -1240,6 +1240,11 @@ class ElementHelper
             $criteria['with'],
             $criteria['withQueries'],
         );
+
+        if (isset($criteria['search']) && !is_string($criteria['search'])) {
+            unset($criteria['search']);
+        }
+
         return $criteria;
     }
 }

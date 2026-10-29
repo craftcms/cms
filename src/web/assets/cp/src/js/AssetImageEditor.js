@@ -4231,6 +4231,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.arePointsInsideRectangle._.bc
       );
 
+      // Allow points up to 1px outside the rectangle, to account for floating point errors
+      this.arePointsInsideRectangle._.toleranceAb = Math.sqrt(
+        this.arePointsInsideRectangle._.scalarAbAb
+      );
+      this.arePointsInsideRectangle._.toleranceBc = Math.sqrt(
+        this.arePointsInsideRectangle._.scalarBcBc
+      );
+
       for (
         this.arePointsInsideRectangle._.i = 0;
         this.arePointsInsideRectangle._.i < points.length;
@@ -4261,13 +4269,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         );
 
         this.arePointsInsideRectangle._.projectsOnAB =
-          0 <= this.arePointsInsideRectangle._.scalarAbAp &&
+          -this.arePointsInsideRectangle._.toleranceAb <=
+            this.arePointsInsideRectangle._.scalarAbAp &&
           this.arePointsInsideRectangle._.scalarAbAp <=
-            this.arePointsInsideRectangle._.scalarAbAb;
+            this.arePointsInsideRectangle._.scalarAbAb +
+              this.arePointsInsideRectangle._.toleranceAb;
         this.arePointsInsideRectangle._.projectsOnBC =
-          0 <= this.arePointsInsideRectangle._.scalarBcBp &&
+          -this.arePointsInsideRectangle._.toleranceBc <=
+            this.arePointsInsideRectangle._.scalarBcBp &&
           this.arePointsInsideRectangle._.scalarBcBp <=
-            this.arePointsInsideRectangle._.scalarBcBc;
+            this.arePointsInsideRectangle._.scalarBcBc +
+              this.arePointsInsideRectangle._.toleranceBc;
 
         if (
           !(

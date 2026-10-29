@@ -24,6 +24,38 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     );
   },
 
+  addElements: function ($elements) {
+    this.base($elements);
+
+    // Route the Open in Image Editor actions through this input, so new assets can replace the selected ones
+    for (let i = 0; i < $elements.length; i++) {
+      const $element = $elements.eq(i);
+      this.findElementActions($element, '[id*="action-image-edit"]').each(
+        (i, btn) => {
+          const $btn = $(btn);
+          // Remove the existing handler, and change the ID in case it hasn't been registered yet
+          $btn
+            .off('activate')
+            .attr('id', `${btn.id}-${Math.floor(Math.random() * 1000000)}`);
+          this.addListener($btn, 'activate', () => {
+            $btn.closest('.menu').data('disclosureMenu')?.hide();
+            new Craft.AssetImageEditor($element.data('id'), {
+              allowDegreeFractions: Craft.isImagick,
+              onSave: (data) => {
+                if (data.newAssetId) {
+                  this.replaceElement(
+                    $element.data('id'),
+                    data.newAssetId
+                  ).catch(() => {});
+                }
+              },
+            });
+          });
+        }
+      );
+    }
+  },
+
   elementSelectSettings() {
     return Object.assign(this.base(), {
       makeFocusable: true,

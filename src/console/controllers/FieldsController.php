@@ -18,8 +18,10 @@ use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\services\Fields;
+use craft\services\ProjectConfig;
 use Illuminate\Support\Collection;
 use yii\console\ExitCode;
 
@@ -439,47 +441,11 @@ MD, $infoByField->join("\n"))));
         $fieldsService = Craft::$app->getFields();
 
         $this->do("Updating usages for `$outgoingField->handle`", function() use (
-            $fieldsService,
             $persistingField,
             $outgoingField,
             $outgoingLayouts,
         ) {
-            $projectConfigService = Craft::$app->getProjectConfig();
-            $muteEvents = $projectConfigService->muteEvents;
-            $projectConfigService->muteEvents = true;
-
-            foreach ($outgoingLayouts as $layout) {
-                $changed = false;
-                foreach ($layout->getCustomFieldElements() as $layoutElement) {
-                    if ($layoutElement->getFieldUid() === $outgoingField->uid) {
-                        // hard code the label, handle, and instructions, if they differ from the persistent field
-                        $layoutElement->label = $this->layoutElementOverride($persistingField->name, $outgoingField->name, $layoutElement->label);
-                        $layoutElement->handle = $this->layoutElementOverride($persistingField->handle, $outgoingField->handle, $layoutElement->handle);
-                        $layoutElement->instructions = $this->layoutElementOverride($persistingField->instructions, $outgoingField->instructions, $layoutElement->instructions);
-
-                        $layoutElement->setField($persistingField);
-                        $changed = true;
-                    }
-                }
-
-                if ($changed) {
-                    if (!$layout->id) {
-                        // Maybe the ID just wasn't known
-                        $layout->id = Db::idByUid(Table::FIELDLAYOUTS, $layout->uid);
-                    }
-                    if ($layout->id) {
-                        $fieldsService->saveLayout($layout);
-                    }
-                    if ($layout->uid) {
-                        $projectConfigOccurrences = $projectConfigService->find(fn(array $item) => isset($item[$layout->uid]));
-                        foreach ($projectConfigOccurrences as $path => $item) {
-                            $projectConfigService->set("$path.$layout->uid", $layout->getConfig());
-                        }
-                    }
-                }
-            }
-
-            $projectConfigService->muteEvents = $muteEvents;
+            $this->updateFieldUsages($persistingField, $outgoingField, $outgoingLayouts);
         });
 
         $this->do("Removing `$outgoingField->handle`", function() use ($fieldsService, $outgoingField) {
@@ -507,6 +473,72 @@ MD, $infoByField->join("\n"))));
 
         $this->output($this->markdownToAnsi(" → Running content migration for `$outgoingField->handle` …"));
         Craft::$app->getContentMigrator()->migrateUp($migrationName);
+    }
+
+    /**
+     * @param FieldInterface $persistingField
+     * @param FieldInterface $outgoingField
+     * @param FieldLayout[] $outgoingLayouts
+     */
+    private function updateFieldUsages(
+        FieldInterface $persistingField,
+        FieldInterface $outgoingField,
+        array $outgoingLayouts,
+    ): void {
+        $fieldsService = Craft::$app->getFields();
+        $projectConfigService = Craft::$app->getProjectConfig();
+        $muteEvents = $projectConfigService->muteEvents;
+        $projectConfigService->muteEvents = true;
+
+        foreach ($outgoingLayouts as $layout) {
+            $changed = false;
+            foreach ($layout->getCustomFieldElements() as $layoutElement) {
+                if ($layoutElement->getFieldUid() === $outgoingField->uid) {
+                    // hard code the label, handle, and instructions, if they differ from the persistent field
+                    $layoutElement->label = $this->layoutElementOverride($persistingField->name, $outgoingField->name, $layoutElement->label);
+                    $layoutElement->handle = $this->layoutElementOverride($persistingField->handle, $outgoingField->handle, $layoutElement->handle);
+                    $layoutElement->instructions = $this->layoutElementOverride($persistingField->instructions, $outgoingField->instructions, $layoutElement->instructions);
+
+                    // let Fields::saveLayout() know to update any condition rules that reference the outgoing field
+                    $layoutElement->oldFieldUid ??= $outgoingField->uid;
+                    $layoutElement->setField($persistingField);
+                    $changed = true;
+                }
+            }
+
+            if ($changed) {
+                if (!$layout->id) {
+                    // Maybe the ID just wasn't known
+                    $layout->id = Db::idByUid(Table::FIELDLAYOUTS, $layout->uid);
+                }
+                if ($layout->id) {
+                    $fieldsService->saveLayout($layout);
+                }
+                if ($layout->uid) {
+                    $projectConfigOccurrences = $projectConfigService->find(fn(array $item) => (
+                        isset($item[$layout->uid]) ||
+                        in_array($layout->uid, array_column($item[ProjectConfig::ASSOC_KEY] ?? [], 0), true)
+                    ));
+                    foreach ($projectConfigOccurrences as $path => $item) {
+                        if (isset($item[ProjectConfig::ASSOC_KEY])) {
+                            // The layout is stored within a component’s packed settings (e.g. a Content Block field)
+                            $item = ProjectConfigHelper::unpackAssociativeArray($item);
+                            $item[$layout->uid] = $layout->getConfig();
+                            $projectConfigService->set($path, ProjectConfigHelper::packAssociativeArray($item));
+
+                            // Fields read their layouts from their settings, so apply the change to the field as well
+                            if (preg_match(sprintf('/^%s\.(%s)\./', ProjectConfig::PATH_FIELDS, ProjectConfig::UID_PATTERN), $path, $match)) {
+                                $fieldsService->applyFieldSave($match[1], $projectConfigService->get(sprintf('%s.%s', ProjectConfig::PATH_FIELDS, $match[1])), 'global');
+                            }
+                        } else {
+                            $projectConfigService->set("$path.$layout->uid", $layout->getConfig());
+                        }
+                    }
+                }
+            }
+        }
+
+        $projectConfigService->muteEvents = $muteEvents;
     }
 
     private function layoutElementOverride(?string $persistingFieldValue, ?string $outgoingFieldValue, ?string $override): ?string

@@ -260,7 +260,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected static function defineSources(string $context): array
     {
-        if ($context === ElementSources::CONTEXT_INDEX) {
+        if (in_array($context, [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_RESTRICTED_MODAL])) {
             $sections = Craft::$app->getEntries()->getEditableSections();
             $editable = true;
         } else {
@@ -2646,6 +2646,7 @@ JS, [
                 $parentQuery = self::find()
                     ->site('*')
                     ->preferSites([$this->siteId])
+                    ->unique()
                     ->drafts(null)
                     ->draftOf(false)
                     ->status(null);
@@ -3376,6 +3377,7 @@ JS;
         $newFields = $this->getType()->getFieldLayout()->getCustomFields();
         $oldFields = Arr::keyBy($oldLayout->getCustomFields(), fn(FieldInterface $field) => $field->handle);
         $fieldsService = Craft::$app->getFields();
+        $carriedOverFields = [];
 
         foreach ($newFields as $newField) {
             if (isset($oldFields[$newField->handle])) {
@@ -3391,8 +3393,16 @@ JS;
                     )
                 ) {
                     $this->setFieldValue($newField->handle, null);
+                } elseif ($newField->layoutElement->uid !== $oldField->layoutElement->uid) {
+                    $carriedOverFields[] = $newField->handle;
                 }
             }
+        }
+
+        // Content is keyed by layout element UID, so carried-over values need to be saved under their new UIDs
+        // (https://github.com/craftcms/cms/issues/19737)
+        if (!empty($carriedOverFields)) {
+            $this->setDirtyFields($carriedOverFields);
         }
     }
 

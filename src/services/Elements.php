@@ -1701,11 +1701,13 @@ class Elements extends Component
                             $label = $element->getUiLabel();
                             $label = $label !== '' ? "$label ($element->id)" : sprintf('%s %s', $element::lowerDisplayName(), $element->id);
                             try {
-                                if (ElementHelper::isRevision($element)) {
-                                    throw new InvalidElementException($element, "Skipped resaving $label because it's a revision.");
-                                }
+                                $isRevision = ElementHelper::isRevision($element);
                             } catch (Throwable $rootException) {
                                 throw new InvalidElementException($element, "Skipped resaving $label due to an error obtaining its root element: " . $rootException->getMessage());
+                            }
+
+                            if ($isRevision) {
+                                throw new InvalidElementException($element, "Skipped resaving $label because it's a revision.");
                             }
                         }
 
@@ -3561,9 +3563,21 @@ class Elements extends Component
                         $siteCriteria = Arr::only($map['criteria'] ?? [], $siteParams);
                         $otherCriteria = Arr::except($map['criteria'] ?? [], $siteParams);
 
+                        $planCriteria = ElementHelper::cleanseQueryCriteria($plan->criteria);
+
+                        // Allow custom ordering, as long as it can't contain raw SQL
+                        // (see https://github.com/craftcms/cms/issues/19992)
+                        if (!empty($plan->criteria['orderBy'])) {
+                            if (Db::isSafeOrderBy($plan->criteria['orderBy'])) {
+                                $planCriteria['orderBy'] = $plan->criteria['orderBy'];
+                            } else {
+                                Craft::warning("Ignoring unsafe `orderBy` criteria for the eager-loaded `$plan->handle` elements.", __METHOD__);
+                            }
+                        }
+
                         $criteria = array_merge(
                             $siteCriteria,
-                            $plan->criteria,
+                            $planCriteria,
                             $otherCriteria,
                         );
 
@@ -3573,8 +3587,16 @@ class Elements extends Component
 
                         Craft::configure($query, $criteria);
 
+                        // inReverse is applied to each source's target elements below, so make sure the query doesn't
+                        // reverse them as well
+                        $query->inReverse = false;
+
                         if (!$query->siteId) {
                             $query->siteId = $siteId;
+                        }
+
+                        if (isset($plan->siteIds)) {
+                            $query->siteId = array_intersect((array)$query->siteId, $plan->siteIds);
                         }
 
                         if (!$query->id) {

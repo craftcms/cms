@@ -413,6 +413,28 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           });
         }
 
+        // Route the Edit actions through createElementEditor(), so the slideout knows about this input
+        this.findElementActions($element, '[id*="action-edit"]').each(
+          (i, btn) => {
+            const $btn = $(btn);
+            // Remove the existing handler, and change the ID in case it hasn't been registered yet
+            $btn
+              .off('activate')
+              .attr('id', `${btn.id}-${Math.floor(Math.random() * 1000000)}`);
+            this.addListener($btn, 'activate', (ev) => {
+              const cpEditUrl = $element.data('cp-url');
+              if (cpEditUrl && Garnish.isCtrlKeyPressed(ev.originalEvent)) {
+                window.open(cpEditUrl);
+                return;
+              }
+              // focus on the button so that when the slideout is closed, it's returned to the button
+              $btn.focus();
+              $btn.closest('.menu').data('disclosureMenu')?.hide();
+              this.createElementEditor($element);
+            });
+          }
+        );
+
         // only add the diamond icon (for drag-sorting) if device has mouse events
         if (this.settings.sortable && Craft.hasMousePointerEvents()) {
           Craft.ui
@@ -483,6 +505,24 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.updateAddElementsBtn();
       this.onAddElements();
       this.onSortChange();
+    },
+
+    /**
+     * Finds elements within a chip/card, or its action menu, which matches the given selector.
+     *
+     * Action menus get moved to the <body> when they're initialized, so they won't be found within the chip/card.
+     *
+     * @param {jQuery} $element
+     * @param {string} selector
+     * @returns {jQuery}
+     */
+    findElementActions: function ($element, selector) {
+      const disclosureMenu = $element
+        .find(
+          '> .chip-content > .chip-actions .action-btn, > .card-titlebar > .card-actions-container > .card-actions .action-btn'
+        )
+        .data('disclosureMenu');
+      return $element.add(disclosureMenu?.$container ?? $()).find(selector);
     },
 
     defineElementActions: function ($element) {
@@ -579,6 +619,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     replaceElement: function (elementId, replacementId) {
       return new Promise((resolve, reject) => {
+        if (!this.settings.allowRemove) {
+          reject('Elements cannot be removed from this input.');
+          return;
+        }
+
         const $existing = this.$elements.filter(`[data-id="${elementId}"]`);
 
         if (!$existing.length) {
@@ -597,7 +642,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                 siteId: this.settings.criteria.siteId,
                 instances: [
                   {
-                    context: 'field',
+                    context: this.settings.context,
                     ui: ['list', 'list-inline', 'thumbs', 'large'].includes(
                       this.settings.viewMode
                     )
@@ -812,6 +857,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         {
           closeOtherModals: false,
           storageKey: this.modalStorageKey,
+          context: this.settings.context,
           sources: this.settings.sources,
           condition: this.settings.condition,
           referenceElementId: this.settings.referenceElementId
@@ -924,7 +970,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                 siteId: elements[0].siteId,
                 instances: [
                   {
-                    context: 'field',
+                    context: this.settings.context,
                     ui: inputUiType,
                     size: inputUiSize,
                     showActionMenu: this.settings.showActionMenu,
@@ -1517,6 +1563,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       name: null,
       fieldId: null,
       elementType: null,
+      context: 'field',
       sources: null,
       condition: null,
       referenceElementId: null,

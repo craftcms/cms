@@ -150,7 +150,11 @@ class AssetsController extends Controller
         $width = $this->request->getRequiredParam('width');
         $height = $this->request->getRequiredParam('height');
 
-        $asset = Asset::findOne($assetId);
+        if (!is_numeric($assetId)) {
+            throw new BadRequestHttpException('Invalid asset ID.');
+        }
+
+        $asset = Asset::findOne((int)$assetId);
         if ($asset === null) {
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
@@ -709,7 +713,7 @@ class AssetsController extends Controller
             // Check for a conflicting asset
             /** @var Asset|null $conflictingAsset */
             $conflictingAsset = Asset::find()
-                ->select(['elements.id'])
+                ->select(['elements.id', 'assets.volumeId', 'assets.uploaderId'])
                 ->folderId($folderId)
                 ->filename(Db::escapeParam($asset->getFilename()))
                 ->one();
@@ -1385,6 +1389,7 @@ class AssetsController extends Controller
         $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
         $extension = strtolower(pathinfo($uploadedFile->name, PATHINFO_EXTENSION));
 
+        // @phpstan-ignore function.alreadyNarrowedType (Call to function is_array() with array will always evaluate to true.)
         if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
             throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
                 'extension' => $extension,
@@ -1495,8 +1500,11 @@ class AssetsController extends Controller
         $this->requireCpRequest();
 
         $assetId = Craft::$app->getRequest()->getRequiredParam('assetId');
+        if (!is_numeric($assetId)) {
+            throw new BadRequestHttpException('Invalid asset ID.');
+        }
 
-        $asset = Asset::findOne($assetId);
+        $asset = Asset::findOne((int)$assetId);
         if ($asset === null) {
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }

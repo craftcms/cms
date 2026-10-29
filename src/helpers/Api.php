@@ -196,7 +196,10 @@ abstract class Api
         }
 
         if (isset($headers['x-craft-license-domain'])) {
-            $cache->set('licensedDomain', reset($headers['x-craft-license-domain']), $duration);
+            $licensedDomain = reset($headers['x-craft-license-domain']);
+            if (is_string($licensedDomain) && filter_var($licensedDomain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
+                $cache->set('licensedDomain', $licensedDomain, $duration);
+            }
         }
 
         // did we just get any new plugin license keys?
@@ -215,13 +218,31 @@ abstract class Api
             $licenseInfo = [];
             $allCombinedInfo = array_filter(explode(',', reset($headers['x-craft-license-info'])));
             foreach ($allCombinedInfo as $combinedInfo) {
-                [$handle, $combinedValues] = explode(':', $combinedInfo, 2);
+                $parts = explode(':', $combinedInfo, 2);
+                if (count($parts) !== 2) {
+                    continue;
+                }
+                [$handle, $combinedValues] = $parts;
+                if ($handle !== 'craft' && !preg_match('/^plugin-[a-z0-9\-_]+$/i', $handle)) {
+                    continue;
+                }
                 if ($combinedValues === LicenseKeyStatus::Invalid->value) {
                     // invalid license
                     $licenseStatus = LicenseKeyStatus::Invalid->value;
                     $licenseId = $licenseEdition = $timestamp = null;
                 } else {
-                    [$licenseId, $licenseEdition, $licenseStatus] = explode(';', $combinedValues, 3);
+                    $values = explode(';', $combinedValues, 3);
+                    if (count($values) !== 3) {
+                        continue;
+                    }
+                    [$licenseId, $licenseEdition, $licenseStatus] = $values;
+                    if (
+                        ($licenseId !== '' && !ctype_digit($licenseId)) ||
+                        !preg_match('/^[a-z0-9\-_]*$/i', $licenseEdition) ||
+                        LicenseKeyStatus::tryFrom($licenseStatus) === null
+                    ) {
+                        continue;
+                    }
                     if (
                         isset($oldLicenseInfo[$handle]) &&
                         $licenseId == $oldLicenseInfo[$handle]['id'] &&

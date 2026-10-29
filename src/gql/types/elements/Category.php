@@ -9,6 +9,7 @@ namespace craft\gql\types\elements;
 
 use craft\elements\Category as CategoryElement;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
+use craft\gql\resolvers\elements\Category as CategoryResolver;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -43,5 +44,13 @@ class Category extends Element
             'groupHandle' => $source->getGroup()->handle,
             default => parent::resolve($source, $arguments, $context, $resolveInfo),
         };
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function elementResolverClass(): ?string
+    {
+        return CategoryResolver::class;
     }
 }

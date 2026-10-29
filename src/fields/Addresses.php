@@ -267,12 +267,21 @@ class Addresses extends Field implements
      */
     public function canSaveElement(NestedElementInterface $element, User $user): ?bool
     {
-        if (!Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+        $elementsService = Craft::$app->getElements();
+        $owner = $element->getOwner();
+
+        if (!$elementsService->canSave($owner, $user)) {
+            return false;
+        }
+
+        // addresses don't support drafts, so make sure they can edit the canonical owner too
+        $canonicalOwner = $owner->getCanonical(true);
+        if ($canonicalOwner !== $owner && !$elementsService->canSave($canonicalOwner, $user)) {
             return false;
         }
 
         // If this is a new address, make sure we aren't hitting the Max Addresses limit
-        if (!$element->id && $element->getIsCanonical() && $this->maxAddressesReached($element->getOwner())) {
+        if (!$element->id && $element->getIsCanonical() && $this->maxAddressesReached($owner)) {
             return false;
         }
 

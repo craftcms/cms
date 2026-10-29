@@ -80,6 +80,7 @@ use PDO;
 use Reflector;
 use SimpleXMLElement;
 use SoapClient;
+use SQLite3;
 use Symfony\Component\Process\Process;
 use Throwable;
 use Traversable;
@@ -90,11 +91,14 @@ use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\Extension\SandboxExtension;
 use Twig\Node\Expression\Filter\DefaultFilter;
+use Twig\Sandbox\SecurityError;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
 use XMLReader;
+use XMLWriter;
 use XSLTProcessor;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
@@ -104,6 +108,7 @@ use yii\behaviors\AttributeTypecastBehavior;
 use yii\db\Exception;
 use yii\db\Expression;
 use yii\db\QueryInterface;
+use ZipArchive;
 
 /**
  * Class Extension
@@ -220,8 +225,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getFilters(): array
     {
-        $security = Craft::$app->getSecurity();
-
         return [
             new TwigFilter('address', [$this, 'addressFilter'], ['is_safe' => ['html']]),
             new TwigFilter('append', [$this, 'appendFilter'], ['is_safe' => ['html']]),
@@ -232,7 +235,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('base64_encode', 'base64_encode'),
             new TwigFilter('boolean', 'boolval'),
             new TwigFilter('camel', [$this, 'camelFilter']),
-            new TwigFilter('column', [$this, 'columnFilter'], ['needs_is_sandboxed' => true]),
+            new TwigFilter('column', [$this, 'columnFilter'], ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('contains', [$this, 'containsFilter'], ['needs_is_sandboxed' => true]),
             new TwigFilter('currency', [$this, 'currencyFilter']),
             new TwigFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
@@ -531,11 +534,40 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param bool $keepKeys
      * @return array
      * @throws RuntimeError
+     * @throws SecurityError if `$array` (or one of its elements) is an object and `$name` isn’t an allowed property/method in a sandboxed environment
      */
-    public function columnFilter(bool $isSandboxed, mixed $array, mixed $name, bool $keepKeys = true): array
+    public function columnFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $name, bool $keepKeys = true): array
     {
         $this->preventDottedNameInSandbox($isSandboxed, $name, 'column');
-        return ArrayHelper::getColumn($array, $name, $keepKeys);
+
+        if (!$isSandboxed || !is_string($name)) {
+            return ArrayHelper::getColumn($array, $name, $keepKeys);
+        }
+
+        $sandbox = $env->getExtension(SandboxExtension::class);
+
+        if (is_object($array) && !$array instanceof Traversable) {
+            // $array is a single object rather than a list of rows, so extracting a “column” from it would
+            // otherwise mean enumerating its public properties without any sandbox checks. Treat this the same
+            // way the template would if it had accessed the property directly, e.g. `array.name`.
+            $sandbox->checkPropertyAllowed($array, $name);
+            return [ArrayHelper::getValue($array, $name)];
+        }
+
+        // Check each object element’s property/method the same way the template would if it had accessed it
+        // directly, e.g. `element.name`, rather than letting ArrayHelper::getValue() read it unchecked.
+        $result = [];
+        foreach ($array as $k => $element) {
+            if (is_object($element)) {
+                $sandbox->checkPropertyAllowed($element, $name);
+            }
+            if ($keepKeys) {
+                $result[$k] = ArrayHelper::getValue($element, $name);
+            } else {
+                $result[] = ArrayHelper::getValue($element, $name);
+            }
+        }
+        return $result;
     }
 
     /**
@@ -1682,6 +1714,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
             throw new InvalidArgumentException('No class specified for create().');
         }
 
+        // String and object templates (title formats, URI formats, system messages, etc.) are authored
+        // via the control panel/project config rather than the filesystem, so create() isn't allowed there
+        if (Craft::$app->getView()->getIsRenderingStringTemplate()) {
+            throw new InvalidArgumentException('create() cannot be used in string or object templates.');
+        }
+
         $blocklist = [
             AttributeTypecastBehavior::class,
             DirectoryIterator::class,
@@ -1697,6 +1735,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             Process::class,
             SimpleXMLElement::class,
             Reflector::class,
+            SQLite3::class,
+            XMLWriter::class,
+            ZipArchive::class,
         ];
 
         foreach ($blocklist as $c) {
@@ -1709,7 +1750,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
         }
 
-        if (StringHelper::startsWith(rtrim($class, '\\'), 'Iterator', false)) {
+        if (StringHelper::endsWith(rtrim($class, '\\'), 'Iterator', false)) {
             throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
         }
 
