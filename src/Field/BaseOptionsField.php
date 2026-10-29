@@ -598,12 +598,17 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
-        if (! $this->customOptions) {
+        // Custom options are, by definition, not among the field's options
+        if ($this->customOptions) {
             return [];
         }
 
         return [
-            function ($attribute, $value, $fail) {
+            function ($attribute, $value, $fail) use ($element) {
+                if ($this->isValueEmpty($value, $element)) {
+                    return;
+                }
+
                 $options = $value instanceof MultiOptionsFieldData ? $value : [$value];
 
                 if (Collection::make($options)->contains(fn (OptionData $option) => ! $option->valid)) {
