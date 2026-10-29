@@ -84,7 +84,8 @@
   .reviews-summary__bar span {
     display: block;
     block-size: 100%;
-    background: var(--c-color-warning-fill-loud);
+    /* Matches the rating stars. */
+    background: var(--color-static-yellow-100);
   }
 
   @media (forced-colors: active) {

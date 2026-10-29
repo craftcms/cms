@@ -70,7 +70,8 @@
     inset-block-start: 0;
     inset-inline-start: 0;
     overflow: hidden;
-    color: var(--c-color-warning-fill-loud, #f59e0b);
+    /* The same yellow in both themes; the theme's warning yellow reads as brown. */
+    color: var(--color-static-yellow-100);
   }
 
   @media (forced-colors: active) {
