@@ -329,19 +329,19 @@ export default css`
     --_active-color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
   }
 
-  /* Fill (default) — neutral normal fill. */
+  /* Fill (default) — neutral quiet fill. */
   :host([variant~='fill']) {
     border-color: transparent;
     background-color: var(
-      --c-color-fill-normal,
-      var(--c-color-neutral-fill-normal)
+      --c-color-fill-quiet,
+      var(--c-color-neutral-fill-quiet)
     );
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
   :host([variant~='fill']:hover) {
     background-color: hsl(
-      from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
+      from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
         calc(l - 5)
     );
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
@@ -349,7 +349,7 @@ export default css`
 
   :host([variant~='fill']:active) {
     --_active-background-color: hsl(
-      from var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)) h s
+      from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
         calc(l - 10)
     );
     --_active-color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
