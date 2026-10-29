@@ -727,7 +727,9 @@ class ElementHelper
             }
         }
 
-        return $element->getPostEditUrl() ?? Cms::config()->getPostCpLoginRedirect();
+        return ElementIndexReturnUrl::get($element::class)
+            ?? $element->getPostEditUrl()
+            ?? Cms::config()->getPostCpLoginRedirect();
     }
 
     /**

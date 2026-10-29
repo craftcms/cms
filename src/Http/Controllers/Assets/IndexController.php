@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\SiteSwitcher;
+use CraftCms\Cms\Element\ElementIndexReturnUrl;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
@@ -42,6 +43,8 @@ readonly class IndexController
         if ($viewModel->showSiteMenu()) {
             app(SiteSwitcher::class)->scopeToSite();
         }
+
+        ElementIndexReturnUrl::remember($viewModel->elementType(), $request);
 
         return Inertia::render('assets/Index', [$viewModel]);
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Cp\SiteSwitcher;
+use CraftCms\Cms\Element\ElementIndexReturnUrl;
 use CraftCms\Cms\Http\Controllers\Concerns\RedirectsToShownSource;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\ViewModels\EntryIndexViewModel;
@@ -31,7 +32,12 @@ readonly class ContentIndexController
             app(SiteSwitcher::class)->scopeToSite();
         }
 
-        return $this->shownSourceRedirect($request, $viewModel, $sectionHandle !== null && $sectionHandle !== '')
-            ?? Inertia::render('content/Index', [$viewModel]);
+        if ($redirect = $this->shownSourceRedirect($request, $viewModel, $sectionHandle !== null && $sectionHandle !== '')) {
+            return $redirect;
+        }
+
+        ElementIndexReturnUrl::remember($viewModel->elementType(), $request);
+
+        return Inertia::render('content/Index', [$viewModel]);
     }
 }

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Responses;
 
 use CraftCms\Cms\Cp\LegacyTabsShim;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementIndexReturnUrl;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\ViewModels\LegacyElementIndexViewModel;
 use CraftCms\Cms\View\LegacyReadyShim;
@@ -154,6 +155,8 @@ final class BridgedScreen
          * Vue index is taking over, so this is the child's markup alone.
          */
         $toolbar = trim((string) ($variables['toolbar'] ?? ''));
+
+        ElementIndexReturnUrl::remember($elementType, $request);
 
         return Inertia::render(self::ELEMENT_INDEX_PAGE, [$viewModel])
             ->with([

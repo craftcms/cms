@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementIndexReturnUrl;
 use CraftCms\Cms\Http\Controllers\Concerns\RedirectsToShownSource;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\ViewModels\UserIndexViewModel;
@@ -32,7 +33,12 @@ readonly class IndexController
             slug: $slug,
         );
 
-        return $this->shownSourceRedirect($request, $viewModel, $slug !== null && $slug !== '')
-            ?? Inertia::render('users/Index', [$viewModel]);
+        if ($redirect = $this->shownSourceRedirect($request, $viewModel, $slug !== null && $slug !== '')) {
+            return $redirect;
+        }
+
+        ElementIndexReturnUrl::remember($viewModel->elementType(), $request);
+
+        return Inertia::render('users/Index', [$viewModel]);
     }
 }

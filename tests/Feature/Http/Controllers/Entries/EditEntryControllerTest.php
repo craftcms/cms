@@ -125,6 +125,18 @@ it('sends Save back to the entries index', function () {
         );
 });
 
+it('sends Save back to the entries index source last viewed', function () {
+    $indexUrl = cp_url('content/entries/news', ['search' => 'launch']);
+    get($indexUrl)->assertOk();
+
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('redirectUrl', fn (string $url) => Crypt::decrypt($url) === $indexUrl)
+            ->etc()
+        );
+});
+
 it('keeps Save on a named draft', function () {
     $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), name: 'Working Draft');
 

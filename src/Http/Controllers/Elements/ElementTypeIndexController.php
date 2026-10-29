@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementIndexReturnUrl;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\ViewModels\ElementTypeIndexViewModel;
 use Illuminate\Support\Facades\Gate;
@@ -36,6 +37,7 @@ readonly class ElementTypeIndexController
         abort_unless(is_string($elementType) && is_subclass_of($elementType, ElementInterface::class), 404);
 
         $viewModel = new ElementTypeIndexViewModel($elementType, $request);
+        ElementIndexReturnUrl::remember($elementType, $request);
 
         return Inertia::render('elements/Index', [$viewModel])
             ->with([
