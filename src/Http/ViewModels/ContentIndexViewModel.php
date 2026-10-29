@@ -128,12 +128,25 @@ abstract class ContentIndexViewModel extends ViewModel
     {
         $properties = parent::toInertiaProperties($context);
 
-        if (
-            $context->request->header(Header::PARTIAL_COMPONENT) !== $context->component
-            && ! $this->request->filled('viewMode')
-        ) {
-            unset($properties['data'], $properties['pagination'], $properties['structure']);
+        return $context->request->header(Header::PARTIAL_COMPONENT) === $context->component
+            ? $properties
+            : $this->withoutDeferredRows($properties);
+    }
+
+    /**
+     * Leaves the rows out of a payload whose request doesn't name the view
+     * mode they're for.
+     *
+     * @param  array<string, mixed>  $properties
+     * @return array<string, mixed>
+     */
+    protected function withoutDeferredRows(array $properties): array
+    {
+        if ($this->request->filled('viewMode')) {
+            return $properties;
         }
+
+        unset($properties['data'], $properties['pagination'], $properties['structure']);
 
         return $properties;
     }
