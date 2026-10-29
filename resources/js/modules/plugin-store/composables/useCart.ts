@@ -100,8 +100,9 @@ export const useCart = createGlobalState(() => {
   }
 
   async function add(newItems: NewCartItem[]): Promise<void> {
-    const current = await load();
-    const items = cartItemsData(current, cmsLicenseKey());
+    // The cart as it is now, which may have changed since it first loaded.
+    await load();
+    const items = cartItemsData(cart.value, cmsLicenseKey());
 
     for (const item of newItems) {
       const inCart = items.some((existing) =>
