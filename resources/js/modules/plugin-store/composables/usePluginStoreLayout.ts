@@ -72,7 +72,11 @@ function canUpgradeCraft(context: PluginStoreContext): boolean {
  * every plugin category, and links out to craftcms.com and Craft Console.
  */
 export function usePluginStoreLayout(
-  options: {title?: MaybeRefOrGetter<string | null | undefined>} = {}
+  options: {
+    title?: MaybeRefOrGetter<string | null | undefined>;
+    /** See `ScreenProps.headerRule`. */
+    headerRule?: boolean;
+  } = {}
 ): void {
   const page = usePage<{context: PluginStoreContext; title: string}>();
   const {categories} = useCoreData();
@@ -136,5 +140,6 @@ export function usePluginStoreLayout(
   useAppLayout(() => ({
     title: toValue(options.title) ?? page.props.title,
     subnav: subnav.value,
+    headerRule: options.headerRule,
   }));
 }

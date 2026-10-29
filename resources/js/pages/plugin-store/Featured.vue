@@ -16,7 +16,10 @@
     .then((response) => (section.value = response))
     .catch(() => {});
 
-  usePluginStoreLayout({title: () => section.value?.title});
+  usePluginStoreLayout({
+    title: () => section.value?.title,
+    headerRule: true,
+  });
 </script>
 
 <template>

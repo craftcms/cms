@@ -96,7 +96,7 @@
 </script>
 
 <template>
-  <div class="plugin-index" :class="{'plugin-index--ruled': !sortRow}">
+  <div class="plugin-index">
     <component
       :is="sortRow ? 'div' : LayoutSlot"
       v-if="sort"
@@ -131,7 +131,10 @@
       </div>
     </component>
 
-    <PluginGrid :plugins="plugins" />
+    <PluginGrid
+      :plugins="plugins"
+      :class="{'plugin-index__grid--flush': !sortRow}"
+    />
 
     <p v-if="failed" class="plugin-index__error">
       {{ t('Couldn’t get plugins.') }}
@@ -156,10 +159,9 @@
   }
 
   /* Ruled off from the grid either way: below the title row, or below the sort's own row. */
-  /* Pulled up over the content's top padding, so it sits as close under the title row as the sort row's rule does. */
-  .plugin-index--ruled {
-    margin-block-start: calc(var(--c-spacing-lg) * -1);
-    border-block-start: 1px solid var(--c-color-border-quiet);
+  /* Beside the title, the header's rule is above and the content's padding already spaces it. */
+  .plugin-index .plugin-index__grid--flush {
+    margin-block-start: 0;
   }
 
   .plugin-index__sort-row {

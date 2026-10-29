@@ -12,7 +12,10 @@
     categories.value.find((c) => Number(c.id) === props.categoryId)
   );
 
-  usePluginStoreLayout({title: () => category.value?.title});
+  usePluginStoreLayout({
+    title: () => category.value?.title,
+    headerRule: true,
+  });
 </script>
 
 <template>

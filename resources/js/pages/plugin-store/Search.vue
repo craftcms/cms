@@ -11,6 +11,7 @@
       props.query
         ? t('Showing results for “{searchQuery}”', {searchQuery: props.query})
         : null,
+    headerRule: true,
   });
 </script>
 
