@@ -55,7 +55,8 @@ export type ContentIndexData = Omit<
   sources: Source[];
   sites: IndexSite[];
   currentCondition: ConditionConfig | null;
-  viewState: Partial<ViewState>;
+  /** `mode` is the view mode the payload's rows were rendered for. */
+  viewState: Partial<ViewState> & {mode?: ViewMode['mode']};
   viewModes: ViewMode[];
   sortOptions: SortOption[];
   sort: SortItem[];

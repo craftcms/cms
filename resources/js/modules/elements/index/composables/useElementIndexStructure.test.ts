@@ -206,14 +206,10 @@ describe('loadedBranchDepth', () => {
 describe('useElementIndexStructure', () => {
   const visitor = {merge: vi.fn(), visit: vi.fn(), currentQuery: () => ({})};
   const viewState = ref<ViewState>({
-    inlineEditing: false,
-    mode: 'structure',
     showHeaderColumn: true,
     static: false,
   });
 
-  // The saved mode is shared by every source, so it can outlive a switch to a
-  // source without a structure.
   it('only treats structure sources as being in structure mode', () => {
     const source = ref<{structureId: number | null}>({structureId: 1});
     const {isStructure} = useElementIndexStructure(
@@ -224,7 +220,8 @@ describe('useElementIndexStructure', () => {
         },
       },
       viewState,
-      visitor
+      visitor,
+      () => 'structure'
     );
 
     expect(isStructure.value).toBe(true);

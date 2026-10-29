@@ -90,14 +90,26 @@ export function useElementIndex(options: UseElementIndexOptions) {
   const preferredSort = elementIndex.sort.filter(
     ({field}) => field !== 'score'
   );
+  const sourceKey = () => elementIndex.source?.key ?? '*';
+  const {
+    mode: savedMode,
+    restore: restoreViewMode,
+    persistedMode,
+  } = useElementIndexViewMode(
+    viewState,
+    visitor,
+    sourceKey,
+    () => elementIndex.viewState?.mode,
+    () => visibleViewModes.value.map(({mode}) => mode),
+    (mode) => thumbSizeModeParams(mode)
+  );
   const filters = useElementIndexFilters(visitor, {
     search: elementIndex.search,
     status: elementIndex.status,
     conditions: elementIndex.currentCondition,
     busy: options.busy,
     preferredSort: () => {
-      const sourceKey = elementIndex.source?.key ?? '*';
-      const saved = viewState.value.sources?.[sourceKey]?.sort?.filter(
+      const saved = viewState.value.sources?.[sourceKey()]?.sort?.filter(
         ({field}) => field !== 'score'
       );
 
@@ -105,11 +117,11 @@ export function useElementIndex(options: UseElementIndexOptions) {
         return saved;
       }
 
-      return sourceKey === initialSourceKey ? preferredSort : [];
+      return sourceKey() === initialSourceKey ? preferredSort : [];
     },
     params: () => ({
       source: elementIndex.source?.key,
-      viewMode: viewState.value.mode,
+      viewMode: persistedMode(),
       ...options.filterParams?.(),
     }),
   });
@@ -137,13 +149,6 @@ export function useElementIndex(options: UseElementIndexOptions) {
     elementIndex,
     visitor
   );
-  const {mode: savedMode, restore: restoreViewMode} = useElementIndexViewMode(
-    viewState,
-    visitor,
-    () => elementIndex.viewState?.mode,
-    () => visibleViewModes.value.map(({mode}) => mode),
-    (mode) => thumbSizeModeParams(mode)
-  );
   const visibleViewModes = computed(() =>
     elementIndex.viewModes.filter(
       (viewMode) =>
@@ -164,22 +169,14 @@ export function useElementIndex(options: UseElementIndexOptions) {
     options: thumbSizeOptions,
     restore: restoreThumbSize,
     modeParams: thumbSizeModeParams,
-  } = useElementIndexThumbSize(
-    viewState,
-    visitor,
-    () => mode.value,
-    () => elementIndex.source?.key ?? '*'
-  );
-  const inlineEditingActive = computed({
-    get: () => viewState.value.inlineEditing,
-    set: (value: boolean) => {
-      viewState.value.inlineEditing = value;
-    },
-  });
+  } = useElementIndexThumbSize(viewState, visitor, () => mode.value, sourceKey);
+  // Not persisted: inline editing ends with the page.
+  const inlineEditingActive = shallowRef(false);
   const structureView = useElementIndexStructure(
     elementIndex,
     viewState,
-    visitor
+    visitor,
+    () => mode.value
   );
   const data = computed(() =>
     options.data
@@ -297,13 +294,32 @@ export function useElementIndex(options: UseElementIndexOptions) {
 
   function changeSource(key: string): void {
     if (key === elementIndex.source?.key) return;
+    const sourceMode = persistedMode(key);
+
+    // A source without a chosen mode gets its default, which only the server
+    // knows, so its thumbnail size can't be asked for until its rows arrive.
     visitor.merge(
       {
         source: key,
-        viewMode: mode.value,
-        ...thumbSizeModeParams(mode.value, key),
+        viewMode: sourceMode ?? null,
+        ...(sourceMode
+          ? thumbSizeModeParams(sourceMode, key)
+          : {thumbSize: null}),
       },
-      {resetPage: true}
+      {
+        resetPage: true,
+        onFinish: ({completed}) => {
+          const thumbSizeRestore =
+            completed && !sourceMode && restoreThumbSize();
+
+          if (thumbSizeRestore) {
+            visitor.merge(thumbSizeRestore.params, {
+              only: thumbSizeRestore.only,
+              replace: true,
+            });
+          }
+        },
+      }
     );
   }
 

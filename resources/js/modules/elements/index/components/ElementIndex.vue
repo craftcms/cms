@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed, onMounted, provide, ref, useTemplateRef, watch} from 'vue';
+  import {computed, provide, ref, useTemplateRef, watch} from 'vue';
   import {onLongPress} from '@vueuse/core';
   import {ButtonVariant, t} from '@craftcms/ui';
   import PaginationControls from '@/common/components/PaginationControls.vue';
@@ -155,12 +155,6 @@
   watch(inlineEditor.editingIds, (ids) => {
     if (inlineEditing) {
       inlineEditing.active.value = ids.length > 0;
-    }
-  });
-
-  onMounted(() => {
-    if (inlineEditing?.active.value && canEditInline.value) {
-      void startInlineEditing();
     }
   });
 
