@@ -35,6 +35,8 @@ export interface PluginSummary {
   name: string;
   packageName: string;
   shortDescription: string | null;
+  developerId: number;
+  developerName: string;
   iconUrl: string | null;
   abandoned: boolean;
   editions: PluginEdition[];
@@ -62,8 +64,6 @@ export interface PluginInstallHistoryPoint {
 }
 
 export interface Plugin extends PluginSummary {
-  developerId: number;
-  developerName: string;
   developerPartner: boolean;
   longDescription: string | null;
   documentationUrl: string | null;

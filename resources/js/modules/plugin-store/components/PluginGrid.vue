@@ -20,8 +20,9 @@
   .plugin-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-    column-gap: var(--c-spacing-xl);
-    margin: 0;
+    gap: var(--c-spacing-lg);
+    margin-block: var(--c-spacing-lg) 0;
+    margin-inline: 0;
     padding: 0;
     list-style: none;
   }
