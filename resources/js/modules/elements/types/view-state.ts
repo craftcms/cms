@@ -9,8 +9,16 @@ export type ViewMode = {
   availableOnMobile?: boolean;
 };
 
-/** A source's persisted view overrides (columns, sort, and thumbnail sizes). */
+/**
+ * A source's persisted view overrides (view mode, columns, sort, and
+ * thumbnail sizes).
+ */
 export type SourceViewState = {
+  /**
+   * The user's chosen view mode for this source. Absent, the source shows the
+   * mode the server rendered: its default.
+   */
+  mode?: ViewMode['mode'];
   /**
    * Columns the user has explicitly chosen to show, in display order — the
    * single source of column-order truth. Checking a column appends it;
@@ -38,9 +46,8 @@ export type ThumbSize = ChipThumbSizeValue;
  */
 export type ViewState = {
   inlineEditing: boolean;
-  mode: ViewMode['mode'];
   /**
-   * Per-source view overrides (columns, sort, and thumbnail sizes), keyed by source key. Absent
+   * Per-source view overrides (view mode, columns, sort, and thumbnail sizes), keyed by source key. Absent
    * entries fall back to the source's own config (`tableAttributes` /
    * `defaultSort`) or the element-type defaults.
    */
