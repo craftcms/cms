@@ -148,6 +148,7 @@
 #### Templates
 - It’s now possible to load Blade views within Twig templates. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Craft now registers several Blade directives, bringing near feature parity with Twig templating. ([#19148](https://github.com/craftcms/cms/pull/19148))
+- Improved Twig attribute access on Eloquent models to resolve missing and null attributes, casts, accessors, and relations through Eloquent property access, while preserving explicit method calls.
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
 - Elements no longer include custom field values when iterated over. ([#19004](https://github.com/craftcms/cms/issues/19004))
 - Element save requests no longer enable the element when no status is posted. Craft 5 resolved the status as `enabled ?? (setEnabled ? true : null)`, so a POST carrying none of `enabled`, `setEnabled`, or `enabledForSite` force-enabled the element, and posting `setEnabled=0` was how a request opted out of that. A posted status now decides on its own, and a save that doesn’t carry one leaves the element’s status untouched — which is what lets partial/delta saves keep a disabled element disabled. The `setEnabled` param has nothing left to suppress and is ignored.
