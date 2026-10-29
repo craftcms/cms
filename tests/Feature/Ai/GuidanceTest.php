@@ -58,7 +58,7 @@ it('saves the guidance for every site and for each site from the utility, and re
 });
 
 it('only saves the guidance for sites the user can edit, and for every site if they can edit every site', function () {
-    $other = Site::factory()->create();
+    $other = Site::factory()->create(['groupId' => Sites::getPrimarySite()->groupId, 'sortOrder' => 999]);
     Sites::refreshSites();
     $user = UserModel::factory()->withPermissions([
         'accessCp',
