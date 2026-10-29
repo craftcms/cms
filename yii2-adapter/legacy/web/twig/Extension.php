@@ -15,6 +15,7 @@ use craft\helpers\HtmlPurifier;
 use craft\web\View;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Yii2Adapter\Cp\Html\ElementIndexHtml;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Twig\DeprecatedCallableInfo;
@@ -23,6 +24,7 @@ use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
+use Twig\TwigFunction;
 use yii\base\InvalidConfigException;
 
 /**
@@ -41,6 +43,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('purify', [$this, 'purifyFilter'], ['is_safe' => ['html']]),
             new TwigFilter('ucfirst', [$this, 'ucfirstFilter']),
             new TwigFilter('ucwords', [$this, 'ucwordsFilter'], ['needs_environment' => true]),
+        ];
+    }
+
+    public function getFunctions(): array
+    {
+        return [
+            new TwigFunction('elementIndex', app(ElementIndexHtml::class)->html(...), ['is_safe' => ['html']]),
         ];
     }
 

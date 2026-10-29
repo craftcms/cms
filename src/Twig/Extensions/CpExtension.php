@@ -11,7 +11,6 @@ use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
-use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\Icons;
@@ -57,7 +56,6 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('disclosureMenu', app(MenuHtml::class)->disclosureMenu(...), ['is_safe' => ['html']]),
             new TwigFunction('elementCard', app(ElementHtml::class)->elementCardHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('elementChip', app(ElementHtml::class)->elementChipHtml(...), ['is_safe' => ['html']]),
-            new TwigFunction('elementIndex', app(ElementIndexHtml::class)->html(...), ['is_safe' => ['html']]),
             new TwigFunction('fieldLayoutDesigner', app(FieldLayoutDesigner::class)->html(...), ['is_safe' => ['html']]),
             new TwigFunction('fieldLayoutDesignerField', app(FieldLayoutDesigner::class)->fieldHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('findCrumb', fn (array $items) => $this->findCrumb($items)),

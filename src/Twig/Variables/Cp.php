@@ -378,20 +378,6 @@ class Cp extends Component
     }
 
     /**
-     * Whether this render is collecting fragments rather than drawing a page.
-     *
-     * A layout asks when the answer changes what it should render — an element
-     * index skips the legacy toolbar and boot JS when the control panel shell
-     * is going to supply its own.
-     *
-     * @see LegacyScreenFragments
-     */
-    public function screenCollecting(): bool
-    {
-        return app(LegacyScreenFragments::class)->enabled();
-    }
-
-    /**
      * Hands `_layouts/cp`'s captured fragments to the response layer.
      *
      * Called by `_layouts/cp-fragments.twig`, which is the only caller there

@@ -25,7 +25,6 @@ use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
-use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Cp\Html\StatusHtml;
@@ -39,6 +38,7 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Yii2Adapter\Cp\Html\ElementIndexHtml;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 
@@ -50,7 +50,7 @@ use function CraftCms\Cms\template;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see Alerts}, {@see ElementHtml}, {@see StatusHtml}, {@see PreviewHtml}, {@see ElementIndexHtml}, {@see ContentHtml}, {@see MenuHtml}, {@see FormFields}, {@see Icons}, {@see RequestedSite} instead.
+ * @deprecated 6.0.0 use {@see Alerts}, {@see ElementHtml}, {@see StatusHtml}, {@see PreviewHtml}, {@see ContentHtml}, {@see MenuHtml}, {@see FormFields}, {@see Icons}, {@see RequestedSite} instead.
  */
 class Cp
 {
