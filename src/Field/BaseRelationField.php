@@ -72,7 +72,6 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use Override;
 use RuntimeException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\t;
@@ -239,8 +238,8 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         $ns = sprintf('%s_%s', $field->handle, Str::random(5));
 
         $query = DB::table(Table::RELATIONS, "relations_$ns")
-            ->join(new Alias(Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "relations_$ns.targetId")
-            ->leftJoin(new Alias(Table::ELEMENTS_SITES, "elements_sites_$ns"), "elements_sites_$ns.elementId", '=', "elements_$ns.id")
+            ->join(Table::ELEMENTS." as elements_$ns", "elements_$ns.id", '=', "relations_$ns.targetId")
+            ->leftJoin(Table::ELEMENTS_SITES." as elements_sites_$ns", "elements_sites_$ns.elementId", '=', "elements_$ns.id")
             ->whereColumn("relations_$ns.sourceId", 'elements.id')
             ->where("relations_$ns.fieldId", $field->id)
             ->whereNull("elements_$ns.dateDeleted")
@@ -255,7 +254,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if ($inTargetSiteOnly) {
-            $query->where("elements_sites_$ns.siteId", $field->_targetSiteId() ?? DB::raw('elements_sites.siteId'));
+            $query->where("elements_sites_$ns.siteId", $field->_targetSiteId() ?? DB::raw($query->getGrammar()->wrap('elements_sites.siteId')));
         }
 
         return $query;
@@ -1087,7 +1086,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 $query = $elementQuery->getQuery();
 
                 $query->join(
-                    new Alias(Table::RELATIONS, $relationsAlias),
+                    Table::RELATIONS." as $relationsAlias",
                     function (JoinClause $join) use ($element, $relationsAlias) {
                         $join->whereColumn("$relationsAlias.targetId", 'elements.id')
                             ->where("$relationsAlias.sourceId", $element->id)

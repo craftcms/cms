@@ -38,7 +38,6 @@ use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @since 6.0.0
@@ -367,9 +366,9 @@ class Elements
         }
 
         // First get the element ID and type
-        $result = DB::table(new Alias(Table::ELEMENTS, 'elements'))
+        $result = DB::table(Table::ELEMENTS, 'elements')
             ->select(['elements.id', 'elements.type'])
-            ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', 'elements.id')
+            ->join(Table::ELEMENTS_SITES.' as elements_sites', 'elements_sites.elementId', 'elements.id')
             ->where('elements_sites.siteId', $siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
             ->when(
