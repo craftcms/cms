@@ -73,6 +73,11 @@ class UserPermissions
      */
     private Collection $permissionsByUserId;
 
+    /**
+     * @var array<int, array<string, true>> Users’ permissions, indexed by user ID and permission name
+     */
+    private array $permissionMapsByUserId = [];
+
     public function __construct(
         private readonly PermissionGroupCatalog $permissionGroupCatalog,
     ) {}
@@ -295,7 +300,10 @@ class UserPermissions
             return true;
         }
 
-        return $this->getPermissionsByUserId($userId)->containsStrict($this->canonicalPermissionName($checkPermission));
+        // Build the map from getPermissionsByUserId(), in case it's been overridden
+        $this->permissionMapsByUserId[$userId] ??= array_fill_keys($this->getPermissionsByUserId($userId)->all(), true);
+
+        return isset($this->permissionMapsByUserId[$userId][$this->canonicalPermissionName($checkPermission)]);
     }
 
     /**
@@ -339,6 +347,7 @@ class UserPermissions
         $this->permissionsByUserId ??= collect();
         $userPermissions = $groupPermissions->merge($permissions)->unique();
         $this->permissionsByUserId[$userId] = $userPermissions;
+        unset($this->permissionMapsByUserId[$userId]);
 
         event(new UserPermissionsSaved($userId, $permissions));
 
@@ -393,6 +402,7 @@ class UserPermissions
         $this->permissionsByGroupId ??= collect();
         $this->permissionsByGroupId->put($userGroup->id, collect($permissions));
         unset($this->permissionsByUserId);
+        $this->permissionMapsByUserId = [];
     }
 
     /** @param Collection<int, PermissionGroup> $permissions */
@@ -958,5 +968,6 @@ class UserPermissions
             $this->permissionsByGroupId,
             $this->permissionsByUserId,
         );
+        $this->permissionMapsByUserId = [];
     }
 }
