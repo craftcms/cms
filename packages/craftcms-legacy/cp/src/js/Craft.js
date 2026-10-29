@@ -119,7 +119,7 @@ $.extend(Craft, {
    * @returns {string}
    */
   t: function (category, message, params = {}) {
-    return t(message, params, (category = 'app'), Craft.translations);
+    return t(message, params, category, Craft.translations);
   },
 
   formatMessage: function (pattern, args) {
