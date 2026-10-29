@@ -10,10 +10,13 @@ use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\SnapshotPluginSettings;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
+use CraftCms\Cms\View\TemplateManager;
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 afterEach(function () {
     unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
@@ -67,7 +70,7 @@ it('normalizes only direct settings before boot without resolving runtime servic
 
     new ConfigServiceProvider($app)->register();
 
-    expect($repository->get('craft'))->toBe($normalized)
+    expect(Arr::except($repository->get('craft'), 'twig-sandbox'))->toBe(Arr::except($normalized, 'twig-sandbox'))
         ->and((array) $input)->toBe($state);
 });
 
@@ -168,15 +171,38 @@ it('applies environment overrides when resolved', function () {
 it('materializes typed MCP configuration from JSON environment overrides', function () {
     app(ConfigRepository::class)->set('craft.general', []);
     app()->forgetInstance(GeneralConfig::class);
-    $_SERVER['CRAFT_MCP'] = '{"endpoint":"agents","middleware":["throttle:mcp"]}';
+    $_SERVER['CRAFT_MCP'] = '{"instructions":"Be brief.","middleware":["throttle:mcp"]}';
 
     new ConfigServiceProvider(app())->register();
 
     $config = app(GeneralConfig::class);
 
     expect($config->mcp)->toBeInstanceOf(McpConfig::class)
-        ->and($config->mcp->endpoint)->toBe('agents')
+        ->and($config->mcp->instructions)->toBe('Be brief.')
         ->and($config->mcp->middleware)->toBe(['throttle:mcp']);
+});
+
+it('extends the default Twig sandbox allowlist with project entries', function () {
+    app(ConfigRepository::class)->set('craft.twig-sandbox', [
+        'allowedTags' => [],
+        'allowedFilters' => ['projectFilter'],
+        'allowedFunctions' => [],
+        'allowedMethods' => [
+            Collection::class => ['toJson'],
+            ArrayObject::class => ['count'],
+        ],
+        'allowedProperties' => [],
+    ]);
+
+    new ConfigServiceProvider(app())->register();
+    app()->forgetScopedInstances();
+
+    $config = app(ConfigRepository::class)->get('craft.twig-sandbox');
+
+    expect(app(TemplateManager::class)->renderSandboxedString('{% if true %}{{ "a&b"|e }}{% endif %}'))->toBe('a&amp;b')
+        ->and($config['allowedFilters'])->toContain('e', 'projectFilter')
+        ->and($config['allowedMethods'][Collection::class])->toContain('render', 'toJson')
+        ->and($config['allowedMethods'][ArrayObject::class])->toBe(['count']);
 });
 
 it('fails when an environment override cannot be normalized', function () {

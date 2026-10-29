@@ -65,7 +65,7 @@ it('returns readable resource links alongside element list data and checks acces
 
     $actor->admin = false;
     $actor->save();
-    app(UserPermissions::class)->saveUserPermissions($actor->id, ['accessCp', 'useCraftMcp']);
+    app(UserPermissions::class)->saveUserPermissions($actor->id, ['accessCp']);
     Passport::actingAs($actor, ['mcp:admin'], 'craft-mcp');
 
     McpRequest::send($this, 'resources/read', ['uri' => $uri])
@@ -139,7 +139,7 @@ it('reads entry type field layouts through their owner identifiers and requires 
 
     $actor->admin = false;
     $actor->save();
-    app(UserPermissions::class)->saveUserPermissions($actor->id, ['accessCp', 'useCraftMcp']);
+    app(UserPermissions::class)->saveUserPermissions($actor->id, ['accessCp']);
     Passport::actingAs($actor, ['mcp:admin'], 'craft-mcp');
 
     McpRequest::send($this, 'resources/read', ['uri' => $uri])

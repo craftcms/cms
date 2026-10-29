@@ -78,7 +78,7 @@
                 </div>
                 <craft-tab slot="tab" data-fld-tab="appearance">
                     {{ \CraftCms\Cms\t('Appearance') }}
-                    @if ($hasErrors(['cardView', 'thumbFieldKey']))
+                    @if ($hasErrors(['cardView', 'thumbSources']))
                         {!! $errorIcon !!}
                     @endif
                 </craft-tab>

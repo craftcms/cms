@@ -137,7 +137,7 @@
                   'No sign-in is needed. Assistants can only read the content this site has made public.'
                 )
               : t(
-                  'The first time your assistant connects, it opens a browser window where you sign in and approve access. Your account needs the “Use Craft MCP” permission.'
+                  'The first time your assistant connects, it opens a browser window where you sign in and approve access.'
                 )
           }}
         </p>

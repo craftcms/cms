@@ -155,8 +155,8 @@ kbd {
   --_colorable-on-loud: var(--c-color-on-loud);
 }
 
-/* A card's attribute previews are capped at two lines, unless they opt out
-   with `no-truncate` (generated fields, chips, addresses). */
+/* A card's attribute previews are capped at two lines, or one on a cover card,
+   unless they opt out with `no-truncate` (generated fields, chips, addresses). */
 .card-attribute-preview:not(:has(> .no-truncate)) {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -168,6 +168,12 @@ kbd {
   /* Long unbroken strings (URLs) wrap into the clamp, rather than being
      clipped mid-line with no ellipsis. */
   overflow-wrap: anywhere;
+}
+
+[data-cover='body'] .card-attribute-preview:not(:has(> .no-truncate)) {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  max-block-size: 1lh;
 }
 
 /* A table column grows to fit its widest content, so an uncapped link would

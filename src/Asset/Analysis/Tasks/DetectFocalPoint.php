@@ -38,12 +38,12 @@ class DetectFocalPoint extends ImageAnalysisTask
         return $overwrite || ! $asset->getHasFocalPoint();
     }
 
-    public static function instructions(Asset $asset): string
+    public static function instructions(Asset $asset, bool $overwrite): string
     {
         return 'Find the image’s focal point: the spot that crops of the image should keep in view. That’s usually the most important part of the main subject, such as a person’s face or eyes, or the center of the main object. For a scene without one subject, choose the center of what draws the eye. Give its position as fractions of the image’s width and height, measured from the top-left corner: x is 0 at the left edge and 1 at the right, and y is 0 at the top and 1 at the bottom.';
     }
 
-    public static function schema(JsonSchema $schema, Asset $asset): array
+    public static function schema(JsonSchema $schema, Asset $asset, bool $overwrite): array
     {
         return [
             'x' => $schema->number()->min(0)->max(1)->description('From 0 at the left edge to 1 at the right.')->required(),

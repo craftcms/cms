@@ -1,0 +1,37 @@
+{
+  "name": "acme/bootstrap-plugin",
+  "type": "craft-plugin",
+  "version": "1.0.0",
+  "require": {
+    "craftcms/cms": "6.x-dev"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^11.0",
+    "pestphp/pest": "^5.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Acme\\BootstrapPlugin\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Acme\\BootstrapPlugin\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "class": "Acme\\BootstrapPlugin\\Plugin",
+    "handle": "bootstrap-plugin",
+    "name": "Bootstrap Plugin",
+    "schemaVersion": "1.0.0"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "craftcms/plugin-installer": true,
+      "pestphp/pest-plugin": true,
+      "php-http/discovery": true
+    }
+  }
+}

@@ -10,6 +10,8 @@
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
+  import {t} from '@craftcms/ui/utilities/translate';
+  import {Required} from '@lion/ui/form-core.js';
   import {computed, inject, ref, watch} from 'vue';
   import type {UiControlPayload, UiValue} from './types';
   import {FieldLabelSrOnly, inputName, serverErrorValidators} from './runtime';
@@ -50,8 +52,8 @@
     allMode?: 'singleValue' | 'eachValue';
     sortable?: boolean;
     /**
-     * Label for the leading blank option. Absent leaves it unlabeled; `false`
-     * means the control has no valid empty state and shouldn't offer one.
+     * Label for the leading blank option. Defaults to “Select…” when required,
+     * or an empty label otherwise; `false` omits the blank option.
      */
     placeholder?: string | false;
   };
@@ -69,20 +71,23 @@
   }>();
   const fieldLabelSrOnly = inject(FieldLabelSrOnly, undefined);
 
+  // Lion skips other validators for an empty select. The field renders the
+  // server's message; this validator keeps the native invalid state in sync.
+  const selectValidators = computed(() =>
+    props.invalid && props.required
+      ? [
+          new Required(undefined, {getMessage: () => ''}),
+          ...serverErrorValidators(true),
+        ]
+      : serverErrorValidators(props.invalid)
+  );
+
   /**
-   * A single select needs somewhere to represent "nothing chosen".
-   *
-   * A `<select>` with no selected option shows its first one, so an optional
-   * setting that has never been set looks set — and because nothing changed,
-   * saving posts nothing and it stays unset. A leading blank option makes the
-   * empty state visible, and re-selectable once something has been chosen.
-   *
-   * Multi-selects show an empty list when empty, so they don't need it, and a
-   * required control has no valid empty state to offer. Options that already
-   * carry an empty value supply their own.
-   *
-   * `Choice::placeholder()` labels it and `Choice::withoutPlaceholder()` drops
-   * it for a setting that has no valid empty state.
+   * A leading blank keeps an unset value from looking like the first real
+   * option. Required controls disable it as a prompt, rather than offering
+   * an empty choice. Multi-selects and options with an empty value already
+   * represent the empty state. `Choice::withoutPlaceholder()` opts out for
+   * settings that always hold a value.
    *
    * `UI\Controls\Choice::selectOptions()` mirrors this for the HTML fallback.
    */
@@ -92,14 +97,20 @@
 
     if (
       props.control.props.multiple ||
-      props.required ||
       placeholder === false ||
       options.some((option) => inputValue(option.value) === '')
     ) {
       return options;
     }
 
-    return [{label: placeholder ?? '', value: ''}, ...options];
+    return [
+      {
+        label: placeholder ?? (props.required ? t('Select…') : ''),
+        value: '',
+        disabled: props.required,
+      },
+      ...options,
+    ];
   });
 
   /**
@@ -129,7 +140,7 @@
   );
 
   function inputValue(value: UiValue): string {
-    return value === true ? '1' : value === false ? '' : String(value);
+    return value === true ? '1' : value === false ? '' : String(value ?? '');
   }
 
   const selectedValues = computed(() => {
@@ -312,7 +323,8 @@
     "
     .disabled="!editable"
     :required="editable && required"
-    .validators="serverErrorValidators(invalid)"
+    .validators="selectValidators"
+    .submitted="invalid"
   >
     <select
       slot="input"

@@ -7,7 +7,9 @@ use CraftCms\Cms\Cp\Notifications\CpNotification;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Arr;
@@ -45,7 +47,7 @@ return new class extends Migration
             ->where(function (Builder $query): void {
                 $query
                     ->where('announcements.unread', true)
-                    ->orWhere('announcements.dateRead', '>', now()->subDays(7));
+                    ->orWhere('announcements.dateRead', '>', Query::prepareDateForDb(now()->subDays(7)));
             })
             ->where(function (Builder $query): void {
                 $query
@@ -61,8 +63,8 @@ return new class extends Migration
                     'notifiable_id' => $announcement->userId,
                     'data' => Json::encode(Arr::whereNotNull([
                         'kind' => 'announcement',
-                        'title' => $announcement->heading,
-                        'message' => $announcement->body,
+                        'title' => $this->convertTranslation($announcement->heading),
+                        'message' => $this->convertTranslation($announcement->body),
                         'byline' => $announcement->pluginHandle ?? 'Craft CMS',
                         'icon' => $announcement->pluginHandle === null ? 'custom-icons/craft-cms' : null,
                         'buttons' => [],
@@ -74,5 +76,24 @@ return new class extends Migration
             });
 
         Schema::drop('announcements');
+    }
+
+    /**
+     * Converts a Craft 5 lazy translation (`t9n:[category, message, params, language]`)
+     * to Craft 6’s argument order.
+     */
+    private function convertTranslation(string $value): string
+    {
+        if (! str_starts_with($value, 't9n:')) {
+            return $value;
+        }
+
+        $args = Json::decode(substr($value, 4));
+
+        if (! is_array($args) || ! is_string($args[1] ?? null)) {
+            return $value;
+        }
+
+        return I18N::prep($args[1], $args[2] ?? [], $args[0], $args[3] ?? null);
     }
 };

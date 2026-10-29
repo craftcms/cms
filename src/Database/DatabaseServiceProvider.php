@@ -49,14 +49,14 @@ class DatabaseServiceProvider extends ServiceProvider
             ->give(fn () => $this->app->make(MigrationRepository::class, ['table' => Table::MIGRATIONS]));
 
         $this->app
-            ->when(BulkOps::class)
+            ->when([BulkOps::class, BulkOpDeferrals::class])
             ->needs(ConnectionInterface::class)
-            ->give(fn () => $this->app->make(ConnectionResolverInterface::class)->connection(config('database.bulk_ops_connection', 'db2')));
+            ->give(function () {
+                $resolver = $this->app->make(ConnectionResolverInterface::class);
+                $default = $resolver->connection();
 
-        $this->app
-            ->when(BulkOpDeferrals::class)
-            ->needs(ConnectionInterface::class)
-            ->give(fn () => $this->app->make(ConnectionResolverInterface::class)->connection(config('database.bulk_ops_connection', 'db2')));
+                return $resolver->connection(config('database.bulk_ops_connection', $default->getDriverName() === 'sqlite' ? $resolver->getDefaultConnection() : 'db2'));
+            });
 
         Connection::macro('isMysql', fn (bool $strict = false) => $strict ? $this->getDriverName() === 'mysql' : in_array($this->getDriverName(), ['mysql', 'mariadb']));
         Connection::macro('isMaria', fn () => $this->getDriverName() === 'mariadb');

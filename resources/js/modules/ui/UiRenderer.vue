@@ -4,6 +4,7 @@
     nextTick,
     onErrorCaptured,
     onBeforeUnmount,
+    onMounted,
     provide,
     ref,
     shallowRef,
@@ -12,13 +13,19 @@
   } from 'vue';
   import {useEventListener} from '@vueuse/core';
   import UiNodeList from './UiNodeList.vue';
-  import {canonical, pathsMatch, valueAt} from './runtime';
+  import {canonical, pathsMatch, valueAt, visitControls} from './runtime';
   import {useUiValueGroup} from './uiValueGroup';
   import type {SidebarTabOutlets} from './sidebarTabs';
+  import {
+    registerUiValueSource,
+    type UiValueChangeDetail,
+    type UiValueSource,
+  } from './ui-values';
   import type {
     UiChange,
     UiChangeKind,
     UiControlPayload,
+    UiNodePayload,
     UiPayload,
     UiValue,
     UiValues,
@@ -27,7 +34,9 @@
   import {UiRendererKey} from './renderer/context';
   import {captureControlFocus} from './renderer/controlFocus';
   import {
+    cloneRaw,
     disabledNodes,
+    isWithin,
     withControl,
     withNestedUi,
     withUis,
@@ -65,8 +74,11 @@
   );
 
   const root = ref<HTMLElement>();
+  let uiValueSource: UiValueSource | undefined;
+  let unregisterUiValueSource: (() => void) | undefined;
   const renderError = ref<string>();
   const hostForm = computed(() => root.value?.closest('form'));
+  const observedValues = new Map<string, string>();
   const nativeSubmitting = ref(false);
   const submitting = ref(false);
   let submittedValues: UiValues | undefined;
@@ -85,6 +97,8 @@
     props.payload.scope,
     canonical(valueAt(values, props.payload.scope))
   );
+  rememberObservedValues(props.payload.nodes);
+
   const errorState = useClearedErrors(
     () => props.errors ?? payload.value.errors
   );
@@ -142,11 +156,58 @@
     () => props.disabled,
     () => emitMutation()
   );
-  onBeforeUnmount(() => unregisterValueSource?.());
+  onMounted(() => {
+    uiValueSource = {
+      root: root.value!,
+      getValue: (path) => cloneRaw(valueAt(currentValues(), [...path])),
+    };
+    unregisterUiValueSource = registerUiValueSource(uiValueSource);
+  });
+  onBeforeUnmount(() => {
+    unregisterValueSource?.();
+    unregisterUiValueSource?.();
+  });
 
   function onControlChange(change: UiChange): void {
     recordChange(change);
+    publishValueChange(change);
     emit('change', change, currentValues());
+  }
+
+  function publishValueChange(change: UiChange): void {
+    const key = JSON.stringify(change.path);
+    const value = valueAt(values, change.path);
+    const next = canonical(value);
+
+    if (observedValues.get(key) === next) {
+      return;
+    }
+
+    observedValues.set(key, next);
+
+    const scope = change.scope ?? payload.value.scope;
+
+    if (
+      props.disabled ||
+      valueState.controlAt(change.path)?.mode !== 'editable' ||
+      !uiValueSource
+    ) {
+      return;
+    }
+
+    uiValueSource.root.dispatchEvent(
+      new CustomEvent<UiValueChangeDetail>('craft:ui-value-change', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          ui: uiValueSource,
+          path: [...change.path],
+          scope: [...scope],
+          value: cloneRaw(value),
+          kind: change.kind,
+        },
+      })
+    );
   }
 
   function recordChange(change: UiChange): void {
@@ -190,6 +251,7 @@
       : withNestedUi(payload.value, scope, refreshed);
     emit('update:payload', payload.value);
     emitMutation();
+    resetObservedValues(payload.value.nodes);
 
     if (restoreFocus) {
       nextTick(restoreFocus);
@@ -222,6 +284,7 @@
     errorState.restore();
     valueState.reset(source);
     payload.value = source;
+    resetObservedValues(source.nodes);
     emit('update:payload', payload.value);
     emitMutation();
   }
@@ -268,7 +331,9 @@
     kind: UiChange['kind'] = 'discrete'
   ): void {
     valueState.write(path, value);
-    recordChange({kind, path});
+    const change = {kind, path};
+    recordChange(change);
+    publishValueChange(change);
   }
 
   /**
@@ -299,6 +364,10 @@
         refreshable: true,
       });
     }
+
+    for (const change of changes) {
+      publishValueChange({kind: 'discrete', path: change.path});
+    }
   }
 
   function setSubmitting(value: boolean): void {
@@ -314,8 +383,17 @@
       return;
     }
 
+    for (const key of observedValues.keys()) {
+      const path: string[] = JSON.parse(key);
+
+      if (path.length > control.path.length && isWithin(path, control.path)) {
+        observedValues.delete(key);
+      }
+    }
+
     payload.value = withUis(payload.value, control.path, uis);
     valueState.rememberControls(payload.value.nodes);
+    rememberObservedValues(payload.value.nodes);
   }
 
   defineExpose({
@@ -329,6 +407,21 @@
     setValues,
     canSubmit: () => !renderError.value,
   });
+
+  function rememberObservedValues(nodes: UiNodePayload[]): void {
+    visitControls(nodes, (control) => {
+      const key = JSON.stringify(control.path);
+
+      if (!observedValues.has(key)) {
+        observedValues.set(key, canonical(valueAt(values, control.path)));
+      }
+    });
+  }
+
+  function resetObservedValues(nodes: UiNodePayload[]): void {
+    observedValues.clear();
+    rememberObservedValues(nodes);
+  }
 </script>
 
 <template>

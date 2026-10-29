@@ -7,6 +7,13 @@ import type {
 import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
 
 /**
+ * The props a mode change re-renders. `viewState` comes along so its `mode`
+ * keeps naming the mode the rows were rendered for: Inertia stores the page in
+ * history, and going back to it calls `restore()` again, which trusts that mode.
+ */
+const MODE_PROPS = ['data', 'pagination', 'structure', 'viewState'];
+
+/**
  * Server-driven view mode. Switching modes updates the local view state
  * immediately (so the toolbar + view react without waiting on the network),
  * then pushes a `viewMode` Inertia visit that reflects the change in the URL
@@ -40,7 +47,7 @@ export function useElementIndexViewMode(
       // the rows render with no reordering affordances.
       visitor.merge(
         {viewMode: value, ...modeParams(value)},
-        {only: ['data', 'pagination', 'structure']}
+        {only: MODE_PROPS}
       );
     },
   });
@@ -76,7 +83,7 @@ export function useElementIndexViewMode(
 
     return {
       params: {viewMode: persisted},
-      only: ['data', 'pagination', 'structure'],
+      only: MODE_PROPS,
     };
   }
 
