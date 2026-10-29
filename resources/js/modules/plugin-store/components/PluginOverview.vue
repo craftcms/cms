@@ -3,6 +3,7 @@
   import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
   import {computed} from 'vue';
   import {plugin as pluginRoute} from '@actions/PluginStore/PluginStoreController';
+  import Prose from '@/common/components/Prose.vue';
   import PluginMeta from './PluginMeta.vue';
   import PluginScreenshots from './PluginScreenshots.vue';
   import {usePluginLicenseInfo} from '../composables/usePluginStoreData';
@@ -63,15 +64,14 @@
     />
 
     <div class="plugin-overview">
-      <!-- The description is HTML the Plugin Store renders from the developer's Markdown. -->
-      <div
-        v-if="plugin.longDescription"
-        class="prose"
-        v-html="plugin.longDescription"
-      ></div>
-      <p v-else-if="plugin.shortDescription" class="prose">
-        {{ plugin.shortDescription }}
-      </p>
+      <Prose v-if="plugin.longDescription || plugin.shortDescription">
+        <!-- The description is HTML the Plugin Store renders from the developer's Markdown. -->
+        <div
+          v-if="plugin.longDescription"
+          v-html="plugin.longDescription"
+        ></div>
+        <p v-else>{{ plugin.shortDescription }}</p>
+      </Prose>
       <p v-else>{{ t('No description.') }}</p>
 
       <PluginMeta :plugin="plugin" @show-reviews="emit('show-reviews')" />
@@ -83,10 +83,6 @@
   .plugin-overview {
     display: grid;
     gap: var(--c-spacing-xl);
-  }
-
-  .plugin-overview .prose :deep(p) {
-    margin-block: 0 1em;
   }
 
   @media (width >= var(--breakpoint-xl)) {
