@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\Duplicate;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -38,6 +39,22 @@ it('duplicates entries via the Laravel perform-action route', function () {
         'elementType' => Entry::class,
         'elementAction' => Duplicate::class,
         'elementIds' => [$entry->id],
+    ])->assertOk();
+
+    expect(DB::table(Table::ELEMENTS)->count())->toBeGreaterThan($beforeCount);
+});
+
+it('duplicates unpublished drafts via the Laravel perform-action route', function () {
+    $draft = EntryModel::factory()->createElement();
+    app(Drafts::class)->saveElementAsDraft($draft, User::findOne()->id);
+    $beforeCount = DB::table(Table::ELEMENTS)->count();
+
+    postJson(action(PerformElementActionController::class), [
+        'context' => 'index',
+        'source' => '*',
+        'elementType' => Entry::class,
+        'elementAction' => Duplicate::class,
+        'elementIds' => [$draft->id],
     ])->assertOk();
 
     expect(DB::table(Table::ELEMENTS)->count())->toBeGreaterThan($beforeCount);
